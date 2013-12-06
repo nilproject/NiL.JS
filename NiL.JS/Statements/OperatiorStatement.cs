@@ -264,9 +264,9 @@ namespace NiL.JS.Statements
             //del = Opdel;
         }
 
-        public static Statement ParseForNew(string code, ref int index)
+        public static Statement ParseForUnary(string code, ref int index)
         {
-            return Parse(code, ref index, true, false).Statement; 
+            return Parse(code, ref index, true, true).Statement; 
         }
 
         public static ParseResult Parse(string code, ref int index)
@@ -853,6 +853,12 @@ namespace NiL.JS.Statements
                         }
                     case 'i':
                         {
+                            if (forUnary)
+                            {
+                                binar = false;
+                                repeat = false;
+                                break;
+                            }
                             if (Parser.Validate(code, "instanceof", ref i))
                             {
                                 type = OperationType.InstanceOf;

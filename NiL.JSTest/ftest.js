@@ -10,5 +10,6 @@ for (var i = 0; i < 35; i++)
 console.log(new Date - start);
 */
 
-console.log("comp\
-lite");
+var o = { v1: 1, v2: 2, "2": "index", i: 0 };
+for (o.i in [1,2,3])
+    console.log(o.i);

@@ -10,6 +10,12 @@ namespace NiL.JS.Statements
         public readonly Statement[] initializators;
         public readonly string[] names;
 
+        public VaribleDefineStatement(string name, Statement init)
+        {
+            names = new[] { name };
+            initializators = new[] { init };
+        }
+
         private VaribleDefineStatement(Statement[] initializators, string[] names)
         {
             this.initializators = initializators;

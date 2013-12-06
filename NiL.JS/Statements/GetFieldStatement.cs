@@ -12,7 +12,13 @@ namespace NiL.JS.Statements
         public GetFieldStatement(Statement obj, Statement fieldName)
         {
             this.obj = (s) => { return obj.Invoke(s); };
-            impl = (s) => { return obj.Invoke(s).GetField(fieldName.Invoke(s).Value.ToString()); };
+            impl = (s) =>
+            {
+                var n = fieldName.Invoke(s);
+                if (n.ValueType == ObjectValueType.NoExist)
+                    throw new ArgumentException("Varible not exist");
+                return obj.Invoke(s).GetField(n.Value.ToString());
+            };
         }
 
         public GetFieldStatement(Statement obj, string fieldName)

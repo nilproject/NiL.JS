@@ -71,6 +71,9 @@ namespace NiL.JS.Core
             };
             rules[1] = new _Rule[] // Для операторов
             {
+                new _Rule("[", OperatorStatement.Parse),
+                new _Rule("{", OperatorStatement.Parse),
+                new _Rule("function", OperatorStatement.Parse),
                 new _Rule("(", OperatorStatement.Parse),
                 new _Rule("+", OperatorStatement.Parse),
                 new _Rule("-", OperatorStatement.Parse),

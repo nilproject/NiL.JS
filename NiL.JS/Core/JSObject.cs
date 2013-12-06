@@ -1,6 +1,7 @@
 ﻿using NiL.JS.Core;
 using System;
 using System.Collections.Generic;
+using System.Collections;
 using System.Runtime.InteropServices;
 
 namespace NiL.JS.Core
@@ -21,7 +22,14 @@ namespace NiL.JS.Core
         Date = 9
     }
 
-    public class JSObject
+    [Flags]
+    internal enum ObjectAttributes : byte
+    {
+        None = 0,
+        NotEnumerable = 1,
+    }
+
+    public class JSObject : IEnumerable<string>, IEnumerable
     {
         internal static readonly Func<bool> ErrorAssignCallback = () => { throw new InvalidOperationException("Invalid left-hand side"); };
         internal static readonly JSObject undefined = new JSObject() { ValueType = ObjectValueType.Undefined };
@@ -35,6 +43,7 @@ namespace NiL.JS.Core
         [System.ComponentModel.Browsable(false)]
         internal Func<bool> assignCallback;
         protected Func<string, bool, JSObject> fieldGetter;
+        protected Func<IEnumerator<string>> enumeratorGetter;
         internal JSObject prototype;
         private Dictionary<string, JSObject> fields;
 
@@ -44,6 +53,7 @@ namespace NiL.JS.Core
         internal int iValue;
         internal double dValue;
         internal object oValue;
+        internal ObjectAttributes attributes;
 
         public object Value
         {
@@ -63,6 +73,9 @@ namespace NiL.JS.Core
                         return oValue;
                     case ObjectValueType.Object:
                         return oValue;
+                    case ObjectValueType.Undefined:
+                    case ObjectValueType.NoExistInObject:
+                        return "undefined";
                     default:
                         return null;
                 }
@@ -97,7 +110,7 @@ namespace NiL.JS.Core
             JSObject res = null;
             bool fromProto = fields == null || !fields.TryGetValue(name, out res);
             if (fromProto && prototype != null)
-                res = prototype.GetField(name, fast);
+                res = prototype.GetField(name, true);
             if (res == null)
             {
                 if (fast)
@@ -119,6 +132,7 @@ namespace NiL.JS.Core
             {
                 var t = new JSObject() { ValueType = ObjectValueType.NoExistInObject };
                 t.Assign(res);
+                t.attributes = res.attributes;
                 t.assignCallback = () =>
                 {
                     if (fields == null)
@@ -240,7 +254,7 @@ namespace NiL.JS.Core
 
         public void Delete()
         {
-
+            ValueType = ObjectValueType.NoExist;
         }
 
         public override string ToString()
@@ -251,6 +265,30 @@ namespace NiL.JS.Core
             if (tstr.ValueType == ObjectValueType.Statement)
                 return (tstr.oValue as IContextStatement).Invoke(this, null).oValue as string;
             return "" + (Value ?? "null");
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            if (enumeratorGetter == null)
+            {
+                if (fields == null)
+                    return new string[0].GetEnumerator();
+                return fields.Keys.GetEnumerator();
+            }
+            else
+                return enumeratorGetter();
+        }
+
+        public virtual IEnumerator<string> GetEnumerator()
+        {
+            if (enumeratorGetter == null)
+            {
+                if (fields == null)
+                    return (IEnumerator<string>)new string[0].GetEnumerator();
+                return fields.Keys.GetEnumerator();
+            }
+            else
+                return enumeratorGetter();
         }
 
         public static implicit operator JSObject(bool value)
