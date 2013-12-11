@@ -17,7 +17,7 @@ namespace NiL.JS.Statements.Operators
 
         public override JSObject Invoke(Context context)
         {
-            JSObject temp= first.Invoke(context);
+            JSObject temp = first.Invoke(context);
 
             double dr;
             switch (temp.ValueType)
@@ -42,6 +42,25 @@ namespace NiL.JS.Statements.Operators
                                     tempResult.dValue = dr;
                                     return tempResult;
                                 }
+                            case ObjectValueType.Statement:
+                            case ObjectValueType.Object:
+                                {
+                                    temp = temp.ToPrimitiveValue_Value_String();
+                                    if (temp.ValueType == ObjectValueType.Int)
+                                        goto case ObjectValueType.Int;
+                                    else if (temp.ValueType == ObjectValueType.Double)
+                                        goto case ObjectValueType.Double;
+                                    else if ((temp.ValueType == ObjectValueType.Object)
+                                        || (temp.ValueType == ObjectValueType.String)
+                                        || (temp.ValueType == ObjectValueType.Undefined)
+                                        || (temp.ValueType == ObjectValueType.Statement))
+                                    {
+                                        tempResult.ValueType = ObjectValueType.Double;
+                                        tempResult.dValue = double.NaN;
+                                        return tempResult;
+                                    }
+                                    break;
+                                }
                         }
                         break;
                     }
@@ -65,6 +84,37 @@ namespace NiL.JS.Statements.Operators
                                     tempResult.dValue = dr;
                                     return tempResult;
                                 }
+                            case ObjectValueType.Object:
+                                {
+                                    temp = temp.ToPrimitiveValue_Value_String();
+                                    if (temp.ValueType == ObjectValueType.Int)
+                                        goto case ObjectValueType.Int;
+                                    else if (temp.ValueType == ObjectValueType.Double)
+                                        goto case ObjectValueType.Double;
+                                    else if (temp.ValueType == ObjectValueType.Object)
+                                    {
+                                        tempResult.ValueType = ObjectValueType.Double;
+                                        tempResult.dValue = double.NaN;
+                                        return tempResult;
+                                    }
+                                    break;
+                                }
+                        }
+                        break;
+                    }
+                case ObjectValueType.Date:
+                case ObjectValueType.Object:
+                    {
+                        temp = temp.ToPrimitiveValue_Value_String();
+                        if (temp.ValueType == ObjectValueType.Int)
+                            goto case ObjectValueType.Int;
+                        else if (temp.ValueType == ObjectValueType.Double)
+                            goto case ObjectValueType.Double;
+                        else if (temp.ValueType == ObjectValueType.Object)
+                        {
+                            tempResult.ValueType = ObjectValueType.Double;
+                            tempResult.dValue = double.NaN;
+                            return tempResult;
                         }
                         break;
                     }

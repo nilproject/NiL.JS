@@ -47,6 +47,7 @@ namespace NiL.JS.Core.BaseTypes
                         return DefaultFieldGetter(name, b);
                 }
             };
+            prototype = BaseObject.Prototype;
         }
     }
 }

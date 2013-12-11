@@ -51,6 +51,7 @@ namespace NiL.JS.Core.BaseTypes
                     + " GMT+" + offset.Hours.ToString("00") + offset.Minutes.ToString("00") + " (" + TimeZone.CurrentTimeZone.DaylightName + ")";
                 return res;
             }));
+            proto.prototype = BaseObject.Prototype;
         }
     }
 }

@@ -67,6 +67,9 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * 3 * i; }
         {
             Action<string> _ = Console.WriteLine;
 
+            int passed = 0;
+            int failed = 0;
+            string code;
             try
             {
                 _("Sputnik testing begin...");
@@ -76,20 +79,17 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * 3 * i; }
                 var fls = Directory.EnumerateFiles(folderPath, "*.js", SearchOption.AllDirectories).ToArray();
                 _("Founded " + fls.Length + " js-files");
 
-                int passed = 0;
-                int failed = 0;
-
                 for (int i = 0; i < fls.Length; i++)
                 {
                     bool pass = true;
                     Console.Write("Processing file \"" + fls[i] + "\" ");
                     var f = new FileStream(fls[i], FileMode.Open, FileAccess.Read);
                     var sr = new StreamReader(f);
-                    string code = sr.ReadToEnd();
-                    if (code.IndexOf('"') == -1)
+                    code = sr.ReadToEnd();
+                    /*if (code.IndexOf('"') == -1)
                         code = "eval(\"" + code + "\");";
                     else if (code.IndexOf('\'') == -1)
-                        code = "eval('" + code.Replace("\\", "\\\\") + "');";
+                        code = "eval('" + code.Replace("\\", "\\\\") + "');";*/
                     var s = new Script(code);
                     s.Context.GetField("$ERROR").Assign(new CallableField((t, x) =>
                     {
@@ -120,6 +120,15 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * 3 * i; }
             }
         }
 
+        private static void testEx()
+        {
+            Context.GlobalContext.GetField("f").Assign(null);
+            var s = new Script("f = function f(){ return 'hello' };");
+            s.Invoke();
+            var o = NiL.JS.Core.Context.GlobalContext.GetField("f");
+            var res = (o.Value as IContextStatement).Invoke(null, null);
+        }
+
         static void Main(string[] args)
         {
             NiL.JS.Core.Context.GlobalContext.GetField("platform").Assign("NiL.JS");
@@ -129,6 +138,7 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * 3 * i; }
             //benchmark();
             //featureSupportTest();
             //sputnicTests();
+            //testEx();
 
             GC.Collect();
             GC.WaitForPendingFinalizers();

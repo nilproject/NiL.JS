@@ -1012,7 +1012,7 @@ namespace NiL.JS.Statements
                     }
                 case ObjectValueType.Date:
                     {
-                        var val = temp.ToPrimitiveValueInvert();
+                        var val = temp.ToPrimitiveValue_String_Value();
                         temp = second.Invoke(context);
                         switch (temp.ValueType)
                         {
@@ -1038,6 +1038,21 @@ namespace NiL.JS.Statements
                                     tempResult.oValue = val as string + temp.oValue as string;
                                     return tempResult;
                                 }
+                        }
+                        break;
+                    }
+                case ObjectValueType.Object:
+                    {
+                        temp = temp.ToPrimitiveValue_Value_String();
+                        if (temp.ValueType == ObjectValueType.Int)
+                            goto case ObjectValueType.Int;
+                        else if (temp.ValueType == ObjectValueType.Double)
+                            goto case ObjectValueType.Double;
+                        else if (temp.ValueType == ObjectValueType.Object)
+                        {
+                            tempResult.ValueType = ObjectValueType.Double;
+                            tempResult.dValue = double.NaN;
+                            return tempResult;
                         }
                         break;
                     }
@@ -1097,7 +1112,7 @@ namespace NiL.JS.Statements
                             case ObjectValueType.Object:
                             case ObjectValueType.Date:
                                 {
-                                    temp = temp.ToPrimitiveValue();
+                                    temp = temp.ToPrimitiveValue_Value_String();
                                     if (temp.ValueType == ObjectValueType.Int)
                                         goto case ObjectValueType.Int;
                                     else if (temp.ValueType == ObjectValueType.Double)
@@ -1153,7 +1168,7 @@ namespace NiL.JS.Statements
                 case ObjectValueType.Date:
                 case ObjectValueType.Object:
                     {
-                        temp = temp.ToPrimitiveValue();
+                        temp = temp.ToPrimitiveValue_Value_String();
                         if (temp.ValueType == ObjectValueType.Int)
                             goto case ObjectValueType.Int;
                         else if (temp.ValueType == ObjectValueType.Double)

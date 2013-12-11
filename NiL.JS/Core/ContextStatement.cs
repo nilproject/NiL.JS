@@ -29,5 +29,10 @@ namespace NiL.JS.Core
             var res = Prototype.Invoke(Context, _this, args);
             return res;
         }
+
+        public override string ToString()
+        {
+            return "[Function]";
+        }
     }
 }

@@ -7,7 +7,7 @@ namespace NiL.JS.Core.BaseTypes
 {
     internal class JSArray : JSObject
     {
-        private readonly static string marker = new System.String(new char[] { 'A', 'r', 'r', 'a', 'y' });
+        private readonly static string marker = "Array";
         public static JSObject Prototype;
 
         public static void RegisterTo(Context context)
@@ -23,12 +23,15 @@ namespace NiL.JS.Core.BaseTypes
                 res.prototype = proto;
                 res.ValueType = ObjectValueType.Object;
                 res.oValue = marker;
+                var f = res.GetField("length");
+                f.Assign(0);
+                f.attributes |= ObjectAttributes.DontEnum;
                 if (args != null && args.Length > 0)
                 {
-                    var f = args[0].Invoke();
-                    if ((args.Length > 1) || (f.ValueType != ObjectValueType.Int && f.ValueType != ObjectValueType.Double))
+                    var arg = args[0].Invoke();
+                    if ((args.Length > 1) || (arg.ValueType != ObjectValueType.Int && arg.ValueType != ObjectValueType.Double))
                     {
-                        res.GetField("0").Assign(f);
+                        res.GetField("0").Assign(arg);
                         int i = 1;
                         for (; i < args.Length; i++)
                             res.GetField(i.ToString()).Assign(args[i].Invoke());
@@ -36,15 +39,15 @@ namespace NiL.JS.Core.BaseTypes
                     }
                     else
                     {
-                        if (f.ValueType == ObjectValueType.Double)
+                        if (arg.ValueType == ObjectValueType.Double)
                         {
-                            int l = (int)f.dValue;
-                            if (f.dValue != l)
+                            int l = (int)arg.dValue;
+                            if (arg.dValue != l)
                                 throw new ArgumentException("Invalid array length");
                             res.GetField("length").Assign(l);
                         }
                         else
-                            res.GetField("length").Assign(f);
+                            res.GetField("length").Assign(arg);
                     }
                 }
                 return res;
@@ -54,8 +57,13 @@ namespace NiL.JS.Core.BaseTypes
             Prototype = proto;
             proto.ValueType = ObjectValueType.Object;
             proto.oValue = marker;
-            proto.GetField("length").Assign(0);
-            proto.GetField("push").Assign(new CallableField(Push));
+            var field = proto.GetField("length");
+            field.Assign(0);
+            field.attributes |= ObjectAttributes.DontEnum;
+            field = proto.GetField("push");
+            field.Assign(new CallableField(Push));
+            field.attributes |= ObjectAttributes.DontEnum;
+            proto.prototype = BaseObject.Prototype;
         }
 
         public static JSObject Push(JSObject array, IContextStatement[] args)
@@ -72,15 +80,14 @@ namespace NiL.JS.Core.BaseTypes
 
         public static JSObject Pop(JSObject array, IContextStatement[] args)
         {
-            var len = array.GetField("length", false);
+            /*var len = array.GetField("length", false);
             int index = 0;
             if (len.ValueType == ObjectValueType.Int)
                 index = len.iValue;
             if (index > 0)
             {
-
                 len.Assign(index);
-            }
+            }*/
             return JSObject.undefined;
         }
 
@@ -89,6 +96,9 @@ namespace NiL.JS.Core.BaseTypes
             ValueType = ObjectValueType.Object;
             oValue = marker;
             prototype = Prototype;
+            var f = GetField("length");
+            f.Assign(0);
+            f.attributes |= ObjectAttributes.DontEnum;
         }
     }
 }

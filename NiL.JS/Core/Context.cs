@@ -172,6 +172,7 @@ namespace NiL.JS.Core
 
             JSDate.RegisterTo(globalContext);
             JSArray.RegisterTo(globalContext);
+            BaseObject.RegisterTo(globalContext);
             #endregion
             #region Consts
             var nan = globalContext.GetField("NaN");

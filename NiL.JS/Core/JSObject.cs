@@ -26,7 +26,8 @@ namespace NiL.JS.Core
     internal enum ObjectAttributes : byte
     {
         None = 0,
-        NotEnumerable = 1,
+        DontEnum = 1,
+        DontDelete = 2
     }
 
     public class JSObject : IEnumerable<string>, IEnumerable
@@ -68,14 +69,13 @@ namespace NiL.JS.Core
                     case ObjectValueType.Double:
                         return dValue;
                     case ObjectValueType.Statement:
-                        return "[Function]";
+                        return oValue;
                     case ObjectValueType.String:
                         return oValue;
                     case ObjectValueType.Object:
                         return oValue;
                     case ObjectValueType.Undefined:
                     case ObjectValueType.NoExistInObject:
-                        return "undefined";
                     default:
                         return null;
                 }
@@ -132,7 +132,7 @@ namespace NiL.JS.Core
             {
                 var t = new JSObject() { ValueType = ObjectValueType.NoExistInObject };
                 t.Assign(res);
-                t.attributes = res.attributes;
+                //t.attributes = res.attributes;
                 t.assignCallback = () =>
                 {
                     if (fields == null)
@@ -155,7 +155,7 @@ namespace NiL.JS.Core
             assignCallback = () => { return false; };
         }
 
-        internal JSObject ToPrimitiveValue()
+        internal JSObject ToPrimitiveValue_Value_String()
         {
             if ((ValueType >= ObjectValueType.Object) && (oValue != null))
             {
@@ -179,7 +179,7 @@ namespace NiL.JS.Core
             return this;
         }
 
-        internal JSObject ToPrimitiveValueInvert()
+        internal JSObject ToPrimitiveValue_String_Value()
         {
             if ((ValueType >= ObjectValueType.Object) && (oValue != null))
             {

@@ -297,7 +297,6 @@
     <Content Include="tests\ch07\7.9\7.9.2\S7.9.2_A1_T5.js" />
     <Content Include="tests\ch07\7.9\7.9.2\S7.9.2_A1_T6.js" />
     <Content Include="tests\ch07\7.9\7.9.2\S7.9.2_A1_T7.js" />
-    <Content Include="tests\ch07\7.9\S7.9_A1.js" />
     <Content Include="tests\ch07\7.9\S7.9_A10_T1.js" />
     <Content Include="tests\ch07\7.9\S7.9_A10_T10.js" />
     <Content Include="tests\ch07\7.9\S7.9_A10_T11.js" />
