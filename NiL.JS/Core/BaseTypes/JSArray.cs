@@ -7,7 +7,7 @@ namespace NiL.JS.Core.BaseTypes
 {
     internal class JSArray : JSObject
     {
-        private readonly static string marker = "Array";
+        private const string marker = "Array";
         public static JSObject Prototype;
 
         public static void RegisterTo(Context context)

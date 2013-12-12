@@ -28,8 +28,9 @@ namespace NiL.JS.Statements
             varibles = new string[0];
         }
 
-        public static ParseResult Parse(string code, ref int index)
+        public static ParseResult Parse(ParsingState state, ref int index)
         {
+            string code = state.Code;
             int i = index;
             while (char.IsWhiteSpace(code[i])) i++;
             if (code[i] != '{')
@@ -41,7 +42,7 @@ namespace NiL.JS.Statements
             var funcs = new List<Statement>();
             while (code[i] != '}')
             {
-                var t = Parser.Parse(code, ref i, 0);
+                var t = Parser.Parse(state, ref i, 0);
                 if (t == null)
                     continue;
                 if (t is Function)
@@ -64,7 +65,6 @@ namespace NiL.JS.Statements
                     body.Add(t);
             };
             i++;
-            int l = i - index;
             index = i; 
             body.Reverse();
             return new ParseResult()
@@ -113,9 +113,9 @@ namespace NiL.JS.Statements
         {
             var vars = new HashSet<string>();
             for (int i = 0; i < body.Length; i++)
-                Parser.Optimize(ref body[i], depth + 1, vars);
+                Parser.Optimize(ref body[i], 1, vars);
             for (int i = 0; i < functions.Length; i++)
-                Parser.Optimize(ref functions[i], depth + 1, vars);
+                Parser.Optimize(ref functions[i], 1, vars);
             if (depth > 0)
             {
                 foreach (var v in vars)

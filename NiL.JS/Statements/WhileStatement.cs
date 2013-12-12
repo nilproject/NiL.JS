@@ -9,8 +9,9 @@ namespace NiL.JS.Statements
         private Statement condition;
         private Statement body;
 
-        public static ParseResult Parse(string code, ref int index)
+        internal static ParseResult Parse(ParsingState state, ref int index)
         {
+            string code = state.Code;
             int i = index;
             if (!Parser.Validate(code, "while", ref i))
                 throw new ArgumentException("code (" + i + ")");
@@ -18,12 +19,16 @@ namespace NiL.JS.Statements
             if (code[i] != '(')
                 throw new ArgumentException("code (" + i + ")");
             do i++; while (char.IsWhiteSpace(code[i]));
-            var condition = Parser.Parse(code, ref i, 1);
+            var condition = Parser.Parse(state, ref i, 1);
             while (char.IsWhiteSpace(code[i])) i++;
             if (code[i] != ')')
                 throw new ArgumentException("code (" + i + ")");
             do i++; while (char.IsWhiteSpace(code[i]));
-            var body = Parser.Parse(code, ref i, 0);
+            state.AllowBreak++;
+            state.AllowContinue++;
+            var body = Parser.Parse(state, ref i, 0);
+            state.AllowBreak--;
+            state.AllowContinue--;
             index = i;
             return new ParseResult()
             {

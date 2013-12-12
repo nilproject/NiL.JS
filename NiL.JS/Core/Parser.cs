@@ -188,28 +188,34 @@ namespace NiL.JS.Core
             if (reserveControl)
                 switch (name)
                 {
-                    case "function":
-                    case "var":
-                    case "for":
-                    case "while":
-                    case "return":
-                    case "new":
-                    case "void":
+                    case "break":
+                    case "case":
+                    case "catch":
+                    case "continue":
                     case "delete":
+                    case "default":
+                    case "do":
+                    case "else":
+                    case "finaly":
+                    case "for":
+                    case "function":
+                    case "if":
+                    case "in":
+                    case "instanceof":
+                    case "new":
+                    case "return":
+                    case "switch":
+                    case "this":
+                    case "throw":
+                    case "try":
+                    case "typeof":
+                    case "var":
+                    case "void":
+                    case "while":
+                    case "with":
                     case "true":
                     case "false":
                     case "null":
-                    case "do":
-                    case "in":
-                    case "try":
-                    case "catch":
-                    case "typeof":
-                    case "break":
-                    case "case":
-                    case "switch":
-                    case "default":
-                    case "continue":
-                    case "instanceof":
                         return false;
                 }
             if (move)
@@ -846,16 +852,22 @@ namespace NiL.JS.Core
                 || (c == ':');
         }
 
-        internal static Statement Parse(string code, ref int index, int ruleset)
+        internal static Statement Parse(ParsingState state, ref int index, int ruleset)
         {
-            while ((index < code.Length) && ((code[index] == ';') || (char.IsWhiteSpace(code[index])))) index++;
+            string code = state.Code;
+            while ((index < code.Length) && (char.IsWhiteSpace(code[index]))) index++;
             if (code[index] == '}')
                 return null;
+            if (code[index] == ';')
+            {
+                index++;
+                return new EmptyStatement();
+            }
             for (int i = 0; i < rules[ruleset].Length; i++)
             {
                 if (rules[ruleset][i].Validate(code, ref index, false))
                 {
-                    var pr = rules[ruleset][i].Parse(code, ref index);
+                    var pr = rules[ruleset][i].Parse(state, ref index);
                     if (pr.IsParsed)
                         return pr.Statement;
                 }

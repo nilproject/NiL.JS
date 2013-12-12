@@ -15,28 +15,33 @@ namespace NiL.JS.Statements
         {
         }
 
-        public static ParseResult Parse(string code, ref int index)
+        internal static ParseResult Parse(ParsingState state, ref int index)
         {
+            string code = state.Code;
             int i = index;
             while (char.IsWhiteSpace(code[i])) i++;
             if (!Parser.Validate(code, "for(", ref i) && (!Parser.Validate(code, "for (", ref i)))
                 throw new ArgumentException("code (" + i + ")");
             while (char.IsWhiteSpace(code[i])) i++;
             Statement init = null;
-            init = code[i] == ';' ? null as Statement : Parser.Parse(code, ref i, 3);
+            init = code[i] == ';' ? null as Statement : Parser.Parse(state, ref i, 3);
             if (code[i] != ';')
                 throw new ArgumentException("code (" + i + ")");
             do i++; while (char.IsWhiteSpace(code[i]));
-            var condition = code[i] == ';' ? null as Statement : OperatorStatement.Parse(code, ref i).Statement;
+            var condition = code[i] == ';' ? null as Statement : OperatorStatement.Parse(state, ref i).Statement;
             if (code[i] != ';')
                 throw new ArgumentException("code (" + i + ")");
             do i++; while (char.IsWhiteSpace(code[i]));
-            var post = code[i] == ')' ? null as Statement : OperatorStatement.Parse(code, ref i).Statement;
+            var post = code[i] == ')' ? null as Statement : OperatorStatement.Parse(state, ref i).Statement;
             while (char.IsWhiteSpace(code[i])) i++;
             if (code[i] != ')')
                 throw new ArgumentException("code (" + i + ")");
             do i++; while (char.IsWhiteSpace(code[i]));
-            var body = Parser.Parse(code, ref i, 0);
+            state.AllowBreak++;
+            state.AllowContinue++;
+            var body = Parser.Parse(state, ref i, 0);
+            state.AllowBreak--;
+            state.AllowContinue--;
             index = i;
             return new ParseResult()
             {
@@ -92,7 +97,7 @@ namespace NiL.JS.Statements
 
         public bool Optimize(ref Statement _this, int depth, System.Collections.Generic.HashSet<string> varibles)
         {
-            Parser.Optimize(ref init, depth + 1, varibles);
+            Parser.Optimize(ref init, depth, varibles);
             Parser.Optimize(ref condition, 1, varibles);
             Parser.Optimize(ref post, 1, varibles);
             Parser.Optimize(ref body, depth + 1, varibles);

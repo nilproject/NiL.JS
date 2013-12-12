@@ -14,24 +14,30 @@ namespace NiL.JS.Statements
         {
         }
 
-        public static ParseResult Parse(string code, ref int index)
+        internal static ParseResult Parse(ParsingState state, ref int index)
         {
+            string code = state.Code;
             int i = index;
             if (!Parser.Validate(code, "if (", ref i) && !Parser.Validate(code, "if(", ref i))
                 throw new ArgumentException("code (" + i + ")");
             while (char.IsWhiteSpace(code[i])) i++;
-            Statement condition = OperatorStatement.Parse(code, ref i).Statement;
+            Statement condition = OperatorStatement.Parse(state, ref i).Statement;
             while (char.IsWhiteSpace(code[i])) i++;
             if (code[i] != ')')
                 throw new ArgumentException("code (" + i + ")");
             do i++; while (char.IsWhiteSpace(code[i]));
-            Statement body = Parser.Parse(code, ref i, 0);
+            Statement body = Parser.Parse(state, ref i, 0);
             Statement elseBody = null;
             while (char.IsWhiteSpace(code[i])) i++;
+            if (!(body is CodeBlock) && (code[i] == ';'))
+            {
+                i++;
+                while (char.IsWhiteSpace(code[i])) i++;
+            }
             if (Parser.Validate(code, "else", ref i))
             {
                 while (char.IsWhiteSpace(code[i])) i++;
-                elseBody = Parser.Parse(code, ref i, 0);
+                elseBody = Parser.Parse(state, ref i, 0);
             }
             index = i;
             return new ParseResult()

@@ -22,8 +22,9 @@ namespace NiL.JS.Statements
             this.names = names;
         }
 
-        public static ParseResult Parse(string code, ref int index)
+        internal static ParseResult Parse(ParsingState state, ref int index)
         {
+            string code = state.Code;
             int i = index;
             while (char.IsWhiteSpace(code[i])) i++;
             if (!Parser.Validate(code, "var ", ref i))
@@ -42,7 +43,7 @@ namespace NiL.JS.Statements
                 while (char.IsWhiteSpace(code[i]) && !Parser.isLineTerminator(code[i])) i++;
                 if ((code[i] != ',') && (code[i] != ';') && (code[i] != '=') && (code[i] != '}') && (!Parser.isLineTerminator(code[i])))
                     throw new ArgumentException("code (" + i + ")");
-                initializator.Add(OperatorStatement.Parse(code, ref s, false).Statement);
+                initializator.Add(OperatorStatement.Parse(state, ref s, false).Statement);
                 i = s;
                 if ((code[i] != ',') && (code[i] != ';') && (code[i] != '=') && (code[i] != '}') && (!Parser.isLineTerminator(code[i])))
                     throw new ArgumentException("code (" + i + ")");
@@ -54,7 +55,6 @@ namespace NiL.JS.Statements
             if (!isDef)
                 throw new ArgumentException("code (" + i + ")");
             var inits = initializator.ToArray();
-            int l = i - index;
             index = i;
             return new ParseResult()
             {

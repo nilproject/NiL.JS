@@ -13,8 +13,9 @@ namespace NiL.JS.Statements
         private string[] fields;
         private Statement[] values;
 
-        public static ParseResult Parse(string code, ref int index)
+        public static ParseResult Parse(ParsingState state, ref int index)
         {
+            string code = state.Code;
             if (code[index] != '{')
                 throw new ArgumentException("Invalid JSON definition");
             var flds = new List<string>();
@@ -51,7 +52,7 @@ namespace NiL.JS.Statements
                 if (code[i] != ':')
                     return new ParseResult();
                 do i++; while (char.IsWhiteSpace(code[i]));
-                vls.Add(OperatorStatement.Parse(code, ref i, false).Statement);
+                vls.Add(OperatorStatement.Parse(state, ref i, false).Statement);
                 while (char.IsWhiteSpace(code[i])) i++;
                 if ((code[i] != ',') && (code[i] != '}'))
                     return new ParseResult();

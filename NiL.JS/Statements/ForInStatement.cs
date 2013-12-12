@@ -14,8 +14,9 @@ namespace NiL.JS.Statements
         {
         }
 
-        public static ParseResult Parse(string code, ref int index)
+        internal static ParseResult Parse(ParsingState state, ref int index)
         {
+            string code = state.Code;
             int i = index;
             while (char.IsWhiteSpace(code[i])) i++;
             if (!Parser.Validate(code, "for(", ref i) && (!Parser.Validate(code, "for (", ref i)))
@@ -34,18 +35,22 @@ namespace NiL.JS.Statements
             }
             else
             {
-                res.varible = OperatorStatement.ParseForUnary(code, ref i);
+                res.varible = OperatorStatement.ParseForUnary(state, ref i);
             }
             while (char.IsWhiteSpace(code[i])) i++;
             if (!Parser.Validate(code, "in", ref i))
                 return new ParseResult();
             while (char.IsWhiteSpace(code[i])) i++;
-            res.source = Parser.Parse(code, ref i, 1);
+            res.source = Parser.Parse(state, ref i, 1);
             while (char.IsWhiteSpace(code[i])) i++;
             if (code[i] != ')')
                 throw new ArgumentException();
             i++;
-            res.body = Parser.Parse(code, ref i, 1);
+            state.AllowBreak++;
+            state.AllowContinue++;
+            res.body = Parser.Parse(state, ref i, 1);
+            state.AllowBreak--;
+            state.AllowContinue--;
             index = i;
             return new ParseResult()
             {

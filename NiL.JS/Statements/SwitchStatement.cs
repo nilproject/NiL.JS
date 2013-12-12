@@ -32,8 +32,9 @@ namespace NiL.JS.Statements
             functions = new Function[0];
         }
 
-        public static ParseResult Parse(string code, ref int index)
+        internal static ParseResult Parse(ParsingState state, ref int index)
         {
+            string code = state.Code;
             int i = index;
             if (!Parser.Validate(code, "switch", ref i))
                 throw new ArgumentException("code (" + i + ")");
@@ -41,7 +42,7 @@ namespace NiL.JS.Statements
             if (code[i] != '(')
                 throw new ArgumentException("code (" + i + ")");
             i++;
-            var image = OperatorStatement.Parse(code, ref i).Statement;
+            var image = OperatorStatement.Parse(state, ref i).Statement;
             if (code[i] != ')')
                 throw new ArgumentException("code (" + i + ")");
             do i++; while (char.IsWhiteSpace(code[i]));
@@ -54,6 +55,7 @@ namespace NiL.JS.Statements
             var funcs = new List<Statement>();
             var cases = new List<Case>();
             cases.Add(null);
+            state.AllowBreak++;
             while (code[i] != '}')
             {
                 if (Parser.Validate(code, "case", ref i))
@@ -61,7 +63,7 @@ namespace NiL.JS.Statements
                     do
                         i++;
                     while (char.IsWhiteSpace(code[i]));
-                    var sample = OperatorStatement.Parse(code, ref i).Statement;
+                    var sample = OperatorStatement.Parse(state, ref i).Statement;
                     if (code[i] != ':')
                         throw new ArgumentException("code (" + i + ")");
                     i++;
@@ -78,7 +80,7 @@ namespace NiL.JS.Statements
                 }
                 if (cases.Count == 1 && cases[0] == null)
                     throw new ArgumentException("code (" + i + ")");
-                var t = Parser.Parse(code, ref i, 0);
+                var t = Parser.Parse(state, ref i, 0);
                 if (t == null)
                     continue;
                 if (t is Function)
@@ -101,8 +103,8 @@ namespace NiL.JS.Statements
                     body.Add(t);
                 while (char.IsWhiteSpace(code[i]) || (code[i] == ';')) i++;
             };
+            state.AllowBreak--;
             i++;
-            int l = i - index;
             index = i; 
             return new ParseResult()
             {

@@ -13,7 +13,7 @@ namespace NiL.JSTest
     {
         private static void benchmark()
         {
-            const int iterations = 100000000;
+            const int iterations = 500000000;
             Console.WriteLine("iterations count: " + iterations);
 
             long init = DateTime.Now.Ticks;

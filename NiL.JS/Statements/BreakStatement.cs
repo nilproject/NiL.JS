@@ -5,11 +5,14 @@ namespace NiL.JS.Statements
 {
     class BreakStatement : Statement
     {
-        public static ParseResult Parse(string code, ref int index)
+        internal static ParseResult Parse(ParsingState state, ref int index)
         {
+            string code = state.Code;
             int i = index;
             if (!Parser.Validate(code, "break", ref i))
                 return new ParseResult();
+            if (state.AllowBreak <= 0)
+                throw new ArgumentException();
             index = i;
             return new ParseResult()
             {

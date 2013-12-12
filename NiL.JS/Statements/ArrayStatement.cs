@@ -13,8 +13,9 @@ namespace NiL.JS.Statements
         {
         }
 
-        public static ParseResult Parse(string code, ref int index)
+        public static ParseResult Parse(ParsingState state, ref int index)
         {
+            string code = state.Code;
             int i = index;
             if (code[index] != '[')
                 throw new ArgumentException();
@@ -25,7 +26,7 @@ namespace NiL.JS.Statements
                 if (code[i] == ',')
                     elms.Add(new ImmidateValueStatement(JSObject.undefined));
                 else
-                    elms.Add(OperatorStatement.Parse(code, ref i, false).Statement);
+                    elms.Add(OperatorStatement.Parse(state, ref i, false).Statement);
                 while (char.IsWhiteSpace(code[i])) i++;
                 if (code[i] == ',')
                 {

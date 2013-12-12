@@ -19,13 +19,14 @@ namespace NiL.JS.Statements
         {
         }
 
-        public static ParseResult Parse(string code, ref int index)
+        internal static ParseResult Parse(ParsingState state, ref int index)
         {
+            string code = state.Code;
             int i = index;
             if (!Parser.Validate(code, "try", ref i))
                 throw new ArgumentException("code (" + i + ")");
             while (char.IsWhiteSpace(code[i])) i++;
-            var b = CodeBlock.Parse(code, ref i).Statement;
+            var b = CodeBlock.Parse(state, ref i).Statement;
             while (char.IsWhiteSpace(code[i])) i++;
             if (!Parser.Validate(code, "catch (", ref i))
                 throw new ArgumentException("code (" + i + ")");
@@ -37,7 +38,7 @@ namespace NiL.JS.Statements
             if (!Parser.Validate(code, ")", ref i))
                 throw new ArgumentException("code (" + i + ")");
             while (char.IsWhiteSpace(code[i])) i++;
-            var cb = CodeBlock.Parse(code, ref i).Statement;
+            var cb = CodeBlock.Parse(state, ref i).Statement;
             index = i;
             return new ParseResult()
             {

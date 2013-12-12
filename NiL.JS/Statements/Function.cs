@@ -16,8 +16,9 @@ namespace NiL.JS.Statements
             this.Name = name;
         }
 
-        public static ParseResult Parse(string code, ref int index)
+        internal static ParseResult Parse(ParsingState state, ref int index)
         {
+            string code = state.Code;
             int i = index;
             if (!Parser.Validate(code, "function", ref i))
                 throw new ArgumentException("code (" + i + ")");
@@ -51,8 +52,7 @@ namespace NiL.JS.Statements
             while (char.IsWhiteSpace(code[i]));
             if (code[i] != '{')
                 throw new ArgumentException("code (" + i + ")");
-            Statement body = CodeBlock.Parse(code, ref i).Statement;
-            int l = i - index;
+            Statement body = CodeBlock.Parse(state, ref i).Statement;
             index = i;
             Function res = new Function(name)
                 {

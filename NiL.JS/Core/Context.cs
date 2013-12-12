@@ -34,7 +34,7 @@ namespace NiL.JS.Core
             {
                 int i = 0;
                 string c = "{" + Parser.RemoveComments(x[0].Invoke().oValue.ToString()) + "}";
-                var cb = CodeBlock.Parse(c, ref i).Statement;
+                var cb = CodeBlock.Parse(new ParsingState(c), ref i).Statement;
                 Parser.Optimize(ref cb, null);
                 var res = cb.Invoke((x[0] as ContextStatement).Context);
                 if (i != c.Length)

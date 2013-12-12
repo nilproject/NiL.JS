@@ -18,8 +18,6 @@ namespace NiL.JS.Statements.Operators
         public override JSObject Invoke(Context context)
         {
             var val = (first ?? second).Invoke(context);
-            if (val.ValueType == ObjectValueType.NoExist)
-                throw new InvalidOperationException("varible is undefined");
             if ((val.assignCallback != null) && (!val.assignCallback()))
                 return double.NaN;
 
