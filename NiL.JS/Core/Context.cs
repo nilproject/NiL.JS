@@ -170,9 +170,9 @@ namespace NiL.JS.Core
                 return mres;
             }));
 
-            JSDate.RegisterTo(globalContext);
-            JSArray.RegisterTo(globalContext);
             BaseObject.RegisterTo(globalContext);
+            JSArray.RegisterTo(globalContext);
+            JSDate.RegisterTo(globalContext);
             #endregion
             #region Consts
             var nan = globalContext.GetField("NaN");
