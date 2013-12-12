@@ -22,7 +22,10 @@ namespace NiL.JS.Statements
             var elms = new List<Statement>();
             while (code[i] != ']')
             {
-                elms.Add(OperatorStatement.Parse(code, ref i, false).Statement);
+                if (code[i] == ',')
+                    elms.Add(new ImmidateValueStatement(JSObject.undefined));
+                else
+                    elms.Add(OperatorStatement.Parse(code, ref i, false).Statement);
                 while (char.IsWhiteSpace(code[i])) i++;
                 if (code[i] == ',')
                 {
