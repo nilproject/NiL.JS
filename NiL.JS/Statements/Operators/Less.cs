@@ -24,16 +24,17 @@ namespace NiL.JS.Statements.Operators
             var lvt = temp.ValueType;
             switch (lvt)
             {
+                case ObjectValueType.Bool:
                 case ObjectValueType.Int:
                     {
                         int left = temp.iValue;
                         temp = second.Invoke(context);
                         if (temp.ValueType == ObjectValueType.Int)
-                            tempResult.bValue = left < temp.iValue;
+                            tempResult.iValue = left < temp.iValue ? 1 : 0;
                         else if (temp.ValueType == ObjectValueType.Double)
-                            tempResult.bValue = left < temp.dValue;
+                            tempResult.iValue = left < temp.dValue ? 1 : 0;
                         else if (temp.ValueType == ObjectValueType.Bool)
-                            tempResult.bValue = left < (temp.bValue ? 1 : 0);
+                            tempResult.iValue = left < temp.iValue ? 1 : 0;
                         else throw new NotImplementedException();
                         break;
                     }
@@ -42,20 +43,9 @@ namespace NiL.JS.Statements.Operators
                         double left = temp.dValue;
                         temp = second.Invoke(context);
                         if (temp.ValueType == ObjectValueType.Int)
-                            tempResult.bValue = left < temp.iValue;
+                            tempResult.iValue = left < temp.iValue ? 1 : 0;
                         else if (temp.ValueType == ObjectValueType.Double)
-                            tempResult.bValue = left < temp.dValue;
-                        else throw new NotImplementedException();
-                        break;
-                    }
-                case ObjectValueType.Bool:
-                    {
-                        bool left = temp.bValue;
-                        temp = second.Invoke(context);
-                        if (temp.ValueType == ObjectValueType.Int)
-                            tempResult.bValue = *(int*)(&left) < temp.iValue;
-                        else if (temp.ValueType == ObjectValueType.Double)
-                            tempResult.bValue = *(int*)(&left) < temp.dValue;
+                            tempResult.iValue = left < temp.dValue ? 1 : 0;
                         else throw new NotImplementedException();
                         break;
                     }

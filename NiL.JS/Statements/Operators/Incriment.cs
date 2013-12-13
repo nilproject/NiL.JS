@@ -36,7 +36,7 @@ namespace NiL.JS.Statements.Operators
             else if (val.ValueType == ObjectValueType.Bool)
             {
                 val.ValueType = ObjectValueType.Int;
-                val.iValue = val.bValue ? 2 : 1;
+                val.iValue++;
             }
             else if (val.ValueType == ObjectValueType.Undefined)
             {

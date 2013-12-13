@@ -45,6 +45,11 @@ namespace NiL.JS.Statements.Operators
 
         public override bool Optimize(ref Statement _this, int depth, HashSet<string> vars)
         {
+            if (second == null && !(first is GetVaribleStatement))
+            {
+                _this = first;
+                return true;
+            }
             if (first is IOptimizable)
                 Parser.Optimize(ref first, depth, vars);
             if (second is IOptimizable)

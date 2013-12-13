@@ -54,7 +54,7 @@ b = 1.0 == '1';
 if (!b)
     console.log("'1.0 == '1'' fail");
 b = 1.0 == '1.0';
-if (b)
+if (!b)
     console.log("'1.0 == '1.0'' fail");
 b = 1.0 != 1;
 if (b)
@@ -69,8 +69,8 @@ b = 1.0 != '1.0';
 if (b)
     console.log("'1.0 != '1.0'' fail");
 b = 1.0 != '1.0str';
-if (b)
-    console.log("'1.0 != '1.0'' fail");
+if (!b)
+    console.log("'1.0 != '1.0str'' fail");
 
 b = 'a' == 'a';
 if (!b)
@@ -133,7 +133,7 @@ if (a == a)
 else
     console.log('if(a==a) fail');
 if (a != a)
-    console.log('if(a==a) fail');
+    console.log('if(a!=a) fail');
 else
     console.log('if(a==a) pass');
 if (a === a)

@@ -19,7 +19,7 @@ namespace NiL.JS.Modules
             else if (r.ValueType == ObjectValueType.Double)
                 x = r.dValue;
             else if (r.ValueType == ObjectValueType.Bool)
-                x = r.bValue ? 1 : 0;
+                x = r.iValue;
             else if ((r.ValueType == ObjectValueType.Statement) || (r.ValueType == ObjectValueType.Undefined))
                 return double.NaN;
             else if ((r.ValueType == ObjectValueType.Object) && (r.oValue is string))
@@ -33,12 +33,10 @@ namespace NiL.JS.Modules
 
             r = args[1].Invoke();
             double y = double.NaN;
-            if (r.ValueType == ObjectValueType.Int)
+            if (r.ValueType == ObjectValueType.Int || r.ValueType == ObjectValueType.Bool)
                 y = r.iValue;
             else if (r.ValueType == ObjectValueType.Double)
                 y = r.dValue;
-            else if (r.ValueType == ObjectValueType.Bool)
-                y = r.bValue ? 1 : 0;
             else if ((r.ValueType == ObjectValueType.Statement) || (r.ValueType == ObjectValueType.Undefined))
                 return double.NaN;
             else if ((r.ValueType == ObjectValueType.Object) && (r.oValue is string))
@@ -59,12 +57,10 @@ namespace NiL.JS.Modules
                 return double.NaN;
             var r = args[0].Invoke();
             double x = double.NaN;
-            if (r.ValueType == ObjectValueType.Int)
+            if (r.ValueType == ObjectValueType.Int || r.ValueType == ObjectValueType.Bool)
                 x = r.iValue;
             else if (r.ValueType == ObjectValueType.Double)
                 x = r.dValue;
-            else if (r.ValueType == ObjectValueType.Bool)
-                x = r.bValue ? 1 : 0;
             else if ((r.ValueType == ObjectValueType.Statement) || (r.ValueType == ObjectValueType.Undefined))
                 return double.NaN;
             else if ((r.ValueType == ObjectValueType.Object) && (r.oValue is string))

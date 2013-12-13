@@ -921,7 +921,6 @@ namespace NiL.JS.Statements
                 else
                     res = new OperatorStatement() { first = first, second = second, type = type };
             }
-            int l = i - index;
             index = i;
             return new ParseResult()
             {
@@ -1058,6 +1057,8 @@ namespace NiL.JS.Statements
                         }
                         break;
                     }
+                case ObjectValueType.NoExist:
+                    throw new InvalidOperationException("Varible not defined");
             }
             throw new NotImplementedException();
         }
@@ -1188,7 +1189,7 @@ namespace NiL.JS.Statements
             tempResult.ValueType = ObjectValueType.Int;
 
             var lvt = temp.ValueType;
-            if (lvt == ObjectValueType.Int)
+            if (lvt == ObjectValueType.Int || lvt == ObjectValueType.Bool)
             {
                 int left = temp.iValue;
                 temp = second.Invoke(context);
@@ -1197,7 +1198,7 @@ namespace NiL.JS.Statements
                 else if (temp.ValueType == ObjectValueType.Double)
                     tempResult.iValue = (int)left & (int)temp.dValue;
                 else if (temp.ValueType == ObjectValueType.Bool)
-                    tempResult.iValue = (int)left & (int)(temp.bValue ? 1 : 0);
+                    tempResult.iValue = (int)left & temp.iValue;
             }
             else if (lvt == ObjectValueType.Double)
             {
@@ -1207,15 +1208,6 @@ namespace NiL.JS.Statements
                     tempResult.iValue = (int)left & (int)temp.iValue;
                 else if (temp.ValueType == ObjectValueType.Double)
                     tempResult.iValue = (int)left & (int)temp.dValue;
-            }
-            else if (lvt == ObjectValueType.Bool)
-            {
-                bool left = temp.bValue;
-                temp = second.Invoke(context);
-                if (temp.ValueType == ObjectValueType.Int)
-                    tempResult.iValue = *(int*)(&left) & (int)temp.iValue;
-                else if (temp.ValueType == ObjectValueType.Double)
-                    tempResult.iValue = *(int*)(&left) & (int)temp.dValue;
             }
             else throw new NotImplementedException();
             return tempResult;
@@ -1244,7 +1236,7 @@ namespace NiL.JS.Statements
             else if (val.ValueType == ObjectValueType.Bool)
             {
                 val.ValueType = ObjectValueType.Int;
-                val.iValue = val.bValue ? 0 : -1;
+                val.iValue--;
             }
             else if (val.ValueType == ObjectValueType.Undefined)
             {
@@ -1310,36 +1302,100 @@ namespace NiL.JS.Statements
             tempResult.ValueType = ObjectValueType.Bool;
 
             var lvt = temp.ValueType;
-            if (lvt == ObjectValueType.Int)
+            switch (lvt)
             {
-                int left = temp.iValue;
-                temp = second.Invoke(context);
-                if (temp.ValueType == ObjectValueType.Int)
-                    tempResult.bValue = left == temp.iValue;
-                else if (temp.ValueType == ObjectValueType.Double)
-                    tempResult.bValue = left == temp.dValue;
-                else if (temp.ValueType == ObjectValueType.Bool)
-                    tempResult.bValue = left == (temp.bValue ? 1 : 0);
+                case ObjectValueType.Bool:
+                case ObjectValueType.Int:
+                    {
+                        int left = temp.iValue;
+                        temp = second.Invoke(context);
+                        if (temp.ValueType == ObjectValueType.Int)
+                            tempResult.iValue = left == temp.iValue ? 1 : 0;
+                        else if (temp.ValueType == ObjectValueType.Double)
+                            tempResult.iValue = left == temp.dValue ? 1 : 0;
+                        else if (temp.ValueType == ObjectValueType.Bool)
+                            tempResult.iValue = left == temp.iValue ? 1 : 0;
+                        else if (temp.ValueType == ObjectValueType.String)
+                        {
+                            double d = 0;
+                            int i = 0;
+                            string v = temp.oValue as string;
+                            if (Parser.ParseNumber(v, ref i, true, out d) && (i == v.Length))
+                                tempResult.iValue = left == d ? 1 : 0;
+                            else
+                                tempResult.iValue = 0;
+                        }
+                        else goto default;
+                        break;
+                    }
+                case ObjectValueType.Double:
+                    {
+                        double left = temp.dValue;
+                        temp = second.Invoke(context);
+                        if (temp.ValueType == ObjectValueType.Int)
+                            tempResult.iValue = left == temp.iValue ? 1 : 0;
+                        else if (temp.ValueType == ObjectValueType.Double)
+                            tempResult.iValue = left == temp.dValue ? 1 : 0;
+                        else if (temp.ValueType == ObjectValueType.String)
+                        {
+                            double d = 0;
+                            int i = 0;
+                            string v = temp.oValue as string;
+                            if (Parser.ParseNumber(v, ref i, true, out d) && (i == v.Length))
+                                tempResult.iValue = left == d ? 1 : 0;
+                            else
+                                tempResult.iValue = 0;
+                        }
+                        else goto default;
+                        break;
+                    }
+                case ObjectValueType.String:
+                    {
+                        string left = temp.oValue as string;
+                        temp = second.Invoke(context);
+                        if (temp.ValueType == ObjectValueType.Int)
+                        {
+                            double d = 0;
+                            int i = 0;
+                            if (Parser.ParseNumber(left, ref i, true, out d) && (i == left.Length))
+                                tempResult.iValue = d == temp.iValue ? 1 : 0;
+                            else
+                                tempResult.iValue = 0;
+                        }
+                        else if (temp.ValueType == ObjectValueType.Double)
+                        {
+                            double d = 0;
+                            int i = 0;
+                            if (Parser.ParseNumber(left, ref i, true, out d) && (i == left.Length))
+                                tempResult.iValue = d == temp.dValue ? 1 : 0;
+                            else
+                                tempResult.iValue = 0;
+                        }
+                        else if (temp.ValueType == ObjectValueType.String)
+                        {
+                            tempResult.iValue = left == temp.oValue as string ? 1 : 0;
+                        }
+                        else goto default;
+                        break;
+                    }
+                case ObjectValueType.Object:
+                    {
+                        var left = temp;
+                        temp = second.Invoke(context);
+                        if (temp.ValueType == ObjectValueType.Object)
+                            tempResult.iValue = left.oValue == temp.oValue ? 1 : 0;
+                        else if (temp.ValueType == ObjectValueType.Int)
+                        {
+                            if (left.oValue == null)
+                                tempResult.iValue = 0;
+                            else
+                                goto default;
+                        } 
+                        else goto default;
+                        break;
+                    }
+                default: throw new NotImplementedException();
             }
-            else if (lvt == ObjectValueType.Double)
-            {
-                double left = temp.dValue;
-                temp = second.Invoke(context);
-                if (temp.ValueType == ObjectValueType.Int)
-                    tempResult.bValue = left == temp.iValue;
-                else if (temp.ValueType == ObjectValueType.Double)
-                    tempResult.bValue = left == temp.dValue;
-            }
-            else if (lvt == ObjectValueType.Bool)
-            {
-                bool left = temp.bValue;
-                temp = second.Invoke(context);
-                if (temp.ValueType == ObjectValueType.Int)
-                    tempResult.bValue = *(int*)(&left) == temp.iValue;
-                else if (temp.ValueType == ObjectValueType.Double)
-                    tempResult.bValue = *(int*)(&left) == temp.dValue;
-            }
-            else throw new NotImplementedException();
             return tempResult;
         }
 
@@ -1369,16 +1425,14 @@ namespace NiL.JS.Statements
             tempResult.ValueType = ObjectValueType.Int;
 
             var lvt = temp.ValueType;
-            if (lvt == ObjectValueType.Int)
+            if (lvt == ObjectValueType.Int || lvt == ObjectValueType.Bool)
             {
                 int left = temp.iValue;
                 temp = second.Invoke(context);
-                if (temp.ValueType == ObjectValueType.Int)
-                    tempResult.iValue = (int)left ^ (int)temp.iValue;
+                if (temp.ValueType == ObjectValueType.Int || temp.ValueType == ObjectValueType.Bool)
+                    tempResult.iValue = (int)left ^ temp.iValue;
                 else if (temp.ValueType == ObjectValueType.Double)
                     tempResult.iValue = (int)left ^ (int)temp.dValue;
-                else if (temp.ValueType == ObjectValueType.Bool)
-                    tempResult.iValue = (int)left ^ (int)(temp.bValue ? 1 : 0);
             }
             else if (lvt == ObjectValueType.Double)
             {
@@ -1388,15 +1442,6 @@ namespace NiL.JS.Statements
                     tempResult.iValue = (int)left ^ (int)temp.iValue;
                 else if (temp.ValueType == ObjectValueType.Double)
                     tempResult.iValue = (int)left ^ (int)temp.dValue;
-            }
-            else if (lvt == ObjectValueType.Bool)
-            {
-                bool left = temp.bValue;
-                temp = second.Invoke(context);
-                if (temp.ValueType == ObjectValueType.Int)
-                    tempResult.iValue = *(int*)(&left) ^ (int)temp.iValue;
-                else if (temp.ValueType == ObjectValueType.Double)
-                    tempResult.iValue = *(int*)(&left) ^ (int)temp.dValue;
             }
             else throw new NotImplementedException();
             return tempResult;
@@ -1409,16 +1454,14 @@ namespace NiL.JS.Statements
             tempResult.ValueType = ObjectValueType.Int;
 
             var lvt = temp.ValueType;
-            if (lvt == ObjectValueType.Int)
+            if (lvt == ObjectValueType.Int || lvt == ObjectValueType.Bool)
             {
                 int left = temp.iValue;
                 temp = second.Invoke(context);
-                if (temp.ValueType == ObjectValueType.Int)
+                if (temp.ValueType == ObjectValueType.Int || temp.ValueType == ObjectValueType.Bool)
                     tempResult.iValue = (int)left | (int)temp.iValue;
                 else if (temp.ValueType == ObjectValueType.Double)
                     tempResult.iValue = (int)left | (int)temp.dValue;
-                else if (temp.ValueType == ObjectValueType.Bool)
-                    tempResult.iValue = (int)left | (int)(temp.bValue ? 1 : 0);
             }
             else if (lvt == ObjectValueType.Double)
             {
@@ -1428,15 +1471,6 @@ namespace NiL.JS.Statements
                     tempResult.iValue = (int)left | (int)temp.iValue;
                 else if (temp.ValueType == ObjectValueType.Double)
                     tempResult.iValue = (int)left | (int)temp.dValue;
-            }
-            else if (lvt == ObjectValueType.Bool)
-            {
-                bool left = temp.bValue;
-                temp = second.Invoke(context);
-                if (temp.ValueType == ObjectValueType.Int)
-                    tempResult.iValue = *(int*)(&left) | (int)temp.iValue;
-                else if (temp.ValueType == ObjectValueType.Double)
-                    tempResult.iValue = *(int*)(&left) | (int)temp.dValue;
             }
             else throw new NotImplementedException();
             return tempResult;
@@ -1673,34 +1707,23 @@ namespace NiL.JS.Statements
             tempResult.ValueType = ObjectValueType.Bool;
 
             var lvt = temp.ValueType;
-            if (lvt == ObjectValueType.Int)
+            if (lvt == ObjectValueType.Int || lvt == ObjectValueType.Bool)
             {
                 int left = temp.iValue;
                 temp = second.Invoke(context);
-                if (temp.ValueType == ObjectValueType.Int)
-                    tempResult.bValue = left > temp.iValue;
+                if (temp.ValueType == ObjectValueType.Int || temp.ValueType == ObjectValueType.Bool)
+                    tempResult.iValue = left > temp.iValue ? 1 : 0;
                 else if (temp.ValueType == ObjectValueType.Double)
-                    tempResult.bValue = left > temp.dValue;
-                else if (temp.ValueType == ObjectValueType.Bool)
-                    tempResult.bValue = left > (temp.bValue ? 1 : 0);
+                    tempResult.iValue = left > temp.dValue ? 1 : 0;
             }
             else if (lvt == ObjectValueType.Double)
             {
                 double left = temp.dValue;
                 temp = second.Invoke(context);
                 if (temp.ValueType == ObjectValueType.Int)
-                    tempResult.bValue = left > temp.iValue;
+                    tempResult.iValue = left > temp.iValue ? 1 : 0;
                 else if (temp.ValueType == ObjectValueType.Double)
-                    tempResult.bValue = left > temp.dValue;
-            }
-            else if (lvt == ObjectValueType.Bool)
-            {
-                bool left = temp.bValue;
-                temp = second.Invoke(context);
-                if (temp.ValueType == ObjectValueType.Int)
-                    tempResult.bValue = *(int*)(&left) > temp.iValue;
-                else if (temp.ValueType == ObjectValueType.Double)
-                    tempResult.bValue = *(int*)(&left) > temp.dValue;
+                    tempResult.iValue = left > temp.dValue ? 1 : 0;
             }
             else throw new NotImplementedException();
             return tempResult;
@@ -1712,34 +1735,23 @@ namespace NiL.JS.Statements
             tempResult.ValueType = ObjectValueType.Bool;
 
             var lvt = temp.ValueType;
-            if (lvt == ObjectValueType.Int)
+            if (lvt == ObjectValueType.Int || lvt == ObjectValueType.Bool)
             {
                 int left = temp.iValue;
                 temp = second.Invoke(context);
-                if (temp.ValueType == ObjectValueType.Int)
-                    tempResult.bValue = left <= temp.iValue;
+                if (temp.ValueType == ObjectValueType.Int || temp.ValueType == ObjectValueType.Bool)
+                    tempResult.iValue = left <= temp.iValue ? 1 : 0;
                 else if (temp.ValueType == ObjectValueType.Double)
-                    tempResult.bValue = left <= temp.dValue;
-                else if (temp.ValueType == ObjectValueType.Bool)
-                    tempResult.bValue = left <= (temp.bValue ? 1 : 0);
+                    tempResult.iValue = left <= temp.dValue ? 1 : 0;
             }
             else if (lvt == ObjectValueType.Double)
             {
                 double left = temp.dValue;
                 temp = second.Invoke(context);
                 if (temp.ValueType == ObjectValueType.Int)
-                    tempResult.bValue = left <= temp.iValue;
+                    tempResult.iValue = left <= temp.iValue ? 1 : 0;
                 else if (temp.ValueType == ObjectValueType.Double)
-                    tempResult.bValue = left <= temp.dValue;
-            }
-            else if (lvt == ObjectValueType.Bool)
-            {
-                bool left = temp.bValue;
-                temp = second.Invoke(context);
-                if (temp.ValueType == ObjectValueType.Int)
-                    tempResult.bValue = *(int*)(&left) <= temp.iValue;
-                else if (temp.ValueType == ObjectValueType.Double)
-                    tempResult.bValue = *(int*)(&left) <= temp.dValue;
+                    tempResult.iValue = left <= temp.dValue ? 1 : 0;
             }
             else throw new NotImplementedException();
             return tempResult;
@@ -1752,34 +1764,23 @@ namespace NiL.JS.Statements
             tempResult.ValueType = ObjectValueType.Bool;
 
             var lvt = temp.ValueType;
-            if (lvt == ObjectValueType.Int)
+            if (lvt == ObjectValueType.Int || lvt == ObjectValueType.Bool)
             {
                 int left = temp.iValue;
                 temp = second.Invoke(context);
-                if (temp.ValueType == ObjectValueType.Int)
-                    tempResult.bValue = left >= temp.iValue;
+                if (temp.ValueType == ObjectValueType.Int || temp.ValueType == ObjectValueType.Bool)
+                    tempResult.iValue = left >= temp.iValue ? 1 : 0;
                 else if (temp.ValueType == ObjectValueType.Double)
-                    tempResult.bValue = left >= temp.dValue;
-                else if (temp.ValueType == ObjectValueType.Bool)
-                    tempResult.bValue = left >= (temp.bValue ? 1 : 0);
+                    tempResult.iValue = left >= temp.dValue ? 1 : 0;
             }
             else if (lvt == ObjectValueType.Double)
             {
                 double left = temp.dValue;
                 temp = second.Invoke(context);
                 if (temp.ValueType == ObjectValueType.Int)
-                    tempResult.bValue = left >= temp.iValue;
+                    tempResult.iValue = left >= temp.iValue ? 1 : 0;
                 else if (temp.ValueType == ObjectValueType.Double)
-                    tempResult.bValue = left >= temp.dValue;
-            }
-            else if (lvt == ObjectValueType.Bool)
-            {
-                bool left = temp.bValue;
-                temp = second.Invoke(context);
-                if (temp.ValueType == ObjectValueType.Int)
-                    tempResult.bValue = *(int*)(&left) >= temp.iValue;
-                else if (temp.ValueType == ObjectValueType.Double)
-                    tempResult.bValue = *(int*)(&left) >= temp.dValue;
+                    tempResult.iValue = left >= temp.dValue ? 1 : 0;
             }
             else throw new NotImplementedException();
             return tempResult;
@@ -1812,11 +1813,11 @@ namespace NiL.JS.Statements
             }
             if (lvt == ObjectValueType.Bool)
             {
-                var l = temp.bValue;
+                var l = temp.iValue;
                 temp = second.Invoke(context);
                 if (lvt != temp.ValueType)
                     return true;
-                return l != temp.bValue;
+                return l != temp.iValue;
             }
             if (lvt == ObjectValueType.Statement)
             {
@@ -1853,44 +1854,11 @@ namespace NiL.JS.Statements
             throw new NotImplementedException();
         }
 
-        private unsafe JSObject OpNotEqual(Context context)
+        private JSObject OpNotEqual(Context context)
         {
-            var temp = first.Invoke(context);
-
-            tempResult.ValueType = ObjectValueType.Bool;
-
-            var lvt = temp.ValueType;
-            if (lvt == ObjectValueType.Int)
-            {
-                int left = temp.iValue;
-                temp = second.Invoke(context);
-                if (temp.ValueType == ObjectValueType.Int)
-                    tempResult.bValue = left != temp.iValue;
-                else if (temp.ValueType == ObjectValueType.Double)
-                    tempResult.bValue = left != temp.dValue;
-                else if (temp.ValueType == ObjectValueType.Bool)
-                    tempResult.bValue = left != (temp.bValue ? 1 : 0);
-            }
-            else if (lvt == ObjectValueType.Double)
-            {
-                double left = temp.dValue;
-                temp = second.Invoke(context);
-                if (temp.ValueType == ObjectValueType.Int)
-                    tempResult.bValue = left != temp.iValue;
-                else if (temp.ValueType == ObjectValueType.Double)
-                    tempResult.bValue = left != temp.dValue;
-            }
-            else if (lvt == ObjectValueType.Bool)
-            {
-                bool left = temp.bValue;
-                temp = second.Invoke(context);
-                if (temp.ValueType == ObjectValueType.Int)
-                    tempResult.bValue = *(int*)(&left) != temp.iValue;
-                else if (temp.ValueType == ObjectValueType.Double)
-                    tempResult.bValue = *(int*)(&left) != temp.dValue;
-            }
-            else throw new NotImplementedException();
-            return tempResult;
+            var t = OpEqual(context);
+            t.iValue ^= 1;
+            return t;
         }
 
         private unsafe JSObject OpTypeOf(Context context)
@@ -1911,6 +1879,7 @@ namespace NiL.JS.Statements
                         o.oValue = "number";
                         break;
                     }
+                case ObjectValueType.NoExistInObject:
                 case ObjectValueType.Undefined:
                     {
                         o.oValue = "undefined";
@@ -1937,6 +1906,8 @@ namespace NiL.JS.Statements
                         o.oValue = "object";
                         break;
                     }
+                case ObjectValueType.NoExist:
+                    throw new InvalidOperationException("Varible not defined");
                 default: throw new NotImplementedException();
             }
             return o;
@@ -1948,13 +1919,13 @@ namespace NiL.JS.Statements
             var c = second.Invoke(context).GetField("prototype");
             JSObject o = tempResult;
             o.ValueType = ObjectValueType.Bool;
-            o.bValue = false;
+            o.iValue = 0;
             if (c.ValueType == ObjectValueType.Object)
                 while (a.ValueType == ObjectValueType.Object)
                 {
                     if (a.oValue == c.oValue)
                     {
-                        o.bValue = true;
+                        o.iValue = 1;
                         return o;
                     }
                     a = a.GetField("__proto__", true);
@@ -1997,12 +1968,10 @@ namespace NiL.JS.Statements
             JSObject o = tempResult;
             var vt = val.ValueType;
             o.ValueType = ObjectValueType.Int;
-            if (vt == ObjectValueType.Int)
+            if (vt == ObjectValueType.Int || vt == ObjectValueType.Bool)
                 o.iValue = val.iValue ^ -1;
             else if (vt == ObjectValueType.Double)
                 o.iValue = (int)val.dValue ^ -1;
-            else if (vt == ObjectValueType.Bool)
-                o.iValue = (val.bValue ? -2 : -1);
             else
                 o.iValue = -1;
             return o;
@@ -2022,16 +1991,14 @@ namespace NiL.JS.Statements
             JSObject o = tempResult;
             var vt = val.ValueType;
             o.ValueType = ObjectValueType.Bool;
-            if (vt == ObjectValueType.Int)
-                o.bValue = val.iValue == 0;
+            if (vt == ObjectValueType.Int || vt == ObjectValueType.Bool)
+                o.iValue = val.iValue == 0 ? 1 : 0;
             else if (vt == ObjectValueType.Double)
-                o.bValue = val.dValue == 0.0;
-            else if (vt == ObjectValueType.Bool)
-                o.bValue = !val.bValue;
+                o.iValue = val.dValue == 0.0 ? 1 : 0;
             else if (vt == ObjectValueType.String)
-                o.bValue = string.IsNullOrEmpty(val.oValue as string);
+                o.iValue = string.IsNullOrEmpty(val.oValue as string) ? 1 : 0;
             else if (vt == ObjectValueType.Object)
-                o.bValue = val.oValue == null;
+                o.iValue = val.oValue == null ? 1 : 0;
             else throw new NotImplementedException();
             return o;
         }

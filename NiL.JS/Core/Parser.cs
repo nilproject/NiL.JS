@@ -969,7 +969,8 @@ namespace NiL.JS.Core
         {
             StringBuilder res = new StringBuilder(code.Length);
             int commentType = 0;
-            for (int i = 0; i < code.Length - 1; i++)
+            int i = 0;
+            for (; i < code.Length - 1; i++)
             {
                 if ((commentType == 0) && (code[i] == '/') && (code[i + 1] == '/' || code[i + 1] == '*'))
                     commentType = code[i + 1] == '/' ? 1 : 2;
@@ -1002,7 +1003,7 @@ namespace NiL.JS.Core
                 if (commentType == 0)
                     res.Append(code[i]);
             }
-            if (commentType == 0)
+            if (i < code.Length)
                 res.Append(code[code.Length - 1]);
             return res.ToString();
         }

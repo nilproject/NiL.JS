@@ -50,7 +50,6 @@ namespace NiL.JS.Core
 
         internal bool temporary;
         internal ObjectValueType ValueType;
-        internal bool bValue;
         internal int iValue;
         internal double dValue;
         internal object oValue;
@@ -63,7 +62,7 @@ namespace NiL.JS.Core
                 switch (ValueType)
                 {
                     case ObjectValueType.Bool:
-                        return bValue;
+                        return iValue != 0;
                     case ObjectValueType.Int:
                         return iValue;
                     case ObjectValueType.Double:
@@ -214,6 +213,7 @@ namespace NiL.JS.Core
             {
                 switch (right.ValueType)
                 {
+                    case ObjectValueType.Bool:
                     case ObjectValueType.Int:
                         {
                             this.iValue = right.iValue;
@@ -232,7 +232,6 @@ namespace NiL.JS.Core
                             this.oValue = right.oValue;
                             break;
                         }
-                    case ObjectValueType.Bool:
                     case ObjectValueType.Undefined:
                         {
                             break;
@@ -241,14 +240,12 @@ namespace NiL.JS.Core
                 }
                 this.prototype = right.prototype;
                 this.ValueType = right.ValueType;
-                this.bValue = right.bValue;
                 this.fields = right.fields;
                 this.fieldGetter = right.fieldGetter;
                 return;
             }
             this.prototype = null;
             this.ValueType = ObjectValueType.Undefined;
-            this.bValue = false;
             this.fieldGetter = null;
         }
 
@@ -293,7 +290,7 @@ namespace NiL.JS.Core
 
         public static implicit operator JSObject(bool value)
         {
-            return new JSObject() { ValueType = ObjectValueType.Bool, bValue = value, temporary = true, assignCallback = ErrorAssignCallback };
+            return new JSObject() { ValueType = ObjectValueType.Bool, iValue = value ? 1 : 0, temporary = true, assignCallback = ErrorAssignCallback };
         }
 
         public static implicit operator JSObject(int value)
@@ -328,9 +325,7 @@ namespace NiL.JS.Core
 
         public static implicit operator bool(JSObject obj)
         {
-            if (obj.ValueType == ObjectValueType.Bool)
-                return obj.bValue;
-            if (obj.ValueType == ObjectValueType.Int)
+            if (obj.ValueType == ObjectValueType.Int || obj.ValueType == ObjectValueType.Bool)
                 return obj.iValue != 0;
             if (obj.ValueType == ObjectValueType.Double)
                 return obj.dValue != 0.0;

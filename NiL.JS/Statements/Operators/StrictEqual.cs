@@ -20,7 +20,7 @@ namespace NiL.JS.Statements.Operators
             var temp = first.Invoke(context);
 
             var lvt = temp.ValueType;
-            if (lvt == ObjectValueType.Int)
+            if (lvt == ObjectValueType.Int || lvt == ObjectValueType.Bool)
             {
                 var l = temp.iValue;
                 temp = second.Invoke(context);
@@ -35,14 +35,6 @@ namespace NiL.JS.Statements.Operators
                 if (lvt != temp.ValueType)
                     return false;
                 return l == temp.dValue;
-            }
-            if (lvt == ObjectValueType.Bool)
-            {
-                var l = temp.bValue;
-                temp = second.Invoke(context);
-                if (lvt != temp.ValueType)
-                    return false;
-                return l == temp.bValue;
             }
             if (lvt == ObjectValueType.Statement)
             {

@@ -51,12 +51,10 @@ namespace NiL.JS.Core
                 if (x.Length > 0)
                 {
                     var r = x[0].Invoke();
-                    if (r.ValueType == ObjectValueType.Int)
+                    if (r.ValueType == ObjectValueType.Int || r.ValueType == ObjectValueType.Bool)
                         return r.iValue;
                     else if (r.ValueType == ObjectValueType.Double)
                         return (int)r.dValue;
-                    else if (r.ValueType == ObjectValueType.Bool)
-                        return r.bValue ? 1 : 0;
                     else if ((r.ValueType == ObjectValueType.Statement) || (r.ValueType == ObjectValueType.Undefined))
                         return 0;
                     else if ((r.ValueType == ObjectValueType.String) && (r.oValue is string))
@@ -91,12 +89,10 @@ namespace NiL.JS.Core
                 if (x.Length > 0)
                 {
                     var r = x[0].Invoke();
-                    if (r.ValueType == ObjectValueType.Int)
+                    if (r.ValueType == ObjectValueType.Int || r.ValueType == ObjectValueType.Bool)
                         return ((char)r.iValue).ToString();
                     else if (r.ValueType == ObjectValueType.Double)
                         return ((char)(int)r.dValue).ToString();
-                    else if (r.ValueType == ObjectValueType.Bool)
-                        return ((char)(r.bValue ? 1 : 0)).ToString();
                     else if ((r.ValueType == ObjectValueType.Statement) || (r.ValueType == ObjectValueType.Undefined))
                         return char.MinValue.ToString();
                     else if (r.ValueType == ObjectValueType.String)
@@ -135,15 +131,15 @@ namespace NiL.JS.Core
                 var field = res.GetField("global");
                 field.Protect();
                 field.ValueType = ObjectValueType.Bool;
-                field.bValue = flags.IndexOf('g') != -1;
+                field.iValue = flags.IndexOf('g') != -1 ? 1 : 0;
                 field = res.GetField("ignoreCase");
                 field.Protect();
                 field.ValueType = ObjectValueType.Bool;
-                field.bValue = (re.Options & System.Text.RegularExpressions.RegexOptions.IgnoreCase) != 0;
+                field.iValue = (re.Options & System.Text.RegularExpressions.RegexOptions.IgnoreCase) != 0 ? 1 : 0;
                 field = res.GetField("multiline");
                 field.Protect();
                 field.ValueType = ObjectValueType.Bool;
-                field.bValue = (re.Options & System.Text.RegularExpressions.RegexOptions.Multiline) != 0;
+                field.iValue = (re.Options & System.Text.RegularExpressions.RegexOptions.Multiline) != 0 ? 1 : 0;
                 field = res.GetField("source");
                 field.Protect();
                 field.ValueType = ObjectValueType.String;
@@ -199,7 +195,6 @@ namespace NiL.JS.Core
         private static JSObject define(Context context, string name)
         {
             var res = new JSObject() { ValueType = ObjectValueType.NoExist };
-            res.bValue = true;
             res.assignCallback = () =>
             {
                 if (context.fields == null)

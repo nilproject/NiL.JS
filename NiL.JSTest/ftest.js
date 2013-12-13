@@ -1,5 +1,5 @@
-﻿i = 1;
-console.log(i++);
-console.log(i);
-console.log(++i);
-console.log(i);
+﻿b = true;
+if ({} == {})
+    console.log(1);
+else
+    console.log(2);
