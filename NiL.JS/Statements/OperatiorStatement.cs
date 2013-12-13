@@ -288,7 +288,7 @@ namespace NiL.JS.Statements
             Statement first = null;
             Statement second = null;
             int s = i;
-            if (Parser.ValidateName(code, ref i, true))
+            if (Parser.ValidateName(code, ref i, true) || Parser.Validate(code, "this", ref i))
                 first = new GetVaribleStatement(code.Substring(s, i - s));
             else if (Parser.ValidateValue(code, ref i, true))
             {
@@ -800,7 +800,7 @@ namespace NiL.JS.Statements
                             i++;
                             while (char.IsWhiteSpace(code[i])) i++;
                             s = i;
-                            if (!Parser.ValidateName(code, ref i, true) && !Parser.ValidateValue(code, ref i, true))
+                            if (!Parser.ValidateName(code, ref i, true, false) && !Parser.ValidateValue(code, ref i, true))
                                 throw new ArgumentException("code (" + i + ")");
                             string name = code.Substring(s, i - s);
                             first = new GetFieldStatement(first, name);

@@ -301,7 +301,6 @@
     <Content Include="tests\ch07\7.9\S7.9_A10_T10.js" />
     <Content Include="tests\ch07\7.9\S7.9_A10_T11.js" />
     <Content Include="tests\ch07\7.9\S7.9_A10_T12.js" />
-    <Content Include="tests\ch07\7.9\S7.9_A10_T2.js" />
     <Content Include="tests\ch07\7.9\S7.9_A10_T3.js" />
     <Content Include="tests\ch07\7.9\S7.9_A10_T4.js" />
     <Content Include="tests\ch07\7.9\S7.9_A10_T5.js" />

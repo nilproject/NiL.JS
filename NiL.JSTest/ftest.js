@@ -1,1 +1,1 @@
-﻿console.log(1 == { valueOf: function () { return 1 }});
+﻿console.log({ "for": [1] }.for[0]);
