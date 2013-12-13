@@ -159,18 +159,17 @@ namespace NiL.JS.Core
             if ((ValueType >= ObjectValueType.Object) && (oValue != null))
             {
                 var tpvs = GetField("valueOf", true);
-                if (tpvs.ValueType != ObjectValueType.Statement)
+                JSObject res = null;
+                if (tpvs.ValueType != ObjectValueType.Statement || (res = (tpvs.oValue as IContextStatement).Invoke(this, null)).ValueType == ObjectValueType.Undefined)
                 {
                     tpvs = GetField("toString", true);
-                    if (tpvs.ValueType != ObjectValueType.Statement)
+                    if (tpvs.ValueType != ObjectValueType.Statement || (res = (tpvs.oValue as IContextStatement).Invoke(this, null)).ValueType == ObjectValueType.Undefined)
                         throw new InvalidOperationException("Can not convert object to primitive value");
                 }
-                var res = (tpvs.oValue as IContextStatement).Invoke(this, null);
                 if ((res.ValueType != ObjectValueType.Bool)
                     && (res.ValueType != ObjectValueType.Double)
                     && (res.ValueType != ObjectValueType.Int)
                     && (res.ValueType != ObjectValueType.String)
-                    && (res.ValueType != ObjectValueType.Undefined)
                     && (!(res.ValueType == ObjectValueType.Object && res.oValue == null)))
                     throw new InvalidOperationException("Can not convert object to primitive value");
                 return res;
@@ -182,19 +181,18 @@ namespace NiL.JS.Core
         {
             if ((ValueType >= ObjectValueType.Object) && (oValue != null))
             {
-                var tpvs = GetField("toString", true);
-                if (tpvs.ValueType != ObjectValueType.Statement)
+                var tpvs = GetField("toSTring", true);
+                JSObject res = null;
+                if (tpvs.ValueType != ObjectValueType.Statement || (res = (tpvs.oValue as IContextStatement).Invoke(this, null)).ValueType == ObjectValueType.Undefined)
                 {
                     tpvs = GetField("valueOf", true);
-                    if (tpvs.ValueType != ObjectValueType.Statement)
+                    if (tpvs.ValueType != ObjectValueType.Statement || (res = (tpvs.oValue as IContextStatement).Invoke(this, null)).ValueType == ObjectValueType.Undefined)
                         throw new InvalidOperationException("Can not convert object to primitive value");
                 }
-                var res = (tpvs.oValue as IContextStatement).Invoke(this, null);
                 if ((res.ValueType != ObjectValueType.Bool)
                     && (res.ValueType != ObjectValueType.Double)
                     && (res.ValueType != ObjectValueType.Int)
                     && (res.ValueType != ObjectValueType.String)
-                    && (res.ValueType != ObjectValueType.Undefined)
                     && (!(res.ValueType == ObjectValueType.Object && res.oValue == null)))
                     throw new InvalidOperationException("Can not convert object to primitive value");
                 return res;

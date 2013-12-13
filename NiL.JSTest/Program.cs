@@ -132,10 +132,10 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * 3 * i; }
         static void Main(string[] args)
         {
             NiL.JS.Core.Context.GlobalContext.GetField("platform").Assign("NiL.JS");
-            runFile(@"tests.js");
+            //runFile(@"tests.js");
             //runFile(@"ftest.js");
             //runFile(@"tests\ch07\7.4\S7.4_A6.js");
-            //benchmark();
+            benchmark();
             //featureSupportTest();
             //sputnicTests();
             //testEx();
