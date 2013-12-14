@@ -250,6 +250,12 @@ namespace NiL.JS.Statements
                             del = OpInstanceOf;
                             break;
                         }
+                    case OperationType.In:
+                        {
+                            fastImpl = new Operators.In(first, second);
+                            del = fastImpl.Invoke;
+                            break;
+                        }
                     default:
                         throw new NotImplementedException();
                 }
@@ -872,7 +878,9 @@ namespace NiL.JS.Statements
                             }
                             else if (Parser.Validate(code, "in", ref i))
                             {
-                                throw new NotImplementedException();
+                                type = OperationType.In;
+                                binar = true;
+                                break;
                             }
                             goto default;
                         }

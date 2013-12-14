@@ -148,6 +148,7 @@
     <Compile Include="Statements\ContinueStatement.cs" />
     <Compile Include="Statements\ForInStatement.cs" />
     <Compile Include="Statements\Operators\None.cs" />
+    <Compile Include="Statements\Operators\In.cs" />
     <Compile Include="Statements\Operators\StrictEqual.cs" />
     <Compile Include="Statements\SwitchStatement.cs" />
     <Compile Include="Statements\GetVaribleStatement.cs" />
