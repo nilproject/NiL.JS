@@ -135,6 +135,7 @@
     <Compile Include="Core\Delegates.cs" />
     <Compile Include="Core\IContextStatement.cs" />
     <Compile Include="Core\IOptimizable.cs" />
+    <Compile Include="Core\JSException.cs" />
     <Compile Include="Core\ParsingState.cs" />
     <Compile Include="Core\Statement.cs" />
     <Compile Include="Core\Context.cs" />
@@ -145,6 +146,7 @@
     <Compile Include="Modules\Math.cs" />
     <Compile Include="Modules\ClassProxy.cs" />
     <Compile Include="Modules\ProtectedAttribute.cs" />
+    <Compile Include="Statements\ThrowStatement.cs" />
     <Compile Include="Statements\EmptyStatement.cs" />
     <Compile Include="Statements\CodeBlock.cs" />
     <Compile Include="Statements\ArrayStatement.cs" />

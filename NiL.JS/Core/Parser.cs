@@ -67,6 +67,7 @@ namespace NiL.JS.Core
                 new _Rule("void", OperatorStatement.Parse),
                 new _Rule("break", BreakStatement.Parse),
                 new _Rule("continue", ContinueStatement.Parse),
+                new _Rule("throw", ThrowStatement.Parse),
                 new _Rule(ValidateName, OperatorStatement.Parse),
                 new _Rule(ValidateValue, OperatorStatement.Parse),
             };

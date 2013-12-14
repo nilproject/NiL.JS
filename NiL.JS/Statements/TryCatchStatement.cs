@@ -13,6 +13,7 @@ namespace NiL.JS.Statements
     {
         private Statement body;
         private Statement catchBody;
+        private Statement finallyBody;
         private string exptName;
 
         public TryCatchStatement()
@@ -39,6 +40,13 @@ namespace NiL.JS.Statements
                 throw new ArgumentException("code (" + i + ")");
             while (char.IsWhiteSpace(code[i])) i++;
             var cb = CodeBlock.Parse(state, ref i).Statement;
+            while (char.IsWhiteSpace(code[i])) i++;
+            Statement f = null;
+            if (Parser.Validate(code, "finally", ref i))
+            {
+                while (char.IsWhiteSpace(code[i])) i++;
+                f = CodeBlock.Parse(state, ref i).Statement;
+            }
             index = i;
             return new ParseResult()
             {
@@ -48,6 +56,7 @@ namespace NiL.JS.Statements
                 {
                     body = b,
                     catchBody = cb,
+                    finallyBody = f,
                     exptName = exptn
                 }
             };
@@ -70,6 +79,11 @@ namespace NiL.JS.Statements
                 eo.ValueType = ObjectValueType.Object;
                 eo.GetField("message").Assign(e.Message);
                 catchBody.Invoke(context);
+            }
+            finally
+            {
+                if (finallyBody != null)
+                    finallyBody.Invoke(context);
             }
             return null;
         }
