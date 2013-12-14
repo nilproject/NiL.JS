@@ -1,2 +1,2 @@
-﻿a = (a = 2, "what?"[a]);
+﻿a = {}.f == undefined;
 console.log(a);

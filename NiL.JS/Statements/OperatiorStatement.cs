@@ -1313,6 +1313,10 @@ namespace NiL.JS.Statements
             throw new NotImplementedException();
         }
 
+#if INLINE
+        // Инлайнинг в OpNotEqual
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+#endif
         private unsafe JSObject OpEqual(Context context)
         {
             var temp = first.Invoke(context);
@@ -1509,6 +1513,14 @@ namespace NiL.JS.Statements
                             else
                                 goto default;
                         }
+                        break;
+                    }
+                case ObjectValueType.NoExistInObject:
+                case ObjectValueType.Undefined:
+                    {
+                        var left = temp;
+                        temp = second.Invoke(context);
+                        tempResult.iValue = temp.ValueType == ObjectValueType.Undefined || temp.ValueType == ObjectValueType.NoExistInObject ? 1 : 0;
                         break;
                     }
                 default: throw new NotImplementedException();
@@ -1996,6 +2008,7 @@ namespace NiL.JS.Statements
                         o.oValue = "number";
                         break;
                     }
+                case ObjectValueType.NoExist:
                 case ObjectValueType.NoExistInObject:
                 case ObjectValueType.Undefined:
                     {
@@ -2023,8 +2036,6 @@ namespace NiL.JS.Statements
                         o.oValue = "object";
                         break;
                     }
-                case ObjectValueType.NoExist:
-                    throw new InvalidOperationException("Varible not defined");
                 default: throw new NotImplementedException();
             }
             return o;
