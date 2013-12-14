@@ -479,6 +479,8 @@ namespace NiL.JS.Statements
                                 repeat = false;
                                 break;
                             }
+                            goto case ';';
+                            /*
                             if (!processComma)
                                 goto case ';';
                             List<Statement> args = new List<Statement>();
@@ -499,6 +501,7 @@ namespace NiL.JS.Statements
                             binar = false;
                             repeat = false;
                             break;
+                             * */
                         }
                     case '?':
                         {
@@ -869,7 +872,7 @@ namespace NiL.JS.Statements
                             }
                             else if (Parser.Validate(code, "in", ref i))
                             {
-
+                                throw new NotImplementedException();
                             }
                             goto default;
                         }
@@ -886,7 +889,7 @@ namespace NiL.JS.Statements
             if (binar)
             {
                 do i++; while (char.IsWhiteSpace(code[i]));
-                second = OperatorStatement.Parse(state, ref i, processComma).Statement;
+                second = OperatorStatement.Parse(state, ref i, false).Statement;
                 if (second is OperatorStatement)
                 {
                     var seops = second as OperatorStatement;
@@ -910,7 +913,14 @@ namespace NiL.JS.Statements
                     else
                         second = ((OperatorStatement)second).first;
                 }
-            }            
+            }
+            if (processComma && (code[i] == ','))
+            {
+                first = new OperatorStatement() { first = first, second = second, type = type };
+                type = OperationType.None;
+                do i++; while (char.IsWhiteSpace(code[i]));
+                second = OperatorStatement.Parse(state, ref i).Statement;
+            }
             OperatorStatement res = null;
             if (assign)
                 res = new OperatorStatement() { first = first, second = new OperatorStatement() { first = first, second = second, type = type }, type = OperationType.Assign };

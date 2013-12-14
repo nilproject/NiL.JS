@@ -44,7 +44,12 @@ namespace NiL.JS.Core.BaseTypes
                             return _charCodeAt;
                         }
                     default:
-                        return DefaultFieldGetter(name, b);
+                        {
+                            int n = 0;
+                            if (Parser.ParseNumber(name, ref n, false, out n))
+                                return (oValue as string)[n];
+                            return DefaultFieldGetter(name, true);
+                        }
                 }
             };
             prototype = BaseObject.Prototype;

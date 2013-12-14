@@ -131,7 +131,6 @@ namespace NiL.JS.Core
             {
                 var t = new JSObject() { ValueType = ObjectValueType.NoExistInObject };
                 t.Assign(res);
-                //t.attributes = res.attributes;
                 t.assignCallback = () =>
                 {
                     if (fields == null)
@@ -284,6 +283,11 @@ namespace NiL.JS.Core
             }
             else
                 return enumeratorGetter();
+        }
+
+        public static implicit operator JSObject(char value)
+        {
+            return new JSObject() { ValueType = ObjectValueType.String, oValue = value.ToString(), temporary = true, assignCallback = ErrorAssignCallback };
         }
 
         public static implicit operator JSObject(bool value)

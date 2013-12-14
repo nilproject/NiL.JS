@@ -43,7 +43,7 @@ namespace NiL.JS.Statements
             while (code[i] != '}')
             {
                 var t = Parser.Parse(state, ref i, 0);
-                if (t == null)
+                if (t == null || t is EmptyStatement)
                     continue;
                 if (t is Function)
                     funcs.Add(t as Function);

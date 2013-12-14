@@ -1,1 +1,2 @@
-﻿console.log({ "for": [1] }.for[0]);
+﻿a = (a = 2, "what?"[a]);
+console.log(a);
