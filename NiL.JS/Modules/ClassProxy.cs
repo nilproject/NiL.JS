@@ -12,14 +12,12 @@ namespace NiL.JS.Modules
     public sealed class ClassProxy : JSObject
     {
         private readonly Type hostedType;
-        private object instance;
 
         public ClassProxy(Type host)
         {
             hostedType = host;
-            instance = null;
+            oValue = null;
             ValueType = ObjectValueType.Object;
-            oValue = "Module";
             base.fieldGetter = getField;
         }
 
@@ -37,16 +35,58 @@ namespace NiL.JS.Modules
                     return undefined;
                 switch (m[0].MemberType)
                 {
-                    case System.Reflection.MemberTypes.Method:
+                    case MemberTypes.Constructor:
                         {
-                            MethodInfo method = m[0] as MethodInfo;
-                            if (instance == null)
-                                instance = hostedType.GetConstructor(System.Type.EmptyTypes).Invoke(System.Type.EmptyTypes);
-                            var dinv = (Func<IContextStatement[], JSObject>)Delegate.CreateDelegate(typeof(Func<IContextStatement[], JSObject>), instance, method);
+                            var method = (ConstructorInfo)m[0];
                             result = new CallableField((th, args) =>
                             {
-                                return dinv(args);
+                                var res = method.Invoke(args);
+                                if (res is int)
+                                    return (int)res;
+                                else if (res is double)
+                                    return (double)res;
+                                else if (res is string)
+                                    return (string)res;
+                                else if (res is bool)
+                                    return (bool)res;
+                                else if (res is ContextStatement)
+                                    return (JSObject)(ContextStatement)res;
+                                else return new ClassProxy(res.GetType()) { oValue = res };
                             });
+                            protect = method.GetCustomAttributes(typeof(ProtectedAttribute), false).Length != 0;
+                            break;
+                        }
+                    case MemberTypes.Method:
+                        {
+                            var method = (MethodInfo)m[0];
+                            if (oValue == null)
+                                oValue = hostedType.GetConstructor(System.Type.EmptyTypes).Invoke(System.Type.EmptyTypes);
+                            if (method.ReturnType == typeof(JSObject) && (method.GetParameters().Length == 1) && (method.GetParameters()[0].ParameterType == typeof(IContextStatement[])))
+                            {
+                                var dinv = (Func<IContextStatement[], JSObject>)Delegate.CreateDelegate(typeof(Func<IContextStatement[], JSObject>), oValue, method);
+                                result = new CallableField((th, args) =>
+                                {
+                                    return dinv(args);
+                                });
+                            }
+                            else
+                            {
+                                result = new CallableField((th, args) =>
+                                {
+                                    var res = method.Invoke(oValue, args);
+                                    if (res is int)
+                                        return (int)res;
+                                    else if (res is double)
+                                        return (double)res;
+                                    else if (res is string)
+                                        return (string)res;
+                                    else if (res is bool)
+                                        return (bool)res;
+                                    else if (res is ContextStatement)
+                                        return (JSObject)(ContextStatement)res;
+                                    else return new ClassProxy(res.GetType()) { oValue = res };
+                                });
+                            }
                             protect = method.GetCustomAttributes(typeof(ProtectedAttribute), false).Length != 0;
                             break;
                         }
@@ -64,7 +104,7 @@ namespace NiL.JS.Modules
                                 result = (bool)res;
                             else if (res is ContextStatement)
                                 result = (JSObject)(ContextStatement)res;
-                            else result = new JSObject() { oValue = res, ValueType = ObjectValueType.Object };
+                            else return new ClassProxy(res.GetType()) { oValue = res };
                             protect = field.GetCustomAttributes(typeof(ProtectedAttribute), false).Length != 0;
                             break;
                         }
