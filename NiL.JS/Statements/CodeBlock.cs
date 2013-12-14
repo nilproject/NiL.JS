@@ -83,7 +83,7 @@ namespace NiL.JS.Statements
             return new ContextStatement(context, this);
         }
 
-        public unsafe override JSObject Invoke(Context context)
+        public override JSObject Invoke(Context context)
         {
             for (int i = functions.Length - 1; i >= 0; i--)
             {

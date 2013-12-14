@@ -8,7 +8,7 @@ namespace NiL.JS.Core
 {
     public delegate JSObject CallableField(JSObject _this, IContextStatement[] args);
 
-    internal enum ObjectValueType : byte
+    internal enum ObjectValueType : int
     {
         NoExist = 0,
         NoExistInObject = 1,
@@ -23,7 +23,7 @@ namespace NiL.JS.Core
     }
 
     [Flags]
-    internal enum ObjectAttributes : byte
+    internal enum ObjectAttributes : int
     {
         None = 0,
         DontEnum = 1,
@@ -67,11 +67,9 @@ namespace NiL.JS.Core
                         return iValue;
                     case ObjectValueType.Double:
                         return dValue;
-                    case ObjectValueType.Statement:
-                        return oValue;
                     case ObjectValueType.String:
-                        return oValue;
                     case ObjectValueType.Object:
+                    case ObjectValueType.Statement:
                         return oValue;
                     case ObjectValueType.Undefined:
                     case ObjectValueType.NoExistInObject:
@@ -199,6 +197,9 @@ namespace NiL.JS.Core
             return this;
         }
 
+#if INLINE
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+#endif
         public void Assign(JSObject right)
         {
             if (this.assignCallback != null)
@@ -325,13 +326,17 @@ namespace NiL.JS.Core
             return new JSObject() { ValueType = ObjectValueType.Statement, oValue = new Statements.ExternalFunction(value), temporary = true, assignCallback = ErrorAssignCallback };
         }
 
+#if INLINE
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+#endif
         public static implicit operator bool(JSObject obj)
         {
-            if (obj.ValueType == ObjectValueType.Int || obj.ValueType == ObjectValueType.Bool)
+            var vt = obj.ValueType;
+            if (vt == ObjectValueType.Int || vt == ObjectValueType.Bool)
                 return obj.iValue != 0;
-            if (obj.ValueType == ObjectValueType.Double)
+            if (vt == ObjectValueType.Double)
                 return obj.dValue != 0.0;
-            return (obj.oValue != null) && (!(obj.oValue is string) || !string.IsNullOrEmpty(obj.oValue as string));
+            return (obj.oValue != null) && ((vt != ObjectValueType.String) || !string.IsNullOrEmpty(obj.oValue as string));
         }
     }
 }

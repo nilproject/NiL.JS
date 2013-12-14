@@ -7,7 +7,7 @@ using NiL.JS.Core.BaseTypes;
 
 namespace NiL.JS.Statements.Operators
 {
-    internal unsafe class StrictEqual : Operator
+    internal class StrictEqual : Operator
     {
         public StrictEqual(Statement first, Statement second)
             : base(first, second)

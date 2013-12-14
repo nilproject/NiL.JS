@@ -18,7 +18,7 @@ namespace NiL.JS.Statements.Operators
         public override JSObject Invoke(Context context)
         {
             JSObject temp = first.Invoke(context);
-
+            var res = tempResult;
             double dr;
             switch (temp.ValueType)
             {
@@ -31,16 +31,16 @@ namespace NiL.JS.Statements.Operators
                             case ObjectValueType.Int:
                                 {
                                     dr *= temp.iValue;
-                                    tempResult.ValueType = ObjectValueType.Double;
-                                    tempResult.dValue = dr;
-                                    return tempResult;
+                                    res.ValueType = ObjectValueType.Double;
+                                    res.dValue = dr;
+                                    return res;
                                 }
                             case ObjectValueType.Double:
                                 {
                                     dr *= temp.dValue;
-                                    tempResult.ValueType = ObjectValueType.Double;
-                                    tempResult.dValue = dr;
-                                    return tempResult;
+                                    res.ValueType = ObjectValueType.Double;
+                                    res.dValue = dr;
+                                    return res;
                                 }
                             case ObjectValueType.Statement:
                             case ObjectValueType.Object:
@@ -55,9 +55,9 @@ namespace NiL.JS.Statements.Operators
                                         || (temp.ValueType == ObjectValueType.Undefined)
                                         || (temp.ValueType == ObjectValueType.Statement))
                                     {
-                                        tempResult.ValueType = ObjectValueType.Double;
-                                        tempResult.dValue = double.NaN;
-                                        return tempResult;
+                                        res.ValueType = ObjectValueType.Double;
+                                        res.dValue = double.NaN;
+                                        return res;
                                     }
                                     break;
                                 }
@@ -73,16 +73,16 @@ namespace NiL.JS.Statements.Operators
                             case ObjectValueType.Int:
                                 {
                                     dr *= temp.iValue;
-                                    tempResult.ValueType = ObjectValueType.Double;
-                                    tempResult.dValue = dr;
-                                    return tempResult;
+                                    res.ValueType = ObjectValueType.Double;
+                                    res.dValue = dr;
+                                    return res;
                                 }
                             case ObjectValueType.Double:
                                 {
                                     dr *= temp.dValue;
-                                    tempResult.ValueType = ObjectValueType.Double;
-                                    tempResult.dValue = dr;
-                                    return tempResult;
+                                    res.ValueType = ObjectValueType.Double;
+                                    res.dValue = dr;
+                                    return res;
                                 }
                             case ObjectValueType.Object:
                                 {
@@ -93,9 +93,9 @@ namespace NiL.JS.Statements.Operators
                                         goto case ObjectValueType.Double;
                                     else if (temp.ValueType == ObjectValueType.Object)
                                     {
-                                        tempResult.ValueType = ObjectValueType.Double;
-                                        tempResult.dValue = double.NaN;
-                                        return tempResult;
+                                        res.ValueType = ObjectValueType.Double;
+                                        res.dValue = double.NaN;
+                                        return res;
                                     }
                                     break;
                                 }
@@ -112,9 +112,9 @@ namespace NiL.JS.Statements.Operators
                             goto case ObjectValueType.Double;
                         else if (temp.ValueType == ObjectValueType.Object)
                         {
-                            tempResult.ValueType = ObjectValueType.Double;
-                            tempResult.dValue = double.NaN;
-                            return tempResult;
+                            res.ValueType = ObjectValueType.Double;
+                            res.dValue = double.NaN;
+                            return res;
                         }
                         break;
                     }

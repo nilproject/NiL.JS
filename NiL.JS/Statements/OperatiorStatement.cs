@@ -1200,7 +1200,7 @@ namespace NiL.JS.Statements
             throw new NotImplementedException();
         }
 
-        private unsafe JSObject OpAnd(Context context)
+        private JSObject OpAnd(Context context)
         {
             var temp = first.Invoke(context);
 
@@ -1317,7 +1317,7 @@ namespace NiL.JS.Statements
         // Инлайнинг в OpNotEqual
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
-        private unsafe JSObject OpEqual(Context context)
+        private JSObject OpEqual(Context context)
         {
             var temp = first.Invoke(context);
 
@@ -1547,7 +1547,7 @@ namespace NiL.JS.Statements
                 return second.Invoke(context);
         }
 
-        private unsafe JSObject OpXor(Context context)
+        private JSObject OpXor(Context context)
         {
             var temp = first.Invoke(context);
 
@@ -1576,7 +1576,7 @@ namespace NiL.JS.Statements
             return tempResult;
         }
 
-        private unsafe JSObject OpOr(Context context)
+        private JSObject OpOr(Context context)
         {
             var temp = first.Invoke(context);
 
@@ -1829,7 +1829,7 @@ namespace NiL.JS.Statements
             throw new NotImplementedException();
         }
 
-        private unsafe JSObject OpMore(Context context)
+        private JSObject OpMore(Context context)
         {
             var temp = first.Invoke(context);
 
@@ -1858,7 +1858,7 @@ namespace NiL.JS.Statements
             return tempResult;
         }
 
-        private unsafe JSObject OpLessOrEqual(Context context)
+        private JSObject OpLessOrEqual(Context context)
         {
             var temp = first.Invoke(context);
             tempResult.ValueType = ObjectValueType.Bool;
@@ -1886,7 +1886,7 @@ namespace NiL.JS.Statements
             return tempResult;
         }
 
-        private unsafe JSObject OpMoreOrEqual(Context context)
+        private JSObject OpMoreOrEqual(Context context)
         {
             var temp = first.Invoke(context);
 
@@ -1990,7 +1990,7 @@ namespace NiL.JS.Statements
             return t;
         }
 
-        private unsafe JSObject OpTypeOf(Context context)
+        private JSObject OpTypeOf(Context context)
         {
             var val = first.Invoke(context);
             JSObject o = null;
@@ -2041,7 +2041,7 @@ namespace NiL.JS.Statements
             return o;
         }
 
-        private unsafe JSObject OpInstanceOf(Context context)
+        private JSObject OpInstanceOf(Context context)
         {
             var a = first.Invoke(context);
             var c = second.Invoke(context).GetField("prototype");
@@ -2061,7 +2061,7 @@ namespace NiL.JS.Statements
             return o;
         }
 
-        private unsafe JSObject OpNew(Context context)
+        private JSObject OpNew(Context context)
         {
             JSObject args = null;
             Statement[] sps = null;
@@ -2090,7 +2090,7 @@ namespace NiL.JS.Statements
             return _this;
         }
 
-        private unsafe JSObject OpNot(Context context)
+        private JSObject OpNot(Context context)
         {
             var val = first.Invoke(context);
             JSObject o = tempResult;
@@ -2113,7 +2113,7 @@ namespace NiL.JS.Statements
             return threads[1].Invoke(context);
         }
 
-        private unsafe JSObject OpLogicalNot(Context context)
+        private JSObject OpLogicalNot(Context context)
         {
             var val = first.Invoke(context);
             JSObject o = tempResult;

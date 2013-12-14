@@ -7,7 +7,7 @@ using NiL.JS.Core.BaseTypes;
 
 namespace NiL.JS.Statements.Operators
 {
-    internal unsafe class In : Operator
+    internal class In : Operator
     {
         public In(Statement first, Statement second)
             : base(first, second)

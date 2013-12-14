@@ -10,6 +10,7 @@ namespace NiL.JS.Statements
         private Statement condition;
         private Statement post;
         private Statement body;
+        private int implId;
 
         private ForStatement()
         {
@@ -43,6 +44,28 @@ namespace NiL.JS.Statements
             state.AllowBreak--;
             state.AllowContinue--;
             index = i;
+            int id = 0;
+            if (body != null)
+            {
+                if (condition == null)
+                {
+                    if (post == null)
+                        id = 0;
+                    else
+                        id = 1;
+                }
+                else
+                {
+                    if (post == null)
+                        id = 2;
+                    else
+                        id = 3;
+                }
+            }
+            else
+            {
+                id = 4;
+            }
             return new ParseResult()
             {
                 IsParsed = true,
@@ -52,7 +75,8 @@ namespace NiL.JS.Statements
                     body = body,
                     condition = condition,
                     init = init,
-                    post = post
+                    post = post,
+                    implId = id
                 }
             };
         }
@@ -62,31 +86,104 @@ namespace NiL.JS.Statements
             return new ContextStatement(context, this);
         }
 
+        private void impl0(Context context)
+        {
+            for (; ; )
+            {
+                body.Invoke(context);
+                if (context.abort != AbortType.None)
+                {
+                    if (context.abort == AbortType.Continue)
+                        context.abort = AbortType.None;
+                    else
+                    {
+                        if (context.abort == AbortType.Break)
+                            context.abort = AbortType.None;
+                        return;
+                    }
+                }
+            }
+        }
+
+        private void impl1(Context context)
+        {
+            for (; ; )
+            {
+                body.Invoke(context);
+                if (context.abort != AbortType.None)
+                {
+                    if (context.abort == AbortType.Continue)
+                        context.abort = AbortType.None;
+                    else
+                    {
+                        if (context.abort == AbortType.Break)
+                            context.abort = AbortType.None;
+                        return;
+                    }
+                }
+                post.Invoke(context);
+            }
+        }
+
+        private void impl2(Context context)
+        {
+            while (condition.Invoke(context))
+            {
+                body.Invoke(context);
+                if (context.abort != AbortType.None)
+                {
+                    if (context.abort == AbortType.Continue)
+                        context.abort = AbortType.None;
+                    else
+                    {
+                        if (context.abort == AbortType.Break)
+                            context.abort = AbortType.None;
+                        return;
+                    }
+                }
+            }
+        }
+
+        private void impl3(Context context)
+        {
+            while (condition.Invoke(context))
+            {
+                body.Invoke(context);
+                if (context.abort != AbortType.None)
+                {
+                    if (context.abort == AbortType.Continue)
+                        context.abort = AbortType.None;
+                    else
+                    {
+                        if (context.abort == AbortType.Break)
+                            context.abort = AbortType.None;
+                        return;
+                    }
+                }
+                post.Invoke(context);
+            }
+        }
+
+        private void impl4(Context context)
+        {
+            while (condition.Invoke(context))
+                post.Invoke(context);
+        }
+
         public override JSObject Invoke(Context context)
         {
             if (init != null)
                 init.Invoke(context);
-            if (body != null)
-            {
-                while (condition == null || condition.Invoke(context))
-                {
-                    body.Invoke(context);
-                    if (context.abort != AbortType.None)
-                    {
-                        if (context.abort == AbortType.Continue)
-                            context.abort = AbortType.None;
-                        else
-                            return null;
-                    }
-                    if (post != null)
-                        post.Invoke(context);
-                }
-            }
+            if (implId == 0)
+                impl0(context);
+            else if (implId == 1)
+                impl1(context);
+            else if (implId == 2)
+                impl2(context);
+            else if (implId == 3)
+                impl3(context);
             else
-            {
-                while (condition.Invoke(context))
-                    post.Invoke(context);
-            }
+                impl4(context);
             return null;
         }
 

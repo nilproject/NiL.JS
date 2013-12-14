@@ -123,7 +123,7 @@ namespace NiL.JS.Statements
             return new ContextStatement(context, this);
         }
 
-        public unsafe override JSObject Invoke(Context context)
+        public override JSObject Invoke(Context context)
         {
             if (functions.Length != 0)
                 throw new InvalidOperationException();
