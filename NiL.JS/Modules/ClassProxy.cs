@@ -21,6 +21,17 @@ namespace NiL.JS.Modules
             base.fieldGetter = getField;
         }
 
+        private static object[] convertArgs(IContextStatement[] source, int targetCount)
+        {
+            if (source == null)
+                return null;
+            object[] res = new object[targetCount];
+            targetCount = System.Math.Min(targetCount, source.Length);
+            for (int i = 0; i < targetCount; i++)
+                res[i] = source[i].Invoke().Value;
+            return res;
+        }
+
         private JSObject getField(string name, bool fast)
         {
             JSObject r = DefaultFieldGetter(name, false);
@@ -28,7 +39,7 @@ namespace NiL.JS.Modules
             {
                 bool protect = false;
                 JSObject result = null;
-                var m = hostedType.GetMember(name);
+                var m = hostedType.GetMember(name, BindingFlags.Public | (oValue == null ? BindingFlags.Static : 0) | BindingFlags.NonPublic | BindingFlags.Instance);
                 if (m.Length > 1)
                     throw new InvalidOperationException("Too many fields with name " + name);
                 if (m.Length == 0)
@@ -59,8 +70,8 @@ namespace NiL.JS.Modules
                     case MemberTypes.Method:
                         {
                             var method = (MethodInfo)m[0];
-                            if (oValue == null)
-                                oValue = hostedType.GetConstructor(System.Type.EmptyTypes).Invoke(System.Type.EmptyTypes);
+                            //if (oValue == null)
+                            //    oValue = hostedType.GetConstructor(System.Type.EmptyTypes).Invoke(System.Type.EmptyTypes);
                             if (method.ReturnType == typeof(JSObject) && (method.GetParameters().Length == 1) && (method.GetParameters()[0].ParameterType == typeof(IContextStatement[])))
                             {
                                 var dinv = (Func<IContextStatement[], JSObject>)Delegate.CreateDelegate(typeof(Func<IContextStatement[], JSObject>), oValue, method);
@@ -73,8 +84,10 @@ namespace NiL.JS.Modules
                             {
                                 result = new CallableField((th, args) =>
                                 {
-                                    var res = method.Invoke(oValue, args);
-                                    if (res is int)
+                                    var res = method.Invoke(oValue, convertArgs(args, method.GetParameters().Length));
+                                    if (res == null)
+                                        return null;
+                                    else if (res is int)
                                         return (int)res;
                                     else if (res is double)
                                         return (double)res;

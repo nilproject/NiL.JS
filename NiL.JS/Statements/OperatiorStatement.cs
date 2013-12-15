@@ -1510,6 +1510,8 @@ namespace NiL.JS.Statements
                             temp = second.Invoke(context);
                             if (temp.ValueType == ObjectValueType.Object || temp.ValueType == ObjectValueType.Date)
                                 tempResult.iValue = left.oValue == temp.oValue ? 1 : 0;
+                            else if (temp.ValueType == ObjectValueType.Undefined && left.oValue == null)
+                                tempResult.iValue = 1;
                             else
                                 goto default;
                         }

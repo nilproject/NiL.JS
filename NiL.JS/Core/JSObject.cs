@@ -46,7 +46,7 @@ namespace NiL.JS.Core
         protected Func<string, bool, JSObject> fieldGetter;
         protected Func<IEnumerator<string>> enumeratorGetter;
         internal JSObject prototype;
-        private Dictionary<string, JSObject> fields;
+        internal Dictionary<string, JSObject> fields;
 
         internal bool temporary;
         internal ObjectValueType ValueType;
