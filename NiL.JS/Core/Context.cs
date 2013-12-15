@@ -44,7 +44,19 @@ namespace NiL.JS.Core
             globalContext.GetField("isNaN").Assign(new CallableField((t, x) =>
             {
                 var r = x[0].Invoke();
-                return double.IsNaN(r.dValue) && r.ValueType == ObjectValueType.Double;
+                if (r.ValueType == ObjectValueType.Double)
+                    return double.IsNaN(r.dValue);
+                if (r.ValueType == ObjectValueType.Bool || r.ValueType == ObjectValueType.Int || r.ValueType == ObjectValueType.Date)
+                    return false;
+                if (r.ValueType == ObjectValueType.String)
+                {
+                    double d = 0;
+                    int i = 0;
+                    if (Parser.ParseNumber(r.oValue as string, ref i, false, out d))
+                        return double.IsNaN(d);
+                    return true;
+                }
+                return true;
             }));
             globalContext.GetField("Number").Assign(new CallableField((t, x) =>
             {
