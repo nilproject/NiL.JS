@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections;
 using System.Runtime.InteropServices;
+using System.Runtime.Serialization;
 
 namespace NiL.JS.Core
 {
@@ -90,7 +91,14 @@ namespace NiL.JS.Core
                 fields = new Dictionary<string, JSObject>();
         }
 
-        public JSObject GetField(string name, bool fast = false)
+        public JSObject GetField(string name)
+        {
+            if (fieldGetter == null)
+                fieldGetter = DefaultFieldGetter;
+            return fieldGetter(name, false);
+        }
+
+        public JSObject GetField(string name, bool fast)
         {
             if (fieldGetter == null)
                 fieldGetter = DefaultFieldGetter;
@@ -103,7 +111,10 @@ namespace NiL.JS.Core
                 throw new InvalidOperationException("Can't access to property value of \"undefined\"");
             if (name == "__proto__")
                 return prototype ?? (fast ? undefined : prototype = new JSObject());
-            fast |= (int)ValueType < (int)ObjectValueType.Object;
+            if ((int)ValueType < (int)ObjectValueType.Object)
+                fast = true;
+            else if (oValue == null)
+                throw new InvalidOperationException("Can't access to property value of \"null\"");
             JSObject res = null;
             bool fromProto = fields == null || !fields.TryGetValue(name, out res);
             if (fromProto && prototype != null)

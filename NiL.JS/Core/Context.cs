@@ -25,7 +25,7 @@ namespace NiL.JS.Core
         internal readonly static Context globalContext = new Context();
         public static Context GlobalContext { get { return globalContext; } }
 
-        static Context()
+        public static void RefreshGlobalContext()
         {
             if (globalContext.fields != null)
                 globalContext.fields.Clear();
@@ -131,7 +131,7 @@ namespace NiL.JS.Core
             {
                 var pattern = x[0].Invoke().Value.ToString();
                 var flags = x.Length > 1 ? x[1].Invoke().Value.ToString() : "";
-                var re = new System.Text.RegularExpressions.Regex(pattern, 
+                var re = new System.Text.RegularExpressions.Regex(pattern,
                     System.Text.RegularExpressions.RegexOptions.ECMAScript
                     | (flags.IndexOf('i') != -1 ? System.Text.RegularExpressions.RegexOptions.IgnoreCase : 0)
                     | (flags.IndexOf('m') != -1 ? System.Text.RegularExpressions.RegexOptions.Multiline : 0)
@@ -194,9 +194,16 @@ namespace NiL.JS.Core
             globalContext.AttachModule(typeof(Modules.console));
         }
 
+        static Context()
+        {
+            RefreshGlobalContext();
+        }
+
         internal readonly Context prototype;
         private const int cacheSize = 5;
+        [NonSerialized]
         private int cacheIndex;
+        [NonSerialized]
         private _cacheItem[] cache;
 
         internal Dictionary<string, JSObject> fields;

@@ -10,6 +10,7 @@ namespace NiL.JS.Statements
 
         public ReturnStatement()
         {
+
         }
 
         internal static ParseResult Parse(ParsingState state, ref int index)

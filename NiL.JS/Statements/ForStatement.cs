@@ -14,6 +14,7 @@ namespace NiL.JS.Statements
 
         private ForStatement()
         {
+
         }
 
         internal static ParseResult Parse(ParsingState state, ref int index)

@@ -1,8 +1,6 @@
-﻿using NiL.JS.Core.BaseTypes;
+﻿using NiL.JS.Core;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using NiL.JS.Core;
 
 namespace NiL.JS.Statements
 {
@@ -88,7 +86,7 @@ namespace NiL.JS.Statements
                 else if (t is SwitchStatement)
                 {
                     SwitchStatement cb = t as SwitchStatement;
-                    funcs.AddRange(cb.functions);                    
+                    funcs.AddRange(cb.functions);
                     cb.functions = new Function[0];
                     body.Add(t);
                 }
@@ -105,7 +103,7 @@ namespace NiL.JS.Statements
             };
             state.AllowBreak--;
             i++;
-            index = i; 
+            index = i;
             return new ParseResult()
             {
                 IsParsed = true,

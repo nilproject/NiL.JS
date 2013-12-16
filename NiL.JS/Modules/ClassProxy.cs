@@ -1,23 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using NiL.JS.Core.BaseTypes;
-using NiL.JS.Core;
+﻿using NiL.JS.Core;
+using System;
 using System.Reflection;
 
 namespace NiL.JS.Modules
 {
     public sealed class ClassProxy : JSObject
     {
-        private readonly Type hostedType;
+        private Type hostedType;
+
+        private ClassProxy()
+        {
+            ValueType = ObjectValueType.Object;
+            base.fieldGetter = getField;
+        }
 
         public ClassProxy(Type host)
         {
             hostedType = host;
-            oValue = null;
-            ValueType = ObjectValueType.Object;
+            oValue = new Statements.ExternalFunction((x, y) => { return new ClassProxy() { hostedType = hostedType, oValue = hostedType.GetConstructor(Type.EmptyTypes).Invoke(null) }; });
+            ValueType = ObjectValueType.Statement;
             base.fieldGetter = getField;
         }
 
@@ -74,7 +75,7 @@ namespace NiL.JS.Modules
                             //    oValue = hostedType.GetConstructor(System.Type.EmptyTypes).Invoke(System.Type.EmptyTypes);
                             if (method.ReturnType == typeof(JSObject) && (method.GetParameters().Length == 1) && (method.GetParameters()[0].ParameterType == typeof(IContextStatement[])))
                             {
-                                var dinv = (Func<IContextStatement[], JSObject>)Delegate.CreateDelegate(typeof(Func<IContextStatement[], JSObject>), oValue, method);
+                                var dinv = (Func<IContextStatement[], JSObject>)Delegate.CreateDelegate(typeof(Func<IContextStatement[], JSObject>), ValueType == ObjectValueType.Statement ? null : oValue, method);
                                 result = new CallableField((th, args) =>
                                 {
                                     return dinv(args);

@@ -11,6 +11,7 @@ namespace NiL.JS.Statements
 
         public ArrayStatement()
         {
+
         }
 
         public static ParseResult Parse(ParsingState state, ref int index)
@@ -31,7 +32,7 @@ namespace NiL.JS.Statements
                 if (code[i] == ',')
                 {
                     do i++;
-                    while (char.IsWhiteSpace(code[i])) ;
+                    while (char.IsWhiteSpace(code[i]));
                 }
                 else if (code[i] != ']')
                     throw new ArgumentException();

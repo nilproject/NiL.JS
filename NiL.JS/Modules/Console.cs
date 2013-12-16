@@ -1,5 +1,6 @@
 ﻿using NiL.JS.Core;
 using NiL.JS.Core.BaseTypes;
+using System;
 
 namespace NiL.JS.Modules
 {
@@ -7,6 +8,7 @@ namespace NiL.JS.Modules
     {
         public console()
         {
+
         }
 
         public JSObject log(IContextStatement[] args)

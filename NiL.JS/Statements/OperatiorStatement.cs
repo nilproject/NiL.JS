@@ -273,7 +273,7 @@ namespace NiL.JS.Statements
 
         public static Statement ParseForUnary(ParsingState state, ref int index)
         {
-            return Parse(state, ref index, true, true).Statement; 
+            return Parse(state, ref index, true, true).Statement;
         }
 
         internal static ParseResult Parse(ParsingState state, ref int index)
@@ -1137,7 +1137,7 @@ namespace NiL.JS.Statements
                                     if (temp.ValueType == ObjectValueType.Int)
                                         goto case ObjectValueType.Int;
                                     else if (temp.ValueType == ObjectValueType.Double)
-                                        goto case ObjectValueType.Double;                                    
+                                        goto case ObjectValueType.Double;
                                     break;
                                 }
                         }

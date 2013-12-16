@@ -12,6 +12,7 @@ namespace NiL.JS.Statements
 
         private IfElseStatement()
         {
+
         }
 
         internal static ParseResult Parse(ParsingState state, ref int index)

@@ -1,8 +1,6 @@
-﻿using NiL.JS.Core.BaseTypes;
+﻿using NiL.JS.Core;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using NiL.JS.Core;
 
 namespace NiL.JS.Statements
 {
@@ -65,7 +63,7 @@ namespace NiL.JS.Statements
                     body.Add(t);
             };
             i++;
-            index = i; 
+            index = i;
             body.Reverse();
             return new ParseResult()
             {
@@ -124,7 +122,12 @@ namespace NiL.JS.Statements
                     _this = body[0];
             }
             else
-                this.varibles = vars.ToArray();
+            {
+                this.varibles = new string[vars.Count];
+                int i = 0;
+                foreach (var v in vars)
+                    this.varibles[i++] = v;
+            }
             return false;
         }
     }

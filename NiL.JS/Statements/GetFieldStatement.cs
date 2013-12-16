@@ -36,9 +36,9 @@ namespace NiL.JS.Statements
                 var r = obj.GetField(fieldName);
                 Func<Context, JSObject> alt = (c) =>
                 {
-                    if (s != c) 
-                        return basic(c); 
-                    else 
+                    if (s != c)
+                        return basic(c);
+                    else
                         return r;
                 };
                 impl = alt;

@@ -11,6 +11,7 @@ namespace NiL.JS.Statements
 
         private DoWhileStatement()
         {
+
         }
 
         internal static ParseResult Parse(ParsingState state, ref int index)

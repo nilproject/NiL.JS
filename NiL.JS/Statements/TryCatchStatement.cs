@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using NiL.JS.Core;
-using NiL.JS.Core.BaseTypes;
-using NiL.JS.Statements;
+﻿using NiL.JS.Core;
+using System;
 
 namespace NiL.JS.Statements
 {
@@ -18,6 +12,7 @@ namespace NiL.JS.Statements
 
         public TryCatchStatement()
         {
+
         }
 
         internal static ParseResult Parse(ParsingState state, ref int index)
@@ -73,7 +68,7 @@ namespace NiL.JS.Statements
             {
                 body.Invoke(context);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 var eo = context.Define(exptName);
                 eo.ValueType = ObjectValueType.Object;
