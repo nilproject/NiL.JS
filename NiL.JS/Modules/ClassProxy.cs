@@ -40,7 +40,7 @@ namespace NiL.JS.Modules
             {
                 bool protect = false;
                 JSObject result = null;
-                var m = hostedType.GetMember(name, BindingFlags.Public | (oValue == null ? BindingFlags.Static : 0) | BindingFlags.NonPublic | BindingFlags.Instance);
+                var m = hostedType.GetMember(name, BindingFlags.Public | (ValueType == ObjectValueType.Statement ? BindingFlags.Static : 0) | BindingFlags.NonPublic | BindingFlags.Instance);
                 if (m.Length > 1)
                     throw new InvalidOperationException("Too many fields with name " + name);
                 if (m.Length == 0)
