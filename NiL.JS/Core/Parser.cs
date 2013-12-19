@@ -854,13 +854,13 @@ namespace NiL.JS.Core
                 || (c == ':');
         }
 
-        internal static Statement Parse(ParsingState state, ref int index, int ruleset)
+        internal static Statement Parse(ParsingState state, ref int index, int ruleset, bool lineAutoComplite = false)
         {
             string code = state.Code;
-            while ((index < code.Length) && (char.IsWhiteSpace(code[index]))) index++;
+            while ((index < code.Length) && (char.IsWhiteSpace(code[index])) && (!lineAutoComplite || !isLineTerminator(code[index]))) index++;
             if (code[index] == '}')
                 return null;
-            if (code[index] == ';')
+            if (code[index] == ';' || (lineAutoComplite && isLineTerminator(code[index])))
             {
                 index++;
                 return new EmptyStatement();

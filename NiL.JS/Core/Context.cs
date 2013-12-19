@@ -211,14 +211,14 @@ namespace NiL.JS.Core
         internal JSObject abortInfo;
         internal JSObject thisBind;
 
-        private static JSObject define(Context context, string name)
+        private JSObject define(string name)
         {
             var res = new JSObject() { ValueType = ObjectValueType.NoExist };
             res.assignCallback = () =>
             {
-                if (context.fields == null)
-                    context.fields = new Dictionary<string, JSObject>();
-                context.fields[name] = res;
+                if (fields == null)
+                    fields = new Dictionary<string, JSObject>();
+                fields[name] = res;
                 res.assignCallback = null;
                 return true;
             };
@@ -281,7 +281,7 @@ namespace NiL.JS.Core
                     scriptRoot = c;
             }
             if (res == null)
-                return define(scriptRoot, name);
+                return scriptRoot.define(name);
             else
             {
                 if (res.ValueType == ObjectValueType.NoExistInObject)

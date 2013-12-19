@@ -424,20 +424,26 @@ namespace NiL.JS.Statements
             {
                 i++;
                 first = OperatorStatement.Parse(state, ref i, true).Statement;
+                while (char.IsWhiteSpace(code[i])) i++;
                 if (code[i] != ')')
                     throw new ArgumentException();
                 i++;
             }
             else
                 first = Parser.Parse(state, ref i, 2);
+            if (first is EmptyStatement)
+                throw new ArgumentException("Invalid operator argument");
             bool canAsign = true && !forUnary; // на случай f() = x
             bool assign = false; // на случай операторов 'x='
             bool binar = false;
             bool repeat; // лёгкая замена goto. Тот самый случай, когда он уместен.
+            int rollbackPos;
             do
             {
                 repeat = false;
                 while (char.IsWhiteSpace(code[i]) && !Parser.isLineTerminator(code[i])) i++;
+                rollbackPos = i;
+                while (char.IsWhiteSpace(code[i])) i++;
                 switch (code[i])
                 {
                     case '\n':
@@ -457,6 +463,7 @@ namespace NiL.JS.Statements
                             {
                                 binar = false;
                                 repeat = false;
+                                i = rollbackPos;
                                 break;
                             }
                             if (code[i + 1] == '=')
@@ -483,31 +490,11 @@ namespace NiL.JS.Statements
                             {
                                 binar = false;
                                 repeat = false;
+                                i = rollbackPos;
                                 break;
                             }
+                            i = rollbackPos;
                             goto case ';';
-                            /*
-                            if (!processComma)
-                                goto case ';';
-                            List<Statement> args = new List<Statement>();
-                            for (; ; )
-                            {
-                                while (char.IsWhiteSpace(code[i])) i++;
-                                if (code[i] != ',')
-                                    break;
-                                else do i++; while (char.IsWhiteSpace(code[i]));
-                                args.Add(OperatorStatement.Parse(state, ref i, false).Statement);
-                            }
-                            first = new OperatorStatement()
-                            {
-                                first = first,
-                                type = OperationType.None,
-                                second = new ImmidateValueStatement(args.ToArray())
-                            };
-                            binar = false;
-                            repeat = false;
-                            break;
-                             * */
                         }
                     case '?':
                         {
@@ -515,6 +502,7 @@ namespace NiL.JS.Statements
                             {
                                 binar = false;
                                 repeat = false;
+                                i = rollbackPos;
                                 break;
                             }
                             type = OperationType.Ternary;
@@ -539,6 +527,7 @@ namespace NiL.JS.Statements
                             {
                                 binar = false;
                                 repeat = false;
+                                i = rollbackPos;
                                 break;
                             }
                             if (code[i + 1] == '=')
@@ -569,10 +558,13 @@ namespace NiL.JS.Statements
                             {
                                 binar = false;
                                 repeat = false;
+                                i = rollbackPos;
                                 break;
                             }
                             if (code[i + 1] == '+')
                             {
+                                if (rollbackPos != i)
+                                    goto default;
                                 first = new OperatorStatement() { second = first, type = OperationType.Incriment };
                                 repeat = true;
                                 i += 2;
@@ -595,10 +587,13 @@ namespace NiL.JS.Statements
                             {
                                 binar = false;
                                 repeat = false;
+                                i = rollbackPos;
                                 break;
                             }
                             if (code[i + 1] == '-')
                             {
+                                if (rollbackPos != i)
+                                    goto default;
                                 first = new OperatorStatement() { second = first, type = OperationType.Decriment };
                                 repeat = true;
                                 i += 2;
@@ -621,6 +616,7 @@ namespace NiL.JS.Statements
                             {
                                 binar = false;
                                 repeat = false;
+                                i = rollbackPos;
                                 break;
                             }
                             binar = true;
@@ -638,6 +634,7 @@ namespace NiL.JS.Statements
                             {
                                 binar = false;
                                 repeat = false;
+                                i = rollbackPos;
                                 break;
                             }
                             if (code[i + 1] == '&')
@@ -667,6 +664,7 @@ namespace NiL.JS.Statements
                             {
                                 binar = false;
                                 repeat = false;
+                                i = rollbackPos;
                                 break;
                             }
                             if (code[i + 1] == '|')
@@ -696,6 +694,7 @@ namespace NiL.JS.Statements
                             {
                                 binar = false;
                                 repeat = false;
+                                i = rollbackPos;
                                 break;
                             }
                             binar = true;
@@ -713,6 +712,7 @@ namespace NiL.JS.Statements
                             {
                                 binar = false;
                                 repeat = false;
+                                i = rollbackPos;
                                 break;
                             }
                             binar = true;
@@ -747,6 +747,7 @@ namespace NiL.JS.Statements
                             {
                                 binar = false;
                                 repeat = false;
+                                i = rollbackPos;
                                 break;
                             }
                             binar = true;
@@ -776,6 +777,7 @@ namespace NiL.JS.Statements
                             {
                                 binar = false;
                                 repeat = false;
+                                i = rollbackPos;
                                 break;
                             }
                             binar = true;
@@ -868,6 +870,7 @@ namespace NiL.JS.Statements
                             {
                                 binar = false;
                                 repeat = false;
+                                i = rollbackPos;
                                 break;
                             }
                             if (Parser.Validate(code, "instanceof", ref i))
@@ -888,6 +891,11 @@ namespace NiL.JS.Statements
                         {
                             if (Parser.isLineTerminator(code[i]))
                                 goto case '\n';
+                            if (i != rollbackPos)
+                            {
+                                i = rollbackPos;
+                                goto case '\n';
+                            }
                             throw new ArgumentException("Invalid operator '" + code[i] + "'");
                         }
                 }

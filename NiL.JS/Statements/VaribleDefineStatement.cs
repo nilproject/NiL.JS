@@ -48,8 +48,9 @@ namespace NiL.JS.Statements
                 if ((code[i] != ',') && (code[i] != ';') && (code[i] != '=') && (code[i] != '}') && (!Parser.isLineTerminator(code[i])))
                     throw new ArgumentException("code (" + i + ")");
                 if (code[i] == ',')
-                    i++;
-                while (char.IsWhiteSpace(code[i]) && !Parser.isLineTerminator(code[i])) i++;
+                    do i++; while (char.IsWhiteSpace(code[i]));
+                else
+                    while (char.IsWhiteSpace(code[i]) && !Parser.isLineTerminator(code[i])) i++;
                 isDef = true;
             }
             if (!isDef)

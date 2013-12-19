@@ -21,23 +21,7 @@ namespace NiL.JS.Statements
                 throw new ArgumentException("code (" + i + ")");
             if ((code[i] != ' ') && (code[i] != ';') && (code[i] != '(') && (code[i] != '}') && (!Parser.isLineTerminator(code[i])))
                 return new ParseResult() { IsParsed = false };
-            while (char.IsWhiteSpace(code[i])) i++;
-            if ((code[i] == ';') || (code[i] == '}') || (Parser.isLineTerminator(code[i])))
-            {
-                index = i;
-                return new ParseResult()
-                {
-                    IsParsed = true,
-                    Message = "",
-                    Statement = new ReturnStatement()
-                    {
-                        body = new ImmidateValueStatement(BaseObject.undefined)
-                    }
-                };
-            }
-            var body = Parser.Parse(state, ref i, 1);
-            var vrs = new System.Collections.Generic.HashSet<string>();
-            Parser.Optimize(ref body, vrs);
+            var body = Parser.Parse(state, ref i, 1, true);
             index = i;
             return new ParseResult()
             {

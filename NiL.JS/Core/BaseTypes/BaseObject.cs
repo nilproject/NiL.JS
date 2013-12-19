@@ -12,7 +12,6 @@ namespace NiL.JS.Core.BaseTypes
 
         public static void RegisterTo(Context context)
         {
-            JSObject proto = null;
             var func = context.Assign("Object", new CallableField((_this, args) =>
             {
                 JSObject res;
@@ -20,7 +19,7 @@ namespace NiL.JS.Core.BaseTypes
                     res = _this;
                 else
                     res = new JSObject();
-                res.prototype = proto;
+                res.prototype = Prototype;
                 res.ValueType = ObjectValueType.Object;
                 res.oValue = new object();
                 if (args != null && args.Length > 0)
@@ -29,6 +28,7 @@ namespace NiL.JS.Core.BaseTypes
                 }
                 return res;
             }));
+            JSObject proto = null;
             proto = func.GetField("prototype");
             proto.Assign(null);
             Prototype = proto;

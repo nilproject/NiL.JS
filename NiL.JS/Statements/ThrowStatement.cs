@@ -14,7 +14,9 @@ namespace NiL.JS.Statements
             if (!Parser.Validate(code, "throw", ref i))
                 return new ParseResult();
             i++;
-            var b = Parser.Parse(state, ref i, 1);
+            var b = Parser.Parse(state, ref i, 1, true);
+            if (b is EmptyStatement)
+                throw new ArgumentException("Can't throw result of EmptyStatement");
             index = i;
             return new ParseResult()
             {

@@ -77,6 +77,7 @@ namespace NiL.JS.Statements
             var res = new JSObject(false);
             res.ValueType = ObjectValueType.Object;
             res.oValue = new object();
+            res.prototype = NiL.JS.Core.BaseTypes.BaseObject.Prototype;
             for (int i = 0; i < fields.Length; i++)
                 res.GetField(fields[i]).Assign(values[i].Invoke(context));
             return res;

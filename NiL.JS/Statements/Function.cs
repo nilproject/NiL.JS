@@ -33,6 +33,9 @@ namespace NiL.JS.Statements
                 if (!Parser.ValidateName(code, ref i, true))
                     throw new ArgumentException("code (" + i + ")");
                 name = code.Substring(n, i - n);
+                while (char.IsWhiteSpace(code[i])) i++;
+                if (code[i] != '(')
+                    throw new ArgumentException("Invalid char at " + i + ": '" + code[i] + "'");
             }
             do i++; while (char.IsWhiteSpace(code[i]));
             if (code[i] == ',')

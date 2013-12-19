@@ -11,7 +11,6 @@ namespace NiL.JS.Core.BaseTypes
 
         public static void RegisterTo(Context context)
         {
-            JSObject proto = null;
             var func = context.Assign("Date", new CallableField((_this, args) =>
             {
                 JSObject res;
@@ -19,13 +18,14 @@ namespace NiL.JS.Core.BaseTypes
                     res = _this;
                 else
                     res = new JSObject();
-                res.prototype = proto;
+                res.prototype = Prototype;
                 res.ValueType = ObjectValueType.Date;
                 res.oValue = new DateTime(DateTime.UtcNow.Ticks);
                 if (args != null && args.Length > 0)
                     throw new NotImplementedException();
                 return res;
             }));
+            JSObject proto = null;
             proto = func.GetField("prototype");
             proto.Assign(null);
             Prototype = proto;
