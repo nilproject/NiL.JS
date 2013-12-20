@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using NiL.JS;
+﻿using NiL.JS;
 using NiL.JS.Core;
-using NiL.JS.Core.BaseTypes;
+using System;
 using System.IO;
+using System.Linq;
+using System.Runtime.Serialization.Formatters.Binary;
 
 namespace NiL.JSTest
 {
@@ -53,7 +51,7 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * 3 * i; }
             var s = new Script(sr.ReadToEnd());
             s.Context.GetField("$ERROR").Assign(new CallableField((t, x) =>
             {
-                Console.WriteLine("ERROR: " + x[0].Invoke());
+                Console.WriteLine("ERROR: " + x[0].Invoke().Value);
                 return null;
             }));
             s.Invoke();
@@ -93,7 +91,7 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * 3 * i; }
                     var s = new Script(code);
                     s.Context.GetField("$ERROR").Assign(new CallableField((t, x) =>
                     {
-                        Console.WriteLine("ERROR: " + x[0].Invoke());
+                        Console.WriteLine("ERROR: " + x[0].Invoke().Value);
                         pass = false;
                         return null;
                     }));
@@ -120,10 +118,33 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * 3 * i; }
             }
         }
 
+        private class TestClass
+        {
+            private static int prop;
+
+            public static int Prop
+            {
+                get
+                {
+                    return prop;
+                }
+                set
+                {
+                    prop = value;
+                }
+            }
+
+            public int method()
+            {
+                return 2;
+            }
+        }
+
         private static void testEx()
         {
             Context.GlobalContext.GetField("f").Assign(null);
-            var s = new Script("f = function f(){ return 'hello' };");
+            Context.GlobalContext.AttachModule(typeof(TestClass));
+            var s = new Script("f = function f(){ console.log(TestClass() instanceof TestClass) };");
             s.Invoke();
             var o = NiL.JS.Core.Context.GlobalContext.GetField("f");
             var res = (o.Value as IContextStatement).Invoke(null, null);

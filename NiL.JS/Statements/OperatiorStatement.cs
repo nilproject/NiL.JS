@@ -906,7 +906,7 @@ namespace NiL.JS.Statements
             {
                 do i++; while (char.IsWhiteSpace(code[i]));
                 second = OperatorStatement.Parse(state, ref i, false).Statement;
-                if (second is OperatorStatement)
+                if (!assign && second is OperatorStatement)
                 {
                     var seops = second as OperatorStatement;
                     if (seops.type != OperationType.None)

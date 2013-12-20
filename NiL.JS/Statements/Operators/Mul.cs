@@ -57,6 +57,16 @@ namespace NiL.JS.Statements.Operators
                                     }
                                     break;
                                 }
+                            case ObjectValueType.String:
+                                {
+                                    var d = double.NaN;
+                                    int n = 0;
+                                    if (Parser.ParseNumber(temp.oValue as string, ref n, true, out d) && (n < (temp.oValue as string).Length))
+                                        d = double.NaN;
+                                    tempResult.dValue = d;
+                                    temp = tempResult;
+                                    goto case ObjectValueType.Double;
+                                }
                         }
                         break;
                     }
@@ -94,6 +104,16 @@ namespace NiL.JS.Statements.Operators
                                         return res;
                                     }
                                     break;
+                                }
+                            case ObjectValueType.String:
+                                {
+                                    var d = double.NaN;
+                                    int n = 0;
+                                    if (Parser.ParseNumber(temp.oValue as string, ref n, true, out d) && (n < (temp.oValue as string).Length))
+                                        d = double.NaN;
+                                    tempResult.dValue = d;
+                                    temp = tempResult;
+                                    goto case ObjectValueType.Double;
                                 }
                         }
                         break;
