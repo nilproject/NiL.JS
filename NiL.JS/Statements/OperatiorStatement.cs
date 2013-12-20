@@ -352,11 +352,11 @@ namespace NiL.JS.Statements
                             }
                             else
                             {
-                                var f = Parser.Parse(state, ref i, 1);
+                                var f = Parse(state, ref i, true, true).Statement;
                                 index = i;
                                 return new ParseResult()
                                 {
-                                    Statement = f,
+                                    Statement = new Operators.Mul(new ImmidateValueStatement(1), f),
                                     Message = "",
                                     IsParsed = true
                                 };
