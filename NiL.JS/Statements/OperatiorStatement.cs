@@ -382,8 +382,7 @@ namespace NiL.JS.Statements
                     case '!':
                         {
                             do i++; while (char.IsWhiteSpace(code[i]));
-                            first = Parse(state, ref i, true, true).Statement;
-                            (first as OperatorStatement).type = OperationType.LogicalNot;
+                            first = new OperatorStatement() { first = Parse(state, ref i, true, true).Statement, type = OperationType.LogicalNot };
                             break;
                         }
                     case '~':

@@ -15,13 +15,10 @@ namespace NiL.JS.Core.BaseTypes
                 if (_this.ValueType == ObjectValueType.Object && _this.prototype == Prototype)
                     res = _this;
                 else
-                    res = new JSObject();
+                    res = new JSArray();
                 res.prototype = Prototype;
                 res.ValueType = ObjectValueType.Object;
                 res.oValue = marker;
-                var f = res.GetField("length");
-                f.Assign(0);
-                f.attributes |= ObjectAttributes.DontEnum;
                 if (args != null && args.Length > 0)
                 {
                     var arg = args[0].Invoke();
@@ -31,7 +28,6 @@ namespace NiL.JS.Core.BaseTypes
                         int i = 1;
                         for (; i < args.Length; i++)
                             res.GetField(i.ToString()).Assign(args[i].Invoke());
-                        res.GetField("length").Assign(i);
                     }
                     else
                     {
@@ -40,10 +36,7 @@ namespace NiL.JS.Core.BaseTypes
                             int l = (int)arg.dValue;
                             if (arg.dValue != l)
                                 throw new ArgumentException("Invalid array length");
-                            res.GetField("length").Assign(l);
                         }
-                        else
-                            res.GetField("length").Assign(arg);
                     }
                 }
                 return res;
@@ -54,10 +47,7 @@ namespace NiL.JS.Core.BaseTypes
             Prototype = proto;
             proto.ValueType = ObjectValueType.Object;
             proto.oValue = marker;
-            var field = proto.GetField("length");
-            field.Assign(0);
-            field.attributes |= ObjectAttributes.DontEnum;
-            field = proto.GetField("push");
+            var field = proto.GetField("push");
             field.Assign(new CallableField(Push));
             field.attributes |= ObjectAttributes.DontEnum;
             proto.prototype = BaseObject.Prototype;
@@ -70,21 +60,13 @@ namespace NiL.JS.Core.BaseTypes
             if (len.ValueType == ObjectValueType.Int)
                 index = len.iValue;
             for (int i = 0; i < args.Length; i++, index++)
-                array.GetField(index.ToString()).Assign(args[i].Invoke());
+                array.GetField(index.ToString()).Assign(args[i] != null ? args[i].Invoke() : JSObject.undefined);
             len.Assign(index);
             return len;
         }
 
         public static JSObject Pop(JSObject array, IContextStatement[] args)
         {
-            /*var len = array.GetField("length", false);
-            int index = 0;
-            if (len.ValueType == ObjectValueType.Int)
-                index = len.iValue;
-            if (index > 0)
-            {
-                len.Assign(index);
-            }*/
             return JSObject.undefined;
         }
 
@@ -93,9 +75,28 @@ namespace NiL.JS.Core.BaseTypes
             ValueType = ObjectValueType.Object;
             oValue = marker;
             prototype = Prototype;
-            var f = GetField("length");
-            f.Assign(0);
-            f.attributes |= ObjectAttributes.DontEnum;
+            var length = GetField("length");
+            length.Assign(0);
+            length.attributes |= ObjectAttributes.DontEnum;
+            length.assignCallback = null;
+            fieldGetter = (name, fast) =>
+            {
+                if (name == "length")
+                    return length;
+                var res = DefaultFieldGetter(name, fast);
+                var oac = res.assignCallback;
+                res.assignCallback = () =>
+                {
+                    if (oac != null)
+                        oac();
+                    int n = 0;
+                    int i = 0;
+                    if (Parser.ParseNumber(name, ref i, true, out n) && (i + 1 == name.Length))
+                        length.iValue = Math.Max(n + 1, length.iValue);
+                    return true;
+                };
+                return res;
+            };
         }
     }
 }

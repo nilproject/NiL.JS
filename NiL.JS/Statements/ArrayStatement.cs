@@ -37,7 +37,7 @@ namespace NiL.JS.Statements
                 else if (code[i] != ']')
                     throw new ArgumentException();
             }
-            do i++; while (char.IsWhiteSpace(code[i]));
+            i++;
             index = i;
             return new ParseResult()
             {
@@ -60,7 +60,6 @@ namespace NiL.JS.Statements
             var res = new NiL.JS.Core.BaseTypes.JSArray();
             for (int i = 0; i < elements.Length; i++)
                 res.GetField(i.ToString()).Assign(elements[i].Invoke(context));
-            res.GetField("length").Assign(elements.Length);
             return res;
         }
 

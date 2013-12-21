@@ -118,7 +118,11 @@ namespace NiL.JS.Core
             JSObject res = null;
             bool fromProto = fields == null || !fields.TryGetValue(name, out res);
             if (fromProto && prototype != null)
+            {
                 res = prototype.GetField(name, true);
+                if (res == undefined)
+                    res = null;
+            }
             if (res == null)
             {
                 if (fast)
@@ -290,7 +294,7 @@ namespace NiL.JS.Core
             if (enumeratorGetter == null)
             {
                 if (fields == null)
-                    return (IEnumerator<string>)new string[0].GetEnumerator();
+                    return null;
                 return fields.Keys.GetEnumerator();
             }
             else
