@@ -131,7 +131,8 @@ namespace NiL.JS.Statements
                         }
                     case OperationType.StrictNotEqual:
                         {
-                            del = OpStrictNotEqual;
+                            fastImpl = new Operators.StrictNotEqual(first, second);
+                            del = fastImpl.Invoke;
                             break;
                         }
                     case OperationType.More:
@@ -352,6 +353,7 @@ namespace NiL.JS.Statements
                             }
                             else
                             {
+                                while (char.IsWhiteSpace(code[i])) i++;
                                 var f = Parse(state, ref i, true, true).Statement;
                                 index = i;
                                 return new ParseResult()
@@ -404,7 +406,7 @@ namespace NiL.JS.Statements
                         {
                             i += 3;
                             do i++; while (char.IsWhiteSpace(code[i]));
-                            first = new OperatorStatement() { first = new ImmidateValueStatement(JSObject.undefined), second = Parse(state, ref i, false, true).Statement, type = OperationType.None };
+                            first = new OperatorStatement() { first = Parse(state, ref i, false, true).Statement, second = new ImmidateValueStatement(JSObject.undefined), type = OperationType.None };
                             break;
                         }
                     case 'n':

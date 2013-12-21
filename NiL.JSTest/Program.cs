@@ -54,6 +54,11 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * 3 * i; }
                 Console.WriteLine("ERROR: " + x[0].Invoke().Value);
                 return null;
             }));
+            s.Context.GetField("ERROR").Assign(new CallableField((t, x) =>
+            {
+                Console.WriteLine("ERROR: " + x[0].Invoke().Value);
+                return null;
+            }));
             s.Invoke();
             sr.Dispose();
             f.Dispose();
@@ -90,6 +95,12 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * 3 * i; }
                         code = "eval('" + code.Replace("\\", "\\\\") + "');";*/
                     var s = new Script(code);
                     s.Context.GetField("$ERROR").Assign(new CallableField((t, x) =>
+                    {
+                        Console.WriteLine("ERROR: " + x[0].Invoke().Value);
+                        pass = false;
+                        return null;
+                    }));
+                    s.Context.GetField("ERROR").Assign(new CallableField((t, x) =>
                     {
                         Console.WriteLine("ERROR: " + x[0].Invoke().Value);
                         pass = false;
@@ -154,11 +165,11 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * 3 * i; }
         {
             NiL.JS.Core.Context.GlobalContext.GetField("platform").Assign("NiL.JS");
             //runFile(@"tests.js");
-            runFile(@"ftest.js");
+            //runFile(@"ftest.js");
             //runFile(@"tests\ch07\7.4\S7.4_A6.js");
             //benchmark();
             //featureSupportTest();
-            //sputnicTests();
+            sputnicTests();
             //testEx();
 
             GC.Collect();

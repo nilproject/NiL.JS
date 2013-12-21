@@ -20,6 +20,8 @@ namespace NiL.JS.Statements.Operators
             {
                 var l = temp.iValue;
                 temp = second.Invoke(context);
+                if (temp.ValueType == ObjectValueType.Double)
+                    return l == temp.dValue;
                 if (lvt != temp.ValueType)
                     return false;
                 return l == temp.iValue;
@@ -28,6 +30,8 @@ namespace NiL.JS.Statements.Operators
             {
                 var l = temp.dValue;
                 temp = second.Invoke(context);
+                if (temp.ValueType == ObjectValueType.Int)
+                    return l == temp.iValue;
                 if (lvt != temp.ValueType)
                     return false;
                 return l == temp.dValue;
