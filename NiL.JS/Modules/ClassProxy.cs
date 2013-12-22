@@ -15,10 +15,22 @@ namespace NiL.JS.Modules
         }
 
         public ClassProxy(Type host)
+            : this()
         {
             hostedType = host;
-            oValue = new Statements.ExternalFunction((x, y) => { return new ClassProxy() { hostedType = hostedType, oValue = hostedType.GetConstructor(Type.EmptyTypes).Invoke(null) }; });
+            oValue = new Statements.ExternalFunction((x, y) =>
+            {
+                var res = new ClassProxy()
+                {
+                    hostedType = hostedType,
+                    oValue = hostedType.GetConstructor(Type.EmptyTypes).Invoke(null)
+                };
+                if (x.prototype != null && x.prototype.ValueType == ObjectValueType.Object && x.prototype.oValue == hostedType)
+                    x.Assign(res);
+                return res;
+            });
             ValueType = ObjectValueType.Statement;
+            DefaultFieldGetter("prototype", false).Assign(new JSObject() { prototype = null, ValueType = ObjectValueType.Object, oValue = hostedType });
             base.fieldGetter = getField;
         }
 
@@ -71,8 +83,6 @@ namespace NiL.JS.Modules
                     case MemberTypes.Method:
                         {
                             var method = (MethodInfo)m[0];
-                            //if (oValue == null)
-                            //    oValue = hostedType.GetConstructor(System.Type.EmptyTypes).Invoke(System.Type.EmptyTypes);
                             if (method.ReturnType == typeof(JSObject) && (method.GetParameters().Length == 1) && (method.GetParameters()[0].ParameterType == typeof(IContextStatement[])))
                             {
                                 var dinv = (Func<IContextStatement[], JSObject>)Delegate.CreateDelegate(typeof(Func<IContextStatement[], JSObject>), ValueType == ObjectValueType.Statement ? null : oValue, method);

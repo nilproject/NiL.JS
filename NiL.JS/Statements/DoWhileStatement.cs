@@ -70,7 +70,7 @@ namespace NiL.JS.Statements
                         return null;
                 }
             }
-            while (condition.Invoke(context));
+            while ((bool)condition.Invoke(context));
             return null;
         }
 

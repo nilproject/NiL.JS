@@ -269,7 +269,7 @@ namespace NiL.JS.Core
 
         public override string ToString()
         {
-            if (ValueType == ObjectValueType.Undefined)
+            if (ValueType <= ObjectValueType.Undefined)
                 return "undefined";
             var tstr = GetField("toString", true);
             if (tstr.ValueType == ObjectValueType.Statement)
@@ -344,7 +344,7 @@ namespace NiL.JS.Core
 #if INLINE
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
-        public static implicit operator bool(JSObject obj)
+        public static explicit operator bool(JSObject obj)
         {
             var vt = obj.ValueType;
             if (vt == ObjectValueType.Int || vt == ObjectValueType.Bool)

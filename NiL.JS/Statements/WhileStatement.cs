@@ -49,7 +49,7 @@ namespace NiL.JS.Statements
 
         public override JSObject Invoke(Context context)
         {
-            while (condition.Invoke(context))
+            while ((bool)condition.Invoke(context))
             {
                 body.Invoke(context);
                 if (context.abort != AbortType.None)

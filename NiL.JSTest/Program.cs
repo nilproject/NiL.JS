@@ -88,11 +88,7 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * 3 * i; }
                     Console.Write("Processing file \"" + fls[i] + "\" ");
                     var f = new FileStream(fls[i], FileMode.Open, FileAccess.Read);
                     var sr = new StreamReader(f);
-                    code = sr.ReadToEnd();
-                    /*if (code.IndexOf('"') == -1)
-                        code = "eval(\"" + code + "\");";
-                    else if (code.IndexOf('\'') == -1)
-                        code = "eval('" + code.Replace("\\", "\\\\") + "');";*/
+                    code = "function runTestCase(a){a()}" + sr.ReadToEnd();
                     var s = new Script(code);
                     s.Context.GetField("$ERROR").Assign(new CallableField((t, x) =>
                     {
@@ -155,7 +151,7 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * 3 * i; }
         {
             Context.GlobalContext.GetField("f").Assign(null);
             Context.GlobalContext.AttachModule(typeof(TestClass));
-            var s = new Script("f = function f(){ console.log(TestClass() instanceof TestClass) };");
+            var s = new Script("f = function f(){ console.log(new TestClass() instanceof TestClass) };");
             s.Invoke();
             var o = NiL.JS.Core.Context.GlobalContext.GetField("f");
             var res = (o.Value as IContextStatement).Invoke(null, null);
@@ -169,8 +165,8 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * 3 * i; }
             //runFile(@"tests\ch07\7.4\S7.4_A6.js");
             //benchmark();
             //featureSupportTest();
-            sputnicTests();
-            //testEx();
+            //sputnicTests();
+            testEx();
 
             GC.Collect();
             GC.WaitForPendingFinalizers();

@@ -128,7 +128,7 @@ namespace NiL.JS.Statements
             int i = cases[0].index;
             for (int j = 1; j < cases.Length; j++)
             {
-                if (cases[j].statement.Invoke(context))
+                if ((bool)cases[j].statement.Invoke(context))
                 {
                     i = cases[j].index;
                     break;

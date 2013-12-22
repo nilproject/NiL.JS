@@ -61,7 +61,7 @@ namespace NiL.JS.Statements
 
         public override JSObject Invoke(Context context)
         {
-            if (condition.Invoke(context))
+            if ((bool)condition.Invoke(context))
                 return body.Invoke(context);
             else if (elseBody != null)
                 return elseBody.Invoke(context);

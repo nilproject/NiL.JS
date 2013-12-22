@@ -60,13 +60,11 @@ namespace NiL.JS.Statements.Operators
                     return false;
                 return l.Equals(temp.oValue);
             }
-            if (lvt == ObjectValueType.Undefined)
+            if (lvt == ObjectValueType.Undefined || lvt == ObjectValueType.NoExistInObject)
             {
                 var l = temp.dValue;
                 temp = second.Invoke(context);
-                if (lvt != temp.ValueType)
-                    return false;
-                return true;
+                return temp.ValueType == ObjectValueType.Undefined || temp.ValueType == ObjectValueType.NoExistInObject;
             }
             throw new NotImplementedException();
         }

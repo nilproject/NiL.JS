@@ -1543,7 +1543,7 @@ namespace NiL.JS.Statements
         {
             var left = first.Invoke(context);
 
-            if (left)
+            if ((bool)left)
                 return left;
             else
                 return second.Invoke(context);
@@ -1552,7 +1552,7 @@ namespace NiL.JS.Statements
         private JSObject OpLogicalAnd(Context context)
         {
             var left = first.Invoke(context);
-            if (!left)
+            if (!(bool)left)
                 return left;
             else
                 return second.Invoke(context);
@@ -2062,7 +2062,7 @@ namespace NiL.JS.Statements
             if (c.ValueType == ObjectValueType.Object)
                 while (a.ValueType == ObjectValueType.Object)
                 {
-                    if (a.oValue == c.oValue)
+                    if (a.oValue == c.oValue || (c.oValue is Type && a.oValue.GetType() == c.oValue))
                     {
                         o.iValue = 1;
                         return o;
@@ -2119,7 +2119,7 @@ namespace NiL.JS.Statements
         private JSObject OpTernary(Context context)
         {
             var threads = ((second as ImmidateValueStatement).Value.oValue as Statement[]);
-            if (first.Invoke(context))
+            if ((bool)first.Invoke(context))
                 return threads[0].Invoke(context);
             return threads[1].Invoke(context);
         }

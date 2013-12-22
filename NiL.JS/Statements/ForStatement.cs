@@ -128,7 +128,7 @@ namespace NiL.JS.Statements
 
         private void impl2(Context context)
         {
-            while (condition.Invoke(context))
+            while ((bool)condition.Invoke(context))
             {
                 body.Invoke(context);
                 if (context.abort != AbortType.None)
@@ -147,7 +147,7 @@ namespace NiL.JS.Statements
 
         private void impl3(Context context)
         {
-            while (condition.Invoke(context))
+            while ((bool)condition.Invoke(context))
             {
                 body.Invoke(context);
                 if (context.abort != AbortType.None)
@@ -167,7 +167,7 @@ namespace NiL.JS.Statements
 
         private void impl4(Context context)
         {
-            while (condition.Invoke(context))
+            while ((bool)condition.Invoke(context))
                 post.Invoke(context);
         }
 
