@@ -447,6 +447,7 @@ namespace NiL.JS.Statements
                 while (char.IsWhiteSpace(code[i])) i++;
                 switch (code[i])
                 {
+                    case '\v':
                     case '\n':
                     case '\r':
                     case ';':

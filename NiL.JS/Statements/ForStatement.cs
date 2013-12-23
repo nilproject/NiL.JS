@@ -23,7 +23,7 @@ namespace NiL.JS.Statements
             int i = index;
             while (char.IsWhiteSpace(code[i])) i++;
             if (!Parser.Validate(code, "for(", ref i) && (!Parser.Validate(code, "for (", ref i)))
-                throw new ArgumentException("code (" + i + ")");
+                return new ParseResult();
             while (char.IsWhiteSpace(code[i])) i++;
             Statement init = null;
             init = code[i] == ';' ? null as Statement : Parser.Parse(state, ref i, 3);

@@ -34,12 +34,9 @@ namespace NiL.JS.Statements
         {
             string code = state.Code;
             int i = index;
-            if (!Parser.Validate(code, "switch", ref i))
-                throw new ArgumentException("code (" + i + ")");
+            if (!Parser.Validate(code, "switch (", ref i) && !Parser.Validate(code, "switch(", ref i))
+                return new ParseResult();
             while (char.IsWhiteSpace(code[i])) i++;
-            if (code[i] != '(')
-                throw new ArgumentException("code (" + i + ")");
-            i++;
             var image = OperatorStatement.Parse(state, ref i).Statement;
             if (code[i] != ')')
                 throw new ArgumentException("code (" + i + ")");

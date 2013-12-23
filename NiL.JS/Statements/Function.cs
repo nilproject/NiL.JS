@@ -20,8 +20,8 @@ namespace NiL.JS.Statements
         {
             string code = state.Code;
             int i = index;
-            if (!Parser.Validate(code, "function", ref i))
-                throw new ArgumentException("code (" + i + ")");
+            if (!Parser.Validate(code, "function", ref i) || !Parser.isIdentificatorTerminator(code[i]))
+                return new ParseResult();
             if ((code[i] != '(') && (!char.IsWhiteSpace(code[i])))
                 return new ParseResult() { IsParsed = false, Message = "Invalid char in function definition" };
             while (char.IsWhiteSpace(code[i])) i++;

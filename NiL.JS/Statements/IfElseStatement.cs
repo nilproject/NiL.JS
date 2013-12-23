@@ -20,7 +20,7 @@ namespace NiL.JS.Statements
             string code = state.Code;
             int i = index;
             if (!Parser.Validate(code, "if (", ref i) && !Parser.Validate(code, "if(", ref i))
-                throw new ArgumentException("code (" + i + ")");
+                return new ParseResult();
             while (char.IsWhiteSpace(code[i])) i++;
             Statement condition = OperatorStatement.Parse(state, ref i).Statement;
             while (char.IsWhiteSpace(code[i])) i++;

@@ -9,7 +9,7 @@ namespace NiL.JS.Statements
         {
             string code = state.Code;
             int i = index;
-            if (!Parser.Validate(code, "break", ref i))
+            if (!Parser.Validate(code, "break", ref i) || !Parser.isIdentificatorTerminator(code[i]))
                 return new ParseResult();
             if (state.AllowBreak <= 0)
                 throw new ArgumentException();

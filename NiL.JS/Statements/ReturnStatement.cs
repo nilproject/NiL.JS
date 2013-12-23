@@ -17,10 +17,8 @@ namespace NiL.JS.Statements
         {
             string code = state.Code;
             int i = index;
-            if (!Parser.Validate(code, "return", ref i))
-                throw new ArgumentException("code (" + i + ")");
-            if ((code[i] != ' ') && (code[i] != ';') && (code[i] != '(') && (code[i] != '}') && (!Parser.isLineTerminator(code[i])))
-                return new ParseResult() { IsParsed = false };
+            if (!Parser.Validate(code, "return", ref i) || !Parser.isIdentificatorTerminator(code[i]))
+                return new ParseResult();
             var body = Parser.Parse(state, ref i, 1, true);
             index = i;
             return new ParseResult()

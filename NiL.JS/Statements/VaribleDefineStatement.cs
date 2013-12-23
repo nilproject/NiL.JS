@@ -28,7 +28,7 @@ namespace NiL.JS.Statements
             int i = index;
             while (char.IsWhiteSpace(code[i])) i++;
             if (!Parser.Validate(code, "var ", ref i))
-                throw new ArgumentException("code (" + i + ")");
+                return new ParseResult();
             bool isDef = false;
             while (char.IsWhiteSpace(code[i])) i++;
             var initializator = new List<Statement>();

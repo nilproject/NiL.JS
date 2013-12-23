@@ -19,8 +19,8 @@ namespace NiL.JS.Statements
             string code = state.Code;
             int i = index;
             while (char.IsWhiteSpace(code[i])) i++;
-            if (!Parser.Validate(code, "do", ref i))
-                throw new ArgumentException("code (" + i + ")");
+            if (!Parser.Validate(code, "do", ref i) || !Parser.isIdentificatorTerminator(code[i]))
+                return new ParseResult();
             while (char.IsWhiteSpace(code[i])) i++;
             state.AllowBreak++;
             state.AllowContinue++;

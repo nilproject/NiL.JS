@@ -851,7 +851,8 @@ namespace NiL.JS.Core
                 || (c == '>')
                 || (c == '=')
                 || (c == '?')
-                || (c == ':');
+                || (c == ':')
+                || (c == ',');
         }
 
         internal static Statement Parse(ParsingState state, ref int index, int ruleset, bool lineAutoComplite = false)
@@ -965,6 +966,21 @@ namespace NiL.JS.Core
         internal static bool isLineTerminator(char c)
         {
             return (c == '\u000A') || (c == '\u000D') || (c == '\u2028') || (c == '\u2029');
+        }
+
+        internal static bool isIdentificatorTerminator(char c)
+        {
+            return c == ' '
+                || isLineTerminator(c) 
+                || isOperator(c) 
+                || (c == '{') 
+                || (c == '\v') 
+                || (c == '}') 
+                || (c == '(') 
+                || (c == ')') 
+                || (c == ';') 
+                || (c == '[') 
+                || (c == ']');
         }
 
         internal static string RemoveComments(string code)
