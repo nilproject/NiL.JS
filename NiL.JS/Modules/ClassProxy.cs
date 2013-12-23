@@ -1,4 +1,4 @@
-﻿using NiL.JS.Core;
+using NiL.JS.Core;
 using System;
 using System.Reflection;
 
@@ -95,7 +95,7 @@ namespace NiL.JS.Modules
                             {
                                 result = new CallableField((th, args) =>
                                 {
-                                    var res = method.Invoke(oValue, convertArgs(args, method.GetParameters().Length));
+                                    var res = method.Invoke(ValueType == ObjectValueType.Statement ? null : oValue, convertArgs(args, method.GetParameters().Length));
                                     if (res == null)
                                         return null;
                                     else if (res is int)
@@ -108,7 +108,7 @@ namespace NiL.JS.Modules
                                         return (bool)res;
                                     else if (res is ContextStatement)
                                         return (JSObject)(ContextStatement)res;
-                                    else return new ClassProxy(res.GetType()) { oValue = res };
+                                    else return new ClassProxy() { oValue = res, hostedType = res.GetType() };
                                 });
                             }
                             protect = method.GetCustomAttributes(typeof(ProtectedAttribute), false).Length != 0;
