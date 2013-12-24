@@ -855,7 +855,12 @@ namespace NiL.JS.Core
                 || (c == ',');
         }
 
-        internal static Statement Parse(ParsingState state, ref int index, int ruleset, bool lineAutoComplite = false)
+        internal static Statement Parse(ParsingState state, ref int index, int ruleset)
+        {
+            return Parse(state, ref index, ruleset, false);
+        }
+
+        internal static Statement Parse(ParsingState state, ref int index, int ruleset, bool lineAutoComplite)
         {
             string code = state.Code;
             while ((index < code.Length) && (char.IsWhiteSpace(code[index])) && (!lineAutoComplite || !isLineTerminator(code[index]))) index++;
