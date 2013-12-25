@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 
 namespace NiL.JS.Core.BaseTypes
 {
     internal class JSArray : JSObject
     {
-        private const string marker = "Array";
+        public const string marker = "Array";
         public static JSObject Prototype;
 
         public static void RegisterTo(Context context)
