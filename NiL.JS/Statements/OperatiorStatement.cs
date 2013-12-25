@@ -2060,8 +2060,8 @@ namespace NiL.JS.Statements
             JSObject o = tempResult;
             o.ValueType = ObjectValueType.Bool;
             o.iValue = 0;
-            if (c.ValueType == ObjectValueType.Object)
-                while (a.ValueType == ObjectValueType.Object)
+            if (c.ValueType >= ObjectValueType.Object)
+                while (a.ValueType >= ObjectValueType.Object)
                 {
                     if (a.oValue == c.oValue || (c.oValue is Type && a.oValue.GetType() == c.oValue))
                     {
