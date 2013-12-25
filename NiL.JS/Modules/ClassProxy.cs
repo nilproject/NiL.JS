@@ -41,7 +41,19 @@ namespace NiL.JS.Modules
             object[] res = new object[targetCount];
             targetCount = System.Math.Min(targetCount, source.Length);
             for (int i = 0; i < targetCount; i++)
-                res[i] = source[i].Invoke().Value;
+            {
+                var obj = source[i].Invoke();
+                var v = obj.Value;
+                if (v == JS.Core.BaseTypes.JSArray.marker as object)
+                {
+                    var arg = new object[obj.GetField("length").iValue];
+                    for (var j = 0; j < arg.Length; j++)
+                        arg[j] = obj.GetField(j.ToString(), true).Value;
+                    res[i] = arg;
+                }
+                else
+                    res[i] = v;
+            }
             return res;
         }
 
