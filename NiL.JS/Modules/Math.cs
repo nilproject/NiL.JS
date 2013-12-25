@@ -4,7 +4,6 @@ using System;
 
 namespace NiL.JS.Modules
 {
-    [Singleton]
     internal sealed class Math
     {
         [Protected]
