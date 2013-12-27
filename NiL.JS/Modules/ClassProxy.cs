@@ -80,7 +80,9 @@ namespace NiL.JS.Modules
                             result = new CallableField((th, args) =>
                             {
                                 var res = method.Invoke(args);
-                                if (res is int)
+                                if (res is JSObject)
+                                    return res as JSObject;
+                                else if (res is int)
                                     return (int)res;
                                 else if (res is double)
                                     return (double)res;
@@ -113,6 +115,8 @@ namespace NiL.JS.Modules
                                     var res = method.Invoke(ValueType == ObjectValueType.Statement ? null : oValue, convertArgs(args, method.GetParameters().Length));
                                     if (res == null)
                                         return null;
+                                    else if (res is JSObject)
+                                        return res as JSObject;
                                     else if (res is int)
                                         return (int)res;
                                     else if (res is double)
@@ -133,7 +137,9 @@ namespace NiL.JS.Modules
                         {
                             var field = (m[0] as FieldInfo);
                             object res = field.GetValue(this);
-                            if (res is int)
+                            if (res is JSObject)
+                                return res as JSObject;
+                            else if (res is int)
                                 result = (int)res;
                             else if (res is double)
                                 result = (double)res;
