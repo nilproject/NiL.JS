@@ -1,4 +1,4 @@
-﻿using NiL.JS.Core;
+using NiL.JS.Core;
 using System;
 using System.Collections.Generic;
 using System.Collections;
@@ -193,7 +193,7 @@ namespace NiL.JS.Core
         {
             if ((ValueType >= ObjectValueType.Object) && (oValue != null))
             {
-                var tpvs = GetField("toSTring", true);
+                var tpvs = GetField("toString", true);
                 JSObject res = null;
                 if (tpvs.ValueType != ObjectValueType.Statement || (res = (tpvs.oValue as IContextStatement).Invoke(this, null)).ValueType == ObjectValueType.Undefined)
                 {
