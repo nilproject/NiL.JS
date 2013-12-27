@@ -1,4 +1,4 @@
-﻿using NiL.JS.Core.BaseTypes;
+using NiL.JS.Core.BaseTypes;
 using System;
 using System.Collections.Generic;
 using NiL.JS.Core;
@@ -1487,43 +1487,33 @@ namespace NiL.JS.Statements
                         {
                             tempResult.iValue = left == temp.oValue as string ? 1 : 0;
                         }
+                        else if (temp.ValueType == ObjectValueType.Object)
+                        {
+                            temp = temp.ToPrimitiveValue_String_Value();
+                            tempResult.iValue = temp.Value.ToString() == left ? 1 : 0;
+                        }
                         else goto default;
                         break;
                     }
                 case ObjectValueType.Date:
                 case ObjectValueType.Object:
                     {
-                        var pv = temp.ToPrimitiveValue_Value_String();
-                        if (pv.ValueType == ObjectValueType.Int)
+                        var right = second.Invoke(context);
+                        switch (right.ValueType)
                         {
-                            temp = pv;
-                            goto case ObjectValueType.Int;
-                        }
-                        else if (pv.ValueType == ObjectValueType.Double)
-                        {
-                            temp = pv;
-                            goto case ObjectValueType.Double;
-                        }
-                        else if (pv.ValueType == ObjectValueType.Bool)
-                        {
-                            temp = pv;
-                            goto case ObjectValueType.Bool;
-                        }
-                        else if (pv.ValueType == ObjectValueType.String)
-                        {
-                            temp = pv;
-                            goto case ObjectValueType.String;
-                        }
-                        else
-                        {
-                            var left = temp;
-                            temp = second.Invoke(context);
-                            if (temp.ValueType == ObjectValueType.Object || temp.ValueType == ObjectValueType.Date)
-                                tempResult.iValue = left.oValue == temp.oValue ? 1 : 0;
-                            else if (temp.ValueType == ObjectValueType.Undefined && left.oValue == null)
-                                tempResult.iValue = 1;
-                            else
-                                goto default;
+                            case ObjectValueType.Object:
+                                {
+                                    tempResult.iValue = temp.oValue == right.oValue ? 1 : 0;
+                                    break;
+                                }
+                            case ObjectValueType.Undefined:
+                            case ObjectValueType.NoExistInObject:
+                                {
+                                    tempResult.iValue = 0;
+                                    break;
+                                }
+                            case ObjectValueType.NoExist: throw new InvalidOperationException("object not exist");
+                            default: throw new NotImplementedException();
                         }
                         break;
                     }
