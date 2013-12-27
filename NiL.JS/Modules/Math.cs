@@ -91,5 +91,15 @@ namespace NiL.JS.Modules
 
             return (int)System.Math.Round(x);
         }
+
+        private static class _Random
+        {
+            public static Random random = new Random((int)DateTime.Now.Ticks);
+        }
+
+        public static JSObject random()
+        {
+            return _Random.random.NextDouble();
+        }
     }
 }
