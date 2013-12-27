@@ -1412,7 +1412,7 @@ namespace NiL.JS.Statements
                                 {
                                     double d = 0;
                                     int i = 0;
-                                    string v = temp0.oValue as string;
+                                    string v = temp1.oValue as string;
                                     if (Parser.ParseNumber(v, ref i, true, out d) && (i == v.Length))
                                         tempResult.iValue = temp0.dValue == d ? 1 : 0;
                                     else
