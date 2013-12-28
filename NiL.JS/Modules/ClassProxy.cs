@@ -196,7 +196,7 @@ namespace NiL.JS.Modules
                                 })),
                                 new NiL.JS.Statements.ExternalFunction(new CallableField((_th, args) =>
                                 {
-                                    var res = getItem.Invoke(oValue, convertArgs(args, gprms));
+                                    var res = getItem.Invoke(oValue, new object[] { sprms[0].ParameterType == typeof(string) ? name : (object)(sprms[0].ParameterType == typeof(int) ? i : (object)d) });
                                     if (res is JSObject)
                                         return res as JSObject;
                                     else if (res is int)

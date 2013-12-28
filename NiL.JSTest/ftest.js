@@ -1,3 +1,3 @@
-﻿var a = { set f(v) { console.log(v) }, get f() { return 'world' } };
-a.f = 'hello';
-console.log(a.f);
+﻿var a = [1, 2, 3, 4];
+var i = 0;
+console.log(a[i]);

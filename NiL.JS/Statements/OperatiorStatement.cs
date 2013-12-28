@@ -813,7 +813,7 @@ namespace NiL.JS.Statements
                             i++;
                             while (char.IsWhiteSpace(code[i])) i++;
                             s = i;
-                            if (!Parser.ValidateName(code, ref i, true, false) && !Parser.ValidateValue(code, ref i, true))
+                            if (!Parser.ValidateName(code, ref i, true, false))
                                 throw new ArgumentException("code (" + i + ")");
                             string name = code.Substring(s, i - s);
                             first = new GetFieldStatement(first, name);
