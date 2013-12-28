@@ -57,10 +57,10 @@ namespace NiL.JS.Statements
 
         public override JSObject Invoke(Context context)
         {
-            var res = new NiL.JS.Core.BaseTypes.JSArray();
+            var res = new NiL.JS.Core.BaseTypes.Array(elements.Length);
             for (int i = 0; i < elements.Length; i++)
-                res.GetField(i.ToString()).Assign(elements[i].Invoke(context));
-            return res;
+                res[i] = (elements[i].Invoke(context));
+            return new Modules.ClassProxy(res);
         }
 
         public override JSObject Invoke(Context context, JSObject _this, IContextStatement[] args)

@@ -58,9 +58,17 @@ namespace NiL.JS.Statements
             return new ContextStatement(context, this);
         }
 
-        public override JSObject Invoke(Context context)
+        public override JSObject InvokeForAssing(Context context)
         {
             return impl(context);
+        }
+
+        public override JSObject Invoke(Context context)
+        {
+            var res = impl(context);
+            if (res.ValueType == ObjectValueType.Property)
+                res = (res.oValue as IContextStatement[])[1].Invoke(null, null);
+            return res;
         }
 
         public override JSObject Invoke(Context context, JSObject _this, IContextStatement[] args)

@@ -88,7 +88,7 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * 3 * i; }
                     Console.Write("Processing file \"" + fls[i] + "\" ");
                     var f = new FileStream(fls[i], FileMode.Open, FileAccess.Read);
                     var sr = new StreamReader(f);
-                    code = "function runTestCase(a){a()}" + sr.ReadToEnd();
+                    code = "function runTestCase(a){a()}\n" + sr.ReadToEnd();
                     var s = new Script(code);
                     s.Context.GetField("$ERROR").Assign(new CallableField((t, x) =>
                     {
@@ -127,46 +127,28 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * 3 * i; }
 
         private class TestClass
         {
-            private static int prop;
-
-            public static int Prop
-            {
-                get
-                {
-                    return prop;
-                }
-                set
-                {
-                    prop = value;
-                }
-            }
-
-            public int method()
-            {
-                return 2;
-            }
+            [NiL.JS.Modules.Invisible]
+            private static int prop = 1;
         }
 
         private static void testEx()
         {
             Context.GlobalContext.GetField("f").Assign(null);
             Context.GlobalContext.AttachModule(typeof(TestClass));
-            var s = new Script("f = function f(){ console.log(new TestClass() instanceof TestClass) };");
+            var s = new Script("TestClass.prop = 2; console.log(TestClass.prop)");
             s.Invoke();
-            var o = NiL.JS.Core.Context.GlobalContext.GetField("f");
-            var res = (o.Value as IContextStatement).Invoke(null, null);
         }
 
         static void Main(string[] args)
         {
             NiL.JS.Core.Context.GlobalContext.GetField("platform").Assign("NiL.JS");
             //runFile(@"tests.js");
-            runFile(@"ftest.js");
+            //runFile(@"ftest.js");
             //runFile(@"tests\ch07\7.4\S7.4_A6.js");
             //benchmark();
             //featureSupportTest();
             //sputnicTests();
-            //testEx();
+            testEx();
 
             GC.Collect();
             GC.WaitForPendingFinalizers();

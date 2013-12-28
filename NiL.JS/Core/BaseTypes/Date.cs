@@ -2,14 +2,14 @@
 
 namespace NiL.JS.Core.BaseTypes
 {
-    internal class JSDate : JSObject
+    internal class Date
     {
         private readonly static string[] month = new[] { "Jun", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
 
-        public readonly static string Marker = new System.String(new char[] { 'D', 'a', 't', 'e' });
-        public static JSObject Prototype;
+        //public readonly static string Marker = new System.String(new char[] { 'D', 'a', 't', 'e' });
+        //public static JSObject Prototype;
 
-        public static void RegisterTo(Context context)
+        /*public static void RegisterTo(Context context)
         {
             var func = context.Assign("Date", new CallableField((_this, args) =>
             {
@@ -49,6 +49,24 @@ namespace NiL.JS.Core.BaseTypes
                 return res;
             }));
             proto.prototype = BaseObject.Prototype;
+        }*/
+
+        private DateTime host = DateTime.Now;
+
+        public long valueOf()
+        {
+            var res = host.Ticks - new DateTime(1970, 1, 1).Ticks;
+            return res / 10000;
+        }
+
+        public string toString()
+        {
+            var lt = host.ToLongTimeString();
+            var offset = TimeZone.CurrentTimeZone.GetUtcOffset(host);
+            var res = host.DayOfWeek.ToString().Substring(0, 3) + " "
+                + month[host.Month - 1] + " " + host.Day + " " + host.Year + " " + lt
+                + " GMT+" + offset.Hours.ToString("00") + offset.Minutes.ToString("00") + " (" + TimeZone.CurrentTimeZone.DaylightName + ")";
+            return res;
         }
     }
 }

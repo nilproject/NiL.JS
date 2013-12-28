@@ -6,12 +6,7 @@ namespace NiL.JS.Modules
 {
     internal sealed class console
     {
-        public console()
-        {
-
-        }
-
-        public JSObject log(IContextStatement[] args)
+        public static JSObject log(IContextStatement[] args)
         {
             var r = args[0].Invoke().Value;
             if (r is double)

@@ -179,8 +179,9 @@ namespace NiL.JS.Core
             }));
 
             BaseObject.RegisterTo(globalContext);
-            JSArray.RegisterTo(globalContext);
-            JSDate.RegisterTo(globalContext);
+            //JSArray.RegisterTo(globalContext);
+            globalContext.AttachModule(typeof(Date));
+            globalContext.AttachModule(typeof(BaseTypes.Array));
             #endregion
             #region Consts
             var nan = globalContext.GetField("NaN");

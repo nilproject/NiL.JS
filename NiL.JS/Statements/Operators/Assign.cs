@@ -14,7 +14,7 @@ namespace NiL.JS.Statements.Operators
         public override JSObject Invoke(Context context)
         {
             var val = second.Invoke(context);
-            first.Invoke(context).Assign(val);
+            first.InvokeForAssing(context).Assign(val);
             return val;
         }
     }

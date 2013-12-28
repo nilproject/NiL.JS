@@ -20,7 +20,8 @@ namespace NiL.JS.Core
         String = 6,
         Object = 7,
         Statement = 8,
-        Date = 9
+        Date = 9,
+        Property = 10
     }
 
     [Flags]
@@ -35,6 +36,7 @@ namespace NiL.JS.Core
     {
         internal static readonly Func<bool> ErrorAssignCallback = () => { throw new InvalidOperationException("Invalid left-hand side"); };
         internal static readonly JSObject undefined = new JSObject() { ValueType = ObjectValueType.Undefined };
+        internal static readonly JSObject Null = new JSObject() { ValueType = ObjectValueType.Object, oValue = null, assignCallback = ErrorAssignCallback };
 
         static JSObject()
         {
@@ -62,6 +64,8 @@ namespace NiL.JS.Core
             {
                 switch (ValueType)
                 {
+                    case ObjectValueType.Property:
+                        return (oValue as IContextStatement[])[1].Invoke(null, null).Value;
                     case ObjectValueType.Bool:
                         return iValue != 0;
                     case ObjectValueType.Int:
@@ -76,6 +80,37 @@ namespace NiL.JS.Core
                     case ObjectValueType.NoExistInObject:
                     default:
                         return null;
+                }
+            }
+            set
+            {
+                switch (ValueType)
+                {
+                    case ObjectValueType.Property:
+                        {
+                            JSObject val;
+                            if (value == null)
+                                val = null;
+                            else if (value is JSObject)
+                                val = value as JSObject;
+                            else if (value is int)
+                                val = (int)value;
+                            else if (value is long)
+                                val = (long)value;
+                            else if (value is double)
+                                val = (double)value;
+                            else if (value is string)
+                                val = (string)value;
+                            else if (value is bool)
+                                val = (bool)value;
+                            else if (value is ContextStatement)
+                                val = (JSObject)(ContextStatement)value;
+                            else val = new NiL.JS.Modules.ClassProxy(value);
+                            (oValue as IContextStatement[])[0].Invoke(null, new IContextStatement[] { new NiL.JS.Statements.ImmidateValueStatement(val) });
+                            break;
+                        }
+                    default:
+                        throw new InvalidOperationException();
                 }
             }
         }
@@ -110,7 +145,7 @@ namespace NiL.JS.Core
             if (ValueType == ObjectValueType.Undefined)
                 throw new InvalidOperationException("Can't access to property value of \"undefined\"");
             if (name == "__proto__")
-                return prototype ?? (fast ? undefined : prototype = new JSObject());
+                return prototype ?? Null;
             if ((int)ValueType < (int)ObjectValueType.Object)
                 fast = true;
             else if (oValue == null)
@@ -220,6 +255,11 @@ namespace NiL.JS.Core
             if (this.assignCallback != null)
                 if (!this.assignCallback())
                     return;
+            if (ValueType == ObjectValueType.Property)
+            {
+                (oValue as IContextStatement[])[0].Invoke(null, new IContextStatement[] { new NiL.JS.Statements.ImmidateValueStatement(right) });
+                return;
+            }
             if (right == this)
                 return;
             if (right != null)
@@ -237,6 +277,7 @@ namespace NiL.JS.Core
                             this.dValue = right.dValue;
                             break;
                         }
+                    case ObjectValueType.Property:
                     case ObjectValueType.Date:
                     case ObjectValueType.Statement:
                     case ObjectValueType.Object:
@@ -314,6 +355,11 @@ namespace NiL.JS.Core
         public static implicit operator JSObject(int value)
         {
             return new JSObject() { ValueType = ObjectValueType.Int, iValue = value, temporary = true, assignCallback = ErrorAssignCallback };
+        }
+
+        public static implicit operator JSObject(long value)
+        {
+            return new JSObject() { ValueType = ObjectValueType.Double, dValue = value, temporary = true, assignCallback = ErrorAssignCallback };
         }
 
         public static implicit operator JSObject(double value)

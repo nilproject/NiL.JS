@@ -8,6 +8,12 @@ namespace NiL.JS.Core
         {
             return new ContextStatement(context, this);
         }
+
+        public virtual JSObject InvokeForAssing(Context context)
+        {
+            return Invoke(context);
+        }
+
         public abstract JSObject Invoke(Context context);
         public abstract JSObject Invoke(Context context, JSObject _this, IContextStatement[] args);
     }

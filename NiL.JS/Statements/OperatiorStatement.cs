@@ -1051,6 +1051,24 @@ namespace NiL.JS.Statements
                                     tempResult.oValue = val.oValue as string + temp.oValue as string;
                                     return tempResult;
                                 }
+                            case ObjectValueType.Int:
+                                {
+                                    tempResult.ValueType = ObjectValueType.String;
+                                    tempResult.oValue = val.oValue as string + tempResult.iValue;
+                                    return tempResult;
+                                }
+                            case ObjectValueType.Bool:
+                                {
+                                    tempResult.ValueType = ObjectValueType.String;
+                                    tempResult.oValue = val.oValue as string + (tempResult.iValue != 0);
+                                    return tempResult;
+                                }
+                            case ObjectValueType.Double:
+                                {
+                                    tempResult.ValueType = ObjectValueType.String;
+                                    tempResult.oValue = val.oValue as string + tempResult.dValue;
+                                    return tempResult;
+                                }
                         }
                         break;
                     }
@@ -1077,6 +1095,8 @@ namespace NiL.JS.Statements
                             goto case ObjectValueType.Int;
                         else if (temp.ValueType == ObjectValueType.Double)
                             goto case ObjectValueType.Double;
+                        else if (temp.ValueType == ObjectValueType.String)
+                            goto case ObjectValueType.String;
                         else if (temp.ValueType == ObjectValueType.Object)
                         {
                             tempResult.ValueType = ObjectValueType.Double;
@@ -2064,7 +2084,7 @@ namespace NiL.JS.Statements
             if (c.ValueType >= ObjectValueType.Object)
                 while (a.ValueType >= ObjectValueType.Object)
                 {
-                    if (a.oValue == c.oValue || (c.oValue is Type && a.oValue.GetType() == c.oValue))
+                    if (a.oValue == c.oValue || (c.oValue is Type && a.oValue.GetType() as object == c.oValue))
                     {
                         o.iValue = 1;
                         return o;

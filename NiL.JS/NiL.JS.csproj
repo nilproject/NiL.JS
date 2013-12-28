@@ -125,9 +125,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Core\BaseTypes\JSArray.cs" />
+    <Compile Include="Core\BaseTypes\Array.cs" />
     <Compile Include="Core\BaseTypes\BaseObject.cs" />
-    <Compile Include="Core\BaseTypes\JSDate.cs" />
+    <Compile Include="Core\BaseTypes\Date.cs" />
     <Compile Include="Core\BaseTypes\JSString.cs" />
     <Compile Include="Core\Delegates.cs" />
     <Compile Include="Core\IContextStatement.cs" />
@@ -140,6 +140,7 @@
     <Compile Include="Core\ThisObject.cs" />
     <Compile Include="Core\ParseResult.cs" />
     <Compile Include="Modules\Console.cs" />
+    <Compile Include="Modules\InvisibleAttribute.cs" />
     <Compile Include="Modules\Math.cs" />
     <Compile Include="Modules\ClassProxy.cs" />
     <Compile Include="Modules\ProtectedAttribute.cs" />
