@@ -214,7 +214,7 @@ namespace NiL.JS.Core
 
         private JSObject define(string name)
         {
-            var res = new JSObject() { ValueType = ObjectValueType.NoExist };
+            var res = new JSObject() { ValueType = ObjectValueType.NotExist };
             res.assignCallback = () =>
             {
                 if (fields == null)
@@ -285,8 +285,8 @@ namespace NiL.JS.Core
                 return scriptRoot.define(name);
             else
             {
-                if (res.ValueType == ObjectValueType.NoExistInObject)
-                    res.ValueType = ObjectValueType.NoExist;
+                if (res.ValueType == ObjectValueType.NotExistInObject)
+                    res.ValueType = ObjectValueType.NotExist;
                 if ((c != this) && (fields != null))
                     fields[name] = res;
             }

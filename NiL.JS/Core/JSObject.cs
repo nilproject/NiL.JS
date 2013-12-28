@@ -11,8 +11,8 @@ namespace NiL.JS.Core
 
     internal enum ObjectValueType : int
     {
-        NoExist = 0,
-        NoExistInObject = 1,
+        NotExist = 0,
+        NotExistInObject = 1,
         Undefined = 2,
         Bool = 3,
         Int = 4,
@@ -77,7 +77,7 @@ namespace NiL.JS.Core
                     case ObjectValueType.Statement:
                         return oValue;
                     case ObjectValueType.Undefined:
-                    case ObjectValueType.NoExistInObject:
+                    case ObjectValueType.NotExistInObject:
                     default:
                         return null;
                 }
@@ -172,12 +172,12 @@ namespace NiL.JS.Core
                         res.assignCallback = null;
                         return true;
                     },
-                    ValueType = ObjectValueType.NoExistInObject
+                    ValueType = ObjectValueType.NotExistInObject
                 };
             }
             else if (fromProto && !fast)
             {
-                var t = new JSObject() { ValueType = ObjectValueType.NoExistInObject };
+                var t = new JSObject() { ValueType = ObjectValueType.NotExistInObject };
                 t.Assign(res);
                 t.assignCallback = () =>
                 {
@@ -189,8 +189,8 @@ namespace NiL.JS.Core
                 };
                 res = t;
             }
-            if (res.ValueType == ObjectValueType.NoExist)
-                res.ValueType = ObjectValueType.NoExistInObject;
+            if (res.ValueType == ObjectValueType.NotExist)
+                res.ValueType = ObjectValueType.NotExistInObject;
             return res;
         }
 
@@ -305,7 +305,7 @@ namespace NiL.JS.Core
 
         public void Delete()
         {
-            ValueType = ObjectValueType.NoExist;
+            ValueType = ObjectValueType.NotExist;
         }
 
         public override string ToString()

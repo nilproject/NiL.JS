@@ -35,7 +35,7 @@ namespace NiL.JS.Statements.Operators
                 val.ValueType = ObjectValueType.Int;
                 val.iValue++;
             }
-            else if (val.ValueType == ObjectValueType.Undefined || val.ValueType == ObjectValueType.NoExistInObject)
+            else if (val.ValueType == ObjectValueType.Undefined || val.ValueType == ObjectValueType.NotExistInObject)
             {
                 val.ValueType = ObjectValueType.Double;
                 val.dValue = double.NaN;

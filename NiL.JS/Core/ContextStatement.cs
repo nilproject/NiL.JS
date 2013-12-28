@@ -19,7 +19,7 @@ namespace NiL.JS.Core
         public JSObject Invoke()
         {
             var res = Prototype.Invoke(Context);
-            if (res.ValueType == ObjectValueType.NoExist)
+            if (res.ValueType == ObjectValueType.NotExist)
                 throw new InvalidOperationException("varible is undefined");
             return res;
         }

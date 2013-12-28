@@ -15,7 +15,7 @@ namespace NiL.JS.Statements
             impl = (s) =>
             {
                 var n = fieldName.Invoke(s);
-                if (n.ValueType == ObjectValueType.NoExist)
+                if (n.ValueType == ObjectValueType.NotExist)
                     throw new ArgumentException("Varible not exist");
                 return obj.Invoke(s).GetField(n.Value.ToString());
             };

@@ -1072,7 +1072,7 @@ namespace NiL.JS.Statements
                         }
                         break;
                     }
-                case ObjectValueType.NoExistInObject:
+                case ObjectValueType.NotExistInObject:
                 case ObjectValueType.Undefined:
                     {
                         var val = "undefined";
@@ -1105,7 +1105,7 @@ namespace NiL.JS.Statements
                         }
                         break;
                     }
-                case ObjectValueType.NoExist:
+                case ObjectValueType.NotExist:
                     throw new InvalidOperationException("Varible not defined");
             }
             throw new NotImplementedException();
@@ -1264,7 +1264,7 @@ namespace NiL.JS.Statements
         private JSObject OpDecriment(Context context)
         {
             var val = (first ?? second).Invoke(context);
-            if (val.ValueType == ObjectValueType.NoExist)
+            if (val.ValueType == ObjectValueType.NotExist)
                 throw new InvalidOperationException("varible is undefined");
             if ((val.assignCallback != null) && (!val.assignCallback()))
                 return double.NaN;
@@ -1540,20 +1540,20 @@ namespace NiL.JS.Statements
                             case ObjectValueType.Bool:
                             case ObjectValueType.String:
                             case ObjectValueType.Undefined:
-                            case ObjectValueType.NoExistInObject:
+                            case ObjectValueType.NotExistInObject:
                                 {
                                     tempResult.iValue = 0;
                                     break;
                                 }
-                            case ObjectValueType.NoExist: throw new InvalidOperationException("object not exist");
+                            case ObjectValueType.NotExist: throw new InvalidOperationException("object not exist");
                             default: throw new NotImplementedException();
                         }
                         break;
                     }
-                case ObjectValueType.NoExistInObject:
+                case ObjectValueType.NotExistInObject:
                 case ObjectValueType.Undefined:
                     {
-                        tempResult.iValue = temp0.ValueType == ObjectValueType.Undefined || temp0.ValueType == ObjectValueType.NoExistInObject ? 1 : 0;
+                        tempResult.iValue = temp0.ValueType == ObjectValueType.Undefined || temp0.ValueType == ObjectValueType.NotExistInObject ? 1 : 0;
                         break;
                     }
                 default: throw new NotImplementedException();
@@ -2041,8 +2041,8 @@ namespace NiL.JS.Statements
                         o.oValue = "number";
                         break;
                     }
-                case ObjectValueType.NoExist:
-                case ObjectValueType.NoExistInObject:
+                case ObjectValueType.NotExist:
+                case ObjectValueType.NotExistInObject:
                 case ObjectValueType.Undefined:
                     {
                         o.oValue = "undefined";
@@ -2099,7 +2099,7 @@ namespace NiL.JS.Statements
             JSObject args = null;
             Statement[] sps = null;
             JSObject temp = first.Invoke(context);
-            if (temp.ValueType <= ObjectValueType.NoExistInObject)
+            if (temp.ValueType <= ObjectValueType.NotExistInObject)
                 throw new ArgumentException("varible is not defined");
             if (temp.ValueType != ObjectValueType.Statement)
                 throw new ArgumentException(temp + " is not callable");

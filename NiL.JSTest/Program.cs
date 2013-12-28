@@ -143,11 +143,11 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * 3 * i; }
         {
             NiL.JS.Core.Context.GlobalContext.GetField("platform").Assign("NiL.JS");
             //runFile(@"tests.js");
-            runFile(@"ftest.js");
+            //runFile(@"ftest.js");
             //runFile(@"tests\ch07\7.4\S7.4_A6.js");
             //benchmark();
             //featureSupportTest();
-            //sputnicTests();
+            sputnicTests();
             //testEx();
 
             GC.Collect();

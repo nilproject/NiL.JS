@@ -157,7 +157,7 @@ namespace NiL.JS.Modules
         private JSObject getField(string name, bool fast)
         {
             JSObject r = DefaultFieldGetter(name, fast);
-            if (r.ValueType == ObjectValueType.NoExistInObject || (fast && r == undefined))
+            if (r.ValueType == ObjectValueType.NotExistInObject || (fast && r == undefined))
             {
                 JSObject result = null;
 #if DEBUG

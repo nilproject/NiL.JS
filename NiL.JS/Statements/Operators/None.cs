@@ -16,12 +16,12 @@ namespace NiL.JS.Statements.Operators
         {
             JSObject temp = null;
             temp = first.Invoke(context);
-            if (temp.ValueType == ObjectValueType.NoExist)
+            if (temp.ValueType == ObjectValueType.NotExist)
                 throw new InvalidOperationException("varible not defined");
             if (second != null)
             {
                 temp = second.Invoke(context);
-                if (temp.ValueType == ObjectValueType.NoExist)
+                if (temp.ValueType == ObjectValueType.NotExist)
                     throw new InvalidOperationException("varible not defined");
             }
             return temp;

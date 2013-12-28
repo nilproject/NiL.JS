@@ -10,8 +10,8 @@ namespace NiL.JS.Core
             fieldGetter = (n, b) =>
             {
                 var res = context.GetField(n);
-                if (res.ValueType == ObjectValueType.NoExist)
-                    res.ValueType = ObjectValueType.NoExistInObject;
+                if (res.ValueType == ObjectValueType.NotExist)
+                    res.ValueType = ObjectValueType.NotExistInObject;
                 return res;
             };
             assignCallback = () => { throw new InvalidOperationException("Invalid left-hand side in assignment"); };

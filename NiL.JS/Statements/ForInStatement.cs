@@ -77,7 +77,7 @@ namespace NiL.JS.Statements
                 foreach (var o in s)
                 {
                     var t = s.GetField(o, true);
-                    if (t.ValueType > ObjectValueType.NoExistInObject && ((t.attributes & ObjectAttributes.DontEnum) == 0))
+                    if (t.ValueType > ObjectValueType.NotExistInObject && ((t.attributes & ObjectAttributes.DontEnum) == 0))
                     {
                         v.ValueType = ObjectValueType.String;
                         v.oValue = o;
