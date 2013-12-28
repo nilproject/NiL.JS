@@ -1,6 +1,7 @@
 ﻿using NiL.JS.Core.BaseTypes;
 using System;
 using NiL.JS.Core;
+using System.Collections.Generic;
 
 namespace NiL.JS.Statements
 {
@@ -10,6 +11,7 @@ namespace NiL.JS.Statements
         private Statement condition;
         private Statement post;
         private Statement body;
+        private List<string> labels;
         private int implId;
 
         private ForStatement()
@@ -26,6 +28,8 @@ namespace NiL.JS.Statements
                 return new ParseResult();
             while (char.IsWhiteSpace(code[i])) i++;
             Statement init = null;
+            int labelsCount = state.LabelCount;
+            state.LabelCount = 0;
             init = code[i] == ';' ? null as Statement : Parser.Parse(state, ref i, 3);
             if (code[i] != ';')
                 throw new ArgumentException("code (" + i + ")");
@@ -77,7 +81,8 @@ namespace NiL.JS.Statements
                     condition = condition,
                     init = init,
                     post = post,
-                    implId = id
+                    implId = id,
+                    labels = state.Labels.GetRange(state.Labels.Count - labelsCount, labelsCount)
                 }
             };
         }
@@ -113,14 +118,14 @@ namespace NiL.JS.Statements
                 body.Invoke(context);
                 if (context.abort != AbortType.None)
                 {
-                    if (context.abort == AbortType.Continue)
-                        context.abort = AbortType.None;
-                    else
+                    bool _break = context.abort > AbortType.Continue;
+                    if (context.abort < AbortType.Return && ((context.abortInfo == null) || (labels.IndexOf(context.abortInfo.oValue as string) != -1)))
                     {
-                        if (context.abort == AbortType.Break)
-                            context.abort = AbortType.None;
-                        return;
+                        context.abort = AbortType.None;
+                        context.abortInfo = null;
                     }
+                    if (_break)
+                        return;
                 }
                 post.Invoke(context);
             }
@@ -133,14 +138,14 @@ namespace NiL.JS.Statements
                 body.Invoke(context);
                 if (context.abort != AbortType.None)
                 {
-                    if (context.abort == AbortType.Continue)
-                        context.abort = AbortType.None;
-                    else
+                    bool _break = context.abort > AbortType.Continue;
+                    if (context.abort < AbortType.Return && ((context.abortInfo == null) || (labels.IndexOf(context.abortInfo.oValue as string) != -1)))
                     {
-                        if (context.abort == AbortType.Break)
-                            context.abort = AbortType.None;
-                        return;
+                        context.abort = AbortType.None;
+                        context.abortInfo = null;
                     }
+                    if (_break)
+                        return;
                 }
             }
         }
@@ -152,14 +157,14 @@ namespace NiL.JS.Statements
                 body.Invoke(context);
                 if (context.abort != AbortType.None)
                 {
-                    if (context.abort == AbortType.Continue)
-                        context.abort = AbortType.None;
-                    else
+                    bool _break = context.abort > AbortType.Continue;
+                    if (context.abort < AbortType.Return && ((context.abortInfo == null) || (labels.IndexOf(context.abortInfo.oValue as string) != -1)))
                     {
-                        if (context.abort == AbortType.Break)
-                            context.abort = AbortType.None;
-                        return;
+                        context.abort = AbortType.None;
+                        context.abortInfo = null;
                     }
+                    if (_break)
+                        return;
                 }
                 post.Invoke(context);
             }

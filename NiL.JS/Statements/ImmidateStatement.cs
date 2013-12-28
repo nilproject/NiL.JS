@@ -14,11 +14,6 @@ namespace NiL.JS.Statements
             value.temporary = false;
         }
 
-        public override IContextStatement Implement(Context context)
-        {
-            return new ContextStatement(context, this);
-        }
-
         public override JSObject Invoke(Context context)
         {
             return Value;

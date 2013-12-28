@@ -6,17 +6,14 @@ namespace NiL.JS.Core
     {
         public int AllowBreak;
         public int AllowContinue;
-        public readonly HashSet<string> Labels;
-        /// <summary>
-        /// Назначать только в LabeledStatement! После взятия присвоить null!
-        /// </summary>
-        public string Label;
+        public readonly List<string> Labels;
+        public int LabelCount;
         public readonly string Code;
 
         public ParsingState(string code)
         {
             Code = code;
-            Labels = new HashSet<string>();
+            Labels = new List<string>();
         }
     }
 }

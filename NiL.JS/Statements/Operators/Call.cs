@@ -35,7 +35,7 @@ namespace NiL.JS.Statements.Operators
                 var sps = args.oValue as Statement[];
                 if (sps != null)
                 {
-                    IContextStatement[] stmnts = sps.Length == 0 ? null as ContextStatement[] : new ContextStatement[sps.Length];
+                    IContextStatement[] stmnts = sps.Length == 0 ? null as IContextStatement[] : new IContextStatement[sps.Length];
                     for (int i = 0; i < sps.Length; i++)
                         stmnts[i] = sps[i].Implement(context);
                     return stat.Invoke(_this, stmnts);

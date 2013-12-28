@@ -38,6 +38,7 @@ namespace NiL.JS.Statements
             while (char.IsWhiteSpace(code[i]));
             var body = new List<Statement>();
             var funcs = new List<Statement>();
+            state.LabelCount = 0;
             while (code[i] != '}')
             {
                 var t = Parser.Parse(state, ref i, 0);

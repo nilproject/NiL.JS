@@ -8,10 +8,10 @@ namespace NiL.JS.Core
     internal enum AbortType
     {
         None = 0,
+        Continue,
+        Break,
         Return,
         Exception,
-        Continue,
-        Break
     }
 
     public sealed class Context

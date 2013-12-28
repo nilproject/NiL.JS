@@ -1,6 +1,7 @@
 ﻿using NiL.JS.Core.BaseTypes;
 using System;
 using NiL.JS.Core;
+using System.Collections.Generic;
 
 namespace NiL.JS.Statements
 {
@@ -9,6 +10,7 @@ namespace NiL.JS.Statements
         private Statement varible;
         private Statement source;
         private Statement body;
+        private List<string> labels;
 
         private ForInStatement()
         {
@@ -23,7 +25,10 @@ namespace NiL.JS.Statements
             if (!Parser.Validate(code, "for(", ref i) && (!Parser.Validate(code, "for (", ref i)))
                 return new ParseResult();
             while (char.IsWhiteSpace(code[i])) i++;
-            var res = new ForInStatement();
+            var res = new ForInStatement()
+            {
+                labels = state.Labels.GetRange(state.Labels.Count - state.LabelCount, state.LabelCount)
+            };
             if (Parser.Validate(code, "var", ref i))
             {
                 while (char.IsWhiteSpace(code[i])) i++;
@@ -84,6 +89,17 @@ namespace NiL.JS.Statements
                         if (v.assignCallback != null)
                             v.assignCallback();
                         body.Invoke(context);
+                        if (context.abort != AbortType.None)
+                        {
+                            bool _break = context.abort > AbortType.Continue;
+                            if (context.abort < AbortType.Return && ((context.abortInfo == null) || (labels.IndexOf(context.abortInfo.oValue as string) != -1)))
+                            {
+                                context.abort = AbortType.None;
+                                context.abortInfo = null;
+                            }
+                            if (_break)
+                                return null;
+                        }
                     }
                 }
                 s = s.prototype;

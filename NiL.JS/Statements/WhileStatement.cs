@@ -1,6 +1,7 @@
 ﻿using NiL.JS.Core.BaseTypes;
 using System;
 using NiL.JS.Core;
+using System.Collections.Generic;
 
 namespace NiL.JS.Statements
 {
@@ -8,6 +9,7 @@ namespace NiL.JS.Statements
     {
         private Statement condition;
         private Statement body;
+        private List<string> labels;
 
         internal static ParseResult Parse(ParsingState state, ref int index)
         {
@@ -15,6 +17,8 @@ namespace NiL.JS.Statements
             int i = index;
             if (!Parser.Validate(code, "while (", ref i) && !Parser.Validate(code, "while(", ref i))
                 return new ParseResult();
+            int labelsCount = state.LabelCount;
+            state.LabelCount = 0;
             while (char.IsWhiteSpace(code[i])) i++;
             var condition = Parser.Parse(state, ref i, 1);
             while (char.IsWhiteSpace(code[i])) i++;
@@ -34,7 +38,8 @@ namespace NiL.JS.Statements
                 Statement = new WhileStatement()
                 {
                     body = body,
-                    condition = condition
+                    condition = condition,
+                    labels = state.Labels.GetRange(state.Labels.Count - labelsCount, labelsCount)
                 }
             };
         }
@@ -51,9 +56,13 @@ namespace NiL.JS.Statements
                 body.Invoke(context);
                 if (context.abort != AbortType.None)
                 {
-                    if (context.abort == AbortType.Continue)
+                    bool _break = context.abort > AbortType.Continue;
+                    if (context.abort < AbortType.Return && ((context.abortInfo == null) || (labels.IndexOf(context.abortInfo.oValue as string) != -1)))
+                    {
                         context.abort = AbortType.None;
-                    else
+                        context.abortInfo = null;
+                    }
+                    if (_break)
                         return null;
                 }
             }

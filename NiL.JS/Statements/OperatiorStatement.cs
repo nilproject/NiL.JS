@@ -10,11 +10,13 @@ namespace NiL.JS.Statements
     internal enum OperationTypeGroups : int
     {
         None = 0,
-        Logic = 0x10,
-        Bit = 0x20,
-        Arithmetic0 = 0x30,
-        Arithmetic1 = 0x40,
-        Unary = 0x50,
+        Logic0 = 0x10,
+        Logic1 = 0x20,
+        Logic2 = 0x30,
+        Bit = 0x40,
+        Arithmetic0 = 0x50,
+        Arithmetic1 = 0x60,
+        Unary = 0x70,
         Special = 0xF0
     }
 
@@ -23,21 +25,21 @@ namespace NiL.JS.Statements
         None = OperationTypeGroups.None + 0,
         Assign = OperationTypeGroups.None + 1,
         Ternary = OperationTypeGroups.None + 2,
-        More = OperationTypeGroups.Logic + 0,
-        Less = OperationTypeGroups.Logic + 1,
-        MoreOrEqual = OperationTypeGroups.Logic + 2,
-        LessOrEqual = OperationTypeGroups.Logic + 3,
-        Equal = OperationTypeGroups.Logic + 4,
-        NotEqual = OperationTypeGroups.Logic + 5,
-        StrictEqual = OperationTypeGroups.Logic + 6,
-        StrictNotEqual = OperationTypeGroups.Logic + 7,
-        And = OperationTypeGroups.Logic + 8,
-        Or = OperationTypeGroups.Logic + 9,
-        Xor = OperationTypeGroups.Logic + 10,
-        LogicalAnd = OperationTypeGroups.Logic + 11,
-        LogicalOr = OperationTypeGroups.Logic + 12,
-        InstanceOf = OperationTypeGroups.Logic + 13,
-        In = OperationType.LogicalAnd + 14,
+        And = OperationTypeGroups.Logic0 + 0,
+        Or = OperationTypeGroups.Logic0 + 1,
+        Xor = OperationTypeGroups.Logic0 + 2,
+        LogicalAnd = OperationTypeGroups.Logic0 + 3,
+        LogicalOr = OperationTypeGroups.Logic0 + 4,
+        Equal = OperationTypeGroups.Logic1 + 0,
+        NotEqual = OperationTypeGroups.Logic1 + 1,
+        StrictEqual = OperationTypeGroups.Logic1 + 2,
+        StrictNotEqual = OperationTypeGroups.Logic1 + 3,
+        InstanceOf = OperationTypeGroups.Logic1 + 4,
+        In = OperationTypeGroups.Logic1 + 5,
+        More = OperationTypeGroups.Logic2 + 0,
+        Less = OperationTypeGroups.Logic2 + 1,
+        MoreOrEqual = OperationTypeGroups.Logic2 + 2,
+        LessOrEqual = OperationTypeGroups.Logic2 + 3,
         SignedShiftLeft = OperationTypeGroups.Bit + 0,
         SignedShiftRight = OperationTypeGroups.Bit + 1,
         UnsignedShiftLeft = OperationTypeGroups.Bit + 2,
@@ -1351,9 +1353,8 @@ namespace NiL.JS.Statements
         {
             var temp0 = first.Invoke(context);
             var temp1 = second.Invoke(context);
-            tempResult.ValueType = ObjectValueType.Bool;
-
             var lvt = temp0.ValueType;
+            tempResult.ValueType = ObjectValueType.Bool;
             switch (lvt)
             {
                 case ObjectValueType.Bool:

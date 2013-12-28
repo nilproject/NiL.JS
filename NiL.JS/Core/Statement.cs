@@ -6,6 +6,8 @@ namespace NiL.JS.Core
     {
         public virtual IContextStatement Implement(Context context)
         {
+            //if (this is IContextStatement)
+            //    return this as IContextStatement;
             return new ContextStatement(context, this);
         }
 

@@ -86,7 +86,14 @@ namespace NiL.JS.Statements
                     if (code[i] != ':')
                         return new ParseResult();
                     do i++; while (char.IsWhiteSpace(code[i]));
-                    vls.Add(OperatorStatement.Parse(state, ref i, false).Statement);
+                    try
+                    {
+                        vls.Add(OperatorStatement.Parse(state, ref i, false).Statement);
+                    }
+                    catch(ArgumentException e)
+                    {
+                        return new ParseResult() { Message = e.Message };
+                    }
                 }
                 while (char.IsWhiteSpace(code[i])) i++;
                 if ((code[i] != ',') && (code[i] != '}'))
