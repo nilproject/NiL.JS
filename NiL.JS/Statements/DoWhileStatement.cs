@@ -31,7 +31,7 @@ namespace NiL.JS.Statements
             var body = Parser.Parse(state, ref i, 0);
             state.AllowBreak--;
             state.AllowContinue--;
-            do i++; while (char.IsWhiteSpace(code[i]));
+            while (char.IsWhiteSpace(code[i])) i++;
             if (!Parser.Validate(code, "while", ref i))
                 throw new ArgumentException("code (" + i + ")");
             while (char.IsWhiteSpace(code[i])) i++;
@@ -69,7 +69,7 @@ namespace NiL.JS.Statements
                 body.Invoke(context);
                 if (context.abort != AbortType.None)
                 {
-                    bool _break = context.abort > AbortType.Continue; 
+                    bool _break = (context.abort > AbortType.Continue) || ((context.abortInfo != null) && (labels.IndexOf(context.abortInfo.oValue as string) == -1));
                     if (context.abort < AbortType.Return && ((context.abortInfo == null) || (labels.IndexOf(context.abortInfo.oValue as string) != -1)))
                     {
                         context.abort = AbortType.None;

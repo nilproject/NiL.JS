@@ -73,22 +73,26 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * 3 * i; }
             int passed = 0;
             int failed = 0;
             string code;
-            try
+            bool negative = false;
+            _("Sputnik testing begin...");
+            _("Directory: \"" + Directory.GetParent(folderPath) + "\"");
+
+            _("Scaning directory...");
+            var fls = Directory.EnumerateFiles(folderPath, "*.js", SearchOption.AllDirectories).ToArray();
+            _("Founded " + fls.Length + " js-files");
+
+            for (int i = 0; i < fls.Length; i++)
             {
-                _("Sputnik testing begin...");
-                _("Directory: \"" + Directory.GetParent(folderPath) + "\"");
-
-                _("Scaning directory...");
-                var fls = Directory.EnumerateFiles(folderPath, "*.js", SearchOption.AllDirectories).ToArray();
-                _("Founded " + fls.Length + " js-files");
-
-                for (int i = 0; i < fls.Length; i++)
+                bool pass = true;
+                try
                 {
-                    bool pass = true;
                     Console.Write("Processing file \"" + fls[i] + "\" ");
                     var f = new FileStream(fls[i], FileMode.Open, FileAccess.Read);
                     var sr = new StreamReader(f);
                     code = "function runTestCase(a){a()}\n" + sr.ReadToEnd();
+                    negative = code.IndexOf(" * @negative") != -1;
+                    if (negative)
+                        pass = false;
                     var s = new Script(code);
                     s.Context.GetField("$ERROR").Assign(new CallableField((t, x) =>
                     {
@@ -105,24 +109,27 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * 3 * i; }
                     s.Invoke();
                     sr.Dispose();
                     f.Dispose();
-                    if (pass)
-                    {
-                        _("Passed");
-                        passed++;
-                    }
-                    else
-                    {
-                        _("Failed");
-                        failed++;
-                    }
                 }
+                catch (Exception e)
+                {
+                    if (!negative)
+                        pass = false;
+                    else
+                        pass = true;
+                }
+                if (pass)
+                {
+                    _("Passed");
+                    passed++;
+                }
+                else
+                {
+                    _("Failed");
+                    failed++;
+                }
+            }
 
-                _("Sputnik testing complite");
-            }
-            catch (Exception e)
-            {
-                _("Sputnik testing fail (" + e.Message + ", " + e.StackTrace + ")");
-            }
+            _("Sputnik testing complite");
         }
 
         private class TestClass
@@ -143,11 +150,11 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * 3 * i; }
         {
             NiL.JS.Core.Context.GlobalContext.GetField("platform").Assign("NiL.JS");
             //runFile(@"tests.js");
-            runFile(@"ftest.js");
+            //runFile(@"ftest.js");
             //runFile(@"tests\ch07\7.4\S7.4_A6.js");
             //benchmark();
             //featureSupportTest();
-            //sputnicTests();
+            sputnicTests();
             //testEx();
 
             GC.Collect();

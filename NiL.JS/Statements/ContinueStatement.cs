@@ -19,7 +19,7 @@ namespace NiL.JS.Statements
             int sl = i;
             JSObject label = null;
             if (Parser.ValidateName(code, ref i))
-                label = code.Substring(sl, i - sl);
+                label = Parser.Unescape(code.Substring(sl, i - sl));
             index = i;
             return new ParseResult()
             {

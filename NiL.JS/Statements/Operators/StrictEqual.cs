@@ -66,7 +66,7 @@ namespace NiL.JS.Statements.Operators
                 temp = second.Invoke(context);
                 return temp.ValueType == ObjectValueType.Undefined || temp.ValueType == ObjectValueType.NotExistInObject;
             }
-            throw new NotImplementedException();
+            throw new InvalidOperationException();
         }
     }
 }

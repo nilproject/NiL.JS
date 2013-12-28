@@ -36,7 +36,7 @@ namespace NiL.JS.Statements
                 string varName;
                 if (!Parser.ValidateName(code, ref i))
                     throw new ArgumentException();
-                varName = code.Substring(start, i - start);
+                varName = Parser.Unescape(code.Substring(start, i - start));
                 res.varible = new VaribleDefineStatement(varName, new GetVaribleStatement(varName));
             }
             else
@@ -91,7 +91,7 @@ namespace NiL.JS.Statements
                         body.Invoke(context);
                         if (context.abort != AbortType.None)
                         {
-                            bool _break = context.abort > AbortType.Continue;
+                            bool _break = (context.abort > AbortType.Continue) || ((context.abortInfo != null) && (labels.IndexOf(context.abortInfo.oValue as string) == -1));
                             if (context.abort < AbortType.Return && ((context.abortInfo == null) || (labels.IndexOf(context.abortInfo.oValue as string) != -1)))
                             {
                                 context.abort = AbortType.None;

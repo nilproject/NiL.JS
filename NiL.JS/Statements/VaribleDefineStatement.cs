@@ -38,7 +38,7 @@ namespace NiL.JS.Statements
                 int s = i;
                 if (!Parser.ValidateName(code, ref i, true))
                     throw new ArgumentException("invalid char " + code[i]);
-                string name = code.Substring(s, i - s);
+                string name = Parser.Unescape(code.Substring(s, i - s));
                 names.Add(name);
                 while (char.IsWhiteSpace(code[i]) && !Parser.isLineTerminator(code[i])) i++;
                 if ((code[i] != ',') && (code[i] != ';') && (code[i] != '=') && (code[i] != '}') && (!Parser.isLineTerminator(code[i])))

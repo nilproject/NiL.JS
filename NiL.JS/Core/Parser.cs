@@ -178,12 +178,12 @@ namespace NiL.JS.Core
 
         internal static bool ValidateName(string code, ref int index, bool move, bool reserveControl)
         {
-            if ((code[index] != '$') && (code[index] != '_') && (!char.IsLetter(code[index])))
+            if ((code[index] != '\\') && (code[index] != '$') && (code[index] != '_') && (!char.IsLetter(code[index])))
                 return false;
             int j = index + 1;
             while (j < code.Length)
             {
-                if ((code[j] != '$') && (code[j] != '_') && (!char.IsLetterOrDigit(code[j])))
+                if ((code[j] != '\\') && (code[j] != '$') && (code[j] != '_') && (!char.IsLetterOrDigit(code[j])))
                     break;
                 j++;
             }
@@ -199,7 +199,7 @@ namespace NiL.JS.Core
                     case "default":
                     case "do":
                     case "else":
-                    case "finaly":
+                    case "finally":
                     case "for":
                     case "function":
                     case "if":
@@ -219,6 +219,37 @@ namespace NiL.JS.Core
                     case "true":
                     case "false":
                     case "null":
+                    case "abstract":
+                    case "export":
+                    case "extends":
+                    case "final":
+                    case "float":
+                    case "goto":
+                    case "implements":
+                    case "import":
+                    case "int":
+                    case "interface":
+                    case "long":
+                    case "boolean":
+                    case "native":
+                    case "package":
+                    case "private":
+                    case "protected":
+                    case "public":
+                    case "short":
+                    case "static":
+                    case "super":
+                    case "synchronized":
+                    case "throws":
+                    case "byte":
+                    case "transient":
+                    case "volatile":
+                    case "char":
+                    case "class":
+                    case "const":
+                    case "debugger":
+                    case "double":
+                    case "enum":
                         return false;
                 }
             if (move)
@@ -290,7 +321,7 @@ namespace NiL.JS.Core
                                 w = false;
                                 break;
                             }
-                            r = true;
+                            r = false;
                             h = true;
                             break;
                         }
@@ -449,7 +480,7 @@ namespace NiL.JS.Core
                         else if ((code[j] == '\n') && (code[j + 1] == '\r'))
                             j++;
                     }
-                    else if (code[j] == '\r' || code[j] == '\n')
+                    else if (isLineTerminator(code[j]))
                         throw new ArgumentException("Unterminated string constant");
                     j++;
                 }
@@ -738,7 +769,7 @@ namespace NiL.JS.Core
                                 w = false;
                                 break;
                             }
-                            r = true;
+                            r = false;
                             h = true;
                             break;
                         }
@@ -997,7 +1028,10 @@ namespace NiL.JS.Core
             for (; i < code.Length - 1; i++)
             {
                 if ((commentType == 0) && (code[i] == '/') && (code[i + 1] == '/' || code[i + 1] == '*'))
-                    commentType = code[i + 1] == '/' ? 1 : 2;
+                {
+                    commentType = code[++i] == '/' ? 1 : 2;
+                    continue;
+                }
                 if (commentType == 0)
                 {
                     var t = i;
@@ -1029,6 +1063,8 @@ namespace NiL.JS.Core
             }
             if (i < code.Length)
                 res.Append(code[code.Length - 1]);
+            if (commentType == 2)
+                throw new ArgumentException("Comment not terminated");
             return res.ToString();
         }
     }

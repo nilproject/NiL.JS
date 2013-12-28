@@ -298,7 +298,7 @@ namespace NiL.JS.Statements
             Statement second = null;
             int s = i;
             if (Parser.ValidateName(code, ref i, true) || Parser.Validate(code, "this", ref i))
-                first = new GetVaribleStatement(code.Substring(s, i - s));
+                first = new GetVaribleStatement(Parser.Unescape(code.Substring(s, i - s)));
             else if (Parser.ValidateValue(code, ref i, true))
             {
                 string value = code.Substring(s, i - s);
@@ -308,7 +308,7 @@ namespace NiL.JS.Statements
                 {
                     bool b = false;
                     if (value == "null")
-                        first = new ImmidateValueStatement(new JSObject() { ValueType = ObjectValueType.Object });
+                        first = new ImmidateValueStatement(JSObject.Null);
                     else if (bool.TryParse(value, out b))
                         first = new ImmidateValueStatement(b);
                     else

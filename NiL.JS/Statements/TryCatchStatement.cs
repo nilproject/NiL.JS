@@ -29,7 +29,7 @@ namespace NiL.JS.Statements
             int s = i;
             if (!Parser.ValidateName(code, ref i, true))
                 throw new ArgumentException("code (" + i + ")");
-            string exptn = code.Substring(s, i - s);
+            string exptn = Parser.Unescape(code.Substring(s, i - s));
             while (char.IsWhiteSpace(code[i])) i++;
             if (!Parser.Validate(code, ")", ref i))
                 throw new ArgumentException("code (" + i + ")");

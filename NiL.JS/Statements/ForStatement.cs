@@ -99,14 +99,14 @@ namespace NiL.JS.Statements
                 body.Invoke(context);
                 if (context.abort != AbortType.None)
                 {
-                    if (context.abort == AbortType.Continue)
-                        context.abort = AbortType.None;
-                    else
+                    bool _break = (context.abort > AbortType.Continue) || ((context.abortInfo != null) && (labels.IndexOf(context.abortInfo.oValue as string) == -1));
+                    if (context.abort < AbortType.Return && ((context.abortInfo == null) || (labels.IndexOf(context.abortInfo.oValue as string) != -1)))
                     {
-                        if (context.abort == AbortType.Break)
-                            context.abort = AbortType.None;
-                        return;
+                        context.abort = AbortType.None;
+                        context.abortInfo = null;
                     }
+                    if (_break)
+                        return;
                 }
             }
         }
@@ -118,7 +118,7 @@ namespace NiL.JS.Statements
                 body.Invoke(context);
                 if (context.abort != AbortType.None)
                 {
-                    bool _break = context.abort > AbortType.Continue;
+                    bool _break = (context.abort > AbortType.Continue) || ((context.abortInfo != null) && (labels.IndexOf(context.abortInfo.oValue as string) == -1));
                     if (context.abort < AbortType.Return && ((context.abortInfo == null) || (labels.IndexOf(context.abortInfo.oValue as string) != -1)))
                     {
                         context.abort = AbortType.None;
@@ -138,7 +138,7 @@ namespace NiL.JS.Statements
                 body.Invoke(context);
                 if (context.abort != AbortType.None)
                 {
-                    bool _break = context.abort > AbortType.Continue;
+                    bool _break = (context.abort > AbortType.Continue) || ((context.abortInfo != null) && (labels.IndexOf(context.abortInfo.oValue as string) == -1));
                     if (context.abort < AbortType.Return && ((context.abortInfo == null) || (labels.IndexOf(context.abortInfo.oValue as string) != -1)))
                     {
                         context.abort = AbortType.None;
@@ -157,7 +157,7 @@ namespace NiL.JS.Statements
                 body.Invoke(context);
                 if (context.abort != AbortType.None)
                 {
-                    bool _break = context.abort > AbortType.Continue;
+                    bool _break = (context.abort > AbortType.Continue) || ((context.abortInfo != null) && (labels.IndexOf(context.abortInfo.oValue as string) == -1));
                     if (context.abort < AbortType.Return && ((context.abortInfo == null) || (labels.IndexOf(context.abortInfo.oValue as string) != -1)))
                     {
                         context.abort = AbortType.None;
