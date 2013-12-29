@@ -90,43 +90,6 @@ namespace NiL.JS.Core
                     return temp;
                 return (bool)temp;
             }));
-            globalContext.GetField("String").Assign(new CallableField((t, x) =>
-            {
-                if (x.Length > 0)
-                    return x[0].Invoke().Value.ToString();
-                return "";
-            }));
-            globalContext.GetField("String").GetField("fromCharCode").Assign(new CallableField((t, x) =>
-            {
-                if (x.Length > 0)
-                {
-                    var r = x[0].Invoke();
-                    if (r.ValueType == ObjectValueType.Int || r.ValueType == ObjectValueType.Bool)
-                        return ((char)r.iValue).ToString();
-                    else if (r.ValueType == ObjectValueType.Double)
-                        return ((char)(int)r.dValue).ToString();
-                    else if ((r.ValueType == ObjectValueType.Statement) || (r.ValueType == ObjectValueType.Undefined))
-                        return char.MinValue.ToString();
-                    else if (r.ValueType == ObjectValueType.String)
-                    {
-                        string s = r.oValue as string;
-                        int ti = 0;
-                        var cc = 0.0;
-                        if (Parser.ParseNumber(s, ref ti, false, out cc))
-                            try
-                            {
-                                return ((char)(int)cc).ToString();
-                            }
-                            catch
-                            {
-                                return '\0';
-                            }
-                        return '\0';
-                    }
-                    else throw new System.InvalidCastException("Cannot convert object to primitive value");
-                }
-                return "";
-            }));
             globalContext.GetField("RegExp").Assign(new CallableField((t, x) =>
             {
                 var pattern = x[0].Invoke().Value.ToString();
@@ -154,8 +117,7 @@ namespace NiL.JS.Core
                 field.iValue = (re.Options & System.Text.RegularExpressions.RegexOptions.Multiline) != 0 ? 1 : 0;
                 field = res.GetField("source");
                 field.Protect();
-                field.ValueType = ObjectValueType.String;
-                field.oValue = pattern;
+                field.Assign(pattern);
                 return res;
             }));
             var rep = globalContext.GetField("RegExp").GetField("prototype");
@@ -179,9 +141,9 @@ namespace NiL.JS.Core
             }));
 
             BaseObject.RegisterTo(globalContext);
-            //JSArray.RegisterTo(globalContext);
             globalContext.AttachModule(typeof(Date));
             globalContext.AttachModule(typeof(BaseTypes.Array));
+            globalContext.AttachModule(typeof(BaseTypes.String));
             #endregion
             #region Consts
             var nan = globalContext.GetField("NaN");

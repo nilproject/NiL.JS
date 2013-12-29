@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace NiL.JS.Modules
 {
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Method | AttributeTargets.Field)]
-    public class InvisibleAttribute : Attribute
+    public class HiddenAttribute : Attribute
     {
     }
 }

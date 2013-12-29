@@ -37,7 +37,7 @@ namespace NiL.JS.Modules
             oValue = new Statements.ExternalFunction((x, y) =>
             {
                 var args = convertArgs(y);
-                var constructor = hostedType.GetConstructor(Type.GetTypeArray(args));
+                var constructor = hostedType.GetConstructor(args != null ? Type.GetTypeArray(args) : Type.EmptyTypes);
                 if (constructor == null)
                 {
                     constructor = hostedType.GetConstructor(new Type[] { typeof(object[]) });
@@ -118,39 +118,49 @@ namespace NiL.JS.Modules
 
         private JSObject convert(MethodInfo method)
         {
-            JSObject result;
-            if (method.ReturnType == typeof(JSObject) && (method.GetParameters().Length == 1) && (method.GetParameters()[0].ParameterType == typeof(IContextStatement[])))
+            JSObject result = null;
+            if (method.ReturnType == typeof(JSObject))
             {
-                var dinv = (Func<IContextStatement[], JSObject>)Delegate.CreateDelegate(typeof(Func<IContextStatement[], JSObject>), ValueType == ObjectValueType.Statement ? null : oValue, method);
-                result = new CallableField((th, args) =>
+                if ((method.GetParameters().Length == 1) && (method.GetParameters()[0].ParameterType == typeof(IContextStatement[])))
                 {
-                    return dinv(args);
-                });
+                    var dinv = (Func<IContextStatement[], JSObject>)Delegate.CreateDelegate(typeof(Func<IContextStatement[], JSObject>), ValueType == ObjectValueType.Statement ? null : oValue, method);
+                    result = new CallableField((th, args) =>
+                    {
+                        return dinv(args);
+                    });
+                    return result;
+                }
+                else if (method.GetParameters().Length == 0)
+                {
+                    var dinv = (Func<JSObject>)Delegate.CreateDelegate(typeof(Func<JSObject>), ValueType == ObjectValueType.Statement ? null : oValue, method);
+                    result = new CallableField((th, args) =>
+                    {
+                        return dinv();
+                    });
+                    return result;
+                }
             }
-            else
+            result = new CallableField((th, args) =>
             {
-                result = new CallableField((th, args) =>
-                {
-                    var res = method.Invoke(ValueType == ObjectValueType.Statement ? null : oValue, convertArgs(args, method.GetParameters()));
-                    if (res == null)
-                        return null;
-                    else if (res is JSObject)
-                        return res as JSObject;
-                    else if (res is int)
-                        return (int)res;
-                    else if (res is long)
-                        return (long)res;
-                    else if (res is double)
-                        return (double)res;
-                    else if (res is string)
-                        return (string)res;
-                    else if (res is bool)
-                        return (bool)res;
-                    else if (res is ContextStatement)
-                        return (JSObject)(ContextStatement)res;
-                    else return new ClassProxy(res);
-                });
-            }
+                var res = method.Invoke(ValueType == ObjectValueType.Statement ? null : oValue, convertArgs(args, method.GetParameters()));
+                if (res == null)
+                    return null;
+                else if (res is JSObject)
+                    return res as JSObject;
+                else if (res is int)
+                    return (int)res;
+                else if (res is long)
+                    return (long)res;
+                else if (res is double)
+                    return (double)res;
+                else if (res is string)
+                    return (string)res;
+                else if (res is bool)
+                    return (bool)res;
+                else if (res is ContextStatement)
+                    return (JSObject)(ContextStatement)res;
+                else return new ClassProxy(res);
+            });
             return result;
         }
 
@@ -166,15 +176,20 @@ namespace NiL.JS.Modules
                 var m = hostedType.GetMember(name, BindingFlags.Public | (ValueType == ObjectValueType.Statement ? BindingFlags.Static : BindingFlags.Instance) | BindingFlags.NonPublic);
                 if (m.Length > 1)
                     throw new InvalidOperationException("Too many fields with name " + name);
-                if (m.Length == 0 || m[0].GetCustomAttribute(typeof(InvisibleAttribute)) != null)
+                if (m.Length == 0 || m[0].GetCustomAttribute(typeof(HiddenAttribute)) != null)
                 {
                     var i = 0;
                     var d = 0;
                     var gprms = getItem != null ? getItem.GetParameters() : null;
-                    var sprms = getItem != null ? setItem.GetParameters() : null;
-                    if (((sprms ?? gprms) != null) && ((gprms ?? sprms)[0].ParameterType == typeof(string)
+                    var sprms = setItem != null ? setItem.GetParameters() : null;
+                    if (((sprms ?? gprms) != null) &&
+                        ((gprms ?? sprms)[0].ParameterType == typeof(string)
                         || (Parser.ParseNumber(name, ref i, false, out i) && (gprms ?? sprms)[0].ParameterType == typeof(int))
-                        || (Parser.ParseNumber(name, ref i, false, out d) && (gprms ?? sprms)[0].ParameterType == typeof(double))))
+                        || (Parser.ParseNumber(name, ref i, false, out d) && (gprms ?? sprms)[0].ParameterType == typeof(double))
+                        || ((gprms ?? sprms)[0].ParameterType == typeof(object))))
+                    {
+                        var ptype = (sprms ?? gprms)[0].ParameterType;
+                        object index = ptype == typeof(double) ? (object)d : (object)(ptype == typeof(int) ? i : (object)name);
                         return new JSObject()
                         {
                             ValueType = ObjectValueType.Property,
@@ -190,13 +205,13 @@ namespace NiL.JS.Modules
                                         a[0] = sprms[0].ParameterType == typeof(string) ? name : (object)(sprms[0].ParameterType == typeof(int) ? i : (object)d);
                                     }
                                     else
-                                        a = new object[] { sprms[0].ParameterType == typeof(string) ? name : (object)(sprms[0].ParameterType == typeof(int) ? i : (object)d), args[0].Invoke() };
+                                        a = new object[] { index, args[0].Invoke() };
                                     setItem.Invoke(oValue, a);
                                     return undefined;
                                 })),
                                 new NiL.JS.Statements.ExternalFunction(new CallableField((_th, args) =>
                                 {
-                                    var res = getItem.Invoke(oValue, new object[] { sprms[0].ParameterType == typeof(string) ? name : (object)(sprms[0].ParameterType == typeof(int) ? i : (object)d) });
+                                    var res = getItem.Invoke(oValue, new object[] { index });
                                     if (res is JSObject)
                                         return res as JSObject;
                                     else if (res is int)
@@ -216,6 +231,7 @@ namespace NiL.JS.Modules
                                 })) 
                             }
                         };
+                    }
                     return r;
                 }
                 switch (m[0].MemberType)

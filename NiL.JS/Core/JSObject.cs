@@ -46,8 +46,8 @@ namespace NiL.JS.Core
         [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
         [System.ComponentModel.Browsable(false)]
         internal Func<bool> assignCallback;
-        protected Func<string, bool, JSObject> fieldGetter;
-        protected Func<IEnumerator<string>> enumeratorGetter;
+        internal Func<string, bool, JSObject> fieldGetter;
+        internal Func<IEnumerator<string>> enumeratorGetter;
         internal JSObject prototype;
         internal Dictionary<string, JSObject> fields;
 
@@ -369,7 +369,7 @@ namespace NiL.JS.Core
 
         public static implicit operator JSObject(string value)
         {
-            return new NiL.JS.Core.BaseTypes.JSString() { ValueType = ObjectValueType.String, oValue = value, temporary = true, assignCallback = ErrorAssignCallback };
+            return new Modules.ClassProxy(new BaseTypes.String(value));
         }
 
         public static implicit operator JSObject(object[] value)

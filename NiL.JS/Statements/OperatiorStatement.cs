@@ -240,7 +240,7 @@ namespace NiL.JS.Statements
                         }
                     case OperationType.TypeOf:
                         {
-                            del = OpTypeOf;
+                            del = (fastImpl = new Operators.TypeOf(first, second)).Invoke;
                             break;
                         }
                     case OperationType.New:
@@ -274,22 +274,74 @@ namespace NiL.JS.Statements
             //del = Opdel;
         }
 
+        private static Statement deicstra(OperatorStatement statement)
+        {
+            Stack<Statement> stats = new Stack<Statement>();
+            Stack<OperationType> types = new Stack<OperationType>();
+            Stack<OpDelegate> delegates = new Stack<OpDelegate>();
+            OperatorStatement cur = statement.second as OperatorStatement;
+            if (cur == null || cur._type == OperationType.None || cur._type == OperationType.Ternary)
+                return statement;
+            types.Push(statement._type);
+            delegates.Push(statement.del);
+            stats.Push(statement.first);
+            while(cur != null)
+            {
+                stats.Push(cur.first);
+                if ((((int)types.Peek() & (int)OperationTypeGroups.Special) > ((int)cur._type & (int)OperationTypeGroups.Special))
+                    || ((((int)types.Peek() & (int)OperationTypeGroups.Special) == ((int)cur._type & (int)OperationTypeGroups.Special)) && (((int)cur._type & (int)OperationTypeGroups.Special) != 0)))
+                {
+                    stats.Push(new OperatorStatement()
+                    {
+                        _type = types.Pop(),
+                        del = delegates.Pop(),
+                        second = stats.Pop(),
+                        first = stats.Pop()
+                    });
+                }
+                if (cur._type == OperationType.None || cur._type == OperationType.Ternary)
+                    break;
+                types.Push(cur._type);
+                delegates.Push(cur.del);
+                if (!(cur.second is OperatorStatement))
+                    stats.Push(cur.second);
+                cur = cur.second as OperatorStatement;
+            }
+            if (stats.Count == 1)
+                return stats.Peek();
+            while (stats.Count > 2)
+                stats.Push(new OperatorStatement()
+                {
+                    _type = types.Pop(),
+                    del = delegates.Pop(),
+                    second = stats.Pop(),
+                    first = stats.Pop()
+                });
+            return new OperatorStatement()
+                    {
+                        _type = types.Pop(),
+                        del = delegates.Pop(),
+                        second = stats.Pop(),
+                        first = stats.Pop()
+                    };
+        }
+
         public static Statement ParseForUnary(ParsingState state, ref int index)
         {
-            return Parse(state, ref index, true, true).Statement;
+            return Parse(state, ref index, true, true, true).Statement;
         }
 
         internal static ParseResult Parse(ParsingState state, ref int index)
         {
-            return Parse(state, ref index, true, false);
+            return Parse(state, ref index, true, false, true);
         }
 
         public static ParseResult Parse(ParsingState state, ref int index, bool processComma)
         {
-            return Parse(state, ref index, processComma, false);
+            return Parse(state, ref index, processComma, false, true);
         }
 
-        private static ParseResult Parse(ParsingState state, ref int index, bool processComma, bool forUnary)
+        private static ParseResult Parse(ParsingState state, ref int index, bool processComma, bool forUnary, bool root)
         {
             string code = state.Code;
             int i = index;
@@ -350,13 +402,13 @@ namespace NiL.JS.Statements
                             if (code[i] == '+')
                             {
                                 do i++; while (char.IsWhiteSpace(code[i]));
-                                first = Parse(state, ref i, true, true).Statement;
-                                (first as OperatorStatement).type = OperationType.Incriment;
+                                first = Parse(state, ref i, true, true, true).Statement;
+                                (first as OperatorStatement)._type = OperationType.Incriment;
                             }
                             else
                             {
                                 while (char.IsWhiteSpace(code[i])) i++;
-                                var f = Parse(state, ref i, true, true).Statement;
+                                var f = Parse(state, ref i, true, true, true).Statement;
                                 index = i;
                                 return new ParseResult()
                                 {
@@ -373,50 +425,50 @@ namespace NiL.JS.Statements
                             if (code[i] == '-')
                             {
                                 do i++; while (char.IsWhiteSpace(code[i]));
-                                first = Parse(state, ref i, true, true).Statement;
-                                (first as OperatorStatement).type = OperationType.Decriment;
+                                first = Parse(state, ref i, true, true, true).Statement;
+                                (first as OperatorStatement)._type = OperationType.Decriment;
                             }
                             else
                             {
                                 while (char.IsWhiteSpace(code[i])) i++;
-                                first = new OperatorStatement() { first = new ImmidateValueStatement(0), second = Parse(state, ref i, true, true).Statement, type = OperationType.Substract };
+                                first = new OperatorStatement() { first = new ImmidateValueStatement(0), second = Parse(state, ref i, true, true, true).Statement, _type = OperationType.Substract };
                             }
                             break;
                         }
                     case '!':
                         {
                             do i++; while (char.IsWhiteSpace(code[i]));
-                            first = new OperatorStatement() { first = Parse(state, ref i, true, true).Statement, type = OperationType.LogicalNot };
+                            first = new OperatorStatement() { first = Parse(state, ref i, true, true, true).Statement, _type = OperationType.LogicalNot };
                             break;
                         }
                     case '~':
                         {
                             do i++; while (char.IsWhiteSpace(code[i]));
-                            first = Parse(state, ref i, true, true).Statement;
-                            (first as OperatorStatement).type = OperationType.Not;
+                            first = Parse(state, ref i, true, true, true).Statement;
+                            (first as OperatorStatement)._type = OperationType.Not;
                             break;
                         }
                     case 't':
                         {
                             i += 5;
                             do i++; while (char.IsWhiteSpace(code[i]));
-                            first = Parse(state, ref i, false, true).Statement;
-                            (first as OperatorStatement).type = OperationType.TypeOf;
+                            first = Parse(state, ref i, false, true, true).Statement;
+                            (first as OperatorStatement)._type = OperationType.TypeOf;
                             break;
                         }
                     case 'v':
                         {
                             i += 3;
                             do i++; while (char.IsWhiteSpace(code[i]));
-                            first = new OperatorStatement() { first = Parse(state, ref i, false, true).Statement, second = new ImmidateValueStatement(JSObject.undefined), type = OperationType.None };
+                            first = new OperatorStatement() { first = Parse(state, ref i, false, true, true).Statement, second = new ImmidateValueStatement(JSObject.undefined), _type = OperationType.None };
                             break;
                         }
                     case 'n':
                         {
                             i += 2;
                             do i++; while (char.IsWhiteSpace(code[i]));
-                            first = Parse(state, ref i, false, true).Statement;
-                            (first as OperatorStatement).type = OperationType.New;
+                            first = Parse(state, ref i, false, true, true).Statement;
+                            (first as OperatorStatement)._type = OperationType.New;
                             break;
                         }
                     default:
@@ -569,7 +621,7 @@ namespace NiL.JS.Statements
                             {
                                 if (rollbackPos != i)
                                     goto default;
-                                first = new OperatorStatement() { second = first, type = OperationType.Incriment };
+                                first = new OperatorStatement() { second = first, _type = OperationType.Incriment };
                                 repeat = true;
                                 i += 2;
                             }
@@ -598,7 +650,7 @@ namespace NiL.JS.Statements
                             {
                                 if (rollbackPos != i)
                                     goto default;
-                                first = new OperatorStatement() { second = first, type = OperationType.Decriment };
+                                first = new OperatorStatement() { second = first, _type = OperationType.Decriment };
                                 repeat = true;
                                 i += 2;
                             }
@@ -835,7 +887,7 @@ namespace NiL.JS.Statements
                                 else if (code[i] == ',')
                                     do i++; while (char.IsWhiteSpace(code[i]));
                                 args.Add(Parser.Parse(state, ref i, 1));
-                                if ((args[args.Count - 1] is OperatorStatement) && (args[args.Count - 1] as OperatorStatement).type == OperationType.None)
+                                if ((args[args.Count - 1] is OperatorStatement) && (args[args.Count - 1] as OperatorStatement)._type == OperationType.None)
                                     args[args.Count - 1] = (args[args.Count - 1] as OperatorStatement).first;
                             }
                             first = new GetFieldStatement(first, args[0]);
@@ -861,7 +913,7 @@ namespace NiL.JS.Statements
                             {
                                 first = first,
                                 second = new ImmidateValueStatement(args.ToArray()),
-                                type = OperationType.Call
+                                _type = OperationType.Call
                             };
                             i++;
                             repeat = !forUnary;
@@ -909,49 +961,28 @@ namespace NiL.JS.Statements
             if (binar)
             {
                 do i++; while (char.IsWhiteSpace(code[i]));
-                second = OperatorStatement.Parse(state, ref i, false).Statement;
-                if (!assign && second is OperatorStatement)
-                {
-                    var seops = second as OperatorStatement;
-                    if (seops.type != OperationType.None)
-                    {
-                        int op0 = (int)type & (int)OperationTypeGroups.Special;
-                        int op1 = (int)seops.type & (int)OperationTypeGroups.Special;
-                        if ((op0 > op1) || (op0 == op1 && type != OperationType.Assign))
-                        {
-                            var t0 = first;
-                            var t1 = seops.first;
-                            var t2 = seops.second;
-                            var type0 = type;
-                            var type1 = seops.type;
-
-                            second = t2;
-                            type = type1;
-                            first = new OperatorStatement() { first = t0, second = t1, type = type0 };
-                        }
-                    }
-                    else
-                        second = ((OperatorStatement)second).first;
-                }
+                second = OperatorStatement.Parse(state, ref i, false, false, false).Statement;
             }
             if (processComma && (code[i] == ','))
             {
-                first = new OperatorStatement() { first = first, second = second, type = type };
+                first = deicstra(new OperatorStatement() { first = first, second = second, _type = type });
                 type = OperationType.None;
                 do i++; while (char.IsWhiteSpace(code[i]));
                 second = OperatorStatement.Parse(state, ref i).Statement;
             }
             OperatorStatement res = null;
             if (assign)
-                res = new OperatorStatement() { first = first, second = new OperatorStatement() { first = first, second = second, type = type }, type = OperationType.Assign };
+                res = new OperatorStatement() { first = first, second = new OperatorStatement() { first = first, second = second, _type = type }, _type = OperationType.Assign };
             else
             {
                 if (forUnary && (type == OperationType.None) && (first is OperatorStatement))
                     res = first as OperatorStatement;
                 else
-                    res = new OperatorStatement() { first = first, second = second, type = type };
+                    res = new OperatorStatement() { first = first, second = second, _type = type };
             }
             index = i;
+            if (root)
+                res = deicstra(res) as OperatorStatement;
             return new ParseResult()
             {
                 Statement = res,
@@ -966,7 +997,6 @@ namespace NiL.JS.Statements
             temp = first.Invoke(context);
 
             double dr;
-            string sr;
             switch (temp.ValueType)
             {
                 case ObjectValueType.Int:
@@ -989,10 +1019,7 @@ namespace NiL.JS.Statements
                         }
                         else if (temp.ValueType == ObjectValueType.String)
                         {
-                            sr = dr.ToString() + (string)temp.oValue;
-                            tempResult.ValueType = ObjectValueType.String;
-                            tempResult.oValue = sr;
-                            return tempResult;
+                            return dr.ToString() + (string)temp.oValue;
                         }
                         break;
                     }
@@ -1020,26 +1047,17 @@ namespace NiL.JS.Statements
                     {
                         var val = temp.oValue as string;
                         temp = second.Invoke(context);
-                        tempResult.ValueType = ObjectValueType.String;
+                        if (temp.ValueType == ObjectValueType.Object)
+                            temp = temp.ToPrimitiveValue_Value_String();
                         if (temp.ValueType == ObjectValueType.Int)
-                        {
                             val += temp.iValue;
-                            tempResult.oValue = val;
-                            return tempResult;
-                        }
                         else if (temp.ValueType == ObjectValueType.Double)
-                        {
                             val += temp.dValue;
-                            tempResult.oValue = val;
-                            return tempResult;
-                        }
                         else if (temp.ValueType == ObjectValueType.String)
-                        {
                             val += temp.oValue as string;
-                            tempResult.oValue = val;
-                            return tempResult;
-                        }
-                        break;
+                        else
+                            break;
+                        return val;
                     }
                 case ObjectValueType.Date:
                     {
@@ -1506,7 +1524,7 @@ namespace NiL.JS.Statements
                 case ObjectValueType.Date:
                 case ObjectValueType.Object:
                     {
-                        switch (temp1.ValueType)
+                        switch (temp0.ValueType)
                         {
                             case ObjectValueType.Int:
                             case ObjectValueType.Double:
@@ -1514,6 +1532,12 @@ namespace NiL.JS.Statements
                             case ObjectValueType.String:
                                 {
                                     temp0 = temp0.ToPrimitiveValue_Value_String();
+                                    break;
+                                }
+                            case ObjectValueType.Object:
+                                {
+                                    if (temp0.oValue is NiL.JS.Core.BaseTypes.String)
+                                        temp0 = (temp0.oValue as NiL.JS.Core.BaseTypes.String).toString();
                                     break;
                                 }
                         }
@@ -2024,57 +2048,6 @@ namespace NiL.JS.Statements
             return t;
         }
 
-        private JSObject OpTypeOf(Context context)
-        {
-            var val = first.Invoke(context);
-            JSObject o = null;
-            if (val.temporary)
-                o = val;
-            else
-                o = tempResult;
-            var vt = val.ValueType;
-            o.ValueType = ObjectValueType.String;
-            switch (vt)
-            {
-                case ObjectValueType.Int:
-                case ObjectValueType.Double:
-                    {
-                        o.oValue = "number";
-                        break;
-                    }
-                case ObjectValueType.NotExist:
-                case ObjectValueType.NotExistInObject:
-                case ObjectValueType.Undefined:
-                    {
-                        o.oValue = "undefined";
-                        break;
-                    }
-                case ObjectValueType.String:
-                    {
-                        o.oValue = "string";
-                        break;
-                    }
-                case ObjectValueType.Bool:
-                    {
-                        o.oValue = "boolean";
-                        break;
-                    }
-                case ObjectValueType.Statement:
-                    {
-                        o.oValue = "function";
-                        break;
-                    }
-                case ObjectValueType.Date:
-                case ObjectValueType.Object:
-                    {
-                        o.oValue = "object";
-                        break;
-                    }
-                default: throw new NotImplementedException();
-            }
-            return o;
-        }
-
         private JSObject OpInstanceOf(Context context)
         {
             var a = first.Invoke(context);
@@ -2177,6 +2150,7 @@ namespace NiL.JS.Statements
 
         public bool Optimize(ref Statement _this, int depth, HashSet<string> vars)
         {
+            type = type;
             if (fastImpl != null)
             {
                 _this = fastImpl;
@@ -2188,12 +2162,12 @@ namespace NiL.JS.Statements
                     (first as IOptimizable).Optimize(ref first, depth + 1, vars);
                 if (second is IOptimizable)
                     (second as IOptimizable).Optimize(ref second, depth + 1, vars);
-                if (type == OperationType.None && second == null && first is ImmidateValueStatement)
+                if (_type == OperationType.None && second == null && first is ImmidateValueStatement)
                 {
                     _this = first;
                     return true;
                 }
-                if (((type == OperationType.Incriment) || (type == OperationType.Decriment)) && (depth != 0))
+                if (((_type == OperationType.Incriment) || (_type == OperationType.Decriment)) && (depth != 0))
                 {
                     if (second == null)
                         return false;

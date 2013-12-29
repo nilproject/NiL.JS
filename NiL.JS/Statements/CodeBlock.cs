@@ -51,7 +51,8 @@ namespace NiL.JS.Statements
                     CodeBlock cb = t as CodeBlock;
                     funcs.AddRange(cb.functions);
                     cb.functions = new Function[0];
-                    body.AddRange(cb.body);
+                    for (int cbi = cb.body.Length; cbi-- > 0; )
+                        body.Add(cb.body[cbi]);
                 }
                 else if (t is SwitchStatement)
                 {

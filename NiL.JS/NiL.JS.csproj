@@ -128,7 +128,7 @@
     <Compile Include="Core\BaseTypes\Array.cs" />
     <Compile Include="Core\BaseTypes\BaseObject.cs" />
     <Compile Include="Core\BaseTypes\Date.cs" />
-    <Compile Include="Core\BaseTypes\JSString.cs" />
+    <Compile Include="Core\BaseTypes\String.cs" />
     <Compile Include="Core\Delegates.cs" />
     <Compile Include="Core\IContextStatement.cs" />
     <Compile Include="Core\IOptimizable.cs" />
@@ -140,11 +140,12 @@
     <Compile Include="Core\ThisObject.cs" />
     <Compile Include="Core\ParseResult.cs" />
     <Compile Include="Modules\Console.cs" />
-    <Compile Include="Modules\InvisibleAttribute.cs" />
+    <Compile Include="Modules\HiddenAttribute.cs" />
     <Compile Include="Modules\Math.cs" />
     <Compile Include="Modules\ClassProxy.cs" />
     <Compile Include="Modules\ProtectedAttribute.cs" />
     <Compile Include="Statements\LabeledStatement.cs" />
+    <Compile Include="Statements\Operators\TypeOf.cs" />
     <Compile Include="Statements\Operators\StrictNotEqual.cs" />
     <Compile Include="Statements\ThrowStatement.cs" />
     <Compile Include="Statements\EmptyStatement.cs" />

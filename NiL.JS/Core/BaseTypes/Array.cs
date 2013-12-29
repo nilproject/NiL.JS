@@ -4,7 +4,7 @@ namespace NiL.JS.Core.BaseTypes
 {
     internal class Array
     {
-        [Modules.Invisible]
+        [Modules.Hidden]
         private JSObject[] data;
 
         public Array()
