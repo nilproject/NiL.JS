@@ -28,9 +28,11 @@ namespace NiL.JS.Statements
             while (char.IsWhiteSpace(code[i])) i++;
             state.AllowBreak++;
             state.AllowContinue++;
-            var body = Parser.Parse(state, ref i, 0);
+            var body = Parser.Parse(state, ref i, 4);
             state.AllowBreak--;
             state.AllowContinue--;
+            if (!(body is CodeBlock) && code[i] == ';')
+                i++;
             while (char.IsWhiteSpace(code[i])) i++;
             if (!Parser.Validate(code, "while", ref i))
                 throw new ArgumentException("code (" + i + ")");

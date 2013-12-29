@@ -19,9 +19,12 @@ namespace NiL.JS.Statements
                 return new ParseResult();
             var label = code.Substring(index, l - index);
             state.Labels.Add(label);
+            int oldlc = state.LabelCount;
             state.LabelCount++;
             state.AllowBreak++;
             var stat = Parser.Parse(state, ref i, 0);
+            state.AllowBreak--;
+            state.LabelCount = oldlc;
             index = i;
             return new ParseResult()
             {

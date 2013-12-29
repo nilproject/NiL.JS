@@ -35,7 +35,7 @@ namespace NiL.JS.Core
 
         static Parser()
         {
-            rules = new _Rule[4][];
+            rules = new _Rule[5][];
             rules[0] = new _Rule[] // Общий
             {
                 new _Rule("[", ArrayStatement.Parse),
@@ -114,6 +114,39 @@ namespace NiL.JS.Core
                 new _Rule("typeof", OperatorStatement.Parse),
                 new _Rule("new", OperatorStatement.Parse),
                 new _Rule("void", OperatorStatement.Parse),
+                new _Rule(ValidateName, OperatorStatement.Parse),
+                new _Rule(ValidateValue, OperatorStatement.Parse),
+            };
+            rules[4] = new _Rule[] // Общий / JSON
+            {
+                new _Rule("[", ArrayStatement.Parse),
+                new _Rule("{", CodeBlock.Parse),
+                new _Rule("var ", VaribleDefineStatement.Parse),
+                new _Rule("if", IfElseStatement.Parse),
+                new _Rule("for", ForInStatement.Parse),
+                new _Rule("for", ForStatement.Parse),
+                new _Rule("while", WhileStatement.Parse),
+                new _Rule("return", ReturnStatement.Parse),
+                new _Rule("function", Function.Parse),
+                new _Rule("switch", SwitchStatement.Parse),
+                new _Rule("do", DoWhileStatement.Parse),
+                new _Rule("(", OperatorStatement.Parse),
+                new _Rule("+", OperatorStatement.Parse),
+                new _Rule("-", OperatorStatement.Parse),
+                new _Rule("!", OperatorStatement.Parse),
+                new _Rule("~", OperatorStatement.Parse),
+                new _Rule("true", OperatorStatement.Parse),
+                new _Rule("false", OperatorStatement.Parse),
+                new _Rule("null", OperatorStatement.Parse),
+                new _Rule("this", OperatorStatement.Parse),
+                new _Rule("typeof", OperatorStatement.Parse),
+                new _Rule("try", TryCatchStatement.Parse),
+                new _Rule("new", OperatorStatement.Parse),
+                new _Rule("void", OperatorStatement.Parse),
+                new _Rule("break", BreakStatement.Parse),
+                new _Rule("continue", ContinueStatement.Parse),
+                new _Rule("throw", ThrowStatement.Parse),
+                new _Rule(ValidateName, LabeledStatement.Parse),
                 new _Rule(ValidateName, OperatorStatement.Parse),
                 new _Rule(ValidateValue, OperatorStatement.Parse),
             };
