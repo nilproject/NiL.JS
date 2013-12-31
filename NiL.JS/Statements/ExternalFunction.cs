@@ -18,7 +18,7 @@ namespace NiL.JS.Statements
             throw new System.InvalidOperationException();
         }
 
-        public JSObject Invoke(JSObject _this, IContextStatement[] args)
+        public JSObject Invoke(JSObject _this, JSObject[] args)
         {
             return del(_this, args);
         }

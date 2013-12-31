@@ -17,7 +17,7 @@ namespace NiL.JS.Statements.Operators
             this.second = second;
         }
 
-        public override JSObject Invoke(Context context, JSObject _this, IContextStatement[] args)
+        public override JSObject Invoke(Context context, JSObject _this, JSObject[] args)
         {
             throw new InvalidOperationException();
         }

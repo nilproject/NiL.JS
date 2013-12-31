@@ -5,7 +5,7 @@ using NiL.JS.Core;
 
 namespace NiL.JS.Statements
 {
-    internal class ArrayStatement : Statement
+    internal class ArrayStatement : Statement, IOptimizable
     {
         private Statement[] elements;
 
@@ -63,9 +63,16 @@ namespace NiL.JS.Statements
             return new Modules.ClassProxy(res);
         }
 
-        public override JSObject Invoke(Context context, JSObject _this, IContextStatement[] args)
+        public override JSObject Invoke(Context context, JSObject _this, JSObject[] args)
         {
             throw new NotImplementedException();
+        }
+
+        public bool Optimize(ref Statement _this, int depth, HashSet<string> vars)
+        {
+            for (int i = 0; i < elements.Length; i++)
+                Parser.Optimize(ref elements[i], depth + 1, vars);
+            return false;
         }
     }
 }

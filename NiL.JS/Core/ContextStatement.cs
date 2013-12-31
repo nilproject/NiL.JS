@@ -24,7 +24,7 @@ namespace NiL.JS.Core
             return res;
         }
 
-        public JSObject Invoke(JSObject _this, IContextStatement[] args)
+        public JSObject Invoke(JSObject _this, JSObject[] args)
         {
             var res = Prototype.Invoke(Context, _this, args);
             return res;

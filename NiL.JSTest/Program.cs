@@ -51,12 +51,12 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * 3 * i; }
             var s = new Script(sr.ReadToEnd());
             s.Context.GetField("$ERROR").Assign(new CallableField((t, x) =>
             {
-                Console.WriteLine("ERROR: " + x[0].Invoke().Value);
+                Console.WriteLine("ERROR: " + x[0].Value);
                 return null;
             }));
             s.Context.GetField("ERROR").Assign(new CallableField((t, x) =>
             {
-                Console.WriteLine("ERROR: " + x[0].Invoke().Value);
+                Console.WriteLine("ERROR: " + x[0].Value);
                 return null;
             }));
             s.Invoke();
@@ -96,13 +96,13 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * 3 * i; }
                     var s = new Script(code);
                     s.Context.GetField("$ERROR").Assign(new CallableField((t, x) =>
                     {
-                        Console.WriteLine("ERROR: " + x[0].Invoke().Value);
+                        Console.WriteLine("ERROR: " + x[0].Value);
                         pass = false;
                         return null;
                     }));
                     s.Context.GetField("ERROR").Assign(new CallableField((t, x) =>
                     {
-                        Console.WriteLine("ERROR: " + x[0].Invoke().Value);
+                        Console.WriteLine("ERROR: " + x[0].Value);
                         pass = false;
                         return null;
                     }));
@@ -151,7 +151,7 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * 3 * i; }
             NiL.JS.Core.Context.GlobalContext.GetField("platform").Assign("NiL.JS");
             //runFile(@"tests.js");
             runFile(@"ftest.js");
-            //runFile(@"tests\ch07\7.4\S7.4_A6.js");
+            //runFile(@"C:\Projects\NiL.JS\NiL.JSTest\tests\Conformance\07_Lexical_Conventions\7.4_Comments\S7.4_A5.js");
             //benchmark();
             //featureSupportTest();
             //sputnicTests();

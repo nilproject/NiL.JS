@@ -32,18 +32,19 @@ namespace NiL.JS.Core
             #region Base Function
             globalContext.GetField("eval").Assign(new CallableField((t, x) =>
             {
-                int i = 0;
-                string c = "{" + Parser.RemoveComments(x[0].Invoke().oValue.ToString()) + "}";
+                throw new NotImplementedException("eval");
+                /*int i = 0;
+                string c = "{" + Parser.RemoveComments(x[0].oValue.ToString()) + "}";
                 var cb = CodeBlock.Parse(new ParsingState(c), ref i).Statement;
                 Parser.Optimize(ref cb, null);
                 var res = cb.Invoke((x[0] as ContextStatement).Context);
                 if (i != c.Length)
                     throw new System.ArgumentException("Invalid char");
-                return res;
+                return res;*/
             }));
             globalContext.GetField("isNaN").Assign(new CallableField((t, x) =>
             {
-                var r = x[0].Invoke();
+                var r = x[0];
                 if (r.ValueType == ObjectValueType.Double)
                     return double.IsNaN(r.dValue);
                 if (r.ValueType == ObjectValueType.Bool || r.ValueType == ObjectValueType.Int || r.ValueType == ObjectValueType.Date)
@@ -62,7 +63,7 @@ namespace NiL.JS.Core
             {
                 if (x.Length > 0)
                 {
-                    var r = x[0].Invoke();
+                    var r = x[0];
                     if (r.ValueType == ObjectValueType.Int || r.ValueType == ObjectValueType.Bool)
                         return r.iValue;
                     else if (r.ValueType == ObjectValueType.Double)
@@ -85,15 +86,15 @@ namespace NiL.JS.Core
             #region Base types
             globalContext.GetField("Boolean").Assign(new CallableField((t, x) =>
             {
-                var temp = x[0].Invoke();
+                var temp = x[0];
                 if (temp.ValueType == ObjectValueType.Bool)
                     return temp;
                 return (bool)temp;
             }));
             globalContext.GetField("RegExp").Assign(new CallableField((t, x) =>
             {
-                var pattern = x[0].Invoke().Value.ToString();
-                var flags = x.Length > 1 ? x[1].Invoke().Value.ToString() : "";
+                var pattern = x[0].Value.ToString();
+                var flags = x.Length > 1 ? x[1].Value.ToString() : "";
                 var re = new System.Text.RegularExpressions.Regex(pattern,
                     System.Text.RegularExpressions.RegexOptions.ECMAScript
                     | (flags.IndexOf('i') != -1 ? System.Text.RegularExpressions.RegexOptions.IgnoreCase : 0)
@@ -128,7 +129,7 @@ namespace NiL.JS.Core
             {
                 if (args.Length == 0)
                     return new JSObject() { ValueType = ObjectValueType.Object };
-                var m = (_this.oValue as System.Text.RegularExpressions.Regex).Match(args[0].Invoke().Value.ToString());
+                var m = (_this.oValue as System.Text.RegularExpressions.Regex).Match(args[0].Value.ToString());
                 var mres = new JSObject();
                 mres.ValueType = ObjectValueType.Object;
                 if (m.Groups.Count != 1)
@@ -171,6 +172,7 @@ namespace NiL.JS.Core
 
         internal Dictionary<string, JSObject> fields;
         internal AbortType abort;
+        internal bool updateThisBind;
         internal JSObject abortInfo;
         internal JSObject thisBind;
 

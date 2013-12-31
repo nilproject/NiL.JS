@@ -23,9 +23,7 @@ namespace NiL.JS.Core.BaseTypes
                 res.ValueType = ObjectValueType.Object;
                 res.oValue = new object();
                 if (args != null && args.Length > 0)
-                {
-                    res.oValue = args[0].Invoke();
-                }
+                    res.oValue = args[0];
                 return res;
             }));
             JSObject proto = null;

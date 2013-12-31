@@ -127,9 +127,9 @@ namespace NiL.JS.Statements
             return new ContextStatement(context, this);
         }
 
-        private static IContextStatement[] defaultArgs = new ContextStatement[0];
+        private static JSObject[] defaultArgs = new JSObject[0];
 
-        public override JSObject Invoke(Context context, JSObject _this, IContextStatement[] args)
+        public override JSObject Invoke(Context context, JSObject _this, JSObject[] args)
         {
             Context internalContext = new Context(context);
             int i = 0;
@@ -137,7 +137,7 @@ namespace NiL.JS.Statements
                 args = defaultArgs;
             int min = Math.Min(args.Length, arguments.Length);
             for (; i < min; i++)
-                internalContext.Define(arguments[i]).Assign(args[i].Invoke());
+                internalContext.Define(arguments[i]).Assign(args[i]);
             for (; i < arguments.Length; i++)
                 internalContext.Define(arguments[i]).Assign(null);
             internalContext.thisBind = _this;

@@ -4,7 +4,7 @@ using NiL.JS.Core;
 
 namespace NiL.JS.Statements
 {
-    internal sealed class ReturnStatement : Statement
+    internal sealed class ReturnStatement : Statement, IOptimizable
     {
         private Statement body;
 
@@ -44,9 +44,15 @@ namespace NiL.JS.Statements
             return null;
         }
 
-        public override JSObject Invoke(Context context, JSObject _this, IContextStatement[] args)
+        public override JSObject Invoke(Context context, JSObject _this, JSObject[] args)
         {
             throw new NotImplementedException();
+        }
+
+        public bool Optimize(ref Statement _this, int depth, System.Collections.Generic.HashSet<string> varibles)
+        {
+            Parser.Optimize(ref body, depth + 1, varibles);
+            return false;
         }
     }
 }

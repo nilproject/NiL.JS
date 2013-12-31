@@ -6,9 +6,9 @@ namespace NiL.JS.Modules
 {
     internal sealed class console
     {
-        public static JSObject log(IContextStatement[] args)
+        public static JSObject log(JSObject[] args)
         {
-            var r = args[0].Invoke().Value;
+            var r = args[0].Value;
             if (r is double)
                 System.Console.WriteLine((r as double?).Value.ToString(System.Globalization.CultureInfo.InvariantCulture));
             else

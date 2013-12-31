@@ -307,9 +307,7 @@ namespace NiL.JS.Statements
                     stats.Push(cur.second);
                 cur = cur.second as OperatorStatement;
             }
-            if (stats.Count == 1)
-                return stats.Peek();
-            while (stats.Count > 2)
+            while (stats.Count > 1)
                 stats.Push(new OperatorStatement()
                 {
                     _type = types.Pop(),
@@ -317,13 +315,7 @@ namespace NiL.JS.Statements
                     second = stats.Pop(),
                     first = stats.Pop()
                 });
-            return new OperatorStatement()
-                    {
-                        _type = types.Pop(),
-                        del = delegates.Pop(),
-                        second = stats.Pop(),
-                        first = stats.Pop()
-                    };
+            return stats.Peek();
         }
 
         public static Statement ParseForUnary(ParsingState state, ref int index)
@@ -2086,12 +2078,12 @@ namespace NiL.JS.Statements
             JSObject _this = new JSObject();
             _this.Assign(temp.GetField("prototype", true));
             _this = new JSObject() { ValueType = ObjectValueType.Object, prototype = _this, oValue = _this.oValue };
-            IContextStatement[] stmnts = null;
+            JSObject[] stmnts = null;
             if ((sps != null) && (sps.Length != 0))
             {
-                stmnts = new ContextStatement[sps.Length];
+                stmnts = new JSObject[sps.Length];
                 for (int i = 0; i < sps.Length; i++)
-                    stmnts[i] = sps[i].Implement(context);
+                    stmnts[i] = sps[i].Invoke(context);
             }
             (stat as IContextStatement).Invoke(_this, stmnts);
             return _this;
@@ -2143,7 +2135,7 @@ namespace NiL.JS.Statements
             return del(context);
         }
 
-        public override JSObject Invoke(Context context, JSObject _this, IContextStatement[] args)
+        public override JSObject Invoke(Context context, JSObject _this, JSObject[] args)
         {
             throw new NotImplementedException();
         }
@@ -2159,9 +2151,9 @@ namespace NiL.JS.Statements
             else
             {
                 if (first is IOptimizable)
-                    (first as IOptimizable).Optimize(ref first, depth + 1, vars);
+                    Parser.Optimize(ref first, depth + 1, vars);
                 if (second is IOptimizable)
-                    (second as IOptimizable).Optimize(ref second, depth + 1, vars);
+                    Parser.Optimize(ref second, depth + 1, vars);
                 if (_type == OperationType.None && second == null && first is ImmidateValueStatement)
                 {
                     _this = first;

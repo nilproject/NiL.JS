@@ -36,13 +36,20 @@ namespace NiL.JS.Modules
             JSObject proto = null;
             oValue = new Statements.ExternalFunction((x, y) =>
             {
-                var args = convertArgs(y);
-                var constructor = hostedType.GetConstructor(args != null ? Type.GetTypeArray(args) : Type.EmptyTypes);
+                object[] args = null;
+                var constructor = hostedType.GetConstructor(y != null ? new Type[] { y.GetType() } : Type.EmptyTypes);
                 if (constructor == null)
                 {
-                    constructor = hostedType.GetConstructor(new Type[] { typeof(object[]) });
-                    args = new object[] { args };
+                    args = convertArgs(y);
+                    constructor = hostedType.GetConstructor(y != null ? Type.GetTypeArray(y) : Type.EmptyTypes);
+                    if (constructor == null)
+                    {
+                        constructor = hostedType.GetConstructor(new Type[] { typeof(object[]) });
+                        args = new object[] { args };
+                    }
                 }
+                else
+                    args = new object[] { y };
                 var res = new ClassProxy(hostedType == typeof(NiL.JS.Core.BaseTypes.Date) ? ObjectValueType.Date : ObjectValueType.Object, hostedType)
                 {
                     oValue = constructor.Invoke(args)
@@ -59,7 +66,7 @@ namespace NiL.JS.Modules
             setItem = hostedType.GetMethod("set_Item", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
         }
 
-        private static object[] convertArgs(IContextStatement[] source)
+        private static object[] convertArgs(JSObject[] source)
         {
             if (source == null)
                 return null;
@@ -68,7 +75,7 @@ namespace NiL.JS.Modules
             {
                 if (source[i] == null)
                     continue;
-                var obj = source[i].Invoke();
+                var obj = source[i];
                 var v = obj.Value;
                 if (v is Core.BaseTypes.Array)
                 {
@@ -84,7 +91,7 @@ namespace NiL.JS.Modules
             return res;
         }
 
-        private static object[] convertArgs(IContextStatement[] source, ParameterInfo[] targetTypes)
+        private static object[] convertArgs(JSObject[] source, ParameterInfo[] targetTypes)
         {
             if (source == null)
                 return null;
@@ -95,7 +102,7 @@ namespace NiL.JS.Modules
             {
                 if (source[i] == null)
                     continue;
-                var obj = source[i].Invoke();
+                var obj = source[i];
                 if (targetTypes[i].ParameterType == typeof(JSObject))
                     res[i] = obj;
                 else
@@ -121,9 +128,9 @@ namespace NiL.JS.Modules
             JSObject result = null;
             if (method.ReturnType == typeof(JSObject))
             {
-                if ((method.GetParameters().Length == 1) && (method.GetParameters()[0].ParameterType == typeof(IContextStatement[])))
+                if ((method.GetParameters().Length == 1) && (method.GetParameters()[0].ParameterType == typeof(JSObject[])))
                 {
-                    var dinv = (Func<IContextStatement[], JSObject>)Delegate.CreateDelegate(typeof(Func<IContextStatement[], JSObject>), ValueType == ObjectValueType.Statement ? null : oValue, method);
+                    var dinv = (Func<JSObject[], JSObject>)Delegate.CreateDelegate(typeof(Func<JSObject[], JSObject>), ValueType == ObjectValueType.Statement ? null : oValue, method);
                     result = new CallableField((th, args) =>
                     {
                         return dinv(args);
@@ -200,12 +207,12 @@ namespace NiL.JS.Modules
                                     object[] a = null;
                                     if (sprms[1].ParameterType != typeof(JSObject))
                                     {
-                                        args = new IContextStatement[] { null, args[0] };
+                                        args = new JSObject[] { null, args[0] };
                                         a = convertArgs(args, sprms);
                                         a[0] = sprms[0].ParameterType == typeof(string) ? name : (object)(sprms[0].ParameterType == typeof(int) ? i : (object)d);
                                     }
                                     else
-                                        a = new object[] { index, args[0].Invoke() };
+                                        a = new object[] { index, args[0] };
                                     setItem.Invoke(oValue, a);
                                     return undefined;
                                 })),

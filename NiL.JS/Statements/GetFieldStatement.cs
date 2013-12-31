@@ -4,53 +4,63 @@ using NiL.JS.Core;
 
 namespace NiL.JS.Statements
 {
-    internal class GetFieldStatement : Statement
+    internal class GetFieldStatement : Statement, IOptimizable
     {
+        private Statement objStatement;
+        private Statement fieldNameStatement;
         private Func<Context, JSObject> impl;
-        internal readonly Func<Context, JSObject> obj;
 
         public GetFieldStatement(Statement obj, Statement fieldName)
         {
-            this.obj = (s) => { return obj.Invoke(s); };
+            objStatement = obj;
+            fieldNameStatement = fieldName;
             impl = (s) =>
             {
                 var n = fieldName.Invoke(s);
                 if (n.ValueType == ObjectValueType.NotExist)
                     throw new ArgumentException("Varible not exist");
-                return obj.Invoke(s).GetField(n.Value.ToString());
+                var th = obj.Invoke(s);
+                if (s.updateThisBind)
+                    s.thisBind = th;
+                var res = th.GetField(n.Value.ToString());
+                return res;
             };
         }
 
         public GetFieldStatement(Statement obj, string fieldName)
         {
-            this.obj = (s) => { return obj.Invoke(s); };
-            impl = (s) => { return obj.Invoke(s).GetField(fieldName); };
+            objStatement = obj;
+            impl = (s) =>
+            {
+                var th = obj.Invoke(s);
+                if (s.updateThisBind)
+                    s.thisBind = th;
+                var res = th.GetField(fieldName);
+                return res;
+            };
         }
 
         public GetFieldStatement(JSObject obj, string fieldName)
         {
-            this.obj = (s) => { return obj; };
-            Func<Context, JSObject> basic = null;
-            basic = (s) =>
+            impl = (s) =>
             {
-                var r = obj.GetField(fieldName);
-                Func<Context, JSObject> alt = (c) =>
-                {
-                    if (s != c)
-                        return basic(c);
-                    else
-                        return r;
-                };
-                impl = alt;
-                return r;
+                if (s.updateThisBind)
+                    s.thisBind = obj;
+                var res = obj.GetField(fieldName);
+                return res;
             };
-            impl = basic;
         }
 
         public GetFieldStatement(JSObject obj, Statement fieldName)
         {
-            this.obj = (s) => { return obj; };
-            impl = (s) => { return obj.GetField(fieldName.Invoke(s).Value.ToString()); };
+            fieldNameStatement = fieldName;
+            impl = (s) =>
+            {
+                if (s.updateThisBind)
+                    s.thisBind = obj;
+                var res = obj.GetField(fieldName.Invoke(s).Value.ToString());
+                return res;
+            };
         }
 
         public override IContextStatement Implement(Context context)
@@ -71,9 +81,16 @@ namespace NiL.JS.Statements
             return res;
         }
 
-        public override JSObject Invoke(Context context, JSObject _this, IContextStatement[] args)
+        public override JSObject Invoke(Context context, JSObject _this, JSObject[] args)
         {
             throw new NotImplementedException();
+        }
+
+        public bool Optimize(ref Statement _this, int depth, System.Collections.Generic.HashSet<string> varibles)
+        {
+            Parser.Optimize(ref objStatement, depth + 1, varibles);
+            Parser.Optimize(ref fieldNameStatement, depth + 1, varibles);
+            return false;
         }
     }
 }

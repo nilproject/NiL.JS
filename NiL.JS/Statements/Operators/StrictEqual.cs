@@ -50,6 +50,8 @@ namespace NiL.JS.Statements.Operators
                 temp = second.Invoke(context);
                 if (lvt != temp.ValueType)
                     return false;
+                if (l == null || temp.oValue == null)
+                    return l == temp.oValue;
                 return l.Equals(temp.oValue);
             }
             if (lvt == ObjectValueType.String)

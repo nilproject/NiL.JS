@@ -1,1 +1,3 @@
-﻿console.log("1" + "2" + "3" + "4");
+﻿var hello = 'hello';
+console.hello = "oops";
+console.log(this.hello);

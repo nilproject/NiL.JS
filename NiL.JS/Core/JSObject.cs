@@ -7,7 +7,7 @@ using System.Runtime.Serialization;
 
 namespace NiL.JS.Core
 {
-    public delegate JSObject CallableField(JSObject _this, IContextStatement[] args);
+    public delegate JSObject CallableField(JSObject _this, JSObject[] args);
 
     internal enum ObjectValueType : int
     {
@@ -106,7 +106,7 @@ namespace NiL.JS.Core
                             else if (value is ContextStatement)
                                 val = (JSObject)(ContextStatement)value;
                             else val = new NiL.JS.Modules.ClassProxy(value);
-                            (oValue as IContextStatement[])[0].Invoke(null, new IContextStatement[] { new NiL.JS.Statements.ImmidateValueStatement(val) });
+                            (oValue as IContextStatement[])[0].Invoke(null, new JSObject[] { val });
                             break;
                         }
                     default:
@@ -133,7 +133,7 @@ namespace NiL.JS.Core
             return fieldGetter(name, false);
         }
 
-        public JSObject GetField(string name, bool fast)
+        public virtual JSObject GetField(string name, bool fast)
         {
             if (fieldGetter == null)
                 fieldGetter = DefaultFieldGetter;
@@ -257,7 +257,7 @@ namespace NiL.JS.Core
                     return;
             if (ValueType == ObjectValueType.Property)
             {
-                (oValue as IContextStatement[])[0].Invoke(null, new IContextStatement[] { new NiL.JS.Statements.ImmidateValueStatement(right) });
+                (oValue as IContextStatement[])[0].Invoke(null, new JSObject[] { right });
                 return;
             }
             if (right == this)

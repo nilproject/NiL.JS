@@ -3,21 +3,29 @@ using NiL.JS.Modules;
 
 namespace NiL.JS.Core.BaseTypes
 {
-    internal class String
+    internal class String : JSObject
     {
-        [Hidden]
-        private string value;
-        [Hidden]
-        private JSObject native;
+        private ClassProxy proxy;
 
         public String()
         {
-            value = "";
+            oValue = "";
+            ValueType = ObjectValueType.String;
         }
 
         public String(string s)
         {
-            value = s;
+            oValue = s;
+            ValueType = ObjectValueType.String;
+        }
+
+        public String(JSObject[] s)
+        {
+            if (s.Length > 0)
+                oValue = s[0].Value.ToString();
+            else
+                oValue = "";
+            ValueType = ObjectValueType.String;
         }
 
         public JSObject this[object pos]
@@ -37,15 +45,20 @@ namespace NiL.JS.Core.BaseTypes
                     else
                         return JSObject.undefined;
                 }
-                if ((p < 0) || (p >= value.Length))
+                if ((p < 0) || (p >= (oValue as string).Length))
                     return JSObject.undefined;
-                return value[p].ToString();
+                return (oValue as string)[p].ToString();
             }
         }
 
-        public static String fromCharCode(object charCode)
+        public static JSObject fromCharCode(JSObject[] code)
         {
             int chc = 0;
+            if (code.Length == 0)
+                return new ClassProxy(new String());
+            object charCode = code[0].Value;
+            if (charCode is String)
+                charCode = (charCode as String).oValue;
             if (charCode is int)
                 chc = (int)charCode;
             else if (charCode is double)
@@ -53,10 +66,10 @@ namespace NiL.JS.Core.BaseTypes
             else if (charCode is string)
             {
                 double d = 0;
-                if (double.TryParse((string)charCode, out d))
+                if (Parser.ParseNumber((string)charCode, ref chc, false, out d))
                     chc = (int)d;
             }
-            return new String(((char)chc).ToString());
+            return new ClassProxy(new String() { oValue = ((char)chc).ToString() });
         }
 
         public double charCodeAt(object pos)
@@ -72,21 +85,19 @@ namespace NiL.JS.Core.BaseTypes
                 if (double.TryParse((string)pos, out d))
                     p = (int)d;
             }
-            if ((p < 0) || (p >= value.Length))
+            if ((p < 0) || (p >= (oValue as string).Length))
                 return double.NaN;
-            return (int)value[p];
+            return (int)(oValue as string)[p];
         }
 
         public JSObject toString()
         {
-            (native ?? (native = new JSObject()
-            {
-                oValue = value,
-                ValueType = ObjectValueType.String,
-                assignCallback = JSObject.ErrorAssignCallback,
-                fieldGetter = (x, y) => { throw new InvalidOperationException(); }
-            })).oValue = value;
-            return native;
+            return this;
+        }
+
+        public JSObject valueOf()
+        {
+            return this;
         }
 
         [Hidden]
@@ -96,21 +107,31 @@ namespace NiL.JS.Core.BaseTypes
         {
             get
             {
-                _length.iValue = value.Length;
+                _length.iValue = (oValue as string).Length;
                 return _length;
             }
         }
 
         public override string ToString()
         {
-            return value;
+            return oValue as string;
         }
 
         public override bool Equals(object obj)
         {
             if (obj is String)
-                return value == (obj as String).value;
+                return oValue.Equals((obj as String).oValue);
             return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return oValue.GetHashCode();
+        }
+
+        public override JSObject GetField(string name, bool fast)
+        {
+            return (proxy ?? (proxy = new ClassProxy(this))).GetField(name, fast);
         }
     }
 }

@@ -20,7 +20,7 @@ for (i1 = 0; i1 < 16; i1++) {
           var uu = hex[i1] + hex[i2] + hex[i3] + hex[i4];
           var xx = String.fromCharCode("0x" + uu);
           var LineTerminators = ((uu === "000A") || (uu === "000D") || (uu === "2028") || (uu === "2029"));
-          var yy = 0;     
+          var yy = 0;
           eval("//var " + xx + "yy = -1");          
           if (LineTerminators !== true) { 
             if (yy !== 0) {
