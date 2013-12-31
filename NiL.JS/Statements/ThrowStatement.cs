@@ -34,7 +34,7 @@ namespace NiL.JS.Statements
             throw new JSException(body.Invoke(context));
         }
 
-        public override JSObject Invoke(Context context, JSObject _this, JSObject[] args)
+        public override JSObject Invoke(Context context, JSObject[] args)
         {
             throw new NotImplementedException();
         }

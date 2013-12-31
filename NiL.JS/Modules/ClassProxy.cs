@@ -55,8 +55,9 @@ namespace NiL.JS.Modules
                     oValue = constructor.Invoke(args)
                 };
                 res.prototype = proto;
-                if (x.prototype != null && x.prototype.ValueType == ObjectValueType.Object && x.prototype.oValue == hostedType as object)
-                    x.Assign(res);
+                var _this = (x.thisBind ?? x.GetField("this"));
+                if (_this.prototype != null && _this.prototype.ValueType == ObjectValueType.Object && _this.prototype.oValue == hostedType as object)
+                    _this.Assign(res);
                 return res;
             });
             proto = DefaultFieldGetter("prototype", false);
@@ -200,7 +201,7 @@ namespace NiL.JS.Modules
                         return new JSObject()
                         {
                             ValueType = ObjectValueType.Property,
-                            oValue = new IContextStatement[] 
+                            oValue = new Statement[] 
                             {
                                 new NiL.JS.Statements.ExternalFunction(new CallableField((_th, args) =>
                                 {
@@ -299,9 +300,9 @@ namespace NiL.JS.Modules
                             result = new JSObject()
                             {
                                 ValueType = ObjectValueType.Property,
-                                oValue = new IContextStatement[] { 
-                                    pinfo.CanWrite ? convert(pinfo.SetMethod).oValue as IContextStatement : null,
-                                    pinfo.CanRead ? convert(pinfo.GetMethod).oValue as IContextStatement : null 
+                                oValue = new ContextStatement[] { 
+                                    pinfo.CanWrite ? convert(pinfo.SetMethod).oValue as ContextStatement : null,
+                                    pinfo.CanRead ? convert(pinfo.GetMethod).oValue as ContextStatement : null 
                                 }
                             };
                             break;

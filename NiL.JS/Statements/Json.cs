@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace NiL.JS.Statements
 {
-    internal class Json : Statement
+    internal class Json : Statement, IOptimizable
     {
         private string[] fields;
         private Statement[] values;
@@ -113,11 +113,6 @@ namespace NiL.JS.Statements
             };
         }
 
-        public override IContextStatement Implement(Context context)
-        {
-            return new ContextStatement(context, this);
-        }
-
         public override JSObject Invoke(Context context)
         {
             var res = new JSObject(false);
@@ -130,16 +125,32 @@ namespace NiL.JS.Statements
                 if (val.ValueType == ObjectValueType.Property)
                 {
                     var gs = val.oValue as Statement[];
-                    val.oValue = new IContextStatement[] { gs[0] != null ? gs[0].Implement(context) : null, gs[1] != null ? gs[1].Implement(context) : null };
+                    val.oValue = new ContextStatement[] { gs[0] != null ? gs[0].Implement(context) : null, gs[1] != null ? gs[1].Implement(context) : null };
                 }
                 res.GetField(fields[i]).Assign(val);
             }
             return res;
         }
 
-        public override JSObject Invoke(Context context, JSObject _this, JSObject[] args)
+        public override JSObject Invoke(Context context, JSObject[] args)
         {
             throw new NotImplementedException();
+        }
+
+        public bool Optimize(ref Statement _this, int depth, HashSet<string> vars)
+        {
+            for (int i = 0; i < values.Length; i++)
+            {
+                if ((values[i] is ImmidateValueStatement) && ((values[i] as ImmidateValueStatement).Value.ValueType == ObjectValueType.Property))
+                {
+                    var gs = (values[i] as ImmidateValueStatement).Value.oValue as Statement[];
+                    Parser.Optimize(ref gs[0], depth + 1, vars);
+                    Parser.Optimize(ref gs[1], depth + 1, vars);
+                }
+                else
+                    Parser.Optimize(ref values[i], depth + 1, vars);
+            }
+            return false;
         }
     }
 }

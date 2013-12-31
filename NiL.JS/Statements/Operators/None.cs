@@ -14,16 +14,25 @@ namespace NiL.JS.Statements.Operators
 
         public override JSObject Invoke(Context context)
         {
+            var outb = context.updateThisBind;
+            context.updateThisBind = false;
             JSObject temp = null;
             temp = first.Invoke(context);
             if (temp.ValueType == ObjectValueType.NotExist)
+            {
+                context.updateThisBind = outb;
                 throw new InvalidOperationException("varible not defined");
+            }
             if (second != null)
             {
                 temp = second.Invoke(context);
                 if (temp.ValueType == ObjectValueType.NotExist)
+                {
+                    context.updateThisBind = outb;
                     throw new InvalidOperationException("varible not defined");
+                }
             }
+            context.updateThisBind = outb;
             return temp;
         }
 

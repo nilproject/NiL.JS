@@ -1,3 +1,2 @@
-﻿var hello = 'hello';
-console.hello = "oops";
-console.log(this.hello);
+﻿var t = new (function () { this.h = "hello" });
+console.log(t.h);

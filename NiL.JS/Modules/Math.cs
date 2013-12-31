@@ -9,11 +9,11 @@ namespace NiL.JS.Modules
         [Protected]
         public const double E = System.Math.E;
 
-        public static JSObject pow(IContextStatement[] args)
+        public static JSObject pow(JSObject[] args)
         {
             if (args.Length < 2)
                 return double.NaN;
-            var r = args[0].Invoke();
+            var r = args[0];
             double x = double.NaN;
             if (r.ValueType == ObjectValueType.Int)
                 x = r.iValue;
@@ -30,7 +30,7 @@ namespace NiL.JS.Modules
                 Parser.ParseNumber(s, ref ix, false, out x);
             }
 
-            r = args[1].Invoke();
+            r = args[1];
             double y = double.NaN;
             if (r.ValueType == ObjectValueType.Int || r.ValueType == ObjectValueType.Bool)
                 y = r.iValue;
@@ -48,11 +48,11 @@ namespace NiL.JS.Modules
             return System.Math.Pow(x, y);
         }
 
-        public static JSObject floor(IContextStatement[] args)
+        public static JSObject floor(JSObject[] args)
         {
             if (args.Length < 1)
                 return double.NaN;
-            var r = args[0].Invoke();
+            var r = args[0];
             double x = double.NaN;
             if (r.ValueType == ObjectValueType.Int || r.ValueType == ObjectValueType.Bool)
                 x = r.iValue;
@@ -70,11 +70,11 @@ namespace NiL.JS.Modules
             return System.Math.Floor(x);
         }
 
-        public static JSObject round(IContextStatement[] args)
+        public static JSObject round(JSObject[] args)
         {
             if (args.Length < 1)
                 return double.NaN;
-            var r = args[0].Invoke();
+            var r = args[0];
             double x = double.NaN;
             if (r.ValueType == ObjectValueType.Int || r.ValueType == ObjectValueType.Bool)
                 x = r.iValue;

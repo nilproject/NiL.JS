@@ -50,11 +50,6 @@ namespace NiL.JS.Statements
             };
         }
 
-        public override IContextStatement Implement(Context context)
-        {
-            return new ContextStatement(context, this);
-        }
-
         public override JSObject Invoke(Context context)
         {
             var res = new NiL.JS.Core.BaseTypes.Array(elements.Length);
@@ -63,7 +58,7 @@ namespace NiL.JS.Statements
             return new Modules.ClassProxy(res);
         }
 
-        public override JSObject Invoke(Context context, JSObject _this, JSObject[] args)
+        public override JSObject Invoke(Context context, JSObject[] args)
         {
             throw new NotImplementedException();
         }

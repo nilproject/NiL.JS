@@ -367,10 +367,10 @@ namespace NiL.JS.Statements
                         {
                             s = value.LastIndexOf('/') + 1;
                             string flags = value.Substring(s);
-                            first = new Operators.Call(new GetVaribleStatement("RegExp"), new ImmidateValueStatement(new IContextStatement[2]
+                            first = new Operators.Call(new GetVaribleStatement("RegExp"), new ImmidateValueStatement(new JSObject[2]
                             {
-                                new ImmidateValueStatement(value.Substring(1, s - 2)),
-                                new ImmidateValueStatement(flags)
+                                value.Substring(1, s - 2),
+                                flags
                             }));
                         }
                         else
@@ -1040,7 +1040,7 @@ namespace NiL.JS.Statements
                         var val = temp.oValue as string;
                         temp = second.Invoke(context);
                         if (temp.ValueType == ObjectValueType.Object)
-                            temp = temp.ToPrimitiveValue_Value_String();
+                            temp = temp.ToPrimitiveValue_Value_String(context);
                         if (temp.ValueType == ObjectValueType.Int)
                             val += temp.iValue;
                         else if (temp.ValueType == ObjectValueType.Double)
@@ -1053,7 +1053,7 @@ namespace NiL.JS.Statements
                     }
                 case ObjectValueType.Date:
                     {
-                        var val = temp.ToPrimitiveValue_String_Value();
+                        var val = temp.ToPrimitiveValue_String_Value(context);
                         temp = second.Invoke(context);
                         switch (temp.ValueType)
                         {
@@ -1102,7 +1102,7 @@ namespace NiL.JS.Statements
                     }
                 case ObjectValueType.Object:
                     {
-                        temp = temp.ToPrimitiveValue_Value_String();
+                        temp = temp.ToPrimitiveValue_Value_String(context);
                         if (temp.ValueType == ObjectValueType.Int)
                             goto case ObjectValueType.Int;
                         else if (temp.ValueType == ObjectValueType.Double)
@@ -1175,7 +1175,7 @@ namespace NiL.JS.Statements
                             case ObjectValueType.Object:
                             case ObjectValueType.Date:
                                 {
-                                    temp = temp.ToPrimitiveValue_Value_String();
+                                    temp = temp.ToPrimitiveValue_Value_String(context);
                                     if (temp.ValueType == ObjectValueType.Int)
                                         goto case ObjectValueType.Int;
                                     else if (temp.ValueType == ObjectValueType.Double)
@@ -1231,7 +1231,7 @@ namespace NiL.JS.Statements
                 case ObjectValueType.Date:
                 case ObjectValueType.Object:
                     {
-                        temp = temp.ToPrimitiveValue_Value_String();
+                        temp = temp.ToPrimitiveValue_Value_String(context);
                         if (temp.ValueType == ObjectValueType.Int)
                             goto case ObjectValueType.Int;
                         else if (temp.ValueType == ObjectValueType.Double)
@@ -1396,7 +1396,7 @@ namespace NiL.JS.Statements
                                 }
                             case ObjectValueType.Object:
                                 {
-                                    temp1 = temp1.ToPrimitiveValue_Value_String();
+                                    temp1 = temp1.ToPrimitiveValue_Value_String(context);
                                     if (temp1.ValueType == ObjectValueType.Int)
                                     {
                                         goto case ObjectValueType.Int;
@@ -1452,7 +1452,7 @@ namespace NiL.JS.Statements
                                 }
                             case ObjectValueType.Object:
                                 {
-                                    temp1 = temp1.ToPrimitiveValue_Value_String();
+                                    temp1 = temp1.ToPrimitiveValue_Value_String(context);
                                     if (temp1.ValueType == ObjectValueType.Int)
                                     {
                                         goto case ObjectValueType.Int;
@@ -1507,7 +1507,7 @@ namespace NiL.JS.Statements
                         }
                         else if (temp1.ValueType == ObjectValueType.Object)
                         {
-                            temp1 = temp1.ToPrimitiveValue_Value_String();
+                            temp1 = temp1.ToPrimitiveValue_Value_String(context);
                             tempResult.iValue = temp1.Value.ToString() == left ? 1 : 0;
                         }
                         else goto default;
@@ -1523,13 +1523,13 @@ namespace NiL.JS.Statements
                             case ObjectValueType.Bool:
                             case ObjectValueType.String:
                                 {
-                                    temp0 = temp0.ToPrimitiveValue_Value_String();
+                                    temp0 = temp0.ToPrimitiveValue_Value_String(context);
                                     break;
                                 }
                             case ObjectValueType.Object:
                                 {
                                     if (temp0.oValue is NiL.JS.Core.BaseTypes.String)
-                                        temp0 = (temp0.oValue as NiL.JS.Core.BaseTypes.String).toString();
+                                        temp0 = (temp0.oValue as NiL.JS.Core.BaseTypes.String);
                                     break;
                                 }
                         }
@@ -2069,15 +2069,13 @@ namespace NiL.JS.Statements
                 throw new ArgumentException("varible is not defined");
             if (temp.ValueType != ObjectValueType.Statement)
                 throw new ArgumentException(temp + " is not callable");
-            var stat = temp.oValue;
             if (second != null)
             {
                 args = second.Invoke(context);
                 sps = args.oValue as Statement[];
             }
-            JSObject _this = new JSObject();
-            _this.Assign(temp.GetField("prototype", true));
-            _this = new JSObject() { ValueType = ObjectValueType.Object, prototype = _this, oValue = _this.oValue };
+            JSObject _this = temp.GetField("prototype", true);
+            _this = new JSObject() { ValueType = ObjectValueType.Object, prototype = _this.ValueType > ObjectValueType.Undefined ? _this : null, oValue = new object() };
             JSObject[] stmnts = null;
             if ((sps != null) && (sps.Length != 0))
             {
@@ -2085,7 +2083,17 @@ namespace NiL.JS.Statements
                 for (int i = 0; i < sps.Length; i++)
                     stmnts[i] = sps[i].Invoke(context);
             }
-            (stat as IContextStatement).Invoke(_this, stmnts);
+            var stat = temp.oValue as Statement;
+            var otb = context.thisBind;
+            context.thisBind = _this;
+            try
+            {
+                stat.Invoke(context, stmnts);
+            }
+            finally
+            {
+                context.thisBind = otb;
+            }
             return _this;
         }
 
@@ -2135,7 +2143,7 @@ namespace NiL.JS.Statements
             return del(context);
         }
 
-        public override JSObject Invoke(Context context, JSObject _this, JSObject[] args)
+        public override JSObject Invoke(Context context, JSObject[] args)
         {
             throw new NotImplementedException();
         }

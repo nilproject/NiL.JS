@@ -4,7 +4,7 @@ using System;
 
 namespace NiL.JS.Statements
 {
-    internal class ExternalFunction : IContextStatement
+    internal class ExternalFunction : Statement
     {
         private readonly CallableField del;
 
@@ -13,14 +13,14 @@ namespace NiL.JS.Statements
             this.del = del;
         }
 
-        public JSObject Invoke()
+        public override JSObject Invoke(Context context)
         {
-            throw new System.InvalidOperationException();
+            throw new InvalidOperationException();
         }
 
-        public JSObject Invoke(JSObject _this, JSObject[] args)
+        public override JSObject Invoke(Context context, JSObject[] args)
         {
-            return del(_this, args);
+            return del(context, args);
         }
     }
 }

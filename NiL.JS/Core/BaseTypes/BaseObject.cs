@@ -12,8 +12,9 @@ namespace NiL.JS.Core.BaseTypes
 
         public static void RegisterTo(Context context)
         {
-            var func = context.Assign("Object", new CallableField((_this, args) =>
+            var func = context.Assign("Object", new CallableField((cont, args) =>
             {
+                var _this = cont.thisBind ?? cont.GetField("this");
                 JSObject res;
                 if (_this.ValueType == ObjectValueType.Object && _this.prototype == Prototype)
                     res = _this;
@@ -32,15 +33,15 @@ namespace NiL.JS.Core.BaseTypes
             Prototype = proto;
             proto.ValueType = ObjectValueType.Object;
             proto.oValue = "Object";
-            var tos = proto.GetField("toString");
-            tos.Assign(new CallableField((_this, args) =>
+            var tostr = proto.GetField("toString");
+            tostr.Assign(new CallableField((cont, args) =>
             {
-                switch (_this.ValueType)
+                switch ((cont.thisBind ?? cont.GetField("this")).ValueType)
                 {
                     case ObjectValueType.Int:
                     case ObjectValueType.Double:
                         {
-                            return "[object Number]";
+                            return  "[object Number]";
                         }
                     case ObjectValueType.Undefined:
                         {
@@ -66,7 +67,13 @@ namespace NiL.JS.Core.BaseTypes
                     default: throw new NotImplementedException();
                 }
             }));
-            tos.attributes |= ObjectAttributes.DontEnum;
+            tostr.attributes |= ObjectAttributes.DontEnum;
+            var valueof = proto.GetField("valueOf");
+            valueof.Assign(new CallableField((cont, args) =>
+            {
+                return cont.thisBind;
+            }));
+            valueof.attributes |= ObjectAttributes.DontEnum;
         }
 
         public BaseObject()

@@ -69,11 +69,6 @@ namespace NiL.JS.Statements
             };
         }
 
-        public override IContextStatement Implement(Context context)
-        {
-            return new ContextStatement(context, this);
-        }
-
         public override JSObject Invoke(Context context)
         {
             /*context.localVaribleCount = names.Length;
@@ -86,7 +81,7 @@ namespace NiL.JS.Statements
             throw new InvalidOperationException("VaribleDefineStatement.Invoke");
         }
 
-        public override JSObject Invoke(Context context, JSObject _this, JSObject[] args)
+        public override JSObject Invoke(Context context, JSObject[] args)
         {
             throw new NotImplementedException();
         }

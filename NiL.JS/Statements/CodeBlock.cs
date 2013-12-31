@@ -78,11 +78,6 @@ namespace NiL.JS.Statements
             };
         }
 
-        public override IContextStatement Implement(Context context)
-        {
-            return new ContextStatement(context, this);
-        }
-
         public override JSObject Invoke(Context context)
         {
             for (int i = functions.Length - 1; i >= 0; i--)
@@ -93,18 +88,18 @@ namespace NiL.JS.Statements
             }
             for (int i = varibles.Length - 1; i >= 0; i--)
                 context.Define(varibles[i]);
-            for (int i = length; i > 0; i--)
+            JSObject res = null;
+            for (int i = length; i >= 0; i--)
             {
-                body[i].Invoke(context);
+                res = body[i].Invoke(context);
+                context.updateThisBind = false;
                 if (context.abort != AbortType.None)
                     return context.abortInfo;
             }
-            if (length >= 0)
-                return body[0].Invoke(context);
-            return null;
+            return res;
         }
 
-        public override JSObject Invoke(Context context, JSObject _this, JSObject[] args)
+        public override JSObject Invoke(Context context, JSObject[] args)
         {
             throw new NotImplementedException();
         }

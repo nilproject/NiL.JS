@@ -87,7 +87,7 @@ namespace NiL.JS.Statements
                 arguments.Add(Parser.Unescape(code.Substring(n, i - n)));
                 while (char.IsWhiteSpace(code[i])) i++;
             }
-            switch(mode)
+            switch (mode)
             {
                 case FunctionParseMode.Getter:
                     {
@@ -122,14 +122,9 @@ namespace NiL.JS.Statements
             };
         }
 
-        public override IContextStatement Implement(Context context)
-        {
-            return new ContextStatement(context, this);
-        }
-
         private static JSObject[] defaultArgs = new JSObject[0];
 
-        public override JSObject Invoke(Context context, JSObject _this, JSObject[] args)
+        public override JSObject Invoke(Context context, JSObject[] args)
         {
             Context internalContext = new Context(context);
             int i = 0;
@@ -140,7 +135,6 @@ namespace NiL.JS.Statements
                 internalContext.Define(arguments[i]).Assign(args[i]);
             for (; i < arguments.Length; i++)
                 internalContext.Define(arguments[i]).Assign(null);
-            internalContext.thisBind = _this;
             body.Invoke(internalContext);
             return internalContext.abortInfo;
         }

@@ -4,7 +4,7 @@ using System;
 
 namespace NiL.JS.Statements
 {
-    internal sealed class ImmidateValueStatement : Statement, IOptimizable, IContextStatement
+    internal sealed class ImmidateValueStatement : Statement, IOptimizable
     {
         public readonly JSObject Value;
 
@@ -19,7 +19,7 @@ namespace NiL.JS.Statements
             return Value;
         }
 
-        public override JSObject Invoke(Context context, JSObject _this, JSObject[] args)
+        public override JSObject Invoke(Context context, JSObject[] args)
         {
             return Value;
         }
@@ -29,7 +29,7 @@ namespace NiL.JS.Statements
             return Value;
         }
 
-        public JSObject Invoke(JSObject _this, JSObject[] args)
+        public JSObject Invoke(JSObject[] args)
         {
             return Value;
         }

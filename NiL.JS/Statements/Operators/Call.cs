@@ -22,14 +22,10 @@ namespace NiL.JS.Statements.Operators
 
             JSObject res = null;
 
-            var stat = (temp.oValue as IContextStatement);
+            var stat = (temp.oValue as Statement);
             var args = second.Invoke(context);
-            JSObject _this = null;
-            _this = context.thisBind;
-            if (_this == null)
-                _this = context.GetField("this");
             if (args.oValue is JSObject[])
-                res = stat.Invoke(_this, args.oValue as JSObject[]);
+                res = stat.Invoke(context, args.oValue as JSObject[]);
             else
             {
                 var sps = args.oValue as Statement[];
@@ -41,7 +37,7 @@ namespace NiL.JS.Statements.Operators
                     for (int i = 0; i < sps.Length; i++)
                         stmnts[i] = sps[i].Invoke(context);
                     context.thisBind = newThisBind;
-                    res = stat.Invoke(_this, stmnts);
+                    res = stat.Invoke(context, stmnts);
                 }
             }
             context.thisBind = oldThisBind;

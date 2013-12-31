@@ -63,11 +63,6 @@ namespace NiL.JS.Statements
             };
         }
 
-        public override IContextStatement Implement(Context context)
-        {
-            return new ContextStatement(context, this);
-        }
-
         public override JSObject InvokeForAssing(Context context)
         {
             return impl(context);
@@ -77,11 +72,11 @@ namespace NiL.JS.Statements
         {
             var res = impl(context);
             if (res.ValueType == ObjectValueType.Property)
-                res = (res.oValue as IContextStatement[])[1].Invoke(null, null);
+                res = (res.oValue as Statement[])[1].Invoke(context, null);
             return res;
         }
 
-        public override JSObject Invoke(Context context, JSObject _this, JSObject[] args)
+        public override JSObject Invoke(Context context, JSObject[] args)
         {
             throw new NotImplementedException();
         }

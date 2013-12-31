@@ -150,11 +150,11 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * 3 * i; }
         {
             NiL.JS.Core.Context.GlobalContext.GetField("platform").Assign("NiL.JS");
             //runFile(@"tests.js");
-            runFile(@"ftest.js");
+            //runFile(@"ftest.js");
             //runFile(@"C:\Projects\NiL.JS\NiL.JSTest\tests\Conformance\07_Lexical_Conventions\7.4_Comments\S7.4_A5.js");
             //benchmark();
             //featureSupportTest();
-            //sputnicTests();
+            sputnicTests();
             //testEx();
 
             GC.Collect();

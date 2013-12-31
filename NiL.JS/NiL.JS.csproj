@@ -130,7 +130,6 @@
     <Compile Include="Core\BaseTypes\Date.cs" />
     <Compile Include="Core\BaseTypes\String.cs" />
     <Compile Include="Core\Delegates.cs" />
-    <Compile Include="Core\IContextStatement.cs" />
     <Compile Include="Core\IOptimizable.cs" />
     <Compile Include="Core\JSException.cs" />
     <Compile Include="Core\ParsingState.cs" />

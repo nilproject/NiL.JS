@@ -41,7 +41,7 @@ namespace NiL.JS.Statements.Operators
                             case ObjectValueType.Statement:
                             case ObjectValueType.Object:
                                 {
-                                    temp = temp.ToPrimitiveValue_Value_String();
+                                    temp = temp.ToPrimitiveValue_Value_String(context);
                                     if (temp.ValueType == ObjectValueType.Int)
                                         goto case ObjectValueType.Int;
                                     else if (temp.ValueType == ObjectValueType.Double)
@@ -92,7 +92,7 @@ namespace NiL.JS.Statements.Operators
                                 }
                             case ObjectValueType.Object:
                                 {
-                                    temp = temp.ToPrimitiveValue_Value_String();
+                                    temp = temp.ToPrimitiveValue_Value_String(context);
                                     if (temp.ValueType == ObjectValueType.Int)
                                         goto case ObjectValueType.Int;
                                     else if (temp.ValueType == ObjectValueType.Double)
@@ -121,7 +121,7 @@ namespace NiL.JS.Statements.Operators
                 case ObjectValueType.Date:
                 case ObjectValueType.Object:
                     {
-                        temp = temp.ToPrimitiveValue_Value_String();
+                        temp = temp.ToPrimitiveValue_Value_String(context);
                         if (temp.ValueType == ObjectValueType.Int)
                             goto case ObjectValueType.Int;
                         else if (temp.ValueType == ObjectValueType.Double)
