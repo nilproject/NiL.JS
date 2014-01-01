@@ -1,11 +1,14 @@
 using NiL.JS.Core;
 using System;
 using System.Reflection;
+using System.Collections.Generic;
 
 namespace NiL.JS.Modules
 {
     public sealed class ClassProxy : JSObject
     {
+        private static readonly Dictionary<Type, ClassProxy> constructors = new Dictionary<Type, ClassProxy>();
+
         private readonly Type hostedType;
         private MethodInfo getItem;
         private MethodInfo setItem;
@@ -34,37 +37,60 @@ namespace NiL.JS.Modules
             hostedType = host;
             ValueType = ObjectValueType.Statement;
             JSObject proto = null;
-            oValue = new Statements.ExternalFunction((x, y) =>
+            ClassProxy exconst = null;
+            if (constructors.TryGetValue(hostedType, out exconst))
             {
-                object[] args = null;
-                var constructor = hostedType.GetConstructor(y != null ? new Type[] { y.GetType() } : Type.EmptyTypes);
-                if (constructor == null)
+                oValue = exconst.oValue;
+                proto = DefaultFieldGetter("prototype", false);
+                proto.Assign(exconst.GetField("prototype", true));
+                base.fieldGetter = getField;
+                getItem = exconst.getItem;
+                setItem = exconst.setItem;
+            }
+            else
+            {
+                oValue = new Statements.ExternalFunction((x, y) =>
                 {
-                    args = convertArgs(y);
-                    constructor = hostedType.GetConstructor(y != null ? Type.GetTypeArray(y) : Type.EmptyTypes);
+                    object[] args = null;
+                    var constructor = hostedType.GetConstructor(y != null ? new Type[] { y.GetType() } : Type.EmptyTypes);
                     if (constructor == null)
                     {
-                        constructor = hostedType.GetConstructor(new Type[] { typeof(object[]) });
-                        args = new object[] { args };
+                        args = convertArgs(y);
+                        constructor = hostedType.GetConstructor(Type.GetTypeArray(y));
+                        if (constructor == null)
+                        {
+                            constructor = hostedType.GetConstructor(new Type[] { typeof(object[]) });
+                            if (constructor == null)
+                            {
+                                constructor = hostedType.GetConstructor(Type.EmptyTypes);
+                                args = null;
+                            }
+                            else
+                                args = new object[] { args };
+                        }
                     }
-                }
-                else
-                    args = new object[] { y };
-                var res = new ClassProxy(hostedType == typeof(NiL.JS.Core.BaseTypes.Date) ? ObjectValueType.Date : ObjectValueType.Object, hostedType)
-                {
-                    oValue = constructor.Invoke(args)
-                };
-                res.prototype = proto;
-                var _this = (x.thisBind ?? x.GetField("this"));
-                if (_this.prototype != null && _this.prototype.ValueType == ObjectValueType.Object && _this.prototype.oValue == hostedType as object)
-                    _this.Assign(res);
-                return res;
-            });
-            proto = DefaultFieldGetter("prototype", false);
-            proto.Assign(new JSObject() { prototype = Core.BaseTypes.BaseObject.Prototype, ValueType = ObjectValueType.Object, oValue = hostedType });
-            base.fieldGetter = getField;
-            getItem = hostedType.GetMethod("get_Item", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
-            setItem = hostedType.GetMethod("set_Item", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+                    else
+                        args = y != null ?new object[] { y } : null;
+                    var res = new ClassProxy(hostedType == typeof(NiL.JS.Core.BaseTypes.Date) ? ObjectValueType.Date : ObjectValueType.Object, hostedType)
+                    {
+                        oValue = constructor.Invoke(args)
+                    };
+                    res.prototype = proto;
+                    var _this = x.thisBind;
+                    if (_this != null && _this.prototype != null && _this.prototype.ValueType == ObjectValueType.Object && _this.prototype.oValue == hostedType as object)
+                        _this.Assign(res);
+                    var c = res.DefaultFieldGetter("constructor", false);
+                    c.Assign(this);
+                    c.attributes |= ObjectAttributes.DontEnum;
+                    return res;
+                });
+                constructors[hostedType] = this;
+                proto = DefaultFieldGetter("prototype", false);
+                proto.Assign(new JSObject() { prototype = Core.BaseTypes.BaseObject.Prototype, ValueType = ObjectValueType.Object, oValue = hostedType });
+                base.fieldGetter = getField;
+                getItem = hostedType.GetMethod("get_Item", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+                setItem = hostedType.GetMethod("set_Item", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+            }
         }
 
         private static object[] convertArgs(JSObject[] source)
@@ -177,6 +203,25 @@ namespace NiL.JS.Modules
             JSObject r = DefaultFieldGetter(name, fast);
             if (r.ValueType == ObjectValueType.NotExistInObject || (fast && r == undefined))
             {
+                switch (name)
+                {
+                    case "constructor":
+                        {
+                            if (ValueType == ObjectValueType.Object)
+                            {
+                                ClassProxy res = null;
+                                if (constructors.TryGetValue(hostedType, out res))
+                                    r.Assign(res);
+                                else
+                                {
+                                    constructors[hostedType] = res = new ClassProxy(hostedType);
+                                    r.Assign(res);
+                                }
+                                return r;
+                            }
+                            break;
+                        }
+                }
                 JSObject result = null;
 #if DEBUG
                 var members = hostedType.GetMembers(BindingFlags.Public | (ValueType == ObjectValueType.Statement ? BindingFlags.Static : BindingFlags.Instance) | BindingFlags.NonPublic);
@@ -300,9 +345,9 @@ namespace NiL.JS.Modules
                             result = new JSObject()
                             {
                                 ValueType = ObjectValueType.Property,
-                                oValue = new ContextStatement[] { 
-                                    pinfo.CanWrite ? convert(pinfo.SetMethod).oValue as ContextStatement : null,
-                                    pinfo.CanRead ? convert(pinfo.GetMethod).oValue as ContextStatement : null 
+                                oValue = new Statement[] { 
+                                    pinfo.CanWrite ? convert(pinfo.SetMethod).oValue as Statement : null,
+                                    pinfo.CanRead ? convert(pinfo.GetMethod).oValue as Statement : null 
                                 }
                             };
                             break;

@@ -551,6 +551,8 @@ namespace NiL.JS.Core
         internal static bool ParseNumber(string code, ref int index, bool move, out double value)
         {
             value = 0;
+            if (code.Length == 0)
+                return true;
             int i = index;
             int sig = 1;
             if (code[i] == '-' || code[i] == '+')
@@ -740,6 +742,8 @@ namespace NiL.JS.Core
         internal static bool ParseNumber(string code, ref int index, bool move, out int value)
         {
             value = 0;
+            if (code.Length == 0)
+                return true;
             int i = index;
             int sig = 1;
             if (code[i] == '-' || code[i] == '+')

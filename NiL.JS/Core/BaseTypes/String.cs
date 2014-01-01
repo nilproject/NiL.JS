@@ -11,12 +11,14 @@ namespace NiL.JS.Core.BaseTypes
         {
             oValue = "";
             ValueType = ObjectValueType.String;
+            fieldGetter = GetField;
         }
 
         public String(string s)
         {
             oValue = s;
             ValueType = ObjectValueType.String;
+            fieldGetter = GetField;
         }
 
         public String(JSObject[] s)
@@ -26,6 +28,7 @@ namespace NiL.JS.Core.BaseTypes
             else
                 oValue = "";
             ValueType = ObjectValueType.String;
+            fieldGetter = GetField;
         }
 
         public JSObject this[object pos]
@@ -55,7 +58,7 @@ namespace NiL.JS.Core.BaseTypes
         {
             int chc = 0;
             if (code.Length == 0)
-                return new ClassProxy(new String());
+                return new String();
             object charCode = code[0].Value;
             if (charCode is String)
                 charCode = (charCode as String).oValue;
@@ -69,7 +72,7 @@ namespace NiL.JS.Core.BaseTypes
                 if (Parser.ParseNumber((string)charCode, ref chc, false, out d))
                     chc = (int)d;
             }
-            return new ClassProxy(new String() { oValue = ((char)chc).ToString() });
+            return new String() { oValue = ((char)chc).ToString() };
         }
 
         public double charCodeAt(object pos)

@@ -3,9 +3,10 @@ using System;
 
 namespace NiL.JS.Statements.Operators
 {
-    internal class StrictNotEqual : StrictEqual
+    internal class NotEqual : Equal
     {
-        public StrictNotEqual(Statement first, Statement second)
+
+        public NotEqual(Statement first, Statement second)
             : base(first, second)
         {
 

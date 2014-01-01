@@ -16,7 +16,6 @@ namespace NiL.JS.Statements.Operators
             var temp = first.Invoke(context);
 
             tempResult.ValueType = ObjectValueType.Bool;
-
             var lvt = temp.ValueType;
             switch (lvt)
             {
@@ -43,6 +42,21 @@ namespace NiL.JS.Statements.Operators
                         else if (temp.ValueType == ObjectValueType.Double)
                             tempResult.iValue = left < temp.dValue ? 1 : 0;
                         else throw new NotImplementedException();
+                        break;
+                    }
+                case ObjectValueType.String:
+                    {
+                        string left = temp.oValue as string;
+                        temp = second.Invoke(context);
+                        switch(temp.ValueType)
+                        {
+                            case ObjectValueType.String:
+                                {
+                                    tempResult.iValue = string.Compare(left, temp.oValue as string) < 0 ? 1 : 0;
+                                    break;
+                                }
+                            default: throw new NotImplementedException();
+                        }
                         break;
                     }
                 default: throw new NotImplementedException();

@@ -43,10 +43,7 @@ namespace NiL.JS.Statements.Operators
                 case ObjectValueType.Date:
                 case ObjectValueType.Object:
                     {
-                        if (val.oValue is NiL.JS.Core.BaseTypes.String)
-                            return "string";
-                        else
-                            return "object";
+                        return "object";
                     }
                 default: throw new NotImplementedException();
             }

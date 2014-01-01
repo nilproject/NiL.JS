@@ -144,12 +144,12 @@ namespace NiL.JS.Core
         {
             if (ValueType == ObjectValueType.Undefined)
                 throw new InvalidOperationException("Can't access to property value of \"undefined\"");
-            if (name == "__proto__")
-                return prototype ?? Null;
             if ((int)ValueType < (int)ObjectValueType.Object)
                 fast = true;
             else if (oValue == null)
                 throw new InvalidOperationException("Can't access to property value of \"null\"");
+            if (name == "__proto__")
+                return prototype ?? Null;
             JSObject res = null;
             bool fromProto = fields == null || !fields.TryGetValue(name, out res);
             if (fromProto && prototype != null)
@@ -423,7 +423,7 @@ namespace NiL.JS.Core
 
         public static implicit operator JSObject(string value)
         {
-            return new Modules.ClassProxy(new BaseTypes.String(value));
+            return new BaseTypes.String(value);
         }
 
         public static implicit operator JSObject(object[] value)
