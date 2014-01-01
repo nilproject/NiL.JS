@@ -128,6 +128,7 @@
     <Compile Include="Core\BaseTypes\Array.cs" />
     <Compile Include="Core\BaseTypes\BaseObject.cs" />
     <Compile Include="Core\BaseTypes\Date.cs" />
+    <Compile Include="Core\BaseTypes\Number.cs" />
     <Compile Include="Core\BaseTypes\String.cs" />
     <Compile Include="Core\Delegates.cs" />
     <Compile Include="Core\IOptimizable.cs" />

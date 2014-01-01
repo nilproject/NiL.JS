@@ -55,7 +55,6 @@ namespace NiL.JS.Modules
                     var constructor = hostedType.GetConstructor(y != null ? new Type[] { y.GetType() } : Type.EmptyTypes);
                     if (constructor == null)
                     {
-                        args = convertArgs(y);
                         constructor = hostedType.GetConstructor(Type.GetTypeArray(y));
                         if (constructor == null)
                         {
@@ -68,6 +67,8 @@ namespace NiL.JS.Modules
                             else
                                 args = new object[] { args };
                         }
+                        else
+                            args = (object[])y;
                     }
                     else
                         args = y != null ?new object[] { y } : null;

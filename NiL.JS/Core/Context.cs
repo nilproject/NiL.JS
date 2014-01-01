@@ -59,29 +59,6 @@ namespace NiL.JS.Core
                 }
                 return true;
             }));
-            globalContext.GetField("Number").Assign(new CallableField((t, x) =>
-            {
-                if (x.Length > 0)
-                {
-                    var r = x[0];
-                    if (r.ValueType == ObjectValueType.Int || r.ValueType == ObjectValueType.Bool)
-                        return r.iValue;
-                    else if (r.ValueType == ObjectValueType.Double)
-                        return (int)r.dValue;
-                    else if ((r.ValueType == ObjectValueType.Statement) || (r.ValueType == ObjectValueType.Undefined))
-                        return 0;
-                    else if ((r.ValueType == ObjectValueType.String) && (r.oValue is string))
-                    {
-                        int cc = 0;
-                        string s = r.oValue as string;
-                        if (!int.TryParse(s, out cc) && (s.Length > 2) && (s[0] == '0') && (s[1] == 'x'))
-                            int.TryParse(s.Substring(2), System.Globalization.NumberStyles.HexNumber, null, out cc);
-                        return cc;
-                    }
-                    else throw new System.InvalidCastException("Cannot convert object to primitive value");
-                }
-                return 0;
-            }));
             #endregion
             #region Base types
             globalContext.GetField("Boolean").Assign(new CallableField((t, x) =>
@@ -145,6 +122,7 @@ namespace NiL.JS.Core
             globalContext.AttachModule(typeof(Date));
             globalContext.AttachModule(typeof(BaseTypes.Array));
             globalContext.AttachModule(typeof(BaseTypes.String));
+            globalContext.AttachModule(typeof(BaseTypes.Number));
             #endregion
             #region Consts
             var nan = globalContext.GetField("NaN");

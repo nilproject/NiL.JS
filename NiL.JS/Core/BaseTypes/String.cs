@@ -12,6 +12,7 @@ namespace NiL.JS.Core.BaseTypes
             oValue = "";
             ValueType = ObjectValueType.String;
             fieldGetter = GetField;
+            assignCallback = JSObject.ErrorAssignCallback;
         }
 
         public String(string s)
@@ -19,6 +20,7 @@ namespace NiL.JS.Core.BaseTypes
             oValue = s;
             ValueType = ObjectValueType.String;
             fieldGetter = GetField;
+            assignCallback = JSObject.ErrorAssignCallback;
         }
 
         public String(JSObject[] s)
@@ -29,6 +31,7 @@ namespace NiL.JS.Core.BaseTypes
                 oValue = "";
             ValueType = ObjectValueType.String;
             fieldGetter = GetField;
+            assignCallback = JSObject.ErrorAssignCallback;
         }
 
         public JSObject this[object pos]

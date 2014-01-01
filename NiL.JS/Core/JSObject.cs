@@ -408,17 +408,17 @@ namespace NiL.JS.Core
 
         public static implicit operator JSObject(int value)
         {
-            return new JSObject() { ValueType = ObjectValueType.Int, iValue = value, temporary = true, assignCallback = ErrorAssignCallback };
+            return new BaseTypes.Number(value);
         }
 
         public static implicit operator JSObject(long value)
         {
-            return new JSObject() { ValueType = ObjectValueType.Double, dValue = value, temporary = true, assignCallback = ErrorAssignCallback };
+            return new BaseTypes.Number((double)value);
         }
 
         public static implicit operator JSObject(double value)
         {
-            return new JSObject() { ValueType = ObjectValueType.Double, dValue = value, temporary = true, assignCallback = ErrorAssignCallback };
+            return new BaseTypes.Number(value);
         }
 
         public static implicit operator JSObject(string value)

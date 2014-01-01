@@ -22,7 +22,7 @@ namespace NiL.JS.Statements
                 var th = obj.Invoke(s);
                 if (s.updateThisBind)
                     s.thisBind = th;
-                var res = th.GetField(n.Value.ToString());
+                var res = th.GetField(n.ToPrimitiveValue_String_Value(s).Value.ToString());
                 return res;
             };
         }
@@ -58,7 +58,7 @@ namespace NiL.JS.Statements
             {
                 if (s.updateThisBind)
                     s.thisBind = obj;
-                var res = obj.GetField(fieldName.Invoke(s).Value.ToString());
+                var res = obj.GetField(fieldName.Invoke(s).ToPrimitiveValue_String_Value(s).Value.ToString());
                 return res;
             };
         }

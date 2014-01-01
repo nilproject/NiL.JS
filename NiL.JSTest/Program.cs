@@ -153,8 +153,8 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * 3 * i; }
             //runFile(@"C:\Projects\NiL.JS\NiL.JSTest\tests\Conformance\07_Lexical_Conventions\7.4_Comments\S7.4_A5.js");
             //benchmark();
             //featureSupportTest();
-            //runFile(@"ftest.js");
-            sputnicTests();
+            runFile(@"ftest.js");
+            //sputnicTests();
             //testEx();
 
             GC.Collect();
