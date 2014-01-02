@@ -66,7 +66,7 @@ namespace NiL.JS.Statements
         public bool Optimize(ref Statement _this, int depth, HashSet<string> vars)
         {
             for (int i = 0; i < elements.Length; i++)
-                Parser.Optimize(ref elements[i], depth + 1, vars);
+                Parser.Optimize(ref elements[i], 2, vars);
             return false;
         }
     }

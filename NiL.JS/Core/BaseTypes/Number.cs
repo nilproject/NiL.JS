@@ -5,8 +5,11 @@ namespace NiL.JS.Core.BaseTypes
 {
     internal class Number : JSObject
     {
-        public new static JSObject NaN = double.NaN;
+        [Modules.Protected]
+        public static JSObject NaN = double.NaN;
+        [Modules.Protected]
         public static JSObject POSITIVE_INFINITY = double.PositiveInfinity;
+        [Modules.Protected]
         public static JSObject NEGATIVE_INFINITY = double.NegativeInfinity;
 
         static Number()

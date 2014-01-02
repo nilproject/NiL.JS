@@ -148,9 +148,9 @@ namespace NiL.JS.Statements
         {
             var vars = new HashSet<string>();
             for (int i = 0; i < body.Length; i++)
-                Parser.Optimize(ref body[i], depth + 1, vars);
+                Parser.Optimize(ref body[i], 1, vars);
             for (int i = 0; i < functions.Length; i++)
-                Parser.Optimize(ref functions[i], depth + 1, vars);
+                Parser.Optimize(ref functions[i], 1, vars);
             if (depth > 0)
             {
                 foreach (var v in vars)

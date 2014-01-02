@@ -144,11 +144,11 @@ namespace NiL.JS.Statements
                 if ((values[i] is ImmidateValueStatement) && ((values[i] as ImmidateValueStatement).Value.ValueType == ObjectValueType.Property))
                 {
                     var gs = (values[i] as ImmidateValueStatement).Value.oValue as Statement[];
-                    Parser.Optimize(ref gs[0], depth + 1, vars);
-                    Parser.Optimize(ref gs[1], depth + 1, vars);
+                    Parser.Optimize(ref gs[0], 1, vars);
+                    Parser.Optimize(ref gs[1], 1, vars);
                 }
                 else
-                    Parser.Optimize(ref values[i], depth + 1, vars);
+                    Parser.Optimize(ref values[i], 2, vars);
             }
             return false;
         }

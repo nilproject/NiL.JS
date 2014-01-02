@@ -3,7 +3,7 @@ using NiL.JS.Core;
 
 namespace NiL.JS.Statements
 {
-    internal sealed class ThrowStatement : Statement
+    internal sealed class ThrowStatement : Statement, IOptimizable
     {
         private Statement body;
 
@@ -37,6 +37,12 @@ namespace NiL.JS.Statements
         public override JSObject Invoke(Context context, JSObject[] args)
         {
             throw new NotImplementedException();
+        }
+
+        public bool Optimize(ref Statement _this, int depth, System.Collections.Generic.HashSet<string> varibles)
+        {
+            Parser.Optimize(ref body, 2, varibles);
+            return false;
         }
     }
 }

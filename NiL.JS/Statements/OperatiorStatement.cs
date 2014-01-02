@@ -58,6 +58,7 @@ namespace NiL.JS.Statements
         Call = OperationTypeGroups.Special + 0,
         TypeOf = OperationTypeGroups.Special + 1,
         New = OperationTypeGroups.Special + 2,
+        Delete = OperationTypeGroups.Special + 3
     }
 
     internal delegate JSObject OpDelegate(Context context);
@@ -252,6 +253,11 @@ namespace NiL.JS.Statements
                             del = OpNew;
                             break;
                         }
+                    case OperationType.Delete:
+                        {
+                            del = (fastImpl = new Operators.Delete(first, second)).Invoke;
+                            break;
+                        }
                     case OperationType.InstanceOf:
                         {
                             del = OpInstanceOf;
@@ -387,6 +393,7 @@ namespace NiL.JS.Statements
                 || (code[i] == '+')
                 || (code[i] == '-')
                 || (code[i] == 'n' && code.Substring(i, 3) == "new")
+                || (code[i] == 'd' && code.Substring(i, 6) == "delete")
                 || (code[i] == 't' && code.Substring(i, 6) == "typeof")
                 || (code[i] == 'v' && code.Substring(i, 4) == "void"))
             {
@@ -469,6 +476,14 @@ namespace NiL.JS.Statements
                             do i++; while (char.IsWhiteSpace(code[i]));
                             first = Parse(state, ref i, false, true, true).Statement;
                             (first as OperatorStatement)._type = OperationType.New;
+                            break;
+                        }
+                    case 'd':
+                        {
+                            i += 5;
+                            do i++; while (char.IsWhiteSpace(code[i]));
+                            first = Parse(state, ref i, false, true, true).Statement;
+                            (first as OperatorStatement)._type = OperationType.Delete;
                             break;
                         }
                     default:

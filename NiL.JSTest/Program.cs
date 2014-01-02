@@ -163,8 +163,8 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * 3 * i; }
             //runFile(@"C:\Projects\NiL.JS\NiL.JSTest\tests\Conformance\08_Types\8.5_The_Number_Type\S8.5_A11_T1.js");
             //benchmark();
             //featureSupportTest();
-            //runFile(@"ftest.js");
-            sputnicTests();
+            runFile(@"ftest.js");
+            //sputnicTests();
             //testEx();
 
             GC.Collect();

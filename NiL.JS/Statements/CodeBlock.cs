@@ -82,9 +82,9 @@ namespace NiL.JS.Statements
         {
             for (int i = functions.Length - 1; i >= 0; i--)
             {
-                var o = context.Define((functions[i] as Function).Name);
-                o.ValueType = ObjectValueType.Statement;
-                o.oValue = functions[i].Implement(context);
+                var o = context.GetField((functions[i] as Function).Name);
+                o.Assign(functions[i].Invoke(context));
+                o.assignCallback = JSObject.ErrorAssignCallback;
             }
             for (int i = varibles.Length - 1; i >= 0; i--)
                 context.Define(varibles[i]);

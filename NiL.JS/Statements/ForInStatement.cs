@@ -56,7 +56,7 @@ namespace NiL.JS.Statements
             i++;
             state.AllowBreak++;
             state.AllowContinue++;
-            res.body = Parser.Parse(state, ref i, 1);
+            res.body = Parser.Parse(state, ref i, 0);
             state.AllowBreak--;
             state.AllowContinue--;
             index = i;
@@ -109,9 +109,9 @@ namespace NiL.JS.Statements
 
         public bool Optimize(ref Statement _this, int depth, System.Collections.Generic.HashSet<string> varibles)
         {
-            Parser.Optimize(ref varible, depth + 1, varibles);
-            Parser.Optimize(ref source, depth + 1, varibles);
-            Parser.Optimize(ref body, depth + 1, varibles);
+            Parser.Optimize(ref varible, 1, varibles);
+            Parser.Optimize(ref source, 1, varibles);
+            Parser.Optimize(ref body, 1, varibles);
             if (varible is Operators.None)
             {
                 if ((varible as Operators.None).Second != null)

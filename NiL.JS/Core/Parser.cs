@@ -62,6 +62,7 @@ namespace NiL.JS.Core
                 new _Rule("typeof", OperatorStatement.Parse),
                 new _Rule("try", TryCatchStatement.Parse),
                 new _Rule("new", OperatorStatement.Parse),
+                new _Rule("delete", OperatorStatement.Parse),
                 new _Rule("void", OperatorStatement.Parse),
                 new _Rule("break", BreakStatement.Parse),
                 new _Rule("continue", ContinueStatement.Parse),
@@ -87,6 +88,7 @@ namespace NiL.JS.Core
                 new _Rule("this", OperatorStatement.Parse),
                 new _Rule("typeof", OperatorStatement.Parse),
                 new _Rule("new", OperatorStatement.Parse),
+                new _Rule("delete", OperatorStatement.Parse),
                 new _Rule("void", OperatorStatement.Parse),
                 new _Rule(ValidateName, OperatorStatement.Parse),
                 new _Rule(ValidateValue, OperatorStatement.Parse),
@@ -113,6 +115,7 @@ namespace NiL.JS.Core
                 new _Rule("this", OperatorStatement.Parse),
                 new _Rule("typeof", OperatorStatement.Parse),
                 new _Rule("new", OperatorStatement.Parse),
+                new _Rule("delete", OperatorStatement.Parse),
                 new _Rule("void", OperatorStatement.Parse),
                 new _Rule(ValidateName, OperatorStatement.Parse),
                 new _Rule(ValidateValue, OperatorStatement.Parse),
@@ -142,6 +145,7 @@ namespace NiL.JS.Core
                 new _Rule("typeof", OperatorStatement.Parse),
                 new _Rule("try", TryCatchStatement.Parse),
                 new _Rule("new", OperatorStatement.Parse),
+                new _Rule("delete", OperatorStatement.Parse),
                 new _Rule("void", OperatorStatement.Parse),
                 new _Rule("break", BreakStatement.Parse),
                 new _Rule("continue", ContinueStatement.Parse),
@@ -310,6 +314,11 @@ namespace NiL.JS.Core
             bool w = true;
             while (w)
             {
+                if (i >= code.Length)
+                {
+                    w = false;
+                    break;
+                }
                 switch (code[i])
                 {
                     case '0':
@@ -583,6 +592,11 @@ namespace NiL.JS.Core
             bool w = true;
             while (w)
             {
+                if (i >= code.Length)
+                {
+                    w = false;
+                    break;
+                }
                 switch (code[i])
                 {
                     case '0':
@@ -779,6 +793,11 @@ namespace NiL.JS.Core
             bool w = true;
             while (w)
             {
+                if (i >= code.Length)
+                {
+                    w = false;
+                    break;
+                }
                 switch (code[i])
                 {
                     case '0':

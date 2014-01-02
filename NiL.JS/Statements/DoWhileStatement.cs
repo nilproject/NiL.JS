@@ -87,8 +87,8 @@ namespace NiL.JS.Statements
 
         public bool Optimize(ref Statement _this, int depth, System.Collections.Generic.HashSet<string> varibles)
         {
-            Parser.Optimize(ref body, varibles);
-            Parser.Optimize(ref condition, varibles);
+            Parser.Optimize(ref body, 1, varibles);
+            Parser.Optimize(ref condition, 1, varibles);
             return false;
         }
     }

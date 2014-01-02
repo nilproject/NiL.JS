@@ -149,6 +149,7 @@
     <Compile Include="Statements\Operators\MoreOrEqual.cs" />
     <Compile Include="Statements\Operators\Equal.cs" />
     <Compile Include="Statements\Operators\Division.cs" />
+    <Compile Include="Statements\Operators\Delete.cs" />
     <Compile Include="Statements\Operators\TypeOf.cs" />
     <Compile Include="Statements\Operators\StrictNotEqual.cs" />
     <Compile Include="Statements\ThrowStatement.cs" />

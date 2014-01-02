@@ -195,10 +195,10 @@ namespace NiL.JS.Statements
 
         public bool Optimize(ref Statement _this, int depth, System.Collections.Generic.HashSet<string> varibles)
         {
-            Parser.Optimize(ref init, depth, varibles);
-            Parser.Optimize(ref condition, 1, varibles);
+            Parser.Optimize(ref init, 1, varibles);
+            Parser.Optimize(ref condition, 2, varibles);
             Parser.Optimize(ref post, 1, varibles);
-            Parser.Optimize(ref body, depth + 1, varibles);
+            Parser.Optimize(ref body, 1, varibles);
             return false;
         }
     }

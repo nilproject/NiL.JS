@@ -82,12 +82,13 @@ namespace NiL.JS.Modules
                         _this.Assign(res);
                     var c = res.DefaultFieldGetter("constructor", false);
                     c.Assign(this);
-                    c.attributes |= ObjectAttributes.DontEnum;
+                    c.attributes |= ObjectAttributes.DontDelete | ObjectAttributes.DontEnum;
                     return res;
                 });
                 constructors[hostedType] = this;
                 proto = DefaultFieldGetter("prototype", false);
                 proto.Assign(new JSObject() { prototype = Core.BaseTypes.BaseObject.Prototype, ValueType = ObjectValueType.Object, oValue = hostedType });
+                proto.attributes |= ObjectAttributes.DontDelete | ObjectAttributes.DontEnum;
                 base.fieldGetter = getField;
                 getItem = hostedType.GetMethod("get_Item", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
                 setItem = hostedType.GetMethod("set_Item", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
@@ -227,6 +228,7 @@ namespace NiL.JS.Modules
                                     constructors[hostedType] = res = new ClassProxy(hostedType);
                                     r.Assign(res);
                                 }
+                                r.attributes |= ObjectAttributes.DontDelete | ObjectAttributes.DontEnum;
                                 return r;
                             }
                             break;
@@ -335,7 +337,7 @@ namespace NiL.JS.Modules
                             var field = (m[0] as FieldInfo);
                             object res = field.GetValue(this);
                             if (res is JSObject)
-                                return res as JSObject;
+                                result = res as JSObject;
                             else if (res is int)
                                 result = (int)res;
                             else if (res is double || res is long)
@@ -369,6 +371,7 @@ namespace NiL.JS.Modules
                 r.Assign(result);
                 if (m[0].GetCustomAttributes(typeof(ProtectedAttribute), false).Length != 0)
                     r.Protect();
+                r.attributes |= ObjectAttributes.DontEnum | ObjectAttributes.DontDelete;
             }
             return r;
         }

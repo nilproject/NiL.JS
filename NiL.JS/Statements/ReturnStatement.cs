@@ -51,7 +51,7 @@ namespace NiL.JS.Statements
 
         public bool Optimize(ref Statement _this, int depth, System.Collections.Generic.HashSet<string> varibles)
         {
-            Parser.Optimize(ref body, depth + 1, varibles);
+            Parser.Optimize(ref body, 2, varibles);
             return false;
         }
     }

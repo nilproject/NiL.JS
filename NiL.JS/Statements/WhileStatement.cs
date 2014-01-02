@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace NiL.JS.Statements
 {
-    internal sealed class WhileStatement : Statement
+    internal sealed class WhileStatement : Statement, IOptimizable
     {
         private Statement condition;
         private Statement body;
@@ -67,6 +67,13 @@ namespace NiL.JS.Statements
         public override JSObject Invoke(Context context, JSObject[] args)
         {
             throw new NotImplementedException();
+        }
+
+        public bool Optimize(ref Statement _this, int depth, System.Collections.Generic.HashSet<string> varibles)
+        {
+            Parser.Optimize(ref condition, 2, varibles);
+            Parser.Optimize(ref body, 1, varibles);
+            return false;
         }
     }
 }

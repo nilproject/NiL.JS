@@ -33,8 +33,8 @@ namespace NiL.JS.Core.BaseTypes
             Prototype = proto;
             proto.ValueType = ObjectValueType.Object;
             proto.oValue = "Object";
-            var tostr = proto.GetField("toString");
-            tostr.Assign(new CallableField((cont, args) =>
+            var temp = proto.GetField("toString");
+            temp.Assign(new CallableField((cont, args) =>
             {
                 switch ((cont.thisBind ?? cont.GetField("this")).ValueType)
                 {
@@ -67,13 +67,21 @@ namespace NiL.JS.Core.BaseTypes
                     default: throw new NotImplementedException();
                 }
             }));
-            tostr.attributes |= ObjectAttributes.DontEnum;
-            var valueof = proto.GetField("valueOf");
-            valueof.Assign(new CallableField((cont, args) =>
+            temp.attributes |= ObjectAttributes.DontEnum;
+            temp = proto.GetField("valueOf");
+            temp.Assign(new CallableField((cont, args) =>
             {
                 return cont.thisBind;
             }));
-            valueof.attributes |= ObjectAttributes.DontEnum;
+            temp.attributes |= ObjectAttributes.DontEnum;
+            temp = proto.GetField("hasOwnProperty");
+            temp.Assign(new CallableField(hasOwnProperty));
+            temp.attributes |= ObjectAttributes.DontEnum;
+        }
+
+        public static JSObject hasOwnProperty(Context cont, JSObject[] name)
+        {
+            throw new NotImplementedException("Object.hasOwnProperty");
         }
 
         public BaseObject()

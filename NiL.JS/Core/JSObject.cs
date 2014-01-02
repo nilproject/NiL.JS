@@ -34,6 +34,9 @@ namespace NiL.JS.Core
 
     public class JSObject : IEnumerable<string>, IEnumerable
     {
+        [Modules.Hidden]
+        [Modules.Protected]
+        private static readonly IEnumerator<string> EmptyEnumerator = ((IEnumerable<string>)(new string[0])).GetEnumerator();
         internal static readonly Func<bool> ErrorAssignCallback = () => { throw new InvalidOperationException("Invalid left-hand side"); };
         internal static readonly JSObject undefined = new JSObject() { ValueType = ObjectValueType.Undefined };
         internal static readonly JSObject Null = new JSObject() { ValueType = ObjectValueType.Object, oValue = null, assignCallback = ErrorAssignCallback };
@@ -391,7 +394,7 @@ namespace NiL.JS.Core
             if (enumeratorGetter == null)
             {
                 if (fields == null)
-                    return null;
+                    return EmptyEnumerator;
                 return fields.Keys.GetEnumerator();
             }
             else
