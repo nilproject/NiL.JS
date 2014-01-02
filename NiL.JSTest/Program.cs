@@ -59,6 +59,11 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * 3 * i; }
                 Console.WriteLine("ERROR: " + x[0].Value);
                 return null;
             }));
+            s.Context.GetField("$PRINT").Assign(new CallableField((t, x) =>
+            {
+                Console.WriteLine("PRINT: " + x[0].Value);
+                return null;
+            }));
             s.Invoke();
             sr.Dispose();
             f.Dispose();
@@ -106,6 +111,11 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * 3 * i; }
                         pass = false;
                         return null;
                     }));
+                    s.Context.GetField("$PRINT").Assign(new CallableField((t, x) =>
+                    {
+                        Console.WriteLine("PRINT: " + x[0].Value);
+                        return null;
+                    }));
                     s.Invoke();
                     sr.Dispose();
                     f.Dispose();
@@ -150,11 +160,11 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * 3 * i; }
         {
             NiL.JS.Core.Context.GlobalContext.GetField("platform").Assign("NiL.JS");
             //runFile(@"tests.js");
-            //runFile(@"C:\Projects\NiL.JS\NiL.JSTest\tests\Conformance\07_Lexical_Conventions\7.4_Comments\S7.4_A5.js");
+            //runFile(@"C:\Projects\NiL.JS\NiL.JSTest\tests\Conformance\08_Types\8.5_The_Number_Type\S8.5_A11_T1.js");
             //benchmark();
             //featureSupportTest();
-            runFile(@"ftest.js");
-            //sputnicTests();
+            //runFile(@"ftest.js");
+            sputnicTests();
             //testEx();
 
             GC.Collect();

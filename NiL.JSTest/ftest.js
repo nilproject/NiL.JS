@@ -1,2 +1,8 @@
-﻿var t = { "h": "hello" }[{ toString: function () { return "h" } }];
-console.log(t);
+﻿console.log(NaN == NaN);
+console.log(NaN != NaN);
+console.log(NaN === NaN);
+console.log(NaN !== NaN);
+console.log(NaN >= NaN);
+console.log(NaN <= NaN);
+console.log(NaN > NaN);
+console.log(NaN < NaN);

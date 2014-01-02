@@ -37,7 +37,9 @@ namespace NiL.JS.Statements.Operators
                     {
                         double left = temp.dValue;
                         temp = second.Invoke(context);
-                        if (temp.ValueType == ObjectValueType.Int)
+                        if (double.IsNaN(left))
+                            tempResult.iValue = this is MoreOrEqual ? 1 : 0; // Костыль. Для его устранения нужно делать полноценную реализацию оператора MoreOrEqual.
+                        else if (temp.ValueType == ObjectValueType.Int)
                             tempResult.iValue = left < temp.iValue ? 1 : 0;
                         else if (temp.ValueType == ObjectValueType.Double)
                             tempResult.iValue = left < temp.dValue ? 1 : 0;
@@ -57,6 +59,18 @@ namespace NiL.JS.Statements.Operators
                                 }
                             default: throw new NotImplementedException();
                         }
+                        break;
+                    }
+                case ObjectValueType.Date:
+                case ObjectValueType.Object:
+                    {
+                        temp = temp.ToPrimitiveValue_Value_String(context);
+                        if (temp.ValueType == ObjectValueType.Int)
+                            goto case ObjectValueType.Int;
+                        else if (temp.ValueType == ObjectValueType.Double)
+                            goto case ObjectValueType.Double;
+                        else if (temp.ValueType == ObjectValueType.String)
+                            goto case ObjectValueType.String;
                         break;
                     }
                 default: throw new NotImplementedException();

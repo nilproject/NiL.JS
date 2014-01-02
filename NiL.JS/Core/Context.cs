@@ -35,6 +35,7 @@ namespace NiL.JS.Core
             {
                 int i = 0;
                 string c = "{" + Parser.RemoveComments(x[0].oValue.ToString()) + "}";
+                //var c = "{" + x[0].oValue + "}";
                 var cb = CodeBlock.Parse(new ParsingState(c), ref i).Statement;
                 if (i != c.Length)
                     throw new System.ArgumentException("Invalid char");
@@ -125,11 +126,10 @@ namespace NiL.JS.Core
             globalContext.AttachModule(typeof(BaseTypes.Number));
             #endregion
             #region Consts
-            var nan = globalContext.GetField("NaN");
-            nan.Protect();
-            nan.ValueType = ObjectValueType.Double;
-            nan.dValue = double.NaN;
-            globalContext.Define("undefined").Protect();
+            globalContext.fields["undefined"] = JSObject.undefined;
+            globalContext.fields["Infinity"] = Number.POSITIVE_INFINITY;
+            globalContext.fields["NaN"] = Number.NaN;
+            globalContext.fields["null"] = JSObject.Null;
             #endregion
 
             globalContext.AttachModule(typeof(Modules.Math));

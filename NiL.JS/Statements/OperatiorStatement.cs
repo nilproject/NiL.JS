@@ -150,7 +150,8 @@ namespace NiL.JS.Statements
                         }
                     case OperationType.Division:
                         {
-                            del = OpDivision;
+                            fastImpl = new Operators.Division(first, second);
+                            del = fastImpl.Invoke;
                             break;
                         }
                     case OperationType.Equal:
@@ -366,7 +367,7 @@ namespace NiL.JS.Statements
                             first = new ImmidateValueStatement(n);
                         else if (Parser.ParseNumber(code, ref s, true, out d))
                             first = new ImmidateValueStatement(d);
-                        else if (Parser.ValidateRegex(code, ref s, true))
+                        else if (Parser.ValidateRegex(code, ref s, true, true))
                         {
                             s = value.LastIndexOf('/') + 1;
                             string flags = value.Substring(s);
@@ -998,11 +999,12 @@ namespace NiL.JS.Statements
             double dr;
             switch (temp.ValueType)
             {
+                case ObjectValueType.Bool:
                 case ObjectValueType.Int:
                     {
                         dr = temp.iValue;
                         temp = second.Invoke(context);
-                        if (temp.ValueType == ObjectValueType.Int)
+                        if (temp.ValueType == ObjectValueType.Int || temp.ValueType == ObjectValueType.Bool)
                         {
                             dr += temp.iValue;
                             tempResult.ValueType = ObjectValueType.Double;
@@ -1289,7 +1291,7 @@ namespace NiL.JS.Statements
                 return double.NaN;
 
             JSObject o = null;
-            if ((second != null) && (val.ValueType != ObjectValueType.Undefined))
+            if ((second != null) && (val.ValueType != ObjectValueType.Undefined) && (val.ValueType != ObjectValueType.NotExistInObject))
             {
                 o = tempResult;
                 o.Assign(val);
@@ -1305,61 +1307,23 @@ namespace NiL.JS.Statements
                 val.ValueType = ObjectValueType.Int;
                 val.iValue--;
             }
-            else if (val.ValueType == ObjectValueType.Undefined)
+            else if (val.ValueType == ObjectValueType.String)
+            {
+                double resd;
+                int i = 0;
+                if (!Parser.ParseNumber(val.oValue as string, ref i, false, out resd))
+                    resd = double.NaN;
+                resd++;
+                val.ValueType = ObjectValueType.Double;
+                val.dValue = resd;
+            }
+            else if (val.ValueType == ObjectValueType.Undefined || val.ValueType == ObjectValueType.NotExistInObject)
             {
                 val.ValueType = ObjectValueType.Double;
                 val.dValue = double.NaN;
             }
             else throw new NotImplementedException();
             return o;
-        }
-
-        private JSObject OpDivision(Context context)
-        {
-            JSObject temp;
-            temp = first.Invoke(context);
-
-            double dr;
-            ObjectValueType lvt = temp.ValueType;
-            if (lvt == ObjectValueType.Int)
-            {
-                dr = temp.iValue;
-                temp = second.Invoke(context);
-                if (temp.ValueType == ObjectValueType.Int)
-                {
-                    dr /= temp.iValue;
-                    tempResult.ValueType = ObjectValueType.Double;
-                    tempResult.dValue = dr;
-                    return tempResult;
-                }
-                else if (temp.ValueType == ObjectValueType.Double)
-                {
-                    dr /= temp.dValue;
-                    tempResult.ValueType = ObjectValueType.Double;
-                    tempResult.dValue = dr;
-                    return tempResult;
-                }
-            }
-            else if (lvt == ObjectValueType.Double)
-            {
-                dr = temp.dValue;
-                temp = second.Invoke(context);
-                if (temp.ValueType == ObjectValueType.Int)
-                {
-                    dr /= temp.iValue;
-                    tempResult.ValueType = ObjectValueType.Double;
-                    tempResult.dValue = dr;
-                    return tempResult;
-                }
-                else if (temp.ValueType == ObjectValueType.Double)
-                {
-                    dr /= temp.dValue;
-                    tempResult.ValueType = ObjectValueType.Double;
-                    tempResult.dValue = dr;
-                    return tempResult;
-                }
-            }
-            throw new NotImplementedException();
         }
 
         private JSObject OpLogicalOr(Context context)

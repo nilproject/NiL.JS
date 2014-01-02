@@ -18,6 +18,7 @@ namespace NiL.JS
             Code = code;
             int i = 0;
             string c = "{" + Parser.RemoveComments(Code) + "}";
+            //var c = "{" + code + "}";
             root = CodeBlock.Parse(new ParsingState(c), ref i).Statement;
             if (i != c.Length)
                 throw new System.ArgumentException("Invalid char");

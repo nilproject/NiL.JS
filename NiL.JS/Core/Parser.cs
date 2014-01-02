@@ -211,15 +211,19 @@ namespace NiL.JS.Core
 
         internal static bool ValidateName(string code, ref int index, bool move, bool reserveControl)
         {
-            if ((code[index] != '\\') && (code[index] != '$') && (code[index] != '_') && (!char.IsLetter(code[index])))
+            int j = index;
+            int startI = j;
+            if ((code[j] != '\\') && (code[j] != '$') && (code[j] != '_') && (!char.IsLetter(code[j])))
                 return false;
-            int j = index + 1;
+            j++;
             while (j < code.Length)
             {
                 if ((code[j] != '\\') && (code[j] != '$') && (code[j] != '_') && (!char.IsLetterOrDigit(code[j])))
                     break;
                 j++;
             }
+            if (startI == j)
+                return false;
             string name = code.Substring(index, j - index);
             if (reserveControl)
                 switch (name)
@@ -410,7 +414,7 @@ namespace NiL.JS.Core
             return r;
         }
 
-        internal static bool ValidateRegex(string code, ref int index, bool move)
+        internal static bool ValidateRegex(string code, ref int index, bool move, bool except)
         {
             int j = index;
             if (code[j] == '/')
@@ -447,21 +451,30 @@ namespace NiL.JS.Core
                         case 'g':
                             {
                                 if (g)
-                                    throw new ArgumentException("Invalid flag in regexp definition");
+                                    if (except)
+                                        throw new ArgumentException("Invalid flag in regexp definition");
+                                    else
+                                        return false;
                                 g = true;
                                 break;
                             }
                         case 'i':
                             {
                                 if (i)
-                                    throw new ArgumentException("Invalid flag in regexp definition");
+                                    if (except)
+                                        throw new ArgumentException("Invalid flag in regexp definition");
+                                    else
+                                        return false;
                                 i = true;
                                 break;
                             }
                         case 'm':
                             {
                                 if (m)
-                                    throw new ArgumentException("Invalid flag in regexp definition");
+                                    if (except)
+                                        throw new ArgumentException("Invalid flag in regexp definition");
+                                    else
+                                        return false;
                                 m = true;
                                 break;
                             }
@@ -485,7 +498,10 @@ namespace NiL.JS.Core
                                     w = false;
                                     break;
                                 }
-                                throw new ArgumentException("Invalid flag in regexp definition");
+                                if (except)
+                                    throw new ArgumentException("Invalid flag in regexp definition");
+                                else
+                                    return false;
                             }
                     }
                 }
@@ -532,7 +548,7 @@ namespace NiL.JS.Core
         {
             int j = index;
             if (code[j] == '/')
-                return ValidateRegex(code, ref index, move);
+                return ValidateRegex(code, ref index, move, true);
             if ((code[j] == '\'') || (code[j] == '"'))
                 return ValidateString(code, ref index, move);
             if ((code.Length - j >= 4) && (code[j] == 'n' || code[j] == 't' || code[j] == 'f'))
@@ -697,22 +713,27 @@ namespace NiL.JS.Core
                     }
                     else
                     {
+                        long temp = 0;
                         for (; (s <= i) && (code[s] != '.'); s++)
-                            value = value * 10 + code[s] - '0';
+                            temp = temp * 10 + (code[s] - '0');
                         if (code[s] == '.')
                         {
                             s++;
                             for (; s <= i; s++, deg--)
-                                value = value * 10 + code[s] - '0';
+                                temp = temp * 10 + (code[s] - '0');
                         }
+                        value = (double)temp;
                     }
+                    value *= sig;
                     if (value == 0.0)
                         return true;
-                    for (; deg > 0; deg--)
-                        value *= 10;
-                    for (; deg < 0; deg++)
+                    if (deg > 0)
+                    {
+                        var exp = Math.Pow(10.0, deg);
+                        value *= exp;
+                    }
+                    while (deg++ < 0)
                         value /= 10;
-                    value *= sig;
                     return true;
                 }
                 else
@@ -728,11 +749,11 @@ namespace NiL.JS.Core
                         for (; s <= i; s++)
                             value = value * 10 + code[s] - '0';
                     }
+                    value *= sig;
                     if (value == 0)
                         return true;
                     for (; deg > 0; deg--)
                         value *= 10;
-                    value *= sig;
                     return true;
                 }
             }
@@ -746,7 +767,7 @@ namespace NiL.JS.Core
                 return true;
             int i = index;
             int sig = 1;
-            if (code[i] == '-' || code[i] == '+')
+            if (code[i] == '+')
                 sig = 44 - code[i++];
             bool h = false;
             bool e = false;
@@ -952,6 +973,42 @@ namespace NiL.JS.Core
             throw new ArgumentException("Unknown token at index " + index + ": " + code.Substring(index, Math.Min(20, code.Length - index)).Split(' ')[0]);
         }
 
+        internal static void skipComment(string code, ref int index, bool skipSpaces)
+        {
+            bool work;
+            do
+            {
+                if (code.Length <= index)
+                    return;
+                work = false;
+                if (code[index] == '/')
+                {
+                    switch (code[index + 1])
+                    {
+                        case '/':
+                            {
+                                index += 2;
+                                while (index < code.Length && !Parser.isLineTerminator(code[index])) index++;
+                                while (index < code.Length && char.IsWhiteSpace(code[index])) index++;
+                                work = true;
+                                break;
+                            }
+                        case '*':
+                            {
+                                index += 2;
+                                while (code[index] != '*' || code[index + 1] != '/')
+                                    index++;
+                                index += 2;
+                                work = true;
+                                break;
+                            }
+                    }
+                }
+            } while (work);
+            if (skipSpaces)
+                while ((index < code.Length) && (char.IsWhiteSpace(code[index]))) index++;
+        }
+
         internal static void Optimize(ref Statement s, int depth, HashSet<string> varibles)
         {
             while ((s is IOptimizable) && (s as IOptimizable).Optimize(ref s, depth, varibles)) { }
@@ -1060,48 +1117,26 @@ namespace NiL.JS.Core
         internal static string RemoveComments(string code)
         {
             StringBuilder res = new StringBuilder(code.Length);
-            int commentType = 0;
-            int i = 0;
-            for (; i < code.Length - 1; i++)
+            for (int i = 0; i < code.Length; )
             {
-                if ((commentType == 0) && (code[i] == '/') && (code[i + 1] == '/' || code[i + 1] == '*'))
-                {
-                    commentType = code[++i] == '/' ? 1 : 2;
+                while (i < code.Length && char.IsWhiteSpace(code[i])) res.Append(code[i++]);
+                var s = i;
+                skipComment(code, ref i, false);
+                for (; s < i; s++)
+                    res.Append(' ');
+                if (i >= code.Length)
                     continue;
-                }
-                if (commentType == 0)
+                if (ValidateName(code, ref i, true)
+                    || ValidateNumber(code, ref i, true)
+                    || ValidateRegex(code, ref i, true, false)
+                    || ValidateString(code, ref i, true))
                 {
-                    var t = i;
-                    if (ValidateString(code, ref i, true))
-                    {
-                        res.Append(code.Substring(t, i - t));
-                        if (i == code.Length)
-                            return res.ToString();
-                    }
-                    else if (ValidateRegex(code, ref i, true))
-                    {
-                        res.Append(code.Substring(t, i - t));
-                        if (i == code.Length)
-                            return res.ToString();
-                    }
+                    for (; s < i; s++)
+                        res.Append(code[s]);
                 }
-                if ((commentType == 1) && isLineTerminator(code[i]))
-                    commentType = 0;
-                if ((commentType == 2) && (code[i] == '*') && (code[i + 1] == '/'))
-                {
-                    commentType = 0;
-                    i++;
-                    if (i + 1 == code.Length)
-                        return res.ToString();
-                    continue;
-                }
-                if (commentType == 0)
-                    res.Append(code[i]);
+                else
+                    res.Append(code[i++]);
             }
-            if (i < code.Length)
-                res.Append(code[code.Length - 1]);
-            if (commentType == 2)
-                throw new ArgumentException("Comment not terminated");
             return res.ToString();
         }
     }

@@ -5,6 +5,21 @@ namespace NiL.JS.Core.BaseTypes
 {
     internal class Number : JSObject
     {
+        public new static JSObject NaN = double.NaN;
+        public static JSObject POSITIVE_INFINITY = double.PositiveInfinity;
+        public static JSObject NEGATIVE_INFINITY = double.NegativeInfinity;
+
+        static Number()
+        {
+            POSITIVE_INFINITY.assignCallback = null;
+            POSITIVE_INFINITY.Protect();
+            NEGATIVE_INFINITY.assignCallback = null;
+            NEGATIVE_INFINITY.Protect();
+            NaN.assignCallback = null;
+            NaN.Protect();
+        }
+
+        [Hidden]
         private ClassProxy proxy;
         
         public Number()
@@ -12,6 +27,7 @@ namespace NiL.JS.Core.BaseTypes
             ValueType = ObjectValueType.Int;
             iValue = 0;
             assignCallback = JSObject.ErrorAssignCallback;
+            fieldGetter = GetField;
         }
 
         public Number(int value)
@@ -19,6 +35,7 @@ namespace NiL.JS.Core.BaseTypes
             ValueType = ObjectValueType.Int;
             iValue = value;
             assignCallback = JSObject.ErrorAssignCallback;
+            fieldGetter = GetField;
         }
 
         public Number(double value)
@@ -26,6 +43,7 @@ namespace NiL.JS.Core.BaseTypes
             ValueType = ObjectValueType.Double;
             dValue = value;
             assignCallback = JSObject.ErrorAssignCallback;
+            fieldGetter = GetField;
         }
 
         public Number(string value)
@@ -83,9 +101,122 @@ namespace NiL.JS.Core.BaseTypes
                     throw new InvalidOperationException("Varible not defined.");
             }
             assignCallback = JSObject.ErrorAssignCallback;
+            fieldGetter = GetField;
         }
 
+        public JSObject toExponential(JSObject digits)
+        {
+            double res = 0;
+            switch (ValueType)
+            {
+                case ObjectValueType.Int:
+                    {
+                        res = iValue;
+                        break;
+                    }
+                case ObjectValueType.Double:
+                    {
+                        res = dValue;
+                        break;
+                    }
+                default:
+                    throw new InvalidOperationException();
+            }
+            int dgts = 0;
+            switch ((digits ?? JSObject.undefined).ValueType)
+            {
+                case ObjectValueType.Int:
+                    {
+                        dgts = digits.iValue;
+                        break;
+                    }
+                case ObjectValueType.Double:
+                    {
+                        dgts = (int)digits.dValue;
+                        break;
+                    }
+                case ObjectValueType.String:
+                    {
+                        double d = 0;
+                        int i = 0;
+                        if (Parser.ParseNumber(digits.oValue.ToString(), ref i, false, out d))
+                        {
+                            dgts = (int)d;
+                        }
+                        break;
+                    }
+                case ObjectValueType.Object:
+                    {
+                        digits = digits.ToPrimitiveValue_Value_String(new Context(Context.globalContext));
+                        if (digits.ValueType == ObjectValueType.String)
+                            goto case ObjectValueType.String;
+                        if (digits.ValueType == ObjectValueType.Int)
+                            goto case ObjectValueType.Int;
+                        if (digits.ValueType == ObjectValueType.Double)
+                            goto case ObjectValueType.Double;
+                        break;
+                    }
+                case ObjectValueType.NotExist:
+                    throw new InvalidOperationException("Varible not defined.");
+                default:
+                    return res.ToString("e");
+            }
+            return res.ToString("e" + dgts);
+        }
 
+        public JSObject toString()
+        {
+            return new String(ValueType == ObjectValueType.Int ? iValue.ToString() : dValue.ToString());
+        }
+
+        public JSObject valueOf()
+        {
+            return this;
+        }
+        
+        public override string ToString()
+        {
+            return ValueType == ObjectValueType.Int ? iValue.ToString() : dValue.ToString();
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is Number)
+            {
+                var n = obj as Number;
+                switch(ValueType)
+                {
+                    case ObjectValueType.Int:
+                        {
+                            switch (n.ValueType)
+                            {
+                                case ObjectValueType.Int:
+                                    return iValue == n.iValue;
+                                case ObjectValueType.Double:
+                                    return iValue == n.dValue;
+                            }
+                            break;
+                        }
+                    case ObjectValueType.Double:
+                        {
+                            switch (n.ValueType)
+                            {
+                                case ObjectValueType.Int:
+                                    return dValue == n.iValue;
+                                case ObjectValueType.Double:
+                                    return dValue == n.dValue;
+                            }
+                            break;
+                        }
+                }
+            }
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return oValue.GetHashCode();
+        }
 
         public override JSObject GetField(string name, bool fast)
         {

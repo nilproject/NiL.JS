@@ -121,14 +121,13 @@ namespace NiL.JS.Modules
 
         private static object[] convertArgs(JSObject[] source, ParameterInfo[] targetTypes)
         {
-            if (source == null)
-                return null;
             int targetCount = targetTypes.Length;
             object[] res = new object[targetCount];
-            targetCount = System.Math.Min(targetCount, source.Length);
+            if (source != null)
+                targetCount = System.Math.Min(targetCount, source.Length);
             for (int i = 0; i < targetCount; i++)
             {
-                if (source[i] == null)
+                if (source == null || source[i] == null)
                     continue;
                 var obj = source[i];
                 if (targetTypes[i].ParameterType == typeof(JSObject))
@@ -201,7 +200,17 @@ namespace NiL.JS.Modules
 
         private JSObject getField(string name, bool fast)
         {
-            JSObject r = DefaultFieldGetter(name, fast);
+            var p = prototype;
+            prototype = null;
+            JSObject r = null;
+            try
+            {
+                r = DefaultFieldGetter(name, fast);
+            }
+            finally
+            {
+                prototype = p;
+            }
             if (r.ValueType == ObjectValueType.NotExistInObject || (fast && r == undefined))
             {
                 switch (name)
@@ -225,9 +234,9 @@ namespace NiL.JS.Modules
                 }
                 JSObject result = null;
 #if DEBUG
-                var members = hostedType.GetMembers(BindingFlags.Public | (ValueType == ObjectValueType.Statement ? BindingFlags.Static : BindingFlags.Instance) | BindingFlags.NonPublic);
+                //var members = hostedType.GetMembers(BindingFlags.Public | (ValueType == ObjectValueType.Statement ? BindingFlags.Static : BindingFlags.Instance) | BindingFlags.NonPublic);
 #endif
-                var m = hostedType.GetMember(name, BindingFlags.Public | (ValueType == ObjectValueType.Statement ? BindingFlags.Static : BindingFlags.Instance) | BindingFlags.NonPublic);
+                var m = hostedType.GetMember(name, BindingFlags.Public | (ValueType == ObjectValueType.Statement ? BindingFlags.Static : BindingFlags.Instance) | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy);
                 if (m.Length > 1)
                     throw new InvalidOperationException("Too many fields with name " + name);
                 if (m.Length == 0 || m[0].GetCustomAttribute(typeof(HiddenAttribute)) != null)

@@ -40,6 +40,7 @@ namespace NiL.JS.Core
 
         static JSObject()
         {
+            undefined.assignCallback = null;
             undefined.Protect();
         }
 
@@ -117,6 +118,7 @@ namespace NiL.JS.Core
 
         public JSObject()
         {
+            enumeratorGetter = null;
             ValueType = ObjectValueType.Undefined;
         }
 

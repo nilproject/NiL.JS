@@ -112,6 +112,12 @@ namespace NiL.JS.Statements
             Parser.Optimize(ref varible, depth + 1, varibles);
             Parser.Optimize(ref source, depth + 1, varibles);
             Parser.Optimize(ref body, depth + 1, varibles);
+            if (varible is Operators.None)
+            {
+                if ((varible as Operators.None).Second != null)
+                    throw new InvalidOperationException("Invalid left-hand side in for-in");
+                varible = (varible as Operators.None).First;
+            }
             return false;
         }
     }

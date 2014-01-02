@@ -19,7 +19,7 @@ namespace NiL.JS.Statements.Operators
                 return double.NaN;
 
             JSObject o = null;
-            if ((second != null) && (val.ValueType != ObjectValueType.Undefined))
+            if ((second != null) && (val.ValueType != ObjectValueType.Undefined) && (val.ValueType != ObjectValueType.NotExistInObject))
             {
                 o = tempResult;
                 o.Assign(val);
@@ -34,6 +34,16 @@ namespace NiL.JS.Statements.Operators
             {
                 val.ValueType = ObjectValueType.Int;
                 val.iValue++;
+            }
+            else if (val.ValueType == ObjectValueType.String)
+            {
+                double resd;
+                int i = 0;
+                if (!Parser.ParseNumber(val.oValue as string, ref i, false, out resd))
+                    resd = double.NaN;
+                resd++;
+                val.ValueType = ObjectValueType.Double;
+                val.dValue = resd;
             }
             else if (val.ValueType == ObjectValueType.Undefined || val.ValueType == ObjectValueType.NotExistInObject)
             {
