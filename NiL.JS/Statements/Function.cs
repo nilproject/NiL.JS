@@ -142,7 +142,7 @@ namespace NiL.JS.Statements
         public override JSObject Invoke(Context context)
         {
             var res = new JSObject() { ValueType = ObjectValueType.Statement, oValue = this.Implement(context) };
-            res.GetField("prototype").Assign(new JSObject() { ValueType = ObjectValueType.Object, oValue = new object() });
+            res.GetField("prototype").Assign(new JSObject() { ValueType = ObjectValueType.Object, oValue = new object(), prototype = BaseObject.Prototype });
             return res;
         }
 

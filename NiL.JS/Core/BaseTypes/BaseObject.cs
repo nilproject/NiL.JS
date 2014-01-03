@@ -9,6 +9,7 @@ namespace NiL.JS.Core.BaseTypes
     internal sealed class BaseObject : JSObject
     {
         public static JSObject Prototype;
+        protected static readonly JSObject tempResult = new JSObject() { attributes = ObjectAttributes.DontDelete };
 
         public static void RegisterTo(Context context)
         {
@@ -77,11 +78,82 @@ namespace NiL.JS.Core.BaseTypes
             temp = proto.GetField("hasOwnProperty");
             temp.Assign(new CallableField(hasOwnProperty));
             temp.attributes |= ObjectAttributes.DontEnum;
+            temp.attributes |= ObjectAttributes.DontEnum;
+            temp = proto.GetField("isPrototypeOf");
+            temp.Assign(new CallableField(isPrototypeOf));
+            temp.attributes |= ObjectAttributes.DontEnum;
+        }
+        
+        public static JSObject isPrototypeOf(Context cont, JSObject[] obj)
+        {
+            if (cont.thisBind == null)
+                throw new InvalidOperationException("Can't convert null to object");
+            if (obj.Length == 0)
+                return false;
+            var a = obj[0];
+            var c = cont.thisBind;
+            JSObject o = tempResult;
+            o.ValueType = ObjectValueType.Bool;
+            o.iValue = 0;
+            if (c.ValueType >= ObjectValueType.Object && c.oValue != null)
+                while (a.ValueType >= ObjectValueType.Object && a.oValue != null)
+                {
+                    if (a.oValue == c.oValue || (c.oValue is Type && a.oValue.GetType() as object == c.oValue))
+                    {
+                        o.iValue = 1;
+                        return o;
+                    }
+                    a = a.GetField("__proto__", true);
+                }
+            return o;
         }
 
         public static JSObject hasOwnProperty(Context cont, JSObject[] name)
         {
-            throw new NotImplementedException("Object.hasOwnProperty");
+            if (cont.thisBind == null)
+                throw new InvalidOperationException("Can't convert null to object");
+            if (name.Length == 0)
+                return false;
+            string n = "";
+            switch ((name[0] ?? JSObject.undefined).ValueType)
+            {
+                case ObjectValueType.Int:
+                    {
+                        n = name[0].iValue.ToString();
+                        break;
+                    }
+                case ObjectValueType.Double:
+                    {
+                        n = name[0].dValue.ToString();
+                        break;
+                    }
+                case ObjectValueType.String:
+                    {
+                        n = name[0].oValue as string;
+                        break;
+                    }
+                case ObjectValueType.Object:
+                    {
+                        name[0] = name[0].ToPrimitiveValue_Value_String(new Context(Context.globalContext));
+                        if (name[0].ValueType == ObjectValueType.String)
+                            goto case ObjectValueType.String;
+                        if (name[0].ValueType == ObjectValueType.Int)
+                            goto case ObjectValueType.Int;
+                        if (name[0].ValueType == ObjectValueType.Double)
+                            goto case ObjectValueType.Double;
+                        break;
+                    }
+                case ObjectValueType.NotExist:
+                    throw new InvalidOperationException("Varible not defined.");
+                default:
+                    throw new NotImplementedException("Object.hasOwnProperty. Invalid Value Type");
+            }
+            var proto = cont.thisBind.prototype;
+            cont.thisBind.prototype = null;
+            var res = cont.thisBind.GetField(n, true);
+            res = (res.ValueType >= ObjectValueType.Undefined) && (res != JSObject.undefined);
+            cont.thisBind.prototype = proto;
+            return res;
         }
 
         public BaseObject()

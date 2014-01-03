@@ -16,33 +16,39 @@ namespace NiL.JS.Statements.Operators
             var oldutb = context.updateThisBind;
             context.updateThisBind = true;
             var oldThisBind = context.thisBind;
-            var temp = first.Invoke(context);
-            if (temp.ValueType != ObjectValueType.Statement)
-                throw new ArgumentException(temp + " is not callable");
-
-            JSObject res = null;
-
-            var stat = (temp.oValue as Statement);
-            var args = second.Invoke(context);
-            if (args.oValue is JSObject[])
-                res = stat.Invoke(context, args.oValue as JSObject[]);
-            else
+            try
             {
-                var sps = args.oValue as Statement[];
-                if (sps != null)
+                var temp = first.Invoke(context);
+                if (temp.ValueType != ObjectValueType.Statement)
+                    throw new ArgumentException(temp + " is not callable");
+
+                JSObject res = null;
+
+                var stat = (temp.oValue as Statement);
+                var args = second.Invoke(context);
+                if (args.oValue is JSObject[])
+                    res = stat.Invoke(context, args.oValue as JSObject[]);
+                else
                 {
-                    var newThisBind = context.thisBind;
-                    context.thisBind = oldThisBind;
-                    JSObject[] stmnts = sps.Length == 0 ? null as JSObject[] : new JSObject[sps.Length];
-                    for (int i = 0; i < sps.Length; i++)
-                        stmnts[i] = sps[i].Invoke(context);
-                    context.thisBind = newThisBind;
-                    res = stat.Invoke(context, stmnts);
+                    var sps = args.oValue as Statement[];
+                    if (sps != null)
+                    {
+                        var newThisBind = context.thisBind;
+                        context.thisBind = oldThisBind;
+                        JSObject[] stmnts = sps.Length == 0 ? null as JSObject[] : new JSObject[sps.Length];
+                        for (int i = 0; i < sps.Length; i++)
+                            stmnts[i] = sps[i].Invoke(context);
+                        context.thisBind = newThisBind;
+                        res = stat.Invoke(context, stmnts);
+                    }
                 }
+                return res;
             }
-            context.thisBind = oldThisBind;
-            context.updateThisBind = oldutb;
-            return res;
+            finally
+            {
+                context.thisBind = oldThisBind;
+                context.updateThisBind = oldutb;
+            }
         }
     }
 }

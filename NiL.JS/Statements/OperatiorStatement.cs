@@ -933,6 +933,7 @@ namespace NiL.JS.Statements
                             i++;
                             repeat = !forUnary;
                             canAsign = false;
+                            binar = false;
                             break;
                         }
                     case 'i':
@@ -973,7 +974,7 @@ namespace NiL.JS.Statements
             } while (repeat);
             if ((!canAsign) && ((type == OperationType.Assign) || (assign)))
                 throw new InvalidOperationException("invalid left-hand side in assignment");
-            if (binar)
+            if (binar && !forUnary)
             {
                 do i++; while (char.IsWhiteSpace(code[i]));
                 second = OperatorStatement.Parse(state, ref i, false, false, false).Statement;
@@ -1774,8 +1775,8 @@ namespace NiL.JS.Statements
             JSObject o = tempResult;
             o.ValueType = ObjectValueType.Bool;
             o.iValue = 0;
-            if (c.ValueType >= ObjectValueType.Object)
-                while (a.ValueType >= ObjectValueType.Object)
+            if (c.ValueType >= ObjectValueType.Object && c.oValue != null)
+                while (a.ValueType >= ObjectValueType.Object && a.oValue != null)
                 {
                     if (a.oValue == c.oValue || (c.oValue is Type && a.oValue.GetType() as object == c.oValue))
                     {
@@ -1801,7 +1802,8 @@ namespace NiL.JS.Statements
                 args = second.Invoke(context);
                 sps = args.oValue as Statement[];
             }
-            JSObject _this = temp.GetField("prototype", true);
+            JSObject _this = new JSObject();
+            _this.Assign(temp.GetField("prototype", true));
             _this = new JSObject() { ValueType = ObjectValueType.Object, prototype = _this.ValueType > ObjectValueType.Undefined ? _this : null, oValue = new object() };
             JSObject[] stmnts = null;
             if ((sps != null) && (sps.Length != 0))

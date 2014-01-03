@@ -88,7 +88,7 @@ namespace NiL.JS.Statements
             }
             for (int i = varibles.Length - 1; i >= 0; i--)
                 context.Define(varibles[i]);
-            JSObject res = null;
+            JSObject res = JSObject.undefined;
             for (int i = length; i >= 0; i--)
             {
                 res = body[i].Invoke(context);

@@ -34,6 +34,8 @@ namespace NiL.JS.Core
 
     public class JSObject : IEnumerable<string>, IEnumerable
     {
+        private static readonly System.Reflection.MemberInfo DefaultGetter = typeof(JSObject).GetMethod("DefaultFieldGetter", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+
         [Modules.Hidden]
         [Modules.Protected]
         private static readonly IEnumerator<string> EmptyEnumerator = ((IEnumerable<string>)(new string[0])).GetEnumerator();
@@ -140,8 +142,8 @@ namespace NiL.JS.Core
 
         public virtual JSObject GetField(string name, bool fast)
         {
-            if (fieldGetter == null)
-                fieldGetter = DefaultFieldGetter;
+            if (fieldGetter == null || fieldGetter.Method == DefaultGetter)
+                return DefaultFieldGetter(name, fast);
             return fieldGetter(name, fast);
         }
 
