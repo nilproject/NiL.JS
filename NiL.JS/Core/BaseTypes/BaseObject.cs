@@ -8,8 +8,9 @@ namespace NiL.JS.Core.BaseTypes
 {
     internal sealed class BaseObject : JSObject
     {
+        private static readonly JSObject tempResult = new JSObject() { attributes = ObjectAttributes.DontDelete };
+
         public static JSObject Prototype;
-        protected static readonly JSObject tempResult = new JSObject() { attributes = ObjectAttributes.DontDelete };
 
         public static void RegisterTo(Context context)
         {
@@ -148,11 +149,8 @@ namespace NiL.JS.Core.BaseTypes
                 default:
                     throw new NotImplementedException("Object.hasOwnProperty. Invalid Value Type");
             }
-            var proto = cont.thisBind.prototype;
-            cont.thisBind.prototype = null;
-            var res = cont.thisBind.GetField(n, true);
+            var res = cont.thisBind.GetField(n, true, true);
             res = (res.ValueType >= ObjectValueType.Undefined) && (res != JSObject.undefined);
-            cont.thisBind.prototype = proto;
             return res;
         }
 

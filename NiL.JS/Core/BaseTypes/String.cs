@@ -3,15 +3,13 @@ using NiL.JS.Modules;
 
 namespace NiL.JS.Core.BaseTypes
 {
-    internal class String : JSObject
+    internal class String : BaseType
     {
-        private ClassProxy proxy;
 
         public String()
         {
             oValue = "";
             ValueType = ObjectValueType.String;
-            fieldGetter = GetField;
             assignCallback = JSObject.ErrorAssignCallback;
         }
 
@@ -19,7 +17,6 @@ namespace NiL.JS.Core.BaseTypes
         {
             oValue = s;
             ValueType = ObjectValueType.String;
-            fieldGetter = GetField;
             assignCallback = JSObject.ErrorAssignCallback;
         }
 
@@ -30,7 +27,6 @@ namespace NiL.JS.Core.BaseTypes
             else
                 oValue = "";
             ValueType = ObjectValueType.String;
-            fieldGetter = GetField;
             assignCallback = JSObject.ErrorAssignCallback;
         }
 
@@ -96,12 +92,7 @@ namespace NiL.JS.Core.BaseTypes
             return (int)(oValue as string)[p];
         }
 
-        public JSObject toString()
-        {
-            return this;
-        }
-
-        public JSObject valueOf()
+        public override JSObject toString()
         {
             return this;
         }
@@ -135,7 +126,7 @@ namespace NiL.JS.Core.BaseTypes
             return oValue.GetHashCode();
         }
 
-        public override JSObject GetField(string name, bool fast)
+        public override JSObject GetField(string name, bool fast, bool own)
         {
             return (proxy ?? (proxy = new ClassProxy(this))).GetField(name, fast);
         }

@@ -4,17 +4,21 @@ namespace NiL.JS.Core
 {
     internal sealed class ThisObject : JSObject
     {
+        private Context context;
+
         public ThisObject(Context context)
         {
             ValueType = ObjectValueType.Object;
-            fieldGetter = (n, b) =>
-            {
-                var res = context.GetField(n);
-                if (res.ValueType == ObjectValueType.NotExist)
-                    res.ValueType = ObjectValueType.NotExistInObject;
-                return res;
-            };
+            this.context = context;
             assignCallback = () => { throw new InvalidOperationException("Invalid left-hand side in assignment"); };
+        }
+
+        public override JSObject GetField(string name, bool fast, bool own)
+        {
+            var res = context.GetField(name);
+            if (res.ValueType == ObjectValueType.NotExist)
+                res.ValueType = ObjectValueType.NotExistInObject;
+            return res;
         }
     }
 }

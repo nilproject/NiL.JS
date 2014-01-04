@@ -52,8 +52,9 @@ namespace NiL.JS.Core
         [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
         [System.ComponentModel.Browsable(false)]
         internal Func<bool> assignCallback;
-        internal Func<string, bool, JSObject> fieldGetter;
-        internal Func<IEnumerator<string>> enumeratorGetter;
+        //internal Func<string, bool, JSObject> fieldGetter;
+        //internal Func<IEnumerator<string>> enumeratorGetter;
+        internal JSObject firstContainer;
         internal JSObject prototype;
         internal Dictionary<string, JSObject> fields;
 
@@ -123,7 +124,6 @@ namespace NiL.JS.Core
 
         public JSObject()
         {
-            enumeratorGetter = null;
             ValueType = ObjectValueType.Undefined;
         }
 
@@ -135,19 +135,22 @@ namespace NiL.JS.Core
 
         public JSObject GetField(string name)
         {
-            if (fieldGetter == null)
-                fieldGetter = DefaultFieldGetter;
-            return fieldGetter(name, false);
+            return GetField(name, false, false);
         }
 
-        public virtual JSObject GetField(string name, bool fast)
+        public JSObject GetField(string name, bool fast)
         {
-            if (fieldGetter == null || fieldGetter.Method == DefaultGetter)
-                return DefaultFieldGetter(name, fast);
-            return fieldGetter(name, fast);
+            return GetField(name, fast, false);
         }
 
-        protected JSObject DefaultFieldGetter(string name, bool fast)
+        public virtual JSObject GetField(string name, bool fast, bool own)
+        {
+            if (firstContainer == null)
+                return DefaultFieldGetter(name, fast, own);
+            return firstContainer.GetField(name, fast, own);
+        }
+
+        protected JSObject DefaultFieldGetter(string name, bool fast, bool own)
         {
             if (ValueType == ObjectValueType.Undefined)
                 throw new InvalidOperationException("Can't access to property value of \"undefined\"");
@@ -158,7 +161,7 @@ namespace NiL.JS.Core
             if (name == "__proto__")
                 return prototype ?? Null;
             JSObject res = null;
-            bool fromProto = fields == null || !fields.TryGetValue(name, out res);
+            bool fromProto = (fields == null || !fields.TryGetValue(name, out res)) && !own;
             if (fromProto && prototype != null)
             {
                 res = prototype.GetField(name, true);
@@ -356,12 +359,12 @@ namespace NiL.JS.Core
                 this.prototype = right.prototype;
                 this.ValueType = right.ValueType;
                 this.fields = right.fields;
-                this.fieldGetter = right.fieldGetter;
+                this.firstContainer = right.firstContainer ?? right;
                 return;
             }
             this.prototype = null;
             this.ValueType = ObjectValueType.Undefined;
-            this.fieldGetter = null;
+            this.firstContainer = null;
         }
 
         public void Delete()
@@ -381,31 +384,21 @@ namespace NiL.JS.Core
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            if (enumeratorGetter == null)
-            {
-                if (fields == null)
-                    return new string[0].GetEnumerator();
-                return fields.Keys.GetEnumerator();
-            }
-            else
-                return enumeratorGetter();
+            if (firstContainer != null)
+                return firstContainer.GetEnumerator();
+            return fields.Keys.GetEnumerator();
         }
 
         public virtual IEnumerator<string> GetEnumerator()
         {
-            if (enumeratorGetter == null)
-            {
-                if (fields == null)
-                    return EmptyEnumerator;
-                return fields.Keys.GetEnumerator();
-            }
-            else
-                return enumeratorGetter();
+            if (firstContainer != null)
+                return firstContainer.GetEnumerator();
+            return fields.Keys.GetEnumerator();
         }
 
         public static implicit operator JSObject(char value)
         {
-            return new JSObject() { ValueType = ObjectValueType.String, oValue = value.ToString(), temporary = true, assignCallback = ErrorAssignCallback };
+            return new BaseTypes.String(value.ToString());
         }
 
         public static implicit operator JSObject(bool value)

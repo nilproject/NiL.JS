@@ -460,7 +460,10 @@ namespace NiL.JS.Statements
                             i += 5;
                             do i++; while (char.IsWhiteSpace(code[i]));
                             first = Parse(state, ref i, false, true, true).Statement;
-                            (first as OperatorStatement)._type = OperationType.TypeOf;
+                            if ((first as OperatorStatement)._type == OperationType.None)
+                                (first as OperatorStatement)._type = OperationType.TypeOf;
+                            else
+                                first = new Operators.TypeOf(first, second);
                             break;
                         }
                     case 'v':
@@ -1072,6 +1075,8 @@ namespace NiL.JS.Statements
                             val += temp.dValue;
                         else if (temp.ValueType == ObjectValueType.String)
                             val += temp.oValue as string;
+                        else if (temp.ValueType == ObjectValueType.Bool)
+                            val += temp.iValue != 0;
                         else
                             break;
                         return val;

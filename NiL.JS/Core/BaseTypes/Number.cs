@@ -3,7 +3,7 @@ using NiL.JS.Modules;
 
 namespace NiL.JS.Core.BaseTypes
 {
-    internal class Number : JSObject
+    internal class Number : BaseType
     {
         [Modules.Protected]
         public static JSObject NaN = double.NaN;
@@ -21,16 +21,12 @@ namespace NiL.JS.Core.BaseTypes
             NaN.assignCallback = null;
             NaN.Protect();
         }
-
-        [Hidden]
-        private ClassProxy proxy;
         
         public Number()
         {
             ValueType = ObjectValueType.Int;
             iValue = 0;
             assignCallback = JSObject.ErrorAssignCallback;
-            fieldGetter = GetField;
         }
 
         public Number(int value)
@@ -38,7 +34,6 @@ namespace NiL.JS.Core.BaseTypes
             ValueType = ObjectValueType.Int;
             iValue = value;
             assignCallback = JSObject.ErrorAssignCallback;
-            fieldGetter = GetField;
         }
 
         public Number(double value)
@@ -46,7 +41,6 @@ namespace NiL.JS.Core.BaseTypes
             ValueType = ObjectValueType.Double;
             dValue = value;
             assignCallback = JSObject.ErrorAssignCallback;
-            fieldGetter = GetField;
         }
 
         public Number(string value)
@@ -104,7 +98,6 @@ namespace NiL.JS.Core.BaseTypes
                     throw new InvalidOperationException("Varible not defined.");
             }
             assignCallback = JSObject.ErrorAssignCallback;
-            fieldGetter = GetField;
         }
 
         public JSObject toExponential(JSObject digits)
@@ -166,16 +159,6 @@ namespace NiL.JS.Core.BaseTypes
             }
             return res.ToString("e" + dgts);
         }
-
-        public JSObject toString()
-        {
-            return new String(ValueType == ObjectValueType.Int ? iValue.ToString() : dValue.ToString());
-        }
-
-        public JSObject valueOf()
-        {
-            return this;
-        }
         
         public override string ToString()
         {
@@ -218,12 +201,7 @@ namespace NiL.JS.Core.BaseTypes
 
         public override int GetHashCode()
         {
-            return oValue.GetHashCode();
-        }
-
-        public override JSObject GetField(string name, bool fast)
-        {
-            return (proxy ?? (proxy = new ClassProxy(this))).GetField(name, fast);
+            return ValueType == ObjectValueType.Int ? iValue.GetHashCode() : dValue.GetHashCode();
         }
     }
 }
