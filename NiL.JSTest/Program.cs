@@ -144,15 +144,22 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * 3 * i; }
 
         private class TestClass
         {
-            [NiL.JS.Modules.Hidden]
-            private static int prop = 1;
+            public static void smethod()
+            {
+
+            }
+
+            public void dmethod()
+            {
+
+            }
         }
 
         private static void testEx()
         {
             Context.GlobalContext.GetField("f").Assign(null);
             Context.GlobalContext.AttachModule(typeof(TestClass));
-            var s = new Script("TestClass.prop = 2; console.log(TestClass.prop)");
+            var s = new Script("console.log(Number(123).toExponential())");
             s.Invoke();
         }
 
@@ -164,8 +171,8 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * 3 * i; }
             //benchmark();
             //featureSupportTest();
             //runFile(@"ftest.js");
-            sputnicTests();
-            //testEx();
+            //sputnicTests();
+            testEx();
 
             GC.Collect();
             GC.WaitForPendingFinalizers();

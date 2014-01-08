@@ -3,6 +3,7 @@ using NiL.JS.Modules;
 
 namespace NiL.JS.Core.BaseTypes
 {
+    [Immutable]
     internal class Number : BaseType
     {
         [Modules.Protected]

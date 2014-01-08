@@ -142,8 +142,9 @@
     <Compile Include="Core\ParseResult.cs" />
     <Compile Include="Modules\Console.cs" />
     <Compile Include="Modules\HiddenAttribute.cs" />
+    <Compile Include="Modules\ImmutableAttribute.cs" />
     <Compile Include="Modules\Math.cs" />
-    <Compile Include="Modules\ClassProxy.cs" />
+    <Compile Include="Modules\TypeProxy.cs" />
     <Compile Include="Modules\ProtectedAttribute.cs" />
     <Compile Include="Statements\LabeledStatement.cs" />
     <Compile Include="Statements\Operators\NotEqual.cs" />

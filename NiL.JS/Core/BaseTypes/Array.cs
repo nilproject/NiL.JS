@@ -46,7 +46,8 @@ namespace NiL.JS.Core.BaseTypes
                     val = (bool)args[i];
                 else if (args[i] is ContextStatement)
                     val = (JSObject)(ContextStatement)args[i];
-                else val = new NiL.JS.Modules.ClassProxy(args[i]);
+                else
+                    val = Modules.TypeProxy.Proxy(args[i]);
                 data[i] = val;
             }
         }

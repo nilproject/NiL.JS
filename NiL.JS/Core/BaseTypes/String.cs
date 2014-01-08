@@ -3,9 +3,9 @@ using NiL.JS.Modules;
 
 namespace NiL.JS.Core.BaseTypes
 {
+    [Immutable]
     internal class String : BaseType
     {
-
         public String()
         {
             oValue = "";
@@ -92,7 +92,7 @@ namespace NiL.JS.Core.BaseTypes
             return (int)(oValue as string)[p];
         }
 
-        public override JSObject toString()
+        public JSObject toString()
         {
             return this;
         }
@@ -124,11 +124,6 @@ namespace NiL.JS.Core.BaseTypes
         public override int GetHashCode()
         {
             return oValue.GetHashCode();
-        }
-
-        public override JSObject GetField(string name, bool fast, bool own)
-        {
-            return (proxy ?? (proxy = new ClassProxy(this))).GetField(name, fast);
         }
     }
 }

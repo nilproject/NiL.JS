@@ -241,7 +241,7 @@ namespace NiL.JS.Core
         {
             if (fields == null)
                 fields = new Dictionary<string, JSObject>();
-            fields.Add(moduleType.Name, new Modules.ClassProxy(moduleType));
+            fields.Add(moduleType.Name, new Modules.TypeProxy(moduleType));
         }
 
         private Context()

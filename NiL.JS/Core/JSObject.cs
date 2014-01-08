@@ -112,7 +112,7 @@ namespace NiL.JS.Core
                                 val = (bool)value;
                             else if (value is ContextStatement)
                                 val = (JSObject)(ContextStatement)value;
-                            else val = new NiL.JS.Modules.ClassProxy(value);
+                            else val = NiL.JS.Modules.TypeProxy.Proxy(value);
                             (oValue as ContextStatement[])[0].Invoke(new JSObject[] { val });
                             break;
                         }
@@ -159,7 +159,7 @@ namespace NiL.JS.Core
             else if (oValue == null)
                 throw new InvalidOperationException("Can't access to property value of \"null\"");
             if (name == "__proto__")
-                return prototype ?? Null;
+                return prototype ?? (fast ? Null : new JSObject(false) { ValueType = ObjectValueType.Object, oValue = null });
             JSObject res = null;
             bool fromProto = (fields == null || !fields.TryGetValue(name, out res)) && !own;
             if (fromProto && prototype != null)
