@@ -144,6 +144,9 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * 3 * i; }
 
         private class TestClass
         {
+            public float dfield { get { return 1.234f; } }
+            public static float sfield = 2.468f;
+
             public static void smethod()
             {
 
@@ -159,7 +162,7 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * 3 * i; }
         {
             Context.GlobalContext.GetField("f").Assign(null);
             Context.GlobalContext.AttachModule(typeof(TestClass));
-            var s = new Script("console.log(Number(123).toExponential())");
+            var s = new Script("console.log(TestClass().sfield)");
             s.Invoke();
         }
 
@@ -171,8 +174,8 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * 3 * i; }
             //benchmark();
             //featureSupportTest();
             //runFile(@"ftest.js");
-            sputnicTests();
-            //testEx();
+            //sputnicTests();
+            testEx();
 
             GC.Collect();
             GC.WaitForPendingFinalizers();
