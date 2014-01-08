@@ -95,8 +95,8 @@ namespace NiL.JS.Core
                 field.ValueType = ObjectValueType.Bool;
                 field.iValue = (re.Options & System.Text.RegularExpressions.RegexOptions.Multiline) != 0 ? 1 : 0;
                 field = res.GetField("source");
-                field.Protect();
                 field.Assign(pattern);
+                field.Protect();
                 return res;
             }));
             var rep = globalContext.GetField("RegExp").GetField("prototype");

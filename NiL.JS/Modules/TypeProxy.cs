@@ -85,7 +85,9 @@ namespace NiL.JS.Modules
             {
                 var result = new CallableField((th, args) =>
                 {
-                    var res = method.Invoke(th.thisBind.oValue ?? th.thisBind.firstContainer ?? th.thisBind, convertArgs(args, method.GetParameters()));
+                    object obj = th.thisBind.firstContainer ?? th.thisBind;
+                    obj = obj is Core.BaseTypes.BaseType ? obj : (obj as JSObject).oValue;
+                    var res = method.Invoke(obj, convertArgs(args, method.GetParameters()));
                     if (res == null)
                         return null;
                     else if (res is JSObject)
@@ -174,7 +176,7 @@ namespace NiL.JS.Modules
                                 })),
                                 new NiL.JS.Statements.ExternalFunction(new CallableField((_th, args) =>
                                 {
-                                    var res = getItem.Invoke(oValue, new object[] { index });
+                                    var res = getItem.Invoke(_th.thisBind.oValue ?? _th.thisBind.firstContainer.oValue ?? _th.thisBind.firstContainer ?? _th.thisBind, new object[] { index });
                                     if (res is JSObject)
                                         return res as JSObject;
                                     else if (res is int)

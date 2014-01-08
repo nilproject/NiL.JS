@@ -13,59 +13,60 @@ namespace NiL.JS.Statements.Operators
 
         public override JSObject Invoke(Context context)
         {
-            var temp0 = first.Invoke(context);
-            var temp1 = second.Invoke(context);
-            var lvt = temp0.ValueType;
-            tempResult.ValueType = ObjectValueType.Bool;
+            var temp = first.Invoke(context);
+            var lvt = temp.ValueType;
             switch (lvt)
             {
                 case ObjectValueType.Bool:
                 case ObjectValueType.Int:
                     {
-                        switch (temp1.ValueType)
+                        var iValue = temp.iValue;
+                        temp = second.Invoke(context);
+                        switch (temp.ValueType)
                         {
                             case ObjectValueType.Bool:
                             case ObjectValueType.Int:
                                 {
-                                    tempResult.iValue = temp0.iValue == temp1.iValue ? 1 : 0;
+                                    tempResult.iValue = iValue == temp.iValue ? 1 : 0;
                                     break;
                                 }
                             case ObjectValueType.Double:
                                 {
-                                    tempResult.iValue = temp0.iValue == temp1.dValue ? 1 : 0;
+
+                                    tempResult.iValue = iValue == temp.dValue ? 1 : 0;
                                     break;
                                 }
                             case ObjectValueType.String:
                                 {
                                     double d = 0;
                                     int i = 0;
-                                    string v = temp1.oValue as string;
+                                    string v = temp.oValue as string;
                                     if (Parser.ParseNumber(v, ref i, true, out d) && (i == v.Length))
-                                        tempResult.iValue = temp0.iValue == d ? 1 : 0;
+                                        tempResult.iValue = iValue == d ? 1 : 0;
                                     else
                                         tempResult.iValue = 0;
                                     break;
                                 }
                             case ObjectValueType.Object:
                                 {
-                                    temp1 = temp1.ToPrimitiveValue_Value_String(context);
-                                    if (temp1.ValueType == ObjectValueType.Int)
+                                    temp = temp.ToPrimitiveValue_Value_String(context);
+                                    if (temp.ValueType == ObjectValueType.Int)
                                     {
                                         goto case ObjectValueType.Int;
                                     }
-                                    else if (temp1.ValueType == ObjectValueType.Double)
+                                    else if (temp.ValueType == ObjectValueType.Double)
                                     {
                                         goto case ObjectValueType.Double;
                                     }
-                                    else if (temp1.ValueType == ObjectValueType.Bool)
+                                    else if (temp.ValueType == ObjectValueType.Bool)
                                     {
                                         goto case ObjectValueType.Bool;
                                     }
-                                    else if (temp1.ValueType == ObjectValueType.String)
+                                    else if (temp.ValueType == ObjectValueType.String)
                                     {
                                         goto case ObjectValueType.String;
                                     }
-                                    else if (temp1.ValueType == ObjectValueType.Object)
+                                    else if (temp.ValueType == ObjectValueType.Object)
                                     {
                                         tempResult.iValue = 0;
                                     }
@@ -78,50 +79,52 @@ namespace NiL.JS.Statements.Operators
                     }
                 case ObjectValueType.Double:
                     {
-                        switch (temp1.ValueType)
+                        var dValue = temp.dValue;
+                        temp = second.Invoke(context);
+                        switch (temp.ValueType)
                         {
                             case ObjectValueType.Bool:
                             case ObjectValueType.Int:
                                 {
-                                    tempResult.iValue = temp0.dValue == temp1.iValue ? 1 : 0;
+                                    tempResult.iValue = dValue == temp.iValue ? 1 : 0;
                                     break;
                                 }
                             case ObjectValueType.Double:
                                 {
-                                    tempResult.iValue = temp0.dValue == temp1.dValue ? 1 : 0;
+                                    tempResult.iValue = dValue == temp.dValue ? 1 : 0;
                                     break;
                                 }
                             case ObjectValueType.String:
                                 {
                                     double d = 0;
                                     int i = 0;
-                                    string v = temp1.oValue as string;
+                                    string v = temp.oValue as string;
                                     if (Parser.ParseNumber(v, ref i, true, out d) && (i == v.Length))
-                                        tempResult.iValue = temp0.dValue == d ? 1 : 0;
+                                        tempResult.iValue = dValue == d ? 1 : 0;
                                     else
                                         tempResult.iValue = 0;
                                     break;
                                 }
                             case ObjectValueType.Object:
                                 {
-                                    temp1 = temp1.ToPrimitiveValue_Value_String(context);
-                                    if (temp1.ValueType == ObjectValueType.Int)
+                                    temp = temp.ToPrimitiveValue_Value_String(context);
+                                    if (temp.ValueType == ObjectValueType.Int)
                                     {
                                         goto case ObjectValueType.Int;
                                     }
-                                    else if (temp1.ValueType == ObjectValueType.Double)
+                                    else if (temp.ValueType == ObjectValueType.Double)
                                     {
                                         goto case ObjectValueType.Double;
                                     }
-                                    else if (temp1.ValueType == ObjectValueType.Bool)
+                                    else if (temp.ValueType == ObjectValueType.Bool)
                                     {
                                         goto case ObjectValueType.Bool;
                                     }
-                                    else if (temp1.ValueType == ObjectValueType.String)
+                                    else if (temp.ValueType == ObjectValueType.String)
                                     {
                                         goto case ObjectValueType.String;
                                     }
-                                    else if (temp1.ValueType == ObjectValueType.Object)
+                                    else if (temp.ValueType == ObjectValueType.Object)
                                     {
                                         tempResult.iValue = 0;
                                     }
@@ -134,8 +137,9 @@ namespace NiL.JS.Statements.Operators
                     }
                 case ObjectValueType.String:
                     {
-                        string left = temp0.oValue as string;
-                        switch (temp1.ValueType)
+                        string left = temp.oValue as string;
+                        temp = second.Invoke(context);
+                        switch (temp.ValueType)
                         {
                             case ObjectValueType.Bool:
                             case ObjectValueType.Int:
@@ -143,7 +147,7 @@ namespace NiL.JS.Statements.Operators
                                     double d = 0;
                                     int i = 0;
                                     if (Parser.ParseNumber(left, ref i, true, out d) && (i == left.Length))
-                                        tempResult.iValue = d == temp1.iValue ? 1 : 0;
+                                        tempResult.iValue = d == temp.iValue ? 1 : 0;
                                     else
                                         tempResult.iValue = 0;
                                     break;
@@ -153,24 +157,24 @@ namespace NiL.JS.Statements.Operators
                                     double d = 0;
                                     int i = 0;
                                     if (Parser.ParseNumber(left, ref i, true, out d) && (i == left.Length))
-                                        tempResult.iValue = d == temp1.dValue ? 1 : 0;
+                                        tempResult.iValue = d == temp.dValue ? 1 : 0;
                                     else
                                         tempResult.iValue = 0;
                                     break;
                                 }
                             case ObjectValueType.String:
                                 {
-                                    tempResult.iValue = left == temp1.oValue as string ? 1 : 0;
+                                    tempResult.iValue = left == temp.oValue as string ? 1 : 0;
                                     break;
                                 }
                             case ObjectValueType.Object:
                                 {
-                                    if (temp1.oValue == null)
+                                    if (temp.oValue == null)
                                         tempResult.iValue = left == null ? 1 : 0;
                                     else
                                     {
-                                        temp1 = temp1.ToPrimitiveValue_Value_String(context);
-                                        tempResult.iValue = temp1.Value.ToString() == left ? 1 : 0;
+                                        temp = temp.ToPrimitiveValue_Value_String(context);
+                                        tempResult.iValue = temp.Value.ToString() == left ? 1 : 0;
                                     }
                                     break;
                                 }
@@ -187,65 +191,88 @@ namespace NiL.JS.Statements.Operators
                 case ObjectValueType.Date:
                 case ObjectValueType.Object:
                     {
-                        switch (temp0.ValueType)
+                        var stemp = second.Invoke(context);
+                        var secondNValue = 0.0;
+                        switch (stemp.ValueType)
                         {
-                            case ObjectValueType.Int:
                             case ObjectValueType.Double:
                             case ObjectValueType.Bool:
-                            case ObjectValueType.String:
-                                {
-                                    temp0 = temp0.ToPrimitiveValue_Value_String(context);
-                                    break;
-                                }
-                            case ObjectValueType.Object:
-                                {
-                                    if (temp0.oValue is NiL.JS.Core.BaseTypes.String)
-                                        temp0 = (temp0.oValue as NiL.JS.Core.BaseTypes.String);
-                                    break;
-                                }
-                        }
-                        lvt = temp0.ValueType;
-                        if (lvt != ObjectValueType.Object)
-                        {
-                            if (lvt == ObjectValueType.Int)
-                                goto case ObjectValueType.Int;
-                            if (lvt == ObjectValueType.Double)
-                                goto case ObjectValueType.Double;
-                            if (lvt == ObjectValueType.Bool)
-                                goto case ObjectValueType.Bool;
-                            if (lvt == ObjectValueType.String)
-                                goto case ObjectValueType.String;
-                        }
-                        switch (temp1.ValueType)
-                        {
-                            case ObjectValueType.Object:
-                                {
-                                    tempResult.iValue = temp0.oValue == temp1.oValue ? 1 : 0;
-                                    break;
-                                }
                             case ObjectValueType.Int:
-                            case ObjectValueType.Double:
-                            case ObjectValueType.Bool:
-                            case ObjectValueType.String:
-                            case ObjectValueType.Undefined:
-                            case ObjectValueType.NotExistInObject:
                                 {
-                                    tempResult.iValue = 0;
+                                    secondNValue = stemp.ValueType == ObjectValueType.Double ? stemp.dValue : stemp.iValue;
+                                    temp = temp.ToPrimitiveValue_Value_String(context);
+                                    switch (temp.ValueType)
+                                    {
+                                        case ObjectValueType.Bool:
+                                        case ObjectValueType.Int:
+                                            {
+                                                tempResult.iValue = temp.iValue == secondNValue ? 1 : 0;
+                                                break;
+                                            }
+                                        case ObjectValueType.Double:
+                                            {
+                                                tempResult.iValue = temp.dValue == secondNValue ? 1 : 0;
+                                                break;
+                                            }
+                                        case ObjectValueType.String:
+                                            {
+                                                double d = 0;
+                                                int i = 0;
+                                                if (Parser.ParseNumber(temp.oValue as string, ref i, true, out d) && (i == (temp.oValue as string).Length))
+                                                    tempResult.iValue = d == secondNValue ? 1 : 0;
+                                                else
+                                                    tempResult.iValue = 0;
+                                                break;
+                                            }
+                                    }
                                     break;
                                 }
-                            case ObjectValueType.NotExist: throw new InvalidOperationException("object not exist");
-                            default: throw new NotImplementedException();
+                            case ObjectValueType.String:
+                                {
+                                    var str = stemp.oValue as string;
+                                    temp = temp.ToPrimitiveValue_Value_String(context);
+                                    switch (temp.ValueType)
+                                    {
+                                        case ObjectValueType.Double:
+                                        case ObjectValueType.Bool:
+                                        case ObjectValueType.Int:
+                                            {
+                                                secondNValue = temp.ValueType == ObjectValueType.Double ? temp.dValue : stemp.iValue;
+                                                double d = 0;
+                                                int i = 0;
+                                                if (Parser.ParseNumber(str, ref i, true, out d) && (i == str.Length))
+                                                    tempResult.iValue = d == secondNValue ? 1 : 0;
+                                                else
+                                                    tempResult.iValue = 0;
+                                                break;
+                                            }
+                                        case ObjectValueType.String:
+                                            {
+                                                tempResult.iValue = temp.oValue as string == str ? 1 : 0;
+                                                break;
+                                            }
+                                    }
+                                    break;
+                                }
+                            default:
+                                {
+                                    tempResult.iValue = temp.Value == stemp.Value ? 1 : 0;
+                                    break;
+                                }
                         }
+                        
                         break;
                     }
                 case ObjectValueType.NotExistInObject:
                 case ObjectValueType.Undefined:
                     {
-                        tempResult.iValue = temp0.ValueType == ObjectValueType.Undefined || temp0.ValueType == ObjectValueType.NotExistInObject ? 1 : 0;
+                        temp = second.Invoke(context);
+                        tempResult.iValue = temp.ValueType == ObjectValueType.Undefined || temp.ValueType == ObjectValueType.NotExistInObject ? 1 : 0;
                         break;
                     }
                 default: throw new NotImplementedException();
             }
+            tempResult.ValueType = ObjectValueType.Bool;
             return tempResult;
         }
     }

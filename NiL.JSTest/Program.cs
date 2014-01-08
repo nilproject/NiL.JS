@@ -171,8 +171,8 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * 3 * i; }
             //benchmark();
             //featureSupportTest();
             //runFile(@"ftest.js");
-            //sputnicTests();
-            testEx();
+            sputnicTests();
+            //testEx();
 
             GC.Collect();
             GC.WaitForPendingFinalizers();

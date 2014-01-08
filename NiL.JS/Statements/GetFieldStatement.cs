@@ -20,8 +20,7 @@ namespace NiL.JS.Statements
                 if (n.ValueType == ObjectValueType.NotExist)
                     throw new ArgumentException("Varible not exist");
                 var th = obj.Invoke(s);
-                if (s.updateThisBind)
-                    s.thisBind = th;
+                s.thisBind = th;
                 var res = th.GetField(n.ToPrimitiveValue_String_Value(s).Value.ToString());
                 return res;
             };
@@ -33,8 +32,7 @@ namespace NiL.JS.Statements
             impl = (s) =>
             {
                 var th = obj.Invoke(s);
-                if (s.updateThisBind)
-                    s.thisBind = th;
+                s.thisBind = th;
                 var res = th.GetField(fieldName);
                 return res;
             };
@@ -44,8 +42,7 @@ namespace NiL.JS.Statements
         {
             impl = (s) =>
             {
-                if (s.updateThisBind)
-                    s.thisBind = obj;
+                s.thisBind = obj;
                 var res = obj.GetField(fieldName);
                 return res;
             };
@@ -56,8 +53,7 @@ namespace NiL.JS.Statements
             fieldNameStatement = fieldName;
             impl = (s) =>
             {
-                if (s.updateThisBind)
-                    s.thisBind = obj;
+                s.thisBind = obj;
                 var res = obj.GetField(fieldName.Invoke(s).ToPrimitiveValue_String_Value(s).Value.ToString());
                 return res;
             };
@@ -70,10 +66,22 @@ namespace NiL.JS.Statements
 
         public override JSObject Invoke(Context context)
         {
-            var res = impl(context);
-            if (res.ValueType == ObjectValueType.Property)
-                res = (res.oValue as Statement[])[1].Invoke(context, null);
-            return res;
+            var oldthb = context.thisBind;
+            var otu = context.updateThisBind;
+            context.updateThisBind = true;
+            try
+            {
+                var res = impl(context);
+                if (res.ValueType == ObjectValueType.Property)
+                    res = (res.oValue as Statement[])[1].Invoke(context, null);
+                return res;
+            }
+            finally
+            {
+                context.updateThisBind = otu;
+                if (!otu)
+                    context.thisBind = oldthb;
+            }
         }
 
         public override JSObject Invoke(Context context, JSObject[] args)

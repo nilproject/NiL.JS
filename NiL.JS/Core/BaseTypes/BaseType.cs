@@ -21,7 +21,7 @@ namespace NiL.JS.Core.BaseTypes
 
         public override JSObject GetField(string name, bool fast, bool own)
         {
-            return proxy ?? (proxy = TypeProxy.Proxy(this)).GetField(name, fast, own);
+            return (proxy ?? (proxy = TypeProxy.Proxy(this))).GetField(name, fast, own);
         }
     }
 }
