@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using NiL.JS.Core.BaseTypes;
 using NiL.JS.Core;
 
@@ -12,6 +12,9 @@ namespace NiL.JS.Statements
 
         public GetVaribleStatement(string name)
         {
+            int i = 0;
+            if (!Parser.ValidateName(name, ref i))
+                throw new ArgumentException("Invalid varible name");
             this.varibleName = name;
         }
 
