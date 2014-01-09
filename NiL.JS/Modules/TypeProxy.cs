@@ -75,7 +75,10 @@ namespace NiL.JS.Modules
                 new TypeProxy(type);
                 prot = prototypes[type];
             }
-            return new JSObject(false) { oValue = obj, ValueType = ObjectValueType.Object, prototype = prot };
+            var res = new JSObject(false) { oValue = obj, ValueType = ObjectValueType.Object };
+            res.GetField("constructor").Assign(constructors[type]);
+            res.prototype = prot;
+            return res;
         }
 
         private Type hostedType;
@@ -142,6 +145,7 @@ namespace NiL.JS.Modules
                         oValue = obj,
                         ValueType = ObjectValueType.Object
                     };
+                    res.GetField("constructor").Assign(this);
                     res.prototype = proto;
                     if (bynew)
                         _this.firstContainer = res;
@@ -223,7 +227,7 @@ namespace NiL.JS.Modules
             var m = hostedType.GetMember(name, BindingFlags.Public | (ValueType == ObjectValueType.Statement ? BindingFlags.Static : BindingFlags.Instance) | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy);
             if (m.Length > 1)
                 throw new InvalidOperationException("Too many fields with name " + name);
-            if (m.Length == 0 || m[0].GetCustomAttribute(typeof(HiddenAttribute)) != null)
+            if (m.Length == 0 || m[0].GetCustomAttributes(typeof(HiddenAttribute), true).Length != 0)
             {
                 r = DefaultFieldGetter(name, fast, own);
                 if (r != undefined && r != Null && r.ValueType != ObjectValueType.NotExistInObject)
@@ -345,8 +349,8 @@ namespace NiL.JS.Modules
                         {
                             ValueType = ObjectValueType.Property,
                             oValue = new Statement[] { 
-                                    pinfo.CanWrite ? convert(pinfo.SetMethod).oValue as Statement : null,
-                                    pinfo.CanRead ? convert(pinfo.GetMethod).oValue as Statement : null 
+                                    pinfo.CanWrite ? convert(pinfo.GetSetMethod()).oValue as Statement : null,
+                                    pinfo.CanRead ? convert(pinfo.GetGetMethod()).oValue as Statement : null 
                                 }
                         };
                         break;
