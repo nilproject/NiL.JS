@@ -4,7 +4,7 @@ using NiL.JS.Modules;
 namespace NiL.JS.Core.BaseTypes
 {
     [Immutable]
-    internal class String : BaseType
+    internal class String : EmbeddedType
     {
         public String()
         {

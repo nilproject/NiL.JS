@@ -69,18 +69,38 @@ namespace NiL.JS.Modules
         public static JSObject Proxy(object obj)
         {
             var type = obj.GetType();
+            var res = new JSObject(false) { oValue = obj, ValueType = ObjectValueType.Object };
+            res.GetField("constructor").Assign(GetConstructor(type));
+            res.prototype = GetPrototype(type);
+            return res;
+        }
+
+        public static JSObject GetPrototype(Type type)
+        {
             TypeProxy prot = null;
             if (!prototypes.TryGetValue(type, out prot))
             {
                 new TypeProxy(type);
                 prot = prototypes[type];
             }
-            return new JSObject(false) { oValue = obj, ValueType = ObjectValueType.Object, prototype = prot };
+            return prot;
+        }
+
+        public static JSObject GetConstructor(Type type)
+        {
+            TypeProxy constructor = null;
+            if (!constructors.TryGetValue(type, out constructor))
+                constructor = new TypeProxy(type);
+            return constructor;
         }
 
         private Type hostedType;
         private MethodInfo getItem;
         private MethodInfo setItem;
+        [NonSerialized]
+        private object index;
+        [NonSerialized]
+        private JSObject defaultProperty;
         private Dictionary<string, JSObject> cache;
 
         private TypeProxy(Type type, bool fictive)
@@ -142,6 +162,8 @@ namespace NiL.JS.Modules
                         oValue = obj,
                         ValueType = ObjectValueType.Object
                     };
+                    if (!(res is Core.BaseTypes.EmbeddedType))
+                        res.GetField("constructor").Assign(this);
                     res.prototype = proto;
                     if (bynew)
                         _this.firstContainer = res;
@@ -211,7 +233,7 @@ namespace NiL.JS.Modules
             if (ValueType == ObjectValueType.Statement)
                 return null;
             object obj = context.thisBind.firstContainer ?? context.thisBind;
-            obj = obj is Core.BaseTypes.BaseType ? obj : (obj as JSObject).oValue;
+            obj = obj is Core.BaseTypes.EmbeddedType ? obj : (obj as JSObject).oValue;
             return obj;
         }
 
@@ -223,7 +245,7 @@ namespace NiL.JS.Modules
             var m = hostedType.GetMember(name, BindingFlags.Public | (ValueType == ObjectValueType.Statement ? BindingFlags.Static : BindingFlags.Instance) | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy);
             if (m.Length > 1)
                 throw new InvalidOperationException("Too many fields with name " + name);
-            if (m.Length == 0 || m[0].GetCustomAttribute(typeof(HiddenAttribute)) != null)
+            if (m.Length == 0 || m[0].GetCustomAttributes(typeof(HiddenAttribute), true).Length != 0)
             {
                 r = DefaultFieldGetter(name, fast, own);
                 if (r != undefined && r != Null && r.ValueType != ObjectValueType.NotExistInObject)
@@ -239,11 +261,13 @@ namespace NiL.JS.Modules
                     || ((gprms ?? sprms)[0].ParameterType == typeof(object))))
                 {
                     var ptype = (sprms ?? gprms)[0].ParameterType;
-                    object index = ptype == typeof(double) ? (object)d : (object)(ptype == typeof(int) ? i : (object)name);
-                    return new JSObject()
+                    index = ptype == typeof(double) ? (object)d : (object)(ptype == typeof(int) ? i : (object)name);
+                    if (defaultProperty == null)
                     {
-                        ValueType = ObjectValueType.Property,
-                        oValue = new Statement[] 
+                        defaultProperty = new JSObject()
+                        {
+                            ValueType = ObjectValueType.Property,
+                            oValue = new Statement[] 
                             {
                                 new NiL.JS.Statements.ExternalFunction(new CallableField((context, args) =>
                                 {
@@ -277,7 +301,9 @@ namespace NiL.JS.Modules
                                     else return TypeProxy.Proxy(res);
                                 })) 
                             }
-                    };
+                        };
+                    }
+                    return defaultProperty;
                 }
                 return r;
             }
@@ -345,8 +371,8 @@ namespace NiL.JS.Modules
                         {
                             ValueType = ObjectValueType.Property,
                             oValue = new Statement[] { 
-                                    pinfo.CanWrite ? convert(pinfo.SetMethod).oValue as Statement : null,
-                                    pinfo.CanRead ? convert(pinfo.GetMethod).oValue as Statement : null 
+                                    pinfo.CanWrite ? convert(pinfo.GetSetMethod()).oValue as Statement : null,
+                                    pinfo.CanRead ? convert(pinfo.GetGetMethod()).oValue as Statement : null 
                                 }
                         };
                         break;

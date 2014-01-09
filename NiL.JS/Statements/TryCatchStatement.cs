@@ -67,6 +67,7 @@ namespace NiL.JS.Statements
             {
                 var eo = context.Define(exptName);
                 eo.ValueType = ObjectValueType.Object;
+                eo.oValue = e;
                 eo.GetField("message").Assign(e.Message);
                 catchBody.Invoke(context);
             }

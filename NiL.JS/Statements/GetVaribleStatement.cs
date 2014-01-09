@@ -12,6 +12,9 @@ namespace NiL.JS.Statements
 
         public GetVaribleStatement(string name)
         {
+            int i = 0;
+            if ((name != "this") && !Parser.ValidateName(name, ref i, false, true))
+                throw new ArgumentException("Invalid varible name");
             this.varibleName = name;
         }
 

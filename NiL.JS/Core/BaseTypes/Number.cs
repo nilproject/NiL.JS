@@ -4,7 +4,7 @@ using NiL.JS.Modules;
 namespace NiL.JS.Core.BaseTypes
 {
     [Immutable]
-    internal class Number : BaseType
+    internal class Number : EmbeddedType
     {
         [Modules.Protected]
         public static JSObject NaN = double.NaN;

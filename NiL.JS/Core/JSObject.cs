@@ -37,10 +37,12 @@ namespace NiL.JS.Core
         private static readonly System.Reflection.MemberInfo DefaultGetter = typeof(JSObject).GetMethod("DefaultFieldGetter", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
 
         [Modules.Hidden]
-        [Modules.Protected]
         private static readonly IEnumerator<string> EmptyEnumerator = ((IEnumerable<string>)(new string[0])).GetEnumerator();
+        [Modules.Hidden]
         internal static readonly Func<bool> ErrorAssignCallback = () => { throw new InvalidOperationException("Invalid left-hand side"); };
+        [Modules.Hidden]
         internal static readonly JSObject undefined = new JSObject() { ValueType = ObjectValueType.Undefined };
+        [Modules.Hidden]
         internal static readonly JSObject Null = new JSObject() { ValueType = ObjectValueType.Object, oValue = null, assignCallback = ErrorAssignCallback };
 
         static JSObject()
@@ -49,22 +51,31 @@ namespace NiL.JS.Core
             undefined.Protect();
         }
 
+        [Modules.Hidden]
         [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
         [System.ComponentModel.Browsable(false)]
         internal Func<bool> assignCallback;
-        //internal Func<string, bool, JSObject> fieldGetter;
-        //internal Func<IEnumerator<string>> enumeratorGetter;
+        [Modules.Hidden]
         internal JSObject firstContainer;
+        [Modules.Hidden]
         internal JSObject prototype;
+        [Modules.Hidden]
         internal Dictionary<string, JSObject> fields;
 
+        [Modules.Hidden]
         internal bool temporary;
+        [Modules.Hidden]
         internal ObjectValueType ValueType;
+        [Modules.Hidden]
         internal int iValue;
+        [Modules.Hidden]
         internal double dValue;
+        [Modules.Hidden]
         internal object oValue;
+        [Modules.Hidden]
         internal ObjectAttributes attributes;
 
+        [Modules.Hidden]
         public object Value
         {
             get
@@ -133,16 +144,19 @@ namespace NiL.JS.Core
                 fields = new Dictionary<string, JSObject>();
         }
 
+        [Modules.Hidden]
         public JSObject GetField(string name)
         {
             return GetField(name, false, false);
         }
 
+        [Modules.Hidden]
         public JSObject GetField(string name, bool fast)
         {
             return GetField(name, fast, false);
         }
 
+        [Modules.Hidden]
         public virtual JSObject GetField(string name, bool fast, bool own)
         {
             if (firstContainer == null)
@@ -150,9 +164,10 @@ namespace NiL.JS.Core
             return firstContainer.GetField(name, fast, own);
         }
 
+        [Modules.Hidden]
         protected JSObject DefaultFieldGetter(string name, bool fast, bool own)
         {
-            if (ValueType == ObjectValueType.Undefined)
+            if (ValueType <= ObjectValueType.Undefined)
                 throw new InvalidOperationException("Can't access to property value of \"undefined\"");
             if ((int)ValueType < (int)ObjectValueType.Object)
                 fast = true;
@@ -204,6 +219,7 @@ namespace NiL.JS.Core
             return res;
         }
 
+        [Modules.Hidden]
         public void Protect()
         {
             if (assignCallback != null)
@@ -211,6 +227,7 @@ namespace NiL.JS.Core
             assignCallback = () => { return false; };
         }
 
+        [Modules.Hidden]
         internal JSObject ToPrimitiveValue_Value_String(Context context)
         {
             var otb = context.thisBind;
@@ -261,6 +278,7 @@ namespace NiL.JS.Core
             return this;
         }
 
+        [Modules.Hidden]
         internal JSObject ToPrimitiveValue_String_Value(Context context)
         {
             var otb = context.thisBind;
@@ -314,6 +332,7 @@ namespace NiL.JS.Core
 #if INLINE
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
+        [Modules.Hidden]
         public void Assign(JSObject right)
         {
             if (this.assignCallback != null)
@@ -367,11 +386,13 @@ namespace NiL.JS.Core
             this.firstContainer = null;
         }
 
+        [Modules.Hidden]
         public void Delete()
         {
             ValueType = ObjectValueType.NotExist;
         }
 
+        [Modules.Hidden]
         public override string ToString()
         {
             if (ValueType <= ObjectValueType.Undefined)
@@ -382,6 +403,7 @@ namespace NiL.JS.Core
             return "" + (Value ?? "null");
         }
 
+        [Modules.Hidden]
         IEnumerator IEnumerable.GetEnumerator()
         {
             if (firstContainer != null)
@@ -389,6 +411,7 @@ namespace NiL.JS.Core
             return fields.Keys.GetEnumerator();
         }
 
+        [Modules.Hidden]
         public virtual IEnumerator<string> GetEnumerator()
         {
             if (firstContainer != null)
