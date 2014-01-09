@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using NiL.JS.Core.BaseTypes;
 using NiL.JS.Core;
 

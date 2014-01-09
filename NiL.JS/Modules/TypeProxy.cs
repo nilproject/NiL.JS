@@ -265,9 +265,9 @@ namespace NiL.JS.Modules
                     if (defaultProperty == null)
                     {
                         defaultProperty = new JSObject()
-                        {
-                            ValueType = ObjectValueType.Property,
-                            oValue = new Statement[] 
+                    {
+                        ValueType = ObjectValueType.Property,
+                        oValue = new Statement[] 
                             {
                                 new NiL.JS.Statements.ExternalFunction(new CallableField((context, args) =>
                                 {
@@ -301,8 +301,8 @@ namespace NiL.JS.Modules
                                     else return TypeProxy.Proxy(res);
                                 })) 
                             }
-                        };
-                    }
+                    };
+                }
                     return defaultProperty;
                 }
                 return r;
