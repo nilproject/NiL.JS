@@ -118,7 +118,8 @@ namespace NiL.JS.Statements
             var res = new JSObject(false);
             res.ValueType = ObjectValueType.Object;
             res.oValue = new object();
-            res.prototype = NiL.JS.Core.BaseTypes.BaseObject.Prototype;
+            res.prototype = new JSObject(false);
+            res.prototype.Assign(NiL.JS.Core.BaseTypes.BaseObject.Prototype);
             for (int i = 0; i < fields.Length; i++)
             {
                 var val = values[i].Invoke(context);
@@ -127,7 +128,7 @@ namespace NiL.JS.Statements
                     var gs = val.oValue as Statement[];
                     val.oValue = new ContextStatement[] { gs[0] != null ? gs[0].Implement(context) : null, gs[1] != null ? gs[1].Implement(context) : null };
                 }
-                res.GetField(fields[i]).Assign(val);
+                res.GetField(fields[i], false, true).Assign(val);
             }
             return res;
         }

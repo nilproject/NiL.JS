@@ -338,11 +338,6 @@ namespace NiL.JS.Core
             if (this.assignCallback != null)
                 if (!this.assignCallback())
                     return;
-            if (ValueType == ObjectValueType.Property)
-            {
-                (oValue as ContextStatement[])[0].Invoke(new JSObject[] { right });
-                return;
-            }
             if (right == this)
                 return;
             if (right != null)

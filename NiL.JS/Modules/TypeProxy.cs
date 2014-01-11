@@ -134,26 +134,43 @@ namespace NiL.JS.Modules
                 oValue = new Statements.ExternalFunction((x, y) =>
                 {
                     object[] args = null;
-                    var constructor = type.GetConstructor(y != null ? new Type[] { y.GetType() } : Type.EmptyTypes);
-                    if (constructor == null)
+                    ConstructorInfo constructor = null;
+                    if (y == null || y.Length == 0)
+                        constructor = hostedType.GetConstructor(Type.EmptyTypes);
+                    else
                     {
-                        constructor = type.GetConstructor(Type.GetTypeArray(y));
-                        if (constructor == null)
+                        Type[] argtypes = new[] { y.GetType() };
+                        if (y.Length == 1)
                         {
-                            constructor = type.GetConstructor(new Type[] { typeof(object[]) });
+                            argtypes[0] = y[0].GetType();
+                            constructor = hostedType.GetConstructor(argtypes);
                             if (constructor == null)
                             {
-                                constructor = type.GetConstructor(Type.EmptyTypes);
-                                args = null;
+                                var arg = y[0].Value;
+                                argtypes[0] = arg.GetType();
+                                constructor = hostedType.GetConstructor(argtypes);
+                                if (constructor != null)
+                                    args = new object[] { arg };
                             }
                             else
-                                args = new object[] { args };
+                                args = new object[] { y[0] };
                         }
-                        else
-                            args = (object[])y;
+                        if (constructor == null || y.Length > 1)
+                        {
+                            constructor = hostedType.GetConstructor(Type.GetTypeArray(y));
+                            if (constructor == null)
+                            {
+                                argtypes[0] = y.GetType();
+                                constructor = hostedType.GetConstructor(argtypes);
+                                if (constructor == null)
+                                    constructor = hostedType.GetConstructor(Type.EmptyTypes);
+                                else
+                                    args = new object[] { y };
+                            }
+                            else
+                                args = y;
+                        }
                     }
-                    else
-                        args = y != null ? new object[] { y } : null;
                     var _this = x.thisBind;
                     bool bynew = _this != null && _this.prototype != null && _this.prototype.ValueType == ObjectValueType.Object && _this.prototype.oValue == type as object;
                     var obj = constructor.Invoke(args);
@@ -265,43 +282,43 @@ namespace NiL.JS.Modules
                     if (defaultProperty == null)
                     {
                         defaultProperty = new JSObject()
-                    {
-                        ValueType = ObjectValueType.Property,
-                        oValue = new Statement[] 
-                            {
-                                new NiL.JS.Statements.ExternalFunction(new CallableField((context, args) =>
+                        {
+                            ValueType = ObjectValueType.Property,
+                            oValue = new Statement[] 
                                 {
-                                    object[] a = null;
-                                    if (sprms[1].ParameterType != typeof(JSObject))
+                                    new NiL.JS.Statements.ExternalFunction(new CallableField((context, args) =>
                                     {
-                                        args = new JSObject[] { null, args[0] };
-                                        a = convertArgs(args, sprms);
-                                        a[0] = sprms[0].ParameterType == typeof(string) ? name : (object)(sprms[0].ParameterType == typeof(int) ? i : (object)d);
-                                    }
-                                    else
-                                        a = new object[] { index, args[0] };
-                                    setItem.Invoke(getTargetObject(context), a);
-                                    return args[0];
-                                })),
-                                new NiL.JS.Statements.ExternalFunction(new CallableField((context, args) =>
-                                {
-                                    var res = getItem.Invoke(getTargetObject(context), new object[] { index });
-                                    if (res is JSObject)
-                                        return res as JSObject;
-                                    else if (res is int)
-                                        return (int)res;
-                                    else if (res is double || res is long)
-                                        return (double)res;
-                                    else if (res is string)
-                                        return (string)res;
-                                    else if (res is bool)
-                                        return (bool)res;
-                                    else if (res is ContextStatement)
-                                        return (JSObject)(ContextStatement)res;
-                                    else return TypeProxy.Proxy(res);
-                                })) 
-                            }
-                    };
+                                        object[] a = null;
+                                        if (sprms[1].ParameterType != typeof(JSObject))
+                                        {
+                                            args = new JSObject[] { null, args[0] };
+                                            a = convertArgs(args, sprms);
+                                            a[0] = sprms[0].ParameterType == typeof(string) ? name : (object)(sprms[0].ParameterType == typeof(int) ? i : (object)d);
+                                        }
+                                        else
+                                            a = new object[] { index, args[0] };
+                                        setItem.Invoke(getTargetObject(context), a);
+                                        return args[0];
+                                    })),
+                                    new NiL.JS.Statements.ExternalFunction(new CallableField((context, args) =>
+                                    {
+                                        var res = getItem.Invoke(getTargetObject(context), new object[] { index });
+                                        if (res is JSObject)
+                                            return res as JSObject;
+                                        else if (res is int)
+                                            return (int)res;
+                                        else if (res is double || res is long)
+                                            return (double)res;
+                                        else if (res is string)
+                                            return (string)res;
+                                        else if (res is bool)
+                                            return (bool)res;
+                                        else if (res is ContextStatement)
+                                            return (JSObject)(ContextStatement)res;
+                                        else return TypeProxy.Proxy(res);
+                                    })) 
+                                }
+                        };
                 }
                     return defaultProperty;
                 }
