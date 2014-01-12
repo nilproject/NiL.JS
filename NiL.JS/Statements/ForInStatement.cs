@@ -97,7 +97,7 @@ namespace NiL.JS.Statements
                         }
                     }
                 }
-                s = s.prototype;
+                s = s.GetField("__proto__", true);
             }
             return JSObject.undefined;
         }

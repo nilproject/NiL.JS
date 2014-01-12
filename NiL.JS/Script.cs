@@ -14,7 +14,7 @@ namespace NiL.JS
 
         public Script(string code)
         {
-            Context = new Context(Context.globalContext);
+            Context = new Context(NiL.JS.Core.Context.globalContext);
             Code = code;
             int i = 0;
             string c = "{" + Parser.RemoveComments(Code) + "}";

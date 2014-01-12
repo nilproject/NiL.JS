@@ -70,7 +70,7 @@ namespace NiL.JS.Modules
         {
             var type = obj.GetType();
             var res = new JSObject(false) { oValue = obj, ValueType = ObjectValueType.Object };
-            res.GetField("constructor").Assign(GetConstructor(type));
+            res.GetField("constructor", false, true).Assign(GetConstructor(type));
             res.prototype = GetPrototype(type);
             return res;
         }
@@ -110,8 +110,8 @@ namespace NiL.JS.Modules
             ValueType = ObjectValueType.Object;
             assignCallback = ErrorAssignCallback;
             cache = new Dictionary<string, JSObject>();
-            getItem = type.GetMethod("get_Item", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
-            setItem = type.GetMethod("set_Item", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+            getItem = type.GetMethod("get_Item", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy);
+            setItem = type.GetMethod("set_Item", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy);
         }
 
         public TypeProxy(Type type)
@@ -122,8 +122,8 @@ namespace NiL.JS.Modules
             TypeProxy exconst = null;
             assignCallback = ErrorAssignCallback;
             cache = new Dictionary<string, JSObject>();
-            getItem = type.GetMethod("get_Item", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
-            setItem = type.GetMethod("set_Item", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+            getItem = type.GetMethod("get_Item", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy);
+            setItem = type.GetMethod("set_Item", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy);
             if (constructors.TryGetValue(type, out exconst))
             {
                 oValue = exconst.oValue;
@@ -172,7 +172,7 @@ namespace NiL.JS.Modules
                         }
                     }
                     var _this = x.thisBind;
-                    bool bynew = _this != null && _this.prototype != null && _this.prototype.ValueType == ObjectValueType.Object && _this.prototype.oValue == type as object;
+                    bool bynew = _this != null && _this.GetField("__proto__", true) != null && _this.GetField("__proto__", true).ValueType == ObjectValueType.Object && _this.GetField("__proto__", true).oValue == type as object;
                     var obj = constructor.Invoke(args);
                     var res = obj is JSObject && !bynew ? obj as JSObject : new JSObject(false)
                     {
@@ -181,7 +181,7 @@ namespace NiL.JS.Modules
                     };
                     if (!(res is Core.BaseTypes.EmbeddedType))
                         res.GetField("constructor").Assign(this);
-                    res.prototype = proto;
+                    res.GetField("__proto__").Assign(proto);
                     if (bynew)
                         _this.firstContainer = res;
                     return res;

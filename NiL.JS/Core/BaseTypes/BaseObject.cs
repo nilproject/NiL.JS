@@ -18,11 +18,11 @@ namespace NiL.JS.Core.BaseTypes
             {
                 var _this = cont.thisBind ?? cont.GetField("this");
                 JSObject res;
-                if (_this.ValueType == ObjectValueType.Object && _this.prototype == Prototype)
+                if (_this.ValueType == ObjectValueType.Object && _this.GetField("__proto__", true) == Prototype)
                     res = _this;
                 else
                     res = new JSObject();
-                res.prototype = Prototype;
+                res.GetField("__proto__").Assign(Prototype);
                 res.ValueType = ObjectValueType.Object;
                 res.oValue = new object();
                 if (args != null && args.Length > 0)

@@ -1809,7 +1809,8 @@ namespace NiL.JS.Statements
             }
             JSObject _this = new JSObject();
             _this.Assign(temp.GetField("prototype", true));
-            _this = new JSObject() { ValueType = ObjectValueType.Object, prototype = _this.ValueType > ObjectValueType.Undefined ? _this : null, oValue = new object() };
+            _this = new JSObject() { ValueType = ObjectValueType.Object, oValue = new object() };
+            _this = _this.ValueType > ObjectValueType.Undefined ? _this : null;
             JSObject[] stmnts = null;
             if ((sps != null) && (sps.Length != 0))
             {

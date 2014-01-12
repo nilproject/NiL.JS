@@ -174,7 +174,7 @@ namespace NiL.JS.Core
             else if (oValue == null)
                 throw new InvalidOperationException("Can't access to property value of \"null\"");
             if (name == "__proto__")
-                return prototype ?? (fast ? Null : new JSObject(false) { ValueType = ObjectValueType.Object, oValue = null });
+                return prototype ?? (fast ? Null : prototype = new JSObject(false) { ValueType = ObjectValueType.Object, oValue = null });
             JSObject res = null;
             bool fromProto = (fields == null || !fields.TryGetValue(name, out res)) && !own;
             if (fromProto && prototype != null)
@@ -370,7 +370,7 @@ namespace NiL.JS.Core
                         }
                     default: throw new InvalidOperationException();
                 }
-                this.prototype = right.prototype;
+                this.prototype = right.GetField("__proto__", true);
                 this.ValueType = right.ValueType;
                 this.fields = right.fields;
                 this.firstContainer = right.firstContainer ?? right;

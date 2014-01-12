@@ -79,7 +79,7 @@ namespace NiL.JS.Core
                     | (flags.IndexOf('m') != -1 ? System.Text.RegularExpressions.RegexOptions.Multiline : 0)
                     );
                 JSObject res = new JSObject();
-                res.prototype = globalContext.GetField("RegExp").GetField("prototype", true);
+                res = globalContext.GetField("RegExp").GetField("prototype", true);
                 res.ValueType = ObjectValueType.Object;
                 res.oValue = re;
                 var field = res.GetField("global");
