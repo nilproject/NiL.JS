@@ -319,7 +319,7 @@ namespace NiL.JS.Modules
                                     })) 
                                 }
                         };
-                }
+                    }
                     return defaultProperty;
                 }
                 return r;

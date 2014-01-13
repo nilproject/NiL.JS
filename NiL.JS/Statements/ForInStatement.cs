@@ -97,7 +97,7 @@ namespace NiL.JS.Statements
                         }
                     }
                 }
-                s = s.GetField("__proto__", true);
+                s = (s.firstContainer ?? s).prototype;
             }
             return JSObject.undefined;
         }

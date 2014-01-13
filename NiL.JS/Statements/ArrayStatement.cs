@@ -55,7 +55,7 @@ namespace NiL.JS.Statements
             var res = new NiL.JS.Core.BaseTypes.Array(elements.Length);
             for (int i = 0; i < elements.Length; i++)
                 res[i] = (elements[i].Invoke(context));
-            return Modules.TypeProxy.Proxy(res);
+            return res;
         }
 
         public override JSObject Invoke(Context context, JSObject[] args)

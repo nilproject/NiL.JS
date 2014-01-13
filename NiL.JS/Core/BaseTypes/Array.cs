@@ -1,22 +1,60 @@
 using System;
+using System.Collections.Generic;
+using System.Collections;
 
 namespace NiL.JS.Core.BaseTypes
 {
-    internal class Array
+    internal class Array : EmbeddedType, IEnumerable<string>
     {
+        private class Enumerator : IEnumerator<string>
+        {
+            private Array owner;
+            private int index;
+
+            public Enumerator(Array owner)
+            {
+                this.owner = owner;
+                index = -1;
+            }
+
+            public object Current { get { return index.ToString(); } }
+
+            string IEnumerator<string>.Current { get { return index.ToString(); } }
+
+            public bool MoveNext()
+            {
+                do
+                    index++;
+                while (index < owner.data.Length && (owner.data[index] == null || owner.data[index].ValueType < ObjectValueType.Undefined));
+                return index < owner.data.Length;
+            }
+
+            public void Reset()
+            {
+                index = -1;
+            }
+
+            public void Dispose()
+            {
+
+            }
+        }
+
         [Modules.Hidden]
         private JSObject[] data;
 
         public Array()
         {
             data = new JSObject[0];
+            ValueType = ObjectValueType.Object;
         }
 
         public Array(int length)
         {
             data = new JSObject[length];
             for (int i = 0; i < data.Length; i++)
-                data[i] = new JSObject();
+                data[i] = null;
+            ValueType = ObjectValueType.Object;
         }
 
         public Array(double d)
@@ -56,7 +94,7 @@ namespace NiL.JS.Core.BaseTypes
         {
             get
             {
-                return data[index];
+                return data[index] ?? JSObject.undefined;
             }
             set
             {
@@ -66,10 +104,10 @@ namespace NiL.JS.Core.BaseTypes
                     for (int i = 0; i < data.Length; i++)
                         t[i] = data[i];
                     for (int i = data.Length; i < t.Length; i++)
-                        t[i] = new JSObject();
+                        t[i] = null;
                     data = t;
                 }
-                data[index].Assign(value);
+                (data[index] ?? (data[index] = new JSObject())).Assign(value);
             }
         }
 
@@ -87,7 +125,7 @@ namespace NiL.JS.Core.BaseTypes
                     for (int i = 0; i < data.Length; i++)
                         t[i] = data[i];
                     for (int i = data.Length; i < t.Length; i++)
-                        t[i] = new JSObject();
+                        t[i] = null;
                     data = t;
                 }
             }
@@ -106,6 +144,11 @@ namespace NiL.JS.Core.BaseTypes
             for (int i = 1; i < data.Length; i++)
                 res += "," + (data[i].Value ?? "").ToString();
             return res;
+        }
+
+        public override IEnumerator<string> GetEnumerator()
+        {
+            return new Enumerator(this);
         }
     }
 }

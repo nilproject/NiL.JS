@@ -401,9 +401,7 @@ namespace NiL.JS.Core
         [Modules.Hidden]
         IEnumerator IEnumerable.GetEnumerator()
         {
-            if (firstContainer != null)
-                return firstContainer.GetEnumerator();
-            return fields.Keys.GetEnumerator();
+            return ((IEnumerable<string>)this).GetEnumerator();
         }
 
         [Modules.Hidden]
@@ -411,6 +409,8 @@ namespace NiL.JS.Core
         {
             if (firstContainer != null)
                 return firstContainer.GetEnumerator();
+            if (fields == null)
+                return EmptyEnumerator;
             return fields.Keys.GetEnumerator();
         }
 
