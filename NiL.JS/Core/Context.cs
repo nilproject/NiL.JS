@@ -30,6 +30,13 @@ namespace NiL.JS.Core
         {
             if (globalContext.fields != null)
                 globalContext.fields.Clear();
+            
+            BaseObject.RegisterTo(globalContext);
+            globalContext.AttachModule(typeof(Date));
+            globalContext.AttachModule(typeof(BaseTypes.Array));
+            globalContext.AttachModule(typeof(BaseTypes.String));
+            globalContext.AttachModule(typeof(BaseTypes.Number));
+
             #region Base Function
             globalContext.GetField("eval").Assign(eval = new CallableField((cont, x) =>
             {
@@ -101,6 +108,7 @@ namespace NiL.JS.Core
             }));
             var rep = globalContext.GetField("RegExp").GetField("prototype");
             rep.Assign(null);
+            rep.prototype = BaseObject.Prototype;
             rep.ValueType = ObjectValueType.Object;
             rep.oValue = new object();
             rep.GetField("exec").Assign(new CallableField((cont, args) =>
@@ -118,12 +126,6 @@ namespace NiL.JS.Core
                 }
                 return mres;
             }));
-
-            BaseObject.RegisterTo(globalContext);
-            globalContext.AttachModule(typeof(Date));
-            globalContext.AttachModule(typeof(BaseTypes.Array));
-            globalContext.AttachModule(typeof(BaseTypes.String));
-            globalContext.AttachModule(typeof(BaseTypes.Number));
             #endregion
             #region Consts
             globalContext.fields["undefined"] = JSObject.undefined;
