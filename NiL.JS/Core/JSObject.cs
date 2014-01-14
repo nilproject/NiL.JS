@@ -40,6 +40,8 @@ namespace NiL.JS.Core
         [Modules.Hidden]
         private static readonly Number tempNumber = new Number() { attributes = ObjectAttributes.DontDelete };
         [Modules.Hidden]
+        private static readonly BaseTypes.String tempString = new BaseTypes.String() { attributes = ObjectAttributes.DontDelete };
+        [Modules.Hidden]
         private static readonly IEnumerator<string> EmptyEnumerator = ((IEnumerable<string>)(new string[0])).GetEnumerator();
         [Modules.Hidden]
         internal static readonly Func<bool> ErrorAssignCallback = () => { throw new InvalidOperationException("Invalid left-hand side"); };
@@ -65,8 +67,6 @@ namespace NiL.JS.Core
         [Modules.Hidden]
         internal Dictionary<string, JSObject> fields;
 
-        [Modules.Hidden]
-        internal bool temporary;
         [Modules.Hidden]
         internal ObjectValueType ValueType;
         [Modules.Hidden]
@@ -183,7 +183,13 @@ namespace NiL.JS.Core
                         tempNumber.dValue = dValue;
                         tempNumber.ValueType = ValueType;
                         firstContainer = tempNumber;
-                        return tempNumber.GetField(name, fast, own);
+                        return tempNumber.GetField(name, true, own);
+                    }
+                case ObjectValueType.String:
+                    {
+                        tempString.oValue = oValue;
+                        firstContainer = tempString;
+                        return tempString.GetField(name, true, own);
                     }
                 case ObjectValueType.Bool:
                     {
@@ -194,7 +200,6 @@ namespace NiL.JS.Core
                 case ObjectValueType.Object:
                 case ObjectValueType.Property:
                 case ObjectValueType.Statement:
-                case ObjectValueType.String:
                     {
                         if (oValue == null)
                             throw new InvalidOperationException("Can't access to property value of \"null\"");
@@ -380,6 +385,7 @@ namespace NiL.JS.Core
                             this.iValue = right.iValue;
                             this.fields = null;
                             this.prototype = null;
+                            this.firstContainer = null;
                             break;
                         }
                     case ObjectValueType.Double:
@@ -387,6 +393,7 @@ namespace NiL.JS.Core
                             this.dValue = right.dValue;
                             this.fields = null;
                             this.prototype = null;
+                            this.firstContainer = null;
                             break;
                         }
                     case ObjectValueType.Statement:
@@ -399,6 +406,7 @@ namespace NiL.JS.Core
                             else
                                 this.prototype = BaseObject.Prototype;
                             this.fields = right.fields;
+                            this.firstContainer = right.firstContainer ?? right;
                             break;
                         }
                     case ObjectValueType.Property:
@@ -407,18 +415,19 @@ namespace NiL.JS.Core
                             this.oValue = right.oValue;
                             this.fields = null;
                             this.prototype = null;
+                            this.firstContainer = null;
                             break;
                         }
                     case ObjectValueType.Undefined:
                         {
                             this.fields = null;
                             this.prototype = null;
+                            this.firstContainer = null;
                             break;
                         }
                     default: throw new InvalidOperationException();
                 }
                 this.ValueType = right.ValueType;
-                this.firstContainer = right.firstContainer ?? right;
                 return;
             }
             this.prototype = null;
@@ -466,7 +475,7 @@ namespace NiL.JS.Core
 
         public static implicit operator JSObject(bool value)
         {
-            return new JSObject() { ValueType = ObjectValueType.Bool, iValue = value ? 1 : 0, temporary = true, assignCallback = ErrorAssignCallback };
+            return new JSObject() { ValueType = ObjectValueType.Bool, iValue = value ? 1 : 0, assignCallback = ErrorAssignCallback };
         }
 
         public static implicit operator JSObject(int value)
@@ -491,17 +500,17 @@ namespace NiL.JS.Core
 
         public static implicit operator JSObject(object[] value)
         {
-            return new JSObject() { ValueType = ObjectValueType.Object, oValue = value, temporary = true, assignCallback = ErrorAssignCallback };
+            return new JSObject() { ValueType = ObjectValueType.Object, oValue = value, assignCallback = ErrorAssignCallback };
         }
 
         public static implicit operator JSObject(ContextStatement value)
         {
-            return new JSObject() { ValueType = ObjectValueType.Statement, oValue = value, temporary = true, assignCallback = ErrorAssignCallback };
+            return new JSObject() { ValueType = ObjectValueType.Statement, oValue = value, assignCallback = ErrorAssignCallback };
         }
 
         public static implicit operator JSObject(CallableField value)
         {
-            return new JSObject() { ValueType = ObjectValueType.Statement, oValue = new Statements.ExternalFunction(value), temporary = true, assignCallback = ErrorAssignCallback };
+            return new JSObject() { ValueType = ObjectValueType.Statement, oValue = new Statements.ExternalFunction(value), assignCallback = ErrorAssignCallback };
         }
 
 #if INLINE

@@ -74,6 +74,24 @@ namespace NiL.JS.Core.BaseTypes
             return new String() { oValue = ((char)chc).ToString() };
         }
 
+        public string charAt(object pos)
+        {
+            int p = 0;
+            if (pos is int)
+                p = (int)pos;
+            else if (pos is double)
+                p = (int)(double)pos;
+            else if (pos is string)
+            {
+                double d = 0;
+                if (double.TryParse((string)pos, out d))
+                    p = (int)d;
+            }
+            if ((p < 0) || (p >= (oValue as string).Length))
+                return "";
+            return (oValue as string)[p].ToString();
+        }
+
         public double charCodeAt(object pos)
         {
             int p = 0;

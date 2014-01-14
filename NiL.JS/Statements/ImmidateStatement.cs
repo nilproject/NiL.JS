@@ -11,7 +11,6 @@ namespace NiL.JS.Statements
         public ImmidateValueStatement(JSObject value)
         {
             Value = value;
-            value.temporary = false;
         }
 
         public override JSObject Invoke(Context context)

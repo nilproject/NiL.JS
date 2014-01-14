@@ -1039,7 +1039,9 @@ namespace NiL.JS.Statements
                         }
                         else if (temp.ValueType == ObjectValueType.String)
                         {
-                            return dr.ToString() + (string)temp.oValue;
+                            tempResult.oValue = dr.ToString() + (string)temp.oValue;
+                            tempResult.ValueType = ObjectValueType.String;
+                            return tempResult;
                         }
                         break;
                     }
@@ -1079,7 +1081,9 @@ namespace NiL.JS.Statements
                             val += temp.iValue != 0;
                         else
                             break;
-                        return val;
+                        tempResult.oValue = val;
+                        tempResult.ValueType = ObjectValueType.String;
+                        return tempResult;
                     }
                 case ObjectValueType.Date:
                     {

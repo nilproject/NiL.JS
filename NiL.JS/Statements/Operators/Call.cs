@@ -38,7 +38,7 @@ namespace NiL.JS.Statements.Operators
                         JSObject[] stmnts = sps.Length == 0 ? null as JSObject[] : new JSObject[sps.Length];
                         for (int i = 0; i < sps.Length; i++)
                             stmnts[i] = sps[i].Invoke(context);
-                        context.thisBind =  newThisBind;
+                        context.thisBind = newThisBind;
                         res = stat.Invoke(context, stmnts);
                     }
                 }
