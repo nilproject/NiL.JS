@@ -54,7 +54,7 @@ namespace NiL.JS.Statements
         {
             var res = new NiL.JS.Core.BaseTypes.Array(elements.Length);
             for (int i = 0; i < elements.Length; i++)
-                res[i] = (elements[i].Invoke(context));
+                res.data[i] = elements[i].Invoke(context);
             return res;
         }
 

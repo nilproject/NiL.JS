@@ -35,6 +35,10 @@ namespace NiL.JS.Modules
 
         private static object[] convertArgs(JSObject[] source, ParameterInfo[] targetTypes)
         {
+            if (targetTypes.Length == 0)
+                return null;
+            if (targetTypes.Length == 1 && targetTypes[0].ParameterType == typeof(JSObject[]))
+                return new object[] { source };
             int targetCount = targetTypes.Length;
             object[] res = new object[targetCount];
             if (source != null)

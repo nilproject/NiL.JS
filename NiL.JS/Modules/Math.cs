@@ -4,7 +4,7 @@ using System;
 
 namespace NiL.JS.Modules
 {
-    internal sealed class Math
+    internal static class Math
     {
         [Protected]
         public const double E = System.Math.E;

@@ -19,8 +19,12 @@ namespace NiL.JS.Statements.Operators
             var field = first.InvokeForAssing(context);
             if (field.ValueType == ObjectValueType.Property)
             {
-                setterArgs[0] = val;
-                (field.oValue as Statement[])[0].Invoke(context, setterArgs);
+                var setter = (field.oValue as Statement[])[0];
+                if (setter != null)
+                {
+                    setterArgs[0] = val;
+                    setter.Invoke(context, setterArgs);
+                }
             }
             else
                 field.Assign(val);

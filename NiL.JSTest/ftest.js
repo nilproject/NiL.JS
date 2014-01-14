@@ -1,1 +1,3 @@
-﻿console.log(/1/ instanceof Object);
+﻿var str = "How are you doing today?";
+var res = str.(" ");
+console.log(res.toString());

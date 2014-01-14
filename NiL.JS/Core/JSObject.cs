@@ -188,6 +188,7 @@ namespace NiL.JS.Core
                 case ObjectValueType.String:
                     {
                         tempString.oValue = oValue;
+                        tempString.length.iValue = (oValue as string).Length;
                         firstContainer = tempString;
                         return tempString.GetField(name, true, own);
                     }
@@ -446,9 +447,16 @@ namespace NiL.JS.Core
         {
             if (ValueType <= ObjectValueType.Undefined)
                 return "undefined";
+            if (ValueType < ObjectValueType.Object)
+                GetField("__proto__", true, true);
+            if (firstContainer != null)
+                return firstContainer.ToString();
             var tstr = GetField("toString", true);
             if (tstr.ValueType == ObjectValueType.Statement)
                 return (tstr.oValue as ContextStatement).Invoke(null).oValue as string;
+            tstr = GetField("valueOf", true);
+            if (tstr.ValueType == ObjectValueType.Statement)
+                return (tstr.oValue as ContextStatement).Invoke(null).Value.ToString();
             return "" + (Value ?? "null");
         }
 

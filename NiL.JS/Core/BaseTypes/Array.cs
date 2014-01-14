@@ -41,7 +41,7 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [Modules.Hidden]
-        private JSObject[] data;
+        internal JSObject[] data;
 
         public Array()
         {
@@ -67,6 +67,8 @@ namespace NiL.JS.Core.BaseTypes
         public Array(object[] args)
         {
             data = new JSObject[args.Length];
+            ValueType = ObjectValueType.Object;
+            oValue = this;
             for (int i = 0; i < args.Length; i++)
             {
                 JSObject val;
@@ -92,24 +94,40 @@ namespace NiL.JS.Core.BaseTypes
             }
         }
 
+        private static int lastReqIndex;
+        private static JSObject tempElement;
+
         public JSObject this[int index]
         {
             get
             {
-                return data[index] ?? JSObject.undefined;
-            }
-            set
-            {
-                if (data.Length <= index)
+                if (data.Length <= index || data[index] == null)
                 {
-                    var t = new JSObject[index + 1];
-                    for (int i = 0; i < data.Length; i++)
-                        t[i] = data[i];
-                    for (int i = data.Length; i < t.Length; i++)
-                        t[i] = null;
-                    data = t;
+                    if (tempElement == null)
+                    {
+                        tempElement = new JSObject(false) { ValueType = ObjectValueType.NotExistInObject };
+                        tempElement.assignCallback = () =>
+                        {
+                            if (data.Length <= lastReqIndex)
+                            {
+                                var t = new JSObject[lastReqIndex + 1];
+                                for (int i = 0; i < data.Length; i++)
+                                    t[i] = data[i];
+                                for (int i = data.Length; i < t.Length; i++)
+                                    t[i] = null;
+                                data = t;
+                            }
+                            data[lastReqIndex] = tempElement;
+                            tempElement.assignCallback = null;
+                            tempElement = null;
+                            return true;
+                        };
+                    }
+                    lastReqIndex = index;
+                    return tempElement;
                 }
-                (data[index] ?? (data[index] = new JSObject())).Assign(value);
+                else
+                    return data[index];
             }
         }
 
