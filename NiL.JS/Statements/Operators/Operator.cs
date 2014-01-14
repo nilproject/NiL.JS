@@ -8,7 +8,6 @@ namespace NiL.JS.Statements.Operators
     internal abstract class Operator : Statement, IOptimizable
     {
         protected readonly JSObject tempResult = new JSObject() { attributes = ObjectAttributes.DontDelete };
-        protected readonly Number tempResultNum = new Number() { attributes = ObjectAttributes.DontDelete };
 
         protected Statement first;
         protected Statement second;

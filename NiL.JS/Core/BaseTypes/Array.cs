@@ -47,7 +47,6 @@ namespace NiL.JS.Core.BaseTypes
         {
             data = new JSObject[0];
             ValueType = ObjectValueType.Object;
-            prototype = BaseObject.Prototype;
             oValue = this;
         }
 
@@ -57,7 +56,6 @@ namespace NiL.JS.Core.BaseTypes
             for (int i = 0; i < data.Length; i++)
                 data[i] = null;
             ValueType = ObjectValueType.Object;
-            prototype = BaseObject.Prototype;
             oValue = this;
         }
 

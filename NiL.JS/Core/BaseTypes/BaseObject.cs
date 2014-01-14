@@ -22,11 +22,12 @@ namespace NiL.JS.Core.BaseTypes
                     res = _this;
                 else
                     res = new JSObject();
-                res.GetField("__proto__").Assign(Prototype);
                 res.ValueType = ObjectValueType.Object;
-                res.oValue = new object();
                 if (args != null && args.Length > 0)
                     res.oValue = args[0];
+                else
+                    res.oValue = new object();
+                res.GetField("__proto__").Assign(Prototype);
                 return res;
             }));
             JSObject proto = null;

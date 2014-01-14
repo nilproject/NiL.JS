@@ -1127,6 +1127,14 @@ namespace NiL.JS.Statements
                                     tempResult.oValue = val as string + temp.oValue as string;
                                     return tempResult;
                                 }
+                            case ObjectValueType.Double:
+                            case ObjectValueType.Bool:
+                            case ObjectValueType.Int:
+                                {
+                                    tempResult.ValueType = ObjectValueType.Double;
+                                    tempResult.dValue = double.NaN;
+                                    return tempResult;
+                                }
                         }
                         break;
                     }

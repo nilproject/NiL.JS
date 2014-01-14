@@ -1,4 +1,5 @@
 using NiL.JS.Core;
+using NiL.JS.Core.BaseTypes;
 using System;
 using System.Collections.Generic;
 using System.Collections;
@@ -36,6 +37,8 @@ namespace NiL.JS.Core
     {
         private static readonly System.Reflection.MemberInfo DefaultGetter = typeof(JSObject).GetMethod("DefaultFieldGetter", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
 
+        [Modules.Hidden]
+        private static readonly Number tempNumber = new Number() { attributes = ObjectAttributes.DontDelete };
         [Modules.Hidden]
         private static readonly IEnumerator<string> EmptyEnumerator = ((IEnumerable<string>)(new string[0])).GetEnumerator();
         [Modules.Hidden]
@@ -167,12 +170,39 @@ namespace NiL.JS.Core
         [Modules.Hidden]
         protected JSObject DefaultFieldGetter(string name, bool fast, bool own)
         {
-            if (ValueType <= ObjectValueType.Undefined)
-                throw new InvalidOperationException("Can't access to property value of \"undefined\"");
-            if ((int)ValueType < (int)ObjectValueType.Object)
-                fast = true;
-            else if (oValue == null)
-                throw new InvalidOperationException("Can't access to property value of \"null\"");
+            switch (ValueType)
+            {
+                case ObjectValueType.Undefined:
+                case ObjectValueType.NotExist:
+                case ObjectValueType.NotExistInObject:
+                    throw new InvalidOperationException("Can't access to property value of \"undefined\"");
+                case ObjectValueType.Int:
+                case ObjectValueType.Double:
+                    {
+                        tempNumber.iValue = iValue;
+                        tempNumber.dValue = dValue;
+                        tempNumber.ValueType = ValueType;
+                        firstContainer = tempNumber;
+                        return tempNumber.GetField(name, fast, own);
+                    }
+                case ObjectValueType.Bool:
+                    {
+                        fast = true;
+                        break;
+                    }
+                case ObjectValueType.Date:
+                case ObjectValueType.Object:
+                case ObjectValueType.Property:
+                case ObjectValueType.Statement:
+                case ObjectValueType.String:
+                    {
+                        if (oValue == null)
+                            throw new InvalidOperationException("Can't access to property value of \"null\"");
+                        break;
+                    }
+                default:
+                    throw new InvalidOperationException();
+            }
             if (name == "__proto__")
                 return prototype ?? (fast ? Null : prototype = new JSObject(false) { ValueType = ObjectValueType.Object, oValue = null });
             JSObject res = null;
@@ -348,31 +378,46 @@ namespace NiL.JS.Core
                     case ObjectValueType.Int:
                         {
                             this.iValue = right.iValue;
+                            this.fields = null;
+                            this.prototype = null;
                             break;
                         }
                     case ObjectValueType.Double:
                         {
                             this.dValue = right.dValue;
+                            this.fields = null;
+                            this.prototype = null;
+                            break;
+                        }
+                    case ObjectValueType.Statement:
+                    case ObjectValueType.Object:
+                    case ObjectValueType.Date:
+                        {
+                            this.oValue = right.oValue;
+                            if (oValue != null)
+                                this.prototype = right.GetField("__proto__", true);
+                            else
+                                this.prototype = BaseObject.Prototype;
+                            this.fields = right.fields;
                             break;
                         }
                     case ObjectValueType.Property:
-                    case ObjectValueType.Date:
-                    case ObjectValueType.Statement:
-                    case ObjectValueType.Object:
                     case ObjectValueType.String:
                         {
                             this.oValue = right.oValue;
+                            this.fields = null;
+                            this.prototype = null;
                             break;
                         }
                     case ObjectValueType.Undefined:
                         {
+                            this.fields = null;
+                            this.prototype = null;
                             break;
                         }
                     default: throw new InvalidOperationException();
                 }
-                this.prototype = right.GetField("__proto__", true);
                 this.ValueType = right.ValueType;
-                this.fields = right.fields;
                 this.firstContainer = right.firstContainer ?? right;
                 return;
             }

@@ -1,4 +1,5 @@
 using NiL.JS.Core;
+using NiL.JS.Core.BaseTypes;
 using System;
 using System.Reflection;
 using System.Collections.Generic;
@@ -112,6 +113,7 @@ namespace NiL.JS.Modules
             cache = new Dictionary<string, JSObject>();
             getItem = type.GetMethod("get_Item", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy);
             setItem = type.GetMethod("set_Item", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy);
+            prototype = BaseObject.Prototype;
         }
 
         public TypeProxy(Type type)
@@ -124,6 +126,7 @@ namespace NiL.JS.Modules
             cache = new Dictionary<string, JSObject>();
             getItem = type.GetMethod("get_Item", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy);
             setItem = type.GetMethod("set_Item", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy);
+            prototype = BaseObject.Prototype;
             if (constructors.TryGetValue(type, out exconst))
             {
                 oValue = exconst.oValue;
@@ -247,15 +250,9 @@ namespace NiL.JS.Modules
 
         private object getTargetObject(Context context)
         {
-            if (ValueType == ObjectValueType.Statement)
+            if (ValueType == ObjectValueType.Statement)            
                 return null;
             object obj = context.thisBind.firstContainer ?? context.thisBind;
-            if (obj is NiL.JS.Core.BaseTypes.Number)
-            {
-                context.thisBind.firstContainer.iValue = context.thisBind.iValue;
-                context.thisBind.firstContainer.dValue = context.thisBind.dValue;
-                context.thisBind.firstContainer.ValueType = context.thisBind.ValueType;
-            }
             obj = obj is Core.BaseTypes.EmbeddedType ? obj : (obj as JSObject).oValue;
             return obj;
         }
