@@ -16,7 +16,7 @@ namespace NiL.JS.Core.BaseTypes
                 this.owner = owner;
                 index = -1;
             }
-
+            
             public object Current { get { return index.ToString(); } }
 
             string IEnumerator<string>.Current { get { return index.ToString(); } }
@@ -133,11 +133,6 @@ namespace NiL.JS.Core.BaseTypes
                     data = t;
                 }
             }
-        }
-
-        public string toString()
-        {
-            return ToString();
         }
 
         public override string ToString()

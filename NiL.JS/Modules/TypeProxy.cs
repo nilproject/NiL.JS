@@ -250,6 +250,12 @@ namespace NiL.JS.Modules
             if (ValueType == ObjectValueType.Statement)
                 return null;
             object obj = context.thisBind.firstContainer ?? context.thisBind;
+            if (obj is NiL.JS.Core.BaseTypes.Number)
+            {
+                context.thisBind.firstContainer.iValue = context.thisBind.iValue;
+                context.thisBind.firstContainer.dValue = context.thisBind.dValue;
+                context.thisBind.firstContainer.ValueType = context.thisBind.ValueType;
+            }
             obj = obj is Core.BaseTypes.EmbeddedType ? obj : (obj as JSObject).oValue;
             return obj;
         }

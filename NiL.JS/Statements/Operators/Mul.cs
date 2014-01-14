@@ -28,6 +28,7 @@ namespace NiL.JS.Statements.Operators
                                 {
                                     dr *= temp.iValue;
                                     res.ValueType = ObjectValueType.Double;
+                                    res.firstContainer = tempResultNum;
                                     res.dValue = dr;
                                     return res;
                                 }
@@ -35,6 +36,7 @@ namespace NiL.JS.Statements.Operators
                                 {
                                     dr *= temp.dValue;
                                     res.ValueType = ObjectValueType.Double;
+                                    res.firstContainer = tempResultNum;
                                     res.dValue = dr;
                                     return res;
                                 }
@@ -52,6 +54,7 @@ namespace NiL.JS.Statements.Operators
                                         || (temp.ValueType == ObjectValueType.Statement))
                                     {
                                         res.ValueType = ObjectValueType.Double;
+                                        res.firstContainer = tempResultNum;
                                         res.dValue = double.NaN;
                                         return res;
                                     }
@@ -80,6 +83,7 @@ namespace NiL.JS.Statements.Operators
                                 {
                                     dr *= temp.iValue;
                                     res.ValueType = ObjectValueType.Double;
+                                    res.firstContainer = tempResultNum;
                                     res.dValue = dr;
                                     return res;
                                 }
@@ -87,6 +91,7 @@ namespace NiL.JS.Statements.Operators
                                 {
                                     dr *= temp.dValue;
                                     res.ValueType = ObjectValueType.Double;
+                                    res.firstContainer = tempResultNum;
                                     res.dValue = dr;
                                     return res;
                                 }
@@ -100,6 +105,7 @@ namespace NiL.JS.Statements.Operators
                                     else if (temp.ValueType == ObjectValueType.Object)
                                     {
                                         res.ValueType = ObjectValueType.Double;
+                                        res.firstContainer = tempResultNum;
                                         res.dValue = double.NaN;
                                         return res;
                                     }

@@ -92,7 +92,7 @@ namespace NiL.JS.Core.BaseTypes
             return (int)(oValue as string)[p];
         }
 
-        public JSObject toString()
+        public override JSObject toString()
         {
             return this;
         }
