@@ -101,6 +101,70 @@ namespace NiL.JS.Core.BaseTypes
             assignCallback = JSObject.ErrorAssignCallback;
         }
 
+        public JSObject toPrecision(JSObject digits)
+        {
+            double res = 0;
+            switch (ValueType)
+            {
+                case ObjectValueType.Int:
+                    {
+                        res = iValue;
+                        break;
+                    }
+                case ObjectValueType.Double:
+                    {
+                        res = dValue;
+                        break;
+                    }
+                default:
+                    throw new InvalidOperationException();
+            }
+            int dgts = 0;
+            switch ((digits ?? JSObject.undefined).ValueType)
+            {
+                case ObjectValueType.Int:
+                    {
+                        dgts = digits.iValue;
+                        break;
+                    }
+                case ObjectValueType.Double:
+                    {
+                        dgts = (int)digits.dValue;
+                        break;
+                    }
+                case ObjectValueType.String:
+                    {
+                        double d = 0;
+                        int i = 0;
+                        if (Parser.ParseNumber(digits.oValue.ToString(), ref i, false, out d))
+                        {
+                            dgts = (int)d;
+                        }
+                        break;
+                    }
+                case ObjectValueType.Object:
+                    {
+                        digits = digits.ToPrimitiveValue_Value_String(new Context(Context.globalContext));
+                        if (digits.ValueType == ObjectValueType.String)
+                            goto case ObjectValueType.String;
+                        if (digits.ValueType == ObjectValueType.Int)
+                            goto case ObjectValueType.Int;
+                        if (digits.ValueType == ObjectValueType.Double)
+                            goto case ObjectValueType.Double;
+                        break;
+                    }
+                case ObjectValueType.NotExist:
+                    throw new InvalidOperationException("Varible not defined.");
+                default:
+                    return res.ToString();
+            }
+            string integerPart = ((int)res).ToString();
+            if (integerPart.Length <= dgts)
+                return System.Math.Round(res, dgts - integerPart.Length).ToString();
+            var sres = ((int)res).ToString("e" + (dgts - 1));
+            return sres;
+        }
+
         public JSObject toExponential(JSObject digits)
         {
             double res = 0;
