@@ -374,27 +374,27 @@ namespace NiL.JS.Core.BaseTypes
             return (oValue as string).Substring(pos0, len);
         }
 
-        public override JSObject toLocaleLowerCase()
+        public JSObject toLocaleLowerCase()
         {
             return (oValue as string).ToLower(System.Threading.Thread.CurrentThread.CurrentUICulture);
         }
 
-        public override JSObject toLocaleUpperCase()
+        public JSObject toLocaleUpperCase()
         {
             return (oValue as string).ToUpper(System.Threading.Thread.CurrentThread.CurrentUICulture);
         }
 
-        public override JSObject toLowerCase()
+        public JSObject toLowerCase()
         {
             return (oValue as string).ToLowerInvariant();
         }
 
-        public override JSObject toUpperCase()
+        public JSObject toUpperCase()
         {
             return (oValue as string).ToUpperInvariant();
         }
 
-        public override JSObject toUpperCase()
+        public JSObject Trim()
         {
             return (oValue as string).Trim();
         }

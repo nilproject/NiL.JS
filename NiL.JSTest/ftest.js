@@ -1,3 +1,2 @@
-﻿var str = "How are you doing today?";
-var res = str.(" ");
+﻿res = (1).toPrecision()
 console.log(res.toString());
