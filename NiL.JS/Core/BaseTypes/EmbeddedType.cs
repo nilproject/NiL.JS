@@ -18,6 +18,11 @@ namespace NiL.JS.Core.BaseTypes
             immutable = GetType().GetCustomAttributes(typeof(ImmutableAttribute), true).Length != 0;
         }
 
+        public virtual JSObject toString()
+        {
+            return ToString();
+        }
+
         public override JSObject GetField(string name, bool fast, bool own)
         {
             switch (name)
