@@ -147,5 +147,15 @@ namespace NiL.JS.Core.BaseTypes
         {
             return new Enumerator(this);
         }
+
+        public override JSObject GetField(string name, bool fast, bool own)
+        {
+            int index = 0;
+            double dindex = 0.0;
+            if (Parser.ParseNumber(name, ref index, false, out dindex) && ((index = (int)dindex) == dindex))
+                return this[index];
+            else
+                return base.GetField(name, fast, own);
+        }
     }
 }

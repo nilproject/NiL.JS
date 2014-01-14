@@ -268,63 +268,6 @@ namespace NiL.JS.Modules
             if (m.Length == 0 || m[0].GetCustomAttributes(typeof(HiddenAttribute), true).Length != 0)
             {
                 r = DefaultFieldGetter(name, fast, own);
-                if (r != undefined && r != Null && r.ValueType != ObjectValueType.NotExistInObject)
-                    return r;
-                var i = 0;
-                var d = 0;
-                var gprms = getItem != null ? getItem.GetParameters() : null;
-                var sprms = setItem != null ? setItem.GetParameters() : null;
-                if (((sprms ?? gprms) != null) &&
-                    ((gprms ?? sprms)[0].ParameterType == typeof(string)
-                    || (Parser.ParseNumber(name, ref i, false, out i) && (gprms ?? sprms)[0].ParameterType == typeof(int))
-                    || (Parser.ParseNumber(name, ref i, false, out d) && (gprms ?? sprms)[0].ParameterType == typeof(double))
-                    || ((gprms ?? sprms)[0].ParameterType == typeof(object))))
-                {
-                    var ptype = (sprms ?? gprms)[0].ParameterType;
-                    index = ptype == typeof(double) ? (object)d : (object)(ptype == typeof(int) ? i : (object)name);
-                    if (defaultProperty == null)
-                    {
-                        defaultProperty = new JSObject()
-                        {
-                            ValueType = ObjectValueType.Property,
-                            oValue = new Statement[] 
-                                {
-                                    new NiL.JS.Statements.ExternalFunction(new CallableField((context, args) =>
-                                    {
-                                        object[] a = null;
-                                        if (sprms[1].ParameterType != typeof(JSObject))
-                                        {
-                                            args = new JSObject[] { null, args[0] };
-                                            a = convertArgs(args, sprms);
-                                            a[0] = sprms[0].ParameterType == typeof(string) ? name : (object)(sprms[0].ParameterType == typeof(int) ? i : (object)d);
-                                        }
-                                        else
-                                            a = new object[] { index, args[0] };
-                                        setItem.Invoke(getTargetObject(context), a);
-                                        return args[0];
-                                    })),
-                                    new NiL.JS.Statements.ExternalFunction(new CallableField((context, args) =>
-                                    {
-                                        var res = getItem.Invoke(getTargetObject(context), new object[] { index });
-                                        if (res is JSObject)
-                                            return res as JSObject;
-                                        else if (res is int)
-                                            return (int)res;
-                                        else if (res is double || res is long)
-                                            return (double)res;
-                                        else if (res is string)
-                                            return (string)res;
-                                        else if (res is bool)
-                                            return (bool)res;
-                                        else if (res is ContextStatement)
-                                            return (JSObject)(ContextStatement)res;
-                                        else return TypeProxy.Proxy(res);
-                                    })) 
-                                }
-                        };
-                    }
-                    return defaultProperty;
-                }
                 return r;
             }
             switch (m[0].MemberType)
