@@ -211,32 +211,29 @@ namespace NiL.JS.Core.BaseTypes
             if (args.Length == 0)
                 return this;
             int pos0 = 0;
-            if (args.Length > 1)
+            switch (args[0].ValueType)
             {
-                switch (args[1].ValueType)
-                {
-                    case ObjectValueType.Int:
-                    case ObjectValueType.Bool:
-                        {
-                            pos0 = args[0].iValue;
-                            break;
-                        }
-                    case ObjectValueType.Double:
-                        {
-                            pos0 = (int)args[0].dValue;
-                            break;
-                        }
-                    case ObjectValueType.Object:
-                    case ObjectValueType.Date:
-                    case ObjectValueType.Statement:
-                    case ObjectValueType.String:
-                        {
-                            double d;
-                            Parser.ParseNumber(args[0].ToString(), ref pos0, false, out d);
-                            pos0 = (int)d;
-                            break;
-                        }
-                }
+                case ObjectValueType.Int:
+                case ObjectValueType.Bool:
+                    {
+                        pos0 = args[0].iValue;
+                        break;
+                    }
+                case ObjectValueType.Double:
+                    {
+                        pos0 = (int)args[0].dValue;
+                        break;
+                    }
+                case ObjectValueType.Object:
+                case ObjectValueType.Date:
+                case ObjectValueType.Statement:
+                case ObjectValueType.String:
+                    {
+                        double d;
+                        Parser.ParseNumber(args[0].ToString(), ref pos0, false, out d);
+                        pos0 = (int)d;
+                        break;
+                    }
             }
             int pos1 = 0;
             if (args.Length > 1)
@@ -266,6 +263,8 @@ namespace NiL.JS.Core.BaseTypes
                         }
                 }
             }
+            else
+                pos1 = int.MaxValue;
             return (oValue as string).Substring(pos0, pos1 - pos0);
         }
         

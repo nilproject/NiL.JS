@@ -25,8 +25,8 @@ namespace NiL.JS.Core.BaseTypes
             {
                 do
                     index++;
-                while (index < owner.data.Length && (owner.data[index] == null || owner.data[index].ValueType < ObjectValueType.Undefined));
-                return index < owner.data.Length;
+                while (index < owner.data.Count && (owner.data[index] == null || owner.data[index].ValueType < ObjectValueType.Undefined));
+                return index < owner.data.Count;
             }
 
             public void Reset()
@@ -41,20 +41,27 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [Modules.Hidden]
-        internal JSObject[] data;
+        internal List<JSObject> data;
+
+        private Array(List<JSObject> collection)
+        {
+            data = collection;
+            ValueType = ObjectValueType.Object;
+            oValue = this;
+        }
 
         public Array()
         {
-            data = new JSObject[0];
+            data = new List<JSObject>();
             ValueType = ObjectValueType.Object;
             oValue = this;
         }
 
         public Array(int length)
         {
-            data = new JSObject[length];
-            for (int i = 0; i < data.Length; i++)
-                data[i] = null;
+            data = new List<JSObject>(length);
+            for (int i = 0; i < length; i++)
+                data.Add(null);
             ValueType = ObjectValueType.Object;
             oValue = this;
         }
@@ -66,7 +73,7 @@ namespace NiL.JS.Core.BaseTypes
 
         public Array(object[] args)
         {
-            data = new JSObject[args.Length];
+            data = new List<JSObject>(args.Length);
             ValueType = ObjectValueType.Object;
             oValue = this;
             for (int i = 0; i < args.Length; i++)
@@ -90,7 +97,7 @@ namespace NiL.JS.Core.BaseTypes
                     val = (JSObject)(ContextStatement)args[i];
                 else
                     val = Modules.TypeProxy.Proxy(args[i]);
-                data[i] = val;
+                data.Add(val);
             }
         }
 
@@ -101,22 +108,15 @@ namespace NiL.JS.Core.BaseTypes
         {
             get
             {
-                if (data.Length <= index || data[index] == null)
+                if (data.Count <= index || data[index] == null)
                 {
                     if (tempElement == null)
                     {
                         tempElement = new JSObject(false) { ValueType = ObjectValueType.NotExistInObject };
                         tempElement.assignCallback = () =>
                         {
-                            if (data.Length <= lastReqIndex)
-                            {
-                                var t = new JSObject[lastReqIndex + 1];
-                                for (int i = 0; i < data.Length; i++)
-                                    t[i] = data[i];
-                                for (int i = data.Length; i < t.Length; i++)
-                                    t[i] = null;
-                                data = t;
-                            }
+                            while (data.Count <= lastReqIndex)
+                                data.Add(null);
                             data[lastReqIndex] = tempElement;
                             tempElement.assignCallback = null;
                             tempElement = null;
@@ -135,28 +135,273 @@ namespace NiL.JS.Core.BaseTypes
         {
             get
             {
-                return data.Length;
+                return data.Count;
             }
             set
             {
-                if (data.Length != value)
+                if (data.Count > value)
+                    data.RemoveRange(value, data.Count - value);
+                else while (data.Count <= value)
+                    data.Add(null);
+            }
+        }
+
+        public JSObject concat(JSObject[] args)
+        {
+            var res = new List<JSObject>(data.Count + args.Length);
+            for (int i = 0; i < data.Count; i++)
+            {
+                res.Add(new JSObject(false));
+                res[i].Assign(data[i]);
+            }
+            for (int i = 0; i < args.Length; i++)
+            {
+                var arg = args[i].firstContainer ?? args[i];
+                if (arg is Array)
                 {
-                    var t = new JSObject[value];
-                    for (int i = 0; i < data.Length; i++)
-                        t[i] = data[i];
-                    for (int i = data.Length; i < t.Length; i++)
-                        t[i] = null;
-                    data = t;
+                    Array arr = arg as Array;
+                    for (int j = 0; j < arr.data.Count; j++)
+                    {
+                        res.Add(new JSObject(false));
+                        res[res.Count - 1].Assign(arr.data[j]);
+                    }
+                }
+                else
+                {
+                    res.Add(new JSObject(false));
+                    res[res.Count - 1].Assign(arg);
                 }
             }
+            return new Array(res);
+        }
+
+        public JSObject indexOf(JSObject[] args)
+        {
+            if (args.Length == 0)
+                return -1;
+            var el = args[0];
+            int pos = 0;
+            if (args.Length > 1)
+            {
+                switch (args[1].ValueType)
+                {
+                    case ObjectValueType.Int:
+                    case ObjectValueType.Bool:
+                        {
+                            pos = args[1].iValue;
+                            break;
+                        }
+                    case ObjectValueType.Double:
+                        {
+                            pos = (int)args[1].dValue;
+                            break;
+                        }
+                    case ObjectValueType.Object:
+                    case ObjectValueType.Date:
+                    case ObjectValueType.Statement:
+                    case ObjectValueType.String:
+                        {
+                            double d;
+                            Parser.ParseNumber(args[1].ToString(), ref pos, false, out d);
+                            pos = (int)d;
+                            break;
+                        }
+                }
+            }
+            var left = new NiL.JS.Statements.ImmidateValueStatement(el);
+            var right = new NiL.JS.Statements.ImmidateValueStatement(null);
+            var opeq = new NiL.JS.Statements.Operators.Equal(left, right);
+            for (int i = 0; i < data.Count; i++)
+            {
+                right.Value = data[i];
+                if ((bool)opeq.Invoke(null))
+                    return i;
+            }
+            return -1;
+        }
+
+        public JSObject join(JSObject[] separator)
+        {
+            if (separator.Length == 0)
+                return ToString();
+            var el = separator[0].ToString();
+            System.Text.StringBuilder sb = new System.Text.StringBuilder();
+            var i = 0;
+            var max = data.Count - 1;
+            for (; i < max; i++)
+            {
+                sb.Append(data[i] ?? "");
+                sb.Append(el);
+            }
+            sb.Append(data[i] ?? "");
+            return sb.ToString();
+        }
+
+        public JSObject lastIndexOf(JSObject[] args)
+        {
+            if (args.Length == 0)
+                return -1;
+            var el = args[0];
+            int pos = 0;
+            if (args.Length > 1)
+            {
+                switch (args[1].ValueType)
+                {
+                    case ObjectValueType.Int:
+                    case ObjectValueType.Bool:
+                        {
+                            pos = args[1].iValue;
+                            break;
+                        }
+                    case ObjectValueType.Double:
+                        {
+                            pos = (int)args[1].dValue;
+                            break;
+                        }
+                    case ObjectValueType.Object:
+                    case ObjectValueType.Date:
+                    case ObjectValueType.Statement:
+                    case ObjectValueType.String:
+                        {
+                            double d;
+                            Parser.ParseNumber(args[1].ToString(), ref pos, false, out d);
+                            pos = (int)d;
+                            break;
+                        }
+                }
+            }
+            var left = new NiL.JS.Statements.ImmidateValueStatement(el);
+            var right = new NiL.JS.Statements.ImmidateValueStatement(null);
+            var opeq = new NiL.JS.Statements.Operators.Equal(left, right);
+            for (int i = data.Count; i-- > 0; )
+            {
+                right.Value = data[i];
+                if ((bool)opeq.Invoke(null))
+                    return i;
+            }
+            return -1;
+        }
+
+        public JSObject pop()
+        {
+            if (data.Count == 0)
+                return JSObject.undefined;
+            var res = data[data.Count - 1] ?? JSObject.undefined;
+            data.RemoveAt(data.Count - 1);
+            return res;
+        }
+
+        public JSObject push(JSObject[] args)
+        {
+            for (int i = 0; i < args.Length; i++)
+            {
+                var t = new JSObject();
+                t.Assign(args[i]);
+                data.Add(t);
+            }
+            return this;
+        }
+
+        public JSObject reverse()
+        {
+            data.Reverse();
+            return this;
+        }
+
+        public JSObject shift()
+        {
+            if (data.Count == 0)
+                return JSObject.undefined;
+            var res = data[0] ?? JSObject.undefined;
+            data.RemoveAt(0);
+            return res;
+        }
+
+        public JSObject slice(JSObject[] args)
+        {
+            if (args.Length == 0)
+                return this;
+            int pos0 = 0;
+            switch (args[0].ValueType)
+            {
+                case ObjectValueType.Int:
+                case ObjectValueType.Bool:
+                    {
+                        pos0 = args[0].iValue;
+                        break;
+                    }
+                case ObjectValueType.Double:
+                    {
+                        pos0 = (int)args[0].dValue;
+                        break;
+                    }
+                case ObjectValueType.Object:
+                case ObjectValueType.Date:
+                case ObjectValueType.Statement:
+                case ObjectValueType.String:
+                    {
+                        double d;
+                        Parser.ParseNumber(args[0].ToString(), ref pos0, false, out d);
+                        pos0 = (int)d;
+                        break;
+                    }
+            }
+            int pos1 = 0;
+            if (args.Length > 1)
+            {
+                switch (args[1].ValueType)
+                {
+                    case ObjectValueType.Int:
+                    case ObjectValueType.Bool:
+                        {
+                            pos1 = args[1].iValue;
+                            break;
+                        }
+                    case ObjectValueType.Double:
+                        {
+                            pos1 = (int)args[1].dValue;
+                            break;
+                        }
+                    case ObjectValueType.Object:
+                    case ObjectValueType.Date:
+                    case ObjectValueType.Statement:
+                    case ObjectValueType.String:
+                        {
+                            double d;
+                            Parser.ParseNumber(args[1].ToString(), ref pos1, false, out d);
+                            pos1 = (int)d;
+                            break;
+                        }
+                }
+                pos1 = Math.Min(pos1, data.Count);
+            }
+            else
+                pos1 = data.Count;
+            if (pos0 < 0)
+                pos0 = data.Count + pos0;
+            if (pos1 < 0)
+                pos1 = data.Count + pos1;
+            pos0 = Math.Min(pos0, data.Count);
+            if (pos0 >= 0 && pos1 >= 0 && pos1 > pos0)
+            {
+                var res = new Array();
+                for (int i = pos0; i < pos1; i++)
+                {
+                    var t = new JSObject();
+                    t.Assign(data[i]);
+                    res.data.Add(t);
+                }
+                return res;
+            }
+            return new Array();
         }
 
         public override string ToString()
         {
-            if (data.Length == 0)
+            if (data.Count == 0)
                 return "";
             var res = (data[0].Value ?? "").ToString();
-            for (int i = 1; i < data.Length; i++)
+            for (int i = 1; i < data.Count; i++)
                 res += "," + (data[i].Value ?? "").ToString();
             return res;
         }

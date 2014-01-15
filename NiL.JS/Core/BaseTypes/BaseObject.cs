@@ -71,6 +71,8 @@ namespace NiL.JS.Core.BaseTypes
                 }
             }));
             temp.attributes |= ObjectAttributes.DontEnum;
+            proto.GetField("toLocaleString").Assign(temp);
+            proto.GetField("toLocaleString").attributes |= ObjectAttributes.DontEnum;
             temp = proto.GetField("valueOf");
             temp.Assign(new CallableField((cont, args) =>
             {
@@ -84,6 +86,54 @@ namespace NiL.JS.Core.BaseTypes
             temp = proto.GetField("isPrototypeOf");
             temp.Assign(new CallableField(isPrototypeOf));
             temp.attributes |= ObjectAttributes.DontEnum;
+            temp = proto.GetField("propertyIsEnumerable");
+            temp.Assign(new CallableField(propertyIsEnumerable));
+            temp.attributes |= ObjectAttributes.DontEnum;
+        }
+
+        public static JSObject propertyIsEnumerable(Context cont, JSObject[] args)
+        {
+            if (cont.thisBind == null)
+                throw new InvalidOperationException("Can't convert null to object");
+            if (args.Length == 0)
+                return false;
+            string n = "";
+            switch ((args[0] ?? JSObject.undefined).ValueType)
+            {
+                case ObjectValueType.Int:
+                    {
+                        n = args[0].iValue.ToString();
+                        break;
+                    }
+                case ObjectValueType.Double:
+                    {
+                        n = args[0].dValue.ToString();
+                        break;
+                    }
+                case ObjectValueType.String:
+                    {
+                        n = args[0].oValue as string;
+                        break;
+                    }
+                case ObjectValueType.Object:
+                    {
+                        args[0] = args[0].ToPrimitiveValue_Value_String(new Context(Context.globalContext));
+                        if (args[0].ValueType == ObjectValueType.String)
+                            goto case ObjectValueType.String;
+                        if (args[0].ValueType == ObjectValueType.Int)
+                            goto case ObjectValueType.Int;
+                        if (args[0].ValueType == ObjectValueType.Double)
+                            goto case ObjectValueType.Double;
+                        break;
+                    }
+                case ObjectValueType.NotExist:
+                    throw new InvalidOperationException("Varible not defined.");
+                default:
+                    throw new NotImplementedException("Object.hasOwnProperty. Invalid Value Type");
+            }
+            var res = cont.thisBind.GetField(n, true, false);
+            res = (res.ValueType >= ObjectValueType.Undefined) && (res != JSObject.undefined) && ((res.attributes & ObjectAttributes.DontEnum) == 0);
+            return res;
         }
         
         public static JSObject isPrototypeOf(Context cont, JSObject[] obj)

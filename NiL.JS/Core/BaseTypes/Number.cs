@@ -224,7 +224,74 @@ namespace NiL.JS.Core.BaseTypes
             }
             return res.ToString("e" + dgts);
         }
-        
+
+        public JSObject toFixed(JSObject digits)
+        {
+            double res = 0;
+            switch (ValueType)
+            {
+                case ObjectValueType.Int:
+                    {
+                        res = iValue;
+                        break;
+                    }
+                case ObjectValueType.Double:
+                    {
+                        res = dValue;
+                        break;
+                    }
+                default:
+                    throw new InvalidOperationException();
+            }
+            int dgts = 0;
+            switch ((digits ?? JSObject.undefined).ValueType)
+            {
+                case ObjectValueType.Int:
+                    {
+                        dgts = digits.iValue;
+                        break;
+                    }
+                case ObjectValueType.Double:
+                    {
+                        dgts = (int)digits.dValue;
+                        break;
+                    }
+                case ObjectValueType.String:
+                    {
+                        double d = 0;
+                        int i = 0;
+                        if (Parser.ParseNumber(digits.oValue.ToString(), ref i, false, out d))
+                        {
+                            dgts = (int)d;
+                        }
+                        break;
+                    }
+                case ObjectValueType.Object:
+                    {
+                        digits = digits.ToPrimitiveValue_Value_String(new Context(Context.globalContext));
+                        if (digits.ValueType == ObjectValueType.String)
+                            goto case ObjectValueType.String;
+                        if (digits.ValueType == ObjectValueType.Int)
+                            goto case ObjectValueType.Int;
+                        if (digits.ValueType == ObjectValueType.Double)
+                            goto case ObjectValueType.Double;
+                        break;
+                    }
+                case ObjectValueType.NotExist:
+                    throw new InvalidOperationException("Varible not defined.");
+                default:
+                    return ((int)res).ToString();
+            }
+            if (dgts < 0 || dgts > 20)
+                throw new ArgumentException("toFixed() digits argument must be between 0 and 20");
+            return System.Math.Round(res, dgts).ToString();
+        }
+
+        public JSObject toLocaleString()
+        {
+            return ValueType == ObjectValueType.Int ? iValue.ToString(System.Threading.Thread.CurrentThread.CurrentUICulture) : dValue.ToString(System.Threading.Thread.CurrentThread.CurrentUICulture);
+        }
+
         public override string ToString()
         {
             return ValueType == ObjectValueType.Int ? iValue.ToString() : dValue.ToString();

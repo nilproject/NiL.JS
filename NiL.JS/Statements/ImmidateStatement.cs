@@ -6,7 +6,7 @@ namespace NiL.JS.Statements
 {
     internal sealed class ImmidateValueStatement : Statement, IOptimizable
     {
-        public readonly JSObject Value;
+        internal JSObject Value;
 
         public ImmidateValueStatement(JSObject value)
         {

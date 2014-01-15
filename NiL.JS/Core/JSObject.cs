@@ -172,10 +172,11 @@ namespace NiL.JS.Core
         {
             switch (ValueType)
             {
-                case ObjectValueType.Undefined:
                 case ObjectValueType.NotExist:
+                    throw new InvalidOperationException("Varible not defined.");
+                case ObjectValueType.Undefined:
                 case ObjectValueType.NotExistInObject:
-                    throw new InvalidOperationException("Can't access to property value of \"undefined\"");
+                    throw new InvalidOperationException("Can't access to property value of \"undefined\".");
                 case ObjectValueType.Int:
                 case ObjectValueType.Double:
                     {
