@@ -575,7 +575,7 @@ namespace NiL.JS.Core
 
         internal static bool ParseNumber(string code, ref int index, bool move, out double value)
         {
-            value = 0;
+            value = double.NaN;
             if (code.Length == 0)
                 return true;
             int i = index;

@@ -1,2 +1,2 @@
-﻿res = (123456.789).toPrecision(5)
+﻿res = 1.2;
 console.log(res.toString());
