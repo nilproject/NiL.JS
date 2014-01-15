@@ -1,6 +1,6 @@
-﻿var numbers = [10, 11, 12];
+﻿var p_zero = +0;
+var n_zero = -0;
 
-// Call the addNumber callback function for each array element.
-var sum = 0;
-numbers.forEach(function addNumber(value) { sum += value; });
-console.log(sum);
+console.log(1.0 / p_zero);
+console.log(1.0 / n_zero);
+console.log(1.0 / p_zero === 1.0 / n_zero);

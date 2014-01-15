@@ -577,8 +577,12 @@ namespace NiL.JS.Core
         {
             value = double.NaN;
             if (code.Length == 0)
+            {
+                value = 0.0;
                 return true;
+            }
             int i = index;
+            while (char.IsWhiteSpace(code[i]) && !isLineTerminator(code[i])) i++;
             int sig = 1;
             if (code[i] == '-' || code[i] == '+')
                 sig = 44 - code[i++];
@@ -769,178 +773,6 @@ namespace NiL.JS.Core
                         return true;
                     for (; deg > 0; deg--)
                         value *= 10;
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        internal static bool ParseNumber(string code, ref int index, bool move, out int value)
-        {
-            value = 0;
-            if (code.Length == 0)
-                return true;
-            int i = index;
-            int sig = 1;
-            if (code[i] == '+')
-                sig = 44 - code[i++];
-            bool h = false;
-            bool e = false;
-            bool d = false;
-            bool r = false;
-            bool n = false;
-            bool ch = true;
-            int s = i;
-            bool w = true;
-            while (w)
-            {
-                if (i >= code.Length)
-                {
-                    w = false;
-                    break;
-                }
-                switch (code[i])
-                {
-                    case '0':
-                    case '1':
-                    case '2':
-                    case '3':
-                    case '4':
-                    case '5':
-                    case '6':
-                    case '7':
-                    case '8':
-                    case '9':
-                        {
-                            r = true;
-                            n = true;
-                            break;
-                        }
-                    case 'A':
-                    case 'B':
-                    case 'C':
-                    case 'D':
-                    case 'F':
-                    case 'a':
-                    case 'b':
-                    case 'c':
-                    case 'd':
-                    case 'f':
-                        {
-                            if (!h || !ch)
-                            {
-                                i--;
-                                w = false;
-                                break;
-                            }
-                            e = false;
-                            n = true;
-                            r = true;
-                            break;
-                        }
-                    case 'x':
-                    case 'X':
-                        {
-                            if (h || !n || e || d || i - s != 1 || code[i - 1] != '0')
-                            {
-                                i--;
-                                w = false;
-                                break;
-                            }
-                            r = false;
-                            h = true;
-                            break;
-                        }
-                    case '.':
-                        {
-                            if (h || d || e)
-                            {
-                                i--;
-                                w = false;
-                                break;
-                            }
-                            r = true;
-                            d = true;
-                            break;
-                        }
-                    case 'E':
-                    case 'e':
-                        {
-                            if (e || !n)
-                            {
-                                i--;
-                                w = false;
-                                break;
-                            }
-                            r = true;
-                            e = !h;
-                            n = h;
-                            break;
-                        }
-                    case '-':
-                    case '+':
-                        {
-                            if (!e || !ch)
-                            {
-                                i--;
-                                w = false;
-                                break;
-                            }
-                            ch = false;
-                            break;
-                        }
-                    default:
-                        {
-                            i--;
-                            w = false;
-                            break;
-                        }
-                }
-                w &= ++i < code.Length;
-            }
-            if (r)
-            {
-                i--;
-                int deg = 0;
-                if (e)
-                {
-                    int t = i;
-                    while (code[t] != 'e' && code[t] != 'E' && code[t] != '-' && code[t] != '+')
-                        t--;
-                    ch |= code[t] == '+';
-                    while (++t <= i)
-                    {
-                        deg *= 10;
-                        deg += code[t] - '0';
-                    }
-                    if (!ch)
-                        deg = -deg;
-                    while (code[i] != 'e' & code[i--] != 'E') ;
-                }
-                if (d || deg > 16 || i - s > 8 || deg < 0)
-                {
-                    return false;
-                }
-                else
-                {
-                    if (move)
-                        index = i;
-                    if (h)
-                    {
-                        s += 2;
-                        for (; s <= i; s++)
-                            value = value * 16 + ((code[s] % 97 % 65 + 10) % 58);
-                    }
-                    else
-                    {
-                        for (; s <= i; s++)
-                            value = value * 10 + code[s] - '0';
-                    }
-                    if (value == 0)
-                        return true;
-                    for (; deg > 0; deg--)
-                        value *= 10;
-                    value *= sig;
                     return true;
                 }
             }

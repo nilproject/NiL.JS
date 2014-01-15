@@ -369,10 +369,13 @@ namespace NiL.JS.Statements
                     {
                         int n = 0;
                         double d = 0;
-                        if (Parser.ParseNumber(code, ref s, true, out n))
-                            first = new ImmidateValueStatement(n);
-                        else if (Parser.ParseNumber(code, ref s, true, out d))
-                            first = new ImmidateValueStatement(d);
+                        if (Parser.ParseNumber(code, ref s, true, out d))
+                        {
+                            if ((n = (int)d) == d && d != -0)
+                                first = new ImmidateValueStatement(n);
+                            else
+                                first = new ImmidateValueStatement(d);
+                        }
                         else if (Parser.ValidateRegex(code, ref s, true, true))
                         {
                             s = value.LastIndexOf('/') + 1;
