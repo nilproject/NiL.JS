@@ -208,7 +208,12 @@ namespace NiL.JS.Core
             if (name == "this")
             {
                 if (thisBind == null)
-                    thisBind = new ThisObject(this);
+                {
+                    if (prototype == null || prototype == globalContext)
+                        thisBind = new ThisObject(this);
+                    else
+                        thisBind = prototype.GetField(name);
+                }
                 return thisBind;
             }
             for (int i = 0; i < cacheSize; i++)
@@ -242,7 +247,7 @@ namespace NiL.JS.Core
         {
             if (fields == null)
                 fields = new Dictionary<string, JSObject>();
-            fields.Add(moduleType.Name, new Modules.TypeProxy(moduleType));
+            fields.Add(moduleType.Name, new TypeProxy(moduleType));
         }
 
         private Context()

@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using NiL.JS.Modules;
-using NiL.JS.Core;
+﻿using NiL.JS.Core;
 
 namespace NiL.JSTest.Modules
 {

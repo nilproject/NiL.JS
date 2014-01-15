@@ -2,7 +2,7 @@
 using NiL.JS.Core;
 using System;
 
-namespace NiL.JS.Statements
+namespace NiL.JS.Core
 {
     internal class ExternalFunction : Statement
     {

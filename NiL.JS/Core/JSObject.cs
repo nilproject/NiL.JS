@@ -126,7 +126,7 @@ namespace NiL.JS.Core
                                 val = (bool)value;
                             else if (value is ContextStatement)
                                 val = (JSObject)(ContextStatement)value;
-                            else val = NiL.JS.Modules.TypeProxy.Proxy(value);
+                            else val = NiL.JS.Core.TypeProxy.Proxy(value);
                             (oValue as ContextStatement[])[0].Invoke(new JSObject[] { val });
                             break;
                         }
@@ -519,7 +519,7 @@ namespace NiL.JS.Core
 
         public static implicit operator JSObject(CallableField value)
         {
-            return new JSObject() { ValueType = ObjectValueType.Statement, oValue = new Statements.ExternalFunction(value), assignCallback = ErrorAssignCallback };
+            return new JSObject() { ValueType = ObjectValueType.Statement, oValue = new ExternalFunction(value), assignCallback = ErrorAssignCallback };
         }
 
 #if INLINE

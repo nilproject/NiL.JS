@@ -698,6 +698,7 @@ namespace NiL.JS.Core
             }
             if (r)
             {
+                value = 0.0;
                 if (move)
                     index = i;
                 i--;

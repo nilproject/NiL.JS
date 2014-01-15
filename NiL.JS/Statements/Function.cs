@@ -127,6 +127,12 @@ namespace NiL.JS.Statements
         public override JSObject Invoke(Context context, JSObject[] args)
         {
             Context internalContext = new Context(context);
+            var @this = context.GetField("this");
+            if (@this.ValueType < ObjectValueType.Object)
+            {
+                @this = new JSObject(false) { ValueType = ObjectValueType.Object, oValue = @this };
+                internalContext.thisBind = @this;
+            }
             int i = 0;
             if (args == null)
                 args = defaultArgs;

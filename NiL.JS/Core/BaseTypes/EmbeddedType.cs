@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Reflection;
-using NiL.JS.Modules;
+using NiL.JS.Core.Modules;
 
 namespace NiL.JS.Core.BaseTypes
 {

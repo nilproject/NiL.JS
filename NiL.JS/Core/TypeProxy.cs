@@ -1,10 +1,10 @@
-using NiL.JS.Core;
 using NiL.JS.Core.BaseTypes;
+using NiL.JS.Core.Modules;
 using System;
-using System.Reflection;
 using System.Collections.Generic;
+using System.Reflection;
 
-namespace NiL.JS.Modules
+namespace NiL.JS.Core
 {
     public sealed class TypeProxy : JSObject
     {
@@ -138,7 +138,7 @@ namespace NiL.JS.Modules
             }
             else
             {
-                oValue = new Statements.ExternalFunction((x, y) =>
+                oValue = new ExternalFunction((x, y) =>
                 {
                     object[] args = null;
                     ConstructorInfo constructor = null;

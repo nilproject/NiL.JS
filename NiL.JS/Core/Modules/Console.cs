@@ -2,7 +2,7 @@
 using NiL.JS.Core.BaseTypes;
 using System;
 
-namespace NiL.JS.Modules
+namespace NiL.JS.Core.Modules
 {
     internal sealed class console
     {

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections;
+using NiL.JS.Core.Modules;
 
 namespace NiL.JS.Core.BaseTypes
 {
@@ -40,7 +41,7 @@ namespace NiL.JS.Core.BaseTypes
             }
         }
 
-        [Modules.Hidden]
+        [Hidden]
         internal List<JSObject> data;
 
         private Array(List<JSObject> collection)
@@ -68,7 +69,13 @@ namespace NiL.JS.Core.BaseTypes
 
         public Array(double d)
         {
-            throw new ArgumentException("Invalid array length");
+            if ((int)d != d)
+                throw new ArgumentException("Invalid array length");
+            data = new List<JSObject>(length);
+            for (int i = 0; i < length; i++)
+                data.Add(null);
+            ValueType = ObjectValueType.Object;
+            oValue = this;
         }
 
         public Array(object[] args)
@@ -96,7 +103,7 @@ namespace NiL.JS.Core.BaseTypes
                 else if (args[i] is ContextStatement)
                     val = (JSObject)(ContextStatement)args[i];
                 else
-                    val = Modules.TypeProxy.Proxy(args[i]);
+                    val = TypeProxy.Proxy(args[i]);
                 data.Add(val);
             }
         }
@@ -373,7 +380,7 @@ namespace NiL.JS.Core.BaseTypes
                             break;
                         }
                 }
-                pos1 = Math.Min(pos1, data.Count);
+                pos1 = System.Math.Min(pos1, data.Count);
             }
             else
                 pos1 = data.Count;
@@ -381,7 +388,7 @@ namespace NiL.JS.Core.BaseTypes
                 pos0 = data.Count + pos0;
             if (pos1 < 0)
                 pos1 = data.Count + pos1;
-            pos0 = Math.Min(pos0, data.Count);
+            pos0 = System.Math.Min(pos0, data.Count);
             if (pos0 >= 0 && pos1 >= 0 && pos1 > pos0)
             {
                 var res = new Array();
@@ -413,6 +420,13 @@ namespace NiL.JS.Core.BaseTypes
 
         public override JSObject GetField(string name, bool fast, bool own)
         {
+            switch (name)
+            {
+                case "forEach":
+                    {
+                        return forEachCF;
+                    }
+            }
             int index = 0;
             double dindex = 0.0;
             if (Parser.ParseNumber(name, ref index, false, out dindex) && ((index = (int)dindex) == dindex))
@@ -420,5 +434,66 @@ namespace NiL.JS.Core.BaseTypes
             else
                 return base.GetField(name, fast, own);
         }
+
+        #region ForEach functions
+        /*
+         * В таких функциях необходимо делать callback, 
+         * а для этого нам будет нужен контекст. 
+         * Контекст можно получить только для CallableField'ов
+         */
+
+        [Hidden]
+        private static readonly JSObject forEachCF = new CallableField(forEach);
+
+        [Hidden]
+        private static JSObject forEach(Context context, JSObject[] args)
+        {
+            if (args.Length == 0)
+                throw new ArgumentException("Undefined is not function");
+
+            bool res = true;
+            var obj = context.thisBind.firstContainer ?? context.thisBind;
+            var len = obj.GetField("length", true);
+            if (len.ValueType == ObjectValueType.Property)
+                len = (len.oValue as Statement[])[1].Invoke(context, null);
+            var count = Tools.jsobjectToDouble(len);
+            var cbargs = new JSObject[3];
+            cbargs[2] = obj;
+            cbargs[1] = new JSObject(false) { ValueType = ObjectValueType.Int };
+            var stat = args[0].oValue as Statement;
+            var cstat = stat as ContextStatement;
+            for (int i = 0; i < count; i++)
+            {
+                cbargs[0] = obj.GetField(i.ToString());
+                cbargs[1].iValue = i;
+                if (cstat != null)
+                {
+                    if (args.Length > 1)
+                    {
+                        var oldtb = cstat.Context.thisBind;
+                        cstat.Context.thisBind = args[1];
+                        res &= (bool)cstat.Invoke(cbargs);
+                        cstat.Context.thisBind = oldtb;
+                    }
+                    else
+                        res &= (bool)cstat.Invoke(cbargs);
+                }
+                else
+                {
+                    if (args.Length > 1)
+                    {
+                        var oldtb = context.thisBind;
+                        context.thisBind = args[1];
+                        res &= (bool)stat.Invoke(context, cbargs);
+                        context.thisBind = oldtb;
+                    }
+                    else
+                        res &= (bool)stat.Invoke(context, cbargs);
+                }
+            }
+            return res;
+        }
+
+        #endregion
     }
 }

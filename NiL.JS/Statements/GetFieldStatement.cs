@@ -66,7 +66,7 @@ namespace NiL.JS.Statements
 
         public override JSObject Invoke(Context context)
         {
-            var oldthb = context.thisBind;
+            var oldthb = context.thisBind ?? context.GetField("this");
             var otu = context.updateThisBind;
             context.updateThisBind = true;
             try

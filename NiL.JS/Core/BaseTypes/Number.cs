@@ -1,5 +1,5 @@
 ﻿using System;
-using NiL.JS.Modules;
+using NiL.JS.Core.Modules;
 
 namespace NiL.JS.Core.BaseTypes
 {
