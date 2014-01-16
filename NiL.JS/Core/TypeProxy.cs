@@ -73,11 +73,30 @@ namespace NiL.JS.Core
 
         public static JSObject Proxy(object obj)
         {
-            var type = obj.GetType();
-            var res = new JSObject(false) { oValue = obj, ValueType = ObjectValueType.Object };
-            res.GetField("constructor", false, true).Assign(GetConstructor(type));
-            res.prototype = GetPrototype(type);
-            return res;
+            if (obj == null)
+                return JSObject.Null;
+            else if (obj is JSObject)
+                return obj as JSObject;
+            else if (obj is int)
+                return (int)obj;
+            else if (obj is long)
+                return (long)obj;
+            else if (obj is double)
+                return (double)obj;
+            else if (obj is string)
+                return (string)obj;
+            else if (obj is bool)
+                return (bool)obj;
+            else if (obj is ContextStatement)
+                return (JSObject)(ContextStatement)obj;
+            else
+            {
+                var type = obj.GetType();
+                var res = new JSObject(false) { oValue = obj, ValueType = ObjectValueType.Object };
+                res.GetField("constructor", false, true).Assign(GetConstructor(type));
+                res.prototype = GetPrototype(type);
+                return res;
+            }
         }
 
         public static JSObject GetPrototype(Type type)
@@ -100,12 +119,7 @@ namespace NiL.JS.Core
         }
 
         private Type hostedType;
-        private MethodInfo getItem;
-        private MethodInfo setItem;
         [NonSerialized]
-        private object index;
-        [NonSerialized]
-        private JSObject defaultProperty;
         private Dictionary<string, JSObject> cache;
 
         private TypeProxy(Type type, bool fictive)
@@ -115,8 +129,6 @@ namespace NiL.JS.Core
             ValueType = ObjectValueType.Object;
             assignCallback = ErrorAssignCallback;
             cache = new Dictionary<string, JSObject>();
-            getItem = type.GetMethod("get_Item", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy);
-            setItem = type.GetMethod("set_Item", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy);
             prototype = BaseObject.Prototype;
         }
 
@@ -128,8 +140,6 @@ namespace NiL.JS.Core
             TypeProxy exconst = null;
             assignCallback = ErrorAssignCallback;
             cache = new Dictionary<string, JSObject>();
-            getItem = type.GetMethod("get_Item", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy);
-            setItem = type.GetMethod("set_Item", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy);
             prototype = BaseObject.Prototype;
             if (constructors.TryGetValue(type, out exconst))
             {
@@ -230,31 +240,21 @@ namespace NiL.JS.Core
             }
             result = new CallableField((context, args) =>
             {
-                var res = method.Invoke(getTargetObject(context), convertArgs(args, method.GetParameters()));
-                if (res == null)
-                    return null;
-                else if (res is JSObject)
-                    return res as JSObject;
-                else if (res is int)
-                    return (int)res;
-                else if (res is long)
-                    return (long)res;
-                else if (res is double)
-                    return (double)res;
-                else if (res is string)
-                    return (string)res;
-                else if (res is bool)
-                    return (bool)res;
-                else if (res is ContextStatement)
-                    return (JSObject)(ContextStatement)res;
-                else return TypeProxy.Proxy(res);
+                try
+                {
+                    return Proxy(method.Invoke(getTargetObject(context), convertArgs(args, method.GetParameters())));
+                }
+                catch (Exception e)
+                {
+                    throw e.InnerException ?? e;
+                }
             });
             return result;
         }
 
         private object getTargetObject(Context context)
         {
-            if (ValueType == ObjectValueType.Statement)            
+            if (ValueType == ObjectValueType.Statement)
                 return null;
             object obj = context.thisBind.firstContainer ?? context.thisBind;
             obj = obj is Core.BaseTypes.EmbeddedType ? obj : (obj as JSObject).oValue;

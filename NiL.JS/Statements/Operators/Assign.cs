@@ -10,7 +10,6 @@ namespace NiL.JS.Statements.Operators
         public Assign(Statement first, Statement second)
             : base(first, second)
         {
-
         }
 
         public override JSObject Invoke(Context context)
@@ -29,6 +28,14 @@ namespace NiL.JS.Statements.Operators
             else
                 field.Assign(val);
             return val;
+        }
+
+        public override bool Optimize(ref Statement _this, int depth, System.Collections.Generic.HashSet<string> vars)
+        {
+            var res = base.Optimize(ref _this, depth, vars);
+            if (first is Operators.Call)
+                throw new InvalidOperationException("Invalid left-hand side in assignment.");
+            return res;
         }
     }
 }

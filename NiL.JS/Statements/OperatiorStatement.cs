@@ -290,7 +290,7 @@ namespace NiL.JS.Statements
             Stack<OperationType> types = new Stack<OperationType>();
             Stack<OpDelegate> delegates = new Stack<OpDelegate>();
             OperatorStatement cur = statement.second as OperatorStatement;
-            if (cur == null || cur._type == OperationType.None || cur._type == OperationType.Ternary)
+            if (cur == null || cur._type == OperationType.None)
                 return statement;
             types.Push(statement._type);
             delegates.Push(statement.del);
@@ -309,7 +309,7 @@ namespace NiL.JS.Statements
                         first = stats.Pop()
                     });
                 }
-                if (cur._type == OperationType.None || cur._type == OperationType.Ternary)
+                if (cur._type == OperationType.None)
                     break;
                 types.Push(cur._type);
                 delegates.Push(cur.del);
@@ -1024,6 +1024,7 @@ namespace NiL.JS.Statements
                 case ObjectValueType.Bool:
                 case ObjectValueType.Int:
                     {
+                        var type = temp.ValueType;
                         dr = temp.iValue;
                         temp = second.Invoke(context);
                         if (temp.ValueType == ObjectValueType.Int || temp.ValueType == ObjectValueType.Bool)
@@ -1042,7 +1043,7 @@ namespace NiL.JS.Statements
                         }
                         else if (temp.ValueType == ObjectValueType.String)
                         {
-                            tempResult.oValue = dr.ToString() + (string)temp.oValue;
+                            tempResult.oValue = (type == ObjectValueType.Bool ? (dr != 0).ToString() : dr.ToString()) + (string)temp.oValue;
                             tempResult.ValueType = ObjectValueType.String;
                             return tempResult;
                         }
@@ -1064,6 +1065,12 @@ namespace NiL.JS.Statements
                             dr += temp.dValue;
                             tempResult.ValueType = ObjectValueType.Double;
                             tempResult.dValue = dr;
+                            return tempResult;
+                        }
+                        else if (temp.ValueType == ObjectValueType.String)
+                        {
+                            tempResult.oValue = dr.ToString() + (string)temp.oValue;
+                            tempResult.ValueType = ObjectValueType.String;
                             return tempResult;
                         }
                         break;
@@ -1668,27 +1675,65 @@ namespace NiL.JS.Statements
             var temp = first.Invoke(context);
 
             tempResult.ValueType = ObjectValueType.Bool;
-
             var lvt = temp.ValueType;
-            if (lvt == ObjectValueType.Int || lvt == ObjectValueType.Bool)
+            switch (lvt)
             {
-                int left = temp.iValue;
-                temp = second.Invoke(context);
-                if (temp.ValueType == ObjectValueType.Int || temp.ValueType == ObjectValueType.Bool)
-                    tempResult.iValue = left > temp.iValue ? 1 : 0;
-                else if (temp.ValueType == ObjectValueType.Double)
-                    tempResult.iValue = left > temp.dValue ? 1 : 0;
+                case ObjectValueType.Bool:
+                case ObjectValueType.Int:
+                    {
+                        int left = temp.iValue;
+                        temp = second.Invoke(context);
+                        if (temp.ValueType == ObjectValueType.Int)
+                            tempResult.iValue = left > temp.iValue ? 1 : 0;
+                        else if (temp.ValueType == ObjectValueType.Double)
+                            tempResult.iValue = left > temp.dValue ? 1 : 0;
+                        else if (temp.ValueType == ObjectValueType.Bool)
+                            tempResult.iValue = left > temp.iValue ? 1 : 0;
+                        else throw new NotImplementedException();
+                        break;
+                    }
+                case ObjectValueType.Double:
+                    {
+                        double left = temp.dValue;
+                        temp = second.Invoke(context);
+                        if (double.IsNaN(left))
+                            tempResult.iValue = 0;
+                        else if (temp.ValueType == ObjectValueType.Int)
+                            tempResult.iValue = left > temp.iValue ? 1 : 0;
+                        else if (temp.ValueType == ObjectValueType.Double)
+                            tempResult.iValue = left > temp.dValue ? 1 : 0;
+                        else throw new NotImplementedException();
+                        break;
+                    }
+                case ObjectValueType.String:
+                    {
+                        string left = temp.oValue as string;
+                        temp = second.Invoke(context);
+                        switch (temp.ValueType)
+                        {
+                            case ObjectValueType.String:
+                                {
+                                    tempResult.iValue = string.Compare(left, temp.oValue as string) > 0 ? 1 : 0;
+                                    break;
+                                }
+                            default: throw new NotImplementedException();
+                        }
+                        break;
+                    }
+                case ObjectValueType.Date:
+                case ObjectValueType.Object:
+                    {
+                        temp = temp.ToPrimitiveValue_Value_String(context);
+                        if (temp.ValueType == ObjectValueType.Int)
+                            goto case ObjectValueType.Int;
+                        else if (temp.ValueType == ObjectValueType.Double)
+                            goto case ObjectValueType.Double;
+                        else if (temp.ValueType == ObjectValueType.String)
+                            goto case ObjectValueType.String;
+                        break;
+                    }
+                default: throw new NotImplementedException();
             }
-            else if (lvt == ObjectValueType.Double)
-            {
-                double left = temp.dValue;
-                temp = second.Invoke(context);
-                if (temp.ValueType == ObjectValueType.Int)
-                    tempResult.iValue = left > temp.iValue ? 1 : 0;
-                else if (temp.ValueType == ObjectValueType.Double)
-                    tempResult.iValue = left > temp.dValue ? 1 : 0;
-            }
-            else throw new NotImplementedException();
             return tempResult;
         }
 

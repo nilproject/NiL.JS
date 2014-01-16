@@ -23,8 +23,8 @@ namespace NiL.JS.Core
         }
 
         internal readonly static Context globalContext = new Context();
+        internal static CallableField eval;
         public static Context GlobalContext { get { return globalContext; } }
-        public static CallableField eval;
 
         public static void RefreshGlobalContext()
         {

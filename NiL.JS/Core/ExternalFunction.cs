@@ -20,7 +20,10 @@ namespace NiL.JS.Core
 
         public override JSObject Invoke(Context context, JSObject[] args)
         {
-            return del(context, args);
+            var res = del(context, args);
+            if (res == null)
+                return JSObject.Null;
+            return res;
         }
     }
 }

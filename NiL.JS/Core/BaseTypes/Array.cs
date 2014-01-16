@@ -435,7 +435,7 @@ namespace NiL.JS.Core.BaseTypes
                 return base.GetField(name, fast, own);
         }
 
-        #region ForEach functions
+        #region functions with callback
         /*
          * В таких функциях необходимо делать callback, 
          * а для этого нам будет нужен контекст. 
