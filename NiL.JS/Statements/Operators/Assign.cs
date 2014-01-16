@@ -33,7 +33,10 @@ namespace NiL.JS.Statements.Operators
         public override bool Optimize(ref Statement _this, int depth, System.Collections.Generic.HashSet<string> vars)
         {
             var res = base.Optimize(ref _this, depth, vars);
-            if (first is Operators.Call)
+            var t = first;
+            while (t is Operators.None)
+                t = (t as Operators.None).Second;
+            if (t is Operators.Call)
                 throw new InvalidOperationException("Invalid left-hand side in assignment.");
             return res;
         }
