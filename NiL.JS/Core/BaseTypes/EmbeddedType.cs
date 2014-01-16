@@ -10,8 +10,6 @@ namespace NiL.JS.Core.BaseTypes
     {
         [Hidden]
         private bool immutable;
-        [Hidden]
-        private JSObject constructor;
 
         protected EmbeddedType()
         {

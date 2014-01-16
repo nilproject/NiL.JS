@@ -8,16 +8,17 @@ namespace NiL.JS.Core
 {
     public sealed class TypeProxy : JSObject
     {
-        private static object[] convertArgs(JSObject[] source)
+        private static object[] convertArgs(JSObject source)
         {
             if (source == null)
                 return null;
-            object[] res = new object[source.Length];
-            for (int i = 0; i < source.Length; i++)
+            var len = source.GetField("length").iValue;
+            object[] res = new object[len];
+            for (int i = 0; i < len; i++)
             {
-                if (source[i] == null)
+                if (source.GetField(i.ToString(), true) == null)
                     continue;
-                var obj = source[i];
+                var obj = source.GetField(i.ToString(), true);
                 var v = obj.Value;
                 if (v is Core.BaseTypes.Array)
                 {
@@ -33,21 +34,33 @@ namespace NiL.JS.Core
             return res;
         }
 
-        private static object[] convertArgs(JSObject[] source, ParameterInfo[] targetTypes)
+        private static object[] convertArgs(JSObject source, ParameterInfo[] targetTypes)
         {
             if (targetTypes.Length == 0)
                 return null;
-            if (targetTypes.Length == 1 && targetTypes[0].ParameterType == typeof(JSObject[]))
-                return new object[] { source };
+            object[] res;
+            if (targetTypes.Length == 1)
+            {
+                if (targetTypes[0].ParameterType == typeof(JSObject))
+                    return new object[] { source };
+                if (targetTypes[0].ParameterType == typeof(JSObject[]))
+                {
+                    var len = source.GetField("length").iValue;
+                    res = new JSObject[len];
+                    for (int i = 0; i < len; i++)
+                        res[i] = source.GetField(i.ToString(), true, true);
+                    return new object[] { res };
+                }
+            }
             int targetCount = targetTypes.Length;
-            object[] res = new object[targetCount];
             if (source != null)
-                targetCount = System.Math.Min(targetCount, source.Length);
+                targetCount = System.Math.Min(targetCount, source.GetField("length").iValue);
+            res = new object[targetCount];
             for (int i = 0; i < targetCount; i++)
             {
-                if (source == null || source[i] == null)
+                if (source == null || source.GetField(i.ToString(), true, true) == null)
                     continue;
-                var obj = source[i];
+                var obj = source.GetField(i.ToString(), true, true);
                 if (targetTypes[i].ParameterType == typeof(JSObject))
                     res[i] = obj;
                 else
@@ -62,7 +75,10 @@ namespace NiL.JS.Core
                         res[i] = arg;
                     }
                     else
-                        res[i] = v;
+                    {
+                        if (targetTypes[i].ParameterType.IsAssignableFrom(v.GetType()))
+                            res[i] = v;
+                    }
                 }
             }
             return res;
@@ -152,29 +168,33 @@ namespace NiL.JS.Core
                 {
                     object[] args = null;
                     ConstructorInfo constructor = null;
-                    if (y == null || y.Length == 0)
+                    if (y == null || y.GetField("length").iValue == 0)
                         constructor = hostedType.GetConstructor(Type.EmptyTypes);
                     else
                     {
                         Type[] argtypes = new[] { y.GetType() };
-                        if (y.Length == 1)
+                        if (y.GetField("length").iValue == 1)
                         {
-                            argtypes[0] = y[0].GetType();
+                            argtypes[0] = typeof(JSObject);
                             constructor = hostedType.GetConstructor(argtypes);
                             if (constructor == null)
                             {
-                                var arg = y[0].Value;
+                                var arg = y.GetField("0").Value;
                                 argtypes[0] = arg.GetType();
                                 constructor = hostedType.GetConstructor(argtypes);
                                 if (constructor != null)
                                     args = new object[] { arg };
                             }
                             else
-                                args = new object[] { y[0] };
+                                args = new object[] { y.GetField("0", true) };
                         }
-                        if (constructor == null || y.Length > 1)
+                        if (constructor == null || y.GetField("length").iValue > 1)
                         {
-                            constructor = hostedType.GetConstructor(Type.GetTypeArray(y));
+                            var len = y.GetField("length").iValue;
+                            argtypes = new Type[len];
+                            for (int i = 0; i < len; i++)
+                                argtypes[i] = typeof(JSObject);
+                            constructor = hostedType.GetConstructor(argtypes);
                             if (constructor == null)
                             {
                                 argtypes[0] = y.GetType();
@@ -185,7 +205,11 @@ namespace NiL.JS.Core
                                     args = new object[] { y };
                             }
                             else
-                                args = y;
+                            {
+                                args = new object[len];
+                                for (int i = 0; i < args.Length; i++)
+                                    args[i] = y.GetField("0", true);
+                            }
                         }
                     }
                     var _this = x.thisBind;
@@ -218,9 +242,9 @@ namespace NiL.JS.Core
             {
                 if (method.ReturnType == typeof(JSObject))
                 {
-                    if ((method.GetParameters().Length == 1) && (method.GetParameters()[0].ParameterType == typeof(JSObject[])))
+                    if ((method.GetParameters().Length == 1) && (method.GetParameters()[0].ParameterType == typeof(JSObject)))
                     {
-                        var dinv = (Func<JSObject[], JSObject>)Delegate.CreateDelegate(typeof(Func<JSObject[], JSObject>), null, method);
+                        var dinv = (Func<JSObject, JSObject>)Delegate.CreateDelegate(typeof(Func<JSObject, JSObject>), null, method);
                         result = new CallableField((th, args) =>
                         {
                             return dinv(args);
@@ -257,7 +281,7 @@ namespace NiL.JS.Core
             if (ValueType == ObjectValueType.Statement)
                 return null;
             object obj = context.thisBind.firstContainer ?? context.thisBind;
-            obj = obj is Core.BaseTypes.EmbeddedType ? obj : (obj as JSObject).oValue;
+            obj = obj is Core.BaseTypes.EmbeddedType ? obj : ((obj as JSObject).oValue);
             return obj;
         }
 
@@ -281,7 +305,7 @@ namespace NiL.JS.Core
                         var method = (ConstructorInfo)m[0];
                         r = new CallableField((th, args) =>
                         {
-                            var res = method.Invoke(args);
+                            var res = method.Invoke(convertArgs(args, method.GetParameters()));
                             if (res is JSObject)
                                 return res as JSObject;
                             else if (res is int)

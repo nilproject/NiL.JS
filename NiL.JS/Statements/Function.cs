@@ -14,7 +14,7 @@ namespace NiL.JS.Statements
             Setter
         }
 
-        private string[] arguments;
+        private string[] argumentsNames;
         private Statement body;
         public readonly string Name;
 
@@ -111,7 +111,7 @@ namespace NiL.JS.Statements
             index = i;
             Function res = new Function(name)
                 {
-                    arguments = arguments.ToArray(),
+                    argumentsNames = arguments.ToArray(),
                     body = body
                 };
             return new ParseResult()
@@ -122,9 +122,7 @@ namespace NiL.JS.Statements
             };
         }
 
-        private static JSObject[] defaultArgs = new JSObject[0];
-
-        public override JSObject Invoke(Context context, JSObject[] args)
+        public override JSObject Invoke(Context context, JSObject args)
         {
             Context internalContext = new Context(context);
             var @this = context.GetField("this");
@@ -134,21 +132,20 @@ namespace NiL.JS.Statements
                 internalContext.thisBind = @this;
             }
             int i = 0;
-            if (args == null)
-                args = defaultArgs;
-            int min = Math.Min(args.Length, arguments.Length);
+            int min = Math.Min(args == null ? 0 : args.GetField("length").iValue, argumentsNames.Length);
             for (; i < min; i++)
-                internalContext.Define(arguments[i]).Assign(args[i]);
-            for (; i < arguments.Length; i++)
-                internalContext.Define(arguments[i]).Assign(null);
+                internalContext.Define(argumentsNames[i]).Assign(args.GetField(i.ToString()));
+            for (; i < argumentsNames.Length; i++)
+                internalContext.Define(argumentsNames[i]).Assign(null);
             body.Invoke(internalContext);
             return internalContext.abortInfo;
         }
 
         public override JSObject Invoke(Context context)
         {
-            var res = new JSObject() { ValueType = ObjectValueType.Statement, oValue = this.Implement(context) };
-            res.GetField("prototype").Assign(new JSObject() { ValueType = ObjectValueType.Object, oValue = new object(), prototype = BaseObject.Prototype });
+            var res = new JSObject(true) { ValueType = ObjectValueType.Statement, oValue = this.Implement(context) };
+            res.fields["prototype"] = new JSObject() { ValueType = ObjectValueType.Object, oValue = new object(), prototype = BaseObject.Prototype, attributes = ObjectAttributes.DontDelete | ObjectAttributes.DontEnum };
+            res.fields["arguments"] = JSObject.Null;
             return res;
         }
 

@@ -23,8 +23,8 @@ namespace NiL.JS.Core.BaseTypes
                 else
                     res = new JSObject();
                 res.ValueType = ObjectValueType.Object;
-                if (args != null && args.Length > 0)
-                    res.oValue = args[0];
+                if (args != null && args.GetField("length").iValue > 0)
+                    res.oValue = args.GetField("0", true);
                 else
                     res.oValue = new object();
                 res.GetField("__proto__").Assign(Prototype);
@@ -91,39 +91,39 @@ namespace NiL.JS.Core.BaseTypes
             temp.attributes |= ObjectAttributes.DontEnum;
         }
 
-        public static JSObject propertyIsEnumerable(Context cont, JSObject[] args)
+        public static JSObject propertyIsEnumerable(Context cont, JSObject args)
         {
             if (cont.thisBind == null)
                 throw new InvalidOperationException("Can't convert null to object");
-            if (args.Length == 0)
+            if (args.GetField("0", true).iValue == 0)
                 return false;
             string n = "";
-            switch ((args[0] ?? JSObject.undefined).ValueType)
+            switch (args.GetField("0", true).ValueType)
             {
                 case ObjectValueType.Int:
                     {
-                        n = args[0].iValue.ToString();
+                        n = args.GetField("0", true).iValue.ToString();
                         break;
                     }
                 case ObjectValueType.Double:
                     {
-                        n = args[0].dValue.ToString();
+                        n = args.GetField("0", true).dValue.ToString();
                         break;
                     }
                 case ObjectValueType.String:
                     {
-                        n = args[0].oValue as string;
+                        n = args.GetField("0", true).oValue as string;
                         break;
                     }
                 case ObjectValueType.Object:
                     {
-                        args[0] = args[0].ToPrimitiveValue_Value_String(new Context(Context.globalContext));
-                        if (args[0].ValueType == ObjectValueType.String)
-                            goto case ObjectValueType.String;
-                        if (args[0].ValueType == ObjectValueType.Int)
-                            goto case ObjectValueType.Int;
-                        if (args[0].ValueType == ObjectValueType.Double)
-                            goto case ObjectValueType.Double;
+                        args = args.GetField("0", true).ToPrimitiveValue_Value_String(new Context(Context.globalContext));
+                        if (args.ValueType == ObjectValueType.String)
+                            n = args.GetField("0", true).oValue as string;
+                        if (args.ValueType == ObjectValueType.Int)
+                            n = args.GetField("0", true).iValue.ToString();
+                        if (args.ValueType == ObjectValueType.Double)
+                            n = args.GetField("0", true).dValue.ToString();
                         break;
                     }
                 case ObjectValueType.NotExist:
@@ -136,13 +136,13 @@ namespace NiL.JS.Core.BaseTypes
             return res;
         }
         
-        public static JSObject isPrototypeOf(Context cont, JSObject[] obj)
+        public static JSObject isPrototypeOf(Context cont, JSObject obj)
         {
             if (cont.thisBind == null)
                 throw new InvalidOperationException("Can't convert null to object");
-            if (obj.Length == 0)
+            if (obj.GetField("length", true).iValue == 0)
                 return false;
-            var a = obj[0];
+            var a = obj.GetField("0", true);
             var c = cont.thisBind;
             JSObject o = tempResult;
             o.ValueType = ObjectValueType.Bool;
@@ -160,39 +160,43 @@ namespace NiL.JS.Core.BaseTypes
             return o;
         }
 
-        public static JSObject hasOwnProperty(Context cont, JSObject[] name)
+        public static JSObject hasOwnProperty(Context cont, JSObject name)
         {
             if (cont.thisBind == null)
                 throw new InvalidOperationException("Can't convert null to object");
-            if (name.Length == 0)
-                return false;
             string n = "";
-            switch ((name[0] ?? JSObject.undefined).ValueType)
+            switch (name.GetField("0", true).ValueType)
             {
+                case ObjectValueType.Undefined:
+                case ObjectValueType.NotExistInObject:
+                    {
+                        n = "undefined";
+                        break;
+                    }
                 case ObjectValueType.Int:
                     {
-                        n = name[0].iValue.ToString();
+                        n = name.GetField("0", true).iValue.ToString();
                         break;
                     }
                 case ObjectValueType.Double:
                     {
-                        n = name[0].dValue.ToString();
+                        n = name.GetField("0", true).dValue.ToString();
                         break;
                     }
                 case ObjectValueType.String:
                     {
-                        n = name[0].oValue as string;
+                        n = name.GetField("0", true).oValue as string;
                         break;
                     }
                 case ObjectValueType.Object:
                     {
-                        name[0] = name[0].ToPrimitiveValue_Value_String(new Context(Context.globalContext));
-                        if (name[0].ValueType == ObjectValueType.String)
-                            goto case ObjectValueType.String;
-                        if (name[0].ValueType == ObjectValueType.Int)
-                            goto case ObjectValueType.Int;
-                        if (name[0].ValueType == ObjectValueType.Double)
-                            goto case ObjectValueType.Double;
+                        name = name.GetField("0", true).ToPrimitiveValue_Value_String(new Context(Context.globalContext));
+                        if (name.ValueType == ObjectValueType.String)
+                            n = name.GetField("0", true).oValue as string;
+                        if (name.ValueType == ObjectValueType.Int)
+                            n = name.GetField("0", true).iValue.ToString();
+                        if (name.ValueType == ObjectValueType.Double)
+                            n = name.GetField("0", true).dValue.ToString();
                         break;
                     }
                 case ObjectValueType.NotExist:

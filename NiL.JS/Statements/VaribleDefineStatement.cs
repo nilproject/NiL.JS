@@ -71,17 +71,10 @@ namespace NiL.JS.Statements
 
         public override JSObject Invoke(Context context)
         {
-            /*context.localVaribleCount = names.Length;
-            for (int i = 0; i < names.Length; i++)
-            {
-                context.GetField(names[i]).Define();
-                initializators[i].Invoke(context);
-            }
-            return null;*/
             throw new InvalidOperationException("VaribleDefineStatement.Invoke");
         }
 
-        public override JSObject Invoke(Context context, JSObject[] args)
+        public override JSObject Invoke(Context context, JSObject args)
         {
             throw new NotImplementedException();
         }

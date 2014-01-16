@@ -17,6 +17,6 @@ namespace NiL.JS.Core
         }
 
         public abstract JSObject Invoke(Context context);
-        public abstract JSObject Invoke(Context context, JSObject[] args);
+        public abstract JSObject Invoke(Context context, JSObject args);
     }
 }

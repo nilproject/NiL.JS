@@ -5,6 +5,8 @@ namespace NiL.JS.Statements.Operators
 {
     internal class Call : Operator
     {
+        public readonly static Call Instance = new Call(new ImmidateValueStatement(null), new ImmidateValueStatement(null));
+
         public Call(Statement first, Statement second)
             : base(first, second)
         {
@@ -23,24 +25,32 @@ namespace NiL.JS.Statements.Operators
                     throw new ArgumentException(temp + " is not callable");
 
                 JSObject res = null;
-
                 var stat = (temp.oValue as Statement);
                 var args = second.Invoke(context);
-                if (args.oValue is JSObject[])
-                    res = stat.Invoke(context, args.oValue as JSObject[]);
-                else
+                var sps = args.oValue as Statement[];
+                if (sps != null)
                 {
-                    var sps = args.oValue as Statement[];
-                    if (sps != null)
+                    var newThisBind = context.thisBind;
+                    context.thisBind = oldThisBind;
+                    JSObject stmnts = new JSObject(true)
+                        {
+                            ValueType = ObjectValueType.Object,
+                            oValue = "[object Arguments]".Clone(),
+                            attributes = ObjectAttributes.DontDelete
+                        };
+                    var length = stmnts.GetField("length", false, true);
+                    length.ValueType = ObjectValueType.Int;
+                    length.iValue = sps.Length;
+                    length.Protect();
+                    length.attributes |= ObjectAttributes.DontEnum | ObjectAttributes.DontDelete;
+                    for (int i = 0; i < sps.Length; i++)
                     {
-                        var newThisBind = context.thisBind;
-                        context.thisBind = oldThisBind;
-                        JSObject[] stmnts = sps.Length == 0 ? null as JSObject[] : new JSObject[sps.Length];
-                        for (int i = 0; i < sps.Length; i++)
-                            stmnts[i] = sps[i].Invoke(context);
-                        context.thisBind = newThisBind;
-                        res = stat.Invoke(context, stmnts);
+                        var a = stmnts.GetField(i.ToString());
+                        a.Assign(sps[i].Invoke(context));
+                        a.attributes |= ObjectAttributes.DontDelete | ObjectAttributes.DontEnum;
                     }
+                    context.thisBind = newThisBind;
+                    res = stat.Invoke(context, stmnts);
                 }
                 return res;
             }

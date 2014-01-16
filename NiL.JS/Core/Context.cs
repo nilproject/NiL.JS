@@ -41,7 +41,7 @@ namespace NiL.JS.Core
             globalContext.GetField("eval").Assign(eval = new CallableField((cont, x) =>
             {
                 int i = 0;
-                string c = "{" + Parser.RemoveComments(x[0].oValue.ToString()) + "}";
+                string c = "{" + Parser.RemoveComments(x.GetField("0", true).ToString()) + "}";
                 var cb = CodeBlock.Parse(new ParsingState(c), ref i).Statement;
                 if (i != c.Length)
                     throw new System.ArgumentException("Invalid char");
@@ -51,7 +51,7 @@ namespace NiL.JS.Core
             }));
             globalContext.GetField("isNaN").Assign(new CallableField((t, x) =>
             {
-                var r = x[0];
+                var r = x.GetField("0", true);
                 if (r.ValueType == ObjectValueType.Double)
                     return double.IsNaN(r.dValue);
                 if (r.ValueType == ObjectValueType.Bool || r.ValueType == ObjectValueType.Int || r.ValueType == ObjectValueType.Date)
@@ -70,15 +70,15 @@ namespace NiL.JS.Core
             #region Base types
             globalContext.GetField("Boolean").Assign(new CallableField((t, x) =>
             {
-                var temp = x[0];
+                var temp = x.GetField("0", true);
                 if (temp.ValueType == ObjectValueType.Bool)
                     return temp;
                 return (bool)temp;
             }));
             globalContext.GetField("RegExp").Assign(new CallableField((t, x) =>
             {
-                var pattern = x[0].Value.ToString();
-                var flags = x.Length > 1 ? x[1].Value.ToString() : "";
+                var pattern = x.GetField("0", true).Value.ToString();
+                var flags = x.GetField("length").iValue > 1 ? x.GetField("1", true).Value.ToString() : "";
                 var re = new System.Text.RegularExpressions.Regex(pattern,
                     System.Text.RegularExpressions.RegexOptions.ECMAScript
                     | (flags.IndexOf('i') != -1 ? System.Text.RegularExpressions.RegexOptions.IgnoreCase : 0)
@@ -112,9 +112,9 @@ namespace NiL.JS.Core
             rep.oValue = new object();
             rep.GetField("exec").Assign(new CallableField((cont, args) =>
             {
-                if (args.Length == 0)
+                if (args.GetField("length").iValue == 0)
                     return new JSObject() { ValueType = ObjectValueType.Object };
-                var m = ((cont.thisBind ?? cont.GetField("this")).oValue as System.Text.RegularExpressions.Regex).Match(args[0].Value.ToString());
+                var m = ((cont.thisBind ?? cont.GetField("this")).oValue as System.Text.RegularExpressions.Regex).Match(args.GetField("0", true).Value.ToString());
                 var mres = new JSObject();
                 mres.ValueType = ObjectValueType.Object;
                 if (m.Groups.Count != 1)
@@ -177,6 +177,7 @@ namespace NiL.JS.Core
             if (!fields.TryGetValue(name, out res))
             {
                 res = new JSObject();
+                res.attributes |= ObjectAttributes.DontDelete;
                 fields[name] = res;
                 cache[cacheIndex++] = new _cacheItem() { name = name, value = res };
                 cacheIndex %= cacheSize;

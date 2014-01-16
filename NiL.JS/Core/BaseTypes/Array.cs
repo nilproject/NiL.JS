@@ -446,9 +446,10 @@ namespace NiL.JS.Core.BaseTypes
         private static readonly JSObject forEachCF = new CallableField(forEach);
 
         [Hidden]
-        private static JSObject forEach(Context context, JSObject[] args)
+        private static JSObject forEach(Context context, JSObject args)
         {
-            if (args.Length == 0)
+            var alen = args.GetField("length").iValue;
+            if (alen == 0)
                 throw new ArgumentException("Undefined is not function");
 
             bool res = true;
@@ -460,7 +461,7 @@ namespace NiL.JS.Core.BaseTypes
             var cbargs = new JSObject[3];
             cbargs[2] = obj;
             cbargs[1] = new JSObject(false) { ValueType = ObjectValueType.Int };
-            var stat = args[0].oValue as Statement;
+            var stat = args.GetField("0", true).oValue as Statement;
             var cstat = stat as ContextStatement;
             for (int i = 0; i < count; i++)
             {
@@ -468,10 +469,10 @@ namespace NiL.JS.Core.BaseTypes
                 cbargs[1].iValue = i;
                 if (cstat != null)
                 {
-                    if (args.Length > 1)
+                    if (alen > 1)
                     {
                         var oldtb = cstat.Context.thisBind;
-                        cstat.Context.thisBind = args[1];
+                        cstat.Context.thisBind = args.GetField("1", true);
                         res &= (bool)cstat.Invoke(cbargs);
                         cstat.Context.thisBind = oldtb;
                     }
@@ -480,10 +481,10 @@ namespace NiL.JS.Core.BaseTypes
                 }
                 else
                 {
-                    if (args.Length > 1)
+                    if (alen > 1)
                     {
                         var oldtb = context.thisBind;
-                        context.thisBind = args[1];
+                        context.thisBind = args.GetField("1", true);
                         res &= (bool)stat.Invoke(context, cbargs);
                         context.thisBind = oldtb;
                     }

@@ -12,13 +12,16 @@ namespace NiL.JS.Statements.Operators
         protected Statement first;
         protected Statement second;
 
+        public Statement First { get { return first; } }
+        public Statement Second { get { return second; } }
+
         protected Operator(Statement first, Statement second)
         {
             this.first = first;
             this.second = second;
         }
 
-        public override JSObject Invoke(Context context, JSObject[] args)
+        public override JSObject Invoke(Context context, JSObject args)
         {
             throw new InvalidOperationException();
         }

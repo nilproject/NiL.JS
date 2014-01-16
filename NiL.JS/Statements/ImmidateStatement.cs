@@ -18,7 +18,7 @@ namespace NiL.JS.Statements
             return Value;
         }
 
-        public override JSObject Invoke(Context context, JSObject[] args)
+        public override JSObject Invoke(Context context, JSObject args)
         {
             return Value;
         }

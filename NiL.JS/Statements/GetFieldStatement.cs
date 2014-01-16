@@ -84,7 +84,7 @@ namespace NiL.JS.Statements
             }
         }
 
-        public override JSObject Invoke(Context context, JSObject[] args)
+        public override JSObject Invoke(Context context, JSObject args)
         {
             throw new NotImplementedException();
         }

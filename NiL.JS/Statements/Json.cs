@@ -133,7 +133,7 @@ namespace NiL.JS.Statements
             return res;
         }
 
-        public override JSObject Invoke(Context context, JSObject[] args)
+        public override JSObject Invoke(Context context, JSObject args)
         {
             throw new NotImplementedException();
         }

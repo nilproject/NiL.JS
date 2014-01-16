@@ -8,7 +8,7 @@ using System.Runtime.Serialization;
 
 namespace NiL.JS.Core
 {
-    public delegate JSObject CallableField(Context context, JSObject[] args);
+    public delegate JSObject CallableField(Context context, JSObject args);
 
     internal enum ObjectValueType : int
     {
@@ -29,8 +29,8 @@ namespace NiL.JS.Core
     internal enum ObjectAttributes : int
     {
         None = 0,
-        DontEnum = 1,
-        DontDelete = 2
+        DontEnum = 1 << 0,
+        DontDelete = 1 << 1
     }
 
     public class JSObject : IEnumerable<string>, IEnumerable
@@ -64,6 +64,8 @@ namespace NiL.JS.Core
         internal JSObject firstContainer;
         [Modules.Hidden]
         internal JSObject prototype;
+        [Modules.Hidden]
+        internal JSObject constructor;
         [Modules.Hidden]
         internal Dictionary<string, JSObject> fields;
 
@@ -210,50 +212,58 @@ namespace NiL.JS.Core
                 default:
                     throw new InvalidOperationException();
             }
-            if (name == "__proto__")
-                return prototype ?? (fast ? Null : prototype = new JSObject(false) { ValueType = ObjectValueType.Object, oValue = null });
-            JSObject res = null;
-            bool fromProto = (fields == null || !fields.TryGetValue(name, out res)) && !own;
-            if (fromProto && prototype != null)
+            switch (name)
             {
-                res = prototype.GetField(name, true);
-                if (res == undefined)
-                    res = null;
-            }
-            if (res == null)
-            {
-                if (fast)
-                    return undefined;
-                res = new JSObject()
-                {
-                    assignCallback = () =>
+                case "__proto__": 
+                    return prototype ?? (fast ? Null : prototype = new JSObject(false) { ValueType = ObjectValueType.Object, oValue = null });
+                case "constructor":
+                    return constructor ?? (fast ? Null : constructor = new JSObject(false) { ValueType = ObjectValueType.Object, oValue = null });
+                default:
                     {
-                        if (fields == null)
-                            fields = new Dictionary<string, JSObject>();
-                        fields[name] = res;
-                        res.assignCallback = null;
-                        return true;
-                    },
-                    ValueType = ObjectValueType.NotExistInObject
-                };
+                        JSObject res = null;
+                        bool fromProto = (fields == null || !fields.TryGetValue(name, out res)) && !own;
+                        if (fromProto && prototype != null)
+                        {
+                            res = prototype.GetField(name, true);
+                            if (res == undefined)
+                                res = null;
+                        }
+                        if (res == null)
+                        {
+                            if (fast)
+                                return undefined;
+                            res = new JSObject()
+                            {
+                                assignCallback = () =>
+                                {
+                                    if (fields == null)
+                                        fields = new Dictionary<string, JSObject>();
+                                    fields[name] = res;
+                                    res.assignCallback = null;
+                                    return true;
+                                },
+                                ValueType = ObjectValueType.NotExistInObject
+                            };
+                        }
+                        else if (fromProto && !fast)
+                        {
+                            var t = new JSObject() { ValueType = ObjectValueType.NotExistInObject };
+                            t.Assign(res);
+                            t.assignCallback = () =>
+                            {
+                                if (fields == null)
+                                    fields = new Dictionary<string, JSObject>();
+                                fields[name] = t;
+                                t.assignCallback = null;
+                                return true;
+                            };
+                            res = t;
+                        }
+                        if (res.ValueType == ObjectValueType.NotExist)
+                            res.ValueType = ObjectValueType.NotExistInObject;
+                        return res;
+                    }
             }
-            else if (fromProto && !fast)
-            {
-                var t = new JSObject() { ValueType = ObjectValueType.NotExistInObject };
-                t.Assign(res);
-                t.assignCallback = () =>
-                {
-                    if (fields == null)
-                        fields = new Dictionary<string, JSObject>();
-                    fields[name] = t;
-                    t.assignCallback = null;
-                    return true;
-                };
-                res = t;
-            }
-            if (res.ValueType == ObjectValueType.NotExist)
-                res.ValueType = ObjectValueType.NotExistInObject;
-            return res;
         }
 
         [Modules.Hidden]

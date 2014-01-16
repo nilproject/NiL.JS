@@ -18,7 +18,7 @@ namespace NiL.JS.Core
             throw new InvalidOperationException();
         }
 
-        public override JSObject Invoke(Context context, JSObject[] args)
+        public override JSObject Invoke(Context context, JSObject args)
         {
             var res = del(context, args);
             if (res == null)

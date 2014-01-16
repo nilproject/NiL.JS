@@ -25,7 +25,7 @@ namespace NiL.JS.Core
             return res;
         }
 
-        public JSObject Invoke(JSObject[] args)
+        public JSObject Invoke(JSObject args)
         {
             var res = Prototype.Invoke(Context, args);
             return res;
@@ -42,7 +42,7 @@ namespace NiL.JS.Core
             return res;
         }
 
-        public override JSObject Invoke(Context context, JSObject[] args)
+        public override JSObject Invoke(Context context, JSObject args)
         {
             var oldthisBind = Context.thisBind;
             Context.thisBind = context.thisBind;

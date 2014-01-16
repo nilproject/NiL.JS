@@ -586,6 +586,19 @@ namespace NiL.JS.Core
             int sig = 1;
             if (code[i] == '-' || code[i] == '+')
                 sig = 44 - code[i++];
+            const string infinity = "Infinity";
+            for (int j = i; j < infinity.Length; j++)
+            {
+                if (code[j] != infinity[j - i])
+                    break;
+                else if (code[j] == 'y')
+                {
+                    if (move)
+                        index = j;
+                    value = sig * double.PositiveInfinity;
+                    return true;
+                }
+            }
             bool h = false;
             bool e = false;
             bool d = false;

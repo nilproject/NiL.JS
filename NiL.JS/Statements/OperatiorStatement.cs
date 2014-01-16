@@ -295,7 +295,7 @@ namespace NiL.JS.Statements
             types.Push(statement._type);
             delegates.Push(statement.del);
             stats.Push(statement.first);
-            while(cur != null)
+            while (cur != null)
             {
                 stats.Push(cur.first);
                 if ((((int)types.Peek() & (int)OperationTypeGroups.Special) > ((int)cur._type & (int)OperationTypeGroups.Special))
@@ -1855,34 +1855,31 @@ namespace NiL.JS.Statements
 
         private JSObject OpNew(Context context)
         {
-            JSObject args = null;
-            Statement[] sps = null;
             JSObject temp = first.Invoke(context);
             if (temp.ValueType <= ObjectValueType.NotExistInObject)
                 throw new ArgumentException("varible is not defined");
             if (temp.ValueType != ObjectValueType.Statement)
                 throw new ArgumentException(temp + " is not callable");
+            
+            var call = Operators.Call.Instance;
+            (call.First as ImmidateValueStatement).Value = temp;
             if (second != null)
+                (call.Second as ImmidateValueStatement).Value = second.Invoke(context);
+            else
+                (call.Second as ImmidateValueStatement).Value = new JSObject[0];
+            JSObject _this = new JSObject()
             {
-                args = second.Invoke(context);
-                sps = args.oValue as Statement[];
-            }
-            JSObject _this = new JSObject();
-            _this.Assign(temp.GetField("prototype", true));
-            _this = new JSObject() { ValueType = ObjectValueType.Object, prototype = _this.ValueType > ObjectValueType.Undefined ? _this : null, oValue = new object() };
-            JSObject[] stmnts = null;
-            if ((sps != null) && (sps.Length != 0))
-            {
-                stmnts = new JSObject[sps.Length];
-                for (int i = 0; i < sps.Length; i++)
-                    stmnts[i] = sps[i].Invoke(context);
-            }
+                ValueType = ObjectValueType.Object,
+                oValue = new object()
+            };
+            _this.GetField("__proto__").Assign(temp.GetField("prototype", true));
+            _this.GetField("constructor").Assign(temp);
             var stat = temp.oValue as Statement;
             var otb = context.thisBind;
             context.thisBind = _this;
             try
             {
-                stat.Invoke(context, stmnts);
+                call.Invoke(context);
             }
             finally
             {
@@ -1937,7 +1934,7 @@ namespace NiL.JS.Statements
             return del(context);
         }
 
-        public override JSObject Invoke(Context context, JSObject[] args)
+        public override JSObject Invoke(Context context, JSObject args)
         {
             throw new NotImplementedException();
         }
