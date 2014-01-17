@@ -419,7 +419,7 @@ namespace NiL.JS.Core
                         else if ((code[j] == '\n') && (code[j + 1] == '\r'))
                             j++;
                     }
-                    else if (isLineTerminator(code[j]))
+                    else if (Tools.isLineTerminator(code[j]))
                         throw new ArgumentException("Unterminated string constant");
                     j++;
                 }
@@ -463,7 +463,7 @@ namespace NiL.JS.Core
                 return true;
             }
             int i = index;
-            while (char.IsWhiteSpace(code[i]) && !isLineTerminator(code[i])) i++;
+            while (char.IsWhiteSpace(code[i]) && !Tools.isLineTerminator(code[i])) i++;
             int sig = 1;
             if (code[i] == '-' || code[i] == '+')
                 sig = 44 - code[i++];
@@ -629,7 +629,7 @@ namespace NiL.JS.Core
                         long temp = 0;
                         for (; (s <= i) && (code[s] != '.'); s++)
                             temp = temp * 10 + (code[s] - '0');
-                        if (code[s] == '.')
+                        if (d)
                         {
                             s++;
                             for (; s <= i; s++, deg--)
@@ -691,6 +691,21 @@ namespace NiL.JS.Core
                 || (c == ',');
         }
 
+        internal static bool isIdentificatorTerminator(char c)
+        {
+            return c == ' '
+                || Tools.isLineTerminator(c)
+                || isOperator(c)
+                || (c == '{')
+                || (c == '\v')
+                || (c == '}')
+                || (c == '(')
+                || (c == ')')
+                || (c == ';')
+                || (c == '[')
+                || (c == ']');
+        }
+
         internal static Statement Parse(ParsingState state, ref int index, int ruleset)
         {
             return Parse(state, ref index, ruleset, false);
@@ -699,10 +714,10 @@ namespace NiL.JS.Core
         internal static Statement Parse(ParsingState state, ref int index, int ruleset, bool lineAutoComplite)
         {
             string code = state.Code;
-            while ((index < code.Length) && (char.IsWhiteSpace(code[index])) && (!lineAutoComplite || !isLineTerminator(code[index]))) index++;
+            while ((index < code.Length) && (char.IsWhiteSpace(code[index])) && (!lineAutoComplite || !Tools.isLineTerminator(code[index]))) index++;
             if (code[index] == '}')
                 return null;
-            if (code[index] == ';' || (lineAutoComplite && isLineTerminator(code[index])))
+            if (code[index] == ';' || (lineAutoComplite && Tools.isLineTerminator(code[index])))
             {
                 index++;
                 return new EmptyStatement();
@@ -719,42 +734,6 @@ namespace NiL.JS.Core
             throw new ArgumentException("Unknown token at index " + index + ": " + code.Substring(index, Math.Min(20, code.Length - index)).Split(' ')[0]);
         }
 
-        internal static void skipComment(string code, ref int index, bool skipSpaces)
-        {
-            bool work;
-            do
-            {
-                if (code.Length <= index)
-                    return;
-                work = false;
-                if (code[index] == '/')
-                {
-                    switch (code[index + 1])
-                    {
-                        case '/':
-                            {
-                                index += 2;
-                                while (index < code.Length && !Parser.isLineTerminator(code[index])) index++;
-                                while (index < code.Length && char.IsWhiteSpace(code[index])) index++;
-                                work = true;
-                                break;
-                            }
-                        case '*':
-                            {
-                                index += 2;
-                                while (code[index] != '*' || code[index + 1] != '/')
-                                    index++;
-                                index += 2;
-                                work = true;
-                                break;
-                            }
-                    }
-                }
-            } while (work);
-            if (skipSpaces)
-                while ((index < code.Length) && (char.IsWhiteSpace(code[index]))) index++;
-        }
-
         internal static void Optimize(ref Statement s, int depth, HashSet<string> varibles)
         {
             while ((s is IOptimizable) && (s as IOptimizable).Optimize(ref s, depth, varibles)) { }
@@ -763,127 +742,6 @@ namespace NiL.JS.Core
         internal static void Optimize(ref Statement s, HashSet<string> varibles)
         {
             while ((s is IOptimizable) && (s as IOptimizable).Optimize(ref s, 0, varibles)) { }
-        }
-
-        internal static string Unescape(string code)
-        {
-            StringBuilder res = new StringBuilder(code.Length);
-            for (int i = 0; i < code.Length; i++)
-            {
-                if (code[i] == '\\')
-                {
-                    i++;
-                    switch (code[i])
-                    {
-                        case 'x':
-                        case 'u':
-                            {
-                                string c = code.Substring(i + 1, code[i] == 'u' ? 4 : 2);
-                                ushort chc = 0;
-                                if (ushort.TryParse(c, System.Globalization.NumberStyles.HexNumber, null, out chc))
-                                {
-                                    char ch = (char)chc;
-                                    res.Append(ch);
-                                    i += c.Length;
-                                }
-                                else
-                                {
-                                    throw new ArgumentException("Invalid escape sequence '\\" + code[i] + c + "'");
-                                    //res.Append(code[i - 1]);
-                                    //res.Append(code[i]);
-                                }
-                                break;
-                            }
-                        case 't':
-                            {
-                                res.Append('\t');
-                                break;
-                            }
-                        case 'f':
-                            {
-                                res.Append('\f');
-                                break;
-                            }
-                        case 'v':
-                            {
-                                res.Append('\v');
-                                break;
-                            }
-                        case 'b':
-                            {
-                                res.Append('\b');
-                                break;
-                            }
-                        case 'n':
-                            {
-                                res.Append('\n');
-                                break;
-                            }
-                        case 'r':
-                            {
-                                res.Append('\r');
-                                break;
-                            }
-                        default:
-                            {
-                                if (char.IsDigit(code[i]))
-                                    res.Append((char)(code[i] - '0'));
-                                else
-                                    res.Append(code[i]);
-                                break;
-                            }
-                    }
-                }
-                else
-                    res.Append(code[i]);
-            }
-            return res.ToString();
-        }
-
-        internal static bool isLineTerminator(char c)
-        {
-            return (c == '\u000A') || (c == '\u000D') || (c == '\u2028') || (c == '\u2029');
-        }
-
-        internal static bool isIdentificatorTerminator(char c)
-        {
-            return c == ' '
-                || isLineTerminator(c) 
-                || isOperator(c) 
-                || (c == '{') 
-                || (c == '\v') 
-                || (c == '}') 
-                || (c == '(') 
-                || (c == ')') 
-                || (c == ';') 
-                || (c == '[') 
-                || (c == ']');
-        }
-
-        internal static string RemoveComments(string code)
-        {
-            StringBuilder res = new StringBuilder(code.Length);
-            for (int i = 0; i < code.Length; )
-            {
-                while (i < code.Length && char.IsWhiteSpace(code[i])) res.Append(code[i++]);
-                var s = i;
-                skipComment(code, ref i, false);
-                for (; s < i; s++)
-                    res.Append(' ');
-                if (i >= code.Length)
-                    continue;
-                if (ValidateName(code, ref i, true)
-                    || ValidateNumber(code, ref i, true)
-                    || ValidateRegex(code, ref i, true, false)
-                    || ValidateString(code, ref i, true))
-                {
-                    for (; s < i; s++)
-                        res.Append(code[s]);
-                }
-                else
-                    res.Append(code[i++]);
-            }
-            return res.ToString();
         }
     }
 }

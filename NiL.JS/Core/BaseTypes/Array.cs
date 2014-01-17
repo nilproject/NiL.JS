@@ -19,7 +19,6 @@ namespace NiL.JS.Core.BaseTypes
             }
             
             public object Current { get { return index.ToString(); } }
-
             string IEnumerator<string>.Current { get { return index.ToString(); } }
 
             public bool MoveNext()
@@ -106,6 +105,11 @@ namespace NiL.JS.Core.BaseTypes
                     val = TypeProxy.Proxy(args[i]);
                 data.Add(val);
             }
+        }
+
+        public void Add(JSObject obj)
+        {
+            data.Add(obj);
         }
 
         private static int lastReqIndex;
@@ -457,7 +461,7 @@ namespace NiL.JS.Core.BaseTypes
             var len = obj.GetField("length", true);
             if (len.ValueType == ObjectValueType.Property)
                 len = (len.oValue as Statement[])[1].Invoke(context, null);
-            var count = Tools.jsobjectToDouble(len);
+            var count = Tools.JSObjectToDouble(len);
             var cbargs = new JSObject[3];
             cbargs[2] = obj;
             cbargs[1] = new JSObject(false) { ValueType = ObjectValueType.Int };

@@ -15,7 +15,7 @@ namespace NiL.JS.Statements
                 return new ParseResult();
             if (state.AllowBreak <= 0)
                 throw new ArgumentException("break not allowed in this context");
-            while (char.IsWhiteSpace(code[i]) && !Parser.isLineTerminator(code[i])) i++;
+            while (char.IsWhiteSpace(code[i]) && !Tools.isLineTerminator(code[i])) i++;
             int sl = i;
             JSObject label = null;
             if (Parser.ValidateName(code, ref i))

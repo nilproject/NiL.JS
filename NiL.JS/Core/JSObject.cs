@@ -46,9 +46,13 @@ namespace NiL.JS.Core
         [Modules.Hidden]
         internal static readonly Func<bool> ErrorAssignCallback = () => { throw new InvalidOperationException("Invalid left-hand side"); };
         [Modules.Hidden]
+        internal static readonly Func<bool> ProtectAssignCallback = () => { return false; };
+        [Modules.Hidden]
         internal static readonly JSObject undefined = new JSObject() { ValueType = ObjectValueType.Undefined };
         [Modules.Hidden]
         internal static readonly JSObject Null = new JSObject() { ValueType = ObjectValueType.Object, oValue = null, assignCallback = ErrorAssignCallback };
+        [Modules.Hidden]
+        internal static readonly JSObject nullString = "null";
 
         static JSObject()
         {
@@ -271,7 +275,7 @@ namespace NiL.JS.Core
         {
             if (assignCallback != null)
                 assignCallback();
-            assignCallback = () => { return false; };
+            assignCallback = ProtectAssignCallback;
         }
 
         [Modules.Hidden]
@@ -281,8 +285,10 @@ namespace NiL.JS.Core
             context.thisBind = this;
             try
             {
-                if ((ValueType >= ObjectValueType.Object) && (oValue != null))
+                if (ValueType >= ObjectValueType.Object)
                 {
+                    if (oValue == null)
+                        return nullString;
                     var tpvs = GetField("valueOf", true);
                     JSObject res = null;
                     if (tpvs.ValueType == ObjectValueType.Statement)
@@ -332,8 +338,10 @@ namespace NiL.JS.Core
             context.thisBind = this;
             try
             {
-                if ((ValueType >= ObjectValueType.Object) && (oValue != null))
+                if (ValueType >= ObjectValueType.Object)
                 {
+                    if (oValue == null)
+                        return nullString;
                     var tpvs = GetField("toString", true);
                     JSObject res = null;
                     if (tpvs.ValueType == ObjectValueType.Statement)
@@ -538,11 +546,22 @@ namespace NiL.JS.Core
         public static explicit operator bool(JSObject obj)
         {
             var vt = obj.ValueType;
-            if (vt == ObjectValueType.Int || vt == ObjectValueType.Bool)
-                return obj.iValue != 0;
-            if (vt == ObjectValueType.Double)
-                return obj.dValue != 0.0;
-            return (obj.oValue != null) && ((vt != ObjectValueType.String) || !string.IsNullOrEmpty(obj.oValue as string));
+            switch (vt)
+            {
+                case ObjectValueType.Int:
+                case ObjectValueType.Bool:
+                    return obj.iValue != 0;
+                case ObjectValueType.Double:
+                    return obj.dValue != 0.0;
+                case ObjectValueType.Object:
+                case ObjectValueType.Date:
+                case ObjectValueType.Statement:
+                    return obj.oValue != null;
+                case ObjectValueType.String:
+                    return !string.IsNullOrEmpty(obj.oValue as string);
+                default:
+                    return false;
+            }
         }
     }
 }

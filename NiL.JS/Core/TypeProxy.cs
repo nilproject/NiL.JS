@@ -8,32 +8,6 @@ namespace NiL.JS.Core
 {
     public sealed class TypeProxy : JSObject
     {
-        private static object[] convertArgs(JSObject source)
-        {
-            if (source == null)
-                return null;
-            var len = source.GetField("length").iValue;
-            object[] res = new object[len];
-            for (int i = 0; i < len; i++)
-            {
-                if (source.GetField(i.ToString(), true) == null)
-                    continue;
-                var obj = source.GetField(i.ToString(), true);
-                var v = obj.Value;
-                if (v is Core.BaseTypes.Array)
-                {
-                    var arr = v as Core.BaseTypes.Array;
-                    var arg = new object[arr.length];
-                    for (var j = 0; j < arg.Length; j++)
-                        arg[j] = arr[j].Value;
-                    res[i] = arg;
-                }
-                else
-                    res[i] = v;
-            }
-            return res;
-        }
-
         private static object[] convertArgs(JSObject source, ParameterInfo[] targetTypes)
         {
             if (targetTypes.Length == 0)
@@ -95,8 +69,6 @@ namespace NiL.JS.Core
                 return obj as JSObject;
             else if (obj is int)
                 return (int)obj;
-            else if (obj is long)
-                return (long)obj;
             else if (obj is double)
                 return (double)obj;
             else if (obj is string)
@@ -110,7 +82,7 @@ namespace NiL.JS.Core
                 var type = obj.GetType();
                 var res = new JSObject(false) { oValue = obj, ValueType = ObjectValueType.Object };
                 res.GetField("constructor", false, true).Assign(GetConstructor(type));
-                res.prototype = GetPrototype(type);
+                res.GetField("__proto__", false, true).Assign(GetPrototype(type));
                 return res;
             }
         }
@@ -231,22 +203,31 @@ namespace NiL.JS.Core
                     if (_this != null)
                     {
                         thproto = (_this.firstContainer ?? _this).prototype;
-                        bynew = thproto.ValueType == ObjectValueType.Object && thproto.oValue == type as object;
+                        bynew = thproto != null && thproto.ValueType == ObjectValueType.Object && thproto.oValue == type as object;
                     }
                     var obj = constructor.Invoke(args);
-                    var res = obj is JSObject && !bynew ? obj as JSObject : new JSObject(false)
-                    {
-                        oValue = obj,
-                        ValueType = ObjectValueType.Object
-                    };
-                    res.GetField("constructor").Assign(this);
-                    res.GetField("__proto__").Assign(proto);
+                    JSObject res = null;
                     if (bynew)
-                        _this.Assign(res);
+                    {
+                        _this.oValue = obj;
+                        res = _this;
+                    }
+                    else
+                    {
+                        res = obj is JSObject ? obj as JSObject : new JSObject(false)
+                        {
+                            oValue = obj,
+                            ValueType = ObjectValueType.Object
+                        };
+                        res.GetField("constructor").Assign(this);
+                        res.GetField("__proto__").Assign(proto);
+                    }
                     return res;
                 });
                 constructors[type] = this;
-                prototypes[type] = new TypeProxy(type, true);
+                proto = new TypeProxy(type, true);
+                (proto as TypeProxy).DefaultFieldGetter("toString", false, true).Assign(toStringObj);
+                prototypes[type] = proto as TypeProxy;
                 proto = DefaultFieldGetter("prototype", false, false);
                 proto.Assign(prototypes[type]);
                 proto.attributes |= ObjectAttributes.DontDelete | ObjectAttributes.DontEnum;
@@ -284,7 +265,10 @@ namespace NiL.JS.Core
             {
                 try
                 {
-                    return Proxy(method.Invoke(getTargetObject(context), convertArgs(args, method.GetParameters())));
+                    var res = method.Invoke(getTargetObject(context), convertArgs(args, method.GetParameters()));
+                    if (method.ReturnType == typeof(void))
+                        return JSObject.undefined;
+                    return Proxy(res);
                 }
                 catch (Exception e)
                 {
@@ -380,8 +364,8 @@ namespace NiL.JS.Core
                         {
                             ValueType = ObjectValueType.Property,
                             oValue = new Statement[] { 
-                                    pinfo.CanWrite ? convert(pinfo.GetSetMethod()).oValue as Statement : null,
-                                    pinfo.CanRead ? convert(pinfo.GetGetMethod()).oValue as Statement : null 
+                                    pinfo.CanWrite ? convert(pinfo.GetSetMethod(true)).oValue as Statement : null,
+                                    pinfo.CanRead ? convert(pinfo.GetGetMethod(true)).oValue as Statement : null 
                                 }
                         };
                         break;
@@ -393,6 +377,13 @@ namespace NiL.JS.Core
             cache[name] = r;
             r.attributes |= ObjectAttributes.DontDelete | ObjectAttributes.DontEnum;
             return r;
+        }
+
+        private static JSObject toStringObj = new CallableField(toString);
+
+        private static JSObject toString(Context context, JSObject args)
+        {
+            return (context.thisBind.firstContainer ?? context.thisBind).oValue.ToString();
         }
     }
 }

@@ -5,7 +5,14 @@ namespace NiL.JS.Statements.Operators
 {
     internal class Assign : Operator
     {
-        private static JSObject[] setterArgs = new JSObject[1];
+        private static JSObject setterArgs = new JSObject(true) { ValueType = ObjectValueType.Object, oValue = "[object Arguments]" };
+        private static JSObject setterArg = new JSObject();
+
+        static Assign()
+        {
+            setterArgs.fields["length"] = new JSObject() { iValue = 1, ValueType = ObjectValueType.Int, assignCallback = JSObject.ProtectAssignCallback };
+            setterArgs.fields["0"] = setterArg;
+        }
 
         public Assign(Statement first, Statement second)
             : base(first, second)
@@ -21,7 +28,9 @@ namespace NiL.JS.Statements.Operators
                 var setter = (field.oValue as Statement[])[0];
                 if (setter != null)
                 {
-                    setterArgs[0] = val;
+                    setterArg.assignCallback = null;
+                    setterArg.Assign(val);
+                    setterArg.assignCallback = JSObject.ProtectAssignCallback;
                     setter.Invoke(context, setterArgs);
                 }
             }

@@ -62,7 +62,7 @@ namespace NiL.JS.Statements
                 else
                 {
                     if (Parser.ValidateName(code, ref i, true))
-                        flds.Add(Parser.Unescape(code.Substring(s, i - s)));
+                        flds.Add(Tools.Unescape(code.Substring(s, i - s)));
                     else if (Parser.ValidateValue(code, ref i, true))
                     {
                         string value = code.Substring(s, i - s);

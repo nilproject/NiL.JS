@@ -37,6 +37,7 @@ namespace NiL.JS.Statements
                 Message = "",
                 Statement = new WhileStatement()
                 {
+
                     body = body,
                     condition = condition,
                     labels = state.Labels.GetRange(state.Labels.Count - labelsCount, labelsCount)
@@ -48,12 +49,15 @@ namespace NiL.JS.Statements
         {
             while ((bool)condition.Invoke(context))
             {
+
                 body.Invoke(context);
                 if (context.abort != AbortType.None)
                 {
+
                     bool _break = (context.abort > AbortType.Continue) || ((context.abortInfo != null) && (labels.IndexOf(context.abortInfo.oValue as string) == -1));
                     if (context.abort < AbortType.Return && ((context.abortInfo == null) || (labels.IndexOf(context.abortInfo.oValue as string) != -1)))
                     {
+
                         context.abort = AbortType.None;
                         context.abortInfo = null;
                     }

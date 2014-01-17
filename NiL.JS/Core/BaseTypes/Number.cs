@@ -62,6 +62,7 @@ namespace NiL.JS.Core.BaseTypes
             ValueType = ObjectValueType.Int;
             switch(obj.ValueType)
             {
+                case ObjectValueType.Bool:
                 case ObjectValueType.Int:
                     {
                         iValue = obj.iValue;
@@ -144,7 +145,7 @@ namespace NiL.JS.Core.BaseTypes
                     }
                 case ObjectValueType.Object:
                     {
-                        digits = digits.ToPrimitiveValue_Value_String(new Context(Context.globalContext));
+                        digits = digits.GetField("0", true).ToPrimitiveValue_Value_String(new Context(Context.globalContext));
                         if (digits.ValueType == ObjectValueType.String)
                             goto case ObjectValueType.String;
                         if (digits.ValueType == ObjectValueType.Int)
@@ -208,7 +209,7 @@ namespace NiL.JS.Core.BaseTypes
                     }
                 case ObjectValueType.Object:
                     {
-                        digits = digits.ToPrimitiveValue_Value_String(new Context(Context.globalContext));
+                        digits = digits.GetField("0", true).ToPrimitiveValue_Value_String(new Context(Context.globalContext));
                         if (digits.ValueType == ObjectValueType.String)
                             goto case ObjectValueType.String;
                         if (digits.ValueType == ObjectValueType.Int)
@@ -268,7 +269,7 @@ namespace NiL.JS.Core.BaseTypes
                     }
                 case ObjectValueType.Object:
                     {
-                        digits = digits.ToPrimitiveValue_Value_String(new Context(Context.globalContext));
+                        digits = digits.GetField("0", true).ToPrimitiveValue_Value_String(new Context(Context.globalContext));
                         if (digits.ValueType == ObjectValueType.String)
                             goto case ObjectValueType.String;
                         if (digits.ValueType == ObjectValueType.Int)

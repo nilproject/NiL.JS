@@ -15,11 +15,11 @@ namespace NiL.JS.Statements
                 return new ParseResult();
             if (state.AllowContinue <= 0)
                 throw new ArgumentException();
-            while (char.IsWhiteSpace(code[i]) && !Parser.isLineTerminator(code[i])) i++;
+            while (char.IsWhiteSpace(code[i]) && !Tools.isLineTerminator(code[i])) i++;
             int sl = i;
             JSObject label = null;
             if (Parser.ValidateName(code, ref i))
-                label = Parser.Unescape(code.Substring(sl, i - sl));
+                label = Tools.Unescape(code.Substring(sl, i - sl));
             index = i;
             return new ParseResult()
             {

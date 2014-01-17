@@ -30,54 +30,54 @@ namespace NiL.JS.Core.Modules
 
         public static JSObject abs(JSObject[] args)
         {
-            return System.Math.Abs(Tools.jsobjectToDouble(args.Length > 0 ? args[0] : null));
+            return System.Math.Abs(Tools.JSObjectToDouble(args.Length > 0 ? args[0] : null));
         }
 
         public static JSObject acos(JSObject[] args)
         {
-            return System.Math.Acos(Tools.jsobjectToDouble(args.Length > 0 ? args[0] : null));
+            return System.Math.Acos(Tools.JSObjectToDouble(args.Length > 0 ? args[0] : null));
         }
 
         public static JSObject asin(JSObject[] args)
         {
-            return System.Math.Asin(Tools.jsobjectToDouble(args.Length > 0 ? args[0] : null));
+            return System.Math.Asin(Tools.JSObjectToDouble(args.Length > 0 ? args[0] : null));
         }
 
         public static JSObject atan(JSObject[] args)
         {
-            return System.Math.Atan(Tools.jsobjectToDouble(args.Length > 0 ? args[0] : null));
+            return System.Math.Atan(Tools.JSObjectToDouble(args.Length > 0 ? args[0] : null));
         }
 
         public static JSObject atan2(JSObject[] args)
         {
             if (args.Length < 2)
                 return double.NaN;
-            return System.Math.Atan2(Tools.jsobjectToDouble(args[0]), Tools.jsobjectToDouble(args[1]));
+            return System.Math.Atan2(Tools.JSObjectToDouble(args[0]), Tools.JSObjectToDouble(args[1]));
         }
 
         public static JSObject ceil(JSObject[] args)
         {
-            return System.Math.Ceiling(Tools.jsobjectToDouble(args.Length > 0 ? args[0] : null));
+            return System.Math.Ceiling(Tools.JSObjectToDouble(args.Length > 0 ? args[0] : null));
         }
 
         public static JSObject cos(JSObject[] args)
         {
-            return System.Math.Cos(Tools.jsobjectToDouble(args.Length > 0 ? args[0] : null));
+            return System.Math.Cos(Tools.JSObjectToDouble(args.Length > 0 ? args[0] : null));
         }
 
         public static JSObject exp(JSObject[] args)
         {
-            return System.Math.Exp(Tools.jsobjectToDouble(args.Length > 0 ? args[0] : null));
+            return System.Math.Exp(Tools.JSObjectToDouble(args.Length > 0 ? args[0] : null));
         }
 
         public static JSObject floor(JSObject[] args)
         {
-            return System.Math.Floor(Tools.jsobjectToDouble(args.Length > 0 ? args[0] : null));
+            return System.Math.Floor(Tools.JSObjectToDouble(args.Length > 0 ? args[0] : null));
         }
 
         public static JSObject log(JSObject[] args)
         {
-            return System.Math.Log(Tools.jsobjectToDouble(args.Length > 0 ? args[0] : null));
+            return System.Math.Log(Tools.JSObjectToDouble(args.Length > 0 ? args[0] : null));
         }
 
         public static JSObject max(JSObject[] args)
@@ -87,7 +87,7 @@ namespace NiL.JS.Core.Modules
             double res = double.MinValue;
             for (int i = 0; i < args.Length; i++)
             {
-                var t = Tools.jsobjectToDouble(args[i]);
+                var t = Tools.JSObjectToDouble(args[i]);
                 if (double.IsNaN(t))
                     return double.NaN;
                 res = System.Math.Max(res, t);
@@ -99,10 +99,10 @@ namespace NiL.JS.Core.Modules
         {
             if (args.Length == 0)
                 return double.NaN;
-            double res = double.MinValue;
+            double res = double.MaxValue;
             for (int i = 0; i < args.Length; i++)
             {
-                var t = Tools.jsobjectToDouble(args[i]);
+                var t = Tools.JSObjectToDouble(args[i]);
                 if (double.IsNaN(t))
                     return double.NaN;
                 res = System.Math.Min(res, t);
@@ -114,7 +114,7 @@ namespace NiL.JS.Core.Modules
         {
             if (args.Length < 2)
                 return double.NaN;
-            return System.Math.Pow(Tools.jsobjectToDouble(args[0]), Tools.jsobjectToDouble(args[1]));
+            return System.Math.Pow(Tools.JSObjectToDouble(args[0]), Tools.JSObjectToDouble(args[1]));
         }
 
         public static JSObject random()
@@ -124,22 +124,22 @@ namespace NiL.JS.Core.Modules
 
         public static JSObject round(JSObject[] args)
         {
-            return (int)System.Math.Round(Tools.jsobjectToDouble(args.Length > 0 ? args[0] : null));
+            return (int)System.Math.Round(Tools.JSObjectToDouble(args.Length > 0 ? args[0] : null));
         }
 
         public static JSObject sin(JSObject[] args)
         {
-            return System.Math.Sin(Tools.jsobjectToDouble(args.Length > 0 ? args[0] : null));
+            return System.Math.Sin(Tools.JSObjectToDouble(args.Length > 0 ? args[0] : null));
         }
 
         public static JSObject sqrt(JSObject[] args)
         {
-            return System.Math.Sqrt(Tools.jsobjectToDouble(args.Length > 0 ? args[0] : null));
+            return System.Math.Sqrt(Tools.JSObjectToDouble(args.Length > 0 ? args[0] : null));
         }
 
         public static JSObject tan(JSObject[] args)
         {
-            return System.Math.Tan(Tools.jsobjectToDouble(args.Length > 0 ? args[0] : null));
+            return System.Math.Tan(Tools.JSObjectToDouble(args.Length > 0 ? args[0] : null));
         }
 
         #region Exclusives
@@ -148,35 +148,35 @@ namespace NiL.JS.Core.Modules
         {
             if (args.Length < 2)
                 return double.NaN;
-            return System.Math.IEEERemainder(Tools.jsobjectToDouble(args[0]), Tools.jsobjectToDouble(args[1]));
+            return System.Math.IEEERemainder(Tools.JSObjectToDouble(args[0]), Tools.JSObjectToDouble(args[1]));
         }
 
         public static JSObject sign(JSObject[] args)
         {
             if (args.Length < 1)
                 return double.NaN;
-            return System.Math.Sign(Tools.jsobjectToDouble(args[0]));
+            return System.Math.Sign(Tools.JSObjectToDouble(args[0]));
         }
 
         public static JSObject sinh(JSObject[] args)
         {
             if (args.Length < 1)
                 return double.NaN;
-            return System.Math.Sinh(Tools.jsobjectToDouble(args[0]));
+            return System.Math.Sinh(Tools.JSObjectToDouble(args[0]));
         }
 
         public static JSObject tanh(JSObject[] args)
         {
             if (args.Length < 1)
                 return double.NaN;
-            return System.Math.Tanh(Tools.jsobjectToDouble(args[0]));
+            return System.Math.Tanh(Tools.JSObjectToDouble(args[0]));
         }
 
         public static JSObject trunc(JSObject[] args)
         {
             if (args.Length < 1)
                 return double.NaN;
-            return System.Math.Truncate(Tools.jsobjectToDouble(args[0]));
+            return System.Math.Truncate(Tools.JSObjectToDouble(args[0]));
         }
 
         #endregion

@@ -10,5 +10,13 @@ namespace NiL.JS.Core
         {
             Avatar = avatar;
         }
+
+        public override string Message
+        {
+            get
+            {
+                return Avatar.GetField("message", true, false).ToString();
+            }
+        }
     }
 }

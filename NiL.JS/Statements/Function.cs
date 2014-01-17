@@ -67,7 +67,7 @@ namespace NiL.JS.Statements
                 int n = i;
                 if (!Parser.ValidateName(code, ref i, true))
                     throw new ArgumentException("code (" + i + ")");
-                name = Parser.Unescape(code.Substring(n, i - n));
+                name = Tools.Unescape(code.Substring(n, i - n));
                 while (char.IsWhiteSpace(code[i])) i++;
                 if (code[i] != '(')
                     throw new ArgumentException("Invalid char at " + i + ": '" + code[i] + "'");
@@ -84,7 +84,7 @@ namespace NiL.JS.Statements
                 int n = i;
                 if (!Parser.ValidateName(code, ref i, true))
                     throw new ArgumentException("code (" + i + ")");
-                arguments.Add(Parser.Unescape(code.Substring(n, i - n)));
+                arguments.Add(Tools.Unescape(code.Substring(n, i - n)));
                 while (char.IsWhiteSpace(code[i])) i++;
             }
             switch (mode)

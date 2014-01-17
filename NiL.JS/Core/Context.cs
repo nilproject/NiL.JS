@@ -41,7 +41,7 @@ namespace NiL.JS.Core
             globalContext.GetField("eval").Assign(eval = new CallableField((cont, x) =>
             {
                 int i = 0;
-                string c = "{" + Parser.RemoveComments(x.GetField("0", true).ToString()) + "}";
+                string c = "{" + Tools.RemoveComments(x.GetField("0", true).ToString()) + "}";
                 var cb = CodeBlock.Parse(new ParsingState(c), ref i).Statement;
                 if (i != c.Length)
                     throw new System.ArgumentException("Invalid char");

@@ -36,7 +36,7 @@ namespace NiL.JS.Statements
                 string varName;
                 if (!Parser.ValidateName(code, ref i))
                     throw new ArgumentException();
-                varName = Parser.Unescape(code.Substring(start, i - start));
+                varName = Tools.Unescape(code.Substring(start, i - start));
                 res.varible = new VaribleDefineStatement(varName, new GetVaribleStatement(varName));
             }
             else

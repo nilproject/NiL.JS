@@ -6,9 +6,6 @@ namespace NiL.JS.Statements.Operators
 {
     internal class None : Operator
     {
-        public Statement First { get { return first; } }
-        public Statement Second { get { return second; } }
-
         public None(Statement first, Statement second)
             : base(first, second)
         {

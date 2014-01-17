@@ -38,14 +38,14 @@ namespace NiL.JS.Statements
                 int s = i;
                 if (!Parser.ValidateName(code, ref i, true))
                     throw new ArgumentException("invalid char " + code[i]);
-                string name = Parser.Unescape(code.Substring(s, i - s));
+                string name = Tools.Unescape(code.Substring(s, i - s));
                 names.Add(name);
-                while (char.IsWhiteSpace(code[i]) && !Parser.isLineTerminator(code[i])) i++;
-                if ((code[i] != ',') && (code[i] != ';') && (code[i] != '=') && (code[i] != '}') && (!Parser.isLineTerminator(code[i])))
+                while (char.IsWhiteSpace(code[i]) && !Tools.isLineTerminator(code[i])) i++;
+                if ((code[i] != ',') && (code[i] != ';') && (code[i] != '=') && (code[i] != '}') && (!Tools.isLineTerminator(code[i])))
                     throw new ArgumentException("code (" + i + ")");
                 initializator.Add(OperatorStatement.Parse(state, ref s, false).Statement);
                 i = s;
-                if ((code[i] != ',') && (code[i] != ';') && (code[i] != '=') && (code[i] != '}') && (!Parser.isLineTerminator(code[i])))
+                if ((code[i] != ',') && (code[i] != ';') && (code[i] != '=') && (code[i] != '}') && (!Tools.isLineTerminator(code[i])))
                     throw new ArgumentException("code (" + i + ")");
                 while (char.IsWhiteSpace(code[s])) s++;
                 if (code[s] == ',')
@@ -54,7 +54,7 @@ namespace NiL.JS.Statements
                     do i++; while (char.IsWhiteSpace(code[i]));
                 }
                 else
-                    while (char.IsWhiteSpace(code[i]) && !Parser.isLineTerminator(code[i])) i++;
+                    while (char.IsWhiteSpace(code[i]) && !Tools.isLineTerminator(code[i])) i++;
                 isDef = true;
             }
             if (!isDef)
