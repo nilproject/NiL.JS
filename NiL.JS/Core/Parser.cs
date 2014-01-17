@@ -300,127 +300,8 @@ namespace NiL.JS.Core
 
         internal static bool ValidateNumber(string code, ref int index, bool move)
         {
-            int i = index;
-            int sig = 1;
-            if (code[i] == '-' || code[i] == '+')
-                sig = 44 - code[i++];
-            bool h = false;
-            bool e = false;
-            bool d = false;
-            bool r = false;
-            bool n = false;
-            bool ch = true;
-            int s = i;
-            bool w = true;
-            while (w)
-            {
-                if (i >= code.Length)
-                {
-                    w = false;
-                    break;
-                }
-                switch (code[i])
-                {
-                    case '0':
-                    case '1':
-                    case '2':
-                    case '3':
-                    case '4':
-                    case '5':
-                    case '6':
-                    case '7':
-                    case '8':
-                    case '9':
-                        {
-                            r = true;
-                            n = true;
-                            break;
-                        }
-                    case 'A':
-                    case 'B':
-                    case 'C':
-                    case 'D':
-                    case 'F':
-                    case 'a':
-                    case 'b':
-                    case 'c':
-                    case 'd':
-                    case 'f':
-                        {
-                            if (!h || !ch)
-                            {
-                                i--;
-                                w = false;
-                                break;
-                            }
-                            e = false;
-                            n = true;
-                            r = true;
-                            break;
-                        }
-                    case 'x':
-                    case 'X':
-                        {
-                            if (h || !n || e || d || i - s != 1 || code[i - 1] != '0')
-                            {
-                                i--;
-                                w = false;
-                                break;
-                            }
-                            r = false;
-                            h = true;
-                            break;
-                        }
-                    case '.':
-                        {
-                            if (h || d || e)
-                            {
-                                i--;
-                                w = false;
-                                break;
-                            }
-                            r = true;
-                            d = true;
-                            break;
-                        }
-                    case 'E':
-                    case 'e':
-                        {
-                            if (e || !n)
-                            {
-                                i--;
-                                w = false;
-                                break;
-                            }
-                            r = true;
-                            e = !h;
-                            n = h;
-                            break;
-                        }
-                    case '+':
-                    case '-':
-                        {
-                            if (!e || !ch)
-                            {
-                                i--;
-                                w = false;
-                                break;
-                            }
-                            ch = false;
-                            break;
-                        }
-                    default:
-                        {
-                            i--;
-                            w = false;
-                            break;
-                        }
-                }
-                w &= ++i < code.Length;
-            }
-            if (r && move)
-                index = i;
-            return r;
+            double fictive = 0.0;
+            return ParseNumber(code, ref index, move, out fictive);
         }
 
         internal static bool ValidateRegex(string code, ref int index, bool move, bool except)
@@ -662,7 +543,7 @@ namespace NiL.JS.Core
                                 w = false;
                                 break;
                             }
-                            r = true;
+                            r = false;
                             h = true;
                             break;
                         }

@@ -28,30 +28,27 @@ namespace NiL.JS.Statements.Operators
                 var stat = (temp.oValue as Statement);
                 var args = second.Invoke(context);
                 var sps = args.oValue as Statement[];
-                if (sps != null)
-                {
-                    var newThisBind = context.thisBind;
-                    context.thisBind = oldThisBind;
-                    JSObject stmnts = new JSObject(true)
-                        {
-                            ValueType = ObjectValueType.Object,
-                            oValue = "[object Arguments]".Clone(),
-                            attributes = ObjectAttributes.DontDelete
-                        };
-                    var length = stmnts.GetField("length", false, true);
-                    length.ValueType = ObjectValueType.Int;
-                    length.iValue = sps.Length;
-                    length.Protect();
-                    length.attributes |= ObjectAttributes.DontEnum | ObjectAttributes.DontDelete;
-                    for (int i = 0; i < sps.Length; i++)
+                var newThisBind = context.thisBind;
+                context.thisBind = oldThisBind;
+                JSObject stmnts = new JSObject(true)
                     {
-                        var a = stmnts.GetField(i.ToString());
-                        a.Assign(sps[i].Invoke(context));
-                        a.attributes |= ObjectAttributes.DontDelete | ObjectAttributes.DontEnum;
-                    }
-                    context.thisBind = newThisBind;
-                    res = stat.Invoke(context, stmnts);
+                        ValueType = ObjectValueType.Object,
+                        oValue = "[object Arguments]".Clone(),
+                        attributes = ObjectAttributes.DontDelete
+                    };
+                var length = stmnts.GetField("length", false, true);
+                length.ValueType = ObjectValueType.Int;
+                length.iValue = sps == null ? 0 : sps.Length;
+                length.Protect();
+                length.attributes |= ObjectAttributes.DontEnum | ObjectAttributes.DontDelete;
+                for (int i = 0; i < length.iValue; i++)
+                {
+                    var a = stmnts.GetField(i.ToString());
+                    a.Assign(sps[i].Invoke(context));
+                    a.attributes |= ObjectAttributes.DontDelete | ObjectAttributes.DontEnum;
                 }
+                context.thisBind = newThisBind;
+                res = stat.Invoke(context, stmnts);
                 return res;
             }
             finally

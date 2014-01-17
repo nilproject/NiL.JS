@@ -168,63 +168,81 @@ namespace NiL.JS.Core
                 {
                     object[] args = null;
                     ConstructorInfo constructor = null;
-                    if (y == null || y.GetField("length").iValue == 0)
+                    var len = y.GetField("length").iValue;
+                    if (y == null || len == 0)
                         constructor = hostedType.GetConstructor(Type.EmptyTypes);
                     else
                     {
-                        Type[] argtypes = new[] { y.GetType() };
-                        if (y.GetField("length").iValue == 1)
+                        Type[] argtypes = null;
+                        argtypes = new[] { typeof(JSObject) };
+                        if (len == 1)
                         {
-                            argtypes[0] = typeof(JSObject);
                             constructor = hostedType.GetConstructor(argtypes);
-                            if (constructor == null)
-                            {
-                                var arg = y.GetField("0").Value;
-                                argtypes[0] = arg.GetType();
-                                constructor = hostedType.GetConstructor(argtypes);
-                                if (constructor != null)
-                                    args = new object[] { arg };
-                            }
-                            else
-                                args = new object[] { y.GetField("0", true) };
+                            if (constructor != null)
+                                args = new object[] { y };
                         }
-                        if (constructor == null || y.GetField("length").iValue > 1)
+
+                        argtypes[0] = typeof(object[]);
+                        constructor = hostedType.GetConstructor(argtypes);
+                        if (constructor != null)
                         {
-                            var len = y.GetField("length").iValue;
+                            args = new object[len];
+                            for (int i = 0; i < len; i++)
+                                args[i] = y.GetField(i.ToString(), true);
+                            args = new[] { args };
+                        }
+                        else
+                        {
                             argtypes = new Type[len];
                             for (int i = 0; i < len; i++)
                                 argtypes[i] = typeof(JSObject);
                             constructor = hostedType.GetConstructor(argtypes);
-                            if (constructor == null)
+                            if (constructor != null)
                             {
-                                argtypes[0] = y.GetType();
-                                constructor = hostedType.GetConstructor(argtypes);
-                                if (constructor == null)
-                                    constructor = hostedType.GetConstructor(Type.EmptyTypes);
-                                else
-                                    args = new object[] { y };
+                                args = new object[len];
+                                for (int i = 0; i < len; i++)
+                                    args[i] = y.GetField(i.ToString(), true);
                             }
                             else
                             {
-                                args = new object[len];
-                                for (int i = 0; i < args.Length; i++)
-                                    args[i] = y.GetField("0", true);
+                                for (int i = 0; i < len; i++)
+                                    argtypes[i] = y.GetField(i.ToString(), true).Value.GetType();
+                                constructor = hostedType.GetConstructor(argtypes);
+                                if (constructor == null)
+                                {
+                                    for (int i = 0; i < len; i++)
+                                        argtypes[i] = typeof(object);
+                                    constructor = hostedType.GetConstructor(argtypes);
+                                }
+                                if (constructor != null)
+                                {
+                                    args = new object[len];
+                                    for (int i = 0; i < len; i++)
+                                        args[i] = y.GetField(i.ToString(), true).Value;
+                                }
+                                else
+                                    constructor = hostedType.GetConstructor(Type.EmptyTypes);
                             }
                         }
                     }
                     var _this = x.thisBind;
-                    bool bynew = _this != null && _this.GetField("__proto__", true) != null && _this.GetField("__proto__", true).ValueType == ObjectValueType.Object && _this.GetField("__proto__", true).oValue == type as object;
+                    JSObject thproto = null;
+                    bool bynew = false;
+                    if (_this != null)
+                    {
+                        thproto = (_this.firstContainer ?? _this).prototype;
+                        bynew = thproto.ValueType == ObjectValueType.Object && thproto.oValue == type as object;
+                    }
                     var obj = constructor.Invoke(args);
                     var res = obj is JSObject && !bynew ? obj as JSObject : new JSObject(false)
                     {
                         oValue = obj,
                         ValueType = ObjectValueType.Object
                     };
-                    if (!(res is Core.BaseTypes.EmbeddedType))
-                        res.GetField("constructor").Assign(this);
+                    res.GetField("constructor").Assign(this);
                     res.GetField("__proto__").Assign(proto);
                     if (bynew)
-                        _this.firstContainer = res;
+                        _this.Assign(res);
                     return res;
                 });
                 constructors[type] = this;

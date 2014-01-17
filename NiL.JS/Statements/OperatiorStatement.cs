@@ -1870,11 +1870,10 @@ namespace NiL.JS.Statements
             JSObject _this = new JSObject()
             {
                 ValueType = ObjectValueType.Object,
-                oValue = new object()
+                oValue = temp is TypeProxy ? null : new object()
             };
-            _this.GetField("__proto__").Assign(temp.GetField("prototype", true));
-            _this.GetField("constructor").Assign(temp);
-            var stat = temp.oValue as Statement;
+            (_this.prototype = new JSObject()).Assign(temp.GetField("prototype", true));
+            (_this.constructor = new JSObject()).Assign(temp);
             var otb = context.thisBind;
             context.thisBind = _this;
             try
