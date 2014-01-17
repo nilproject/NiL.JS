@@ -50,11 +50,73 @@ namespace NiL.JS.Statements.Operators
                     {
                         string left = temp.oValue as string;
                         temp = second.Invoke(context);
-                        switch(temp.ValueType)
+                        switch (temp.ValueType)
                         {
+                            case ObjectValueType.Bool:
+                            case ObjectValueType.Int:
+                                {
+                                    double d = 0;
+                                    int i = 0;
+                                    if (Parser.ParseNumber(left, ref i, true, out d) && (i == left.Length))
+                                        tempResult.iValue = d < temp.iValue ? 1 : 0;
+                                    else
+                                        tempResult.iValue = 0;
+                                    break;
+                                }
+                            case ObjectValueType.Double:
+                                {
+                                    double d = 0;
+                                    int i = 0;
+                                    if (Parser.ParseNumber(left, ref i, true, out d) && (i == left.Length))
+                                        tempResult.iValue = d < temp.dValue ? 1 : 0;
+                                    else
+                                        tempResult.iValue = 0;
+                                    break;
+                                }
                             case ObjectValueType.String:
                                 {
                                     tempResult.iValue = string.Compare(left, temp.oValue as string) < 0 ? 1 : 0;
+                                    break;
+                                }
+                            case ObjectValueType.Object:
+                                {
+                                    temp = temp.ToPrimitiveValue_Value_String(context);
+                                    switch (temp.ValueType)
+                                    {
+                                        case ObjectValueType.Int:
+                                        case ObjectValueType.Bool:
+                                            {
+                                                double t = 0.0;
+                                                int i = 0;
+                                                if (Parser.ParseNumber(left, ref i, false, out t))
+                                                    tempResult.iValue = t < temp.iValue ? 1 : 0;
+                                                else goto
+                                                    case ObjectValueType.String;
+                                                break;
+                                            }
+                                        case ObjectValueType.Double:
+                                            {
+                                                double t = 0.0;
+                                                int i = 0;
+                                                if (Parser.ParseNumber(left, ref i, false, out t))
+                                                    tempResult.iValue = t < temp.dValue ? 1 : 0;
+                                                else goto
+                                                    case ObjectValueType.String;
+                                                break;
+                                            }
+                                        case ObjectValueType.String:
+                                            {
+                                                tempResult.iValue = string.Compare(left, temp.Value.ToString()) < 0 ? 1 : 0;
+                                                break;
+                                            }
+                                        default: throw new NotImplementedException();
+                                    }
+                                    break;
+                                }
+                            case ObjectValueType.Undefined:
+                            case ObjectValueType.NotExistInObject:
+                                {
+                                    tempResult.iValue = 0;
                                     break;
                                 }
                             default: throw new NotImplementedException();

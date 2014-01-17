@@ -38,15 +38,15 @@ namespace NiL.JS.Core
         private static readonly System.Reflection.MemberInfo DefaultGetter = typeof(JSObject).GetMethod("DefaultFieldGetter", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
 
         [Modules.Hidden]
+        internal static readonly Func<bool> ErrorAssignCallback = () => { throw new InvalidOperationException("Invalid left-hand side"); };
+        [Modules.Hidden]
+        internal static readonly Func<bool> ProtectAssignCallback = () => { return false; };
+        [Modules.Hidden]
         private static readonly Number tempNumber = new Number() { attributes = ObjectAttributes.DontDelete };
         [Modules.Hidden]
         private static readonly BaseTypes.String tempString = new BaseTypes.String() { attributes = ObjectAttributes.DontDelete };
         [Modules.Hidden]
         private static readonly IEnumerator<string> EmptyEnumerator = ((IEnumerable<string>)(new string[0])).GetEnumerator();
-        [Modules.Hidden]
-        internal static readonly Func<bool> ErrorAssignCallback = () => { throw new InvalidOperationException("Invalid left-hand side"); };
-        [Modules.Hidden]
-        internal static readonly Func<bool> ProtectAssignCallback = () => { return false; };
         [Modules.Hidden]
         internal static readonly JSObject undefined = new JSObject() { ValueType = ObjectValueType.Undefined };
         [Modules.Hidden]
@@ -470,13 +470,7 @@ namespace NiL.JS.Core
                 GetField("__proto__", true, true);
             if (firstContainer != null)
                 return firstContainer.ToString();
-            var tstr = GetField("toString", true);
-            if (tstr.ValueType == ObjectValueType.Statement)
-                return (tstr.oValue as ContextStatement).Invoke(null).oValue as string;
-            tstr = GetField("valueOf", true);
-            if (tstr.ValueType == ObjectValueType.Statement)
-                return (tstr.oValue as ContextStatement).Invoke(null).Value.ToString();
-            return "" + (Value ?? "null");
+            return ToPrimitiveValue_String_Value(new Context(Context.globalContext) { thisBind = this }).Value.ToString();
         }
 
         [Modules.Hidden]

@@ -165,6 +165,18 @@ namespace NiL.JS.Core
                         }
                         else
                         {
+                            argtypes[0] = typeof(JSObject[]);
+                            constructor = hostedType.GetConstructor(argtypes);
+                            if (constructor != null)
+                            {
+                                args = new JSObject[len];
+                                for (int i = 0; i < len; i++)
+                                    args[i] = y.GetField(i.ToString(), true);
+                                args = new[] { args };
+                            }
+                        }
+                        if (constructor == null)
+                        {
                             argtypes = new Type[len];
                             for (int i = 0; i < len; i++)
                                 argtypes[i] = typeof(JSObject);

@@ -29,7 +29,7 @@ namespace NiL.JS.Core.BaseTypes
         public String(JSObject[] s)
         {
             if (s.Length > 0)
-                oValue = s[0].Value.ToString();
+                oValue = s[0].ToString();
             else
                 oValue = "";
             ValueType = ObjectValueType.String;
