@@ -174,11 +174,11 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * 3 * i; }
         {
             NiL.JS.Core.Context.GlobalContext.GetField("platform").Assign("NiL.JS");
             //runFile(@"tests.js");
-            //runFile(@"C:\Users\Дмитрий\Documents\Projects\NiL.JS\NiL.JSTest\tests\Conformance\09_Type_Conversion\9.3_ToNumber\S9.3_A5_T1.js");
+            //runFile(@"C:\Users\Дмитрий\Documents\Projects\NiL.JS\NiL.JSTest\tests\Conformance\07_Lexical_Conventions\7.4_Comments\S7.4_A6.js");
             //benchmark();
             //featureSupportTest();
-            runFile(@"ftest.js");
-            //sputnicTests();
+            //runFile(@"ftest.js");
+            sputnicTests();
             //testEx();
 
             GC.Collect();

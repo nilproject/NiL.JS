@@ -6,6 +6,9 @@ namespace NiL.JS.Core.Modules
 {
     internal static class Math
     {
+        [Hidden]
+        private static Number result = new Number(0.0);
+
         private static class _Random
         {
             public readonly static Random random = new Random((int)DateTime.Now.Ticks);
@@ -72,7 +75,9 @@ namespace NiL.JS.Core.Modules
 
         public static JSObject floor(JSObject[] args)
         {
-            return System.Math.Floor(Tools.JSObjectToDouble(args.Length > 0 ? args[0] : null));
+            result.dValue = System.Math.Floor(Tools.JSObjectToDouble(args.Length > 0 ? args[0] : null));
+            result.ValueType = JSObjectType.Double;
+            return result;
         }
 
         public static JSObject log(JSObject[] args)
@@ -114,7 +119,9 @@ namespace NiL.JS.Core.Modules
         {
             if (args.Length < 2)
                 return double.NaN;
-            return System.Math.Pow(Tools.JSObjectToDouble(args[0]), Tools.JSObjectToDouble(args[1]));
+            result.dValue = System.Math.Pow(Tools.JSObjectToDouble(args[0]), Tools.JSObjectToDouble(args[1]));
+            result.ValueType = JSObjectType.Double;
+            return result;
         }
 
         public static JSObject random()

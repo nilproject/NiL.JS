@@ -6,6 +6,9 @@ namespace NiL.JS.Core.BaseTypes
     [Immutable]
     internal class String : EmbeddedType
     {
+        [Hidden]
+        private static readonly String result = new String();
+
         public String()
             : this("")
         {
@@ -108,7 +111,8 @@ namespace NiL.JS.Core.BaseTypes
                 if (Tools.ParseNumber((string)charCode, ref chc, false, out d))
                     chc = (int)d;
             }
-            return new String() { oValue = ((char)chc).ToString() };
+            result.oValue = ((char)chc).ToString();
+            return result;
         }
 
         public JSObject indexOf(JSObject[] args)

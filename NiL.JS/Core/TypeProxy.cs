@@ -285,20 +285,38 @@ namespace NiL.JS.Core
             {
                 if (method.ReturnType == typeof(JSObject))
                 {
-                    if ((method.GetParameters().Length == 1) && (method.GetParameters()[0].ParameterType == typeof(JSObject)))
+                    if (method.GetParameters().Length == 1)
                     {
-                        var dinv = (Func<JSObject, JSObject>)Delegate.CreateDelegate(typeof(Func<JSObject, JSObject>), null, method);
-                        result = new CallableField((th, args) =>
+                        if (method.GetParameters()[0].ParameterType == typeof(JSObject))
                         {
-                            return dinv(args);
-                        });
-                        return result;
+                            var dinv = (Func<JSObject, JSObject>)Delegate.CreateDelegate(typeof(Func<JSObject, JSObject>), null, method);
+                            result = new CallableField((th, args) =>
+                            {
+                                return dinv(args);
+                            });
+                            return result;
+                        }
+                        if (method.GetParameters()[0].ParameterType == typeof(JSObject[]))
+                        {
+                            var dinv = (Func<JSObject[], JSObject>)Delegate.CreateDelegate(typeof(Func<JSObject[], JSObject>), null, method);
+                            JSObject[] cargs = null;
+                            result = new CallableField((th, args) =>
+                            {
+                                var len = args.GetField("length", true, false).iValue;
+                                if (cargs == null || cargs.Length != len)
+                                    cargs = new JSObject[len];
+                                for (int i = 0; i < len; i++)
+                                    cargs[i] = args.GetField(i.ToString(), true, true);
+                                return dinv(cargs);
+                            });
+                            return result;
+                        }
                     }
                     else if (method.GetParameters().Length == 0)
                     {
                         var dinv = (Func<JSObject>)Delegate.CreateDelegate(typeof(Func<JSObject>), null, method);
                         result = new CallableField((th, args) =>
-                        {
+                        {                            
                             return dinv();
                         });
                         return result;
@@ -337,6 +355,8 @@ namespace NiL.JS.Core
         public override JSObject GetField(string name, bool fast, bool own)
         {
             JSObject r = null;
+            if (fields.TryGetValue(name, out r) && r.ValueType > JSObjectType.NotExistInObject)
+                return r;
             var m = hostedType.GetMember(name, BindingFlags.Public | (ValueType == JSObjectType.Function ? BindingFlags.Static : BindingFlags.Instance) | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy);
             if (m.Length > 1)
                 throw new InvalidOperationException("Too many fields with name " + name);
@@ -416,6 +436,7 @@ namespace NiL.JS.Core
             if (m[0].GetCustomAttributes(typeof(ProtectedAttribute), false).Length != 0)
                 r.Protect();
             r.attributes |= ObjectAttributes.DontDelete | ObjectAttributes.DontEnum;
+            fields[name] = r;
             return r;
         }
 
