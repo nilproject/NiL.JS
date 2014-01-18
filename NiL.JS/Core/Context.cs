@@ -36,12 +36,14 @@ namespace NiL.JS.Core
             globalContext.AttachModule(typeof(BaseTypes.Array));
             globalContext.AttachModule(typeof(BaseTypes.String));
             globalContext.AttachModule(typeof(BaseTypes.Number));
+            globalContext.AttachModule(typeof(BaseTypes.Function));
+            globalContext.AttachModule(typeof(BaseTypes.Boolean));
 
             #region Base Function
             globalContext.GetField("eval").Assign(eval = new CallableField((cont, x) =>
             {
                 int i = 0;
-                string c = "{" + Tools.RemoveComments(x.GetField("0", true).ToString()) + "}";
+                string c = "{" + Tools.RemoveComments(x.GetField("0", true, false).ToString()) + "}";
                 var cb = CodeBlock.Parse(new ParsingState(c), ref i).Statement;
                 if (i != c.Length)
                     throw new System.ArgumentException("Invalid char");
@@ -51,16 +53,16 @@ namespace NiL.JS.Core
             }));
             globalContext.GetField("isNaN").Assign(new CallableField((t, x) =>
             {
-                var r = x.GetField("0", true);
-                if (r.ValueType == ObjectValueType.Double)
+                var r = x.GetField("0", true, false);
+                if (r.ValueType == JSObjectType.Double)
                     return double.IsNaN(r.dValue);
-                if (r.ValueType == ObjectValueType.Bool || r.ValueType == ObjectValueType.Int || r.ValueType == ObjectValueType.Date)
+                if (r.ValueType == JSObjectType.Bool || r.ValueType == JSObjectType.Int || r.ValueType == JSObjectType.Date)
                     return false;
-                if (r.ValueType == ObjectValueType.String)
+                if (r.ValueType == JSObjectType.String)
                 {
                     double d = 0;
                     int i = 0;
-                    if (Parser.ParseNumber(r.oValue as string, ref i, false, out d))
+                    if (Tools.ParseNumber(r.oValue as string, ref i, false, out d))
                         return double.IsNaN(d);
                     return true;
                 }
@@ -68,60 +70,53 @@ namespace NiL.JS.Core
             }));
             #endregion
             #region Base types
-            globalContext.GetField("Boolean").Assign(new CallableField((t, x) =>
-            {
-                var temp = x.GetField("0", true);
-                if (temp.ValueType == ObjectValueType.Bool)
-                    return temp;
-                return (bool)temp;
-            }));
             globalContext.GetField("RegExp").Assign(new CallableField((t, x) =>
             {
-                var pattern = x.GetField("0", true).Value.ToString();
-                var flags = x.GetField("length").iValue > 1 ? x.GetField("1", true).Value.ToString() : "";
+                var pattern = x.GetField("0", true, false).Value.ToString();
+                var flags = x.GetField("length", false, true).iValue > 1 ? x.GetField("1", true, false).Value.ToString() : "";
                 var re = new System.Text.RegularExpressions.Regex(pattern,
                     System.Text.RegularExpressions.RegexOptions.ECMAScript
                     | (flags.IndexOf('i') != -1 ? System.Text.RegularExpressions.RegexOptions.IgnoreCase : 0)
                     | (flags.IndexOf('m') != -1 ? System.Text.RegularExpressions.RegexOptions.Multiline : 0)
                     );
                 JSObject res = new JSObject();
-                res.prototype = globalContext.GetField("RegExp").GetField("prototype", true);
-                res.ValueType = ObjectValueType.Object;
+                res.prototype = globalContext.GetField("RegExp").GetField("prototype", true, false);
+                res.ValueType = JSObjectType.Object;
                 res.oValue = re;
-                var field = res.GetField("global");
+                var field = res.GetField("global", false, true);
                 field.Protect();
-                field.ValueType = ObjectValueType.Bool;
+                field.ValueType = JSObjectType.Bool;
                 field.iValue = flags.IndexOf('g') != -1 ? 1 : 0;
-                field = res.GetField("ignoreCase");
+                field = res.GetField("ignoreCase", false, false);
                 field.Protect();
-                field.ValueType = ObjectValueType.Bool;
+                field.ValueType = JSObjectType.Bool;
                 field.iValue = (re.Options & System.Text.RegularExpressions.RegexOptions.IgnoreCase) != 0 ? 1 : 0;
-                field = res.GetField("multiline");
+                field = res.GetField("multiline", false, true);
                 field.Protect();
-                field.ValueType = ObjectValueType.Bool;
+                field.ValueType = JSObjectType.Bool;
                 field.iValue = (re.Options & System.Text.RegularExpressions.RegexOptions.Multiline) != 0 ? 1 : 0;
-                field = res.GetField("source");
+                field = res.GetField("source", false, true);
                 field.Assign(pattern);
                 field.Protect();
                 return res;
             }));
-            var rep = globalContext.GetField("RegExp").GetField("prototype");
+            var rep = globalContext.GetField("RegExp").GetField("prototype", false, true);
             rep.Assign(null);
             rep.prototype = BaseObject.Prototype;
-            rep.ValueType = ObjectValueType.Object;
+            rep.ValueType = JSObjectType.Object;
             rep.oValue = new object();
-            rep.GetField("exec").Assign(new CallableField((cont, args) =>
+            rep.GetField("exec", false, true).Assign(new CallableField((cont, args) =>
             {
-                if (args.GetField("length").iValue == 0)
-                    return new JSObject() { ValueType = ObjectValueType.Object };
-                var m = ((cont.thisBind ?? cont.GetField("this")).oValue as System.Text.RegularExpressions.Regex).Match(args.GetField("0", true).Value.ToString());
+                if (args.GetField("length", false, true).iValue == 0)
+                    return new JSObject() { ValueType = JSObjectType.Object };
+                var m = ((cont.thisBind ?? cont.GetField("this")).oValue as System.Text.RegularExpressions.Regex).Match(args.GetField("0", true, false).Value.ToString());
                 var mres = new JSObject();
-                mres.ValueType = ObjectValueType.Object;
+                mres.ValueType = JSObjectType.Object;
                 if (m.Groups.Count != 1)
                 {
                     mres.oValue = new string[] { m.Groups[1].Value };
-                    mres.GetField("index").Assign(m.Groups[1].Index);
-                    mres.GetField("input").Assign(m.Groups[0].Value);
+                    mres.GetField("index", false, true).Assign(m.Groups[1].Index);
+                    mres.GetField("input", false, true).Assign(m.Groups[0].Value);
                 }
                 return mres;
             }));
@@ -157,7 +152,7 @@ namespace NiL.JS.Core
 
         private JSObject define(string name)
         {
-            var res = new JSObject() { ValueType = ObjectValueType.NotExist };
+            var res = new JSObject() { ValueType = JSObjectType.NotExist };
             res.assignCallback = () =>
             {
                 if (fields == null)
@@ -234,8 +229,8 @@ namespace NiL.JS.Core
                 return scriptRoot.define(name);
             else
             {
-                if (res.ValueType == ObjectValueType.NotExistInObject)
-                    res.ValueType = ObjectValueType.NotExist;
+                if (res.ValueType == JSObjectType.NotExistInObject)
+                    res.ValueType = JSObjectType.NotExist;
                 if ((c != this) && (fields != null))
                     fields[name] = res;
             }

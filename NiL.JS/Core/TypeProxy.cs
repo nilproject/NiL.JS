@@ -8,6 +8,42 @@ namespace NiL.JS.Core
 {
     public sealed class TypeProxy : JSObject
     {
+        private static readonly Dictionary<Type, TypeProxy> constructors = new Dictionary<Type, TypeProxy>();
+        private static readonly Dictionary<Type, TypeProxy> prototypes = new Dictionary<Type, TypeProxy>();
+        private static readonly NiL.JS.Core.BaseTypes.String @string = new BaseTypes.String();
+        private static readonly NiL.JS.Core.BaseTypes.Number number = new Number();
+        private static readonly NiL.JS.Core.BaseTypes.Boolean boolean = new BaseTypes.Boolean();
+
+        private static JSObject embeddedTypeConvert(JSObject source, Type targetType)
+        {
+            if (source.GetType() == targetType)
+                return source;
+            if (targetType == typeof(Number))
+            {
+                if (source.ValueType != JSObjectType.Int && source.ValueType != JSObjectType.Double)
+                    return null;
+                number.iValue = source.iValue;
+                number.dValue = source.dValue;
+                number.ValueType = source.ValueType;
+                return number;
+            }
+            else if (targetType == typeof(NiL.JS.Core.BaseTypes.String))
+            {
+                if (source.ValueType != JSObjectType.String)
+                    return null;
+                @string.oValue = source.oValue;
+                return @string;
+            }
+            else if (targetType == typeof(NiL.JS.Core.BaseTypes.Boolean))
+            {
+                if (source.ValueType != JSObjectType.Bool)
+                    return null;
+                boolean.iValue = source.iValue;
+                return boolean;
+            }
+            return null;
+        }
+
         private static object[] convertArgs(JSObject source, ParameterInfo[] targetTypes)
         {
             if (targetTypes.Length == 0)
@@ -19,7 +55,7 @@ namespace NiL.JS.Core
                     return new object[] { source };
                 if (targetTypes[0].ParameterType == typeof(JSObject[]))
                 {
-                    var len = source.GetField("length").iValue;
+                    var len = source.GetField("length", true, false).iValue;
                     res = new JSObject[len];
                     for (int i = 0; i < len; i++)
                         res[i] = source.GetField(i.ToString(), true, true);
@@ -28,7 +64,7 @@ namespace NiL.JS.Core
             }
             int targetCount = targetTypes.Length;
             if (source != null)
-                targetCount = System.Math.Min(targetCount, source.GetField("length").iValue);
+                targetCount = System.Math.Min(targetCount, source.GetField("length", true, false).iValue);
             res = new object[targetCount];
             for (int i = 0; i < targetCount; i++)
             {
@@ -58,9 +94,6 @@ namespace NiL.JS.Core
             return res;
         }
 
-        private static readonly Dictionary<Type, TypeProxy> constructors = new Dictionary<Type, TypeProxy>();
-        private static readonly Dictionary<Type, TypeProxy> prototypes = new Dictionary<Type, TypeProxy>();
-
         public static JSObject Proxy(object obj)
         {
             if (obj == null)
@@ -75,19 +108,17 @@ namespace NiL.JS.Core
                 return (string)obj;
             else if (obj is bool)
                 return (bool)obj;
-            else if (obj is ContextStatement)
-                return (JSObject)(ContextStatement)obj;
             else
             {
                 var type = obj.GetType();
-                var res = new JSObject(false) { oValue = obj, ValueType = ObjectValueType.Object };
+                var res = new JSObject(false) { oValue = obj, ValueType = JSObjectType.Object };
                 res.GetField("constructor", false, true).Assign(GetConstructor(type));
                 res.GetField("__proto__", false, true).Assign(GetPrototype(type));
                 return res;
             }
         }
 
-        public static JSObject GetPrototype(Type type)
+        public static TypeProxy GetPrototype(Type type)
         {
             TypeProxy prot = null;
             if (!prototypes.TryGetValue(type, out prot))
@@ -98,7 +129,7 @@ namespace NiL.JS.Core
             return prot;
         }
 
-        public static JSObject GetConstructor(Type type)
+        public static TypeProxy GetConstructor(Type type)
         {
             TypeProxy constructor = null;
             if (!constructors.TryGetValue(type, out constructor))
@@ -107,32 +138,34 @@ namespace NiL.JS.Core
         }
 
         private Type hostedType;
-        [NonSerialized]
-        private Dictionary<string, JSObject> cache;
 
-        private TypeProxy(Type type, bool fictive)
+        internal TypeProxy(Type type, bool fictive)
+            : base(true)
         {
             hostedType = type;
             oValue = type;
-            ValueType = ObjectValueType.Object;
-            assignCallback = ErrorAssignCallback;
-            cache = new Dictionary<string, JSObject>();
+            ValueType = JSObjectType.Proxy;
+            assignCallback = JSObject.ProtectAssignCallback;
+            fields["constructor"] = GetConstructor(hostedType);
             prototype = BaseObject.Prototype;
+            attributes |= ObjectAttributes.DontDelete | ObjectAttributes.DontEnum;
         }
 
         public TypeProxy(Type type)
         {
-            ValueType = ObjectValueType.Statement;
+            ValueType = JSObjectType.Function;
             hostedType = type;
             JSObject proto = null;
             TypeProxy exconst = null;
-            assignCallback = ErrorAssignCallback;
-            cache = new Dictionary<string, JSObject>();
+            assignCallback = JSObject.ProtectAssignCallback;
             prototype = BaseObject.Prototype;
+            attributes |= ObjectAttributes.DontDelete | ObjectAttributes.DontEnum;
             if (constructors.TryGetValue(type, out exconst))
             {
                 oValue = exconst.oValue;
-                DefaultFieldGetter("prototype", false, false).Assign(prototypes[type]);
+                proto = DefaultFieldGetter("prototype", false, false);
+                proto.Assign(prototypes[type]);
+                proto.attributes |= ObjectAttributes.DontEnum | ObjectAttributes.DontDelete;
             }
             else
             {
@@ -140,7 +173,7 @@ namespace NiL.JS.Core
                 {
                     object[] args = null;
                     ConstructorInfo constructor = null;
-                    var len = y.GetField("length").iValue;
+                    var len = y.GetField("length", false, false).iValue;
                     if (y == null || len == 0)
                         constructor = hostedType.GetConstructor(Type.EmptyTypes);
                     else
@@ -160,7 +193,7 @@ namespace NiL.JS.Core
                         {
                             args = new object[len];
                             for (int i = 0; i < len; i++)
-                                args[i] = y.GetField(i.ToString(), true);
+                                args[i] = y.GetField(i.ToString(), true, false);
                             args = new[] { args };
                         }
                         else
@@ -171,7 +204,7 @@ namespace NiL.JS.Core
                             {
                                 args = new JSObject[len];
                                 for (int i = 0; i < len; i++)
-                                    args[i] = y.GetField(i.ToString(), true);
+                                    args[i] = y.GetField(i.ToString(), true, false);
                                 args = new[] { args };
                             }
                         }
@@ -185,12 +218,12 @@ namespace NiL.JS.Core
                             {
                                 args = new object[len];
                                 for (int i = 0; i < len; i++)
-                                    args[i] = y.GetField(i.ToString(), true);
+                                    args[i] = y.GetField(i.ToString(), true, false);
                             }
                             else
                             {
                                 for (int i = 0; i < len; i++)
-                                    argtypes[i] = y.GetField(i.ToString(), true).Value.GetType();
+                                    argtypes[i] = y.GetField(i.ToString(), true, false).Value.GetType();
                                 constructor = hostedType.GetConstructor(argtypes);
                                 if (constructor == null)
                                 {
@@ -202,7 +235,7 @@ namespace NiL.JS.Core
                                 {
                                     args = new object[len];
                                     for (int i = 0; i < len; i++)
-                                        args[i] = y.GetField(i.ToString(), true).Value;
+                                        args[i] = y.GetField(i.ToString(), true, false).Value;
                                 }
                                 else
                                     constructor = hostedType.GetConstructor(Type.EmptyTypes);
@@ -214,8 +247,8 @@ namespace NiL.JS.Core
                     bool bynew = false;
                     if (_this != null)
                     {
-                        thproto = (_this.firstContainer ?? _this).prototype;
-                        bynew = thproto != null && thproto.ValueType == ObjectValueType.Object && thproto.oValue == type as object;
+                        thproto = _this.prototype;
+                        bynew = thproto != null && thproto.ValueType == JSObjectType.Proxy && thproto.oValue == type as object;
                     }
                     var obj = constructor.Invoke(args);
                     JSObject res = null;
@@ -229,10 +262,9 @@ namespace NiL.JS.Core
                         res = obj is JSObject ? obj as JSObject : new JSObject(false)
                         {
                             oValue = obj,
-                            ValueType = ObjectValueType.Object
+                            ValueType = JSObjectType.Object,
+                            prototype = proto
                         };
-                        res.GetField("constructor").Assign(this);
-                        res.GetField("__proto__").Assign(proto);
                     }
                     return res;
                 });
@@ -246,7 +278,7 @@ namespace NiL.JS.Core
             }
         }
 
-        private JSObject convert(MethodInfo method)
+        private JSObject ProxyMethod(MethodInfo method)
         {
             JSObject result = null;
             if (method.IsStatic)
@@ -273,11 +305,11 @@ namespace NiL.JS.Core
                     }
                 }
             }
-            result = new CallableField((context, args) =>
+            var cb = new CallableField((context, args) =>
             {
                 try
                 {
-                    var res = method.Invoke(getTargetObject(context), convertArgs(args, method.GetParameters()));
+                    var res = method.Invoke(getTargetObject(context, method.DeclaringType), convertArgs(args, method.GetParameters()));
                     if (method.ReturnType == typeof(void))
                         return JSObject.undefined;
                     return Proxy(res);
@@ -287,24 +319,25 @@ namespace NiL.JS.Core
                     throw e.InnerException ?? e;
                 }
             });
+            result = cb;
             return result;
         }
 
-        private object getTargetObject(Context context)
+        private object getTargetObject(Context context, Type targetType)
         {
-            if (ValueType == ObjectValueType.Statement)
+            if (ValueType == JSObjectType.Function)
                 return null;
-            object obj = context.thisBind.firstContainer ?? context.thisBind;
-            obj = obj is Core.BaseTypes.EmbeddedType ? obj : ((obj as JSObject).oValue);
+            object obj = context.thisBind;
+            if (obj is EmbeddedType)
+                return obj;
+            obj = embeddedTypeConvert(obj as JSObject, targetType) ?? context.thisBind.oValue;
             return obj;
         }
 
         public override JSObject GetField(string name, bool fast, bool own)
         {
             JSObject r = null;
-            if (cache.TryGetValue(name, out r) && r.ValueType >= ObjectValueType.Undefined)
-                return r;
-            var m = hostedType.GetMember(name, BindingFlags.Public | (ValueType == ObjectValueType.Statement ? BindingFlags.Static : BindingFlags.Instance) | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy);
+            var m = hostedType.GetMember(name, BindingFlags.Public | (ValueType == JSObjectType.Function ? BindingFlags.Static : BindingFlags.Instance) | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy);
             if (m.Length > 1)
                 throw new InvalidOperationException("Too many fields with name " + name);
             if (m.Length == 0 || m[0].GetCustomAttributes(typeof(HiddenAttribute), true).Length != 0)
@@ -330,8 +363,6 @@ namespace NiL.JS.Core
                                 return (string)res;
                             else if (res is bool)
                                 return (bool)res;
-                            else if (res is ContextStatement)
-                                return (JSObject)(ContextStatement)res;
                             else
                                 return TypeProxy.Proxy(res);
                         });
@@ -340,7 +371,7 @@ namespace NiL.JS.Core
                 case MemberTypes.Method:
                     {
                         var method = (MethodInfo)m[0];
-                        r = convert(method);
+                        r = ProxyMethod(method);
                         break;
                     }
                 case MemberTypes.Field:
@@ -361,8 +392,6 @@ namespace NiL.JS.Core
                                 r = (string)res;
                             else if (res is bool)
                                 r = (bool)res;
-                            else if (res is ContextStatement)
-                                r = (JSObject)(ContextStatement)res;
                             else
                                 r = TypeProxy.Proxy(res);
                             r.assignCallback = null;
@@ -374,10 +403,10 @@ namespace NiL.JS.Core
                         var pinfo = (PropertyInfo)m[0];
                         r = new JSObject()
                         {
-                            ValueType = ObjectValueType.Property,
-                            oValue = new Statement[] { 
-                                    pinfo.CanWrite ? convert(pinfo.GetSetMethod(true)).oValue as Statement : null,
-                                    pinfo.CanRead ? convert(pinfo.GetGetMethod(true)).oValue as Statement : null 
+                            ValueType = JSObjectType.Property,
+                            oValue = new Function[] { 
+                                    pinfo.CanWrite ? ProxyMethod(pinfo.GetSetMethod(true)).oValue as Function : null,
+                                    pinfo.CanRead ? ProxyMethod(pinfo.GetGetMethod(true)).oValue as Function : null 
                                 }
                         };
                         break;
@@ -386,7 +415,6 @@ namespace NiL.JS.Core
             }
             if (m[0].GetCustomAttributes(typeof(ProtectedAttribute), false).Length != 0)
                 r.Protect();
-            cache[name] = r;
             r.attributes |= ObjectAttributes.DontDelete | ObjectAttributes.DontEnum;
             return r;
         }
@@ -395,7 +423,7 @@ namespace NiL.JS.Core
 
         private static JSObject toString(Context context, JSObject args)
         {
-            return (context.thisBind.firstContainer ?? context.thisBind).oValue.ToString();
+            return context.thisBind.oValue.ToString();
         }
     }
 }

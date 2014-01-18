@@ -54,13 +54,8 @@ namespace NiL.JS.Statements
         {
             var res = new NiL.JS.Core.BaseTypes.Array(elements.Length);
             for (int i = 0; i < elements.Length; i++)
-                res.data[i] = elements[i].Invoke(context);
+                res.data[i] = elements[i].Invoke(context).Clone() as JSObject;
             return res;
-        }
-
-        public override JSObject Invoke(Context context, JSObject args)
-        {
-            throw new NotImplementedException();
         }
 
         public bool Optimize(ref Statement _this, int depth, HashSet<string> vars)

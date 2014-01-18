@@ -19,43 +19,63 @@ namespace NiL.JS.Statements.Operators
                 return double.NaN;
 
             JSObject o = null;
-            if ((second != null) && (val.ValueType != ObjectValueType.Undefined) && (val.ValueType != ObjectValueType.NotExistInObject))
+            if ((second != null) && (val.ValueType != JSObjectType.Undefined) && (val.ValueType != JSObjectType.NotExistInObject))
             {
                 o = tempResult;
                 o.Assign(val);
             }
             else
                 o = val;
-            if (val.ValueType == ObjectValueType.Int)
-                val.iValue++;
-            else if (val.ValueType == ObjectValueType.Double)
-                val.dValue = val.dValue + 1.0;
-            else if (val.ValueType == ObjectValueType.Bool)
+            @switch:
+            switch (val.ValueType)
             {
-                val.ValueType = ObjectValueType.Int;
-                val.iValue++;
+                case JSObjectType.Int:
+                case JSObjectType.Bool:
+                    {
+                        val.ValueType = JSObjectType.Int;
+                        val.iValue++;
+                        break;
+                    }
+                case JSObjectType.Double:
+                    {
+                        val.dValue++;
+                        break;
+                    }
+                case JSObjectType.String:
+                    {
+                        double resd;
+                        int i = 0;
+                        if (!Tools.ParseNumber(val.oValue as string, ref i, false, out resd))
+                            resd = double.NaN;
+                        resd++;
+                        val.ValueType = JSObjectType.Double;
+                        val.dValue = resd;
+                        break;
+                    }
+                case JSObjectType.Date:
+                case JSObjectType.Object:
+                    {
+                        val.Assign(val.ToPrimitiveValue_Value_String(context));
+                        goto @switch;
+                    }
+                case JSObjectType.Undefined:
+                case JSObjectType.NotExistInObject:
+                    {
+                        val.ValueType = JSObjectType.Double;
+                        val.dValue = double.NaN;
+                        break;
+                    }
+                case JSObjectType.NotExist:
+                    throw new JSException(Context.eval(context, "{ message : 'Varible not defined' }"));
+                default:
+                    throw new NotImplementedException();
             }
-            else if (val.ValueType == ObjectValueType.String)
-            {
-                double resd;
-                int i = 0;
-                if (!Parser.ParseNumber(val.oValue as string, ref i, false, out resd))
-                    resd = double.NaN;
-                resd++;
-                val.ValueType = ObjectValueType.Double;
-                val.dValue = resd;
-            }
-            else if (val.ValueType == ObjectValueType.Undefined || val.ValueType == ObjectValueType.NotExistInObject)
-            {
-                val.ValueType = ObjectValueType.Double;
-                val.dValue = double.NaN;
-            }
-            else throw new NotImplementedException();
             return o;
         }
 
         public override bool Optimize(ref Statement _this, int depth, HashSet<string> vars)
         {
+            base.Optimize(ref _this, depth, vars);
             if (depth <= 1 && second != null)
             {
                 first = second;

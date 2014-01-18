@@ -25,7 +25,7 @@ namespace NiL.JS.Core.BaseTypes
             {
                 do
                     index++;
-                while (index < owner.data.Count && (owner.data[index] == null || owner.data[index].ValueType < ObjectValueType.Undefined));
+                while (index < owner.data.Count && (owner.data[index] == null || owner.data[index].ValueType < JSObjectType.Undefined));
                 return index < owner.data.Count;
             }
 
@@ -46,14 +46,14 @@ namespace NiL.JS.Core.BaseTypes
         private Array(List<JSObject> collection)
         {
             data = collection;
-            ValueType = ObjectValueType.Object;
+            ValueType = JSObjectType.Object;
             oValue = this;
         }
 
         public Array()
         {
             data = new List<JSObject>();
-            ValueType = ObjectValueType.Object;
+            ValueType = JSObjectType.Object;
             oValue = this;
         }
 
@@ -62,7 +62,7 @@ namespace NiL.JS.Core.BaseTypes
             data = new List<JSObject>(length);
             for (int i = 0; i < length; i++)
                 data.Add(null);
-            ValueType = ObjectValueType.Object;
+            ValueType = JSObjectType.Object;
             oValue = this;
         }
 
@@ -73,14 +73,14 @@ namespace NiL.JS.Core.BaseTypes
             data = new List<JSObject>(length);
             for (int i = 0; i < length; i++)
                 data.Add(null);
-            ValueType = ObjectValueType.Object;
+            ValueType = JSObjectType.Object;
             oValue = this;
         }
 
         public Array(object[] args)
         {
             data = new List<JSObject>(args.Length);
-            ValueType = ObjectValueType.Object;
+            ValueType = JSObjectType.Object;
             oValue = this;
             for (int i = 0; i < args.Length; i++)
             {
@@ -99,8 +99,6 @@ namespace NiL.JS.Core.BaseTypes
                     val = (string)args[i];
                 else if (args[i] is bool)
                     val = (bool)args[i];
-                else if (args[i] is ContextStatement)
-                    val = (JSObject)(ContextStatement)args[i];
                 else
                     val = TypeProxy.Proxy(args[i]);
                 data.Add(val);
@@ -123,7 +121,7 @@ namespace NiL.JS.Core.BaseTypes
                 {
                     if (tempElement == null)
                     {
-                        tempElement = new JSObject(false) { ValueType = ObjectValueType.NotExistInObject };
+                        tempElement = new JSObject(false) { ValueType = JSObjectType.NotExistInObject };
                         tempElement.assignCallback = () =>
                         {
                             while (data.Count <= lastReqIndex)
@@ -167,7 +165,7 @@ namespace NiL.JS.Core.BaseTypes
             }
             for (int i = 0; i < args.Length; i++)
             {
-                var arg = args[i].firstContainer ?? args[i];
+                var arg = args[i];
                 if (arg is Array)
                 {
                     Array arr = arg as Array;
@@ -196,24 +194,24 @@ namespace NiL.JS.Core.BaseTypes
             {
                 switch (args[1].ValueType)
                 {
-                    case ObjectValueType.Int:
-                    case ObjectValueType.Bool:
+                    case JSObjectType.Int:
+                    case JSObjectType.Bool:
                         {
                             pos = args[1].iValue;
                             break;
                         }
-                    case ObjectValueType.Double:
+                    case JSObjectType.Double:
                         {
                             pos = (int)args[1].dValue;
                             break;
                         }
-                    case ObjectValueType.Object:
-                    case ObjectValueType.Date:
-                    case ObjectValueType.Statement:
-                    case ObjectValueType.String:
+                    case JSObjectType.Object:
+                    case JSObjectType.Date:
+                    case JSObjectType.Function:
+                    case JSObjectType.String:
                         {
                             double d;
-                            Parser.ParseNumber(args[1].ToString(), ref pos, false, out d);
+                            Tools.ParseNumber(args[1].ToString(), ref pos, false, out d);
                             pos = (int)d;
                             break;
                         }
@@ -258,24 +256,24 @@ namespace NiL.JS.Core.BaseTypes
             {
                 switch (args[1].ValueType)
                 {
-                    case ObjectValueType.Int:
-                    case ObjectValueType.Bool:
+                    case JSObjectType.Int:
+                    case JSObjectType.Bool:
                         {
                             pos = args[1].iValue;
                             break;
                         }
-                    case ObjectValueType.Double:
+                    case JSObjectType.Double:
                         {
                             pos = (int)args[1].dValue;
                             break;
                         }
-                    case ObjectValueType.Object:
-                    case ObjectValueType.Date:
-                    case ObjectValueType.Statement:
-                    case ObjectValueType.String:
+                    case JSObjectType.Object:
+                    case JSObjectType.Date:
+                    case JSObjectType.Function:
+                    case JSObjectType.String:
                         {
                             double d;
-                            Parser.ParseNumber(args[1].ToString(), ref pos, false, out d);
+                            Tools.ParseNumber(args[1].ToString(), ref pos, false, out d);
                             pos = (int)d;
                             break;
                         }
@@ -335,24 +333,24 @@ namespace NiL.JS.Core.BaseTypes
             int pos0 = 0;
             switch (args[0].ValueType)
             {
-                case ObjectValueType.Int:
-                case ObjectValueType.Bool:
+                case JSObjectType.Int:
+                case JSObjectType.Bool:
                     {
                         pos0 = args[0].iValue;
                         break;
                     }
-                case ObjectValueType.Double:
+                case JSObjectType.Double:
                     {
                         pos0 = (int)args[0].dValue;
                         break;
                     }
-                case ObjectValueType.Object:
-                case ObjectValueType.Date:
-                case ObjectValueType.Statement:
-                case ObjectValueType.String:
+                case JSObjectType.Object:
+                case JSObjectType.Date:
+                case JSObjectType.Function:
+                case JSObjectType.String:
                     {
                         double d;
-                        Parser.ParseNumber(args[0].ToString(), ref pos0, false, out d);
+                        Tools.ParseNumber(args[0].ToString(), ref pos0, false, out d);
                         pos0 = (int)d;
                         break;
                     }
@@ -362,24 +360,24 @@ namespace NiL.JS.Core.BaseTypes
             {
                 switch (args[1].ValueType)
                 {
-                    case ObjectValueType.Int:
-                    case ObjectValueType.Bool:
+                    case JSObjectType.Int:
+                    case JSObjectType.Bool:
                         {
                             pos1 = args[1].iValue;
                             break;
                         }
-                    case ObjectValueType.Double:
+                    case JSObjectType.Double:
                         {
                             pos1 = (int)args[1].dValue;
                             break;
                         }
-                    case ObjectValueType.Object:
-                    case ObjectValueType.Date:
-                    case ObjectValueType.Statement:
-                    case ObjectValueType.String:
+                    case JSObjectType.Object:
+                    case JSObjectType.Date:
+                    case JSObjectType.Function:
+                    case JSObjectType.String:
                         {
                             double d;
-                            Parser.ParseNumber(args[1].ToString(), ref pos1, false, out d);
+                            Tools.ParseNumber(args[1].ToString(), ref pos1, false, out d);
                             pos1 = (int)d;
                             break;
                         }
@@ -433,7 +431,7 @@ namespace NiL.JS.Core.BaseTypes
             }
             int index = 0;
             double dindex = 0.0;
-            if (Parser.ParseNumber(name, ref index, false, out dindex) && ((index = (int)dindex) == dindex))
+            if (Tools.ParseNumber(name, ref index, false, out dindex) && ((index = (int)dindex) == dindex))
                 return this[index];
             else
                 return base.GetField(name, fast, own);
@@ -452,49 +450,28 @@ namespace NiL.JS.Core.BaseTypes
         [Hidden]
         private static JSObject forEach(Context context, JSObject args)
         {
-            var alen = args.GetField("length").iValue;
+            var alen = args.GetField("length", true, false).iValue;
             if (alen == 0)
                 throw new ArgumentException("Undefined is not function");
 
             bool res = true;
-            var obj = context.thisBind.firstContainer ?? context.thisBind;
-            var len = obj.GetField("length", true);
-            if (len.ValueType == ObjectValueType.Property)
-                len = (len.oValue as Statement[])[1].Invoke(context, null);
+            var obj = context.thisBind;
+            var len = obj.GetField("length", true, false);
+            if (len.ValueType == JSObjectType.Property)
+                len = (len.oValue as NiL.JS.Core.BaseTypes.Function[])[1].Invoke(obj, null);
             var count = Tools.JSObjectToDouble(len);
             var cbargs = new JSObject[3];
             cbargs[2] = obj;
-            cbargs[1] = new JSObject(false) { ValueType = ObjectValueType.Int };
-            var stat = args.GetField("0", true).oValue as Statement;
-            var cstat = stat as ContextStatement;
+            cbargs[1] = new JSObject(false) { ValueType = JSObjectType.Int };
+            var stat = args.GetField("0", true, false).oValue as Function;
             for (int i = 0; i < count; i++)
             {
-                cbargs[0] = obj.GetField(i.ToString());
+                cbargs[0] = obj.GetField(i.ToString(), true, false);
                 cbargs[1].iValue = i;
-                if (cstat != null)
-                {
-                    if (alen > 1)
-                    {
-                        var oldtb = cstat.Context.thisBind;
-                        cstat.Context.thisBind = args.GetField("1", true);
-                        res &= (bool)cstat.Invoke(cbargs);
-                        cstat.Context.thisBind = oldtb;
-                    }
-                    else
-                        res &= (bool)cstat.Invoke(cbargs);
-                }
+                if (alen > 1)
+                    res &= (bool)stat.Invoke(args.GetField("1", true, false), cbargs);
                 else
-                {
-                    if (alen > 1)
-                    {
-                        var oldtb = context.thisBind;
-                        context.thisBind = args.GetField("1", true);
-                        res &= (bool)stat.Invoke(context, cbargs);
-                        context.thisBind = oldtb;
-                    }
-                    else
-                        res &= (bool)stat.Invoke(context, cbargs);
-                }
+                    res &= (bool)stat.Invoke(cbargs);
             }
             return res;
         }

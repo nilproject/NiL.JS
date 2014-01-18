@@ -28,10 +28,5 @@ namespace NiL.JS.Statements
             cacheContext = context;
             return cacheRes = context.GetField(varibleName);
         }
-
-        public override JSObject Invoke(Context context, JSObject args)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

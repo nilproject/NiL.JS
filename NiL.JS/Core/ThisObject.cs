@@ -6,7 +6,7 @@ namespace NiL.JS.Core
     {
         public ThisObject(Context context)
         {
-            ValueType = ObjectValueType.Object;
+            ValueType = JSObjectType.Object;
             oValue = context;
             assignCallback = () => { throw new InvalidOperationException("Invalid left-hand side in assignment"); };
         }
@@ -14,8 +14,8 @@ namespace NiL.JS.Core
         public override JSObject GetField(string name, bool fast, bool own)
         {
             var res = (oValue as Context).GetField(name);
-            if (res.ValueType == ObjectValueType.NotExist)
-                res.ValueType = ObjectValueType.NotExistInObject;
+            if (res.ValueType == JSObjectType.NotExist)
+                res.ValueType = JSObjectType.NotExistInObject;
             return res;
         }
     }

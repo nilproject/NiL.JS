@@ -51,17 +51,17 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * 3 * i; }
             var s = new Script(sr.ReadToEnd());
             s.Context.GetField("$ERROR").Assign(new CallableField((t, x) =>
             {
-                Console.WriteLine("ERROR: " + x[0].Value);
+                Console.WriteLine("ERROR: " + x.GetField("0", true, false).Value);
                 return null;
             }));
             s.Context.GetField("ERROR").Assign(new CallableField((t, x) =>
             {
-                Console.WriteLine("ERROR: " + x[0].Value);
+                Console.WriteLine("ERROR: " + x.GetField("0", true, false).Value);
                 return null;
             }));
             s.Context.GetField("$PRINT").Assign(new CallableField((t, x) =>
             {
-                Console.WriteLine("PRINT: " + x[0].Value);
+                Console.WriteLine("PRINT: " + x.GetField("0", true, false).Value);
                 return null;
             }));
             s.Invoke();
@@ -101,24 +101,28 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * 3 * i; }
                     var s = new Script(code);
                     s.Context.GetField("$ERROR").Assign(new CallableField((t, x) =>
                     {
-                        Console.WriteLine("ERROR: " + x[0].Value);
+                        Console.WriteLine("ERROR: " + x.GetField("0", true, false).Value);
                         pass = false;
                         return null;
                     }));
                     s.Context.GetField("ERROR").Assign(new CallableField((t, x) =>
                     {
-                        Console.WriteLine("ERROR: " + x[0].Value);
+                        Console.WriteLine("ERROR: " + x.GetField("0", true, false).Value);
                         pass = false;
                         return null;
                     }));
                     s.Context.GetField("$PRINT").Assign(new CallableField((t, x) =>
                     {
-                        Console.WriteLine("PRINT: " + x[0].Value);
+                        Console.WriteLine("PRINT: " + x.GetField("0", true, false).Value);
                         return null;
                     }));
                     s.Invoke();
                     sr.Dispose();
                     f.Dispose();
+                }
+                catch (NotImplementedException e)
+                {
+                    pass = false;
                 }
                 catch (Exception e)
                 {
@@ -160,9 +164,9 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * 3 * i; }
 
         private static void testEx()
         {
-            Context.GlobalContext.GetField("f").Assign(null);
+            Context.GlobalContext.GetField("f").Assign(new CallableField((c, a) => { return null; }));
             Context.GlobalContext.AttachModule(typeof(TestClass));
-            var s = new Script("console.log(TestClass().sfield)");
+            var s = new Script("f()");
             s.Invoke();
         }
 
@@ -170,11 +174,11 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * 3 * i; }
         {
             NiL.JS.Core.Context.GlobalContext.GetField("platform").Assign("NiL.JS");
             //runFile(@"tests.js");
-            //runFile(@"C:\Projects\NiL.JS\NiL.JSTest\tests\Conformance\08_Types\8.5_The_Number_Type\S8.5_A11_T1.js");
+            //runFile(@"C:\Users\Дмитрий\Documents\Projects\NiL.JS\NiL.JSTest\tests\Conformance\09_Type_Conversion\9.3_ToNumber\S9.3_A5_T1.js");
             //benchmark();
             //featureSupportTest();
-            //runFile(@"ftest.js");
-            sputnicTests();
+            runFile(@"ftest.js");
+            //sputnicTests();
             //testEx();
 
             GC.Collect();

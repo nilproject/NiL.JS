@@ -21,11 +21,6 @@ namespace NiL.JS.Statements.Operators
             this.second = second;
         }
 
-        public override JSObject Invoke(Context context, JSObject args)
-        {
-            throw new InvalidOperationException();
-        }
-
         public virtual bool Optimize(ref Statement _this, int depth, HashSet<string> vars)
         {
             if (first is IOptimizable)

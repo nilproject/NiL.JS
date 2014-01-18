@@ -32,21 +32,11 @@ namespace NiL.JS.Statements
             };
         }
 
-        public override ContextStatement Implement(Context context)
-        {
-            return new ContextStatement(context, this);
-        }
-
         public override JSObject Invoke(Context context)
         {
             context.abort = AbortType.Return;
             context.abortInfo = body.Invoke(context);
             return null;
-        }
-
-        public override JSObject Invoke(Context context, JSObject args)
-        {
-            throw new NotImplementedException();
         }
 
         public bool Optimize(ref Statement _this, int depth, System.Collections.Generic.HashSet<string> varibles)

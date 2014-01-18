@@ -64,12 +64,17 @@ namespace NiL.JS.Statements
             {
                 body.Invoke(context);
             }
+            catch (JSException e)
+            {
+                var eo = context.Define(exptName);
+                eo.Assign(e.Avatar);
+            }
             catch (Exception e)
             {
                 var eo = context.Define(exptName);
-                eo.ValueType = ObjectValueType.Object;
+                eo.ValueType = JSObjectType.Object;
                 eo.oValue = e;
-                eo.GetField("message").Assign(e.Message);
+                eo.GetField("message", false, false).Assign(e.Message);
                 catchBody.Invoke(context);
             }
             finally
@@ -78,11 +83,6 @@ namespace NiL.JS.Statements
                     finallyBody.Invoke(context);
             }
             return null;
-        }
-
-        public override JSObject Invoke(Context context, JSObject args)
-        {
-            throw new NotImplementedException();
         }
 
         public bool Optimize(ref Statement _this, int depth, System.Collections.Generic.HashSet<string> varibles)

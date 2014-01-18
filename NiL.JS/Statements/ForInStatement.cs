@@ -72,14 +72,14 @@ namespace NiL.JS.Statements
         {
             var s = source.Invoke(context);
             var v = varible.Invoke(context);
-            while ((s != null) && (s.ValueType > ObjectValueType.Undefined))
+            while ((s != null) && (s.ValueType > JSObjectType.Undefined))
             {
                 foreach (var o in s)
                 {
-                    var t = s.GetField(o, true);
-                    if (t.ValueType > ObjectValueType.NotExistInObject && ((t.attributes & ObjectAttributes.DontEnum) == 0))
+                    var t = s.GetField(o, true, false);
+                    if (t.ValueType > JSObjectType.NotExistInObject && ((t.attributes & ObjectAttributes.DontEnum) == 0))
                     {
-                        v.ValueType = ObjectValueType.String;
+                        v.ValueType = JSObjectType.String;
                         v.oValue = o;
                         if (v.assignCallback != null)
                             v.assignCallback();
@@ -97,14 +97,9 @@ namespace NiL.JS.Statements
                         }
                     }
                 }
-                s = (s.firstContainer ?? s).prototype;
+                s = s.prototype;
             }
             return JSObject.undefined;
-        }
-
-        public override JSObject Invoke(Context context, JSObject args)
-        {
-            throw new NotImplementedException();
         }
 
         public bool Optimize(ref Statement _this, int depth, System.Collections.Generic.HashSet<string> varibles)

@@ -18,7 +18,7 @@ namespace NiL.JS.Statements.Operators
             context.updateThisBind = false;
             JSObject temp = null;
             temp = first.Invoke(context);
-            if (temp.ValueType == ObjectValueType.NotExist)
+            if (temp.ValueType == JSObjectType.NotExist)
             {
                 context.updateThisBind = outb;
                 throw new InvalidOperationException("varible not defined");
@@ -26,7 +26,7 @@ namespace NiL.JS.Statements.Operators
             if (second != null)
             {
                 temp = second.Invoke(context);
-                if (temp.ValueType == ObjectValueType.NotExist)
+                if (temp.ValueType == JSObjectType.NotExist)
                 {
                     context.updateThisBind = outb;
                     throw new InvalidOperationException("varible not defined");

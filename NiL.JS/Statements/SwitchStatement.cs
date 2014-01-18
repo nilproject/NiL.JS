@@ -27,7 +27,7 @@ namespace NiL.JS.Statements
         {
             this.body = body;
             length = body.Length - 1;
-            functions = new Function[0];
+            functions = new FunctionStatement[0];
         }
 
         internal static ParseResult Parse(ParsingState state, ref int index)
@@ -78,20 +78,20 @@ namespace NiL.JS.Statements
                 var t = Parser.Parse(state, ref i, 0);
                 if (t == null)
                     continue;
-                if (t is Function)
-                    funcs.Add(t as Function);
+                if (t is FunctionStatement)
+                    funcs.Add(t as FunctionStatement);
                 else if (t is SwitchStatement)
                 {
                     SwitchStatement cb = t as SwitchStatement;
                     funcs.AddRange(cb.functions);
-                    cb.functions = new Function[0];
+                    cb.functions = new FunctionStatement[0];
                     body.Add(t);
                 }
                 else if (t is CodeBlock)
                 {
                     CodeBlock cb = t as CodeBlock;
                     funcs.AddRange(cb.functions);
-                    cb.functions = new Function[0];
+                    cb.functions = new FunctionStatement[0];
                     body.AddRange(cb.body);
                 }
                 else
@@ -137,11 +137,6 @@ namespace NiL.JS.Statements
                 }
             }
             return null;
-        }
-
-        public override JSObject Invoke(Context context, JSObject args)
-        {
-            throw new NotImplementedException();
         }
 
         public bool Optimize(ref Statement _this, int depth, System.Collections.Generic.HashSet<string> varibles)

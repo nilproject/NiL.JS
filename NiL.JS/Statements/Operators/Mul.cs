@@ -18,133 +18,155 @@ namespace NiL.JS.Statements.Operators
             double dr;
             switch (temp.ValueType)
             {
-                case ObjectValueType.Int:
+                case JSObjectType.Bool:
+                case JSObjectType.Int:
                     {
                         dr = temp.iValue;
                         temp = second.Invoke(context);
                         switch (temp.ValueType)
                         {
-                            case ObjectValueType.Int:
+                            case JSObjectType.Bool:
+                            case JSObjectType.Int:
                                 {
                                     dr *= temp.iValue;
-                                    res.ValueType = ObjectValueType.Double;
+                                    res.ValueType = JSObjectType.Double;
                                     res.dValue = dr;
                                     return res;
                                 }
-                            case ObjectValueType.Double:
+                            case JSObjectType.Double:
                                 {
                                     dr *= temp.dValue;
-                                    res.ValueType = ObjectValueType.Double;
+                                    res.ValueType = JSObjectType.Double;
                                     res.dValue = dr;
                                     return res;
                                 }
-                            case ObjectValueType.Statement:
-                            case ObjectValueType.Object:
+                            case JSObjectType.Function:
+                            case JSObjectType.Object:
                                 {
-                                    temp = temp.ToPrimitiveValue_Value_String(context);
-                                    if (temp.ValueType == ObjectValueType.Int)
-                                        goto case ObjectValueType.Int;
-                                    else if (temp.ValueType == ObjectValueType.Double)
-                                        goto case ObjectValueType.Double;
-                                    else if ((temp.ValueType == ObjectValueType.Object)
-                                        || (temp.ValueType == ObjectValueType.String)
-                                        || (temp.ValueType == ObjectValueType.Undefined)
-                                        || (temp.ValueType == ObjectValueType.Statement))
+                                    if (temp.oValue != null)
+                                        temp = temp.ToPrimitiveValue_Value_String(context);
+                                    if (temp.ValueType == JSObjectType.Int || temp.ValueType == JSObjectType.Bool)
+                                        goto case JSObjectType.Int;
+                                    else if (temp.ValueType == JSObjectType.Double)
+                                        goto case JSObjectType.Double;
+                                    else if ((temp.ValueType == JSObjectType.Object)
+                                        || (temp.ValueType == JSObjectType.String)
+                                        || (temp.ValueType == JSObjectType.Undefined)
+                                        || (temp.ValueType == JSObjectType.Function))
                                     {
-                                        res.ValueType = ObjectValueType.Double;
-                                        res.dValue = double.NaN;
+                                        res.ValueType = JSObjectType.Double;
+                                        if (temp.oValue == null)
+                                            res.dValue = dr * 0.0;
+                                        else
+                                            res.dValue = double.NaN;
                                         return res;
                                     }
                                     break;
                                 }
-                            case ObjectValueType.String:
+                            case JSObjectType.String:
                                 {
                                     var d = double.NaN;
                                     int n = 0;
-                                    if (Parser.ParseNumber(temp.oValue as string, ref n, true, out d) && (n < (temp.oValue as string).Length))
+                                    if (Tools.ParseNumber(temp.oValue as string, ref n, true, out d) && (n < (temp.oValue as string).Length))
                                         d = double.NaN;
                                     tempResult.dValue = d;
                                     temp = tempResult;
-                                    goto case ObjectValueType.Double;
+                                    goto case JSObjectType.Double;
+                                }
+                            case JSObjectType.Undefined:
+                            case JSObjectType.NotExistInObject:
+                                {
+                                    res.ValueType = JSObjectType.Double;
+                                    res.dValue = double.NaN;
+                                    return res;
                                 }
                         }
                         break;
                     }
-                case ObjectValueType.Double:
+                case JSObjectType.Double:
                     {
                         dr = temp.dValue;
                         temp = second.Invoke(context);
                         switch (temp.ValueType)
                         {
-                            case ObjectValueType.Int:
+                            case JSObjectType.Int:
                                 {
                                     dr *= temp.iValue;
-                                    res.ValueType = ObjectValueType.Double;
+                                    res.ValueType = JSObjectType.Double;
                                     res.dValue = dr;
                                     return res;
                                 }
-                            case ObjectValueType.Double:
+                            case JSObjectType.Double:
                                 {
                                     dr *= temp.dValue;
-                                    res.ValueType = ObjectValueType.Double;
+                                    res.ValueType = JSObjectType.Double;
                                     res.dValue = dr;
                                     return res;
                                 }
-                            case ObjectValueType.Object:
+                            case JSObjectType.Object:
                                 {
                                     temp = temp.ToPrimitiveValue_Value_String(context);
-                                    if (temp.ValueType == ObjectValueType.Int)
-                                        goto case ObjectValueType.Int;
-                                    else if (temp.ValueType == ObjectValueType.Double)
-                                        goto case ObjectValueType.Double;
-                                    else if (temp.ValueType == ObjectValueType.Object)
+                                    if (temp.ValueType == JSObjectType.Int || temp.ValueType == JSObjectType.Bool)
+                                        goto case JSObjectType.Int;
+                                    else if (temp.ValueType == JSObjectType.Double)
+                                        goto case JSObjectType.Double;
+                                    else if (temp.ValueType == JSObjectType.Object)
                                     {
-                                        res.ValueType = ObjectValueType.Double;
+                                        res.ValueType = JSObjectType.Double;
                                         res.dValue = double.NaN;
                                         return res;
                                     }
                                     break;
                                 }
-                            case ObjectValueType.String:
+                            case JSObjectType.String:
                                 {
                                     var d = double.NaN;
                                     int n = 0;
-                                    if (Parser.ParseNumber(temp.oValue as string, ref n, true, out d) && (n < (temp.oValue as string).Length))
+                                    if (Tools.ParseNumber(temp.oValue as string, ref n, true, out d) && (n < (temp.oValue as string).Length))
                                         d = double.NaN;
                                     tempResult.dValue = d;
                                     temp = tempResult;
-                                    goto case ObjectValueType.Double;
+                                    goto case JSObjectType.Double;
+                                }
+                            case JSObjectType.Undefined:
+                            case JSObjectType.NotExistInObject:
+                                {
+                                    res.ValueType = JSObjectType.Double;
+                                    res.dValue = double.NaN;
+                                    return res;
                                 }
                         }
                         break;
                     }
-                case ObjectValueType.Date:
-                case ObjectValueType.Object:
+                case JSObjectType.Date:
+                case JSObjectType.Object:
                     {
                         temp = temp.ToPrimitiveValue_Value_String(context);
-                        if (temp.ValueType == ObjectValueType.Int)
-                            goto case ObjectValueType.Int;
-                        else if (temp.ValueType == ObjectValueType.Double)
-                            goto case ObjectValueType.Double;
-                        else if (temp.ValueType == ObjectValueType.Object)
+                        if (temp.ValueType == JSObjectType.Int || temp.ValueType == JSObjectType.Bool)
+                            goto case JSObjectType.Int;
+                        else if (temp.ValueType == JSObjectType.Double)
+                            goto case JSObjectType.Double;
+                        else if (temp.ValueType == JSObjectType.Object 
+                            || temp.ValueType == JSObjectType.NotExistInObject 
+                            || temp.ValueType == JSObjectType.Undefined)
                         {
-                            res.ValueType = ObjectValueType.Double;
+                            res.ValueType = JSObjectType.Double;
                             res.dValue = double.NaN;
                             return res;
                         }
-                        else if (temp.ValueType == ObjectValueType.String)
-                            goto case ObjectValueType.String;
+                        else if (temp.ValueType == JSObjectType.String)
+                            goto case JSObjectType.String;
                         break;
                     }
-                case ObjectValueType.String:
+                case JSObjectType.String:
                     {
                         var d = double.NaN;
                         int n = 0;
-                        if (Parser.ParseNumber(temp.oValue as string, ref n, true, out d) && (n < (temp.oValue as string).Length))
-                                d = double.NaN;
+                        if (Tools.ParseNumber(temp.oValue as string, ref n, true, out d) && (n < (temp.oValue as string).Length))
+                            d = double.NaN;
                         tempResult.dValue = d;
                         temp = tempResult;
-                        goto case ObjectValueType.Double;
+                        goto case JSObjectType.Double;
                     }
             }
             throw new NotImplementedException();

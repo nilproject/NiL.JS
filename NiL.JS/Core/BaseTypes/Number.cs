@@ -12,6 +12,10 @@ namespace NiL.JS.Core.BaseTypes
         public static JSObject POSITIVE_INFINITY = double.PositiveInfinity;
         [Modules.Protected]
         public static JSObject NEGATIVE_INFINITY = double.NegativeInfinity;
+        [Modules.Protected]
+        public static JSObject MAX_VALUE = double.MaxValue;
+        [Modules.Protected]
+        public static JSObject MIN_VALUE = double.Epsilon;
 
         static Number()
         {
@@ -19,84 +23,97 @@ namespace NiL.JS.Core.BaseTypes
             POSITIVE_INFINITY.Protect();
             NEGATIVE_INFINITY.assignCallback = null;
             NEGATIVE_INFINITY.Protect();
+            MAX_VALUE.assignCallback = null;
+            MAX_VALUE.Protect();
+            MIN_VALUE.assignCallback = null;
+            MIN_VALUE.Protect();
             NaN.assignCallback = null;
             NaN.Protect();
         }
         
         public Number()
         {
-            ValueType = ObjectValueType.Int;
+            ValueType = JSObjectType.Int;
             iValue = 0;
             assignCallback = JSObject.ErrorAssignCallback;
         }
 
         public Number(int value)
         {
-            ValueType = ObjectValueType.Int;
+            ValueType = JSObjectType.Int;
             iValue = value;
             assignCallback = JSObject.ErrorAssignCallback;
         }
 
         public Number(double value)
         {
-            ValueType = ObjectValueType.Double;
+            ValueType = JSObjectType.Double;
             dValue = value;
             assignCallback = JSObject.ErrorAssignCallback;
         }
 
         public Number(string value)
         {
-            ValueType = ObjectValueType.Int;
+            ValueType = JSObjectType.Int;
             assignCallback = JSObject.ErrorAssignCallback;
             double d = 0;
             int i = 0;
-            if (Parser.ParseNumber(value, ref i, false, out d))
+            if (Tools.ParseNumber(value, ref i, false, out d))
             {
                 dValue = d;
-                ValueType = ObjectValueType.Double;
+                ValueType = JSObjectType.Double;
             }
         }
 
         public Number(JSObject obj)
         {
-            ValueType = ObjectValueType.Int;
+            ValueType = JSObjectType.Int;
             switch(obj.ValueType)
             {
-                case ObjectValueType.Bool:
-                case ObjectValueType.Int:
+                case JSObjectType.Bool:
+                case JSObjectType.Int:
                     {
                         iValue = obj.iValue;
                         break;
                     }
-                case ObjectValueType.Double:
+                case JSObjectType.Double:
                     {
                         dValue = obj.dValue;
-                        ValueType = ObjectValueType.Double;
+                        ValueType = JSObjectType.Double;
                         break;
                     }
-                case ObjectValueType.String:
+                case JSObjectType.String:
                     {
                         double d = 0;
                         int i = 0;
-                        if (Parser.ParseNumber(obj.oValue.ToString(), ref i, false, out d))
+                        if (Tools.ParseNumber(obj.oValue.ToString(), ref i, false, out d))
                         {
                             dValue = d;
-                            ValueType = ObjectValueType.Double;
+                            ValueType = JSObjectType.Double;
                         }
                         break;
                     }
-                case ObjectValueType.Object:
+                case JSObjectType.Object:
                     {
                         obj = obj.ToPrimitiveValue_Value_String(new Context(Context.globalContext));
-                        if (obj.ValueType == ObjectValueType.String)
-                            goto case ObjectValueType.String;
-                        if (obj.ValueType == ObjectValueType.Int)
-                            goto case ObjectValueType.Int;
-                        if (obj.ValueType == ObjectValueType.Double)
-                            goto case ObjectValueType.Double;
+                        if (obj.ValueType == JSObjectType.String)
+                            goto case JSObjectType.String;
+                        if (obj.ValueType == JSObjectType.Int)
+                            goto case JSObjectType.Int;
+                        if (obj.ValueType == JSObjectType.Double)
+                            goto case JSObjectType.Double;
+                        if (obj.ValueType == JSObjectType.Bool)
+                            goto case JSObjectType.Bool;
                         break;
                     }
-                case ObjectValueType.NotExist:
+                case JSObjectType.Undefined:
+                case JSObjectType.NotExistInObject:
+                    {
+                        ValueType = JSObjectType.Double;
+                        dValue = double.NaN;
+                        break;
+                    }
+                case JSObjectType.NotExist:
                     throw new InvalidOperationException("Varible not defined.");
             }
             assignCallback = JSObject.ErrorAssignCallback;
@@ -107,12 +124,12 @@ namespace NiL.JS.Core.BaseTypes
             double res = 0;
             switch (ValueType)
             {
-                case ObjectValueType.Int:
+                case JSObjectType.Int:
                     {
                         res = iValue;
                         break;
                     }
-                case ObjectValueType.Double:
+                case JSObjectType.Double:
                     {
                         res = dValue;
                         break;
@@ -123,38 +140,38 @@ namespace NiL.JS.Core.BaseTypes
             int dgts = 0;
             switch ((digits ?? JSObject.undefined).ValueType)
             {
-                case ObjectValueType.Int:
+                case JSObjectType.Int:
                     {
                         dgts = digits.iValue;
                         break;
                     }
-                case ObjectValueType.Double:
+                case JSObjectType.Double:
                     {
                         dgts = (int)digits.dValue;
                         break;
                     }
-                case ObjectValueType.String:
+                case JSObjectType.String:
                     {
                         double d = 0;
                         int i = 0;
-                        if (Parser.ParseNumber(digits.oValue.ToString(), ref i, false, out d))
+                        if (Tools.ParseNumber(digits.oValue.ToString(), ref i, false, out d))
                         {
                             dgts = (int)d;
                         }
                         break;
                     }
-                case ObjectValueType.Object:
+                case JSObjectType.Object:
                     {
-                        digits = digits.GetField("0", true).ToPrimitiveValue_Value_String(new Context(Context.globalContext));
-                        if (digits.ValueType == ObjectValueType.String)
-                            goto case ObjectValueType.String;
-                        if (digits.ValueType == ObjectValueType.Int)
-                            goto case ObjectValueType.Int;
-                        if (digits.ValueType == ObjectValueType.Double)
-                            goto case ObjectValueType.Double;
+                        digits = digits.GetField("0", true, false).ToPrimitiveValue_Value_String(new Context(Context.globalContext));
+                        if (digits.ValueType == JSObjectType.String)
+                            goto case JSObjectType.String;
+                        if (digits.ValueType == JSObjectType.Int)
+                            goto case JSObjectType.Int;
+                        if (digits.ValueType == JSObjectType.Double)
+                            goto case JSObjectType.Double;
                         break;
                     }
-                case ObjectValueType.NotExist:
+                case JSObjectType.NotExist:
                     throw new InvalidOperationException("Varible not defined.");
                 default:
                     return res.ToString();
@@ -171,12 +188,12 @@ namespace NiL.JS.Core.BaseTypes
             double res = 0;
             switch (ValueType)
             {
-                case ObjectValueType.Int:
+                case JSObjectType.Int:
                     {
                         res = iValue;
                         break;
                     }
-                case ObjectValueType.Double:
+                case JSObjectType.Double:
                     {
                         res = dValue;
                         break;
@@ -187,38 +204,38 @@ namespace NiL.JS.Core.BaseTypes
             int dgts = 0;
             switch ((digits ?? JSObject.undefined).ValueType)
             {
-                case ObjectValueType.Int:
+                case JSObjectType.Int:
                     {
                         dgts = digits.iValue;
                         break;
                     }
-                case ObjectValueType.Double:
+                case JSObjectType.Double:
                     {
                         dgts = (int)digits.dValue;
                         break;
                     }
-                case ObjectValueType.String:
+                case JSObjectType.String:
                     {
                         double d = 0;
                         int i = 0;
-                        if (Parser.ParseNumber(digits.oValue.ToString(), ref i, false, out d))
+                        if (Tools.ParseNumber(digits.oValue.ToString(), ref i, false, out d))
                         {
                             dgts = (int)d;
                         }
                         break;
                     }
-                case ObjectValueType.Object:
+                case JSObjectType.Object:
                     {
-                        digits = digits.GetField("0", true).ToPrimitiveValue_Value_String(new Context(Context.globalContext));
-                        if (digits.ValueType == ObjectValueType.String)
-                            goto case ObjectValueType.String;
-                        if (digits.ValueType == ObjectValueType.Int)
-                            goto case ObjectValueType.Int;
-                        if (digits.ValueType == ObjectValueType.Double)
-                            goto case ObjectValueType.Double;
+                        digits = digits.GetField("0", true, false).ToPrimitiveValue_Value_String(new Context(Context.globalContext));
+                        if (digits.ValueType == JSObjectType.String)
+                            goto case JSObjectType.String;
+                        if (digits.ValueType == JSObjectType.Int)
+                            goto case JSObjectType.Int;
+                        if (digits.ValueType == JSObjectType.Double)
+                            goto case JSObjectType.Double;
                         break;
                     }
-                case ObjectValueType.NotExist:
+                case JSObjectType.NotExist:
                     throw new InvalidOperationException("Varible not defined.");
                 default:
                     return res.ToString("e");
@@ -231,12 +248,12 @@ namespace NiL.JS.Core.BaseTypes
             double res = 0;
             switch (ValueType)
             {
-                case ObjectValueType.Int:
+                case JSObjectType.Int:
                     {
                         res = iValue;
                         break;
                     }
-                case ObjectValueType.Double:
+                case JSObjectType.Double:
                     {
                         res = dValue;
                         break;
@@ -247,38 +264,38 @@ namespace NiL.JS.Core.BaseTypes
             int dgts = 0;
             switch ((digits ?? JSObject.undefined).ValueType)
             {
-                case ObjectValueType.Int:
+                case JSObjectType.Int:
                     {
                         dgts = digits.iValue;
                         break;
                     }
-                case ObjectValueType.Double:
+                case JSObjectType.Double:
                     {
                         dgts = (int)digits.dValue;
                         break;
                     }
-                case ObjectValueType.String:
+                case JSObjectType.String:
                     {
                         double d = 0;
                         int i = 0;
-                        if (Parser.ParseNumber(digits.oValue.ToString(), ref i, false, out d))
+                        if (Tools.ParseNumber(digits.oValue.ToString(), ref i, false, out d))
                         {
                             dgts = (int)d;
                         }
                         break;
                     }
-                case ObjectValueType.Object:
+                case JSObjectType.Object:
                     {
-                        digits = digits.GetField("0", true).ToPrimitiveValue_Value_String(new Context(Context.globalContext));
-                        if (digits.ValueType == ObjectValueType.String)
-                            goto case ObjectValueType.String;
-                        if (digits.ValueType == ObjectValueType.Int)
-                            goto case ObjectValueType.Int;
-                        if (digits.ValueType == ObjectValueType.Double)
-                            goto case ObjectValueType.Double;
+                        digits = digits.GetField("0", true, false).ToPrimitiveValue_Value_String(new Context(Context.globalContext));
+                        if (digits.ValueType == JSObjectType.String)
+                            goto case JSObjectType.String;
+                        if (digits.ValueType == JSObjectType.Int)
+                            goto case JSObjectType.Int;
+                        if (digits.ValueType == JSObjectType.Double)
+                            goto case JSObjectType.Double;
                         break;
                     }
-                case ObjectValueType.NotExist:
+                case JSObjectType.NotExist:
                     throw new InvalidOperationException("Varible not defined.");
                 default:
                     return ((int)res).ToString();
@@ -290,12 +307,12 @@ namespace NiL.JS.Core.BaseTypes
 
         public JSObject toLocaleString()
         {
-            return ValueType == ObjectValueType.Int ? iValue.ToString(System.Threading.Thread.CurrentThread.CurrentUICulture) : dValue.ToString(System.Threading.Thread.CurrentThread.CurrentUICulture);
+            return ValueType == JSObjectType.Int ? iValue.ToString(System.Threading.Thread.CurrentThread.CurrentUICulture) : dValue.ToString(System.Threading.Thread.CurrentThread.CurrentUICulture);
         }
 
         public override string ToString()
         {
-            return ValueType == ObjectValueType.Int ? iValue.ToString() : dValue.ToString();
+            return ValueType == JSObjectType.Int ? iValue.ToString() : dValue.ToString();
         }
 
         public override bool Equals(object obj)
@@ -305,24 +322,24 @@ namespace NiL.JS.Core.BaseTypes
                 var n = obj as Number;
                 switch(ValueType)
                 {
-                    case ObjectValueType.Int:
+                    case JSObjectType.Int:
                         {
                             switch (n.ValueType)
                             {
-                                case ObjectValueType.Int:
+                                case JSObjectType.Int:
                                     return iValue == n.iValue;
-                                case ObjectValueType.Double:
+                                case JSObjectType.Double:
                                     return iValue == n.dValue;
                             }
                             break;
                         }
-                    case ObjectValueType.Double:
+                    case JSObjectType.Double:
                         {
                             switch (n.ValueType)
                             {
-                                case ObjectValueType.Int:
+                                case JSObjectType.Int:
                                     return dValue == n.iValue;
-                                case ObjectValueType.Double:
+                                case JSObjectType.Double:
                                     return dValue == n.dValue;
                             }
                             break;
@@ -334,7 +351,7 @@ namespace NiL.JS.Core.BaseTypes
 
         public override int GetHashCode()
         {
-            return ValueType == ObjectValueType.Int ? iValue.GetHashCode() : dValue.GetHashCode();
+            return ValueType == JSObjectType.Int ? iValue.GetHashCode() : dValue.GetHashCode();
         }
     }
 }

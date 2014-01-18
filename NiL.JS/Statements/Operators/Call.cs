@@ -21,34 +21,35 @@ namespace NiL.JS.Statements.Operators
             try
             {
                 var temp = first.Invoke(context);
-                if (temp.ValueType != ObjectValueType.Statement)
+                if (temp.ValueType != JSObjectType.Function)
                     throw new ArgumentException(temp + " is not callable");
 
                 JSObject res = null;
-                var stat = (temp.oValue as Statement);
+                var stat = (temp.oValue as NiL.JS.Core.BaseTypes.Function);
                 var args = second.Invoke(context);
                 var sps = args.oValue as Statement[];
                 var newThisBind = context.thisBind;
                 context.thisBind = oldThisBind;
-                JSObject stmnts = new JSObject(true)
+                JSObject arguments = new JSObject(true)
                     {
-                        ValueType = ObjectValueType.Object,
+                        ValueType = JSObjectType.Object,
                         oValue = "[object Arguments]".Clone(),
-                        attributes = ObjectAttributes.DontDelete
+                        attributes = ObjectAttributes.DontDelete | ObjectAttributes.DontEnum
                     };
-                var length = stmnts.GetField("length", false, true);
-                length.ValueType = ObjectValueType.Int;
+                arguments.assignCallback = JSObject.ProtectAssignCallback;
+                var length = arguments.GetField("length", false, true);
+                length.ValueType = JSObjectType.Int;
                 length.iValue = sps == null ? 0 : sps.Length;
                 length.Protect();
                 length.attributes |= ObjectAttributes.DontEnum | ObjectAttributes.DontDelete;
                 for (int i = 0; i < length.iValue; i++)
                 {
-                    var a = stmnts.GetField(i.ToString());
+                    var a = arguments.GetField(i.ToString(), false, false);
                     a.Assign(sps[i].Invoke(context));
                     a.attributes |= ObjectAttributes.DontDelete | ObjectAttributes.DontEnum;
                 }
                 context.thisBind = newThisBind;
-                res = stat.Invoke(context, stmnts);
+                res = stat.Invoke(context, arguments);
                 return res;
             }
             finally

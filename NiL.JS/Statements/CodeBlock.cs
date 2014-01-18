@@ -22,7 +22,7 @@ namespace NiL.JS.Statements
         {
             this.body = body;
             length = body.Length - 1;
-            functions = new Function[0];
+            functions = new FunctionStatement[0];
             varibles = new string[0];
         }
 
@@ -44,13 +44,13 @@ namespace NiL.JS.Statements
                 var t = Parser.Parse(state, ref i, 0);
                 if (t == null || t is EmptyStatement)
                     continue;
-                if (t is Function)
-                    funcs.Add(t as Function);
+                if (t is FunctionStatement)
+                    funcs.Add(t as FunctionStatement);
                 else if (t is CodeBlock)
                 {
                     CodeBlock cb = t as CodeBlock;
                     funcs.AddRange(cb.functions);
-                    cb.functions = new Function[0];
+                    cb.functions = new FunctionStatement[0];
                     for (int cbi = cb.body.Length; cbi-- > 0; )
                         body.Add(cb.body[cbi]);
                 }
@@ -58,7 +58,7 @@ namespace NiL.JS.Statements
                 {
                     SwitchStatement cb = t as SwitchStatement;
                     funcs.AddRange(cb.functions);
-                    cb.functions = new Function[0];
+                    cb.functions = new FunctionStatement[0];
                     body.Add(t);
                 }
                 else
@@ -82,7 +82,7 @@ namespace NiL.JS.Statements
         {
             for (int i = functions.Length - 1; i >= 0; i--)
             {
-                var o = context.GetField((functions[i] as Function).Name);
+                var o = context.GetField((functions[i] as FunctionStatement).Name);
                 o.Assign(functions[i].Invoke(context));
                 o.assignCallback = JSObject.ErrorAssignCallback;
             }
@@ -97,11 +97,6 @@ namespace NiL.JS.Statements
                     return context.abortInfo;
             }
             return res;
-        }
-
-        public override JSObject Invoke(Context context, JSObject args)
-        {
-            throw new NotImplementedException();
         }
 
         public bool Optimize(ref Statement _this, int depth, System.Collections.Generic.HashSet<string> varibles)

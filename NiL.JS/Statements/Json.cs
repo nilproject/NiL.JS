@@ -1,4 +1,5 @@
 ﻿using NiL.JS.Core;
+using NiL.JS.Core.BaseTypes;
 using System;
 using System.Collections.Generic;
 
@@ -25,12 +26,12 @@ namespace NiL.JS.Statements
                     break;
                 if (Parser.Validate(code, "set", i))
                 {
-                    var setter = Function.Parse(state, ref i, Function.FunctionParseMode.Setter).Statement as Function;
+                    var setter = FunctionStatement.Parse(state, ref i, FunctionStatement.FunctionParseMode.Setter).Statement as FunctionStatement;
                     if (flds.IndexOf(setter.Name) == -1)
                     {
                         flds.Add(setter.Name);
                         var vle = new ImmidateValueStatement(new Statement[2] { setter, null });
-                        vle.Value.ValueType = ObjectValueType.Property;
+                        vle.Value.ValueType = JSObjectType.Property;
                         vls.Add(vle);
                     }
                     else
@@ -43,12 +44,12 @@ namespace NiL.JS.Statements
                 }
                 else if (Parser.Validate(code, "get", i))
                 {
-                    var getter = Function.Parse(state, ref i, Function.FunctionParseMode.Getter).Statement as Function;
+                    var getter = FunctionStatement.Parse(state, ref i, FunctionStatement.FunctionParseMode.Getter).Statement as FunctionStatement;
                     if (flds.IndexOf(getter.Name) == -1)
                     {
                         flds.Add(getter.Name);
                         var vle = new ImmidateValueStatement(new Statement[2] { null, getter });
-                        vle.Value.ValueType = ObjectValueType.Property;
+                        vle.Value.ValueType = JSObjectType.Property;
                         vls.Add(vle);
                     }
                     else
@@ -115,34 +116,29 @@ namespace NiL.JS.Statements
 
         public override JSObject Invoke(Context context)
         {
-            var res = new JSObject(false);
-            res.ValueType = ObjectValueType.Object;
+            var res = new JSObject(true);
+            res.ValueType = JSObjectType.Object;
             res.oValue = new object();
             res.prototype = new JSObject(false);
             res.prototype.Assign(NiL.JS.Core.BaseTypes.BaseObject.Prototype);
             for (int i = 0; i < fields.Length; i++)
             {
                 var val = values[i].Invoke(context);
-                if (val.ValueType == ObjectValueType.Property)
+                if (val.ValueType == JSObjectType.Property)
                 {
                     var gs = val.oValue as Statement[];
-                    val.oValue = new ContextStatement[] { gs[0] != null ? gs[0].Implement(context) : null, gs[1] != null ? gs[1].Implement(context) : null };
+                    val.oValue = new Function[] { gs[0] != null ? gs[0].Invoke(context) as Function : null, gs[1] != null ? gs[1].Invoke(context) as Function : null };
                 }
                 res.GetField(fields[i], false, true).Assign(val);
             }
             return res;
         }
 
-        public override JSObject Invoke(Context context, JSObject args)
-        {
-            throw new NotImplementedException();
-        }
-
         public bool Optimize(ref Statement _this, int depth, HashSet<string> vars)
         {
             for (int i = 0; i < values.Length; i++)
             {
-                if ((values[i] is ImmidateValueStatement) && ((values[i] as ImmidateValueStatement).Value.ValueType == ObjectValueType.Property))
+                if ((values[i] is ImmidateValueStatement) && ((values[i] as ImmidateValueStatement).Value.ValueType == JSObjectType.Property))
                 {
                     var gs = (values[i] as ImmidateValueStatement).Value.oValue as Statement[];
                     Parser.Optimize(ref gs[0], 1, vars);

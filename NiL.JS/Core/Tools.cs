@@ -13,22 +13,264 @@ namespace NiL.JS.Core
                 return double.NaN;
             var r = arg;
             double x = double.NaN;
-            if (r.ValueType == ObjectValueType.Int || r.ValueType == ObjectValueType.Bool)
+            if (r.ValueType == JSObjectType.Int || r.ValueType == JSObjectType.Bool)
                 x = r.iValue;
-            else if (r.ValueType == ObjectValueType.Double)
+            else if (r.ValueType == JSObjectType.Double)
                 x = r.dValue;
-            else if ((r.ValueType == ObjectValueType.Statement) || (r.ValueType == ObjectValueType.Undefined))
+            else if ((r.ValueType == JSObjectType.Function) || (r.ValueType == JSObjectType.Undefined))
                 return double.NaN;
-            else if ((r.ValueType == ObjectValueType.String))
+            else if ((r.ValueType == JSObjectType.String))
             {
                 int ix = 0;
                 string s = r.oValue as string;
-                Parser.ParseNumber(s, ref ix, false, out x);
+                Tools.ParseNumber(s, ref ix, false, out x);
             }
             return x;
         }
 
-        internal static string Unescape(string code)
+        public static bool ParseNumber(string code, ref int index, bool move, out double value)
+        {
+            value = double.NaN;
+            if (code.Length == 0)
+            {
+                value = 0.0;
+                return true;
+            }
+            int i = index;
+            while (char.IsWhiteSpace(code[i]) && !Tools.isLineTerminator(code[i])) i++;
+            int sig = 1;
+            if (code[i] == '-' || code[i] == '+')
+                sig = 44 - code[i++];
+            const string infinity = "Infinity";
+            for (int j = i; j < infinity.Length; j++)
+            {
+                if (code[j] != infinity[j - i])
+                    break;
+                else if (code[j] == 'y')
+                {
+                    if (move)
+                        index = j;
+                    value = sig * double.PositiveInfinity;
+                    return true;
+                }
+            }
+            bool h = false;
+            bool e = false;
+            bool d = false;
+            bool r = false;
+            bool n = false;
+            bool ch = true;
+            int s = i;
+            bool w = true;
+            while (w)
+            {
+                if (i >= code.Length)
+                {
+                    w = false;
+                    break;
+                }
+                switch (code[i])
+                {
+                    case '0':
+                    case '1':
+                    case '2':
+                    case '3':
+                    case '4':
+                    case '5':
+                    case '6':
+                    case '7':
+                    case '8':
+                    case '9':
+                        {
+                            r = true;
+                            n = true;
+                            break;
+                        }
+                    case 'A':
+                    case 'B':
+                    case 'C':
+                    case 'D':
+                    case 'F':
+                    case 'a':
+                    case 'b':
+                    case 'c':
+                    case 'd':
+                    case 'f':
+                        {
+                            if (!h || !ch)
+                            {
+                                i--;
+                                w = false;
+                                break;
+                            }
+                            e = false;
+                            n = true;
+                            r = true;
+                            break;
+                        }
+                    case 'x':
+                    case 'X':
+                        {
+                            if (h || !n || e || d || i - s != 1 || code[i - 1] != '0')
+                            {
+                                i--;
+                                w = false;
+                                break;
+                            }
+                            r = false;
+                            h = true;
+                            break;
+                        }
+                    case '.':
+                        {
+                            if (h || d || e)
+                            {
+                                i--;
+                                w = false;
+                                break;
+                            }
+                            r = true;
+                            d = true;
+                            break;
+                        }
+                    case 'E':
+                    case 'e':
+                        {
+                            if (e || !n)
+                            {
+                                i--;
+                                w = false;
+                                break;
+                            }
+                            r = true;
+                            e = !h;
+                            n = h;
+                            break;
+                        }
+                    case '-':
+                    case '+':
+                        {
+                            if (!e || !ch)
+                            {
+                                i--;
+                                w = false;
+                                break;
+                            }
+                            ch = false;
+                            break;
+                        }
+                    default:
+                        {
+                            i--;
+                            w = false;
+                            break;
+                        }
+                }
+                w &= ++i < code.Length;
+            }
+            if (r)
+            {
+                value = 0.0;
+                if (move)
+                    index = i;
+                i--;
+                int deg = 0;
+                if (e)
+                {
+                    int t = i;
+                    while (code[t] != 'e' && code[t] != 'E' && code[t] != '-' && code[t] != '+')
+                        t--;
+                    ch |= code[t] == '+';
+                    while (++t <= i)
+                    {
+                        deg *= 10;
+                        deg += code[t] - '0';
+                    }
+                    if (!ch)
+                        deg = -deg;
+                    while (code[i] != 'e' & code[i--] != 'E') ;
+                }
+                if (d || deg > 16 || i - s > 8 || deg < 0)
+                {
+                    if (h)
+                    {
+                        s += 2;
+                        for (; s <= i; s++)
+                            value = value * 16 + ((code[s] % 97 % 65 + 10) % 58);
+                    }
+                    else
+                    {
+                        long temp = 0;
+                        for (; (s <= i) && (code[s] != '.'); s++)
+                            temp = temp * 10 + (code[s] - '0');
+                        if (d)
+                        {
+                            s++;
+                            for (; s <= i; s++, deg--)
+                                temp = temp * 10 + (code[s] - '0');
+                        }
+                        if (deg < 0)
+                        {
+                            if (deg <= -16)
+                            {
+                                value = (double)((decimal)temp * (decimal)Math.Pow(10.0, -16));
+                                deg += 16;
+                            }
+                            else
+                            {
+                                value = (double)((decimal)temp * (decimal)Math.Pow(10.0, deg));
+                                deg = 0;
+                            }
+                        }
+                        else
+                        {
+                            if (deg >= 10)
+                            {
+                                value = (double)((decimal)temp * (decimal)Math.Pow(10.0, 10));
+                                deg -= 10;
+                            }
+                            else
+                            {
+                                value = (double)((decimal)temp * (decimal)Math.Pow(10.0, deg));
+                                deg = 0;
+                            }
+                        }
+                    }
+                    value *= sig;
+                    if (value == 0.0)
+                        return true;
+                    if (deg != 0)
+                    {
+                        var exp = Math.Pow(10.0, deg);
+                        value *= exp;
+                    }
+                    return true;
+                }
+                else
+                {
+                    if (h)
+                    {
+                        s += 2;
+                        for (; s <= i; s++)
+                            value = value * 16 + ((code[s] % 97 % 65 + 10) % 58);
+                    }
+                    else
+                    {
+                        for (; s <= i; s++)
+                            value = value * 10 + code[s] - '0';
+                    }
+                    value *= sig;
+                    if (value == 0)
+                        return true;
+                    for (; deg > 0; deg--)
+                        value *= 10;
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public static string Unescape(string code)
         {
             StringBuilder res = new StringBuilder(code.Length);
             for (int i = 0; i < code.Length; i++)

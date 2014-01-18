@@ -6,14 +6,17 @@ using NiL.JS.Core.Modules;
 
 namespace NiL.JS.Core.BaseTypes
 {
-    internal abstract class EmbeddedType : JSObject
+    public abstract class EmbeddedType : JSObject
     {
         [Hidden]
         private bool immutable;
+        [Hidden]
+        private JSObject constructor;
 
         protected EmbeddedType()
         {
             immutable = GetType().GetCustomAttributes(typeof(ImmutableAttribute), true).Length != 0;
+            oValue = this;
         }
 
         public virtual JSObject toString()
@@ -29,25 +32,45 @@ namespace NiL.JS.Core.BaseTypes
                     {
                         if (constructor != null)
                             return constructor;
-                        constructor = new JSObject();
-                        constructor.Assign(TypeProxy.GetConstructor(this.GetType()));
+                        if (immutable)
+                            constructor = TypeProxy.GetConstructor(this.GetType());
+                        else
+                        {
+                            constructor = new JSObject();
+                            constructor.Assign(TypeProxy.GetConstructor(this.GetType()));
+                        }
                         return constructor;
                     }
                 case "__proto__":
                     {
                         if (prototype != null)
                             return prototype;
-                        prototype = new JSObject();
-                        prototype.Assign(TypeProxy.GetPrototype(this.GetType()));
+                        if (immutable)
+                            prototype = TypeProxy.GetPrototype(this.GetType());
+                        else
+                        {
+                            prototype = new JSObject();
+                            prototype.Assign(TypeProxy.GetPrototype(this.GetType()));
+                        }
                         return prototype;
                     }
             }
             if (prototype == null)
             {
-                prototype = new JSObject();
-                prototype.Assign(TypeProxy.GetPrototype(this.GetType()));
+                if (immutable)
+                    prototype = TypeProxy.GetPrototype(this.GetType());
+                else
+                {
+                    prototype = new JSObject();
+                    prototype.Assign(TypeProxy.GetPrototype(this.GetType()));
+                }
             }
-            return prototype.GetField(name, fast || immutable, own);
+            return DefaultFieldGetter(name, fast, false);
+        }
+
+        public JSObject valueOf()
+        {
+            return this;
         }
     }
 }

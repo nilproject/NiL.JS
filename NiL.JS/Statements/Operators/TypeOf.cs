@@ -17,31 +17,31 @@ namespace NiL.JS.Statements.Operators
             var vt = val.ValueType;
             switch (vt)
             {
-                case ObjectValueType.Int:
-                case ObjectValueType.Double:
+                case JSObjectType.Int:
+                case JSObjectType.Double:
                     {
                         return "number";
                     }
-                case ObjectValueType.NotExist:
-                case ObjectValueType.NotExistInObject:
-                case ObjectValueType.Undefined:
+                case JSObjectType.NotExist:
+                case JSObjectType.NotExistInObject:
+                case JSObjectType.Undefined:
                     {
                         return "undefined";
                     }
-                case ObjectValueType.String:
+                case JSObjectType.String:
                     {
                         return "string";
                     }
-                case ObjectValueType.Bool:
+                case JSObjectType.Bool:
                     {
                         return "boolean";
                     }
-                case ObjectValueType.Statement:
+                case JSObjectType.Function:
                     {
                         return "function";
                     }
-                case ObjectValueType.Date:
-                case ObjectValueType.Object:
+                case JSObjectType.Date:
+                case JSObjectType.Object:
                     {
                         return "object";
                     }

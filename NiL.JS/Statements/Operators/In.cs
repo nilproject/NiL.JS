@@ -13,8 +13,9 @@ namespace NiL.JS.Statements.Operators
 
         public override JSObject Invoke(Context context)
         {
-            tempResult.ValueType = ObjectValueType.Bool;
-            tempResult.iValue = second.Invoke(context).GetField(first.Invoke(context).Value.ToString()).ValueType >= ObjectValueType.Undefined ? 1 : 0;
+            var t = second.Invoke(context).GetField(first.Invoke(context).ToString(), true, false);
+            tempResult.iValue = t != JSObject.undefined && t.ValueType >= JSObjectType.Undefined ? 1 : 0;
+            tempResult.ValueType = JSObjectType.Bool;
             return tempResult;
         }
     }

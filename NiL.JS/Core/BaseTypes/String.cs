@@ -7,36 +7,20 @@ namespace NiL.JS.Core.BaseTypes
     internal class String : EmbeddedType
     {
         public String()
+            : this("")
         {
-            oValue = "";
-            ValueType = ObjectValueType.String;
-            assignCallback = JSObject.ErrorAssignCallback;
-            _length = (oValue as string).Length;
-            length.assignCallback = null;
-            length.Protect();
         }
 
         public String(string s)
         {
             oValue = s;
-            ValueType = ObjectValueType.String;
+            ValueType = JSObjectType.String;
             assignCallback = JSObject.ErrorAssignCallback;
-            _length = (oValue as string).Length;
-            length.assignCallback = null;
-            length.Protect();
         }
 
         public String(JSObject[] s)
+            : this(s.Length > 0 ? s[0].ToString() : "")
         {
-            if (s.Length > 0)
-                oValue = s[0].ToString();
-            else
-                oValue = "";
-            ValueType = ObjectValueType.String;
-            assignCallback = JSObject.ErrorAssignCallback;
-            _length = (oValue as string).Length;
-            length.assignCallback = null;
-            length.Protect();
         }
 
         public JSObject this[object pos]
@@ -58,7 +42,7 @@ namespace NiL.JS.Core.BaseTypes
                 }
                 if ((p < 0) || (p >= (oValue as string).Length))
                     return JSObject.undefined;
-                return new JSObject(false) { ValueType = ObjectValueType.String, oValue = (oValue as string)[p].ToString(), assignCallback = () => { return false; } };
+                return new JSObject(false) { ValueType = JSObjectType.String, oValue = (oValue as string)[p].ToString(), assignCallback = () => { return false; } };
             }
         }
 
@@ -121,7 +105,7 @@ namespace NiL.JS.Core.BaseTypes
             else if (charCode is string)
             {
                 double d = 0;
-                if (Parser.ParseNumber((string)charCode, ref chc, false, out d))
+                if (Tools.ParseNumber((string)charCode, ref chc, false, out d))
                     chc = (int)d;
             }
             return new String() { oValue = ((char)chc).ToString() };
@@ -137,24 +121,24 @@ namespace NiL.JS.Core.BaseTypes
             {
                 switch(args[1].ValueType)
                 {
-                    case ObjectValueType.Int:
-                    case ObjectValueType.Bool:
+                    case JSObjectType.Int:
+                    case JSObjectType.Bool:
                         {
                             pos = args[1].iValue;
                             break;
                         }
-                    case ObjectValueType.Double:
+                    case JSObjectType.Double:
                         {
                             pos = (int)args[1].dValue;
                             break;
                         }
-                    case ObjectValueType.Object:
-                    case ObjectValueType.Date:
-                    case ObjectValueType.Statement:
-                    case ObjectValueType.String:
+                    case JSObjectType.Object:
+                    case JSObjectType.Date:
+                    case JSObjectType.Function:
+                    case JSObjectType.String:
                         {
                             double d;
-                            Parser.ParseNumber(args[1].ToString(), ref pos, false, out d);
+                            Tools.ParseNumber(args[1].ToString(), ref pos, false, out d);
                             pos = (int)d;
                             break;
                         }
@@ -173,24 +157,24 @@ namespace NiL.JS.Core.BaseTypes
             {
                 switch (args[1].ValueType)
                 {
-                    case ObjectValueType.Int:
-                    case ObjectValueType.Bool:
+                    case JSObjectType.Int:
+                    case JSObjectType.Bool:
                         {
                             pos = args[1].iValue;
                             break;
                         }
-                    case ObjectValueType.Double:
+                    case JSObjectType.Double:
                         {
                             pos = (int)args[1].dValue;
                             break;
                         }
-                    case ObjectValueType.Object:
-                    case ObjectValueType.Date:
-                    case ObjectValueType.Statement:
-                    case ObjectValueType.String:
+                    case JSObjectType.Object:
+                    case JSObjectType.Date:
+                    case JSObjectType.Function:
+                    case JSObjectType.String:
                         {
                             double d;
-                            Parser.ParseNumber(args[1].ToString(), ref pos, false, out d);
+                            Tools.ParseNumber(args[1].ToString(), ref pos, false, out d);
                             pos = (int)d;
                             break;
                         }
@@ -213,24 +197,24 @@ namespace NiL.JS.Core.BaseTypes
             int pos0 = 0;
             switch (args[0].ValueType)
             {
-                case ObjectValueType.Int:
-                case ObjectValueType.Bool:
+                case JSObjectType.Int:
+                case JSObjectType.Bool:
                     {
                         pos0 = args[0].iValue;
                         break;
                     }
-                case ObjectValueType.Double:
+                case JSObjectType.Double:
                     {
                         pos0 = (int)args[0].dValue;
                         break;
                     }
-                case ObjectValueType.Object:
-                case ObjectValueType.Date:
-                case ObjectValueType.Statement:
-                case ObjectValueType.String:
+                case JSObjectType.Object:
+                case JSObjectType.Date:
+                case JSObjectType.Function:
+                case JSObjectType.String:
                     {
                         double d;
-                        Parser.ParseNumber(args[0].ToString(), ref pos0, false, out d);
+                        Tools.ParseNumber(args[0].ToString(), ref pos0, false, out d);
                         pos0 = (int)d;
                         break;
                     }
@@ -240,24 +224,24 @@ namespace NiL.JS.Core.BaseTypes
             {
                 switch (args[1].ValueType)
                 {
-                    case ObjectValueType.Int:
-                    case ObjectValueType.Bool:
+                    case JSObjectType.Int:
+                    case JSObjectType.Bool:
                         {
                             pos1 = args[1].iValue;
                             break;
                         }
-                    case ObjectValueType.Double:
+                    case JSObjectType.Double:
                         {
                             pos1 = (int)args[1].dValue;
                             break;
                         }
-                    case ObjectValueType.Object:
-                    case ObjectValueType.Date:
-                    case ObjectValueType.Statement:
-                    case ObjectValueType.String:
+                    case JSObjectType.Object:
+                    case JSObjectType.Date:
+                    case JSObjectType.Function:
+                    case JSObjectType.String:
                         {
                             double d;
-                            Parser.ParseNumber(args[1].ToString(), ref pos1, false, out d);
+                            Tools.ParseNumber(args[1].ToString(), ref pos1, false, out d);
                             pos1 = (int)d;
                             break;
                         }
@@ -278,24 +262,24 @@ namespace NiL.JS.Core.BaseTypes
             {
                 switch (args[1].ValueType)
                 {
-                    case ObjectValueType.Int:
-                    case ObjectValueType.Bool:
+                    case JSObjectType.Int:
+                    case JSObjectType.Bool:
                         {
                             limit = args[1].iValue;
                             break;
                         }
-                    case ObjectValueType.Double:
+                    case JSObjectType.Double:
                         {
                             limit = (int)args[1].dValue;
                             break;
                         }
-                    case ObjectValueType.Object:
-                    case ObjectValueType.Date:
-                    case ObjectValueType.Statement:
-                    case ObjectValueType.String:
+                    case JSObjectType.Object:
+                    case JSObjectType.Date:
+                    case JSObjectType.Function:
+                    case JSObjectType.String:
                         {
                             double d;
-                            Parser.ParseNumber(args[1].ToString(), ref limit, false, out d);
+                            Tools.ParseNumber(args[1].ToString(), ref limit, false, out d);
                             limit = (int)d;
                             break;
                         }
@@ -319,24 +303,24 @@ namespace NiL.JS.Core.BaseTypes
             {
                 switch (args[1].ValueType)
                 {
-                    case ObjectValueType.Int:
-                    case ObjectValueType.Bool:
+                    case JSObjectType.Int:
+                    case JSObjectType.Bool:
                         {
                             pos0 = args[0].iValue;
                             break;
                         }
-                    case ObjectValueType.Double:
+                    case JSObjectType.Double:
                         {
                             pos0 = (int)args[0].dValue;
                             break;
                         }
-                    case ObjectValueType.Object:
-                    case ObjectValueType.Date:
-                    case ObjectValueType.Statement:
-                    case ObjectValueType.String:
+                    case JSObjectType.Object:
+                    case JSObjectType.Date:
+                    case JSObjectType.Function:
+                    case JSObjectType.String:
                         {
                             double d;
-                            Parser.ParseNumber(args[0].ToString(), ref pos0, false, out d);
+                            Tools.ParseNumber(args[0].ToString(), ref pos0, false, out d);
                             pos0 = (int)d;
                             break;
                         }
@@ -347,24 +331,24 @@ namespace NiL.JS.Core.BaseTypes
             {
                 switch (args[1].ValueType)
                 {
-                    case ObjectValueType.Int:
-                    case ObjectValueType.Bool:
+                    case JSObjectType.Int:
+                    case JSObjectType.Bool:
                         {
                             len = args[1].iValue;
                             break;
                         }
-                    case ObjectValueType.Double:
+                    case JSObjectType.Double:
                         {
                             len = (int)args[1].dValue;
                             break;
                         }
-                    case ObjectValueType.Object:
-                    case ObjectValueType.Date:
-                    case ObjectValueType.Statement:
-                    case ObjectValueType.String:
+                    case JSObjectType.Object:
+                    case JSObjectType.Date:
+                    case JSObjectType.Function:
+                    case JSObjectType.String:
                         {
                             double d;
-                            Parser.ParseNumber(args[1].ToString(), ref len, false, out d);
+                            Tools.ParseNumber(args[1].ToString(), ref len, false, out d);
                             len = (int)d;
                             break;
                         }
@@ -403,12 +387,13 @@ namespace NiL.JS.Core.BaseTypes
             return this;
         }
 
-        private readonly JSObject _length;
+        private static readonly Number _length = new Number(0) { assignCallback = JSObject.ProtectAssignCallback };
 
         public JSObject length
         {
             get
             {
+                _length.iValue = (oValue as string).Length;
                 return _length;
             }
         }
@@ -434,7 +419,7 @@ namespace NiL.JS.Core.BaseTypes
         {
             int index = 0;
             double dindex = 0.0;
-            if (Parser.ParseNumber(name, ref index, false, out dindex) && ((index = (int)dindex) == dindex))
+            if (Tools.ParseNumber(name, ref index, false, out dindex) && ((index = (int)dindex) == dindex))
                 return this[index];
             else
                 return base.GetField(name, fast, own);

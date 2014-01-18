@@ -17,56 +17,56 @@ namespace NiL.JS.Statements.Operators
             var lvt = temp.ValueType;
             switch (lvt)
             {
-                case ObjectValueType.Bool:
-                case ObjectValueType.Int:
+                case JSObjectType.Bool:
+                case JSObjectType.Int:
                     {
                         var iValue = temp.iValue;
                         temp = second.Invoke(context);
                         switch (temp.ValueType)
                         {
-                            case ObjectValueType.Bool:
-                            case ObjectValueType.Int:
+                            case JSObjectType.Bool:
+                            case JSObjectType.Int:
                                 {
                                     tempResult.iValue = iValue == temp.iValue ? 1 : 0;
                                     break;
                                 }
-                            case ObjectValueType.Double:
+                            case JSObjectType.Double:
                                 {
 
                                     tempResult.iValue = iValue == temp.dValue ? 1 : 0;
                                     break;
                                 }
-                            case ObjectValueType.String:
+                            case JSObjectType.String:
                                 {
                                     double d = 0;
                                     int i = 0;
                                     string v = temp.oValue as string;
-                                    if (Parser.ParseNumber(v, ref i, true, out d) && (i == v.Length))
+                                    if (Tools.ParseNumber(v, ref i, true, out d) && (i == v.Length))
                                         tempResult.iValue = iValue == d ? 1 : 0;
                                     else
                                         tempResult.iValue = 0;
                                     break;
                                 }
-                            case ObjectValueType.Object:
+                            case JSObjectType.Object:
                                 {
                                     temp = temp.ToPrimitiveValue_Value_String(context);
-                                    if (temp.ValueType == ObjectValueType.Int)
+                                    if (temp.ValueType == JSObjectType.Int)
                                     {
-                                        goto case ObjectValueType.Int;
+                                        goto case JSObjectType.Int;
                                     }
-                                    else if (temp.ValueType == ObjectValueType.Double)
+                                    else if (temp.ValueType == JSObjectType.Double)
                                     {
-                                        goto case ObjectValueType.Double;
+                                        goto case JSObjectType.Double;
                                     }
-                                    else if (temp.ValueType == ObjectValueType.Bool)
+                                    else if (temp.ValueType == JSObjectType.Bool)
                                     {
-                                        goto case ObjectValueType.Bool;
+                                        goto case JSObjectType.Bool;
                                     }
-                                    else if (temp.ValueType == ObjectValueType.String)
+                                    else if (temp.ValueType == JSObjectType.String)
                                     {
-                                        goto case ObjectValueType.String;
+                                        goto case JSObjectType.String;
                                     }
-                                    else if (temp.ValueType == ObjectValueType.Object)
+                                    else if (temp.ValueType == JSObjectType.Object)
                                     {
                                         tempResult.iValue = 0;
                                     }
@@ -77,54 +77,54 @@ namespace NiL.JS.Statements.Operators
                         }
                         break;
                     }
-                case ObjectValueType.Double:
+                case JSObjectType.Double:
                     {
                         var dValue = temp.dValue;
                         temp = second.Invoke(context);
                         switch (temp.ValueType)
                         {
-                            case ObjectValueType.Bool:
-                            case ObjectValueType.Int:
+                            case JSObjectType.Bool:
+                            case JSObjectType.Int:
                                 {
                                     tempResult.iValue = dValue == temp.iValue ? 1 : 0;
                                     break;
                                 }
-                            case ObjectValueType.Double:
+                            case JSObjectType.Double:
                                 {
                                     tempResult.iValue = dValue == temp.dValue ? 1 : 0;
                                     break;
                                 }
-                            case ObjectValueType.String:
+                            case JSObjectType.String:
                                 {
                                     double d = 0;
                                     int i = 0;
                                     string v = temp.oValue as string;
-                                    if (Parser.ParseNumber(v, ref i, true, out d) && (i == v.Length))
+                                    if (Tools.ParseNumber(v, ref i, true, out d) && (i == v.Length))
                                         tempResult.iValue = dValue == d ? 1 : 0;
                                     else
                                         tempResult.iValue = 0;
                                     break;
                                 }
-                            case ObjectValueType.Object:
+                            case JSObjectType.Object:
                                 {
                                     temp = temp.ToPrimitiveValue_Value_String(context);
-                                    if (temp.ValueType == ObjectValueType.Int)
+                                    if (temp.ValueType == JSObjectType.Int)
                                     {
-                                        goto case ObjectValueType.Int;
+                                        goto case JSObjectType.Int;
                                     }
-                                    else if (temp.ValueType == ObjectValueType.Double)
+                                    else if (temp.ValueType == JSObjectType.Double)
                                     {
-                                        goto case ObjectValueType.Double;
+                                        goto case JSObjectType.Double;
                                     }
-                                    else if (temp.ValueType == ObjectValueType.Bool)
+                                    else if (temp.ValueType == JSObjectType.Bool)
                                     {
-                                        goto case ObjectValueType.Bool;
+                                        goto case JSObjectType.Bool;
                                     }
-                                    else if (temp.ValueType == ObjectValueType.String)
+                                    else if (temp.ValueType == JSObjectType.String)
                                     {
-                                        goto case ObjectValueType.String;
+                                        goto case JSObjectType.String;
                                     }
-                                    else if (temp.ValueType == ObjectValueType.Object)
+                                    else if (temp.ValueType == JSObjectType.Object)
                                     {
                                         tempResult.iValue = 0;
                                     }
@@ -135,39 +135,39 @@ namespace NiL.JS.Statements.Operators
                         }
                         break;
                     }
-                case ObjectValueType.String:
+                case JSObjectType.String:
                     {
                         string left = temp.oValue as string;
                         temp = second.Invoke(context);
                         switch (temp.ValueType)
                         {
-                            case ObjectValueType.Bool:
-                            case ObjectValueType.Int:
+                            case JSObjectType.Bool:
+                            case JSObjectType.Int:
                                 {
                                     double d = 0;
                                     int i = 0;
-                                    if (Parser.ParseNumber(left, ref i, true, out d) && (i == left.Length))
+                                    if (Tools.ParseNumber(left, ref i, true, out d) && (i == left.Length))
                                         tempResult.iValue = d == temp.iValue ? 1 : 0;
                                     else
                                         tempResult.iValue = 0;
                                     break;
                                 }
-                            case ObjectValueType.Double:
+                            case JSObjectType.Double:
                                 {
                                     double d = 0;
                                     int i = 0;
-                                    if (Parser.ParseNumber(left, ref i, true, out d) && (i == left.Length))
+                                    if (Tools.ParseNumber(left, ref i, true, out d) && (i == left.Length))
                                         tempResult.iValue = d == temp.dValue ? 1 : 0;
                                     else
                                         tempResult.iValue = 0;
                                     break;
                                 }
-                            case ObjectValueType.String:
+                            case JSObjectType.String:
                                 {
                                     tempResult.iValue = left == temp.oValue as string ? 1 : 0;
                                     break;
                                 }
-                            case ObjectValueType.Object:
+                            case JSObjectType.Object:
                                 {
                                     if (temp.oValue == null)
                                         tempResult.iValue = left == null ? 1 : 0;
@@ -178,8 +178,8 @@ namespace NiL.JS.Statements.Operators
                                     }
                                     break;
                                 }
-                            case ObjectValueType.Undefined:
-                            case ObjectValueType.NotExistInObject:
+                            case JSObjectType.Undefined:
+                            case JSObjectType.NotExistInObject:
                                 {
                                     tempResult.iValue = 0;
                                     break;
@@ -188,37 +188,45 @@ namespace NiL.JS.Statements.Operators
                         }
                         break;
                     }
-                case ObjectValueType.Date:
-                case ObjectValueType.Object:
+                case JSObjectType.Function:
+                    {
+                        var left = temp.oValue;
+                        temp = second.Invoke(context);
+                        tempResult.iValue = left == temp.oValue ? 1 : 0;
+                        break;
+                    }
+                case JSObjectType.Proxy:
+                case JSObjectType.Date:
+                case JSObjectType.Object:
                     {
                         var stemp = second.Invoke(context);
                         var secondNValue = 0.0;
                         switch (stemp.ValueType)
                         {
-                            case ObjectValueType.Double:
-                            case ObjectValueType.Bool:
-                            case ObjectValueType.Int:
+                            case JSObjectType.Double:
+                            case JSObjectType.Bool:
+                            case JSObjectType.Int:
                                 {
-                                    secondNValue = stemp.ValueType == ObjectValueType.Double ? stemp.dValue : stemp.iValue;
+                                    secondNValue = stemp.ValueType == JSObjectType.Double ? stemp.dValue : stemp.iValue;
                                     temp = temp.ToPrimitiveValue_Value_String(context);
                                     switch (temp.ValueType)
                                     {
-                                        case ObjectValueType.Bool:
-                                        case ObjectValueType.Int:
+                                        case JSObjectType.Bool:
+                                        case JSObjectType.Int:
                                             {
                                                 tempResult.iValue = temp.iValue == secondNValue ? 1 : 0;
                                                 break;
                                             }
-                                        case ObjectValueType.Double:
+                                        case JSObjectType.Double:
                                             {
                                                 tempResult.iValue = temp.dValue == secondNValue ? 1 : 0;
                                                 break;
                                             }
-                                        case ObjectValueType.String:
+                                        case JSObjectType.String:
                                             {
                                                 double d = 0;
                                                 int i = 0;
-                                                if (Parser.ParseNumber(temp.oValue as string, ref i, true, out d) && (i == (temp.oValue as string).Length))
+                                                if (Tools.ParseNumber(temp.oValue as string, ref i, true, out d) && (i == (temp.oValue as string).Length))
                                                     tempResult.iValue = d == secondNValue ? 1 : 0;
                                                 else
                                                     tempResult.iValue = 0;
@@ -227,26 +235,26 @@ namespace NiL.JS.Statements.Operators
                                     }
                                     break;
                                 }
-                            case ObjectValueType.String:
+                            case JSObjectType.String:
                                 {
                                     var str = stemp.oValue as string;
                                     temp = temp.ToPrimitiveValue_Value_String(context);
                                     switch (temp.ValueType)
                                     {
-                                        case ObjectValueType.Double:
-                                        case ObjectValueType.Bool:
-                                        case ObjectValueType.Int:
+                                        case JSObjectType.Double:
+                                        case JSObjectType.Bool:
+                                        case JSObjectType.Int:
                                             {
-                                                secondNValue = temp.ValueType == ObjectValueType.Double ? temp.dValue : stemp.iValue;
+                                                secondNValue = temp.ValueType == JSObjectType.Double ? temp.dValue : stemp.iValue;
                                                 double d = 0;
                                                 int i = 0;
-                                                if (Parser.ParseNumber(str, ref i, true, out d) && (i == str.Length))
+                                                if (Tools.ParseNumber(str, ref i, true, out d) && (i == str.Length))
                                                     tempResult.iValue = d == secondNValue ? 1 : 0;
                                                 else
                                                     tempResult.iValue = 0;
                                                 break;
                                             }
-                                        case ObjectValueType.String:
+                                        case JSObjectType.String:
                                             {
                                                 tempResult.iValue = temp.oValue as string == str ? 1 : 0;
                                                 break;
@@ -259,20 +267,19 @@ namespace NiL.JS.Statements.Operators
                                     tempResult.iValue = temp.Value == stemp.Value ? 1 : 0;
                                     break;
                                 }
-                        }
-                        
+                        }                        
                         break;
                     }
-                case ObjectValueType.NotExistInObject:
-                case ObjectValueType.Undefined:
+                case JSObjectType.NotExistInObject:
+                case JSObjectType.Undefined:
                     {
                         temp = second.Invoke(context);
-                        tempResult.iValue = temp.ValueType == ObjectValueType.Undefined || temp.ValueType == ObjectValueType.NotExistInObject ? 1 : 0;
+                        tempResult.iValue = temp.ValueType == JSObjectType.Undefined || temp.ValueType == JSObjectType.NotExistInObject ? 1 : 0;
                         break;
                     }
                 default: throw new NotImplementedException();
             }
-            tempResult.ValueType = ObjectValueType.Bool;
+            tempResult.ValueType = JSObjectType.Bool;
             return tempResult;
         }
     }

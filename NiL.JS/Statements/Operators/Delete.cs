@@ -14,11 +14,11 @@ namespace NiL.JS.Statements.Operators
         public override JSObject Invoke(Context context)
         {
             var temp = first.Invoke(context);
-            tempResult.ValueType = ObjectValueType.Bool;
+            tempResult.ValueType = JSObjectType.Bool;
             if ((temp.attributes & ObjectAttributes.DontDelete) == 0)
             {
                 tempResult.iValue = 1;
-                temp.ValueType = ObjectValueType.NotExist;
+                temp.ValueType = JSObjectType.NotExist;
             }
             else
                 tempResult.iValue = 0;

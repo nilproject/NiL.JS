@@ -16,27 +16,27 @@ namespace NiL.JS.Statements.Operators
             var temp = first.Invoke(context);
 
             var lvt = temp.ValueType;
-            if (lvt == ObjectValueType.Int || lvt == ObjectValueType.Bool)
+            if (lvt == JSObjectType.Int || lvt == JSObjectType.Bool)
             {
                 var l = temp.iValue;
                 temp = second.Invoke(context);
-                if (temp.ValueType == ObjectValueType.Double)
+                if (temp.ValueType == JSObjectType.Double)
                     return l == temp.dValue;
                 if (lvt != temp.ValueType)
                     return false;
                 return l == temp.iValue;
             }
-            if (lvt == ObjectValueType.Double)
+            if (lvt == JSObjectType.Double)
             {
                 var l = temp.dValue;
                 temp = second.Invoke(context);
-                if (temp.ValueType == ObjectValueType.Int)
+                if (temp.ValueType == JSObjectType.Int)
                     return l == temp.iValue;
                 if (lvt != temp.ValueType)
                     return false;
                 return l == temp.dValue;
             }
-            if (lvt == ObjectValueType.Statement)
+            if (lvt == JSObjectType.Function)
             {
                 var l = temp.oValue;
                 temp = second.Invoke(context);
@@ -44,7 +44,7 @@ namespace NiL.JS.Statements.Operators
                     return false;
                 return l == temp.oValue;
             }
-            if (lvt == ObjectValueType.Object)
+            if (lvt == JSObjectType.Object)
             {
                 var l = temp.oValue;
                 temp = second.Invoke(context);
@@ -54,7 +54,7 @@ namespace NiL.JS.Statements.Operators
                     return l == temp.oValue;
                 return l.Equals(temp.oValue);
             }
-            if (lvt == ObjectValueType.String)
+            if (lvt == JSObjectType.String)
             {
                 var l = temp.oValue;
                 temp = second.Invoke(context);
@@ -62,11 +62,11 @@ namespace NiL.JS.Statements.Operators
                     return false;
                 return l.Equals(temp.oValue);
             }
-            if (lvt == ObjectValueType.Undefined || lvt == ObjectValueType.NotExistInObject)
+            if (lvt == JSObjectType.Undefined || lvt == JSObjectType.NotExistInObject)
             {
                 var l = temp.dValue;
                 temp = second.Invoke(context);
-                return temp.ValueType == ObjectValueType.Undefined || temp.ValueType == ObjectValueType.NotExistInObject;
+                return temp.ValueType == JSObjectType.Undefined || temp.ValueType == JSObjectType.NotExistInObject;
             }
             throw new InvalidOperationException();
         }

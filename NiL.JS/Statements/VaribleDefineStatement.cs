@@ -74,11 +74,6 @@ namespace NiL.JS.Statements
             throw new InvalidOperationException("VaribleDefineStatement.Invoke");
         }
 
-        public override JSObject Invoke(Context context, JSObject args)
-        {
-            throw new NotImplementedException();
-        }
-
         public bool Optimize(ref Statement _this, int depth, System.Collections.Generic.HashSet<string> varibles)
         {
             if (initializators.Length > 1)

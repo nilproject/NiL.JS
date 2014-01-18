@@ -48,11 +48,6 @@ namespace NiL.JS.Statements
             return JSObject.undefined;
         }
 
-        public override JSObject Invoke(Context context, JSObject args)
-        {
-            throw new NotImplementedException();
-        }
-
         public bool Optimize(ref Statement _this, int depth, System.Collections.Generic.HashSet<string> varibles)
         {
             Parser.Optimize(ref statement, depth, varibles);

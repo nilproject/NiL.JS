@@ -5,12 +5,12 @@ namespace NiL.JS.Statements.Operators
 {
     internal class Assign : Operator
     {
-        private static JSObject setterArgs = new JSObject(true) { ValueType = ObjectValueType.Object, oValue = "[object Arguments]" };
+        private static JSObject setterArgs = new JSObject(true) { ValueType = JSObjectType.Object, oValue = "[object Arguments]" };
         private static JSObject setterArg = new JSObject();
 
         static Assign()
         {
-            setterArgs.fields["length"] = new JSObject() { iValue = 1, ValueType = ObjectValueType.Int, assignCallback = JSObject.ProtectAssignCallback };
+            setterArgs.fields["length"] = new JSObject() { iValue = 1, ValueType = JSObjectType.Int, assignCallback = JSObject.ProtectAssignCallback };
             setterArgs.fields["0"] = setterArg;
         }
 
@@ -23,15 +23,15 @@ namespace NiL.JS.Statements.Operators
         {
             var val = second.Invoke(context);
             var field = first.InvokeForAssing(context);
-            if (field.ValueType == ObjectValueType.Property)
+            if (field.ValueType == JSObjectType.Property)
             {
-                var setter = (field.oValue as Statement[])[0];
+                var setter = (field.oValue as NiL.JS.Core.BaseTypes.Function[])[0];
                 if (setter != null)
                 {
                     setterArg.assignCallback = null;
                     setterArg.Assign(val);
                     setterArg.assignCallback = JSObject.ProtectAssignCallback;
-                    setter.Invoke(context, setterArgs);
+                    setter.Invoke(context.thisBind, setterArgs);
                 }
             }
             else
