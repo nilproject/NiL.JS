@@ -24,24 +24,29 @@ namespace NiL.JS.Statements
             while (char.IsWhiteSpace(code[i])) i++;
             var b = CodeBlock.Parse(state, ref i).Statement;
             while (char.IsWhiteSpace(code[i])) i++;
-            if (!Parser.Validate(code, "catch (", ref i) && !Parser.Validate(code, "catch(", ref i))
-                throw new ArgumentException("code (" + i + ")");
-            int s = i;
-            if (!Parser.ValidateName(code, ref i, true))
-                throw new ArgumentException("code (" + i + ")");
-            string exptn = Tools.Unescape(code.Substring(s, i - s));
-            while (char.IsWhiteSpace(code[i])) i++;
-            if (!Parser.Validate(code, ")", ref i))
-                throw new ArgumentException("code (" + i + ")");
-            while (char.IsWhiteSpace(code[i])) i++;
-            var cb = CodeBlock.Parse(state, ref i).Statement;
-            while (char.IsWhiteSpace(code[i])) i++;
+            Statement cb = null;
+            string exptn = null;
+            if (Parser.Validate(code, "catch (", ref i) || Parser.Validate(code, "catch(", ref i))
+            {
+                int s = i;
+                if (!Parser.ValidateName(code, ref i, true))
+                    throw new ArgumentException("code (" + i + ")");
+                exptn = Tools.Unescape(code.Substring(s, i - s));
+                while (char.IsWhiteSpace(code[i])) i++;
+                if (!Parser.Validate(code, ")", ref i))
+                    throw new ArgumentException("code (" + i + ")");
+                while (char.IsWhiteSpace(code[i])) i++;
+                cb = CodeBlock.Parse(state, ref i).Statement;
+                while (char.IsWhiteSpace(code[i])) i++;
+            }
             Statement f = null;
             if (Parser.Validate(code, "finally", ref i))
             {
                 while (char.IsWhiteSpace(code[i])) i++;
                 f = CodeBlock.Parse(state, ref i).Statement;
             }
+            if (cb == null && f == null)
+                throw new ArgumentException("try block mast contain 'catch' or/and 'finally' block");
             index = i;
             return new ParseResult()
             {
@@ -59,23 +64,29 @@ namespace NiL.JS.Statements
 
         public override JSObject Invoke(Context context)
         {
-
             try
             {
                 body.Invoke(context);
             }
             catch (JSException e)
             {
-                var eo = context.Define(exptName);
-                eo.Assign(e.Avatar);
+                if (catchBody != null)
+                {
+                    var eo = context.Define(exptName);
+                    eo.Assign(e.Avatar);
+                    catchBody.Invoke(context);
+                }
             }
             catch (Exception e)
             {
-                var eo = context.Define(exptName);
-                eo.ValueType = JSObjectType.Object;
-                eo.oValue = e;
-                eo.GetField("message", false, false).Assign(e.Message);
-                catchBody.Invoke(context);
+                if (catchBody != null)
+                {
+                    var eo = context.Define(exptName);
+                    eo.ValueType = JSObjectType.Object;
+                    eo.oValue = e;
+                    eo.GetField("message", false, false).Assign(e.Message);
+                    catchBody.Invoke(context);
+                }
             }
             finally
             {

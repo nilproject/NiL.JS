@@ -25,6 +25,7 @@ namespace NiL.JS.Core
                 string s = r.oValue as string;
                 Tools.ParseNumber(s, ref ix, false, out x);
             }
+            else throw new NotImplementedException();
             return x;
         }
 
@@ -37,7 +38,12 @@ namespace NiL.JS.Core
                 return true;
             }
             int i = index;
-            while (char.IsWhiteSpace(code[i]) && !Tools.isLineTerminator(code[i])) i++;
+            while (i < code.Length && char.IsWhiteSpace(code[i]) && !Tools.isLineTerminator(code[i])) i++;
+            if (i == code.Length)
+            {
+                value = 0.0;
+                return true;
+            }
             int sig = 1;
             if (code[i] == '-' || code[i] == '+')
                 sig = 44 - code[i++];
