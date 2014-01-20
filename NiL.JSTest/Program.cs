@@ -182,7 +182,7 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * 3 * i; }
             //benchmark();
             //featureSupportTest();
             //runFile(@"ftest.js");
-            sputnicTests(@"C:\Users\Дмитрий\Documents\Projects\NiL.JS\NiL.JSTest\tests\Conformance\11_Expressions\11.5_Multiplicative_Operators");
+            sputnicTests();
             //testEx();
 
             GC.Collect();

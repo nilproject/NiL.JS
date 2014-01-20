@@ -186,59 +186,61 @@ namespace NiL.JS.Core
                             if (constructor != null)
                                 args = new object[] { y };
                         }
-
-                        argtypes[0] = typeof(object[]);
-                        constructor = hostedType.GetConstructor(argtypes);
-                        if (constructor != null)
-                        {
-                            args = new object[len];
-                            for (int i = 0; i < len; i++)
-                                args[i] = y.GetField(i.ToString(), true, false);
-                            args = new[] { args };
-                        }
-                        else
-                        {
-                            argtypes[0] = typeof(JSObject[]);
-                            constructor = hostedType.GetConstructor(argtypes);
-                            if (constructor != null)
-                            {
-                                args = new JSObject[len];
-                                for (int i = 0; i < len; i++)
-                                    args[i] = y.GetField(i.ToString(), true, false);
-                                args = new[] { args };
-                            }
-                        }
                         if (constructor == null)
                         {
-                            argtypes = new Type[len];
-                            for (int i = 0; i < len; i++)
-                                argtypes[i] = typeof(JSObject);
+                            argtypes[0] = typeof(object[]);
                             constructor = hostedType.GetConstructor(argtypes);
                             if (constructor != null)
                             {
                                 args = new object[len];
                                 for (int i = 0; i < len; i++)
                                     args[i] = y.GetField(i.ToString(), true, false);
+                                args = new[] { args };
                             }
                             else
                             {
-                                for (int i = 0; i < len; i++)
-                                    argtypes[i] = y.GetField(i.ToString(), true, false).Value.GetType();
+                                argtypes[0] = typeof(JSObject[]);
                                 constructor = hostedType.GetConstructor(argtypes);
-                                if (constructor == null)
+                                if (constructor != null)
                                 {
+                                    args = new JSObject[len];
                                     for (int i = 0; i < len; i++)
-                                        argtypes[i] = typeof(object);
-                                    constructor = hostedType.GetConstructor(argtypes);
+                                        args[i] = y.GetField(i.ToString(), true, false);
+                                    args = new[] { args };
                                 }
+                            }
+                            if (constructor == null)
+                            {
+                                argtypes = new Type[len];
+                                for (int i = 0; i < len; i++)
+                                    argtypes[i] = typeof(JSObject);
+                                constructor = hostedType.GetConstructor(argtypes);
                                 if (constructor != null)
                                 {
                                     args = new object[len];
                                     for (int i = 0; i < len; i++)
-                                        args[i] = y.GetField(i.ToString(), true, false).Value;
+                                        args[i] = y.GetField(i.ToString(), true, false);
                                 }
                                 else
-                                    constructor = hostedType.GetConstructor(Type.EmptyTypes);
+                                {
+                                    for (int i = 0; i < len; i++)
+                                        argtypes[i] = y.GetField(i.ToString(), true, false).Value.GetType();
+                                    constructor = hostedType.GetConstructor(argtypes);
+                                    if (constructor == null)
+                                    {
+                                        for (int i = 0; i < len; i++)
+                                            argtypes[i] = typeof(object);
+                                        constructor = hostedType.GetConstructor(argtypes);
+                                    }
+                                    if (constructor != null)
+                                    {
+                                        args = new object[len];
+                                        for (int i = 0; i < len; i++)
+                                            args[i] = y.GetField(i.ToString(), true, false).Value;
+                                    }
+                                    else
+                                        constructor = hostedType.GetConstructor(Type.EmptyTypes);
+                                }
                             }
                         }
                     }

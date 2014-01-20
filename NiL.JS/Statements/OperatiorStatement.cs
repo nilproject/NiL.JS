@@ -1374,8 +1374,8 @@ namespace NiL.JS.Statements
         private JSObject OpUnsignedShiftRight(Context context)
         {
             var left = Tools.JSObjectToInt(first.Invoke(context));
-            tempResult.iValue = (int)((uint)left >> Tools.JSObjectToInt(second.Invoke(context)));
-            tempResult.ValueType = JSObjectType.Int;
+            tempResult.dValue = (double)((uint)left >> Tools.JSObjectToInt(second.Invoke(context)));
+            tempResult.ValueType = JSObjectType.Double;
             return tempResult;
         }
 
@@ -1624,17 +1624,9 @@ namespace NiL.JS.Statements
 
         private JSObject OpNot(Context context)
         {
-            var val = first.Invoke(context);
-            JSObject o = tempResult;
-            var vt = val.ValueType;
-            o.ValueType = JSObjectType.Int;
-            if (vt == JSObjectType.Int || vt == JSObjectType.Bool)
-                o.iValue = val.iValue ^ -1;
-            else if (vt == JSObjectType.Double)
-                o.iValue = (int)val.dValue ^ -1;
-            else
-                o.iValue = -1;
-            return o;
+            tempResult.iValue = Tools.JSObjectToInt(first.Invoke(context)) ^ -1;
+            tempResult.ValueType = JSObjectType.Int;
+            return tempResult;
         }
 
         private JSObject OpTernary(Context context)

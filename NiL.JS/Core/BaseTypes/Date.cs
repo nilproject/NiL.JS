@@ -1,22 +1,44 @@
 ﻿using System;
+using NiL.JS.Core.Modules;
 
 namespace NiL.JS.Core.BaseTypes
 {
     internal class Date
     {
+        [Hidden]
+        private readonly static long UTCBase = new DateTime(1970, 1, 1).Ticks;
+
+        [Hidden]
         private readonly static string[] month = new[] { "Jun", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
 
-        private DateTime host = DateTime.Now;
+        [Hidden]
+        private DateTime host;
+        [Hidden]
+        private bool error = false;
 
         public Date()
         {
-
+            host = DateTime.Now;
         }
 
-        public long valueOf()
+        public Date(JSObject args)
         {
-            var res = host.Ticks - new DateTime(1970, 1, 1).Ticks;
-            return res / 10000;
+            try
+            {
+                host = new DateTime((long)Tools.JSObjectToDouble(args.GetField("0", true, false)) + UTCBase);
+            }
+            catch
+            {
+                error = true;
+            }
+        }
+
+        public double valueOf()
+        {
+            if (error)
+                return double.NaN;
+            var res = host.Ticks - UTCBase;
+            return res;
         }
 
         public string toString()

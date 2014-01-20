@@ -44,6 +44,8 @@ namespace NiL.JS.Core
                 case JSObjectType.Undefined:
                 case JSObjectType.NotExistInObject:
                     return double.NaN;
+                case JSObjectType.NotExist:
+                    throw new InvalidOperationException("Varible not defined.");
                 default:
                     throw new NotImplementedException();
             }
@@ -63,7 +65,9 @@ namespace NiL.JS.Core
                     }
                 case JSObjectType.Double:
                     {
-                        return (int)r.dValue;
+                        if (double.IsNaN(r.dValue) || double.IsInfinity(r.dValue))
+                            return 0;
+                        return (int)((long)r.dValue & 0xFFFFFFFF);
                     }
                 case JSObjectType.String:
                     {
@@ -110,14 +114,14 @@ namespace NiL.JS.Core
             if (code[i] == '-' || code[i] == '+')
                 sig = 44 - code[i++];
             const string infinity = "Infinity";
-            for (int j = i; j < infinity.Length; j++)
+            for (int j = i; (j - i) < infinity.Length; j++)
             {
                 if (code[j] != infinity[j - i])
                     break;
                 else if (code[j] == 'y')
                 {
                     if (move)
-                        index = j;
+                        index = j + 1;
                     value = sig * double.PositiveInfinity;
                     return true;
                 }
@@ -269,19 +273,32 @@ namespace NiL.JS.Core
                     else
                     {
                         long temp = 0;
+                        int l = 0;
                         for (; (s <= i) && (code[s] != '.'); s++)
-                            temp = temp * 10 + (code[s] - '0');
+                            if (l <= 18)
+                            {
+                                temp = temp * 10 + (code[s] - '0');
+                                l++;
+                            }
+                            else
+                                deg++;
                         if (d)
                         {
                             s++;
                             for (; s <= i; s++, deg--)
-                                temp = temp * 10 + (code[s] - '0');
+                                if (l <= 18)
+                                {
+                                    temp = temp * 10 + (code[s] - '0');
+                                    l++;
+                                }
+                                else
+                                    deg++;
                         }
                         if (deg < 0)
                         {
-                            if (deg <= -16)
+                            if (deg < -16)
                             {
-                                value = (double)((decimal)temp * (decimal)Math.Pow(10.0, -16));
+                                value = (double)((decimal)temp * 0.0000000000000001M);
                                 deg += 16;
                             }
                             else
@@ -290,11 +307,11 @@ namespace NiL.JS.Core
                                 deg = 0;
                             }
                         }
-                        else
+                        else if (deg != 0)
                         {
-                            if (deg >= 10)
+                            if (deg > 10)
                             {
-                                value = (double)((decimal)temp * (decimal)Math.Pow(10.0, 10));
+                                value = (double)((decimal)temp * 10000000000M);
                                 deg -= 10;
                             }
                             else
@@ -303,6 +320,7 @@ namespace NiL.JS.Core
                                 deg = 0;
                             }
                         }
+                        else value = temp;
                     }
                     value *= sig;
                     if (value == 0.0)
@@ -478,6 +496,27 @@ namespace NiL.JS.Core
                     res.Append(code[i++]);
             }
             return res.ToString();
+        }
+
+        internal static string DoubleToString(double d)
+        {
+            if (0.0 == d || double.IsInfinity(d) || double.IsNaN(d))
+                return d.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            if (Math.Abs(d) < 1.0)
+            {
+                if (d == (d % 0.000001))
+                    return d.ToString("0.####e-0", System.Globalization.CultureInfo.InvariantCulture);
+                if (d == (d % 0.001))
+                {
+                    var t = Math.Sign(d);
+                    d = Math.Abs(d);
+                    if (t < 0)
+                        return d.ToString("-0.##########", System.Globalization.CultureInfo.InvariantCulture);
+                }
+            }
+            else if (Math.Abs(d) >= 1e+21)
+                return d.ToString("0.####e+0", System.Globalization.CultureInfo.InvariantCulture);
+            return d.ToString("0.##########", System.Globalization.CultureInfo.InvariantCulture);
         }
     }
 }

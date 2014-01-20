@@ -389,7 +389,12 @@ namespace NiL.JS.Core
                 GetField("__proto__", true, true);
             else if (oValue is JSObject)
                 return oValue.ToString();
-            return ToPrimitiveValue_String_Value(new Context(Context.globalContext) { thisBind = this }).Value.ToString();
+            var res = ToPrimitiveValue_String_Value(new Context(Context.globalContext) { thisBind = this }).Value;
+            if (res is bool)
+                return (bool)res ? "true":"false";
+            if (res is double)
+                return Tools.DoubleToString((double)res);
+            return (res ?? "null").ToString();
         }
 
         [Modules.Hidden]

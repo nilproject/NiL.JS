@@ -39,7 +39,7 @@ namespace NiL.JS.Core.BaseTypes
         public Boolean(JSObject obj)
         {
             ValueType = JSObjectType.Bool;
-            iValue = (bool)obj ? 1 : 0;
+            iValue = (bool)(obj.GetField("0", true, false)) ? 1 : 0;
             assignCallback = JSObject.ErrorAssignCallback;
         }
     }

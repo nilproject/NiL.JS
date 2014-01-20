@@ -67,55 +67,8 @@ namespace NiL.JS.Core.BaseTypes
 
         public Number(JSObject obj)
         {
-            ValueType = JSObjectType.Int;
-            switch(obj.ValueType)
-            {
-                case JSObjectType.Bool:
-                case JSObjectType.Int:
-                    {
-                        iValue = obj.iValue;
-                        break;
-                    }
-                case JSObjectType.Double:
-                    {
-                        dValue = obj.dValue;
-                        ValueType = JSObjectType.Double;
-                        break;
-                    }
-                case JSObjectType.String:
-                    {
-                        double d = 0;
-                        int i = 0;
-                        if (Tools.ParseNumber(obj.oValue.ToString(), ref i, false, out d))
-                        {
-                            dValue = d;
-                            ValueType = JSObjectType.Double;
-                        }
-                        break;
-                    }
-                case JSObjectType.Object:
-                    {
-                        obj = obj.ToPrimitiveValue_Value_String(new Context(Context.globalContext));
-                        if (obj.ValueType == JSObjectType.String)
-                            goto case JSObjectType.String;
-                        if (obj.ValueType == JSObjectType.Int)
-                            goto case JSObjectType.Int;
-                        if (obj.ValueType == JSObjectType.Double)
-                            goto case JSObjectType.Double;
-                        if (obj.ValueType == JSObjectType.Bool)
-                            goto case JSObjectType.Bool;
-                        break;
-                    }
-                case JSObjectType.Undefined:
-                case JSObjectType.NotExistInObject:
-                    {
-                        ValueType = JSObjectType.Double;
-                        dValue = double.NaN;
-                        break;
-                    }
-                case JSObjectType.NotExist:
-                    throw new InvalidOperationException("Varible not defined.");
-            }
+            ValueType = JSObjectType.Double;
+            dValue = Tools.JSObjectToDouble(obj.GetField("0", true, false));
             assignCallback = JSObject.ErrorAssignCallback;
         }
 
@@ -312,7 +265,7 @@ namespace NiL.JS.Core.BaseTypes
 
         public override string ToString()
         {
-            return ValueType == JSObjectType.Int ? iValue.ToString() : dValue.ToString();
+            return ValueType == JSObjectType.Int ? iValue.ToString() : Tools.DoubleToString(dValue);
         }
 
         public override int GetHashCode()

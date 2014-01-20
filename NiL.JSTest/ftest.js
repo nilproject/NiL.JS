@@ -1,1 +1,1 @@
-﻿console.log(( -Infinity * 1))
+﻿console.log(-1000000000000000000000..toString())

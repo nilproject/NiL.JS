@@ -26,60 +26,27 @@ namespace NiL.JS.Core.BaseTypes
         {
         }
 
-        public JSObject this[object pos]
+        public JSObject this[int pos]
         {
             get
             {
-                int p = 0;
-                if (pos is int)
-                    p = (int)pos;
-                else if (pos is double)
-                    p = (int)(double)pos;
-                else if (pos is string)
-                {
-                    double d = 0;
-                    if (double.TryParse((string)pos, out d))
-                        p = (int)d;
-                    else
-                        return JSObject.undefined;
-                }
-                if ((p < 0) || (p >= (oValue as string).Length))
+                if ((pos < 0) || (pos >= (oValue as string).Length))
                     return JSObject.undefined;
-                return new JSObject(false) { ValueType = JSObjectType.String, oValue = (oValue as string)[p].ToString(), assignCallback = () => { return false; } };
+                return new JSObject(false) { ValueType = JSObjectType.String, oValue = (oValue as string)[pos].ToString(), assignCallback = () => { return false; } };
             }
         }
 
-        public string charAt(object pos)
+        public string charAt(JSObject pos)
         {
-            int p = 0;
-            if (pos is int)
-                p = (int)pos;
-            else if (pos is double)
-                p = (int)(double)pos;
-            else if (pos is string)
-            {
-                double d = 0;
-                if (double.TryParse((string)pos, out d))
-                    p = (int)d;
-            }
+            int p = Tools.JSObjectToInt(pos.GetField("0", true, false));
             if ((p < 0) || (p >= (oValue as string).Length))
                 return "";
             return (oValue as string)[p].ToString();
         }
 
-        public double charCodeAt(object pos)
+        public double charCodeAt(JSObject pos)
         {
-            int p = 0;
-            if (pos is int)
-                p = (int)pos;
-            else if (pos is double)
-                p = (int)(double)pos;
-            else if (pos is string)
-            {
-                double d = 0;
-                if (double.TryParse((string)pos, out d))
-                    p = (int)d;
-            }
+            int p = Tools.JSObjectToInt(pos.GetField("0", true, false));
             if ((p < 0) || (p >= (oValue as string).Length))
                 return double.NaN;
             return (int)(oValue as string)[p];
@@ -96,21 +63,9 @@ namespace NiL.JS.Core.BaseTypes
         public static JSObject fromCharCode(JSObject[] code)
         {
             int chc = 0;
-            if (code.Length == 0)
+            if (code == null || code.Length == 0)
                 return new String();
-            object charCode = code[0].Value;
-            if (charCode is String)
-                charCode = (charCode as String).oValue;
-            if (charCode is int)
-                chc = (int)charCode;
-            else if (charCode is double)
-                chc = (int)(double)charCode;
-            else if (charCode is string)
-            {
-                double d = 0;
-                if (Tools.ParseNumber((string)charCode, ref chc, false, out d))
-                    chc = (int)d;
-            }
+            chc = Tools.JSObjectToInt(code[0]);
             result.oValue = ((char)chc).ToString();
             return result;
         }
