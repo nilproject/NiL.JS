@@ -30,6 +30,8 @@ namespace NiL.JS.Statements.Operators
             {
                 var l = temp.dValue;
                 temp = second.Invoke(context);
+                if (double.IsNaN(l))
+                    tempResult.iValue = this is StrictNotEqual ? 1 : 0; // Костыль. Для его устранения нужно делать полноценную реализацию оператора StrictNotEqual.
                 if (temp.ValueType == JSObjectType.Int)
                     return l == temp.iValue;
                 if (lvt != temp.ValueType)

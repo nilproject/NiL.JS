@@ -12,21 +12,83 @@ namespace NiL.JS.Core
             if (arg == null)
                 return double.NaN;
             var r = arg;
-            double x = double.NaN;
-            if (r.ValueType == JSObjectType.Int || r.ValueType == JSObjectType.Bool)
-                x = r.iValue;
-            else if (r.ValueType == JSObjectType.Double)
-                x = r.dValue;
-            else if ((r.ValueType == JSObjectType.Function) || (r.ValueType == JSObjectType.Undefined))
-                return double.NaN;
-            else if ((r.ValueType == JSObjectType.String))
+            switch (r.ValueType)
             {
-                int ix = 0;
-                string s = r.oValue as string;
-                Tools.ParseNumber(s, ref ix, false, out x);
+                case JSObjectType.Bool:
+                case JSObjectType.Int:
+                    {
+                        return r.iValue;
+                    }
+                case JSObjectType.Double:
+                    {
+                        return r.dValue;
+                    }
+                case JSObjectType.String:
+                    {
+                        double x = double.NaN;
+                        int ix = 0;
+                        string s = (r.oValue as string).Trim();
+                        if (Tools.ParseNumber(s, ref ix, true, out x) && ix < s.Length)
+                            return double.NaN;
+                        return x;
+                    }
+                case JSObjectType.Date:
+                case JSObjectType.Function:
+                case JSObjectType.Object:
+                    {
+                        if (r.oValue == null)
+                            return 0;
+                        r = r.ToPrimitiveValue_Value_String(Context.globalContext);
+                        return JSObjectToDouble(r);
+                    }
+                case JSObjectType.Undefined:
+                case JSObjectType.NotExistInObject:
+                    return double.NaN;
+                default:
+                    throw new NotImplementedException();
             }
-            else throw new NotImplementedException();
-            return x;
+        }
+
+        public static int JSObjectToInt(JSObject arg)
+        {
+            if (arg == null)
+                return 0;
+            var r = arg;
+            switch (r.ValueType)
+            {
+                case JSObjectType.Bool:
+                case JSObjectType.Int:
+                    {
+                        return r.iValue;
+                    }
+                case JSObjectType.Double:
+                    {
+                        return (int)r.dValue;
+                    }
+                case JSObjectType.String:
+                    {
+                        double x = 0;
+                        int ix = 0;
+                        string s = (r.oValue as string).Trim();
+                        if (!Tools.ParseNumber(s, ref ix, true, out x) || ix < s.Length)
+                            return 0;
+                        return (int)x;
+                    }
+                case JSObjectType.Date:
+                case JSObjectType.Function:
+                case JSObjectType.Object:
+                    {
+                        if (r.oValue == null)
+                            return 0;
+                        r = r.ToPrimitiveValue_Value_String(Context.globalContext);
+                        return JSObjectToInt(r);
+                    }
+                case JSObjectType.Undefined:
+                case JSObjectType.NotExistInObject:
+                    return 0;
+                default:
+                    throw new NotImplementedException();
+            }
         }
 
         public static bool ParseNumber(string code, ref int index, bool move, out double value)

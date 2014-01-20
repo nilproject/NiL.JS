@@ -302,7 +302,7 @@ namespace NiL.JS.Core.BaseTypes
             }
             if (dgts < 0 || dgts > 20)
                 throw new ArgumentException("toFixed() digits argument must be between 0 and 20");
-            return System.Math.Round(res, dgts).ToString();
+            return System.Math.Round(res, dgts).ToString(".00000000000000000000".Substring(0, dgts + 1), System.Globalization.CultureInfo.InvariantCulture);
         }
 
         public JSObject toLocaleString()
@@ -313,40 +313,6 @@ namespace NiL.JS.Core.BaseTypes
         public override string ToString()
         {
             return ValueType == JSObjectType.Int ? iValue.ToString() : dValue.ToString();
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (obj is Number)
-            {
-                var n = obj as Number;
-                switch(ValueType)
-                {
-                    case JSObjectType.Int:
-                        {
-                            switch (n.ValueType)
-                            {
-                                case JSObjectType.Int:
-                                    return iValue == n.iValue;
-                                case JSObjectType.Double:
-                                    return iValue == n.dValue;
-                            }
-                            break;
-                        }
-                    case JSObjectType.Double:
-                        {
-                            switch (n.ValueType)
-                            {
-                                case JSObjectType.Int:
-                                    return dValue == n.iValue;
-                                case JSObjectType.Double:
-                                    return dValue == n.dValue;
-                            }
-                            break;
-                        }
-                }
-            }
-            return false;
         }
 
         public override int GetHashCode()

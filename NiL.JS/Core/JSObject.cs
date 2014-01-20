@@ -236,6 +236,7 @@ namespace NiL.JS.Core
             if (assignCallback != null)
                 assignCallback();
             assignCallback = ProtectAssignCallback;
+            attributes |= ObjectAttributes.DontDelete;
         }
 
         [Modules.Hidden]
@@ -245,7 +246,7 @@ namespace NiL.JS.Core
             context.thisBind = this;
             try
             {
-                if (ValueType >= JSObjectType.Object)
+                if (ValueType >= JSObjectType.Object && oValue != null)
                 {
                     if (oValue == null)
                         return nullString;
@@ -280,55 +281,62 @@ namespace NiL.JS.Core
                         oValue = "{ message: 'Can not convert object to primitive value' }" 
                     } }));
                 }
-                else
-                    context.thisBind = otb;
+                return this;
             }
-            catch
+            finally
             {
                 context.thisBind = otb;
-                throw;
             }
-            return this;
         }
 
         [Modules.Hidden]
         internal JSObject ToPrimitiveValue_String_Value(Context context)
         {
-            if (ValueType >= JSObjectType.Object)
+            var otb = context.thisBind;
+            context.thisBind = this;
+            try
             {
-                if (oValue == null)
-                    return nullString;
-                var tpvs = GetField("toString", true, false);
-                JSObject res = null;
-                if (tpvs.ValueType == JSObjectType.Function)
+                if (ValueType >= JSObjectType.Object && oValue != null)
                 {
-                    res = (tpvs.oValue as NiL.JS.Core.BaseTypes.Function).Invoke(this, null);
-                    if (res.ValueType == JSObjectType.Object)
+                    if (oValue == null)
+                        return nullString;
+                    var tpvs = GetField("toString", true, false);
+                    JSObject res = null;
+                    if (tpvs.ValueType == JSObjectType.Function)
                     {
-                        if (res.oValue is BaseTypes.String)
-                            res = res.oValue as BaseTypes.String;
+                        res = (tpvs.oValue as NiL.JS.Core.BaseTypes.Function).Invoke(context.thisBind, null);
+                        if (res.ValueType == JSObjectType.Object)
+                        {
+                            if (res.oValue is BaseTypes.String)
+                                res = res.oValue as BaseTypes.String;
+                        }
+                        if (res.ValueType > JSObjectType.Undefined && res.ValueType < JSObjectType.Object)
+                            return res;
                     }
-                    if (res.ValueType > JSObjectType.Undefined && res.ValueType < JSObjectType.Object)
-                        return res;
-                }
-                tpvs = GetField("valueOf", true, false);
-                if (tpvs.ValueType == JSObjectType.Function)
-                {
-                    res = (tpvs.oValue as NiL.JS.Core.BaseTypes.Function).Invoke(this, null);
-                    if (res.ValueType == JSObjectType.Object)
+                    tpvs = GetField("valueOf", true, false);
+                    if (tpvs.ValueType == JSObjectType.Function)
                     {
-                        if (res.oValue is BaseTypes.String)
-                            res = res.oValue as BaseTypes.String;
+                        res = (tpvs.oValue as NiL.JS.Core.BaseTypes.Function).Invoke(context.thisBind, null);
+                        if (res.ValueType == JSObjectType.Object)
+                        {
+                            if (res.oValue is BaseTypes.String)
+                                res = res.oValue as BaseTypes.String;
+                        }
+                        if (res.ValueType > JSObjectType.Undefined && res.ValueType < JSObjectType.Object)
+                            return res;
                     }
-                    if (res.ValueType > JSObjectType.Undefined && res.ValueType < JSObjectType.Object)
-                        return res;
-                }
-                throw new JSException(Context.eval(context, new[] { new JSObject() {
+                    context.thisBind = otb;
+                    throw new JSException(Context.eval(context, new[] { new JSObject() {
                         ValueType = JSObjectType.String,
                         oValue = "{ message: 'Can not convert object to primitive value' }" 
                     } }));
+                }
+                return this;
             }
-            return this;
+            finally
+            {
+                context.thisBind = otb;
+            }
         }
 
 #if INLINE

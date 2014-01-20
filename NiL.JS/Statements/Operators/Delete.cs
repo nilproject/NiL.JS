@@ -15,7 +15,9 @@ namespace NiL.JS.Statements.Operators
         {
             var temp = first.Invoke(context);
             tempResult.ValueType = JSObjectType.Bool;
-            if ((temp.attributes & ObjectAttributes.DontDelete) == 0)
+            if (temp.ValueType <= JSObjectType.NotExistInObject)
+                tempResult.iValue = 1;
+            else if ((temp.attributes & ObjectAttributes.DontDelete) == 0)
             {
                 tempResult.iValue = 1;
                 temp.ValueType = JSObjectType.NotExist;

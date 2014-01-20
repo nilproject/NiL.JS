@@ -178,11 +178,11 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * 3 * i; }
         {
             NiL.JS.Core.Context.GlobalContext.GetField("platform").Assign("NiL.JS");
             //runFile(@"tests.js");
-            //runFile(@"C:\Users\Дмитрий\Documents\Projects\NiL.JS\NiL.JSTest\tests\Conformance\09_Type_Conversion\9.3_ToNumber\9.3.1_ToNumber_from_String\S9.3.1_A2.js");
+            //runFile(@"C:\Users\Дмитрий\Documents\Projects\NiL.JS\NiL.JSTest\tests\Conformance\08_Types\8.6_The_Object_Type\8.6.2_Internal_Properties_and_Methods\S8.6.2_A5_T1.js");
             //benchmark();
             //featureSupportTest();
-            runFile(@"ftest.js");
-            //sputnicTests();
+            //runFile(@"ftest.js");
+            sputnicTests(@"C:\Users\Дмитрий\Documents\Projects\NiL.JS\NiL.JSTest\tests\Conformance\11_Expressions\11.5_Multiplicative_Operators");
             //testEx();
 
             GC.Collect();
