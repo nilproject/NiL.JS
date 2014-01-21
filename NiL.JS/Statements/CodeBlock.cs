@@ -122,5 +122,17 @@ namespace NiL.JS.Statements
             }
             return false;
         }
+
+        public override string ToString()
+        {
+            if (body == null || body.Length == 0)
+                return "{ }";
+            string res = "{" + Environment.NewLine;
+            var replp = Environment.NewLine + "\t";
+            var replt = Environment.NewLine + "\t\t";
+            for (int i = body.Length; i-- > 0; )
+                res += "\t" + body[i].ToString().Replace(replp, replt) + Environment.NewLine;
+            return res + "}";
+        }
     }
 }
