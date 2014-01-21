@@ -391,6 +391,24 @@ namespace NiL.JS.Core
             return (res ?? "null").ToString();
         }
 
+        public virtual string Stringify()
+        {
+            if (ValueType <= JSObjectType.Undefined)
+                return "undefined";
+            switch (ValueType)
+            {
+                case JSObjectType.Bool:
+                    return iValue != 0 ? "true" : "false";
+                case JSObjectType.Double:
+                    return dValue.ToString();
+                case JSObjectType.Int:
+                    return iValue.ToString();
+                case JSObjectType.String:
+                    return "\"" + oValue + "\"";
+            }
+            return "<" + ValueType + ">";
+        }
+
         [Modules.Hidden]
         IEnumerator IEnumerable.GetEnumerator()
         {

@@ -38,5 +38,10 @@ namespace NiL.JS.Statements
             }
             return false;
         }
+
+        public override string ToString()
+        {
+            return Value.Stringify();
+        }
     }
 }

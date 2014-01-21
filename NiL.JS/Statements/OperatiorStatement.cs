@@ -1671,5 +1671,21 @@ namespace NiL.JS.Statements
                 return false;
             }
         }
+
+        public override string ToString()
+        {
+            return (first != null ? " " + first : "") + operationString() + (second != null ? " " + second : "") + ";";
+        }
+
+        private string operationString()
+        {
+            switch (_type)
+            {
+                case OperationType.Addition:
+                    return "+";
+                default:
+                    return "<" + _type + ">";
+            }
+        }
     }
 }
