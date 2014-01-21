@@ -9,7 +9,6 @@ namespace NiL.JS.Core
             ValueType = JSObjectType.Object;
             oValue = context;
             assignCallback = () => { throw new InvalidOperationException("Invalid left-hand side in assignment"); };
-            attributes |= ObjectAttributes.DontDelete;
         }
 
         public override JSObject GetField(string name, bool fast, bool own)

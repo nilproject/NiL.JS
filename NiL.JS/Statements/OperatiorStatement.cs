@@ -1613,7 +1613,9 @@ namespace NiL.JS.Statements
             context.thisBind = _this;
             try
             {
-                call.Invoke(context);
+                var res = call.Invoke(context);
+                if ((bool)res)
+                    return res;
             }
             finally
             {

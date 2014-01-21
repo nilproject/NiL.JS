@@ -181,8 +181,8 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * 3 * i; }
             //runFile(@"C:\Users\Дмитрий\Documents\Projects\NiL.JS\NiL.JSTest\tests\Conformance\08_Types\8.6_The_Object_Type\8.6.2_Internal_Properties_and_Methods\S8.6.2_A5_T1.js");
             //benchmark();
             //featureSupportTest();
-            //runFile(@"ftest.js");
-            sputnicTests();
+            runFile(@"ftest.js");
+            //sputnicTests();
             //testEx();
 
             GC.Collect();

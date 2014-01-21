@@ -103,7 +103,15 @@ namespace NiL.JS.Core.BaseTypes
             if (name == "prototype")
             {
                 if (protorypeField == null)
-                    protorypeField = new JSObject() { oValue = new object(), ValueType = JSObjectType.Object, prototype = BaseObject.Prototype };
+                {
+                    protorypeField = new JSObject()
+                    {
+                        oValue = new object(),
+                        ValueType = JSObjectType.Object,
+                        prototype = BaseObject.Prototype
+                    };
+                    protorypeField.GetField("constructor", false, true).Assign(this);
+                }
                 return protorypeField;
             }
             return DefaultFieldGetter(name, fast, own);

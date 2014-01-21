@@ -46,7 +46,7 @@ namespace NiL.JS.Statements.Operators
                 {
                     var a = arguments.GetField(i.ToString(), false, false);
                     a.Assign(sps[i].Invoke(context));
-                    a.attributes |= ObjectAttributes.DontDelete | ObjectAttributes.DontEnum;
+                    a.attributes |= ObjectAttributes.DontEnum;
                 }
                 context.thisBind = newThisBind;
                 res = stat.Invoke(context, arguments);

@@ -80,14 +80,14 @@ namespace NiL.JS.Statements
 
         public override JSObject Invoke(Context context)
         {
+            for (int i = varibles.Length - 1; i >= 0; i--)
+                context.Define(varibles[i]);
             for (int i = functions.Length - 1; i >= 0; i--)
             {
-                var o = context.GetField((functions[i] as FunctionStatement).Name);
+                var o = context.Define((functions[i] as FunctionStatement).Name);
                 o.Assign(functions[i].Invoke(context));
                 o.assignCallback = JSObject.ErrorAssignCallback;
             }
-            for (int i = varibles.Length - 1; i >= 0; i--)
-                context.Define(varibles[i]);
             JSObject res = JSObject.undefined;
             for (int i = length; i >= 0; i--)
             {
@@ -106,6 +106,10 @@ namespace NiL.JS.Statements
                 Parser.Optimize(ref body[i], 1, vars);
             for (int i = 0; i < functions.Length; i++)
                 Parser.Optimize(ref functions[i], 1, vars);
+
+            for (int i = functions.Length - 1; i >= 0; i--)
+                vars.Remove((functions[i] as FunctionStatement).Name);
+
             if (depth > 0)
             {
                 foreach (var v in vars)

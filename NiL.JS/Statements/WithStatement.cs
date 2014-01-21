@@ -38,7 +38,10 @@ namespace NiL.JS.Statements
 
         public override JSObject Invoke(Context context)
         {
-            body.Invoke(new WithContext(obj.Invoke(context), context));
+            var intcontext = new WithContext(obj.Invoke(context), context);
+            body.Invoke(intcontext);
+            context.abort = intcontext.abort;
+            context.abortInfo = intcontext.abortInfo;
             return JSObject.undefined;
         }
 

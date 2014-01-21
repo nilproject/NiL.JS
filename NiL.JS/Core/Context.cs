@@ -70,6 +70,48 @@ namespace NiL.JS.Core
                 }
                 return true;
             }));
+            globalContext.GetField("parseInt").Assign(new CallableField((t, x) =>
+            {
+                var r = x.GetField("0", true, false);
+                for (; ; )
+                    switch (r.ValueType)
+                    {
+                        case JSObjectType.Bool:
+                        case JSObjectType.Int:
+                            {
+                                return r.iValue;
+                            }
+                        case JSObjectType.Double:
+                            {
+                                if (double.IsNaN(r.dValue) || double.IsInfinity(r.dValue))
+                                    return 0;
+                                return (int)((long)r.dValue & 0xFFFFFFFF);
+                            }
+                        case JSObjectType.String:
+                            {
+                                double dres = 0;
+                                int ix = 0;
+                                string s = (r.oValue as string).Trim();
+                                if (!Tools.ParseNumber(s, ref ix, true, out dres) || ix < s.Length)
+                                    return 0;
+                                return (int)dres;
+                            }
+                        case JSObjectType.Date:
+                        case JSObjectType.Function:
+                        case JSObjectType.Object:
+                            {
+                                if (r.oValue == null)
+                                    return 0;
+                                r = r.ToPrimitiveValue_Value_String(Context.globalContext);
+                                break;
+                            }
+                        case JSObjectType.Undefined:
+                        case JSObjectType.NotExistInObject:
+                            return 0;
+                        default:
+                            throw new NotImplementedException();
+                    }
+            }));
             #endregion
             #region Base types
             globalContext.GetField("RegExp").Assign(new CallableField((t, x) =>
@@ -210,7 +252,7 @@ namespace NiL.JS.Core
             JSObject res = null;
             if (name == "this")
             {
-                if (thisBind == null)
+                if (thisBind == null || thisBind.ValueType <= JSObjectType.Undefined)
                 {
                     if (prototype == null || prototype == globalContext)
                         thisBind = new ThisObject(this);
