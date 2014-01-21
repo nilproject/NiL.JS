@@ -128,10 +128,10 @@ namespace NiL.JS.Core
             switch (ValueType)
             {
                 case JSObjectType.NotExist:
-                    throw new InvalidOperationException("Varible not defined.");
+                    throw new JSException(TypeProxy.Proxy(new TypeError("Varible not defined.")));
                 case JSObjectType.Undefined:
                 case JSObjectType.NotExistInObject:
-                    throw new InvalidOperationException("Can't access to property value of \"undefined\".");
+                    throw new JSException(TypeProxy.Proxy(new TypeError("Can't access to property value of \"undefined\".")));
                 case JSObjectType.Int:
                 case JSObjectType.Double:
                     {
@@ -154,7 +154,7 @@ namespace NiL.JS.Core
                 case JSObjectType.Proxy:
                     {
                         if (oValue == null)
-                            throw new InvalidOperationException("Can't access to property value of \"null\"");
+                            throw new JSException(TypeProxy.Proxy(new TypeError("Can't access to property value of \"null\"")));
                         if (this is TypeProxy)
                             break;
                         return TypeProxy.GetPrototype(oValue as Type).GetField(name, fast, own);
@@ -164,7 +164,7 @@ namespace NiL.JS.Core
                 case JSObjectType.Property:
                     {
                         if (oValue == null)
-                            throw new InvalidOperationException("Can't access to property value of \"null\"");
+                            throw new JSException(TypeProxy.Proxy(new TypeError("Can't access to property value of \"null\"")));
                         break;
                     }
                 case JSObjectType.Function:
@@ -172,11 +172,11 @@ namespace NiL.JS.Core
                         if (prototype == null)
                             prototype = TypeProxy.GetPrototype(typeof(NiL.JS.Core.BaseTypes.String)).Clone() as JSObject;
                         if (oValue == null)
-                            throw new InvalidOperationException("Can't access to property value of \"null\"");
+                            throw new JSException(TypeProxy.Proxy(new TypeError("Can't access to property value of \"null\"")));
                         break;
                     }
                 default:
-                    throw new InvalidOperationException();
+                    throw new NotImplementedException();
             }
             switch (name)
             {
@@ -276,10 +276,7 @@ namespace NiL.JS.Core
                             return res;
                     }
                     context.thisBind = otb;
-                    throw new JSException(Context.eval(context, new[] { new JSObject() {
-                        ValueType = JSObjectType.String,
-                        oValue = "{ message: 'Can not convert object to primitive value' }" 
-                    } }));
+                    throw new JSException(TypeProxy.Proxy(new TypeError("Can't convert object to primitive value.")));
                 }
                 return this;
             }
@@ -326,10 +323,7 @@ namespace NiL.JS.Core
                             return res;
                     }
                     context.thisBind = otb;
-                    throw new JSException(Context.eval(context, new[] { new JSObject() {
-                        ValueType = JSObjectType.String,
-                        oValue = "{ message: 'Can not convert object to primitive value' }" 
-                    } }));
+                    throw new JSException(TypeProxy.Proxy(new TypeError("Can't convert object to primitive value.")));
                 }
                 return this;
             }
@@ -406,6 +400,8 @@ namespace NiL.JS.Core
         [Modules.Hidden]
         public virtual IEnumerator<string> GetEnumerator()
         {
+            if (ValueType <= JSObjectType.Undefined)
+                throw new JSException(TypeProxy.Proxy(new TypeError("Can't enumerate properties of undefined.")));
             if (fields == null)
                 return EmptyEnumerator;
             return fields.Keys.GetEnumerator();

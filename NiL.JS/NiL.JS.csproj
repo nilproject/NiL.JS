@@ -134,12 +134,16 @@
     <Compile Include="Core\BaseTypes\Boolean.cs" />
     <Compile Include="Core\BaseTypes\EmbeddedType.cs" />
     <Compile Include="Core\BaseTypes\Date.cs" />
+    <Compile Include="Core\BaseTypes\Error.cs" />
     <Compile Include="Core\BaseTypes\Function.cs" />
     <Compile Include="Core\BaseTypes\Number.cs" />
     <Compile Include="Core\BaseTypes\String.cs" />
+    <Compile Include="Core\BaseTypes\ReferenceError.cs" />
+    <Compile Include="Core\BaseTypes\TypeError.cs" />
     <Compile Include="Core\Delegates.cs" />
     <Compile Include="Core\IOptimizable.cs" />
     <Compile Include="Core\JSException.cs" />
+    <Compile Include="Core\Modules\PrototypeAttribute.cs" />
     <Compile Include="Core\ParsingState.cs" />
     <Compile Include="Core\Statement.cs" />
     <Compile Include="Core\Context.cs" />
@@ -153,6 +157,7 @@
     <Compile Include="Core\Tools.cs" />
     <Compile Include="Core\TypeProxy.cs" />
     <Compile Include="Core\Modules\ProtectedAttribute.cs" />
+    <Compile Include="Core\WithContext.cs" />
     <Compile Include="Statements\LabeledStatement.cs" />
     <Compile Include="Statements\Operators\NotEqual.cs" />
     <Compile Include="Statements\Operators\MoreOrEqual.cs" />
@@ -197,6 +202,7 @@
     <Compile Include="Statements\TryCatchStatement.cs" />
     <Compile Include="Statements\VaribleDefineStatement.cs" />
     <Compile Include="Statements\WhileStatement.cs" />
+    <Compile Include="Statements\WithStatement.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -49,6 +49,7 @@ namespace NiL.JS.Core
                 new _Rule("return", ReturnStatement.Parse),
                 new _Rule("function", FunctionStatement.Parse),
                 new _Rule("switch", SwitchStatement.Parse),
+                new _Rule("with", WithStatement.Parse),
                 new _Rule("do", DoWhileStatement.Parse),
                 new _Rule("(", OperatorStatement.Parse),
                 new _Rule("+", OperatorStatement.Parse),
@@ -120,7 +121,7 @@ namespace NiL.JS.Core
                 new _Rule(ValidateName, OperatorStatement.Parse),
                 new _Rule(ValidateValue, OperatorStatement.Parse),
             };
-            rules[4] = new _Rule[] // Общий / JSON
+            rules[4] = new _Rule[] // Общий без JSON
             {
                 new _Rule("[", ArrayStatement.Parse),
                 new _Rule("{", CodeBlock.Parse),
@@ -132,6 +133,7 @@ namespace NiL.JS.Core
                 new _Rule("return", ReturnStatement.Parse),
                 new _Rule("function", FunctionStatement.Parse),
                 new _Rule("switch", SwitchStatement.Parse),
+                new _Rule("with", WithStatement.Parse),
                 new _Rule("do", DoWhileStatement.Parse),
                 new _Rule("(", OperatorStatement.Parse),
                 new _Rule("+", OperatorStatement.Parse),

@@ -46,11 +46,11 @@ namespace NiL.JS.Statements.Operators
                     return false;
                 return l == temp.oValue;
             }
-            if (lvt == JSObjectType.Object)
+            if (lvt == JSObjectType.Object || lvt == JSObjectType.Proxy)
             {
                 var l = temp.oValue;
                 temp = second.Invoke(context);
-                if (lvt != temp.ValueType)
+                if (temp.ValueType != JSObjectType.Proxy && temp.ValueType != JSObjectType.Object)
                     return false;
                 if (l == null || temp.oValue == null)
                     return l == temp.oValue;

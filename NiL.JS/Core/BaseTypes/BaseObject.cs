@@ -17,11 +17,19 @@ namespace NiL.JS.Core.BaseTypes
             var func = context.Assign("Object", new CallableField((cont, args) =>
             {
                 var _this = cont.thisBind ?? cont.GetField("this");
+                object oVal = null;
+                if (args != null && args.GetField("length", true, false).iValue > 0)
+                    oVal = args.GetField("0", true, false);
                 JSObject res;
-                if (_this.ValueType == JSObjectType.Object && _this.prototype.oValue == Prototype.oValue)
+                if (_this.ValueType == JSObjectType.Object && _this.prototype != null && _this.prototype.oValue == Prototype.oValue)
                     res = _this;
                 else
+                {
+                    if ((oVal is JSObject) && (oVal as JSObject).ValueType >= JSObjectType.Object)
+                        return oVal as JSObject;
                     res = new JSObject();
+                }
+                res.oValue = oVal ?? new object();
                 res.ValueType = JSObjectType.Object;
                 if (args != null && args.GetField("length", true, false).iValue > 0)
                     res.oValue = args.GetField("0", true, false);

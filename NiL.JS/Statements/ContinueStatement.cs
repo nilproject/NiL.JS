@@ -3,7 +3,7 @@ using NiL.JS.Core;
 
 namespace NiL.JS.Statements
 {
-    class ContinueStatement : Statement
+    internal class ContinueStatement : Statement
     {
         private JSObject label;
         

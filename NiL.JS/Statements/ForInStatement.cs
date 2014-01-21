@@ -71,8 +71,10 @@ namespace NiL.JS.Statements
         public override JSObject Invoke(Context context)
         {
             var s = source.Invoke(context);
+            if (s.ValueType >= JSObjectType.Object && s.oValue == null)
+                throw new JSException(TypeProxy.Proxy(new TypeError("Can't enumerate properties of undefined.")));
             var v = varible.Invoke(context);
-            while ((s != null) && (s.ValueType > JSObjectType.Undefined))
+            while (s != null)
             {
                 foreach (var o in s)
                 {

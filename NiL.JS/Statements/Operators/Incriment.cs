@@ -66,7 +66,7 @@ namespace NiL.JS.Statements.Operators
                         break;
                     }
                 case JSObjectType.NotExist:
-                    throw new JSException(Context.eval(context, "{ message : 'Varible not defined' }"));
+                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.Error("Varible not defined.")));
                 default:
                     throw new NotImplementedException();
             }

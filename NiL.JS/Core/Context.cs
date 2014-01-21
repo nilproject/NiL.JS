@@ -14,7 +14,7 @@ namespace NiL.JS.Core
         Exception,
     }
 
-    public sealed class Context
+    public class Context
     {
         private struct _cacheItem
         {
@@ -23,7 +23,6 @@ namespace NiL.JS.Core
         }
 
         internal readonly static Context globalContext = new Context();
-        internal static CallableField eval;
         public static Context GlobalContext { get { return globalContext; } }
 
         public static void RefreshGlobalContext()
@@ -38,9 +37,12 @@ namespace NiL.JS.Core
             globalContext.AttachModule(typeof(BaseTypes.Number));
             globalContext.AttachModule(typeof(BaseTypes.Function));
             globalContext.AttachModule(typeof(BaseTypes.Boolean));
+            globalContext.AttachModule(typeof(BaseTypes.Error));
+            globalContext.AttachModule(typeof(BaseTypes.TypeError));
+            globalContext.AttachModule(typeof(BaseTypes.ReferenceError));
 
             #region Base Function
-            globalContext.GetField("eval").Assign(eval = new CallableField((cont, x) =>
+            globalContext.GetField("eval").Assign(new CallableField((cont, x) =>
             {
                 int i = 0;
                 string c = "{" + Tools.RemoveComments(x.GetField("0", true, false).ToString()) + "}";
@@ -149,6 +151,11 @@ namespace NiL.JS.Core
         internal bool updateThisBind;
         internal JSObject abortInfo;
         internal JSObject thisBind;
+        
+        private Context()
+        {
+            cache = new _cacheItem[cacheSize];
+        }
 
         private JSObject define(string name)
         {
@@ -198,7 +205,7 @@ namespace NiL.JS.Core
             abortInfo = JSObject.undefined;
         }
 
-        public JSObject GetField(string name)
+        public virtual JSObject GetField(string name)
         {
             JSObject res = null;
             if (name == "this")
@@ -244,11 +251,6 @@ namespace NiL.JS.Core
             if (fields == null)
                 fields = new Dictionary<string, JSObject>();
             fields.Add(moduleType.Name, new TypeProxy(moduleType));
-        }
-
-        private Context()
-        {
-            cache = new _cacheItem[cacheSize];
         }
 
         internal Context(Context prototype)

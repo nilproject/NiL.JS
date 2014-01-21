@@ -41,6 +41,34 @@ namespace NiL.JS.Core
                 boolean.iValue = source.iValue;
                 return boolean;
             }
+            else if (targetType == typeof(NiL.JS.Core.BaseTypes.EmbeddedType))
+            {
+                switch(source.ValueType)
+                {
+                    case JSObjectType.Double:
+                    case JSObjectType.Int:
+                        {
+                            number.iValue = source.iValue;
+                            number.dValue = source.dValue;
+                            number.ValueType = source.ValueType;
+                            return number;
+                        }
+                    case JSObjectType.String:
+                        {
+                            if (source.ValueType != JSObjectType.String)
+                                return null;
+                            @string.oValue = source.oValue;
+                            return @string;
+                        }
+                    case JSObjectType.Bool:
+                        {
+                            if (source.ValueType != JSObjectType.Bool)
+                                return null;
+                            boolean.iValue = source.iValue;
+                            return boolean;
+                        }
+                }
+            }
             return null;
         }
 
@@ -111,9 +139,7 @@ namespace NiL.JS.Core
             else
             {
                 var type = obj.GetType();
-                var res = new JSObject(false) { oValue = obj, ValueType = JSObjectType.Object };
-                res.GetField("constructor", false, true).Assign(GetConstructor(type));
-                res.GetField("__proto__", false, true).Assign(GetPrototype(type));
+                var res = new JSObject() { oValue = obj, ValueType = JSObjectType.Object, prototype = GetPrototype(type) };
                 return res;
             }
         }
@@ -147,7 +173,11 @@ namespace NiL.JS.Core
             ValueType = JSObjectType.Proxy;
             assignCallback = JSObject.ProtectAssignCallback;
             fields["constructor"] = GetConstructor(hostedType);
-            prototype = BaseObject.Prototype;
+            var pa = type.GetCustomAttributes(typeof(PrototypeAttribute), false);
+            if (pa.Length != 0)
+                prototype = GetPrototype((pa[0] as PrototypeAttribute).PrototypeType).Clone() as JSObject;
+            else
+                prototype = BaseObject.Prototype.Clone() as JSObject;
             attributes |= ObjectAttributes.DontDelete | ObjectAttributes.DontEnum;
         }
 
@@ -173,8 +203,8 @@ namespace NiL.JS.Core
                 {
                     object[] args = null;
                     ConstructorInfo constructor = null;
-                    var len = y.GetField("length", false, false).iValue;
-                    if (y == null || len == 0)
+                    var len = y == null ? 0 : y.GetField("length", false, false).iValue;
+                    if (len == 0)
                         constructor = hostedType.GetConstructor(Type.EmptyTypes);
                     else
                     {
@@ -350,7 +380,9 @@ namespace NiL.JS.Core
             object obj = context.thisBind;
             if (obj is EmbeddedType)
                 return obj;
-            obj = embeddedTypeConvert(obj as JSObject, targetType) ?? context.thisBind.oValue;
+            obj = embeddedTypeConvert(obj as JSObject, targetType) ?? (obj as JSObject).oValue;
+            if (obj is JSObject)
+                obj = embeddedTypeConvert(obj as JSObject, targetType) ?? obj;
             return obj;
         }
 
