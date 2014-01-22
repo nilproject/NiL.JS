@@ -73,7 +73,7 @@ namespace NiL.JS.Statements
             {
                 var res = impl(context);
                 if (res.ValueType == JSObjectType.Property)
-                    res = (res.oValue as Function[])[1].Invoke(context.thisBind, null);
+                    res = (res.oValue as Function[])[1].Invoke(context, null);
                 return res;
             }
             finally

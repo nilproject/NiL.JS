@@ -41,7 +41,7 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [Hidden]
-        internal List<JSObject> data;
+        private List<JSObject> data;
 
         private Array(List<JSObject> collection)
         {
@@ -124,8 +124,12 @@ namespace NiL.JS.Core.BaseTypes
                         tempElement = new JSObject(false) { ValueType = JSObjectType.NotExistInObject };
                         tempElement.assignCallback = () =>
                         {
-                            while (data.Count <= lastReqIndex)
-                                data.Add(null);
+                            if (data.Count <= lastReqIndex)
+                            {
+                                data.Capacity = lastReqIndex + 1;
+                                while (data.Count <= lastReqIndex)
+                                    data.Add(null);
+                            }
                             data[lastReqIndex] = tempElement;
                             tempElement.assignCallback = null;
                             tempElement = null;
@@ -137,6 +141,12 @@ namespace NiL.JS.Core.BaseTypes
                 }
                 else
                     return data[index];
+            }
+            internal set
+            {
+                while (data.Count <= index)
+                    data.Add(null);
+                data[index] = value;
             }
         }
 

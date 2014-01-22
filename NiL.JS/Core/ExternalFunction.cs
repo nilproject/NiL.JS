@@ -4,7 +4,7 @@ using System;
 
 namespace NiL.JS.Core
 {
-    internal class ExternalFunction : Function
+    internal sealed class ExternalFunction : Function
     {
         private readonly CallableField del;
 
@@ -20,7 +20,7 @@ namespace NiL.JS.Core
             context = contextOverride;
             try
             {
-                return Invoke(null as JSObject, args);
+                return Invoke(args);
             }
             finally
             {
@@ -28,22 +28,12 @@ namespace NiL.JS.Core
             }
         }
 
-        public override JSObject Invoke(JSObject thisOverride, JSObject args)
+        public override JSObject Invoke(JSObject args)
         {
-            var otb = context.thisBind;
-            if (thisOverride != null)
-                context.thisBind = thisOverride;
-            try
-            {
-                var res = del(context, args);
-                if (res == null)
-                    return JSObject.Null;
-                return res;
-            }
-            finally
-            {
-                context.thisBind = otb;
-            }
+            var res = del(context, args);
+            if (res == null)
+                return JSObject.Null;
+            return res;
         }
     }
 }

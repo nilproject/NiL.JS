@@ -51,26 +51,14 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [Hidden]
-        public JSObject Invoke(JSObject args)
-        {
-            return Invoke(null as JSObject, args);
-        }
-
-        [Hidden]
-        public virtual JSObject Invoke(Context thisOverride, JSObject args)
-        {
-            return Invoke(thisOverride != null ? thisOverride.GetField("this") : null, args);
-        }
-
-        [Hidden]
-        public virtual JSObject Invoke(JSObject thisOverride, JSObject args)
+        public virtual JSObject Invoke(JSObject args)
         {
             var oldargs = _arguments;
             _arguments = args;
             try
             {
                 Context internalContext = new Context(context);
-                var @this = thisOverride ?? context.thisBind;
+                var @this = context.thisBind;
                 if (@this != null && @this.ValueType < JSObjectType.Object)
                 {
                     @this = new JSObject(false)
@@ -95,6 +83,36 @@ namespace NiL.JS.Core.BaseTypes
             finally
             {
                 _arguments = oldargs;
+            }
+        }
+
+        [Hidden]
+        public virtual JSObject Invoke(Context contextOverride, JSObject args)
+        {
+            var oldContext = context.thisBind;
+            context.thisBind = contextOverride.thisBind;
+            try
+            {
+                return Invoke(args);
+            }
+            finally
+            {
+                context.thisBind = oldContext;
+            }
+        }
+
+        [Hidden]
+        public virtual JSObject Invoke(JSObject thisOverride, JSObject args)
+        {
+            var oldContext = context.thisBind;
+            context.thisBind = thisOverride;
+            try
+            {
+                return Invoke(args);
+            }
+            finally
+            {
+                context.thisBind = oldContext;
             }
         }
 

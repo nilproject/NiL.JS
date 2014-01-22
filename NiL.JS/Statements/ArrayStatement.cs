@@ -54,7 +54,7 @@ namespace NiL.JS.Statements
         {
             var res = new NiL.JS.Core.BaseTypes.Array(elements.Length);
             for (int i = 0; i < elements.Length; i++)
-                res.data[i] = elements[i].Invoke(context).Clone() as JSObject;
+                res[i] = elements[i].Invoke(context).Clone() as JSObject;
             return res;
         }
 

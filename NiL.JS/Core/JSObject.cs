@@ -94,6 +94,7 @@ namespace NiL.JS.Core
                     case JSObjectType.String:
                     case JSObjectType.Object:
                     case JSObjectType.Function:
+                    case JSObjectType.Property:
                         return oValue;
                     case JSObjectType.Undefined:
                     case JSObjectType.NotExistInObject:
@@ -254,7 +255,7 @@ namespace NiL.JS.Core
                     JSObject res = null;
                     if (tpvs.ValueType == JSObjectType.Function)
                     {
-                        res = (tpvs.oValue as NiL.JS.Core.BaseTypes.Function).Invoke(context.thisBind, null);
+                        res = (tpvs.oValue as NiL.JS.Core.BaseTypes.Function).Invoke(context, null);
                         if (res.ValueType == JSObjectType.Object)
                         {
                             if (res.oValue is BaseTypes.String)
@@ -266,7 +267,7 @@ namespace NiL.JS.Core
                     tpvs = GetField("toString", true, false);
                     if (tpvs.ValueType == JSObjectType.Function)
                     {
-                        res = (tpvs.oValue as NiL.JS.Core.BaseTypes.Function).Invoke(context.thisBind, null);
+                        res = (tpvs.oValue as NiL.JS.Core.BaseTypes.Function).Invoke(context, null);
                         if (res.ValueType == JSObjectType.Object)
                         {
                             if (res.oValue is BaseTypes.String)
@@ -301,7 +302,7 @@ namespace NiL.JS.Core
                     JSObject res = null;
                     if (tpvs.ValueType == JSObjectType.Function)
                     {
-                        res = (tpvs.oValue as NiL.JS.Core.BaseTypes.Function).Invoke(context.thisBind, null);
+                        res = (tpvs.oValue as NiL.JS.Core.BaseTypes.Function).Invoke(context, null);
                         if (res.ValueType == JSObjectType.Object)
                         {
                             if (res.oValue is BaseTypes.String)
@@ -313,7 +314,7 @@ namespace NiL.JS.Core
                     tpvs = GetField("valueOf", true, false);
                     if (tpvs.ValueType == JSObjectType.Function)
                     {
-                        res = (tpvs.oValue as NiL.JS.Core.BaseTypes.Function).Invoke(context.thisBind, null);
+                        res = (tpvs.oValue as NiL.JS.Core.BaseTypes.Function).Invoke(context, null);
                         if (res.ValueType == JSObjectType.Object)
                         {
                             if (res.oValue is BaseTypes.String)

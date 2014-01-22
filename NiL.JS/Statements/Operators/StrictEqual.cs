@@ -70,6 +70,8 @@ namespace NiL.JS.Statements.Operators
                 temp = second.Invoke(context);
                 return temp.ValueType == JSObjectType.Undefined || temp.ValueType == JSObjectType.NotExistInObject;
             }
+            if (lvt == JSObjectType.NotExist)
+                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible not defined.")));
             throw new InvalidOperationException();
         }
     }

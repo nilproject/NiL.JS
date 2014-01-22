@@ -152,7 +152,7 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * 3 * i; }
 
         private class TestClass
         {
-            public float dfield { get { return 1.234f; } }
+            public float dfield = 1;
             public static float sfield = 2.468f;
 
             public static void smethod()
@@ -160,17 +160,21 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * 3 * i; }
 
             }
 
-            public void dmethod()
+            public void dmethod(double a)
             {
+                dfield = (float)a;
+            }
 
+            public void dmethod(float a)
+            {
+                dfield = a;
             }
         }
 
         private static void testEx()
         {
-            Context.GlobalContext.GetField("f").Assign(new CallableField((c, a) => { return null; }));
-            Context.GlobalContext.AttachModule(typeof(TestClass));
-            var s = new Script("f()");
+            Context.GlobalContext.AttachModule(typeof(System.Console));
+            var s = new Script("console.log('')");
             s.Invoke();
         }
 
@@ -181,8 +185,8 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * 3 * i; }
             //runFile(@"C:\Users\Дмитрий\Documents\Projects\NiL.JS\NiL.JSTest\tests\Conformance\08_Types\8.6_The_Object_Type\8.6.2_Internal_Properties_and_Methods\S8.6.2_A5_T1.js");
             //benchmark();
             //featureSupportTest();
-            //runFile(@"ftest.js");
-            sputnicTests();
+            runFile(@"ftest.js");
+            //sputnicTests();
             //testEx();
 
             GC.Collect();

@@ -31,7 +31,7 @@ namespace NiL.JS.Statements.Operators
                     setterArg.assignCallback = null;
                     setterArg.Assign(val);
                     setterArg.assignCallback = JSObject.ProtectAssignCallback;
-                    setter.Invoke(context.thisBind, setterArgs);
+                    setter.Invoke(context, setterArgs);
                 }
             }
             else
