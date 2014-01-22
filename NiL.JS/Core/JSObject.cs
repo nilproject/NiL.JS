@@ -95,6 +95,7 @@ namespace NiL.JS.Core
                     case JSObjectType.Object:
                     case JSObjectType.Function:
                     case JSObjectType.Property:
+                    case JSObjectType.Proxy:
                         return oValue;
                     case JSObjectType.Undefined:
                     case JSObjectType.NotExistInObject:

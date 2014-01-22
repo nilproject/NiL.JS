@@ -76,6 +76,17 @@ namespace NiL.JS.Core
             return null;
         }
 
+        private static object[] convertArray(NiL.JS.Core.BaseTypes.Array array)
+        {
+            var arg = new object[array.length];
+            for (var j = 0; j < arg.Length; j++)
+            {
+                var temp = array[j].Value;
+                arg[j] = temp is NiL.JS.Core.BaseTypes.Array ? convertArray(temp as NiL.JS.Core.BaseTypes.Array) : temp;
+            }
+            return arg;
+        }
+
         private static object[] convertArgs(JSObject source, ParameterInfo[] targetTypes)
         {
             if (targetTypes.Length == 0)
@@ -107,14 +118,11 @@ namespace NiL.JS.Core
                     res[i] = obj;
                 else
                 {
-                    var v = obj.ValueType == JSObjectType.Object && !(obj.oValue is Core.BaseTypes.Array) ? obj : obj.Value;
+                    var v = obj.ValueType == JSObjectType.Object && obj.oValue != null && obj.oValue.GetType() == typeof(object) ? obj : obj.Value;
                     if (v is Core.BaseTypes.Array)
                     {
                         var arr = v as Core.BaseTypes.Array;
-                        var arg = new object[arr.length];
-                        for (var j = 0; j < arg.Length; j++)
-                            arg[j] = arr[j].Value;
-                        res[i] = arg;
+                        res[i] = convertArray(arr);
                     }
                     else
                     {
