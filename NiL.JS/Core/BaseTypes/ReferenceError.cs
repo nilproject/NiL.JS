@@ -14,7 +14,7 @@ namespace NiL.JS.Core.BaseTypes
         {
             get
             {
-                return "TypeError";
+                return "ReferenceError";
             }
         }
 

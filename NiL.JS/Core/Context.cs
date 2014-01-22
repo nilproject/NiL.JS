@@ -70,6 +70,10 @@ namespace NiL.JS.Core
                 }
                 return true;
             }));
+            globalContext.GetField("parseFloat").Assign(new CallableField((t, x) =>
+            {
+                return Tools.JSObjectToDouble(x.GetField("0", true, false));
+            }));
             globalContext.GetField("parseInt").Assign(new CallableField((t, x) =>
             {
                 var r = x.GetField("0", true, false);
@@ -92,7 +96,7 @@ namespace NiL.JS.Core
                                 double dres = 0;
                                 int ix = 0;
                                 string s = (r.oValue as string).Trim();
-                                if (!Tools.ParseNumber(s, ref ix, true, out dres) || ix < s.Length)
+                                if (!Tools.ParseNumber(s, ref ix, true, out dres, Tools.JSObjectToInt(x.GetField("1", true, false)), true))
                                     return 0;
                                 return (int)dres;
                             }

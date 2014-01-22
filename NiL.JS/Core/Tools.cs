@@ -7,6 +7,10 @@ namespace NiL.JS.Core
 {
     public static class Tools
     {
+        private static readonly char[] NumChars = new[] { 
+            '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 
+            'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z' };
+
         public static double JSObjectToDouble(JSObject arg)
         {
             if (arg == null)
@@ -97,7 +101,14 @@ namespace NiL.JS.Core
 
         public static bool ParseNumber(string code, ref int index, bool move, out double value)
         {
+            return ParseNumber(code, ref index, move, out value, 0, false);
+        }
+
+        public static bool ParseNumber(string code, ref int index, bool move, out double value, int radix, bool allowOctal)
+        {
             value = double.NaN;
+            if (radix != 0 && (radix < 2 || radix > 36))
+                return true;
             if (code.Length == 0)
             {
                 value = 0.0;
@@ -126,234 +137,168 @@ namespace NiL.JS.Core
                     return true;
                 }
             }
-            bool h = false;
-            bool e = false;
-            bool d = false;
-            bool r = false;
-            bool n = false;
-            bool ch = true;
-            int s = i;
-            bool w = true;
-            while (w)
+            bool res = false;
+            if (i + 1 < code.Length)
             {
-                if (i >= code.Length)
+                if ((radix == 0 || radix == 16) && (code[i] == '0') && (code[i + 1] == 'x' || code[i + 1] == 'X'))
                 {
-                    w = false;
-                    break;
+                    i += 2;
+                    radix = 16;
                 }
-                switch (code[i])
+                else if (allowOctal && (radix == 0 && code[i] == '0' && char.IsDigit(code[i + 1])))
                 {
-                    case '0':
-                    case '1':
-                    case '2':
-                    case '3':
-                    case '4':
-                    case '5':
-                    case '6':
-                    case '7':
-                    case '8':
-                    case '9':
-                        {
-                            r = true;
-                            n = true;
-                            break;
-                        }
-                    case 'A':
-                    case 'B':
-                    case 'C':
-                    case 'D':
-                    case 'F':
-                    case 'a':
-                    case 'b':
-                    case 'c':
-                    case 'd':
-                    case 'f':
-                        {
-                            if (!h || !ch)
-                            {
-                                i--;
-                                w = false;
-                                break;
-                            }
-                            e = false;
-                            n = true;
-                            r = true;
-                            break;
-                        }
-                    case 'x':
-                    case 'X':
-                        {
-                            if (h || !n || e || d || i - s != 1 || code[i - 1] != '0')
-                            {
-                                i--;
-                                w = false;
-                                break;
-                            }
-                            r = false;
-                            h = true;
-                            break;
-                        }
-                    case '.':
-                        {
-                            if (h || d || e)
-                            {
-                                i--;
-                                w = false;
-                                break;
-                            }
-                            r = true;
-                            d = true;
-                            break;
-                        }
-                    case 'E':
-                    case 'e':
-                        {
-                            if (e || !n)
-                            {
-                                i--;
-                                w = false;
-                                break;
-                            }
-                            r = true;
-                            e = !h;
-                            n = h;
-                            break;
-                        }
-                    case '-':
-                    case '+':
-                        {
-                            if (!e || !ch)
-                            {
-                                i--;
-                                w = false;
-                                break;
-                            }
-                            ch = false;
-                            break;
-                        }
-                    default:
-                        {
-                            i--;
-                            w = false;
-                            break;
-                        }
+                    i += 1;
+                    radix = 8;
+                    res = true;
                 }
-                w &= ++i < code.Length;
             }
-            if (r)
+            if (radix == 0)
             {
-                value = 0.0;
-                if (move)
-                    index = i;
-                i--;
+                long temp = 0;
+                int scount = 0;
                 int deg = 0;
-                if (e)
+                while (i < code.Length)
                 {
-                    int t = i;
-                    while (code[t] != 'e' && code[t] != 'E' && code[t] != '-' && code[t] != '+')
-                        t--;
-                    ch |= code[t] == '+';
-                    while (++t <= i)
+                    if (!char.IsDigit(code[i]))
+                        break;
+                    else
                     {
-                        deg *= 10;
-                        deg += code[t] - '0';
+                        if (scount <= 18)
+                        {
+                            temp = temp * 10 + (code[i++] - '0');
+                            scount++;
+                        }
+                        else
+                        {
+                            deg++;
+                            i++;
+                        }
+                        res = true;
                     }
-                    if (!ch)
-                        deg = -deg;
-                    while (code[i] != 'e' & code[i--] != 'E') ;
                 }
-                if (d || deg > 16 || i - s > 8 || deg < 0)
+                if (!res && code[i] != '.')
+                    return false;
+                if (i < code.Length && code[i] == '.')
                 {
-                    if (h)
+                    i++;
+                    while (i < code.Length)
                     {
-                        s += 2;
-                        for (; s <= i; s++)
-                            value = value * 16 + ((code[s] % 97 % 65 + 10) % 58);
+                        if (!char.IsDigit(code[i]))
+                            break;
+                        else
+                        {
+                            if (scount <= 18)
+                            {
+                                temp = temp * 10 + (code[i++] - '0');
+                                scount++;
+                                deg--;
+                            }
+                            else
+                                i++;
+                            res = true;
+                        }
+                    }
+                }
+                if (!res)
+                    return false;
+                if (i < code.Length && (code[i] == 'e' || code[i] == 'E'))
+                {
+                    i++;
+                    int td = 0;
+                    int esign = code[i] >= 43 && code[i] <= 45 ? 44 - code[i++] : 1;
+                    while (i < code.Length)
+                    {
+                        if (!char.IsDigit(code[i]))
+                            break;
+                        else
+                        {
+                            if (scount <= 18)
+                                td = td * 10 + (code[i++] - '0');
+                        }
+                    }
+                    deg += td * esign;
+                }
+                if (deg != 0)
+                {
+                    decimal dtemp = temp;
+                    if (deg < 0)
+                    {
+                        if (deg < -16)
+                        {
+                            value = (double)((decimal)temp * 0.0000000000000001M);
+                            deg += 16;
+                        }
+                        else
+                        {
+                            value = (double)((decimal)temp * (decimal)Math.Pow(10.0, deg));
+                            deg = 0;
+                        }
                     }
                     else
                     {
-                        long temp = 0;
-                        int l = 0;
-                        for (; (s <= i) && (code[s] != '.'); s++)
-                            if (l <= 18)
-                            {
-                                temp = temp * 10 + (code[s] - '0');
-                                l++;
-                            }
-                            else
-                                deg++;
-                        if (d)
+                        if (deg > 10)
                         {
-                            s++;
-                            for (; s <= i; s++, deg--)
-                                if (l <= 18)
-                                {
-                                    temp = temp * 10 + (code[s] - '0');
-                                    l++;
-                                }
-                                else
-                                    deg++;
+                            value = (double)((decimal)temp * 10000000000M);
+                            deg -= 10;
                         }
-                        if (deg < 0)
+                        else
                         {
-                            if (deg < -16)
-                            {
-                                value = (double)((decimal)temp * 0.0000000000000001M);
-                                deg += 16;
-                            }
-                            else
-                            {
-                                value = (double)((decimal)temp * (decimal)Math.Pow(10.0, deg));
-                                deg = 0;
-                            }
+                            value = (double)((decimal)temp * (decimal)Math.Pow(10.0, deg));
+                            deg = 0;
                         }
-                        else if (deg != 0)
-                        {
-                            if (deg > 10)
-                            {
-                                value = (double)((decimal)temp * 10000000000M);
-                                deg -= 10;
-                            }
-                            else
-                            {
-                                value = (double)((decimal)temp * (decimal)Math.Pow(10.0, deg));
-                                deg = 0;
-                            }
-                        }
-                        else value = temp;
                     }
-                    value *= sig;
-                    if (value == 0.0)
-                        return true;
                     if (deg != 0)
                     {
                         var exp = Math.Pow(10.0, deg);
                         value *= exp;
                     }
-                    return true;
                 }
                 else
+                    value = temp;
+                value *= sig;
+                if (move)
+                    index = i;
+                return true;
+            }
+            else
+            {
+                value = 0;
+                long temp = 0;
+                int starti = i;
+                while (i < code.Length)
                 {
-                    if (h)
+                    var sign = ((code[i++] % 97 % 65 + 10) % 58);
+                    if (sign >= radix)
                     {
-                        s += 2;
-                        for (; s <= i; s++)
-                            value = value * 16 + ((code[s] % 97 % 65 + 10) % 58);
+                        if (radix < 10 && i - starti > 1)
+                        {
+                            i = starti;
+                            temp = 0;
+                            radix = 10;
+                        }
+                        else
+                        {
+                            i--;
+                            break;
+                        }
                     }
                     else
                     {
-                        for (; s <= i; s++)
-                            value = value * 10 + code[s] - '0';
+                        temp = temp * radix + sign;
+                        res = true;
                     }
-                    value *= sig;
-                    if (value == 0)
-                        return true;
-                    for (; deg > 0; deg--)
-                        value *= 10;
-                    return true;
                 }
+                if (!res)
+                {
+                    value = double.NaN;
+                    return false;
+                }
+                value = temp;
+                value *= sig;
+                if (move)
+                    index = i;
+                return true;
             }
-            return false;
         }
 
         public static string Unescape(string code)
