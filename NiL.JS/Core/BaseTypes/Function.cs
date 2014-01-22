@@ -51,7 +51,7 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [Hidden]
-        public virtual JSObject Invoke(JSObject args)
+        public JSObject Invoke(JSObject args)
         {
             return Invoke(null as JSObject, args);
         }
