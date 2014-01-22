@@ -58,7 +58,7 @@ namespace NiL.JS.Statements
             return res;
         }
 
-        public bool Optimize(ref Statement _this, int depth, HashSet<string> vars)
+        public bool Optimize(ref Statement _this, int depth, Dictionary<string, Statement> vars)
         {
             for (int i = 0; i < elements.Length; i++)
                 Parser.Optimize(ref elements[i], 2, vars);

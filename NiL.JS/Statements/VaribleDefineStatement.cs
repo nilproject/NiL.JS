@@ -74,14 +74,17 @@ namespace NiL.JS.Statements
             throw new InvalidOperationException("VaribleDefineStatement.Invoke");
         }
 
-        public bool Optimize(ref Statement _this, int depth, System.Collections.Generic.HashSet<string> varibles)
+        public bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> varibles)
         {
             if (initializators.Length > 1)
                 _this = new CodeBlock(initializators);
             else
                 _this = initializators[0];
             for (var i = 0; i < names.Length; i++)
-                varibles.Add(names[i]);
+            {
+                if (!varibles.ContainsKey(names[i]))
+                    varibles.Add(names[i], null);
+            }
             return _this is IOptimizable;
         }
     }

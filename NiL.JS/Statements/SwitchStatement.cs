@@ -12,9 +12,9 @@ namespace NiL.JS.Statements
             public Statement statement;
         }
 
-        internal Statement[] functions;
+        private FunctionStatement[] functions;
         private int length;
-        public readonly Statement[] body;
+        private readonly Statement[] body;
         private Case[] cases;
 
         public SwitchStatement(Statement[] body, double fictive)
@@ -47,7 +47,7 @@ namespace NiL.JS.Statements
                 i++;
             while (char.IsWhiteSpace(code[i]));
             var body = new List<Statement>();
-            var funcs = new List<Statement>();
+            var funcs = new List<FunctionStatement>();
             var cases = new List<Case>();
             cases.Add(null);
             state.AllowBreak++;
@@ -80,20 +80,6 @@ namespace NiL.JS.Statements
                     continue;
                 if (t is FunctionStatement)
                     funcs.Add(t as FunctionStatement);
-                else if (t is SwitchStatement)
-                {
-                    SwitchStatement cb = t as SwitchStatement;
-                    funcs.AddRange(cb.functions);
-                    cb.functions = new FunctionStatement[0];
-                    body.Add(t);
-                }
-                else if (t is CodeBlock)
-                {
-                    CodeBlock cb = t as CodeBlock;
-                    funcs.AddRange(cb.functions);
-                    cb.functions = new FunctionStatement[0];
-                    body.AddRange(cb.body);
-                }
                 else
                     body.Add(t);
                 while (char.IsWhiteSpace(code[i]) || (code[i] == ';')) i++;
@@ -115,7 +101,7 @@ namespace NiL.JS.Statements
 
         public override JSObject Invoke(Context context)
         {
-            if (functions.Length != 0)
+            if (functions != null)
                 throw new InvalidOperationException();
             int i = cases[0].index;
             for (int j = 1; j < cases.Length; j++)
@@ -139,22 +125,20 @@ namespace NiL.JS.Statements
             return null;
         }
 
-        public bool Optimize(ref Statement _this, int depth, System.Collections.Generic.HashSet<string> varibles)
+        public bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> varibles)
         {
-            var vars = new HashSet<string>();
-            for (int i = 0; i < body.Length; i++)
-                Parser.Optimize(ref body[i], 1, vars);
-            for (int i = 0; i < functions.Length; i++)
-                Parser.Optimize(ref functions[i], 1, vars);
-            if (depth > 0)
-            {
-                foreach (var v in vars)
-                    varibles.Add(v);
-                if (body.Length == 1)
-                    _this = body[0];
-            }
-            else
+            if (depth < 1)
                 throw new InvalidOperationException();
+            for (int i = 0; i < body.Length; i++)
+                Parser.Optimize(ref body[i], 1, varibles);
+            for (int i = 0; i < functions.Length; i++)
+            {
+                Statement stat = functions[i];
+                Parser.Optimize(ref stat, 1, varibles);
+                varibles[functions[i].Name] = stat;
+                functions[i] = null;
+            }
+            functions = null;
             return false;
         }
     }

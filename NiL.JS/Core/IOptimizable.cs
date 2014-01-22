@@ -9,6 +9,6 @@ namespace NiL.JS.Core
         /// <param name="_this">Ссылка на экземпляр, для которого происходит вызов функции</param>
         /// <param name="depth">Глубина рекурсивного погружения, отсчитываемая от нуля</param>
         /// <returns>true если были внесены изменения</returns>
-        bool Optimize(ref Statement _this, int depth, System.Collections.Generic.HashSet<string> varibles);
+        bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> varibles);
     }
 }

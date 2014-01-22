@@ -28,7 +28,7 @@ namespace NiL.JS.Statements
             return Value;
         }
 
-        public bool Optimize(ref Statement _this, int depth, System.Collections.Generic.HashSet<string> varibles)
+        public bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> varibles)
         {
             var vss = Value.Value as Statement[];
             if (vss != null)

@@ -96,11 +96,11 @@ namespace NiL.JS.Statements
             return null;
         }
 
-        public bool Optimize(ref Statement _this, int depth, System.Collections.Generic.HashSet<string> varibles)
+        public bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> varibles)
         {
             Parser.Optimize(ref body, 1, varibles);
-            Parser.Optimize(ref catchBody, 1, varibles);
-            Parser.Optimize(ref finallyBody, 1, varibles);
+            Parser.Optimize(ref catchBody, 0, new System.Collections.Generic.Dictionary<string,Statement>());
+            Parser.Optimize(ref finallyBody, 0, new System.Collections.Generic.Dictionary<string,Statement>());
             return false;
         }
     }

@@ -73,7 +73,7 @@ namespace NiL.JS.Statements.Operators
             return o;
         }
 
-        public override bool Optimize(ref Statement _this, int depth, HashSet<string> vars)
+        public override bool Optimize(ref Statement _this, int depth, Dictionary<string, Statement> vars)
         {
             base.Optimize(ref _this, depth, vars);
             if (depth <= 1 && second != null)

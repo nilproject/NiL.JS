@@ -517,12 +517,12 @@ namespace NiL.JS.Core
             throw new ArgumentException("Unknown token at index " + index + ": " + code.Substring(index, Math.Min(20, code.Length - index)).Split(' ')[0]);
         }
 
-        internal static void Optimize(ref Statement s, int depth, HashSet<string> varibles)
+        internal static void Optimize(ref Statement s, int depth, Dictionary<string, Statement> varibles)
         {
             while ((s is IOptimizable) && (s as IOptimizable).Optimize(ref s, depth, varibles)) { }
         }
 
-        internal static void Optimize(ref Statement s, HashSet<string> varibles)
+        internal static void Optimize(ref Statement s, Dictionary<string, Statement> varibles)
         {
             while ((s is IOptimizable) && (s as IOptimizable).Optimize(ref s, 0, varibles)) { }
         }

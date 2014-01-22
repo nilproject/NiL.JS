@@ -6,7 +6,7 @@ namespace NiL.JS.Statements
 {
     internal class CodeBlock : Statement, IOptimizable
     {
-        internal Statement[] functions;
+        private FunctionStatement[] functions;
         private string[] varibles;
         private int length;
         public readonly Statement[] body;
@@ -37,7 +37,7 @@ namespace NiL.JS.Statements
                 i++;
             while (char.IsWhiteSpace(code[i]));
             var body = new List<Statement>();
-            var funcs = new List<Statement>();
+            var funcs = new List<FunctionStatement>();
             state.LabelCount = 0;
             while (code[i] != '}')
             {
@@ -46,21 +46,6 @@ namespace NiL.JS.Statements
                     continue;
                 if (t is FunctionStatement)
                     funcs.Add(t as FunctionStatement);
-                else if (t is CodeBlock)
-                {
-                    CodeBlock cb = t as CodeBlock;
-                    funcs.AddRange(cb.functions);
-                    cb.functions = new FunctionStatement[0];
-                    for (int cbi = cb.body.Length; cbi-- > 0; )
-                        body.Add(cb.body[cbi]);
-                }
-                else if (t is SwitchStatement)
-                {
-                    SwitchStatement cb = t as SwitchStatement;
-                    funcs.AddRange(cb.functions);
-                    cb.functions = new FunctionStatement[0];
-                    body.Add(t);
-                }
                 else
                     body.Add(t);
             };
@@ -99,13 +84,17 @@ namespace NiL.JS.Statements
             return res;
         }
 
-        public bool Optimize(ref Statement _this, int depth, System.Collections.Generic.HashSet<string> varibles)
+        public bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> varibles)
         {
-            var vars = new HashSet<string>();
+            var vars = new Dictionary<string, Statement>();
             for (int i = 0; i < body.Length; i++)
                 Parser.Optimize(ref body[i], 1, vars);
             for (int i = 0; i < functions.Length; i++)
-                Parser.Optimize(ref functions[i], 1, vars);
+            {
+                Statement stat = functions[i];
+                Parser.Optimize(ref stat, 1, vars);
+                functions[i] = stat as FunctionStatement;
+            }
 
             for (int i = functions.Length - 1; i >= 0; i--)
                 vars.Remove((functions[i] as FunctionStatement).Name);
@@ -113,16 +102,26 @@ namespace NiL.JS.Statements
             if (depth > 0)
             {
                 foreach (var v in vars)
-                    varibles.Add(v);
+                    if (v.Value != null || !varibles.ContainsKey(v.Key))
+                        varibles[v.Key] = v.Value;
+                foreach (var f in functions)
+                    varibles[f.Name] = f;
                 if (body.Length == 1)
                     _this = body[0];
             }
             else
             {
-                this.varibles = new string[vars.Count];
-                int i = 0;
+                List<string> cvars = new List<string>(this.varibles);
+                List<FunctionStatement> funcs = new List<FunctionStatement>(this.functions);
                 foreach (var v in vars)
-                    this.varibles[i++] = v;
+                {
+                    if (v.Value != null)
+                        funcs.Add(v.Value as FunctionStatement);
+                    else
+                        cvars.Add(v.Key);
+                }
+                this.functions = funcs.ToArray();
+                this.varibles = cvars.ToArray();
             }
             return false;
         }

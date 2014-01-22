@@ -39,7 +39,7 @@ namespace NiL.JS.Statements.Operators
             return val;
         }
 
-        public override bool Optimize(ref Statement _this, int depth, System.Collections.Generic.HashSet<string> vars)
+        public override bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> vars)
         {
             var res = base.Optimize(ref _this, depth, vars);
             var t = first;

@@ -84,7 +84,7 @@ namespace NiL.JS.Statements
             }
         }
 
-        public bool Optimize(ref Statement _this, int depth, System.Collections.Generic.HashSet<string> varibles)
+        public bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> varibles)
         {
             Parser.Optimize(ref objStatement, depth + 1, varibles);
             Parser.Optimize(ref fieldNameStatement, depth + 1, varibles);

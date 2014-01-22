@@ -1644,7 +1644,7 @@ namespace NiL.JS.Statements
             return del(context);
         }
 
-        public bool Optimize(ref Statement _this, int depth, HashSet<string> vars)
+        public bool Optimize(ref Statement _this, int depth, Dictionary<string, Statement> vars)
         {
             type = type;
             if (fastImpl != null)

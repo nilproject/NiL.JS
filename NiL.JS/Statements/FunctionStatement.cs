@@ -128,7 +128,7 @@ namespace NiL.JS.Statements
             return res;
         }
 
-        public bool Optimize(ref Statement _this, int depth, System.Collections.Generic.HashSet<string> varibles)
+        public bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> varibles)
         {
             (body as IOptimizable).Optimize(ref body, 0, varibles);
             return false;

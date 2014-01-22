@@ -21,7 +21,7 @@ namespace NiL.JS.Statements.Operators
             this.second = second;
         }
 
-        public virtual bool Optimize(ref Statement _this, int depth, HashSet<string> vars)
+        public virtual bool Optimize(ref Statement _this, int depth, Dictionary<string, Statement> vars)
         {
             if (first is IOptimizable)
                 Parser.Optimize(ref first, depth + 1, vars);

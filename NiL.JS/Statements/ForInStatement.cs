@@ -104,7 +104,7 @@ namespace NiL.JS.Statements
             return JSObject.undefined;
         }
 
-        public bool Optimize(ref Statement _this, int depth, System.Collections.Generic.HashSet<string> varibles)
+        public bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> varibles)
         {
             Parser.Optimize(ref varible, 1, varibles);
             Parser.Optimize(ref source, 1, varibles);
