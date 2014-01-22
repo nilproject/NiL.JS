@@ -139,6 +139,8 @@ namespace NiL.JS.Statements
                 functions[i] = null;
             }
             functions = null;
+            for (int i = 1; i < cases.Length; i++)
+                Parser.Optimize(ref cases[i].statement, 2, varibles);
             return false;
         }
     }
