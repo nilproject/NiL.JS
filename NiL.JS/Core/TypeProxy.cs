@@ -199,7 +199,6 @@ namespace NiL.JS.Core
         internal TypeProxy(Type type, bool fictive)
         {
             hostedType = type;
-            oValue = type;
             ValueType = JSObjectType.Proxy;
             assignCallback = JSObject.ProtectAssignCallback;
             fields = new Dictionary<string, JSObject>();
