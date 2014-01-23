@@ -448,17 +448,16 @@ namespace NiL.JS.Core
                     int l = args.GetField("length", true, false).iValue;
                     for (int i = 0; i < m.Length; i++)
                     {
-                        if ((m[i] as MethodInfo).GetParameters().Length == l)
-                        {
+                        var mi = m[i] as MethodInfo;
+                        if (mi.DeclaringType != typeof(object) && mi.GetParameters().Length == l)
                             return (cache[i] ?? (cache[i] = ProxyMethod(m[i] as MethodInfo).oValue as Function)).Invoke(context, args);
-                        }
                     }
                     return null;
                 });
             }
             else
             {
-                if (m.Length == 0 || m[0].GetCustomAttributes(typeof(HiddenAttribute), true).Length != 0)
+                if (m.Length == 0 || m[0].DeclaringType == typeof(object) || m[0].GetCustomAttributes(typeof(HiddenAttribute), true).Length != 0)
                 {
                     r = DefaultFieldGetter(name, fast, own);
                     return r;

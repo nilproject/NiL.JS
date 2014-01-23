@@ -67,8 +67,9 @@ namespace NiL.JS.Core.BaseTypes
                         oValue = @this,
                         attributes = ObjectAttributes.DontEnum | ObjectAttributes.DontDelete | ObjectAttributes.Immutable
                     };
-                    internalContext.thisBind = @this;
                 }
+                internalContext.thisBind = @this;
+                context.thisBind = null;
                 int i = 0;
                 int min = System.Math.Min(args == null ? 0 : args.GetField("length", true, false).iValue, argumentsNames.Length);
                 for (; i < min; i++)
