@@ -32,6 +32,7 @@ namespace NiL.JS.Core
         None = 0,
         DontEnum = 1 << 0,
         DontDelete = 1 << 1,
+        ReadOnly = 1 << 2,
         Immutable = 1 << 16
     }
 
@@ -40,9 +41,7 @@ namespace NiL.JS.Core
         private static readonly System.Reflection.MemberInfo DefaultGetter = typeof(JSObject).GetMethod("DefaultFieldGetter", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
 
         [Modules.Hidden]
-        internal static readonly Func<bool> ErrorAssignCallback = () => { throw new InvalidOperationException("Invalid left-hand side"); };
-        [Modules.Hidden]
-        internal static readonly Func<bool> ProtectAssignCallback = () => { return false; };
+        internal static readonly Action ErrorAssignCallback = () => { throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Invalid left-hand side"))); };
         [Modules.Hidden]
         private static readonly IEnumerator<string> EmptyEnumerator = ((IEnumerable<string>)(new string[0])).GetEnumerator();
         [Modules.Hidden]
@@ -61,7 +60,7 @@ namespace NiL.JS.Core
         [Modules.Hidden]
         [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
         [System.ComponentModel.Browsable(false)]
-        internal Func<bool> assignCallback;
+        internal Action assignCallback;
         [Modules.Hidden]
         internal JSObject prototype;
         [Modules.Hidden]
@@ -206,7 +205,6 @@ namespace NiL.JS.Core
                                         fields = new Dictionary<string, JSObject>();
                                     fields[name] = res;
                                     res.assignCallback = null;
-                                    return true;
                                 },
                                 ValueType = JSObjectType.NotExistInObject
                             };
@@ -221,7 +219,6 @@ namespace NiL.JS.Core
                                     fields = new Dictionary<string, JSObject>();
                                 fields[name] = t;
                                 t.assignCallback = null;
-                                return true;
                             };
                             res = t;
                         }
@@ -237,8 +234,7 @@ namespace NiL.JS.Core
         {
             if (assignCallback != null)
                 assignCallback();
-            assignCallback = ProtectAssignCallback;
-            attributes |= ObjectAttributes.DontDelete;
+            attributes |= ObjectAttributes.DontDelete | ObjectAttributes.ReadOnly;
         }
 
         [Modules.Hidden]
@@ -342,8 +338,9 @@ namespace NiL.JS.Core
         public void Assign(JSObject right)
         {
             if (this.assignCallback != null)
-                if (!this.assignCallback())
-                    return;
+                this.assignCallback();
+            if ((attributes & ObjectAttributes.ReadOnly) != 0)
+                return;
             if (right == this)
                 return;
             if (right != null)
@@ -368,12 +365,6 @@ namespace NiL.JS.Core
             var res = new JSObject();
             res.Assign(this);
             return res;
-        }
-
-        [Modules.Hidden]
-        public void Delete()
-        {
-            ValueType = JSObjectType.NotExist;
         }
 
         [Modules.Hidden]
@@ -490,6 +481,8 @@ namespace NiL.JS.Core
                 case JSObjectType.Undefined:
                 case JSObjectType.NotExistInObject:
                     return false;
+                case JSObjectType.NotExist:
+                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("varible not defined")));
                 default:
                     throw new NotImplementedException();
             }

@@ -81,10 +81,7 @@ namespace NiL.JS.Statements
             {
                 if (catchBody != null)
                 {
-                    var eo = context.Define(exptName);
-                    eo.ValueType = JSObjectType.Object;
-                    eo.oValue = e;
-                    eo.GetField("message", false, false).Assign(e.Message);
+                    context.Define(exptName).Assign(TypeProxy.Proxy(e));
                     catchBody.Invoke(context);
                 }
             }

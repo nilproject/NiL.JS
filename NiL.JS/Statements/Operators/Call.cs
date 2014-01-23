@@ -27,7 +27,7 @@ namespace NiL.JS.Statements.Operators
                 context.thisBind = null;
                 var temp = first.Invoke(context);
                 if (temp.ValueType != JSObjectType.Function)
-                    throw new ArgumentException(temp + " is not callable");
+                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError(temp + " is not callable")));
                 func = (temp.oValue as Function);
                 newThisBind = context.thisBind;
             }
@@ -42,19 +42,24 @@ namespace NiL.JS.Statements.Operators
                 {
                     ValueType = JSObjectType.Object,
                     oValue = "[object Arguments]".Clone(),
-                    attributes = ObjectAttributes.DontDelete | ObjectAttributes.DontEnum
+                    attributes = ObjectAttributes.DontDelete | ObjectAttributes.DontEnum,
+                    prototype = BaseObject.Prototype
                 };
-            arguments.assignCallback = JSObject.ProtectAssignCallback;
-            var length = arguments.GetField("length", false, true);
-            length.ValueType = JSObjectType.Int;
-            length.iValue = sps == null ? 0 : sps.Length;
-            length.Protect();
-            length.attributes |= ObjectAttributes.DontEnum | ObjectAttributes.DontDelete;
-            for (int i = 0; i < length.iValue; i++)
+            var field = arguments.GetField("length", false, true);
+            field.ValueType = JSObjectType.Int;
+            field.iValue = sps == null ? 0 : sps.Length;
+            field.Protect();
+            field.attributes = ObjectAttributes.DontEnum;
+            for (int i = 0; i < field.iValue; i++)
             {
                 var a = arguments.GetField(i.ToString(), false, false);
                 a.Assign(sps[i].Invoke(context));
             }
+            field = arguments.GetField("callee", false, true);
+            field.ValueType = JSObjectType.Function;
+            field.oValue = func;
+            field.Protect();
+            field.attributes = ObjectAttributes.DontEnum;
             if (newThisBind != null || func is ExternalFunction)
             {
                 context.thisBind = newThisBind;

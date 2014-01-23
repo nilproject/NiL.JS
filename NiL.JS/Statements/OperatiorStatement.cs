@@ -1289,9 +1289,10 @@ namespace NiL.JS.Statements
             var val = (first ?? second).Invoke(context);
             if (val.ValueType == JSObjectType.NotExist)
                 throw new InvalidOperationException("varible is undefined");
-            if ((val.assignCallback != null) && (!val.assignCallback()))
+            if ((val.attributes & ObjectAttributes.ReadOnly) != 0)
                 return double.NaN;
-
+            if (val.assignCallback != null)
+                val.assignCallback();
             JSObject o = null;
             if ((second != null) && (val.ValueType != JSObjectType.Undefined) && (val.ValueType != JSObjectType.NotExistInObject))
             {

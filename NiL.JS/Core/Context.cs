@@ -40,6 +40,10 @@ namespace NiL.JS.Core
             globalContext.AttachModule(typeof(BaseTypes.Error));
             globalContext.AttachModule(typeof(BaseTypes.TypeError));
             globalContext.AttachModule(typeof(BaseTypes.ReferenceError));
+            globalContext.AttachModule(typeof(BaseTypes.EvalError));
+            globalContext.AttachModule(typeof(BaseTypes.RangeError));
+            globalContext.AttachModule(typeof(BaseTypes.URIError));
+            globalContext.AttachModule(typeof(BaseTypes.SyntaxError));
 
             #region Base Function
             globalContext.GetField("eval").Assign(new CallableField((cont, x) =>
@@ -69,6 +73,20 @@ namespace NiL.JS.Core
                     return true;
                 }
                 return true;
+            }));
+            globalContext.GetField("encodeURI").Assign(new CallableField((t, x) =>
+            {
+                return System.Web.HttpServerUtility.UrlTokenEncode(System.Text.UTF8Encoding.Default.GetBytes(x.GetField("0", true, false).ToString()));
+            }));
+            globalContext.GetField("encodeURIComponent").Assign(globalContext.GetField("encodeURI"));
+            globalContext.GetField("decodeURI").Assign(new CallableField((t, x) =>
+            {
+                return System.Text.UTF8Encoding.Default.GetString(System.Web.HttpServerUtility.UrlTokenDecode(x.GetField("0", true, false).ToString()));
+            }));
+            globalContext.GetField("decodeURIComponent").Assign(globalContext.GetField("decodeURI"));
+            globalContext.GetField("isFinite").Assign(new CallableField((t, x) =>
+            {
+                return !double.IsInfinity(Tools.JSObjectToDouble(x.GetField("0", true, false)));
             }));
             globalContext.GetField("parseFloat").Assign(new CallableField((t, x) =>
             {
@@ -212,7 +230,6 @@ namespace NiL.JS.Core
                     fields = new Dictionary<string, JSObject>();
                 fields[name] = res;
                 res.assignCallback = null;
-                return true;
             };
             return res;
         }

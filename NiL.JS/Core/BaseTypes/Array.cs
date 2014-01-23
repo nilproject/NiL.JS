@@ -133,7 +133,6 @@ namespace NiL.JS.Core.BaseTypes
                             data[lastReqIndex] = tempElement;
                             tempElement.assignCallback = null;
                             tempElement = null;
-                            return true;
                         };
                     }
                     lastReqIndex = index;

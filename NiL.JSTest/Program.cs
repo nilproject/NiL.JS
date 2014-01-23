@@ -95,7 +95,7 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * 3 * i; }
                     var f = new FileStream(fls[i], FileMode.Open, FileAccess.Read);
                     var sr = new StreamReader(f);
                     code = "function runTestCase(a){a()}\n" + sr.ReadToEnd();
-                    negative = code.IndexOf("* @negative") != -1;
+                    negative = code.IndexOf("@negative") != -1;
                     if (negative)
                         pass = false;
                     var s = new Script(code);

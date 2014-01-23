@@ -126,6 +126,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Web" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
@@ -134,6 +135,10 @@
     <Compile Include="Core\BaseTypes\Boolean.cs" />
     <Compile Include="Core\BaseTypes\EmbeddedType.cs" />
     <Compile Include="Core\BaseTypes\Date.cs" />
+    <Compile Include="Core\BaseTypes\URIError.cs" />
+    <Compile Include="Core\BaseTypes\SyntaxError.cs" />
+    <Compile Include="Core\BaseTypes\RangeError.cs" />
+    <Compile Include="Core\BaseTypes\EvalError.cs" />
     <Compile Include="Core\BaseTypes\Error.cs" />
     <Compile Include="Core\BaseTypes\Function.cs" />
     <Compile Include="Core\BaseTypes\Number.cs" />

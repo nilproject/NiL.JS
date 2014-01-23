@@ -200,7 +200,6 @@ namespace NiL.JS.Core
         {
             hostedType = type;
             ValueType = JSObjectType.Proxy;
-            assignCallback = JSObject.ProtectAssignCallback;
             fields = new Dictionary<string, JSObject>();
             fields["constructor"] = GetConstructor(hostedType);
             var pa = type.GetCustomAttributes(typeof(PrototypeAttribute), false);
@@ -208,7 +207,7 @@ namespace NiL.JS.Core
                 prototype = GetPrototype((pa[0] as PrototypeAttribute).PrototypeType).Clone() as JSObject;
             else
                 prototype = BaseObject.Prototype.Clone() as JSObject;
-            attributes |= ObjectAttributes.DontDelete | ObjectAttributes.DontEnum;
+            attributes |= ObjectAttributes.DontDelete | ObjectAttributes.DontEnum | ObjectAttributes.ReadOnly;
         }
 
         public TypeProxy(Type type)
@@ -217,9 +216,8 @@ namespace NiL.JS.Core
             hostedType = type;
             JSObject proto = null;
             TypeProxy exconst = null;
-            assignCallback = JSObject.ProtectAssignCallback;
             prototype = BaseObject.Prototype;
-            attributes |= ObjectAttributes.DontDelete | ObjectAttributes.DontEnum;
+            attributes |= ObjectAttributes.DontDelete | ObjectAttributes.DontEnum | ObjectAttributes.ReadOnly;
             if (constructors.TryGetValue(type, out exconst))
             {
                 oValue = exconst.oValue;

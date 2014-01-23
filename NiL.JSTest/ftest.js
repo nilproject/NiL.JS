@@ -1,5 +1,9 @@
-﻿function f() {
-    return { x: 1 };
+﻿try {
+    x & 1;
+    $ERROR('#1.1: x & 1 throw ReferenceError. Actual: ' + (x & 1));
 }
-console.log(new f().x)
-console.log(this.x);
+catch (e) {
+    if ((e instanceof ReferenceError) !== true) {
+        $ERROR('#1.2: x & 1 throw ReferenceError. Actual: ' + (e));
+    }
+}

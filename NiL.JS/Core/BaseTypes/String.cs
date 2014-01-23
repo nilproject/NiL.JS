@@ -32,7 +32,7 @@ namespace NiL.JS.Core.BaseTypes
             {
                 if ((pos < 0) || (pos >= (oValue as string).Length))
                     return JSObject.undefined;
-                return new JSObject(false) { ValueType = JSObjectType.String, oValue = (oValue as string)[pos].ToString(), assignCallback = () => { return false; } };
+                return new JSObject(false) { ValueType = JSObjectType.String, oValue = (oValue as string)[pos].ToString(), attributes = ObjectAttributes.ReadOnly };
             }
         }
 
@@ -346,7 +346,7 @@ namespace NiL.JS.Core.BaseTypes
             return this;
         }
 
-        private static readonly Number _length = new Number(0) { assignCallback = JSObject.ProtectAssignCallback };
+        private static readonly Number _length = new Number(0) { attributes = ObjectAttributes.ReadOnly | ObjectAttributes.DontDelete | ObjectAttributes.DontEnum };
 
         public JSObject length
         {
