@@ -90,6 +90,8 @@ namespace NiL.JS.Core.BaseTypes
         [Hidden]
         public virtual JSObject Invoke(Context contextOverride, JSObject args)
         {
+            if (contextOverride == null)
+                return Invoke(args);
             var oldContext = context.thisBind;
             context.thisBind = contextOverride.thisBind;
             try
@@ -105,6 +107,8 @@ namespace NiL.JS.Core.BaseTypes
         [Hidden]
         public virtual JSObject Invoke(JSObject thisOverride, JSObject args)
         {
+            if (thisOverride == null)
+                return Invoke(args);
             var oldContext = context.thisBind;
             context.thisBind = thisOverride;
             try
