@@ -1,2 +1,5 @@
-﻿var sysasm = ReferenceError().GetType().BaseType.BaseType.Assembly;
-console.log(sysasm.GetType("System.Double").GetMethod("Parse").Invoke(null, ["123"]))
+﻿function f() {
+    return { x: 1 };
+}
+console.log(new f().x)
+console.log(this.x);

@@ -409,7 +409,8 @@ namespace NiL.JS.Core
             if (_this != null)
             {
                 thproto = _this.prototype;
-                bynew = thproto != null && thproto.ValueType == JSObjectType.Proxy && thproto.oValue == hostedType as object;
+                if (thproto.ValueType == JSObjectType.Proxy && thproto.oValue is TypeProxy)
+                    bynew = (thproto.oValue as TypeProxy).hostedType == hostedType;
             }
             var obj = constructor.Invoke(args);
             JSObject res = null;

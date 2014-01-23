@@ -165,6 +165,7 @@
     <Compile Include="Statements\Operators\Division.cs" />
     <Compile Include="Statements\Operators\Delete.cs" />
     <Compile Include="Statements\Operators\LogicalNot.cs" />
+    <Compile Include="Statements\Operators\New.cs" />
     <Compile Include="Statements\Operators\TypeOf.cs" />
     <Compile Include="Statements\Operators\StrictNotEqual.cs" />
     <Compile Include="Statements\ThrowStatement.cs" />

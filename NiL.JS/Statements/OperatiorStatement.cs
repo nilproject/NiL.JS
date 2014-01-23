@@ -251,7 +251,7 @@ namespace NiL.JS.Statements
                         }
                     case OperationType.New:
                         {
-                            del = OpNew;
+                            del = (fastImpl = new Operators.New(first, second)).Invoke;
                             break;
                         }
                     case OperationType.Delete:
@@ -1584,44 +1584,6 @@ namespace NiL.JS.Statements
                     a = a.GetField("__proto__", true, false);
                 }
             return o;
-        }
-
-        private JSObject OpNew(Context context)
-        {
-            JSObject temp = first.Invoke(context);
-            if (temp.ValueType <= JSObjectType.NotExistInObject)
-                throw new ArgumentException("varible is not defined");
-            if (temp.ValueType != JSObjectType.Function)
-                throw new ArgumentException(temp + " is not callable");
-            
-            var call = Operators.Call.Instance;
-            (call.First as ImmidateValueStatement).Value = temp;
-            if (second != null)
-                (call.Second as ImmidateValueStatement).Value = second.Invoke(context);
-            else
-                (call.Second as ImmidateValueStatement).Value = new JSObject[0];
-            JSObject _this = new JSObject()
-            {
-                ValueType = JSObjectType.Object,
-                oValue = temp is TypeProxy ? null : new object()
-            };
-            if (temp is TypeProxy)
-                _this.prototype = temp.GetField("prototype", true, false);
-            else
-                (_this.prototype = new JSObject()).Assign(temp.GetField("prototype", true, false));
-            var otb = context.thisBind;
-            context.thisBind = _this;
-            try
-            {
-                var res = call.Invoke(context);
-                if ((bool)res)
-                    return res;
-            }
-            finally
-            {
-                context.thisBind = otb;
-            }
-            return _this;
         }
 
         private JSObject OpNot(Context context)
