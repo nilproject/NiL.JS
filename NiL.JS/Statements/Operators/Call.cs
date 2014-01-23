@@ -48,14 +48,14 @@ namespace NiL.JS.Statements.Operators
             var length = arguments.GetField("length", false, true);
             length.ValueType = JSObjectType.Int;
             length.iValue = sps == null ? 0 : sps.Length;
-            length.assignCallback = JSObject.ProtectAssignCallback;
+            length.Protect();
             length.attributes |= ObjectAttributes.DontEnum | ObjectAttributes.DontDelete;
             for (int i = 0; i < length.iValue; i++)
             {
                 var a = arguments.GetField(i.ToString(), false, false);
                 a.Assign(sps[i].Invoke(context));
             }
-            if (newThisBind != null)
+            if (newThisBind != null || func is ExternalFunction)
             {
                 context.thisBind = newThisBind;
                 try
@@ -70,7 +70,7 @@ namespace NiL.JS.Statements.Operators
             }
             else
             {
-                res = func.Invoke(arguments);
+                res = func.Invoke(oldThisBind, arguments);
                 return res;
             }
         }
