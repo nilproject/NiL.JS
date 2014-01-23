@@ -21,22 +21,17 @@ namespace NiL.JS.Statements.Operators
 
         public override JSObject Invoke(Context context)
         {
-            var val = second.Invoke(context);
+            setterArg.Assign(second.Invoke(context));
             var field = first.InvokeForAssing(context);
             if (field.ValueType == JSObjectType.Property)
             {
                 var setter = (field.oValue as NiL.JS.Core.BaseTypes.Function[])[0];
                 if (setter != null)
-                {
-                    setterArg.assignCallback = null;
-                    setterArg.Assign(val);
-                    setterArg.assignCallback = JSObject.ProtectAssignCallback;
                     setter.Invoke(context, setterArgs);
-                }
             }
             else
-                field.Assign(val);
-            return val;
+                field.Assign(setterArg);
+            return setterArg;
         }
 
         public override bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> vars)
