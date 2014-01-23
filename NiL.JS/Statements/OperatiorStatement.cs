@@ -372,7 +372,7 @@ namespace NiL.JS.Statements
                         double d = 0;
                         if (Tools.ParseNumber(code, ref s, true, out d))
                         {
-                            if ((n = (int)d) == d && d != -0)
+                            if ((n = (int)d) == d && !double.IsNegativeInfinity(1.0 / d))
                                 first = new ImmidateValueStatement(n);
                             else
                                 first = new ImmidateValueStatement(d);
