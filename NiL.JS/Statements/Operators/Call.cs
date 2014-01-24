@@ -62,7 +62,7 @@ namespace NiL.JS.Statements.Operators
             field.attributes = ObjectAttributes.DontEnum;
             if (newThisBind != null || func is ExternalFunction)
             {
-                context.thisBind = newThisBind;
+                context.thisBind = newThisBind ?? oldThisBind;
                 try
                 {
                     res = func.Invoke(context, arguments);

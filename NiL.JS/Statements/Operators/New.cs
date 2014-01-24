@@ -1,4 +1,5 @@
 ﻿using NiL.JS.Core;
+using NiL.JS.Core.BaseTypes;
 using System;
 
 namespace NiL.JS.Statements.Operators
@@ -16,8 +17,8 @@ namespace NiL.JS.Statements.Operators
             JSObject temp = first.Invoke(context);
             if (temp.ValueType <= JSObjectType.NotExistInObject)
                 throw new ArgumentException("varible is not defined");
-            if (temp.ValueType != JSObjectType.Function)
-                throw new ArgumentException(temp + " is not callable");
+            if (temp.ValueType != JSObjectType.Function && !(temp.ValueType == JSObjectType.Object && temp.oValue is Function))
+                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError(temp + " is not callable")));
 
             var call = Operators.Call.Instance;
             (call.First as ImmidateValueStatement).Value = temp;
