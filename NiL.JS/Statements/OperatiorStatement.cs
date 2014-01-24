@@ -66,7 +66,7 @@ namespace NiL.JS.Statements
 
     internal class OperatorStatement : Statement, IOptimizable
     {
-        private static readonly JSObject tempResult = new JSObject();
+        private static readonly JSObject tempResult = new JSObject() { assignCallback = JSObject.ErrorAssignCallback, attributes = ObjectAttributes.DontDelete };
 
         private Statement fastImpl;
 
@@ -453,7 +453,10 @@ namespace NiL.JS.Statements
                         {
                             do i++; while (char.IsWhiteSpace(code[i]));
                             first = Parse(state, ref i, true, true, true).Statement;
-                            (first as OperatorStatement)._type = OperationType.Not;
+                            if ((first as OperatorStatement)._type == OperationType.None)
+                                (first as OperatorStatement)._type = OperationType.Not;
+                            else
+                                first = new OperatorStatement() { first = first, _type = OperationType.Not };
                             break;
                         }
                     case 't':
@@ -479,7 +482,10 @@ namespace NiL.JS.Statements
                             i += 2;
                             do i++; while (char.IsWhiteSpace(code[i]));
                             first = Parse(state, ref i, false, true, true).Statement;
-                            (first as OperatorStatement)._type = OperationType.New;
+                            if ((first as OperatorStatement)._type == OperationType.None || (first as OperatorStatement)._type == OperationType.Call)
+                                (first as OperatorStatement)._type = OperationType.New;
+                            else
+                                first = new Operators.New(first, second);
                             break;
                         }
                     case 'd':
@@ -487,7 +493,10 @@ namespace NiL.JS.Statements
                             i += 5;
                             do i++; while (char.IsWhiteSpace(code[i]));
                             first = Parse(state, ref i, false, true, true).Statement;
-                            (first as OperatorStatement)._type = OperationType.Delete;
+                            if ((first as OperatorStatement)._type == OperationType.None)
+                                (first as OperatorStatement)._type = OperationType.Delete;
+                            else
+                                first = new Operators.Delete(first, second);
                             break;
                         }
                     default:

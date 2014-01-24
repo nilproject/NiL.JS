@@ -18,8 +18,10 @@ namespace NiL.JS.Statements
             {
                 var n = fieldName.Invoke(s);
                 if (n.ValueType == JSObjectType.NotExist)
-                    throw new ArgumentException("Varible not exist");
+                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("varible not defined")));
                 var th = obj.Invoke(s);
+                if (th.ValueType == JSObjectType.NotExist)
+                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("varible not defined")));
                 s.thisBind = th;
                 var res = th.GetField(n.ToPrimitiveValue_String_Value(s).Value.ToString(), false, false);
                 return res;
@@ -32,6 +34,8 @@ namespace NiL.JS.Statements
             impl = (s) =>
             {
                 var th = obj.Invoke(s);
+                if (th.ValueType == JSObjectType.NotExist)
+                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("varible not defined")));
                 s.thisBind = th;
                 var res = th.GetField(fieldName, false, false);
                 return res;
@@ -53,8 +57,11 @@ namespace NiL.JS.Statements
             fieldNameStatement = fieldName;
             impl = (s) =>
             {
+                var f = fieldName.Invoke(s);
+                if (f.ValueType == JSObjectType.NotExist)
+                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("varible not defined")));
                 s.thisBind = obj;
-                var res = obj.GetField(fieldName.Invoke(s).ToPrimitiveValue_String_Value(s).Value.ToString(), false, false);
+                var res = obj.GetField(f.ToPrimitiveValue_String_Value(s).Value.ToString(), false, false);
                 return res;
             };
         }

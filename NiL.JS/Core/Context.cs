@@ -77,6 +77,14 @@ namespace NiL.JS.Core
                 }
                 return true;
             }));
+            globalContext.GetField("unescape").Assign(new CallableField((t, x) =>
+            {
+                return System.Web.HttpUtility.HtmlDecode(x.GetField("0", true, false).ToString());
+            }));
+            globalContext.GetField("escape").Assign(new CallableField((t, x) =>
+            {
+                return System.Web.HttpUtility.HtmlEncode(x.GetField("0", true, false).ToString());
+            }));
             globalContext.GetField("encodeURI").Assign(new CallableField((t, x) =>
             {
                 return System.Web.HttpServerUtility.UrlTokenEncode(System.Text.UTF8Encoding.Default.GetBytes(x.GetField("0", true, false).ToString()));

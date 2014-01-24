@@ -17,6 +17,7 @@ namespace NiL.JS.Core
         private static JSObject toStringObj = new CallableField(toString);
 
         private Type hostedType;
+        private object prototypeInstance;
 
         private static JSObject embeddedTypeConvert(JSObject source, Type targetType)
         {
@@ -135,7 +136,9 @@ namespace NiL.JS.Core
 
         private static JSObject toString(Context context, JSObject args)
         {
-            return context.thisBind.oValue.ToString();
+            if (context.thisBind.ValueType == JSObjectType.Bool)
+                return context.thisBind.iValue != 0 ? "true" : "false";
+            return context.thisBind.Value.ToString();
         }
 
         public static JSObject Proxy(object obj)
@@ -191,6 +194,8 @@ namespace NiL.JS.Core
             if (obj is EmbeddedType)
                 return obj;
             obj = embeddedTypeConvert(obj as JSObject, targetType) ?? (obj as JSObject).oValue;
+            if (obj == this)
+                return prototypeInstance;
             if (obj is JSObject)
                 obj = embeddedTypeConvert(obj as JSObject, targetType) ?? obj;
             return obj;
@@ -198,6 +203,9 @@ namespace NiL.JS.Core
 
         internal TypeProxy(Type type, bool fictive)
         {
+            var ctor = type.GetConstructor(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance, null, Type.EmptyTypes, null);
+            if (ctor != null)
+                prototypeInstance = ctor.Invoke(null);
             hostedType = type;
             ValueType = JSObjectType.Proxy;
             fields = new Dictionary<string, JSObject>();

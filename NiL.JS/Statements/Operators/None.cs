@@ -38,7 +38,7 @@ namespace NiL.JS.Statements.Operators
 
         public override bool Optimize(ref Statement _this, int depth, Dictionary<string, Statement> vars)
         {
-            if (second == null && !(first is GetVaribleStatement))
+            if (second == null && depth > 1)
             {
                 _this = first;
                 return true;

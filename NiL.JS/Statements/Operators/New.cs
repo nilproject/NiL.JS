@@ -16,7 +16,7 @@ namespace NiL.JS.Statements.Operators
         {
             JSObject temp = first.Invoke(context);
             if (temp.ValueType <= JSObjectType.NotExistInObject)
-                throw new ArgumentException("varible is not defined");
+                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible not defined.")));
             if (temp.ValueType != JSObjectType.Function && !(temp.ValueType == JSObjectType.Object && temp.oValue is Function))
                 throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError(temp + " is not callable")));
 
