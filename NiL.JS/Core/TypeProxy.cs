@@ -447,7 +447,9 @@ namespace NiL.JS.Core
                     for (int i = 0; i < m.Length; i++)
                     {
                         var mi = m[i] as MethodInfo;
-                        if (mi.DeclaringType != typeof(object) && mi.GetParameters().Length == l)
+                        if (mi.DeclaringType == typeof(object))
+                            continue;
+                        if (mi.GetParameters().Length == l && mi.GetCustomAttributes(typeof(HiddenAttribute), false).Length == 0)
                             return (cache[i] ?? (cache[i] = ProxyMethod(m[i] as MethodInfo).oValue as Function)).Invoke(context, args);
                     }
                     return null;
