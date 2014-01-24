@@ -538,5 +538,12 @@ namespace NiL.JS.Core
             fields[name] = r;
             return r;
         }
+
+        public override IEnumerator<string> GetEnumerator()
+        {
+            if (fields == null)
+                return JSObject.EmptyEnumerator;
+            return fields.Keys.GetEnumerator();
+        }
     }
 }

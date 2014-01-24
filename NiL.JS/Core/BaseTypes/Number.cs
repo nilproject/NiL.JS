@@ -115,7 +115,7 @@ namespace NiL.JS.Core.BaseTypes
                     }
                 case JSObjectType.Object:
                     {
-                        digits = digits.GetField("0", true, false).ToPrimitiveValue_Value_String(new Context(Context.globalContext));
+                        digits = digits.GetField("0", true, false).ToPrimitiveValue_Value_String(new Context(Context.currentRootContext));
                         if (digits.ValueType == JSObjectType.String)
                             goto case JSObjectType.String;
                         if (digits.ValueType == JSObjectType.Int)
@@ -179,7 +179,7 @@ namespace NiL.JS.Core.BaseTypes
                     }
                 case JSObjectType.Object:
                     {
-                        digits = digits.GetField("0", true, false).ToPrimitiveValue_Value_String(new Context(Context.globalContext));
+                        digits = digits.GetField("0", true, false).ToPrimitiveValue_Value_String(new Context(Context.currentRootContext));
                         if (digits.ValueType == JSObjectType.String)
                             goto case JSObjectType.String;
                         if (digits.ValueType == JSObjectType.Int)
@@ -239,7 +239,7 @@ namespace NiL.JS.Core.BaseTypes
                     }
                 case JSObjectType.Object:
                     {
-                        digits = digits.GetField("0", true, false).ToPrimitiveValue_Value_String(new Context(Context.globalContext));
+                        digits = digits.GetField("0", true, false).ToPrimitiveValue_Value_String(new Context(Context.currentRootContext));
                         if (digits.ValueType == JSObjectType.String)
                             goto case JSObjectType.String;
                         if (digits.ValueType == JSObjectType.Int)

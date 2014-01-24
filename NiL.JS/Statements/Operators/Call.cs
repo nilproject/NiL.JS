@@ -26,7 +26,7 @@ namespace NiL.JS.Statements.Operators
                 context.updateThisBind = true;
                 context.thisBind = null;
                 var temp = first.Invoke(context);
-                if (temp.ValueType != JSObjectType.Function)
+                if (temp.ValueType != JSObjectType.Function && !(temp.ValueType == JSObjectType.Object && temp.oValue is Function))
                     throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError(temp + " is not callable")));
                 func = (temp.oValue as Function);
                 newThisBind = context.thisBind;

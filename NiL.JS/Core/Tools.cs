@@ -42,7 +42,7 @@ namespace NiL.JS.Core
                     {
                         if (r.oValue == null)
                             return 0;
-                        r = r.ToPrimitiveValue_Value_String(Context.globalContext);
+                        r = r.ToPrimitiveValue_Value_String(Context.currentRootContext);
                         return JSObjectToDouble(r);
                     }
                 case JSObjectType.Undefined:
@@ -88,7 +88,7 @@ namespace NiL.JS.Core
                     {
                         if (r.oValue == null)
                             return 0;
-                        r = r.ToPrimitiveValue_Value_String(Context.globalContext);
+                        r = r.ToPrimitiveValue_Value_String(Context.currentRootContext);
                         return JSObjectToInt(r);
                     }
                 case JSObjectType.Undefined:

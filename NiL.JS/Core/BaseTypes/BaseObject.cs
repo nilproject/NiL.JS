@@ -75,6 +75,8 @@ namespace NiL.JS.Core.BaseTypes
                     case JSObjectType.Date:
                     case JSObjectType.Object:
                         {
+                            if (cont.thisBind.oValue is ThisObject)
+                                return cont.thisBind.oValue.ToString();
                             return "[object Object]";
                         }
                     default: throw new NotImplementedException();
@@ -130,7 +132,7 @@ namespace NiL.JS.Core.BaseTypes
                     }
                 case JSObjectType.Object:
                     {
-                        args = args.GetField("0", true, false).ToPrimitiveValue_Value_String(new Context(Context.globalContext));
+                        args = args.GetField("0", true, false).ToPrimitiveValue_Value_String(new Context(Context.currentRootContext));
                         if (args.ValueType == JSObjectType.String)
                             n = args.GetField("0", true, false).oValue as string;
                         if (args.ValueType == JSObjectType.Int)
@@ -203,7 +205,7 @@ namespace NiL.JS.Core.BaseTypes
                     }
                 case JSObjectType.Object:
                     {
-                        name = name.GetField("0", true, false).ToPrimitiveValue_Value_String(new Context(Context.globalContext));
+                        name = name.GetField("0", true, false).ToPrimitiveValue_Value_String(new Context(Context.currentRootContext));
                         if (name.ValueType == JSObjectType.String)
                             n = name.GetField("0", true, false).oValue as string;
                         if (name.ValueType == JSObjectType.Int)

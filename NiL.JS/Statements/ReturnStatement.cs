@@ -34,8 +34,8 @@ namespace NiL.JS.Statements
 
         public override JSObject Invoke(Context context)
         {
-            context.abort = AbortType.Return;
             context.abortInfo = body.Invoke(context);
+            context.abort = AbortType.Return;
             return null;
         }
 

@@ -30,7 +30,15 @@ namespace NiL.JS
             {
                 var lm = System.Runtime.GCSettings.LatencyMode;
                 System.Runtime.GCSettings.LatencyMode = System.Runtime.GCLatencyMode.Interactive;
-                root.Invoke(Context);
+                NiL.JS.Core.Context.currentRootContext = Context;
+                try
+                {
+                    root.Invoke(Context);
+                }
+                finally
+                {
+                    NiL.JS.Core.Context.currentRootContext = null;
+                }
                 System.Runtime.GCSettings.LatencyMode = lm;
             }
         }

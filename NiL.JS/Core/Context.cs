@@ -22,6 +22,7 @@ namespace NiL.JS.Core
             public JSObject value;
         }
 
+        internal static Context currentRootContext = null;
         internal readonly static Context globalContext = new Context();
         public static Context GlobalContext { get { return globalContext; } }
 
@@ -44,9 +45,11 @@ namespace NiL.JS.Core
             globalContext.AttachModule(typeof(BaseTypes.RangeError));
             globalContext.AttachModule(typeof(BaseTypes.URIError));
             globalContext.AttachModule(typeof(BaseTypes.SyntaxError));
+            globalContext.AttachModule(typeof(Modules.Math));
+            globalContext.AttachModule(typeof(Modules.console));
 
             #region Base Function
-            globalContext.GetField("eval").Assign(new CallableField((cont, x) =>
+            globalContext.GetField("eval").Assign(new CallableField((context, x) =>
             {
                 int i = 0;
                 string c = "{" + Tools.RemoveComments(x.GetField("0", true, false).ToString()) + "}";
@@ -54,7 +57,7 @@ namespace NiL.JS.Core
                 if (i != c.Length)
                     throw new System.ArgumentException("Invalid char");
                 Parser.Optimize(ref cb, null);
-                var res = cb.Invoke(cont);
+                var res = cb.Invoke(context);
                 return res;
             }));
             globalContext.GetField("isNaN").Assign(new CallableField((t, x) =>
@@ -124,7 +127,7 @@ namespace NiL.JS.Core
                             {
                                 if (r.oValue == null)
                                     return 0;
-                                r = r.ToPrimitiveValue_Value_String(Context.globalContext);
+                                r = r.ToPrimitiveValue_Value_String(Context.currentRootContext);
                                 break;
                             }
                         case JSObjectType.Undefined:
@@ -194,8 +197,8 @@ namespace NiL.JS.Core
             globalContext.fields["null"] = JSObject.Null;
             #endregion
 
-            globalContext.AttachModule(typeof(Modules.Math));
-            globalContext.AttachModule(typeof(Modules.console));
+            foreach (var v in globalContext.fields.Values)
+                v.attributes |= ObjectAttributes.DontEnum;
         }
 
         static Context()
@@ -223,7 +226,11 @@ namespace NiL.JS.Core
 
         private JSObject define(string name)
         {
-            var res = new JSObject() { ValueType = JSObjectType.NotExist };
+            JSObject res = BaseTypes.BaseObject.Prototype.GetField(name, true, true);
+            if (res == JSObject.undefined)
+                res = new JSObject() { ValueType = JSObjectType.NotExist };
+            else
+                res = res.Clone() as JSObject;
             res.assignCallback = () =>
             {
                 if (fields == null)
@@ -271,15 +278,23 @@ namespace NiL.JS.Core
         public virtual JSObject GetField(string name)
         {
             JSObject res = null;
+            var c = this;
             if (name == "this")
             {
-                if (thisBind == null || thisBind.ValueType <= JSObjectType.Undefined)
+                if (thisBind == null)
                 {
-                    if (prototype == null || prototype == globalContext)
-                        thisBind = new ThisObject(this);
-                    else
-                        thisBind = prototype.GetField(name);
+                    for (; ; )
+                        if (c.prototype == globalContext)
+                        {
+                            thisBind = new ThisObject(c);
+                            c.thisBind = thisBind;
+                            break;
+                        }
+                        else
+                            c = c.prototype;
                 }
+                else if (thisBind.ValueType <= JSObjectType.Undefined) // было "delete this". Просто вернём к жизни существующий объект
+                    thisBind.ValueType = JSObjectType.Object;
                 return thisBind;
             }
             for (int i = 0; i < cacheSize; i++)
@@ -288,11 +303,10 @@ namespace NiL.JS.Core
                     return cache[i].value;
             }
             var scriptRoot = this;
-            var c = this;
             while (((c.fields == null) || !c.fields.TryGetValue(name, out res)) && (c.prototype != null))
             {
                 c = c.prototype;
-                if (c != Context.globalContext)
+                if (c != globalContext)
                     scriptRoot = c;
             }
             if (res == null)

@@ -9,22 +9,23 @@ namespace NiL.JS.Statements
 {
     internal enum OperationTypeGroups : int
     {
-        None = 0,
-        Logic0 = 0x10,
-        Logic1 = 0x20,
-        Logic2 = 0x30,
-        Bit = 0x40,
-        Arithmetic0 = 0x50,
-        Arithmetic1 = 0x60,
-        Unary = 0x70,
+        Choice = 0x0,
+        Assign = 0x10,
+        Logic0 = 0x20,
+        Logic1 = 0x30,
+        Logic2 = 0x40,
+        Bit = 0x50,
+        Arithmetic0 = 0x60,
+        Arithmetic1 = 0x70,
+        Unary = 0x80,
         Special = 0xF0
     }
 
     internal enum OperationType : int
     {
-        None = OperationTypeGroups.None + 0,
-        Assign = OperationTypeGroups.None + 1,
-        Ternary = OperationTypeGroups.None + 2,
+        Assign = OperationTypeGroups.Assign + 1,
+        None = OperationTypeGroups.Choice + 0,
+        Ternary = OperationTypeGroups.Choice + 2,
         And = OperationTypeGroups.Logic0 + 0,
         Or = OperationTypeGroups.Logic0 + 1,
         Xor = OperationTypeGroups.Logic0 + 2,
@@ -291,7 +292,7 @@ namespace NiL.JS.Statements
             Stack<OperationType> types = new Stack<OperationType>();
             Stack<OpDelegate> delegates = new Stack<OpDelegate>();
             OperatorStatement cur = statement.second as OperatorStatement;
-            if (cur == null || cur._type == OperationType.None)
+            if (cur == null)
                 return statement;
             types.Push(statement._type);
             delegates.Push(statement.del);
@@ -299,8 +300,9 @@ namespace NiL.JS.Statements
             while (cur != null)
             {
                 stats.Push(cur.first);
-                if ((((int)types.Peek() & (int)OperationTypeGroups.Special) > ((int)cur._type & (int)OperationTypeGroups.Special))
-                    || ((((int)types.Peek() & (int)OperationTypeGroups.Special) == ((int)cur._type & (int)OperationTypeGroups.Special)) && (((int)cur._type & (int)OperationTypeGroups.Special) != 0)))
+                var topType = (int)types.Peek();
+                if (((topType & (int)OperationTypeGroups.Special) > ((int)cur._type & (int)OperationTypeGroups.Special))
+                    || (((topType & (int)OperationTypeGroups.Special) == ((int)cur._type & (int)OperationTypeGroups.Special)) && (((int)cur._type & (int)OperationTypeGroups.Special) > 0x10)))
                 {
                     stats.Push(new OperatorStatement()
                     {
@@ -310,8 +312,6 @@ namespace NiL.JS.Statements
                         first = stats.Pop()
                     });
                 }
-                if (cur._type == OperationType.None)
-                    break;
                 types.Push(cur._type);
                 delegates.Push(cur.del);
                 if (!(cur.second is OperatorStatement))
@@ -561,15 +561,17 @@ namespace NiL.JS.Statements
                         }
                     case ',':
                         {
-                            if (forUnary)
+                            if (forUnary || !processComma)
                             {
                                 binar = false;
                                 repeat = false;
                                 i = rollbackPos;
                                 break;
                             }
-                            i = rollbackPos;
-                            goto case ';';
+                            type = OperationType.None;
+                            binar = true;
+                            repeat = false;
+                            break;
                         }
                     case '?':
                         {
@@ -993,15 +995,15 @@ namespace NiL.JS.Statements
             if (binar && !forUnary)
             {
                 do i++; while (char.IsWhiteSpace(code[i]));
-                second = OperatorStatement.Parse(state, ref i, false, false, false).Statement;
+                second = OperatorStatement.Parse(state, ref i, processComma, false, false).Statement;
             }
-            if (processComma && (code[i] == ','))
+            /*if (processComma && (code[i] == ','))
             {
                 first = deicstra(new OperatorStatement() { first = first, second = second, _type = type });
                 type = OperationType.None;
                 do i++; while (char.IsWhiteSpace(code[i]));
                 second = OperatorStatement.Parse(state, ref i).Statement;
-            }
+            }*/
             OperatorStatement res = null;
             if (assign)
                 res = new OperatorStatement() { first = first, second = new OperatorStatement() { first = first, second = second, _type = type }, _type = OperationType.Assign };
@@ -1071,6 +1073,8 @@ namespace NiL.JS.Statements
                             tempResult.ValueType = JSObjectType.Double;
                             return tempResult;
                         }
+                        else if (temp.ValueType == JSObjectType.NotExist)
+                            throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("varible not defined")));
                         break;
                     }
                 case JSObjectType.Double:
@@ -1079,25 +1083,44 @@ namespace NiL.JS.Statements
                         temp = second.Invoke(context);
                         if (temp.ValueType >= JSObjectType.Object)
                             temp = temp.ToPrimitiveValue_Value_String(context);
-                        if (temp.ValueType == JSObjectType.Int || temp.ValueType == JSObjectType.Bool)
+                        switch (temp.ValueType)
                         {
-                            dr += temp.iValue;
-                            tempResult.ValueType = JSObjectType.Double;
-                            tempResult.dValue = dr;
-                            return tempResult;
-                        }
-                        else if (temp.ValueType == JSObjectType.Double)
-                        {
-                            dr += temp.dValue;
-                            tempResult.ValueType = JSObjectType.Double;
-                            tempResult.dValue = dr;
-                            return tempResult;
-                        }
-                        else if (temp.ValueType == JSObjectType.String)
-                        {
-                            tempResult.oValue = dr.ToString() + (string)temp.oValue;
-                            tempResult.ValueType = JSObjectType.String;
-                            return tempResult;
+                            case JSObjectType.Int:
+                            case JSObjectType.Bool:
+                                {
+                                    dr += temp.iValue;
+                                    tempResult.ValueType = JSObjectType.Double;
+                                    tempResult.dValue = dr;
+                                    return tempResult;
+                                }
+                            case JSObjectType.Double:
+                                {
+                                    dr += temp.dValue;
+                                    tempResult.ValueType = JSObjectType.Double;
+                                    tempResult.dValue = dr;
+                                    return tempResult;
+                                }
+                            case JSObjectType.String:
+                                {
+                                    tempResult.oValue = dr.ToString() + (string)temp.oValue;
+                                    tempResult.ValueType = JSObjectType.String;
+                                    return tempResult;
+                                }
+                            case JSObjectType.Object: // null
+                                {
+                                    tempResult.dValue = dr;
+                                    tempResult.ValueType = JSObjectType.Double;
+                                    return tempResult;
+                                }
+                            case JSObjectType.NotExistInObject:
+                            case JSObjectType.Undefined:
+                                {
+                                    tempResult.dValue = double.NaN;
+                                    tempResult.ValueType = JSObjectType.Double;
+                                    return tempResult;
+                                }
+                            case JSObjectType.NotExist:
+                                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("varible not defined")));
                         }
                         break;
                     }
@@ -1143,6 +1166,8 @@ namespace NiL.JS.Statements
                                     val += "null";
                                     break;
                                 }
+                            case JSObjectType.NotExist:
+                                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("varible not defined")));
                         }
                         tempResult.oValue = val;
                         tempResult.ValueType = JSObjectType.String;
@@ -1178,6 +1203,8 @@ namespace NiL.JS.Statements
                                     tempResult.oValue = val.oValue as string + tempResult.dValue;
                                     return tempResult;
                                 }
+                            case JSObjectType.NotExist:
+                                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("varible not defined")));
                         }
                         break;
                     }
@@ -1212,6 +1239,8 @@ namespace NiL.JS.Statements
                                     tempResult.dValue = double.NaN;
                                     return tempResult;
                                 }
+                            case JSObjectType.NotExist:
+                                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("varible not defined")));
                         }
                         break;
                     }
@@ -1258,12 +1287,16 @@ namespace NiL.JS.Statements
                         }
                         else if (temp.ValueType == JSObjectType.Double)
                             goto case JSObjectType.Double;
+                        else if (temp.ValueType == JSObjectType.Int || temp.ValueType == JSObjectType.Bool)
+                            goto case JSObjectType.Int;
                         else if (temp.ValueType == JSObjectType.String)
                             goto case JSObjectType.String;
+                        else if (temp.ValueType == JSObjectType.NotExist)
+                            throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("varible not defined")));
                         break;
                     }
                 case JSObjectType.NotExist:
-                    throw new InvalidOperationException("Varible not defined");
+                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("varible not defined")));
             }
             throw new NotImplementedException();
         }

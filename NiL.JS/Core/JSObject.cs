@@ -43,7 +43,7 @@ namespace NiL.JS.Core
         [Modules.Hidden]
         internal static readonly Action ErrorAssignCallback = () => { throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Invalid left-hand side"))); };
         [Modules.Hidden]
-        private static readonly IEnumerator<string> EmptyEnumerator = ((IEnumerable<string>)(new string[0])).GetEnumerator();
+        protected static readonly IEnumerator<string> EmptyEnumerator = ((IEnumerable<string>)(new string[0])).GetEnumerator();
         [Modules.Hidden]
         internal static readonly JSObject undefined = new JSObject() { ValueType = JSObjectType.Undefined };
         [Modules.Hidden]
@@ -376,7 +376,7 @@ namespace NiL.JS.Core
                 GetField("__proto__", true, true);
             else if (oValue is JSObject)
                 return oValue.ToString();
-            var res = ToPrimitiveValue_String_Value(new Context(Context.globalContext) { thisBind = this }).Value;
+            var res = ToPrimitiveValue_String_Value(new Context(Context.currentRootContext) { thisBind = this }).Value;
             if (res is bool)
                 return (bool)res ? "true":"false";
             if (res is double)
@@ -413,6 +413,8 @@ namespace NiL.JS.Core
         {
             if (ValueType <= JSObjectType.Undefined)
                 throw new JSException(TypeProxy.Proxy(new TypeError("Can't enumerate properties of undefined.")));
+            if (ValueType >= JSObjectType.Object && oValue is JSObject)
+                return (oValue as JSObject).GetEnumerator();
             if (fields == null)
                 return EmptyEnumerator;
             return fields.Keys.GetEnumerator();

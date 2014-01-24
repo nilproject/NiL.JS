@@ -72,5 +72,12 @@ namespace NiL.JS.Core.BaseTypes
         {
             return this;
         }
+
+        public override IEnumerator<string> GetEnumerator()
+        {
+            if (fields == null)
+                return JSObject.EmptyEnumerator;
+            return fields.Keys.GetEnumerator();
+        }
     }
 }

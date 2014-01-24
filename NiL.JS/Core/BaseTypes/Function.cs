@@ -35,10 +35,29 @@ namespace NiL.JS.Core.BaseTypes
 
         public Function()
         {
-            context = Context.globalContext;
+            context = Context.currentRootContext ?? Context.globalContext;
             body = new Statements.EmptyStatement();
             argumentsNames = new string[0];
             Name = "";
+            ValueType = JSObjectType.Function;
+        }
+
+        public Function(JSObject args)
+            : this()
+        {
+            var index = 0;
+            int len = args.GetField("length", true, false).iValue - 1;
+            var argn = "";
+            for (int i = 0; i < len; i++)
+                argn += args.GetField(i.ToString(), true, false) + (i + 1 < len ? "," : "");
+            var fs = NiL.JS.Statements.FunctionStatement.Parse(new ParsingState("function(" + argn + "){" + args.GetField(len.ToString(), true, false) + "}"), ref index);
+            if (fs.IsParsed)
+            {
+                Parser.Optimize(ref fs.Statement, new Dictionary<string, Statement>());
+                var func = fs.Statement.Invoke(context) as Function;
+                body = func.body;
+                argumentsNames = func.argumentsNames;
+            }
         }
 
         public Function(Context context, Statement body, string[] argumentsNames, string name)
@@ -69,7 +88,6 @@ namespace NiL.JS.Core.BaseTypes
                     };
                 }
                 internalContext.thisBind = @this;
-                context.thisBind = null;
                 int i = 0;
                 int min = System.Math.Min(args == null ? 0 : args.GetField("length", true, false).iValue, argumentsNames.Length);
                 for (; i < min; i++)
