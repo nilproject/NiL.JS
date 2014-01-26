@@ -3,9 +3,9 @@ using System;
 
 namespace NiL.JS.Statements.Operators
 {
-    internal class Less : Operator
+    internal class More : Operator
     {
-        public Less(Statement first, Statement second)
+        public More(Statement first, Statement second)
             : base(first, second)
         {
 
@@ -28,12 +28,12 @@ namespace NiL.JS.Statements.Operators
                             case JSObjectType.Bool:
                             case JSObjectType.Int:
                                 {
-                                    tempResult.iValue = left < temp.iValue ? 1 : 0;
+                                    tempResult.iValue = left > temp.iValue ? 1 : 0;
                                     break;
                                 }
                             case JSObjectType.Double:
                                 {
-                                    tempResult.iValue = left < temp.dValue ? 1 : 0;
+                                    tempResult.iValue = left > temp.dValue ? 1 : 0;
                                     break;
                                 }
                             case JSObjectType.String:
@@ -41,9 +41,9 @@ namespace NiL.JS.Statements.Operators
                                     var index = 0;
                                     double td = 0;
                                     if (Tools.ParseNumber(temp.oValue as string, ref index, true, out td) && (index == (temp.oValue as string).Length))
-                                        tempResult.iValue = left < td ? 1 : 0;
+                                        tempResult.iValue = left > td ? 1 : 0;
                                     else
-                                        tempResult.iValue = this is MoreOrEqual ? 1 : 0;
+                                        tempResult.iValue = this is LessOrEqual ? 1 : 0;
                                     break;
                                 }
                             case JSObjectType.Date:
@@ -68,7 +68,7 @@ namespace NiL.JS.Statements.Operators
                             case JSObjectType.Undefined:
                             case JSObjectType.NotExistInObject:
                                 {
-                                    tempResult.iValue = this is MoreOrEqual ? 1 : 0;
+                                    tempResult.iValue = this is LessOrEqual ? 1 : 0;
                                     break;
                                 }
                             case JSObjectType.NotExist:
@@ -83,19 +83,19 @@ namespace NiL.JS.Statements.Operators
                         double left = temp.dValue;
                         temp = second.Invoke(context);
                         if (double.IsNaN(left))
-                            tempResult.iValue = this is MoreOrEqual ? 1 : 0; // Костыль. Для его устранения нужно делать полноценную реализацию оператора MoreOrEqual.
-                        else 
+                            tempResult.iValue = this is LessOrEqual ? 1 : 0; // Костыль. Для его устранения нужно делать полноценную реализацию оператора MoreOrEqual.
+                        else
                             switch (temp.ValueType)
                             {
                                 case JSObjectType.Bool:
                                 case JSObjectType.Int:
                                     {
-                                        tempResult.iValue = left < temp.iValue ? 1 : 0;
+                                        tempResult.iValue = left > temp.iValue ? 1 : 0;
                                         break;
                                     }
                                 case JSObjectType.Double:
                                     {
-                                        tempResult.iValue = left < temp.dValue ? 1 : 0;
+                                        tempResult.iValue = left > temp.dValue ? 1 : 0;
                                         break;
                                     }
                                 case JSObjectType.String:
@@ -103,15 +103,15 @@ namespace NiL.JS.Statements.Operators
                                         var index = 0;
                                         double td = 0;
                                         if (Tools.ParseNumber(temp.oValue as string, ref index, true, out td) && (index == (temp.oValue as string).Length))
-                                            tempResult.iValue = left < td ? 1 : 0;
+                                            tempResult.iValue = left > td ? 1 : 0;
                                         else
-                                            tempResult.iValue = this is MoreOrEqual ? 1 : 0;
+                                            tempResult.iValue = this is LessOrEqual ? 1 : 0;
                                         break;
                                     }
                                 case JSObjectType.Undefined:
                                 case JSObjectType.NotExistInObject:
                                     {
-                                        tempResult.iValue = this is MoreOrEqual ? 1 : 0;
+                                        tempResult.iValue = this is LessOrEqual ? 1 : 0;
                                         break;
                                     }
                                 case JSObjectType.Date:
@@ -152,7 +152,7 @@ namespace NiL.JS.Statements.Operators
                                     double d = 0;
                                     int i = 0;
                                     if (Tools.ParseNumber(left, ref i, true, out d) && (i == left.Length))
-                                        tempResult.iValue = d < temp.iValue ? 1 : 0;
+                                        tempResult.iValue = d > temp.iValue ? 1 : 0;
                                     else
                                         tempResult.iValue = 0;
                                     break;
@@ -162,14 +162,14 @@ namespace NiL.JS.Statements.Operators
                                     double d = 0;
                                     int i = 0;
                                     if (Tools.ParseNumber(left, ref i, true, out d) && (i == left.Length))
-                                        tempResult.iValue = d < temp.dValue ? 1 : 0;
+                                        tempResult.iValue = d > temp.dValue ? 1 : 0;
                                     else
                                         tempResult.iValue = 0;
                                     break;
                                 }
                             case JSObjectType.String:
                                 {
-                                    tempResult.iValue = string.Compare(left, temp.oValue as string, StringComparison.Ordinal) < 0 ? 1 : 0;
+                                    tempResult.iValue = string.Compare(left, temp.oValue as string, StringComparison.Ordinal) > 0 ? 1 : 0;
                                     break;
                                 }
                             case JSObjectType.Function:
@@ -184,7 +184,7 @@ namespace NiL.JS.Statements.Operators
                                                 double t = 0.0;
                                                 int i = 0;
                                                 if (Tools.ParseNumber(left, ref i, false, out t))
-                                                    tempResult.iValue = t < temp.iValue ? 1 : 0;
+                                                    tempResult.iValue = t > temp.iValue ? 1 : 0;
                                                 else goto
                                                     case JSObjectType.String;
                                                 break;
@@ -194,14 +194,14 @@ namespace NiL.JS.Statements.Operators
                                                 double t = 0.0;
                                                 int i = 0;
                                                 if (Tools.ParseNumber(left, ref i, false, out t))
-                                                    tempResult.iValue = t < temp.dValue ? 1 : 0;
-                                                else 
+                                                    tempResult.iValue = t > temp.dValue ? 1 : 0;
+                                                else
                                                     goto case JSObjectType.String;
                                                 break;
                                             }
                                         case JSObjectType.String:
                                             {
-                                                tempResult.iValue = string.Compare(left, temp.Value.ToString()) < 0 ? 1 : 0;
+                                                tempResult.iValue = string.Compare(left, temp.Value.ToString()) > 0 ? 1 : 0;
                                                 break;
                                             }
                                         case JSObjectType.Object:
@@ -209,7 +209,7 @@ namespace NiL.JS.Statements.Operators
                                                 double t = 0.0;
                                                 int i = 0;
                                                 if (Tools.ParseNumber(left, ref i, false, out t))
-                                                    tempResult.iValue = t < 0 ? 1 : 0;
+                                                    tempResult.iValue = t > 0 ? 1 : 0;
                                                 else
                                                     tempResult.iValue = this is MoreOrEqual ? 1 : 0;
                                                 break;

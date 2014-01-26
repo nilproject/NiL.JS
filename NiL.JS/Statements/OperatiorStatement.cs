@@ -125,7 +125,7 @@ namespace NiL.JS.Statements
                         }
                     case OperationType.LessOrEqual:
                         {
-                            del = OpLessOrEqual;
+                            fastImpl = new Operators.LessOrEqual(first, second);
                             break;
                         }
                     case OperationType.Addition:
@@ -141,7 +141,7 @@ namespace NiL.JS.Statements
                         }
                     case OperationType.More:
                         {
-                            del = OpMore;
+                            fastImpl = new Operators.More(first, second);
                             break;
                         }
                     case OperationType.MoreOrEqual:
@@ -300,17 +300,23 @@ namespace NiL.JS.Statements
             while (cur != null)
             {
                 stats.Push(cur.first);
-                var topType = (int)types.Peek();
-                if (((topType & (int)OperationTypeGroups.Special) > ((int)cur._type & (int)OperationTypeGroups.Special))
-                    || (((topType & (int)OperationTypeGroups.Special) == ((int)cur._type & (int)OperationTypeGroups.Special)) && (((int)cur._type & (int)OperationTypeGroups.Special) > 0x10)))
+                for (; types.Count > 0; )
                 {
-                    stats.Push(new OperatorStatement()
+                    var topType = (int)types.Peek();
+                    if (((topType & (int)OperationTypeGroups.Special) > ((int)cur._type & (int)OperationTypeGroups.Special))
+                        || (((topType & (int)OperationTypeGroups.Special) == ((int)cur._type & (int)OperationTypeGroups.Special))
+                            && (((int)cur._type & (int)OperationTypeGroups.Special) > 0x10)))
                     {
-                        _type = types.Pop(),
-                        del = delegates.Pop(),
-                        second = stats.Pop(),
-                        first = stats.Pop()
-                    });
+                        stats.Push(new OperatorStatement()
+                        {
+                            _type = types.Pop(),
+                            del = delegates.Pop(),
+                            second = stats.Pop(),
+                            first = stats.Pop()
+                        });
+                    }
+                    else
+                        break;
                 }
                 types.Push(cur._type);
                 delegates.Push(cur.del);
@@ -1006,13 +1012,6 @@ namespace NiL.JS.Statements
                 do i++; while (char.IsWhiteSpace(code[i]));
                 second = OperatorStatement.Parse(state, ref i, processComma, false, false, false).Statement;
             }
-            /*if (processComma && (code[i] == ','))
-            {
-                first = deicstra(new OperatorStatement() { first = first, second = second, _type = type });
-                type = OperationType.None;
-                do i++; while (char.IsWhiteSpace(code[i]));
-                second = OperatorStatement.Parse(state, ref i).Statement;
-            }*/
             OperatorStatement res = null;
             if (assign)
                 res = new OperatorStatement() { first = first, second = new OperatorStatement() { first = first, second = second, _type = type }, _type = OperationType.Assign };
@@ -1122,101 +1121,6 @@ namespace NiL.JS.Statements
             double left = Tools.JSObjectToDouble(first.Invoke(context));
             tempResult.dValue = left % Tools.JSObjectToDouble(second.Invoke(context));
             tempResult.ValueType = JSObjectType.Double;
-            return tempResult;
-        }
-
-        private JSObject OpMore(Context context)
-        {
-            var temp = first.Invoke(context);
-
-            tempResult.ValueType = JSObjectType.Bool;
-            var lvt = temp.ValueType;
-            switch (lvt)
-            {
-                case JSObjectType.Bool:
-                case JSObjectType.Int:
-                    {
-                        int left = temp.iValue;
-                        temp = second.Invoke(context);
-                        if (temp.ValueType == JSObjectType.Int)
-                            tempResult.iValue = left > temp.iValue ? 1 : 0;
-                        else if (temp.ValueType == JSObjectType.Double)
-                            tempResult.iValue = left > temp.dValue ? 1 : 0;
-                        else if (temp.ValueType == JSObjectType.Bool)
-                            tempResult.iValue = left > temp.iValue ? 1 : 0;
-                        else throw new NotImplementedException();
-                        break;
-                    }
-                case JSObjectType.Double:
-                    {
-                        double left = temp.dValue;
-                        temp = second.Invoke(context);
-                        if (double.IsNaN(left))
-                            tempResult.iValue = 0;
-                        else if (temp.ValueType == JSObjectType.Int)
-                            tempResult.iValue = left > temp.iValue ? 1 : 0;
-                        else if (temp.ValueType == JSObjectType.Double)
-                            tempResult.iValue = left > temp.dValue ? 1 : 0;
-                        else throw new NotImplementedException();
-                        break;
-                    }
-                case JSObjectType.String:
-                    {
-                        string left = temp.oValue as string;
-                        temp = second.Invoke(context);
-                        switch (temp.ValueType)
-                        {
-                            case JSObjectType.String:
-                                {
-                                    tempResult.iValue = string.Compare(left, temp.oValue as string) > 0 ? 1 : 0;
-                                    break;
-                                }
-                            default: throw new NotImplementedException();
-                        }
-                        break;
-                    }
-                case JSObjectType.Date:
-                case JSObjectType.Object:
-                    {
-                        temp = temp.ToPrimitiveValue_Value_String();
-                        if (temp.ValueType == JSObjectType.Int)
-                            goto case JSObjectType.Int;
-                        else if (temp.ValueType == JSObjectType.Double)
-                            goto case JSObjectType.Double;
-                        else if (temp.ValueType == JSObjectType.String)
-                            goto case JSObjectType.String;
-                        break;
-                    }
-                default: throw new NotImplementedException();
-            }
-            return tempResult;
-        }
-
-        private JSObject OpLessOrEqual(Context context)
-        {
-            var temp = first.Invoke(context);
-            tempResult.ValueType = JSObjectType.Bool;
-
-            var lvt = temp.ValueType;
-            if (lvt == JSObjectType.Int || lvt == JSObjectType.Bool)
-            {
-                int left = temp.iValue;
-                temp = second.Invoke(context);
-                if (temp.ValueType == JSObjectType.Int || temp.ValueType == JSObjectType.Bool)
-                    tempResult.iValue = left <= temp.iValue ? 1 : 0;
-                else if (temp.ValueType == JSObjectType.Double)
-                    tempResult.iValue = left <= temp.dValue ? 1 : 0;
-            }
-            else if (lvt == JSObjectType.Double)
-            {
-                double left = temp.dValue;
-                temp = second.Invoke(context);
-                if (temp.ValueType == JSObjectType.Int)
-                    tempResult.iValue = left <= temp.iValue ? 1 : 0;
-                else if (temp.ValueType == JSObjectType.Double)
-                    tempResult.iValue = left <= temp.dValue ? 1 : 0;
-            }
-            else throw new NotImplementedException();
             return tempResult;
         }
 

@@ -78,7 +78,6 @@ namespace NiL.JS.Statements
             for (int i = length; i >= 0; i--)
             {
                 res = body[i].Invoke(context);
-                context.updateThisBind = false;
                 if (context.abort != AbortType.None)
                     return context.abortInfo;
             }

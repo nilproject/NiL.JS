@@ -1,7 +1,3 @@
-﻿var x = 1;
-function f()
-{
-    this.x = 2;
+﻿if (("aB" < "aa") !== true) {
+    $ERROR('#7: ("aB" < aa") === true');
 }
-console.log(new f().x);
-console.log(this.x);

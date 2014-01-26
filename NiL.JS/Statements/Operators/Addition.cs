@@ -114,7 +114,9 @@ namespace NiL.JS.Statements.Operators
                     {
                         var val = temp.oValue as string;
                         temp = second.Invoke(context);
-                        if (temp.ValueType >= JSObjectType.Object)
+                        if (temp.ValueType == JSObjectType.Date)
+                            temp = temp.ToPrimitiveValue_String_Value();
+                        else if (temp.ValueType >= JSObjectType.Object)
                             temp = temp.ToPrimitiveValue_Value_String();
                         switch (temp.ValueType)
                         {
@@ -160,38 +162,8 @@ namespace NiL.JS.Statements.Operators
                     }
                 case JSObjectType.Date:
                     {
-                        var val = temp.ToPrimitiveValue_String_Value();
-                        temp = second.Invoke(context);
-                        switch (temp.ValueType)
-                        {
-                            case JSObjectType.String:
-                                {
-                                    tempResult.ValueType = JSObjectType.String;
-                                    tempResult.oValue = val.oValue as string + temp.oValue as string;
-                                    return tempResult;
-                                }
-                            case JSObjectType.Int:
-                                {
-                                    tempResult.ValueType = JSObjectType.String;
-                                    tempResult.oValue = val.oValue as string + tempResult.iValue;
-                                    return tempResult;
-                                }
-                            case JSObjectType.Bool:
-                                {
-                                    tempResult.ValueType = JSObjectType.String;
-                                    tempResult.oValue = val.oValue as string + (tempResult.iValue != 0);
-                                    return tempResult;
-                                }
-                            case JSObjectType.Double:
-                                {
-                                    tempResult.ValueType = JSObjectType.String;
-                                    tempResult.oValue = val.oValue as string + tempResult.dValue;
-                                    return tempResult;
-                                }
-                            case JSObjectType.NotExist:
-                                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("varible not defined")));
-                        }
-                        break;
+                        temp = temp.ToPrimitiveValue_String_Value();
+                        goto case JSObjectType.String;
                     }
                 case JSObjectType.NotExistInObject:
                 case JSObjectType.Undefined:
@@ -229,6 +201,7 @@ namespace NiL.JS.Statements.Operators
                         }
                         break;
                     }
+                case JSObjectType.Function:
                 case JSObjectType.Object:
                     {
                         temp = temp.ToPrimitiveValue_Value_String();

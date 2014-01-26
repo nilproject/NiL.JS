@@ -434,7 +434,9 @@ namespace NiL.JS.Core
             if (bynew)
             {
                 _this.oValue = obj;
-                if (obj is JSObject)
+                if (obj is Date)
+                    _this.ValueType = JSObjectType.Date;
+                else if (obj is JSObject)
                     _this.ValueType = (JSObjectType)System.Math.Max((int)JSObjectType.Object, (int)(obj as JSObject).ValueType);
                 res = _this;
             }
