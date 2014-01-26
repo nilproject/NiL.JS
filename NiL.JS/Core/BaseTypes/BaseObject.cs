@@ -8,13 +8,19 @@ namespace NiL.JS.Core.BaseTypes
 {
     internal sealed class BaseObject : JSObject
     {
-        private static readonly JSObject tempResult = new JSObject() { attributes = ObjectAttributes.DontDelete };
+        private static JSObject tempResult;// = new JSObject() { attributes = ObjectAttributes.DontDelete };
 
         public static JSObject Prototype;
 
         public static void RegisterTo(Context context)
         {
-            var func = context.Assign("Object", new CallableField((cont, args) =>
+            JSObject proto = null;
+            proto = new JSObject(true);
+            proto.ValueType = JSObjectType.Object;
+            proto.oValue = "Object";
+            Prototype = proto;
+            var func = context.GetField("Object");
+            func.Assign(new CallableField((cont, args) =>
             {
                 var _this = cont.thisBind ?? cont.GetField("this");
                 object oVal = null;
@@ -40,12 +46,8 @@ namespace NiL.JS.Core.BaseTypes
                     res.fields = new Dictionary<string, JSObject>();
                 return res;
             }));
-            JSObject proto = null;
-            proto = func.GetField("prototype", false, false);
-            proto.Assign(null);
-            Prototype = proto;
-            proto.ValueType = JSObjectType.Object;
-            proto.oValue = "Object";
+            func.GetField("prototype", false, false).Assign(Prototype);
+            func.attributes |= ObjectAttributes.DontDelete | ObjectAttributes.DontEnum | ObjectAttributes.ReadOnly;
             var temp = proto.GetField("toString", false, false);
             temp.Assign(new CallableField((cont, args) =>
             {
@@ -104,6 +106,7 @@ namespace NiL.JS.Core.BaseTypes
             temp = proto.GetField("constructor", false, true);
             temp.Assign(func);
             temp.attributes |= ObjectAttributes.DontEnum;
+            tempResult = new JSObject() { attributes = ObjectAttributes.DontDelete };
         }
 
         public static JSObject propertyIsEnumerable(Context cont, JSObject args)
@@ -132,7 +135,7 @@ namespace NiL.JS.Core.BaseTypes
                     }
                 case JSObjectType.Object:
                     {
-                        args = args.GetField("0", true, false).ToPrimitiveValue_Value_String(new Context(Context.currentRootContext));
+                        args = args.GetField("0", true, false).ToPrimitiveValue_Value_String();
                         if (args.ValueType == JSObjectType.String)
                             n = args.GetField("0", true, false).oValue as string;
                         if (args.ValueType == JSObjectType.Int)
@@ -205,7 +208,7 @@ namespace NiL.JS.Core.BaseTypes
                     }
                 case JSObjectType.Object:
                     {
-                        name = name.GetField("0", true, false).ToPrimitiveValue_Value_String(new Context(Context.currentRootContext));
+                        name = name.GetField("0", true, false).ToPrimitiveValue_Value_String();
                         if (name.ValueType == JSObjectType.String)
                             n = name.GetField("0", true, false).oValue as string;
                         if (name.ValueType == JSObjectType.Int)

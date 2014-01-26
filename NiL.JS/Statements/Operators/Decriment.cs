@@ -1,12 +1,11 @@
 ﻿using NiL.JS.Core;
 using System;
-using System.Collections.Generic;
 
 namespace NiL.JS.Statements.Operators
 {
-    internal sealed class Incriment : Operator
+    internal class Decriment : Operator
     {
-        public Incriment(Statement first, Statement second)
+        public Decriment(Statement first, Statement second)
             : base(first, second)
         {
             tempResult.assignCallback = null;
@@ -67,12 +66,12 @@ namespace NiL.JS.Statements.Operators
             {
                 case JSObjectType.Int:
                     {
-                        val.iValue++;
+                        val.iValue--;
                         break;
                     }
                 case JSObjectType.Double:
                     {
-                        val.dValue++;
+                        val.dValue--;
                         break;
                     }
                 case JSObjectType.Undefined:
@@ -86,17 +85,6 @@ namespace NiL.JS.Statements.Operators
                     throw new NotImplementedException();
             }
             return o;
-        }
-
-        public override bool Optimize(ref Statement _this, int depth, Dictionary<string, Statement> vars)
-        {
-            base.Optimize(ref _this, depth, vars);
-            if (depth <= 1 && second != null)
-            {
-                first = second;
-                second = null;
-            }
-            return false;
         }
     }
 }

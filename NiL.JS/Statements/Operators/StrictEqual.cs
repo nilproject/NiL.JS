@@ -35,7 +35,7 @@ namespace NiL.JS.Statements.Operators
                 temp = second.Invoke(context);
                 if (double.IsNaN(l))
                     tempResult.iValue = this is StrictNotEqual ? 1 : 0; // Костыль. Для его устранения нужно делать полноценную реализацию оператора StrictNotEqual.
-                if (temp.ValueType == JSObjectType.Int)
+                else if (temp.ValueType == JSObjectType.Int)
                     tempResult.iValue = l == temp.iValue ? 1 : 0;
                 else if (lvt != temp.ValueType)
                     tempResult.iValue = 0;
@@ -55,11 +55,11 @@ namespace NiL.JS.Statements.Operators
                 tempResult.ValueType = JSObjectType.Bool;
                 return tempResult;
             }
-            if (lvt == JSObjectType.Object || lvt == JSObjectType.Proxy)
+            if (lvt == JSObjectType.Object)
             {
                 var l = temp.oValue;
                 temp = second.Invoke(context);
-                if (temp.ValueType != JSObjectType.Proxy && temp.ValueType != JSObjectType.Object)
+                if (temp.ValueType != JSObjectType.Object)
                     tempResult.iValue = 0;
                 else if (l == null || temp.oValue == null)
                     tempResult.iValue = l == temp.oValue ? 1 : 0;

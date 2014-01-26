@@ -6,6 +6,25 @@ namespace NiL.JS.Statements.Operators
 {
     internal class New : Operator
     {
+        private class ThisSetStat : Statement
+        {
+            public JSObject _this;
+            public JSObject value;
+
+            public ThisSetStat()
+            {
+
+            }
+
+            public override JSObject Invoke(Context context)
+            {
+                context.thisBind = _this;
+                return value;
+            }
+        }
+
+        public readonly static Call CallInstance = new Call(new ThisSetStat(), new ImmidateValueStatement(null));
+
         public New(Statement first, Statement second)
             : base(first, second)
         {
@@ -20,32 +39,23 @@ namespace NiL.JS.Statements.Operators
             if (temp.ValueType != JSObjectType.Function && !(temp.ValueType == JSObjectType.Object && temp.oValue is Function))
                 throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError(temp + " is not callable")));
 
-            var call = Operators.Call.Instance;
-            (call.First as ImmidateValueStatement).Value = temp;
             if (second != null)
-                (call.Second as ImmidateValueStatement).Value = second.Invoke(context);
+                (CallInstance.Second as ImmidateValueStatement).Value = second.Invoke(context);
             else
-                (call.Second as ImmidateValueStatement).Value = new JSObject[0];
+                (CallInstance.Second as ImmidateValueStatement).Value = new JSObject[0];
             JSObject _this = new JSObject() { ValueType = JSObjectType.Object };
-            if (temp is TypeProxy)
+            if (temp.oValue is TypeProxyConstructor)
                 _this.prototype = temp.GetField("prototype", true, false);
             else
             {
                 (_this.prototype = new JSObject()).Assign(temp.GetField("prototype", true, false));
                 _this.oValue = new object();
             }
-            var otb = context.thisBind;
-            context.thisBind = _this;
-            try
-            {
-                var res = call.Invoke(context);
-                if ((bool)res)
-                    return res;
-            }
-            finally
-            {
-                context.thisBind = otb;
-            }
+            (CallInstance.First as ThisSetStat).value = temp;
+            (CallInstance.First as ThisSetStat)._this = _this;
+            var res = CallInstance.Invoke(context);
+            if ((bool)res)
+                return res;
             return _this;
         }
     }

@@ -10,10 +10,12 @@ namespace NiL.JS.Statements.Operators
 
         static Assign()
         {
-            setterArgs.fields["length"] = new JSObject() {
+            setterArgs.fields["length"] = new JSObject() 
+            {
                 iValue = 1, 
                 ValueType = JSObjectType.Int, 
-                attributes = ObjectAttributes.DontEnum | ObjectAttributes.DontDelete | ObjectAttributes.ReadOnly };
+                attributes = ObjectAttributes.DontEnum | ObjectAttributes.DontDelete | ObjectAttributes.ReadOnly
+            };
             setterArgs.fields["0"] = setterArg;
         }
 

@@ -43,7 +43,7 @@ namespace NiL.JS.Statements
             {
                 if (code[i] == ';')
                     return new ParseResult();
-                res.varible = OperatorStatement.ParseForUnary(state, ref i);
+                res.varible = OperatorStatement.Parse(state, ref i, true, true).Statement;
             }
             while (char.IsWhiteSpace(code[i])) i++;
             if (!Parser.Validate(code, "in", ref i))

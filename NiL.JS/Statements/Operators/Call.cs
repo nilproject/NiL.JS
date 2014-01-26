@@ -6,8 +6,6 @@ namespace NiL.JS.Statements.Operators
 {
     internal class Call : Operator
     {
-        public readonly static Call Instance = new Call(new ImmidateValueStatement(null), new ImmidateValueStatement(null));
-
         public Call(Statement first, Statement second)
             : base(first, second)
         {
@@ -16,7 +14,6 @@ namespace NiL.JS.Statements.Operators
 
         public override JSObject Invoke(Context context)
         {
-            JSObject res = null;
             JSObject newThisBind = null;
             Function func = null;
             JSObject oldThisBind = context.thisBind;
@@ -24,11 +21,12 @@ namespace NiL.JS.Statements.Operators
             try
             {
                 context.updateThisBind = true;
-                context.thisBind = null;
                 var temp = first.Invoke(context);
+                if (temp.ValueType == JSObjectType.NotExist)
+                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible not defined.")));
                 if (temp.ValueType != JSObjectType.Function && !(temp.ValueType == JSObjectType.Object && temp.oValue is Function))
                     throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError(temp + " is not callable")));
-                func = (temp.oValue as Function);
+                func = temp.oValue as Function ?? (Function)((TypeProxy)temp.oValue);
                 newThisBind = context.thisBind;
             }
             finally
@@ -53,31 +51,22 @@ namespace NiL.JS.Statements.Operators
             for (int i = 0; i < field.iValue; i++)
             {
                 var a = arguments.GetField(i.ToString(), false, false);
-                a.Assign(sps[i].Invoke(context));
+                a.Assign(Tools.RaiseIfNotExist(sps[i].Invoke(context)));
             }
             field = arguments.GetField("callee", false, true);
             field.ValueType = JSObjectType.Function;
             field.oValue = func;
             field.Protect();
             field.attributes = ObjectAttributes.DontEnum;
-            if (newThisBind != null || func is ExternalFunction)
-            {
-                context.thisBind = newThisBind ?? oldThisBind;
-                try
-                {
-                    res = func.Invoke(context, arguments);
-                    return res;
-                }
-                finally
-                {
-                    context.thisBind = oldThisBind;
-                }
-            }
+            if (func is ExternalFunction)
+                return func.Invoke(context, newThisBind, arguments);
             else
-            {
-                res = func.Invoke(oldThisBind, arguments);
-                return res;
-            }
+                return func.Invoke(newThisBind, arguments);
+        }
+
+        public override string ToString()
+        {
+            return first + "(" + second + ")";
         }
     }
 }

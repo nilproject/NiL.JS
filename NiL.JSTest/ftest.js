@@ -1,9 +1,7 @@
-﻿try {
-    x & 1;
-    $ERROR('#1.1: x & 1 throw ReferenceError. Actual: ' + (x & 1));
+﻿var x = 1;
+function f()
+{
+    this.x = 2;
 }
-catch (e) {
-    if ((e instanceof ReferenceError) !== true) {
-        $ERROR('#1.2: x & 1 throw ReferenceError. Actual: ' + (e));
-    }
-}
+console.log(new f().x);
+console.log(this.x);

@@ -18,6 +18,7 @@ namespace NiL.JS.Core
         private Context context;
 
         public ThisObject(Context context)
+            : base(false)
         {
             ValueType = JSObjectType.Object;
             this.context = context;

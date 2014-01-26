@@ -1,0 +1,289 @@
+﻿using NiL.JS.Core;
+using System;
+
+namespace NiL.JS.Statements.Operators
+{
+    internal class Addition : Operator
+    {
+        public Addition(Statement first, Statement second)
+            : base(first, second)
+        {
+
+        }
+
+        public override JSObject Invoke(Context context)
+        {
+            JSObject temp;
+            temp = first.Invoke(context);
+
+            double dr;
+            switch (temp.ValueType)
+            {
+                case JSObjectType.Bool:
+                case JSObjectType.Int:
+                    {
+                        var type = temp.ValueType;
+                        dr = temp.iValue;
+                        temp = second.Invoke(context);
+                        if (temp.ValueType >= JSObjectType.Object)
+                            temp = temp.ToPrimitiveValue_Value_String();
+                        if (temp.ValueType == JSObjectType.Int || temp.ValueType == JSObjectType.Bool)
+                        {
+                            dr += temp.iValue;
+                            tempResult.ValueType = JSObjectType.Double;
+                            tempResult.dValue = dr;
+                            return tempResult;
+                        }
+                        else if (temp.ValueType == JSObjectType.Double)
+                        {
+                            dr += temp.dValue;
+                            tempResult.ValueType = JSObjectType.Double;
+                            tempResult.dValue = dr;
+                            return tempResult;
+                        }
+                        else if (temp.ValueType == JSObjectType.String)
+                        {
+                            tempResult.oValue = (type == JSObjectType.Bool ? (dr != 0 ? "true" : "false") : dr.ToString()) + (string)temp.oValue;
+                            tempResult.ValueType = JSObjectType.String;
+                            return tempResult;
+                        }
+                        else if (temp.ValueType == JSObjectType.Undefined || temp.ValueType == JSObjectType.NotExistInObject)
+                        {
+                            tempResult.dValue = double.NaN;
+                            tempResult.ValueType = JSObjectType.Double;
+                            return tempResult;
+                        }
+                        else if (temp.ValueType == JSObjectType.Object) // x+null
+                        {
+                            tempResult.dValue = dr;
+                            tempResult.ValueType = JSObjectType.Double;
+                            return tempResult;
+                        }
+                        else if (temp.ValueType == JSObjectType.NotExist)
+                            throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("varible not defined")));
+                        break;
+                    }
+                case JSObjectType.Double:
+                    {
+                        dr = temp.dValue;
+                        temp = second.Invoke(context);
+                        if (temp.ValueType >= JSObjectType.Object)
+                            temp = temp.ToPrimitiveValue_Value_String();
+                        switch (temp.ValueType)
+                        {
+                            case JSObjectType.Int:
+                            case JSObjectType.Bool:
+                                {
+                                    dr += temp.iValue;
+                                    tempResult.ValueType = JSObjectType.Double;
+                                    tempResult.dValue = dr;
+                                    return tempResult;
+                                }
+                            case JSObjectType.Double:
+                                {
+                                    dr += temp.dValue;
+                                    tempResult.ValueType = JSObjectType.Double;
+                                    tempResult.dValue = dr;
+                                    return tempResult;
+                                }
+                            case JSObjectType.String:
+                                {
+                                    tempResult.oValue = dr.ToString() + (string)temp.oValue;
+                                    tempResult.ValueType = JSObjectType.String;
+                                    return tempResult;
+                                }
+                            case JSObjectType.Object: // null
+                                {
+                                    tempResult.dValue = dr;
+                                    tempResult.ValueType = JSObjectType.Double;
+                                    return tempResult;
+                                }
+                            case JSObjectType.NotExistInObject:
+                            case JSObjectType.Undefined:
+                                {
+                                    tempResult.dValue = double.NaN;
+                                    tempResult.ValueType = JSObjectType.Double;
+                                    return tempResult;
+                                }
+                            case JSObjectType.NotExist:
+                                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("varible not defined")));
+                        }
+                        break;
+                    }
+                case JSObjectType.String:
+                    {
+                        var val = temp.oValue as string;
+                        temp = second.Invoke(context);
+                        if (temp.ValueType >= JSObjectType.Object)
+                            temp = temp.ToPrimitiveValue_Value_String();
+                        switch (temp.ValueType)
+                        {
+                            case JSObjectType.Int:
+                                {
+                                    val += temp.iValue;
+                                    break;
+                                }
+                            case JSObjectType.Double:
+                                {
+                                    val += temp.dValue;
+                                    break;
+                                }
+                            case JSObjectType.Bool:
+                                {
+                                    val += temp.iValue != 0 ? "true" : "false";
+                                    break;
+                                }
+                            case JSObjectType.String:
+                                {
+                                    val += temp.oValue;
+                                    break;
+                                }
+                            case JSObjectType.Undefined:
+                            case JSObjectType.NotExistInObject:
+                                {
+                                    val += "undefined";
+                                    break;
+                                }
+                            case JSObjectType.Object:
+                            case JSObjectType.Function:
+                            case JSObjectType.Date:
+                                {
+                                    val += "null";
+                                    break;
+                                }
+                            case JSObjectType.NotExist:
+                                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("varible not defined")));
+                        }
+                        tempResult.oValue = val;
+                        tempResult.ValueType = JSObjectType.String;
+                        return tempResult;
+                    }
+                case JSObjectType.Date:
+                    {
+                        var val = temp.ToPrimitiveValue_String_Value();
+                        temp = second.Invoke(context);
+                        switch (temp.ValueType)
+                        {
+                            case JSObjectType.String:
+                                {
+                                    tempResult.ValueType = JSObjectType.String;
+                                    tempResult.oValue = val.oValue as string + temp.oValue as string;
+                                    return tempResult;
+                                }
+                            case JSObjectType.Int:
+                                {
+                                    tempResult.ValueType = JSObjectType.String;
+                                    tempResult.oValue = val.oValue as string + tempResult.iValue;
+                                    return tempResult;
+                                }
+                            case JSObjectType.Bool:
+                                {
+                                    tempResult.ValueType = JSObjectType.String;
+                                    tempResult.oValue = val.oValue as string + (tempResult.iValue != 0);
+                                    return tempResult;
+                                }
+                            case JSObjectType.Double:
+                                {
+                                    tempResult.ValueType = JSObjectType.String;
+                                    tempResult.oValue = val.oValue as string + tempResult.dValue;
+                                    return tempResult;
+                                }
+                            case JSObjectType.NotExist:
+                                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("varible not defined")));
+                        }
+                        break;
+                    }
+                case JSObjectType.NotExistInObject:
+                case JSObjectType.Undefined:
+                    {
+                        var val = "undefined";
+                        temp = second.Invoke(context);
+                        if (temp.ValueType >= JSObjectType.Object)
+                            temp = temp.ToPrimitiveValue_Value_String();
+                        switch (temp.ValueType)
+                        {
+                            case JSObjectType.String:
+                                {
+                                    tempResult.ValueType = JSObjectType.String;
+                                    tempResult.oValue = val as string + temp.oValue as string;
+                                    return tempResult;
+                                }
+                            case JSObjectType.Double:
+                            case JSObjectType.Bool:
+                            case JSObjectType.Int:
+                                {
+                                    tempResult.ValueType = JSObjectType.Double;
+                                    tempResult.dValue = double.NaN;
+                                    return tempResult;
+                                }
+                            case JSObjectType.Object: // undefined+null
+                            case JSObjectType.NotExistInObject:
+                            case JSObjectType.Undefined:
+                                {
+                                    tempResult.ValueType = JSObjectType.Double;
+                                    tempResult.dValue = double.NaN;
+                                    return tempResult;
+                                }
+                            case JSObjectType.NotExist:
+                                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("varible not defined")));
+                        }
+                        break;
+                    }
+                case JSObjectType.Object:
+                    {
+                        temp = temp.ToPrimitiveValue_Value_String();
+                        if (temp.ValueType == JSObjectType.Int || temp.ValueType == JSObjectType.Bool)
+                            goto case JSObjectType.Int;
+                        else if (temp.ValueType == JSObjectType.Object)
+                        {
+                            temp = second.Invoke(context);
+                            if (temp.ValueType >= JSObjectType.Object)
+                                temp = temp.ToPrimitiveValue_Value_String();
+                            if (temp.ValueType == JSObjectType.Int || temp.ValueType == JSObjectType.Bool)
+                            {
+                                tempResult.ValueType = JSObjectType.Int;
+                                tempResult.iValue = temp.iValue;
+                                return tempResult;
+                            }
+                            else if (temp.ValueType == JSObjectType.Double)
+                            {
+                                tempResult.ValueType = JSObjectType.Double;
+                                tempResult.dValue = temp.dValue;
+                                return tempResult;
+                            }
+                            else if (temp.ValueType == JSObjectType.String)
+                            {
+                                tempResult.oValue = "null" + (string)temp.oValue;
+                                tempResult.ValueType = JSObjectType.String;
+                                return tempResult;
+                            }
+                            else if (temp.ValueType == JSObjectType.Undefined || temp.ValueType == JSObjectType.NotExistInObject)
+                            {
+                                tempResult.dValue = double.NaN;
+                                tempResult.ValueType = JSObjectType.Double;
+                                return tempResult;
+                            }
+                            else if (temp.ValueType == JSObjectType.Object) // null+null
+                            {
+                                tempResult.iValue = 0;
+                                tempResult.ValueType = JSObjectType.Int;
+                                return tempResult;
+                            }
+                        }
+                        else if (temp.ValueType == JSObjectType.Double)
+                            goto case JSObjectType.Double;
+                        else if (temp.ValueType == JSObjectType.Int || temp.ValueType == JSObjectType.Bool)
+                            goto case JSObjectType.Int;
+                        else if (temp.ValueType == JSObjectType.String)
+                            goto case JSObjectType.String;
+                        else if (temp.ValueType == JSObjectType.NotExist)
+                            throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("varible not defined")));
+                        break;
+                    }
+                case JSObjectType.NotExist:
+                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("varible not defined")));
+            }
+            throw new NotImplementedException();
+        }
+    }
+}

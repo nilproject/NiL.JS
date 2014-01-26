@@ -414,6 +414,38 @@ namespace NiL.JS.Core.BaseTypes
             return new Array();
         }
 
+        public JSObject sort(JSObject args)
+        {
+            var length = args.GetField("length", false, true);
+            var first = args.GetField("0", false, true);
+            var len = Tools.JSObjectToInt(length);
+            Function comparer = null;
+            if (len > 0)
+                comparer = args.GetField("0", true, false).Value as Function;
+            if (comparer != null)
+            {
+                var second = args.GetField("1", false, true);
+                second.assignCallback = null;
+                first.assignCallback = null;
+                length.assignCallback = null;
+                args.fields.Clear();
+                length.iValue = 2;
+                length.ValueType = JSObjectType.Int;
+                args.fields["length"] = length;
+                args.fields["0"] = first;
+                args.fields["1"] = second;
+                data.Sort((JSObject l, JSObject r) =>
+                {
+                    first.Assign(l);
+                    second.Assign(r);
+                    return Tools.JSObjectToInt(comparer.Invoke(args));
+                });
+            }
+            else
+                data.Sort((JSObject l, JSObject r) => { return string.Compare(l.ToString(), r.ToString()); });
+            return this;
+        }
+
         public override string ToString()
         {
             if (data.Count == 0)

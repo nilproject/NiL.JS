@@ -40,6 +40,7 @@ namespace NiL.JS.Core.BaseTypes
             argumentsNames = new string[0];
             Name = "";
             ValueType = JSObjectType.Function;
+            prototype = null;
         }
 
         public Function(JSObject args)
@@ -67,17 +68,47 @@ namespace NiL.JS.Core.BaseTypes
             this.body = body;
             Name = name;
             ValueType = JSObjectType.Function;
+            prototype = null;
+        }
+        
+        internal static readonly Number _length = new Number(0) { attributes = ObjectAttributes.ReadOnly | ObjectAttributes.DontDelete | ObjectAttributes.DontEnum };
+
+        public virtual JSObject length
+        {
+            get
+            {
+                _length.iValue = argumentsNames.Length;
+                return _length;
+            }
         }
 
         [Hidden]
         public virtual JSObject Invoke(JSObject args)
+        {
+            return Invoke(null as JSObject, args);
+        }
+
+        [Hidden]
+        public virtual JSObject Invoke(Context contextOverride, JSObject args)
+        {
+            return Invoke(args);
+        }
+
+        [Hidden]
+        public virtual JSObject Invoke(Context contextOverride, JSObject thisOverride, JSObject args)
+        {
+            return Invoke(args);
+        }
+
+        [Hidden]
+        public virtual JSObject Invoke(JSObject thisOverride, JSObject args)
         {
             var oldargs = _arguments;
             _arguments = args;
             try
             {
                 Context internalContext = new Context(context);
-                var @this = context.thisBind;
+                var @this = thisOverride ?? context.thisBind;
                 if (@this != null && @this.ValueType < JSObjectType.Object)
                 {
                     @this = new JSObject(false)
@@ -105,40 +136,6 @@ namespace NiL.JS.Core.BaseTypes
             }
         }
 
-        [Hidden]
-        public virtual JSObject Invoke(Context contextOverride, JSObject args)
-        {
-            if (contextOverride == null)
-                return Invoke(args);
-            var oldContext = context.thisBind;
-            context.thisBind = contextOverride.thisBind;
-            try
-            {
-                return Invoke(args);
-            }
-            finally
-            {
-                context.thisBind = oldContext;
-            }
-        }
-
-        [Hidden]
-        public virtual JSObject Invoke(JSObject thisOverride, JSObject args)
-        {
-            if (thisOverride == null)
-                return Invoke(args);
-            var oldContext = context.thisBind;
-            context.thisBind = thisOverride;
-            try
-            {
-                return Invoke(args);
-            }
-            finally
-            {
-                context.thisBind = oldContext;
-            }
-        }
-
         public override JSObject GetField(string name, bool fast, bool own)
         {
             if (name == "prototype")
@@ -161,9 +158,10 @@ namespace NiL.JS.Core.BaseTypes
         public override string ToString()
         {
             var res = "function " + Name + "(";
-            for (int i = 0; i < argumentsNames.Length; )
-                res += argumentsNames[i] + (++i < argumentsNames.Length ? "," : "");
-            res += ")" + body.ToString();
+            if (arguments != null)
+                for (int i = 0; i < argumentsNames.Length; )
+                    res += argumentsNames[i] + (++i < argumentsNames.Length ? "," : "");
+            res += ")" + (body is Statements.EmptyStatement ? "{ }" : ((object)body ?? "{ [native code] }").ToString());
             return res;
         }
     }

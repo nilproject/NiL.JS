@@ -6,6 +6,9 @@ namespace NiL.JS.Core.BaseTypes
     internal class Date
     {
         [Hidden]
+        private readonly static String tempSResult = "";
+
+        [Hidden]
         private readonly static long UTCBase = new DateTime(1970, 1, 1).Ticks;
 
         [Hidden]
@@ -41,7 +44,13 @@ namespace NiL.JS.Core.BaseTypes
             return res;
         }
 
-        public string toString()
+        public JSObject toString()
+        {
+            tempSResult.oValue = ToString();
+            return tempSResult;
+        }
+
+        public override string ToString()
         {
             var lt = host.ToLongTimeString();
             var offset = TimeZone.CurrentTimeZone.GetUtcOffset(host);

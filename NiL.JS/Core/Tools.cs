@@ -42,7 +42,7 @@ namespace NiL.JS.Core
                     {
                         if (r.oValue == null)
                             return 0;
-                        r = r.ToPrimitiveValue_Value_String(Context.currentRootContext);
+                        r = r.ToPrimitiveValue_Value_String();
                         return JSObjectToDouble(r);
                     }
                 case JSObjectType.Undefined:
@@ -88,7 +88,7 @@ namespace NiL.JS.Core
                     {
                         if (r.oValue == null)
                             return 0;
-                        r = r.ToPrimitiveValue_Value_String(Context.currentRootContext);
+                        r = r.ToPrimitiveValue_Value_String();
                         return JSObjectToInt(r);
                     }
                 case JSObjectType.Undefined:
@@ -99,6 +99,27 @@ namespace NiL.JS.Core
                 default:
                     throw new NotImplementedException();
             }
+        }
+
+        internal static string DoubleToString(double d)
+        {
+            if (0.0 == d || double.IsInfinity(d) || double.IsNaN(d))
+                return d.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            if (Math.Abs(d) < 1.0)
+            {
+                if (d == (d % 0.000001))
+                    return d.ToString("0.####e-0", System.Globalization.CultureInfo.InvariantCulture);
+                if (d == (d % 0.001))
+                {
+                    var t = Math.Sign(d);
+                    d = Math.Abs(d);
+                    if (t < 0)
+                        return d.ToString("-0.##########", System.Globalization.CultureInfo.InvariantCulture);
+                }
+            }
+            else if (Math.Abs(d) >= 1e+21)
+                return d.ToString("0.####e+0", System.Globalization.CultureInfo.InvariantCulture);
+            return d.ToString("0.##########", System.Globalization.CultureInfo.InvariantCulture);
         }
 
         public static bool ParseNumber(string code, ref int index, bool move, out double value)
@@ -445,25 +466,11 @@ namespace NiL.JS.Core
             return res.ToString();
         }
 
-        internal static string DoubleToString(double d)
+        internal static JSObject RaiseIfNotExist(JSObject obj)
         {
-            if (0.0 == d || double.IsInfinity(d) || double.IsNaN(d))
-                return d.ToString(System.Globalization.CultureInfo.InvariantCulture);
-            if (Math.Abs(d) < 1.0)
-            {
-                if (d == (d % 0.000001))
-                    return d.ToString("0.####e-0", System.Globalization.CultureInfo.InvariantCulture);
-                if (d == (d % 0.001))
-                {
-                    var t = Math.Sign(d);
-                    d = Math.Abs(d);
-                    if (t < 0)
-                        return d.ToString("-0.##########", System.Globalization.CultureInfo.InvariantCulture);
-                }
-            }
-            else if (Math.Abs(d) >= 1e+21)
-                return d.ToString("0.####e+0", System.Globalization.CultureInfo.InvariantCulture);
-            return d.ToString("0.##########", System.Globalization.CultureInfo.InvariantCulture);
+            if (obj.ValueType == JSObjectType.NotExist)
+                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible is not defined.")));
+            return obj;
         }
     }
 }

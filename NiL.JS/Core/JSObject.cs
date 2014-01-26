@@ -22,8 +22,7 @@ namespace NiL.JS.Core
         Object = 7,
         Function = 8,
         Date = 9,
-        Property = 10,
-        Proxy = 11
+        Property = 10
     }
 
     [Flags]
@@ -49,7 +48,7 @@ namespace NiL.JS.Core
         [Modules.Hidden]
         internal static readonly JSObject Null = new JSObject() { ValueType = JSObjectType.Object, oValue = null, assignCallback = ErrorAssignCallback };
         [Modules.Hidden]
-        internal static readonly JSObject nullString = "null";
+        internal static readonly JSObject nullString = new JSObject() { ValueType = JSObjectType.String, oValue = "null", assignCallback = ErrorAssignCallback };
 
         static JSObject()
         {
@@ -94,7 +93,6 @@ namespace NiL.JS.Core
                     case JSObjectType.Object:
                     case JSObjectType.Function:
                     case JSObjectType.Property:
-                    case JSObjectType.Proxy:
                         return oValue;
                     case JSObjectType.Undefined:
                     case JSObjectType.NotExistInObject:
@@ -126,6 +124,8 @@ namespace NiL.JS.Core
         [Modules.Hidden]
         protected JSObject DefaultFieldGetter(string name, bool fast, bool own)
         {
+            if ((attributes & ObjectAttributes.Immutable) != 0)
+                fast = true;
             switch (ValueType)
             {
                 case JSObjectType.NotExist:
@@ -136,29 +136,30 @@ namespace NiL.JS.Core
                 case JSObjectType.Int:
                 case JSObjectType.Double:
                     {
-                        prototype = TypeProxy.GetPrototype(typeof(Number));
+                        if (this is TypeProxy)
+                            prototype = BaseObject.Prototype;
+                        else
+                            prototype = TypeProxy.GetPrototype(typeof(Number));
                         fast = true;
                         break;
                     }
                 case JSObjectType.String:
                     {
-                        prototype = TypeProxy.GetPrototype(typeof(NiL.JS.Core.BaseTypes.String));
+                        if (this is TypeProxy)
+                            prototype = BaseObject.Prototype;
+                        else
+                            prototype = TypeProxy.GetPrototype(typeof(NiL.JS.Core.BaseTypes.String));
                         fast = true;
                         break;
                     }
                 case JSObjectType.Bool:
                     {
-                        prototype = TypeProxy.GetPrototype(typeof(NiL.JS.Core.BaseTypes.Boolean));
+                        if (this is TypeProxy)
+                            prototype = BaseObject.Prototype;
+                        else
+                            prototype = TypeProxy.GetPrototype(typeof(NiL.JS.Core.BaseTypes.Boolean));
                         fast = true;
                         break;
-                    }
-                case JSObjectType.Proxy:
-                    {
-                        if (oValue == null)
-                            throw new JSException(TypeProxy.Proxy(new TypeError("Can't access to property value of \"null\"")));
-                        if (this is TypeProxy)
-                            break;
-                        return TypeProxy.GetPrototype(oValue as Type).GetField(name, fast, own);
                     }
                 case JSObjectType.Date:
                 case JSObjectType.Object:
@@ -171,7 +172,12 @@ namespace NiL.JS.Core
                 case JSObjectType.Function:
                     {
                         if (prototype == null)
-                            prototype = TypeProxy.GetPrototype(typeof(NiL.JS.Core.BaseTypes.String)).Clone() as JSObject;
+                        {
+                            if (this is TypeProxy)
+                                prototype = BaseObject.Prototype;
+                            else
+                                prototype = TypeProxy.GetPrototype(typeof(NiL.JS.Core.BaseTypes.Function)).Clone() as JSObject;
+                        }
                         if (oValue == null)
                             throw new JSException(TypeProxy.Proxy(new TypeError("Can't access to property value of \"null\"")));
                         break;
@@ -238,97 +244,77 @@ namespace NiL.JS.Core
         }
 
         [Modules.Hidden]
-        internal JSObject ToPrimitiveValue_Value_String(Context context)
+        internal JSObject ToPrimitiveValue_Value_String()
         {
-            var otb = context.thisBind;
-            context.thisBind = this;
-            try
+            if (ValueType >= JSObjectType.Object && oValue != null)
             {
-                if (ValueType >= JSObjectType.Object && oValue != null)
+                if (oValue == null)
+                    return nullString;
+                var tpvs = GetField("valueOf", true, false);
+                JSObject res = null;
+                if (tpvs.ValueType == JSObjectType.Function)
                 {
-                    if (oValue == null)
-                        return nullString;
-                    var tpvs = GetField("valueOf", true, false);
-                    JSObject res = null;
-                    if (tpvs.ValueType == JSObjectType.Function)
+                    res = (tpvs.oValue as NiL.JS.Core.BaseTypes.Function).Invoke(this, null);
+                    if (res.ValueType == JSObjectType.Object)
                     {
-                        res = (tpvs.oValue as NiL.JS.Core.BaseTypes.Function).Invoke(context, null);
-                        if (res.ValueType == JSObjectType.Object)
-                        {
-                            if (res.oValue is BaseTypes.String)
-                                res = res.oValue as BaseTypes.String;
-                        }
-                        if (res.ValueType > JSObjectType.Undefined && res.ValueType < JSObjectType.Object)
-                            return res;
+                        if (res.oValue is BaseTypes.String)
+                            res = res.oValue as BaseTypes.String;
                     }
-                    tpvs = GetField("toString", true, false);
-                    if (tpvs.ValueType == JSObjectType.Function)
-                    {
-                        res = (tpvs.oValue as NiL.JS.Core.BaseTypes.Function).Invoke(context, null);
-                        if (res.ValueType == JSObjectType.Object)
-                        {
-                            if (res.oValue is BaseTypes.String)
-                                res = res.oValue as BaseTypes.String;
-                        }
-                        if (res.ValueType > JSObjectType.Undefined && res.ValueType < JSObjectType.Object)
-                            return res;
-                    }
-                    context.thisBind = otb;
-                    throw new JSException(TypeProxy.Proxy(new TypeError("Can't convert object to primitive value.")));
+                    if (res.ValueType > JSObjectType.Undefined && res.ValueType < JSObjectType.Object)
+                        return res;
                 }
-                return this;
+                tpvs = GetField("toString", true, false);
+                if (tpvs.ValueType == JSObjectType.Function)
+                {
+                    res = (tpvs.oValue as NiL.JS.Core.BaseTypes.Function).Invoke(this, null);
+                    if (res.ValueType == JSObjectType.Object)
+                    {
+                        if (res.oValue is BaseTypes.String)
+                            res = res.oValue as BaseTypes.String;
+                    }
+                    if (res.ValueType > JSObjectType.Undefined && res.ValueType < JSObjectType.Object)
+                        return res;
+                }
+                throw new JSException(TypeProxy.Proxy(new TypeError("Can't convert object to primitive value.")));
             }
-            finally
-            {
-                context.thisBind = otb;
-            }
+            return this;
         }
 
         [Modules.Hidden]
-        internal JSObject ToPrimitiveValue_String_Value(Context context)
+        internal JSObject ToPrimitiveValue_String_Value()
         {
-            var otb = context.thisBind;
-            context.thisBind = this;
-            try
+            if (ValueType >= JSObjectType.Object && oValue != null)
             {
-                if (ValueType >= JSObjectType.Object && oValue != null)
+                if (oValue == null)
+                    return nullString;
+                var tpvs = GetField("toString", true, false);
+                JSObject res = null;
+                if (tpvs.ValueType == JSObjectType.Function)
                 {
-                    if (oValue == null)
-                        return nullString;
-                    var tpvs = GetField("toString", true, false);
-                    JSObject res = null;
-                    if (tpvs.ValueType == JSObjectType.Function)
+                    res = (tpvs.oValue as NiL.JS.Core.BaseTypes.Function).Invoke(this, null);
+                    if (res.ValueType == JSObjectType.Object)
                     {
-                        res = (tpvs.oValue as NiL.JS.Core.BaseTypes.Function).Invoke(context, null);
-                        if (res.ValueType == JSObjectType.Object)
-                        {
-                            if (res.oValue is BaseTypes.String)
-                                res = res.oValue as BaseTypes.String;
-                        }
-                        if (res.ValueType > JSObjectType.Undefined && res.ValueType < JSObjectType.Object)
-                            return res;
+                        if (res.oValue is BaseTypes.String)
+                            res = res.oValue as BaseTypes.String;
                     }
-                    tpvs = GetField("valueOf", true, false);
-                    if (tpvs.ValueType == JSObjectType.Function)
-                    {
-                        res = (tpvs.oValue as NiL.JS.Core.BaseTypes.Function).Invoke(context, null);
-                        if (res.ValueType == JSObjectType.Object)
-                        {
-                            if (res.oValue is BaseTypes.String)
-                                res = res.oValue as BaseTypes.String;
-                        }
-                        if (res.ValueType > JSObjectType.Undefined && res.ValueType < JSObjectType.Object)
-                            return res;
-                    }
-                    context.thisBind = otb;
-                    throw new JSException(TypeProxy.Proxy(new TypeError("Can't convert object to primitive value.")));
+                    if (res.ValueType > JSObjectType.Undefined && res.ValueType < JSObjectType.Object)
+                        return res;
                 }
-                return this;
+                tpvs = GetField("valueOf", true, false);
+                if (tpvs.ValueType == JSObjectType.Function)
+                {
+                    res = (tpvs.oValue as NiL.JS.Core.BaseTypes.Function).Invoke(this, null);
+                    if (res.ValueType == JSObjectType.Object)
+                    {
+                        if (res.oValue is BaseTypes.String)
+                            res = res.oValue as BaseTypes.String;
+                    }
+                    if (res.ValueType > JSObjectType.Undefined && res.ValueType < JSObjectType.Object)
+                        return res;
+                }
+                throw new JSException(TypeProxy.Proxy(new TypeError("Can't convert object to primitive value.")));
             }
-            finally
-            {
-                context.thisBind = otb;
-            }
+            return this;
         }
 
 #if INLINE
@@ -351,6 +337,7 @@ namespace NiL.JS.Core
                 this.dValue = right.dValue;
                 this.prototype = right.prototype;
                 this.fields = right.fields;
+                this.attributes = this.attributes & ~ObjectAttributes.Immutable | (right.attributes & ObjectAttributes.Immutable);
                 return;
             }
             this.fields = null;
@@ -370,13 +357,16 @@ namespace NiL.JS.Core
         [Modules.Hidden]
         public override string ToString()
         {
+#if DEBUG
+            var type = GetType();
+#endif
             if (ValueType <= JSObjectType.Undefined)
                 return "undefined";
             if (ValueType < JSObjectType.Object)
                 GetField("__proto__", true, true);
             else if (oValue is JSObject)
                 return oValue.ToString();
-            var res = ToPrimitiveValue_String_Value(new Context(Context.currentRootContext) { thisBind = this }).Value;
+            var res = ToPrimitiveValue_String_Value().Value;
             if (res is bool)
                 return (bool)res ? "true":"false";
             if (res is double)
@@ -427,7 +417,7 @@ namespace NiL.JS.Core
 
         public static implicit operator JSObject(bool value)
         {
-            return new JSObject() { ValueType = JSObjectType.Bool, iValue = value ? 1 : 0, assignCallback = ErrorAssignCallback };
+            return value ? BaseTypes.Boolean.TrueEr : BaseTypes.Boolean.FalseEr;
         }
 
         public static implicit operator JSObject(int value)
@@ -476,7 +466,6 @@ namespace NiL.JS.Core
                 case JSObjectType.Object:
                 case JSObjectType.Date:
                 case JSObjectType.Function:
-                case JSObjectType.Proxy:
                     return obj.oValue != null;
                 case JSObjectType.String:
                     return !string.IsNullOrEmpty(obj.oValue as string);

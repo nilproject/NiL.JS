@@ -9,5 +9,10 @@ namespace NiL.JS.Statements
         {
             return JSObject.undefined;
         }
+
+        public override string ToString()
+        {
+            return "";
+        }
     }
 }

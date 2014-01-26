@@ -21,5 +21,10 @@ namespace NiL.JS.Core.BaseTypes
         {
             this.message = message;
         }
+
+        public override string ToString()
+        {
+            return name + ": " + message;
+        }
     }
 }

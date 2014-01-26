@@ -135,6 +135,7 @@
     <Compile Include="Core\BaseTypes\Boolean.cs" />
     <Compile Include="Core\BaseTypes\EmbeddedType.cs" />
     <Compile Include="Core\BaseTypes\Date.cs" />
+    <Compile Include="Core\BaseTypes\RegExp.cs" />
     <Compile Include="Core\BaseTypes\URIError.cs" />
     <Compile Include="Core\BaseTypes\SyntaxError.cs" />
     <Compile Include="Core\BaseTypes\RangeError.cs" />
@@ -162,6 +163,7 @@
     <Compile Include="Core\Tools.cs" />
     <Compile Include="Core\TypeProxy.cs" />
     <Compile Include="Core\Modules\ProtectedAttribute.cs" />
+    <Compile Include="Core\TypeProxyConstructor.cs" />
     <Compile Include="Core\WithContext.cs" />
     <Compile Include="Statements\LabeledStatement.cs" />
     <Compile Include="Statements\Operators\NotEqual.cs" />
@@ -171,6 +173,9 @@
     <Compile Include="Statements\Operators\Delete.cs" />
     <Compile Include="Statements\Operators\LogicalNot.cs" />
     <Compile Include="Statements\Operators\New.cs" />
+    <Compile Include="Statements\Operators\InstanceOf.cs" />
+    <Compile Include="Statements\Operators\Addition.cs" />
+    <Compile Include="Statements\Operators\Decriment.cs" />
     <Compile Include="Statements\Operators\TypeOf.cs" />
     <Compile Include="Statements\Operators\StrictNotEqual.cs" />
     <Compile Include="Statements\ThrowStatement.cs" />

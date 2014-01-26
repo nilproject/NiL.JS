@@ -19,6 +19,7 @@ namespace NiL.JS.Core.BaseTypes
             oValue = s;
             ValueType = JSObjectType.String;
             assignCallback = JSObject.ErrorAssignCallback;
+            attributes |= ObjectAttributes.Immutable;
         }
 
         public String(JSObject[] s)
@@ -448,5 +449,10 @@ namespace NiL.JS.Core.BaseTypes
             return "<sup>" + oValue + "</sup>";
         }
         #endregion
+
+        public static implicit operator String (string val)
+        {
+            return new String(val);
+        }
     }
 }

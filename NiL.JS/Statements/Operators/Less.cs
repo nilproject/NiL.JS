@@ -80,7 +80,7 @@ namespace NiL.JS.Statements.Operators
                                 }
                             case JSObjectType.Object:
                                 {
-                                    temp = temp.ToPrimitiveValue_Value_String(context);
+                                    temp = temp.ToPrimitiveValue_Value_String();
                                     switch (temp.ValueType)
                                     {
                                         case JSObjectType.Int:
@@ -126,7 +126,7 @@ namespace NiL.JS.Statements.Operators
                 case JSObjectType.Date:
                 case JSObjectType.Object:
                     {
-                        temp = temp.ToPrimitiveValue_Value_String(context);
+                        temp = temp.ToPrimitiveValue_Value_String();
                         if (temp.ValueType == JSObjectType.Int)
                             goto case JSObjectType.Int;
                         else if (temp.ValueType == JSObjectType.Double)

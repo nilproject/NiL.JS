@@ -49,7 +49,7 @@ namespace NiL.JS.Statements.Operators
                                 }
                             case JSObjectType.Object:
                                 {
-                                    temp = temp.ToPrimitiveValue_Value_String(context);
+                                    temp = temp.ToPrimitiveValue_Value_String();
                                     if (temp.ValueType == JSObjectType.Int)
                                     {
                                         goto case JSObjectType.Int;
@@ -107,7 +107,7 @@ namespace NiL.JS.Statements.Operators
                                 }
                             case JSObjectType.Object:
                                 {
-                                    temp = temp.ToPrimitiveValue_Value_String(context);
+                                    temp = temp.ToPrimitiveValue_Value_String();
                                     if (temp.ValueType == JSObjectType.Int)
                                     {
                                         goto case JSObjectType.Int;
@@ -173,7 +173,7 @@ namespace NiL.JS.Statements.Operators
                                         tempResult.iValue = left == null ? 1 : 0;
                                     else
                                     {
-                                        temp = temp.ToPrimitiveValue_Value_String(context);
+                                        temp = temp.ToPrimitiveValue_Value_String();
                                         tempResult.iValue = temp.Value.ToString() == left ? 1 : 0;
                                     }
                                     break;
@@ -195,7 +195,6 @@ namespace NiL.JS.Statements.Operators
                         tempResult.iValue = left == temp.oValue ? 1 : 0;
                         break;
                     }
-                case JSObjectType.Proxy:
                 case JSObjectType.Date:
                 case JSObjectType.Object:
                     {
@@ -208,7 +207,7 @@ namespace NiL.JS.Statements.Operators
                             case JSObjectType.Int:
                                 {
                                     secondNValue = stemp.ValueType == JSObjectType.Double ? stemp.dValue : stemp.iValue;
-                                    temp = temp.ToPrimitiveValue_Value_String(context);
+                                    temp = temp.ToPrimitiveValue_Value_String();
                                     switch (temp.ValueType)
                                     {
                                         case JSObjectType.Bool:
@@ -238,7 +237,7 @@ namespace NiL.JS.Statements.Operators
                             case JSObjectType.String:
                                 {
                                     var str = stemp.oValue as string;
-                                    temp = temp.ToPrimitiveValue_Value_String(context);
+                                    temp = temp.ToPrimitiveValue_Value_String();
                                     switch (temp.ValueType)
                                     {
                                         case JSObjectType.Double:

@@ -42,7 +42,6 @@ namespace NiL.JS.Statements.Operators
                     }
                 case JSObjectType.Date:
                 case JSObjectType.Object:
-                case JSObjectType.Proxy:
                     {
                         return "object";
                     }

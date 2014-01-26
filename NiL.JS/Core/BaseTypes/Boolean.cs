@@ -8,6 +8,17 @@ namespace NiL.JS.Core.BaseTypes
     [Modules.Immutable]
     internal class Boolean : EmbeddedType
     {
+        [Modules.Protected]
+        public static Boolean True = true;
+        [Modules.Protected]
+        public static Boolean False = false;
+        [Modules.Hidden]
+        [Modules.Protected]
+        public static Boolean TrueEr = new Boolean(true) { assignCallback = JSObject.ErrorAssignCallback };
+        [Modules.Hidden]
+        [Modules.Protected]
+        public static Boolean FalseEr = new Boolean(false) { assignCallback = JSObject.ErrorAssignCallback };
+
         public Boolean()
         {
             ValueType = JSObjectType.Bool;
@@ -15,10 +26,10 @@ namespace NiL.JS.Core.BaseTypes
             assignCallback = JSObject.ErrorAssignCallback;
         }
 
-        public Boolean(int value)
+        public Boolean(bool value)
         {
             ValueType = JSObjectType.Bool;
-            iValue = value != 0 ? 1 : 0;
+            iValue = value ? 1 : 0;
             assignCallback = JSObject.ErrorAssignCallback;
         }
 
@@ -26,6 +37,13 @@ namespace NiL.JS.Core.BaseTypes
         {
             ValueType = JSObjectType.Double;
             iValue = value != 0 && !double.IsNaN(value) ? 1 : 0;
+            assignCallback = JSObject.ErrorAssignCallback;
+        }
+
+        public Boolean(int value)
+        {
+            ValueType = JSObjectType.Bool;
+            iValue = value != 0 ? 1 : 0;
             assignCallback = JSObject.ErrorAssignCallback;
         }
 
@@ -41,6 +59,11 @@ namespace NiL.JS.Core.BaseTypes
             ValueType = JSObjectType.Bool;
             iValue = (bool)(obj.GetField("0", true, false)) ? 1 : 0;
             assignCallback = JSObject.ErrorAssignCallback;
+        }
+
+        public static implicit operator Boolean(bool value)
+        {
+            return new Boolean(value);
         }
     }
 }

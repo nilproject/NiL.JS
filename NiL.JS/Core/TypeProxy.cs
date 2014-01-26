@@ -6,9 +6,9 @@ using System.Reflection;
 
 namespace NiL.JS.Core
 {
-    public sealed class TypeProxy : Function
+    public sealed class TypeProxy : JSObject
     {
-        private static readonly Dictionary<Type, TypeProxy> constructors = new Dictionary<Type, TypeProxy>();
+        private static readonly Dictionary<Type, JSObject> constructors = new Dictionary<Type, JSObject>();
         private static readonly Dictionary<Type, TypeProxy> prototypes = new Dictionary<Type, TypeProxy>();
         private static readonly NiL.JS.Core.BaseTypes.String @string = new BaseTypes.String();
         private static readonly NiL.JS.Core.BaseTypes.Number number = new Number();
@@ -16,8 +16,9 @@ namespace NiL.JS.Core
 
         private static JSObject toStringObj = new CallableField(toString);
 
-        private Type hostedType;
+        internal Type hostedType;
         private object prototypeInstance;
+        private BindingFlags bindFlags = BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.NonPublic;
 
         private static JSObject embeddedTypeConvert(JSObject source, Type targetType)
         {
@@ -48,7 +49,7 @@ namespace NiL.JS.Core
             }
             else if (targetType == typeof(NiL.JS.Core.BaseTypes.EmbeddedType))
             {
-                switch(source.ValueType)
+                switch (source.ValueType)
                 {
                     case JSObjectType.Double:
                     case JSObjectType.Int:
@@ -136,8 +137,6 @@ namespace NiL.JS.Core
 
         private static JSObject toString(Context context, JSObject args)
         {
-            if (context.thisBind.ValueType == JSObjectType.Bool)
-                return context.thisBind.iValue != 0 ? "true" : "false";
             return context.thisBind.Value.ToString();
         }
 
@@ -163,11 +162,13 @@ namespace NiL.JS.Core
             {
                 var type = obj.GetType();
                 var res = new JSObject() { oValue = obj, ValueType = JSObjectType.Object, prototype = GetPrototype(type) };
+                if (res.prototype.attributes.HasFlag(ObjectAttributes.Immutable))
+                    res.attributes |= ObjectAttributes.Immutable;
                 return res;
             }
         }
 
-        public static TypeProxy GetPrototype(Type type)
+        internal static TypeProxy GetPrototype(Type type)
         {
             TypeProxy prot = null;
             if (!prototypes.TryGetValue(type, out prot))
@@ -178,70 +179,78 @@ namespace NiL.JS.Core
             return prot;
         }
 
-        public static TypeProxy GetConstructor(Type type)
+        internal static JSObject GetConstructor(Type type)
         {
-            TypeProxy constructor = null;
+            JSObject constructor = null;
             if (!constructors.TryGetValue(type, out constructor))
-                constructor = new TypeProxy(type);
+            {
+                new TypeProxy(type);
+                constructor = constructors[type];
+            }
             return constructor;
         }
 
         private object getTargetObject(Context context, Type targetType)
         {
-            if (ValueType == JSObjectType.Function)
+            if ((bindFlags & BindingFlags.Static) != 0)
                 return null;
             object obj = context.thisBind;
             if (obj is EmbeddedType)
                 return obj;
+            if (obj is JSObject && (obj as JSObject).oValue is JSObject)
+                obj = (obj as JSObject).oValue ?? obj;
             obj = embeddedTypeConvert(obj as JSObject, targetType) ?? (obj as JSObject).oValue;
             if (obj == this)
                 return prototypeInstance;
-            if (obj is JSObject)
-                obj = embeddedTypeConvert(obj as JSObject, targetType) ?? obj;
             return obj;
         }
 
-        internal TypeProxy(Type type, bool fictive)
+        private TypeProxy()
+            : base(true)
         {
-            var ctor = type.GetConstructor(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance, null, Type.EmptyTypes, null);
-            if (ctor != null)
-                prototypeInstance = ctor.Invoke(null);
-            hostedType = type;
-            ValueType = JSObjectType.Proxy;
-            fields = new Dictionary<string, JSObject>();
-            fields["constructor"] = GetConstructor(hostedType);
-            var pa = type.GetCustomAttributes(typeof(PrototypeAttribute), false);
-            if (pa.Length != 0)
-                prototype = GetPrototype((pa[0] as PrototypeAttribute).PrototypeType).Clone() as JSObject;
-            else
-                prototype = BaseObject.Prototype.Clone() as JSObject;
-            attributes |= ObjectAttributes.DontDelete | ObjectAttributes.DontEnum | ObjectAttributes.ReadOnly;
+            ValueType = JSObjectType.Object;
+            oValue = this;
         }
 
-        public TypeProxy(Type type)
+        private TypeProxy(Type type)
+            :base(true)
         {
-            ValueType = JSObjectType.Function;
-            hostedType = type;
-            JSObject proto = null;
-            TypeProxy exconst = null;
-            prototype = BaseObject.Prototype;
-            attributes |= ObjectAttributes.DontDelete | ObjectAttributes.DontEnum | ObjectAttributes.ReadOnly;
-            if (constructors.TryGetValue(type, out exconst))
-            {
-                oValue = exconst.oValue;
-                proto = DefaultFieldGetter("prototype", false, false);
-                proto.Assign(prototypes[type]);
-                proto.attributes |= ObjectAttributes.DontEnum | ObjectAttributes.DontDelete;
-            }
+            if (constructors.ContainsKey(type))
+                throw new InvalidOperationException("Type \"" + type + "\" already proxied.");
             else
             {
-                constructors[type] = this;
-                proto = new TypeProxy(type, true);
-                (proto as TypeProxy).DefaultFieldGetter("toString", false, true).Assign(toStringObj);
-                prototypes[type] = proto as TypeProxy;
-                proto = DefaultFieldGetter("prototype", false, false);
-                proto.Assign(prototypes[type]);
-                proto.attributes |= ObjectAttributes.DontDelete | ObjectAttributes.DontEnum;
+                prototypes[type] = this;
+
+                var ictor = type.GetConstructor(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy, null, Type.EmptyTypes, null);
+                if (ictor != null)
+                    prototypeInstance = ictor.Invoke(null);
+
+                ValueType = prototypeInstance is JSObject ? (JSObjectType)System.Math.Max((int)(prototypeInstance as JSObject).ValueType, (int)JSObjectType.Object) : JSObjectType.Object;
+                oValue = this;
+                hostedType = type;
+                attributes |= ObjectAttributes.DontDelete | ObjectAttributes.DontEnum | ObjectAttributes.ReadOnly;
+                if (hostedType.GetCustomAttributes(typeof(ImmutableAttribute), false).Length != 0)
+                    attributes |= ObjectAttributes.Immutable;
+                var ctorProxy = new TypeProxy() { hostedType = type, bindFlags = bindFlags | BindingFlags.Static };
+                if (prototypeInstance == null) // Static
+                {
+                    constructors[type] = ctorProxy;
+                }
+                else
+                {
+                    ctorProxy.DefaultFieldGetter("prototype", false, false).Assign(this);
+                    var ctor = new TypeProxyConstructor(constructorBody, ctorProxy);
+                    ctorProxy.DefaultFieldGetter("__proto__", false, false).Assign(GetPrototype(typeof(TypeProxyConstructor)));
+                    ctor.attributes = attributes;
+                    constructors[type] = ctor;
+                    fields["constructor"] = ctor;
+                }
+                bindFlags |= BindingFlags.Instance;
+                var pa = type.GetCustomAttributes(typeof(PrototypeAttribute), false);
+                if (pa.Length != 0)
+                    prototype = GetPrototype((pa[0] as PrototypeAttribute).PrototypeType).Clone() as JSObject;
+                else
+                    prototype = BaseObject.Prototype.Clone() as JSObject;
             }
         }
 
@@ -404,18 +413,20 @@ namespace NiL.JS.Core
             return constructor;
         }
 
-        public override JSObject Invoke(JSObject y)
+        private JSObject constructorBody(Context context, JSObject argsObj)
         {
             var thisBind = context.thisBind;
             object[] args = null;
-            ConstructorInfo constructor = findConstructor(y, ref args);            
+            ConstructorInfo constructor = findConstructor(argsObj, ref args);
+            if (constructor == null)
+                throw new JSException(Proxy(new BaseTypes.TypeError(hostedType.Name + " can't be created.")));
             var _this = thisBind;
             JSObject thproto = null;
             bool bynew = false;
             if (_this != null)
             {
                 thproto = _this.prototype;
-                if (thproto.ValueType == JSObjectType.Proxy && thproto.oValue is TypeProxy)
+                if (thproto.oValue is TypeProxy)
                     bynew = (thproto.oValue as TypeProxy).hostedType == hostedType;
             }
             var obj = constructor.Invoke(args);
@@ -423,16 +434,21 @@ namespace NiL.JS.Core
             if (bynew)
             {
                 _this.oValue = obj;
+                if (obj is JSObject)
+                    _this.ValueType = (JSObjectType)System.Math.Max((int)JSObjectType.Object, (int)(obj as JSObject).ValueType);
                 res = _this;
             }
             else
             {
-                res = obj is JSObject ? obj as JSObject : new JSObject(false)
-                {
-                    oValue = obj,
-                    ValueType = JSObjectType.Object,
-                    prototype = GetPrototype(hostedType)
-                };
+                if (hostedType == typeof(Date))
+                    res = (obj as Date).toString();
+                else
+                    res = obj is JSObject ? obj as JSObject : new JSObject(false)
+                    {
+                        oValue = obj,
+                        ValueType = JSObjectType.Object,
+                        prototype = GetPrototype(hostedType)
+                    };
             }
             return res;
         }
@@ -442,7 +458,7 @@ namespace NiL.JS.Core
             JSObject r = null;
             if (fields.TryGetValue(name, out r) && r.ValueType > JSObjectType.NotExistInObject)
                 return r;
-            var m = hostedType.GetMember(name, BindingFlags.Public | (ValueType == JSObjectType.Function ? BindingFlags.Static : BindingFlags.Instance) | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy);
+            var m = hostedType.GetMember(name, bindFlags);
             if (m.Length > 1)
             {
                 for (int i = 0; i < m.Length; i++)
@@ -467,8 +483,18 @@ namespace NiL.JS.Core
             {
                 if (m.Length == 0 || m[0].DeclaringType == typeof(object) || m[0].GetCustomAttributes(typeof(HiddenAttribute), true).Length != 0)
                 {
-                    r = DefaultFieldGetter(name, fast, own);
-                    return r;
+                    switch (name)
+                    {
+                        case "toString":
+                            {
+                                return GetField("ToString", true, true);
+                            }
+                        default:
+                            {
+                                r = DefaultFieldGetter(name, fast, own);
+                                return r;
+                            }
+                    }
                 }
                 switch (m[0].MemberType)
                 {
@@ -505,7 +531,9 @@ namespace NiL.JS.Core
                             if (field.IsStatic)
                             {
                                 var val = field.GetValue(null);
-                                if (val is JSObject)
+                                if (val == null)
+                                    r = JSObject.Null;
+                                else if (val is JSObject)
                                     r = val as JSObject;
                                 else
                                 {
@@ -554,6 +582,16 @@ namespace NiL.JS.Core
             if (fields == null)
                 return JSObject.EmptyEnumerator;
             return fields.Keys.GetEnumerator();
+        }
+
+        public override string ToString()
+        {
+            return ((bindFlags & BindingFlags.Static) != 0 ? "Proxy:Static (" : "Proxy:Dynamic (") + hostedType + ")";
+        }
+
+        public static implicit operator Function(TypeProxy proxy)
+        {
+            return proxy.prototypeInstance as Function;
         }
     }
 }
