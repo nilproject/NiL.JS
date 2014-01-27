@@ -129,7 +129,7 @@ namespace NiL.JS.Core
             switch (ValueType)
             {
                 case JSObjectType.NotExist:
-                    throw new JSException(TypeProxy.Proxy(new TypeError("Varible not defined.")));
+                    throw new JSException(TypeProxy.Proxy(new ReferenceError("Varible not defined.")));
                 case JSObjectType.Undefined:
                 case JSObjectType.NotExistInObject:
                     throw new JSException(TypeProxy.Proxy(new TypeError("Can't access to property value of \"undefined\".")));

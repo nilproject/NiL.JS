@@ -3,7 +3,7 @@ using NiL.JS.Core.Modules;
 
 namespace NiL.JS.Core.BaseTypes
 {
-    internal class Date
+    public class Date
     {
         [Hidden]
         private readonly static String tempSResult = "";

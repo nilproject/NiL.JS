@@ -78,6 +78,16 @@ namespace NiL.JS.Statements
             for (int i = length; i >= 0; i--)
             {
                 res = body[i].Invoke(context);
+#if DEBUG
+                if (NiL.JS.Core.BaseTypes.Boolean.TrueEr.iValue != 1 || NiL.JS.Core.BaseTypes.Boolean.TrueEr.ValueType != JSObjectType.Bool)
+                    throw new ArithmeticException();
+                if (NiL.JS.Core.BaseTypes.Boolean.FalseEr.iValue != 0 || NiL.JS.Core.BaseTypes.Boolean.FalseEr.ValueType != JSObjectType.Bool)
+                    throw new ArithmeticException();
+                if (NiL.JS.Core.BaseTypes.Boolean.True.iValue != 1 || NiL.JS.Core.BaseTypes.Boolean.True.ValueType != JSObjectType.Bool)
+                    throw new ArithmeticException();
+                if (NiL.JS.Core.BaseTypes.Boolean.False.iValue != 0 || NiL.JS.Core.BaseTypes.Boolean.False.ValueType != JSObjectType.Bool)
+                    throw new ArithmeticException();
+#endif
                 if (context.abort != AbortType.None)
                     return context.abortInfo;
             }

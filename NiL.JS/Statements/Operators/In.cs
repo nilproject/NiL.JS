@@ -1,4 +1,5 @@
 ﻿using NiL.JS.Core;
+using NiL.JS.Core.BaseTypes;
 using System;
 
 namespace NiL.JS.Statements.Operators
@@ -13,10 +14,23 @@ namespace NiL.JS.Statements.Operators
 
         public override JSObject Invoke(Context context)
         {
-            var t = second.Invoke(context).GetField(first.Invoke(context).ToString(), true, false);
-            tempResult.iValue = t != JSObject.undefined && t.ValueType >= JSObjectType.Undefined ? 1 : 0;
-            tempResult.ValueType = JSObjectType.Bool;
-            return tempResult;
+            var fn = Tools.RaiseIfNotExist(first.Invoke(context));
+            var oassc = fn.assignCallback;
+            fn.assignCallback = () => { fn = fn.Clone() as JSObject; };
+            try
+            {
+                var source = Tools.RaiseIfNotExist(second.Invoke(context));
+                if (source.ValueType < JSObjectType.Object)
+                    throw new JSException(TypeProxy.Proxy(new TypeError("Right-hand value of instanceof is not object.")));
+                var t = source.GetField(fn.ToString(), true, false);
+                tempResult.iValue = t != JSObject.undefined && t.ValueType >= JSObjectType.Undefined ? 1 : 0;
+                tempResult.ValueType = JSObjectType.Bool;
+                return tempResult;
+            }
+            finally
+            {
+                fn.assignCallback = oassc;
+            }
         }
     }
 }

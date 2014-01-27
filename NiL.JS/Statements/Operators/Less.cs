@@ -33,7 +33,10 @@ namespace NiL.JS.Statements.Operators
                                 }
                             case JSObjectType.Double:
                                 {
-                                    tempResult.iValue = left < temp.dValue ? 1 : 0;
+                                    if (double.IsNaN(left) || double.IsNaN(temp.dValue))
+                                        tempResult.iValue = this is MoreOrEqual ? 1 : 0; // Костыль. Для его устранения нужно делать полноценную реализацию оператора MoreOrEqual.
+                                    else
+                                        tempResult.iValue = left < temp.dValue ? 1 : 0;
                                     break;
                                 }
                             case JSObjectType.String:
@@ -84,7 +87,7 @@ namespace NiL.JS.Statements.Operators
                         temp = second.Invoke(context);
                         if (double.IsNaN(left))
                             tempResult.iValue = this is MoreOrEqual ? 1 : 0; // Костыль. Для его устранения нужно делать полноценную реализацию оператора MoreOrEqual.
-                        else 
+                        else
                             switch (temp.ValueType)
                             {
                                 case JSObjectType.Bool:
@@ -95,7 +98,10 @@ namespace NiL.JS.Statements.Operators
                                     }
                                 case JSObjectType.Double:
                                     {
-                                        tempResult.iValue = left < temp.dValue ? 1 : 0;
+                                        if (double.IsNaN(left) || double.IsNaN(temp.dValue))
+                                            tempResult.iValue = this is MoreOrEqual ? 1 : 0; // Костыль. Для его устранения нужно делать полноценную реализацию оператора MoreOrEqual.
+                                        else
+                                            tempResult.iValue = left < temp.dValue ? 1 : 0;
                                         break;
                                     }
                                 case JSObjectType.String:
@@ -154,7 +160,7 @@ namespace NiL.JS.Statements.Operators
                                     if (Tools.ParseNumber(left, ref i, true, out d) && (i == left.Length))
                                         tempResult.iValue = d < temp.iValue ? 1 : 0;
                                     else
-                                        tempResult.iValue = 0;
+                                        tempResult.iValue = this is MoreOrEqual ? 1 : 0;
                                     break;
                                 }
                             case JSObjectType.Double:
@@ -164,7 +170,7 @@ namespace NiL.JS.Statements.Operators
                                     if (Tools.ParseNumber(left, ref i, true, out d) && (i == left.Length))
                                         tempResult.iValue = d < temp.dValue ? 1 : 0;
                                     else
-                                        tempResult.iValue = 0;
+                                        tempResult.iValue = this is MoreOrEqual ? 1 : 0;
                                     break;
                                 }
                             case JSObjectType.String:
@@ -183,7 +189,7 @@ namespace NiL.JS.Statements.Operators
                                             {
                                                 double t = 0.0;
                                                 int i = 0;
-                                                if (Tools.ParseNumber(left, ref i, false, out t))
+                                                if (Tools.ParseNumber(left, ref i, true, out t) && (i == left.Length))
                                                     tempResult.iValue = t < temp.iValue ? 1 : 0;
                                                 else goto
                                                     case JSObjectType.String;
@@ -193,9 +199,9 @@ namespace NiL.JS.Statements.Operators
                                             {
                                                 double t = 0.0;
                                                 int i = 0;
-                                                if (Tools.ParseNumber(left, ref i, false, out t))
+                                                if (Tools.ParseNumber(left, ref i, true, out t) && (i == left.Length))
                                                     tempResult.iValue = t < temp.dValue ? 1 : 0;
-                                                else 
+                                                else
                                                     goto case JSObjectType.String;
                                                 break;
                                             }
@@ -208,7 +214,7 @@ namespace NiL.JS.Statements.Operators
                                             {
                                                 double t = 0.0;
                                                 int i = 0;
-                                                if (Tools.ParseNumber(left, ref i, false, out t))
+                                                if (Tools.ParseNumber(left, ref i, true, out t) && (i == left.Length))
                                                     tempResult.iValue = t < 0 ? 1 : 0;
                                                 else
                                                     tempResult.iValue = this is MoreOrEqual ? 1 : 0;
@@ -223,7 +229,7 @@ namespace NiL.JS.Statements.Operators
                             case JSObjectType.Undefined:
                             case JSObjectType.NotExistInObject:
                                 {
-                                    tempResult.iValue = 0;
+                                    tempResult.iValue = this is MoreOrEqual ? 1 : 0;
                                     break;
                                 }
                             case JSObjectType.NotExist:
@@ -256,7 +262,7 @@ namespace NiL.JS.Statements.Operators
                 case JSObjectType.NotExistInObject:
                     {
                         second.Invoke(context);
-                        tempResult.iValue = 0;
+                        tempResult.iValue = this is MoreOrEqual ? 1 : 0;
                         break;
                     }
                 case JSObjectType.NotExist:
