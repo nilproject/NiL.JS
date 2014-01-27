@@ -167,7 +167,7 @@ namespace NiL.JS.Core
             }
         }
 
-        internal static TypeProxy GetPrototype(Type type)
+        public static TypeProxy GetPrototype(Type type)
         {
             TypeProxy prot = null;
             if (!prototypes.TryGetValue(type, out prot))
@@ -178,7 +178,7 @@ namespace NiL.JS.Core
             return prot;
         }
 
-        internal static JSObject GetConstructor(Type type)
+        public static JSObject GetConstructor(Type type)
         {
             JSObject constructor = null;
             if (!constructors.TryGetValue(type, out constructor))
@@ -212,7 +212,7 @@ namespace NiL.JS.Core
         }
 
         private TypeProxy(Type type)
-            :base(true)
+            : base(true)
         {
             if (constructors.ContainsKey(type))
                 throw new InvalidOperationException("Type \"" + type + "\" already proxied.");
@@ -293,7 +293,7 @@ namespace NiL.JS.Core
                     {
                         var dinv = (Func<JSObject>)Delegate.CreateDelegate(typeof(Func<JSObject>), null, method);
                         result = new CallableField((th, args) =>
-                        {                            
+                        {
                             return dinv();
                         });
                         return result;
