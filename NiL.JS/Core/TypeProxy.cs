@@ -162,8 +162,7 @@ namespace NiL.JS.Core
             {
                 var type = obj.GetType();
                 var res = new JSObject() { oValue = obj, ValueType = JSObjectType.Object, prototype = GetPrototype(type) };
-                if (res.prototype.attributes.HasFlag(ObjectAttributes.Immutable))
-                    res.attributes |= ObjectAttributes.Immutable;
+                res.attributes |= res.prototype.attributes & ObjectAttributes.Immutable;
                 return res;
             }
         }
