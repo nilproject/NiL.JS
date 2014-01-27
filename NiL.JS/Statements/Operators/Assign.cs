@@ -10,10 +10,10 @@ namespace NiL.JS.Statements.Operators
 
         static Assign()
         {
-            setterArgs.fields["length"] = new JSObject() 
+            setterArgs.fields["length"] = new JSObject()
             {
-                iValue = 1, 
-                ValueType = JSObjectType.Int, 
+                iValue = 1,
+                ValueType = JSObjectType.Int,
                 attributes = ObjectAttributes.DontEnum | ObjectAttributes.DontDelete | ObjectAttributes.ReadOnly
             };
             setterArgs.fields["0"] = setterArg;
@@ -27,16 +27,27 @@ namespace NiL.JS.Statements.Operators
         public override JSObject Invoke(Context context)
         {
             setterArg.Assign(second.Invoke(context));
-            var field = first.InvokeForAssing(context);
-            if (field.ValueType == JSObjectType.Property)
+            var otb = context.thisBind;
+            var outb = context.updateThisBind;
+            try
             {
-                var setter = (field.oValue as NiL.JS.Core.BaseTypes.Function[])[0];
-                if (setter != null)
-                    setter.Invoke(context, setterArgs);
+                context.updateThisBind = true;
+                var field = first.InvokeForAssing(context);
+                if (field.ValueType == JSObjectType.Property)
+                {
+                    var setter = (field.oValue as NiL.JS.Core.BaseTypes.Function[])[0];
+                    if (setter != null)
+                        setter.Invoke(context, setterArgs);
+                }
+                else
+                    field.Assign(setterArg);
+                return setterArg;
             }
-            else
-                field.Assign(setterArg);
-            return setterArg;
+            finally
+            {
+                context.updateThisBind = outb;
+                context.thisBind = otb;
+            }
         }
 
         public override bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> vars)

@@ -15,11 +15,13 @@ namespace NiL.JS.Statements.Operators
         public override JSObject Invoke(Context context)
         {
             JSObject temp = null;
+            var otb = context.thisBind;
             temp = first.Invoke(context);
             if (temp.ValueType == JSObjectType.NotExist)
                 throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("varible not defined")));
             if (second != null)
             {
+                context.thisBind = otb;
                 temp = second.Invoke(context);
                 if (temp.ValueType == JSObjectType.NotExist)
                     throw new InvalidOperationException("varible not defined");

@@ -23,8 +23,6 @@ namespace NiL.JS.Statements
 
         public override JSObject Invoke(Context context)
         {
-            if (context.updateThisBind)
-                context.thisBind = null;
             if (context == cacheContext)
                 if (cacheRes == null)
                     return (cacheRes = context.GetField(varibleName));
