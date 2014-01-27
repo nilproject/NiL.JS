@@ -16,6 +16,12 @@ namespace NiL.JS.Core.BaseTypes
 
         }
 
+        public RangeError(JSObject args)
+            : base(args.GetField("0", true, false).ToString())
+        {
+
+        }
+
         public RangeError(string message)
             : base(message)
         {

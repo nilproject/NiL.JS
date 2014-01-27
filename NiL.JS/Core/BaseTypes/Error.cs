@@ -17,6 +17,11 @@ namespace NiL.JS.Core.BaseTypes
 
         }
 
+        public Error(JSObject args)
+        {
+            message = args.GetField("0", true, false).ToString();
+        }
+
         public Error(string message)
         {
             this.message = message;

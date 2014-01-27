@@ -18,6 +18,12 @@ namespace NiL.JS.Core.BaseTypes
             }
         }
 
+        public ReferenceError(JSObject args)
+            : base(args.GetField("0", true, false).ToString())
+        {
+
+        }
+
         public ReferenceError()
         {
 

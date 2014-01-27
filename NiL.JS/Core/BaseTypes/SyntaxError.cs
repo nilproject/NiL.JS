@@ -16,6 +16,12 @@ namespace NiL.JS.Core.BaseTypes
 
         }
 
+        public SyntaxError(JSObject args)
+            : base(args.GetField("0", true, false).ToString())
+        {
+
+        }
+
         public SyntaxError(string message)
             : base(message)
         {

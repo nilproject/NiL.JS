@@ -16,6 +16,12 @@ namespace NiL.JS.Core.BaseTypes
 
         }
 
+        public URIError(JSObject args)
+            : base(args.GetField("0", true, false).ToString())
+        {
+
+        }
+
         public URIError(string message)
             : base(message)
         {

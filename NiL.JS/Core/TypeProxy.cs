@@ -328,26 +328,23 @@ namespace NiL.JS.Core
             {
                 Type[] argtypes = null;
                 argtypes = new[] { typeof(JSObject) };
-                if (len == 1)
+                constructor = hostedType.GetConstructor(argtypes);
+                if (constructor != null)
                 {
+                    args = new object[] { argObj };
+                    return constructor;
+                }
+                else
+                {
+                    argtypes[0] = typeof(JSObject[]);
                     constructor = hostedType.GetConstructor(argtypes);
                     if (constructor != null)
                     {
-                        args = new object[] { argObj };
+                        args = new JSObject[len];
+                        for (int i = 0; i < len; i++)
+                            args[i] = argObj.GetField(i.ToString(), true, false);
+                        args = new[] { args };
                         return constructor;
-                    }
-                    else
-                    {
-                        argtypes[0] = typeof(JSObject[]);
-                        constructor = hostedType.GetConstructor(argtypes);
-                        if (constructor != null)
-                        {
-                            args = new JSObject[len];
-                            for (int i = 0; i < len; i++)
-                                args[i] = argObj.GetField(i.ToString(), true, false);
-                            args = new[] { args };
-                            return constructor;
-                        }
                     }
                 }
                 if (constructor == null)
@@ -363,7 +360,7 @@ namespace NiL.JS.Core
                         return constructor;
                     }
                 }
-                if (constructor == null)
+                if (constructor == null && len != 1)
                 {
                     argtypes = new Type[len];
                     for (int i = 0; i < len; i++)
