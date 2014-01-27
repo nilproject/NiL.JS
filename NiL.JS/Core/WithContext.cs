@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using NiL.JS.Core.BaseTypes;
 
 namespace NiL.JS.Core
 {
@@ -12,15 +9,19 @@ namespace NiL.JS.Core
         public WithContext(JSObject obj, Context prototype)
             : base(prototype)
         {
+            if (obj.ValueType == JSObjectType.NotExist)
+                throw new JSException(TypeProxy.Proxy(new ReferenceError("Varible not defined.")));
+            if (obj.ValueType <= JSObjectType.Undefined)
+                throw new JSException(TypeProxy.Proxy(new TypeError("Can't access to property value of \"undefined\".")));
+            if (obj.ValueType >= JSObjectType.Object && obj.oValue == null)
+                throw new JSException(TypeProxy.Proxy(new TypeError("Can't access to property value of \"null\".")));
             this.obj = obj;
+            this.fields = obj.fields;
         }
 
-        public override JSObject GetField(string name)
+        internal override JSObject Define(string name)
         {
-            var t = obj.GetField(name, true, false);
-            if (t == JSObject.undefined || t.ValueType < JSObjectType.Undefined)
-                return base.GetField(name);
-            return t;
+            return prototype.Define(name);
         }
     }
 }

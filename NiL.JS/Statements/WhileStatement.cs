@@ -57,7 +57,6 @@ namespace NiL.JS.Statements
                     bool _break = (context.abort > AbortType.Continue) || ((context.abortInfo != null) && (labels.IndexOf(context.abortInfo.oValue as string) == -1));
                     if (context.abort < AbortType.Return && ((context.abortInfo == null) || (labels.IndexOf(context.abortInfo.oValue as string) != -1)))
                     {
-
                         context.abort = AbortType.None;
                         context.abortInfo = null;
                     }

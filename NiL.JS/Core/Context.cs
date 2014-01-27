@@ -157,8 +157,7 @@ namespace NiL.JS.Core
             RefreshGlobalContext();
         }
 
-        private readonly Context prototype;
-        private const int cacheSize = 5;
+        protected readonly Context prototype;
 
         internal Dictionary<string, JSObject> fields;
         internal AbortType abort;
@@ -193,7 +192,7 @@ namespace NiL.JS.Core
             return res;
         }
 
-        internal JSObject Define(string name)
+        internal virtual JSObject Define(string name)
         {
             JSObject res;
             if (fields == null)
@@ -262,7 +261,7 @@ namespace NiL.JS.Core
             {
                 if (res.ValueType == JSObjectType.NotExistInObject)
                     res.ValueType = JSObjectType.NotExist;
-                if ((c != this) && (fields != null))
+                if ((c != this) && (fields != null) && !(this is WithContext))
                     fields[name] = res;
             }
             return res;

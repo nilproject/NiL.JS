@@ -175,9 +175,9 @@ namespace NiL.JS.Core.BaseTypes
             for (int i = 0; i < args.Length; i++)
             {
                 var arg = args[i];
-                if (arg is Array)
+                if (arg.ValueType == JSObjectType.Object && arg.oValue is Array)
                 {
-                    Array arr = arg as Array;
+                    Array arr = arg.oValue as Array;
                     for (int j = 0; j < arr.data.Count; j++)
                     {
                         res.Add(new JSObject(false));

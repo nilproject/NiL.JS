@@ -64,6 +64,7 @@ namespace NiL.JS.Statements
 
         public override JSObject Invoke(Context context)
         {
+            Exception except = null;
             try
             {
                 body.Invoke(context);
@@ -76,6 +77,7 @@ namespace NiL.JS.Statements
                     eo.Assign(e.Avatar);
                     catchBody.Invoke(context);
                 }
+                else except = e;
             }
             catch (Exception e)
             {
@@ -84,12 +86,34 @@ namespace NiL.JS.Statements
                     context.Define(exptName).Assign(TypeProxy.Proxy(e));
                     catchBody.Invoke(context);
                 }
+                else except = e;
             }
             finally
             {
                 if (finallyBody != null)
-                    finallyBody.Invoke(context);
+                {
+                    var abort = context.abort;
+                    var ainfo = context.abortInfo;
+                    context.abort = AbortType.None;
+                    context.abortInfo = JSObject.undefined;
+                    try
+                    {
+                        finallyBody.Invoke(context);
+                    }
+                    finally
+                    {
+                        if (context.abort == AbortType.None)
+                        {
+                            context.abort = abort;
+                            context.abortInfo = ainfo;
+                        }
+                        else
+                            except = null;
+                    }
+                }
             }
+            if (except != null)
+                throw except;
             return null;
         }
 
