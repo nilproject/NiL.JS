@@ -126,6 +126,10 @@ namespace NiL.JS.Core
                         var arr = v as Core.BaseTypes.Array;
                         res[i] = convertArray(arr);
                     }
+                    else if (v is TypeProxy)
+                    {
+                        res[i] = (v as TypeProxy).hostedType;
+                    }
                     else
                     {
                         res[i] = v;
