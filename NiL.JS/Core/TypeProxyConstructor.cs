@@ -7,7 +7,7 @@ namespace NiL.JS.Core
 {
     internal class TypeProxyConstructor : ExternalFunction
     {
-        private TypeProxy proxy;
+        internal readonly TypeProxy proxy;
 
         private static JSObject empty(Context context, JSObject args)
         {
