@@ -124,7 +124,10 @@ namespace NiL.JS.Core
                     if (v is Core.BaseTypes.Array)
                         res[i] = convertArray(v as Core.BaseTypes.Array);
                     else if (v is TypeProxy)
-                        res[i] = (v as TypeProxy).hostedType;
+                    {
+                        var tp = v as TypeProxy;
+                        res[i] = (tp.bindFlags & BindingFlags.Static) != 0 ? tp.hostedType : tp.prototypeInstance;
+                    }
                     else if (v is TypeProxyConstructor)
                         res[i] = (v as TypeProxyConstructor).proxy.hostedType;
                     else
