@@ -148,7 +148,7 @@ namespace NiL.JS.Core
             if (code[i] == '-' || code[i] == '+')
                 sig = 44 - code[i++];
             const string infinity = "Infinity";
-            for (int j = i; (j - i) < infinity.Length; j++)
+            for (int j = i; ((j - i) < infinity.Length) && (j < code.Length); j++)
             {
                 if (code[j] != infinity[j - i])
                     break;
@@ -199,7 +199,7 @@ namespace NiL.JS.Core
                         res = true;
                     }
                 }
-                if (!res && code[i] != '.')
+                if (!res && (i >= code.Length || code[i] != '.'))
                     return false;
                 if (i < code.Length && code[i] == '.')
                 {
@@ -468,7 +468,7 @@ namespace NiL.JS.Core
 
         internal static JSObject RaiseIfNotExist(JSObject obj)
         {
-            if (obj.ValueType == JSObjectType.NotExist)
+            if (obj != null && obj.ValueType == JSObjectType.NotExist)
                     throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible is not defined.")));
             return obj;
         }

@@ -36,7 +36,7 @@ namespace NiL.JS.Statements
         {
             context.abort = AbortType.Continue;
             context.abortInfo = label;
-            return JSObject.undefined;
+            return null;
         }
     }
 }

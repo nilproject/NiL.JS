@@ -108,6 +108,39 @@ namespace NiL.JS.Statements
             if (code[i] != '{')
                 throw new ArgumentException("code (" + i + ")");
             Statement body = CodeBlock.Parse(state, ref i).Statement;
+            var tindex = i;
+            while (i < code.Length && char.IsWhiteSpace(code[i])) i++;
+            if (i < code.Length && code[i] == '(')
+            {
+                List<Statement> args = new List<Statement>();
+                i++;
+                for (; ; )
+                {
+                    while (char.IsWhiteSpace(code[i])) i++;
+                    if (code[i] == ')')
+                        break;
+                    else if (code[i] == ',')
+                        do i++; while (char.IsWhiteSpace(code[i]));
+                    args.Add(OperatorStatement.Parse(state, ref i, false).Statement);
+                }
+                i++;
+                tindex = i;
+                while (i < code.Length && char.IsWhiteSpace(code[i])) i++;
+                index = i;
+                return new ParseResult()
+                {
+                    IsParsed = true,
+                    Message = "",
+                    Statement = new Operators.Call(new FunctionStatement(name)
+                    {
+                        argumentsNames = arguments.ToArray(),
+                        body = body
+                    },
+                    new ImmidateValueStatement(args.ToArray()))
+                };
+            }
+            else
+                i = tindex;
             index = i;
             FunctionStatement res = new FunctionStatement(name)
                 {

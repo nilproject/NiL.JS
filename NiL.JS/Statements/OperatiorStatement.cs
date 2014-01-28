@@ -9,23 +9,24 @@ namespace NiL.JS.Statements
 {
     internal enum OperationTypeGroups : int
     {
-        Choice = 0x0,
+        None = 0x0,
         Assign = 0x10,
-        Logic0 = 0x20,
-        Logic1 = 0x30,
-        Logic2 = 0x40,
-        Bit = 0x50,
-        Arithmetic0 = 0x60,
-        Arithmetic1 = 0x70,
-        Unary = 0x80,
+        Choice = 0x20,
+        Logic0 = 0x30,
+        Logic1 = 0x40,
+        Logic2 = 0x50,
+        Bit = 0x60,
+        Arithmetic0 = 0x70,
+        Arithmetic1 = 0x80,
+        Unary = 0x90,
         Special = 0xF0
     }
 
     internal enum OperationType : int
     {
-        Assign = OperationTypeGroups.Assign + 1,
-        None = OperationTypeGroups.Choice + 0,
-        Ternary = OperationTypeGroups.Choice + 2,
+        None = OperationTypeGroups.None + 0,
+        Assign = OperationTypeGroups.Assign + 0,
+        Ternary = OperationTypeGroups.Choice + 0,
         And = OperationTypeGroups.Logic0 + 0,
         Or = OperationTypeGroups.Logic0 + 1,
         Xor = OperationTypeGroups.Logic0 + 2,

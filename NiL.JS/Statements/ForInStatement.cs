@@ -2,11 +2,14 @@
 using System;
 using NiL.JS.Core;
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace NiL.JS.Statements
 {
     internal sealed class ForInStatement : Statement, IOptimizable
     {
+        private FieldInfo indexMember = (FieldInfo)typeof(Dictionary<string, JSObject>.KeyCollection.Enumerator).GetMember("index", BindingFlags.Instance | BindingFlags.NonPublic)[0];
+
         private Statement varible;
         private Statement source;
         private Statement body;
@@ -70,14 +73,30 @@ namespace NiL.JS.Statements
 
         public override JSObject Invoke(Context context)
         {
-            var s = source.Invoke(context);
+            var s = Tools.RaiseIfNotExist(source.Invoke(context));
             if (s.ValueType >= JSObjectType.Object && s.oValue == null)
                 throw new JSException(TypeProxy.Proxy(new TypeError("Can't enumerate properties of undefined.")));
             var v = varible.Invoke(context);
             while (s != null)
             {
-                foreach (var o in s)
+                if (s.ValueType <= JSObjectType.Undefined)
+                    throw new JSException(TypeProxy.Proxy(new TypeError("Can't access to property value of \"undefined\".")));
+                var keys = s.GetEnumerator();
+                for (; ; )
                 {
+                    try
+                    {
+                        if (!keys.MoveNext())
+                            break;
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        var index = (int)indexMember.GetValue(keys);
+                        keys = s.GetEnumerator();
+                        while (index-- > 0)
+                            keys.MoveNext();
+                    }
+                    var o = keys.Current;
                     var t = s.GetField(o, true, false);
                     if (t.ValueType > JSObjectType.NotExistInObject && ((t.attributes & ObjectAttributes.DontEnum) == 0))
                     {

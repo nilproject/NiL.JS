@@ -16,22 +16,18 @@ namespace NiL.JS.Statements.Operators
         {
             JSObject temp = null;
             var otb = context.thisBind;
-            temp = first.Invoke(context);
-            if (temp.ValueType == JSObjectType.NotExist)
-                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("varible not defined")));
+            temp = Tools.RaiseIfNotExist(first.Invoke(context));
             if (second != null)
             {
                 context.thisBind = otb;
-                temp = second.Invoke(context);
-                if (temp.ValueType == JSObjectType.NotExist)
-                    throw new InvalidOperationException("varible not defined");
+                temp = Tools.RaiseIfNotExist(second.Invoke(context));
             }
             return temp;
         }
 
         public override bool Optimize(ref Statement _this, int depth, Dictionary<string, Statement> vars)
         {
-            if (second == null && (depth > 1 || !(first is GetVaribleStatement)))
+            if (second == null)
             {
                 _this = first;
                 return true;

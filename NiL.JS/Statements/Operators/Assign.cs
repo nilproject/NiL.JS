@@ -26,7 +26,7 @@ namespace NiL.JS.Statements.Operators
 
         public override JSObject Invoke(Context context)
         {
-            setterArg.Assign(second.Invoke(context));
+            setterArg.Assign(Tools.RaiseIfNotExist(second.Invoke(context)));
             var otb = context.thisBind;
             var outb = context.updateThisBind;
             try

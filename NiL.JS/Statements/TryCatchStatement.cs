@@ -5,6 +5,8 @@ namespace NiL.JS.Statements
 {
     internal class TryCatchStatement : Statement, IOptimizable
     {
+        private static JSObject tempContainer = new JSObject();
+
         private Statement body;
         private Statement catchBody;
         private Statement finallyBody;
@@ -73,9 +75,15 @@ namespace NiL.JS.Statements
             {
                 if (catchBody != null)
                 {
-                    var eo = context.Define(exptName);
-                    eo.Assign(e.Avatar);
+                    var cvar = context.GetField(exptName);
+                    tempContainer.Assign(cvar);
+                    tempContainer.attributes = cvar.attributes;
+                    cvar.Assign(e.Avatar);
+                    cvar.attributes = ObjectAttributes.DontDelete;
                     catchBody.Invoke(context);
+                    cvar.Assign(tempContainer);
+                    cvar.attributes = tempContainer.attributes;
+                    tempContainer.attributes = ObjectAttributes.None;
                 }
                 else except = e;
             }
@@ -83,8 +91,15 @@ namespace NiL.JS.Statements
             {
                 if (catchBody != null)
                 {
-                    context.Define(exptName).Assign(TypeProxy.Proxy(e));
+                    var cvar = context.GetField(exptName);
+                    tempContainer.Assign(cvar);
+                    tempContainer.attributes = cvar.attributes;
+                    cvar.Assign(TypeProxy.Proxy(e));
+                    cvar.attributes = ObjectAttributes.DontDelete;
                     catchBody.Invoke(context);
+                    cvar.Assign(tempContainer);
+                    cvar.attributes = tempContainer.attributes;
+                    tempContainer.attributes = ObjectAttributes.None;
                 }
                 else except = e;
             }
@@ -120,8 +135,8 @@ namespace NiL.JS.Statements
         public bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> varibles)
         {
             Parser.Optimize(ref body, 1, varibles);
-            Parser.Optimize(ref catchBody, 0, new System.Collections.Generic.Dictionary<string,Statement>());
-            Parser.Optimize(ref finallyBody, 0, new System.Collections.Generic.Dictionary<string,Statement>());
+            Parser.Optimize(ref catchBody, 1, varibles);
+            Parser.Optimize(ref finallyBody, 1, varibles);
             return false;
         }
     }

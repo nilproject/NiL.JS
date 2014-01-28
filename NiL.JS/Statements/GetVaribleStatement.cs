@@ -12,13 +12,21 @@ namespace NiL.JS.Statements
 
         private static System.Collections.Generic.Dictionary<string, GetVaribleStatement> cache = new System.Collections.Generic.Dictionary<string, GetVaribleStatement>();
 
+        internal static void ResetCache(string name)
+        {
+            GetVaribleStatement gvs = null;
+            if (cache.TryGetValue(name, out gvs))
+                gvs.cacheRes = null;
+        }
+
         public GetVaribleStatement(string name)
         {
             int i = 0;
             if ((name != "this") && !Parser.ValidateName(name, ref i, false, true))
                 throw new ArgumentException("Invalid varible name");
             this.varibleName = name;
-            cache[name] = this;
+            if (!cache.ContainsKey(name))
+                cache[name] = this;
         }
 
         public override JSObject Invoke(Context context)

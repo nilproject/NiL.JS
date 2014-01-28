@@ -158,7 +158,7 @@ namespace NiL.JS.Core.BaseTypes
         public override string ToString()
         {
             var res = "function " + Name + "(";
-            if (arguments != null)
+            if (argumentsNames != null)
                 for (int i = 0; i < argumentsNames.Length; )
                     res += argumentsNames[i] + (++i < argumentsNames.Length ? "," : "");
             res += ")" + (body is Statements.EmptyStatement ? "{ }" : ((object)body ?? "{ [native code] }").ToString());

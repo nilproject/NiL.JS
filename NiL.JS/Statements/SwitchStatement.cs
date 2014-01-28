@@ -103,7 +103,7 @@ namespace NiL.JS.Statements
         {
             if (functions != null)
                 throw new InvalidOperationException();
-            int i = cases[0].index;
+            int i = cases[0] != null ? cases[0].index : length + 1;
             for (int j = 1; j < cases.Length; j++)
             {
                 if ((bool)cases[j].statement.Invoke(context))

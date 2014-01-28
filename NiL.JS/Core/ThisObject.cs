@@ -11,7 +11,7 @@ namespace NiL.JS.Core
         static ThisObject()
         {
             thisProto = BaseTypes.BaseObject.Prototype.Clone() as JSObject;
-            thisProto = new JSObject(false) { ValueType = JSObjectType.Object, prototype = thisProto };
+            thisProto = new JSObject(false) { ValueType = JSObjectType.Object, oValue = new object(), prototype = thisProto };
             thisProto.attributes |= ObjectAttributes.ReadOnly | ObjectAttributes.Immutable | ObjectAttributes.DontEnum | ObjectAttributes.DontDelete;
         }
 
@@ -20,8 +20,9 @@ namespace NiL.JS.Core
         public ThisObject(Context context)
             : base(false)
         {
-            ValueType = JSObjectType.Object;
             this.context = context;
+            fields = context.fields;
+            ValueType = JSObjectType.Object;
             oValue = this;
             prototype = thisProto;
             assignCallback = () => { throw new InvalidOperationException("Invalid left-hand side in assignment"); };

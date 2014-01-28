@@ -77,9 +77,9 @@ namespace NiL.JS.Statements
             JSObject res = JSObject.undefined;
             for (int i = length; i >= 0; i--)
             {
-                res = body[i].Invoke(context);
+                res = Tools.RaiseIfNotExist(body[i].Invoke(context)) ?? res;
                 if (context.abort != AbortType.None)
-                    return context.abortInfo;
+                    return context.abort == AbortType.Return ? context.abortInfo : res;
             }
             return res;
         }
@@ -88,7 +88,7 @@ namespace NiL.JS.Statements
         {
             var vars = new Dictionary<string, Statement>();
             for (int i = 0; i < body.Length; i++)
-                Parser.Optimize(ref body[i], 1, vars);
+                Parser.Optimize(ref body[i], depth < 0 ? 2 : 1, vars);
             for (int i = 0; i < functions.Length; i++)
             {
                 Statement stat = functions[i];

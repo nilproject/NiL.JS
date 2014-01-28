@@ -51,7 +51,7 @@ namespace NiL.JS.Core
                 var cb = CodeBlock.Parse(new ParsingState(c), ref i).Statement;
                 if (i != c.Length)
                     throw new System.ArgumentException("Invalid char");
-                Parser.Optimize(ref cb, null);
+                Parser.Optimize(ref cb, -1, null);
                 var res = cb.Invoke(context);
                 return res;
             }));
@@ -202,6 +202,7 @@ namespace NiL.JS.Core
                 res = new JSObject();
                 res.attributes |= ObjectAttributes.DontDelete;
                 fields[name] = res;
+                GetVaribleStatement.ResetCache(name);
             }
             return res;
         }
@@ -222,6 +223,16 @@ namespace NiL.JS.Core
             abortInfo = JSObject.undefined;
         }
 
+        /// <summary>
+        /// Получает переменную, определённую в этом или одном из родительских объектов. 
+        /// Если переменная не существовала, вернётся объект, после присваивания значения которому,
+        /// будет создана переменная в базовом контексте выполнения (не в GlobalContext).
+        /// </summary>
+        /// <remarks>Делать fast версию этого метода не имеет смысла. 
+        /// Если переменная была получена с целью прочитать значение, 
+        /// то будет брошено исключение, трудоёмкость которого несравнимо больше трудоёмкости создания объекта.</remarks>
+        /// <param name="name"></param>
+        /// <returns></returns>
         public virtual JSObject GetField(string name)
         {
             JSObject res = null;

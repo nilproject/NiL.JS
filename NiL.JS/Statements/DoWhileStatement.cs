@@ -40,7 +40,7 @@ namespace NiL.JS.Statements
             if (code[i] != '(')
                 throw new ArgumentException("code (" + i + ")");
             do i++; while (char.IsWhiteSpace(code[i]));
-            var condition = Parser.Parse(state, ref i, 0);
+            var condition = Parser.Parse(state, ref i, 1);
             while (char.IsWhiteSpace(code[i])) i++;
             if (code[i] != ')')
                 throw new ArgumentException("code (" + i + ")");
@@ -61,9 +61,10 @@ namespace NiL.JS.Statements
 
         public override JSObject Invoke(Context context)
         {
+            JSObject res = null;
             do
             {
-                body.Invoke(context);
+                res = body.Invoke(context);
                 if (context.abort != AbortType.None)
                 {
                     bool _break = (context.abort > AbortType.Continue) || ((context.abortInfo != null) && (labels.IndexOf(context.abortInfo.oValue as string) == -1));
@@ -73,11 +74,11 @@ namespace NiL.JS.Statements
                         context.abortInfo = null;
                     }
                     if (_break)
-                        return null;
+                        return res;
                 }
             }
             while ((bool)condition.Invoke(context));
-            return null;
+            return res;
         }
 
         public bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> varibles)
