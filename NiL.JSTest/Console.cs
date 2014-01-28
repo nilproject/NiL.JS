@@ -10,11 +10,7 @@ namespace NiL.JSTest.Modules
 
         public void log(JSObject[] args)
         {
-            var r = args[0].Value;
-            if (r is double)
-                System.Console.WriteLine((r as double?).Value.ToString(System.Globalization.CultureInfo.InvariantCulture));
-            else
-                System.Console.WriteLine(r);
+            System.Console.WriteLine(args[0]);
         }
     }
 }

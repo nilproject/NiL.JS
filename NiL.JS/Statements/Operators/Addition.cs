@@ -43,7 +43,7 @@ namespace NiL.JS.Statements.Operators
                         }
                         else if (temp.ValueType == JSObjectType.String)
                         {
-                            tempResult.oValue = (type == JSObjectType.Bool ? (dr != 0 ? "true" : "false") : dr.ToString()) + (string)temp.oValue;
+                            tempResult.oValue = (type == JSObjectType.Bool ? (dr != 0 ? "true" : "false") : Tools.DoubleToString(dr)) + (string)temp.oValue;
                             tempResult.ValueType = JSObjectType.String;
                             return tempResult;
                         }
@@ -88,7 +88,7 @@ namespace NiL.JS.Statements.Operators
                                 }
                             case JSObjectType.String:
                                 {
-                                    tempResult.oValue = dr.ToString() + (string)temp.oValue;
+                                    tempResult.oValue = Tools.DoubleToString(dr) + (string)temp.oValue;
                                     tempResult.ValueType = JSObjectType.String;
                                     return tempResult;
                                 }
@@ -127,7 +127,7 @@ namespace NiL.JS.Statements.Operators
                                 }
                             case JSObjectType.Double:
                                 {
-                                    val += temp.dValue;
+                                    val += Tools.DoubleToString(temp.dValue);
                                     break;
                                 }
                             case JSObjectType.Bool:

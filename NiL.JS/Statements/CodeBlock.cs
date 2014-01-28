@@ -88,7 +88,7 @@ namespace NiL.JS.Statements
         {
             var vars = new Dictionary<string, Statement>();
             for (int i = 0; i < body.Length; i++)
-                Parser.Optimize(ref body[i], depth < 0 ? 2 : 1, vars);
+                Parser.Optimize(ref body[i], depth < 0 ? 2 : Math.Max(1, depth), vars);
             for (int i = 0; i < functions.Length; i++)
             {
                 Statement stat = functions[i];

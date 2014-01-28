@@ -2,9 +2,11 @@
 using NiL.JS.Statements;
 using NiL.JS.Core.BaseTypes;
 using System;
+using System.Threading;
 
 namespace NiL.JS
 {
+    [Serializable]
     public sealed class Script
     {
         private Statement root;
@@ -38,8 +40,8 @@ namespace NiL.JS
                 finally
                 {
                     NiL.JS.Core.Context.currentRootContext = null;
+                    System.Runtime.GCSettings.LatencyMode = lm;
                 }
-                System.Runtime.GCSettings.LatencyMode = lm;
             }
         }
     }

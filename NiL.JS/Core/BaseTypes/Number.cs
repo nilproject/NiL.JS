@@ -265,7 +265,7 @@ namespace NiL.JS.Core.BaseTypes
 
         public override string ToString()
         {
-            return ValueType == JSObjectType.Int ? iValue.ToString() : Tools.DoubleToString(dValue);
+            return ValueType == JSObjectType.Int ? iValue.ToString(System.Globalization.CultureInfo.InvariantCulture) : Tools.DoubleToString(dValue);
         }
 
         public override int GetHashCode()
