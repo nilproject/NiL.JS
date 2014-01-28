@@ -173,21 +173,21 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * 3 * i; }
 
         private static void testEx()
         {
-            Context.GlobalContext.AttachModule(typeof(System.Console));
-            var s = new Script("console.log('')");
+            Context.GlobalContext.AttachModule(typeof(TestClass));
+            var s = new Script(
+@"TestClass.smethod();
+var t = TestClass();
+t.dmethod(1);");
             s.Invoke();
         }
 
         static void Main(string[] args)
         {
             NiL.JS.Core.Context.GlobalContext.GetField("platform").Assign("NiL.JS");
-            //runFile(@"tests.js");
-            //runFile(@"C:\Users\Дмитрий\Documents\Projects\NiL.JS\NiL.JSTest\tests\Conformance\08_Types\8.6_The_Object_Type\8.6.2_Internal_Properties_and_Methods\S8.6.2_A5_T1.js");
             //benchmark();
-            //featureSupportTest();
             //runFile(@"ftest.js");
-            sputnicTests();
-            //testEx();
+            //sputnicTests();
+            testEx();
 
             GC.Collect();
             GC.WaitForPendingFinalizers();
