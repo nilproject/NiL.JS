@@ -48,5 +48,12 @@ namespace NiL.JS.Statements.Operators
                 default: throw new NotImplementedException();
             }
         }
+
+        public override bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> vars)
+        {
+            if (first is IOptimizable)
+                Parser.Optimize(ref first, depth + 1, vars);
+            return false;
+        }
     }
 }

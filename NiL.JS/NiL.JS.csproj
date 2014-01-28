@@ -178,6 +178,7 @@
     <Compile Include="Statements\Operators\Decriment.cs" />
     <Compile Include="Statements\Operators\More.cs" />
     <Compile Include="Statements\Operators\LessOrEqual.cs" />
+    <Compile Include="Statements\Operators\Substract.cs" />
     <Compile Include="Statements\Operators\TypeOf.cs" />
     <Compile Include="Statements\Operators\StrictNotEqual.cs" />
     <Compile Include="Statements\ThrowStatement.cs" />

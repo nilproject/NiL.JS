@@ -14,7 +14,9 @@ namespace NiL.JS.Statements.Operators
 
         public override JSObject Invoke(Context context)
         {
-            var val = Tools.RaiseIfNotExist((first ?? second).Invoke(context));
+            var val = (first ?? second).Invoke(context);
+            if (val.ValueType == JSObjectType.NotExist)
+                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible not defined.")));
             if (val.assignCallback != null)
                 val.assignCallback();
             if ((val.attributes & ObjectAttributes.ReadOnly) != 0)
@@ -67,7 +69,13 @@ namespace NiL.JS.Statements.Operators
             {
                 case JSObjectType.Int:
                     {
-                        val.iValue++;
+                        if ((val.iValue & 0x80000000) != 0)
+                        {
+                            val.dValue = val.iValue + 1.0;
+                            val.ValueType = JSObjectType.Double;
+                        }
+                        else
+                            val.iValue++;
                         break;
                     }
                 case JSObjectType.Double:

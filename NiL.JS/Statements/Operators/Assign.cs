@@ -25,8 +25,7 @@ namespace NiL.JS.Statements.Operators
         }
 
         public override JSObject Invoke(Context context)
-        {
-            setterArg.Assign(Tools.RaiseIfNotExist(second.Invoke(context)));
+        {            
             var otb = context.thisBind;
             var outb = context.updateThisBind;
             try
@@ -35,13 +34,20 @@ namespace NiL.JS.Statements.Operators
                 var field = first.InvokeForAssing(context);
                 if (field.ValueType == JSObjectType.Property)
                 {
+                    setterArg.Assign(Tools.RaiseIfNotExist(second.Invoke(context)));
                     var setter = (field.oValue as NiL.JS.Core.BaseTypes.Function[])[0];
                     if (setter != null)
                         setter.Invoke(context, setterArgs);
+                    return setterArg;
                 }
                 else
-                    field.Assign(setterArg);
-                return setterArg;
+                {
+                    var t = second.Invoke(context);
+                    if (t.ValueType == JSObjectType.NotExist)
+                        throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible is not defined.")));
+                    field.Assign(t);
+                    return t;
+                }
             }
             finally
             {

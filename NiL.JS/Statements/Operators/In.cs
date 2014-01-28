@@ -32,5 +32,14 @@ namespace NiL.JS.Statements.Operators
                 fn.assignCallback = oassc;
             }
         }
+
+        public override bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> vars)
+        {
+            if (first is IOptimizable)
+                Parser.Optimize(ref first, depth + 1, vars);
+            if (second is IOptimizable)
+                Parser.Optimize(ref second, depth + 1, vars);
+            return false;
+        }
     }
 }

@@ -165,7 +165,7 @@ namespace NiL.JS.Statements
                         }
                     case OperationType.Substract:
                         {
-                            del = OpSubstract;
+                            fastImpl = new Operators.Substract(first, second);
                             break;
                         }
                     case OperationType.StrictEqual:
@@ -1032,14 +1032,6 @@ namespace NiL.JS.Statements
                 Message = "",
                 IsParsed = true
             };
-        }
-
-        private JSObject OpSubstract(Context context)
-        {
-            double left = Tools.JSObjectToDouble(first.Invoke(context));
-            tempResult.dValue = left - Tools.JSObjectToDouble(second.Invoke(context));
-            tempResult.ValueType = JSObjectType.Double;
-            return tempResult;
         }
 
         private JSObject OpAnd(Context context)

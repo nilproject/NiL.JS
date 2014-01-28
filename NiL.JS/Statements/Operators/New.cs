@@ -23,7 +23,7 @@ namespace NiL.JS.Statements.Operators
             }
         }
 
-        public readonly static Call CallInstance = new Call(new ThisSetStat(), new ImmidateValueStatement(null));
+        public readonly Call CallInstance = new Call(new ThisSetStat(), new ImmidateValueStatement(null));
 
         public New(Statement first, Statement second)
             : base(first, second)
@@ -42,7 +42,7 @@ namespace NiL.JS.Statements.Operators
             if (second != null)
                 (CallInstance.Second as ImmidateValueStatement).Value = second.Invoke(context);
             else
-                (CallInstance.Second as ImmidateValueStatement).Value = new JSObject[0];
+                (CallInstance.Second as ImmidateValueStatement).Value = new Statement[0];
             JSObject _this = new JSObject() { ValueType = JSObjectType.Object };
             if (temp.oValue is TypeProxyConstructor)
                 _this.prototype = temp.GetField("prototype", true, false);

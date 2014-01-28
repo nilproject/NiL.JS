@@ -66,7 +66,13 @@ namespace NiL.JS.Statements.Operators
             {
                 case JSObjectType.Int:
                     {
-                        val.iValue--;
+                        if ((val.iValue & 0x80000000) != 0)
+                        {
+                            val.dValue = val.iValue - 1.0;
+                            val.ValueType = JSObjectType.Double;
+                        }
+                        else
+                            val.iValue--;
                         break;
                     }
                 case JSObjectType.Double:

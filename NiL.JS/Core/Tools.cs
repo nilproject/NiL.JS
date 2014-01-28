@@ -11,27 +11,29 @@ namespace NiL.JS.Core
             '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 
             'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z' };
 
+#if INLINE
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+#endif
         public static double JSObjectToDouble(JSObject arg)
         {
             if (arg == null)
                 return double.NaN;
-            var r = arg;
-            switch (r.ValueType)
+            switch (arg.ValueType)
             {
                 case JSObjectType.Bool:
                 case JSObjectType.Int:
                     {
-                        return r.iValue;
+                        return arg.iValue;
                     }
                 case JSObjectType.Double:
                     {
-                        return r.dValue;
+                        return arg.dValue;
                     }
                 case JSObjectType.String:
                     {
                         double x = double.NaN;
                         int ix = 0;
-                        string s = (r.oValue as string).Trim();
+                        string s = (arg.oValue as string).Trim();
                         if (Tools.ParseNumber(s, ref ix, true, out x) && ix < s.Length)
                             return double.NaN;
                         return x;
@@ -40,10 +42,10 @@ namespace NiL.JS.Core
                 case JSObjectType.Function:
                 case JSObjectType.Object:
                     {
-                        if (r.oValue == null)
+                        if (arg.oValue == null)
                             return 0;
-                        r = r.ToPrimitiveValue_Value_String();
-                        return JSObjectToDouble(r);
+                        arg = arg.ToPrimitiveValue_Value_String();
+                        return JSObjectToDouble(arg);
                     }
                 case JSObjectType.Undefined:
                 case JSObjectType.NotExistInObject:
@@ -403,7 +405,7 @@ namespace NiL.JS.Core
         {
             return (c == '\u000A') || (c == '\u000D') || (c == '\u2028') || (c == '\u2029');
         }
-        
+
         internal static void skipComment(string code, ref int index, bool skipSpaces)
         {
             bool work;
@@ -469,7 +471,7 @@ namespace NiL.JS.Core
         internal static JSObject RaiseIfNotExist(JSObject obj)
         {
             if (obj != null && obj.ValueType == JSObjectType.NotExist)
-                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible is not defined.")));
+                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible is not defined.")));
             return obj;
         }
     }

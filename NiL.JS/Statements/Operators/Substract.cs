@@ -3,9 +3,9 @@ using System;
 
 namespace NiL.JS.Statements.Operators
 {
-    internal class Division : Operator
+    internal class Substract : Operator
     {
-        public Division(Statement first, Statement second)
+        public Substract(Statement first, Statement second)
             : base(first, second)
         {
 
@@ -13,7 +13,7 @@ namespace NiL.JS.Statements.Operators
 
         public override JSObject Invoke(Context context)
         {
-            tempResult.dValue = Tools.JSObjectToDouble(first.Invoke(context)) / Tools.JSObjectToDouble(second.Invoke(context));
+            tempResult.dValue = Tools.JSObjectToDouble(first.Invoke(context)) - Tools.JSObjectToDouble(second.Invoke(context));
             tempResult.ValueType = JSObjectType.Double;
             return tempResult;
         }

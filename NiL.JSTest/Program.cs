@@ -11,12 +11,12 @@ namespace NiL.JSTest
     {
         private static void benchmark()
         {
-            const int iterations = 500000000;
+            const int iterations = 100000000;
             Console.WriteLine("iterations count: " + iterations);
 
             long init = DateTime.Now.Ticks;
             Script s = new Script(@"
-var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * 3 * i; }
+var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * i + 3 - 2 / 2; }
 ");
             init = DateTime.Now.Ticks - init;
             long start = DateTime.Now.Ticks;
@@ -24,12 +24,12 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * 3 * i; }
             long l = (DateTime.Now.Ticks - start);
             Console.WriteLine("script: " + (l / 10000).ToString());
             Console.WriteLine("initialization: " + (init / 10000).ToString());
-            var a = 1;
+            var a = 1.0;
             long nativeStart = DateTime.Now.Ticks;
             for (var i = 0; i < iterations; i++)
-                a = a * 3 * i;
+                a = a * i + 3 - 2 / 2;
             long nativeL = (DateTime.Now.Ticks - nativeStart);
-            Console.WriteLine(a);
+            Console.WriteLine(a == Tools.JSObjectToDouble(s.Context.GetField("a")) ? "valid" : "invalid");
             Console.WriteLine("native: " + (nativeL / 10000).ToString());
             Console.WriteLine("rate: " + ((double)l / (double)nativeL).ToString());
         }
@@ -186,8 +186,8 @@ t.dmethod(1);");
             NiL.JS.Core.Context.GlobalContext.GetField("platform").Assign("NiL.JS");
             //benchmark();
             //runFile(@"ftest.js");
-            //sputnicTests();
-            testEx();
+            sputnicTests();
+            //testEx();
 
             GC.Collect();
             GC.WaitForPendingFinalizers();

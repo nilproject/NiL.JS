@@ -1,1 +1,24 @@
-﻿console.log(!!(new Boolean(false)))
+﻿var str = "";
+var strObj = new String;
+
+////////////////////////////////////////////////////////////
+// CHECK#1
+if (str.constructor !== strObj.constructor) {
+    $ERROR('#1: "".constructor === new String.constructor');
+}
+//
+/////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////
+// CHECK#2
+if (str != strObj) {
+    $ERROR('#2: values of str=""; and strObj=new String(""); are equal');
+}
+//
+/////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////
+// CHECK#3
+if (str === strObj) {
+    $ERROR('#3: objects of str=""; and strObj=new String(""); are different');
+}

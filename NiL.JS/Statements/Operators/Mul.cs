@@ -13,8 +13,7 @@ namespace NiL.JS.Statements.Operators
 
         public override JSObject Invoke(Context context)
         {
-            double left = Tools.JSObjectToDouble(first.Invoke(context));
-            tempResult.dValue = left * Tools.JSObjectToDouble(second.Invoke(context));
+            tempResult.dValue = Tools.JSObjectToDouble(first.Invoke(context)) * Tools.JSObjectToDouble(second.Invoke(context));
             tempResult.ValueType = JSObjectType.Double;
             return tempResult;
         }

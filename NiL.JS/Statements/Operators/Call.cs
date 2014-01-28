@@ -6,6 +6,8 @@ namespace NiL.JS.Statements.Operators
 {
     internal class Call : Operator
     {
+        private Statement[] args;
+
         public Call(Statement first, Statement second)
             : base(first, second)
         {
@@ -35,7 +37,6 @@ namespace NiL.JS.Statements.Operators
                 context.updateThisBind = oldutb;
             }
 
-            var sps = second.Invoke(context).oValue as Statement[];
             JSObject arguments = new JSObject(true)
                 {
                     ValueType = JSObjectType.Object,
@@ -45,13 +46,15 @@ namespace NiL.JS.Statements.Operators
                 };
             var field = arguments.GetField("length", false, true);
             field.ValueType = JSObjectType.Int;
-            field.iValue = sps == null ? 0 : sps.Length;
+            if (args == null)
+                args = second.Invoke(null).oValue as Statement[];
+            field.iValue = args.Length;
             field.Protect();
             field.attributes = ObjectAttributes.DontEnum;
             for (int i = 0; i < field.iValue; i++)
             {
                 var a = arguments.GetField(i.ToString(), false, false);
-                a.Assign(Tools.RaiseIfNotExist(sps[i].Invoke(context)));
+                a.Assign(Tools.RaiseIfNotExist(args[i].Invoke(context)));
             }
             field = arguments.GetField("callee", false, true);
             field.ValueType = JSObjectType.Function;
@@ -67,6 +70,16 @@ namespace NiL.JS.Statements.Operators
         public override string ToString()
         {
             return first + "(" + second + ")";
+        }
+
+        public override bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> vars)
+        {
+            if (first is IOptimizable)
+                Parser.Optimize(ref first, depth + 1, vars);
+            if (second is IOptimizable)
+                Parser.Optimize(ref second, depth + 1, vars);
+            args = second.Invoke(null).oValue as Statement[];
+            return false;
         }
     }
 }
