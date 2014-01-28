@@ -122,18 +122,13 @@ namespace NiL.JS.Core
                 {
                     var v = obj.ValueType == JSObjectType.Object && obj.oValue != null && obj.oValue.GetType() == typeof(object) ? obj : obj.Value;
                     if (v is Core.BaseTypes.Array)
-                    {
-                        var arr = v as Core.BaseTypes.Array;
-                        res[i] = convertArray(arr);
-                    }
+                        res[i] = convertArray(v as Core.BaseTypes.Array);
                     else if (v is TypeProxy)
-                    {
                         res[i] = (v as TypeProxy).hostedType;
-                    }
+                    else if (v is TypeProxyConstructor)
+                        res[i] = (v as TypeProxyConstructor).proxy.hostedType;
                     else
-                    {
                         res[i] = v;
-                    }
                 }
             }
             return res;
