@@ -95,8 +95,8 @@ namespace NiL.JS.Statements
                 functions[i] = stat as FunctionStatement;
             }
 
-            for (int i = functions.Length - 1; i >= 0; i--)
-                vars.Remove((functions[i] as FunctionStatement).Name);
+            //for (int i = functions.Length - 1; i >= 0; i--)
+            //    vars.Remove((functions[i] as FunctionStatement).Name);
 
             if (depth > 0)
             {
@@ -119,6 +119,7 @@ namespace NiL.JS.Statements
                     else
                         cvars.Add(v.Key);
                 }
+                funcs.Reverse();
                 this.functions = funcs.ToArray();
                 this.varibles = cvars.ToArray();
             }
