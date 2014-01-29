@@ -119,6 +119,9 @@ namespace NiL.JS.Core.BaseTypes
                     };
                 }
                 internalContext.thisBind = @this;
+                internalContext.Assign("arguments", args);
+                if (Name != null && Name != "")
+                    internalContext.Define(Name).Assign(this);
                 int i = 0;
                 int min = System.Math.Min(args == null ? 0 : args.GetField("length", true, false).iValue, argumentsNames.Length);
                 for (; i < min; i++)
@@ -126,7 +129,6 @@ namespace NiL.JS.Core.BaseTypes
                 for (; i < argumentsNames.Length; i++)
                     internalContext.Define(argumentsNames[i]).Assign(null);
 
-                internalContext.Assign("arguments", args);
                 body.Invoke(internalContext);
                 return internalContext.abortInfo;
             }

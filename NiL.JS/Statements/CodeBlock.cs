@@ -72,7 +72,6 @@ namespace NiL.JS.Statements
                 var o = context.Define((functions[i] as FunctionStatement).Name);
                 o.assignCallback = null;
                 o.Assign(functions[i].Invoke(context));
-                o.assignCallback = JSObject.ErrorAssignCallback;
             }
             JSObject res = JSObject.undefined;
             for (int i = length; i >= 0; i--)
