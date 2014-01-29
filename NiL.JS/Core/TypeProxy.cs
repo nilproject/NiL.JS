@@ -221,10 +221,14 @@ namespace NiL.JS.Core
             else
             {
                 prototypes[type] = this;
-
-                var ictor = type.GetConstructor(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy, null, Type.EmptyTypes, null);
-                if (ictor != null)
-                    prototypeInstance = ictor.Invoke(null);
+                if (type.IsValueType)
+                    prototypeInstance = Activator.CreateInstance(type);
+                else
+                {
+                    var ictor = type.GetConstructor(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy, null, Type.EmptyTypes, null);
+                    if (ictor != null)
+                        prototypeInstance = ictor.Invoke(null);
+                }
 
                 ValueType = prototypeInstance is JSObject ? (JSObjectType)System.Math.Max((int)(prototypeInstance as JSObject).ValueType, (int)JSObjectType.Object) : JSObjectType.Object;
                 oValue = this;
