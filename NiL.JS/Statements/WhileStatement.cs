@@ -47,13 +47,12 @@ namespace NiL.JS.Statements
 
         public override JSObject Invoke(Context context)
         {
+            JSObject res = null;
             while ((bool)condition.Invoke(context))
             {
-
-                body.Invoke(context);
+                res = body.Invoke(context);
                 if (context.abort != AbortType.None)
                 {
-
                     bool _break = (context.abort > AbortType.Continue) || ((context.abortInfo != null) && (labels.IndexOf(context.abortInfo.oValue as string) == -1));
                     if (context.abort < AbortType.Return && ((context.abortInfo == null) || (labels.IndexOf(context.abortInfo.oValue as string) != -1)))
                     {
@@ -61,16 +60,17 @@ namespace NiL.JS.Statements
                         context.abortInfo = null;
                     }
                     if (_break)
-                        return null;
+                        return res;
                 }
             }
-            return null;
+            return res;
         }
 
         public bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> varibles)
         {
+            depth = Math.Max(1, depth);
+            Parser.Optimize(ref body, depth, varibles);
             Parser.Optimize(ref condition, 2, varibles);
-            Parser.Optimize(ref body, 1, varibles);
             return false;
         }
     }

@@ -74,13 +74,9 @@ namespace NiL.JS.Statements
         public override JSObject Invoke(Context context)
         {
             var s = Tools.RaiseIfNotExist(source.Invoke(context));
-            if (s.ValueType >= JSObjectType.Object && s.oValue == null)
-                throw new JSException(TypeProxy.Proxy(new TypeError("Can't enumerate properties of undefined.")));
             var v = varible.Invoke(context);
             while (s != null)
             {
-                if (s.ValueType <= JSObjectType.Undefined)
-                    throw new JSException(TypeProxy.Proxy(new TypeError("Can't access to property value of \"undefined\".")));
                 var keys = s.GetEnumerator();
                 for (; ; )
                 {
@@ -127,7 +123,7 @@ namespace NiL.JS.Statements
         {
             Parser.Optimize(ref varible, 1, varibles);
             Parser.Optimize(ref source, 1, varibles);
-            Parser.Optimize(ref body, 1, varibles);
+            Parser.Optimize(ref body, Math.Max(1, depth), varibles);
             if (varible is Operators.None)
             {
                 if ((varible as Operators.None).Second != null)

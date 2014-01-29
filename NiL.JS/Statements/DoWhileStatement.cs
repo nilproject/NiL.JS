@@ -85,7 +85,7 @@ namespace NiL.JS.Statements
         {
             depth = Math.Max(1, depth);
             Parser.Optimize(ref body, depth, varibles);
-            Parser.Optimize(ref condition, depth, varibles);
+            Parser.Optimize(ref condition, 2, varibles);
             return false;
         }
     }

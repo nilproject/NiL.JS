@@ -401,10 +401,13 @@ namespace NiL.JS.Core
         [Modules.Hidden]
         public virtual IEnumerator<string> GetEnumerator()
         {
-            if (ValueType <= JSObjectType.Undefined)
+            if (ValueType < JSObjectType.Undefined)
                 throw new JSException(TypeProxy.Proxy(new TypeError("Can't enumerate properties of undefined.")));
-            if (ValueType >= JSObjectType.Object && oValue is JSObject)
-                return (oValue as JSObject).GetEnumerator();
+            if (ValueType >= JSObjectType.Object)
+            {
+                if (oValue is JSObject)
+                    return (oValue as JSObject).GetEnumerator();
+            }
             if (fields == null)
                 return EmptyEnumerator;
             return fields.Keys.GetEnumerator();

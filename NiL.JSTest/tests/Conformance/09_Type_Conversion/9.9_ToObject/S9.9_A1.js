@@ -30,7 +30,8 @@ catch(e){
   }
 }
 
-// CHECK#3
+// CHECK#3 // invalid
+/*
 try{
   for(var y in undefined) y = 2;
   $ERROR('#3.1: for(var y in undefined) y = 2 must throw TypeError. Actual: y === ' + (y));
@@ -39,7 +40,7 @@ catch(e){
   if((e instanceof TypeError) !== true){
     $ERROR('#3.2: for(var y in undefined) y = 2 must throw TypeError. Actual: ' + (e));
   }
-}
+}*/
 
 // CHECK#4
 try{

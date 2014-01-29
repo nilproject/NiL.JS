@@ -87,11 +87,12 @@ namespace NiL.JS.Statements
             };
         }
 
-        private void impl0(Context context)
+        private JSObject impl0(Context context)
         {
+            JSObject res = JSObject.undefined;
             for (; ; )
             {
-                body.Invoke(context);
+                res = body.Invoke(context) ?? res;
                 if (context.abort != AbortType.None)
                 {
                     bool _break = (context.abort > AbortType.Continue) || ((context.abortInfo != null) && (labels.IndexOf(context.abortInfo.oValue as string) == -1));
@@ -101,16 +102,17 @@ namespace NiL.JS.Statements
                         context.abortInfo = null;
                     }
                     if (_break)
-                        return;
+                        return res;
                 }
             }
         }
 
-        private void impl1(Context context)
+        private JSObject impl1(Context context)
         {
+            JSObject res = JSObject.undefined;
             for (; ; )
             {
-                body.Invoke(context);
+                res = body.Invoke(context) ?? res;
                 if (context.abort != AbortType.None)
                 {
                     bool _break = (context.abort > AbortType.Continue) || ((context.abortInfo != null) && (labels.IndexOf(context.abortInfo.oValue as string) == -1));
@@ -120,17 +122,18 @@ namespace NiL.JS.Statements
                         context.abortInfo = null;
                     }
                     if (_break)
-                        return;
+                        return res;
                 }
                 post.Invoke(context);
             }
         }
 
-        private void impl2(Context context)
+        private JSObject impl2(Context context)
         {
+            JSObject res = JSObject.undefined;
             while ((bool)condition.Invoke(context))
             {
-                body.Invoke(context);
+                res = body.Invoke(context) ?? res;
                 if (context.abort != AbortType.None)
                 {
                     bool _break = (context.abort > AbortType.Continue) || ((context.abortInfo != null) && (labels.IndexOf(context.abortInfo.oValue as string) == -1));
@@ -140,16 +143,18 @@ namespace NiL.JS.Statements
                         context.abortInfo = null;
                     }
                     if (_break)
-                        return;
+                        return res;
                 }
             }
+            return res;
         }
 
-        private void impl3(Context context)
+        private JSObject impl3(Context context)
         {
+            JSObject res = JSObject.undefined;
             while ((bool)condition.Invoke(context))
             {
-                body.Invoke(context);
+                res = body.Invoke(context) ?? res;
                 if (context.abort != AbortType.None)
                 {
                     bool _break = (context.abort > AbortType.Continue) || ((context.abortInfo != null) && (labels.IndexOf(context.abortInfo.oValue as string) == -1));
@@ -159,16 +164,18 @@ namespace NiL.JS.Statements
                         context.abortInfo = null;
                     }
                     if (_break)
-                        return;
+                        return res;
                 }
                 post.Invoke(context);
             }
+            return res;
         }
 
-        private void impl4(Context context)
+        private JSObject impl4(Context context)
         {
             while ((bool)condition.Invoke(context))
                 post.Invoke(context);
+            return JSObject.undefined;
         }
 
         public override JSObject Invoke(Context context)
@@ -176,16 +183,15 @@ namespace NiL.JS.Statements
             if (init != null)
                 init.Invoke(context);
             if (implId == 0)
-                impl0(context);
+                return impl0(context);
             else if (implId == 1)
-                impl1(context);
+                return impl1(context);
             else if (implId == 2)
-                impl2(context);
+                return impl2(context);
             else if (implId == 3)
-                impl3(context);
+                return impl3(context);
             else
-                impl4(context);
-            return null;
+                return impl4(context);
         }
 
         public bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> varibles)
@@ -193,7 +199,7 @@ namespace NiL.JS.Statements
             Parser.Optimize(ref init, 1, varibles);
             Parser.Optimize(ref condition, 2, varibles);
             Parser.Optimize(ref post, 1, varibles);
-            Parser.Optimize(ref body, 1, varibles);
+            Parser.Optimize(ref body, Math.Max(1, depth), varibles);
             return false;
         }
     }

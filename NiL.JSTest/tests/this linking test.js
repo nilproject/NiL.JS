@@ -1,7 +1,7 @@
 ﻿var x = 1;
 function f1() {
     if (this.x != 1) {
-        $ERROR("this linking error.");
+        $ERROR("#1. this linking error.");
     }
 }
 
@@ -12,3 +12,11 @@ var o = {
     }
 };
 o.f();
+
+function (a) {
+    if (a != this)
+        console.log("#2.");
+} (this)
+
+if (function () { return this } () != this)
+    console.log("#3.");
