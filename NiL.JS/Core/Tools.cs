@@ -292,8 +292,8 @@ namespace NiL.JS.Core
                 int starti = i;
                 while (i < code.Length)
                 {
-                    var sign = ((code[i++] % 97 % 65 + 10) % 58);
-                    if (sign >= radix)
+                    var sign = ((code[i] % 'a' % 'A' + 10) % ('0' + 10));
+                    if (sign >= radix || (NumChars[sign] != code[i] && (NumChars[sign] - ('a' - 'A')) != code[i]))
                     {
                         if (radix < 10 && i - starti > 1)
                         {
@@ -302,16 +302,14 @@ namespace NiL.JS.Core
                             radix = 10;
                         }
                         else
-                        {
-                            i--;
                             break;
-                        }
                     }
                     else
                     {
                         temp = temp * radix + sign;
                         res = true;
                     }
+                    i++;
                 }
                 if (!res)
                 {
