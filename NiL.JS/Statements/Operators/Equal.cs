@@ -72,7 +72,7 @@ namespace NiL.JS.Statements.Operators
                                     break;
                                 }
                             case JSObjectType.NotExist:
-                                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("varible not defined")));
+                                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible not defined.")));
                             default:
                                 throw new NotImplementedException();
                         }
@@ -131,7 +131,7 @@ namespace NiL.JS.Statements.Operators
                                     throw new NotImplementedException();
                                 }
                             case JSObjectType.NotExist:
-                                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("varible not defined")));
+                                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible not defined.")));
                             default:
                                 throw new NotImplementedException();
                         }
@@ -198,7 +198,7 @@ namespace NiL.JS.Statements.Operators
                                             }
                                         case JSObjectType.String:
                                             {
-                                                tempResult.iValue = string.Compare(left, temp.Value.ToString()) == 0 ? 1 : 0;
+                                                tempResult.iValue = string.Compare(left, temp.Value.ToString(), StringComparison.Ordinal) == 0 ? 1 : 0;
                                                 break;
                                             }
                                         case JSObjectType.Object:
@@ -207,7 +207,7 @@ namespace NiL.JS.Statements.Operators
                                                 break;
                                             }
                                         case JSObjectType.NotExist:
-                                            throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("varible not defined")));
+                                            throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible not defined.")));
                                         default: throw new NotImplementedException();
                                     }
                                     break;
@@ -219,7 +219,7 @@ namespace NiL.JS.Statements.Operators
                                     break;
                                 }
                             case JSObjectType.NotExist:
-                                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("varible not defined")));
+                                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible not defined.")));
                             default: throw new NotImplementedException();
                         }
                         break;
@@ -319,7 +319,7 @@ namespace NiL.JS.Statements.Operators
                         break;
                     }
                 case JSObjectType.NotExist:
-                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("varible not defined")));
+                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible not defined.")));
                 default: throw new NotImplementedException();
             }
             tempResult.ValueType = JSObjectType.Bool;

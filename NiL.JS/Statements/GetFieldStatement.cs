@@ -22,18 +22,6 @@ namespace NiL.JS.Statements
             fieldNameStatement = new ImmidateValueStatement(fieldName);
         }
 
-        public GetFieldStatement(JSObject obj, string fieldName)
-        {
-            objStatement = new ImmidateValueStatement(obj);
-            fieldNameStatement = new ImmidateValueStatement(fieldName);
-        }
-
-        public GetFieldStatement(JSObject obj, Statement fieldName)
-        {
-            objStatement = new ImmidateValueStatement(obj);
-            fieldNameStatement = fieldName;
-        }
-
         public override JSObject InvokeForAssing(Context context)
         {
             return impl(context, false);
@@ -49,10 +37,10 @@ namespace NiL.JS.Statements
         {
             var n = fieldNameStatement.Invoke(context);
             if (n.ValueType == JSObjectType.NotExist)
-                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("varible not defined")));
+                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible not defined.")));
             var th = objStatement.Invoke(context);
             if (th.ValueType == JSObjectType.NotExist)
-                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("varible not defined")));
+                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible not defined.")));
             if (context.updateThisBind)
                 context.thisBind = th;
             var res = th.GetField(n.ToPrimitiveValue_String_Value().Value.ToString(), false, false);

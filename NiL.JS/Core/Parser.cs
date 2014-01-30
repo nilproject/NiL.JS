@@ -320,7 +320,6 @@ namespace NiL.JS.Core
             int j = index;
             if (code[j] == '/')
             {
-                char fchar = code[j];
                 j++;
                 while ((j < code.Length) && (code[j] != '/'))
                 {

@@ -6,7 +6,7 @@ using System.Text;
 namespace NiL.JS.Core.Modules
 {
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Method | AttributeTargets.Field)]
-    public class HiddenAttribute : Attribute
+    public sealed class HiddenAttribute : Attribute
     {
     }
 }

@@ -14,8 +14,6 @@ namespace NiL.JS.Core
         private static readonly NiL.JS.Core.BaseTypes.Number number = new Number();
         private static readonly NiL.JS.Core.BaseTypes.Boolean boolean = new BaseTypes.Boolean();
 
-        private static JSObject toStringObj = new CallableField(toString);
-
         internal Type hostedType;
         private object prototypeInstance;
         private BindingFlags bindFlags = BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.NonPublic;
@@ -137,33 +135,28 @@ namespace NiL.JS.Core
             return res;
         }
 
-        private static JSObject toString(Context context, JSObject args)
+        public static JSObject Proxy(object value)
         {
-            return context.thisBind.Value.ToString();
-        }
-
-        public static JSObject Proxy(object obj)
-        {
-            if (obj == null)
+            if (value == null)
                 return JSObject.Null;
-            else if (obj is JSObject)
-                return obj as JSObject;
-            else if (obj is int)
-                return (int)obj;
-            else if (obj is long)
-                return (double)(long)obj;
-            else if (obj is float)
-                return (double)(float)obj;
-            else if (obj is double)
-                return (double)obj;
-            else if (obj is string)
-                return (string)obj;
-            else if (obj is bool)
-                return (bool)obj;
+            else if (value is JSObject)
+                return value as JSObject;
+            else if (value is int)
+                return (int)value;
+            else if (value is long)
+                return (double)(long)value;
+            else if (value is float)
+                return (double)(float)value;
+            else if (value is double)
+                return (double)value;
+            else if (value is string)
+                return (string)value;
+            else if (value is bool)
+                return (bool)value;
             else
             {
-                var type = obj.GetType();
-                var res = new JSObject() { oValue = obj, ValueType = JSObjectType.Object, prototype = GetPrototype(type) };
+                var type = value.GetType();
+                var res = new JSObject() { oValue = value, ValueType = JSObjectType.Object, prototype = GetPrototype(type) };
                 res.attributes |= res.prototype.attributes & ObjectAttributes.Immutable;
                 return res;
             }

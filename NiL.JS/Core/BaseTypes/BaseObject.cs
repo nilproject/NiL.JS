@@ -120,12 +120,12 @@ namespace NiL.JS.Core.BaseTypes
             {
                 case JSObjectType.Int:
                     {
-                        n = args.GetField("0", true, false).iValue.ToString();
+                        n = args.GetField("0", true, false).iValue.ToString(System.Globalization.CultureInfo.InvariantCulture);
                         break;
                     }
                 case JSObjectType.Double:
                     {
-                        n = args.GetField("0", true, false).dValue.ToString();
+                        n = Tools.DoubleToString(args.GetField("0", true, false).dValue);
                         break;
                     }
                 case JSObjectType.String:
@@ -141,7 +141,7 @@ namespace NiL.JS.Core.BaseTypes
                         if (args.ValueType == JSObjectType.Int)
                             n = args.GetField("0", true, false).iValue.ToString();
                         if (args.ValueType == JSObjectType.Double)
-                            n = args.GetField("0", true, false).dValue.ToString();
+                            n = Tools.DoubleToString(args.GetField("0", true, false).dValue);
                         break;
                     }
                 case JSObjectType.NotExist:
@@ -193,12 +193,12 @@ namespace NiL.JS.Core.BaseTypes
                     }
                 case JSObjectType.Int:
                     {
-                        n = name.GetField("0", true, false).iValue.ToString();
+                        n = name.GetField("0", true, false).iValue.ToString(System.Globalization.CultureInfo.InvariantCulture);
                         break;
                     }
                 case JSObjectType.Double:
                     {
-                        n = name.GetField("0", true, false).dValue.ToString();
+                        n = Tools.DoubleToString(name.GetField("0", true, false).dValue);
                         break;
                     }
                 case JSObjectType.String:
@@ -212,9 +212,9 @@ namespace NiL.JS.Core.BaseTypes
                         if (name.ValueType == JSObjectType.String)
                             n = name.GetField("0", true, false).oValue as string;
                         if (name.ValueType == JSObjectType.Int)
-                            n = name.GetField("0", true, false).iValue.ToString();
+                            n = name.GetField("0", true, false).iValue.ToString(System.Globalization.CultureInfo.InvariantCulture);
                         if (name.ValueType == JSObjectType.Double)
-                            n = name.GetField("0", true, false).dValue.ToString();
+                            n = Tools.DoubleToString(name.GetField("0", true, false).dValue);
                         break;
                     }
                 case JSObjectType.NotExist:

@@ -127,12 +127,12 @@ namespace NiL.JS.Core.BaseTypes
                 case JSObjectType.NotExist:
                     throw new InvalidOperationException("Varible not defined.");
                 default:
-                    return res.ToString();
+                    return Tools.DoubleToString(res);
             }
             string integerPart = ((int)res).ToString();
             if (integerPart.Length <= dgts)
-                return System.Math.Round(res, dgts - integerPart.Length).ToString();
-            var sres = ((int)res).ToString("e" + (dgts - 1));
+                return Tools.DoubleToString(System.Math.Round(res, dgts - integerPart.Length));
+            var sres = ((int)res).ToString("e" + (dgts - 1), System.Globalization.CultureInfo.InvariantCulture);
             return sres;
         }
 
@@ -191,9 +191,9 @@ namespace NiL.JS.Core.BaseTypes
                 case JSObjectType.NotExist:
                     throw new InvalidOperationException("Varible not defined.");
                 default:
-                    return res.ToString("e");
+                    return res.ToString("e", System.Globalization.CultureInfo.InvariantCulture);
             }
-            return res.ToString("e" + dgts);
+            return res.ToString("e" + dgts, System.Globalization.CultureInfo.InvariantCulture);
         }
 
         public JSObject toFixed(JSObject digits)
@@ -260,7 +260,7 @@ namespace NiL.JS.Core.BaseTypes
 
         public JSObject toLocaleString()
         {
-            return ValueType == JSObjectType.Int ? iValue.ToString(System.Threading.Thread.CurrentThread.CurrentUICulture) : dValue.ToString(System.Threading.Thread.CurrentThread.CurrentUICulture);
+            return ValueType == JSObjectType.Int ? iValue.ToString(System.Globalization.CultureInfo.CurrentCulture) : dValue.ToString(System.Globalization.CultureInfo.CurrentCulture);
         }
 
         public override string ToString()

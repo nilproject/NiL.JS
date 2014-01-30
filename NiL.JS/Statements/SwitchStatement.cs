@@ -17,17 +17,10 @@ namespace NiL.JS.Statements
         private readonly Statement[] body;
         private Case[] cases;
 
-        public SwitchStatement(Statement[] body, double fictive)
-        {
-            this.body = body;
-            length = body.Length - 1;
-        }
-
         public SwitchStatement(Statement[] body)
         {
             this.body = body;
             length = body.Length - 1;
-            functions = new FunctionStatement[0];
         }
 
         internal static ParseResult Parse(ParsingState state, ref int index)
@@ -91,7 +84,7 @@ namespace NiL.JS.Statements
             {
                 IsParsed = true,
                 Message = "",
-                Statement = new SwitchStatement(body.ToArray(), 0.0)
+                Statement = new SwitchStatement(body.ToArray())
                 {
                     functions = funcs.ToArray(),
                     cases = cases.ToArray(),

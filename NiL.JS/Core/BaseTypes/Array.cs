@@ -18,8 +18,8 @@ namespace NiL.JS.Core.BaseTypes
                 index = -1;
             }
             
-            public object Current { get { return index.ToString(); } }
-            string IEnumerator<string>.Current { get { return index.ToString(); } }
+            public object Current { get { return index.ToString(System.Globalization.CultureInfo.InvariantCulture); } }
+            string IEnumerator<string>.Current { get { return index.ToString(System.Globalization.CultureInfo.InvariantCulture); } }
 
             public bool MoveNext()
             {
@@ -442,7 +442,7 @@ namespace NiL.JS.Core.BaseTypes
                 });
             }
             else
-                data.Sort((JSObject l, JSObject r) => { return string.Compare(l.ToString(), r.ToString()); });
+                data.Sort((JSObject l, JSObject r) => { return string.Compare(l.ToString(), r.ToString(), StringComparison.Ordinal); });
             return this;
         }
 
@@ -507,7 +507,7 @@ namespace NiL.JS.Core.BaseTypes
             var stat = args.GetField("0", true, false).oValue as Function;
             for (int i = 0; i < count; i++)
             {
-                cbargs[0] = obj.GetField(i.ToString(), true, false);
+                cbargs[0] = obj.GetField(i.ToString(System.Globalization.CultureInfo.InvariantCulture), true, false);
                 cbargs[1].iValue = i;
                 if (alen > 1)
                     res &= (bool)stat.Invoke(args.GetField("1", true, false), cbargs);

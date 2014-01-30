@@ -18,16 +18,6 @@ namespace NiL.JS.Statements
             return Value;
         }
 
-        public JSObject Invoke()
-        {
-            return Value;
-        }
-
-        public JSObject Invoke(JSObject[] args)
-        {
-            return Value;
-        }
-
         public bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> varibles)
         {
             var vss = Value.Value as Statement[];

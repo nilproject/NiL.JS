@@ -2,6 +2,7 @@
 
 namespace NiL.JS.Core
 {
+    [Serializable]
     public class JSException : Exception
     {
         public JSObject Avatar { get; private set; }

@@ -120,7 +120,7 @@ namespace NiL.JS.Core.BaseTypes
                 }
                 internalContext.thisBind = @this;
                 internalContext.Assign("arguments", args);
-                if (Name != null && Name != "")
+                if (!string.IsNullOrEmpty(Name))
                     internalContext.Define(Name).Assign(this);
                 int i = 0;
                 int min = System.Math.Min(args == null ? 0 : args.GetField("length", true, false).iValue, argumentsNames.Length);

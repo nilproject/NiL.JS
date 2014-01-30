@@ -215,14 +215,6 @@ namespace NiL.JS.Core
             return value;
         }
 
-        internal void Clear()
-        {
-            if (fields != null)
-                fields.Clear();
-            abort = AbortType.None;
-            abortInfo = JSObject.undefined;
-        }
-
         /// <summary>
         /// Получает переменную, определённую в этом или одном из родительских объектов. 
         /// Если переменная не существовала, вернётся объект, после присваивания значения которому,

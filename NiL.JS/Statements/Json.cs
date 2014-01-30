@@ -76,7 +76,7 @@ namespace NiL.JS.Statements
                             if (int.TryParse(value, out n))
                                 flds.Add(n.ToString());
                             else if (double.TryParse(value, out d))
-                                flds.Add(d.ToString());
+                                flds.Add(Tools.DoubleToString(d));
                             else
                                 return new ParseResult();
                         }

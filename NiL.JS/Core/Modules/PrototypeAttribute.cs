@@ -5,7 +5,8 @@ using System.Text;
 
 namespace NiL.JS.Core.Modules
 {
-    public class PrototypeAttribute : Attribute
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Enum | AttributeTargets.Struct)]
+    public sealed class PrototypeAttribute : Attribute
     {
         public Type PrototypeType { get; private set; }
 

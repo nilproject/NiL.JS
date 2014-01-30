@@ -37,8 +37,6 @@ namespace NiL.JS.Core
 
     public class JSObject : IEnumerable<string>, IEnumerable, ICloneable
     {
-        private static readonly System.Reflection.MemberInfo DefaultGetter = typeof(JSObject).GetMethod("DefaultFieldGetter", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-
         [Modules.Hidden]
         internal static readonly Action ErrorAssignCallback = () => { throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Invalid left-hand side"))); };
         [Modules.Hidden]
@@ -383,7 +381,7 @@ namespace NiL.JS.Core
                 case JSObjectType.Bool:
                     return iValue != 0 ? "true" : "false";
                 case JSObjectType.Double:
-                    return dValue.ToString();
+                    return Tools.DoubleToString(dValue);
                 case JSObjectType.Int:
                     return iValue.ToString();
                 case JSObjectType.String:
@@ -476,7 +474,7 @@ namespace NiL.JS.Core
                 case JSObjectType.NotExistInObject:
                     return false;
                 case JSObjectType.NotExist:
-                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("varible not defined")));
+                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible not defined.")));
                 default:
                     throw new NotImplementedException();
             }

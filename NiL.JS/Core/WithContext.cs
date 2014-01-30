@@ -4,8 +4,6 @@ namespace NiL.JS.Core
 {
     internal class WithContext : Context
     {
-        private JSObject obj;
-
         public WithContext(JSObject obj, Context prototype)
             : base(prototype)
         {
@@ -15,7 +13,6 @@ namespace NiL.JS.Core
                 throw new JSException(TypeProxy.Proxy(new TypeError("Can't access to property value of \"undefined\".")));
             if (obj.ValueType >= JSObjectType.Object && obj.oValue == null)
                 throw new JSException(TypeProxy.Proxy(new TypeError("Can't access to property value of \"null\".")));
-            this.obj = obj;
             this.fields = obj.fields;
         }
 

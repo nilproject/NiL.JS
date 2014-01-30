@@ -51,7 +51,7 @@ namespace NiL.JS.Core
                 case JSObjectType.NotExistInObject:
                     return double.NaN;
                 case JSObjectType.NotExist:
-                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("varible not defined")));
+                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible not defined.")));
                 default:
                     throw new NotImplementedException();
             }
@@ -97,7 +97,7 @@ namespace NiL.JS.Core
                 case JSObjectType.NotExistInObject:
                     return 0;
                 case JSObjectType.NotExist:
-                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("varible not defined")));
+                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible not defined.")));
                 default:
                     throw new NotImplementedException();
             }
@@ -245,7 +245,6 @@ namespace NiL.JS.Core
                 }
                 if (deg != 0)
                 {
-                    decimal dtemp = temp;
                     if (deg < 0)
                     {
                         if (deg < -16)

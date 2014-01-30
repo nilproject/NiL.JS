@@ -15,7 +15,9 @@ namespace NiL.JS.Core.Modules
         }
 
         [Protected]
-        public static readonly double E = System.Math.E;
+        public const double E = System.Math.E;
+        [Protected]
+        public const double PI = System.Math.PI;
         [Protected]
         public static readonly double LN2 = System.Math.Log(2);
         [Protected]
@@ -24,8 +26,6 @@ namespace NiL.JS.Core.Modules
         public static readonly double LOG2E = 1.0 / System.Math.Log(2);
         [Protected]
         public static readonly double LOG10E = 1.0 / System.Math.Log(10);
-        [Protected]
-        public static readonly double PI = System.Math.PI;
         [Protected]
         public static readonly double SQRT1_2 = System.Math.Sqrt(0.5);
         [Protected]
