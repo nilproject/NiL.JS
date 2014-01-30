@@ -6,7 +6,9 @@ namespace NiL.JS.Core
     {
         public int AllowBreak;
         public int AllowContinue;
-        public readonly List<string> Labels;
+        public int AllowReturn;
+        public bool InExpression;
+        public List<string> Labels;
         public int LabelCount;
         public readonly string Code;
 

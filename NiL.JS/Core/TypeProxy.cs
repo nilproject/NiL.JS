@@ -315,6 +315,10 @@ namespace NiL.JS.Core
                         return JSObject.undefined;
                     return Proxy(res);
                 }
+                catch (TargetException e)
+                {
+                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError(e.Message)));
+                }
                 catch (Exception e)
                 {
                     throw e.InnerException ?? e;

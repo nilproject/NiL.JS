@@ -359,6 +359,7 @@ namespace NiL.JS.Statements
             Statement first = null;
             Statement second = null;
             int s = i;
+            state.InExpression = true;
             if (Parser.ValidateName(code, ref i, true) || Parser.Validate(code, "this", ref i))
                 first = new GetVaribleStatement(Tools.Unescape(code.Substring(s, i - s)));
             else if (Parser.ValidateValue(code, ref i, true))
@@ -609,6 +610,7 @@ namespace NiL.JS.Statements
                                 throw new ArgumentException("Invalid char in ternary operator");
                             do i++; while (char.IsWhiteSpace(code[i]));
                             sec[1] = Parser.Parse(state, ref i, 1);
+                            state.InExpression = true;
                             second = new ImmidateValueStatement(sec);
                             binar = false;
                             repeat = false;
@@ -916,7 +918,7 @@ namespace NiL.JS.Statements
                             i++;
                             while (char.IsWhiteSpace(code[i])) i++;
                             s = i;
-                            if (!Parser.ValidateName(code, ref i, true, false))
+                            if (!Parser.ValidateName(code, ref i, true, false, true))
                                 throw new ArgumentException("code (" + i + ")");
                             string name = code.Substring(s, i - s);
                             first = new GetFieldStatement(first, name);
@@ -1026,6 +1028,7 @@ namespace NiL.JS.Statements
             index = i;
             if (root)
                 res = deicstra(res) as OperatorStatement;
+            state.InExpression = !root;
             return new ParseResult()
             {
                 Statement = res,

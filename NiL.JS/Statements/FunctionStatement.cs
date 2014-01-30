@@ -59,6 +59,8 @@ namespace NiL.JS.Statements
                         break;
                     }
             }
+            bool inExp = state.InExpression;
+            state.InExpression = false;
             while (char.IsWhiteSpace(code[i])) i++;
             var arguments = new List<string>();
             string name = null;
@@ -83,7 +85,7 @@ namespace NiL.JS.Statements
                     do i++; while (char.IsWhiteSpace(code[i]));
                 int n = i;
                 if (!Parser.ValidateName(code, ref i, true))
-                    throw new ArgumentException("code (" + i + ")");
+                    throw new JSException(TypeProxy.Proxy(new SyntaxError("Invalid description of function arguments.")));
                 arguments.Add(Tools.Unescape(code.Substring(n, i - n)));
                 while (char.IsWhiteSpace(code[i])) i++;
             }
@@ -107,40 +109,57 @@ namespace NiL.JS.Statements
             while (char.IsWhiteSpace(code[i]));
             if (code[i] != '{')
                 throw new ArgumentException("code (" + i + ")");
-            Statement body = CodeBlock.Parse(state, ref i).Statement;
-            var tindex = i;
-            while (i < code.Length && char.IsWhiteSpace(code[i])) i++;
-            if (i < code.Length && code[i] == '(')
+            var labels = state.Labels;
+            state.Labels = new List<string>();
+            state.AllowReturn++;
+            Statement body = null;
+            try
             {
-                List<Statement> args = new List<Statement>();
-                i++;
-                for (; ; )
-                {
-                    while (char.IsWhiteSpace(code[i])) i++;
-                    if (code[i] == ')')
-                        break;
-                    else if (code[i] == ',')
-                        do i++; while (char.IsWhiteSpace(code[i]));
-                    args.Add(OperatorStatement.Parse(state, ref i, false).Statement);
-                }
-                i++;
-                tindex = i;
-                while (i < code.Length && char.IsWhiteSpace(code[i])) i++;
-                index = i;
-                return new ParseResult()
-                {
-                    IsParsed = true,
-                    Message = "",
-                    Statement = new Operators.Call(new FunctionStatement(name)
-                    {
-                        argumentsNames = arguments.ToArray(),
-                        body = body
-                    },
-                    new ImmidateValueStatement(args.ToArray()))
-                };
+                body = CodeBlock.Parse(state, ref i).Statement;
             }
-            else
-                i = tindex;
+            finally
+            {
+                state.Labels = labels;
+                state.AllowReturn--;
+            }
+            if (!inExp)
+            {
+                var tindex = i;
+                while (i < code.Length && char.IsWhiteSpace(code[i])) i++;
+                if (i < code.Length && code[i] == '(')
+                {
+                    List<Statement> args = new List<Statement>();
+                    i++;
+                    for (; ; )
+                    {
+                        while (char.IsWhiteSpace(code[i])) i++;
+                        if (code[i] == ')')
+                            break;
+                        else if (code[i] == ',')
+                            do i++; while (char.IsWhiteSpace(code[i]));
+                        args.Add(OperatorStatement.Parse(state, ref i, false).Statement);
+                    }
+                    i++;
+                    index = i;
+                    while (i < code.Length && char.IsWhiteSpace(code[i])) i++;
+                    if (i < code.Length && code[i] == ';')
+                        throw new JSException(TypeProxy.Proxy(new SyntaxError("Expression can not start with word \"function\"")));
+                    return new ParseResult()
+                    {
+                        IsParsed = true,
+                        Message = "",
+                        Statement = new Operators.Call(new FunctionStatement(name)
+                        {
+                            argumentsNames = arguments.ToArray(),
+                            body = body
+                        },
+                        new ImmidateValueStatement(args.ToArray()))
+                    };
+                }
+                else
+                    i = tindex;
+            }
+            state.InExpression = inExp;
             index = i;
             FunctionStatement res = new FunctionStatement(name)
                 {

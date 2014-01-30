@@ -14,7 +14,7 @@ namespace NiL.JS.Statements
             if (!Parser.Validate(code, "continue", ref i) || !Parser.isIdentificatorTerminator(code[i]))
                 return new ParseResult();
             if (state.AllowContinue <= 0)
-                throw new ArgumentException();
+                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.SyntaxError("Invalid use continue statement")));
             while (char.IsWhiteSpace(code[i]) && !Tools.isLineTerminator(code[i])) i++;
             int sl = i;
             JSObject label = null;

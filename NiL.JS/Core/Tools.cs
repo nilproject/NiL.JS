@@ -326,6 +326,11 @@ namespace NiL.JS.Core
 
         public static string Unescape(string code)
         {
+            return Unescape(code, true);
+        }
+
+        public static string Unescape(string code, bool defaultUnescape)
+        {
             StringBuilder res = new StringBuilder(code.Length);
             for (int i = 0; i < code.Length; i++)
             {
@@ -386,9 +391,21 @@ namespace NiL.JS.Core
                         default:
                             {
                                 if (char.IsDigit(code[i]))
-                                    res.Append((char)(code[i] - '0'));
-                                else
+                                {
+                                    var ccode = code[i] - '0';
+                                    if (i + 1 < code.Length && char.IsDigit(code[i + 1]))
+                                        ccode = ccode * 10 + (code[++i] - '0');
+                                    if (i + 1 < code.Length && char.IsDigit(code[i + 1]))
+                                        ccode = ccode * 10 + (code[++i] - '0');
+                                    res.Append((char)ccode);
+                                }
+                                else if (defaultUnescape)
                                     res.Append(code[i]);
+                                else
+                                {
+                                    res.Append('\\');
+                                    res.Append(code[i]);
+                                }
                                 break;
                             }
                     }

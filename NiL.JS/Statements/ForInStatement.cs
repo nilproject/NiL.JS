@@ -73,6 +73,7 @@ namespace NiL.JS.Statements
 
         public override JSObject Invoke(Context context)
         {
+            JSObject res = JSObject.undefined;
             var s = Tools.RaiseIfNotExist(source.Invoke(context));
             var v = varible.Invoke(context);
             while (s != null)
@@ -100,7 +101,7 @@ namespace NiL.JS.Statements
                         v.oValue = o;
                         if (v.assignCallback != null)
                             v.assignCallback();
-                        body.Invoke(context);
+                        res = body.Invoke(context) ?? res;
                         if (context.abort != AbortType.None)
                         {
                             bool _break = (context.abort > AbortType.Continue) || ((context.abortInfo != null) && (labels.IndexOf(context.abortInfo.oValue as string) == -1));
@@ -116,7 +117,7 @@ namespace NiL.JS.Statements
                 }
                 s = s.prototype;
             }
-            return JSObject.undefined;
+            return res;
         }
 
         public bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> varibles)

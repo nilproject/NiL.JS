@@ -24,7 +24,7 @@ namespace NiL.JS.Statements
                 int s = i;
                 if (code[i] == '}')
                     break;
-                if (Parser.Validate(code, "set", i))
+                if (Parser.Validate(code, "set", i) && Parser.isIdentificatorTerminator(code[i + 3]))
                 {
                     var setter = FunctionStatement.Parse(state, ref i, FunctionStatement.FunctionParseMode.Setter).Statement as FunctionStatement;
                     if (flds.IndexOf(setter.Name) == -1)
@@ -42,7 +42,7 @@ namespace NiL.JS.Statements
                         ((vle as ImmidateValueStatement).Value.oValue as Statement[])[0] = setter;
                     }
                 }
-                else if (Parser.Validate(code, "get", i))
+                else if (Parser.Validate(code, "get", i) && Parser.isIdentificatorTerminator(code[i + 3]))
                 {
                     var getter = FunctionStatement.Parse(state, ref i, FunctionStatement.FunctionParseMode.Getter).Statement as FunctionStatement;
                     if (flds.IndexOf(getter.Name) == -1)
@@ -91,7 +91,7 @@ namespace NiL.JS.Statements
                     {
                         vls.Add(OperatorStatement.Parse(state, ref i, false).Statement);
                     }
-                    catch(ArgumentException e)
+                    catch(JSException e)
                     {
                         return new ParseResult() { Message = e.Message };
                     }

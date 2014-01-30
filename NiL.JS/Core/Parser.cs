@@ -207,30 +207,39 @@ namespace NiL.JS.Core
 
         internal static bool ValidateName(string code, ref int index)
         {
-            return ValidateName(code, ref index, true, true);
+            return ValidateName(code, ref index, true, true, true);
         }
 
         internal static bool ValidateName(string code, ref int index, bool move)
         {
-            return ValidateName(code, ref index, move, true);
+            return ValidateName(code, ref index, move, true, true);
         }
 
-        internal static bool ValidateName(string code, ref int index, bool move, bool reserveControl)
+        internal static bool ValidateName(string code, ref int index, bool move, bool reserveControl, bool allowEscape)
         {
             int j = index;
             int startI = j;
-            if ((code[j] != '\\') && (code[j] != '$') && (code[j] != '_') && (!char.IsLetter(code[j])))
+            if ((!allowEscape || code[j] != '\\') && (code[j] != '$') && (code[j] != '_') && (!char.IsLetter(code[j])))
                 return false;
             j++;
             while (j < code.Length)
             {
-                if ((code[j] != '\\') && (code[j] != '$') && (code[j] != '_') && (!char.IsLetterOrDigit(code[j])))
+                if ((!allowEscape || code[j] != '\\') && (code[j] != '$') && (code[j] != '_') && (!char.IsLetterOrDigit(code[j])))
                     break;
                 j++;
             }
             if (startI == j)
                 return false;
             string name = code.Substring(index, j - index);
+            if (allowEscape)
+            {
+                int i = 0;
+                name = Tools.Unescape(name, false);
+                var res = ValidateName(name, ref i, true, reserveControl, false) && i == name.Length;
+                if (res && move)
+                    index = j;
+                return res;
+            }
             if (reserveControl)
                 switch (name)
                 {
@@ -514,7 +523,7 @@ namespace NiL.JS.Core
                         return pr.Statement;
                 }
             }
-            throw new ArgumentException("Unknown token at index " + index + ": " + code.Substring(index, Math.Min(20, code.Length - index)).Split(' ')[0]);
+            throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.SyntaxError("Unknown token at index " + index + ": " + code.Substring(index, Math.Min(20, code.Length - index)).Split(' ')[0])));
         }
 
         internal static void Optimize(ref Statement s, int depth, Dictionary<string, Statement> varibles)

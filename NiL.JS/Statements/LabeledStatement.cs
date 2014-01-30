@@ -24,6 +24,7 @@ namespace NiL.JS.Statements
             state.AllowBreak++;
             var stat = Parser.Parse(state, ref i, 0);
             state.AllowBreak--;
+            state.Labels.Remove(label);
             state.LabelCount = oldlc;
             index = i;
             return new ParseResult()

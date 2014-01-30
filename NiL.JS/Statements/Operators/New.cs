@@ -44,17 +44,18 @@ namespace NiL.JS.Statements.Operators
             else
                 (CallInstance.Second as ImmidateValueStatement).Value = new Statement[0];
             JSObject _this = new JSObject() { ValueType = JSObjectType.Object };
-            if (temp.oValue is TypeProxyConstructor)
-                _this.prototype = temp.GetField("prototype", true, false);
-            else
+            _this.prototype = temp.GetField("prototype", true, false);
+            if (_this.prototype.ValueType < JSObjectType.Object)
+                _this.prototype = BaseObject.Prototype;
+            if (!(temp.oValue is TypeProxyConstructor))
             {
-                (_this.prototype = new JSObject()).Assign(temp.GetField("prototype", true, false));
+                _this.prototype = _this.prototype.Clone() as JSObject;
                 _this.oValue = new object();
             }
             (CallInstance.First as ThisSetStat).value = temp;
             (CallInstance.First as ThisSetStat)._this = _this;
             var res = CallInstance.Invoke(context);
-            if ((bool)res)
+            if (res.ValueType >= JSObjectType.Object && res.oValue != null)
                 return res;
             return _this;
         }
