@@ -45,7 +45,7 @@ namespace NiL.JS.Core
                 boolean.iValue = source.iValue;
                 return boolean;
             }
-            else if (targetType == typeof(NiL.JS.Core.BaseTypes.EmbeddedType))
+            else if (targetType == typeof(NiL.JS.Core.EmbeddedType))
             {
                 switch (source.ValueType)
                 {
@@ -128,6 +128,18 @@ namespace NiL.JS.Core
                     }
                     else if (v is TypeProxyConstructor)
                         res[i] = (v as TypeProxyConstructor).proxy.hostedType;
+                    else if (v is Function && targetTypes[i].ParameterType == typeof(System.EventHandler))
+                    {
+                        res[i] = new System.EventHandler((sender, e) =>
+                        {
+                            var eargs = new JSObject();
+                            eargs.oValue = "[object Arguments]".Clone();
+                            eargs.ValueType = JSObjectType.Object;
+                            eargs.GetField("length", false, true).Assign(1);
+                            eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(sender));
+                            (v as Function).Invoke(eargs);
+                        });
+                    }
                     else
                         res[i] = v;
                 }
@@ -475,7 +487,9 @@ namespace NiL.JS.Core
                         if (mi.DeclaringType == typeof(object))
                             continue;
                         if (mi.GetParameters().Length == l && mi.GetCustomAttributes(typeof(HiddenAttribute), false).Length == 0)
+                        {
                             return (cache[i] ?? (cache[i] = ProxyMethod(m[i] as MethodInfo).oValue as Function)).Invoke(context, args);
+                        }
                     }
                     return null;
                 });
@@ -564,6 +578,19 @@ namespace NiL.JS.Core
                                 oValue = new Function[] { 
                                     pinfo.CanWrite ? ProxyMethod(pinfo.GetSetMethod(true)).oValue as Function : null,
                                     pinfo.CanRead ? ProxyMethod(pinfo.GetGetMethod(true)).oValue as Function : null 
+                                }
+                            };
+                            break;
+                        }
+                    case MemberTypes.Event:
+                        {
+                            var pinfo = (EventInfo)m[0];
+                            r = new JSObject()
+                            {
+                                ValueType = JSObjectType.Property,
+                                oValue = new Function[] { 
+                                    ProxyMethod(pinfo.AddMethod).oValue as Function,
+                                    null
                                 }
                             };
                             break;

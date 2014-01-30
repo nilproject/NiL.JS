@@ -4,17 +4,18 @@ using System.Text;
 using System.Reflection;
 using NiL.JS.Core.Modules;
 
-namespace NiL.JS.Core.BaseTypes
+namespace NiL.JS.Core
 {
     public abstract class EmbeddedType : JSObject
     {
         protected EmbeddedType()
         {
             prototype = TypeProxy.GetPrototype(this.GetType());
+            ValueType = JSObjectType.Object;
             oValue = this;
         }
 
-        public virtual JSObject toString()
+        internal virtual JSObject toString()
         {
             return ToString();
         }

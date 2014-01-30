@@ -3,7 +3,7 @@ using NiL.JS.Core;
 using System;
 using System.IO;
 using System.Linq;
-using System.Runtime.Serialization.Formatters.Binary;
+using System.Windows.Forms;
 
 namespace NiL.JSTest
 {
@@ -178,10 +178,12 @@ console.log(utc);
 
         static void Main(string[] args)
         {
+            typeof(System.Windows.Forms.Form).GetType();
             NiL.JS.Core.Context.GlobalContext.GetField("platform").Assign("NiL.JS");
+            NiL.JS.Core.Context.GlobalContext.GetField("System").Assign(new SubspaceProvider("System"));
             //benchmark();
-            //runFile(@"ftest.js");
-            sputnicTests();
+            runFile(@"ftest.js");
+            //sputnicTests();
             //testEx();
 
             GC.Collect();

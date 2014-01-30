@@ -10,7 +10,7 @@ namespace NiL.JSTest.Modules
 
         public void log(JSObject[] args)
         {
-            System.Console.WriteLine(args[0]);
+            global::System.Console.WriteLine(args[0]);
         }
     }
 }

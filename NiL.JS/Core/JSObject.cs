@@ -40,17 +40,16 @@ namespace NiL.JS.Core
         [Modules.Hidden]
         internal static readonly Action ErrorAssignCallback = () => { throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Invalid left-hand side"))); };
         [Modules.Hidden]
-        protected static readonly IEnumerator<string> EmptyEnumerator = ((IEnumerable<string>)(new string[0])).GetEnumerator();
+        internal protected static readonly IEnumerator<string> EmptyEnumerator = ((IEnumerable<string>)(new string[0])).GetEnumerator();
         [Modules.Hidden]
-        internal static readonly JSObject undefined = new JSObject() { ValueType = JSObjectType.Undefined };
+        public static readonly JSObject undefined = new JSObject() { ValueType = JSObjectType.Undefined, attributes = ObjectAttributes.DontDelete | ObjectAttributes.DontEnum };
         [Modules.Hidden]
-        internal static readonly JSObject Null = new JSObject() { ValueType = JSObjectType.Object, oValue = null, assignCallback = ErrorAssignCallback };
+        public static readonly JSObject Null = new JSObject() { ValueType = JSObjectType.Object, oValue = null, assignCallback = ErrorAssignCallback, attributes = ObjectAttributes.DontDelete | ObjectAttributes.DontEnum };
         [Modules.Hidden]
-        internal static readonly JSObject nullString = new JSObject() { ValueType = JSObjectType.String, oValue = "null", assignCallback = ErrorAssignCallback };
+        internal static readonly JSObject nullString = new JSObject() { ValueType = JSObjectType.String, oValue = "null", assignCallback = ErrorAssignCallback, attributes = ObjectAttributes.DontDelete | ObjectAttributes.DontEnum };
 
         static JSObject()
         {
-            undefined.assignCallback = null;
             undefined.Protect();
         }
 
@@ -370,24 +369,6 @@ namespace NiL.JS.Core
             if (res is double)
                 return Tools.DoubleToString((double)res);
             return (res ?? "null").ToString();
-        }
-
-        public virtual string Stringify()
-        {
-            if (ValueType <= JSObjectType.Undefined)
-                return "undefined";
-            switch (ValueType)
-            {
-                case JSObjectType.Bool:
-                    return iValue != 0 ? "true" : "false";
-                case JSObjectType.Double:
-                    return Tools.DoubleToString(dValue);
-                case JSObjectType.Int:
-                    return iValue.ToString();
-                case JSObjectType.String:
-                    return "\"" + oValue + "\"";
-            }
-            return "<" + ValueType + ">";
         }
 
         [Modules.Hidden]

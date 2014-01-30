@@ -133,7 +133,7 @@
     <Compile Include="Core\BaseTypes\Array.cs" />
     <Compile Include="Core\BaseTypes\BaseObject.cs" />
     <Compile Include="Core\BaseTypes\Boolean.cs" />
-    <Compile Include="Core\BaseTypes\EmbeddedType.cs" />
+    <Compile Include="Core\EmbeddedType.cs" />
     <Compile Include="Core\BaseTypes\Date.cs" />
     <Compile Include="Core\BaseTypes\RegExp.cs" />
     <Compile Include="Core\BaseTypes\URIError.cs" />
