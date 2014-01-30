@@ -2276,7 +2276,6 @@
     <Content Include="tests\Conformance\12_Statement\12.6_Iteration_Statements\12.6.3_The_for_Statement\S12.6.3_A9.1.js" />
     <Content Include="tests\Conformance\12_Statement\12.6_Iteration_Statements\12.6.3_The_for_Statement\S12.6.3_A9.js" />
     <Content Include="tests\Conformance\12_Statement\12.6_Iteration_Statements\12.6.4_The_for_in_Statement\S12.6.4_A1.js" />
-    <Content Include="tests\Conformance\12_Statement\12.6_Iteration_Statements\12.6.4_The_for_in_Statement\S12.6.4_A14_T1.js" />
     <Content Include="tests\Conformance\12_Statement\12.6_Iteration_Statements\12.6.4_The_for_in_Statement\S12.6.4_A14_T2.js" />
     <Content Include="tests\Conformance\12_Statement\12.6_Iteration_Statements\12.6.4_The_for_in_Statement\S12.6.4_A15.js" />
     <Content Include="tests\Conformance\12_Statement\12.6_Iteration_Statements\12.6.4_The_for_in_Statement\S12.6.4_A2.js" />

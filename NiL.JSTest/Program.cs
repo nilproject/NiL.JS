@@ -34,14 +34,6 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * i + 3 - 2 / 2; }
             Console.WriteLine("rate: " + ((double)l / (double)nativeL).ToString());
         }
 
-        private static void featureSupportTest()
-        {
-            Script s = new Script(@"
-
-");
-            s.Invoke(); 
-        }
-
         private static void runFile(string filename)
         {
             Console.WriteLine("Processing file: " + filename);
@@ -174,10 +166,13 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * i + 3 - 2 / 2; }
         private static void testEx()
         {
             Context.GlobalContext.AttachModule(typeof(TestClass));
-            var s = new Script(
-@"TestClass.smethod();
-var t = TestClass();
-t.dmethod(1);");
+            var s = new Script(@"
+var d = new Date('January 11, 1980 06:30:00');
+gmt = d.toGMTString();
+utc = d.toUTCString();
+console.log(gmt);
+console.log(utc);
+");
             s.Invoke();
         }
 
@@ -185,8 +180,8 @@ t.dmethod(1);");
         {
             NiL.JS.Core.Context.GlobalContext.GetField("platform").Assign("NiL.JS");
             //benchmark();
-            runFile(@"ftest.js");
-            //sputnicTests();
+            //runFile(@"ftest.js");
+            sputnicTests();
             //testEx();
 
             GC.Collect();

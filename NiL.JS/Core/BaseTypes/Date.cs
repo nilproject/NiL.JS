@@ -28,7 +28,33 @@ namespace NiL.JS.Core.BaseTypes
         {
             try
             {
-                host = new DateTime((long)Tools.JSObjectToDouble(args.GetField("0", true, false)) + UTCBase);
+                if (args.GetField("length", true, false).iValue == 1)
+                {
+                    var arg = args.GetField("0", true, false);
+                    switch (arg.ValueType)
+                    {
+                        case JSObjectType.Int:
+                        case JSObjectType.Bool:
+                        case JSObjectType.Double:
+                            {
+                                host = new DateTime((long)Tools.JSObjectToDouble(arg) + UTCBase);
+                                break;
+                            }
+                        case JSObjectType.String:
+                            {
+                                host = DateTime.Parse(arg.ToString());
+                                break;
+                            }
+                    }
+                }
+                else
+                    host = new System.DateTime(
+                    Tools.JSObjectToInt(args.GetField("0", true, false)),
+                    Tools.JSObjectToInt(args.GetField("1", true, false)),
+                    Tools.JSObjectToInt(args.GetField("2", true, false)),
+                    Tools.JSObjectToInt(args.GetField("3", true, false)),
+                    Tools.JSObjectToInt(args.GetField("4", true, false)),
+                    Tools.JSObjectToInt(args.GetField("5", true, false)));
             }
             catch
             {
@@ -44,7 +70,220 @@ namespace NiL.JS.Core.BaseTypes
             return res;
         }
 
+        public double getTime()
+        {
+            if (error)
+                return double.NaN;
+            var res = host.Ticks - UTCBase;
+            return res;
+        }
+
+        public int getYear()
+        {
+            return host.Year - 1900;
+        }
+
+        public int getFullYear()
+        {
+            return host.Year;
+        }
+
+        public int getUTCFullYear()
+        {
+            return host.Year;
+        }
+
+        public int getMonth()
+        {
+            return host.Month;
+        }
+
+        public int getUTCMonth()
+        {
+            return host.Month;
+        }
+
+        public int getDate()
+        {
+            return host.Day;
+        }
+
+        public int getUTCDate()
+        {
+            return host.Day;
+        }
+
+        public int getDay()
+        {
+            return (int)host.DayOfWeek;
+        }
+
+        public int getUTCDay()
+        {
+            return (int)host.DayOfWeek;
+        }
+
+        public int getHours()
+        {
+            return host.Hour;
+        }
+
+        public int getUTCHours()
+        {
+            return host.Hour;
+        }
+
+        public int getMinutes()
+        {
+            return host.Minute;
+        }
+
+        public int getUTCMinutes()
+        {
+            return host.Minute;
+        }
+
+        public int getSeconds()
+        {
+            return host.Second;
+        }
+
+        public int getUTCSeconds()
+        {
+            return host.Second;
+        }
+
+        public int getMilliseconds()
+        {
+            return host.Millisecond;
+        }
+
+        public int getUTCMilliseconds()
+        {
+            return host.Millisecond;
+        }
+
+        public int setTime(int time)
+        {
+            host = new DateTime(time + UTCBase);
+            return time;
+        }
+
+        public int setMilliseconds(int time)
+        {
+            host.AddMilliseconds(time - host.Millisecond);
+            return time;
+        }
+
+        public int setUTCMilliseconds(int time)
+        {
+            host.AddMilliseconds(time - host.Millisecond);
+            return time;
+        }
+
+        public int setSeconds(int time)
+        {
+            host.AddSeconds(time - host.Second);
+            return time;
+        }
+
+        public int setUTCSeconds(int time)
+        {
+            host.AddSeconds(time - host.Second);
+            return time;
+        }
+
+        public int setMinutes(int time)
+        {
+            host.AddMinutes(time - host.Minute);
+            return time;
+        }
+
+        public int setUTCMinutes(int time)
+        {
+            host.AddMinutes(time - host.Minute);
+            return time;
+        }
+
+        public int setHours(int time)
+        {
+            host.AddHours(time - host.Hour);
+            return time;
+        }
+
+        public int setUTCHours(int time)
+        {
+            host.AddHours(time - host.Hour);
+            return time;
+        }
+
+        public int setDate(int time)
+        {
+            host.AddDays(time - host.Day);
+            return time;
+        }
+
+        public int setUTCDate(int time)
+        {
+            host.AddDays(time - host.Day);
+            return time;
+        }
+
+        public int setMonth(int time)
+        {
+            host.AddMonths(time - host.Month);
+            return time;
+        }
+
+        public int setUTCMonth(int time)
+        {
+            host.AddMonths(time - host.Month);
+            return time;
+        }
+
+        public int setYear(int time)
+        {
+            host.AddYears(time - host.Year);
+            return time;
+        }
+
+        public int setUTCYear(int time)
+        {
+            host.AddYears(time - host.Year);
+            return time;
+        }
+
+        public int setFullYear(int time)
+        {
+            host.AddYears(time - host.Year);
+            return time;
+        }
+
+        public int setUTCFullYear(int time)
+        {
+            host.AddYears(time - host.Year);
+            return time;
+        }
+
         public JSObject toString()
+        {
+            tempSResult.oValue = ToString();
+            return tempSResult;
+        }
+
+        public JSObject toLocaleString()
+        {
+            tempSResult.oValue = ToString();
+            return tempSResult;
+        }
+
+        public JSObject toUTCString()
+        {
+            tempSResult.oValue = ToString();
+            return tempSResult;
+        }
+
+        public JSObject toGMTString()
         {
             tempSResult.oValue = ToString();
             return tempSResult;
@@ -58,6 +297,36 @@ namespace NiL.JS.Core.BaseTypes
                 + month[host.Month - 1] + " " + host.Day + " " + host.Year + " " + lt
                 + " GMT+" + offset.Hours.ToString("00") + offset.Minutes.ToString("00") + " (" + TimeZone.CurrentTimeZone.DaylightName + ")";
             return res;
+        }
+
+        public static double parse(string dateTime)
+        {
+            try
+            {
+                return System.DateTime.Parse(dateTime).Ticks - UTCBase;
+            }
+            catch
+            {
+                return double.NaN;
+            }
+        }
+
+        public static double UTC(JSObject dateTime)
+        {
+            try
+            {
+                return new System.DateTime(
+                    Tools.JSObjectToInt(dateTime.GetField("0", true, false)),
+                    Tools.JSObjectToInt(dateTime.GetField("1", true, false)),
+                    Tools.JSObjectToInt(dateTime.GetField("2", true, false)),
+                    Tools.JSObjectToInt(dateTime.GetField("3", true, false)),
+                    Tools.JSObjectToInt(dateTime.GetField("4", true, false)),
+                    Tools.JSObjectToInt(dateTime.GetField("5", true, false))).Ticks - UTCBase;
+            }
+            catch
+            {
+                return double.NaN;
+            }
         }
     }
 }
