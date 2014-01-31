@@ -32,12 +32,16 @@ namespace NiL.JS.Statements.Operators
             {
                 context.updateThisBind = true;
                 var field = first.InvokeForAssing(context);
+                var _this = context.thisBind;
                 if (field.ValueType == JSObjectType.Property)
                 {
                     setterArg.Assign(Tools.RaiseIfNotExist(second.Invoke(context)));
                     var setter = (field.oValue as NiL.JS.Core.BaseTypes.Function[])[0];
                     if (setter != null)
+                    {
+                        context.thisBind = _this;
                         setter.Invoke(context, setterArgs);
+                    }
                     return setterArg;
                 }
                 else

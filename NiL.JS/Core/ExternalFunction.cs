@@ -46,17 +46,18 @@ namespace NiL.JS.Core
 
         public override JSObject Invoke(JSObject thisOverride, JSObject args)
         {
-            var oldThis = context.thisBind;
-            if (thisOverride == null || oldThis == thisOverride)
+            if (thisOverride == null)
                 return Invoke(args);
-            context.thisBind = thisOverride;
+            var oldContext = context;
             try
             {
+                context = new Context(context);
+                context.thisBind = thisOverride;
                 return Invoke(args);
             }
             finally
             {
-                context.thisBind = oldThis;
+                context = oldContext;
             }
         }
 
