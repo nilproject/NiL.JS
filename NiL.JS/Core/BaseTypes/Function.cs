@@ -7,6 +7,627 @@ namespace NiL.JS.Core.BaseTypes
 {
     public class Function : EmbeddedType
     {
+        private class _DelegateWraper
+        {
+            private Function function;
+
+            public _DelegateWraper(Function func)
+            {
+                function = func;
+            }
+
+            public RT Invoke<RT>()
+            {
+                var eargs = new JSObject();
+                eargs.oValue = "[object Arguments]".Clone();
+                eargs.ValueType = JSObjectType.Object;
+                eargs.GetField("length", false, true).Assign(0);
+                return (RT)function.Invoke(eargs).Value;
+            }
+
+            public RT Invoke<RT, T1>(T1 a1)
+            {
+                var eargs = new JSObject();
+                eargs.oValue = "[object Arguments]".Clone();
+                eargs.ValueType = JSObjectType.Object;
+                eargs.GetField("length", false, true).Assign(2);
+                eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
+                return (RT)function.Invoke(eargs).Value;
+            }
+
+            public RT Invoke<RT, T1, T2>(T1 a1, T2 a2)
+            {
+                var eargs = new JSObject();
+                eargs.oValue = "[object Arguments]".Clone();
+                eargs.ValueType = JSObjectType.Object;
+                eargs.GetField("length", false, true).Assign(2);
+                eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
+                eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
+                return (RT)function.Invoke(eargs).Value;
+            }
+
+            public RT Invoke<RT, T1, T2, T3>(T1 a1, T2 a2, T3 a3)
+            {
+                var eargs = new JSObject();
+                eargs.oValue = "[object Arguments]".Clone();
+                eargs.ValueType = JSObjectType.Object;
+                eargs.GetField("length", false, true).Assign(3);
+                eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
+                eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
+                eargs.GetField("2", false, true).Assign(TypeProxy.Proxy(a3));
+                return (RT)function.Invoke(eargs).Value;
+            }
+
+            public RT Invoke<RT, T1, T2, T3, T4>(T1 a1, T2 a2, T3 a3, T4 a4)
+            {
+                var eargs = new JSObject();
+                eargs.oValue = "[object Arguments]".Clone();
+                eargs.ValueType = JSObjectType.Object;
+                eargs.GetField("length", false, true).Assign(4);
+                eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
+                eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
+                eargs.GetField("2", false, true).Assign(TypeProxy.Proxy(a3));
+                eargs.GetField("3", false, true).Assign(TypeProxy.Proxy(a4));
+                return (RT)function.Invoke(eargs).Value;
+            }
+
+            public RT Invoke<RT, T1, T2, T3, T4, T5>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5)
+            {
+                var eargs = new JSObject();
+                eargs.oValue = "[object Arguments]".Clone();
+                eargs.ValueType = JSObjectType.Object;
+                eargs.GetField("length", false, true).Assign(5);
+                eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
+                eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
+                eargs.GetField("2", false, true).Assign(TypeProxy.Proxy(a3));
+                eargs.GetField("3", false, true).Assign(TypeProxy.Proxy(a4));
+                eargs.GetField("4", false, true).Assign(TypeProxy.Proxy(a5));
+                return (RT)function.Invoke(eargs).Value;
+            }
+
+            public RT Invoke<RT, T1, T2, T3, T4, T5, T6>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6)
+            {
+                var eargs = new JSObject();
+                eargs.oValue = "[object Arguments]".Clone();
+                eargs.ValueType = JSObjectType.Object;
+                eargs.GetField("length", false, true).Assign(6);
+                eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
+                eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
+                eargs.GetField("2", false, true).Assign(TypeProxy.Proxy(a3));
+                eargs.GetField("3", false, true).Assign(TypeProxy.Proxy(a4));
+                eargs.GetField("4", false, true).Assign(TypeProxy.Proxy(a5));
+                eargs.GetField("5", false, true).Assign(TypeProxy.Proxy(a6));
+                return (RT)function.Invoke(eargs).Value;
+            }
+
+            public RT Invoke<RT, T1, T2, T3, T4, T5, T6, T7>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7)
+            {
+                var eargs = new JSObject();
+                eargs.oValue = "[object Arguments]".Clone();
+                eargs.ValueType = JSObjectType.Object;
+                eargs.GetField("length", false, true).Assign(7);
+                eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
+                eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
+                eargs.GetField("2", false, true).Assign(TypeProxy.Proxy(a3));
+                eargs.GetField("3", false, true).Assign(TypeProxy.Proxy(a4));
+                eargs.GetField("4", false, true).Assign(TypeProxy.Proxy(a5));
+                eargs.GetField("5", false, true).Assign(TypeProxy.Proxy(a6));
+                eargs.GetField("6", false, true).Assign(TypeProxy.Proxy(a7));
+                return (RT)function.Invoke(eargs).Value;
+            }
+
+            public RT Invoke<RT, T1, T2, T3, T4, T5, T6, T7, T8>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8)
+            {
+                var eargs = new JSObject();
+                eargs.oValue = "[object Arguments]".Clone();
+                eargs.ValueType = JSObjectType.Object;
+                eargs.GetField("length", false, true).Assign(8);
+                eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
+                eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
+                eargs.GetField("2", false, true).Assign(TypeProxy.Proxy(a3));
+                eargs.GetField("3", false, true).Assign(TypeProxy.Proxy(a4));
+                eargs.GetField("4", false, true).Assign(TypeProxy.Proxy(a5));
+                eargs.GetField("5", false, true).Assign(TypeProxy.Proxy(a6));
+                eargs.GetField("6", false, true).Assign(TypeProxy.Proxy(a7));
+                eargs.GetField("7", false, true).Assign(TypeProxy.Proxy(a8));
+                return (RT)function.Invoke(eargs).Value;
+            }
+
+            public RT Invoke<RT, T1, T2, T3, T4, T5, T6, T7, T8, T9>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9)
+            {
+                var eargs = new JSObject();
+                eargs.oValue = "[object Arguments]".Clone();
+                eargs.ValueType = JSObjectType.Object;
+                eargs.GetField("length", false, true).Assign(9);
+                eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
+                eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
+                eargs.GetField("2", false, true).Assign(TypeProxy.Proxy(a3));
+                eargs.GetField("3", false, true).Assign(TypeProxy.Proxy(a4));
+                eargs.GetField("4", false, true).Assign(TypeProxy.Proxy(a5));
+                eargs.GetField("5", false, true).Assign(TypeProxy.Proxy(a6));
+                eargs.GetField("6", false, true).Assign(TypeProxy.Proxy(a7));
+                eargs.GetField("7", false, true).Assign(TypeProxy.Proxy(a8));
+                eargs.GetField("8", false, true).Assign(TypeProxy.Proxy(a9));
+                return (RT)function.Invoke(eargs).Value;
+            }
+
+            public RT Invoke<RT, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10)
+            {
+                var eargs = new JSObject();
+                eargs.oValue = "[object Arguments]".Clone();
+                eargs.ValueType = JSObjectType.Object;
+                eargs.GetField("length", false, true).Assign(10);
+                eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
+                eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
+                eargs.GetField("2", false, true).Assign(TypeProxy.Proxy(a3));
+                eargs.GetField("3", false, true).Assign(TypeProxy.Proxy(a4));
+                eargs.GetField("4", false, true).Assign(TypeProxy.Proxy(a5));
+                eargs.GetField("5", false, true).Assign(TypeProxy.Proxy(a6));
+                eargs.GetField("6", false, true).Assign(TypeProxy.Proxy(a7));
+                eargs.GetField("7", false, true).Assign(TypeProxy.Proxy(a8));
+                eargs.GetField("8", false, true).Assign(TypeProxy.Proxy(a9));
+                eargs.GetField("9", false, true).Assign(TypeProxy.Proxy(a10));
+                return (RT)function.Invoke(eargs).Value;
+            }
+
+            public RT Invoke<RT, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10, T11 a11)
+            {
+                var eargs = new JSObject();
+                eargs.oValue = "[object Arguments]".Clone();
+                eargs.ValueType = JSObjectType.Object;
+                eargs.GetField("length", false, true).Assign(11);
+                eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
+                eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
+                eargs.GetField("2", false, true).Assign(TypeProxy.Proxy(a3));
+                eargs.GetField("3", false, true).Assign(TypeProxy.Proxy(a4));
+                eargs.GetField("4", false, true).Assign(TypeProxy.Proxy(a5));
+                eargs.GetField("5", false, true).Assign(TypeProxy.Proxy(a6));
+                eargs.GetField("6", false, true).Assign(TypeProxy.Proxy(a7));
+                eargs.GetField("7", false, true).Assign(TypeProxy.Proxy(a8));
+                eargs.GetField("8", false, true).Assign(TypeProxy.Proxy(a9));
+                eargs.GetField("9", false, true).Assign(TypeProxy.Proxy(a10));
+                eargs.GetField("10", false, true).Assign(TypeProxy.Proxy(a11));
+                return (RT)function.Invoke(eargs).Value;
+            }
+
+            public RT Invoke<RT, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10, T11 a11, T12 a12)
+            {
+                var eargs = new JSObject();
+                eargs.oValue = "[object Arguments]".Clone();
+                eargs.ValueType = JSObjectType.Object;
+                eargs.GetField("length", false, true).Assign(12);
+                eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
+                eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
+                eargs.GetField("2", false, true).Assign(TypeProxy.Proxy(a3));
+                eargs.GetField("3", false, true).Assign(TypeProxy.Proxy(a4));
+                eargs.GetField("4", false, true).Assign(TypeProxy.Proxy(a5));
+                eargs.GetField("5", false, true).Assign(TypeProxy.Proxy(a6));
+                eargs.GetField("6", false, true).Assign(TypeProxy.Proxy(a7));
+                eargs.GetField("7", false, true).Assign(TypeProxy.Proxy(a8));
+                eargs.GetField("8", false, true).Assign(TypeProxy.Proxy(a9));
+                eargs.GetField("9", false, true).Assign(TypeProxy.Proxy(a10));
+                eargs.GetField("10", false, true).Assign(TypeProxy.Proxy(a11));
+                eargs.GetField("11", false, true).Assign(TypeProxy.Proxy(a12));
+                return (RT)function.Invoke(eargs).Value;
+            }
+
+            public RT Invoke<RT, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10, T11 a11, T12 a12, T13 a13)
+            {
+                var eargs = new JSObject();
+                eargs.oValue = "[object Arguments]".Clone();
+                eargs.ValueType = JSObjectType.Object;
+                eargs.GetField("length", false, true).Assign(13);
+                eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
+                eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
+                eargs.GetField("2", false, true).Assign(TypeProxy.Proxy(a3));
+                eargs.GetField("3", false, true).Assign(TypeProxy.Proxy(a4));
+                eargs.GetField("4", false, true).Assign(TypeProxy.Proxy(a5));
+                eargs.GetField("5", false, true).Assign(TypeProxy.Proxy(a6));
+                eargs.GetField("6", false, true).Assign(TypeProxy.Proxy(a7));
+                eargs.GetField("7", false, true).Assign(TypeProxy.Proxy(a8));
+                eargs.GetField("8", false, true).Assign(TypeProxy.Proxy(a9));
+                eargs.GetField("9", false, true).Assign(TypeProxy.Proxy(a10));
+                eargs.GetField("10", false, true).Assign(TypeProxy.Proxy(a11));
+                eargs.GetField("11", false, true).Assign(TypeProxy.Proxy(a12));
+                eargs.GetField("12", false, true).Assign(TypeProxy.Proxy(a13));
+                return (RT)function.Invoke(eargs).Value;
+            }
+
+            public RT Invoke<RT, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10, T11 a11, T12 a12, T13 a13, T14 a14)
+            {
+                var eargs = new JSObject();
+                eargs.oValue = "[object Arguments]".Clone();
+                eargs.ValueType = JSObjectType.Object;
+                eargs.GetField("length", false, true).Assign(14);
+                eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
+                eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
+                eargs.GetField("2", false, true).Assign(TypeProxy.Proxy(a3));
+                eargs.GetField("3", false, true).Assign(TypeProxy.Proxy(a4));
+                eargs.GetField("4", false, true).Assign(TypeProxy.Proxy(a5));
+                eargs.GetField("5", false, true).Assign(TypeProxy.Proxy(a6));
+                eargs.GetField("6", false, true).Assign(TypeProxy.Proxy(a7));
+                eargs.GetField("7", false, true).Assign(TypeProxy.Proxy(a8));
+                eargs.GetField("8", false, true).Assign(TypeProxy.Proxy(a9));
+                eargs.GetField("9", false, true).Assign(TypeProxy.Proxy(a10));
+                eargs.GetField("10", false, true).Assign(TypeProxy.Proxy(a11));
+                eargs.GetField("11", false, true).Assign(TypeProxy.Proxy(a12));
+                eargs.GetField("12", false, true).Assign(TypeProxy.Proxy(a13));
+                eargs.GetField("13", false, true).Assign(TypeProxy.Proxy(a14));
+                return (RT)function.Invoke(eargs).Value;
+            }
+
+            public RT Invoke<RT, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10, T11 a11, T12 a12, T13 a13, T14 a14, T15 a15)
+            {
+                var eargs = new JSObject();
+                eargs.oValue = "[object Arguments]".Clone();
+                eargs.ValueType = JSObjectType.Object;
+                eargs.GetField("length", false, true).Assign(15);
+                eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
+                eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
+                eargs.GetField("2", false, true).Assign(TypeProxy.Proxy(a3));
+                eargs.GetField("3", false, true).Assign(TypeProxy.Proxy(a4));
+                eargs.GetField("4", false, true).Assign(TypeProxy.Proxy(a5));
+                eargs.GetField("5", false, true).Assign(TypeProxy.Proxy(a6));
+                eargs.GetField("6", false, true).Assign(TypeProxy.Proxy(a7));
+                eargs.GetField("7", false, true).Assign(TypeProxy.Proxy(a8));
+                eargs.GetField("8", false, true).Assign(TypeProxy.Proxy(a9));
+                eargs.GetField("9", false, true).Assign(TypeProxy.Proxy(a10));
+                eargs.GetField("10", false, true).Assign(TypeProxy.Proxy(a11));
+                eargs.GetField("11", false, true).Assign(TypeProxy.Proxy(a12));
+                eargs.GetField("12", false, true).Assign(TypeProxy.Proxy(a13));
+                eargs.GetField("13", false, true).Assign(TypeProxy.Proxy(a14));
+                eargs.GetField("14", false, true).Assign(TypeProxy.Proxy(a15));
+                return (RT)function.Invoke(eargs).Value;
+            }
+
+            public RT Invoke<RT, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10, T11 a11, T12 a12, T13 a13, T14 a14, T15 a15, T16 a16)
+            {
+                var eargs = new JSObject();
+                eargs.oValue = "[object Arguments]".Clone();
+                eargs.ValueType = JSObjectType.Object;
+                eargs.GetField("length", false, true).Assign(16);
+                eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
+                eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
+                eargs.GetField("2", false, true).Assign(TypeProxy.Proxy(a3));
+                eargs.GetField("3", false, true).Assign(TypeProxy.Proxy(a4));
+                eargs.GetField("4", false, true).Assign(TypeProxy.Proxy(a5));
+                eargs.GetField("5", false, true).Assign(TypeProxy.Proxy(a6));
+                eargs.GetField("6", false, true).Assign(TypeProxy.Proxy(a7));
+                eargs.GetField("7", false, true).Assign(TypeProxy.Proxy(a8));
+                eargs.GetField("8", false, true).Assign(TypeProxy.Proxy(a9));
+                eargs.GetField("9", false, true).Assign(TypeProxy.Proxy(a10));
+                eargs.GetField("10", false, true).Assign(TypeProxy.Proxy(a11));
+                eargs.GetField("11", false, true).Assign(TypeProxy.Proxy(a12));
+                eargs.GetField("12", false, true).Assign(TypeProxy.Proxy(a13));
+                eargs.GetField("13", false, true).Assign(TypeProxy.Proxy(a14));
+                eargs.GetField("14", false, true).Assign(TypeProxy.Proxy(a15));
+                eargs.GetField("15", false, true).Assign(TypeProxy.Proxy(a16));
+                return (RT)function.Invoke(eargs).Value;
+            }
+
+            public void Invoke()
+            {
+                var eargs = new JSObject();
+                eargs.oValue = "[object Arguments]".Clone();
+                eargs.ValueType = JSObjectType.Object;
+                eargs.GetField("length", false, true).Assign(0);
+                function.Invoke(eargs);
+            }
+
+            public void Invoke<T1>(T1 a1)
+            {
+                var eargs = new JSObject();
+                eargs.oValue = "[object Arguments]".Clone();
+                eargs.ValueType = JSObjectType.Object;
+                eargs.GetField("length", false, true).Assign(2);
+                eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
+                function.Invoke(eargs);
+            }
+
+            public void Invoke<T1, T2>(T1 a1, T2 a2)
+            {
+                var eargs = new JSObject();
+                eargs.oValue = "[object Arguments]".Clone();
+                eargs.ValueType = JSObjectType.Object;
+                eargs.GetField("length", false, true).Assign(2);
+                eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
+                eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
+                function.Invoke(eargs);
+            }
+
+            public void Invoke<T1, T2, T3>(T1 a1, T2 a2, T3 a3)
+            {
+                var eargs = new JSObject();
+                eargs.oValue = "[object Arguments]".Clone();
+                eargs.ValueType = JSObjectType.Object;
+                eargs.GetField("length", false, true).Assign(3);
+                eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
+                eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
+                eargs.GetField("2", false, true).Assign(TypeProxy.Proxy(a3));
+                function.Invoke(eargs);
+            }
+
+            public void Invoke<T1, T2, T3, T4>(T1 a1, T2 a2, T3 a3, T4 a4)
+            {
+                var eargs = new JSObject();
+                eargs.oValue = "[object Arguments]".Clone();
+                eargs.ValueType = JSObjectType.Object;
+                eargs.GetField("length", false, true).Assign(4);
+                eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
+                eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
+                eargs.GetField("2", false, true).Assign(TypeProxy.Proxy(a3));
+                eargs.GetField("3", false, true).Assign(TypeProxy.Proxy(a4));
+                function.Invoke(eargs);
+            }
+
+            public void Invoke<T1, T2, T3, T4, T5>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5)
+            {
+                var eargs = new JSObject();
+                eargs.oValue = "[object Arguments]".Clone();
+                eargs.ValueType = JSObjectType.Object;
+                eargs.GetField("length", false, true).Assign(5);
+                eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
+                eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
+                eargs.GetField("2", false, true).Assign(TypeProxy.Proxy(a3));
+                eargs.GetField("3", false, true).Assign(TypeProxy.Proxy(a4));
+                eargs.GetField("4", false, true).Assign(TypeProxy.Proxy(a5));
+                function.Invoke(eargs);
+            }
+
+            public void Invoke<T1, T2, T3, T4, T5, T6>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6)
+            {
+                var eargs = new JSObject();
+                eargs.oValue = "[object Arguments]".Clone();
+                eargs.ValueType = JSObjectType.Object;
+                eargs.GetField("length", false, true).Assign(6);
+                eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
+                eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
+                eargs.GetField("2", false, true).Assign(TypeProxy.Proxy(a3));
+                eargs.GetField("3", false, true).Assign(TypeProxy.Proxy(a4));
+                eargs.GetField("4", false, true).Assign(TypeProxy.Proxy(a5));
+                eargs.GetField("5", false, true).Assign(TypeProxy.Proxy(a6));
+                function.Invoke(eargs);
+            }
+
+            public void Invoke<T1, T2, T3, T4, T5, T6, T7>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7)
+            {
+                var eargs = new JSObject();
+                eargs.oValue = "[object Arguments]".Clone();
+                eargs.ValueType = JSObjectType.Object;
+                eargs.GetField("length", false, true).Assign(7);
+                eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
+                eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
+                eargs.GetField("2", false, true).Assign(TypeProxy.Proxy(a3));
+                eargs.GetField("3", false, true).Assign(TypeProxy.Proxy(a4));
+                eargs.GetField("4", false, true).Assign(TypeProxy.Proxy(a5));
+                eargs.GetField("5", false, true).Assign(TypeProxy.Proxy(a6));
+                eargs.GetField("6", false, true).Assign(TypeProxy.Proxy(a7));
+                function.Invoke(eargs);
+            }
+
+            public void Invoke<T1, T2, T3, T4, T5, T6, T7, T8>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8)
+            {
+                var eargs = new JSObject();
+                eargs.oValue = "[object Arguments]".Clone();
+                eargs.ValueType = JSObjectType.Object;
+                eargs.GetField("length", false, true).Assign(8);
+                eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
+                eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
+                eargs.GetField("2", false, true).Assign(TypeProxy.Proxy(a3));
+                eargs.GetField("3", false, true).Assign(TypeProxy.Proxy(a4));
+                eargs.GetField("4", false, true).Assign(TypeProxy.Proxy(a5));
+                eargs.GetField("5", false, true).Assign(TypeProxy.Proxy(a6));
+                eargs.GetField("6", false, true).Assign(TypeProxy.Proxy(a7));
+                eargs.GetField("7", false, true).Assign(TypeProxy.Proxy(a8));
+                function.Invoke(eargs);
+            }
+
+            public void Invoke<T1, T2, T3, T4, T5, T6, T7, T8, T9>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9)
+            {
+                var eargs = new JSObject();
+                eargs.oValue = "[object Arguments]".Clone();
+                eargs.ValueType = JSObjectType.Object;
+                eargs.GetField("length", false, true).Assign(9);
+                eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
+                eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
+                eargs.GetField("2", false, true).Assign(TypeProxy.Proxy(a3));
+                eargs.GetField("3", false, true).Assign(TypeProxy.Proxy(a4));
+                eargs.GetField("4", false, true).Assign(TypeProxy.Proxy(a5));
+                eargs.GetField("5", false, true).Assign(TypeProxy.Proxy(a6));
+                eargs.GetField("6", false, true).Assign(TypeProxy.Proxy(a7));
+                eargs.GetField("7", false, true).Assign(TypeProxy.Proxy(a8));
+                eargs.GetField("8", false, true).Assign(TypeProxy.Proxy(a9));
+                function.Invoke(eargs);
+            }
+
+            public void Invoke<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10)
+            {
+                var eargs = new JSObject();
+                eargs.oValue = "[object Arguments]".Clone();
+                eargs.ValueType = JSObjectType.Object;
+                eargs.GetField("length", false, true).Assign(10);
+                eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
+                eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
+                eargs.GetField("2", false, true).Assign(TypeProxy.Proxy(a3));
+                eargs.GetField("3", false, true).Assign(TypeProxy.Proxy(a4));
+                eargs.GetField("4", false, true).Assign(TypeProxy.Proxy(a5));
+                eargs.GetField("5", false, true).Assign(TypeProxy.Proxy(a6));
+                eargs.GetField("6", false, true).Assign(TypeProxy.Proxy(a7));
+                eargs.GetField("7", false, true).Assign(TypeProxy.Proxy(a8));
+                eargs.GetField("8", false, true).Assign(TypeProxy.Proxy(a9));
+                eargs.GetField("9", false, true).Assign(TypeProxy.Proxy(a10));
+                function.Invoke(eargs);
+            }
+
+            public void Invoke<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10, T11 a11)
+            {
+                var eargs = new JSObject();
+                eargs.oValue = "[object Arguments]".Clone();
+                eargs.ValueType = JSObjectType.Object;
+                eargs.GetField("length", false, true).Assign(11);
+                eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
+                eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
+                eargs.GetField("2", false, true).Assign(TypeProxy.Proxy(a3));
+                eargs.GetField("3", false, true).Assign(TypeProxy.Proxy(a4));
+                eargs.GetField("4", false, true).Assign(TypeProxy.Proxy(a5));
+                eargs.GetField("5", false, true).Assign(TypeProxy.Proxy(a6));
+                eargs.GetField("6", false, true).Assign(TypeProxy.Proxy(a7));
+                eargs.GetField("7", false, true).Assign(TypeProxy.Proxy(a8));
+                eargs.GetField("8", false, true).Assign(TypeProxy.Proxy(a9));
+                eargs.GetField("9", false, true).Assign(TypeProxy.Proxy(a10));
+                eargs.GetField("10", false, true).Assign(TypeProxy.Proxy(a11));
+                function.Invoke(eargs);
+            }
+
+            public void Invoke<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10, T11 a11, T12 a12)
+            {
+                var eargs = new JSObject();
+                eargs.oValue = "[object Arguments]".Clone();
+                eargs.ValueType = JSObjectType.Object;
+                eargs.GetField("length", false, true).Assign(12);
+                eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
+                eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
+                eargs.GetField("2", false, true).Assign(TypeProxy.Proxy(a3));
+                eargs.GetField("3", false, true).Assign(TypeProxy.Proxy(a4));
+                eargs.GetField("4", false, true).Assign(TypeProxy.Proxy(a5));
+                eargs.GetField("5", false, true).Assign(TypeProxy.Proxy(a6));
+                eargs.GetField("6", false, true).Assign(TypeProxy.Proxy(a7));
+                eargs.GetField("7", false, true).Assign(TypeProxy.Proxy(a8));
+                eargs.GetField("8", false, true).Assign(TypeProxy.Proxy(a9));
+                eargs.GetField("9", false, true).Assign(TypeProxy.Proxy(a10));
+                eargs.GetField("10", false, true).Assign(TypeProxy.Proxy(a11));
+                eargs.GetField("11", false, true).Assign(TypeProxy.Proxy(a12));
+                function.Invoke(eargs);
+            }
+
+            public void Invoke<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10, T11 a11, T12 a12, T13 a13)
+            {
+                var eargs = new JSObject();
+                eargs.oValue = "[object Arguments]".Clone();
+                eargs.ValueType = JSObjectType.Object;
+                eargs.GetField("length", false, true).Assign(13);
+                eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
+                eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
+                eargs.GetField("2", false, true).Assign(TypeProxy.Proxy(a3));
+                eargs.GetField("3", false, true).Assign(TypeProxy.Proxy(a4));
+                eargs.GetField("4", false, true).Assign(TypeProxy.Proxy(a5));
+                eargs.GetField("5", false, true).Assign(TypeProxy.Proxy(a6));
+                eargs.GetField("6", false, true).Assign(TypeProxy.Proxy(a7));
+                eargs.GetField("7", false, true).Assign(TypeProxy.Proxy(a8));
+                eargs.GetField("8", false, true).Assign(TypeProxy.Proxy(a9));
+                eargs.GetField("9", false, true).Assign(TypeProxy.Proxy(a10));
+                eargs.GetField("10", false, true).Assign(TypeProxy.Proxy(a11));
+                eargs.GetField("11", false, true).Assign(TypeProxy.Proxy(a12));
+                eargs.GetField("12", false, true).Assign(TypeProxy.Proxy(a13));
+                function.Invoke(eargs);
+            }
+
+            public void Invoke<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10, T11 a11, T12 a12, T13 a13, T14 a14)
+            {
+                var eargs = new JSObject();
+                eargs.oValue = "[object Arguments]".Clone();
+                eargs.ValueType = JSObjectType.Object;
+                eargs.GetField("length", false, true).Assign(14);
+                eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
+                eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
+                eargs.GetField("2", false, true).Assign(TypeProxy.Proxy(a3));
+                eargs.GetField("3", false, true).Assign(TypeProxy.Proxy(a4));
+                eargs.GetField("4", false, true).Assign(TypeProxy.Proxy(a5));
+                eargs.GetField("5", false, true).Assign(TypeProxy.Proxy(a6));
+                eargs.GetField("6", false, true).Assign(TypeProxy.Proxy(a7));
+                eargs.GetField("7", false, true).Assign(TypeProxy.Proxy(a8));
+                eargs.GetField("8", false, true).Assign(TypeProxy.Proxy(a9));
+                eargs.GetField("9", false, true).Assign(TypeProxy.Proxy(a10));
+                eargs.GetField("10", false, true).Assign(TypeProxy.Proxy(a11));
+                eargs.GetField("11", false, true).Assign(TypeProxy.Proxy(a12));
+                eargs.GetField("12", false, true).Assign(TypeProxy.Proxy(a13));
+                eargs.GetField("13", false, true).Assign(TypeProxy.Proxy(a14));
+                function.Invoke(eargs);
+            }
+
+            public void Invoke<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10, T11 a11, T12 a12, T13 a13, T14 a14, T15 a15)
+            {
+                var eargs = new JSObject();
+                eargs.oValue = "[object Arguments]".Clone();
+                eargs.ValueType = JSObjectType.Object;
+                eargs.GetField("length", false, true).Assign(15);
+                eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
+                eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
+                eargs.GetField("2", false, true).Assign(TypeProxy.Proxy(a3));
+                eargs.GetField("3", false, true).Assign(TypeProxy.Proxy(a4));
+                eargs.GetField("4", false, true).Assign(TypeProxy.Proxy(a5));
+                eargs.GetField("5", false, true).Assign(TypeProxy.Proxy(a6));
+                eargs.GetField("6", false, true).Assign(TypeProxy.Proxy(a7));
+                eargs.GetField("7", false, true).Assign(TypeProxy.Proxy(a8));
+                eargs.GetField("8", false, true).Assign(TypeProxy.Proxy(a9));
+                eargs.GetField("9", false, true).Assign(TypeProxy.Proxy(a10));
+                eargs.GetField("10", false, true).Assign(TypeProxy.Proxy(a11));
+                eargs.GetField("11", false, true).Assign(TypeProxy.Proxy(a12));
+                eargs.GetField("12", false, true).Assign(TypeProxy.Proxy(a13));
+                eargs.GetField("13", false, true).Assign(TypeProxy.Proxy(a14));
+                eargs.GetField("14", false, true).Assign(TypeProxy.Proxy(a15));
+                function.Invoke(eargs);
+            }
+
+            public void Invoke<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10, T11 a11, T12 a12, T13 a13, T14 a14, T15 a15, T16 a16)
+            {
+                var eargs = new JSObject();
+                eargs.oValue = "[object Arguments]".Clone();
+                eargs.ValueType = JSObjectType.Object;
+                eargs.GetField("length", false, true).Assign(16);
+                eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
+                eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
+                eargs.GetField("2", false, true).Assign(TypeProxy.Proxy(a3));
+                eargs.GetField("3", false, true).Assign(TypeProxy.Proxy(a4));
+                eargs.GetField("4", false, true).Assign(TypeProxy.Proxy(a5));
+                eargs.GetField("5", false, true).Assign(TypeProxy.Proxy(a6));
+                eargs.GetField("6", false, true).Assign(TypeProxy.Proxy(a7));
+                eargs.GetField("7", false, true).Assign(TypeProxy.Proxy(a8));
+                eargs.GetField("8", false, true).Assign(TypeProxy.Proxy(a9));
+                eargs.GetField("9", false, true).Assign(TypeProxy.Proxy(a10));
+                eargs.GetField("10", false, true).Assign(TypeProxy.Proxy(a11));
+                eargs.GetField("11", false, true).Assign(TypeProxy.Proxy(a12));
+                eargs.GetField("12", false, true).Assign(TypeProxy.Proxy(a13));
+                eargs.GetField("13", false, true).Assign(TypeProxy.Proxy(a14));
+                eargs.GetField("14", false, true).Assign(TypeProxy.Proxy(a15));
+                eargs.GetField("15", false, true).Assign(TypeProxy.Proxy(a16));
+                function.Invoke(eargs);
+            }
+        
+        }
+
+        [Hidden]
+        public object MakeDelegate(Type delegateType)
+        {
+            var del = delegateType.GetMethod("Invoke");
+            var prms = del.GetParameters();
+            if (prms.Length <= 16)
+            {
+                var temp = typeof(_DelegateWraper).GetMember("Invoke");
+                if (del.ReturnType != typeof(void))
+                {
+                    Type[] argtypes = new Type[prms.Length + 1];
+                    for (int i = 0; i < prms.Length; i++)
+                        argtypes[i + 1] = prms[i].ParameterType;
+                    argtypes[0] = del.ReturnType;
+                    var instance = new _DelegateWraper(this);
+                    var method = ((System.Reflection.MethodInfo)typeof(_DelegateWraper).GetMember("Invoke")[prms.Length]).MakeGenericMethod(argtypes);
+                    return Delegate.CreateDelegate(delegateType, instance, method);
+                }
+                else
+                {
+                    Type[] argtypes = new Type[prms.Length];
+                    for (int i = 0; i < prms.Length; i++)
+                        argtypes[i] = prms[i].ParameterType;
+                    var instance = new _DelegateWraper(this);
+                    var method = ((System.Reflection.MethodInfo)typeof(_DelegateWraper).GetMember("Invoke")[17 + prms.Length]).MakeGenericMethod(argtypes);
+                    return Delegate.CreateDelegate(delegateType, instance, method);
+                }
+            }
+            else
+                throw new ArgumentException("Parameters count mast be no more 16.");
+        }
+
         [Hidden]
         internal protected Context context;
         [Hidden]
@@ -70,7 +691,7 @@ namespace NiL.JS.Core.BaseTypes
             ValueType = JSObjectType.Function;
             prototype = null;
         }
-        
+
         internal static readonly Number _length = new Number(0) { attributes = ObjectAttributes.ReadOnly | ObjectAttributes.DontDelete | ObjectAttributes.DontEnum };
 
         public virtual JSObject length

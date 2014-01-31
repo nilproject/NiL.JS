@@ -128,17 +128,9 @@ namespace NiL.JS.Core
                     }
                     else if (v is TypeProxyConstructor)
                         res[i] = (v as TypeProxyConstructor).proxy.hostedType;
-                    else if (v is Function && targetTypes[i].ParameterType == typeof(System.EventHandler))
+                    else if (v is Function && targetTypes[i].ParameterType.IsSubclassOf(typeof(Delegate)))
                     {
-                        res[i] = new System.EventHandler((sender, e) =>
-                        {
-                            var eargs = new JSObject();
-                            eargs.oValue = "[object Arguments]".Clone();
-                            eargs.ValueType = JSObjectType.Object;
-                            eargs.GetField("length", false, true).Assign(1);
-                            eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(sender));
-                            (v as Function).Invoke(eargs);
-                        });
+                        res[i] = (v as Function).MakeDelegate(targetTypes[i].ParameterType);
                     }
                     else
                         res[i] = v;
@@ -484,19 +476,15 @@ namespace NiL.JS.Core
                     for (int i = 0; i < m.Length; i++)
                     {
                         var mi = m[i] as MethodInfo;
-                        if (mi.DeclaringType == typeof(object))
-                            continue;
                         if (mi.GetParameters().Length == l && mi.GetCustomAttributes(typeof(HiddenAttribute), false).Length == 0)
-                        {
                             return (cache[i] ?? (cache[i] = ProxyMethod(m[i] as MethodInfo).oValue as Function)).Invoke(context, args);
-                        }
                     }
                     return null;
                 });
             }
             else
             {
-                if (m.Length == 0 || m[0].DeclaringType == typeof(object) || m[0].GetCustomAttributes(typeof(HiddenAttribute), true).Length != 0)
+                if (m.Length == 0 || name == "GetType" || m[0].GetCustomAttributes(typeof(HiddenAttribute), true).Length != 0)
                 {
                     switch (name)
                     {
@@ -589,7 +577,7 @@ namespace NiL.JS.Core
                             {
                                 ValueType = JSObjectType.Property,
                                 oValue = new Function[] { 
-                                    ProxyMethod(pinfo.AddMethod).oValue as Function,
+                                    ProxyMethod(pinfo.GetAddMethod()).oValue as Function,
                                     null
                                 }
                             };
