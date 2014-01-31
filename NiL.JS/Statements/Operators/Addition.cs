@@ -16,34 +16,40 @@ namespace NiL.JS.Statements.Operators
             JSObject temp;
             temp = first.Invoke(context);
 
-            double dr;
             switch (temp.ValueType)
             {
                 case JSObjectType.Bool:
                 case JSObjectType.Int:
                     {
                         var type = temp.ValueType;
-                        dr = temp.iValue;
+                        int ir = temp.iValue;
                         temp = second.Invoke(context);
                         if (temp.ValueType >= JSObjectType.Object)
                             temp = temp.ToPrimitiveValue_Value_String();
                         if (temp.ValueType == JSObjectType.Int || temp.ValueType == JSObjectType.Bool)
                         {
-                            dr += temp.iValue;
-                            tempResult.ValueType = JSObjectType.Double;
-                            tempResult.dValue = dr;
-                            return tempResult;
+                            if (((ir & temp.iValue) & (int)0x60000000) == 0)
+                            {
+                                tempResult.ValueType = JSObjectType.Int;
+                                tempResult.iValue = ir + temp.iValue;
+                                return tempResult;
+                            }
+                            else
+                            {
+                                tempResult.ValueType = JSObjectType.Double;
+                                tempResult.dValue = (double)ir + temp.iValue;
+                                return tempResult;
+                            }
                         }
                         else if (temp.ValueType == JSObjectType.Double)
                         {
-                            dr += temp.dValue;
                             tempResult.ValueType = JSObjectType.Double;
-                            tempResult.dValue = dr;
+                            tempResult.dValue = ir + temp.dValue;
                             return tempResult;
                         }
                         else if (temp.ValueType == JSObjectType.String)
                         {
-                            tempResult.oValue = (type == JSObjectType.Bool ? (dr != 0 ? "true" : "false") : Tools.DoubleToString(dr)) + (string)temp.oValue;
+                            tempResult.oValue = (type == JSObjectType.Bool ? (ir != 0 ? "true" : "false") : ir.ToString()) + (string)temp.oValue;
                             tempResult.ValueType = JSObjectType.String;
                             return tempResult;
                         }
@@ -55,7 +61,7 @@ namespace NiL.JS.Statements.Operators
                         }
                         else if (temp.ValueType == JSObjectType.Object) // x+null
                         {
-                            tempResult.dValue = dr;
+                            tempResult.dValue = ir;
                             tempResult.ValueType = JSObjectType.Double;
                             return tempResult;
                         }
@@ -65,7 +71,7 @@ namespace NiL.JS.Statements.Operators
                     }
                 case JSObjectType.Double:
                     {
-                        dr = temp.dValue;
+                        double dr = temp.dValue;
                         temp = second.Invoke(context);
                         if (temp.ValueType >= JSObjectType.Object)
                             temp = temp.ToPrimitiveValue_Value_String();
