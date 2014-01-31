@@ -389,10 +389,10 @@ namespace NiL.JS.Statements
                         {
                             s = value.LastIndexOf('/') + 1;
                             string flags = value.Substring(s);
-                            first = new Operators.Call(new GetVaribleStatement("RegExp"), new ImmidateValueStatement(new JSObject[2]
+                            first = new Operators.Call(new GetVaribleStatement("RegExp"), new ImmidateValueStatement(new Statement[2]
                             {
-                                value.Substring(1, s - 2),
-                                flags
+                                new ImmidateValueStatement(value.Substring(1, s - 2)),
+                                new ImmidateValueStatement(flags)
                             }));
                         }
                         else

@@ -759,6 +759,7 @@ namespace NiL.JS.Core.BaseTypes
             }
         }
 
+        [Hidden]
         public override JSObject GetField(string name, bool fast, bool own)
         {
             if (name == "prototype")
@@ -771,13 +772,16 @@ namespace NiL.JS.Core.BaseTypes
                         ValueType = JSObjectType.Object,
                         prototype = BaseObject.Prototype
                     };
-                    protorypeField.GetField("constructor", false, true).Assign(this);
+                    var ctor = protorypeField.GetField("constructor", false, true);
+                    ctor.attributes = ObjectAttributes.DontDelete | ObjectAttributes.DontEnum;
+                    ctor.Assign(this);
                 }
                 return protorypeField;
             }
             return DefaultFieldGetter(name, fast, own);
         }
 
+        [Hidden]
         public override string ToString()
         {
             var res = "function " + Name + "(";
@@ -786,6 +790,18 @@ namespace NiL.JS.Core.BaseTypes
                     res += argumentsNames[i] + (++i < argumentsNames.Length ? "," : "");
             res += ")" + (body is Statements.EmptyStatement ? "{ }" : ((object)body ?? "{ [native code] }").ToString());
             return res;
+        }
+
+        public JSObject call(JSObject args)
+        {
+            var newThis = args.GetField("0", true, false);
+            var prmlen = --args.GetField("length", true, false).iValue;
+            for (int i = 0; i < prmlen; i++)
+                args.fields[i.ToString()] = args.GetField((i + 1).ToString(), true, false);
+            args.fields.Remove(prmlen.ToString());
+            if (newThis.ValueType > JSObjectType.Undefined && (newThis.ValueType < JSObjectType.Object || newThis.oValue != null))
+                return Invoke(newThis, args);
+            return Invoke(args);
         }
     }
 }

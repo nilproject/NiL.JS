@@ -436,30 +436,37 @@ namespace NiL.JS.Core
                 if (thproto.oValue is TypeProxy)
                     bynew = (thproto.oValue as TypeProxy).hostedType == hostedType;
             }
-            var obj = constructor.Invoke(args);
-            JSObject res = null;
-            if (bynew)
+            try
             {
-                _this.oValue = obj;
-                if (obj is Date)
-                    _this.ValueType = JSObjectType.Date;
-                else if (obj is JSObject)
-                    _this.ValueType = (JSObjectType)System.Math.Max((int)JSObjectType.Object, (int)(obj as JSObject).ValueType);
-                res = _this;
-            }
-            else
-            {
-                if (hostedType == typeof(Date))
-                    res = (obj as Date).toString();
+                var obj = constructor.Invoke(args);
+                JSObject res = null;
+                if (bynew)
+                {
+                    _this.oValue = obj;
+                    if (obj is Date)
+                        _this.ValueType = JSObjectType.Date;
+                    else if (obj is JSObject)
+                        _this.ValueType = (JSObjectType)System.Math.Max((int)JSObjectType.Object, (int)(obj as JSObject).ValueType);
+                    res = _this;
+                }
                 else
-                    res = obj is JSObject ? obj as JSObject : new JSObject(false)
-                    {
-                        oValue = obj,
-                        ValueType = JSObjectType.Object,
-                        prototype = GetPrototype(hostedType)
-                    };
+                {
+                    if (hostedType == typeof(Date))
+                        res = (obj as Date).toString();
+                    else
+                        res = obj is JSObject ? obj as JSObject : new JSObject(false)
+                        {
+                            oValue = obj,
+                            ValueType = JSObjectType.Object,
+                            prototype = GetPrototype(hostedType)
+                        };
+                }
+                return res;
             }
-            return res;
+            catch (TargetInvocationException e)
+            {
+                throw e.InnerException;
+            }
         }
 
         public override JSObject GetField(string name, bool fast, bool own)
