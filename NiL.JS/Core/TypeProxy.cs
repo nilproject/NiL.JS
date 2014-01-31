@@ -195,7 +195,7 @@ namespace NiL.JS.Core
             object obj = context.thisBind;
             if (obj is EmbeddedType)
                 return obj;
-            if (obj is JSObject && (obj as JSObject).oValue is JSObject)
+            if (obj is JSObject && (obj as JSObject).ValueType >= JSObjectType.Object && (obj as JSObject).oValue is JSObject)
                 obj = (obj as JSObject).oValue ?? obj;
             obj = embeddedTypeConvert(obj as JSObject, targetType) ?? (obj as JSObject).oValue;
             if (obj == this)
