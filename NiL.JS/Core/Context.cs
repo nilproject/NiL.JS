@@ -19,6 +19,7 @@ namespace NiL.JS.Core
         internal static Context currentRootContext = null;
         internal readonly static Context globalContext = new Context();
         public static Context GlobalContext { get { return globalContext; } }
+        public static CallableField Eval { get; private set; }
 
         public static void RefreshGlobalContext()
         {
@@ -44,7 +45,7 @@ namespace NiL.JS.Core
             globalContext.AttachModule(typeof(Modules.console));
 
             #region Base Function
-            globalContext.GetField("eval").Assign(new CallableField((context, x) =>
+            globalContext.GetField("eval").Assign(Eval = new CallableField((context, x) =>
             {
                 int i = 0;
                 string c = "{" + Tools.RemoveComments(x.GetField("0", true, false).ToString()) + "}";

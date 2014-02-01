@@ -36,9 +36,7 @@ namespace NiL.JS.Statements
             do i++; while (char.IsWhiteSpace(code[i]));
             if (code[i] != '{')
                 throw new ArgumentException("code (" + i + ")");
-            do
-                i++;
-            while (char.IsWhiteSpace(code[i]));
+            do i++; while (char.IsWhiteSpace(code[i]));
             var body = new List<Statement>();
             var funcs = new List<FunctionStatement>();
             var cases = new List<Case>();
@@ -46,26 +44,31 @@ namespace NiL.JS.Statements
             state.AllowBreak++;
             while (code[i] != '}')
             {
-                if (Parser.Validate(code, "case", ref i))
+                do
                 {
-                    do
+                    if (Parser.Validate(code, "case", ref i))
+                    {
+                        do
+                            i++;
+                        while (char.IsWhiteSpace(code[i]));
+                        var sample = OperatorStatement.Parse(state, ref i).Statement;
+                        if (code[i] != ':')
+                            throw new ArgumentException("code (" + i + ")");
                         i++;
-                    while (char.IsWhiteSpace(code[i]));
-                    var sample = OperatorStatement.Parse(state, ref i).Statement;
-                    if (code[i] != ':')
-                        throw new ArgumentException("code (" + i + ")");
-                    i++;
-                    cases.Add(new Case() { index = body.Count, statement = new Operators.StrictEqual(image, sample) });
-                }
-                else if (Parser.Validate(code, "default", ref i))
-                {
-                    if (cases[0] != null)
-                        throw new InvalidOperationException("Duplicate default case in switch");
-                    if (code[i] != ':')
-                        throw new ArgumentException("code (" + i + ")");
-                    i++;
-                    cases[0] = new Case() { index = body.Count, statement = null };
-                }
+                        cases.Add(new Case() { index = body.Count, statement = new Operators.StrictEqual(image, sample) });
+                    }
+                    else if (Parser.Validate(code, "default", ref i))
+                    {
+                        if (cases[0] != null)
+                            throw new InvalidOperationException("Duplicate default case in switch");
+                        if (code[i] != ':')
+                            throw new ArgumentException("code (" + i + ")");
+                        i++;
+                        cases[0] = new Case() { index = body.Count, statement = null };
+                    }
+                    else break;
+                    while (char.IsWhiteSpace(code[i]) || (code[i] == ';')) i++;
+                } while (true);
                 if (cases.Count == 1 && cases[0] == null)
                     throw new ArgumentException("code (" + i + ")");
                 var t = Parser.Parse(state, ref i, 0);
@@ -76,7 +79,7 @@ namespace NiL.JS.Statements
                 else
                     body.Add(t);
                 while (char.IsWhiteSpace(code[i]) || (code[i] == ';')) i++;
-            };
+            }
             state.AllowBreak--;
             i++;
             index = i;

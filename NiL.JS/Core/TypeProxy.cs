@@ -537,6 +537,7 @@ namespace NiL.JS.Core
                         {
                             var method = (MethodInfo)m[0];
                             r = ProxyMethod(method);
+                            r.assignCallback = null;
                             break;
                         }
                     case MemberTypes.Field:
