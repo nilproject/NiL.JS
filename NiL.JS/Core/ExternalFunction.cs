@@ -65,7 +65,7 @@ namespace NiL.JS.Core
         {
             get
             {
-                _length.iValue = del.Method.GetParameters().Length;
+                _length.iValue = 0;
                 return _length;
             }
         }

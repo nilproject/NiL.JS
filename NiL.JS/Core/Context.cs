@@ -25,7 +25,7 @@ namespace NiL.JS.Core
         {
             if (globalContext.fields != null)
                 globalContext.fields.Clear();
-            
+            TypeProxy.Clear();
             BaseObject.RegisterTo(globalContext);
             globalContext.AttachModule(typeof(BaseTypes.Date));
             globalContext.AttachModule(typeof(BaseTypes.Array));
@@ -45,7 +45,7 @@ namespace NiL.JS.Core
             globalContext.AttachModule(typeof(Modules.console));
 
             #region Base Function
-            globalContext.GetField("eval").Assign(Eval = new CallableField((context, x) =>
+            globalContext.GetOwnField("eval").Assign(Eval = new CallableField((context, x) =>
             {
                 int i = 0;
                 string c = "{" + Tools.RemoveComments(x.GetField("0", true, false).ToString()) + "}";
@@ -56,7 +56,7 @@ namespace NiL.JS.Core
                 var res = cb.Invoke(context);
                 return res;
             }));
-            globalContext.GetField("isNaN").Assign(new CallableField((t, x) =>
+            globalContext.GetOwnField("isNaN").Assign(new CallableField((t, x) =>
             {
                 var r = x.GetField("0", true, false);
                 if (r.ValueType == JSObjectType.Double)
@@ -73,33 +73,34 @@ namespace NiL.JS.Core
                 }
                 return true;
             }));
-            globalContext.GetField("unescape").Assign(new CallableField((t, x) =>
+            globalContext.GetOwnField("unescape").Assign(new CallableField((t, x) =>
             {
                 return System.Web.HttpUtility.HtmlDecode(x.GetField("0", true, false).ToString());
             }));
-            globalContext.GetField("escape").Assign(new CallableField((t, x) =>
+            globalContext.GetOwnField("escape").Assign(new CallableField((t, x) =>
             {
                 return System.Web.HttpUtility.HtmlEncode(x.GetField("0", true, false).ToString());
             }));
-            globalContext.GetField("encodeURI").Assign(new CallableField((t, x) =>
+            globalContext.GetOwnField("encodeURI").Assign(new CallableField((t, x) =>
             {
                 return System.Web.HttpServerUtility.UrlTokenEncode(System.Text.UTF8Encoding.Default.GetBytes(x.GetField("0", true, false).ToString()));
             }));
-            globalContext.GetField("encodeURIComponent").Assign(globalContext.GetField("encodeURI"));
-            globalContext.GetField("decodeURI").Assign(new CallableField((t, x) =>
+            globalContext.GetOwnField("encodeURIComponent").Assign(globalContext.GetField("encodeURI"));
+            globalContext.GetOwnField("decodeURI").Assign(new CallableField((t, x) =>
             {
                 return System.Text.UTF8Encoding.Default.GetString(System.Web.HttpServerUtility.UrlTokenDecode(x.GetField("0", true, false).ToString()));
             }));
-            globalContext.GetField("decodeURIComponent").Assign(globalContext.GetField("decodeURI"));
-            globalContext.GetField("isFinite").Assign(new CallableField((t, x) =>
+            globalContext.GetOwnField("decodeURIComponent").Assign(globalContext.GetField("decodeURI"));
+            globalContext.GetOwnField("isFinite").Assign(new CallableField((t, x) =>
             {
-                return !double.IsInfinity(Tools.JSObjectToDouble(x.GetField("0", true, false)));
+                var d = Tools.JSObjectToDouble(x.GetField("0", true, false));
+                return !double.IsNaN(d) && !double.IsInfinity(d);
             }));
-            globalContext.GetField("parseFloat").Assign(new CallableField((t, x) =>
+            globalContext.GetOwnField("parseFloat").Assign(new CallableField((t, x) =>
             {
                 return Tools.JSObjectToDouble(x.GetField("0", true, false));
             }));
-            globalContext.GetField("parseInt").Assign(new CallableField((t, x) =>
+            globalContext.GetOwnField("parseInt").Assign(new CallableField((t, x) =>
             {
                 var r = x.GetField("0", true, false);
                 for (; ; )
@@ -193,8 +194,31 @@ namespace NiL.JS.Core
             return res;
         }
 
-        internal virtual JSObject Define(string name)
+        public virtual JSObject GetOwnField(string name)
         {
+            if (name == "this")
+            {
+                var c = this;
+                if (thisBind == null)
+                {
+                    for (; ; )
+                    {
+                        if (c.prototype == globalContext)
+                        {
+                            thisBind = new ThisObject(c);
+                            c.thisBind = thisBind;
+                            break;
+                        }
+                        else
+                            c = c.prototype;
+                        if (c.thisBind != null)
+                            thisBind = c.thisBind;
+                    }
+                }
+                else if (thisBind.ValueType <= JSObjectType.Undefined) // было "delete this". Просто вернём к жизни существующий объект
+                    thisBind.ValueType = JSObjectType.Object;
+                return thisBind;
+            }
             JSObject res;
             if (fields == null)
                 fields = new Dictionary<string, JSObject>();
@@ -229,9 +253,9 @@ namespace NiL.JS.Core
         public virtual JSObject GetField(string name)
         {
             JSObject res = null;
-            var c = this;
             if (name == "this")
             {
+                var c = this;
                 if (thisBind == null)
                 {
                     for (; ; )
@@ -252,20 +276,20 @@ namespace NiL.JS.Core
                     thisBind.ValueType = JSObjectType.Object;
                 return thisBind;
             }
-            var scriptRoot = this;
-            while (((c.fields == null) || !c.fields.TryGetValue(name, out res)) && (c.prototype != null))
-            {
-                c = c.prototype;
-                if (c != globalContext)
-                    scriptRoot = c;
-            }
+            bool fromProto = (fields == null || !fields.TryGetValue(name, out res)) && (prototype != null);
+            if (fromProto)
+                res = prototype.GetField(name);
             if (res == null)
-                return scriptRoot.define(name);
+            {
+                if (this == globalContext)
+                    return null;
+                return define(name);
+            }
             else
             {
                 if (res.ValueType == JSObjectType.NotExistInObject)
                     res.ValueType = JSObjectType.NotExist;
-                if ((c != this) && (fields != null) && !(this is WithContext))
+                if (fromProto && fields != null)
                     fields[name] = res;
             }
             return res;

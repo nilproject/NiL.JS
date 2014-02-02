@@ -25,16 +25,17 @@ namespace NiL.JS.Statements.Operators
         }
 
         public override JSObject Invoke(Context context)
-        {            
+        {
             var otb = context.thisBind;
             var outb = context.updateThisBind;
+            JSObject field = null;
             try
             {
                 context.updateThisBind = true;
-                var field = first.InvokeForAssing(context);
-                var _this = context.thisBind;
+                field = first.InvokeForAssing(context);
                 if (field.ValueType == JSObjectType.Property)
                 {
+                    var _this = context.thisBind;
                     setterArg.Assign(Tools.RaiseIfNotExist(second.Invoke(context)));
                     var setter = (field.oValue as NiL.JS.Core.BaseTypes.Function[])[0];
                     if (setter != null)
@@ -44,20 +45,17 @@ namespace NiL.JS.Statements.Operators
                     }
                     return setterArg;
                 }
-                else
-                {
-                    var t = second.Invoke(context);
-                    if (t.ValueType == JSObjectType.NotExist)
-                        throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible is not defined.")));
-                    field.Assign(t);
-                    return t;
-                }
             }
             finally
             {
                 context.updateThisBind = outb;
                 context.thisBind = otb;
             }
+            var t = second.Invoke(context);
+            if (t.ValueType == JSObjectType.NotExist)
+                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible is not defined.")));
+            field.Assign(t);
+            return t;
         }
 
         public override bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> vars)

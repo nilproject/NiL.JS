@@ -11,12 +11,11 @@ namespace NiL.JS.Statements
         {
             string code = state.Code;
             int i = index;
-            if (!Parser.Validate(code, "throw", ref i))
+            if (!Parser.Validate(code, "throw", ref i) || (!char.IsWhiteSpace(code[i]) && (code[i] != '(')))
                 return new ParseResult();
-            i++;
             var b = Parser.Parse(state, ref i, 1, true);
             if (b is EmptyStatement)
-                throw new ArgumentException("Can't throw result of EmptyStatement");
+                throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Can't throw result of EmptyStatement " + Tools.PositionToTextcord(code, i - 1))));
             index = i;
             return new ParseResult()
             {

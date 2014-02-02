@@ -25,15 +25,21 @@ namespace NiL.JS.Statements.Operators
                 tempResult.ValueType = JSObjectType.Bool;
                 tempResult.iValue = 0;
                 if (c.oValue != null)
+                {
+                    bool tpmode = c.oValue is TypeProxy;
+                    Type type = null;
+                    if (tpmode)
+                        type = (c.oValue as TypeProxy).hostedType;
                     while (a.ValueType >= JSObjectType.Object && a.oValue != null)
                     {
-                        if (a.oValue == c.oValue || (c.oValue is TypeProxy && a.oValue.GetType() == (c.oValue as TypeProxy).hostedType))
+                        if (a.oValue == c.oValue || (tpmode && a.oValue is TypeProxy && (a.oValue as TypeProxy).hostedType == type))
                         {
                             tempResult.iValue = 1;
                             return tempResult;
                         }
                         a = a.GetField("__proto__", true, false);
                     }
+                }
                 return tempResult;
             }
             finally

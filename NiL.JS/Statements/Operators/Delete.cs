@@ -13,7 +13,7 @@ namespace NiL.JS.Statements.Operators
 
         public override JSObject Invoke(Context context)
         {
-            var temp = first.Invoke(context);
+            var temp = first.InvokeForAssing(context);
             tempResult.ValueType = JSObjectType.Bool;
             if (temp.ValueType <= JSObjectType.NotExistInObject)
                 tempResult.iValue = 1;

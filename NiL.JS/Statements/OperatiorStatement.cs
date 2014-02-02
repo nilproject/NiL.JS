@@ -418,8 +418,8 @@ namespace NiL.JS.Statements
                             {
                                 do i++; while (char.IsWhiteSpace(code[i]));
                                 first = Parse(state, ref i, true, true, false, true).Statement;
-                                if ((first as OperatorStatement)._type != OperationType.None)
-                                    throw new InvalidOperationException("Invalid prefix operation");
+                                if (first == null || (first as OperatorStatement)._type != OperationType.None)
+                                    throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid prefix operation")));
                                 (first as OperatorStatement)._type = OperationType.Incriment;
                             }
                             else
@@ -438,8 +438,8 @@ namespace NiL.JS.Statements
                             {
                                 do i++; while (char.IsWhiteSpace(code[i]));
                                 first = Parse(state, ref i, true, true, false, true).Statement;
-                                if ((first as OperatorStatement)._type != OperationType.None)
-                                    throw new InvalidOperationException("Invalid prefix operation");
+                                if (first == null || (first as OperatorStatement)._type != OperationType.None)
+                                    throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid prefix operation")));
                                 (first as OperatorStatement)._type = OperationType.Decriment;
                             }
                             else
@@ -517,13 +517,13 @@ namespace NiL.JS.Statements
                 first = OperatorStatement.Parse(state, ref i, true).Statement;
                 while (char.IsWhiteSpace(code[i])) i++;
                 if (code[i] != ')')
-                    throw new ArgumentException();
+                    throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \")\"")));
                 i++;
             }
             else
                 first = Parser.Parse(state, ref i, 2);
             if (first is EmptyStatement)
-                throw new ArgumentException("Invalid operator argument");
+                throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid operator argument at " + Tools.PositionToTextcord(code, i))));
             bool canAsign = true && !forUnary; // на случай f() = x
             bool assign = false; // на случай операторов 'x='
             bool binar = false;
@@ -1004,7 +1004,7 @@ namespace NiL.JS.Statements
                                 i = rollbackPos;
                                 goto case '\n';
                             }
-                            throw new ArgumentException("Invalid operator '" + code[i] + "'");
+                            throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid operator '" + code[i] + "' at " + Tools.PositionToTextcord(code, i))));
                         }
                 }
             } while (repeat);
@@ -1016,6 +1016,8 @@ namespace NiL.JS.Statements
                 second = OperatorStatement.Parse(state, ref i, processComma, false, false, false).Statement;
             }
             OperatorStatement res = null;
+            if (first == second && first == null)
+                return new ParseResult();
             if (assign)
                 res = new OperatorStatement() { first = first, second = new OperatorStatement() { first = first, second = second, _type = type }, _type = OperationType.Assign };
             else

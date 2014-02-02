@@ -37,12 +37,12 @@ namespace NiL.JS.Statements
             {
                 int s = i;
                 if (!Parser.ValidateName(code, ref i, true))
-                    throw new ArgumentException("invalid char " + code[i]);
+                    throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid varible definition at " + Tools.PositionToTextcord(code, s))));
                 string name = Tools.Unescape(code.Substring(s, i - s));
                 names.Add(name);
                 while (char.IsWhiteSpace(code[i]) && !Tools.isLineTerminator(code[i])) i++;
                 if ((code[i] != ',') && (code[i] != ';') && (code[i] != '=') && (code[i] != '}') && (!Tools.isLineTerminator(code[i])))
-                    throw new ArgumentException("code (" + i + ")");
+                    throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \";\", \",\", \"=\" or \"}\" at + " + Tools.PositionToTextcord(code, i))));
                 initializator.Add(OperatorStatement.Parse(state, ref s, false).Statement);
                 i = s;
                 if ((code[i] != ',') && (code[i] != ';') && (code[i] != '=') && (code[i] != '}') && (!Tools.isLineTerminator(code[i])))

@@ -15,9 +15,17 @@ namespace NiL.JS.Core
             oValue = this;
         }
 
-        internal virtual JSObject toString()
+        public JSObject toString()
         {
             return ToString();
+        }
+
+        public override string ToString()
+        {
+            if (oValue != this || ValueType < JSObjectType.Object)
+                return base.ToString();
+            else
+                return GetType().ToString();
         }
 
         public override JSObject GetField(string name, bool fast, bool own)

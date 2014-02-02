@@ -4,7 +4,7 @@ using System;
 
 namespace NiL.JS.Core.Modules
 {
-    internal sealed class console
+    internal static class console
     {
         public static JSObject log(JSObject args)
         {

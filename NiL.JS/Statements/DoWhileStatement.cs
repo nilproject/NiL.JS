@@ -35,15 +35,15 @@ namespace NiL.JS.Statements
                 i++;
             while (char.IsWhiteSpace(code[i])) i++;
             if (!Parser.Validate(code, "while", ref i))
-                throw new ArgumentException("code (" + i + ")");
+                throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \"while\" at + " + Tools.PositionToTextcord(code, i))));
             while (char.IsWhiteSpace(code[i])) i++;
             if (code[i] != '(')
-                throw new ArgumentException("code (" + i + ")");
+                throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \"(\" at + " + Tools.PositionToTextcord(code, i))));
             do i++; while (char.IsWhiteSpace(code[i]));
             var condition = Parser.Parse(state, ref i, 1);
             while (char.IsWhiteSpace(code[i])) i++;
             if (code[i] != ')')
-                throw new ArgumentException("code (" + i + ")");
+                throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \")\" at + " + Tools.PositionToTextcord(code, i))));
             i++;
             index = i;
             return new ParseResult()

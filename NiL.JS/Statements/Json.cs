@@ -24,7 +24,7 @@ namespace NiL.JS.Statements
                 int s = i;
                 if (code[i] == '}')
                     break;
-                if (Parser.Validate(code, "set", i) && Parser.isIdentificatorTerminator(code[i + 3]))
+                if (Parser.Validate(code, "set", i) && (Tools.isLineTerminator(code[i + 3]) || char.IsWhiteSpace(code[i + 3])))
                 {
                     var setter = FunctionStatement.Parse(state, ref i, FunctionStatement.FunctionParseMode.Setter).Statement as FunctionStatement;
                     if (flds.IndexOf(setter.Name) == -1)
@@ -42,7 +42,7 @@ namespace NiL.JS.Statements
                         ((vle as ImmidateValueStatement).Value.oValue as Statement[])[0] = setter;
                     }
                 }
-                else if (Parser.Validate(code, "get", i) && Parser.isIdentificatorTerminator(code[i + 3]))
+                else if (Parser.Validate(code, "get", i) && (Tools.isLineTerminator(code[i + 3]) || char.IsWhiteSpace(code[i + 3])))
                 {
                     var getter = FunctionStatement.Parse(state, ref i, FunctionStatement.FunctionParseMode.Getter).Statement as FunctionStatement;
                     if (flds.IndexOf(getter.Name) == -1)
@@ -87,14 +87,7 @@ namespace NiL.JS.Statements
                     if (code[i] != ':')
                         return new ParseResult();
                     do i++; while (char.IsWhiteSpace(code[i]));
-                    try
-                    {
-                        vls.Add(OperatorStatement.Parse(state, ref i, false).Statement);
-                    }
-                    catch(JSException e)
-                    {
-                        return new ParseResult() { Message = e.Message };
-                    }
+                    vls.Add(OperatorStatement.Parse(state, ref i, false).Statement);
                 }
                 while (char.IsWhiteSpace(code[i])) i++;
                 if ((code[i] != ',') && (code[i] != '}'))

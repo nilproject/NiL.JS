@@ -4,6 +4,8 @@ namespace NiL.JS.Core
 {
     internal class WithContext : Context
     {
+        private JSObject @object;
+
         public WithContext(JSObject obj, Context prototype)
             : base(prototype)
         {
@@ -13,12 +15,25 @@ namespace NiL.JS.Core
                 throw new JSException(TypeProxy.Proxy(new TypeError("Can't access to property value of \"undefined\".")));
             if (obj.ValueType >= JSObjectType.Object && obj.oValue == null)
                 throw new JSException(TypeProxy.Proxy(new TypeError("Can't access to property value of \"null\".")));
-            this.fields = obj.fields;
+            @object = obj.Clone() as JSObject;
         }
 
-        internal override JSObject Define(string name)
+        public override JSObject GetOwnField(string name)
         {
-            return prototype.Define(name);
+            return prototype.GetOwnField(name);
+        }
+
+        public override JSObject GetField(string name)
+        {
+            thisBind = prototype.thisBind;
+            var res = @object.GetField(name, true, false);
+            if (res.ValueType < JSObjectType.Undefined || res == JSObject.undefined)
+                return prototype.GetField(name);
+            else
+            {
+                thisBind = @object;
+                return res;
+            }
         }
     }
 }

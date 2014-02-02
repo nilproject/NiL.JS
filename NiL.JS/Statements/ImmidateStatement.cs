@@ -31,7 +31,7 @@ namespace NiL.JS.Statements
 
         public override string ToString()
         {
-            return "<Object>";
+            return Value.ToString();
         }
     }
 }

@@ -56,6 +56,11 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * i + 3 - 2 / 2; }
                 Console.WriteLine("PRINT: " + x.GetField("0", true, false).Value);
                 return null;
             }));
+            s.Context.GetField("$FAIL").Assign(new CallableField((t, x) =>
+            {
+                Console.WriteLine("FAIL: " + x.GetField("0", true, false).Value);
+                return null;
+            }));
             s.Invoke();
             sr.Dispose();
             f.Dispose();
@@ -84,6 +89,7 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * i + 3 - 2 / 2; }
                 try
                 {
                     Console.Write("Processing file \"" + fls[i] + "\" ");
+                    Context.RefreshGlobalContext();
                     var f = new FileStream(fls[i], FileMode.Open, FileAccess.Read);
                     var sr = new StreamReader(f);
                     code = "function runTestCase(a){a()};\n" + sr.ReadToEnd();
@@ -108,11 +114,25 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * i + 3 - 2 / 2; }
                         Console.WriteLine("PRINT: " + x.GetField("0", true, false).Value);
                         return null;
                     }));
+                    s.Context.GetField("$FAIL").Assign(new CallableField((t, x) =>
+                    {
+                        Console.WriteLine("FAIL: " + x.GetField("0", true, false).Value);
+                        pass = false;
+                        return null;
+                    }));
                     s.Invoke();
                     sr.Dispose();
                     f.Dispose();
                 }
                 catch (NotImplementedException e)
+                {
+                    pass = false;
+                }
+                catch (ArgumentException)
+                {
+                    pass = false;
+                }
+                catch (NullReferenceException)
                 {
                     pass = false;
                 }
@@ -131,7 +151,7 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * i + 3 - 2 / 2; }
                 else
                 {
                     _("Failed");
-                    failed++;
+                   failed++;
                 }
             }
 
@@ -178,12 +198,21 @@ console.log(utc);
 
         static void Main(string[] args)
         {
-            typeof(System.Windows.Forms.Form).GetType();
-            NiL.JS.Core.Context.GlobalContext.GetField("platform").Assign("NiL.JS");
-            NiL.JS.Core.Context.GlobalContext.GetField("System").Assign(new SubspaceProvider("System"));
+            typeof(System.Windows.Forms.Button).GetType();
+            NiL.JS.Core.Context.GlobalContext.GetOwnField("platform").Assign("NiL.JS");
+            NiL.JS.Core.Context.GlobalContext.GetOwnField("System").Assign(new SubspaceProvider("System"));
+            NiL.JS.Core.Context.GlobalContext.GetOwnField("load").Assign(new CallableField((context, eargs) =>
+            {
+                var f = new FileStream("Benchmarks\\" + eargs.GetField("0", true, false).ToString(), FileMode.Open, FileAccess.Read);
+                var sr = new StreamReader(f);
+                eargs.GetField("0", true, false).Assign(sr.ReadToEnd());
+                return NiL.JS.Core.Context.Eval(context, eargs);
+            }));
             //benchmark();
-            runFile(@"ftest.js");
-            //sputnicTests();
+            //runFile(@"ftest.js");
+            //runFile(@"Benchmarks\run.js");
+            sputnicTests();
+            //sputnicTests(@"tests\Conformance\15_Native_ECMA_Script_Objects");
             //testEx();
 
             GC.Collect();

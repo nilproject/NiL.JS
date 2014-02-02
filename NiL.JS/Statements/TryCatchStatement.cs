@@ -24,6 +24,8 @@ namespace NiL.JS.Statements
             if (!Parser.Validate(code, "try", ref i) || !Parser.isIdentificatorTerminator(code[i]))
                 return new ParseResult();
             while (char.IsWhiteSpace(code[i])) i++;
+            if (code[i] != '{')
+                throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid try statement definition at " + Tools.PositionToTextcord(code, i))));
             var b = CodeBlock.Parse(state, ref i).Statement;
             while (char.IsWhiteSpace(code[i])) i++;
             Statement cb = null;
@@ -32,23 +34,28 @@ namespace NiL.JS.Statements
             {
                 int s = i;
                 if (!Parser.ValidateName(code, ref i, true))
-                    throw new ArgumentException("code (" + i + ")");
+                    throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Catch block must contain varible name " + Tools.PositionToTextcord(code, i))));
                 exptn = Tools.Unescape(code.Substring(s, i - s));
                 while (char.IsWhiteSpace(code[i])) i++;
                 if (!Parser.Validate(code, ")", ref i))
-                    throw new ArgumentException("code (" + i + ")");
+                    throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \")\" at + " + Tools.PositionToTextcord(code, i))));
                 while (char.IsWhiteSpace(code[i])) i++;
+                if (code[i] != '{')
+                    throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid catch block statement definition at " + Tools.PositionToTextcord(code, i))));
                 cb = CodeBlock.Parse(state, ref i).Statement;
                 while (char.IsWhiteSpace(code[i])) i++;
             }
             Statement f = null;
-            if (Parser.Validate(code, "finally", ref i))
+            if (Parser.Validate(code, "finally", i) && Parser.isIdentificatorTerminator(code[i + 7]))
             {
+                i += 7;
                 while (char.IsWhiteSpace(code[i])) i++;
+                if (code[i] != '{')
+                    throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid finally block statement definition at " + Tools.PositionToTextcord(code, i))));
                 f = CodeBlock.Parse(state, ref i).Statement;
             }
             if (cb == null && f == null)
-                throw new ArgumentException("try block mast contain 'catch' or/and 'finally' block");
+                throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("try block must contain 'catch' or/and 'finally' block")));
             index = i;
             return new ParseResult()
             {

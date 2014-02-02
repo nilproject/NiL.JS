@@ -30,7 +30,6 @@ namespace NiL.JS.Statements
         {
             string code = state.Code;
             int i = index;
-            while (char.IsWhiteSpace(code[i])) i++;
             if (code[i] != '{')
                 throw new ArgumentException("code (" + i + ")");
             do
@@ -66,10 +65,10 @@ namespace NiL.JS.Statements
         public override JSObject Invoke(Context context)
         {
             for (int i = varibles.Length - 1; i >= 0; i--)
-                context.Define(varibles[i]);
+                context.GetOwnField(varibles[i]);
             for (int i = functions.Length - 1; i >= 0; i--)
             {
-                var o = context.Define((functions[i] as FunctionStatement).Name);
+                var o = context.GetOwnField((functions[i] as FunctionStatement).Name);
                 o.assignCallback = null;
                 o.Assign(functions[i].Invoke(context));
             }

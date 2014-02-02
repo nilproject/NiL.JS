@@ -113,7 +113,7 @@ namespace NiL.JS.Core
         [Modules.Hidden]
         public virtual JSObject GetField(string name, bool fast, bool own)
         {
-            if (ValueType >= JSObjectType.Object && oValue is JSObject)
+            if (ValueType >= JSObjectType.Object && (oValue is JSObject) && ((oValue as JSObject).ValueType >= JSObjectType.Object))
                 return (oValue as JSObject).GetField(name, fast, own);
             return DefaultFieldGetter(name, fast, own);
         }
@@ -189,8 +189,8 @@ namespace NiL.JS.Core
                 default:
                     {
                         JSObject res = null;
-                        bool fromProto = (fields == null || !fields.TryGetValue(name, out res)) && !own;
-                        if (fromProto && prototype != null)
+                        bool fromProto = (fields == null || !fields.TryGetValue(name, out res)) && (prototype != null) && (!own || prototype.oValue is TypeProxy);
+                        if (fromProto)
                         {
                             res = prototype.GetField(name, true, false);
                             if (res == undefined)
@@ -223,6 +223,7 @@ namespace NiL.JS.Core
                                 fields[name] = t;
                                 t.assignCallback = null;
                             };
+                            t.attributes = res.attributes;
                             res = t;
                         }
                         if (res.ValueType == JSObjectType.NotExist)
@@ -257,7 +258,7 @@ namespace NiL.JS.Core
                         if (res.oValue is BaseTypes.String)
                             res = res.oValue as BaseTypes.String;
                     }
-                    if (res.ValueType > JSObjectType.Undefined && res.ValueType < JSObjectType.Object)
+                    if (res.ValueType < JSObjectType.Object)
                         return res;
                 }
                 tpvs = GetField("toString", true, false);
@@ -269,7 +270,7 @@ namespace NiL.JS.Core
                         if (res.oValue is BaseTypes.String)
                             res = res.oValue as BaseTypes.String;
                     }
-                    if (res.ValueType > JSObjectType.Undefined && res.ValueType < JSObjectType.Object)
+                    if (res.ValueType < JSObjectType.Object)
                         return res;
                 }
                 throw new JSException(TypeProxy.Proxy(new TypeError("Can't convert object to primitive value.")));
@@ -294,7 +295,7 @@ namespace NiL.JS.Core
                         if (res.oValue is BaseTypes.String)
                             res = res.oValue as BaseTypes.String;
                     }
-                    if (res.ValueType > JSObjectType.Undefined && res.ValueType < JSObjectType.Object)
+                    if (res.ValueType < JSObjectType.Object)
                         return res;
                 }
                 tpvs = GetField("valueOf", true, false);
@@ -306,7 +307,7 @@ namespace NiL.JS.Core
                         if (res.oValue is BaseTypes.String)
                             res = res.oValue as BaseTypes.String;
                     }
-                    if (res.ValueType > JSObjectType.Undefined && res.ValueType < JSObjectType.Object)
+                    if (res.ValueType < JSObjectType.Object)
                         return res;
                 }
                 throw new JSException(TypeProxy.Proxy(new TypeError("Can't convert object to primitive value.")));
@@ -354,9 +355,6 @@ namespace NiL.JS.Core
         [Modules.Hidden]
         public override string ToString()
         {
-#if DEBUG
-            var type = GetType();
-#endif
             if (ValueType <= JSObjectType.Undefined)
                 return "undefined";
             if (ValueType < JSObjectType.Object)

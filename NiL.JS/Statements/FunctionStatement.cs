@@ -68,14 +68,14 @@ namespace NiL.JS.Statements
             {
                 int n = i;
                 if (!Parser.ValidateName(code, ref i, true))
-                    throw new ArgumentException("code (" + i + ")");
+                    throw new JSException(TypeProxy.Proxy(new SyntaxError("Invalid function parameters definition " + (string.IsNullOrEmpty(name) ? "for function \"" + name + "\" " : "") + "at " + Tools.PositionToTextcord(code, n))));
                 name = Tools.Unescape(code.Substring(n, i - n));
                 while (char.IsWhiteSpace(code[i])) i++;
                 if (code[i] != '(')
                     throw new ArgumentException("Invalid char at " + i + ": '" + code[i] + "'");
             }
             else if (mode != FunctionParseMode.Regular)
-                throw new ArgumentException("Getters and Setters mast have name");
+                throw new ArgumentException("Getters and Setters must have name");
             do i++; while (char.IsWhiteSpace(code[i]));
             if (code[i] == ',')
                 throw new ArgumentException("code (" + i + ")");

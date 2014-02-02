@@ -32,16 +32,16 @@ namespace NiL.JS.Statements
             state.LabelCount = 0;
             init = code[i] == ';' ? null as Statement : Parser.Parse(state, ref i, 3);
             if (code[i] != ';')
-                throw new ArgumentException("code (" + i + ")");
+                throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \";\" at + " + Tools.PositionToTextcord(code, i))));
             do i++; while (char.IsWhiteSpace(code[i]));
             var condition = code[i] == ';' ? null as Statement : OperatorStatement.Parse(state, ref i).Statement;
             if (code[i] != ';')
-                throw new ArgumentException("code (" + i + ")");
+                throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \";\" at + " + Tools.PositionToTextcord(code, i))));
             do i++; while (char.IsWhiteSpace(code[i]));
             var post = code[i] == ')' ? null as Statement : OperatorStatement.Parse(state, ref i).Statement;
             while (char.IsWhiteSpace(code[i])) i++;
             if (code[i] != ')')
-                throw new ArgumentException("code (" + i + ")");
+                throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \";\" at + " + Tools.PositionToTextcord(code, i))));
             do i++; while (char.IsWhiteSpace(code[i]));
             state.AllowBreak++;
             state.AllowContinue++;

@@ -147,6 +147,7 @@
     <Compile Include="Core\BaseTypes\ReferenceError.cs" />
     <Compile Include="Core\BaseTypes\TypeError.cs" />
     <Compile Include="Core\Delegates.cs" />
+    <Compile Include="Core\ExternalFunction.cs" />
     <Compile Include="Core\IOptimizable.cs" />
     <Compile Include="Core\JSException.cs" />
     <Compile Include="Core\Modules\PrototypeAttribute.cs" />
@@ -161,6 +162,7 @@
     <Compile Include="Core\Modules\ImmutableAttribute.cs" />
     <Compile Include="Core\Modules\Math.cs" />
     <Compile Include="Core\Tools.cs" />
+    <Compile Include="Core\MethodProxy.cs" />
     <Compile Include="Core\TypeProxy.cs" />
     <Compile Include="Core\Modules\ProtectedAttribute.cs" />
     <Compile Include="Core\TypeProxyConstructor.cs" />
@@ -212,7 +214,6 @@
     <Compile Include="Statements\OperatiorStatement.cs" />
     <Compile Include="Script.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Core\ExternalFunction.cs" />
     <Compile Include="Statements\TryCatchStatement.cs" />
     <Compile Include="Statements\VaribleDefineStatement.cs" />
     <Compile Include="Statements\WhileStatement.cs" />

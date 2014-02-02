@@ -4,7 +4,7 @@ using NiL.JS.Core.Modules;
 namespace NiL.JS.Core.BaseTypes
 {
     [Immutable]
-    internal class String : EmbeddedType
+    internal class String : JSObject
     {
         [Hidden]
         private static readonly String result = new String();
@@ -342,7 +342,7 @@ namespace NiL.JS.Core.BaseTypes
             return (oValue as string).Trim();
         }
 
-        internal override JSObject toString()
+        internal JSObject toString()
         {
             return this;
         }

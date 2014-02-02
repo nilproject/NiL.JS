@@ -65,5 +65,10 @@ namespace NiL.JS.Core.BaseTypes
         {
             return new Boolean(value);
         }
+
+        public static implicit operator bool(Boolean value)
+        {
+            return value != null && value.iValue != 0;
+        }
     }
 }

@@ -32,10 +32,10 @@ namespace NiL.JS.Statements
             while (char.IsWhiteSpace(code[i])) i++;
             var image = OperatorStatement.Parse(state, ref i).Statement;
             if (code[i] != ')')
-                throw new ArgumentException("code (" + i + ")");
+                throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \")\" at + " + Tools.PositionToTextcord(code, i))));
             do i++; while (char.IsWhiteSpace(code[i]));
             if (code[i] != '{')
-                throw new ArgumentException("code (" + i + ")");
+                throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \"{\" at + " + Tools.PositionToTextcord(code, i))));
             do i++; while (char.IsWhiteSpace(code[i]));
             var body = new List<Statement>();
             var funcs = new List<FunctionStatement>();
@@ -46,23 +46,23 @@ namespace NiL.JS.Statements
             {
                 do
                 {
-                    if (Parser.Validate(code, "case", ref i))
+                    if (Parser.Validate(code, "case", i) && Parser.isIdentificatorTerminator(code[i + 4]))
                     {
-                        do
-                            i++;
-                        while (char.IsWhiteSpace(code[i]));
+                        i += 4;
+                        while (char.IsWhiteSpace(code[i])) i++;
                         var sample = OperatorStatement.Parse(state, ref i).Statement;
                         if (code[i] != ':')
-                            throw new ArgumentException("code (" + i + ")");
+                            throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \":\" at + " + Tools.PositionToTextcord(code, i))));
                         i++;
                         cases.Add(new Case() { index = body.Count, statement = new Operators.StrictEqual(image, sample) });
                     }
-                    else if (Parser.Validate(code, "default", ref i))
+                    else if (Parser.Validate(code, "default", i) && Parser.isIdentificatorTerminator(code[i + 7]))
                     {
                         if (cases[0] != null)
-                            throw new InvalidOperationException("Duplicate default case in switch");
+                            throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Duplicate default case in switch at " + Tools.PositionToTextcord(code, i))));
+                        i += 7;
                         if (code[i] != ':')
-                            throw new ArgumentException("code (" + i + ")");
+                            throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \":\" at + " + Tools.PositionToTextcord(code, i))));
                         i++;
                         cases[0] = new Case() { index = body.Count, statement = null };
                     }
@@ -70,7 +70,7 @@ namespace NiL.JS.Statements
                     while (char.IsWhiteSpace(code[i]) || (code[i] == ';')) i++;
                 } while (true);
                 if (cases.Count == 1 && cases[0] == null)
-                    throw new ArgumentException("code (" + i + ")");
+                    throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Switch statement must be contain cases. " + Tools.PositionToTextcord(code, index))));
                 var t = Parser.Parse(state, ref i, 0);
                 if (t == null)
                     continue;

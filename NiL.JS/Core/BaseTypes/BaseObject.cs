@@ -19,7 +19,7 @@ namespace NiL.JS.Core.BaseTypes
             proto.ValueType = JSObjectType.Object;
             proto.oValue = "Object";
             Prototype = proto;
-            var func = context.GetField("Object");
+            var func = context.GetOwnField("Object");
             func.Assign(new CallableField((cont, args) =>
             {
                 var _this = cont.thisBind ?? cont.GetField("this");
@@ -37,11 +37,10 @@ namespace NiL.JS.Core.BaseTypes
                 }
                 res.oValue = oVal ?? new object();
                 res.ValueType = JSObjectType.Object;
-                if (args != null && args.GetField("length", true, false).iValue > 0)
-                    res.oValue = args.GetField("0", true, false);
+                if (!(oVal is JSObject))
+                    res.prototype = Prototype.Clone() as JSObject;
                 else
-                    res.oValue = new object();
-                res.GetField("__proto__", false, true).Assign(Prototype);
+                    res.prototype = (oVal as JSObject).GetField("__proto__", true, true);
                 if (res.fields == null)
                     res.fields = new Dictionary<string, JSObject>();
                 return res;
@@ -79,7 +78,13 @@ namespace NiL.JS.Core.BaseTypes
                         {
                             if (cont.thisBind.oValue is ThisObject)
                                 return cont.thisBind.oValue.ToString();
-                            return "[object Object]";
+                            if (cont.thisBind.oValue is TypeProxy)
+                            {
+                                if ((cont.thisBind.oValue as TypeProxy).hostedType == typeof(RegExp))
+                                    return "[object Object]";
+                                return "[object " + (cont.thisBind.oValue as TypeProxy).hostedType.Name + "]";
+                            }
+                            return "[object " + cont.thisBind.oValue.GetType().Name + "]";
                         }
                     default: throw new NotImplementedException();
                 }
@@ -90,7 +95,7 @@ namespace NiL.JS.Core.BaseTypes
             temp = proto.GetField("valueOf", false, true);
             temp.Assign(new CallableField((cont, args) =>
             {
-                return cont.thisBind;
+                return cont.thisBind.oValue is JSObject ? cont.thisBind.oValue as JSObject : cont.thisBind;
             }));
             temp.attributes |= ObjectAttributes.DontEnum;
             temp = proto.GetField("hasOwnProperty", false, true);
@@ -166,15 +171,21 @@ namespace NiL.JS.Core.BaseTypes
             o.ValueType = JSObjectType.Bool;
             o.iValue = 0;
             if (c.ValueType >= JSObjectType.Object && c.oValue != null)
+            {
+                bool tpmode = c.oValue is TypeProxy;
+                Type type = null;
+                if (tpmode)
+                    type = (c.oValue as TypeProxy).hostedType;
                 while (a.ValueType >= JSObjectType.Object && a.oValue != null)
                 {
-                    if (a.oValue == c.oValue || (c.oValue is Type && a.oValue.GetType() as object == c.oValue))
+                    if (a.oValue == c.oValue || (tpmode && a.oValue is TypeProxy && (a.oValue as TypeProxy).hostedType == type))
                     {
                         o.iValue = 1;
                         return o;
                     }
                     a = a.GetField("__proto__", true, false);
                 }
+            }
             return o;
         }
 

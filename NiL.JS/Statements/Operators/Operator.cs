@@ -27,8 +27,13 @@ namespace NiL.JS.Statements.Operators
                 Parser.Optimize(ref first, depth + 1, vars);
             if (second is IOptimizable)
                 Parser.Optimize(ref second, depth + 1, vars);
-            if (first is ImmidateValueStatement && second is ImmidateValueStatement)
-                _this = new ImmidateValueStatement(this.Invoke(null));
+            try
+            {
+                if (first is ImmidateValueStatement && second is ImmidateValueStatement)
+                    _this = new ImmidateValueStatement(this.Invoke(null));
+            }
+            catch(NullReferenceException)
+            { }
             return false;
         }
     }

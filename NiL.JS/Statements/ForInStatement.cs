@@ -55,7 +55,7 @@ namespace NiL.JS.Statements
             res.source = Parser.Parse(state, ref i, 1);
             while (char.IsWhiteSpace(code[i])) i++;
             if (code[i] != ')')
-                throw new ArgumentException();
+                throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \")\" at + " + Tools.PositionToTextcord(code, i))));
             i++;
             state.AllowBreak++;
             state.AllowContinue++;

@@ -32,3 +32,5 @@ if (o2.y != 2)
     $ERROR("#6");
 if (o2.x)
     $ERROR("#7");
+
+String(Math.PI)

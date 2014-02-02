@@ -29,7 +29,7 @@ namespace NiL.JS.Statements.Operators
                     throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible not defined.")));
                 if (temp.ValueType != JSObjectType.Function && !(temp.ValueType == JSObjectType.Object && temp.oValue is Function))
                     throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError(temp + " is not callable")));
-                func = temp.oValue as Function ?? (Function)((TypeProxy)temp.oValue);
+                func = temp.oValue as Function;
                 newThisBind = context.thisBind;
             }
             finally
@@ -62,10 +62,7 @@ namespace NiL.JS.Statements.Operators
             field.oValue = func;
             field.Protect();
             field.attributes = ObjectAttributes.DontEnum;
-            if (func is ExternalFunction)
-                return func.Invoke(context, newThisBind, arguments);
-            else
-                return func.Invoke(newThisBind, arguments);
+            return func.Invoke(context, newThisBind, arguments);
         }
 
         public override string ToString()

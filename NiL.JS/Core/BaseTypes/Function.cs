@@ -625,7 +625,7 @@ namespace NiL.JS.Core.BaseTypes
                 }
             }
             else
-                throw new ArgumentException("Parameters count mast be no more 16.");
+                throw new ArgumentException("Parameters count must be no more 16.");
         }
 
         [Hidden]
@@ -714,13 +714,13 @@ namespace NiL.JS.Core.BaseTypes
         {
             return Invoke(args);
         }
-
+        
         [Hidden]
         public virtual JSObject Invoke(Context contextOverride, JSObject thisOverride, JSObject args)
         {
-            return Invoke(args);
+            return Invoke(thisOverride, args);
         }
-
+        
         [Hidden]
         public virtual JSObject Invoke(JSObject thisOverride, JSObject args)
         {
@@ -742,13 +742,13 @@ namespace NiL.JS.Core.BaseTypes
                 internalContext.thisBind = @this;
                 internalContext.Assign("arguments", args);
                 if (!string.IsNullOrEmpty(Name))
-                    internalContext.Define(Name).Assign(this);
+                    internalContext.GetOwnField(Name).Assign(this);
                 int i = 0;
                 int min = System.Math.Min(args == null ? 0 : args.GetField("length", true, false).iValue, argumentsNames.Length);
                 for (; i < min; i++)
-                    internalContext.Define(argumentsNames[i]).Assign(args.GetField(i.ToString(), true, false));
+                    internalContext.GetOwnField(argumentsNames[i]).Assign(args.GetField(i.ToString(), true, false));
                 for (; i < argumentsNames.Length; i++)
-                    internalContext.Define(argumentsNames[i]).Assign(null);
+                    internalContext.GetOwnField(argumentsNames[i]).Assign(null);
 
                 body.Invoke(internalContext);
                 return internalContext.abortInfo;
@@ -770,7 +770,8 @@ namespace NiL.JS.Core.BaseTypes
                     {
                         oValue = new object(),
                         ValueType = JSObjectType.Object,
-                        prototype = BaseObject.Prototype
+                        prototype = BaseObject.Prototype,
+                        attributes = ObjectAttributes.DontDelete | ObjectAttributes.DontEnum
                     };
                     var ctor = protorypeField.GetField("constructor", false, true);
                     ctor.attributes = ObjectAttributes.DontDelete | ObjectAttributes.DontEnum;

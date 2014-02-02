@@ -103,6 +103,46 @@ namespace NiL.JS.Core
             }
         }
 
+        public static JSObject JSObjectToNumber(JSObject arg)
+        {
+            if (arg == null)
+                return 0;
+            switch (arg.ValueType)
+            {
+                case JSObjectType.Bool:
+                case JSObjectType.Int:
+                case JSObjectType.Double:
+                    {
+                        return arg;
+                    }
+                case JSObjectType.String:
+                    {
+                        double x = 0;
+                        int ix = 0;
+                        string s = (arg.oValue as string).Trim();
+                        if (!Tools.ParseNumber(s, ref ix, true, out x) || ix < s.Length)
+                            return 0;
+                        return x;
+                    }
+                case JSObjectType.Date:
+                case JSObjectType.Function:
+                case JSObjectType.Object:
+                    {
+                        if (arg.oValue == null)
+                            return 0;
+                        arg = arg.ToPrimitiveValue_Value_String();
+                        return JSObjectToNumber(arg);
+                    }
+                case JSObjectType.Undefined:
+                case JSObjectType.NotExistInObject:
+                    return 0;
+                case JSObjectType.NotExist:
+                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible not defined.")));
+                default:
+                    throw new NotImplementedException();
+            }
+        }
+
         internal static string DoubleToString(double d)
         {
             if (0.0 == d || double.IsInfinity(d) || double.IsNaN(d))
@@ -341,6 +381,8 @@ namespace NiL.JS.Core
                         case 'x':
                         case 'u':
                             {
+                                if (i + (code[i] == 'u' ? 5 : 3) > code.Length)
+                                    throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid escape code (\"" + code + "\")")));
                                 string c = code.Substring(i + 1, code[i] == 'u' ? 4 : 2);
                                 ushort chc = 0;
                                 if (ushort.TryParse(c, System.Globalization.NumberStyles.HexNumber, null, out chc))
@@ -351,7 +393,7 @@ namespace NiL.JS.Core
                                 }
                                 else
                                 {
-                                    throw new ArgumentException("Invalid escape sequence '\\" + code[i] + c + "'");
+                                    throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid escape sequence '\\" + code[i] + c + "'")));
                                     //res.Append(code[i - 1]);
                                     //res.Append(code[i]);
                                 }
@@ -487,6 +529,42 @@ namespace NiL.JS.Core
             if (obj != null && obj.ValueType == JSObjectType.NotExist)
                 throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible is not defined.")));
             return obj;
+        }
+
+        internal sealed class TextCord
+        {
+            internal int line;
+            internal int column;
+
+            public override string ToString()
+            {
+                return "(" + line + ": " + column + ")"; 
+            }
+        }
+
+        internal static TextCord PositionToTextcord(string text, int position)
+        {
+            int line = 1;
+            int column = 1;
+            for (int i = 0; i < position; i++)
+            {
+                if (text[i] == '\n')
+                {
+                    column = 0;
+                    line++;
+                    if (text[i + 1] == '\r')
+                        i++;
+                }
+                else if (text[i] == '\r')
+                {
+                    column = 0;
+                    line++;
+                    if (text[i + 1] == '\n')
+                        i++;
+                }
+                column++;
+            }
+            return new TextCord() { line = line, column = column };
         }
     }
 }

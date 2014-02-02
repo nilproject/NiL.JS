@@ -38,8 +38,7 @@ namespace NiL.JS.Core
             rules = new _Rule[5][];
             rules[0] = new _Rule[] // Общий
             {
-                new _Rule("[", ArrayStatement.Parse),
-                new _Rule("{", Json.Parse),
+                new _Rule("[", OperatorStatement.Parse),
                 new _Rule("{", CodeBlock.Parse),
                 new _Rule("var ", VaribleDefineStatement.Parse),
                 new _Rule("if", IfElseStatement.Parse),
@@ -108,7 +107,7 @@ namespace NiL.JS.Core
                 new _Rule("-", OperatorStatement.Parse),
                 new _Rule("!", OperatorStatement.Parse),
                 new _Rule("~", OperatorStatement.Parse),
-                new _Rule("function", FunctionStatement.Parse),
+                new _Rule("function", OperatorStatement.Parse),
                 new _Rule("(", OperatorStatement.Parse),
                 new _Rule("true", OperatorStatement.Parse),
                 new _Rule("false", OperatorStatement.Parse),
@@ -123,7 +122,7 @@ namespace NiL.JS.Core
             };
             rules[4] = new _Rule[] // Общий без JSON
             {
-                new _Rule("[", ArrayStatement.Parse),
+                new _Rule("[", OperatorStatement.Parse),
                 new _Rule("{", CodeBlock.Parse),
                 new _Rule("var ", VaribleDefineStatement.Parse),
                 new _Rule("if", IfElseStatement.Parse),
@@ -378,22 +377,9 @@ namespace NiL.JS.Core
                                 m = true;
                                 break;
                             }
-                        case '\n':
-                        case '\r':
-                        case ';':
-                        case ')':
-                        case ']':
-                        case '}':
-                        case ':':
-                        case '.':
-                        case ' ':
-                            {
-                                w = false;
-                                break;
-                            }
                         default:
                             {
-                                if (isOperator(code[j]))
+                                if (isIdentificatorTerminator(code[j]))
                                 {
                                     w = false;
                                     break;
@@ -430,7 +416,7 @@ namespace NiL.JS.Core
                             j++;
                     }
                     else if (Tools.isLineTerminator(code[j]))
-                        throw new ArgumentException("Unterminated string constant");
+                        throw new JSException(TypeProxy.Proxy(new BaseTypes.SyntaxError("Unterminated string constant")));
                     j++;
                 }
                 if (move)
@@ -479,7 +465,8 @@ namespace NiL.JS.Core
                 || (c == '=')
                 || (c == '?')
                 || (c == ':')
-                || (c == ',');
+                || (c == ',')
+                || (c == '.');
         }
 
         internal static bool isIdentificatorTerminator(char c)
@@ -504,6 +491,7 @@ namespace NiL.JS.Core
 
         internal static Statement Parse(ParsingState state, ref int index, int ruleset, bool lineAutoComplite)
         {
+            int sindex = index;
             string code = state.Code;
             while ((index < code.Length) && (char.IsWhiteSpace(code[index])) && (!lineAutoComplite || !Tools.isLineTerminator(code[index]))) index++;
             if (code[index] == '}')
@@ -522,7 +510,9 @@ namespace NiL.JS.Core
                         return pr.Statement;
                 }
             }
-            throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.SyntaxError("Unknown token at index " + index + ": " + code.Substring(index, Math.Min(20, code.Length - index)).Split(' ')[0])));
+            var cord = Tools.PositionToTextcord(code, sindex);
+            throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.SyntaxError("Unexpected token at " + cord + " : "
+                + code.Substring(index, Math.Min(20, code.Length - index)).Split(' ')[0])));
         }
 
         internal static void Optimize(ref Statement s, int depth, Dictionary<string, Statement> varibles)
