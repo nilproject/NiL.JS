@@ -14,9 +14,9 @@ var __string = new String("dfe23iu 34 =+65--");
 
 var __re = /\d+/;
 
-__split = __string.split(__re);
+var __split = __string.split(__re);
 
-__expected = ["dfe","iu "," =+","--"];
+var __expected = ["dfe","iu "," =+","--"];
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

@@ -8,7 +8,7 @@
 * @description: Checking if creating "new Object.prototype.toLocaleString" fails;
 */
 
-FACTORY = Object.prototype.toLocaleString;
+var FACTORY = Object.prototype.toLocaleString;
 
 try {
   instance = new FACTORY;

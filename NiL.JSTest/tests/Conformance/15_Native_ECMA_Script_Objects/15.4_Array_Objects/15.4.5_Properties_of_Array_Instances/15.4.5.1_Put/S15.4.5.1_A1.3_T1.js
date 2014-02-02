@@ -9,7 +9,7 @@
 */
 
 //CHECK#1
-x = [];
+var x = [];
 x.length = true;
 if (x.length !== 1) {  
   $ERROR('#1: x = []; x.length = true; x.length === 1. Actual: ' + (x.length));    

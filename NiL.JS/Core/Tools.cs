@@ -510,7 +510,7 @@ namespace NiL.JS.Core
                     res.Append(' ');
                 if (i >= code.Length)
                     continue;
-                if (Parser.ValidateName(code, ref i, true)
+                if (Parser.ValidateName(code, ref i, true, false)
                     || Parser.ValidateNumber(code, ref i, true)
                     || Parser.ValidateRegex(code, ref i, true, false)
                     || Parser.ValidateString(code, ref i, true))

@@ -9,8 +9,8 @@
 */
 
 //CHECK#
-pow = 2;
-for (i = 1; i < 32; i++) {   
+var pow = 2;
+for (var i = 1; i < 32; i++) {   
   if (pow > 36) {  
     var res = true;  
     if (isNaN(parseInt(1, pow)) !== true) {

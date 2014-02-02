@@ -8,7 +8,7 @@
 * @description: Checking if creating "new Object.prototype.valueOf" fails;
 */
 
-FACTORY = Object.prototype.valueOf;
+var FACTORY = Object.prototype.valueOf;
 
 try {
   instance = new FACTORY;

@@ -13,7 +13,7 @@ if (!(Function.prototype.apply.hasOwnProperty('length'))) {
   $FAIL('#1: the Function.prototype.apply has length property.');
 }
 
-obj = Function.prototype.apply.length;
+var obj = Function.prototype.apply.length;
 
 Function.prototype.apply.length = function(){return "shifted";};
 

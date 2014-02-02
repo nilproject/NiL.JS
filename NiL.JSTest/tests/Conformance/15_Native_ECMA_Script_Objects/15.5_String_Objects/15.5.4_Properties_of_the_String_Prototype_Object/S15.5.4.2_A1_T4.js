@@ -8,7 +8,7 @@
 * @description: Create new String(function(){}()) and check it`s method toString();
 */
 
-__string__obj = new String(function(){}());
+var __string__obj = new String(function(){}());
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#

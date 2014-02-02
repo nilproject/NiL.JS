@@ -16,12 +16,12 @@
 * @description: Values of the function constructor arguments are "{toString:function(){throw 1;}}" and "{toString:function(){throw 'body';}}";
 */
 
-p = {toString:function(){throw 1;}};
-body = {toString:function(){throw "body";}};
+var p = {toString:function(){throw 1;}};
+var body = {toString:function(){throw "body";}};
 
 //CHECK#1
 try {
-  f = new Function(p,body);
+  var f = new Function(p,body);
   $FAIL('#1: test failed');
 } catch (e) {
   if (e !== 1) {

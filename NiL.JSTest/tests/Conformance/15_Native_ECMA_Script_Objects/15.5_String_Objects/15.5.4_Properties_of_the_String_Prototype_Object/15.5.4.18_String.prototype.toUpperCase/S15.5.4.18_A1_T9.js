@@ -8,14 +8,14 @@
 * @description: Call toUpperCase() function of string object;
 */
 
-__obj = {
+var __obj = {
     valueOf:function(){},
     toString:void 0
 };
 
-__upperCase = new String(__obj).toUpperCase();
+var __upperCase = new String(__obj).toUpperCase();
 
-__expected ="UNDEFINED"; 
+var __expected ="UNDEFINED"; 
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

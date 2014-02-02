@@ -15,7 +15,7 @@ if (isFinite.propertyIsEnumerable('length') !== false) {
 }
 
 //CHECK#2
-result = true;
+var result = true;
 for (p in isFinite){
   if (p === "length") {
     result = false;

@@ -18,7 +18,7 @@
 
 //CHECK#1
 try {
-  f = new Function("", "");
+  var f = new Function("", "");
 } catch (e) {
   $FAIL('#1: test failed with error '+e);
 }

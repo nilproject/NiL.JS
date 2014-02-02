@@ -6,10 +6,11 @@
 * @section: 15.4.4.2;
 * @assertion: The length property of toString has the attribute ReadOnly;
 * @description: Checking if varying the length property fails;
+* @strict_mode_negative
 */
 
 //CHECK#1
-x = Array.prototype.toString.length;
+var x = Array.prototype.toString.length;
 Array.prototype.toString.length = Infinity;
 if (Array.prototype.toString.length !== x) {
   $ERROR('#1: x = Array.prototype.toString.length; Array.prototype.toString.length = Infinity; Array.prototype.toString.length === x. Actual: ' + (Array.prototype.toString.length));

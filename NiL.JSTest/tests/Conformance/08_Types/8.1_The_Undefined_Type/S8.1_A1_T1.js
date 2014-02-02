@@ -5,8 +5,8 @@
  * @name: S8.1_A1_T1;
  * @section: 8.1;
  * @assertion: The Undefined type has one value, called undefined;
- * @description: Checking if execution of "x = undefined" passes; 
+ * @description: Checking if execution of "var x = undefined" passes; 
 */
 
 // CHECK#1
-x = undefined;
+var x = undefined;

@@ -15,7 +15,7 @@ function FACTORY(){
   return obj;
 }
 
-obj=new FACTORY("",1,2,void 0);
+var obj=new FACTORY("",1,2,void 0);
 
 //CHECK#1
 if (typeof this["shifted"] !== "undefined") {

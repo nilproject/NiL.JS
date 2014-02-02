@@ -15,8 +15,8 @@ if (Array.prototype.toLocaleString.propertyIsEnumerable('length') !== false) {
 }
 
 //CHECK#2
-result = true;
-for (p in Array.toLocaleString){
+var result = true;
+for (var p in Array.toLocaleString){
   if (p === "length") {
     result = false;
   }  

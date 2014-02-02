@@ -10,14 +10,14 @@
  * string.charAt(k + 6) not equal "%";
 */
 
-errorCount = 0;
-count = 0;
+var errorCount = 0;
+var count = 0;
 var indexP;
 var indexO = 0;
 
-for (index = 0xF0; index <= 0xF7; index++) {
+for (var index = 0xF0; index <= 0xF7; index++) {
   count++; 
-  hex = decimalToHexString(index);
+  var hex = decimalToHexString(index);
   try {
     decodeURI("%" + hex.substring(2) + "%A0111%A0");
   } catch (e) { 

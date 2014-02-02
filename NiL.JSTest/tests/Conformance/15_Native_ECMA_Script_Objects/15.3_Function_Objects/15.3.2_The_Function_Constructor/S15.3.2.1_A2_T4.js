@@ -8,9 +8,9 @@
 * @description: Values of the function constructor arguments are "return"-s of various results;
 */
 
-i=0;
+var i=0;
 
-p={toString:function(){return "arg"+(++i)}};
+var p={toString:function(){return "arg"+(++i);}};
 
 //CHECK#1
 try {
@@ -28,3 +28,4 @@ if (!(f instanceof Function)){
 if (f(4,"2","QUESTION") !== "42QUESTION") {
   $ERROR('#3: It is permissible but not necessary to have one argument for each formal parameter to be specified');
 }
+  

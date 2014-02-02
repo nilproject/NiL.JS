@@ -10,8 +10,8 @@
 */
 
 //CHECK#
-res8 = 1;
-res10 = 1;
+var res8 = 1;
+var res10 = 1;
 if (parseInt("08") !== parseInt("08", 8)) {
   res8 = 0;
 }

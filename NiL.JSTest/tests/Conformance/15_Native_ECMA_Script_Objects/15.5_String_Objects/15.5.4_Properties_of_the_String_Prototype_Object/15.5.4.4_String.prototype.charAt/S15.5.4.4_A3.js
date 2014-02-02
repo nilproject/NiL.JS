@@ -8,7 +8,7 @@
 * @description: pos is bigger of string length;
 */
 
-__instance = new String("ABC");
+var __instance = new String("ABC");
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

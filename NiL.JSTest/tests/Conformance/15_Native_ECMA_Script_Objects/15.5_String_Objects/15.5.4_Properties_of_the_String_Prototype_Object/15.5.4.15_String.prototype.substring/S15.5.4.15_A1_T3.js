@@ -8,14 +8,14 @@
 * @description: Checking by using eval;
 */
 
-substring = String.prototype.substring;
+var substring = String.prototype.substring;
 
 if (typeof toString === "undefined"){
     toString = Object.prototype.toString;
 }
 
-__class__ = toString();
-__toggle = 1;
+var __class__ = toString();
+var __toggle = 1;
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

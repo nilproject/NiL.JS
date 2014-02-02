@@ -9,6 +9,7 @@
  * @description: Expression statement. Eval return primitive value;  
 */
 
+var x;
 //CHECK#1
 if (eval("x = 1") !== 1) {
   $ERROR('#1: eval("x = 1") === 1. Actual: ' + (eval("x = 1")));

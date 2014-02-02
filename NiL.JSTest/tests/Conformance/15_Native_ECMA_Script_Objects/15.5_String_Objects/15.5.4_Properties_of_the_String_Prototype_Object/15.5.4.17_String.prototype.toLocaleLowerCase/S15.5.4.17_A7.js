@@ -8,11 +8,14 @@
 * @description: Checking if creating the String.prototype.toLocaleLowerCase object fails;
 */
 
-__FACTORY = String.prototype.toLocaleLowerCase;
+var __FACTORY = String.prototype.toLocaleLowerCase;
 
 try {
-  __instance = new __FACTORY;
-  $FAIL('#1: __FACTORY = String.prototype.toLocaleLowerCase; "__instance = new __FACTORY" lead to throwing exception');
+  var __instance = new __FACTORY;
+  $FAIL('#1: var __FACTORY = String.prototype.toLocaleLowerCase; "__instance = new __FACTORY" lead to throwing exception');
 } catch (e) {
+  if ((e instanceof TypeError) !== true) {
+    $ERROR('#1.1: var __FACTORY = String.prototype.toLocaleLowerCase; "var __instance = new __FACTORY" throw a TypeError. Actual: ' + (e));  
+  }
   $PRINT(e);
 }

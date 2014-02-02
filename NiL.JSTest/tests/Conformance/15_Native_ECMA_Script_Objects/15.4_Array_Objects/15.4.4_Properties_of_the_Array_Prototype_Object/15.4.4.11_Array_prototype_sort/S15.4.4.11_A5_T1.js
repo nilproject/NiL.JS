@@ -12,7 +12,7 @@
 var myComparefn = function(x,y) {
   throw "error";
 }
-x = [1,0];
+var x = [1,0];
 try {
   x.sort(myComparefn)
   $ERROR('#1.1: Array.sort should not eat exceptions');

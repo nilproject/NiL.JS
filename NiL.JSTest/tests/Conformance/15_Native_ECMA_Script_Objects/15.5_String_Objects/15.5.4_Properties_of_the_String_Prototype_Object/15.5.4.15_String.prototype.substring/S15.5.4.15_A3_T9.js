@@ -9,7 +9,7 @@
 * @description: Apply String.prototype.substring to Math instance. Start is Math.PI, end is -10;
 */
 
-__instance = Math;
+var __instance = Math;
  
 __instance.substring = String.prototype.substring;
 

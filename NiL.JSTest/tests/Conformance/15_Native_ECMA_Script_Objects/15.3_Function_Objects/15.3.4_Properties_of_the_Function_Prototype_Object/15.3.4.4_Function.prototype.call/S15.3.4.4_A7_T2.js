@@ -9,8 +9,8 @@
 */
 
 try {
-  FACTORY = Function.prototype.call;
-  obj = new FACTORY();
+  var FACTORY = Function.prototype.call;
+  var obj = new FACTORY();
   $ERROR('#1: Function.prototype.call can\'t be used as [[create]] caller');
 } catch (e) {
   if (!(e instanceof TypeError)) {

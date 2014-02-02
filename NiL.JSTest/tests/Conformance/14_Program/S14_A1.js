@@ -8,8 +8,8 @@
 * @description: Declaring a function within an "if" Expression;
 */
 
-THERE = "I'm there";
-HERE = "I'm here";
+var THERE = "I'm there";
+var HERE = "I'm here";
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

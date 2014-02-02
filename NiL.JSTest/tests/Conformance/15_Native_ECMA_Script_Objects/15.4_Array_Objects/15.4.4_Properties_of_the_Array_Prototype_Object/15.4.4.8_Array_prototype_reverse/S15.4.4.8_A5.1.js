@@ -15,10 +15,10 @@ if (Array.prototype.reverse.propertyIsEnumerable('length') !== false) {
 }
 
 //CHECK#2
-result = true;
+var result = true;
 for (p in Array.reverse){
   if (p === "length") {
-    result = false;
+    var result = false;
   }  
 }
 

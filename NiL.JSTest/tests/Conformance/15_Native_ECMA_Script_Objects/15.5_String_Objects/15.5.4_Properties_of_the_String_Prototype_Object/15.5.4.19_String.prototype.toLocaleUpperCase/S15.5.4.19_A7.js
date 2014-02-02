@@ -8,9 +8,13 @@
 * @description: Checking if creating the String.prototype.toLocaleUpperCase object fails;
 */
 
-__FACTORY = String.prototype.toLocaleUpperCase;
+var __FACTORY = String.prototype.toLocaleUpperCase;
 
 try {
-  __instance = new __FACTORY;
+  var __instance = new __FACTORY;
   $FAIL('#1: __FACTORY = String.prototype.toLocaleUpperCase; "__instance = new __FACTORY" lead to throwing exception');
-} catch (e) {}
+} catch (e) {
+  if ((e instanceof TypeError) !== true) {
+    $ERROR('#1.1:  var __instance = new __FACTORY;  Object has no construct lead  a TypeError. Actual: ' + (e));  
+  }
+}

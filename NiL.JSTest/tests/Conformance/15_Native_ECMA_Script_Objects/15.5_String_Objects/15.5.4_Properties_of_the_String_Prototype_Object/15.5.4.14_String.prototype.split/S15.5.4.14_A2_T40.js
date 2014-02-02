@@ -13,9 +13,9 @@
 
 var __instance = new String("hello");
 
-__split = __instance.split("l", 1);
+var __split = __instance.split("l", 1);
 
-__expected = ["he"];
+var __expected = ["he"];
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

@@ -14,7 +14,7 @@
 var __string = "thisundefinedisundefinedaundefinedstringundefinedobject";
 var __expected = ["this", "is", "a", "string", "object"];
 
-__split = __string.split(void 0);
+var __split = __string.split(void 0);
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

@@ -6,9 +6,10 @@
  * @section: 8.6.1, 15.2.2, 15.8;
  * @assertion: A property can have attribute ReadOnly like E in Math;
  * @description: Try change Math.E property; 
+ * @strict_mode_negative
 */
 
-__e = Math.E;
+var __e = Math.E;
 Math.E=1;
 if (Math.E !==__e){
   $ERROR('#1: __e = Math.E; Math.E=1; Math.E ===__e');

@@ -13,9 +13,9 @@
 
 var __instance = new String("hello");
 
-__split = __instance.split("l", NaN);
+var __split = __instance.split("l", NaN);
 
-__expected = [];
+var __expected = [];
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

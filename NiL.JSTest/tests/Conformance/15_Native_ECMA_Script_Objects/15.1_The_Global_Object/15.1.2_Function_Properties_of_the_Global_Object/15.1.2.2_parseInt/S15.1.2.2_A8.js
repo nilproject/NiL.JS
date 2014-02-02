@@ -12,11 +12,11 @@
 */
 
 //CHECK
-errorCount = 0;
-count = 0;
+var errorCount = 0;
+var count = 0;
 var indexP;
 var indexO = 0;
-for (index = 0; index <= 65535; index++) {  
+for (var index = 0; index <= 65535; index++) {  
   if ((index < 0x0030) || (index > 0x0039) && 
       (index < 0x0041) || (index > 0x005A) && 
       (index < 0x0061) || (index > 0x007A)) {    

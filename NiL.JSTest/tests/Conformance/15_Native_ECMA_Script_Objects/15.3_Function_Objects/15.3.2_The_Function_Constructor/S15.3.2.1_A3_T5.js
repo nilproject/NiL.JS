@@ -17,11 +17,11 @@
 */
 
 
-body = "return \"A\";";
+var body = "return \"A\";";
 
 //CHECK#1
 try {
-  f = new Function(void 0,body);
+  var f = new Function(void 0,body);
 } catch (e) {
   $FAIL('#1: test failed with error '+e);
 }

@@ -12,11 +12,12 @@
 * @description: Arguments are boolean expression, function call and null, and instance is Boolean;
 */
 
-__instance = new Boolean;
+
+var __instance = new Boolean;
 
 __instance.split = String.prototype.split;
 
-__split = __instance.split("A"!=="\u0041", function(){return 0;}(),null);
+var __split = __instance.split("A"!=="\u0041", function(){return 0;}(),null);
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

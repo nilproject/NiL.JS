@@ -16,11 +16,11 @@
 * @description: Values of the function constructor arguments are an undefined variable and "return 1.1;";
 */
 
-body = "return 1.1;";
+var body = "return 1.1;";
 
 //CHECK#1
 try {
-  f = new Function(p,body);
+  var f = new Function(p,body);
 } catch (e) {
   $FAIL('#1: test failed with error '+e);
 }
@@ -36,5 +36,3 @@ if (f()!==1.1) {
 }
 
 var p;
-
-

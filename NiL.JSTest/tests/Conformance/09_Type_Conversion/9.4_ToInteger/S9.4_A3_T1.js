@@ -54,7 +54,7 @@ if (d7.valueOf() !== 1) {
 // CHECK#8
 var d8 = new Date(false);
 if (d8.valueOf() !== 0) {
-  $ERROR('#8: var d8 = new Date(true); d8.valueOf() === 0;');
+  $ERROR('#8: var d8 = new Date(false); d8.valueOf() === 0;');
 }
 
 // CHECK#9

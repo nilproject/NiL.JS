@@ -12,7 +12,7 @@
 */
 
 //CHECK#1
-x = new Array(0,1,2,3);
+var x = new Array(0,1,2,3);
 if (x.toString() !== x.join()) {
   $ERROR('#1.1: x = new Array(0,1,2,3); x.toString() === x.join(). Actual: ' + (x.toString()));
 } else {

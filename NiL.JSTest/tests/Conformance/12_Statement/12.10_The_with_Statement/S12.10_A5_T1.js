@@ -6,6 +6,7 @@
  * @section: 12.10;
  * @assertion: Deleting property using "eval" statement containing "with" statement;
  * @description: Deleting string property;
+ * @strict_mode_negative
  */
 
 this.p1 = 1;

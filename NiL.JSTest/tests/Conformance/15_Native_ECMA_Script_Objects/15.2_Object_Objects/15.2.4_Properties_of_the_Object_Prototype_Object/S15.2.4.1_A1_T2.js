@@ -8,9 +8,9 @@
 * @description: Creating "new Object.prototype.constructor" and checking its properties;
 */
 
-constr = Object.prototype.constructor;
+var constr = Object.prototype.constructor;
 
-obj = new constr;
+var obj = new constr;
 
 // CHECK#0
 if (obj === undefined) {
@@ -28,7 +28,7 @@ if (!(Object.prototype.isPrototypeOf(obj))) {
 }
 
 // CHECK#3
-to_string_result = '[object '+ 'Object' +']';
+var to_string_result = '[object '+ 'Object' +']';
 if (obj.toString() !== to_string_result) {
   $ERROR('#3: when new Object() calls the [[Class]] property of the newly constructed object is set to "Object".');
 }

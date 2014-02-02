@@ -13,13 +13,13 @@ if (typeof Object.prototype.propertyIsEnumerable !== "function") {
   $ERROR('#1: propertyIsEnumerable method is defined');
 }
 
-proto={rootprop:"avis"};
+var proto={rootprop:"avis"};
 
 function AVISFACTORY(name){this.name=name};
 
 AVISFACTORY.prototype = proto;
 
-seagull= new AVISFACTORY("seagull");
+var seagull= new AVISFACTORY("seagull");
 
 //CHECK#2
 if (typeof seagull.propertyIsEnumerable !== "function") {

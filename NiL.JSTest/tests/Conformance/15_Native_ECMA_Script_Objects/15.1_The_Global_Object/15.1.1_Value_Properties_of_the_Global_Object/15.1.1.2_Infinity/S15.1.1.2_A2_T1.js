@@ -6,6 +6,7 @@
  * @section: 15.1.1.2, 15.5.1, 15.6.1, 15.7.1;
  * @assertion: The Infinity is not ReadOnly;
  * @description: Checking Boolean, Number, String Functions; 
+ * @strict_mode_negative
 */
 
 // CHECK#1

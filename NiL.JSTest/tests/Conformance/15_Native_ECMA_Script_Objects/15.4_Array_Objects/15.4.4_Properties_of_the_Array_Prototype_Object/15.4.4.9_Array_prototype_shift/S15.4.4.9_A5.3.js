@@ -6,10 +6,11 @@
 * @section: 15.4.4.9;
 * @assertion: The length property of shift has the attribute ReadOnly;
 * @description: Checking if varying the length property fails;
+* @strict_mode_negative
 */
 
 //CHECK#1
-x = Array.prototype.shift.length;
+var x = Array.prototype.shift.length;
 Array.prototype.shift.length = Infinity;
 if (Array.prototype.shift.length !== x) {
   $ERROR('#1: x = Array.prototype.shift.length; Array.prototype.shift.length = Infinity; Array.prototype.shift.length === x. Actual: ' + (Array.prototype.shift.length));

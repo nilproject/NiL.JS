@@ -9,11 +9,11 @@
 * And regular expression object have property lastIndex = tested_string.lastIndexOf("0")+1;
 */
 
-__string = "Boston, MA 02134";
+var __string = "Boston, MA 02134";
 
-__matches=["02134", "02134", undefined];
+var __matches=["02134", "02134", undefined];
 
-__re = /([\d]{5})([-\ ]?[\d]{4})?$/;
+var __re = /([\d]{5})([-\ ]?[\d]{4})?$/;
 
 __re.lastIndex = __string.lastIndexOf("0")+1;
 

@@ -12,13 +12,13 @@
 * @description: Argument is function(){}(), and instance is String(object), object have overrided toString and valueOf functions;
 */
 
-__obj = {
+var __obj = {
     valueOf:function(){},
     toString:void 0
 };
 
 //since ToString(undefined) evaluates to "undefined" split(undefined) evaluates to split("undefined")
-__split = new String(__obj).split(function(){}());
+var __split = new String(__obj).split(function(){}());
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

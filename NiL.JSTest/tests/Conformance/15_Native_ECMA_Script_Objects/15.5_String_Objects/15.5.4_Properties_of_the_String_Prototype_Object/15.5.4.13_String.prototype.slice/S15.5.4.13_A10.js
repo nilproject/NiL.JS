@@ -16,7 +16,7 @@ if (!(String.prototype.slice.hasOwnProperty('length'))) {
 //
 //////////////////////////////////////////////////////////////////////////////
 
-__obj = String.prototype.slice.length;
+var __obj = String.prototype.slice.length;
 
 String.prototype.slice.length = function(){return "shifted";};
 

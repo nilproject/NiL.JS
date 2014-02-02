@@ -14,7 +14,7 @@ var __instance = new Number(-1e21);
 
 __instance.split = String.prototype.split;
 
-__split = __instance.split();
+var __split = __instance.split();
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

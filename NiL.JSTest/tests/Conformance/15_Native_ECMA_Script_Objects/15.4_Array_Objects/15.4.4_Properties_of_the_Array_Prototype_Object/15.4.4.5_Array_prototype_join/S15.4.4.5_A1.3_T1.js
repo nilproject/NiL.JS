@@ -9,7 +9,7 @@
 */
 
 //CHECK#1
-x = [];
+var x = [];
 x[0] = undefined;
 if (x.join() !== "") {
   $ERROR('#1: x = []; x[0] = undefined; x.join() === "". Actual: ' + (x.join()));

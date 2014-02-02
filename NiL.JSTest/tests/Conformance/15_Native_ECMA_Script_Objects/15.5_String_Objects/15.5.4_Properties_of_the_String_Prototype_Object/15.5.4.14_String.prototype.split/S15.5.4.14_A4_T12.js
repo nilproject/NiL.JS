@@ -14,9 +14,9 @@ var __string = new String("hello");
 
 var __re = new RegExp;
 
-__split = __string.split(__re, 1);
+var __split = __string.split(__re, 1);
 
-__expected = ["h"];
+var __expected = ["h"];
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

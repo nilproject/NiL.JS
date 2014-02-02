@@ -8,9 +8,9 @@
 * @description: thisArg is boolean true;
 */
 
-obj=true;
+var obj=true;
 
-retobj = new Function("this.touched= true; return this;").apply(obj);
+var retobj = new Function("this.touched= true; return this;").apply(obj);
 
 //CHECK#1
 if (typeof obj.touched !== "undefined") {

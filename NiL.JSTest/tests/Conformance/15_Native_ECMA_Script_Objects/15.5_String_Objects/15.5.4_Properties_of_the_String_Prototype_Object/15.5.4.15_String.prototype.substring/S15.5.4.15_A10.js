@@ -16,7 +16,7 @@ if (!(String.prototype.substring.hasOwnProperty('length'))) {
 //
 //////////////////////////////////////////////////////////////////////////////
 
-__obj = String.prototype.substring.length;
+var __obj = String.prototype.substring.length;
 
 String.prototype.substring.length = function(){return "shifted";};
 

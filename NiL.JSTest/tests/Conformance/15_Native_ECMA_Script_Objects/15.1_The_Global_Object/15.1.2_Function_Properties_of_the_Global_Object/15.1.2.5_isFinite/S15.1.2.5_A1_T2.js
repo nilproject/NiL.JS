@@ -37,7 +37,3 @@ if (!(isFinite(new Number(NaN)) === false)) {
 if (isFinite(new Boolean(true)) === false) {
   $ERROR('#6: new Boolean(true) !== Not-a-Finite'); 
 }
-
-
-
-

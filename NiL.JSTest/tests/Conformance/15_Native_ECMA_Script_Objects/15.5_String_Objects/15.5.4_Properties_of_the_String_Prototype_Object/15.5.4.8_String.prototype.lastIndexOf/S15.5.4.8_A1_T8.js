@@ -8,7 +8,7 @@
 * @description: Call lastIndexOf(searchString, position) function with void 0 argument of string object;
 */
 
-__obj = {toString:function(){}};
+var __obj = {toString:function(){}};
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

@@ -8,9 +8,9 @@
 * @description: thisArg is number;
 */
 
-obj=1;
+var obj=1;
 
-retobj = Function("this.touched= true; return this;").call(obj);
+var retobj = Function("this.touched= true; return this;").call(obj);
 
 //CHECK#1
 if (typeof obj.touched !== "undefined") {

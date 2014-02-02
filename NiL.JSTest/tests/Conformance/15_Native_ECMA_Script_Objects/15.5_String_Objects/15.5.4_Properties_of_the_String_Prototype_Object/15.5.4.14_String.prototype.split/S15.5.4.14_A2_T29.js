@@ -15,9 +15,9 @@ var __instance = new Number(100111122133144155);
 
 Number.prototype.split = String.prototype.split;
 
-__split = __instance.split(1);
+var __split = __instance.split(1);
 
-__expected = ["","00","","","","22","33","44","60"];
+var __expected = ["","00","","","","22","33","44","60"];
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

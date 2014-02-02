@@ -7,6 +7,7 @@
  * @assertion: Properties of the [[Prototype]] object 
  * are visible as properties of the child object for the purposes of get access, but not for put access;
  * @description: Check visibility properties of the child object for the purposes of get access, but not for put access;
+ * @strict_mode_negative
 */
  
 //Establish foo object 

@@ -9,7 +9,7 @@
 */
 
 // CHECK#1
-x = Number.MIN_VALUE;
+var x = Number.MIN_VALUE;
 Number.MIN_VALUE = 1;
 if (Number.MIN_VALUE !== x) {
   $ERROR('#1: x = Number.MIN_VALUE; Number.MIN_VALUE = 1; Number.MIN_VALUE === x');

@@ -6,10 +6,11 @@
 * @section: 15.4.3.1;
 * @assertion: The Array.prototype property has the attribute ReadOnly;
 * @description: Checking if varying the Array.prototype property fails;
+* @strict_mode_negative
 */
 
 //CHECK#1
-x = Array.prototype;
+var x = Array.prototype;
 Array.prototype = 1;
 if (Array.prototype !== x) {
 	$ERROR('#1: x = Array.prototype; Array.prototype = 1; Array.prototype === x. Actual: ' + (Array.prototype));

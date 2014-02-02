@@ -8,7 +8,7 @@
 * @description: Call indexOf(searchString, position) function with function(){}() argument of string object;
 */
 
-__obj = {
+var __obj = {
     valueOf:function(){},
     toString:void 0
 };

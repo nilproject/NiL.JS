@@ -12,7 +12,7 @@ function FACTORY(){
   (function(){this.feat="kamon beyba"}).call(null);
 };
 
-obj = new FACTORY;
+var obj = new FACTORY;
 
 //CHECK#1
 if (this["feat"] !== "kamon beyba") {

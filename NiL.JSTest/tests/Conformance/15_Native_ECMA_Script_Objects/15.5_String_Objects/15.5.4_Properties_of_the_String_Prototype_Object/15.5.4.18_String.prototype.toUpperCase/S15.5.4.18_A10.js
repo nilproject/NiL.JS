@@ -16,7 +16,7 @@ if (!(String.prototype.toUpperCase.hasOwnProperty('length'))) {
 //
 //////////////////////////////////////////////////////////////////////////////
 
-__obj = String.prototype.toUpperCase.length;
+var __obj = String.prototype.toUpperCase.length;
 
 String.prototype.toUpperCase.length = function(){return "shifted";};
 

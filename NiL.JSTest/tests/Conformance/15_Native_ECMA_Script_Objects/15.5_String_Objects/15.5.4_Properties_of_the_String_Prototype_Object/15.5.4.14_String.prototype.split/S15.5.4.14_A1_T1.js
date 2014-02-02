@@ -12,11 +12,11 @@
 * @description: Arguments are false and true, and instance is object;
 */
 
-__instance = new Object(true);
+var __instance = new Object(true);
 
 __instance.split = String.prototype.split;
 
-__split = __instance.split(true, false);
+var __split = __instance.split(true, false);
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

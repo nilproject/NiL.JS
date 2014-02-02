@@ -36,7 +36,7 @@ namespace NiL.JS.Statements
             while ((code[i] != '\n') && (code[i] != '\r') && (code[i] != ';') && (code[i] != '}'))
             {
                 int s = i;
-                if (!Parser.ValidateName(code, ref i, true))
+                if (!Parser.ValidateName(code, ref i, true, state.strict.Peek()))
                     throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid varible definition at " + Tools.PositionToTextcord(code, s))));
                 string name = Tools.Unescape(code.Substring(s, i - s));
                 names.Add(name);

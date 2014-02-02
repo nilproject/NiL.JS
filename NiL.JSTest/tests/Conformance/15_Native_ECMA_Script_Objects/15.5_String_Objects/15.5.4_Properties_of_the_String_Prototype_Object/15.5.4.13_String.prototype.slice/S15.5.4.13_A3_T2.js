@@ -8,7 +8,7 @@
 * @description: Apply String.prototype.slice to Object instance, use other value for start and end values;
 */
 
-__instance = new Object();
+var __instance = new Object();
 
 __instance.slice = String.prototype.slice;
 

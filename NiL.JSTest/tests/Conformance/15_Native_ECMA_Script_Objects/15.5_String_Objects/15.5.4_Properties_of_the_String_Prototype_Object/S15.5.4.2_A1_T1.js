@@ -8,7 +8,7 @@
 * @description: Create new String(number) and check it`s method toString();
 */
 
-__string__obj = new String(1);
+var __string__obj = new String(1);
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#

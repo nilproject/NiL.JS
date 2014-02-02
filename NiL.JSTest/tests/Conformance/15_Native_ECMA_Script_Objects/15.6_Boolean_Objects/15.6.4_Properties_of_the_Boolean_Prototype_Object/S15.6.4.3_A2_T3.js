@@ -12,9 +12,9 @@
 
 //CHECK#1
 try{
-  s1 = new Date();
+  var s1 = new Date();
   s1.valueOf = Boolean.prototype.valueOf;
-  v1 = s1.valueOf(); 
+  var v1 = s1.valueOf(); 
   $ERROR('#1: Boolean.prototype.valueOf on not a Boolean object should throw TypeError');
 }
 catch(e){
@@ -25,9 +25,9 @@ catch(e){
 
 //CHECK#1
 try{
-  s2 = new Date();
+  var s2 = new Date();
   s2.myValueOf = Boolean.prototype.valueOf;
-  v2 = s2.myValueOf(); 
+  var v2 = s2.myValueOf(); 
   $ERROR('#2: Boolean.prototype.valueOf on not a Boolean object should throw TypeError');
 }
 catch(e){

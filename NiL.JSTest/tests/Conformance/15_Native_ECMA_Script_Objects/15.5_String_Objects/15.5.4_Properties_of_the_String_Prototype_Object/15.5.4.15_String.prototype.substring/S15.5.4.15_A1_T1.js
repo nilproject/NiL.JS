@@ -8,7 +8,7 @@
 * @description: Arguments are false and true, and instance is object;
 */
 
-__instance = new Object(true);
+var __instance = new Object(true);
 
 __instance.substring = String.prototype.substring;
 

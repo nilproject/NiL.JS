@@ -9,7 +9,7 @@
 * Function calls itself by the name of the variable;
 */
 
-__func = function (arg){
+var __func = function (arg){
     if (arg === 1) {
     	return arg;
     } else {

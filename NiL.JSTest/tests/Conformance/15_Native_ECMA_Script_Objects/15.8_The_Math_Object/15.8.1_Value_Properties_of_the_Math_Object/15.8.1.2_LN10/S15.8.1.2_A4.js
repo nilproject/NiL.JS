@@ -6,10 +6,11 @@
  * @section: 15.8.1.2;
  * @assertion: Value Property LN10 of the Math Object has the attribute ReadOnly;
  * @description: Checking if Math.LN10 property has the attribute ReadOnly;
+ * @strict_mode_negative
  */
 
 // CHECK#1
-x = Math.LN10;
+var x = Math.LN10;
 Math.LN10 = 1;
 if (Math.LN10 !== x) {
   $ERROR('#1: Math.LN10 hasn\'t ReadOnly: \'x = Math.LN10;Math.LN10 = 1;Math.LN10 === x\'');

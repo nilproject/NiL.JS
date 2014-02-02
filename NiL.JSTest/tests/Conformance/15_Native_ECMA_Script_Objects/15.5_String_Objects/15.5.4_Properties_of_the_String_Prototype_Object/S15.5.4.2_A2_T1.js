@@ -8,7 +8,7 @@
 * @description: Checking if creating variable String.prototype.toString fails;
 */
 
-__toString = String.prototype.toString;
+var __toString = String.prototype.toString;
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

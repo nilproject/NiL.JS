@@ -17,7 +17,7 @@
 
 //CHECK#1
 try {
-  f = new Function(void 0);
+  var f = new Function(void 0);
 } catch (e) {
   $FAIL('#1: test failed with error '+e);
 }

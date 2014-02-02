@@ -8,7 +8,7 @@
 * @description: Create String object as new String(1) and check it`s valueOf();
 */
 
-__string__obj = new String(1);
+var __string__obj = new String(1);
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#

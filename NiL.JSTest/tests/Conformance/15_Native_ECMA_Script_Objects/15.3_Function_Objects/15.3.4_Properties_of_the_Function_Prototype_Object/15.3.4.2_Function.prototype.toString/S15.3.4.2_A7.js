@@ -8,10 +8,10 @@
 * @description: Checking if creating "new Function.prototype.toString" fails;
 */
 
-FACTORY = Function.prototype.toString;
+var FACTORY = Function.prototype.toString;
 
 try {
-  instance = new FACTORY;
+  var instance = new FACTORY;
   $FAIL('#1: Function.prototype.toString can\'t be used as constructor');
 } catch (e) {
   $PRINT(e);

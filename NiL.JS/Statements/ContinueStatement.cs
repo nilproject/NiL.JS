@@ -18,7 +18,7 @@ namespace NiL.JS.Statements
             while (char.IsWhiteSpace(code[i]) && !Tools.isLineTerminator(code[i])) i++;
             int sl = i;
             JSObject label = null;
-            if (Parser.ValidateName(code, ref i))
+            if (Parser.ValidateName(code, ref i, true, state.strict.Peek()))
             {
                 label = Tools.Unescape(code.Substring(sl, i - sl));
                 if (!state.Labels.Contains(label.oValue as string))

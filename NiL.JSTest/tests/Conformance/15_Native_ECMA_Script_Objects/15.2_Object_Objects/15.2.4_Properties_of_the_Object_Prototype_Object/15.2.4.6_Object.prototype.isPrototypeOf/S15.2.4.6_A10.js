@@ -6,6 +6,7 @@
 * @section: 15.2.4.6;
 * @assertion: The Object.prototype.isPrototypeOf.length property has the attribute ReadOnly;
 * @description: Checking if varying the Object.prototype.isPrototypeOf.length property fails;
+* @strict_mode_negative
 */
 
 //CHECK#1
@@ -13,7 +14,7 @@ if (!(Object.prototype.isPrototypeOf.hasOwnProperty('length'))) {
   $FAIL('#1: the Object.prototype.isPrototypeOf has length property');
 }
 
-obj = Object.prototype.isPrototypeOf.length;
+var obj = Object.prototype.isPrototypeOf.length;
 
 Object.prototype.isPrototypeOf.length = function(){return "shifted";};
 

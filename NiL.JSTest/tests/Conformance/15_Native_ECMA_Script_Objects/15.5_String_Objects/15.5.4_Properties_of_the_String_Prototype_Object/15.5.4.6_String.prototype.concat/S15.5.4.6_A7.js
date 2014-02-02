@@ -8,9 +8,9 @@
 * @description: Checking if creating the String.prototype.concat object fails;
 */
 
-__FACTORY = String.prototype.concat;
+var __FACTORY = String.prototype.concat;
 
 try {
-  __instance = new __FACTORY;
+  var __instance = new __FACTORY;
   $FAIL('#1: __FACTORY = String.prototype.concat; "__instance = new __FACTORY" lead throwing exception');
 } catch (e) {}

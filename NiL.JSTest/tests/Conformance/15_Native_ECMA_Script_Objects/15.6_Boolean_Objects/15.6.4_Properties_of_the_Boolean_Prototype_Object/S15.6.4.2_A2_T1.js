@@ -12,9 +12,9 @@
 
 //CHECK#1
 try{
-  s1 = new String();
+  var s1 = new String();
   s1.toString = Boolean.prototype.toString;
-  v1 = s1.toString(); 
+  var v1 = s1.toString(); 
   $ERROR('#1: Boolean.prototype.toString on not a Boolean object should throw TypeError');
 }
 catch(e){
@@ -25,9 +25,9 @@ catch(e){
 
 //CHECK#2
 try{
-  s2 = new String();
+  var s2 = new String();
   s2.myToString = Boolean.prototype.toString;
-  v2 = s2.myToString(); 
+  var v2 = s2.myToString(); 
   $ERROR('#2: Boolean.prototype.toString on not a Boolean object should throw TypeError');
 }
 catch(e){

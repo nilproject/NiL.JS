@@ -8,14 +8,14 @@
 * @description: Call toLocaleUpperCase() function of string object;
 */
 
-__obj = {
+var __obj = {
     valueOf:function(){},
     toString:void 0
 };
 
-__lowerCase = new String(__obj).toLocaleUpperCase();
+var __lowerCase = new String(__obj).toLocaleUpperCase();
 
-__expected ="UNDEFINED"; 
+var __expected ="UNDEFINED"; 
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

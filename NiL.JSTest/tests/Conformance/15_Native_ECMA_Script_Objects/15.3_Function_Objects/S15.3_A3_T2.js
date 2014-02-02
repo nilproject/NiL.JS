@@ -10,16 +10,16 @@
 */
 
 this.color="red";
-name="mars";
+var name="mars";
 
-f = Function.call("blablastring", "return this.color;");
+var f = Function.call("blablastring", "return this.color;");
 
 //CHECK#1
 if (f() !== "red") {
   $ERROR('#1: ');
 }
 
-g = Function.call(null, "return this.name;");
+var g = Function.call(null, "return this.name;");
 
 //CHECK#2
 if (g() !== "mars") {

@@ -9,6 +9,8 @@
 * @description: Declaring a function with "function __func()" and no "return" in the function body;
 */
 
+var x;
+
 function __func(){
     x = true;
 }

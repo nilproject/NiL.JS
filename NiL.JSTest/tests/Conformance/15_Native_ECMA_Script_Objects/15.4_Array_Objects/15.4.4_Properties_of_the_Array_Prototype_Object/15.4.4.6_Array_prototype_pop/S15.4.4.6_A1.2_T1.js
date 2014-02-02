@@ -10,7 +10,7 @@
 */
 
 //CHECK#1
-x = new Array(0,1,2,3);
+var x = new Array(0,1,2,3);
 var pop = x.pop();
 if (pop !== 3) {
   $ERROR('#1: x = new Array(0,1,2,3); x.pop() === 3. Actual: ' + (pop));

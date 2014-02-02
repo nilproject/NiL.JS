@@ -8,7 +8,7 @@
 * @description: Arguments are function call and x, and instance is Boolean. x is undefined variable;
 */
 
-__instance = new Boolean;
+var __instance = new Boolean;
 
 __instance.substring = String.prototype.substring;
 

@@ -12,7 +12,7 @@ var TEST_STRING = new String( " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNO
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1
-for ( k = 0, i = 0x0020; i < 0x007e; i++, k++ ) {
+for ( var k = 0, i = 0x0020; i < 0x007e; i++, k++ ) {
     if (TEST_STRING.indexOf( String.fromCharCode(i), k+1 ) !== -1) {
       $ERROR('#'+(i-0x0020)+': TEST_STRING.indexOf( String.fromCharCode('+i+'), '+(k+1)+' )===-1. Actual: '+TEST_STRING.indexOf( String.fromCharCode(i), k+1 )); 
     }

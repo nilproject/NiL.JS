@@ -6,6 +6,7 @@
  * @section: 15.7.3.4;
  * @assertion: Number.NaN is DontDelete;
  * @description: Checking if deleting Number.NaN fails;
+ * @strict_mode_negative
 */
 
 // CHECK#1

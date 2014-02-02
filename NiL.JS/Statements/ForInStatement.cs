@@ -37,7 +37,7 @@ namespace NiL.JS.Statements
                 while (char.IsWhiteSpace(code[i])) i++;
                 int start = i;
                 string varName;
-                if (!Parser.ValidateName(code, ref i))
+                if (!Parser.ValidateName(code, ref i, true, state.strict.Peek()))
                     throw new ArgumentException();
                 varName = Tools.Unescape(code.Substring(start, i - start));
                 res.varible = new VaribleDefineStatement(varName, new GetVaribleStatement(varName));

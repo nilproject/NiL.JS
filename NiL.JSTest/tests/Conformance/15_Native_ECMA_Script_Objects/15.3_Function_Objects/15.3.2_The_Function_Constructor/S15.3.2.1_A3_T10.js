@@ -16,12 +16,12 @@
 * @description: Values of the function constructor arguments are "{toString:function(){return "z;x"}}" and "return this;"; 
 */
 
-body = "return this;";
-p={toString:function(){return "z;x"}};
+var body = "return this;";
+var p={toString:function(){return "z;x"}};
 
 //CHECK#1
 try {
-  f = new Function(p,body);
+  var f = new Function(p,body);
   $FAIL('#1: If P is not parsable as a FormalParameterList_opt then throw a SyntaxError exception');
 } catch (e) {
   if (!(e instanceof SyntaxError)) {

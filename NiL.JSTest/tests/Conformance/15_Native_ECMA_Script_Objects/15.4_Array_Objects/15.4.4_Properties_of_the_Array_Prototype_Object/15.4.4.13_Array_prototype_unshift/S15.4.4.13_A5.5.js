@@ -15,8 +15,8 @@ if (Array.propertyIsEnumerable('unshift') !== false) {
 }
 
 //CHECK#2
-result = true;
-for (p in Array){
+var result = true;
+for (var p in Array){
   if (p === "unshift") {
     result = false;
   }  
@@ -25,4 +25,3 @@ for (p in Array){
 if (result !== true) {
   $ERROR('#2: result = true; for (p in Array) { if (p === "unshift") result = false; }  result === true;');
 }
-

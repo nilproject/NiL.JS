@@ -6,10 +6,11 @@
  * @section: 15.8.1.1;
  * @assertion: Value Property E of the Math Object has the attribute ReadOnly;
  * @description: Checking if Math.E property has the attribute ReadOnly;
+ * @strict_mode_negative
  */
 
 // CHECK#1
-x = Math.E;
+var x = Math.E;
 Math.E = 1;
 if (Math.E !== x) {
   $ERROR('#1: Math.E hasn\'t ReadOnly: \'x = Math.E;Math.E = 1;Math.E === x\'');

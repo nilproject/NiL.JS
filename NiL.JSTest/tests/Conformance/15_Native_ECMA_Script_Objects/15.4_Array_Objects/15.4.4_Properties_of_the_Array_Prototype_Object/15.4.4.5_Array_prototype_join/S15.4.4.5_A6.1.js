@@ -15,8 +15,8 @@ if (Array.prototype.join.propertyIsEnumerable('length') !== false) {
 }
 
 //CHECK#2
-result = true;
-for (p in Array.join){
+var result = true;
+for (var p in Array.join){
   if (p === "length") {
     result = false;
   }  

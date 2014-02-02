@@ -9,6 +9,8 @@
 * @description: Using "return" with no expression. Declaring a function with "var __func = function()";
 */
 
+var x; 
+
 var __func = function(){
     x = 1;
     return;

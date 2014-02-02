@@ -9,7 +9,7 @@
 * @description: Creating string object with "new String()" initialized with numbers that have more than 1 significant digit following the point;
 */
 
-__str = new String(1.2345);
+var __str = new String(1.2345);
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1
 if (typeof __str !== "object") {

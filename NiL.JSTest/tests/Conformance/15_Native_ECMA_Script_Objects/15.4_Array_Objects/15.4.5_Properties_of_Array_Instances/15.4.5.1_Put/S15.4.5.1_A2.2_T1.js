@@ -10,7 +10,7 @@
 */
 
 //CHECK#1
-x = Array(100);
+var x = Array(100);
 x[0] = 1;
 if (x.length !== 100) {  
   $ERROR('#1: x = Array(100); x[0] = 1; x.length === 100. Actual: ' + (x.length));    

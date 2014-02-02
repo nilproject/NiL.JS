@@ -8,7 +8,7 @@
 * @description: Argument is void 0, and instance is String object with overrided toString function;
 */
 
-__obj = {toString:function(){}};
+var __obj = {toString:function(){}};
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

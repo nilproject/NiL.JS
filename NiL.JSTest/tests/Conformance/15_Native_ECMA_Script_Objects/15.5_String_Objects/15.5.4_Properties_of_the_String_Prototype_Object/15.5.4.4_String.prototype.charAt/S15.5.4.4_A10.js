@@ -16,7 +16,7 @@ if (!(String.prototype.charAt.hasOwnProperty('length'))) {
 //
 //////////////////////////////////////////////////////////////////////////////
 
-__obj = String.prototype.charAt.length;
+var __obj = String.prototype.charAt.length;
 
 String.prototype.charAt.length = function(){return "shifted";};
 

@@ -16,7 +16,7 @@ if (!(String.prototype.search.hasOwnProperty('length'))) {
 //
 //////////////////////////////////////////////////////////////////////////////
 
-__obj = String.prototype.search.length;
+var __obj = String.prototype.search.length;
 
 String.prototype.search.length = function(){return "shifted";};
 

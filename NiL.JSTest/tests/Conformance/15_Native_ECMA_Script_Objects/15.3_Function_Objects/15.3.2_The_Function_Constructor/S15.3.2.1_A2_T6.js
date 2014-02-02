@@ -8,9 +8,9 @@
 * @description: Values of the function constructor arguments are "return"-s of various results and a concotenation of strings;
 */
 
-i=0;
+var i=0;
 
-p={toString:function(){return "arg"+(++i)}};
+var p={toString:function(){return "arg"+(++i)}};
 
 //CHECK#1
 try {

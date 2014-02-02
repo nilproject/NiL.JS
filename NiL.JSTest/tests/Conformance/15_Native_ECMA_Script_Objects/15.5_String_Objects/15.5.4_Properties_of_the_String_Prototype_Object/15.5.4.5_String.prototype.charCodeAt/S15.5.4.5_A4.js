@@ -8,7 +8,7 @@
 * @description: Change toString function, it trow exception, and call charCodeAt();
 */
 
-__obj={
+var __obj={
     valueOf:1,
     toString:function(){throw 'intostring'},
     charCodeAt:String.prototype.charCodeAt

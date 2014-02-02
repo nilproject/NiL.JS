@@ -16,12 +16,12 @@
 * @description: Values of the function constructor arguments are "{toString:function(){return 'a';}}" and "return a;";
 */
 
-p = {toString:function(){return "a";}};
-body = "return a;";
+var p = {toString:function(){return "a";}};
+var body = "return a;";
 
 //CHECK#1
 try {
-  f = new Function(p,body);
+  var f = new Function(p,body);
 } catch (e) {
   $FAIL('#1: test failed with error '+e);
 }

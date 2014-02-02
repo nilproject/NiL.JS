@@ -9,7 +9,7 @@
 */
 
 // CHECK#1
-for (prop in this) {
+for (var prop in this) {
   if (prop === "NaN") {
 	$ERROR('#1: The NaN is DontEnum');
   }	 	

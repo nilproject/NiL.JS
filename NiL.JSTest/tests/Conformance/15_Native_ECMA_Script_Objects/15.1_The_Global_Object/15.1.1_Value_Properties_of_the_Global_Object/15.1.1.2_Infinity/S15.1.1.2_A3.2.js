@@ -9,7 +9,7 @@
 */
 
 // CHECK#1
-for (prop in this) {
+for (var prop in this) {
   if (prop === "Infinity") {
 	$ERROR('#1: The Infinity is DontEnum');
   }	 	

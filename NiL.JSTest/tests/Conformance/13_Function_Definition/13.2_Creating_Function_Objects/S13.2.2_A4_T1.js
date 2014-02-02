@@ -12,13 +12,13 @@
 * @description: Declaring a function with "function __FACTORY()";
 */
 
-__CUBE="cube";
+var __CUBE="cube";
 
 function __FACTORY(){
 };
 __FACTORY.prototype={ shape:__CUBE, printShape:function(){return this.shape;} };
 
-__device = new __FACTORY();
+var __device = new __FACTORY();
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

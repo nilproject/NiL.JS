@@ -9,14 +9,14 @@
 * @description: Calling Object function with number argument value;
 */
 
-num = 1.1;
+var num = 1.1;
 
 // CHECK#1
 if(typeof num  !== 'number'){
   $ERROR('#1: num = 1.1 should be Number primitive');
 }
 
-obj = Object(num);
+var obj = Object(num);
 
 //CHECK#2
 if (typeof obj !== "object") {

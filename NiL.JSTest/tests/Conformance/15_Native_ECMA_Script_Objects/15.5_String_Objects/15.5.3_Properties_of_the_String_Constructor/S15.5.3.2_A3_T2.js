@@ -8,7 +8,7 @@
 * @description: Create function variable, that equal String.fromCharCode, delete original String.fromCharCode and use created variable;
 */
 
-__fcc__func = String.fromCharCode;
+var __fcc__func = String.fromCharCode;
 
 delete String.fromCharCode;
 

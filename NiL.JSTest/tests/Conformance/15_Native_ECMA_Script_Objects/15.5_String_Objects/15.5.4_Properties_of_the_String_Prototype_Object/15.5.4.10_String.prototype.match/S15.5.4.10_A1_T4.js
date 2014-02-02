@@ -8,9 +8,9 @@
 * @description: Call match (regexp) function without arguments of string;
 */
 
-__matched = "".match();
+var __matched = "".match();
 
-__expected = RegExp().exec(""); 
+var __expected = RegExp().exec(""); 
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

@@ -8,7 +8,7 @@
 * @description: Arguments are true and 1, and instance is object;
 */
 
-__instance = new Object(true);
+var __instance = new Object(true);
 
 __instance.replace = String.prototype.replace;
 

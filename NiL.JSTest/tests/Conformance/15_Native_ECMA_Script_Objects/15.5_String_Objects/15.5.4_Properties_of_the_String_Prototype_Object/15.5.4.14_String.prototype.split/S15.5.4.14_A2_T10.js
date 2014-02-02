@@ -14,7 +14,7 @@
 var __string = "this123is123a123string123object";
 var __expected = ["this", "is", "a", "string", "object"];
 
-__split = __string.split(123);
+var __split = __string.split(123);
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

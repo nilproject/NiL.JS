@@ -6,10 +6,11 @@
  * @section: 15.8.1.3;
  * @assertion: Value Property LN2 of the Math Object has the attribute ReadOnly;
  * @description: Checking if Math.LN2 property has the attribute DontDelete;
+ * @strict_mode_negative
  */
 
 // CHECK#1
-x = Math.LN2;
+var x = Math.LN2;
 Math.LN2 = 1;
 if (Math.LN2 !== x) {
   $ERROR('#1: Math.LN2 hasn\'t ReadOnly: \'x = Math.LN2;Math.LN2 = 1;Math.LN2 === x\'');

@@ -8,7 +8,7 @@
 * @description: Call String(function(){}());
 */
 
-__str = String(function(){}());
+var __str = String(function(){}());
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

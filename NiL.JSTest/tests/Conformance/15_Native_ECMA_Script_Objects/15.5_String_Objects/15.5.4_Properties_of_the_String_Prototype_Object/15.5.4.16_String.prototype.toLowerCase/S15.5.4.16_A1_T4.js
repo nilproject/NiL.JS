@@ -8,9 +8,9 @@
 * @description: Call toLowerCase() function without arguments of string and from empty string;
 */
 
-__lowerCase = "".toLowerCase();
+var __lowerCase = "".toLowerCase();
 
-__expected = ""; 
+var __expected = ""; 
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

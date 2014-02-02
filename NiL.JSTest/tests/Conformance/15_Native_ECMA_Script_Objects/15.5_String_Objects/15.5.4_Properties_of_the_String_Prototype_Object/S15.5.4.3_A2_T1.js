@@ -9,7 +9,7 @@
 * @description: Checking if creating variable String.prototype.valueOf fails;
 */
 
-__valueOf = String.prototype.valueOf;
+var __valueOf = String.prototype.valueOf;
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

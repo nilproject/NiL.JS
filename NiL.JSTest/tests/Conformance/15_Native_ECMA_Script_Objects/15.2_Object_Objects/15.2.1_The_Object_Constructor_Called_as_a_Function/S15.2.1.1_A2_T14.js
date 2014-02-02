@@ -9,7 +9,7 @@
 * @description: Calling Object function with sum of empty string and a number as argument value;
 */
 
-obj = Object(""+1);
+var obj = Object(""+1);
 
 //CHECK#2
 if (obj.constructor !== String) {

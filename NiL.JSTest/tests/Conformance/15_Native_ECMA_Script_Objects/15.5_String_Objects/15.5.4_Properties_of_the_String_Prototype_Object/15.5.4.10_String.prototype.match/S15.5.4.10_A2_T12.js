@@ -8,11 +8,11 @@
 * @description: Regular expression is variable that have value /([\d]{5})([-\ ]?[\d]{4})?$/g;
 */
 
-__matches=["02134"];
+var __matches=["02134"];
 
-__string = "Boston, MA 02134";
+var __string = "Boston, MA 02134";
 
-__re = /([\d]{5})([-\ ]?[\d]{4})?$/g;
+var __re = /([\d]{5})([-\ ]?[\d]{4})?$/g;
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

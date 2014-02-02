@@ -6,10 +6,11 @@
 * @section: 15.4.4.6; 
 * @assertion: The length property of pop has the attribute ReadOnly;
 * @description: Checking if varying the length property fails;
+* @strict_mode_negative
 */
 
 //CHECK#1
-x = Array.prototype.pop.length;
+var x = Array.prototype.pop.length;
 Array.prototype.pop.length = Infinity;
 if (Array.prototype.pop.length !== x) {
   $ERROR('#1: x = Array.prototype.pop.length; Array.prototype.pop.length = Infinity; Array.prototype.pop.length === x. Actual: ' + (Array.prototype.pop.length));

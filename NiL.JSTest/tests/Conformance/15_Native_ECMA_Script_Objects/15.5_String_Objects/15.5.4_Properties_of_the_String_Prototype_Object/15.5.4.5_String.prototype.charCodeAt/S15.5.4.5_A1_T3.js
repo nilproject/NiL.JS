@@ -8,13 +8,13 @@
 * @description: Use numbers and strings as pos;
 */
 
-charCodeAt = String.prototype.charCodeAt;
+var charCodeAt = String.prototype.charCodeAt;
 
 if (typeof toString === "undefined"){
-    toString = Object.prototype.toString;
+    var toString = Object.prototype.toString;
 }
 
-__class__ = toString();
+var __class__ = toString();
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

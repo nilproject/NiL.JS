@@ -16,7 +16,7 @@ if (!(String.prototype.split.hasOwnProperty('length'))) {
 //
 //////////////////////////////////////////////////////////////////////////////
 
-__obj = String.prototype.split.length;
+var __obj = String.prototype.split.length;
 
 String.prototype.split.length = function(){return "shifted";};
 

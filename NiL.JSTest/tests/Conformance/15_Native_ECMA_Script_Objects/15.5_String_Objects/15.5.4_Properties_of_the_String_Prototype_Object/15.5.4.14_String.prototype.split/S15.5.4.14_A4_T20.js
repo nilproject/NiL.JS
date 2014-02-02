@@ -14,9 +14,9 @@ var __string = new String("a b c de f");
 
 var __re = /\s/;
 
-__split = __string.split(__re,3);
+var __split = __string.split(__re,3);
 
-__expected = ["a","b","c"];
+var __expected = ["a","b","c"];
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

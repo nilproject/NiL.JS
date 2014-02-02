@@ -13,7 +13,7 @@ function __func(){
     arguments[0]["PI"]=3.14;
 }
 
-__obj={};
+var __obj={};
 
 __func(__obj);
 

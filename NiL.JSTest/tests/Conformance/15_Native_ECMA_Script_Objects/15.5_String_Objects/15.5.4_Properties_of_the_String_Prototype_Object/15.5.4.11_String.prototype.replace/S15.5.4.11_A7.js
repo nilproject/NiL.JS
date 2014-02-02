@@ -8,9 +8,9 @@
 * @description: Checking if creating the String.prototype.replace object fails;
 */
 
-__FACTORY = String.prototype.replace;
+var __FACTORY = String.prototype.replace;
 
 try {
-  __instance = new __FACTORY;
+  var __instance = new __FACTORY;
   $FAIL('#1: __FACTORY = String.prototype.replace; "__instance = new __FACTORY" lead to throwing exception');
 } catch (e) {}

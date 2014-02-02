@@ -9,13 +9,13 @@
 * @description: Calling Object function with boolean argument value;
 */
 
-bool = true;
+var bool = true;
 
 if(typeof bool !== 'boolean'){
   $FAIL('#1: bool should be boolean primitive');
 }
 
-obj = Object(bool);
+var obj = Object(bool);
 
 if (obj.constructor !== Boolean) {
   $ERROR('#2: Object(true) returns ToObject(true)');

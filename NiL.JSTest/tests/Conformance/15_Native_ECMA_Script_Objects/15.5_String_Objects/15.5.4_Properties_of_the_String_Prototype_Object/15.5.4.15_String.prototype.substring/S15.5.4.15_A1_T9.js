@@ -8,7 +8,7 @@
 * @description: Arguments are undefined and object, and instance is new String(object), object have overrided valueOf and toString functions;
 */
 
-__obj = {
+var __obj = {
     valueOf:function(){},
     toString:void 0
 };

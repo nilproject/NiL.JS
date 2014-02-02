@@ -9,11 +9,11 @@
 * 
 */
 
-__obj = {toString:function(){}};
+var __obj = {toString:function(){}};
 
-__matched = String(__obj).match(void 0);
+var __matched = String(__obj).match(void 0);
 
-__expected = RegExp(void 0).exec("undefined"); 
+var __expected = RegExp(void 0).exec("undefined"); 
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

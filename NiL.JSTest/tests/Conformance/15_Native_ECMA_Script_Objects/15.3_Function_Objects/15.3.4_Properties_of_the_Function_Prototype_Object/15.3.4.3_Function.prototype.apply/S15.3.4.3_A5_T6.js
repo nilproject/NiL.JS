@@ -8,7 +8,7 @@
 * @description: thisArg is new String();
 */
 
-obj=new String("soap");
+var obj=new String("soap");
 
 ( function(){this.touched= true;}).apply(obj);
 

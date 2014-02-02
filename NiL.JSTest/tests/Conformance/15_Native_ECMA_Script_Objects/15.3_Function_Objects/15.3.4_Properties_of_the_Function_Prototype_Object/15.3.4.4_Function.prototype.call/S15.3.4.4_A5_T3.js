@@ -8,9 +8,9 @@
 * @description: thisArg is string;
 */
 
-obj="soap";
+var obj="soap";
 
-retobj = ( function(){this.touched= true; return this;} ).call(obj);
+var retobj = ( function(){this.touched= true; return this;} ).call(obj);
 
 //CHECK#1
 if (typeof obj.touched !== "undefined") {

@@ -8,11 +8,11 @@
 * @description: Call String(new Array);
 */
 
-__old__Array__prototype__toString = Array.prototype.toString;
+var __old__Array__prototype__toString = Array.prototype.toString;
 
 Array.prototype.toString=function(){return "__ARRAY__";};
 
-__str = String(new Array);
+var __str = String(new Array);
 
 // restore old toString method just in case
 Array.prototype.toString=__old__Array__prototype__toString;

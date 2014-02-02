@@ -17,11 +17,11 @@
 */
 
 
-body = "return this;";
+var body = "return this;";
 
 //CHECK#1
 try {
-  f = new Function(undefined,body);
+  var f = new Function(undefined,body);
 } catch (e) {
   $FAIL('#1: test failed with error '+e);
 }

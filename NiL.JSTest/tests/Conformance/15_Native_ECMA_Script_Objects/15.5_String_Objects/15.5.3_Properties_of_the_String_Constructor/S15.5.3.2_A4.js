@@ -8,7 +8,7 @@
 * @description: Checking if creating "new String.fromCharCode" fails;
 */
 
-__fcc__func = String.fromCharCode;
+var __fcc__func = String.fromCharCode;
 
 delete String.fromCharCode;
 

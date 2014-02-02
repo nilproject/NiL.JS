@@ -15,8 +15,8 @@ if (Array.prototype.sort.propertyIsEnumerable('length') !== false) {
 }
 
 //CHECK#2
-result = true;
-for (p in Array.sort){
+var result = true;
+for (var p in Array.sort){
   if (p === "length") {
     result = false;
   }  

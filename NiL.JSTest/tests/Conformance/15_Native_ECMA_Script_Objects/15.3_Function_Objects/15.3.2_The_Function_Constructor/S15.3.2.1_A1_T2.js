@@ -14,11 +14,11 @@
 * @description: The body of the function is "{toString:function(){return "return 1;";}}";
 */
 
-body={toString:function(){return "return 1;";}}
+var body={toString:function(){return "return 1;";}};
 
 //CHECK#1
 try {
-  f = new Function(body);	
+  var f = new Function(body);	
 } catch (e) {
   $FAIL('#1: test failed with error '+e);
 }

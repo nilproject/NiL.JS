@@ -12,7 +12,7 @@
 
 function Palette(){};
 Palette.prototype = {red:0xFF0000, green:0x00FF00};
-__palette = new Palette;
+var __palette = new Palette;
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

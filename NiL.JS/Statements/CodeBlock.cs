@@ -38,16 +38,29 @@ namespace NiL.JS.Statements
             var body = new List<Statement>();
             var funcs = new List<FunctionStatement>();
             state.LabelCount = 0;
+            bool strictSwitch = false;
             while (code[i] != '}')
             {
                 var t = Parser.Parse(state, ref i, 0);
+                if (state.allowStrict && t is OperatorStatement && ((t as OperatorStatement).Type == OperationType.None))
+                {
+                    var op = t as OperatorStatement;
+                    if (op.Second == null && (op.First is ImmidateValueStatement) && "use strict".Equals((op.First as ImmidateValueStatement).Value.Value))
+                    {
+                        state.strict.Push(true);
+                        strictSwitch = true;
+                        continue;
+                    }
+                }
                 if (t == null || t is EmptyStatement)
                     continue;
                 if (t is FunctionStatement)
                     funcs.Add(t as FunctionStatement);
                 else
                     body.Add(t);
-            };
+            }
+            if (strictSwitch)
+                state.strict.Pop();
             i++;
             index = i;
             body.Reverse();

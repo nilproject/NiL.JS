@@ -29,7 +29,7 @@ if (String.fromCharCode(-65535).charCodeAt(0) !== 1) {
 }
 
 // CHECK#5
-if (String.fromCharCode(-65536).charCodeAt(0) !== -0) {
+if (String.fromCharCode(-65536).charCodeAt(0) !== 0) {
   $ERROR('#5: String.fromCharCode(-65536).charCodeAt(0) === 0. Actual: ' + (String.fromCharCode(-65536).charCodeAt(0)));
 }
 

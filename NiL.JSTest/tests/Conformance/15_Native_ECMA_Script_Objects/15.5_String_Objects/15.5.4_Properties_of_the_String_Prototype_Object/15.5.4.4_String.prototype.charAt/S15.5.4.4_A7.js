@@ -8,9 +8,13 @@
 * @description: Checking if creating the String.prototype.charAt object fails;
 */
 
-__FACTORY = String.prototype.charAt;
+var __FACTORY = String.prototype.charAt;
 
 try {
-  __instance = new __FACTORY;
+  var __instance = new __FACTORY;
   $FAIL('#1: __FACTORY = String.prototype.charAt; "__instance = new __FACTORY" lead to throwing exception');
-} catch (e) {}
+} catch (e) {
+  if ((e instanceof TypeError) !== true) {
+    $ERROR('#1.2: undefined = 1 throw a TypeError. Actual: ' + (e));  
+  }
+}

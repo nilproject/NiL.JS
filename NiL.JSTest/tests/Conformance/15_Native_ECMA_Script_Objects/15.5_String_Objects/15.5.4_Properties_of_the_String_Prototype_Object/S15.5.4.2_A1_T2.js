@@ -8,7 +8,7 @@
 * @description: Create new String(boolean) and check it`s method toString();
 */
 
-__string__obj = new String(true);
+var __string__obj = new String(true);
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#

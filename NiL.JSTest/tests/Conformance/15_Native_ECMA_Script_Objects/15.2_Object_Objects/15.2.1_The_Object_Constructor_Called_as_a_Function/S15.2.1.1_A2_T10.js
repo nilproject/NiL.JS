@@ -9,14 +9,14 @@
 * @description: Calling Object function with array of numbers as argument value;
 */
 
-arr = [1,2,3];
+var arr = [1,2,3];
 
 //CHECK#1
 if (typeof arr !== 'object') {
   $ERROR('#1: arr = [1,2,3] is NOT an object');
 }
 
-n_obj = Object(arr);
+var n_obj = Object(arr);
 
 arr.push(4);
 

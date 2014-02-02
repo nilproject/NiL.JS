@@ -9,14 +9,14 @@
 * @description: Calling Object function with object argument value;
 */
 
-obj = {flag:true};
+var obj = {flag:true};
 
 //CHECK#1
 if (typeof(obj) !== 'object') {
   $FAIL('#1: obj = {flag:true} should be an Object');
 }
 
-n_obj = Object(obj);
+var n_obj = Object(obj);
 
 //CHECK#2
 if ((n_obj !== obj)||(!(n_obj['flag']))) {

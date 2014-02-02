@@ -14,11 +14,11 @@
 * @description: Value of the function constructor argument is "Object(1)";
 */
 
-body = new Object(1);
+var body = new Object(1);
 
 //CHECK#1
 try {
-  f = new Function(body);
+  var f = new Function(body);
 } catch (e) {
   $FAIL('#1: test failed with error '+e);
 }

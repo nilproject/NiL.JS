@@ -8,8 +8,8 @@
 * @description: Declaring a function with "var __PROTO = function()";
 */
 
-__MONSTER="monster";
-__PREDATOR="predator";
+var __MONSTER="monster";
+var __PREDATOR="predator";
 
 var __PROTO = function(){};
 
@@ -24,7 +24,7 @@ var __FACTORY = function(){this.name=__PREDATOR};
 
 __FACTORY.prototype=__PROTO;
 
-__monster = new __FACTORY();
+var __monster = new __FACTORY();
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

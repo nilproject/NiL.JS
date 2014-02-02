@@ -7,7 +7,7 @@
 * @assertion: The String.prototype.concat.length property has the attribute ReadOnly;
 * @description: Checking if varying the String.prototype.concat.length property fails;
 */
-
+ 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1
 if (!(String.prototype.concat.hasOwnProperty('length'))) {
@@ -16,7 +16,7 @@ if (!(String.prototype.concat.hasOwnProperty('length'))) {
 //
 //////////////////////////////////////////////////////////////////////////////
 
-__obj = String.prototype.concat.length;
+var __obj = String.prototype.concat.length;
 
 String.prototype.concat.length = function(){return "shifted";};
 

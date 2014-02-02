@@ -8,9 +8,9 @@
 * @description: Create new String.prototype.constructor object and check it;
 */
 
-__constr = String.prototype.constructor;
+var __constr = String.prototype.constructor;
 
-__instance = new __constr("choosing one");
+var __instance = new __constr("choosing one");
 
 //////////////////////////////////////////////////////////////////////////////
 // CHECK#0
@@ -38,7 +38,7 @@ if (!(String.prototype.isPrototypeOf(__instance))) {
 
 //////////////////////////////////////////////////////////////////////////////
 // CHECK#3
-__to_string_result = '[object '+ 'String' +']';
+var __to_string_result = '[object '+ 'String' +']';
 
 delete String.prototype.toString;
 

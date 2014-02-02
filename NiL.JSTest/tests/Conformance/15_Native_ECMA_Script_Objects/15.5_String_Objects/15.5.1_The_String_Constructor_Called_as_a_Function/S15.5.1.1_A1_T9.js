@@ -8,9 +8,9 @@
 * @description: Call String(this);
 */
 
-toString=function(){return "__THIS__";};
+var toString=function(){return "__THIS__";};
 
-__str = String(this);
+var __str = String(this);
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

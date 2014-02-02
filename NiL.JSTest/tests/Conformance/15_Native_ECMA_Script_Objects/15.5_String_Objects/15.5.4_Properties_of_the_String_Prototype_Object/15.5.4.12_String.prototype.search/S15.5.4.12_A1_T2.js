@@ -8,7 +8,7 @@
 * @description: Argument is function call, and instance is Boolean;
 */
 
-__instance = new Boolean;
+var __instance = new Boolean;
 
 __instance.search = String.prototype.search;
 

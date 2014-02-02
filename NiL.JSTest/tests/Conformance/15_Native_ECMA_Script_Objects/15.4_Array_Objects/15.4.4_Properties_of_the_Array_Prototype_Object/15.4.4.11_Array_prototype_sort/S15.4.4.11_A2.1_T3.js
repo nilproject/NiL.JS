@@ -12,13 +12,13 @@
 */
 
 var obj = {valueOf: function() {return 1}, toString: function() {return -2}};
-alphabetR = [undefined, 2, 1, "X", -1, "a", true, obj, NaN, Infinity]; 
- alphabet = [-1, obj, 1, 2, Infinity, NaN, "X", "a", true, undefined];
+var alphabetR = [undefined, 2, 1, "X", -1, "a", true, obj, NaN, Infinity]; 
+var  alphabet = [-1, obj, 1, 2, Infinity, NaN, "X", "a", true, undefined];
  
 //CHECK#1
 alphabetR.sort();
-result = true;
-for (i = 0; i < 10; i++) {
+var result = true;
+for (var i = 0; i < 10; i++) {
   if (!(isNaN(alphabetR[i]) && isNaN(alphabet[i]))) { 
     if (alphabetR[i] !== alphabet[i]) result = false;
   }  

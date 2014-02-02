@@ -13,7 +13,7 @@
 */
 
 //since ToString() evaluates to "" split() evaluates to split("",0)
-__split = "".split();
+var __split = "".split();
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

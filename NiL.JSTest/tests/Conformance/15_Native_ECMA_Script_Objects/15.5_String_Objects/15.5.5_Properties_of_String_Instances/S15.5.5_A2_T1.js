@@ -8,7 +8,7 @@
 * @description: Create new string object and try new created_string;
 */
 
-__str = new Object("");
+var __str = new Object("");
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

@@ -8,15 +8,15 @@
 * @description: Checking by using eval;
 */
 
-lastIndexOf = String.prototype.lastIndexOf;
+var lastIndexOf = String.prototype.lastIndexOf;
 
 var __obj__pos = {valueOf:function(){return 7;}};
 
 if (typeof toString === "undefined"){
-  toString = Object.prototype.toString;
+  var toString = Object.prototype.toString;
 }
 
-__class__ = toString();
+var __class__ = toString();
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

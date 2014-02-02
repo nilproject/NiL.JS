@@ -8,7 +8,7 @@
 * @description: Argument is function that return boolean, and instance is Boolean object;
 */
 
-__instance = new Boolean;
+var __instance = new Boolean;
 
 __instance.match = String.prototype.match;
 

@@ -8,9 +8,9 @@
 * @description: Checking if creating the String.prototype.split object fails;
 */
 
-__FACTORY = String.prototype.split;
+var __FACTORY = String.prototype.split;
 
 try {
-  __instance = new __FACTORY;
+  var __instance = new __FACTORY;
   $FAIL('#1: __FACTORY = String.prototype.split; "__instance = new __FACTORY" lead to throwing exception');
 } catch (e) {}

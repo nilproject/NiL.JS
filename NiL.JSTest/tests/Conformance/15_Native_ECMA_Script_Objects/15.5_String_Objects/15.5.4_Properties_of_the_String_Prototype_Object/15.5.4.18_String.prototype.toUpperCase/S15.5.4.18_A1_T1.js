@@ -8,7 +8,7 @@
 * @description: Arguments is true, and instance is object;
 */
 
-__instance = new Object(true);
+var __instance = new Object(true);
 
 __instance.toUpperCase = String.prototype.toUpperCase;
 

@@ -9,8 +9,8 @@
 * @description: Trying to [[call]] this function; 
 */
 
-__PLANT="flower";
-__ROSE="rose";
+var __PLANT="flower";
+var __ROSE="rose";
 
 function __PROTO(){};
 
@@ -25,7 +25,7 @@ function __FACTORY(){this.name=__ROSE};
 
 __FACTORY.prototype=__PROTO;
 
-__rose = new __FACTORY();
+var __rose = new __FACTORY();
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

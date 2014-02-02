@@ -8,7 +8,7 @@
 * @description: thisArg is Function();
 */
 
-obj=Function();
+var obj=Function();
 
 new Function("this.touched= true; return this;").apply(obj);
 

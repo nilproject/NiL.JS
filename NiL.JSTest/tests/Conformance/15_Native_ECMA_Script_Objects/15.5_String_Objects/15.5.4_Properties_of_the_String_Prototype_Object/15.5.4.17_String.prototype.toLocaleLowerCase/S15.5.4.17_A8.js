@@ -27,9 +27,9 @@ if (String.prototype.toLocaleLowerCase.propertyIsEnumerable('length')) {
 
 //////////////////////////////////////////////////////////////////////////////
 // CHECK#2
-count=0;
+var count=0;
 
-for (p in String.prototype.toLocaleLowerCase){
+for (var p in String.prototype.toLocaleLowerCase){
   if (p==="length") count++;
 }
 

@@ -15,8 +15,8 @@ if (Array.prototype.splice.propertyIsEnumerable('length') !== false) {
 }
 
 //CHECK#2
-result = true;
-for (p in Array.splice){
+var result = true;
+for (var p in Array.splice){
   if (p === "length") {
     result = false;
   }  

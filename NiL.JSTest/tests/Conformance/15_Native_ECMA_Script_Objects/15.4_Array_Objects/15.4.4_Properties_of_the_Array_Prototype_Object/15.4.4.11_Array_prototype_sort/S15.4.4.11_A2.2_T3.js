@@ -9,12 +9,12 @@
 */
 
 var obj = {valueOf: function() {return 1}, toString: function() {return -2}}; 
-alphabetR = [undefined, 2, 1, "X", -1, "a", true, obj, NaN, Infinity]; 
- alphabet = [true, "a", "X", NaN, Infinity, 2, 1, obj, -1, undefined];
+var alphabetR = [undefined, 2, 1, "X", -1, "a", true, obj, NaN, Infinity]; 
+var alphabet = [true, "a", "X", NaN, Infinity, 2, 1, obj, -1, undefined];
 
 var myComparefn = function(x,y) {
-  xS = String(x);
-  yS = String(y);
+  var xS = String(x);
+  var yS = String(y);
   if (xS < yS) return 1
   if (xS > yS) return -1;   
   return 0;
@@ -22,8 +22,8 @@ var myComparefn = function(x,y) {
  
 //CHECK#1
 alphabetR.sort(myComparefn);
-result = true;
-for (i = 0; i < 10; i++) {
+var result = true;
+for (var i = 0; i < 10; i++) {
   if (!(isNaN(alphabetR[i]) && isNaN(alphabet[i]))) { 
     if (alphabetR[i] !== alphabet[i]) result = false;
   }  

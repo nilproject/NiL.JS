@@ -11,7 +11,7 @@
 */
 
 //CHECK#1
-x = [];
+var x = [];
 x.length = 1;
 if (x.length !== 1) {  
   $ERROR('#1: x = []; x.length = 1; x.length === 1. Actual: ' + (x.length));    

@@ -9,7 +9,7 @@
 */
 
 //CHECK#1
-x = 1;
+var x = 1;
 if (eval(x) !== x) {
   $ERROR('#1: x = 1; eval(x) === x. Actual: ' + (eval(x)));
 }

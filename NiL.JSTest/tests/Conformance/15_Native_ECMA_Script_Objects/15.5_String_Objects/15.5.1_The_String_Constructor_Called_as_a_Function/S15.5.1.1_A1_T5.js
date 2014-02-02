@@ -8,7 +8,7 @@
 * @description: Call String(x), where x is undefined variable;
 */
 
-__str = String(x);
+var __str = String(x);
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

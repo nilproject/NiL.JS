@@ -9,8 +9,8 @@
 * @description: First argument is this, and this don`t have needed variable;
 */
 
-f=Function.call(this, "return planet;");
-g=Function.call(this, "return color;");
+var f=Function.call(this, "return planet;");
+var g=Function.call(this, "return color;");
 
 //CHECK#1
 try{
@@ -21,7 +21,7 @@ try{
   	$ERROR('#1.1: ');
 }   
 
-planet="mars";
+var planet="mars";
 
 //CHECK#2
 if (f() !== "mars") {

@@ -13,7 +13,7 @@
 
 //CHECK#1
 Array.prototype[2] = -1;
-x = [0,1,2];
+var x = [0,1,2];
 if (x[2] !== 2) {  
   $ERROR('#1: Array.prototype[2] = -1; x = [0,1,3]; x[2] === 2. Actual: ' + (x[2]));    
 }

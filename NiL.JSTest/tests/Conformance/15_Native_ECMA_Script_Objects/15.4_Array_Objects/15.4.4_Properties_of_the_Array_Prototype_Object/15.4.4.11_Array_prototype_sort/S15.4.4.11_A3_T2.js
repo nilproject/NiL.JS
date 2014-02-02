@@ -17,8 +17,8 @@ alphabetR.length = 10;
 var alphabet = [true, "a", "X", NaN, Infinity, 2, 1, obj, -1, undefined];
  
  var myComparefn = function(x,y) {
-  xS = String(x);
-  yS = String(y);
+  var xS = String(x);
+  var yS = String(y);
   if (xS < yS) return 1
   if (xS > yS) return -1;   
   return 0;
@@ -33,8 +33,8 @@ if (alphabetR.getClass() !== "[object " + "Object" + "]") {
 }
  
 //CHECK#1
-result = true;
-for (i = 0; i < 10; i++) {
+var result = true;
+for (var i = 0; i < 10; i++) {
   if (!(isNaN(alphabetR[i]) && isNaN(alphabet[i]))) { 
     if (alphabetR[i] !== alphabet[i]) result = false;
   }  

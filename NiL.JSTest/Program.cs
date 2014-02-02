@@ -210,9 +210,9 @@ console.log(utc);
             }));
             //benchmark();
             //runFile(@"ftest.js");
-            //runFile(@"Benchmarks\run.js");
-            sputnicTests();
-            //sputnicTests(@"tests\Conformance\15_Native_ECMA_Script_Objects");
+            runFile(@"Benchmarks\run.js");
+            //sputnicTests();
+            //sputnicTests(@"tests\Conformance\07_Lexical_Conventions\7.5_Tokens\7.5.3_Future_Reserved_Words");
             //testEx();
 
             GC.Collect();

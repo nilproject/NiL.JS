@@ -8,7 +8,7 @@
 * @description: Argument is string, and instance is array of strings;
 */
 
-__instance = new Array('new','zoo','revue');
+var __instance = new Array('new','zoo','revue');
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

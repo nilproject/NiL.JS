@@ -8,7 +8,7 @@
 * @description: Call String(1/"a"), String("b"* null) and String(Number.NaN);
 */
 
-__str = String(1/"a");
+var __str = String(1/"a");
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

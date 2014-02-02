@@ -9,14 +9,14 @@
 * @description: Calling Object function with Infinity argument value;
 */
 
-num = Infinity;
+var num = Infinity;
 
 // CHECK#1
 if(typeof num  !== 'number'){
   $ERROR('#1: num = Infinity should be a Number primitive');
 }
 
-obj = Object(num);
+var obj = Object(num);
 
 //CHECK#2
 if (obj.constructor !== Number) {

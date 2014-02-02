@@ -8,7 +8,7 @@
 * @description: Call String(true) and String(false);
 */
 
-__str = String(true);
+var __str = String(true);
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

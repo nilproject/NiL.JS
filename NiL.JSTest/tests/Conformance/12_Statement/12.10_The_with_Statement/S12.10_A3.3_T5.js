@@ -7,6 +7,7 @@
  * @assertion: No matter how control leaves the embedded 'Statement', 
  * the scope chain is always restored to its former state;
  * @description: Declaring "with" statement within a function constructor, leading to completion by exception;
+ * @strict_mode_negative
  */
  
 this.p1 = 1;

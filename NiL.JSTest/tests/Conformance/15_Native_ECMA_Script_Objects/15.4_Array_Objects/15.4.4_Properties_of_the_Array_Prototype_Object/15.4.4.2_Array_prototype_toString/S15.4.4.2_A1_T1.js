@@ -10,7 +10,7 @@
 */
 
 //CHECK#1
-x = new Array();
+var x = new Array();
 if (x.toString() !== x.join()) {
   $ERROR('#1.1: x = new Array(); x.toString() === x.join(). Actual: ' + (x.toString()));
 }  else {

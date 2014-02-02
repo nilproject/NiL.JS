@@ -16,11 +16,11 @@
 * @description: Values of the function constructor arguments are "a,b,c" and "null";
 */
 
-p = "a,b,c";
+var p = "a,b,c";
 
 //CHECK#1
 try {
-  f = new Function(p, null);
+  var f = new Function(p, null);
 } catch (e) {
   $FAIL('#1: test failed with error '+e);
 }

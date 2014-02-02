@@ -10,7 +10,7 @@
 
 //CHECK#1
 Array.prototype[1] = 1;
-x = [0];
+var x = [0];
 x.length = 2;
 if (x.toString() !== "0,1") {  
   $ERROR('#1: Array.prototype[1] = 1; x = [0]; x.length = 2; x.toString() === "0,1". Actual: ' + (x.toString()));    

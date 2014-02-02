@@ -8,10 +8,10 @@
 * @description: Checking if creating the String.prototype.lastIndexOf object fails;
 */
 
-__FACTORY = String.prototype.lastIndexOf;
+var __FACTORY = String.prototype.lastIndexOf;
 
 try {
-  __instance = new __FACTORY;
+  var __instance = new __FACTORY;
   $FAIL('#1: __FACTORY = String.prototype.lastIndexOf; __instance = new __FACTORY lead to throwing exception');
 } catch (e) {
   $PRINT(e);

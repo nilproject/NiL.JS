@@ -9,13 +9,13 @@
 * Prototype of the object is Function();
 */
 
-proto=Function();
+var proto=Function();
 
 function FACTORY(){};
 
 FACTORY.prototype=proto;
 
-obj = new FACTORY;
+var obj = new FACTORY;
 
 //CHECK#1
 if (typeof obj.apply !== "function") {

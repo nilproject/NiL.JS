@@ -11,7 +11,7 @@
 
 //CHECK#1
 try{
-  f = Function.call(mars, "return name;");
+  var f = Function.call(mars, "return name;");
   $ERROR('#1: When applied to the Function object itself, thisArg should be ignored');
 } catch(e){
   if (!(e instanceof ReferenceError)) {
@@ -19,9 +19,9 @@ try{
   }
 } 
 
-mars={name:"mars", color:"red", number:4};
+var mars={name:"mars", color:"red", number:4};
 
-f = Function.call(mars, "this.godname=\"ares\"; return this.color;");
+var f = Function.call(mars, "this.godname=\"ares\"; return this.color;");
 
 var about_mars = f();
 

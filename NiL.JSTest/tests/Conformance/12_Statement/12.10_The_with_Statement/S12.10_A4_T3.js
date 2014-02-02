@@ -6,6 +6,7 @@
  * @section: 12.10;
  * @assertion: Changing property using "eval" statement containing "with" statement;
  * @description: Changing boolean property;
+ * @strict_mode_negative
  */
  
 this.p1 = 'a';

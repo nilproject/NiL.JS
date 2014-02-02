@@ -12,11 +12,11 @@
 * @description: Argument of the hasOwnProperty method is a custom property of a function object;
 */
 
-FACTORY = function(){
+var FACTORY = function(){
     this.aproperty = 1;
 };
 
-instance = new FACTORY;
+var instance = new FACTORY;
 
 //CHECK#1
 if (typeof Object.prototype.hasOwnProperty !== "function") {

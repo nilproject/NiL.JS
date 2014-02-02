@@ -15,8 +15,8 @@ if (Array.prototype.push.propertyIsEnumerable('length') !== false) {
 }
 
 //CHECK#2
-result = true;
-for (p in Array.push){
+var result = true;
+for (var p in Array.push){
   if (p === "length") {
     result = false;
   }  

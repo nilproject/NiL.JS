@@ -9,14 +9,14 @@
 * @description: Calling Object function with empty string argument value;
 */
 
-str = '';
+var str = '';
 
 // CHECK#1
 if (typeof(str) !== 'string') {
   $FAIL('#1: "" is NOT a String');
 }
 
-obj = Object(str);
+var obj = Object(str);
 
 //CHECK#2
 if (obj.constructor !== String) {

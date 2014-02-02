@@ -8,7 +8,7 @@
 * @description: start is tested_string.length, end is tested_string.length;
 */
 
-__string = new String("this is a string object");
+var __string = new String("this is a string object");
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

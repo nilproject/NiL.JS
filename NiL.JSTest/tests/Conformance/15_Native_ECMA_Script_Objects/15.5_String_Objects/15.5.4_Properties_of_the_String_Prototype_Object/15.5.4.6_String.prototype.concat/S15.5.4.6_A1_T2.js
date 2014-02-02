@@ -8,7 +8,7 @@
 * @description: Arguments are equation with false and true, and instance is Boolean object;
 */
 
-__instance = new Boolean;
+var __instance = new Boolean;
 
 __instance.concat = String.prototype.concat;
 

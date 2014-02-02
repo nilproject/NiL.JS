@@ -18,7 +18,7 @@ if (Array.prototype.valueOf !== 1) {
 }
 
 //CHECK#2
-x = new Array();
+var x = new Array();
 if (x.valueOf !== 1) {
   $ERROR('#1: Object.prototype.valueOf = 1; x = new Array(); x.valueOf === 1. Actual: ' + (x.valueOf));
 }

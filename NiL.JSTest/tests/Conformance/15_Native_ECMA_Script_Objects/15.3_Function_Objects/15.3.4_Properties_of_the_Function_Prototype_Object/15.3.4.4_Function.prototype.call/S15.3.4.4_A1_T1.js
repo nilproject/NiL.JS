@@ -9,13 +9,13 @@
 * Prototype of the object is Function(); 
 */
 
-proto=Function();
+var proto=Function();
 
 function FACTORY(){};
 
 FACTORY.prototype=proto;
 
-obj = new FACTORY;
+var obj = new FACTORY;
 
 //CHECK#1
 if (typeof obj.call !== "function") {
@@ -31,3 +31,4 @@ try {
   	$ERROR('#2.1: If the object does not have a [[Call]] property, a TypeError exception is thrown');
   }
 }
+    

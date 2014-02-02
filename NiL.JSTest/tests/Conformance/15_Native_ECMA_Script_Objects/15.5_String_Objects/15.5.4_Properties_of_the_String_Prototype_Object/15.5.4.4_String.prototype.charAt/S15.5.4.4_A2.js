@@ -12,7 +12,7 @@ function __FACTORY(){};
 
 __FACTORY.prototype.charAt = String.prototype.charAt;
 
-__instance = new __FACTORY;
+var __instance = new __FACTORY;
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

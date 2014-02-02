@@ -12,7 +12,7 @@
 
 var __string = new String(" ");
 
-__split = __string.split();
+var __split = __string.split();
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

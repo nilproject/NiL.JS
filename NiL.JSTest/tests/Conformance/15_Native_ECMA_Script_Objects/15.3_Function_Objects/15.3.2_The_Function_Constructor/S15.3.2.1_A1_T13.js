@@ -17,7 +17,7 @@
 
 //CHECK#1
 try {
-  f = new Function({});
+  var f = new Function({});
   $FAIL('#1: test failed with error '+e);
 } catch (e) {
   if (!(e instanceof SyntaxError)) {

@@ -13,7 +13,7 @@ function FACTORY(){};
 
 FACTORY.prototype=Function.prototype;
 
-obj = new FACTORY;
+var obj = new FACTORY;
 
 //CHECK#1
 if (typeof obj.apply !== "function") {

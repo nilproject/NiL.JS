@@ -8,9 +8,9 @@
 * @description: thisArg is function variable;
 */
 
-f = function(){this.touched= true;};
+var f = function(){this.touched= true;};
 
-obj={};
+var obj={};
 
 f.call(obj);
 

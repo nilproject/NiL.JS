@@ -8,7 +8,7 @@
 * @description: pos is equation with false and true, and instance is Boolean object;
 */
 
-__instance = new Boolean;
+var __instance = new Boolean;
 
 __instance.charCodeAt = String.prototype.charCodeAt;
 

@@ -22,7 +22,7 @@ if (!Object.prototype.isPrototypeOf(__obj)){
 /*function ProtoObj(){
   
 };*/
-protoObj={};
+var protoObj={};
 //Establish foo object
 function FooObj(){};
 

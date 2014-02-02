@@ -8,9 +8,9 @@
 * @description: thisArg is function variable that return this;
 */
 
-f = function(){this.touched= true; return this;};
+var f = function(){this.touched= true; return this;};
 
-retobj = f.call(obj);
+var retobj = f.call(obj);
 
 //CHECK#1
 if (typeof obj !== "undefined") {

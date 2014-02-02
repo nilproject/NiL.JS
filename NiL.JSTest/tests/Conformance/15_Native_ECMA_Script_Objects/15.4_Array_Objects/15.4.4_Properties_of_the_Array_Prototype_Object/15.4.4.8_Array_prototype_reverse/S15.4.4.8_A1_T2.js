@@ -10,7 +10,7 @@
 */
 
 //CHECK#1
-x = [];
+var x = [];
 x[0] = true;
 x[2] = Infinity;
 x[4] = undefined;

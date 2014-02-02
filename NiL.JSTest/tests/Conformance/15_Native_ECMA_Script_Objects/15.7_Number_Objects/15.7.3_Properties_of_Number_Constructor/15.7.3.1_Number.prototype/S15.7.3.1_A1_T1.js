@@ -9,7 +9,7 @@
 */
 
 //CHECK#1
-x = Number.prototype;
+var x = Number.prototype;
 Number.prototype = 1;
 if (Number.prototype !== x) {
   $ERROR('#1: The Number.prototype property has the attributes ReadOnly');

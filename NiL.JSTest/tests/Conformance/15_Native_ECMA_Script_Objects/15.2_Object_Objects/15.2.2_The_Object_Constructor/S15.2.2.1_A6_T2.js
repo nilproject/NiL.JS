@@ -8,7 +8,7 @@
 * @description: Creating an object with "new Object(null,2,3)";
 */
 
-obj = new Object(null,2,3);
+var obj = new Object(null,2,3);
 
 //CHECK#1
 if (obj.constructor !== Object) {

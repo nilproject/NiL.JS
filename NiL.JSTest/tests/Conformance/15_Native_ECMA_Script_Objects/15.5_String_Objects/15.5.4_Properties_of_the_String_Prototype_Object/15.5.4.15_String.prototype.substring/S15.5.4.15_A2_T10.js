@@ -8,7 +8,7 @@
 * @description: start is 0, end is 8;
 */
 
-__string = new String("this_is_a_string object");
+var __string = new String("this_is_a_string object");
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

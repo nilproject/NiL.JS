@@ -8,7 +8,7 @@
 * @description: Checking if creating "new Object.prototype.propertyIsEnumerable" fails;
 */
 
-FACTORY = Object.prototype.propertyIsEnumerable;
+var FACTORY = Object.prototype.propertyIsEnumerable;
 
 try {
   instance = new FACTORY;

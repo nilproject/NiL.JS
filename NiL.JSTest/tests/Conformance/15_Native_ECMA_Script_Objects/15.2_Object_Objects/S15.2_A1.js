@@ -8,9 +8,9 @@
 * @description: Checking if Object equals to this.Object; 
 */
 
-obj=Object;
+var obj=Object;
 
-thisobj=this.Object;
+var thisobj=this.Object;
 
 if(obj!==thisobj){
   $ERROR('Object is the property of global');

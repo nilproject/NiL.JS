@@ -8,7 +8,7 @@
 * @description: Nesting level is three;
 */
 
-__ROBOT="C3PO";
+var __ROBOT="C3PO";
 
 function __FUNC(){
     function __GUNC(){

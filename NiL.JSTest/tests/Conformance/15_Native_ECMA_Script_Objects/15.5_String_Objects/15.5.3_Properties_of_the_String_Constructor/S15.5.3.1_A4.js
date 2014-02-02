@@ -16,7 +16,7 @@ if (!(String.hasOwnProperty('prototype'))) {
 //
 //////////////////////////////////////////////////////////////////////////////
 
-__obj = String.prototype;
+var __obj = String.prototype;
 
 String.prototype = function(){return "shifted";};
 

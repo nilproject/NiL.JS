@@ -9,7 +9,7 @@
 */
 
 //CHECK#1
-for(x in Number) {
+for(var x in Number) {
   if(x === "MAX_VALUE") {
     $ERROR('#1: Number.MAX_VALUE has the attribute DontEnum');
   }

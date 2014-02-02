@@ -12,7 +12,7 @@ function FACTORY(){
   Function("this.feat=\"in da haus\"").apply();
 };
 
-obj = new FACTORY;
+var obj = new FACTORY;
 
 //CHECK#1
 if (this["feat"] !== "in da haus") {

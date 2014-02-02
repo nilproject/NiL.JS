@@ -9,22 +9,22 @@
 * @description: Calling Object function with NaN argument value;
 */
 
-num = NaN;
+var num = NaN;
 
 // CHECK#1
 if(typeof num  !== 'number'){
   $ERROR('#1: num = NaN should have number type');
 }
 
-obj = Object(num);
+var obj = Object(num);
 
 //CHECK#2
 if (obj.constructor !== Number) {
-  $ERROR('#2: Object(Infinity) returns ToObject(Infinity)');
+  $ERROR('#2: Object(NaN) returns ToObject(NaN)');
 }
 
 //CHECK#3
 if (typeof obj!=="object") {
-  $ERROR('#2: Object(Infinity) returns ToObject(Infinity)');
+  $ERROR('#2: Object(NaN) returns ToObject(NaN)');
 }
 //

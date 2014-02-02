@@ -8,10 +8,10 @@
 * @description: Checking if creating the String.prototype.slice object fails;
 */
 
-__FACTORY = String.prototype.slice;
+var __FACTORY = String.prototype.slice;
 
 try {
-  __instance = new __FACTORY;
+  var __instance = new __FACTORY;
   $FAIL('#1: __FACTORY = String.prototype.slice; "__instance = new __FACTORY" lead to throwing exception');
 } catch (e) {
   $PRINT(e);

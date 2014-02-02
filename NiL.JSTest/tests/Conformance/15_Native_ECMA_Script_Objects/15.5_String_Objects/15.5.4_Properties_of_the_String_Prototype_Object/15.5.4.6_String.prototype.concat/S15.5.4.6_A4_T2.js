@@ -8,8 +8,8 @@
 * @description: Override toString function onto function, that throw exception;
 */
 
-__instance = {toString:function(){throw "intostring";}};
-__obj = {toString:function(){throw "infirstarg";}};
+var __instance = {toString:function(){throw "intostring";}};
+var __obj = {toString:function(){throw "infirstarg";}};
 
 __instance.concat = String.prototype.concat;
 

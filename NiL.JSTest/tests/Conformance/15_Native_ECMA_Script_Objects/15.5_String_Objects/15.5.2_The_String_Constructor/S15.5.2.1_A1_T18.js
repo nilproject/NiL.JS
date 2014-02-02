@@ -9,7 +9,7 @@
 * @description: Create string object with "new String()" initialized with numbers that have more than 1 significant digit;
 */
 
-__str = new String(1000000000000000000000);
+var __str = new String(1000000000000000000000);
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1
 if (typeof __str !== "object") {

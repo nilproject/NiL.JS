@@ -9,7 +9,7 @@
 * @description: Create string object with "new String(1.0)"; 
 */
 
-__str = new String(1.0);
+var __str = new String(1.0);
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

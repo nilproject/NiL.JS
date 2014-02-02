@@ -9,7 +9,7 @@
 * @description: Apply String.prototype.substring to Number instance. Start is Infinity, end is NaN;
 */
 
-__instance = new Number(NaN);
+var __instance = new Number(NaN);
  
 __instance.substring = String.prototype.substring;
 

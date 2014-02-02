@@ -14,9 +14,9 @@ var __string = new String("a b c de f");
 
 var __re = /X/;
 
-__split = __string.split(__re);
+var __split = __string.split(__re);
 
-__expected = ["a b c de f"];
+var __expected = ["a b c de f"];
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

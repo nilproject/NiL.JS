@@ -4,12 +4,12 @@
 /**
  * @name: S8.1_A3;
  * @section: 8.1;
- * @assertion: undefined is not a keyword or reserved word;
- * @description: Checking if execution of "undefined=1" passes; 
+ * @assertion: undefined is now non-writable in es5;
+ * @description: "undefined=1" should throw a TypeError; 
 */
 
 //////////////////////////////////////////////////////////
-// CHECK#1
-undefined=1;
+// CHECK1#
+var undefined = 1;
 //
 //////////////////////////////////////////////////////////

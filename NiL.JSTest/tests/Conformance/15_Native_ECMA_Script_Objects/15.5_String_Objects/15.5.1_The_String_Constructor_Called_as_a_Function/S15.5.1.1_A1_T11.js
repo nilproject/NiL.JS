@@ -8,7 +8,7 @@
 * @description: Call String(1/0) and String(-1/0), and call with +/-Infinity;
 */
 
-__str = String(1/0);
+var __str = String(1/0);
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

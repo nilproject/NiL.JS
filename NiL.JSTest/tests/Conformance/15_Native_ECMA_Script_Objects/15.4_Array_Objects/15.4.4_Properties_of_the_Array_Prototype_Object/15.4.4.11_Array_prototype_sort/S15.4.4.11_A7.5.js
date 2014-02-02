@@ -15,8 +15,8 @@ if (Array.propertyIsEnumerable('sort') !== false) {
 }
 
 //CHECK#2
-result = true;
-for (p in Array){
+var result = true;
+for (var p in Array){
   if (p === "sort") {
     result = false;
   }  

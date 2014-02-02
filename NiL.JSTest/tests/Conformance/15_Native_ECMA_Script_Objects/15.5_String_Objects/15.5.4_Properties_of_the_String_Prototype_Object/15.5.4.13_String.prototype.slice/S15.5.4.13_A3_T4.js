@@ -10,7 +10,7 @@
 
 __FACTORY.prototype.toString = function() { return this.value+''; };
 
-__instance = new __FACTORY(void 0);
+var __instance = new __FACTORY(void 0);
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

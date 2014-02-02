@@ -9,7 +9,7 @@
 * @description: Apply String.prototype.substring to Boolean instance. Start is new Array(), end is new Boolean(1);
 */
 
-__instance = new Boolean();
+var __instance = new Boolean();
  
 __instance.substring = String.prototype.substring;
 

@@ -12,8 +12,11 @@
 //CHECK#1
 try{
     var __result = __func();
-	$FAIL("#1: var __result = __func() lead to throwing exception");
+	$FAIL("#1.1: var __result = __func() lead to throwing exception");
 } catch(e) {
+  if ((e instanceof TypeError) !== true) {
+    $ERROR('#1.2: func should throw a TypeError  Actual: ' + (e));  
+  }
 }
 //
 //////////////////////////////////////////////////////////////////////////////

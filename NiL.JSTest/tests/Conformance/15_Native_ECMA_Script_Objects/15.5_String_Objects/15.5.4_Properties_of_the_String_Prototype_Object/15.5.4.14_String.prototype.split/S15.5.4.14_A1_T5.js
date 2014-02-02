@@ -13,7 +13,7 @@
 */
 
 //since ToString(null) evaluates to "null" split(null) evaluates to split("null",0)
-__split = function(){return "gnulluna"}().split(null);
+var __split = function(){return "gnulluna"}().split(null);
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

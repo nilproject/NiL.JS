@@ -9,7 +9,7 @@
 */
 
 Array.prototype[1] = 1;
-x = [0];
+var x = [0];
 x.length = 2;
 
 //CHECK#1

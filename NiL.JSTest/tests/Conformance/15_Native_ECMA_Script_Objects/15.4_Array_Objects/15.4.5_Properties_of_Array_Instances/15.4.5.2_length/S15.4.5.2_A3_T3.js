@@ -10,7 +10,7 @@
 */
 
 //CHECK#1
-x = [];
+var x = [];
 x.length = 4294967295;
 if (x.length !== 4294967295) {  
   $ERROR('#1: x = []; x.length = 4294967295; x.length === 4294967295');    

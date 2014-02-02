@@ -6,6 +6,7 @@
  * @section: 15.1.1.3, 11.4.3;
  * @assertion: The undefined is not ReadOnly;
  * @description: Checking typeof Operator; 
+ * @strict_mode_negative
 */
 
 // CHECK#1

@@ -20,7 +20,7 @@ function f1(x){
   }
 }
 if(!(f1().constructor.prototype === Function.prototype)){
-  $PRINT('#1: f1() returns function');
+  $ERROR('#1: f1() returns function');
 }
 
 //CHECK#2
@@ -32,5 +32,16 @@ function f2(x){
   }
 }
 if(!(f2() === "function")){
-  $PRINT('#2: f2() === "function"');
+  $ERROR('#2: f2() === "function"');
+}
+
+//CHECK#3
+function f3() {
+  return typeof arguments;
+  function arguments() {
+    return 7;
+  }
+}
+if (!(f3() === "function")){
+  $ERROR('#3: f3() === "function"');
 }

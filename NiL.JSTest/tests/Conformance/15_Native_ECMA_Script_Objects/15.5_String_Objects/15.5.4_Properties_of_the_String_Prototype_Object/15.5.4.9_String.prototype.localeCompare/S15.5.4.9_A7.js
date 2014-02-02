@@ -8,9 +8,9 @@
 * @description: Checking if creating the String.prototype.localeCompare object fails;
 */
 
-__FACTORY = String.prototype.localeCompare;
+var __FACTORY = String.prototype.localeCompare;
 
 try {
-  __instance = new __FACTORY;
+  var __instance = new __FACTORY;
   $FAIL('#1: __FACTORY = String.prototype.localeCompare; __instance = new __FACTORY lead to throwing exception');
 } catch (e) {}

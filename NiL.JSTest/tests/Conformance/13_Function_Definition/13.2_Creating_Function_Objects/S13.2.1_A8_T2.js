@@ -10,7 +10,7 @@
 * @description: Throwing an exception within a function body. Declaring function with "var __func = function (message)";
 */
 
-CATCH_ME_IF_YOU_CAN = true;
+var CATCH_ME_IF_YOU_CAN = true;
 
 var __func = function (message){
     var x = 1;

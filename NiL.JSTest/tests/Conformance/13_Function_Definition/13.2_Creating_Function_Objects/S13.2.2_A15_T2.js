@@ -9,7 +9,7 @@
 * @description: Function declared at the end of the program and "obj" property is declared with "obj = {}";
 */
 
-__obj = new __FACTORY();
+var __obj = new __FACTORY();
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

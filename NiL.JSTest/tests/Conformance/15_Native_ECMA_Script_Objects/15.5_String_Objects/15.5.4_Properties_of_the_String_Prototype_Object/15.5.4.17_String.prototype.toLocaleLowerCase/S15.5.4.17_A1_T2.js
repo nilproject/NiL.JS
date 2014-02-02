@@ -8,7 +8,7 @@
 * @description: Instance is Boolean object;
 */
 
-__instance = new Boolean;
+var __instance = new Boolean;
 
 __instance.toLocaleLowerCase = String.prototype.toLocaleLowerCase;
 

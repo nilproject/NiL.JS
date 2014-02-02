@@ -22,7 +22,7 @@ namespace NiL.JS.Statements
         public GetVaribleStatement(string name)
         {
             int i = 0;
-            if ((name != "this") && !Parser.ValidateName(name, ref i, false, true, true))
+            if ((name != "this") && !Parser.ValidateName(name, ref i, false, true, true, false))
                 throw new ArgumentException("Invalid varible name");
             this.varibleName = name;
             if (!cache.ContainsKey(name))
@@ -31,6 +31,8 @@ namespace NiL.JS.Statements
 
         public override JSObject Invoke(Context context)
         {
+            if (varibleName != "this" && context.updateThisBind)
+                context.thisBind = null;
             if (context == cacheContext)
                 if (cacheRes == null)
                     return (cacheRes = context.GetField(varibleName));

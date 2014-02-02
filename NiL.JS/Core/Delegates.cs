@@ -3,5 +3,5 @@
 namespace NiL.JS.Core
 {
     internal delegate ParseResult ParseDelegate(ParsingState state, ref int position);
-    internal delegate bool ValidateDelegate(string code, ref int position, bool moveCursor);
+    internal delegate bool ValidateDelegate(string code, ref int position);
 }

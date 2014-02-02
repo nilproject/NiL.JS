@@ -8,15 +8,15 @@
 * @description: Call toLocaleLowerCase() function of string object;
 */
 
-__obj = {
+var __obj = {
     valueOf:function(){},
     toString:void 0
 };
 
-__lowerCase = new String(__obj).toLocaleLowerCase();
+var __lowerCase = new String(__obj).toLocaleLowerCase();
 
 
-__expected ="undefined"; 
+var __expected ="undefined"; 
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

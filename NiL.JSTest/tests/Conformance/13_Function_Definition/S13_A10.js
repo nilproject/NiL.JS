@@ -10,7 +10,7 @@
 
 function __ziggy__func(){return "ziggy stardust"}
 
-__music_box={};
+var __music_box={};
 
 __music_box.ziggy = __ziggy__func;
 

@@ -8,7 +8,7 @@
  * @description: Complex tests;
 */
 
-result = true;
+var result = true;
 
 //CHECK#1
 try {

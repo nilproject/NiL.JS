@@ -8,13 +8,13 @@
 * @description: Checking by using eval;
 */
 
-search = String.prototype.search;
+var search = String.prototype.search;
 
 if (typeof toString === "undefined"){
-    toString = Object.prototype.toString;
+    var toString = Object.prototype.toString;
 }
 
-__class__ = toString();
+var __class__ = toString();
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

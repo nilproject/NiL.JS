@@ -13,9 +13,9 @@ function __FACTORY(){};
 
 __FACTORY.prototype.toString=function(){return "tostr"};
 
-__obj = new __FACTORY;
+var __obj = new __FACTORY;
 
-__str = new String(__obj);
+var __str = new String(__obj);
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

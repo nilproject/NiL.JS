@@ -6,10 +6,11 @@
 * @section: 15.4.4.5;
 * @assertion: The length property of join has the attribute ReadOnly;
 * @description: Checking if varying the length property fails;
+* @strict_mode_negative
 */
 
 //CHECK#1
-x = Array.prototype.join.length;
+var x = Array.prototype.join.length;
 Array.prototype.join.length = Infinity;
 if (Array.prototype.join.length !== x) {
   $ERROR('#1: x = Array.prototype.join.length; Array.prototype.join.length = Infinity; Array.prototype.join.length === x. Actual: ' + (Array.prototype.join.length));

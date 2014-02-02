@@ -8,9 +8,9 @@
 * @description: Regular expression is /\D{2}/g;
 */
 
-__matches=["ab", "cd"];
+var __matches=["ab", "cd"];
 
-__string = "123456abcde7890";
+var __string = "123456abcde7890";
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

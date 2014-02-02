@@ -8,7 +8,7 @@
 * @description: pos is false and true, and instance is object;
 */
 
-__instance = new Object(42);
+var __instance = new Object(42);
 
 __instance.charCodeAt = String.prototype.charCodeAt;
 

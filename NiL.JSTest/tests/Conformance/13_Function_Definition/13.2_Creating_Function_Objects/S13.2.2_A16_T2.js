@@ -5,7 +5,7 @@
 * @name: S13.2.2_A16_T2;
 * @section: 13.2.2;
 * @assertion: FunctionExpression within a new statement is admitted;
-* @description: Using "__obj = new function __func(arg){this.prop=arg;}(5)" as FunctionExpression;
+* @description: Using "var __obj = new function __func(arg){this.prop=arg;}(5)" as FunctionExpression;
 */
 
 //////////////////////////////////////////////////////////////////////////////
@@ -16,7 +16,7 @@ if (typeof __func !== "undefined") {
 //
 //////////////////////////////////////////////////////////////////////////////
 
-__obj = new function __func(arg){this.prop=arg;}(5);
+var __obj = new function __func(arg){this.prop=arg;}(5);
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#2

@@ -12,10 +12,10 @@
 * @description: Argument is void 0, and instance is String(object), object have overrided toString function;
 */
 
-__obj = {toString:function(){}};
+var __obj = {toString:function(){}};
 
 //since ToString(void 0) evaluates to "undefined" split(void 0) evaluates to split("undefined")
-__split = String(__obj).split(void 0);
+var __split = String(__obj).split(void 0);
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

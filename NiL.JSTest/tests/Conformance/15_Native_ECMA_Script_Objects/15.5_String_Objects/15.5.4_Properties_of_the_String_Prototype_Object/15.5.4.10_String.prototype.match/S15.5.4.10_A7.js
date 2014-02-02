@@ -8,9 +8,9 @@
 * @description: Checking if creating "String.prototype.match object" fails;
 */
 
-__FACTORY = String.prototype.match;
+var __FACTORY = String.prototype.match;
 
 try {
-  __instance = new __FACTORY;
+  var __instance = new __FACTORY;
   $FAIL('#1: __FACTORY = String.prototype.match; __FACTORY = String.prototype.match; __instance = new __FACTORY lead to throwing exception');
 } catch (e) {}

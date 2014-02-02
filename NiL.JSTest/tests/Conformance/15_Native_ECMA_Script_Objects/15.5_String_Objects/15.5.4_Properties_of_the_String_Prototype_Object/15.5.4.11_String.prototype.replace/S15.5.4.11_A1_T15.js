@@ -10,14 +10,14 @@
 
 var __obj = {toString:function(){return /77/}};
 
-__instance = new Object(1100.00777001);
+var __instance = new Object(1100.00777001);
 
 Object.prototype.replace = String.prototype.replace;
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1
 try {
-  x = __instance.replace(__obj, 1) === "1100.0017001";
+  var x = __instance.replace(__obj, 1) === "1100.0017001";
     $FAIL('#1.0: x = __instance.replace(__obj, 1) === "1100.0017001" lead to throwing exception');
 } catch (e) {
   if (!(e instanceof TypeError)) {

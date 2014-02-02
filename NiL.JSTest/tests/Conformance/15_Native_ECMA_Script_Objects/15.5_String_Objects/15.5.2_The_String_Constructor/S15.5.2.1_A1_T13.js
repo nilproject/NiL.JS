@@ -16,7 +16,7 @@ __obj.valueOf=function(){throw "invalueof"};
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1
 try {
-  __str = new String(__obj);
+  var __str = new String(__obj);
   $ERROR('#1: __obj.valueOf=function(){throw "invalueof"}; __str = new String(__obj) lead throwing exception');
 } catch (e) {
   if (e!=="invalueof") {

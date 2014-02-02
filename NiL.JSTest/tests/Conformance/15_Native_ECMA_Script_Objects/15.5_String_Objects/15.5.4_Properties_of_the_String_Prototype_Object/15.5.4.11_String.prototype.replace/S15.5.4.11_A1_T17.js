@@ -10,9 +10,9 @@
 
 var __re = new RegExp(x,"g");
 
-__instance = String("asdf");
+var __instance = String("asdf");
 
-__str = "1";
+var __str = "1";
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1
 if (__instance.replace(__re, __str) !== "1a1s1d1f1") {

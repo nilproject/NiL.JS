@@ -15,8 +15,8 @@ if (Array.prototype.slice.propertyIsEnumerable('length') !== false) {
 }
 
 //CHECK#2
-result = true;
-for (p in Array.slice){
+var result = true;
+for (var p in Array.slice){
   if (p === "length") {
     result = false;
   }  

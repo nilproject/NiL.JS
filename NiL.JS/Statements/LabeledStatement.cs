@@ -12,7 +12,7 @@ namespace NiL.JS.Statements
         {
             int i = index;
             string code = state.Code;
-            if (!Parser.ValidateName(code, ref i))
+            if (!Parser.ValidateName(code, ref i, false, state.strict.Peek()))
                 return new ParseResult();
             int l = i;
             if (!Parser.Validate(code, " :", ref i) && code[i++] != ':')

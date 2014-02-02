@@ -9,7 +9,7 @@
 * @description: Apply String.prototype.substring to Array instance. Start is Infinity, end is -Infinity;
 */
 
-__instance = new Array(1,2,3,4,5); 
+var __instance = new Array(1,2,3,4,5); 
 __instance.substring = String.prototype.substring;
 
 //////////////////////////////////////////////////////////////////////////////

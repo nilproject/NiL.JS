@@ -8,7 +8,7 @@
 * @description: Override toString function;
 */
 
-__instance = {toString:function(){return "one"}};
+var __instance = {toString:function(){return "one"}};
 
 __instance.concat = String.prototype.concat;
 

@@ -15,7 +15,7 @@ __obj.valueOf=function(){return true;};
 
 __obj.toString=function(){return {};};
 
-__str = new String(__obj);
+var __str = new String(__obj);
 
 
 

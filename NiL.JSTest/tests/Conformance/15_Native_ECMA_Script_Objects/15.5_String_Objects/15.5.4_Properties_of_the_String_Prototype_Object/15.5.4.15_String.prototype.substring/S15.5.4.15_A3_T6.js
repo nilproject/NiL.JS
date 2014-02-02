@@ -9,7 +9,7 @@
 * @description: Apply String.prototype.substring to Object instance. Start is 8, end is length of object.toString;
 */
 
-__instance = new Object(); 
+var __instance = new Object(); 
 __instance.substring = String.prototype.substring;
 
 //////////////////////////////////////////////////////////////////////////////

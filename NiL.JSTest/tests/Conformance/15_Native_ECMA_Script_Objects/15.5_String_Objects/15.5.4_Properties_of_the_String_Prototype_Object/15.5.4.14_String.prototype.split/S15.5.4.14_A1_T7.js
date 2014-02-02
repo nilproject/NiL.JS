@@ -13,7 +13,7 @@
 */
 
 //since ToString(undefined) evaluates to "undefined" split(undefined) evaluates to split("undefined",0)
-__split = String("undefinedd").split(undefined);
+var __split = String("undefinedd").split(undefined);
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

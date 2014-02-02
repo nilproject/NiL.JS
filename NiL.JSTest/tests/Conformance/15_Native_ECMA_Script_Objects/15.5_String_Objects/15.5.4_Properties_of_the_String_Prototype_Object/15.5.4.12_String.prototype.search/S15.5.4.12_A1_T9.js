@@ -8,7 +8,7 @@
 * @description: Argument is function call, and instance is String object with overrided toString and valueOf functions;
 */
 
-__obj = {
+var __obj = {
     valueOf:function(){},
     toString:void 0
 };

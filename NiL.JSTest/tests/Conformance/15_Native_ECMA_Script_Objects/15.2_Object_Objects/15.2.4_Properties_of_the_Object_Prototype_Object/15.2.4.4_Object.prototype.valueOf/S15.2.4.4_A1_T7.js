@@ -13,7 +13,7 @@ if (typeof Object.prototype.valueOf !== "function") {
   $ERROR('#1: valueOf method defined');
 }
 
-obj=new Object(void 0);
+var obj=new Object(void 0);
 
 //CHECK#2
 if (typeof obj.valueOf !== "function") {

@@ -8,9 +8,8 @@
 * @description: Call toLocaleUpperCase() function without arguments of string and from empty string;
 */
 
-__lowerCase = "".toLocaleUpperCase();
-
-__expected = ""; 
+var __lowerCase = "".toLocaleUpperCase();
+var __expected = ""; 
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

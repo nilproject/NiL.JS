@@ -10,7 +10,7 @@
 
 //CHECK#1
 try {
-  x = [];
+  var x = [];
   x.length = NaN;
   $ERROR('#1.1: x = []; x.length = NaN throw RangeError. Actual: x.length === ' + (x.length));
 } catch(e) {    

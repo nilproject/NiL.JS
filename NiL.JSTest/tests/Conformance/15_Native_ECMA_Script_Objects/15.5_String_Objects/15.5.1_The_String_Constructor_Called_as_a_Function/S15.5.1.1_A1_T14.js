@@ -8,7 +8,7 @@
 * @description: Call String(0) and String(-0);
 */
 
-__str = String(0);
+var __str = String(0);
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

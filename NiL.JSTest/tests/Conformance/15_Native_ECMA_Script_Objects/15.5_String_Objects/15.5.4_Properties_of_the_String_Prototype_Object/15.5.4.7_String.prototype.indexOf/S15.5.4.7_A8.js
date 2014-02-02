@@ -27,7 +27,7 @@ if (String.prototype.indexOf.propertyIsEnumerable('length')) {
 
 //////////////////////////////////////////////////////////////////////////////
 // CHECK#2
-count=0;
+var count=0;
 
 for (p in String.prototype.indexOf){
   if (p==="length") count++;

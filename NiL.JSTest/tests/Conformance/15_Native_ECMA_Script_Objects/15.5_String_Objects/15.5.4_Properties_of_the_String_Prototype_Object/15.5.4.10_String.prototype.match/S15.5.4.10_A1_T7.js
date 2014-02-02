@@ -8,9 +8,9 @@
 * @description: Call match (regexp) function with undefined argument of string object;
 */
 
-__matched = String("undefined").match(undefined);
+var __matched = String("undefined").match(undefined);
 
-__expected = RegExp(undefined).exec("undefined"); 
+var __expected = RegExp(undefined).exec("undefined"); 
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

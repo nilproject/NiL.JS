@@ -9,7 +9,7 @@
 * @description: The value is "this";
 */
 
-x=1;
+var x=1;
 
 var obj = this;
 

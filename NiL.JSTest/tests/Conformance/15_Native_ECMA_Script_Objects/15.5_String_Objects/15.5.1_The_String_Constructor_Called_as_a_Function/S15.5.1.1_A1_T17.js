@@ -8,7 +8,7 @@
 * @description: Call String() with numbers that have more than 1 significant digit after point;
 */
 
-__str = String(1.2345);
+var __str = String(1.2345);
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

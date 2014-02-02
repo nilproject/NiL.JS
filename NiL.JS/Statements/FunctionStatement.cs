@@ -67,7 +67,7 @@ namespace NiL.JS.Statements
             if (code[i] != '(')
             {
                 int n = i;
-                if (!Parser.ValidateName(code, ref i, true))
+                if (!Parser.ValidateName(code, ref i, true, state.strict.Peek()))
                     throw new JSException(TypeProxy.Proxy(new SyntaxError("Invalid function parameters definition " + (string.IsNullOrEmpty(name) ? "for function \"" + name + "\" " : "") + "at " + Tools.PositionToTextcord(code, n))));
                 name = Tools.Unescape(code.Substring(n, i - n));
                 while (char.IsWhiteSpace(code[i])) i++;
@@ -84,7 +84,7 @@ namespace NiL.JS.Statements
                 if (code[i] == ',')
                     do i++; while (char.IsWhiteSpace(code[i]));
                 int n = i;
-                if (!Parser.ValidateName(code, ref i, true))
+                if (!Parser.ValidateName(code, ref i, true, state.strict.Peek()))
                     throw new JSException(TypeProxy.Proxy(new SyntaxError("Invalid description of function arguments.")));
                 arguments.Add(Tools.Unescape(code.Substring(n, i - n)));
                 while (char.IsWhiteSpace(code[i])) i++;

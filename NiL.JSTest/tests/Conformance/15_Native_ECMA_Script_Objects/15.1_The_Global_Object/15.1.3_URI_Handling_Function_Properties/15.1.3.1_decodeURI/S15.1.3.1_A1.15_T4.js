@@ -8,17 +8,17 @@
  * @description: Complex tests. B = [0xF0 - 0x0F7], C = [0xC0, 0xFF];
 */
 
-errorCount = 0;
-count = 0;
+var errorCount = 0;
+var count = 0;
 var indexP;
 var indexO = 0;
 
-for (indexB = 0xF0; indexB <= 0xF7; indexB++) {
+for (var indexB = 0xF0; indexB <= 0xF7; indexB++) {
   count++; 
-  hexB = decimalToHexString(indexB); 
-  result = true;
-  for (indexC = 0xC0; indexC <= 0xFF; indexC++) {
-    hexC = decimalToHexString(indexC);  
+  var hexB = decimalToHexString(indexB); 
+  var result = true;
+  for (var indexC = 0xC0; indexC <= 0xFF; indexC++) {
+    var hexC = decimalToHexString(indexC);  
     try {
       decodeURI("%" + hexB.substring(2) + "%" + hexC.substring(2) + "%A0%A0");
     } catch (e) { 

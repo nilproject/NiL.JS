@@ -9,7 +9,7 @@
 * @description: Creating string object with "new String(NaN)"; 
 */
 
-__str = new String(NaN);
+var __str = new String(NaN);
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

@@ -9,7 +9,7 @@
 */
 
 //CHECK#1
-for(x in Number) {
+for(var x in Number) {
   if(x === "MIN_VALUE") {
     $ERROR('#1: Number.MIN_VALUE has the attribute DontEnum');
   }

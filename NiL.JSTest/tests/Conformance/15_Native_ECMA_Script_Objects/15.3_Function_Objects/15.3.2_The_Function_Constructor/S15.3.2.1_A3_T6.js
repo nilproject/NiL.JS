@@ -17,16 +17,14 @@
 */
 
 
-body = "return true;";
+var body = "return true;";
 
 //CHECK#1
 try {
-  f = new Function(null,body);
+  var f = new Function(null,body);
   $FAIL('#1: If P is not parsable as a FormalParameterList_opt then throw a SyntaxError exception');
 } catch (e) {
   if (!(e instanceof SyntaxError)) {
   	$ERROR('#1.1: If P is not parsable as a FormalParameterList_opt then throw a SyntaxError exception');
   }
 }
-
-

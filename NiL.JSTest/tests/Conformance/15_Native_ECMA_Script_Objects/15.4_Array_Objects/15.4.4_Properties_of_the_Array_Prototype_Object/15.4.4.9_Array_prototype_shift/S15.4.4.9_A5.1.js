@@ -15,8 +15,8 @@ if (Array.prototype.shift.propertyIsEnumerable('length') !== false) {
 }
 
 //CHECK#2
-result = true;
-for (p in Array.shift){
+var result = true;
+for (var p in Array.shift){
   if (p === "length") {
     result = false;
 }  

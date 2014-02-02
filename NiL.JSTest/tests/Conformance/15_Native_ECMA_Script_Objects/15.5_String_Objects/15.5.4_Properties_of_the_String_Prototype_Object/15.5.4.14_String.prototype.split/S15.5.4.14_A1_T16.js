@@ -18,7 +18,7 @@ var __obj = {toString:function(){return /\u0037\u0037/g;}};
 Number.prototype.split=String.prototype.split;
 
 try {
-  __split = 6776767677.006771122677555.split(__obj);
+  var __split = 6776767677.006771122677555.split(__obj);
   $FAIL('#1: "__split = 6776767677.006771122677555.split(__obj)" lead to throwing exception');
 } catch (e) {
   if (!(e instanceof TypeError)) {

@@ -9,7 +9,7 @@
 */
 
 try {
-  obj = new Function.call;
+  var obj = new Function.call;
   $ERROR('#1: Function.prototype.call can\'t be used as [[create]] caller');
 } catch (e) {
   if (!(e instanceof TypeError)) {

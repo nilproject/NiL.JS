@@ -8,7 +8,7 @@
 * @description: Checking type of substring();
 */
 
-__string = new String("this is a string object");
+var __string = new String("this is a string object");
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

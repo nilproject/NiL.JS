@@ -9,6 +9,7 @@
 */
 
 //CHECK#1
+var x;
 try {
   eval("x = 1; x\u000A++");
   $ERROR('#1.1: eval("x = 1; x\\u000A++") must throw a SyntaxError. Actual: ' + (eval("x = 1; x\u000A++")));

@@ -11,7 +11,7 @@
 */
 
 //CHECK#1
-x = new Array();
+var x = new Array();
 var unshift = x.unshift(1);
 if (unshift !== 1) {
   $ERROR('#1: x = new Array(); x.unshift(1) === 1. Actual: ' + (unshift));

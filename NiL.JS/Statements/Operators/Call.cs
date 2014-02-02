@@ -23,7 +23,7 @@ namespace NiL.JS.Statements.Operators
             try
             {
                 context.updateThisBind = true;
-                context.thisBind = null;
+                //context.thisBind = null;
                 var temp = first.Invoke(context);
                 if (temp.ValueType == JSObjectType.NotExist)
                     throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible not defined.")));

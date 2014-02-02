@@ -9,7 +9,7 @@
 */
 
 //CHECK#1
-for(x in Number) {
+for(var x in Number) {
   if(x === "POSITIVE_INFINITY") {
     $ERROR('#1: Number.POSITIVE_INFINITY has the attribute DontEnum');
   }

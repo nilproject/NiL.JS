@@ -15,8 +15,8 @@ if (Array.prototype.concat.propertyIsEnumerable('length') !== false) {
 }
 
 //CHECK#2
-result = true;
-for (p in Array.concat){
+var result = true;
+for (var p in Array.concat){
   if (p === "length") {
     result = false;
   }  

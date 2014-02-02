@@ -9,7 +9,7 @@
 */
 
 Array.prototype[1] = -1;
-x = [1,0];
+var x = [1,0];
 x.length = 2;
 x.sort();
 

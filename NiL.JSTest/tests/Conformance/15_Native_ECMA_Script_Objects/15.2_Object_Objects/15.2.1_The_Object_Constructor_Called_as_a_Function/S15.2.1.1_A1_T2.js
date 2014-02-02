@@ -11,9 +11,9 @@
 
 //var y= void 0;
 
-__obj = Object(void 0);
+var __obj = Object(void 0);
 
-n__obj = new Object(void 0);
+var n__obj = new Object(void 0);
 
 
 if (__obj.toString() !== n__obj.toString()){

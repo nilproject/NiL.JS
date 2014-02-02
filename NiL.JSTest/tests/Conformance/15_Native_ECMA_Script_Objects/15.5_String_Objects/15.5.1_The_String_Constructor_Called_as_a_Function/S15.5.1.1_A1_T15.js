@@ -8,11 +8,11 @@
 * @description: Call String(string_object);
 */
 
-__obj__str = "caps";
+var __obj__str = "caps";
 
 //__obj__str.prop=1;
 
-__str = String(__obj__str);
+var __str = String(__obj__str);
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

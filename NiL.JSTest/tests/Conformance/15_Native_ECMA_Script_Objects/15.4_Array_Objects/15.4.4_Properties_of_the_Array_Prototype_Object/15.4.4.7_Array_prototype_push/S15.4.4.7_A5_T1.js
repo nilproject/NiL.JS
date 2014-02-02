@@ -11,7 +11,7 @@
 Object.prototype[1] = -1;
 Object.prototype.length = 1;
 Object.prototype.push = Array.prototype.push;
-x = {0:0};
+var x = {0:0};
 
 //CHECK#1
 var push = x.push(1);

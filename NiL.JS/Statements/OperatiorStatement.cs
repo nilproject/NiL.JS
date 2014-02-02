@@ -71,14 +71,17 @@ namespace NiL.JS.Statements
 
         private Statement fastImpl;
 
+        public Statement First { get { return first; } }
+        public Statement Second { get { return second; } }
+
         private OperationType _type;
-        private OperationType type
+        public OperationType Type
         {
             get
             {
                 return _type;
             }
-            set
+            private set
             {
                 fastImpl = null;
                 switch (value)
@@ -360,7 +363,7 @@ namespace NiL.JS.Statements
             Statement second = null;
             int s = i;
             state.InExpression = true;
-            if (Parser.ValidateName(code, ref i, true) || Parser.Validate(code, "this", ref i))
+            if (Parser.ValidateName(code, ref i, true, state.strict.Peek()) || Parser.Validate(code, "this", ref i))
                 first = new GetVaribleStatement(Tools.Unescape(code.Substring(s, i - s)));
             else if (Parser.ValidateValue(code, ref i, true))
             {
@@ -918,7 +921,7 @@ namespace NiL.JS.Statements
                             i++;
                             while (char.IsWhiteSpace(code[i])) i++;
                             s = i;
-                            if (!Parser.ValidateName(code, ref i, true, false, true))
+                            if (!Parser.ValidateName(code, ref i, true, false, true, state.strict.Peek()))
                                 throw new ArgumentException("code (" + i + ")");
                             string name = code.Substring(s, i - s);
                             first = new GetFieldStatement(first, name);
@@ -1144,7 +1147,7 @@ namespace NiL.JS.Statements
 
         public bool Optimize(ref Statement _this, int depth, Dictionary<string, Statement> vars)
         {
-            type = type;
+            Type = Type;
             if (fastImpl != null)
             {
                 _this = fastImpl;

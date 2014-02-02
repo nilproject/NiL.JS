@@ -6,10 +6,11 @@
 * @section: 15.4.4.10; 
 * @assertion: The length property of slice has the attribute ReadOnly;
 * @description: Checking if varying the length property fails;
+* @strict_mode_negative
 */
 
 //CHECK#1
-x = Array.prototype.slice.length;
+var x = Array.prototype.slice.length;
 Array.prototype.slice.length = Infinity;
 if (Array.prototype.slice.length !== x) {
   $ERROR('#1: x = Array.prototype.slice.length; Array.prototype.slice.length = Infinity; Array.prototypeslice.length === x. Actual: ' + (Array.prototypeslice.length));

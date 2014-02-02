@@ -11,7 +11,7 @@
 
 __FACTORY.prototype.substring = String.prototype.substring;
 
-__instance = new __FACTORY(void 0);
+var __instance = new __FACTORY(void 0);
  
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

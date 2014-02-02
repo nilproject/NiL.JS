@@ -14,7 +14,7 @@ var __instance = function(){};
 
 __instance.split = String.prototype.split;
 
-__split = __instance.split();
+var __split = __instance.split();
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

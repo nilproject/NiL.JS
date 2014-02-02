@@ -16,7 +16,7 @@ if (!(String.prototype.match.hasOwnProperty('length'))) {
 //
 //////////////////////////////////////////////////////////////////////////////
 
-__obj = String.prototype.match.length;
+var __obj = String.prototype.match.length;
 
 String.prototype.match.length = function(){return "shifted";};
 

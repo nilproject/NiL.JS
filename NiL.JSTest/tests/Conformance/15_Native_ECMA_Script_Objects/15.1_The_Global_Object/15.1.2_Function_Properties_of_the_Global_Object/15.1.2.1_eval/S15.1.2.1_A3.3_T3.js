@@ -20,10 +20,10 @@ try {
 }
 
 //CHECK#2
+
+function f() {  eval("return;"); };
+
 try {
-  function f() {
-       eval("return;");
-  }
   f();      
   $ERROR('#2.1: return must throw SyntaxError. Actual: ' + (f()));
 } catch(e) {

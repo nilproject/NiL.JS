@@ -10,4 +10,5 @@
 */
 
 //CHECK#1
+var x;
 eval("x = 1; x\u000A++"); 

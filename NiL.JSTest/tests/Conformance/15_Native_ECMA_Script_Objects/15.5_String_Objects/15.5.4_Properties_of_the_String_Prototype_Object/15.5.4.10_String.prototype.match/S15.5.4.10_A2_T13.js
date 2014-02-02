@@ -9,12 +9,12 @@
 * And regular expression object have property lastIndex = 0;
 */
 
-__matches=["02134"];
+var __matches=["02134"];
 
-__re = /([\d]{5})([-\ ]?[\d]{4})?$/g;
+var __re = /([\d]{5})([-\ ]?[\d]{4})?$/g;
 __re.lastIndex = 0;
 
-__string = "Boston, MA 02134";
+var __string = "Boston, MA 02134";
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

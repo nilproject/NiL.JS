@@ -8,7 +8,7 @@
 * @description: Call replace (searchValue, replaceValue) function with regular expression and void 0 arguments of String object;
 */
 
-__obj = {toString:function(){}};
+var __obj = {toString:function(){}};
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

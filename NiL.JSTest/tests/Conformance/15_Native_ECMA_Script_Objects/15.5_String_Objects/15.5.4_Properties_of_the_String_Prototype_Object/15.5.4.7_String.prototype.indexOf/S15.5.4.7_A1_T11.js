@@ -8,7 +8,7 @@
 * @description: Instance is Date(0) object;
 */
 
-__instance = new Date(0);
+var __instance = new Date(0);
 
 __instance.indexOf = String.prototype.indexOf;
 

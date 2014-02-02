@@ -14,11 +14,11 @@
 * @description: Value of the function constructor argument is "var 1=1;";
 */
 
-body = "var 1=1;";
+var body = "var 1=1;";
 
 //CHECK#1
 try {
-  f = new Function(body);
+  var f = new Function(body);
   $FAIL('#1: If body is not parsable as FunctionBody then throw a SyntaxError exception');
 } catch (e) {
   if (!(e instanceof SyntaxError)) {

@@ -9,7 +9,7 @@
 */
 
 //CHECK#
-for (i = 2; i <= 36; i++) {
+for (var i = 2; i <= 36; i++) {
   if (isNaN(parseInt("$string", i)) !== true) {
     $ERROR('#' + i + ': parseInt("$string", i) === Not-a-Number. Actual: ' + (parseInt("$string", i)));
   }

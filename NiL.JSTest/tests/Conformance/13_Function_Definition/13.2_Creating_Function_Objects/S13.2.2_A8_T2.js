@@ -12,10 +12,10 @@
 * @description: Creating a function whose prototype contains declaration of another function declared as a variable; 
 */
 
-__FRST="one";
-__SCND="two";
+var __FRST="one";
+var __SCND="two";
 
-__func = function(arg1, arg2){
+var __func = function(arg1, arg2){
 	this.first=arg1;
 	var __gunc = function(arg){return arg+="BA"};
 	__gunc.prop=arg2;
@@ -23,7 +23,7 @@ __func = function(arg1, arg2){
 	
 };
 
-__instance = new __func(__FRST, __SCND);
+var __instance = new __func(__FRST, __SCND);
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

@@ -22,7 +22,7 @@ function FORCEDUSER_FACTORY( name, grade ) {
   this.getGrade=function(){return grade;};
 }
 
-proto = new USER_FACTORY("noname");
+var proto = new USER_FACTORY("noname");
 
 FORCEDUSER_FACTORY.prototype = proto;
 

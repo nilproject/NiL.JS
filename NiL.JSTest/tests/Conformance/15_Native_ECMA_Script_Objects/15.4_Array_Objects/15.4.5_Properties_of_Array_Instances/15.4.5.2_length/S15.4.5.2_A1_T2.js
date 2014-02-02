@@ -11,14 +11,14 @@
 */
 
 //CHECK#1
-x = [];
+var x = [];
 x[4294967295] = 1;
 if (x.length !== 0) {  
   $ERROR('#1: x = []; x[4294967295] = 1; x.length === 0. Actual: ' + (x.length));    
 }
 
 //CHECK#2
-y =[];
+var y =[];
 y[1] = 1;
 y[4294967295] = 1;
 if (y.length !== 2) {      

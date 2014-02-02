@@ -14,7 +14,7 @@
 var __string = "thistrueistrueatruestringtrueobject";
 var __expected = ["this", "is", "a", "string", "object"];
 
-__split = __string.split(true);
+var __split = __string.split(true);
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

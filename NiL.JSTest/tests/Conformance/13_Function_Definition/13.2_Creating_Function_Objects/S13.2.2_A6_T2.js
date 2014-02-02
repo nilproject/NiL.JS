@@ -12,8 +12,8 @@
 * @description: Declaring a function with "function __func (arg)";
 */
 
-__FOO="fooValue";
-__BAR="barValue";
+var __FOO="fooValue";
+var __BAR="barValue";
 
 function __func (arg){
 	this.foo=arg;
@@ -21,7 +21,7 @@ function __func (arg){
 	this.bar=arguments[1];
 };
 
-__obj = new __func(__FOO, __BAR);
+var __obj = new __func(__FOO, __BAR);
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

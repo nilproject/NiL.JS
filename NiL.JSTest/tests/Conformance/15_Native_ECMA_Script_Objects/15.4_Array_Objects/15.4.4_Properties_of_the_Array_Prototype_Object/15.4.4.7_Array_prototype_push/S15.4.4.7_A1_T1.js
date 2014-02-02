@@ -11,7 +11,7 @@
 */
 
 //CHECK#1
-x = new Array();
+var x = new Array();
 var push = x.push(1);
 if (push !== 1) {
   $ERROR('#1: x = new Array(); x.push(1) === 1. Actual: ' + (push));

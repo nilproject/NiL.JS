@@ -17,12 +17,12 @@
 */
 
 
-body = "return this;";
-p="1,1";
+var body = "return this;";
+var p="1,1";
 
 //CHECK#1
 try {
-  f = new Function(p,body);
+  var f = new Function(p,body);
   $FAIL('#1: If P is not parsable as a FormalParameterList_opt then throw a SyntaxError exception');
 } catch (e) {
   if (!(e instanceof SyntaxError)) {

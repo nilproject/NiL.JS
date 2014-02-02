@@ -6,10 +6,11 @@
  * @section: 15.1.3.1;
  * @assertion: The length property of decodeURI has the attribute ReadOnly;
  * @description: Checking if varying the length property fails;
+ * @strict_mode_negative
 */
 
 //CHECK#1
-x = decodeURI.length;
+var x = decodeURI.length;
 decodeURI.length = Infinity;
 if (decodeURI.length !== x) {
   $ERROR('#1: x = decodeURI.length; decodeURI.length = Infinity; decodeURI.length === x. Actual: ' + (decodeURI.length));

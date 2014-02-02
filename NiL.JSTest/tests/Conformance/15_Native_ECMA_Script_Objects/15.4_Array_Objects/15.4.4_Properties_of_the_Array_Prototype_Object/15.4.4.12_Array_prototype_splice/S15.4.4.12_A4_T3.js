@@ -9,7 +9,7 @@
 */
 
 Array.prototype[0] = -1;
-x = [];
+var x = [];
 x.length = 1;
 var arr = x.splice(0,1);
 

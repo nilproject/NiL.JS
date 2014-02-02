@@ -8,9 +8,9 @@
 * @description: Regular expression is /([\d]{5})([-\ ]?[\d]{4})?$/g;
 */
 
-__matches=["02134"];
+var __matches=["02134"];
 
-__string = "Boston, Mass. 02134";
+var __string = "Boston, Mass. 02134";
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

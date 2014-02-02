@@ -8,7 +8,7 @@
 * @description: Checking by using eval, Call String(eval());;
 */
 
-__str = String(eval());
+var __str = String(eval());
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

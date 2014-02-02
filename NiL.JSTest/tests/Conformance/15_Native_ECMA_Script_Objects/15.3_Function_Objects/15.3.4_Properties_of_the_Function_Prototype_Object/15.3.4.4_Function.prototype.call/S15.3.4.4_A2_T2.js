@@ -8,7 +8,7 @@
 * @description: Checking f.call.length, where f is new Function;
 */
 
-f=new Function;
+var f=new Function;
 
 //CHECK#1
 if (typeof f.call !== "function") {

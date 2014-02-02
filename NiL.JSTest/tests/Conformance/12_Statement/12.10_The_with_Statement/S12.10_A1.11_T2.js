@@ -7,6 +7,7 @@
  * @assertion: The with statement adds a computed object to the front of the
  * scope chain of the current execution context;
  * @description: Calling a function within "with" statement declared without the statement, leading to normal completion by "return";
+ * @strict_mode_negative
  */
 this.p1 = 1;
 this.p2 = 2;

@@ -10,7 +10,7 @@
 */
 
 //CHECK#1
-x = [];
+var x = [];
 var reverse = x.reverse();
 if (reverse !== x) {
   $ERROR('#1: x = []; x.reverse() === x. Actual: ' + (reverse));

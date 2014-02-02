@@ -13,7 +13,7 @@
 
 var __string = new String("hello");
 
-__split = __string.split("x");
+var __split = __string.split("x");
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

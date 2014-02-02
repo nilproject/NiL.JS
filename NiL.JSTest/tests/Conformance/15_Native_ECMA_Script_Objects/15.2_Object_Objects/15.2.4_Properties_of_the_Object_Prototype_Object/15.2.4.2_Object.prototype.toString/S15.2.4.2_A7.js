@@ -8,7 +8,7 @@
 * @description: Checking if creating "new Object.prototype.toString" fails;
 */
 
-FACTORY = Object.prototype.toString;
+var FACTORY = Object.prototype.toString;
 
 try {
   instance = new FACTORY;

@@ -10,7 +10,7 @@
 
 //CHECK#1
 try {
-  x = [];
+  var x = [];
   x.length = 4294967296;
   $ERROR('#1.1: x = []; x.length = 4294967296 throw RangeError. Actual: x.length === ' + (x.length));
 } catch(e) {    

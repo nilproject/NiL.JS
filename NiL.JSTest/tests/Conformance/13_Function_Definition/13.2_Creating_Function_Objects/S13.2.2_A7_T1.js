@@ -12,8 +12,8 @@
 * @description: Declaring a function with "as __func = function(arg)";
 */
 
-__FRST="one";
-__SCND="two";
+var __FRST="one";
+var __SCND="two";
 
 function __func (arg1, arg2){
 	this.first=arg1;
@@ -22,7 +22,7 @@ function __func (arg1, arg2){
 	
 };
 
-__obj__ = new __func(__FRST, __SCND);
+var __obj__ = new __func(__FRST, __SCND);
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

@@ -8,14 +8,14 @@
 * @description: Call toLowerCase() function of string object;
 */
 
-__obj = {
+var __obj = {
     valueOf:function(){},
     toString:void 0
 };
 
-__lowerCase = new String(__obj).toLowerCase();
+var __lowerCase = new String(__obj).toLowerCase();
 
-__expected ="undefined"; 
+var __expected ="undefined"; 
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

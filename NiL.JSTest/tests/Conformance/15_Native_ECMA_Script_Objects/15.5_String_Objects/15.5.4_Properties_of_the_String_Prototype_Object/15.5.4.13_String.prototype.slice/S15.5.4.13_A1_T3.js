@@ -8,14 +8,14 @@
 * @description: Checking by using eval;
 */
 
-slice = String.prototype.slice;
+var slice = String.prototype.slice;
 
 if (typeof toString === "undefined"){
     toString = Object.prototype.toString;
 }
 
-__class__ = toString();
-__toggle = 1;
+var __class__ = toString();
+var __toggle = 1;
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

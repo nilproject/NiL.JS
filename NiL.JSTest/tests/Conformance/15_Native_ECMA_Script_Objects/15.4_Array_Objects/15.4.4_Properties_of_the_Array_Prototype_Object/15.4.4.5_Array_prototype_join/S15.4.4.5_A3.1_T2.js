@@ -8,7 +8,7 @@
  * @description: If Type(separator) is Object, evaluate ToPrimitive(separator, String); 
 */
 
-x = new Array(0,1,2,3);
+var x = new Array(0,1,2,3);
 //CHECK#1
 var object = {valueOf: function() {return "+"}};
 if (x.join(object) !== "0[object Object]1[object Object]2[object Object]3") {

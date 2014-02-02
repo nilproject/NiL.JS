@@ -15,8 +15,8 @@ if (Array.propertyIsEnumerable('join') !== false) {
 }
 
 //CHECK#2
-result = true;
-for (p in Array){
+var result = true;
+for (var p in Array){
   if (p === "join") {
     result = false;
   }  

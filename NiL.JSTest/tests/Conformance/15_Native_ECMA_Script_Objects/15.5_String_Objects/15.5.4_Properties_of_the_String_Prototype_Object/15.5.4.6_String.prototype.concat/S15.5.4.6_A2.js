@@ -8,7 +8,7 @@
 * @description: Call concat([,[...]]) function with 128 arguments;
 */
 
-__instance = new Number();
+var __instance = new Number();
 
 __instance.concat = String.prototype.concat;
 

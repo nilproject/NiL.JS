@@ -8,9 +8,9 @@
 * @description: thisArg is number;
 */
 
-obj=1;
+var obj=1;
 
-retobj = Function("this.touched= true; return this;").apply(obj);
+var retobj = Function("this.touched= true; return this;").apply(obj);
 
 //CHECK#1
 if (typeof obj.touched !== "undefined") {
@@ -21,4 +21,3 @@ if (typeof obj.touched !== "undefined") {
 if (!(retobj["touched"])) {
   $ERROR('#2: If thisArg is not null(defined) the called function is passed ToObject(thisArg) as the this value');
 }
-

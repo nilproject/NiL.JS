@@ -8,7 +8,7 @@
 * @description: Create new String and try call it;
 */
 
-__str = new String;
+var __str = new String;
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

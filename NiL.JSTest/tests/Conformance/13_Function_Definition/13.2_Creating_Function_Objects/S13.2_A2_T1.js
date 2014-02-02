@@ -8,7 +8,7 @@
 * @description: Nesting level is two;
 */
 
-__JEDI="jedi";
+var __JEDI="jedi";
 
 function __FUNC(){
     function __GUNC(){

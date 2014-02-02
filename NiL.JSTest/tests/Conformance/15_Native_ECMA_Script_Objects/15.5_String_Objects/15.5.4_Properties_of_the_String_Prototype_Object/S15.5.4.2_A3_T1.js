@@ -9,7 +9,7 @@
 */
 
 //CHECK#1
-str = new String();
+var str = new String();
 if(!(str.valueOf() == str.toString()))
   $ERROR('#1: str = new String(),str.valueOf() == str.toString()');
 

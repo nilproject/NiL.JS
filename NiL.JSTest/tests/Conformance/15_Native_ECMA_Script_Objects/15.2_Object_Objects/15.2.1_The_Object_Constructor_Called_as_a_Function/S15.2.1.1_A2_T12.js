@@ -9,7 +9,7 @@
 * @description: Calling Object function with numeric expression as argument value;
 */
 
-obj = Object(1.1*([].length+{q:1}["q"]));
+var obj = Object(1.1*([].length+{q:1}["q"]));
 
 //CHECK#2
 if (typeof obj !== "object") {

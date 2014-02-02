@@ -14,7 +14,7 @@ var __string = new String("hello");
 
 var __re = /l/;
 
-__split = __string.split(__re, void 0);
+var __split = __string.split(__re, void 0);
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

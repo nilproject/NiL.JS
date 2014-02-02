@@ -8,7 +8,7 @@
 * @description: Checking if creating "new Object.prototype.hasOwnProperty" fails;
 */
 
-FACTORY = Object.prototype.hasOwnProperty;
+var FACTORY = Object.prototype.hasOwnProperty;
 
 try {
   instance = new FACTORY;

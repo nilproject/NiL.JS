@@ -12,9 +12,9 @@
 
 //CHECK#1
 try{
-  s1 = {x: 1};
+  var s1 = {x: 1};
   s1.toString = Number.prototype.toString;
-  v1 = s1.toString(); 
+  var v1 = s1.toString(); 
   $ERROR('#1: Number.prototype.toString on not a Number object should throw TypeError');
 }
 catch(e){
@@ -25,9 +25,9 @@ catch(e){
 
 //CHECK#2
 try{
-  s2 = {x: 1};
+  var s2 = {x: 1};
   s2.myToString = Number.prototype.toString;
-  v2 = s2.myToString(); 
+  var v2 = s2.myToString(); 
   $ERROR('#2: Number.prototype.toString on not a Number object should throw TypeError');
 }
 catch(e){

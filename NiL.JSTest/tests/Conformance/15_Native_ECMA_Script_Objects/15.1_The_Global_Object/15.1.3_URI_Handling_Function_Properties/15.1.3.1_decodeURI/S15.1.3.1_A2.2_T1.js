@@ -8,18 +8,18 @@
  * @description: Complex tests, use RFC 3629;
 */
 
-errorCount = 0;
-count = 0;
+var errorCount = 0;
+var count = 0;
 var indexP;
 var indexO = 0;
-uriReserved = [";", "/", "?", ":", "@", "&", "=", "+", "$", ","];
+var uriReserved = [";", "/", "?", ":", "@", "&", "=", "+", "$", ","];
 l:
-for (indexB1 = 0x00; indexB1 <= 0x7F; indexB1++) {       
+for (var indexB1 = 0x00; indexB1 <= 0x7F; indexB1++) {       
   count++;
   var hexB1 = decimalToHexString(indexB1);  
   var index = indexB1;  
   try {
-    hex = String.fromCharCode(index);
+    var hex = String.fromCharCode(index);
     for (indexC = 0; indexC < uriReserved.length; indexC++) {    
       if (hex === uriReserved[indexC]) continue l;        
     } 

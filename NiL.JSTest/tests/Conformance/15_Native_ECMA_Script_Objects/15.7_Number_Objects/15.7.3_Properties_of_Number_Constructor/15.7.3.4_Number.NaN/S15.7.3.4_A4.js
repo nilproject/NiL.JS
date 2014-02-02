@@ -9,7 +9,7 @@
 */
 
 //CHECK#1
-for(x in Number) {
+for(var x in Number) {
   if(x === "NaN") {
     $ERROR('#1: Number.NaN has the attribute DontEnum');
   }

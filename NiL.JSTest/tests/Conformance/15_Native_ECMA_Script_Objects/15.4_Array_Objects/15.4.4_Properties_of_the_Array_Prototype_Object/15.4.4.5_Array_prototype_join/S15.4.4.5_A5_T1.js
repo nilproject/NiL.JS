@@ -10,7 +10,7 @@
 
 //CHECK#1
 Array.prototype[1] = 1;
-x = [0];
+var x = [0];
 x.length = 2;
 if (x.join() !== "0,1") {  
   $ERROR('#1: Array.prototype[1] = 1; x = [0]; x.length = 2; x.join() === "0,1". Actual: ' + (x.join()));    

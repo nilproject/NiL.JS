@@ -9,14 +9,14 @@
 * @description: Calling Object function with string argument value;
 */
 
-str = 'Luke Skywalker';
+var str = 'Luke Skywalker';
 
 // CHECK#1
 if (typeof str  !== 'string') {
   $ERROR('#1: "Luke Skywalker" should be a String primitive');
 }
 
-obj = Object(str);
+var obj = Object(str);
 
 //CHECK#2
 if (obj.constructor !== String) {

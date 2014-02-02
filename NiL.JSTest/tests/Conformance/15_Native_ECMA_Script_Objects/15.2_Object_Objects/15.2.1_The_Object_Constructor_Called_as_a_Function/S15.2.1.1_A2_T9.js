@@ -14,7 +14,7 @@ if (typeof func !== 'function') {
   $ERROR('#1: func = function(){return 1;} is NOT an function');
 }
 
-n_obj = Object(func);
+var n_obj = Object(func);
 
 //CHECK#2
 if ((n_obj !== func)||(n_obj()!==1)) {

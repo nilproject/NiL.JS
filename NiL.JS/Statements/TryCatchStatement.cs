@@ -33,7 +33,7 @@ namespace NiL.JS.Statements
             if (Parser.Validate(code, "catch (", ref i) || Parser.Validate(code, "catch(", ref i))
             {
                 int s = i;
-                if (!Parser.ValidateName(code, ref i, true))
+                if (!Parser.ValidateName(code, ref i, true, state.strict.Peek()))
                     throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Catch block must contain varible name " + Tools.PositionToTextcord(code, i))));
                 exptn = Tools.Unescape(code.Substring(s, i - s));
                 while (char.IsWhiteSpace(code[i])) i++;

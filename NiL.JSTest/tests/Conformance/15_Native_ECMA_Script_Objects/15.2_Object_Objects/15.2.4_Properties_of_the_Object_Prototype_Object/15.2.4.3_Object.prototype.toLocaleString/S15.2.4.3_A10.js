@@ -13,7 +13,7 @@ if (!(Object.prototype.toLocaleString.hasOwnProperty('length'))) {
   $FAIL('#1: the Object.prototype.toLocaleString has length property.');
 }
 
-obj = Object.prototype.toLocaleString.length;
+var obj = Object.prototype.toLocaleString.length;
 
 Object.prototype.toLocaleString.length = function(){return "shifted";};
 

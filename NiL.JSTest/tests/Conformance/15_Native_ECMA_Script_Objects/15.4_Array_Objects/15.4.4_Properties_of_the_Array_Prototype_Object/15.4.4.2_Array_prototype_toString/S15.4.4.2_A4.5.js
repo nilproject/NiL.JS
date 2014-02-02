@@ -15,8 +15,8 @@ if (Array.propertyIsEnumerable('toString') !== false) {
 }
 
 //CHECK#2
-result = true;
-for (p in Array){
+var result = true;
+for (var p in Array){
   if (p === "toString") {
     result = false;
   }  

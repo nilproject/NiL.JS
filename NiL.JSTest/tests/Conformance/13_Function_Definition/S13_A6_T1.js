@@ -10,13 +10,13 @@
 
 function __func(){return 1};
  
-__store__func = __func;
+var __store__func = __func;
  
- __1 = __func();
+var __1 = __func();
  
  function __func(){return 'A'};
  
- __A = __func();
+var __A = __func();
  
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

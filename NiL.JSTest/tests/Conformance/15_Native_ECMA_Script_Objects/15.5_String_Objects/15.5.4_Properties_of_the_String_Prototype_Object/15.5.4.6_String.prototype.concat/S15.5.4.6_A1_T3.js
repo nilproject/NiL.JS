@@ -8,15 +8,15 @@
 * @description: Use numbers and function object as arguments;
 */
 
-concat = String.prototype.concat;
+var concat = String.prototype.concat;
 
 var __obj5 = {toString:function(){return 5;}};
 
 if (typeof toString === "undefined"){
-    toString = Object.prototype.toString;
+    var toString = Object.prototype.toString;
 }
 
-__class__ = toString();
+var __class__ = toString();
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

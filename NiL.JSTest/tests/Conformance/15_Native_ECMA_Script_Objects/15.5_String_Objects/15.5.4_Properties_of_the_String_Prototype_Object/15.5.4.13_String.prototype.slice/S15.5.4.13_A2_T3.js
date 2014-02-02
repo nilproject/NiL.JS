@@ -8,7 +8,7 @@
 * @description: Call slice from empty String object;
 */
 
-__string = new String("");
+var __string = new String("");
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

@@ -9,7 +9,7 @@
 * Function call itself by it`s name;
 */
 
-__func = function __exp__func(arg){
+var __func = function __exp__func(arg){
     if (arg === 1) {
     	return arg;
     } else {

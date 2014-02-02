@@ -9,7 +9,7 @@
 * @description: Creating string object with "new String(function(){return [1,2,3]}())"; 
 */
 
-__str = new String(function(){return [1,2,3]}());
+var __str = new String(function(){return [1,2,3]}());
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

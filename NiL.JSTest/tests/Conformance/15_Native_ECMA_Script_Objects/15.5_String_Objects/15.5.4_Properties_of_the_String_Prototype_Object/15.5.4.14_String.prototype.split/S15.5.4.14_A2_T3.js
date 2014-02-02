@@ -13,7 +13,7 @@
 
 var __string = new String("one two three four five");
 
-__split = __string.split(/ /,2);
+var __split = __string.split(/ /,2);
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

@@ -9,7 +9,7 @@
 * @description: Calling Object function with boolean expression as argument value;
 */
 
-obj = Object((1===1)&&(!false));
+var obj = Object((1===1)&&(!false));
 
 //CHECK#1
 if (obj.constructor !== Boolean) {

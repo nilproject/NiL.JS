@@ -8,9 +8,9 @@
 * @description: Regular expression is /0./;
 */
 
-__re = /0./;
+var __re = /0./;
 
-__num = 10203040506070809000;
+var __num = 10203040506070809000;
 
 Number.prototype.match = String.prototype.match;
 

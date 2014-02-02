@@ -16,7 +16,7 @@ var __re =  new RegExp("00");
 
 Number.prototype.split=String.prototype.split;
 
-__split = 6776767677.006771122677555.split(__re, eval("\"1\""));
+var __split = 6776767677.006771122677555.split(__re, eval("\"1\""));
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

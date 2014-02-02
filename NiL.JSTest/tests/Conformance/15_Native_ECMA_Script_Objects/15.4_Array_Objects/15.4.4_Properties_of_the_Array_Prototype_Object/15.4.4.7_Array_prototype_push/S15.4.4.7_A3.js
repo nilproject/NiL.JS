@@ -8,7 +8,7 @@
  * @description: If ToUint32(length) !== length, throw RangeError; 
 */
 
-x = [];
+var x = [];
 x.length = 4294967295;
 
 //CHECK#1

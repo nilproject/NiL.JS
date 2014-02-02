@@ -16,7 +16,7 @@ if (!(String.prototype.charCodeAt.hasOwnProperty('length'))) {
 //
 //////////////////////////////////////////////////////////////////////////////
 
-__obj = String.prototype.charCodeAt.length;
+var __obj = String.prototype.charCodeAt.length;
 
 String.prototype.charCodeAt.length = function(){return "shifted";};
 

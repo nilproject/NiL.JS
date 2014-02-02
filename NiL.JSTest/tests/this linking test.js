@@ -34,3 +34,15 @@ if (o2.x)
     $ERROR("#7");
 
 String(Math.PI)
+
+var c = function () { }
+c.prototype.m1 = function () { return this.m2(); };
+c.prototype.m2 = function () { return this.x; };
+var o = new c();
+o.x = 1;
+var t = function () {
+    var o = new c();
+    o.x = 1;
+    return o.m1()
+}();
+console.log(t);

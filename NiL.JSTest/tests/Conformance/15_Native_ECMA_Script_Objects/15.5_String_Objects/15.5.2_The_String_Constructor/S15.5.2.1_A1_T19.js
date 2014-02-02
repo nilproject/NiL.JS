@@ -9,7 +9,7 @@
 * @description: Creating string object with "new String()" initialized with Array of numbers;
 */
 
-__str = new String(new Array(1,2,3));
+var __str = new String(new Array(1,2,3));
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1
 if (typeof __str !== "object") {

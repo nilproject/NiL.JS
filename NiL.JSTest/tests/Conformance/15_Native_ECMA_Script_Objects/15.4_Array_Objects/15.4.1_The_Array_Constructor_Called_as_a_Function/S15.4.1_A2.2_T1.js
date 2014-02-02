@@ -26,8 +26,8 @@ var x = Array(
 90,91,92,93,94,95,96,97,98,99
 );
 
-for (i = 0; i < 100; i++) {
-  result = true;
+for (var i = 0; i < 100; i++) {
+  var result = true;
   if (x[i] !== i) {
     result = false;
   }

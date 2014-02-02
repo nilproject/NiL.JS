@@ -8,9 +8,9 @@
  * @description: Compare Function with this.Function;
  */
 
-obj = Function;
+var obj = Function;
 
-thisobj = this.Function;
+var thisobj = this.Function;
 
 if (obj !== thisobj) {
   $ERROR('Function is the property of global');

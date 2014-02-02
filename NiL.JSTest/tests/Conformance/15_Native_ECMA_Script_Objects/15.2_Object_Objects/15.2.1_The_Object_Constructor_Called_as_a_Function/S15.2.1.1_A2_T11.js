@@ -14,7 +14,7 @@ if (typeof func !== 'undefined') {
   $ERROR('#1:  function expression can\'t be declarated');
 }
 
-n_obj = Object(function func(){return 1;});
+var n_obj = Object(function func(){return 1;});
 
 //CHECK#2
 if ((n_obj.constructor !== Function)||(n_obj()!==1)) {

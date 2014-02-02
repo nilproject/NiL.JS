@@ -8,7 +8,7 @@
 * @description: Regular expression is /([\d]{5})([-\ ]?[\d]{4})?$/. Last match is void 0;
 */
 
-__string = "Boston, Mass. 02134";
+var __string = "Boston, Mass. 02134";
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

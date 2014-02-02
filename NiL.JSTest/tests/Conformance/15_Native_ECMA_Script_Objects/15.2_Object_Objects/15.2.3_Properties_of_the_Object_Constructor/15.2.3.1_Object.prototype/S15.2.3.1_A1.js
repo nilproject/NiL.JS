@@ -8,7 +8,7 @@
 * @description: Checking if varying "Object.prototype" property fails;
 */
 
-obj = Object.prototype;
+var obj = Object.prototype;
 Object.prototype = function(){return "shifted";};
 
 //CHECK#1

@@ -27,9 +27,9 @@ if (String.prototype.substring.propertyIsEnumerable('length')) {
 
 //////////////////////////////////////////////////////////////////////////////
 // CHECK#2
-count=0;
+var count=0;
 
-for (p in String.prototype.substring){
+for (var p in String.prototype.substring){
   if (p==="length") count++;
 }
 

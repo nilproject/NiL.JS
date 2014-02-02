@@ -9,9 +9,9 @@
 * @description: Creating Object(x) and checking its properties;
 */
 
-__obj = Object(x);
+var __obj = Object(x);
 
-n__obj = new Object(x); 
+var n__obj = new Object(x); 
 
 if (__obj.toString() !== n__obj.toString()){
 	$ERROR('#1');	

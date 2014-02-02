@@ -8,7 +8,7 @@
 * @description: Checking if varying the instance that is applied fails;
 */
 
-__instance = new String("one");
+var __instance = new String("one");
 
 __instance.concat("two");
 

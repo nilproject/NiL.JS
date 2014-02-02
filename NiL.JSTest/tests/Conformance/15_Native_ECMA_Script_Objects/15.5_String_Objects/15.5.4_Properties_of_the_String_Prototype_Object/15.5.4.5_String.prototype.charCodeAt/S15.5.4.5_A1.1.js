@@ -12,7 +12,7 @@ function __FACTORY(){this.toString = function(){ return "wizard";};};
 
 __FACTORY.prototype.charCodeAt = String.prototype.charCodeAt;
 
-__instance = new __FACTORY;
+var __instance = new __FACTORY;
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

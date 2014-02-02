@@ -12,7 +12,7 @@
 * @description: Checking by using eval;
 */
 
-split = String.prototype.split;
+var split = String.prototype.split;
 
 var __obj__lim = {valueOf:function(){return 5;}};
 
@@ -20,9 +20,9 @@ if (typeof toString === "undefined"){
     toString = Object.prototype.toString;
 }
 
-__class__ = toString();
+var __class__ = toString();
 
-__split = split(eval("\"[\""),__obj__lim);
+var __split = split(eval("\"[\""),__obj__lim);
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

@@ -61,7 +61,7 @@ namespace NiL.JS.Statements
             var res = objStatement.ToString();
             var field = fieldNameStatement.ToString();
             int i = 0;
-            if (field.Length > 0 && field[0] == '"' && Parser.ValidateName(field.Substring(1, field.Length - 2), ref i))
+            if (field.Length > 0 && field[0] == '"' && Parser.ValidateName(field.Substring(1, field.Length - 2), ref i, true, true))
                 res += "." + field.Substring(1, field.Length - 2);
             else
                 res += "[" + field + "]";

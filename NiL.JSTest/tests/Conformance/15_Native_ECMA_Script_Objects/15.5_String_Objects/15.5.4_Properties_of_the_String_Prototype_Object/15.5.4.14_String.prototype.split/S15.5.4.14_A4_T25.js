@@ -14,9 +14,9 @@ var __string = new String("abc");
 
 var __re = new RegExp('[a-z]');
 
-__split = __string.split(__re);
+var __split = __string.split(__re);
 
-__expected = ["","","",""];
+var __expected = ["","","",""];
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

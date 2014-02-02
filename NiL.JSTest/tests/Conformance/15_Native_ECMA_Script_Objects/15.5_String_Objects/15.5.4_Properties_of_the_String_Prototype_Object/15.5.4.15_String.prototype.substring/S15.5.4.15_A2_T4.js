@@ -8,7 +8,7 @@
 * @description: start is Infinity, end is NaN;
 */
 
-__string = new String("this is a string object");
+var __string = new String("this is a string object");
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

@@ -9,7 +9,7 @@
 */
 
 // CHECK#1
-Finite = true;
+var Finite = true;
 if (typeof(Finite) !== "boolean") {
 	$ERROR('#1: Finite = true; typeof(NaN) === "boolean". Actual: ' + (typeof(NaN))); 
 }

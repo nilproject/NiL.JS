@@ -9,7 +9,7 @@
 */
 
 //CHECK#1
-x = [];
+var x = [];
 x.length = {valueOf: function() {return 2}};
 if (x.length !== 2) {
   $ERROR('#1: x = []; x.length = {valueOf: function() {return 2}};  x.length === 2. Actual: ' + (x.length));

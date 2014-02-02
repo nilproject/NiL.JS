@@ -25,8 +25,8 @@ if (alphabetR.getClass() !== "[object " + "Object" + "]") {
 }
  
 //CHECK#1
-result = true;
-for (i = 0; i < 10; i++) {
+var result = true;
+for (var i = 0; i < 10; i++) {
   if (!(isNaN(alphabetR[i]) && isNaN(alphabet[i]))) { 
     if (alphabetR[i] !== alphabet[i]) result = false;
   }  

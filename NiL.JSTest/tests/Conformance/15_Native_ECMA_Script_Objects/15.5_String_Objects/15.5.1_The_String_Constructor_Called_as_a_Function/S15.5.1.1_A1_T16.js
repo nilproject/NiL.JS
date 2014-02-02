@@ -8,7 +8,7 @@
 * @description: Call String() with .12345 and analogous numbers;
 */
 
-__str = String(.12345);
+var __str = String(.12345);
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

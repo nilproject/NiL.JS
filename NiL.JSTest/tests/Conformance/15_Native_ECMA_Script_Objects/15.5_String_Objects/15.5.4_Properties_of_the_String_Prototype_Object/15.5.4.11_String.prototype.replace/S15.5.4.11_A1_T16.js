@@ -10,18 +10,18 @@
 
 var __re = /77/;
 
-__instance = new Number(1100.00777001);
+var __instance = new Number(1100.00777001);
 
 Number.prototype.replace = String.prototype.replace;
 
-__obj = {toString:function(){return function(a1,a2,a3){return a2+"z"};}}
+var __obj = {toString:function(){return function(a1,a2,a3){return a2+"z"};}}
 //__obj = function(a1,a2,a3){return a2+"z"};
 
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1
 try {
-  x = __instance.replace(__re, __obj) === "1100.007z7001";
+  var x = __instance.replace(__re, __obj) === "1100.007z7001";
   $FAIL('#1.0: x = __instance.replace(__obj, 1) === "1100.007z7001" lead to throwing exception');
 } catch (e) {
   if (!(e instanceof TypeError)) {

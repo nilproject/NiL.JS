@@ -12,9 +12,9 @@
 
 //CHECK#1
 try{
-  s1 = new Boolean();
+  var s1 = new Boolean();
   s1.valueOf = Number.prototype.valueOf;
-  v1 = s1.valueOf(); 
+  var v1 = s1.valueOf(); 
   $ERROR('#1: Number.prototype.valueOf on not a Number object should throw TypeError');
 }
 catch(e){
@@ -25,9 +25,9 @@ catch(e){
 
 //CHECK#2
 try{
-  s2 = new Boolean();
+  var s2 = new Boolean();
   s2.myValueOf = Number.prototype.valueOf;
-  v2 = s2.myValueOf(); 
+  var v2 = s2.myValueOf(); 
   $ERROR('#2: Number.prototype.valueOf on not a Number object should throw TypeError');
 }
 catch(e){

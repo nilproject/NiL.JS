@@ -14,12 +14,9 @@ namespace NiL.JS.Core
 
             public _Rule(string token, ParseDelegate parseDel)
             {
-                this.Validate = (string code, ref int pos, bool move) =>
+                this.Validate = (string code, ref int pos) =>
                 {
-                    if (move)
-                        return Parser.Validate(code, token, ref pos);
-                    else
-                        return Parser.Validate(code, token, pos);
+                    return Parser.Validate(code, token, pos);
                 };
                 this.Parse = parseDel;
             }
@@ -206,15 +203,15 @@ namespace NiL.JS.Core
 
         internal static bool ValidateName(string code, ref int index)
         {
-            return ValidateName(code, ref index, true, true, true);
+            return ValidateName(code, ref index, false, true, true, false);
         }
 
-        internal static bool ValidateName(string code, ref int index, bool move)
+        internal static bool ValidateName(string code, ref int index, bool move, bool strict)
         {
-            return ValidateName(code, ref index, move, true, true);
+            return ValidateName(code, ref index, move, true, true, strict);
         }
 
-        internal static bool ValidateName(string code, ref int index, bool move, bool reserveControl, bool allowEscape)
+        internal static bool ValidateName(string code, ref int index, bool move, bool reserveControl, bool allowEscape, bool strict)
         {
             int j = index;
             int startI = j;
@@ -234,7 +231,7 @@ namespace NiL.JS.Core
             {
                 int i = 0;
                 name = Tools.Unescape(name, false);
-                var res = ValidateName(name, ref i, true, reserveControl, false) && i == name.Length;
+                var res = ValidateName(name, ref i, true, reserveControl, false, strict) && i == name.Length;
                 if (res && move)
                     index = j;
                 return res;
@@ -270,38 +267,27 @@ namespace NiL.JS.Core
                     case "true":
                     case "false":
                     case "null":
-                    case "abstract":
                     case "export":
                     case "extends":
-                    case "final":
-                    case "float":
-                    case "goto":
-                    case "implements":
                     case "import":
-                    case "int":
+                    case "super":
+                    case "class":
+                    case "const":
+                    case "debugger":
+                    case "enum":
+                        return false;
+                    case "implements":
                     case "interface":
-                    case "long":
-                    case "boolean":
-                    case "native":
                     case "package":
                     case "private":
                     case "protected":
                     case "public":
-                    case "short":
                     case "static":
-                    case "super":
-                    case "synchronized":
-                    case "throws":
-                    case "byte":
-                    case "transient":
-                    case "volatile":
-                    case "char":
-                    case "class":
-                    case "const":
-                    case "debugger":
-                    case "double":
-                    case "enum":
-                        return false;
+                        {
+                            if (strict)
+                                return false;
+                            break;
+                        }
                 }
             if (move)
                 index = j;
@@ -430,6 +416,11 @@ namespace NiL.JS.Core
             return false;
         }
 
+        internal static bool ValidateValue(string code, ref int index)
+        {
+            return ValidateValue(code, ref index, false);
+        }
+
         internal static bool ValidateValue(string code, ref int index, bool move)
         {
             int j = index;
@@ -491,11 +482,11 @@ namespace NiL.JS.Core
 
         internal static Statement Parse(ParsingState state, ref int index, int ruleset, bool lineAutoComplite)
         {
-            int sindex = index;
             string code = state.Code;
             while ((index < code.Length) && (char.IsWhiteSpace(code[index])) && (!lineAutoComplite || !Tools.isLineTerminator(code[index]))) index++;
             if (code[index] == '}')
                 return null;
+            int sindex = index;
             if (code[index] == ';' || (lineAutoComplite && Tools.isLineTerminator(code[index])))
             {
                 index++;
@@ -503,7 +494,7 @@ namespace NiL.JS.Core
             }
             for (int i = 0; i < rules[ruleset].Length; i++)
             {
-                if (rules[ruleset][i].Validate(code, ref index, false))
+                if (rules[ruleset][i].Validate(code, ref index))
                 {
                     var pr = rules[ruleset][i].Parse(state, ref index);
                     if (pr.IsParsed)

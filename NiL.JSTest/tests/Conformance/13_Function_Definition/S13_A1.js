@@ -8,7 +8,7 @@
 * @description: Checking the type of y; 
 */
 
-__func = function __exp__func(){return 0;};
+var __func = function __exp__func(){return 0;};
 
 ////////////////////////////////////////////////
 // //////////////////////////////

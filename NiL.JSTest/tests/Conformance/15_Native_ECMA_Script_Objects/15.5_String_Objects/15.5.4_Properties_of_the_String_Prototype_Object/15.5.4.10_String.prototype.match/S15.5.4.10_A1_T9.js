@@ -8,14 +8,14 @@
 * @description: Call match (regexp) function with function(){}() argument of string object;
 */
 
-__obj = {
+var __obj = {
     valueOf:function(){},
     toString:void 0
 };
 
-__matched = new String(__obj).match(function(){}());
+var __matched = new String(__obj).match(function(){}());
 
-__expected = RegExp(undefined).exec("undefined"); 
+var __expected = RegExp(undefined).exec("undefined"); 
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

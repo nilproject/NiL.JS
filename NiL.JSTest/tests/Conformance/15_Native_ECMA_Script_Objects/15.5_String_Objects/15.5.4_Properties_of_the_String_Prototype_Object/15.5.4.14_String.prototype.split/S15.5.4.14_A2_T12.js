@@ -13,7 +13,7 @@
 
 var __string = new String("one-1 two-2 four-4");
 
-__split = __string.split("r-42");
+var __split = __string.split("r-42");
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

@@ -15,7 +15,7 @@ if (this.propertyIsEnumerable('isNaN') !== false) {
 }
 
 //CHECK#2
-result = true;
+var result = true;
 for (p in this){
   if (p === "isNaN") {
     result = false;

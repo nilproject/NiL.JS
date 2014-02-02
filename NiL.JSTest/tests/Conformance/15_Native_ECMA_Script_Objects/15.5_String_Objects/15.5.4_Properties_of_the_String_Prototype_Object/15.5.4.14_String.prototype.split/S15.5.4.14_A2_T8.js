@@ -14,7 +14,7 @@
 var __string = "thisnullisnullanullstringnullobject";
 var __expected = ["this", "is", "a", "string", "object"];
 
-__split = __string.split(null);
+var __split = __string.split(null);
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

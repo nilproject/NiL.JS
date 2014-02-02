@@ -8,7 +8,7 @@
 * @description: Call replace (searchValue, replaceValue) function with functions arguments of new String object;
 */
 
-__obj = {
+var __obj = {
     valueOf:function(){},
     toString:void 0
 };

@@ -8,7 +8,7 @@
 * @description: Creating an object with "Object(1,2,3)"; 
 */
 
-obj = Object(1,2,3);
+var obj = Object(1,2,3);
 
 //CHECK#1
 if (obj.constructor !== Number) {

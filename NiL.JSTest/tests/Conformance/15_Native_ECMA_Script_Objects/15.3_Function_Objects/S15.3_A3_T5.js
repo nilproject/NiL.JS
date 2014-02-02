@@ -9,15 +9,15 @@
 * @description: First argument is this, and this don`t have needed variable. Function return this.var_name;
 */
 
-f=Function.call(this, "return this.planet;");
-g=Function.call(this, "return this.color;");
+var f=Function.call(this, "return this.planet;");
+var g=Function.call(this, "return this.color;");
 
 //CHECK#1
 if (f() !== undefined) {
   $ERROR('#2: ');
 }
 
-planet="mars";
+var planet="mars";
 
 //CHECK#2
 if (f() !== "mars") {

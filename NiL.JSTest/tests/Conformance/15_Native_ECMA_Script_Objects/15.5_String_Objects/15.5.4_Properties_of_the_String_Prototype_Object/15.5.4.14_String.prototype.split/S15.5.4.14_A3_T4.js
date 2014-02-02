@@ -14,7 +14,7 @@ var __instance = new Number(NaN);
 
 __instance.split = String.prototype.split;
 
-__split = __instance.split();
+var __split = __instance.split();
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

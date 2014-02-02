@@ -8,7 +8,7 @@
 * @description: Getting the value of the internal [[Class]] property with Object.prototype.toString() function; 
 */
 
-tostr = Object.prototype.toString();
+var tostr = Object.prototype.toString();
 
 //CHECK#1
 if (tostr !== "[object Object]") {

@@ -17,13 +17,13 @@
 */
 
 
-body = "return a;";
+var body = "return a;";
 
-p=Object("a");
+var p=Object("a");
 
 //CHECK#1
 try {
-  f = new Function(p, body);
+  var f = new Function(p, body);
 } catch (e) {
   $FAIL('#1: test failed with error '+e);
 }
@@ -37,5 +37,3 @@ if (f.constructor !== Function) {
 if (f(1)!==1) {
   $ERROR('#3: When the Function constructor is called with one argument then body be that argument the following steps are taken...');
 }
-
-

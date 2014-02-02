@@ -9,11 +9,11 @@
 * @description: Creating string object with "new String(function(){})"; 
 */
 
-__stored__Function__prototype__toString = Function.prototype.toString;
+var __stored__Function__prototype__toString = Function.prototype.toString;
 
 Function.prototype.toString=function(){return "SHIFTED"};
 
-__str = new String(function(){});
+var __str = new String(function(){});
 
 Function.prototype.toString = __stored__Function__prototype__toString;
 

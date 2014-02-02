@@ -16,7 +16,7 @@ __obj.valueOf=function(){return true};
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1
 try {
-  __str = new String(__obj);
+  var __str = new String(__obj);
   $ERROR('#1: var __obj = {toString:function(){throw "intostr"}}; __str = new String(__obj) lead throwing exception');
 } catch (e) {
   if (e!=="intostr") {

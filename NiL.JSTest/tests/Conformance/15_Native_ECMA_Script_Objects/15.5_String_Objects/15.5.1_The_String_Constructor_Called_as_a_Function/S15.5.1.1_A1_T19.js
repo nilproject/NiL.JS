@@ -8,7 +8,7 @@
 * @description: Call String() with Array of numbers;
 */
 
-__str = String(new Array(1,2,3));
+var __str = String(new Array(1,2,3));
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1

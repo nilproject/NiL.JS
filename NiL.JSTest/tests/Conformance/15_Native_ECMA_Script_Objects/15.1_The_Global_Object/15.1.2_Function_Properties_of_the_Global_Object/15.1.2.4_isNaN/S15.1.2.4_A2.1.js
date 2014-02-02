@@ -15,7 +15,7 @@ if (isNaN.propertyIsEnumerable('length') !== false) {
 }
 
 //CHECK#2
-result = true;
+var result = true;
 for (p in isNaN){
   if (p === "length") {
     result = false;

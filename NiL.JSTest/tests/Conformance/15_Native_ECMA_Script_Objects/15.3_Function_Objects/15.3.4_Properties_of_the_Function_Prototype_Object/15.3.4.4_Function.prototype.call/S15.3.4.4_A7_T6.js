@@ -10,7 +10,7 @@
 
 //CHECK#1
 try {
-  obj = new (Function("function f(){this.p1=1;};return f").call());
+  var obj = new (Function("function f(){this.p1=1;};return f").call());
 } catch (e) {
   $ERROR('#1: Function.prototype.call can\'t be used as [[create]] caller');
 }

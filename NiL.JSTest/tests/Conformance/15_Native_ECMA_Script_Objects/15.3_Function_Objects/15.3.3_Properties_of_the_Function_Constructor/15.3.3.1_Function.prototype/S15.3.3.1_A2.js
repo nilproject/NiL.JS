@@ -14,7 +14,7 @@ if (Function.propertyIsEnumerable('prototype')) {
 }
 
 // CHECK#2
-count=0;
+var count=0;
 
 for (p in Function){
   if (p==="prototype") count++;

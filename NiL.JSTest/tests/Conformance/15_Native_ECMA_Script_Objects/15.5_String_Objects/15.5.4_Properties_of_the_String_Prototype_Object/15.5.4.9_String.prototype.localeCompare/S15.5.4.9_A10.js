@@ -16,7 +16,7 @@ if (!(String.prototype.localeCompare.hasOwnProperty('length'))) {
 //
 //////////////////////////////////////////////////////////////////////////////
 
-__obj = String.prototype.localeCompare.length;
+var __obj = String.prototype.localeCompare.length;
 
 String.prototype.localeCompare.length = function(){return "shifted";};
 

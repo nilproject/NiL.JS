@@ -9,7 +9,7 @@
 * @description: First argument is this, and this have needed variable. Function return this.var_name;
 */
 
-f=Function.call(this, "return this.planet;");
+var f=Function.call(this, "return this.planet;");
 
 //CHECK#1
 if (f() !== undefined) {

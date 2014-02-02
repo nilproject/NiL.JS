@@ -16,7 +16,7 @@ if (!(String.prototype.toLowerCase.hasOwnProperty('length'))) {
 //
 //////////////////////////////////////////////////////////////////////////////
 
-__obj = String.prototype.toLowerCase.length;
+var __obj = String.prototype.toLowerCase.length;
 
 String.prototype.toLowerCase.length = function(){return "shifted";};
 

@@ -16,7 +16,7 @@ if (!(String.prototype.indexOf.hasOwnProperty('length'))) {
 //
 //////////////////////////////////////////////////////////////////////////////
 
-__obj = String.prototype.indexOf.length;
+var __obj = String.prototype.indexOf.length;
 
 String.prototype.indexOf.length = function(){return "shifted";};
 
