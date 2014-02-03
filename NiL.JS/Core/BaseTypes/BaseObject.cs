@@ -26,15 +26,16 @@ namespace NiL.JS.Core.BaseTypes
                 object oVal = null;
                 if (args != null && args.GetField("length", true, false).iValue > 0)
                     oVal = args.GetField("0", true, false);
+                if (oVal is JSObject && 
+                    (((oVal as JSObject).ValueType >= JSObjectType.Object && (oVal as JSObject).oValue == null) || (oVal as JSObject).ValueType <= JSObjectType.Undefined))
+                    oVal = null;
+                if ((oVal is JSObject) && (oVal as JSObject).ValueType >= JSObjectType.Object)
+                    return oVal as JSObject;
                 JSObject res;
                 if (_this.ValueType == JSObjectType.Object && _this.prototype != null && _this.prototype.oValue == Prototype.oValue)
                     res = _this;
                 else
-                {
-                    if ((oVal is JSObject) && (oVal as JSObject).ValueType >= JSObjectType.Object)
-                        return oVal as JSObject;
                     res = new JSObject();
-                }
                 res.oValue = oVal ?? new object();
                 res.ValueType = JSObjectType.Object;
                 if (!(oVal is JSObject))
@@ -84,6 +85,8 @@ namespace NiL.JS.Core.BaseTypes
                                     return "[object Object]";
                                 return "[object " + (cont.thisBind.oValue as TypeProxy).hostedType.Name + "]";
                             }
+                            if (cont.thisBind.oValue is string)
+                                return cont.thisBind.oValue as string;
                             return "[object " + cont.thisBind.oValue.GetType().Name + "]";
                         }
                     default: throw new NotImplementedException();

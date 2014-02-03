@@ -70,6 +70,19 @@ namespace NiL.JS.Statements.Operators
                         tempResult.ValueType = JSObjectType.Bool;
                         return tempResult;
                     }
+                case JSObjectType.Date:
+                    {
+                        var l = temp.oValue;
+                        temp = Tools.RaiseIfNotExist(second.Invoke(context));
+                        if (temp.ValueType != JSObjectType.Date)
+                            tempResult.iValue = 0;
+                        else if (l == null || temp.oValue == null)
+                            tempResult.iValue = l == temp.oValue ? 1 : 0;
+                        else
+                            tempResult.iValue = l.Equals(temp.oValue) ? 1 : 0;
+                        tempResult.ValueType = JSObjectType.Bool;
+                        return tempResult;
+                    }
                 case JSObjectType.String:
                     {
                         var l = temp.oValue;
@@ -93,7 +106,7 @@ namespace NiL.JS.Statements.Operators
             }
             if (lvt == JSObjectType.NotExist)
                 throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible not defined.")));
-            throw new InvalidOperationException();
+            throw new NotImplementedException();
         }
     }
 }

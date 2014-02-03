@@ -48,13 +48,21 @@ namespace NiL.JS.Core.BaseTypes
                     }
                 }
                 else
-                    host = new System.DateTime(
-                    Tools.JSObjectToInt(args.GetField("0", true, false)),
-                    Tools.JSObjectToInt(args.GetField("1", true, false)),
-                    Tools.JSObjectToInt(args.GetField("2", true, false)),
-                    Tools.JSObjectToInt(args.GetField("3", true, false)),
-                    Tools.JSObjectToInt(args.GetField("4", true, false)),
-                    Tools.JSObjectToInt(args.GetField("5", true, false)));
+                {
+                    int y = Tools.JSObjectToInt(args.GetField("0", true, false));
+                    int m = Tools.JSObjectToInt(args.GetField("1", true, false));
+                    int d = Tools.JSObjectToInt(args.GetField("2", true, false));
+                    int h = Tools.JSObjectToInt(args.GetField("3", true, false));
+                    int n = Tools.JSObjectToInt(args.GetField("4", true, false));
+                    int s = Tools.JSObjectToInt(args.GetField("5", true, false));
+                    host = new System.DateTime();
+                    host = host.AddYears(y - host.Year);
+                    host = host.AddMonths(m - host.Month);
+                    host = host.AddDays(d - host.Day);
+                    host = host.AddHours(y - host.Hour);
+                    host = host.AddMinutes(m - host.Minute);
+                    host = host.AddSeconds(d - host.Second);
+                }
             }
             catch
             {
@@ -171,97 +179,97 @@ namespace NiL.JS.Core.BaseTypes
 
         public int setMilliseconds(int time)
         {
-            host.AddMilliseconds(time - host.Millisecond);
+            host = host.AddMilliseconds(time - host.Millisecond);
             return time;
         }
 
         public int setUTCMilliseconds(int time)
         {
-            host.AddMilliseconds(time - host.Millisecond);
+            host = host.AddMilliseconds(time - host.Millisecond);
             return time;
         }
 
         public int setSeconds(int time)
         {
-            host.AddSeconds(time - host.Second);
+            host = host.AddSeconds(time - host.Second);
             return time;
         }
 
         public int setUTCSeconds(int time)
         {
-            host.AddSeconds(time - host.Second);
+            host = host.AddSeconds(time - host.Second);
             return time;
         }
 
         public int setMinutes(int time)
         {
-            host.AddMinutes(time - host.Minute);
+            host = host.AddMinutes(time - host.Minute);
             return time;
         }
 
         public int setUTCMinutes(int time)
         {
-            host.AddMinutes(time - host.Minute);
+            host = host.AddMinutes(time - host.Minute);
             return time;
         }
 
         public int setHours(int time)
         {
-            host.AddHours(time - host.Hour);
+            host = host.AddHours(time - host.Hour);
             return time;
         }
 
         public int setUTCHours(int time)
         {
-            host.AddHours(time - host.Hour);
+            host = host.AddHours(time - host.Hour);
             return time;
         }
 
         public int setDate(int time)
         {
-            host.AddDays(time - host.Day);
+            host = host.AddDays(time - host.Day);
             return time;
         }
 
         public int setUTCDate(int time)
         {
-            host.AddDays(time - host.Day);
+            host = host.AddDays(time - host.Day);
             return time;
         }
 
         public int setMonth(int time)
         {
-            host.AddMonths(time - host.Month);
+            host = host.AddMonths(time - host.Month);
             return time;
         }
 
         public int setUTCMonth(int time)
         {
-            host.AddMonths(time - host.Month);
+            host = host = host.AddMonths(time - host.Month);
             return time;
         }
 
         public int setYear(int time)
         {
-            host.AddYears(time - host.Year);
+            host = host.AddYears(time - host.Year);
             return time;
         }
 
         public int setUTCYear(int time)
         {
-            host.AddYears(time - host.Year);
+            host = host.AddYears(time - host.Year);
             return time;
         }
 
         public int setFullYear(int time)
         {
-            host.AddYears(time - host.Year);
+            host = host.AddYears(time - host.Year);
             return time;
         }
 
         public int setUTCFullYear(int time)
         {
-            host.AddYears(time - host.Year);
+            host = host.AddYears(time - host.Year);
             return time;
         }
 
