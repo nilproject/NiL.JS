@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="10.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>NiL.JSTest</RootNamespace>
     <AssemblyName>NiL.JSTest</AssemblyName>
-    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
     <PublishUrl>publish\</PublishUrl>
@@ -27,10 +27,14 @@
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
-    <SccProjectName>SAK</SccProjectName>
-    <SccLocalPath>SAK</SccLocalPath>
-    <SccAuxPath>SAK</SccAuxPath>
-    <SccProvider>SAK</SccProvider>
+    <SccProjectName>
+    </SccProjectName>
+    <SccLocalPath>
+    </SccLocalPath>
+    <SccAuxPath>
+    </SccAuxPath>
+    <SccProvider>
+    </SccProvider>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -426,10 +430,6 @@
     <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.4_String_Literals\S7.8.4_A4.2_T6.js" />
     <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.4_String_Literals\S7.8.4_A4.2_T7.js" />
     <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.4_String_Literals\S7.8.4_A4.2_T8.js" />
-    <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.4_String_Literals\S7.8.4_A4.3_T1.js" />
-    <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.4_String_Literals\S7.8.4_A4.3_T2.js" />
-    <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.4_String_Literals\S7.8.4_A4.3_T3.js" />
-    <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.4_String_Literals\S7.8.4_A4.3_T4.js" />
     <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.4_String_Literals\S7.8.4_A4.3_T5.js" />
     <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.4_String_Literals\S7.8.4_A4.3_T6.js" />
     <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.4_String_Literals\S7.8.4_A4.3_T7.js" />
@@ -443,8 +443,6 @@
     <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.4_String_Literals\S7.8.4_A6.2_T1.js" />
     <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.4_String_Literals\S7.8.4_A6.2_T2.js" />
     <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.4_String_Literals\S7.8.4_A6.3_T1.js" />
-    <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.4_String_Literals\S7.8.4_A6.4_T1.js" />
-    <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.4_String_Literals\S7.8.4_A6.4_T2.js" />
     <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.4_String_Literals\S7.8.4_A7.1_T1.js" />
     <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.4_String_Literals\S7.8.4_A7.1_T2.js" />
     <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.4_String_Literals\S7.8.4_A7.1_T3.js" />
@@ -456,57 +454,6 @@
     <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.4_String_Literals\S7.8.4_A7.2_T5.js" />
     <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.4_String_Literals\S7.8.4_A7.2_T6.js" />
     <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.4_String_Literals\S7.8.4_A7.3_T1.js" />
-    <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.4_String_Literals\S7.8.4_A7.4_T1.js" />
-    <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.4_String_Literals\S7.8.4_A7.4_T2.js" />
-    <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.5_Regular_Expression_Literals\S7.8.5_A1.1_T1.js" />
-    <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.5_Regular_Expression_Literals\S7.8.5_A1.1_T2.js" />
-    <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.5_Regular_Expression_Literals\S7.8.5_A1.2_T1.js" />
-    <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.5_Regular_Expression_Literals\S7.8.5_A1.2_T2.js" />
-    <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.5_Regular_Expression_Literals\S7.8.5_A1.2_T3.js" />
-    <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.5_Regular_Expression_Literals\S7.8.5_A1.2_T4.js" />
-    <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.5_Regular_Expression_Literals\S7.8.5_A1.3_T1.js" />
-    <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.5_Regular_Expression_Literals\S7.8.5_A1.3_T2.js" />
-    <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.5_Regular_Expression_Literals\S7.8.5_A1.3_T3.js" />
-    <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.5_Regular_Expression_Literals\S7.8.5_A1.3_T4.js" />
-    <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.5_Regular_Expression_Literals\S7.8.5_A1.3_T5.js" />
-    <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.5_Regular_Expression_Literals\S7.8.5_A1.3_T6.js" />
-    <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.5_Regular_Expression_Literals\S7.8.5_A1.4_T1.js" />
-    <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.5_Regular_Expression_Literals\S7.8.5_A1.4_T2.js" />
-    <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.5_Regular_Expression_Literals\S7.8.5_A1.5_T1.js" />
-    <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.5_Regular_Expression_Literals\S7.8.5_A1.5_T2.js" />
-    <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.5_Regular_Expression_Literals\S7.8.5_A1.5_T3.js" />
-    <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.5_Regular_Expression_Literals\S7.8.5_A1.5_T4.js" />
-    <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.5_Regular_Expression_Literals\S7.8.5_A1.5_T5.js" />
-    <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.5_Regular_Expression_Literals\S7.8.5_A1.5_T6.js" />
-    <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.5_Regular_Expression_Literals\S7.8.5_A2.1_T1.js" />
-    <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.5_Regular_Expression_Literals\S7.8.5_A2.1_T2.js" />
-    <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.5_Regular_Expression_Literals\S7.8.5_A2.2_T1.js" />
-    <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.5_Regular_Expression_Literals\S7.8.5_A2.2_T2.js" />
-    <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.5_Regular_Expression_Literals\S7.8.5_A2.3_T1.js" />
-    <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.5_Regular_Expression_Literals\S7.8.5_A2.3_T2.js" />
-    <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.5_Regular_Expression_Literals\S7.8.5_A2.3_T3.js" />
-    <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.5_Regular_Expression_Literals\S7.8.5_A2.3_T4.js" />
-    <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.5_Regular_Expression_Literals\S7.8.5_A2.3_T5.js" />
-    <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.5_Regular_Expression_Literals\S7.8.5_A2.3_T6.js" />
-    <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.5_Regular_Expression_Literals\S7.8.5_A2.4_T1.js" />
-    <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.5_Regular_Expression_Literals\S7.8.5_A2.4_T2.js" />
-    <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.5_Regular_Expression_Literals\S7.8.5_A2.5_T1.js" />
-    <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.5_Regular_Expression_Literals\S7.8.5_A2.5_T2.js" />
-    <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.5_Regular_Expression_Literals\S7.8.5_A2.5_T3.js" />
-    <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.5_Regular_Expression_Literals\S7.8.5_A2.5_T4.js" />
-    <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.5_Regular_Expression_Literals\S7.8.5_A2.5_T5.js" />
-    <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.5_Regular_Expression_Literals\S7.8.5_A2.5_T6.js" />
-    <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.5_Regular_Expression_Literals\S7.8.5_A3.1_T1.js" />
-    <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.5_Regular_Expression_Literals\S7.8.5_A3.1_T2.js" />
-    <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.5_Regular_Expression_Literals\S7.8.5_A3.1_T3.js" />
-    <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.5_Regular_Expression_Literals\S7.8.5_A3.1_T4.js" />
-    <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.5_Regular_Expression_Literals\S7.8.5_A3.1_T5.js" />
-    <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.5_Regular_Expression_Literals\S7.8.5_A3.1_T6.js" />
-    <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.5_Regular_Expression_Literals\S7.8.5_A3.1_T7.js" />
-    <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.5_Regular_Expression_Literals\S7.8.5_A3.1_T8.js" />
-    <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.5_Regular_Expression_Literals\S7.8.5_A3.1_T9.js" />
-    <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.5_Regular_Expression_Literals\S7.8.5_A4.1.js" />
-    <Content Include="tests\Conformance\07_Lexical_Conventions\7.8_Literals\7.8.5_Regular_Expression_Literals\S7.8.5_A4.2.js" />
     <Content Include="tests\Conformance\07_Lexical_Conventions\7.9_Automatic_Semicolon_Insertion\7.9.2_Examples_of_Automatic_Semicolon_Insertion\S7.9.2_A1_T1.js" />
     <Content Include="tests\Conformance\07_Lexical_Conventions\7.9_Automatic_Semicolon_Insertion\7.9.2_Examples_of_Automatic_Semicolon_Insertion\S7.9.2_A1_T2.js" />
     <Content Include="tests\Conformance\07_Lexical_Conventions\7.9_Automatic_Semicolon_Insertion\7.9.2_Examples_of_Automatic_Semicolon_Insertion\S7.9.2_A1_T3.js" />
@@ -1794,7 +1741,6 @@
     <Content Include="tests\Conformance\11_Expressions\11.8_Relational_Operators\11.8.2_The_Greater_than_Operator\S11.8.2_A2.1_T2.js" />
     <Content Include="tests\Conformance\11_Expressions\11.8_Relational_Operators\11.8.2_The_Greater_than_Operator\S11.8.2_A2.1_T3.js" />
     <Content Include="tests\Conformance\11_Expressions\11.8_Relational_Operators\11.8.2_The_Greater_than_Operator\S11.8.2_A2.2_T1.js" />
-    <Content Include="tests\Conformance\11_Expressions\11.8_Relational_Operators\11.8.2_The_Greater_than_Operator\S11.8.2_A2.3_T1.js" />
     <Content Include="tests\Conformance\11_Expressions\11.8_Relational_Operators\11.8.2_The_Greater_than_Operator\S11.8.2_A2.4_T1.js" />
     <Content Include="tests\Conformance\11_Expressions\11.8_Relational_Operators\11.8.2_The_Greater_than_Operator\S11.8.2_A2.4_T2.js" />
     <Content Include="tests\Conformance\11_Expressions\11.8_Relational_Operators\11.8.2_The_Greater_than_Operator\S11.8.2_A2.4_T3.js" />
@@ -1830,7 +1776,6 @@
     <Content Include="tests\Conformance\11_Expressions\11.8_Relational_Operators\11.8.3_The_Less_than_or_equal_Operator\S11.8.3_A2.1_T2.js" />
     <Content Include="tests\Conformance\11_Expressions\11.8_Relational_Operators\11.8.3_The_Less_than_or_equal_Operator\S11.8.3_A2.1_T3.js" />
     <Content Include="tests\Conformance\11_Expressions\11.8_Relational_Operators\11.8.3_The_Less_than_or_equal_Operator\S11.8.3_A2.2_T1.js" />
-    <Content Include="tests\Conformance\11_Expressions\11.8_Relational_Operators\11.8.3_The_Less_than_or_equal_Operator\S11.8.3_A2.3_T1.js" />
     <Content Include="tests\Conformance\11_Expressions\11.8_Relational_Operators\11.8.3_The_Less_than_or_equal_Operator\S11.8.3_A2.4_T1.js" />
     <Content Include="tests\Conformance\11_Expressions\11.8_Relational_Operators\11.8.3_The_Less_than_or_equal_Operator\S11.8.3_A2.4_T2.js" />
     <Content Include="tests\Conformance\11_Expressions\11.8_Relational_Operators\11.8.3_The_Less_than_or_equal_Operator\S11.8.3_A2.4_T3.js" />
@@ -1866,7 +1811,6 @@
     <Content Include="tests\Conformance\11_Expressions\11.8_Relational_Operators\11.8.4_The_Grater_than_or_equal_Operator\S11.8.4_A2.1_T2.js" />
     <Content Include="tests\Conformance\11_Expressions\11.8_Relational_Operators\11.8.4_The_Grater_than_or_equal_Operator\S11.8.4_A2.1_T3.js" />
     <Content Include="tests\Conformance\11_Expressions\11.8_Relational_Operators\11.8.4_The_Grater_than_or_equal_Operator\S11.8.4_A2.2_T1.js" />
-    <Content Include="tests\Conformance\11_Expressions\11.8_Relational_Operators\11.8.4_The_Grater_than_or_equal_Operator\S11.8.4_A2.3_T1.js" />
     <Content Include="tests\Conformance\11_Expressions\11.8_Relational_Operators\11.8.4_The_Grater_than_or_equal_Operator\S11.8.4_A2.4_T1.js" />
     <Content Include="tests\Conformance\11_Expressions\11.8_Relational_Operators\11.8.4_The_Grater_than_or_equal_Operator\S11.8.4_A2.4_T2.js" />
     <Content Include="tests\Conformance\11_Expressions\11.8_Relational_Operators\11.8.4_The_Grater_than_or_equal_Operator\S11.8.4_A2.4_T3.js" />
@@ -2272,7 +2216,6 @@
     <Content Include="tests\Conformance\12_Statement\12.5_The_if_Statement\S12.5_A12_T4.js" />
     <Content Include="tests\Conformance\12_Statement\12.5_The_if_Statement\S12.5_A1_T1.js" />
     <Content Include="tests\Conformance\12_Statement\12.5_The_if_Statement\S12.5_A1_T2.js" />
-    <Content Include="tests\Conformance\12_Statement\12.5_The_if_Statement\S12.5_A2.js" />
     <Content Include="tests\Conformance\12_Statement\12.5_The_if_Statement\S12.5_A3.js" />
     <Content Include="tests\Conformance\12_Statement\12.5_The_if_Statement\S12.5_A4.js" />
     <Content Include="tests\Conformance\12_Statement\12.5_The_if_Statement\S12.5_A5.js" />
@@ -2282,7 +2225,6 @@
     <Content Include="tests\Conformance\12_Statement\12.5_The_if_Statement\S12.5_A8.js" />
     <Content Include="tests\Conformance\12_Statement\12.5_The_if_Statement\S12.5_A9_T1.js" />
     <Content Include="tests\Conformance\12_Statement\12.5_The_if_Statement\S12.5_A9_T2.js" />
-    <Content Include="tests\Conformance\12_Statement\12.5_The_if_Statement\S12.5_A9_T3.js" />
     <Content Include="tests\Conformance\12_Statement\12.6_Iteration_Statements\12.6.1_The_do_while_Statement\S12.6.1_A1.js" />
     <Content Include="tests\Conformance\12_Statement\12.6_Iteration_Statements\12.6.1_The_do_while_Statement\S12.6.1_A10.js" />
     <Content Include="tests\Conformance\12_Statement\12.6_Iteration_Statements\12.6.1_The_do_while_Statement\S12.6.1_A11.js" />
@@ -2313,9 +2255,6 @@
     <Content Include="tests\Conformance\12_Statement\12.6_Iteration_Statements\12.6.2_The_while_statement\S12.6.2_A1.js" />
     <Content Include="tests\Conformance\12_Statement\12.6_Iteration_Statements\12.6.2_The_while_statement\S12.6.2_A10.js" />
     <Content Include="tests\Conformance\12_Statement\12.6_Iteration_Statements\12.6.2_The_while_statement\S12.6.2_A11.js" />
-    <Content Include="tests\Conformance\12_Statement\12.6_Iteration_Statements\12.6.2_The_while_statement\S12.6.2_A13_T1.js" />
-    <Content Include="tests\Conformance\12_Statement\12.6_Iteration_Statements\12.6.2_The_while_statement\S12.6.2_A13_T2.js" />
-    <Content Include="tests\Conformance\12_Statement\12.6_Iteration_Statements\12.6.2_The_while_statement\S12.6.2_A13_T3.js" />
     <Content Include="tests\Conformance\12_Statement\12.6_Iteration_Statements\12.6.2_The_while_statement\S12.6.2_A14_T1.js" />
     <Content Include="tests\Conformance\12_Statement\12.6_Iteration_Statements\12.6.2_The_while_statement\S12.6.2_A14_T2.js" />
     <Content Include="tests\Conformance\12_Statement\12.6_Iteration_Statements\12.6.2_The_while_statement\S12.6.2_A15.js" />
@@ -2376,11 +2315,6 @@
     <Content Include="tests\Conformance\12_Statement\12.6_Iteration_Statements\12.6.3_The_for_Statement\S12.6.3_A9.1.js" />
     <Content Include="tests\Conformance\12_Statement\12.6_Iteration_Statements\12.6.3_The_for_Statement\S12.6.3_A9.js" />
     <Content Include="tests\Conformance\12_Statement\12.6_Iteration_Statements\12.6.4_The_for_in_Statement\S12.6.4_A1.js" />
-    <Content Include="tests\Conformance\12_Statement\12.6_Iteration_Statements\12.6.4_The_for_in_Statement\S12.6.4_A13_T1.js" />
-    <Content Include="tests\Conformance\12_Statement\12.6_Iteration_Statements\12.6.4_The_for_in_Statement\S12.6.4_A13_T2.js" />
-    <Content Include="tests\Conformance\12_Statement\12.6_Iteration_Statements\12.6.4_The_for_in_Statement\S12.6.4_A13_T3.js" />
-    <Content Include="tests\Conformance\12_Statement\12.6_Iteration_Statements\12.6.4_The_for_in_Statement\S12.6.4_A14_T1.js" />
-    <Content Include="tests\Conformance\12_Statement\12.6_Iteration_Statements\12.6.4_The_for_in_Statement\S12.6.4_A14_T2.js" />
     <Content Include="tests\Conformance\12_Statement\12.6_Iteration_Statements\12.6.4_The_for_in_Statement\S12.6.4_A15.js" />
     <Content Include="tests\Conformance\12_Statement\12.6_Iteration_Statements\12.6.4_The_for_in_Statement\S12.6.4_A2.js" />
     <Content Include="tests\Conformance\12_Statement\12.6_Iteration_Statements\12.6.4_The_for_in_Statement\S12.6.4_A3.1.js" />

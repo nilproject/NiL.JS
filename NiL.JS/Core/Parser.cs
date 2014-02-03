@@ -308,17 +308,23 @@ namespace NiL.JS.Core
                 j++;
                 while ((j < code.Length) && (code[j] != '/'))
                 {
-                    if ((code[j] == '\n') || (code[j] == '\r'))
+                    if (Tools.isLineTerminator(code[j]))
                         return false;
                     if (code[j] == '\\')
+                    {
                         j++;
+                        if (Tools.isLineTerminator(code[j]))
+                            return false;
+                    }
                     j++;
                 }
                 if (j == code.Length)
                     return false;
                 try
                 {
-                    new System.Text.RegularExpressions.Regex(code.Substring(index + 1, j - index - 1), System.Text.RegularExpressions.RegexOptions.ECMAScript);
+                    new System.Text.RegularExpressions.Regex(code.Substring(index + 1, j - index - 1)
+                        .Replace("\\P", "P")
+                        , System.Text.RegularExpressions.RegexOptions.ECMAScript);
                 }
                 catch
                 {
@@ -331,7 +337,18 @@ namespace NiL.JS.Core
                     j++;
                     if (j >= code.Length)
                         break;
-                    switch (code[j])
+                    char c = code[j];
+                    if (c == '\\')
+                    {
+                        int len = 1;
+                        if (code[j + 1] == 'u')
+                            len = 5;
+                        else if (code[j + 1] == 'x')
+                            len = 3;
+                        c = Tools.Unescape(code.Substring(j, len + 1))[0];
+                        j += len;
+                    }
+                    switch (c)
                     {
                         case 'g':
                             {
@@ -365,7 +382,7 @@ namespace NiL.JS.Core
                             }
                         default:
                             {
-                                if (isIdentificatorTerminator(code[j]))
+                                if (isIdentificatorTerminator(c))
                                 {
                                     w = false;
                                     break;
@@ -503,7 +520,7 @@ namespace NiL.JS.Core
             }
             var cord = Tools.PositionToTextcord(code, sindex);
             throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.SyntaxError("Unexpected token at " + cord + " : "
-                + code.Substring(index, Math.Min(20, code.Length - index)).Split(' ')[0])));
+                + code.Substring(index, Math.Min(20, code.Length - index)).Split(new[] { ' ', '\n', '\r' })[0])));
         }
 
         internal static void Optimize(ref Statement s, int depth, Dictionary<string, Statement> varibles)

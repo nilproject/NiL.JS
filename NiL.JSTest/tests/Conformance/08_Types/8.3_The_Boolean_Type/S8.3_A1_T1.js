@@ -8,7 +8,7 @@
  * @description: Assign true and false to variables;
 */
 
-if (x == undefined) {
+if (x != undefined) {
     $ERROR("x == undefined, but actual is "+ x);
 }   
 

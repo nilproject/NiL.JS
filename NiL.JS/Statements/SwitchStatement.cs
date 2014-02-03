@@ -75,7 +75,11 @@ namespace NiL.JS.Statements
                 if (t == null)
                     continue;
                 if (t is FunctionStatement)
+                {
+                    if (state.strict.Peek())
+                        throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
                     funcs.Add(t as FunctionStatement);
+                }
                 else
                     body.Add(t);
                 while (char.IsWhiteSpace(code[i]) || (code[i] == ';')) i++;

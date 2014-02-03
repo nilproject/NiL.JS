@@ -28,6 +28,8 @@ namespace NiL.JS.Statements
                 throw new ArgumentException("code (" + i + ")");
             do i++; while (char.IsWhiteSpace(code[i]));
             Statement body = Parser.Parse(state, ref i, 0);
+            if (body is FunctionStatement && state.strict.Peek())
+                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
             Statement elseBody = null;
             while (char.IsWhiteSpace(code[i])) i++;
             if (!(body is CodeBlock) && (code[i] == ';'))
@@ -39,6 +41,8 @@ namespace NiL.JS.Statements
             {
                 while (char.IsWhiteSpace(code[i])) i++;
                 elseBody = Parser.Parse(state, ref i, 0);
+                if (elseBody is FunctionStatement && state.strict.Peek())
+                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
             }
             index = i;
             return new ParseResult()

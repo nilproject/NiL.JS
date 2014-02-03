@@ -27,14 +27,25 @@ namespace NiL.JS.Core.BaseTypes
                 return;
             }
             global = false;
-            var pattern = ptrn.ValueType > JSObjectType.Undefined ? ptrn.ToString() : "";
+            var pattern = ptrn.ValueType > JSObjectType.Undefined ? ptrn.ToString().Replace("\\P", "P") : "";
             var flags = x.GetField("length", false, true).iValue > 1 && x.GetField("1", true, false).ValueType > JSObjectType.Undefined ? x.GetField("1", true, false).ToString() : "";
             try
             {
                 System.Text.RegularExpressions.RegexOptions options = System.Text.RegularExpressions.RegexOptions.ECMAScript;
                 for (int i = 0; i < flags.Length; i++)
                 {
-                    switch (flags[i])
+                    char c = flags[i];
+                    if (c == '\\')
+                    {
+                        int len = 1;
+                        if (flags[i + 1] == 'u')
+                            len = 5;
+                        else if (flags[i + 1] == 'x')
+                            len = 3;
+                        c = Tools.Unescape(flags.Substring(i, len + 1))[0];
+                        i += len;
+                    }
+                    switch (c)
                     {
                         case 'i':
                             {

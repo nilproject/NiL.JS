@@ -46,6 +46,8 @@ namespace NiL.JS.Statements
             state.AllowBreak++;
             state.AllowContinue++;
             var body = Parser.Parse(state, ref i, 0);
+            if (body is FunctionStatement && state.strict.Peek())
+                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
             state.AllowBreak--;
             state.AllowContinue--;
             index = i;

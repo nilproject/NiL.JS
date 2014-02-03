@@ -115,10 +115,12 @@ namespace NiL.JS.Statements
             Statement body = null;
             try
             {
+                state.AllowStrict = true;
                 body = CodeBlock.Parse(state, ref i).Statement;
             }
             finally
             {
+                state.AllowStrict = false;
                 state.Labels = labels;
                 state.AllowReturn--;
             }

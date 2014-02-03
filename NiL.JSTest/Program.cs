@@ -92,7 +92,7 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * i + 3 - 2 / 2; }
                     Context.RefreshGlobalContext();
                     var f = new FileStream(fls[i], FileMode.Open, FileAccess.Read);
                     var sr = new StreamReader(f);
-                    code = "function runTestCase(a){a()};\n" + sr.ReadToEnd();
+                    code = sr.ReadToEnd() + "\nfunction runTestCase(a){a()};";
                     negative = code.IndexOf("@negative") != -1;
                     if (negative)
                         pass = false;
@@ -210,8 +210,8 @@ console.log(utc);
             }));
             //benchmark();
             //runFile(@"ftest.js");
-            runFile(@"Benchmarks\run.js");
-            //sputnicTests();
+            //runFile(@"Benchmarks\run.js");
+            sputnicTests();
             //sputnicTests(@"tests\Conformance\07_Lexical_Conventions\7.5_Tokens\7.5.3_Future_Reserved_Words");
             //testEx();
 

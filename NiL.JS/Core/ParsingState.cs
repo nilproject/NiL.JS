@@ -12,7 +12,7 @@ namespace NiL.JS.Core
         public readonly Stack<bool> strict;
         public int LabelCount;
         public readonly string Code;
-        public bool allowStrict;
+        public bool AllowStrict;
 
         public ParsingState(string code)
         {
@@ -20,7 +20,7 @@ namespace NiL.JS.Core
             Labels = new List<string>();
             strict = new Stack<bool>();
             strict.Push(false);
-            allowStrict = true;
+            AllowStrict = true;
         }
     }
 }

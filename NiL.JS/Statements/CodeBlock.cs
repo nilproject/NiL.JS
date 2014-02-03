@@ -10,20 +10,15 @@ namespace NiL.JS.Statements
         private string[] varibles;
         private int length;
         public readonly Statement[] body;
+        public readonly bool strict;
 
-        public CodeBlock(Statement[] body, double fictive)
+        public CodeBlock(Statement[] body, bool strict)
         {
             this.body = body;
             length = body.Length - 1;
+            functions = null;
             varibles = new string[0];
-        }
-
-        public CodeBlock(Statement[] body)
-        {
-            this.body = body;
-            length = body.Length - 1;
-            functions = new FunctionStatement[0];
-            varibles = new string[0];
+            this.strict = strict;
         }
 
         public static ParseResult Parse(ParsingState state, ref int index)
@@ -39,28 +34,38 @@ namespace NiL.JS.Statements
             var funcs = new List<FunctionStatement>();
             state.LabelCount = 0;
             bool strictSwitch = false;
+            bool allowStrict = state.AllowStrict;
+            bool root = state.AllowStrict;
+            state.AllowStrict = false;
             while (code[i] != '}')
             {
                 var t = Parser.Parse(state, ref i, 0);
-                if (state.allowStrict && t is OperatorStatement && ((t as OperatorStatement).Type == OperationType.None))
+                if (allowStrict)
                 {
-                    var op = t as OperatorStatement;
-                    if (op.Second == null && (op.First is ImmidateValueStatement) && "use strict".Equals((op.First as ImmidateValueStatement).Value.Value))
+                    allowStrict = false;
+                    if (t is OperatorStatement && ((t as OperatorStatement).Type == OperationType.None))
                     {
-                        state.strict.Push(true);
-                        strictSwitch = true;
-                        continue;
+                        var op = t as OperatorStatement;
+                        if (op.Second == null && (op.First is ImmidateValueStatement) && "use strict".Equals((op.First as ImmidateValueStatement).Value.Value))
+                        {
+                            state.strict.Push(true);
+                            strictSwitch = true;
+                            continue;
+                        }
                     }
                 }
                 if (t == null || t is EmptyStatement)
                     continue;
                 if (t is FunctionStatement)
+                {
+                    if (state.strict.Peek())
+                        if (!root)
+                            throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
                     funcs.Add(t as FunctionStatement);
+                }
                 else
                     body.Add(t);
             }
-            if (strictSwitch)
-                state.strict.Pop();
             i++;
             index = i;
             body.Reverse();
@@ -68,7 +73,7 @@ namespace NiL.JS.Statements
             {
                 IsParsed = true,
                 Message = "",
-                Statement = new CodeBlock(body.ToArray(), 0.0)
+                Statement = new CodeBlock(body.ToArray(), strictSwitch && state.strict.Pop())
                 {
                     functions = funcs.ToArray()
                 }
@@ -77,10 +82,13 @@ namespace NiL.JS.Statements
 
         public override JSObject Invoke(Context context)
         {
+            context.strict |= strict;
             for (int i = varibles.Length - 1; i >= 0; i--)
                 context.GetOwnField(varibles[i]);
             for (int i = functions.Length - 1; i >= 0; i--)
             {
+                if (string.IsNullOrEmpty((functions[i] as FunctionStatement).Name))
+                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.SyntaxError("Declarated function must have name.")));
                 var o = context.GetOwnField((functions[i] as FunctionStatement).Name);
                 o.assignCallback = null;
                 o.Assign(functions[i].Invoke(context));
@@ -100,6 +108,8 @@ namespace NiL.JS.Statements
             var vars = new Dictionary<string, Statement>();
             for (int i = 0; i < body.Length; i++)
                 Parser.Optimize(ref body[i], depth < 0 ? 2 : Math.Max(1, depth), vars);
+            if (functions == null)
+                functions = new FunctionStatement[0];
             for (int i = 0; i < functions.Length; i++)
             {
                 Statement stat = functions[i];

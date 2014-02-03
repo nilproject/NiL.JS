@@ -373,7 +373,7 @@ namespace NiL.JS.Core
             StringBuilder res = new StringBuilder(code.Length);
             for (int i = 0; i < code.Length; i++)
             {
-                if (code[i] == '\\')
+                if (code[i] == '\\' && i + 1 < code.Length)
                 {
                     i++;
                     switch (code[i])
@@ -470,7 +470,7 @@ namespace NiL.JS.Core
                 if (code.Length <= index)
                     return;
                 work = false;
-                if (code[index] == '/')
+                if (code[index] == '/' && index + 1 < code.Length)
                 {
                     switch (code[index + 1])
                     {

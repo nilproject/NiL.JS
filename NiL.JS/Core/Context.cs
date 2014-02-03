@@ -166,6 +166,7 @@ namespace NiL.JS.Core
         internal bool updateThisBind;
         internal JSObject abortInfo;
         internal JSObject thisBind;
+        internal bool strict;
         
         private Context()
         {

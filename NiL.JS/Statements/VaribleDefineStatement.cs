@@ -77,7 +77,7 @@ namespace NiL.JS.Statements
         public bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> varibles)
         {
             if (initializators.Length > 1)
-                _this = new CodeBlock(initializators);
+                _this = new CodeBlock(initializators, false);
             else
                 _this = initializators[0];
             for (var i = 0; i < names.Length; i++)
