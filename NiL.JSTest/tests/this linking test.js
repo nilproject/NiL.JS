@@ -45,4 +45,10 @@ var t = function () {
     o.x = 1;
     return o.m1()
 }();
-console.log(t);
+if (t != 1)
+console.log("#8");
+
+var o = { x: 1, getx: function () { return function () { return this.x }; } };
+var x = 2;
+if (o.getx().call(null) != 2)
+console.log("#9");

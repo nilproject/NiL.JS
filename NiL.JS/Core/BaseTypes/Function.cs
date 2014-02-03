@@ -800,8 +800,11 @@ namespace NiL.JS.Core.BaseTypes
             for (int i = 0; i < prmlen; i++)
                 args.fields[i.ToString()] = args.GetField((i + 1).ToString(), true, false);
             args.fields.Remove(prmlen.ToString());
-            if (newThis.ValueType > JSObjectType.Undefined && (newThis.ValueType < JSObjectType.Object || newThis.oValue != null))
-                return Invoke(newThis, args);
+            if (newThis.ValueType > JSObjectType.Undefined)
+                if (newThis.ValueType < JSObjectType.Object || newThis.oValue != null)
+                    return Invoke(newThis, args);
+                else
+                    return Invoke(Context.currentRootContext.thisBind ?? Context.currentRootContext.GetOwnField("this"), args);
             return Invoke(args);
         }
     }
