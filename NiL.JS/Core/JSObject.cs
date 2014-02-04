@@ -47,6 +47,8 @@ namespace NiL.JS.Core
         public static readonly JSObject Null = new JSObject() { ValueType = JSObjectType.Object, oValue = null, assignCallback = ErrorAssignCallback, attributes = ObjectAttributes.DontDelete | ObjectAttributes.DontEnum };
         [Modules.Hidden]
         internal static readonly JSObject nullString = new JSObject() { ValueType = JSObjectType.String, oValue = "null", assignCallback = ErrorAssignCallback, attributes = ObjectAttributes.DontDelete | ObjectAttributes.DontEnum };
+        [Modules.Hidden]
+        internal static JSObject Prototype;
 
         static JSObject()
         {
@@ -99,6 +101,7 @@ namespace NiL.JS.Core
             }
         }
 
+        [Modules.Hidden]
         public JSObject()
         {
             ValueType = JSObjectType.Undefined;
@@ -108,6 +111,22 @@ namespace NiL.JS.Core
         {
             if (createFields)
                 fields = new Dictionary<string, JSObject>();
+        }
+
+        public JSObject(JSObject args)
+        {
+            object oVal = null;
+            if (args != null && args.GetField("length", true, false).iValue > 0)
+                oVal = args.GetField("0", true, false);
+            if ((oVal == null) ||
+                (oVal is JSObject && (((oVal as JSObject).ValueType >= JSObjectType.Object && (oVal as JSObject).oValue == null) || (oVal as JSObject).ValueType <= JSObjectType.Undefined)))
+                oVal = new object();
+            ValueType = JSObjectType.Object;
+            oValue = oVal;
+            if (oVal is JSObject)
+                prototype = (oVal as JSObject).GetField("__proto__", true, true);
+            else
+                prototype = Prototype;
         }
 
         [Modules.Hidden]
@@ -134,7 +153,7 @@ namespace NiL.JS.Core
                 case JSObjectType.Double:
                     {
                         if (this is TypeProxy)
-                            prototype = BaseObject.Prototype;
+                            prototype = JSObject.Prototype;
                         else
                             prototype = TypeProxy.GetPrototype(typeof(Number));
                         fast = true;
@@ -143,7 +162,7 @@ namespace NiL.JS.Core
                 case JSObjectType.String:
                     {
                         if (this is TypeProxy)
-                            prototype = BaseObject.Prototype;
+                            prototype = JSObject.Prototype;
                         else
                             prototype = TypeProxy.GetPrototype(typeof(NiL.JS.Core.BaseTypes.String));
                         fast = true;
@@ -152,7 +171,7 @@ namespace NiL.JS.Core
                 case JSObjectType.Bool:
                     {
                         if (this is TypeProxy)
-                            prototype = BaseObject.Prototype;
+                            prototype = JSObject.Prototype;
                         else
                             prototype = TypeProxy.GetPrototype(typeof(NiL.JS.Core.BaseTypes.Boolean));
                         fast = true;
@@ -171,7 +190,7 @@ namespace NiL.JS.Core
                         if (prototype == null)
                         {
                             if (this is TypeProxy)
-                                prototype = BaseObject.Prototype;
+                                prototype = JSObject.Prototype;
                             else
                                 prototype = TypeProxy.GetPrototype(typeof(NiL.JS.Core.BaseTypes.Function)).Clone() as JSObject;
                         }
@@ -390,6 +409,184 @@ namespace NiL.JS.Core
             return fields.Keys.GetEnumerator();
         }
 
+        public virtual JSObject toString()
+        {
+            switch (this.ValueType)
+            {
+                case JSObjectType.Int:
+                case JSObjectType.Double:
+                    {
+                        return "[object Number]";
+                    }
+                case JSObjectType.Undefined:
+                    {
+                        return "[object Undefined]";
+                    }
+                case JSObjectType.String:
+                    {
+                        return "[object String]";
+                    }
+                case JSObjectType.Bool:
+                    {
+                        return "[object Boolean]";
+                    }
+                case JSObjectType.Function:
+                    {
+                        return "[object Function]";
+                    }
+                case JSObjectType.Date:
+                case JSObjectType.Object:
+                    {
+                        if (this.oValue is ThisObject)
+                            return this.oValue.ToString();
+                        if (this.oValue is TypeProxy)
+                        {
+                            if ((this.oValue as TypeProxy).hostedType == typeof(RegExp))
+                                return "[object Object]";
+                            return "[object " + (this.oValue as TypeProxy).hostedType.Name + "]";
+                        }
+                        if (this.oValue is string)
+                            return this.oValue as string;
+                        if (this.oValue != null)
+                            return "[object " + this.oValue.GetType().Name + "]";
+                        else
+                            return "[object Null]";
+                    }
+                default: throw new NotImplementedException();
+            }
+        }
+
+        public virtual JSObject toLocaleString()
+        {
+            switch (this.ValueType)
+            {
+                case JSObjectType.Int:
+                case JSObjectType.Double:
+                    {
+                        return "[object Number]";
+                    }
+                case JSObjectType.Undefined:
+                    {
+                        throw new JSException(TypeProxy.Proxy(new BaseTypes.TypeError("toLocaleString called on undefined value")));
+                    }
+                case JSObjectType.String:
+                    {
+                        return "[object String]";
+                    }
+                case JSObjectType.Bool:
+                    {
+                        return "[object Boolean]";
+                    }
+                case JSObjectType.Function:
+                    {
+                        return "[object Function]";
+                    }
+                case JSObjectType.Date:
+                case JSObjectType.Object:
+                    {
+                        if (this.oValue is ThisObject)
+                            return this.oValue.ToString();
+                        if (this.oValue is TypeProxy)
+                        {
+                            if ((this.oValue as TypeProxy).hostedType == typeof(RegExp))
+                                return "[object Object]";
+                            return "[object " + (this.oValue as TypeProxy).hostedType.Name + "]";
+                        }
+                        if (this.oValue is string)
+                            return this.oValue as string;
+                        if (this.oValue != null)
+                            return "[object " + this.oValue.GetType().Name + "]";
+                        else
+                            throw new JSException(TypeProxy.Proxy(new BaseTypes.TypeError("toLocaleString called on null")));
+                    }
+                default: throw new NotImplementedException();
+            }
+        }
+
+        public virtual JSObject valueOf()
+        {
+            if (ValueType >= JSObjectType.Object && oValue is JSObject)
+                return (oValue as JSObject).valueOf();
+            else
+                return this;
+        }
+
+        public virtual JSObject isPrototypeOf(JSObject args)
+        {
+            if (args.GetField("length", true, false).iValue == 0)
+                return false;
+            var a = args.GetField("0", true, false);
+            var c = this;
+            JSObject o = false;
+            o.ValueType = JSObjectType.Bool;
+            o.iValue = 0;
+            if (c.ValueType >= JSObjectType.Object && c.oValue != null)
+            {
+                bool tpmode = c.oValue is TypeProxy;
+                Type type = null;
+                if (tpmode)
+                    type = (c.oValue as TypeProxy).hostedType;
+                while (a.ValueType >= JSObjectType.Object && a.oValue != null)
+                {
+                    if (a.oValue == c.oValue || (tpmode && a.oValue is TypeProxy && (a.oValue as TypeProxy).hostedType == type))
+                    {
+                        o.iValue = 1;
+                        return o;
+                    }
+                    a = a.GetField("__proto__", true, false);
+                }
+            }
+            return o;
+        }
+
+        public virtual JSObject hasOwnProperty(JSObject args)
+        {
+            JSObject name = args.GetField("0", true, false);
+            string n = "";
+            switch (name.ValueType)
+            {
+                case JSObjectType.Undefined:
+                case JSObjectType.NotExistInObject:
+                    {
+                        n = "undefined";
+                        break;
+                    }
+                case JSObjectType.Int:
+                    {
+                        n = name.iValue.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                        break;
+                    }
+                case JSObjectType.Double:
+                    {
+                        n = Tools.DoubleToString(name.dValue);
+                        break;
+                    }
+                case JSObjectType.String:
+                    {
+                        n = name.oValue as string;
+                        break;
+                    }
+                case JSObjectType.Object:
+                    {
+                        args = name.ToPrimitiveValue_Value_String();
+                        if (args.ValueType == JSObjectType.String)
+                            n = name.oValue as string;
+                        if (args.ValueType == JSObjectType.Int)
+                            n = name.iValue.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                        if (args.ValueType == JSObjectType.Double)
+                            n = Tools.DoubleToString(name.dValue);
+                        break;
+                    }
+                case JSObjectType.NotExist:
+                    throw new InvalidOperationException("Varible not defined.");
+                default:
+                    throw new NotImplementedException("Object.hasOwnProperty. Invalid Value Type");
+            }
+            var res = GetField(n, true, true);
+            res = (res.ValueType >= JSObjectType.Undefined) && (res != JSObject.undefined);
+            return res;
+        }
+
         public static implicit operator JSObject(char value)
         {
             return new BaseTypes.String(value.ToString());
@@ -397,7 +594,7 @@ namespace NiL.JS.Core
 
         public static implicit operator JSObject(bool value)
         {
-            return value ? BaseTypes.Boolean.TrueEr : BaseTypes.Boolean.FalseEr;
+            return new BaseTypes.Boolean(value);
         }
 
         public static implicit operator JSObject(int value)

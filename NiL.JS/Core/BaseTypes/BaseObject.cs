@@ -6,9 +6,9 @@ using System.Reflection;
 
 namespace NiL.JS.Core.BaseTypes
 {
-    internal sealed class BaseObject : JSObject
+    /*internal sealed class BaseObject : JSObject
     {
-        private static JSObject tempResult;// = new JSObject() { attributes = ObjectAttributes.DontDelete };
+        private static JSObject tempResult;
 
         public static JSObject Prototype;
 
@@ -17,7 +17,7 @@ namespace NiL.JS.Core.BaseTypes
             JSObject proto = null;
             proto = new JSObject(true);
             proto.ValueType = JSObjectType.Object;
-            proto.oValue = "Object";
+            proto.oValue = "[object Object]";
             Prototype = proto;
             var func = context.GetOwnField("Object");
             func.Assign(new CallableField((cont, args) =>
@@ -46,55 +46,15 @@ namespace NiL.JS.Core.BaseTypes
                     res.fields = new Dictionary<string, JSObject>();
                 return res;
             }));
-            func.GetField("prototype", false, false).Assign(Prototype);
+            func.GetField("prototype", false, true).Assign(Prototype);
+            func.GetField("prototype", false, true).attributes |= ObjectAttributes.ReadOnly | ObjectAttributes.DontDelete;
             func.attributes |= ObjectAttributes.DontDelete | ObjectAttributes.DontEnum | ObjectAttributes.ReadOnly;
-            var temp = proto.GetField("toString", false, false);
-            temp.Assign(new CallableField((cont, args) =>
-            {
-                switch ((cont.thisBind ?? cont.GetField("this")).ValueType)
-                {
-                    case JSObjectType.Int:
-                    case JSObjectType.Double:
-                        {
-                            return  "[object Number]";
-                        }
-                    case JSObjectType.Undefined:
-                        {
-                            return "[object Undefined]";
-                        }
-                    case JSObjectType.String:
-                        {
-                            return "[object String]";
-                        }
-                    case JSObjectType.Bool:
-                        {
-                            return "[object Boolean]";
-                        }
-                    case JSObjectType.Function:
-                        {
-                            return "[object Function]";
-                        }
-                    case JSObjectType.Date:
-                    case JSObjectType.Object:
-                        {
-                            if (cont.thisBind.oValue is ThisObject)
-                                return cont.thisBind.oValue.ToString();
-                            if (cont.thisBind.oValue is TypeProxy)
-                            {
-                                if ((cont.thisBind.oValue as TypeProxy).hostedType == typeof(RegExp))
-                                    return "[object Object]";
-                                return "[object " + (cont.thisBind.oValue as TypeProxy).hostedType.Name + "]";
-                            }
-                            if (cont.thisBind.oValue is string)
-                                return cont.thisBind.oValue as string;
-                            return "[object " + cont.thisBind.oValue.GetType().Name + "]";
-                        }
-                    default: throw new NotImplementedException();
-                }
-            }));
+            var temp = proto.GetField("toString", false, true);
+            temp.Assign(new MethodProxy(typeof(JSObject).GetMethod("toString", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)));
             temp.attributes |= ObjectAttributes.DontEnum;
-            proto.GetField("toLocaleString", false, false).Assign(temp);
-            proto.GetField("toLocaleString", false, false).attributes |= ObjectAttributes.DontEnum;
+            temp = proto.GetField("toLocaleString", false, true);
+            temp.Assign(new MethodProxy(typeof(JSObject).GetMethod("toLocaleString", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)));
+            temp.attributes |= ObjectAttributes.DontEnum;
             temp = proto.GetField("valueOf", false, true);
             temp.Assign(new CallableField((cont, args) =>
             {
@@ -247,5 +207,5 @@ namespace NiL.JS.Core.BaseTypes
             oValue = new object();
             prototype = Prototype;
         }
-    }
+    }*/
 }

@@ -1,8 +1,18 @@
-﻿var obj = new Date(1978, 3);
+﻿function __func() { };
 
-var n_obj = new Object(obj);
+//////////////////////////////////////////////////////////////////////////////
+//CHECK#1
+if (!(Function.prototype.isPrototypeOf(__func))) {
+    $ERROR('#1: Function.prototype.isPrototypeOf(__func)');
+}
+//
+//////////////////////////////////////////////////////////////////////////////
 
+
+var __gunc = function () { };
+
+//////////////////////////////////////////////////////////////////////////////
 //CHECK#2
-if ((n_obj.getYear() !== 78) || (n_obj.getMonth() !== 3)) {
-    $ERROR('#2: When the Object constructor is called and if the value is an Object simply value returns.');
+if (!(Function.prototype.isPrototypeOf(__gunc))) {
+    $ERROR('#1: Function.prototype.isPrototypeOf(__gunc)');
 }

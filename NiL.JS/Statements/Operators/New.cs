@@ -46,7 +46,7 @@ namespace NiL.JS.Statements.Operators
             JSObject _this = new JSObject() { ValueType = JSObjectType.Object };
             _this.prototype = temp.GetField("prototype", true, false);
             if (_this.prototype.ValueType > JSObjectType.Undefined && _this.prototype.ValueType < JSObjectType.Object)
-                _this.prototype = BaseObject.Prototype;
+                _this.prototype = JSObject.Prototype;
             else
                 if (_this.prototype.oValue == null)
                     throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.TypeError("Can't create object.")));
@@ -55,6 +55,8 @@ namespace NiL.JS.Statements.Operators
                 _this.prototype = _this.prototype.Clone() as JSObject;
                 _this.oValue = new object();
             }
+            else
+                _this.oValue = this;
             (CallInstance.First as ThisSetStat).value = temp;
             (CallInstance.First as ThisSetStat)._this = _this;
             var res = CallInstance.Invoke(context);

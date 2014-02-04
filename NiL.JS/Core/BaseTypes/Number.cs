@@ -258,7 +258,7 @@ namespace NiL.JS.Core.BaseTypes
             return System.Math.Round(res, dgts).ToString(".00000000000000000000".Substring(0, dgts + 1), System.Globalization.CultureInfo.InvariantCulture);
         }
 
-        public JSObject toLocaleString()
+        public override JSObject toLocaleString()
         {
             return ValueType == JSObjectType.Int ? iValue.ToString(System.Globalization.CultureInfo.CurrentCulture) : dValue.ToString(System.Globalization.CultureInfo.CurrentCulture);
         }

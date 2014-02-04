@@ -113,7 +113,6 @@ namespace NiL.JS.Statements
             res.ValueType = JSObjectType.Object;
             res.oValue = new object();
             res.prototype = new JSObject(false);
-            res.prototype.Assign(NiL.JS.Core.BaseTypes.BaseObject.Prototype);
             for (int i = 0; i < fields.Length; i++)
             {
                 var val = values[i].Invoke(context);
@@ -124,6 +123,7 @@ namespace NiL.JS.Statements
                 }
                 res.GetField(fields[i], false, true).Assign(val);
             }
+            res.prototype.Assign(JSObject.Prototype);
             return res;
         }
 

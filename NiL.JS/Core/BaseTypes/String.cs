@@ -342,7 +342,22 @@ namespace NiL.JS.Core.BaseTypes
             return (oValue as string).Trim();
         }
 
-        internal JSObject toString()
+        public override JSObject valueOf()
+        {
+            return base.valueOf();
+        }
+
+        public override JSObject toLocaleString()
+        {
+            return base.toLocaleString();
+        }
+
+        public override JSObject isPrototypeOf(JSObject args)
+        {
+            return base.isPrototypeOf(args);
+        }
+
+        public override JSObject toString()
         {
             return this;
         }

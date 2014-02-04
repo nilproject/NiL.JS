@@ -15,7 +15,7 @@ namespace NiL.JS.Core
             oValue = this;
         }
 
-        public JSObject toString()
+        public override JSObject toString()
         {
             return ToString();
         }
@@ -43,7 +43,7 @@ namespace NiL.JS.Core
             return DefaultFieldGetter(name, fast, false);
         }
 
-        public JSObject valueOf()
+        public override JSObject valueOf()
         {
             return this;
         }

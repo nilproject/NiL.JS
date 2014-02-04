@@ -59,8 +59,19 @@ namespace NiL.JS.Core
 
         public static int JSObjectToInt(JSObject arg)
         {
+            return JSObjectToInt(arg, 0);
+        }
+
+        /// <summary>
+        /// Преобразует JSObject в значение типа integer.
+        /// </summary>
+        /// <param name="arg">JSObject, значение которого нужно преобразовать</param>
+        /// <param name="default">значение, которое будет возвращено, если значение arg null или undefined</param>
+        /// <returns></returns>
+        public static int JSObjectToInt(JSObject arg, int @default)
+        {
             if (arg == null)
-                return 0;
+                return @default;
             var r = arg;
             switch (r.ValueType)
             {
@@ -89,13 +100,13 @@ namespace NiL.JS.Core
                 case JSObjectType.Object:
                     {
                         if (r.oValue == null)
-                            return 0;
+                            return @default;
                         r = r.ToPrimitiveValue_Value_String();
                         return JSObjectToInt(r);
                     }
                 case JSObjectType.Undefined:
                 case JSObjectType.NotExistInObject:
-                    return 0;
+                    return @default;
                 case JSObjectType.NotExist:
                     throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible not defined.")));
                 default:

@@ -42,22 +42,23 @@ namespace NiL.JS.Statements.Operators
                 {
                     ValueType = JSObjectType.Object,
                     oValue = "[object Arguments]".Clone(),
-                    attributes = ObjectAttributes.DontDelete | ObjectAttributes.DontEnum,
-                    prototype = BaseObject.Prototype
+                    attributes = ObjectAttributes.DontDelete | ObjectAttributes.DontEnum
                 };
             var field = arguments.GetField("length", false, true);
             field.ValueType = JSObjectType.Int;
             if (args == null)
                 args = second.Invoke(null).oValue as Statement[];
-            field.iValue = args.Length;
             field.Protect();
+            field.iValue = args.Length;
             field.attributes = ObjectAttributes.DontEnum;
             for (int i = 0; i < field.iValue; i++)
             {
-                var a = arguments.GetField(i.ToString(), false, false);
-                a.Assign(Tools.RaiseIfNotExist(args[i].Invoke(context)));
+                //var a = arguments.GetField(i.ToString(), false, true);
+                //a.Assign(Tools.RaiseIfNotExist(args[i].Invoke(context)));
+                arguments.fields[i.ToString()] = Tools.RaiseIfNotExist(args[i].Invoke(context)).Clone() as JSObject;
             }
-            field = arguments.GetField("callee", false, true);
+            arguments.prototype = JSObject.Prototype;
+            arguments.fields["callee"] = field = new JSObject();
             field.ValueType = JSObjectType.Function;
             field.oValue = func;
             field.Protect();

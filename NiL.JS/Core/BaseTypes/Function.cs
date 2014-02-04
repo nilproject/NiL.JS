@@ -652,6 +652,8 @@ namespace NiL.JS.Core.BaseTypes
                 return _arguments;
             }
         }
+        [Hidden]
+        private static JSObject Prototype;
         #endregion
 
         public Function()
@@ -661,7 +663,7 @@ namespace NiL.JS.Core.BaseTypes
             argumentsNames = new string[0];
             Name = "";
             ValueType = JSObjectType.Function;
-            prototype = null;
+            prototype = TypeProxy.GetPrototype(typeof(Function));
         }
 
         public Function(JSObject args)
@@ -689,7 +691,7 @@ namespace NiL.JS.Core.BaseTypes
             this.body = body;
             Name = name;
             ValueType = JSObjectType.Function;
-            prototype = null;
+            prototype = TypeProxy.GetPrototype(typeof(Function));
         }
 
         internal static readonly Number _length = new Number(0) { attributes = ObjectAttributes.ReadOnly | ObjectAttributes.DontDelete | ObjectAttributes.DontEnum };
@@ -770,7 +772,7 @@ namespace NiL.JS.Core.BaseTypes
                     {
                         oValue = new object(),
                         ValueType = JSObjectType.Object,
-                        prototype = BaseObject.Prototype,
+                        prototype = JSObject.Prototype,
                         attributes = ObjectAttributes.DontDelete | ObjectAttributes.DontEnum
                     };
                     var ctor = protorypeField.GetField("constructor", false, true);
@@ -793,19 +795,17 @@ namespace NiL.JS.Core.BaseTypes
             return res;
         }
 
-        public JSObject call(JSObject args)
+        public virtual JSObject call(JSObject args)
         {
             var newThis = args.GetField("0", true, false);
             var prmlen = --args.GetField("length", true, false).iValue;
             for (int i = 0; i < prmlen; i++)
                 args.fields[i.ToString()] = args.GetField((i + 1).ToString(), true, false);
             args.fields.Remove(prmlen.ToString());
-            if (newThis.ValueType > JSObjectType.Undefined)
-                if (newThis.ValueType < JSObjectType.Object || newThis.oValue != null)
-                    return Invoke(newThis, args);
-                else
-                    return Invoke(Context.currentRootContext.thisBind ?? Context.currentRootContext.GetOwnField("this"), args);
-            return Invoke(args);
+            if (newThis.ValueType < JSObjectType.Object || newThis.oValue != null)
+                return Invoke(newThis, args);
+            else
+                return Invoke(Context.currentRootContext.thisBind ?? Context.currentRootContext.GetOwnField("this"), args);
         }
     }
 }

@@ -84,19 +84,26 @@ namespace NiL.JS.Core
                 throw new InvalidOperationException("Type \"" + type + "\" already proxied.");
             else
             {
+                hostedType = type;
                 prototypes[type] = this;
                 if (type.IsValueType)
                     prototypeInstance = Activator.CreateInstance(type);
                 else
                 {
-                    var ictor = type.GetConstructor(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy, null, Type.EmptyTypes, null);
-                    if (ictor != null)
-                        prototypeInstance = ictor.Invoke(null);
+                    if (hostedType == typeof(JSObject))
+                    {
+                        prototypeInstance = new JSObject() { oValue = this, ValueType = JSObjectType.Object };
+                    }
+                    else
+                    {
+                        var ictor = type.GetConstructor(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy, null, Type.EmptyTypes, null);
+                        if (ictor != null)
+                            prototypeInstance = ictor.Invoke(null);
+                    }
                 }
 
                 ValueType = prototypeInstance is JSObject ? (JSObjectType)System.Math.Max((int)(prototypeInstance as JSObject).ValueType, (int)JSObjectType.Object) : JSObjectType.Object;
                 oValue = this;
-                hostedType = type;
                 attributes |= ObjectAttributes.DontDelete | ObjectAttributes.DontEnum | ObjectAttributes.ReadOnly;
                 if (hostedType.GetCustomAttributes(typeof(ImmutableAttribute), false).Length != 0)
                     attributes |= ObjectAttributes.Immutable;
@@ -121,7 +128,7 @@ namespace NiL.JS.Core
                 if (pa.Length != 0)
                     prototype = GetPrototype((pa[0] as PrototypeAttribute).PrototypeType).Clone() as JSObject;
                 else
-                    prototype = BaseObject.Prototype.Clone() as JSObject;
+                    prototype = JSObject.Prototype;
             }
         }
 

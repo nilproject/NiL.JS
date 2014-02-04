@@ -14,7 +14,7 @@ namespace NiL.JS.Statements.Operators
 
         public override JSObject Invoke(Context context)
         {
-            var val = (first ?? second).Invoke(context);
+            var val = (first ?? second).InvokeForAssing(context);
             if (val.ValueType == JSObjectType.NotExist)
                 throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible not defined.")));
             if (val.assignCallback != null)

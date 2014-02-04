@@ -65,7 +65,7 @@ namespace NiL.JS.Core
         {
             get
             {
-                _length.iValue = 0;
+                _length.iValue = 1;
                 return _length;
             }
         }

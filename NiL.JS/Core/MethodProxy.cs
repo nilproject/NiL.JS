@@ -15,10 +15,19 @@ namespace NiL.JS.Core
         private static readonly NiL.JS.Core.BaseTypes.Boolean boolean = new BaseTypes.Boolean();
 
         private MethodBase info;
+        private Func<JSObject[], object> @delegate = null;
 
         public MethodProxy(MethodBase methodinfo)
         {
             info = methodinfo;
+            if (info is MethodInfo && methodinfo.IsStatic)
+            {
+                var mi = info as MethodInfo;
+                if (mi.ReturnType.IsSubclassOf(typeof(object))
+                    && info.GetParameters().Length == 1
+                    && info.GetParameters()[0].ParameterType == typeof(JSObject[]))
+                    this.@delegate = (Func<JSObject[], object>)Delegate.CreateDelegate(typeof(Func<JSObject[], object>), mi);
+            }
         }
 
         private static object[] convertArray(NiL.JS.Core.BaseTypes.Array array)
@@ -30,6 +39,15 @@ namespace NiL.JS.Core
                 arg[j] = temp is NiL.JS.Core.BaseTypes.Array ? convertArray(temp as NiL.JS.Core.BaseTypes.Array) : temp;
             }
             return arg;
+        }
+
+        private static JSObject[] argumentsToArray(JSObject source)
+        {
+            var len = source.GetField("length", true, false).iValue;
+            var res = new JSObject[len];
+            for (int i = 0; i < len; i++)
+                res[i] = source.GetField(i.ToString(), true, true);
+            return res;
         }
 
         private static object[] convertArgs(JSObject source, ParameterInfo[] targetTypes)
@@ -150,7 +168,7 @@ namespace NiL.JS.Core
                 return null;
             object obj = _this;
             if (obj == null)
-                throw new JSException(TypeProxy.Proxy(new TypeError("Try to call method for incompatible receiver.")));
+                return JSObject.undefined;//throw new JSException(TypeProxy.Proxy(new TypeError("Try to call method for incompatible receiver.")));
             if (obj is EmbeddedType)
                 return obj;
             var objasjso = obj as JSObject;
@@ -178,7 +196,11 @@ namespace NiL.JS.Core
         {
             try
             {
-                var res = info.Invoke(getTargetObject(thisOverride ?? context.thisBind, info.DeclaringType), convertArgs(args, info.GetParameters()));
+                object res = null;
+                if (@delegate != null)
+                    res = @delegate(argumentsToArray(args));
+                else
+                    res = info.Invoke(getTargetObject(thisOverride ?? context.thisBind, info.DeclaringType), convertArgs(args, info.GetParameters()));
                 return TypeProxy.Proxy(res);
             }
             catch (TargetException e)
@@ -229,6 +251,19 @@ namespace NiL.JS.Core
         public override string ToString()
         {
             return "function " + info.Name + "(){ [native code] }";
+        }
+
+        public override JSObject call(JSObject args)
+        {
+            var newThis = args.GetField("0", true, false);
+            var prmlen = --args.GetField("length", true, false).iValue;
+            for (int i = 0; i < prmlen; i++)
+                args.fields[i.ToString()] = args.GetField((i + 1).ToString(), true, false);
+            args.fields.Remove(prmlen.ToString());
+            if (newThis.ValueType < JSObjectType.Object || newThis.oValue != null || (info.DeclaringType == typeof(JSObject)))
+                return Invoke(newThis, args);
+            else
+                return Invoke(Context.currentRootContext.thisBind ?? Context.currentRootContext.GetOwnField("this"), args);
         }
     }
 }

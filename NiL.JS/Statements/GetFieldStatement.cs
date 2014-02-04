@@ -35,15 +35,17 @@ namespace NiL.JS.Statements
 
         private JSObject impl(Context context, bool callProp)
         {
-            var n = fieldNameStatement.Invoke(context);
-            if (n.ValueType == JSObjectType.NotExist)
-                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible not defined.")));
             var th = objStatement.Invoke(context);
             if (th.ValueType == JSObjectType.NotExist)
                 throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible not defined.")));
+
+            var n = fieldNameStatement.Invoke(context);
+            if (n.ValueType == JSObjectType.NotExist)
+                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible not defined.")));
+
             if (context.updateThisBind)
                 context.thisBind = th;
-            var res = th.GetField(n.ToPrimitiveValue_String_Value().Value.ToString(), false, false);
+            var res = th.GetField(n.ToPrimitiveValue_String_Value().Value.ToString(), callProp, false);
             if (callProp && res.ValueType == JSObjectType.Property)
                 res = (res.oValue as Function[])[1].Invoke(th, null);
             return res;

@@ -51,11 +51,11 @@ namespace NiL.JS.Statements.Operators
                 context.updateThisBind = outb;
                 context.thisBind = otb;
             }
+            if (context.strict)
+                Tools.RaiseIfNotExist(field);
             var t = second.Invoke(context);
             if (t.ValueType == JSObjectType.NotExist)
                 throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible is not defined.")));
-            if (context.strict)
-                Tools.RaiseIfNotExist(field);
             field.Assign(t);
             return t;
         }

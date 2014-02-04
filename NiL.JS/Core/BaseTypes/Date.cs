@@ -49,19 +49,20 @@ namespace NiL.JS.Core.BaseTypes
                 }
                 else
                 {
-                    int y = Tools.JSObjectToInt(args.GetField("0", true, false));
-                    int m = Tools.JSObjectToInt(args.GetField("1", true, false));
-                    int d = Tools.JSObjectToInt(args.GetField("2", true, false));
-                    int h = Tools.JSObjectToInt(args.GetField("3", true, false));
-                    int n = Tools.JSObjectToInt(args.GetField("4", true, false));
-                    int s = Tools.JSObjectToInt(args.GetField("5", true, false));
+                    int y = Tools.JSObjectToInt(args.GetField("0", true, false), 1);
+                    int m = Tools.JSObjectToInt(args.GetField("1", true, false), 0) + 1;
+                    int d = Tools.JSObjectToInt(args.GetField("2", true, false), 1);
+                    int h = Tools.JSObjectToInt(args.GetField("3", true, false), 0);
+                    int n = Tools.JSObjectToInt(args.GetField("4", true, false), 0);
+                    int s = Tools.JSObjectToInt(args.GetField("5", true, false), 0);
                     host = new System.DateTime();
                     host = host.AddYears(y - host.Year);
                     host = host.AddMonths(m - host.Month);
                     host = host.AddDays(d - host.Day);
-                    host = host.AddHours(y - host.Hour);
-                    host = host.AddMinutes(m - host.Minute);
-                    host = host.AddSeconds(d - host.Second);
+                    host = host.AddHours(h - host.Hour);
+                    host = host.AddMinutes(n - host.Minute);
+                    host = host.AddSeconds(s - host.Second);
+                    string test = host.ToLongDateString();
                 }
             }
             catch
@@ -103,12 +104,12 @@ namespace NiL.JS.Core.BaseTypes
 
         public int getMonth()
         {
-            return host.Month;
+            return host.Month - 1;
         }
 
         public int getUTCMonth()
         {
-            return host.Month;
+            return host.Month - 1;
         }
 
         public int getDate()

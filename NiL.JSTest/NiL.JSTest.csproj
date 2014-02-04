@@ -1235,7 +1235,6 @@
     <Content Include="tests\Conformance\11_Expressions\11.14_Comma_Operator\S11.14_A2.1_T3.js" />
     <Content Include="tests\Conformance\11_Expressions\11.14_Comma_Operator\S11.14_A3.js" />
     <Content Include="tests\Conformance\11_Expressions\11.1_Primary_Expressions\11.1.1_The_this_Keyword\S11.1.1_A1.js" />
-    <Content Include="tests\Conformance\11_Expressions\11.1_Primary_Expressions\11.1.1_The_this_Keyword\S11.1.1_A2.js" />
     <Content Include="tests\Conformance\11_Expressions\11.1_Primary_Expressions\11.1.1_The_this_Keyword\S11.1.1_A3.1.js" />
     <Content Include="tests\Conformance\11_Expressions\11.1_Primary_Expressions\11.1.1_The_this_Keyword\S11.1.1_A3.2.js" />
     <Content Include="tests\Conformance\11_Expressions\11.1_Primary_Expressions\11.1.1_The_this_Keyword\S11.1.1_A4.1.js" />
