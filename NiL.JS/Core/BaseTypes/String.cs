@@ -347,12 +347,14 @@ namespace NiL.JS.Core.BaseTypes
             return this;
         }
 
-        private static readonly Number _length = new Number(0) { attributes = ObjectAttributes.ReadOnly | ObjectAttributes.DontDelete | ObjectAttributes.DontEnum };
+        private Number _length = null;// new Number(0) { attributes = ObjectAttributes.ReadOnly | ObjectAttributes.DontDelete | ObjectAttributes.DontEnum };
 
         public JSObject length
         {
             get
             {
+                if (_length == null)
+                    _length = new Number(0) { attributes = ObjectAttributes.ReadOnly | ObjectAttributes.DontDelete | ObjectAttributes.DontEnum };
                 _length.iValue = (oValue as string).Length;
                 return _length;
             }

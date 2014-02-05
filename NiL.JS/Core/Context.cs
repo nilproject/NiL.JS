@@ -16,7 +16,23 @@ namespace NiL.JS.Core
 
     public class Context
     {
-        internal static Context currentRootContext = null;
+        private static Dictionary<int, Context> _executedContexts = new Dictionary<int, Context>();
+        internal static Context currentRootContext
+        {
+            get
+            {
+                Context res = null;
+                _executedContexts.TryGetValue(System.Threading.Thread.CurrentThread.ManagedThreadId, out res);
+                return res;
+            }
+            set
+            {
+                if (value == null)
+                    _executedContexts.Remove(System.Threading.Thread.CurrentThread.ManagedThreadId);
+                else
+                    _executedContexts.Add(System.Threading.Thread.CurrentThread.ManagedThreadId, value);
+            }
+        }
         internal readonly static Context globalContext = new Context();
         public static Context GlobalContext { get { return globalContext; } }
         public static CallableField Eval { get; private set; }
@@ -25,12 +41,7 @@ namespace NiL.JS.Core
         {
             if (globalContext.fields != null)
                 globalContext.fields.Clear();
-            JSObject.number.prototype = null;
-            JSObject.@string.prototype = null;
-            JSObject.boolean.prototype = null;
-            MethodProxy.number.prototype = null;
-            MethodProxy.@string.prototype = null;
-            MethodProxy.boolean.prototype = null;
+            ThisObject.thisProto = null;
             JSObject.GlobalPrototype = null;
             TypeProxy.Clear();
             globalContext.GetOwnField("Object").Assign(TypeProxy.GetConstructor(typeof(JSObject)));

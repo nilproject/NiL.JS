@@ -47,8 +47,11 @@ namespace NiL.JS.Core
             TypeProxy prot = null;
             if (!prototypes.TryGetValue(type, out prot))
             {
-                new TypeProxy(type);
-                prot = prototypes[type];
+                lock (prototypes)
+                {
+                    new TypeProxy(type);
+                    prot = prototypes[type];
+                }
             }
             return prot;
         }
@@ -58,8 +61,11 @@ namespace NiL.JS.Core
             JSObject constructor = null;
             if (!constructors.TryGetValue(type, out constructor))
             {
-                new TypeProxy(type);
-                constructor = constructors[type];
+                lock (prototypes)
+                {
+                    new TypeProxy(type);
+                    constructor = constructors[type];
+                }
             }
             return constructor;
         }

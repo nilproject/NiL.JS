@@ -100,8 +100,8 @@ namespace NiL.JS.Core.BaseTypes
             data.Add(obj);
         }
 
-        private static int lastReqIndex;
-        private static JSObject tempElement;
+        private int lastReqIndex;
+        private JSObject tempElement;
 
         public JSObject this[int index]
         {

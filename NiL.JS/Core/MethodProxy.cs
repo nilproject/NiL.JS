@@ -6,9 +6,9 @@ namespace NiL.JS.Core
 {
     internal class MethodProxy : BaseTypes.Function
     {
-        internal static readonly new NiL.JS.Core.BaseTypes.String @string = new BaseTypes.String();
-        internal static readonly new NiL.JS.Core.BaseTypes.Number number = new Number();
-        internal static readonly new NiL.JS.Core.BaseTypes.Boolean boolean = new BaseTypes.Boolean();
+        private new NiL.JS.Core.BaseTypes.String @string;// = new BaseTypes.String();
+        private new NiL.JS.Core.BaseTypes.Number number;// = new Number();
+        private new NiL.JS.Core.BaseTypes.Boolean boolean;// = new BaseTypes.Boolean();
 
         private MethodBase info;
         private Func<JSObject[], object> @delegate = null;
@@ -46,7 +46,7 @@ namespace NiL.JS.Core
             return res;
         }
 
-        private static object[] convertArgs(JSObject source, ParameterInfo[] targetTypes)
+        private object[] convertArgs(JSObject source, ParameterInfo[] targetTypes)
         {
             if (targetTypes.Length == 0)
                 return null;
@@ -100,7 +100,7 @@ namespace NiL.JS.Core
             return res;
         }
 
-        private static JSObject embeddedTypeConvert(JSObject source, Type targetType)
+        private JSObject embeddedTypeConvert(JSObject source, Type targetType)
         {
             if (source.GetType() == targetType)
                 return source;
@@ -112,6 +112,8 @@ namespace NiL.JS.Core
                     {
                         if (typeof(BaseTypes.Number) != targetType && !typeof(BaseTypes.Number).IsSubclassOf(targetType))
                             return null;
+                        if (number == null)
+                            number = new Number();
                         number.iValue = source.iValue;
                         number.dValue = source.dValue;
                         number.ValueType = source.ValueType;
@@ -121,6 +123,8 @@ namespace NiL.JS.Core
                     {
                         if (typeof(BaseTypes.String) != targetType && !typeof(BaseTypes.String).IsSubclassOf(targetType))
                             return null;
+                        if (@string == null)
+                            @string = new BaseTypes.String();
                         @string.oValue = source.oValue;
                         return @string;
                     }
@@ -128,6 +132,8 @@ namespace NiL.JS.Core
                     {
                         if (typeof(BaseTypes.Boolean) != targetType && !typeof(BaseTypes.Boolean).IsSubclassOf(targetType))
                             return null;
+                        if (boolean == null)
+                            boolean = new BaseTypes.Boolean();
                         boolean.iValue = source.iValue;
                         return boolean;
                     }

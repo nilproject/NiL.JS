@@ -37,9 +37,7 @@ namespace NiL.JS.Core
 
     public class JSObject : IEnumerable<string>, IEnumerable, ICloneable
     {
-        internal static readonly NiL.JS.Core.BaseTypes.String @string = new BaseTypes.String();
-        internal static readonly NiL.JS.Core.BaseTypes.Number number = new Number();
-        internal static readonly NiL.JS.Core.BaseTypes.Boolean boolean = new BaseTypes.Boolean();
+        private NiL.JS.Core.BaseTypes.String @string;
 
         [Modules.Hidden]
         internal static readonly Action ErrorAssignCallback = () => { throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Invalid left-hand side"))); };
@@ -154,6 +152,8 @@ namespace NiL.JS.Core
                     }
                 case JSObjectType.String:
                     {
+                        if (@string == null)
+                            @string = new BaseTypes.String();
                         @string.oValue = oValue;
                         return @string.GetField(name, fast, own);
                     }

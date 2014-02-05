@@ -6,13 +6,13 @@ namespace NiL.JS.Core
 {
     internal sealed class ThisObject : JSObject
     {
-        private readonly static JSObject thisProto;
+        internal static JSObject thisProto;
 
-        static ThisObject()
+        private static JSObject createThisProto()
         {
-            thisProto = JSObject.GlobalPrototype;
-            thisProto = new JSObject(false) { ValueType = JSObjectType.Object, oValue = new object(), prototype = thisProto };
+            thisProto = new JSObject(false) { ValueType = JSObjectType.Object, oValue = new object(), prototype = JSObject.GlobalPrototype };
             thisProto.attributes |= ObjectAttributes.ReadOnly | ObjectAttributes.Immutable | ObjectAttributes.DontEnum | ObjectAttributes.DontDelete;
+            return thisProto;
         }
 
         private Context context;
@@ -24,7 +24,7 @@ namespace NiL.JS.Core
             fields = context.fields;
             ValueType = JSObjectType.Object;
             oValue = this;
-            prototype = thisProto;
+            prototype = thisProto ?? createThisProto();
             assignCallback = () => { throw new InvalidOperationException("Invalid left-hand side in assignment"); };
         }
 

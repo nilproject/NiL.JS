@@ -67,7 +67,7 @@ namespace NiL.JS.Statements
 
     internal class OperatorStatement : Statement, IOptimizable
     {
-        private static readonly JSObject tempResult = new JSObject() { assignCallback = JSObject.ErrorAssignCallback, attributes = ObjectAttributes.DontDelete };
+        private readonly JSObject tempResult = new JSObject() { assignCallback = JSObject.ErrorAssignCallback, attributes = ObjectAttributes.DontDelete };
 
         private Statement fastImpl;
 

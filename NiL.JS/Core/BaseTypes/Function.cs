@@ -691,7 +691,7 @@ namespace NiL.JS.Core.BaseTypes
             ValueType = JSObjectType.Function;
         }
 
-        internal static readonly Number _length = new Number(0) { attributes = ObjectAttributes.ReadOnly | ObjectAttributes.DontDelete | ObjectAttributes.DontEnum };
+        internal readonly Number _length = new Number(0) { attributes = ObjectAttributes.ReadOnly | ObjectAttributes.DontDelete | ObjectAttributes.DontEnum };
 
         public virtual JSObject length
         {

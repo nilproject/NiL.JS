@@ -6,7 +6,7 @@ namespace NiL.JS.Core.BaseTypes
     public class Date
     {
         [Hidden]
-        private readonly static String tempSResult = "";
+        private readonly String tempSResult = "";
 
         [Hidden]
         private readonly static long UTCBase = new DateTime(1970, 1, 1).Ticks;

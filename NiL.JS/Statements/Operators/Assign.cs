@@ -5,10 +5,11 @@ namespace NiL.JS.Statements.Operators
 {
     internal class Assign : Operator
     {
-        private static JSObject setterArgs = new JSObject(true) { ValueType = JSObjectType.Object, oValue = "[object Arguments]" };
-        private static JSObject setterArg = new JSObject();
+        private JSObject setterArgs = new JSObject(true) { ValueType = JSObjectType.Object, oValue = "[object Arguments]" };
+        private JSObject setterArg = new JSObject();
 
-        static Assign()
+        public Assign(Statement first, Statement second)
+            : base(first, second)
         {
             setterArgs.fields["length"] = new JSObject()
             {
@@ -17,11 +18,6 @@ namespace NiL.JS.Statements.Operators
                 attributes = ObjectAttributes.DontEnum | ObjectAttributes.DontDelete | ObjectAttributes.ReadOnly
             };
             setterArgs.fields["0"] = setterArg;
-        }
-
-        public Assign(Statement first, Statement second)
-            : base(first, second)
-        {
         }
 
         public override JSObject Invoke(Context context)
