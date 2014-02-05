@@ -28,7 +28,7 @@ namespace NiL.JS
 
         public void Invoke()
         {
-            lock (Context.globalContext)
+            //lock (Context.globalContext)
             {
                 var lm = System.Runtime.GCSettings.LatencyMode;
                 System.Runtime.GCSettings.LatencyMode = System.Runtime.GCLatencyMode.Interactive;
