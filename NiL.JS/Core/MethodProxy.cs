@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Reflection;
 using NiL.JS.Core.BaseTypes;
 
@@ -145,7 +141,7 @@ namespace NiL.JS.Core
                 return null;
             object obj = _this;
             if (obj == null)
-                return JSObject.undefined;//throw new JSException(TypeProxy.Proxy(new TypeError("Try to call method for incompatible receiver.")));
+                return JSObject.undefined;
             if (obj is EmbeddedType)
                 return obj;
             var objasjso = obj as JSObject;
