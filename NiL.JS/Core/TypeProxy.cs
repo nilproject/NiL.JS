@@ -152,6 +152,7 @@ namespace NiL.JS.Core
                 var cache = new Function[m.Length];
                 r = new CallableField((context, args) =>
                 {
+                    context.ValidateThreadID();
                     int l = args.GetField("length", true, false).iValue;
                     for (int i = 0; i < m.Length; i++)
                     {

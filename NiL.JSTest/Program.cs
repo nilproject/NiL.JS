@@ -109,6 +109,11 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * i + 3 - 2 / 2; }
                         pass = false;
                         return null;
                     }));
+                    s.Context.GetField("PRINT").Assign(new CallableField((t, x) =>
+                    {
+                        Console.WriteLine("PRINT: " + x.GetField("0", true, false).Value);
+                        return null;
+                    }));
                     s.Context.GetField("$PRINT").Assign(new CallableField((t, x) =>
                     {
                         Console.WriteLine("PRINT: " + x.GetField("0", true, false).Value);
@@ -151,7 +156,7 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * i + 3 - 2 / 2; }
                 else
                 {
                     _("Failed");
-                   failed++;
+                    failed++;
                 }
             }
 
@@ -199,9 +204,9 @@ console.log(utc);
         static void Main(string[] args)
         {
             typeof(System.Windows.Forms.Button).GetType();
-            NiL.JS.Core.Context.GlobalContext.GetOwnField("platform").Assign("NiL.JS");
-            NiL.JS.Core.Context.GlobalContext.GetOwnField("System").Assign(new SubspaceProvider("System"));
-            NiL.JS.Core.Context.GlobalContext.GetOwnField("load").Assign(new CallableField((context, eargs) =>
+            NiL.JS.Core.Context.GlobalContext.InitField("platform").Assign("NiL.JS");
+            NiL.JS.Core.Context.GlobalContext.InitField("System").Assign(new SubspaceProvider("System"));
+            NiL.JS.Core.Context.GlobalContext.InitField("load").Assign(new CallableField((context, eargs) =>
             {
                 var f = new FileStream("Benchmarks\\" + eargs.GetField("0", true, false).ToString(), FileMode.Open, FileAccess.Read);
                 var sr = new StreamReader(f);
@@ -209,9 +214,9 @@ console.log(utc);
                 return NiL.JS.Core.Context.Eval(context, eargs);
             }));
             //benchmark();
-            runFile(@"ftest.js");
+            //runFile(@"ftest.js");
             //runFile(@"Benchmarks\run.js");
-            //sputnicTests();
+            sputnicTests();
             //sputnicTests(@"tests\Conformance\15_Native_ECMA_Script_Objects\15.2_Object_Objects");
             //testEx();
 
@@ -222,6 +227,11 @@ console.log(utc);
             Console.WriteLine("GC.CollectionCount: " + GC.CollectionCount(2));
             Console.WriteLine("GC.MaxGeneration: " + GC.MaxGeneration);
             Console.WriteLine("GC.GetTotalMemory: " + GC.GetTotalMemory(false));
+            while (System.Windows.Forms.Application.OpenForms.Count != 0)
+            {
+                System.Threading.Thread.Sleep(1);
+                System.Windows.Forms.Application.DoEvents();
+            }
         }
     }
 }

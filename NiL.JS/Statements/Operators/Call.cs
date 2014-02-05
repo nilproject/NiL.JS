@@ -62,7 +62,7 @@ namespace NiL.JS.Statements.Operators
             field.ValueType = JSObjectType.Function;
             field.oValue = func;
             field.Protect();
-            field.attributes = ObjectAttributes.DontEnum;
+            field.attributes = ObjectAttributes.DontEnum;            
             return func.Invoke(context, newThisBind, arguments);
         }
 

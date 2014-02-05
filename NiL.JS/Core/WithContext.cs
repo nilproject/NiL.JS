@@ -18,9 +18,9 @@ namespace NiL.JS.Core
             @object = obj.Clone() as JSObject;
         }
 
-        public override JSObject GetOwnField(string name)
+        public override JSObject InitField(string name)
         {
-            return prototype.GetOwnField(name);
+            return prototype.InitField(name);
         }
 
         public override JSObject GetField(string name)

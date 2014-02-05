@@ -4,7 +4,7 @@ using System;
 
 namespace NiL.JS.Core
 {
-    internal class ExternalFunction : Function
+    internal sealed class ExternalFunction : Function
     {
         private readonly CallableField del;
 
@@ -65,6 +65,8 @@ namespace NiL.JS.Core
         {
             get
             {
+                if (_length == null)
+                    _length = new Number(0) { attributes = ObjectAttributes.ReadOnly | ObjectAttributes.DontDelete | ObjectAttributes.DontEnum };
                 _length.iValue = 1;
                 return _length;
             }
@@ -72,6 +74,7 @@ namespace NiL.JS.Core
 
         public override JSObject Invoke(JSObject args)
         {
+            context.ValidateThreadID();
             var res = del(context, args);
             if (res == null)
                 return JSObject.Null;

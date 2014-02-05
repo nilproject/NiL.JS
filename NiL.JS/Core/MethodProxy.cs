@@ -4,11 +4,11 @@ using NiL.JS.Core.BaseTypes;
 
 namespace NiL.JS.Core
 {
-    internal class MethodProxy : BaseTypes.Function
+    internal class MethodProxy : Function
     {
-        private new NiL.JS.Core.BaseTypes.String @string;// = new BaseTypes.String();
-        private new NiL.JS.Core.BaseTypes.Number number;// = new Number();
-        private new NiL.JS.Core.BaseTypes.Boolean boolean;// = new BaseTypes.Boolean();
+        private NiL.JS.Core.BaseTypes.String @string;// = new BaseTypes.String();
+        private NiL.JS.Core.BaseTypes.Number number;// = new Number();
+        private NiL.JS.Core.BaseTypes.Boolean boolean;// = new BaseTypes.Boolean();
 
         private MethodBase info;
         private Func<JSObject[], object> @delegate = null;
@@ -166,6 +166,8 @@ namespace NiL.JS.Core
         {
             get
             {
+                if (_length == null)
+                    _length = new Number(0) { attributes = ObjectAttributes.ReadOnly | ObjectAttributes.DontDelete | ObjectAttributes.DontEnum };
                 _length.iValue = info.GetParameters().Length;
                 return _length;
             }
@@ -175,6 +177,7 @@ namespace NiL.JS.Core
         {
             try
             {
+                context.ValidateThreadID();
                 object res = null;
                 if (@delegate != null)
                     res = @delegate(argumentsToArray(args));
@@ -242,7 +245,7 @@ namespace NiL.JS.Core
             if (newThis.ValueType < JSObjectType.Object || newThis.oValue != null || (info.DeclaringType == typeof(JSObject)))
                 return Invoke(newThis, args);
             else
-                return Invoke(Context.currentRootContext.thisBind ?? Context.currentRootContext.GetOwnField("this"), args);
+                return Invoke(Context.thisBind ?? Context.GetField("this"), args);
         }
     }
 }

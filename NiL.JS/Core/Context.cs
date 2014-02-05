@@ -16,23 +16,28 @@ namespace NiL.JS.Core
 
     public class Context
     {
-        private static Dictionary<int, Context> _executedContexts = new Dictionary<int, Context>();
+        private static Dictionary<int, WeakReference> _executedContexts = new Dictionary<int, WeakReference>();
         internal static Context currentRootContext
         {
             get
             {
-                Context res = null;
-                _executedContexts.TryGetValue(System.Threading.Thread.CurrentThread.ManagedThreadId, out res);
-                return res;
+                WeakReference res = null;
+                if (_executedContexts.TryGetValue(System.Threading.Thread.CurrentThread.ManagedThreadId, out res))
+                    return res.Target as Context;
+                else
+                    return null;
             }
             set
             {
-                if (value == null)
-                    _executedContexts.Remove(System.Threading.Thread.CurrentThread.ManagedThreadId);
-                else
-                    _executedContexts.Add(System.Threading.Thread.CurrentThread.ManagedThreadId, value);
+                if (value != null)
+                    throw new InvalidOperationException();
+                var cc = currentRootContext;
+                GC.SuppressFinalize(cc);
+                cc.threadid = 0;
+                _executedContexts.Remove(System.Threading.Thread.CurrentThread.ManagedThreadId);
             }
         }
+
         internal readonly static Context globalContext = new Context();
         public static Context GlobalContext { get { return globalContext; } }
         public static CallableField Eval { get; private set; }
@@ -44,7 +49,7 @@ namespace NiL.JS.Core
             ThisObject.thisProto = null;
             JSObject.GlobalPrototype = null;
             TypeProxy.Clear();
-            globalContext.GetOwnField("Object").Assign(TypeProxy.GetConstructor(typeof(JSObject)));
+            globalContext.InitField("Object").Assign(TypeProxy.GetConstructor(typeof(JSObject)));
             JSObject.GlobalPrototype = TypeProxy.GetPrototype(typeof(JSObject));
             globalContext.AttachModule(typeof(BaseTypes.Date));
             globalContext.AttachModule(typeof(BaseTypes.Array));
@@ -64,7 +69,7 @@ namespace NiL.JS.Core
             globalContext.AttachModule(typeof(Modules.console));
 
             #region Base Function
-            globalContext.GetOwnField("eval").Assign(Eval = new CallableField((context, x) =>
+            globalContext.InitField("eval").Assign(Eval = new CallableField((context, x) =>
             {
                 int i = 0;
                 string c = "{" + Tools.RemoveComments(x.GetField("0", true, false).ToString()) + "}";
@@ -75,7 +80,7 @@ namespace NiL.JS.Core
                 var res = cb.Invoke(context);
                 return res;
             }));
-            globalContext.GetOwnField("isNaN").Assign(new CallableField((t, x) =>
+            globalContext.InitField("isNaN").Assign(new CallableField((t, x) =>
             {
                 var r = x.GetField("0", true, false);
                 if (r.ValueType == JSObjectType.Double)
@@ -92,34 +97,34 @@ namespace NiL.JS.Core
                 }
                 return true;
             }));
-            globalContext.GetOwnField("unescape").Assign(new CallableField((t, x) =>
+            globalContext.InitField("unescape").Assign(new CallableField((t, x) =>
             {
                 return System.Web.HttpUtility.HtmlDecode(x.GetField("0", true, false).ToString());
             }));
-            globalContext.GetOwnField("escape").Assign(new CallableField((t, x) =>
+            globalContext.InitField("escape").Assign(new CallableField((t, x) =>
             {
                 return System.Web.HttpUtility.HtmlEncode(x.GetField("0", true, false).ToString());
             }));
-            globalContext.GetOwnField("encodeURI").Assign(new CallableField((t, x) =>
+            globalContext.InitField("encodeURI").Assign(new CallableField((t, x) =>
             {
                 return System.Web.HttpServerUtility.UrlTokenEncode(System.Text.UTF8Encoding.Default.GetBytes(x.GetField("0", true, false).ToString()));
             }));
-            globalContext.GetOwnField("encodeURIComponent").Assign(globalContext.GetField("encodeURI"));
-            globalContext.GetOwnField("decodeURI").Assign(new CallableField((t, x) =>
+            globalContext.InitField("encodeURIComponent").Assign(globalContext.GetField("encodeURI"));
+            globalContext.InitField("decodeURI").Assign(new CallableField((t, x) =>
             {
                 return System.Text.UTF8Encoding.Default.GetString(System.Web.HttpServerUtility.UrlTokenDecode(x.GetField("0", true, false).ToString()));
             }));
-            globalContext.GetOwnField("decodeURIComponent").Assign(globalContext.GetField("decodeURI"));
-            globalContext.GetOwnField("isFinite").Assign(new CallableField((t, x) =>
+            globalContext.InitField("decodeURIComponent").Assign(globalContext.GetField("decodeURI"));
+            globalContext.InitField("isFinite").Assign(new CallableField((t, x) =>
             {
                 var d = Tools.JSObjectToDouble(x.GetField("0", true, false));
                 return !double.IsNaN(d) && !double.IsInfinity(d);
             }));
-            globalContext.GetOwnField("parseFloat").Assign(new CallableField((t, x) =>
+            globalContext.InitField("parseFloat").Assign(new CallableField((t, x) =>
             {
                 return Tools.JSObjectToDouble(x.GetField("0", true, false));
             }));
-            globalContext.GetOwnField("parseInt").Assign(new CallableField((t, x) =>
+            globalContext.InitField("parseInt").Assign(new CallableField((t, x) =>
             {
                 var r = x.GetField("0", true, false);
                 for (; ; )
@@ -180,6 +185,8 @@ namespace NiL.JS.Core
 
         protected readonly Context prototype;
 
+        private int threadid = 0;
+
         internal Dictionary<string, JSObject> fields;
         internal AbortType abort;
         internal bool updateThisBind;
@@ -214,51 +221,19 @@ namespace NiL.JS.Core
             };
             return res;
         }
-
-        public virtual JSObject GetOwnField(string name)
+        
+        public virtual JSObject InitField(string name)
         {
             if (name == "this")
-            {
-                var c = this;
-                if (thisBind == null)
-                {
-                    for (; ; )
-                    {
-                        if (c.prototype == globalContext)
-                        {
-                            thisBind = new ThisObject(c);
-                            c.thisBind = thisBind;
-                            break;
-                        }
-                        else
-                            c = c.prototype;
-                        if (c.thisBind != null)
-                            thisBind = c.thisBind;
-                    }
-                }
-                else if (thisBind.ValueType <= JSObjectType.Undefined) // было "delete this". Просто вернём к жизни существующий объект
-                    thisBind.ValueType = JSObjectType.Object;
-                return thisBind;
-            }
-            JSObject res;
+                return GetField(name);
             if (fields == null)
                 fields = new Dictionary<string, JSObject>();
+            JSObject res = null;
             if (!fields.TryGetValue(name, out res))
-            {
-                res = new JSObject();
-                res.attributes |= ObjectAttributes.DontDelete;
-                fields[name] = res;
-                GetVaribleStatement.ResetCache(name);
-            }
+                fields[name] = res = new JSObject();
+            Statements.GetVaribleStatement.ResetCache(name);
+            res.attributes |= ObjectAttributes.DontDelete;
             return res;
-        }
-
-        internal JSObject Assign(string name, JSObject value)
-        {
-            if (fields == null)
-                fields = new Dictionary<string, JSObject>();
-            fields[name] = value;
-            return value;
         }
 
         /// <summary>
@@ -321,6 +296,26 @@ namespace NiL.JS.Core
             if (fields == null)
                 fields = new Dictionary<string, JSObject>();
             fields.Add(moduleType.Name, TypeProxy.GetConstructor(moduleType));
+            Statements.GetVaribleStatement.ResetCache(moduleType.Name);
+            fields[moduleType.Name].attributes |= ObjectAttributes.DontDelete;
+        }
+
+        internal void ValidateThreadID()
+        {
+            if (threadid != System.Threading.Thread.CurrentThread.ManagedThreadId)
+            {
+                if (prototype != null && prototype != globalContext)
+                {
+                    prototype.ValidateThreadID();
+                }
+                else
+                {
+                    if (threadid != 0)
+                        _executedContexts.Remove(threadid);
+                    _executedContexts[threadid = System.Threading.Thread.CurrentThread.ManagedThreadId] = new WeakReference(this);
+                    GC.ReRegisterForFinalize(this);
+                }
+            }
         }
 
         internal Context(Context prototype)
@@ -328,6 +323,12 @@ namespace NiL.JS.Core
             this.prototype = prototype;
             this.thisBind = prototype.thisBind;
             this.abortInfo = JSObject.undefined;
+            GC.SuppressFinalize(this);
+        }
+
+        ~Context()
+        {
+            _executedContexts.Remove(threadid);
         }
     }
 }

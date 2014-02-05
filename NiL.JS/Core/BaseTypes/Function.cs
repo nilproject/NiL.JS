@@ -682,7 +682,7 @@ namespace NiL.JS.Core.BaseTypes
             }
         }
 
-        public Function(Context context, Statement body, string[] argumentsNames, string name)
+        internal Function(Context context, Statement body, string[] argumentsNames, string name)
         {
             this.context = context;
             this.argumentsNames = argumentsNames;
@@ -691,12 +691,14 @@ namespace NiL.JS.Core.BaseTypes
             ValueType = JSObjectType.Function;
         }
 
-        internal readonly Number _length = new Number(0) { attributes = ObjectAttributes.ReadOnly | ObjectAttributes.DontDelete | ObjectAttributes.DontEnum };
+        internal Number _length = null;
 
         public virtual JSObject length
         {
             get
             {
+                if (_length == null)
+                    _length = new Number(0) { attributes = ObjectAttributes.ReadOnly | ObjectAttributes.DontDelete | ObjectAttributes.DontEnum };
                 _length.iValue = argumentsNames.Length;
                 return _length;
             }
@@ -723,6 +725,7 @@ namespace NiL.JS.Core.BaseTypes
         [Hidden]
         public virtual JSObject Invoke(JSObject thisOverride, JSObject args)
         {
+            context.ValidateThreadID();
             var oldargs = _arguments;
             _arguments = args;
             try
@@ -739,15 +742,15 @@ namespace NiL.JS.Core.BaseTypes
                     };
                 }
                 internalContext.thisBind = @this;
-                internalContext.Assign("arguments", args);
+                internalContext.InitField("arguments").Assign(args ?? new JSObject(true) { ValueType = JSObjectType.Object, oValue = new object() });
                 if (!string.IsNullOrEmpty(Name))
-                    internalContext.GetOwnField(Name).Assign(this);
+                    internalContext.InitField(Name).Assign(this.Clone() as JSObject);
                 int i = 0;
                 int min = System.Math.Min(args == null ? 0 : args.GetField("length", true, false).iValue, argumentsNames.Length);
                 for (; i < min; i++)
-                    internalContext.GetOwnField(argumentsNames[i]).Assign(args.GetField(i.ToString(), true, false));
+                    internalContext.InitField(argumentsNames[i]).Assign(args.GetField(i.ToString(), true, false));
                 for (; i < argumentsNames.Length; i++)
-                    internalContext.GetOwnField(argumentsNames[i]).Assign(null);
+                    internalContext.InitField(argumentsNames[i]).Assign(new JSObject());
 
                 body.Invoke(internalContext);
                 return internalContext.abortInfo;
@@ -804,7 +807,7 @@ namespace NiL.JS.Core.BaseTypes
             if (newThis.ValueType < JSObjectType.Object || newThis.oValue != null)
                 return Invoke(newThis, args);
             else
-                return Invoke(Context.currentRootContext.thisBind ?? Context.currentRootContext.GetOwnField("this"), args);
+                return Invoke(Context.currentRootContext.thisBind ?? Context.currentRootContext.GetField("this"), args);
         }
     }
 }

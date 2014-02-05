@@ -84,14 +84,14 @@ namespace NiL.JS.Statements
         {
             context.strict |= strict;
             for (int i = varibles.Length - 1; i >= 0; i--)
-                context.GetOwnField(varibles[i]);
+                context.InitField(varibles[i]);
             for (int i = functions.Length - 1; i >= 0; i--)
             {
                 if (string.IsNullOrEmpty((functions[i] as FunctionStatement).Name))
                     throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.SyntaxError("Declarated function must have name.")));
-                var o = context.GetOwnField((functions[i] as FunctionStatement).Name);
-                o.assignCallback = null;
-                o.Assign(functions[i].Invoke(context));
+                var f = context.InitField((functions[i] as FunctionStatement).Name);
+                f.Assign(functions[i].Invoke(context));
+                f.assignCallback = null;
             }
             JSObject res = JSObject.undefined;
             for (int i = length; i >= 0; i--)

@@ -28,20 +28,17 @@ namespace NiL.JS
 
         public void Invoke()
         {
-            //lock (Context.globalContext)
+            var lm = System.Runtime.GCSettings.LatencyMode;
+            System.Runtime.GCSettings.LatencyMode = System.Runtime.GCLatencyMode.Interactive;
+            try
             {
-                var lm = System.Runtime.GCSettings.LatencyMode;
-                System.Runtime.GCSettings.LatencyMode = System.Runtime.GCLatencyMode.Interactive;
-                NiL.JS.Core.Context.currentRootContext = Context;
-                try
-                {
-                    root.Invoke(Context);
-                }
-                finally
-                {
-                    NiL.JS.Core.Context.currentRootContext = null;
-                    System.Runtime.GCSettings.LatencyMode = lm;
-                }
+                Context.ValidateThreadID();
+                root.Invoke(Context);
+            }
+            finally
+            {
+                System.Runtime.GCSettings.LatencyMode = lm;
+                Context.currentRootContext = null;
             }
         }
     }

@@ -7,8 +7,8 @@ using NiL.JS.Core.BaseTypes;
 
 namespace NiL.JS.Core
 {
-    [Modules.Prototype(typeof(BaseTypes.Function))]
-    internal class TypeProxyConstructor : BaseTypes.Function
+    [Modules.Prototype(typeof(Function))]
+    internal sealed class TypeProxyConstructor : Function
     {
         internal readonly TypeProxy proxy;
 
@@ -86,6 +86,8 @@ namespace NiL.JS.Core
         {
             get
             {
+                if (_length == null)
+                    _length = new Number(0) { attributes = ObjectAttributes.ReadOnly | ObjectAttributes.DontDelete | ObjectAttributes.DontEnum };
                 if (proxy.hostedType == typeof(Function))
                     _length.iValue = 1;
                 else
@@ -172,6 +174,7 @@ namespace NiL.JS.Core
 
         public override JSObject Invoke(JSObject argsObj)
         {
+            context.ValidateThreadID();
             var thisBind = context.thisBind;
             object[] args = null;
             ConstructorInfo constructor = findConstructor(argsObj, ref args);
