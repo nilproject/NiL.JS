@@ -192,10 +192,7 @@ namespace NiL.JS.Core
                 JSObject res = null;
                 if (bynew)
                 {
-                    if (obj is EmbeddedType)
-                        _this.oValue = (obj as JSObject).oValue;
-                    else
-                        _this.oValue = obj;
+                    _this.oValue = obj;
                     if (obj is BaseTypes.Date)
                         _this.ValueType = JSObjectType.Date;
                     else if (obj is JSObject)

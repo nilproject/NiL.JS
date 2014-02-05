@@ -37,6 +37,10 @@ namespace NiL.JS.Core
 
     public class JSObject : IEnumerable<string>, IEnumerable, ICloneable
     {
+        internal static readonly NiL.JS.Core.BaseTypes.String @string = new BaseTypes.String();
+        internal static readonly NiL.JS.Core.BaseTypes.Number number = new Number();
+        internal static readonly NiL.JS.Core.BaseTypes.Boolean boolean = new BaseTypes.Boolean();
+
         [Modules.Hidden]
         internal static readonly Action ErrorAssignCallback = () => { throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Invalid left-hand side"))); };
         [Modules.Hidden]
@@ -48,7 +52,7 @@ namespace NiL.JS.Core
         [Modules.Hidden]
         internal static readonly JSObject nullString = new JSObject() { ValueType = JSObjectType.String, oValue = "null", assignCallback = ErrorAssignCallback, attributes = ObjectAttributes.DontDelete | ObjectAttributes.DontEnum };
         [Modules.Hidden]
-        internal static JSObject Prototype;
+        internal static JSObject GlobalPrototype;
 
         static JSObject()
         {
@@ -126,19 +130,11 @@ namespace NiL.JS.Core
             if (oVal is JSObject)
                 prototype = (oVal as JSObject).GetField("__proto__", true, true);
             else
-                prototype = Prototype;
+                prototype = GlobalPrototype;
         }
 
         [Modules.Hidden]
         public virtual JSObject GetField(string name, bool fast, bool own)
-        {
-            if (ValueType >= JSObjectType.Object && (oValue is JSObject) && ((oValue as JSObject).ValueType >= JSObjectType.Object))
-                return (oValue as JSObject).GetField(name, fast, own);
-            return DefaultFieldGetter(name, fast, own);
-        }
-
-        [Modules.Hidden]
-        protected JSObject DefaultFieldGetter(string name, bool fast, bool own)
         {
             if ((attributes & ObjectAttributes.Immutable) != 0)
                 fast = true;
@@ -152,28 +148,18 @@ namespace NiL.JS.Core
                 case JSObjectType.Int:
                 case JSObjectType.Double:
                     {
-                        if (this is TypeProxy)
-                            prototype = JSObject.Prototype;
-                        else
-                            prototype = TypeProxy.GetPrototype(typeof(Number));
+                        prototype = TypeProxy.GetPrototype(typeof(Number));
                         fast = true;
                         break;
                     }
                 case JSObjectType.String:
                     {
-                        if (this is TypeProxy)
-                            prototype = JSObject.Prototype;
-                        else
-                            prototype = TypeProxy.GetPrototype(typeof(NiL.JS.Core.BaseTypes.String));
-                        fast = true;
-                        break;
+                        @string.oValue = oValue;
+                        return @string.GetField(name, fast, own);
                     }
                 case JSObjectType.Bool:
                     {
-                        if (this is TypeProxy)
-                            prototype = JSObject.Prototype;
-                        else
-                            prototype = TypeProxy.GetPrototype(typeof(NiL.JS.Core.BaseTypes.Boolean));
+                        prototype = TypeProxy.GetPrototype(typeof(BaseTypes.Boolean));
                         fast = true;
                         break;
                     }
@@ -181,26 +167,27 @@ namespace NiL.JS.Core
                 case JSObjectType.Object:
                 case JSObjectType.Property:
                     {
+                        if ((oValue is JSObject) && ((oValue as JSObject).ValueType >= JSObjectType.Object))
+                            return (oValue as JSObject).GetField(name, fast, own);
                         if (oValue == null)
                             throw new JSException(TypeProxy.Proxy(new TypeError("Can't access to property value of \"null\"")));
                         break;
                     }
                 case JSObjectType.Function:
                     {
-                        if (prototype == null)
-                        {
-                            if (this is TypeProxy)
-                                prototype = JSObject.Prototype;
-                            else
-                                prototype = TypeProxy.GetPrototype(typeof(NiL.JS.Core.BaseTypes.Function)).Clone() as JSObject;
-                        }
                         if (oValue == null)
                             throw new JSException(TypeProxy.Proxy(new TypeError("Can't access to property value of \"null\"")));
-                        break;
+                        return (oValue as JSObject).GetField(name, false, own);
                     }
                 default:
                     throw new NotImplementedException();
             }
+            return DefaultFieldGetter(name, fast, own);
+        }
+
+        [Modules.Hidden]
+        protected JSObject DefaultFieldGetter(string name, bool fast, bool own)
+        {            
             switch (name)
             {
                 case "__proto__": 
@@ -522,13 +509,14 @@ namespace NiL.JS.Core
             o.iValue = 0;
             if (c.ValueType >= JSObjectType.Object && c.oValue != null)
             {
-                bool tpmode = c.oValue is TypeProxy;
-                Type type = null;
-                if (tpmode)
-                    type = (c.oValue as TypeProxy).hostedType;
                 while (a.ValueType >= JSObjectType.Object && a.oValue != null)
                 {
-                    if (a.oValue == c.oValue || (tpmode && a.oValue is TypeProxy && (a.oValue as TypeProxy).hostedType == type))
+                    if (a.oValue == c.oValue)
+                    {
+                        o.iValue = 1;
+                        return o;
+                    }
+                    if ((a.oValue is TypeProxy) && (a.oValue as TypeProxy).prototypeInstance == this)
                     {
                         o.iValue = 1;
                         return o;

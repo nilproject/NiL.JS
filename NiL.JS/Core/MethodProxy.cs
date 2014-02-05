@@ -10,9 +10,9 @@ namespace NiL.JS.Core
 {
     internal class MethodProxy : BaseTypes.Function
     {
-        private static readonly NiL.JS.Core.BaseTypes.String @string = new BaseTypes.String();
-        private static readonly NiL.JS.Core.BaseTypes.Number number = new Number();
-        private static readonly NiL.JS.Core.BaseTypes.Boolean boolean = new BaseTypes.Boolean();
+        internal static readonly new NiL.JS.Core.BaseTypes.String @string = new BaseTypes.String();
+        internal static readonly new NiL.JS.Core.BaseTypes.Number number = new Number();
+        internal static readonly new NiL.JS.Core.BaseTypes.Boolean boolean = new BaseTypes.Boolean();
 
         private MethodBase info;
         private Func<JSObject[], object> @delegate = null;
@@ -108,56 +108,33 @@ namespace NiL.JS.Core
         {
             if (source.GetType() == targetType)
                 return source;
-            if (targetType == typeof(Number))
+            
+            switch (source.ValueType)
             {
-                if (source.ValueType != JSObjectType.Int && source.ValueType != JSObjectType.Double)
-                    return null;
-                number.iValue = source.iValue;
-                number.dValue = source.dValue;
-                number.ValueType = source.ValueType;
-                return number;
-            }
-            else if (targetType == typeof(NiL.JS.Core.BaseTypes.String))
-            {
-                if (source.ValueType != JSObjectType.String)
-                    return null;
-                @string.oValue = source.oValue;
-                return @string;
-            }
-            else if (targetType == typeof(NiL.JS.Core.BaseTypes.Boolean))
-            {
-                if (source.ValueType != JSObjectType.Bool)
-                    return null;
-                boolean.iValue = source.iValue;
-                return boolean;
-            }
-            else if (targetType == typeof(NiL.JS.Core.EmbeddedType))
-            {
-                switch (source.ValueType)
-                {
-                    case JSObjectType.Double:
-                    case JSObjectType.Int:
-                        {
-                            number.iValue = source.iValue;
-                            number.dValue = source.dValue;
-                            number.ValueType = source.ValueType;
-                            return number;
-                        }
-                    case JSObjectType.String:
-                        {
-                            if (source.ValueType != JSObjectType.String)
-                                return null;
-                            @string.oValue = source.oValue;
-                            return @string;
-                        }
-                    case JSObjectType.Bool:
-                        {
-                            if (source.ValueType != JSObjectType.Bool)
-                                return null;
-                            boolean.iValue = source.iValue;
-                            return boolean;
-                        }
-                }
+                case JSObjectType.Int:
+                case JSObjectType.Double:
+                    {
+                        if (typeof(BaseTypes.Number) != targetType && !typeof(BaseTypes.Number).IsSubclassOf(targetType))
+                            return null;
+                        number.iValue = source.iValue;
+                        number.dValue = source.dValue;
+                        number.ValueType = source.ValueType;
+                        return number;
+                    }
+                case JSObjectType.String:
+                    {
+                        if (typeof(BaseTypes.String) != targetType && !typeof(BaseTypes.String).IsSubclassOf(targetType))
+                            return null;
+                        @string.oValue = source.oValue;
+                        return @string;
+                    }
+                case JSObjectType.Bool:
+                    {
+                        if (typeof(BaseTypes.Boolean) != targetType && !typeof(BaseTypes.Boolean).IsSubclassOf(targetType))
+                            return null;
+                        boolean.iValue = source.iValue;
+                        return boolean;
+                    }
             }
             return null;
         }

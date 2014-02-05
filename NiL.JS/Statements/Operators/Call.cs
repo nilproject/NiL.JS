@@ -57,7 +57,7 @@ namespace NiL.JS.Statements.Operators
                 //a.Assign(Tools.RaiseIfNotExist(args[i].Invoke(context)));
                 arguments.fields[i.ToString()] = Tools.RaiseIfNotExist(args[i].Invoke(context)).Clone() as JSObject;
             }
-            arguments.prototype = JSObject.Prototype;
+            arguments.prototype = JSObject.GlobalPrototype;
             arguments.fields["callee"] = field = new JSObject();
             field.ValueType = JSObjectType.Function;
             field.oValue = func;

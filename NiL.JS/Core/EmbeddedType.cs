@@ -10,7 +10,6 @@ namespace NiL.JS.Core
     {
         protected EmbeddedType()
         {
-            prototype = TypeProxy.GetPrototype(this.GetType());
             ValueType = JSObjectType.Object;
             oValue = this;
         }
@@ -30,16 +29,8 @@ namespace NiL.JS.Core
 
         public override JSObject GetField(string name, bool fast, bool own)
         {
-            switch (name)
-            {
-                case "__proto__":
-                    {
-                        if (prototype != null)
-                            return prototype;
-                        prototype = TypeProxy.GetPrototype(this.GetType());
-                        return prototype;
-                    }
-            }
+            if (prototype == null)
+                prototype = TypeProxy.GetPrototype(this.GetType());
             return DefaultFieldGetter(name, fast, false);
         }
 

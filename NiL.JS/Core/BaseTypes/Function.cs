@@ -652,8 +652,7 @@ namespace NiL.JS.Core.BaseTypes
                 return _arguments;
             }
         }
-        [Hidden]
-        private static JSObject Prototype;
+
         #endregion
 
         public Function()
@@ -663,12 +662,11 @@ namespace NiL.JS.Core.BaseTypes
             argumentsNames = new string[0];
             Name = "";
             ValueType = JSObjectType.Function;
-            prototype = TypeProxy.GetPrototype(typeof(Function));
         }
 
         public Function(JSObject args)
-            : this()
         {
+            context = Context.currentRootContext ?? Context.globalContext;
             var index = 0;
             int len = args.GetField("length", true, false).iValue - 1;
             var argn = "";
@@ -691,7 +689,6 @@ namespace NiL.JS.Core.BaseTypes
             this.body = body;
             Name = name;
             ValueType = JSObjectType.Function;
-            prototype = TypeProxy.GetPrototype(typeof(Function));
         }
 
         internal static readonly Number _length = new Number(0) { attributes = ObjectAttributes.ReadOnly | ObjectAttributes.DontDelete | ObjectAttributes.DontEnum };
@@ -772,7 +769,7 @@ namespace NiL.JS.Core.BaseTypes
                     {
                         oValue = new object(),
                         ValueType = JSObjectType.Object,
-                        prototype = JSObject.Prototype,
+                        prototype = JSObject.GlobalPrototype,
                         attributes = ObjectAttributes.DontDelete | ObjectAttributes.DontEnum
                     };
                     var ctor = protorypeField.GetField("constructor", false, true);
@@ -781,6 +778,8 @@ namespace NiL.JS.Core.BaseTypes
                 }
                 return protorypeField;
             }
+            if (prototype == null)
+                prototype = TypeProxy.GetPrototype(typeof(Function));
             return DefaultFieldGetter(name, fast, own);
         }
 

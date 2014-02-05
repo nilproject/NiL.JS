@@ -46,7 +46,7 @@ namespace NiL.JS.Statements.Operators
             JSObject _this = new JSObject() { ValueType = JSObjectType.Object };
             _this.prototype = temp.GetField("prototype", true, false);
             if (_this.prototype.ValueType > JSObjectType.Undefined && _this.prototype.ValueType < JSObjectType.Object)
-                _this.prototype = JSObject.Prototype;
+                _this.prototype = JSObject.GlobalPrototype;
             else
                 if (_this.prototype.oValue == null)
                     throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.TypeError("Can't create object.")));

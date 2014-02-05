@@ -4,7 +4,7 @@ using NiL.JS.Core.Modules;
 namespace NiL.JS.Core.BaseTypes
 {
     [Immutable]
-    internal class String : JSObject
+    internal class String : EmbeddedType
     {
         [Hidden]
         private static readonly String result = new String();
@@ -342,21 +342,6 @@ namespace NiL.JS.Core.BaseTypes
             return (oValue as string).Trim();
         }
 
-        public override JSObject valueOf()
-        {
-            return base.valueOf();
-        }
-
-        public override JSObject toLocaleString()
-        {
-            return base.toLocaleString();
-        }
-
-        public override JSObject isPrototypeOf(JSObject args)
-        {
-            return base.isPrototypeOf(args);
-        }
-
         public override JSObject toString()
         {
             return this;
@@ -392,12 +377,14 @@ namespace NiL.JS.Core.BaseTypes
 
         public override JSObject GetField(string name, bool fast, bool own)
         {
+            if (prototype == null)
+                prototype = TypeProxy.GetPrototype(typeof(String));
             int index = 0;
             double dindex = 0.0;
             if (Tools.ParseNumber(name, ref index, false, out dindex) && ((index = (int)dindex) == dindex))
                 return this[index];
             else
-                return base.GetField(name, fast, own);
+                return DefaultFieldGetter(name, fast, false);
         }
 
         #region HTML Wraping

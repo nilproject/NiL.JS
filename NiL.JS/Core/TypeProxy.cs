@@ -80,7 +80,7 @@ namespace NiL.JS.Core
         private TypeProxy(Type type)
             : base(true)
         {
-            if (constructors.ContainsKey(type))
+            if (prototypes.ContainsKey(type))
                 throw new InvalidOperationException("Type \"" + type + "\" already proxied.");
             else
             {
@@ -128,7 +128,7 @@ namespace NiL.JS.Core
                 if (pa.Length != 0)
                     prototype = GetPrototype((pa[0] as PrototypeAttribute).PrototypeType).Clone() as JSObject;
                 else
-                    prototype = JSObject.Prototype;
+                    prototype = JSObject.GlobalPrototype ?? (typeof(JSObject) != type ? GetPrototype(typeof(JSObject)) : null);
             }
         }
 
@@ -158,7 +158,7 @@ namespace NiL.JS.Core
             }
             else
             {
-                if (m.Length == 0 || name == "GetType" || m[0].GetCustomAttributes(typeof(HiddenAttribute), true).Length != 0)
+                if (m.Length == 0 || name == "GetType" || m[0].GetCustomAttributes(typeof(HiddenAttribute), false).Length != 0)
                 {
                     switch (name)
                     {

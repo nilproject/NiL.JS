@@ -123,7 +123,7 @@ namespace NiL.JS.Statements
                 }
                 res.GetField(fields[i], false, true).Assign(val);
             }
-            res.prototype.Assign(JSObject.Prototype);
+            res.prototype.Assign(JSObject.GlobalPrototype);
             return res;
         }
 

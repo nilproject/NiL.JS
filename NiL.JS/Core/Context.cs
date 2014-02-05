@@ -25,10 +25,16 @@ namespace NiL.JS.Core
         {
             if (globalContext.fields != null)
                 globalContext.fields.Clear();
-            JSObject.Prototype = null;
+            JSObject.number.prototype = null;
+            JSObject.@string.prototype = null;
+            JSObject.boolean.prototype = null;
+            MethodProxy.number.prototype = null;
+            MethodProxy.@string.prototype = null;
+            MethodProxy.boolean.prototype = null;
+            JSObject.GlobalPrototype = null;
             TypeProxy.Clear();
             globalContext.GetOwnField("Object").Assign(TypeProxy.GetConstructor(typeof(JSObject)));
-            JSObject.Prototype = TypeProxy.GetPrototype(typeof(JSObject));
+            JSObject.GlobalPrototype = TypeProxy.GetPrototype(typeof(JSObject));
             globalContext.AttachModule(typeof(BaseTypes.Date));
             globalContext.AttachModule(typeof(BaseTypes.Array));
             globalContext.AttachModule(typeof(BaseTypes.String));
@@ -177,7 +183,7 @@ namespace NiL.JS.Core
         private JSObject define(string name)
         {
             JSObject res = null;
-            var baseProto = JSObject.Prototype;
+            var baseProto = JSObject.GlobalPrototype;
             if (baseProto != null)
             {
                 res = baseProto.GetField(name, true, true);

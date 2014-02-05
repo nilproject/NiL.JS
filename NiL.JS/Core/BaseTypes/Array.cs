@@ -5,7 +5,7 @@ using NiL.JS.Core.Modules;
 
 namespace NiL.JS.Core.BaseTypes
 {
-    internal class Array : EmbeddedType, IEnumerable<string>
+    internal class Array : EmbeddedType
     {
         private class Enumerator : IEnumerator<string>
         {
@@ -46,15 +46,11 @@ namespace NiL.JS.Core.BaseTypes
         private Array(List<JSObject> collection)
         {
             data = collection;
-            ValueType = JSObjectType.Object;
-            oValue = this;
         }
 
         public Array()
         {
             data = new List<JSObject>();
-            ValueType = JSObjectType.Object;
-            oValue = this;
         }
 
         public Array(int length)
@@ -62,8 +58,6 @@ namespace NiL.JS.Core.BaseTypes
             data = new List<JSObject>(length);
             for (int i = 0; i < length; i++)
                 data.Add(null);
-            ValueType = JSObjectType.Object;
-            oValue = this;
         }
 
         public Array(double d)
@@ -73,15 +67,11 @@ namespace NiL.JS.Core.BaseTypes
             data = new List<JSObject>(length);
             for (int i = 0; i < length; i++)
                 data.Add(null);
-            ValueType = JSObjectType.Object;
-            oValue = this;
         }
 
         public Array(object[] args)
         {
             data = new List<JSObject>(args.Length);
-            ValueType = JSObjectType.Object;
-            oValue = this;
             for (int i = 0; i < args.Length; i++)
             {
                 JSObject val;
