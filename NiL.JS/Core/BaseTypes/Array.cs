@@ -55,6 +55,8 @@ namespace NiL.JS.Core.BaseTypes
 
         public Array(int length)
         {
+            if (length < 0)
+                throw new JSException(TypeProxy.Proxy(new RangeError("Invalid array length.")));
             data = new List<JSObject>(length);
             for (int i = 0; i < length; i++)
                 data.Add(null);
@@ -62,11 +64,19 @@ namespace NiL.JS.Core.BaseTypes
 
         public Array(double d)
         {
-            if ((int)d != d)
-                throw new ArgumentException("Invalid array length");
-            data = new List<JSObject>(length);
-            for (int i = 0; i < length; i++)
+            if (((long)d != d) || (d < 0) || (d > 0xffffffff))
+                    throw new JSException(TypeProxy.Proxy(new RangeError("Invalid array length.")));
+#if x64
+            var len = (int)System.Math.Min((long)d, 0x7fffffff);
+            data = new List<JSObject>(len);
+            for (int i = 0; i < d; i++)
                 data.Add(null);
+#else
+            var len = (int)System.Math.Min((long)d, 0xffffff);
+            data = new List<JSObject>(len);
+            for (int i = 0; i < len; i++)
+                data.Add(null);
+#endif
         }
 
         public Array(object[] args)
@@ -448,7 +458,9 @@ namespace NiL.JS.Core.BaseTypes
 
         public override JSObject toString()
         {
-            return ToString();
+            if (this.GetType() != typeof(Array) && !this.GetType().IsSubclassOf(typeof(Array)))
+                throw new JSException(TypeProxy.Proxy(new TypeError("Try to call Array.toString on not Array object.")));
+            return this.ToString();
         }
 
         public override IEnumerator<string> GetEnumerator()
@@ -467,7 +479,7 @@ namespace NiL.JS.Core.BaseTypes
             }
             int index = 0;
             double dindex = 0.0;
-            if (Tools.ParseNumber(name, ref index, false, out dindex) && ((index = (int)dindex) == dindex))
+            if (Tools.ParseNumber(name, ref index, false, out dindex) && (dindex <= 0xffffff ) && ((index = (int)dindex) == dindex))
                 return this[index];
             else
                 return base.GetField(name, fast, own);

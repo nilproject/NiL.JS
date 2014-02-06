@@ -304,8 +304,11 @@ namespace NiL.JS.Core
                 }
                 return TypeProxy.Proxy(res);
             }
-            catch (TargetException e)
+            catch (Exception e)
             {
+                var st = e.StackTrace;
+                while (e.InnerException != null)
+                    e = e.InnerException;
                 throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError(e.Message)));
             }
         }

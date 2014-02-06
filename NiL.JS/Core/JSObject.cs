@@ -108,15 +108,26 @@ namespace NiL.JS.Core
             object oVal = null;
             if (args != null && args.GetField("length", true, false).iValue > 0)
                 oVal = args.GetField("0", true, false);
+            JSObject res = null;
             if ((oVal == null) ||
                 (oVal is JSObject && (((oVal as JSObject).ValueType >= JSObjectType.Object && (oVal as JSObject).oValue == null) || (oVal as JSObject).ValueType <= JSObjectType.Undefined)))
-                oVal = new object();
+            {
+                res = new JSObject(true);
+                res.oValue = res;
+                res.ValueType = JSObjectType.Object;
+                res.prototype = GlobalPrototype;
+                return res;
+            }
+            else if ((oVal as JSObject).ValueType >= JSObjectType.Object && (oVal as JSObject).oValue != null)
+                return oVal as JSObject;
+
+            if (context.thisBind != null && context.thisBind.ValueType == JSObjectType.Object && context.thisBind.prototype != null && context.thisBind.prototype.oValue == GlobalPrototype)
+                res = context.thisBind;
             else
-                if ((oVal as JSObject).ValueType >= JSObjectType.Object && (oVal as JSObject).oValue != null)
-                    return oVal as JSObject;
-            var res = new JSObject(true);
+                res = new JSObject(true) { prototype = GlobalPrototype };
+
             res.ValueType = JSObjectType.Object;
-            res.oValue = oVal;
+            res.oValue = oVal ?? res;
             if (oVal is JSObject)
                 res.prototype = (oVal as JSObject).GetField("__proto__", true, true);
             else
@@ -173,7 +184,7 @@ namespace NiL.JS.Core
                 case JSObjectType.Object:
                 case JSObjectType.Property:
                     {
-                        if ((oValue is JSObject) && ((oValue as JSObject).ValueType >= JSObjectType.Object))
+                        if (oValue != this && (oValue is JSObject) && ((oValue as JSObject).ValueType >= JSObjectType.Object))
                             return (oValue as JSObject).GetField(name, fast, own);
                         if (oValue == null)
                             throw new JSException(TypeProxy.Proxy(new TypeError("Can't access to property value of \"null\"")));
@@ -183,6 +194,8 @@ namespace NiL.JS.Core
                     {
                         if (oValue == null)
                             throw new JSException(TypeProxy.Proxy(new TypeError("Can't access to property value of \"null\"")));
+                        if (oValue == this)
+                            break;
                         return (oValue as JSObject).GetField(name, false, own);
                     }
                 default:
@@ -373,7 +386,7 @@ namespace NiL.JS.Core
                 return "undefined";
             if (ValueType < JSObjectType.Object)
                 GetField("__proto__", true, true);
-            else if (oValue is JSObject)
+            else if (oValue != this && oValue is JSObject)
                 return oValue.ToString();
             var res = ToPrimitiveValue_String_Value().Value;
             if (res is bool)
@@ -396,7 +409,7 @@ namespace NiL.JS.Core
                 throw new JSException(TypeProxy.Proxy(new TypeError("Can't enumerate properties of undefined.")));
             if (ValueType >= JSObjectType.Object)
             {
-                if (oValue is JSObject)
+                if (oValue != this && oValue is JSObject)
                     return (oValue as JSObject).GetEnumerator();
             }
             if (fields == null)

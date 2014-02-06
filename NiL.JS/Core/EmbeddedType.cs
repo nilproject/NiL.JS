@@ -26,7 +26,7 @@ namespace NiL.JS.Core
         {
             if (prototype == null)
                 prototype = TypeProxy.GetPrototype(this.GetType());
-            return DefaultFieldGetter(name, fast, false);
+            return DefaultFieldGetter(name, fast, own);
         }
 
         public override JSObject valueOf()

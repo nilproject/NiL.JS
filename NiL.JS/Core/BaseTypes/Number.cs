@@ -56,13 +56,13 @@ namespace NiL.JS.Core.BaseTypes
         {
             ValueType = JSObjectType.Int;
             assignCallback = JSObject.ErrorAssignCallback;
+            dValue = double.NaN;
+            ValueType = JSObjectType.Double;
             double d = 0;
             int i = 0;
-            if (Tools.ParseNumber(value, ref i, false, out d))
-            {
+            value = value.Trim();
+            if (Tools.ParseNumber(value, ref i, true, out d) && i == value.Length)
                 dValue = d;
-                ValueType = JSObjectType.Double;
-            }
         }
 
         public Number(JSObject obj)

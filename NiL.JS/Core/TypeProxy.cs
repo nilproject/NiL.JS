@@ -98,7 +98,11 @@ namespace NiL.JS.Core
                 {
                     if (hostedType == typeof(JSObject))
                     {
-                        prototypeInstance = new JSObject() { oValue = this, ValueType = JSObjectType.Object };
+                        prototypeInstance = new JSObject()
+                        {
+                            ValueType = JSObjectType.Object,
+                            oValue = this // Не убирать!
+                        };
                     }
                     else
                     {

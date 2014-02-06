@@ -40,9 +40,7 @@ namespace NiL.JS.Statements.Operators
                 throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError(temp + " is not callable")));
 
             if (second != null)
-                (CallInstance.Second as ImmidateValueStatement).Value = second.Invoke(context);
-            else
-                (CallInstance.Second as ImmidateValueStatement).Value = new Statement[0];
+                (CallInstance.Second as ImmidateValueStatement).Value = second.Invoke(context);                
             JSObject _this = new JSObject() { ValueType = JSObjectType.Object };
             _this.prototype = temp.GetField("prototype", true, false);
             if (_this.prototype.ValueType > JSObjectType.Undefined && _this.prototype.ValueType < JSObjectType.Object)
@@ -53,7 +51,7 @@ namespace NiL.JS.Statements.Operators
             if (!(temp.oValue is TypeProxyConstructor))
             {
                 _this.prototype = _this.prototype.Clone() as JSObject;
-                _this.oValue = new object();
+                _this.oValue = _this;
             }
             else
                 _this.oValue = this;
@@ -63,6 +61,13 @@ namespace NiL.JS.Statements.Operators
             if (res.ValueType >= JSObjectType.Object && res.oValue != null)
                 return res;
             return _this;
+        }
+
+        public override bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> vars)
+        {
+            if (second == null)
+                (CallInstance.Second as ImmidateValueStatement).Value = new Statement[0];
+            return base.Optimize(ref _this, depth, vars);
         }
     }
 }

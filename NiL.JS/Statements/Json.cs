@@ -117,19 +117,22 @@ namespace NiL.JS.Statements
         {
             var res = new JSObject(true);
             res.ValueType = JSObjectType.Object;
-            res.oValue = new object();
-            res.prototype = new JSObject(false);
+            res.oValue = res;
+            res.prototype = JSObject.GlobalPrototype.Clone() as JSObject;
             for (int i = 0; i < fields.Length; i++)
             {
                 var val = values[i].Invoke(context);
                 if (val.ValueType == JSObjectType.Property)
                 {
                     var gs = val.oValue as Statement[];
-                    val.oValue = new Function[] { gs[0] != null ? gs[0].Invoke(context) as Function : null, gs[1] != null ? gs[1].Invoke(context) as Function : null };
+                    var prop = res.GetField(fields[i], false, true);
+                    prop.oValue = new Function[] { gs[0] != null ? gs[0].Invoke(context) as Function : null, gs[1] != null ? gs[1].Invoke(context) as Function : null };
+                    prop.ValueType = JSObjectType.Property;
+                    prop.assignCallback();
                 }
-                res.GetField(fields[i], false, true).Assign(val);
+                else
+                    res.fields[this.fields[i]] = val.Clone() as JSObject;
             }
-            res.prototype.Assign(JSObject.GlobalPrototype);
             return res;
         }
 

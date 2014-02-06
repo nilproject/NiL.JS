@@ -10,7 +10,8 @@ namespace NiL.JS.Core
 
         private static JSObject createThisProto()
         {
-            thisProto = new JSObject(false) { ValueType = JSObjectType.Object, oValue = new object(), prototype = JSObject.GlobalPrototype };
+            thisProto = new JSObject(false) { ValueType = JSObjectType.Object, prototype = JSObject.GlobalPrototype };
+            thisProto.oValue = thisProto;
             thisProto.attributes |= ObjectAttributes.ReadOnly | ObjectAttributes.Immutable | ObjectAttributes.DontEnum | ObjectAttributes.DontDelete;
             return thisProto;
         }

@@ -728,7 +728,6 @@ namespace NiL.JS.Core.BaseTypes
         {
             context.ValidateThreadID();
             var oldargs = _arguments;
-            _arguments = args;
             try
             {
                 Context internalContext = new Context(context);
@@ -743,15 +742,23 @@ namespace NiL.JS.Core.BaseTypes
                     };
                 }
                 internalContext.thisBind = @this;
-                internalContext.InitField("arguments").Assign(args ?? new JSObject(true) { ValueType = JSObjectType.Object, oValue = new object() });
+                if (args == null)
+                {
+                    args = new JSObject(true) { ValueType = JSObjectType.Object };
+                    args.oValue = args;
+                    args.GetField("callee", false, true).Assign(this);
+                    args.GetField("length", false, true).Assign(0);
+                }
+                _arguments = args;
+                internalContext.InitField("arguments").Assign(_arguments);
                 if (!string.IsNullOrEmpty(Name))
                     internalContext.InitField(Name).Assign(this.Clone() as JSObject);
                 int i = 0;
-                int min = System.Math.Min(args == null ? 0 : args.GetField("length", true, false).iValue, argumentsNames.Length);
+                int min = System.Math.Min(args.GetField("length", true, false).iValue, argumentsNames.Length);
                 for (; i < min; i++)
                     internalContext.InitField(argumentsNames[i]).Assign(args.GetField(i.ToString(), true, false));
                 for (; i < argumentsNames.Length; i++)
-                    internalContext.InitField(argumentsNames[i]).Assign(new JSObject());
+                    internalContext.InitField(argumentsNames[i]).Assign(null);
 
                 body.Invoke(internalContext);
                 return internalContext.abortInfo;
@@ -771,11 +778,11 @@ namespace NiL.JS.Core.BaseTypes
                 {
                     protorypeField = new JSObject()
                     {
-                        oValue = new object(),
                         ValueType = JSObjectType.Object,
                         prototype = JSObject.GlobalPrototype,
                         attributes = ObjectAttributes.DontDelete | ObjectAttributes.DontEnum
                     };
+                    protorypeField.oValue = protorypeField;
                     var ctor = protorypeField.GetField("constructor", false, true);
                     ctor.attributes = ObjectAttributes.DontDelete | ObjectAttributes.DontEnum;
                     ctor.Assign(this);

@@ -45,7 +45,7 @@ namespace NiL.JS.Statements
 
             if (context.updateThisBind)
                 context.thisBind = th;
-            var res = th.GetField(n.ToPrimitiveValue_String_Value().Value.ToString(), callProp, false);
+            var res = th.GetField(n.ToString(), callProp, false);
             if (callProp && res.ValueType == JSObjectType.Property)
                 res = (res.oValue as Function[])[1].Invoke(th, null);
             return res;

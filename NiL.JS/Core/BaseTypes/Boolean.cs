@@ -35,7 +35,7 @@ namespace NiL.JS.Core.BaseTypes
 
         public Boolean(double value)
         {
-            ValueType = JSObjectType.Double;
+            ValueType = JSObjectType.Bool;
             iValue = value != 0 && !double.IsNaN(value) ? 1 : 0;
             assignCallback = JSObject.ErrorAssignCallback;
         }
