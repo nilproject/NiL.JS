@@ -446,6 +446,11 @@ namespace NiL.JS.Core.BaseTypes
             return res;
         }
 
+        public override JSObject toString()
+        {
+            return ToString();
+        }
+
         public override IEnumerator<string> GetEnumerator()
         {
             return new Enumerator(this);

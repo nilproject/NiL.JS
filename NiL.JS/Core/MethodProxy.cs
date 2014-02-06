@@ -162,6 +162,7 @@ namespace NiL.JS.Core
             return obj;
         }
 
+        [Modules.DontDelete]
         public override JSObject length
         {
             get
@@ -173,6 +174,7 @@ namespace NiL.JS.Core
             }
         }
 
+        [Modules.Hidden]
         public override JSObject Invoke(JSObject thisOverride, JSObject args)
         {
             try
@@ -195,6 +197,7 @@ namespace NiL.JS.Core
             }
         }
 
+        [Modules.Hidden]
         public override JSObject Invoke(Context contextOverride, JSObject args)
         {
             var oldContext = context;
@@ -209,6 +212,7 @@ namespace NiL.JS.Core
             }
         }
 
+        [Modules.Hidden]
         public override JSObject Invoke(Context contextOverride, JSObject thisOverride, JSObject args)
         {
             var oldContext = context;
@@ -225,8 +229,11 @@ namespace NiL.JS.Core
             }
         }
 
+        [Modules.Hidden]
         public override JSObject GetField(string name, bool fast, bool own)
         {
+            if (prototype == null)
+                prototype = TypeProxy.GetPrototype(this.GetType());
             return DefaultFieldGetter(name, fast, own);
         }
 

@@ -149,6 +149,7 @@
     <Compile Include="Core\ExternalFunction.cs" />
     <Compile Include="Core\IOptimizable.cs" />
     <Compile Include="Core\JSException.cs" />
+    <Compile Include="Core\Modules\DontDeleteAttribute.cs" />
     <Compile Include="Core\Modules\PrototypeAttribute.cs" />
     <Compile Include="Core\ParsingState.cs" />
     <Compile Include="Core\Statement.cs" />

@@ -49,8 +49,12 @@ namespace NiL.JS.Core
             ThisObject.thisProto = null;
             JSObject.GlobalPrototype = null;
             TypeProxy.Clear();
-            globalContext.InitField("Object").Assign(TypeProxy.GetConstructor(typeof(JSObject)));
+            var Object = new ExternalFunction(JSObject.InternalConstructor);
             JSObject.GlobalPrototype = TypeProxy.GetPrototype(typeof(JSObject));
+            JSObject.GlobalPrototype.GetField("constructor", false, true).oValue = Object.oValue;
+            Object.GetField("prototype", false, true).Assign(JSObject.GlobalPrototype);
+            Object.GetField("prototype", false, true).attributes |= ObjectAttributes.ReadOnly | ObjectAttributes.DontDelete;
+            globalContext.InitField("Object").Assign(Object);
             globalContext.AttachModule(typeof(BaseTypes.Date));
             globalContext.AttachModule(typeof(BaseTypes.Array));
             globalContext.AttachModule(typeof(BaseTypes.String));

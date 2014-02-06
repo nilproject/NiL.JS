@@ -141,7 +141,7 @@ namespace NiL.JS.Core
         public override JSObject GetField(string name, bool fast, bool own)
         {
             JSObject r = null;
-            if (fields.TryGetValue(name, out r) && r.ValueType > JSObjectType.NotExistInObject)
+            if (fields.TryGetValue(name, out r))
                 return r;
             var m = hostedType.GetMember(name, bindFlags);
             if (m.Length > 1)
@@ -253,8 +253,10 @@ namespace NiL.JS.Core
                 }
                 if (m[0].GetCustomAttributes(typeof(ProtectedAttribute), false).Length != 0)
                     r.Protect();
+                if (m[0].GetCustomAttributes(typeof(DontDeleteAttribute), false).Length != 0)
+                    r.attributes |= ObjectAttributes.DontDelete;
             }
-            r.attributes |= ObjectAttributes.DontDelete | ObjectAttributes.DontEnum;
+            r.attributes |= ObjectAttributes.DontEnum;
             fields[name] = r;
             return r;
         }

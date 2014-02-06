@@ -22,6 +22,7 @@ namespace NiL.JS.Statements.Operators
                 context.thisBind = otb;
                 temp = Tools.RaiseIfNotExist(second.Invoke(context));
             }
+            context.thisBind = otb;
             return temp;
         }
 

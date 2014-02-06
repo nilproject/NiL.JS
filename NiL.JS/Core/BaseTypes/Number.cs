@@ -263,6 +263,11 @@ namespace NiL.JS.Core.BaseTypes
             return ValueType == JSObjectType.Int ? iValue.ToString(System.Globalization.CultureInfo.CurrentCulture) : dValue.ToString(System.Globalization.CultureInfo.CurrentCulture);
         }
 
+        public override JSObject toString()
+        {
+            return ToString();
+        }
+
         public override string ToString()
         {
             return ValueType == JSObjectType.Int ? iValue.ToString(System.Globalization.CultureInfo.InvariantCulture) : Tools.DoubleToString(dValue);

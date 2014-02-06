@@ -23,12 +23,16 @@ namespace NiL.JS.Statements.Operators
             try
             {
                 context.updateThisBind = true;
-                //context.thisBind = null;
                 var temp = first.Invoke(context);
                 if (temp.ValueType == JSObjectType.NotExist)
-                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible not defined.")));
+                {
+                    if (context.thisBind == null)
+                        throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible not defined.")));
+                    else
+                        throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError(First + " not exist.")));
+                }
                 if (temp.ValueType != JSObjectType.Function && !(temp.ValueType == JSObjectType.Object && temp.oValue is Function))
-                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError(temp + " is not callable")));
+                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError(first + " is not callable")));
                 func = temp.oValue as Function;
                 newThisBind = context.thisBind;
             }
@@ -53,8 +57,6 @@ namespace NiL.JS.Statements.Operators
             field.attributes = ObjectAttributes.DontEnum;
             for (int i = 0; i < field.iValue; i++)
             {
-                //var a = arguments.GetField(i.ToString(), false, true);
-                //a.Assign(Tools.RaiseIfNotExist(args[i].Invoke(context)));
                 arguments.fields[i.ToString()] = Tools.RaiseIfNotExist(args[i].Invoke(context)).Clone() as JSObject;
             }
             arguments.prototype = JSObject.GlobalPrototype;
