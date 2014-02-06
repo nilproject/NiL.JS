@@ -9,9 +9,15 @@ var o = {
     x: 2,
     f: function () {
         f1();
+    },
+    getx:function(){
+        return this.x;
     }
 };
 o.f();
+
+if ((1,o.getx)() != 1)
+    console.log("#1.1");
 
 function (a) {
     if (a != this)
@@ -38,8 +44,6 @@ String(Math.PI)
 var c = function () { }
 c.prototype.m1 = function () { return this.m2(); };
 c.prototype.m2 = function () { return this.x; };
-var o = new c();
-o.x = 1;
 var t = function () {
     var o = new c();
     o.x = 1;

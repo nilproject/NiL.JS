@@ -27,7 +27,7 @@ namespace NiL.JSTest
                 {
                     if (types[j].FullName == reqname)
                         return NiL.JS.Core.TypeProxy.GetConstructor(types[j]);
-                    if (!createSubNode && types[j].Namespace != null && types[j].Namespace.Length >= reqname.Length && types[j].Namespace.Substring(0, reqname.Length) == reqname)
+                    if (!createSubNode && types[j].Namespace != null && types[j].Namespace.Length >= reqname.Length && types[j].Namespace.IndexOf(reqname) == 0)
                         createSubNode = true;
                 }
             }

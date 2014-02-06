@@ -26,6 +26,7 @@ namespace NiL.JS.Statements
                     break;
                 if (Parser.Validate(code, "set", i) && (Tools.isLineTerminator(code[i + 3]) || char.IsWhiteSpace(code[i + 3])))
                 {
+                    int pos = i;
                     var setter = FunctionStatement.Parse(state, ref i, FunctionStatement.FunctionParseMode.Setter).Statement as FunctionStatement;
                     if (flds.IndexOf(setter.Name) == -1)
                     {
@@ -37,13 +38,16 @@ namespace NiL.JS.Statements
                     else
                     {
                         var vle = vls[flds.IndexOf(setter.Name)];
-                        if (((vle as ImmidateValueStatement).Value.oValue as Statement[])[0] != null)
-                            throw new ArgumentException("Try to redefine setter for " + setter.Name);
+                        if (!(vle is ImmidateValueStatement))
+                            throw new JSException(TypeProxy.Proxy(new SyntaxError("Try to define setter for defined field at " + Tools.PositionToTextcord(code, pos))));
+                        if (((vle as ImmidateValueStatement).Value.oValue as Statement[])[1] != null)
+                            throw new JSException(TypeProxy.Proxy(new SyntaxError("Try to redefine setter " + setter.Name + " at " + Tools.PositionToTextcord(code, pos))));
                         ((vle as ImmidateValueStatement).Value.oValue as Statement[])[0] = setter;
                     }
                 }
                 else if (Parser.Validate(code, "get", i) && (Tools.isLineTerminator(code[i + 3]) || char.IsWhiteSpace(code[i + 3])))
                 {
+                    int pos = i;
                     var getter = FunctionStatement.Parse(state, ref i, FunctionStatement.FunctionParseMode.Getter).Statement as FunctionStatement;
                     if (flds.IndexOf(getter.Name) == -1)
                     {
@@ -55,8 +59,10 @@ namespace NiL.JS.Statements
                     else
                     {
                         var vle = vls[flds.IndexOf(getter.Name)];
+                        if (!(vle is ImmidateValueStatement))
+                            throw new JSException(TypeProxy.Proxy(new SyntaxError("Try to define getter for defined field at " + Tools.PositionToTextcord(code, pos))));
                         if (((vle as ImmidateValueStatement).Value.oValue as Statement[])[1] != null)
-                            throw new ArgumentException("Try to redefine getter for " + getter.Name);
+                            throw new JSException(TypeProxy.Proxy(new SyntaxError("Try to redefine getter " + getter.Name + " at " + Tools.PositionToTextcord(code, pos))));
                         ((vle as ImmidateValueStatement).Value.oValue as Statement[])[1] = getter;
                     }
                 }

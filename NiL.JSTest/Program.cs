@@ -214,9 +214,9 @@ console.log(utc);
                 return NiL.JS.Core.Context.Eval(context, eargs);
             }));
             //benchmark();
-            //runFile(@"ftest.js");
+            runFile(@"ftest.js");
             //runFile(@"Benchmarks\run.js");
-            sputnicTests();
+            //sputnicTests();
             //sputnicTests(@"tests\Conformance\15_Native_ECMA_Script_Objects\15.2_Object_Objects");
             //testEx();
 
