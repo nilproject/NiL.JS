@@ -4,6 +4,7 @@ using System;
 
 namespace NiL.JS.Core
 {
+    [Modules.Prototype(typeof(Function))]
     internal sealed class ExternalFunction : Function
     {
         private readonly CallableField del;

@@ -201,7 +201,7 @@ namespace NiL.JS.Core
                 default:
                     {
                         JSObject res = null;
-                        bool fromProto = (fields == null || !fields.TryGetValue(name, out res)) && (prototype != null) && (!own || prototype.oValue is TypeProxy);
+                        bool fromProto = (fields == null || !fields.TryGetValue(name, out res) || res.ValueType < JSObjectType.Undefined) && (prototype != null) && (!own || prototype.oValue is TypeProxy);
                         if (fromProto)
                         {
                             res = prototype.GetField(name, true, false);
@@ -482,15 +482,14 @@ namespace NiL.JS.Core
             if (args.GetField("length", true, false).iValue == 0)
                 return false;
             var a = args.GetField("0", true, false);
-            var c = this;
             JSObject o = false;
             o.ValueType = JSObjectType.Bool;
             o.iValue = 0;
-            if (c.ValueType >= JSObjectType.Object && c.oValue != null)
+            if (this.ValueType >= JSObjectType.Object && this.oValue != null)
             {
                 while (a.ValueType >= JSObjectType.Object && a.oValue != null)
                 {
-                    if (a.oValue == c.oValue)
+                    if (a.oValue == this.oValue)
                     {
                         o.iValue = 1;
                         return o;

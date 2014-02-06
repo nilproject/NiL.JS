@@ -13,7 +13,7 @@ namespace NiL.JS.Core
 
         internal Type hostedType;
         internal object prototypeInstance;
-        internal BindingFlags bindFlags = BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.NonPublic;
+        internal BindingFlags bindFlags = BindingFlags.Public | BindingFlags.NonPublic;
 
         public static JSObject Proxy(object value)
         {
@@ -104,7 +104,11 @@ namespace NiL.JS.Core
                     {
                         var ictor = type.GetConstructor(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy, null, Type.EmptyTypes, null);
                         if (ictor != null)
+                        {
                             prototypeInstance = ictor.Invoke(null);
+                            if ((prototypeInstance is JSObject) && (prototypeInstance as JSObject).ValueType < JSObjectType.Object)
+                                (prototypeInstance as JSObject).ValueType = JSObjectType.Object;
+                        }
                     }
                 }
 
@@ -142,7 +146,11 @@ namespace NiL.JS.Core
         {
             JSObject r = null;
             if (fields.TryGetValue(name, out r))
+            {
+                if (r.ValueType < JSObjectType.Undefined)
+                    r.Assign(DefaultFieldGetter(name, fast, own));
                 return r;
+            }
             var m = hostedType.GetMember(name, bindFlags);
             if (m.Length > 1)
             {

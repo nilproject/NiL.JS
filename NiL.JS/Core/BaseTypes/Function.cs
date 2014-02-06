@@ -783,7 +783,7 @@ namespace NiL.JS.Core.BaseTypes
                 return protorypeField;
             }
             if (prototype == null)
-                prototype = TypeProxy.GetPrototype(typeof(Function));
+                prototype = TypeProxy.GetPrototype(this.GetType());
             return DefaultFieldGetter(name, fast, own);
         }
 
