@@ -185,7 +185,11 @@ namespace NiL.JS.Core
             {
                 if (_length == null)
                     _length = new Number(0) { attributes = ObjectAttributes.ReadOnly | ObjectAttributes.DontDelete | ObjectAttributes.DontEnum };
-                _length.iValue = info.GetParameters().Length;
+                var pc = info.GetCustomAttributes(typeof(Modules.ParametersCountAttribute), false);
+                if (pc.Length != 0)
+                    _length.iValue = (pc[0] as Modules.ParametersCountAttribute).Value;
+                else
+                    _length.iValue = info.GetParameters().Length;
                 return _length;
             }
         }
@@ -309,6 +313,8 @@ namespace NiL.JS.Core
                 var st = e.StackTrace;
                 while (e.InnerException != null)
                     e = e.InnerException;
+                if (e is JSException)
+                    throw e;
                 throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError(e.Message)));
             }
         }

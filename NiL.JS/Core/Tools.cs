@@ -57,6 +57,11 @@ namespace NiL.JS.Core
             }
         }
 
+        /// <summary>
+        /// Преобразует JSObject в значение типа integer.
+        /// </summary>
+        /// <param name="arg">JSObject, значение которого нужно преобразовать.</param>
+        /// <returns>Целочисленное значение, представленное в объекте arg.</returns>
         public static int JSObjectToInt(JSObject arg)
         {
             return JSObjectToInt(arg, 0);
@@ -65,13 +70,13 @@ namespace NiL.JS.Core
         /// <summary>
         /// Преобразует JSObject в значение типа integer.
         /// </summary>
-        /// <param name="arg">JSObject, значение которого нужно преобразовать</param>
-        /// <param name="default">значение, которое будет возвращено, если значение arg null или undefined</param>
-        /// <returns></returns>
-        public static int JSObjectToInt(JSObject arg, int @default)
+        /// <param name="arg">JSObject, значение которого нужно преобразовать.</param>
+        /// <param name="nullOrUndef">Значение, которое будет возвращено, если значение arg null или undefined.</param>
+        /// <returns>Целочисленное значение, представленное в объекте arg.</returns>
+        public static int JSObjectToInt(JSObject arg, int nullOrUndef)
         {
             if (arg == null)
-                return @default;
+                return nullOrUndef;
             var r = arg;
             switch (r.ValueType)
             {
@@ -82,8 +87,10 @@ namespace NiL.JS.Core
                     }
                 case JSObjectType.Double:
                     {
-                        if (double.IsNaN(r.dValue) || double.IsInfinity(r.dValue))
+                        if (double.IsNaN(r.dValue))
                             return 0;
+                        if (double.IsInfinity(r.dValue))
+                            return double.IsPositiveInfinity(r.dValue) ? int.MaxValue : int.MinValue;
                         return (int)((long)r.dValue & 0xFFFFFFFF);
                     }
                 case JSObjectType.String:
@@ -100,13 +107,13 @@ namespace NiL.JS.Core
                 case JSObjectType.Object:
                     {
                         if (r.oValue == null)
-                            return @default;
+                            return nullOrUndef;
                         r = r.ToPrimitiveValue_Value_String();
                         return JSObjectToInt(r);
                     }
                 case JSObjectType.Undefined:
                 case JSObjectType.NotExistInObject:
-                    return @default;
+                    return nullOrUndef;
                 case JSObjectType.NotExist:
                     throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible not defined.")));
                 default:

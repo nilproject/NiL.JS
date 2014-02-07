@@ -637,7 +637,7 @@ namespace NiL.JS.Core.BaseTypes
         [Hidden]
         private string[] argumentsNames;
         [Hidden]
-        private Statement body;
+        private Statements.CodeBlock body;
         [Hidden]
         public readonly string Name;
 
@@ -658,7 +658,7 @@ namespace NiL.JS.Core.BaseTypes
         public Function()
         {
             context = Context.currentRootContext ?? Context.globalContext;
-            body = new Statements.EmptyStatement();
+            body = new Statements.CodeBlock(new Statement[0], false);
             argumentsNames = new string[0];
             Name = "";
             ValueType = JSObjectType.Function;
@@ -682,7 +682,7 @@ namespace NiL.JS.Core.BaseTypes
             }
         }
 
-        internal Function(Context context, Statement body, string[] argumentsNames, string name)
+        internal Function(Context context, Statements.CodeBlock body, string[] argumentsNames, string name)
         {
             this.context = context;
             this.argumentsNames = argumentsNames;
@@ -732,7 +732,7 @@ namespace NiL.JS.Core.BaseTypes
             {
                 Context internalContext = new Context(context);
                 var @this = thisOverride ?? context.thisBind;
-                if (@this != null && @this.ValueType < JSObjectType.Object)
+                if (@this != null && @this.ValueType < JSObjectType.Object && !body.strict)
                 {
                     @this = new JSObject(false)
                     {
@@ -801,7 +801,7 @@ namespace NiL.JS.Core.BaseTypes
             if (argumentsNames != null)
                 for (int i = 0; i < argumentsNames.Length; )
                     res += argumentsNames[i] + (++i < argumentsNames.Length ? "," : "");
-            res += ")" + (body is Statements.EmptyStatement ? "{ }" : ((object)body ?? "{ [native code] }").ToString());
+            res += ")" + ((object)body ?? "{ [native code] }").ToString();
             return res;
         }
 

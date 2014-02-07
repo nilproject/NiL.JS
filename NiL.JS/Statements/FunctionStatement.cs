@@ -15,7 +15,7 @@ namespace NiL.JS.Statements
         }
 
         private string[] argumentsNames;
-        private Statement body;
+        private CodeBlock body;
         public readonly string Name;
 
         private FunctionStatement(string name)
@@ -112,11 +112,11 @@ namespace NiL.JS.Statements
             var labels = state.Labels;
             state.Labels = new List<string>();
             state.AllowReturn++;
-            Statement body = null;
+            CodeBlock body = null;
             try
             {
                 state.AllowStrict = true;
-                body = CodeBlock.Parse(state, ref i).Statement;
+                body = CodeBlock.Parse(state, ref i).Statement as CodeBlock;
             }
             finally
             {
@@ -184,7 +184,9 @@ namespace NiL.JS.Statements
 
         public bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> varibles)
         {
-            (body as IOptimizable).Optimize(ref body, 0, varibles);
+            var stat = body as Statement;
+            (body as IOptimizable).Optimize(ref stat, 0, varibles);
+            body = stat as CodeBlock;
             return false;
         }
     }

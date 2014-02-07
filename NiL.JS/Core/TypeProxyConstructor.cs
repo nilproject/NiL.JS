@@ -10,7 +10,7 @@ namespace NiL.JS.Core
     [Modules.Prototype(typeof(Function))]
     internal sealed class TypeProxyConstructor : Function
     {
-        private static readonly object Object = new object();
+        private static readonly new object Object = new object();
         internal readonly TypeProxy proxy;
 
         private static JSObject empty(Context context, JSObject args)
@@ -30,7 +30,7 @@ namespace NiL.JS.Core
                 prototype = TypeProxy.GetPrototype(typeof(TypeProxyConstructor)).Clone() as JSObject;
                 return prototype;
             }
-            var res = proxy.GetField(name, true, false);
+            var res = proxy.GetField(name, true, own);
             if (res == JSObject.undefined)
                 return base.GetField(name, fast, own);
             return res;

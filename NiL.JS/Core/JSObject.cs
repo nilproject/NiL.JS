@@ -103,7 +103,7 @@ namespace NiL.JS.Core
             }
         }
 
-        internal static JSObject InternalConstructor(Context context, JSObject args)
+        internal static JSObject Object(Context context, JSObject args)
         {
             object oVal = null;
             if (args != null && args.GetField("length", true, false).iValue > 0)
@@ -217,7 +217,7 @@ namespace NiL.JS.Core
                         bool fromProto = (fields == null || !fields.TryGetValue(name, out res) || res.ValueType < JSObjectType.Undefined) && (prototype != null) && (!own || prototype.oValue is TypeProxy);
                         if (fromProto)
                         {
-                            res = prototype.GetField(name, true, false);
+                            res = prototype.GetField(name, true, own);
                             if (own && res.ValueType != JSObjectType.Property)
                                 res = null;
                             if (res == undefined)
@@ -405,8 +405,8 @@ namespace NiL.JS.Core
         [Modules.Hidden]
         public virtual IEnumerator<string> GetEnumerator()
         {
-            if (ValueType < JSObjectType.Undefined)
-                throw new JSException(TypeProxy.Proxy(new TypeError("Can't enumerate properties of undefined.")));
+            //if (ValueType <= JSObjectType.Undefined)
+            //    throw new JSException(TypeProxy.Proxy(new TypeError("Can't enumerate properties of undefined.")));
             if (ValueType >= JSObjectType.Object)
             {
                 if (oValue != this && oValue is JSObject)

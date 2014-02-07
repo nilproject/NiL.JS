@@ -5,7 +5,7 @@ using NiL.JS.Core.Modules;
 
 namespace NiL.JS.Core.BaseTypes
 {
-    internal class Array : EmbeddedType
+    internal sealed class Array : EmbeddedType
     {
         private class Enumerator : IEnumerator<string>
         {
@@ -122,6 +122,9 @@ namespace NiL.JS.Core.BaseTypes
                     if (tempElement == null)
                     {
                         tempElement = new JSObject(false) { ValueType = JSObjectType.NotExistInObject };
+                        var pv = (prototype ?? GetField("__proto__", true, false)).GetField(index.ToString(), true, false);
+                        if (pv != undefined)
+                            tempElement.Assign(pv);
                         tempElement.assignCallback = () =>
                         {
                             if (data.Count <= lastReqIndex)
@@ -134,6 +137,17 @@ namespace NiL.JS.Core.BaseTypes
                             tempElement.assignCallback = null;
                             tempElement = null;
                         };
+                    }
+                    else
+                    {
+                        var pv = (prototype ?? GetField("__proto__", true, false)).GetField(index.ToString(), true, false);
+                        if (pv != undefined)
+                        {
+                            var t = tempElement.assignCallback;
+                            tempElement.assignCallback = null;
+                            tempElement.Assign(pv);
+                            tempElement.assignCallback = t;
+                        }
                     }
                     lastReqIndex = index;
                     return tempElement;
@@ -335,87 +349,128 @@ namespace NiL.JS.Core.BaseTypes
             return res;
         }
 
+        [ParametersCount(2)]
         public JSObject slice(JSObject[] args)
         {
             if (args.Length == 0)
                 return this;
-            int pos0 = 0;
-            switch (args[0].ValueType)
+            if ((object)this is Array) // Да, Array sealed, но тут и не такое возможно.
             {
-                case JSObjectType.Int:
-                case JSObjectType.Bool:
-                    {
-                        pos0 = args[0].iValue;
-                        break;
-                    }
-                case JSObjectType.Double:
-                    {
-                        pos0 = (int)args[0].dValue;
-                        break;
-                    }
-                case JSObjectType.Object:
-                case JSObjectType.Date:
-                case JSObjectType.Function:
-                case JSObjectType.String:
-                    {
-                        double d;
-                        Tools.ParseNumber(args[0].ToString(), ref pos0, false, out d);
-                        pos0 = (int)d;
-                        break;
-                    }
-            }
-            int pos1 = 0;
-            if (args.Length > 1)
-            {
-                switch (args[1].ValueType)
+                int pos0 = Tools.JSObjectToInt(args[0], int.MaxValue);
+                int pos1 = 0;
+                if (args.Length > 1)
                 {
-                    case JSObjectType.Int:
-                    case JSObjectType.Bool:
-                        {
-                            pos1 = args[1].iValue;
-                            break;
-                        }
-                    case JSObjectType.Double:
-                        {
-                            pos1 = (int)args[1].dValue;
-                            break;
-                        }
-                    case JSObjectType.Object:
-                    case JSObjectType.Date:
-                    case JSObjectType.Function:
-                    case JSObjectType.String:
-                        {
-                            double d;
-                            Tools.ParseNumber(args[1].ToString(), ref pos1, false, out d);
-                            pos1 = (int)d;
-                            break;
-                        }
+                    if (args[1].ValueType <= JSObjectType.Undefined)
+                        pos1 = data.Count;
+                    else
+                        pos1 = System.Math.Min(Tools.JSObjectToInt(args[1]), data.Count);
                 }
-                pos1 = System.Math.Min(pos1, data.Count);
-            }
-            else
-                pos1 = data.Count;
-            if (pos0 < 0)
-                pos0 = data.Count + pos0;
-            if (pos1 < 0)
-                pos1 = data.Count + pos1;
-            pos0 = System.Math.Min(pos0, data.Count);
-            if (pos0 >= 0 && pos1 >= 0 && pos1 > pos0)
-            {
-                var res = new Array();
-                for (int i = pos0; i < pos1; i++)
+                else
+                    pos1 = data.Count;
+                if (pos0 < 0)
+                    pos0 = data.Count + pos0;
+                if (pos0 < 0)
+                    pos0 = 0;
+                if (pos1 < 0)
+                    pos1 = data.Count + pos1;
+                if (pos1 < 0)
+                    pos1 = 0;
+                pos0 = System.Math.Min(pos0, data.Count);
+                if (pos0 >= 0 && pos1 >= 0 && pos1 > pos0)
                 {
-                    var t = new JSObject();
-                    t.Assign(data[i]);
-                    res.data.Add(t);
+                    var res = new Array();
+                    for (int i = pos0; i < pos1; i++)
+                    {
+                        var t = new JSObject();
+                        t.Assign(data[i]);
+                        res.data.Add(t);
+                    }
+                    return res;
                 }
-                return res;
+                return new Array();
             }
-            return new Array();
+            else // кто-то отправил объект с полем length
+            {
+                int len = Tools.JSObjectToInt(this.GetField("length", true, false));
+                if (len >= 0)
+                {
+                    var t = new Array(len);
+                    for (int i = 0; i < t.data.Count; i++)
+                    {
+                        var val = this.GetField(i.ToString(), true, false);
+                        if (val.ValueType > JSObjectType.Undefined)
+                            t.data[i] = val.Clone() as JSObject;
+                    }
+                    return t.slice(args);
+                }
+                else
+                {
+                    long pos0 = (long)Tools.JSObjectToDouble(args[0]);
+                    long pos1 = 0;
+                    if (args.Length > 1)
+                    {
+                        if (args[1].ValueType <= JSObjectType.Undefined)
+                            pos1 = data.Count;
+                        else
+                            pos1 = (long)Tools.JSObjectToDouble(args[1]);
+                    }
+                    else
+                        pos1 = data.Count;
+                    if (pos0 < 0)
+                        pos0 = data.Count + pos0;
+                    if (pos0 < 0)
+                        pos0 = 0;
+                    if (pos1 < 0)
+                        pos1 = data.Count + pos1;
+                    if (pos1 < 0)
+                        pos1 = 0;
+                    var t = new Array(0);
+                    if (this.fields != null)
+                    {
+                        foreach (var p in this.fields)
+                        {
+                            int i = 0;
+                            double d = 0;
+                            if (Tools.ParseNumber(p.Key, ref i, true, out d) && i == p.Key.Length && (long)d == d && d >= pos0 && d < pos1)
+                                t.GetField((d - pos0).ToString(), false, true).Assign(p.Value);
+                        }
+                    }
+                    return t;
+                }
+            }
+        }
+
+        private sealed class JSComparer : IComparer<JSObject>
+        {
+            private Func<JSObject, JSObject, int> comparer;
+
+            public JSComparer(Func<JSObject, JSObject, int> comparer)
+            {
+                this.comparer = comparer;
+            }
+
+            public int Compare(JSObject x, JSObject y)
+            {
+                return comparer(x, y);
+            }
         }
 
         public JSObject sort(JSObject args)
         {
+            if (!(((object)this) is Array)) // Да, Array sealed, но тут и не такое возможно.
+            {
+                int l = System.Math.Max(0, Tools.JSObjectToInt(this.GetField("length", true, false)));
+                var t = new Array(l);
+                for (int i = 0; i < l; i++)
+                {
+                    var val = this.GetField(i.ToString(), true, false);
+                    t.data[i] = val;
+                }
+                t.sort(args);
+                for (int i = 0; i < l; i++)
+                    this.fields[i.ToString()] = t.data[i];
+                return this;
+            }
             var length = args.GetField("length", false, true);
             var first = args.GetField("0", false, true);
             var len = Tools.JSObjectToInt(length);
@@ -434,15 +489,32 @@ namespace NiL.JS.Core.BaseTypes
                 args.fields["length"] = length;
                 args.fields["0"] = first;
                 args.fields["1"] = second;
-                data.Sort((JSObject l, JSObject r) =>
+
+                int undefBlockStart = data.Count;
+                for (int i = 0; i < undefBlockStart; i++)
+                {
+                    if (data[i] == null || data[i].ValueType <= JSObjectType.Undefined)
+                    {
+                        undefBlockStart--;
+                        var t = data[i];
+                        data[i] = data[undefBlockStart];
+                        data[undefBlockStart] = t;
+                    }
+                }
+
+                data.Sort(0, undefBlockStart, new JSComparer((JSObject l, JSObject r) =>
                 {
                     first.Assign(l);
                     second.Assign(r);
-                    return Tools.JSObjectToInt(comparer.Invoke(args));
-                });
+                    var res = Tools.JSObjectToInt(comparer.Invoke(JSObject.undefined, args));
+                    return res;
+                }));
             }
             else
-                data.Sort((JSObject l, JSObject r) => { return string.Compare(l.ToString(), r.ToString(), StringComparison.Ordinal); });
+                data.Sort((JSObject l, JSObject r) =>
+                {
+                    return string.Compare((l ?? "undefined").ToString(), (r ?? "undefined").ToString(), StringComparison.Ordinal);
+                });
             return this;
         }
 
@@ -466,6 +538,12 @@ namespace NiL.JS.Core.BaseTypes
         public override IEnumerator<string> GetEnumerator()
         {
             return new Enumerator(this);
+        }
+
+        [Modules.Hidden]
+        public override JSObject valueOf()
+        {
+            return base.valueOf();
         }
 
         public override JSObject GetField(string name, bool fast, bool own)
