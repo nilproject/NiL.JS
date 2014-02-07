@@ -64,7 +64,18 @@ namespace NiL.JS.Core
         /// <returns>Целочисленное значение, представленное в объекте arg.</returns>
         public static int JSObjectToInt(JSObject arg)
         {
-            return JSObjectToInt(arg, 0);
+            return JSObjectToInt(arg, 0, false);
+        }
+
+        /// <summary>
+        /// Преобразует JSObject в значение типа integer.
+        /// </summary>
+        /// <param name="arg">JSObject, значение которого нужно преобразовать.</param>
+        /// <param name="alternateInfinity">Если истина, для значений +Infinity и -Infinity будут возвращены значения int.MaxValue и int.MinValue соответственно.</param>
+        /// <returns>Целочисленное значение, представленное в объекте arg.</returns>
+        public static int JSObjectToInt(JSObject arg, bool alternateInfinity)
+        {
+            return JSObjectToInt(arg, 0, alternateInfinity);
         }
 
         /// <summary>
@@ -74,6 +85,18 @@ namespace NiL.JS.Core
         /// <param name="nullOrUndef">Значение, которое будет возвращено, если значение arg null или undefined.</param>
         /// <returns>Целочисленное значение, представленное в объекте arg.</returns>
         public static int JSObjectToInt(JSObject arg, int nullOrUndef)
+        {
+            return JSObjectToInt(arg, nullOrUndef, false);
+        }
+
+        /// <summary>
+        /// Преобразует JSObject в значение типа integer.
+        /// </summary>
+        /// <param name="arg">JSObject, значение которого нужно преобразовать.</param>
+        /// <param name="nullOrUndef">Значение, которое будет возвращено, если значение arg null или undefined.</param>
+        /// <param name="alternateInfinity">Если истина, для значений +Infinity и -Infinity будут возвращены значения int.MaxValue и int.MinValue соответственно.</param>
+        /// <returns>Целочисленное значение, представленное в объекте arg.</returns>
+        public static int JSObjectToInt(JSObject arg, int nullOrUndef, bool alternateInfinity)
         {
             if (arg == null)
                 return nullOrUndef;
@@ -90,7 +113,7 @@ namespace NiL.JS.Core
                         if (double.IsNaN(r.dValue))
                             return 0;
                         if (double.IsInfinity(r.dValue))
-                            return double.IsPositiveInfinity(r.dValue) ? int.MaxValue : int.MinValue;
+                            return alternateInfinity ? double.IsPositiveInfinity(r.dValue) ? int.MaxValue : int.MinValue : 0;
                         return (int)((long)r.dValue & 0xFFFFFFFF);
                     }
                 case JSObjectType.String:

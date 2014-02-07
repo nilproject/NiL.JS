@@ -75,7 +75,12 @@ namespace NiL.JS.Core.Modules
 
         public static JSObject floor(JSObject[] args)
         {
-            result.dValue = System.Math.Floor(Tools.JSObjectToDouble(args.Length > 0 ? args[0] : null));
+            var a = Tools.JSObjectToDouble(args.Length > 0 ? args[0] : null);
+            if (a < 0 && a > -1e-15)
+                a = 0;
+            if (a > 0 && a < -1e-15)
+                a = 0;
+            result.dValue = System.Math.Floor(a);
             result.ValueType = JSObjectType.Double;
             return result;
         }
@@ -85,11 +90,10 @@ namespace NiL.JS.Core.Modules
             return System.Math.Log(Tools.JSObjectToDouble(args.Length > 0 ? args[0] : null));
         }
 
+        [ParametersCount(2)]
         public static JSObject max(JSObject[] args)
         {
-            if (args.Length == 0)
-                return double.NaN;
-            double res = double.MinValue;
+            double res = double.NegativeInfinity;
             for (int i = 0; i < args.Length; i++)
             {
                 var t = Tools.JSObjectToDouble(args[i]);
@@ -100,11 +104,10 @@ namespace NiL.JS.Core.Modules
             return res;
         }
 
+        [ParametersCount(2)]
         public static JSObject min(JSObject[] args)
         {
-            if (args.Length == 0)
-                return double.NaN;
-            double res = double.MaxValue;
+            double res = double.PositiveInfinity;
             for (int i = 0; i < args.Length; i++)
             {
                 var t = Tools.JSObjectToDouble(args[i]);
@@ -115,11 +118,24 @@ namespace NiL.JS.Core.Modules
             return res;
         }
 
+        [ParametersCount(2)]
         public static JSObject pow(JSObject[] args)
         {
             if (args.Length < 2)
-                return double.NaN;
-            result.dValue = System.Math.Pow(Tools.JSObjectToDouble(args[0]), Tools.JSObjectToDouble(args[1]));
+                result.dValue = double.NaN;
+            else
+            {
+                var @base = Tools.JSObjectToDouble(args[0]);
+                var degree = Tools.JSObjectToDouble(args[1]);
+                if (@base == 1 && double.IsInfinity(degree))
+                    result.dValue = double.NaN;
+                else if (double.IsNaN(@base) && degree == 0.0)
+                    result.dValue = 1;
+                else
+                {
+                    result.dValue = System.Math.Pow(@base, degree);
+                }
+            }
             result.ValueType = JSObjectType.Double;
             return result;
         }
@@ -131,7 +147,7 @@ namespace NiL.JS.Core.Modules
 
         public static JSObject round(JSObject[] args)
         {
-            return (int)System.Math.Round(Tools.JSObjectToDouble(args.Length > 0 ? args[0] : null));
+            return System.Math.Round(Tools.JSObjectToDouble(args.Length > 0 ? args[0] : null) + 0.001);
         }
 
         public static JSObject sin(JSObject[] args)

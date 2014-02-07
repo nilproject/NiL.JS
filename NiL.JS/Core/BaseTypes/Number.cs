@@ -265,6 +265,8 @@ namespace NiL.JS.Core.BaseTypes
 
         public override JSObject toString()
         {
+            if (!typeof(Number).IsAssignableFrom(this.GetType()))
+                throw new JSException(TypeProxy.Proxy(new TypeError("Try to call Number.toString on not Number object")));
             return ToString();
         }
 

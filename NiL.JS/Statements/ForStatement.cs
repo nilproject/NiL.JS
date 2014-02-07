@@ -201,7 +201,7 @@ namespace NiL.JS.Statements
             Parser.Optimize(ref init, 1, varibles);
             Parser.Optimize(ref condition, 2, varibles);
             Parser.Optimize(ref post, 1, varibles);
-            Parser.Optimize(ref body, Math.Max(1, depth), varibles);
+            Parser.Optimize(ref body, System.Math.Max(1, depth), varibles);
             return false;
         }
     }

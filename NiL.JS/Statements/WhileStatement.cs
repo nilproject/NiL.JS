@@ -70,7 +70,7 @@ namespace NiL.JS.Statements
 
         public bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> varibles)
         {
-            depth = Math.Max(1, depth);
+            depth = System.Math.Max(1, depth);
             Parser.Optimize(ref body, depth, varibles);
             Parser.Optimize(ref condition, 2, varibles);
             return false;

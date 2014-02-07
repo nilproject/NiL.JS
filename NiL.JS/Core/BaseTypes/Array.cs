@@ -356,14 +356,14 @@ namespace NiL.JS.Core.BaseTypes
                 return this;
             if ((object)this is Array) // Да, Array sealed, но тут и не такое возможно.
             {
-                int pos0 = Tools.JSObjectToInt(args[0], int.MaxValue);
+                int pos0 = Tools.JSObjectToInt(args[0], int.MaxValue, true);
                 int pos1 = 0;
                 if (args.Length > 1)
                 {
                     if (args[1].ValueType <= JSObjectType.Undefined)
                         pos1 = data.Count;
                     else
-                        pos1 = System.Math.Min(Tools.JSObjectToInt(args[1]), data.Count);
+                        pos1 = System.Math.Min(Tools.JSObjectToInt(args[1], true), data.Count);
                 }
                 else
                     pos1 = data.Count;

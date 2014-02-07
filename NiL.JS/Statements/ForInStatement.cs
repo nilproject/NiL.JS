@@ -126,7 +126,7 @@ namespace NiL.JS.Statements
         {
             Parser.Optimize(ref varible, 1, varibles);
             Parser.Optimize(ref source, 1, varibles);
-            Parser.Optimize(ref body, Math.Max(1, depth), varibles);
+            Parser.Optimize(ref body, System.Math.Max(1, depth), varibles);
             if (varible is Operators.None)
             {
                 if ((varible as Operators.None).Second != null)
