@@ -211,6 +211,13 @@ namespace NiL.JS.Core.BaseTypes
                         res = dValue;
                         break;
                     }
+                case JSObjectType.Object:
+                    {
+                        if (!typeof(Number).IsAssignableFrom(GetType()))
+                            throw new JSException(TypeProxy.Proxy(new TypeError("Try to call Number.toFixed on not number object.")));
+                        res = 0;
+                        break;
+                    }
                 default:
                     throw new InvalidOperationException();
             }
@@ -224,7 +231,12 @@ namespace NiL.JS.Core.BaseTypes
                     }
                 case JSObjectType.Double:
                     {
-                        dgts = (int)digits.dValue;
+                        if (double.IsNaN(digits.dValue))
+                            dgts = 0;
+                        else if (double.IsInfinity(digits.dValue))
+                            throw new JSException(TypeProxy.Proxy(new RangeError("toFixed() digits argument must be between 0 and 20")));
+                        else
+                            dgts = (int)digits.dValue;
                         break;
                     }
                 case JSObjectType.String:
@@ -253,9 +265,13 @@ namespace NiL.JS.Core.BaseTypes
                 default:
                     return ((int)res).ToString();
             }
+            if (System.Math.Abs(dValue) >= 1e+21)
+                return dValue.ToString("0.####e+0", System.Globalization.CultureInfo.InvariantCulture);
             if (dgts < 0 || dgts > 20)
-                throw new ArgumentException("toFixed() digits argument must be between 0 and 20");
-            return System.Math.Round(res, dgts).ToString(".00000000000000000000".Substring(0, dgts + 1), System.Globalization.CultureInfo.InvariantCulture);
+                throw new JSException(TypeProxy.Proxy(new RangeError("toFixed() digits argument must be between 0 and 20")));
+            if (dgts > 0)
+                dgts++;
+            return System.Math.Round(res, dgts).ToString("0.00000000000000000000".Substring(0, dgts + 1), System.Globalization.CultureInfo.InvariantCulture);
         }
 
         public override JSObject toLocaleString()
@@ -263,11 +279,80 @@ namespace NiL.JS.Core.BaseTypes
             return ValueType == JSObjectType.Int ? iValue.ToString(System.Globalization.CultureInfo.CurrentCulture) : dValue.ToString(System.Globalization.CultureInfo.CurrentCulture);
         }
 
-        public override JSObject toString()
+        public override JSObject toString(JSObject radix)
         {
             if (!typeof(Number).IsAssignableFrom(this.GetType()))
                 throw new JSException(TypeProxy.Proxy(new TypeError("Try to call Number.toString on not Number object")));
-            return ToString();
+            int r = 10;
+            if (radix != null && radix.GetField("length", true, false).iValue > 0)
+            {
+                var ar = radix.GetField("0", true, false);
+                if (ar.ValueType == JSObjectType.Object && ar.oValue == null)
+                    throw new JSException(TypeProxy.Proxy(new Error("Radix can't be null.")));
+                switch(ar.ValueType)
+                {
+                    case JSObjectType.Int:
+                    case JSObjectType.Bool:
+                        {
+                            r = ar.iValue;
+                            break;
+                        }
+                    case JSObjectType.Double:
+                        {
+                            r = (int)ar.dValue;
+                            break;
+                        }
+                    case JSObjectType.NotExistInObject:
+                    case JSObjectType.Undefined:
+                        {
+                            r = 10;
+                            break;
+                        }
+                    default:
+                        {
+                            r = Tools.JSObjectToInt(ar);
+                            break;
+                        }
+                }
+            }
+            if (r < 2 || r > 36)
+                throw new JSException(TypeProxy.Proxy(new TypeError("Radix must be between 2 and 36.")));
+            if (r == 10)
+                return ToString();
+            else
+            {
+                long res = iValue;
+                if (ValueType == JSObjectType.Double)
+                {
+                    if (double.IsNaN(dValue))
+                        return "NaN";
+                    if (double.IsPositiveInfinity(dValue))
+                        return "Infinity";
+                    if (double.IsNegativeInfinity(dValue))
+                        return "-Infinity";
+                    res = (int)dValue;
+                }
+                bool neg = res < 0;
+                if (neg)
+                    res = -res;
+                string sres = (res % r).ToString();
+                res /= r;
+                while (res != 0)
+                {
+                    sres = Tools.NumChars[res % r] + sres;
+                    res /= r;
+                }
+                return neg ? "-" + sres : sres;
+            }
+        }
+
+        public override JSObject valueOf()
+        {
+            if (!typeof(Number).IsAssignableFrom(GetType()))
+                throw new JSException(TypeProxy.Proxy(new TypeError("Try to call Number.valueOf on not number object.")));
+            if (ValueType == JSObjectType.Object) // prototype instance
+                return 0;
+            return base.valueOf();
         }
 
         public override string ToString()

@@ -43,11 +43,6 @@ namespace NiL.JS.Core.BaseTypes
         [Hidden]
         private List<JSObject> data;
 
-        private Array(List<JSObject> collection)
-        {
-            data = collection;
-        }
-
         public Array()
         {
             data = new List<JSObject>();
@@ -64,45 +59,18 @@ namespace NiL.JS.Core.BaseTypes
 
         public Array(double d)
         {
-            if (((long)d != d) || (d < 0) || (d > 0xffffffff))
-                    throw new JSException(TypeProxy.Proxy(new RangeError("Invalid array length.")));
-#if x64
-            var len = (int)System.Math.Min((long)d, 0x7fffffff);
-            data = new List<JSObject>(len);
-            for (int i = 0; i < d; i++)
+            if (((long)d != d) || (d < 0) || (d > 0x7fffffff))
+                throw new JSException(TypeProxy.Proxy(new RangeError("Invalid array length.")));
+            data = new List<JSObject>((int)d);
+            for (int i = 0; i < length; i++)
                 data.Add(null);
-#else
-            var len = (int)System.Math.Min((long)d, 0xffffff);
-            data = new List<JSObject>(len);
-            for (int i = 0; i < len; i++)
-                data.Add(null);
-#endif
         }
 
-        public Array(object[] args)
+        public Array(ICollection collection)
         {
-            data = new List<JSObject>(args.Length);
-            for (int i = 0; i < args.Length; i++)
-            {
-                JSObject val;
-                if (args[i] == null)
-                    val = null;
-                else if (args[i] is JSObject)
-                    val = args[i] as JSObject;
-                else if (args[i] is int)
-                    val = (int)args[i];
-                else if (args[i] is long)
-                    val = (long)args[i];
-                else if (args[i] is double)
-                    val = (double)args[i];
-                else if (args[i] is string)
-                    val = (string)args[i];
-                else if (args[i] is bool)
-                    val = (bool)args[i];
-                else
-                    val = TypeProxy.Proxy(args[i]);
-                data.Add(val);
-            }
+            data = new List<JSObject>(collection.Count);
+            foreach (var o in collection)
+                data.Add(TypeProxy.Proxy(o));
         }
 
         public void Add(JSObject obj)
@@ -110,7 +78,6 @@ namespace NiL.JS.Core.BaseTypes
             data.Add(obj);
         }
 
-        private int lastReqIndex;
         private JSObject tempElement;
 
         public JSObject this[int index]
@@ -121,25 +88,26 @@ namespace NiL.JS.Core.BaseTypes
                 {
                     if (tempElement == null)
                     {
-                        tempElement = new JSObject(false) { ValueType = JSObjectType.NotExistInObject };
+                        tempElement = new JSObject(false) { ValueType = JSObjectType.NotExistInObject, iValue = index };
                         var pv = (prototype ?? GetField("__proto__", true, false)).GetField(index.ToString(), true, false);
                         if (pv != undefined)
                             tempElement.Assign(pv);
                         tempElement.assignCallback = () =>
                         {
-                            if (data.Count <= lastReqIndex)
+                            if (data.Count <= tempElement.iValue)
                             {
-                                data.Capacity = lastReqIndex + 1;
-                                while (data.Count <= lastReqIndex)
+                                data.Capacity = tempElement.iValue + 1; 
+                                while (data.Count <= tempElement.iValue)
                                     data.Add(null);
                             }
-                            data[lastReqIndex] = tempElement;
+                            data[tempElement.iValue] = tempElement;
                             tempElement.assignCallback = null;
                             tempElement = null;
                         };
                     }
                     else
                     {
+                        tempElement.iValue = index;
                         var pv = (prototype ?? GetField("__proto__", true, false)).GetField(index.ToString(), true, false);
                         if (pv != undefined)
                         {
@@ -149,7 +117,6 @@ namespace NiL.JS.Core.BaseTypes
                             tempElement.assignCallback = t;
                         }
                     }
-                    lastReqIndex = index;
                     return tempElement;
                 }
                 else
@@ -157,6 +124,8 @@ namespace NiL.JS.Core.BaseTypes
             }
             internal set
             {
+                if (data.Capacity < index)
+                    data.Capacity = index + 1;
                 while (data.Count <= index)
                     data.Add(null);
                 data[index] = value;
@@ -173,8 +142,13 @@ namespace NiL.JS.Core.BaseTypes
             {
                 if (data.Count > value)
                     data.RemoveRange(value, data.Count - value);
-                else while (data.Count <= value)
-                    data.Add(null);
+                else
+                {
+                    if (data.Capacity < value)
+                        data.Capacity = value;
+                    while (data.Count < value)
+                        data.Add(null);
+                }
             }
         }
 
@@ -440,6 +414,100 @@ namespace NiL.JS.Core.BaseTypes
             }
         }
 
+        [ParametersCount(2)]
+        public JSObject splice(JSObject[] args)
+        {
+            if (args.Length == 0)
+                return this;
+            if ((object)this is Array) // Да, Array sealed, но тут и не такое возможно.
+            {
+                int pos0 = Tools.JSObjectToInt(args[0], int.MaxValue, true);
+                int pos1 = 0;
+                if (args.Length > 1)
+                {
+                    if (args[1].ValueType <= JSObjectType.Undefined)
+                        pos1 = data.Count;
+                    else
+                        pos1 = System.Math.Min(Tools.JSObjectToInt(args[1], true), data.Count);
+                }
+                else
+                    pos1 = data.Count;
+                if (pos0 < 0)
+                {
+                    pos0 = data.Count + pos0;
+                    if (pos0 < 0)
+                        pos0 = data.Count + pos0;
+                }
+                if (pos0 < 0)
+                    pos0 = 0;
+                pos1--;
+                if (pos1 < 0)
+                    pos1 = 0;
+                pos0 = System.Math.Min(pos0, data.Count);
+                pos1 += pos0;
+                pos1 = System.Math.Min(pos1, this.data.Count - 1);
+                var res = new Array();
+                for (int i = pos0; i <= pos1; i++)
+                {
+                    res.data.Add(data[i]);
+                }
+                this.data.RemoveRange(pos0, pos1 - pos0 + 1);
+                if (args.Length > 2)
+                {
+                    this.data.InsertRange(pos0, args);
+                    this.data.RemoveRange(pos0, 2);
+                }
+                return res;
+            }
+            else // кто-то отправил объект с полем length
+            {
+                int len = Tools.JSObjectToInt(this.GetField("length", true, false));
+                if (len >= 0)
+                {
+                    var t = new Array(len);
+                    for (int i = 0; i < t.data.Count; i++)
+                    {
+                        var val = this.GetField(i.ToString(), true, false);
+                        if (val.ValueType > JSObjectType.Undefined)
+                            t.data[i] = val.Clone() as JSObject;
+                    }
+                    return t.splice(args);
+                }
+                else
+                {
+                    long pos0 = (long)Tools.JSObjectToDouble(args[0]);
+                    long pos1 = 0;
+                    if (args.Length > 1)
+                    {
+                        if (args[1].ValueType <= JSObjectType.Undefined)
+                            pos1 = data.Count;
+                        else
+                            pos1 = (long)Tools.JSObjectToDouble(args[1]);
+                    }
+                    else
+                        pos1 = data.Count;
+                    if (pos0 < 0)
+                        pos0 = data.Count + pos0;
+                    if (pos0 < 0)
+                        pos0 = 0;
+                    if (pos1 < 0)
+                        pos1 = 0;
+                    var t = new Array(0);
+                    if (this.fields != null)
+                    {
+                        foreach (var p in this.fields)
+                        {
+                            int i = 0;
+                            double d = 0;
+                            if (Tools.ParseNumber(p.Key, ref i, true, out d) && i == p.Key.Length && (long)d == d && d >= pos0 && d < pos1)
+                                t.GetField((d - pos0).ToString(), false, true).Assign(p.Value);
+                        }
+                    }
+                    return t;
+                }
+            }
+        }
+
         private sealed class JSComparer : IComparer<JSObject>
         {
             private Func<JSObject, JSObject, int> comparer;
@@ -522,13 +590,13 @@ namespace NiL.JS.Core.BaseTypes
         {
             if (data.Count == 0)
                 return "";
-            var res = (data[0].Value ?? "").ToString();
+            var res = (data[0] ?? "").ToString();
             for (int i = 1; i < data.Count; i++)
-                res += "," + (data[i].Value ?? "").ToString();
+                res += "," + (data[i] ?? "").ToString();
             return res;
         }
 
-        public override JSObject toString()
+        public override JSObject toString(JSObject args)
         {
             if (this.GetType() != typeof(Array) && !this.GetType().IsSubclassOf(typeof(Array)))
                 throw new JSException(TypeProxy.Proxy(new TypeError("Try to call Array.toString on not Array object.")));
@@ -557,10 +625,14 @@ namespace NiL.JS.Core.BaseTypes
             }
             int index = 0;
             double dindex = 0.0;
-            if (Tools.ParseNumber(name, ref index, false, out dindex) && (dindex <= 0xffffff ) && ((index = (int)dindex) == dindex))
-                return this[index];
-            else
-                return base.GetField(name, fast, own);
+            if (Tools.ParseNumber(name, ref index, false, out dindex))
+            {
+                if (dindex > 0x7fffffff || dindex < 0)
+                    throw new JSException(TypeProxy.Proxy(new RangeError("Invalid array index")));
+                if (((index = (int)dindex) == dindex))
+                    return this[index];
+            }
+            return base.GetField(name, fast, own);
         }
 
         #region functions with callback

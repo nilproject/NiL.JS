@@ -51,12 +51,14 @@ namespace NiL.JS.Core
             return arg;
         }
 
+        private static readonly string[] intStringCache = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" };
+
         private static JSObject[] argumentsToArray(JSObject source)
         {
             var len = source.GetField("length", true, false).iValue;
             var res = new JSObject[len];
             for (int i = 0; i < len; i++)
-                res[i] = source.GetField(i.ToString(), true, true);
+                res[i] = source.GetField(i < 10 ? intStringCache[i] : i.ToString(), true, true);
             return res;
         }
 
@@ -65,7 +67,7 @@ namespace NiL.JS.Core
             if (targetTypes.Length == 0)
                 return null;
             object[] res;
-            var len = source.GetField("length", true, false).iValue;
+            var len = source == null ? 0 : source.GetField("length", true, false).iValue;
             if (targetTypes.Length == 1)
             {
                 if (targetTypes[0].ParameterType == typeof(JSObject))
@@ -80,7 +82,7 @@ namespace NiL.JS.Core
             }
             int targetCount = targetTypes.Length;
             targetCount = System.Math.Min(targetCount, len);
-            res = new object[targetCount];
+            res = targetCount != 0 ? new object[targetCount] : null;
             for (int i = 0; i < targetCount; i++)
             {
                 var obj = source.GetField(i.ToString(), true, true);

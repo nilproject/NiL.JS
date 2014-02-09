@@ -342,7 +342,7 @@ namespace NiL.JS.Core.BaseTypes
             return (oValue as string).Trim();
         }
 
-        public override JSObject toString()
+        public override JSObject toString(JSObject args)
         {
             return this;
         }

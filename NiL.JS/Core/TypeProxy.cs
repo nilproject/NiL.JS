@@ -110,8 +110,12 @@ namespace NiL.JS.Core
                         if (ictor != null)
                         {
                             prototypeInstance = ictor.Invoke(null);
-                            if ((prototypeInstance is JSObject) && (prototypeInstance as JSObject).ValueType < JSObjectType.Object)
-                                (prototypeInstance as JSObject).ValueType = JSObjectType.Object;
+                            if (prototypeInstance is JSObject)
+                            {
+                                (prototypeInstance as JSObject).fields = this.fields;
+                                if ((prototypeInstance as JSObject).ValueType < JSObjectType.Object)
+                                    (prototypeInstance as JSObject).ValueType = JSObjectType.Object;
+                            }
                         }
                     }
                 }

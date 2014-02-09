@@ -218,7 +218,7 @@ namespace NiL.JS.Core
                         if (fromProto)
                         {
                             res = prototype.GetField(name, true, own);
-                            if (own && res.ValueType != JSObjectType.Property)
+                            if (own && (prototype.oValue as TypeProxy).prototypeInstance != this.oValue && res.ValueType != JSObjectType.Property)
                                 res = null;
                             if (res == undefined)
                                 res = null;
@@ -417,7 +417,8 @@ namespace NiL.JS.Core
             return fields.Keys.GetEnumerator();
         }
 
-        public virtual JSObject toString()
+        [Modules.ParametersCount(0)]
+        public virtual JSObject toString(JSObject args)
         {
             switch (this.ValueType)
             {
@@ -471,7 +472,7 @@ namespace NiL.JS.Core
                 throw new JSException(TypeProxy.Proxy(new TypeError("toLocaleString calling on null.")));
             if (ValueType <= JSObjectType.Undefined)
                 throw new JSException(TypeProxy.Proxy(new TypeError("toLocaleString calling on undefined value.")));
-            return toString();
+            return toString(null);
         }
 
         public virtual JSObject valueOf()

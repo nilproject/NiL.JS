@@ -73,10 +73,10 @@ namespace NiL.JS.Core.BaseTypes
 
         public override JSObject toLocaleString()
         {
-            return toString();
+            return toString(null);
         }
 
-        public override JSObject toString()
+        public override JSObject toString(JSObject args)
         {
             return iValue != 0 ? "true" : "false";
         }

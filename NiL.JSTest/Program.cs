@@ -216,9 +216,9 @@ console.log(utc);
             //benchmark();
             //runFile(@"ftest.js");
             //runFile(@"Benchmarks\run.js");
-            //sputnicTests();
+            sputnicTests();
             //sputnicTests(@"tests\Conformance\15_Native_ECMA_Script_Objects\15.2_Object_Objects");
-            sputnicTests(@"tests\Conformance\15_Native_ECMA_Script_Objects\15.4_Array_Objects");
+            //sputnicTests(@"tests\Conformance\15_Native_ECMA_Script_Objects\15.4_Array_Objects");
             //sputnicTests(@"tests\Conformance\15_Native_ECMA_Script_Objects\15.7_Number_Objects");
             //testEx();
 
