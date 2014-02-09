@@ -1,4 +1,3 @@
-```html
 <html>
 <head>
     <title>NiL.JS JavaSctipt engine.</title>
@@ -25,4 +24,3 @@
     </ul>
 </body>
 </html>
-```
