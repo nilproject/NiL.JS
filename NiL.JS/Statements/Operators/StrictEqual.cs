@@ -108,5 +108,10 @@ namespace NiL.JS.Statements.Operators
                 throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible not defined.")));
             throw new NotImplementedException();
         }
+
+        public override string ToString()
+        {
+            return "(" + first + " === " + second + ")";
+        }
     }
 }

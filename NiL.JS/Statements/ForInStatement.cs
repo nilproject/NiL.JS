@@ -135,5 +135,10 @@ namespace NiL.JS.Statements
             }
             return false;
         }
+
+        public override string ToString()
+        {
+            return "for (" + varible + " in " + source + ")" + (body is CodeBlock ? "" : Environment.NewLine + "  ") + body;
+        }
     }
 }

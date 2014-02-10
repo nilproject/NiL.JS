@@ -16,6 +16,7 @@ namespace NiL.JS.Statements
         private int length;
         private readonly Statement[] body;
         private Case[] cases;
+        private Statement image;
 
         public SwitchStatement(Statement[] body)
         {
@@ -95,6 +96,7 @@ namespace NiL.JS.Statements
                 {
                     functions = funcs.ToArray(),
                     cases = cases.ToArray(),
+                    image = image
                 }
             };
         }
@@ -129,6 +131,7 @@ namespace NiL.JS.Statements
         {
             if (depth < 1)
                 throw new InvalidOperationException();
+            Parser.Optimize(ref image, varibles);
             for (int i = 0; i < body.Length; i++)
                 Parser.Optimize(ref body[i], 1, varibles);
             for (int i = 0; i < functions.Length; i++)
@@ -142,6 +145,32 @@ namespace NiL.JS.Statements
             for (int i = 1; i < cases.Length; i++)
                 Parser.Optimize(ref cases[i].statement, 2, varibles);
             return false;
+        }
+
+        public override string ToString()
+        {
+            string res = "switch (" + image + ") {" + Environment.NewLine;
+            var replp = Environment.NewLine;
+            var replt = Environment.NewLine + "  ";
+            if (functions != null)
+                for (var i = 0; i < functions.Length; i++)
+                {
+                    var func = functions[i].ToString().Replace(replp, replt);
+                    res += "  " + func + Environment.NewLine;
+                }
+            for (int i = 0; i < body.Length; i++)
+            {
+                for (int j = 0; j < cases.Length; j++)
+                {
+                    if (cases[j] != null && cases[j].index == i)
+                    {
+                        res += "case " + (cases[j].statement as Operators.StrictEqual).Second + ":" + Environment.NewLine;
+                    }
+                }
+                string lc = body[i].ToString().Replace(replp, replt);
+                res += "  " + lc + (lc[lc.Length - 1] != '}' ? ";" + Environment.NewLine : Environment.NewLine);
+            }
+            return res + "}";
         }
     }
 }

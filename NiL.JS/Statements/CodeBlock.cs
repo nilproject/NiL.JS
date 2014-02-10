@@ -129,6 +129,8 @@ namespace NiL.JS.Statements
                     varibles[f.Name] = f;
                 if (body.Length == 1)
                     _this = body[0];
+                if (body.Length == 0)
+                    _this = new EmptyStatement();
             }
             else
             {
@@ -152,11 +154,21 @@ namespace NiL.JS.Statements
         {
             if (body == null || body.Length == 0)
                 return "{ }";
-            string res = "{" + Environment.NewLine;
-            var replp = Environment.NewLine + "\t";
-            var replt = Environment.NewLine + "\t\t";
+            string res = " {" + Environment.NewLine;
+            var replp = Environment.NewLine;
+            var replt = Environment.NewLine + "  ";
+            for (var i = 0; i < varibles.Length; i++)
+                res += "  var " + varibles[i] + ";" + Environment.NewLine;
+            for (var i = 0; i < functions.Length; i++)
+            {
+                var func = functions[i].ToString().Replace(replp, replt);
+                res += "  " + func + Environment.NewLine;
+            }
             for (int i = body.Length; i-- > 0; )
-                res += "\t" + body[i].ToString().Replace(replp, replt) + ";" + Environment.NewLine;
+            {
+                string lc = body[i].ToString().Replace(replp, replt);
+                res += "  " + lc + (lc[lc.Length - 1] != '}' ? ";" + Environment.NewLine : Environment.NewLine);
+            }
             return res + "}";
         }
     }

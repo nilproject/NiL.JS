@@ -66,5 +66,10 @@ namespace NiL.JS.Statements.Operators
                 throw new InvalidOperationException("Invalid left-hand side in assignment.");
             return res;
         }
+
+        public override string ToString()
+        {
+            return "(" + first + " = " + second + ")";
+        }
     }
 }

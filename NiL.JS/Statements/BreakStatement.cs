@@ -42,5 +42,10 @@ namespace NiL.JS.Statements
             context.abortInfo = label;
             return null;
         }
+
+        public override string ToString()
+        {
+            return "break" + (label != null ? " " + label : "");
+        }
     }
 }

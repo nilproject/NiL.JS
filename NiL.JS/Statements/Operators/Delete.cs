@@ -26,5 +26,10 @@ namespace NiL.JS.Statements.Operators
                 tempResult.iValue = 0;
             return tempResult;
         }
+
+        public override string ToString()
+        {
+            return "delete " + first;
+        }
     }
 }

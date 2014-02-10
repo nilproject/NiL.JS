@@ -31,6 +31,8 @@ namespace NiL.JS.Statements
 
         public override string ToString()
         {
+            if (Value.ValueType == JSObjectType.String)
+                return "\"" + Value.oValue + "\"";
             return Value.ToString();
         }
     }

@@ -5,7 +5,7 @@ using System.Text;
 
 namespace NiL.JS.Core.BaseTypes
 {
-    internal class RegExp : EmbeddedType
+    internal sealed class RegExp : EmbeddedType
     {
         private JSObject lIndex = 0;
         private System.Text.RegularExpressions.Regex regEx;
@@ -167,6 +167,8 @@ namespace NiL.JS.Core.BaseTypes
 
         public JSObject exec(JSObject args)
         {
+            if (this.GetType() != typeof(RegExp))
+                throw new JSException(TypeProxy.Proxy(new TypeError("Try to call RegExp.exec on not RegExp object.")));
             string input = args.GetField("0", true, false).ToString();
             lIndex = Tools.JSObjectToNumber(lIndex);
             if (lIndex.ValueType == JSObjectType.Double)

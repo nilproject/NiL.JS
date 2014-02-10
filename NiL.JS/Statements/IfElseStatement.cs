@@ -74,5 +74,17 @@ namespace NiL.JS.Statements
             Parser.Optimize(ref elseBody, depth, varibles);
             return false;
         }
+
+        public override string ToString()
+        {
+            string rp = Environment.NewLine;
+            string rs = Environment.NewLine + "  ";
+            var sbody = body.ToString();
+            var sebody = elseBody == null ? "" : elseBody.ToString();
+            return "if (" + condition + ")" + (body is CodeBlock ? sbody : Environment.NewLine + "  " + sbody.Replace(rp, rs)) +
+                (elseBody != null ?
+                Environment.NewLine + "else" + Environment.NewLine +
+                (elseBody is CodeBlock ? sebody.Replace(rp, rs) : "  " + sebody) : "");
+        }
     }
 }

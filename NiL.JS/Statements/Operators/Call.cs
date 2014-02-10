@@ -70,7 +70,15 @@ namespace NiL.JS.Statements.Operators
 
         public override string ToString()
         {
-            return first + "(" + second + ")";
+            string res = first + "(";
+            var args = second.Invoke(null).oValue as Statement[];
+            for (int i = 0; i < args.Length; i++)
+            {
+                res += args[i];
+                if (i + 1 < args.Length)
+                    res += ", ";
+            }
+            return res + ")";
         }
 
         public override bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> vars)

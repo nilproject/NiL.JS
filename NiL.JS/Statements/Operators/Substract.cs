@@ -17,5 +17,10 @@ namespace NiL.JS.Statements.Operators
             tempResult.ValueType = JSObjectType.Double;
             return tempResult;
         }
+
+        public override string ToString()
+        {
+            return "(" + first + " - " + second + ")";
+        }
     }
 }

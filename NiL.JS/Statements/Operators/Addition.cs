@@ -264,5 +264,10 @@ namespace NiL.JS.Statements.Operators
             }
             throw new NotImplementedException();
         }
+
+        public override string ToString()
+        {
+            return "(" + first + " + " + second + ")";
+        }
     }
 }

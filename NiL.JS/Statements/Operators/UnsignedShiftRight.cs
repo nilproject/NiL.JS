@@ -3,9 +3,9 @@ using System;
 
 namespace NiL.JS.Statements.Operators
 {
-    internal sealed class Mul : Operator
+    internal class UnsignedShiftRight : Operator
     {
-        public Mul(Statement first, Statement second)
+        public UnsignedShiftRight(Statement first, Statement second)
             : base(first, second)
         {
 
@@ -13,14 +13,15 @@ namespace NiL.JS.Statements.Operators
 
         public override JSObject Invoke(Context context)
         {
-            tempResult.dValue = Tools.JSObjectToDouble(first.Invoke(context)) * Tools.JSObjectToDouble(second.Invoke(context));
+            var left = Tools.JSObjectToInt(first.Invoke(context));
+            tempResult.dValue = (double)((uint)left >> Tools.JSObjectToInt(second.Invoke(context)));
             tempResult.ValueType = JSObjectType.Double;
             return tempResult;
         }
 
         public override string ToString()
         {
-            return "(" + first + " * " + second + ")";
+            return "(" + first + " >>> " + second + ")";
         }
     }
 }

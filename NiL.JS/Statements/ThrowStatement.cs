@@ -38,5 +38,10 @@ namespace NiL.JS.Statements
             Parser.Optimize(ref body, 2, varibles);
             return false;
         }
+
+        public override string ToString()
+        {
+            return "throw" + (body != null ? " " + body : "");
+        }
     }
 }

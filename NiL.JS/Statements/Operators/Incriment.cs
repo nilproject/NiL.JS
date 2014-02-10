@@ -106,5 +106,10 @@ namespace NiL.JS.Statements.Operators
             }
             return false;
         }
+
+        public override string ToString()
+        {
+            return first != null ? "++" + first : second + "++";
+        }
     }
 }

@@ -204,5 +204,11 @@ namespace NiL.JS.Statements
             Parser.Optimize(ref body, System.Math.Max(1, depth), varibles);
             return false;
         }
+
+        public override string ToString()
+        {
+            var istring = init.ToString();
+            return "for (" + istring.Substring(1, istring.Length - 2) + "; " +condition +"; " + post + ")" + (body is CodeBlock ? "" : Environment.NewLine + "  ") + body;
+        }
     }
 }

@@ -75,5 +75,10 @@ namespace NiL.JS.Statements
             Parser.Optimize(ref condition, 2, varibles);
             return false;
         }
+
+        public override string ToString()
+        {
+            return "while (" + condition + ")" + (body is CodeBlock ? "" : Environment.NewLine + "  ") + body;
+        }
     }
 }

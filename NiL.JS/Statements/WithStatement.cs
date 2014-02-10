@@ -53,5 +53,10 @@ namespace NiL.JS.Statements
             Parser.Optimize(ref body, depth, varibles);
             return false;
         }
+
+        public override string ToString()
+        {
+            return "with (" + obj + ")" + (body is CodeBlock ? "" : Environment.NewLine + "  ") + body;
+        }
     }
 }

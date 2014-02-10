@@ -49,7 +49,7 @@ namespace NiL.JS.Statements
 
         public override string ToString()
         {
-            return "return " + body;
+            return "return" + (body != null ? " " + body : "");
         }
     }
 }

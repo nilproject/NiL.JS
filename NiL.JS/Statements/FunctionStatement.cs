@@ -9,14 +9,15 @@ namespace NiL.JS.Statements
     {
         public enum FunctionParseMode
         {
-            Regular = 0,
-            Getter,
-            Setter
+            function = 0,
+            get,
+            set
         }
-
+                
         private string[] argumentsNames;
         private CodeBlock body;
-        public readonly string Name;
+        internal readonly string Name;
+        internal FunctionParseMode mode;
 
         private FunctionStatement(string name)
         {
@@ -25,7 +26,7 @@ namespace NiL.JS.Statements
 
         internal static ParseResult Parse(ParsingState state, ref int index)
         {
-            return Parse(state, ref index, FunctionParseMode.Regular);
+            return Parse(state, ref index, FunctionParseMode.function);
         }
 
         internal static ParseResult Parse(ParsingState state, ref int index, FunctionParseMode mode)
@@ -34,7 +35,7 @@ namespace NiL.JS.Statements
             int i = index;
             switch (mode)
             {
-                case FunctionParseMode.Regular:
+                case FunctionParseMode.function:
                     {
                         if (!Parser.Validate(code, "function", ref i))
                             return new ParseResult();
@@ -42,7 +43,7 @@ namespace NiL.JS.Statements
                             return new ParseResult() { IsParsed = false, Message = "Invalid char in function definition" };
                         break;
                     }
-                case FunctionParseMode.Getter:
+                case FunctionParseMode.get:
                     {
                         if (!Parser.Validate(code, "get", ref i))
                             return new ParseResult();
@@ -50,7 +51,7 @@ namespace NiL.JS.Statements
                             return new ParseResult() { IsParsed = false, Message = "Invalid char in function definition" };
                         break;
                     }
-                case FunctionParseMode.Setter:
+                case FunctionParseMode.set:
                     {
                         if (!Parser.Validate(code, "set", ref i))
                             return new ParseResult();
@@ -74,7 +75,7 @@ namespace NiL.JS.Statements
                 if (code[i] != '(')
                     throw new ArgumentException("Invalid char at " + i + ": '" + code[i] + "'");
             }
-            else if (mode != FunctionParseMode.Regular)
+            else if (mode != FunctionParseMode.function)
                 throw new ArgumentException("Getters and Setters must have name");
             do i++; while (char.IsWhiteSpace(code[i]));
             if (code[i] == ',')
@@ -91,13 +92,13 @@ namespace NiL.JS.Statements
             }
             switch (mode)
             {
-                case FunctionParseMode.Getter:
+                case FunctionParseMode.get:
                     {
                         if (arguments.Count != 0)
                             throw new ArgumentException("getter have many arguments");
                         break;
                     }
-                case FunctionParseMode.Setter:
+                case FunctionParseMode.set:
                     {
                         if (arguments.Count != 1)
                             throw new ArgumentException("setter have invalid arguments");
@@ -166,7 +167,8 @@ namespace NiL.JS.Statements
             FunctionStatement res = new FunctionStatement(name)
                 {
                     argumentsNames = arguments.ToArray(),
-                    body = body
+                    body = body,
+                    mode = mode
                 };
             return new ParseResult()
             {
@@ -188,6 +190,16 @@ namespace NiL.JS.Statements
             (body as IOptimizable).Optimize(ref stat, 0, varibles);
             body = stat as CodeBlock;
             return false;
+        }
+
+        public override string ToString()
+        {
+            var res = mode + " " + Name + "(";
+            if (argumentsNames != null)
+                for (int i = 0; i < argumentsNames.Length; )
+                    res += argumentsNames[i] + (++i < argumentsNames.Length ? "," : "");
+            res += ")" + ((object)body ?? "{ [native code] }").ToString();
+            return res;
         }
     }
 }

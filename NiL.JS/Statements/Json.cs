@@ -27,7 +27,7 @@ namespace NiL.JS.Statements
                 if (Parser.Validate(code, "set", i) && (Tools.isLineTerminator(code[i + 3]) || char.IsWhiteSpace(code[i + 3])))
                 {
                     int pos = i;
-                    var setter = FunctionStatement.Parse(state, ref i, FunctionStatement.FunctionParseMode.Setter).Statement as FunctionStatement;
+                    var setter = FunctionStatement.Parse(state, ref i, FunctionStatement.FunctionParseMode.set).Statement as FunctionStatement;
                     if (flds.IndexOf(setter.Name) == -1)
                     {
                         flds.Add(setter.Name);
@@ -40,7 +40,7 @@ namespace NiL.JS.Statements
                         var vle = vls[flds.IndexOf(setter.Name)];
                         if (!(vle is ImmidateValueStatement))
                             throw new JSException(TypeProxy.Proxy(new SyntaxError("Try to define setter for defined field at " + Tools.PositionToTextcord(code, pos))));
-                        if (((vle as ImmidateValueStatement).Value.oValue as Statement[])[1] != null)
+                        if (((vle as ImmidateValueStatement).Value.oValue as Statement[])[0] != null)
                             throw new JSException(TypeProxy.Proxy(new SyntaxError("Try to redefine setter " + setter.Name + " at " + Tools.PositionToTextcord(code, pos))));
                         ((vle as ImmidateValueStatement).Value.oValue as Statement[])[0] = setter;
                     }
@@ -48,7 +48,7 @@ namespace NiL.JS.Statements
                 else if (Parser.Validate(code, "get", i) && (Tools.isLineTerminator(code[i + 3]) || char.IsWhiteSpace(code[i + 3])))
                 {
                     int pos = i;
-                    var getter = FunctionStatement.Parse(state, ref i, FunctionStatement.FunctionParseMode.Getter).Statement as FunctionStatement;
+                    var getter = FunctionStatement.Parse(state, ref i, FunctionStatement.FunctionParseMode.get).Statement as FunctionStatement;
                     if (flds.IndexOf(getter.Name) == -1)
                     {
                         flds.Add(getter.Name);
@@ -150,6 +150,28 @@ namespace NiL.JS.Statements
                     Parser.Optimize(ref values[i], 2, vars);
             }
             return false;
+        }
+
+        public override string ToString()
+        {
+            string res = "{ ";
+            for (int i = 0; i < fields.Length; i++)
+            {
+                int l = 0;
+                if ((values[i] is ImmidateValueStatement) && ((values[i] as ImmidateValueStatement).Value.ValueType == JSObjectType.Property))
+                {
+                    var gs = (values[i] as ImmidateValueStatement).Value.oValue as Statement[];
+                    res += gs[0];
+                    if (gs[0] != null && gs[1] != null)
+                        res += ", ";
+                    res += gs[1];
+                }
+                else
+                    res += "\"" + fields[i] + "\"" + " : " + values[i];
+                if (i + 1 < fields.Length)
+                    res += ", ";
+            }
+            return res + " }";
         }
     }
 }

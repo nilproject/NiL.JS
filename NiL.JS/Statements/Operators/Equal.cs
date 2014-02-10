@@ -325,5 +325,10 @@ namespace NiL.JS.Statements.Operators
             tempResult.ValueType = JSObjectType.Bool;
             return tempResult;
         }
+
+        public override string ToString()
+        {
+            return "(" + first + " == " + second + ")";
+        }
     }
 }

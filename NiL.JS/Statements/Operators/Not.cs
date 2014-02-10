@@ -3,9 +3,9 @@ using System;
 
 namespace NiL.JS.Statements.Operators
 {
-    internal class LessOrEqual : More
+    internal class Not : Operator
     {
-        public LessOrEqual(Statement first, Statement second)
+        public Not(Statement first, Statement second)
             : base(first, second)
         {
 
@@ -13,14 +13,14 @@ namespace NiL.JS.Statements.Operators
 
         public override JSObject Invoke(Context context)
         {
-            var t = base.Invoke(context);
-            t.iValue ^= 1;
-            return t;
+            tempResult.iValue = Tools.JSObjectToInt(first.Invoke(context)) ^ -1;
+            tempResult.ValueType = JSObjectType.Int;
+            return tempResult;
         }
 
         public override string ToString()
         {
-            return "(" + first + " <= " + second + ")";
+            return "~" + first;
         }
     }
 }

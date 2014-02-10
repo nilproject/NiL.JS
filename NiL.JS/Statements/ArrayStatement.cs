@@ -64,5 +64,17 @@ namespace NiL.JS.Statements
                 Parser.Optimize(ref elements[i], 2, vars);
             return false;
         }
+
+        public override string ToString()
+        {
+            string res = "[";
+            for (int i = 0; i < elements.Length; i++)
+            {
+                res += elements[i];
+                if (i + 1 < elements.Length)
+                    res += ", ";
+            }
+            return res + ']';
+        }
     }
 }

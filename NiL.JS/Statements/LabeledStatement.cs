@@ -54,5 +54,10 @@ namespace NiL.JS.Statements
             Parser.Optimize(ref statement, depth, varibles);
             return false;
         }
+
+        public override string ToString()
+        {
+            return label + ": " + statement;
+        }
     }
 }

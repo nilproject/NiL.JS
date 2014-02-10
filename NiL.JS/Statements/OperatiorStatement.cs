@@ -88,38 +88,32 @@ namespace NiL.JS.Statements
                 {
                     case OperationType.Multiply:
                         {
-                            fastImpl = new Operators.Mul(first, second);
-                            del = fastImpl.Invoke;
+                            fastImpl = new Operators.Mul(first, second);                            
                             break;
                         }
                     case OperationType.None:
                         {
-                            fastImpl = new Operators.None(first, second);
-                            del = fastImpl.Invoke;
+                            fastImpl = new Operators.None(first, second);                            
                             break;
                         }
                     case OperationType.Assign:
                         {
-                            fastImpl = new Operators.Assign(first, second);
-                            del = fastImpl.Invoke;
+                            fastImpl = new Operators.Assign(first, second);                            
                             break;
                         }
                     case OperationType.Less:
                         {
-                            fastImpl = new Operators.Less(first, second);
-                            del = fastImpl.Invoke;
+                            fastImpl = new Operators.Less(first, second);                            
                             break;
                         }
                     case OperationType.Incriment:
                         {
-                            fastImpl = new Operators.Incriment(first, second);
-                            del = fastImpl.Invoke;
+                            fastImpl = new Operators.Incriment(first, second);                            
                             break;
                         }
                     case OperationType.Call:
                         {
-                            fastImpl = new Operators.Call(first, second);
-                            del = fastImpl.Invoke;
+                            fastImpl = new Operators.Call(first, second);                            
                             break;
                         }
                     case OperationType.Decriment:
@@ -139,8 +133,7 @@ namespace NiL.JS.Statements
                         }
                     case OperationType.StrictNotEqual:
                         {
-                            fastImpl = new Operators.StrictNotEqual(first, second);
-                            del = fastImpl.Invoke;
+                            fastImpl = new Operators.StrictNotEqual(first, second);                            
                             break;
                         }
                     case OperationType.More:
@@ -150,20 +143,18 @@ namespace NiL.JS.Statements
                         }
                     case OperationType.MoreOrEqual:
                         {
-                            fastImpl = new Operators.MoreOrEqual(first, second);
-                            del = fastImpl.Invoke;
+                            fastImpl = new Operators.MoreOrEqual(first, second);                            
                             break;
                         }
                     case OperationType.Division:
                         {
                             fastImpl = new Operators.Division(first, second);
-                            del = fastImpl.Invoke;
+                            
                             break;
                         }
                     case OperationType.Equal:
                         {
-                            fastImpl = new Operators.Equal(first, second);
-                            del = fastImpl.Invoke;
+                            fastImpl = new Operators.Equal(first, second);                            
                             break;
                         }
                     case OperationType.Substract:
@@ -173,106 +164,102 @@ namespace NiL.JS.Statements
                         }
                     case OperationType.StrictEqual:
                         {
-                            fastImpl = new Operators.StrictEqual(first, second);
-                            del = fastImpl.Invoke;
+                            fastImpl = new Operators.StrictEqual(first, second);                            
                             break;
                         }
                     case OperationType.LogicalOr:
                         {
-                            del = OpLogicalOr;
+                            fastImpl = new Operators.LogicalOr(first, second);                            
                             break;
                         }
                     case OperationType.LogicalAnd:
                         {
-                            del = OpLogicalAnd;
+                            fastImpl = new Operators.LogicalAnd(first, second);                            
                             break;
                         }
                     case OperationType.NotEqual:
                         {
-                            fastImpl = new Operators.NotEqual(first, second);
-                            del = fastImpl.Invoke;
+                            fastImpl = new Operators.NotEqual(first, second);                            
                             break;
                         }
                     case OperationType.UnsignedShiftLeft:
                         {
-                            del = OpUnsignedShiftLeft;
+                            fastImpl = new Operators.UnsignedShiftLeft(first, second);                            
                             break;
                         }
                     case OperationType.UnsignedShiftRight:
                         {
-                            del = OpUnsignedShiftRight;
+                            fastImpl = new Operators.UnsignedShiftRight(first, second);                            
                             break;
                         }
                     case OperationType.SignedShiftLeft:
                         {
-                            del = OpSignedShiftLeft;
+                            fastImpl = new Operators.SignedShiftLeft(first, second);                            
                             break;
                         }
                     case OperationType.SignedShiftRight:
                         {
-                            del = OpSignedShiftRight;
+                            fastImpl = new Operators.SignedShiftRight(first, second);                            
                             break;
                         }
                     case OperationType.Module:
                         {
-                            del = OpMod;
+                            fastImpl = new Operators.Mod(first, second);                            
                             break;
                         }
                     case OperationType.LogicalNot:
                         {
-                            fastImpl = new Operators.LogicalNot(first, second);
-                            del = fastImpl.Invoke;
+                            fastImpl = new Operators.LogicalNot(first, second);                            
                             break;
                         }
                     case OperationType.Not:
                         {
-                            del = OpNot;
+                            fastImpl = new Operators.Not(first, second);                            
                             break;
                         }
                     case OperationType.Xor:
                         {
-                            del = OpXor;
+                            fastImpl = new Operators.Xor(first, second);                            
                             break;
                         }
                     case OperationType.Or:
                         {
-                            del = OpOr;
+                            fastImpl = new Operators.Or(first, second);                            
                             break;
                         }
                     case OperationType.And:
                         {
-                            del = OpAnd;
+                            fastImpl = new Operators.And(first, second);                            
                             break;
                         }
                     case OperationType.Ternary:
                         {
-                            del = OpTernary;
+                            fastImpl = new Operators.Ternary(first, second);                            
                             break;
                         }
                     case OperationType.TypeOf:
                         {
-                            del = (fastImpl = new Operators.TypeOf(first, second)).Invoke;
+                            fastImpl = new Operators.TypeOf(first, second);
                             break;
                         }
                     case OperationType.New:
                         {
-                            del = (fastImpl = new Operators.New(first, second)).Invoke;
+                            fastImpl = new Operators.New(first, second);
                             break;
                         }
                     case OperationType.Delete:
                         {
-                            del = (fastImpl = new Operators.Delete(first, second)).Invoke;
+                            fastImpl = new Operators.Delete(first, second);
                             break;
                         }
                     case OperationType.InstanceOf:
                         {
-                            del = (fastImpl = new Operators.InstanceOf(first, second)).Invoke;
+                            fastImpl = new Operators.InstanceOf(first, second);
                             break;
                         }
                     case OperationType.In:
                         {
                             fastImpl = new Operators.In(first, second);
-                            del = fastImpl.Invoke;
                             break;
                         }
                     default:
@@ -283,11 +270,9 @@ namespace NiL.JS.Statements
         }
         private Statement first;
         private Statement second;
-        private OpDelegate del;
 
         public OperatorStatement()
         {
-            //del = Opdel;
         }
 
         private static Statement deicstra(OperatorStatement statement)
@@ -299,7 +284,6 @@ namespace NiL.JS.Statements
             if (cur == null)
                 return statement;
             types.Push(statement._type);
-            delegates.Push(statement.del);
             stats.Push(statement.first);
             while (cur != null)
             {
@@ -314,7 +298,6 @@ namespace NiL.JS.Statements
                         stats.Push(new OperatorStatement()
                         {
                             _type = types.Pop(),
-                            del = delegates.Pop(),
                             second = stats.Pop(),
                             first = stats.Pop()
                         });
@@ -323,7 +306,6 @@ namespace NiL.JS.Statements
                         break;
                 }
                 types.Push(cur._type);
-                delegates.Push(cur.del);
                 if (!(cur.second is OperatorStatement))
                     stats.Push(cur.second);
                 cur = cur.second as OperatorStatement;
@@ -332,7 +314,6 @@ namespace NiL.JS.Statements
                 stats.Push(new OperatorStatement()
                 {
                     _type = types.Pop(),
-                    del = delegates.Pop(),
                     second = stats.Pop(),
                     first = stats.Pop()
                 });
@@ -1042,153 +1023,16 @@ namespace NiL.JS.Statements
             };
         }
 
-        private JSObject OpAnd(Context context)
-        {
-            var left = Tools.JSObjectToInt(first.Invoke(context));
-            tempResult.iValue = left & Tools.JSObjectToInt(second.Invoke(context));
-            tempResult.ValueType = JSObjectType.Int;
-            return tempResult;
-        }
-
-        private JSObject OpLogicalOr(Context context)
-        {
-            var left = first.Invoke(context);
-
-            if ((bool)left)
-                return left;
-            else
-                return second.Invoke(context);
-        }
-
-        private JSObject OpLogicalAnd(Context context)
-        {
-            var left = first.Invoke(context);
-            if (!(bool)left)
-                return left;
-            else
-                return second.Invoke(context);
-        }
-
-        private JSObject OpXor(Context context)
-        {
-            var left = Tools.JSObjectToInt(first.Invoke(context));
-            tempResult.iValue = left ^ Tools.JSObjectToInt(second.Invoke(context));
-            tempResult.ValueType = JSObjectType.Int;
-            return tempResult;
-        }
-
-        private JSObject OpOr(Context context)
-        {
-            var left = Tools.JSObjectToInt(first.Invoke(context));
-            tempResult.iValue = left | Tools.JSObjectToInt(second.Invoke(context));
-            tempResult.ValueType = JSObjectType.Int;
-            return tempResult;
-        }
-
-        private JSObject OpUnsignedShiftLeft(Context context)
-        {
-            var left = Tools.JSObjectToInt(first.Invoke(context));
-            tempResult.iValue = (int)((uint)left << Tools.JSObjectToInt(second.Invoke(context)));
-            tempResult.ValueType = JSObjectType.Int;
-            return tempResult;
-        }
-
-        private JSObject OpUnsignedShiftRight(Context context)
-        {
-            var left = Tools.JSObjectToInt(first.Invoke(context));
-            tempResult.dValue = (double)((uint)left >> Tools.JSObjectToInt(second.Invoke(context)));
-            tempResult.ValueType = JSObjectType.Double;
-            return tempResult;
-        }
-
-        private JSObject OpSignedShiftRight(Context context)
-        {
-            var left = Tools.JSObjectToInt(first.Invoke(context));
-            tempResult.iValue = (int)(left >> Tools.JSObjectToInt(second.Invoke(context)));
-            tempResult.ValueType = JSObjectType.Int;
-            return tempResult;
-        }
-
-        private JSObject OpSignedShiftLeft(Context context)
-        {
-            var left = Tools.JSObjectToInt(first.Invoke(context));
-            tempResult.iValue = (int)(left << Tools.JSObjectToInt(second.Invoke(context)));
-            tempResult.ValueType = JSObjectType.Int;
-            return tempResult;
-        }
-
-        private JSObject OpMod(Context context)
-        {
-            double left = Tools.JSObjectToDouble(first.Invoke(context));
-            tempResult.dValue = left % Tools.JSObjectToDouble(second.Invoke(context));
-            tempResult.ValueType = JSObjectType.Double;
-            return tempResult;
-        }
-
-        private JSObject OpNot(Context context)
-        {
-            tempResult.iValue = Tools.JSObjectToInt(first.Invoke(context)) ^ -1;
-            tempResult.ValueType = JSObjectType.Int;
-            return tempResult;
-        }
-
-        private JSObject OpTernary(Context context)
-        {
-            var threads = ((second as ImmidateValueStatement).Value.oValue as Statement[]);
-            if ((bool)first.Invoke(context))
-                return threads[0].Invoke(context);
-            return threads[1].Invoke(context);
-        }
-
         public override JSObject Invoke(Context context)
         {
-            return del(context);
+            throw new InvalidOperationException();
         }
 
         public bool Optimize(ref Statement _this, int depth, Dictionary<string, Statement> vars)
         {
             Type = Type;
-            if (fastImpl != null)
-            {
-                _this = fastImpl;
-                return true;
-            }
-            else
-            {
-                if (first is IOptimizable)
-                    Parser.Optimize(ref first, depth + 1, vars);
-                if (second is IOptimizable)
-                    Parser.Optimize(ref second, depth + 1, vars);
-                if (_type == OperationType.None && second == null && first is ImmidateValueStatement)
-                {
-                    _this = first;
-                    return true;
-                }
-                if (((_type == OperationType.Incriment) || (_type == OperationType.Decriment)) && (depth != 0))
-                {
-                    if (second == null)
-                        return false;
-                    first = second;
-                    second = null;
-                }
-                return false;
-            }
-        }
-
-        public override string ToString()
-        {
-            return (first != null ? " " + first : "") + operationString() + (second != null ? " " + second : "") + ";";
-        }
-
-        private string operationString()
-        {
-            switch (_type)
-            {
-                case OperationType.Addition:
-                    return "+";
-                default:
-                    return "<" + _type + ">";
-            }
+            _this = fastImpl;
+            return true;
         }
     }
 }

@@ -56,5 +56,10 @@ namespace NiL.JS.Statements.Operators
                 Parser.Optimize(ref second, depth + 1, vars);
             return false;
         }
+
+        public override string ToString()
+        {
+            return "(" + first + " instanceof " + second + ")";
+        }
     }
 }

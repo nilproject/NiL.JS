@@ -146,5 +146,19 @@ namespace NiL.JS.Statements
             Parser.Optimize(ref finallyBody, 1, varibles);
             return false;
         }
+
+        public override string ToString()
+        {
+            var sbody = body.ToString();
+            var fbody = finallyBody == null ? "" : finallyBody.ToString();
+            var cbody = catchBody == null ? "" : catchBody.ToString();
+            return "try" + (body is CodeBlock ? sbody : " {" + Environment.NewLine + "  " + sbody + Environment.NewLine + "}") +
+                (catchBody != null ?
+                Environment.NewLine + "catch (" + exptName + ")" +
+                (catchBody is CodeBlock ? cbody : "{ " + cbody + " }") : "") +
+                (finallyBody != null ?
+                Environment.NewLine + "finally" +
+                (finallyBody is CodeBlock ? fbody : " { " + fbody + " }") : "");
+        }
     }
 }

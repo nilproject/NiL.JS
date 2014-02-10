@@ -38,9 +38,7 @@ namespace NiL.JS.Statements.Operators
                 throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible not defined.")));
             if (temp.ValueType != JSObjectType.Function && !(temp.ValueType == JSObjectType.Object && temp.oValue is Function))
                 throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError(temp + " is not callable")));
-
-            if (second != null)
-                (CallInstance.Second as ImmidateValueStatement).Value = second.Invoke(context);                
+         
             JSObject _this = new JSObject() { ValueType = JSObjectType.Object };
             _this.prototype = temp.GetField("prototype", true, false);
             if (_this.prototype.ValueType > JSObjectType.Undefined && _this.prototype.ValueType < JSObjectType.Object)
@@ -67,7 +65,22 @@ namespace NiL.JS.Statements.Operators
         {
             if (second == null)
                 (CallInstance.Second as ImmidateValueStatement).Value = new Statement[0];
+            else
+                (CallInstance.Second as ImmidateValueStatement).Value = second.Invoke(null);
             return base.Optimize(ref _this, depth, vars);
+        }
+
+        public override string ToString()
+        {
+            string res = "new " + first + "(";
+            var args = (CallInstance.Second as ImmidateValueStatement).Value.oValue as Statement[];
+            for (int i = 0; i < args.Length; i++)
+            {
+                res += args[i];
+                if (i + 1 < args.Length)
+                    res += ", ";
+            }
+            return res + ")";
         }
     }
 }

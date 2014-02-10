@@ -17,5 +17,10 @@ namespace NiL.JS.Statements.Operators
             t.iValue ^= 1;
             return t;
         }
+
+        public override string ToString()
+        {
+            return "(" + first + " >= " + second + ")";
+        }
     }
 }

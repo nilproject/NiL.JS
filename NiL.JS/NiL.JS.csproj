@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="10.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>NiL.JS</RootNamespace>
     <AssemblyName>NiL.JS</AssemblyName>
-    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile>
     </TargetFrameworkProfile>
@@ -184,6 +184,18 @@
     <Compile Include="Statements\Operators\Substract.cs" />
     <Compile Include="Statements\Operators\TypeOf.cs" />
     <Compile Include="Statements\Operators\StrictNotEqual.cs" />
+    <Compile Include="Statements\Operators\And.cs" />
+    <Compile Include="Statements\Operators\LogicalOr.cs" />
+    <Compile Include="Statements\Operators\LogicalAnd.cs" />
+    <Compile Include="Statements\Operators\Xor.cs" />
+    <Compile Include="Statements\Operators\Or.cs" />
+    <Compile Include="Statements\Operators\UnsignedShiftLeft.cs" />
+    <Compile Include="Statements\Operators\UnsignedShiftRight.cs" />
+    <Compile Include="Statements\Operators\SignedShiftRight.cs" />
+    <Compile Include="Statements\Operators\SignedShiftLeft.cs" />
+    <Compile Include="Statements\Operators\Mod.cs" />
+    <Compile Include="Statements\Operators\Not.cs" />
+    <Compile Include="Statements\Operators\Ternary.cs" />
     <Compile Include="Statements\ThrowStatement.cs" />
     <Compile Include="Statements\EmptyStatement.cs" />
     <Compile Include="Statements\CodeBlock.cs" />
@@ -201,7 +213,6 @@
     <Compile Include="Statements\Operators\Call.cs" />
     <Compile Include="Statements\Operators\Incriment.cs" />
     <Compile Include="Statements\Operators\Less.cs" />
-    <Compile Include="Statements\Operators\OP.cs" />
     <Compile Include="Statements\Operators\Mul.cs" />
     <Compile Include="Statements\Operators\Operator.cs" />
     <Compile Include="Statements\ReturnStatement.cs" />
