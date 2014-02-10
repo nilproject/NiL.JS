@@ -1,59 +1,42 @@
-﻿if ((new Number(1e21)).toFixed() !== String(1e21)) {
-    $ERROR('#1: (new Number(1e21)).prototype.toFixed() === String(1e21)');
+﻿var x = new Array();
+var unshift = x.unshift(1);
+if (unshift !== 1) {
+    $ERROR('#1: x = new Array(); x.unshift(1) === 1. Actual: ' + (unshift));
 }
 
 //CHECK#2
-if ((new Number(1e21)).toFixed(0) !== String(1e21)) {
-    $ERROR('#2: (new Number(1e21)).prototype.toFixed(0) === String(1e21)');
+if (x[0] !== 1) {
+    $ERROR('#2: x = new Array(); x.unshift(1); x[0] === 1. Actual: ' + (x[0]));
 }
 
 //CHECK#3
-if ((new Number(1e21)).toFixed(1) !== String(1e21)) {
-    $ERROR('#3: (new Number(1e21)).prototype.toFixed(1) === String(1e21)');
+var unshift = x.unshift();
+if (unshift !== 1) {
+    $ERROR('#3: x = new Array(); x.unshift(1); x.unshift() === 1. Actual: ' + (unshift));
 }
 
 //CHECK#4
-if ((new Number(1e21)).toFixed(1.1) !== String(1e21)) {
-    $ERROR('#4: (new Number(1e21)).toFixed(1.1) === String(1e21)');
+if (x[1] !== undefined) {
+    $ERROR('#4: x = new Array(); x.unshift(1); x.unshift(); x[1] === unedfined. Actual: ' + (x[1]));
 }
 
 //CHECK#5
-if ((new Number(1e21)).toFixed(0.9) !== String(1e21)) {
-    $ERROR('#5: (new Number(1e21)).toFixed(0.9) === String(1e21)');
+var unshift = x.unshift(-1);
+if (unshift !== 2) {
+    $ERROR('#5: x = new Array(); x.unshift(1); x.unshift(); x.unshift(-1) === 2. Actual: ' + (unshift));
 }
 
 //CHECK#6
-if ((new Number(1e21)).toFixed("1") !== String(1e21)) {
-    $ERROR('#6: (new Number(1e21)).toFixed("1") === String(1e21)');
+if (x[0] !== -1) {
+    $ERROR('#6: x = new Array(); x.unshift(1); x.unshift(-1); x[0] === -1. Actual: ' + (x[0]));
 }
 
 //CHECK#7
-if ((new Number(1e21)).toFixed("1.1") !== String(1e21)) {
-    $ERROR('#7: (new Number(1e21)).toFixed("1.1") === String(1e21)');
+if (x[1] !== 1) {
+    $ERROR('#7: x = new Array(); x.unshift(1); x.unshift(-1); x[1] === 1. Actual: ' + (x[1]));
 }
 
 //CHECK#8
-if ((new Number(1e21)).toFixed("0.9") !== String(1e21)) {
-    $ERROR('#8: (new Number(1e21)).toFixed("0.9") === String(1e21)');
-}
-
-//CHECK#9
-if ((new Number(1e21)).toFixed(Number.NaN) !== String(1e21)) {
-    $ERROR('#9: (new Number(1e21)).toFixed(Number.NaN) === String(1e21)');
-}
-
-//CHECK#10
-if ((new Number(1e21)).toFixed("some string") !== String(1e21)) {
-    $ERROR('#9: (new Number(1e21)).toFixed("some string") === String(1e21)');
-}
-
-//CHECK#10
-try {
-    s = (new Number(1e21)).toFixed(Number.POSITIVE_INFINITY);
-    $ERROR('#10: (new Number(1e21)).toFixed(Number.POSITIVE_INFINITY) should throw RangeError, not return NaN');
-}
-catch (e) {
-    if (!(e instanceof RangeError)) {
-        $ERROR('#10: (new Number(1e21)).toFixed(Number.POSITIVE_INFINITY) should throw RangeError, not ' + e);
-    }
+if (x.length !== 2) {
+    $ERROR('#8: x = new Array(); x.unshift(1); x.unshift(); x.unshift(-1); x.length === 2. Actual: ' + (x.length));
 }

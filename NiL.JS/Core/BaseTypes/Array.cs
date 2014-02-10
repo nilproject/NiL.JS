@@ -62,7 +62,7 @@ namespace NiL.JS.Core.BaseTypes
             if (((long)d != d) || (d < 0) || (d > 0x7fffffff))
                 throw new JSException(TypeProxy.Proxy(new RangeError("Invalid array length.")));
             data = new List<JSObject>((int)d);
-            for (int i = 0; i < length; i++)
+            for (int i = 0; i < data.Capacity; i++)
                 data.Add(null);
         }
 
@@ -433,25 +433,20 @@ namespace NiL.JS.Core.BaseTypes
                 else
                     pos1 = data.Count;
                 if (pos0 < 0)
-                {
                     pos0 = data.Count + pos0;
-                    if (pos0 < 0)
-                        pos0 = data.Count + pos0;
-                }
                 if (pos0 < 0)
                     pos0 = 0;
-                pos1--;
                 if (pos1 < 0)
                     pos1 = 0;
                 pos0 = System.Math.Min(pos0, data.Count);
                 pos1 += pos0;
-                pos1 = System.Math.Min(pos1, this.data.Count - 1);
+                pos1 = System.Math.Min(pos1, this.data.Count);
                 var res = new Array();
-                for (int i = pos0; i <= pos1; i++)
+                for (int i = pos0; i < pos1; i++)
                 {
                     res.data.Add(data[i]);
                 }
-                this.data.RemoveRange(pos0, pos1 - pos0 + 1);
+                this.data.RemoveRange(pos0, pos1 - pos0);
                 if (args.Length > 2)
                 {
                     this.data.InsertRange(pos0, args);
@@ -461,50 +456,72 @@ namespace NiL.JS.Core.BaseTypes
             }
             else // кто-то отправил объект с полем length
             {
-                int len = Tools.JSObjectToInt(this.GetField("length", true, false));
-                if (len >= 0)
+                var lobj = this.GetField("length", true, false);
+                long len = (long)Tools.JSObjectToDouble(lobj);
+                len &= 0xffffffff;
+                long pos0 = (long)Tools.JSObjectToDouble(args[0]);
+                long pos1 = 0;
+                if (args.Length > 1)
                 {
-                    var t = new Array(len);
-                    for (int i = 0; i < t.data.Count; i++)
-                    {
-                        var val = this.GetField(i.ToString(), true, false);
-                        if (val.ValueType > JSObjectType.Undefined)
-                            t.data[i] = val.Clone() as JSObject;
-                    }
-                    return t.splice(args);
+                    if (args[1].ValueType <= JSObjectType.Undefined)
+                        pos1 = data.Count;
+                    else
+                        pos1 = (long)Tools.JSObjectToDouble(args[1]);
                 }
                 else
+                    pos1 = len;
+                if (pos0 < 0)
+                    pos0 = len + pos0;
+                if (pos0 < 0)
+                    pos0 = 0;
+                if (pos1 < 0)
+                    pos1 = 0;
+                pos0 = System.Math.Min(pos0, len);
+                pos1 += pos0;
+                pos1 = System.Math.Min(pos1, len);
+                var t = new Array(pos1 - pos0);
+                List<string> keysForDelete = new List<string>(t.data.Count);
+                List<KeyValuePair<string, JSObject>> ritems = new List<KeyValuePair<string, JSObject>>();
+                var addCount = System.Math.Max(0, args.Length - 2);
+                if (this.fields != null)
                 {
-                    long pos0 = (long)Tools.JSObjectToDouble(args[0]);
-                    long pos1 = 0;
-                    if (args.Length > 1)
+                    foreach (var p in this.fields)
                     {
-                        if (args[1].ValueType <= JSObjectType.Undefined)
-                            pos1 = data.Count;
-                        else
-                            pos1 = (long)Tools.JSObjectToDouble(args[1]);
-                    }
-                    else
-                        pos1 = data.Count;
-                    if (pos0 < 0)
-                        pos0 = data.Count + pos0;
-                    if (pos0 < 0)
-                        pos0 = 0;
-                    if (pos1 < 0)
-                        pos1 = 0;
-                    var t = new Array(0);
-                    if (this.fields != null)
-                    {
-                        foreach (var p in this.fields)
+                        int i = 0;
+                        double d = 0;
+                        if (Tools.ParseNumber(p.Key, ref i, true, out d) && i == p.Key.Length && (long)d == d && d >= pos0)
                         {
-                            int i = 0;
-                            double d = 0;
-                            if (Tools.ParseNumber(p.Key, ref i, true, out d) && i == p.Key.Length && (long)d == d && d >= pos0 && d < pos1)
-                                t.GetField((d - pos0).ToString(), false, true).Assign(p.Value);
+                            if (d < pos1)
+                            {
+                                t.data[(int)(d - pos0)] = p.Value;
+                                keysForDelete.Add(p.Key);
+                            }
+                            else if (d < len)
+                            {
+                                ritems.Add(new KeyValuePair<string, JSObject>((d - pos1 + pos0 + addCount).ToString(), p.Value));
+                                keysForDelete.Add(p.Key);
+                            }
                         }
                     }
-                    return t;
+                    for (int i = 0; i < keysForDelete.Count; i++)
+                        this.fields.Remove(keysForDelete[i]);
+                    for (int i = 0; i < ritems.Count; i++)
+                        this.fields[ritems[i].Key] = ritems[i].Value;
+                    for (int i = 0; i < addCount; i++)
+                        this.fields[(pos0 + i).ToString()] = args[i + 2];
+                    pos0 += addCount + ritems.Count;
+                    if (pos0 < 0x7fffffff)
+                    {
+                        lobj.iValue = (int)(pos0);
+                        lobj.ValueType = JSObjectType.Int;
+                    }
+                    else
+                    {
+                        lobj.dValue = pos0;
+                        lobj.ValueType = JSObjectType.Double;
+                    }
                 }
+                return t;
             }
         }
 
