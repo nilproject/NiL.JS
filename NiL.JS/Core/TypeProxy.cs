@@ -269,7 +269,7 @@ namespace NiL.JS.Core
                 }
                 if (m[0].GetCustomAttributes(typeof(ProtectedAttribute), false).Length != 0)
                     r.Protect();
-                if (m[0].GetCustomAttributes(typeof(DontDeleteAttribute), false).Length != 0)
+                if (m[0].GetCustomAttributes(typeof(DoNotDeleteAttribute), false).Length != 0)
                     r.attributes |= ObjectAttributes.DontDelete;
             }
             r.attributes |= ObjectAttributes.DontEnum;

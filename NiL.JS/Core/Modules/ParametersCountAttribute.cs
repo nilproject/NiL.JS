@@ -11,11 +11,11 @@ namespace NiL.JS.Core.Modules
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Constructor)]
     public sealed class ParametersCountAttribute : Attribute
     {
-        public int Value { get; private set; }
+        public int Count { get; private set; }
 
         public ParametersCountAttribute(int count)
         {
-            Value = count;
+            Count = count;
         }
     }
 }

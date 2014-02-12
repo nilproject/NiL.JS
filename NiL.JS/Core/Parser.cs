@@ -28,12 +28,10 @@ namespace NiL.JS.Core
             }
         }
 
-        private static _Rule[][] rules;
-
-        static Parser()
+        private static _Rule[][] rules = new _Rule[][]
         {
-            rules = new _Rule[5][];
-            rules[0] = new _Rule[] // Общий
+            // 0
+            new _Rule[] // Общий
             {
                 new _Rule("[", OperatorStatement.Parse),
                 new _Rule("{", CodeBlock.Parse),
@@ -67,8 +65,9 @@ namespace NiL.JS.Core
                 new _Rule(ValidateName, LabeledStatement.Parse),
                 new _Rule(ValidateName, OperatorStatement.Parse),
                 new _Rule(ValidateValue, OperatorStatement.Parse),
-            };
-            rules[1] = new _Rule[] // Для операторов
+            },
+            // 1
+            new _Rule[] // Для операторов
             {
                 new _Rule("[", OperatorStatement.Parse),
                 new _Rule("{", OperatorStatement.Parse),
@@ -89,14 +88,16 @@ namespace NiL.JS.Core
                 new _Rule("void", OperatorStatement.Parse),
                 new _Rule(ValidateName, OperatorStatement.Parse),
                 new _Rule(ValidateValue, OperatorStatement.Parse),
-            };
-            rules[2] = new _Rule[] // Для операторов №2
+            },
+            // 2
+            new _Rule[] // Для операторов №2
             {
                 new _Rule("[", ArrayStatement.Parse),
                 new _Rule("{", Json.Parse),
                 new _Rule("function", FunctionStatement.Parse),
-            };
-            rules[3] = new _Rule[] // Для for
+            },
+            // 3
+            new _Rule[] // Для for
             {
                 new _Rule("var ", VaribleDefineStatement.Parse),
                 new _Rule("(", OperatorStatement.Parse),
@@ -116,8 +117,9 @@ namespace NiL.JS.Core
                 new _Rule("void", OperatorStatement.Parse),
                 new _Rule(ValidateName, OperatorStatement.Parse),
                 new _Rule(ValidateValue, OperatorStatement.Parse),
-            };
-            rules[4] = new _Rule[] // Общий без JSON
+            },
+            // 4
+            new _Rule[] // Общий без JSON
             {
                 new _Rule("[", OperatorStatement.Parse),
                 new _Rule("{", CodeBlock.Parse),
@@ -151,8 +153,8 @@ namespace NiL.JS.Core
                 new _Rule(ValidateName, LabeledStatement.Parse),
                 new _Rule(ValidateName, OperatorStatement.Parse),
                 new _Rule(ValidateValue, OperatorStatement.Parse),
-            };
-        }
+            }
+        };
 
         internal static bool Validate(string code, string patern, int index)
         {

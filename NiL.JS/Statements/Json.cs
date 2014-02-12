@@ -157,7 +157,6 @@ namespace NiL.JS.Statements
             string res = "{ ";
             for (int i = 0; i < fields.Length; i++)
             {
-                int l = 0;
                 if ((values[i] is ImmidateValueStatement) && ((values[i] as ImmidateValueStatement).Value.ValueType == JSObjectType.Property))
                 {
                     var gs = (values[i] as ImmidateValueStatement).Value.oValue as Statement[];

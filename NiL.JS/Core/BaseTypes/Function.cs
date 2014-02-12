@@ -693,7 +693,7 @@ namespace NiL.JS.Core.BaseTypes
 
         internal Number _length = null;
 
-        [Modules.DontDelete]
+        [Modules.DoNotDelete]
         public virtual JSObject length
         {
             get

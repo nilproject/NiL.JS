@@ -83,7 +83,7 @@ namespace NiL.JS.Core
             }
         }
 
-        [Modules.DontDelete]
+        [Modules.DoNotDelete]
         public override JSObject length
         {
             get

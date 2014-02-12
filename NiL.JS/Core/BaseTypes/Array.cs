@@ -602,6 +602,18 @@ namespace NiL.JS.Core.BaseTypes
                 });
             return this;
         }
+        
+        public JSObject unshift(JSObject[] args)
+        {
+            JSObject res = null;
+            for (int i = 0; i < args.Length; i++)
+            {
+                res = new JSObject();
+                res.Assign(args[i]);
+                data.Insert(0, res);
+            }
+            return length;
+        }
 
         public override string ToString()
         {

@@ -180,7 +180,7 @@ namespace NiL.JS.Core
             return obj;
         }
 
-        [Modules.DontDelete]
+        [Modules.DoNotDelete]
         public override JSObject length
         {
             get
@@ -189,7 +189,7 @@ namespace NiL.JS.Core
                     _length = new Number(0) { attributes = ObjectAttributes.ReadOnly | ObjectAttributes.DontDelete | ObjectAttributes.DontEnum };
                 var pc = info.GetCustomAttributes(typeof(Modules.ParametersCountAttribute), false);
                 if (pc.Length != 0)
-                    _length.iValue = (pc[0] as Modules.ParametersCountAttribute).Value;
+                    _length.iValue = (pc[0] as Modules.ParametersCountAttribute).Count;
                 else
                     _length.iValue = info.GetParameters().Length;
                 return _length;

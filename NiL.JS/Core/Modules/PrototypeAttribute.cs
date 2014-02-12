@@ -10,9 +10,9 @@ namespace NiL.JS.Core.Modules
     {
         public Type PrototypeType { get; private set; }
 
-        public PrototypeAttribute(Type type)
+        public PrototypeAttribute(Type prototypeType)
         {
-            PrototypeType = type;
+            PrototypeType = prototypeType;
         }
     }
 }
