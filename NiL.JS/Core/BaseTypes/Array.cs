@@ -299,12 +299,7 @@ namespace NiL.JS.Core.BaseTypes
 
         public JSObject push(JSObject[] args)
         {
-            for (int i = 0; i < args.Length; i++)
-            {
-                var t = new JSObject();
-                t.Assign(args[i]);
-                data.Add(t);
-            }
+            data.AddRange(args);
             return this;
         }
 
@@ -426,7 +421,7 @@ namespace NiL.JS.Core.BaseTypes
                 if (args.Length > 1)
                 {
                     if (args[1].ValueType <= JSObjectType.Undefined)
-                        pos1 = data.Count;
+                        pos1 = 0;
                     else
                         pos1 = System.Math.Min(Tools.JSObjectToInt(args[1], true), data.Count);
                 }
@@ -606,12 +601,7 @@ namespace NiL.JS.Core.BaseTypes
         public JSObject unshift(JSObject[] args)
         {
             JSObject res = null;
-            for (int i = 0; i < args.Length; i++)
-            {
-                res = new JSObject();
-                res.Assign(args[i]);
-                data.Insert(0, res);
-            }
+            data.InsertRange(0, args);
             return length;
         }
 

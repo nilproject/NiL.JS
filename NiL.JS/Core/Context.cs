@@ -276,7 +276,7 @@ namespace NiL.JS.Core
                             thisBind = c.thisBind;
                     }
                 }
-                else if (thisBind.ValueType <= JSObjectType.Undefined) // было "delete this". Просто вернём к жизни существующий объект
+                else if (thisBind.ValueType < JSObjectType.Undefined) // было "delete this". Просто вернём к жизни существующий объект
                     thisBind.ValueType = JSObjectType.Object;
                 return thisBind;
             }

@@ -44,7 +44,7 @@ namespace NiL.JS.Core
         [Modules.Hidden]
         internal protected static readonly IEnumerator<string> EmptyEnumerator = ((IEnumerable<string>)(new string[0])).GetEnumerator();
         [Modules.Hidden]
-        public static readonly JSObject undefined = new JSObject() { ValueType = JSObjectType.Undefined, attributes = ObjectAttributes.DontDelete | ObjectAttributes.DontEnum };
+        public static readonly JSObject undefined = new JSObject() { ValueType = JSObjectType.Undefined, attributes = ObjectAttributes.DontDelete | ObjectAttributes.DontEnum | ObjectAttributes.ReadOnly };
         [Modules.Hidden]
         public static readonly JSObject Null = new JSObject() { ValueType = JSObjectType.Object, oValue = null, assignCallback = ErrorAssignCallback, attributes = ObjectAttributes.DontDelete | ObjectAttributes.DontEnum };
         [Modules.Hidden]
