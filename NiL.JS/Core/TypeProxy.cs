@@ -148,7 +148,7 @@ namespace NiL.JS.Core
                 {
                     var prot = ctorProxy.DefaultFieldGetter("prototype", false, false);
                     prot.Assign(this);
-                    prot.attributes |= ObjectAttributes.DontDelete | ObjectAttributes.DontEnum | ObjectAttributes.ReadOnly;
+                    prot.attributes = ObjectAttributes.DontDelete | ObjectAttributes.DontEnum | ObjectAttributes.ReadOnly;
                     var ctor = new TypeProxyConstructor(ctorProxy);
                     ctorProxy.DefaultFieldGetter("__proto__", false, false).Assign(GetPrototype(typeof(TypeProxyConstructor)));
                     ctor.attributes = attributes;

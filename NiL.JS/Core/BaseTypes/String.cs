@@ -6,9 +6,6 @@ namespace NiL.JS.Core.BaseTypes
     [Immutable]
     internal class String : EmbeddedType
     {
-        [Hidden]
-        private static readonly String result = new String();
-
         public String()
             : this("")
         {
@@ -66,9 +63,13 @@ namespace NiL.JS.Core.BaseTypes
             int chc = 0;
             if (code == null || code.Length == 0)
                 return new String();
-            chc = Tools.JSObjectToInt(code[0]);
-            result.oValue = ((char)chc).ToString();
-            return result;
+            string res = "";
+            for (int i = 0; i < code.Length; i++)
+            {
+                chc = Tools.JSObjectToInt(code[i]);
+                res += ((char)chc).ToString();
+            }
+            return res;
         }
 
         public JSObject indexOf(JSObject[] args)
@@ -346,9 +347,25 @@ namespace NiL.JS.Core.BaseTypes
             return (oValue as string).Trim();
         }
 
+        [ParametersCount(0)]
         public override JSObject toString(JSObject args)
         {
-            return this;
+            if (typeof(String).IsAssignableFrom(this.GetType()))
+            {
+                if (ValueType == JSObjectType.Object)
+                    return "";
+                return this;
+            }
+            else
+                throw new JSException(TypeProxy.Proxy(new TypeError("Try to call String.toString for not string object.")));
+        }
+
+        public override JSObject valueOf()
+        {
+            if (typeof(String).IsAssignableFrom(this.GetType()))
+                return this;
+            else
+                throw new JSException(TypeProxy.Proxy(new TypeError("Try to call String.valueOf for not string object.")));
         }
 
         private Number _length = null;// new Number(0) { attributes = ObjectAttributes.ReadOnly | ObjectAttributes.DontDelete | ObjectAttributes.DontEnum };
@@ -366,7 +383,10 @@ namespace NiL.JS.Core.BaseTypes
 
         public override string ToString()
         {
-            return oValue as string;
+            if (typeof(String).IsAssignableFrom(this.GetType()))
+                return oValue as string;
+            else
+                throw new JSException(TypeProxy.Proxy(new TypeError("Try to call String.toString for not string object.")));
         }
 
         public override bool Equals(object obj)

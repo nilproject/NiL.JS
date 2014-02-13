@@ -221,7 +221,7 @@ console.log(utc);
             runFile(@"ftest.js");
             //runFile(@"Benchmarks\run.js");
             //sputnicTests();
-            //sputnicTests(@"D:\Projects\NiL.JS\NiL.JSTest\tests\Conformance\15_Native_ECMA_Script_Objects\15.4_Array_Objects\15.4.4_Properties_of_the_Array_Prototype_Object");
+            //sputnicTests(@"tests\Conformance\15_Native_ECMA_Script_Objects\15.5_String_Objects");
             //sputnicTests(@"tests\Conformance\15_Native_ECMA_Script_Objects\15.2_Object_Objects");
             //sputnicTests(@"tests\Conformance\15_Native_ECMA_Script_Objects\15.4_Array_Objects");
             //sputnicTests(@"tests\Conformance\15_Native_ECMA_Script_Objects\15.7_Number_Objects");

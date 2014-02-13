@@ -386,8 +386,6 @@ namespace NiL.JS.Core
                 return "undefined";
             if (ValueType < JSObjectType.Object)
                 GetField("__proto__", true, true);
-            else if (oValue != this && oValue is JSObject)
-                return oValue.ToString();
             var res = ToPrimitiveValue_String_Value().Value;
             if (res is bool)
                 return (bool)res ? "true":"false";
@@ -455,8 +453,6 @@ namespace NiL.JS.Core
                                 return "[object Object]";
                             return "[object " + (ht == typeof(JSObject) ? typeof(System.Object) : ht).Name + "]";
                         }
-                        if (this.oValue is string)
-                            return this.oValue as string;
                         if (this.oValue != null)
                             return "[object " + (this.oValue.GetType() == typeof(JSObject) ? typeof(System.Object) : this.oValue.GetType()).Name + "]";
                         else

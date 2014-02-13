@@ -600,7 +600,6 @@ namespace NiL.JS.Core.BaseTypes
         
         public JSObject unshift(JSObject[] args)
         {
-            JSObject res = null;
             data.InsertRange(0, args);
             return length;
         }

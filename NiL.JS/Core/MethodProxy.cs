@@ -258,45 +258,29 @@ namespace NiL.JS.Core
                         for (int i = 0; i < prms.Length; i++)
                             if (prms[i].ParameterType.IsValueType)
                                 throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError("Invalid parameter (" + prms[i].Name + ") type of method " + minfo)));
-                        var cargs = convertArgs(args, info.GetParameters());
-                        
+                        var cargs = convertArgs(args, prms);
+                        Delegate del = null;
                         switch (prms.Length)
                         {
-                            case 0: res = (Activator.CreateInstance(typeof(Func<object>), target, minfo.MethodHandle.GetFunctionPointer()) as Delegate)
-                                .DynamicInvoke(null); break;
-                            case 1: res = (Activator.CreateInstance(typeof(Func<object, object>), target, minfo.MethodHandle.GetFunctionPointer()) as Delegate)
-                                .DynamicInvoke(cargs[0]); break;
-                            case 2: res = (Activator.CreateInstance(typeof(Func<object, object, object>), target, minfo.MethodHandle.GetFunctionPointer()) as Delegate)
-                                .DynamicInvoke(cargs[0], cargs[1]); break;
-                            case 3: res = (Activator.CreateInstance(typeof(Func<object, object, object, object>), target, minfo.MethodHandle.GetFunctionPointer()) as Delegate)
-                                .DynamicInvoke(cargs[0], cargs[1], cargs[2]); break;
-                            case 4: res = (Activator.CreateInstance(typeof(Func<object, object, object, object, object>), target, minfo.MethodHandle.GetFunctionPointer()) as Delegate)
-                                .DynamicInvoke(cargs[0], cargs[1], cargs[2], cargs[3]); break;
-                            case 5: res = (Activator.CreateInstance(typeof(Func<object, object, object, object, object, object>), target, minfo.MethodHandle.GetFunctionPointer()) as Delegate)
-                                .DynamicInvoke(cargs[0], cargs[1], cargs[2], cargs[3], cargs[4]); break;
-                            case 6: res = (Activator.CreateInstance(typeof(Func<object, object, object, object, object, object, object>), target, minfo.MethodHandle.GetFunctionPointer()) as Delegate)
-                                .DynamicInvoke(cargs[0], cargs[1], cargs[2], cargs[3], cargs[4], cargs[5]); break;
-                            case 7: res = (Activator.CreateInstance(typeof(Func<object, object, object, object, object, object, object, object>), target, minfo.MethodHandle.GetFunctionPointer()) as Delegate)
-                                .DynamicInvoke(cargs[0], cargs[1], cargs[2], cargs[3], cargs[4], cargs[5], cargs[6]); break;
-                            case 8: res = (Activator.CreateInstance(typeof(Func<object, object, object, object, object, object, object, object, object>), target, minfo.MethodHandle.GetFunctionPointer()) as Delegate)
-                                .DynamicInvoke(cargs[0], cargs[1], cargs[2], cargs[3], cargs[4], cargs[5], cargs[6], cargs[7]); break;
-                            case 9: res = (Activator.CreateInstance(typeof(Func<object, object, object, object, object, object, object, object, object, object>), target, minfo.MethodHandle.GetFunctionPointer()) as Delegate)
-                                .DynamicInvoke(cargs[0], cargs[1], cargs[2], cargs[3], cargs[4], cargs[5], cargs[6], cargs[7], cargs[8]); break;
-                            case 10: res = (Activator.CreateInstance(typeof(Func<object, object, object, object, object, object, object, object, object, object, object>), target, minfo.MethodHandle.GetFunctionPointer()) as Delegate)
-                                .DynamicInvoke(cargs[0], cargs[1], cargs[2], cargs[3], cargs[4], cargs[5], cargs[5], cargs[7], cargs[8], cargs[9]); break;
-                            case 11: res = (Activator.CreateInstance(typeof(Func<object, object, object, object, object, object, object, object, object, object, object, object>), target, minfo.MethodHandle.GetFunctionPointer()) as Delegate)
-                                .DynamicInvoke(cargs[0], cargs[1], cargs[2], cargs[3], cargs[4], cargs[5], cargs[5], cargs[7], cargs[8], cargs[9], cargs[10]); break;
-                            case 12: res = (Activator.CreateInstance(typeof(Func<object, object, object, object, object, object, object, object, object, object, object, object, object>), target, minfo.MethodHandle.GetFunctionPointer()) as Delegate)
-                                .DynamicInvoke(cargs[0], cargs[1], cargs[2], cargs[3], cargs[4], cargs[5], cargs[5], cargs[7], cargs[8], cargs[9], cargs[10], cargs[11]); break;
-                            case 13: res = (Activator.CreateInstance(typeof(Func<object, object, object, object, object, object, object, object, object, object, object, object, object, object>), target, minfo.MethodHandle.GetFunctionPointer()) as Delegate)
-                                .DynamicInvoke(cargs[0], cargs[1], cargs[2], cargs[3], cargs[4], cargs[5], cargs[5], cargs[7], cargs[8], cargs[9], cargs[10], cargs[11], cargs[12]); break;
-                            case 14: res = (Activator.CreateInstance(typeof(Func<object, object, object, object, object, object, object, object, object, object, object, object, object, object, object>), target, minfo.MethodHandle.GetFunctionPointer()) as Delegate)
-                                .DynamicInvoke(cargs[0], cargs[1], cargs[2], cargs[3], cargs[4], cargs[5], cargs[5], cargs[7], cargs[8], cargs[9], cargs[10], cargs[11], cargs[12], cargs[13]); break;
-                            case 15: res = (Activator.CreateInstance(typeof(Func<object, object, object, object, object, object, object, object, object, object, object, object, object, object, object, object>), target, minfo.MethodHandle.GetFunctionPointer()) as Delegate)
-                                .DynamicInvoke(cargs[0], cargs[1], cargs[2], cargs[3], cargs[4], cargs[5], cargs[5], cargs[7], cargs[8], cargs[9], cargs[10], cargs[11], cargs[12], cargs[13], cargs[14]); break;
-                            case 16: res = (Activator.CreateInstance(typeof(Func<object, object, object, object, object, object, object, object, object, object, object, object, object, object, object, object, object>), target, minfo.MethodHandle.GetFunctionPointer()) as Delegate)
-                                .DynamicInvoke(cargs[0], cargs[1], cargs[2], cargs[3], cargs[4], cargs[5], cargs[5], cargs[7], cargs[8], cargs[9], cargs[10], cargs[11], cargs[12], cargs[13], cargs[14], cargs[15]); break;
+                            case 0: del = (Activator.CreateInstance(typeof(Func<object>), target, minfo.MethodHandle.GetFunctionPointer()) as Delegate); break;
+                            case 1: del = (Activator.CreateInstance(typeof(Func<object, object>), target, minfo.MethodHandle.GetFunctionPointer()) as Delegate); break;
+                            case 2: del = (Activator.CreateInstance(typeof(Func<object, object, object>), target, minfo.MethodHandle.GetFunctionPointer()) as Delegate); break;
+                            case 3: del = (Activator.CreateInstance(typeof(Func<object, object, object, object>), target, minfo.MethodHandle.GetFunctionPointer()) as Delegate); break;
+                            case 4: del = (Activator.CreateInstance(typeof(Func<object, object, object, object, object>), target, minfo.MethodHandle.GetFunctionPointer()) as Delegate); break;
+                            case 5: del = (Activator.CreateInstance(typeof(Func<object, object, object, object, object, object>), target, minfo.MethodHandle.GetFunctionPointer()) as Delegate); break;
+                            case 6: del = (Activator.CreateInstance(typeof(Func<object, object, object, object, object, object, object>), target, minfo.MethodHandle.GetFunctionPointer()) as Delegate); break;
+                            case 7: del = (Activator.CreateInstance(typeof(Func<object, object, object, object, object, object, object, object>), target, minfo.MethodHandle.GetFunctionPointer()) as Delegate); break;
+                            case 8: del = (Activator.CreateInstance(typeof(Func<object, object, object, object, object, object, object, object, object>), target, minfo.MethodHandle.GetFunctionPointer()) as Delegate); break;
+                            case 9: del = (Activator.CreateInstance(typeof(Func<object, object, object, object, object, object, object, object, object, object>), target, minfo.MethodHandle.GetFunctionPointer()) as Delegate); break;
+                            case 10: del = (Activator.CreateInstance(typeof(Func<object, object, object, object, object, object, object, object, object, object, object>), target, minfo.MethodHandle.GetFunctionPointer()) as Delegate); break;
+                            case 11: del = (Activator.CreateInstance(typeof(Func<object, object, object, object, object, object, object, object, object, object, object, object>), target, minfo.MethodHandle.GetFunctionPointer()) as Delegate); break;
+                            case 12: del = (Activator.CreateInstance(typeof(Func<object, object, object, object, object, object, object, object, object, object, object, object, object>), target, minfo.MethodHandle.GetFunctionPointer()) as Delegate); break;
+                            case 13: del = (Activator.CreateInstance(typeof(Func<object, object, object, object, object, object, object, object, object, object, object, object, object, object>), target, minfo.MethodHandle.GetFunctionPointer()) as Delegate); break;
+                            case 14: del = (Activator.CreateInstance(typeof(Func<object, object, object, object, object, object, object, object, object, object, object, object, object, object, object>), target, minfo.MethodHandle.GetFunctionPointer()) as Delegate); break;
+                            case 15: del = (Activator.CreateInstance(typeof(Func<object, object, object, object, object, object, object, object, object, object, object, object, object, object, object, object>), target, minfo.MethodHandle.GetFunctionPointer()) as Delegate); break;
+                            case 16: del = (Activator.CreateInstance(typeof(Func<object, object, object, object, object, object, object, object, object, object, object, object, object, object, object, object, object>), target, minfo.MethodHandle.GetFunctionPointer()) as Delegate); break;
                         }
+                        res = del.DynamicInvoke(cargs);
                     }
                     else
                     {
