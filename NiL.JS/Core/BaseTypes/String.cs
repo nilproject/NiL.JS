@@ -208,7 +208,7 @@ namespace NiL.JS.Core.BaseTypes
                 }
             }
             else
-                pos1 = int.MaxValue;
+                pos1 = (oValue as string).Length;
             return (oValue as string).Substring(pos0, pos1 - pos0);
         }
         
@@ -245,7 +245,11 @@ namespace NiL.JS.Core.BaseTypes
                         }
                 }
             }
-            var res = (oValue as string).Split(new string[] { fstr }, limit, StringSplitOptions.None);
+            string[] res = null;
+            if (string.IsNullOrEmpty(fstr))
+                return new Array(System.Text.UTF8Encoding.UTF8.GetChars(System.Text.UTF8Encoding.UTF8.GetBytes(oValue as string)));
+            else
+                res = (oValue as string).Split(new string[] { fstr }, limit, StringSplitOptions.None);
             return new Array(res);
         }
 

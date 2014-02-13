@@ -28,14 +28,14 @@
 print = console.log;
 
 load('base.js');
-load('richards.js');
-load('deltablue.js');
+//load('richards.js');
+//load('deltablue.js');
 load('crypto.js');
 //load('raytrace.js');
-load('earley-boyer.js');
-load('regexp.js');
-load('splay.js');
-load('navier-stokes.js');
+//load('earley-boyer.js');
+//load('regexp.js');
+//load('splay.js');
+//load('navier-stokes.js');
 
 var success = true;
 

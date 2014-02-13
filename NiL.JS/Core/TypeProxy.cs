@@ -21,16 +21,30 @@ namespace NiL.JS.Core
                 return JSObject.Null;
             else if (value is JSObject)
                 return value as JSObject;
+            else if (value is sbyte)
+                return (int)(sbyte)value;
+            else if (value is byte)
+                return (int)(byte)value;
+            else if (value is short)
+                return (int)(short)value;
+            else if (value is ushort)
+                return (int)(ushort)value;
             else if (value is int)
                 return (int)value;
+            else if (value is uint)
+                return (double)(uint)value;
             else if (value is long)
                 return (double)(long)value;
+            else if (value is ulong)
+                return (double)(ulong)value;
             else if (value is float)
                 return (double)(float)value;
             else if (value is double)
                 return (double)value;
             else if (value is string)
-                return (string)value;
+                return value.ToString();
+            else if (value is char)
+                return value.ToString();
             else if (value is bool)
                 return (bool)value;
             else

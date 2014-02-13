@@ -37,10 +37,13 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * i + 3 - 2 / 2; }
         private static void runFile(string filename)
         {
             Console.WriteLine("Processing file: " + filename);
-            Console.WriteLine("-------------------------------------");
             var f = new FileStream(filename, FileMode.Open, FileAccess.Read);
             var sr = new StreamReader(f);
+            var sw = new System.Diagnostics.Stopwatch();
+            sw.Start();
             var s = new Script(sr.ReadToEnd());
+            sw.Stop();
+            Console.WriteLine("Compile time: " + sw.Elapsed);
             s.Context.GetField("$ERROR").Assign(new CallableField((t, x) =>
             {
                 Console.WriteLine("ERROR: " + x.GetField("0", true, false).Value);
@@ -61,6 +64,7 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * i + 3 - 2 / 2; }
                 Console.WriteLine("FAIL: " + x.GetField("0", true, false).Value);
                 return null;
             }));
+            Console.WriteLine("-------------------------------------");
             s.Invoke();
             sr.Dispose();
             f.Dispose();
@@ -214,11 +218,12 @@ console.log(utc);
                 return NiL.JS.Core.Context.Eval(context, eargs);
             }));
             //benchmark();
-            //runFile(@"ftest.js");
+            runFile(@"ftest.js");
             //runFile(@"Benchmarks\run.js");
             //sputnicTests();
+            //sputnicTests(@"D:\Projects\NiL.JS\NiL.JSTest\tests\Conformance\15_Native_ECMA_Script_Objects\15.4_Array_Objects\15.4.4_Properties_of_the_Array_Prototype_Object");
             //sputnicTests(@"tests\Conformance\15_Native_ECMA_Script_Objects\15.2_Object_Objects");
-            sputnicTests(@"tests\Conformance\15_Native_ECMA_Script_Objects\15.4_Array_Objects");
+            //sputnicTests(@"tests\Conformance\15_Native_ECMA_Script_Objects\15.4_Array_Objects");
             //sputnicTests(@"tests\Conformance\15_Native_ECMA_Script_Objects\15.7_Number_Objects");
             //testEx();
 

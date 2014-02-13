@@ -752,7 +752,7 @@ namespace NiL.JS.Core.BaseTypes
                 _arguments = args;
                 internalContext.InitField("arguments").Assign(_arguments);
                 if (!string.IsNullOrEmpty(Name))
-                    internalContext.InitField(Name).Assign(this.Clone() as JSObject);
+                    internalContext.InitField(Name).Assign(this);
                 int i = 0;
                 int min = System.Math.Min(args.GetField("length", true, false).iValue, argumentsNames.Length);
                 for (; i < min; i++)
