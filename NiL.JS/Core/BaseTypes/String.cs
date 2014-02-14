@@ -6,6 +6,20 @@ namespace NiL.JS.Core.BaseTypes
     [Immutable]
     internal class String : EmbeddedType
     {
+        public static JSObject fromCharCode(JSObject[] code)
+        {
+            int chc = 0;
+            if (code == null || code.Length == 0)
+                return new String();
+            string res = "";
+            for (int i = 0; i < code.Length; i++)
+            {
+                chc = Tools.JSObjectToInt(code[i]);
+                res += ((char)chc).ToString();
+            }
+            return res;
+        }
+
         public String()
             : this("")
         {
@@ -55,20 +69,6 @@ namespace NiL.JS.Core.BaseTypes
             string res = oValue.ToString();
             for (var i = 0; i < args.Length; i++)
                 res += args[i].ToString();
-            return res;
-        }
-
-        public static JSObject fromCharCode(JSObject[] code)
-        {
-            int chc = 0;
-            if (code == null || code.Length == 0)
-                return new String();
-            string res = "";
-            for (int i = 0; i < code.Length; i++)
-            {
-                chc = Tools.JSObjectToInt(code[i]);
-                res += ((char)chc).ToString();
-            }
             return res;
         }
 
@@ -149,6 +149,36 @@ namespace NiL.JS.Core.BaseTypes
             string str0 = oValue.ToString();
             string str1 = args.Length > 0 ? args[0].ToString() : "";
             return string.Compare(str0, str1, StringComparison.Ordinal);
+        }
+
+        public JSObject match(JSObject args)
+        {
+            var a0 = args.GetField("0", true, false);
+            if (a0.ValueType == JSObjectType.Object && a0.oValue is RegExp)
+            {
+                var regex = a0.oValue as RegExp;
+                if (!regex.global)
+                {
+                    args.GetField("0", false, true).Assign(this);
+                    return regex.exec(args);
+                }
+                else
+                {
+                    var groups = regex.regEx.Match(oValue as string ?? this.ToString()).Groups;
+                    var res = new Array(groups.Count);
+                    for (int i = 0; i < groups.Count; i++)
+                        res.data[i] = groups[i].Value;
+                    return res;
+                }
+            }
+            else
+            {
+                var groups = new System.Text.RegularExpressions.Regex((a0.ValueType > JSObjectType.Undefined ? (object)a0 : "").ToString(), System.Text.RegularExpressions.RegexOptions.ECMAScript).Match(oValue as string ?? this.ToString()).Groups;
+                var res = new Array(groups.Count);
+                for (int i = 0; i < groups.Count; i++)
+                    res.data[i] = groups[i].Value;
+                return res;
+            }
         }
 
         public JSObject replace(JSObject[] args)

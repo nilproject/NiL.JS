@@ -41,7 +41,7 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [Hidden]
-        private List<JSObject> data;
+        internal List<JSObject> data;
 
         public Array()
         {
