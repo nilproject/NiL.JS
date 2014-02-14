@@ -335,7 +335,7 @@ namespace NiL.JS.Core.BaseTypes
                 bool neg = res < 0;
                 if (neg)
                     res = -res;
-                string sres = (res % r).ToString();
+                string sres = Tools.NumChars[res % r].ToString();
                 res /= r;
                 while (res != 0)
                 {

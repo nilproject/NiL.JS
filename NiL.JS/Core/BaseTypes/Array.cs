@@ -70,7 +70,11 @@ namespace NiL.JS.Core.BaseTypes
         {
             data = new List<JSObject>(collection.Count);
             foreach (var o in collection)
-                data.Add(TypeProxy.Proxy(o));
+            {
+                var t = TypeProxy.Proxy(o);
+                t.assignCallback = null;
+                data.Add(t);
+            }
         }
 
         public void Add(JSObject obj)
