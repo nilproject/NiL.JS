@@ -151,6 +151,17 @@ namespace NiL.JS.Core.BaseTypes
             return string.Compare(str0, str1, StringComparison.Ordinal);
         }
 
+        public JSObject replace(JSObject[] args)
+        {
+            if (args.Length == 0)
+                return this;
+            string pattern = args.Length > 0 ? args[0].ToString() : "";
+            string replace = args.Length > 1 ? args[1].ToString() : "undefined";
+            if (string.IsNullOrEmpty(pattern))
+                return replace + oValue;
+            return oValue.ToString().Replace(pattern, replace);
+        }
+
         public JSObject slice(JSObject[] args)
         {
             if (args.Length == 0)
@@ -266,7 +277,7 @@ namespace NiL.JS.Core.BaseTypes
             int pos0 = 0;
             if (args.Length > 1)
             {
-                switch (args[1].ValueType)
+                switch (args[0].ValueType)
                 {
                     case JSObjectType.Int:
                     case JSObjectType.Bool:
