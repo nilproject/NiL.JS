@@ -80,7 +80,7 @@ namespace NiL.JS.Core.BaseTypes
             int pos = 0;
             if (args.Length > 1)
             {
-                switch(args[1].ValueType)
+                switch (args[1].ValueType)
                 {
                     case JSObjectType.Int:
                     case JSObjectType.Bool:
@@ -155,11 +155,87 @@ namespace NiL.JS.Core.BaseTypes
         {
             if (args.Length == 0)
                 return this;
-            string pattern = args.Length > 0 ? args[0].ToString() : "";
-            string replace = args.Length > 1 ? args[1].ToString() : "undefined";
-            if (string.IsNullOrEmpty(pattern))
-                return replace + oValue;
-            return oValue.ToString().Replace(pattern, replace);
+            if (args[0].ValueType == JSObjectType.Object && args[0].oValue is RegExp)
+            {
+                if (args.Length > 1 && args[1].oValue is Function)
+                {
+                    var oac = assignCallback;
+                    assignCallback = null;
+                    string temp = this.oValue as string;
+                    var f = args[1].oValue as Function;
+                    var match = new String();
+                    match.assignCallback = null;
+                    var margs = new JSObject(true) { ValueType = JSObjectType.Object, oValue = new Arguments(), prototype = JSObject.GlobalPrototype };
+                    JSObject len = 1;
+                    len.assignCallback = null;
+                    len.attributes = ObjectAttributes.DontDelete | ObjectAttributes.DontEnum | ObjectAttributes.ReadOnly;
+                    margs.fields["length"] = len;
+                    margs.fields["0"] = match;
+                    match.oValue = (args[0].oValue as RegExp).regEx.Replace(oValue.ToString(), new System.Text.RegularExpressions.MatchEvaluator(
+                        (m) =>
+                        {
+                            this.oValue = temp;
+                            this.ValueType = JSObjectType.String;
+                            len.iValue = 1 + m.Groups.Count + 1 + 1;
+                            match.oValue = m.Value;
+                            JSObject t = m.Index;
+                            for (int i = 0; i < m.Groups.Count; i++)
+                            {
+                                t = m.Groups[i].Value;
+                                t.assignCallback = null;
+                                margs.fields[(i + 1).ToString()] = t;
+                            }
+                            t = m.Index;
+                            t.assignCallback = null;
+                            margs.fields[(len.iValue - 2).ToString()] = t;
+                            margs.fields[(len.iValue - 1).ToString()] = this;
+                            return f.Invoke(margs).ToString();
+                        }), (args[0].oValue as RegExp).global ? int.MaxValue : 1);
+                    this.oValue = temp;
+                    this.ValueType = JSObjectType.String;
+                    assignCallback = oac;
+                    return match;
+                }
+                else
+                {
+                    return (args[0].oValue as RegExp).regEx.Replace(oValue.ToString(), args.Length > 1 ? args[1].ToString() : "undefined", (args[0].oValue as RegExp).global ? int.MaxValue : 1);
+                }
+            }
+            else
+            {
+                string pattern = args.Length > 0 ? args[0].ToString() : "";
+                if (args.Length > 1 && args[1].oValue is Function)
+                {
+                    var oac = assignCallback;
+                    assignCallback = null;
+                    string othis = this.oValue as string;
+                    var f = args[1].oValue as Function;
+                    var match = new String();
+                    var margs = new JSObject(true) { ValueType = JSObjectType.Object, oValue = new Arguments(), prototype = JSObject.GlobalPrototype };
+                    JSObject alen = 3;
+                    alen.assignCallback = null;
+                    alen.attributes = ObjectAttributes.DontDelete | ObjectAttributes.DontEnum | ObjectAttributes.ReadOnly;
+                    margs.fields["length"] = alen;
+                    margs.fields["0"] = pattern;
+                    margs.fields["2"] = this;
+                    int index = oValue.ToString().IndexOf(pattern);
+                    if (index == -1)
+                        return this;
+                    margs.fields["1"] = index;
+                    var res = othis.Substring(0, index) + f.Invoke(margs).ToString() + othis.Substring(index + pattern.Length);
+                    oValue = othis;
+                    ValueType = JSObjectType.String;
+                    assignCallback = oac;
+                    return res;
+                }
+                else
+                {
+                    string replace = args.Length > 1 ? args[1].ToString() : "undefined";
+                    if (string.IsNullOrEmpty(pattern))
+                        return replace + oValue;
+                    return oValue.ToString().Replace(pattern, replace);
+                }
+            }
         }
 
         public JSObject slice(JSObject[] args)
@@ -223,7 +299,7 @@ namespace NiL.JS.Core.BaseTypes
                 pos1 = (oValue as string).Length;
             return (oValue as string).Substring(pos0, pos1 - pos0);
         }
-        
+
         public JSObject split(JSObject[] args)
         {
             if (args.Length == 0)
@@ -449,7 +525,7 @@ namespace NiL.JS.Core.BaseTypes
         {
             return "<tt>" + oValue + "</tt>";
         }
-        
+
         public JSObject fontcolor(JSObject arg)
         {
             return "<font color=\"" + arg.Value + "\">" + oValue + "</font>";
@@ -489,7 +565,7 @@ namespace NiL.JS.Core.BaseTypes
         }
         #endregion
 
-        public static implicit operator String (string val)
+        public static implicit operator String(string val)
         {
             return new String(val);
         }

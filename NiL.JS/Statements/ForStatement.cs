@@ -208,7 +208,7 @@ namespace NiL.JS.Statements
         public override string ToString()
         {
             var istring = init.ToString();
-            return "for (" + istring.Substring(1, istring.Length - 2) + "; " +condition +"; " + post + ")" + (body is CodeBlock ? "" : Environment.NewLine + "  ") + body;
+            return "for (" + istring.Substring(1, istring.Length - 2) + "; " + condition + "; " + post + ")" + (body is CodeBlock ? "" : Environment.NewLine + "  ") + body;
         }
     }
 }

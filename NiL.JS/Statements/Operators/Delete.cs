@@ -13,18 +13,50 @@ namespace NiL.JS.Statements.Operators
 
         public override JSObject Invoke(Context context)
         {
-            var temp = first.InvokeForAssing(context);
-            tempResult.ValueType = JSObjectType.Bool;
-            if (temp.ValueType <= JSObjectType.NotExistInObject)
-                tempResult.iValue = 1;
-            else if ((temp.attributes & ObjectAttributes.DontDelete) == 0)
+            var otb = context.thisBind;
+            var outb = context.updateThisBind;
+            try
             {
-                tempResult.iValue = 1;
-                temp.ValueType = JSObjectType.NotExist;
+                context.updateThisBind = true;
+                var temp = first.InvokeForAssing(context);
+                tempResult.ValueType = JSObjectType.Bool;
+                if (temp.ValueType <= JSObjectType.NotExistInObject)
+                    tempResult.iValue = 1;
+                else if ((temp.attributes & ObjectAttributes.Argument) != 0)
+                {
+                    if (first is GetFieldStatement)
+                    {
+                        tempResult.iValue = 1;
+                        var args = context.thisBind;
+                        foreach (var a in args.fields)
+                        {
+                            if (a.Value == temp)
+                            {
+                                args.fields.Remove(a.Key);
+                                return tempResult;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        tempResult.iValue = 0;
+                        return tempResult;
+                    }
+                }
+                else if ((temp.attributes & ObjectAttributes.DontDelete) == 0)
+                {
+                    tempResult.iValue = 1;
+                    temp.ValueType = JSObjectType.NotExist;
+                }
+                else
+                    tempResult.iValue = 0;
+                return tempResult;
             }
-            else
-                tempResult.iValue = 0;
-            return tempResult;
+            finally
+            {
+                context.thisBind = otb;
+                context.updateThisBind = outb;
+            }
         }
 
         public override string ToString()

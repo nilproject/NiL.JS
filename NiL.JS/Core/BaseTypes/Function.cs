@@ -19,7 +19,7 @@ namespace NiL.JS.Core.BaseTypes
             public RT Invoke<RT>()
             {
                 var eargs = new JSObject();
-                eargs.oValue = "[object Arguments]".Clone();
+                eargs.oValue = new Arguments();
                 eargs.ValueType = JSObjectType.Object;
                 eargs.GetField("length", false, true).Assign(0);
                 return (RT)function.Invoke(eargs).Value;
@@ -28,7 +28,7 @@ namespace NiL.JS.Core.BaseTypes
             public RT Invoke<RT, T1>(T1 a1)
             {
                 var eargs = new JSObject();
-                eargs.oValue = "[object Arguments]".Clone();
+                eargs.oValue = new Arguments();
                 eargs.ValueType = JSObjectType.Object;
                 eargs.GetField("length", false, true).Assign(2);
                 eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
@@ -38,7 +38,7 @@ namespace NiL.JS.Core.BaseTypes
             public RT Invoke<RT, T1, T2>(T1 a1, T2 a2)
             {
                 var eargs = new JSObject();
-                eargs.oValue = "[object Arguments]".Clone();
+                eargs.oValue = new Arguments();
                 eargs.ValueType = JSObjectType.Object;
                 eargs.GetField("length", false, true).Assign(2);
                 eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
@@ -49,7 +49,7 @@ namespace NiL.JS.Core.BaseTypes
             public RT Invoke<RT, T1, T2, T3>(T1 a1, T2 a2, T3 a3)
             {
                 var eargs = new JSObject();
-                eargs.oValue = "[object Arguments]".Clone();
+                eargs.oValue = new Arguments();
                 eargs.ValueType = JSObjectType.Object;
                 eargs.GetField("length", false, true).Assign(3);
                 eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
@@ -61,7 +61,7 @@ namespace NiL.JS.Core.BaseTypes
             public RT Invoke<RT, T1, T2, T3, T4>(T1 a1, T2 a2, T3 a3, T4 a4)
             {
                 var eargs = new JSObject();
-                eargs.oValue = "[object Arguments]".Clone();
+                eargs.oValue = new Arguments();
                 eargs.ValueType = JSObjectType.Object;
                 eargs.GetField("length", false, true).Assign(4);
                 eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
@@ -74,7 +74,7 @@ namespace NiL.JS.Core.BaseTypes
             public RT Invoke<RT, T1, T2, T3, T4, T5>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5)
             {
                 var eargs = new JSObject();
-                eargs.oValue = "[object Arguments]".Clone();
+                eargs.oValue = new Arguments();
                 eargs.ValueType = JSObjectType.Object;
                 eargs.GetField("length", false, true).Assign(5);
                 eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
@@ -88,7 +88,7 @@ namespace NiL.JS.Core.BaseTypes
             public RT Invoke<RT, T1, T2, T3, T4, T5, T6>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6)
             {
                 var eargs = new JSObject();
-                eargs.oValue = "[object Arguments]".Clone();
+                eargs.oValue = new Arguments();
                 eargs.ValueType = JSObjectType.Object;
                 eargs.GetField("length", false, true).Assign(6);
                 eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
@@ -103,7 +103,7 @@ namespace NiL.JS.Core.BaseTypes
             public RT Invoke<RT, T1, T2, T3, T4, T5, T6, T7>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7)
             {
                 var eargs = new JSObject();
-                eargs.oValue = "[object Arguments]".Clone();
+                eargs.oValue = new Arguments();
                 eargs.ValueType = JSObjectType.Object;
                 eargs.GetField("length", false, true).Assign(7);
                 eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
@@ -119,7 +119,7 @@ namespace NiL.JS.Core.BaseTypes
             public RT Invoke<RT, T1, T2, T3, T4, T5, T6, T7, T8>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8)
             {
                 var eargs = new JSObject();
-                eargs.oValue = "[object Arguments]".Clone();
+                eargs.oValue = new Arguments();
                 eargs.ValueType = JSObjectType.Object;
                 eargs.GetField("length", false, true).Assign(8);
                 eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
@@ -136,7 +136,7 @@ namespace NiL.JS.Core.BaseTypes
             public RT Invoke<RT, T1, T2, T3, T4, T5, T6, T7, T8, T9>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9)
             {
                 var eargs = new JSObject();
-                eargs.oValue = "[object Arguments]".Clone();
+                eargs.oValue = new Arguments();
                 eargs.ValueType = JSObjectType.Object;
                 eargs.GetField("length", false, true).Assign(9);
                 eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
@@ -154,7 +154,7 @@ namespace NiL.JS.Core.BaseTypes
             public RT Invoke<RT, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10)
             {
                 var eargs = new JSObject();
-                eargs.oValue = "[object Arguments]".Clone();
+                eargs.oValue = new Arguments();
                 eargs.ValueType = JSObjectType.Object;
                 eargs.GetField("length", false, true).Assign(10);
                 eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
@@ -173,7 +173,7 @@ namespace NiL.JS.Core.BaseTypes
             public RT Invoke<RT, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10, T11 a11)
             {
                 var eargs = new JSObject();
-                eargs.oValue = "[object Arguments]".Clone();
+                eargs.oValue = new Arguments();
                 eargs.ValueType = JSObjectType.Object;
                 eargs.GetField("length", false, true).Assign(11);
                 eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
@@ -193,7 +193,7 @@ namespace NiL.JS.Core.BaseTypes
             public RT Invoke<RT, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10, T11 a11, T12 a12)
             {
                 var eargs = new JSObject();
-                eargs.oValue = "[object Arguments]".Clone();
+                eargs.oValue = new Arguments();
                 eargs.ValueType = JSObjectType.Object;
                 eargs.GetField("length", false, true).Assign(12);
                 eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
@@ -214,7 +214,7 @@ namespace NiL.JS.Core.BaseTypes
             public RT Invoke<RT, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10, T11 a11, T12 a12, T13 a13)
             {
                 var eargs = new JSObject();
-                eargs.oValue = "[object Arguments]".Clone();
+                eargs.oValue = new Arguments();
                 eargs.ValueType = JSObjectType.Object;
                 eargs.GetField("length", false, true).Assign(13);
                 eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
@@ -236,7 +236,7 @@ namespace NiL.JS.Core.BaseTypes
             public RT Invoke<RT, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10, T11 a11, T12 a12, T13 a13, T14 a14)
             {
                 var eargs = new JSObject();
-                eargs.oValue = "[object Arguments]".Clone();
+                eargs.oValue = new Arguments();
                 eargs.ValueType = JSObjectType.Object;
                 eargs.GetField("length", false, true).Assign(14);
                 eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
@@ -259,7 +259,7 @@ namespace NiL.JS.Core.BaseTypes
             public RT Invoke<RT, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10, T11 a11, T12 a12, T13 a13, T14 a14, T15 a15)
             {
                 var eargs = new JSObject();
-                eargs.oValue = "[object Arguments]".Clone();
+                eargs.oValue = new Arguments();
                 eargs.ValueType = JSObjectType.Object;
                 eargs.GetField("length", false, true).Assign(15);
                 eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
@@ -283,7 +283,7 @@ namespace NiL.JS.Core.BaseTypes
             public RT Invoke<RT, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10, T11 a11, T12 a12, T13 a13, T14 a14, T15 a15, T16 a16)
             {
                 var eargs = new JSObject();
-                eargs.oValue = "[object Arguments]".Clone();
+                eargs.oValue = new Arguments();
                 eargs.ValueType = JSObjectType.Object;
                 eargs.GetField("length", false, true).Assign(16);
                 eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
@@ -308,7 +308,7 @@ namespace NiL.JS.Core.BaseTypes
             public void Invoke()
             {
                 var eargs = new JSObject();
-                eargs.oValue = "[object Arguments]".Clone();
+                eargs.oValue = new Arguments();
                 eargs.ValueType = JSObjectType.Object;
                 eargs.GetField("length", false, true).Assign(0);
                 function.Invoke(eargs);
@@ -317,7 +317,7 @@ namespace NiL.JS.Core.BaseTypes
             public void Invoke<T1>(T1 a1)
             {
                 var eargs = new JSObject();
-                eargs.oValue = "[object Arguments]".Clone();
+                eargs.oValue = new Arguments();
                 eargs.ValueType = JSObjectType.Object;
                 eargs.GetField("length", false, true).Assign(2);
                 eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
@@ -327,7 +327,7 @@ namespace NiL.JS.Core.BaseTypes
             public void Invoke<T1, T2>(T1 a1, T2 a2)
             {
                 var eargs = new JSObject();
-                eargs.oValue = "[object Arguments]".Clone();
+                eargs.oValue = new Arguments();
                 eargs.ValueType = JSObjectType.Object;
                 eargs.GetField("length", false, true).Assign(2);
                 eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
@@ -338,7 +338,7 @@ namespace NiL.JS.Core.BaseTypes
             public void Invoke<T1, T2, T3>(T1 a1, T2 a2, T3 a3)
             {
                 var eargs = new JSObject();
-                eargs.oValue = "[object Arguments]".Clone();
+                eargs.oValue = new Arguments();
                 eargs.ValueType = JSObjectType.Object;
                 eargs.GetField("length", false, true).Assign(3);
                 eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
@@ -350,7 +350,7 @@ namespace NiL.JS.Core.BaseTypes
             public void Invoke<T1, T2, T3, T4>(T1 a1, T2 a2, T3 a3, T4 a4)
             {
                 var eargs = new JSObject();
-                eargs.oValue = "[object Arguments]".Clone();
+                eargs.oValue = new Arguments();
                 eargs.ValueType = JSObjectType.Object;
                 eargs.GetField("length", false, true).Assign(4);
                 eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
@@ -363,7 +363,7 @@ namespace NiL.JS.Core.BaseTypes
             public void Invoke<T1, T2, T3, T4, T5>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5)
             {
                 var eargs = new JSObject();
-                eargs.oValue = "[object Arguments]".Clone();
+                eargs.oValue = new Arguments();
                 eargs.ValueType = JSObjectType.Object;
                 eargs.GetField("length", false, true).Assign(5);
                 eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
@@ -377,7 +377,7 @@ namespace NiL.JS.Core.BaseTypes
             public void Invoke<T1, T2, T3, T4, T5, T6>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6)
             {
                 var eargs = new JSObject();
-                eargs.oValue = "[object Arguments]".Clone();
+                eargs.oValue = new Arguments();
                 eargs.ValueType = JSObjectType.Object;
                 eargs.GetField("length", false, true).Assign(6);
                 eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
@@ -392,7 +392,7 @@ namespace NiL.JS.Core.BaseTypes
             public void Invoke<T1, T2, T3, T4, T5, T6, T7>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7)
             {
                 var eargs = new JSObject();
-                eargs.oValue = "[object Arguments]".Clone();
+                eargs.oValue = new Arguments();
                 eargs.ValueType = JSObjectType.Object;
                 eargs.GetField("length", false, true).Assign(7);
                 eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
@@ -408,7 +408,7 @@ namespace NiL.JS.Core.BaseTypes
             public void Invoke<T1, T2, T3, T4, T5, T6, T7, T8>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8)
             {
                 var eargs = new JSObject();
-                eargs.oValue = "[object Arguments]".Clone();
+                eargs.oValue = new Arguments();
                 eargs.ValueType = JSObjectType.Object;
                 eargs.GetField("length", false, true).Assign(8);
                 eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
@@ -425,7 +425,7 @@ namespace NiL.JS.Core.BaseTypes
             public void Invoke<T1, T2, T3, T4, T5, T6, T7, T8, T9>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9)
             {
                 var eargs = new JSObject();
-                eargs.oValue = "[object Arguments]".Clone();
+                eargs.oValue = new Arguments();
                 eargs.ValueType = JSObjectType.Object;
                 eargs.GetField("length", false, true).Assign(9);
                 eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
@@ -443,7 +443,7 @@ namespace NiL.JS.Core.BaseTypes
             public void Invoke<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10)
             {
                 var eargs = new JSObject();
-                eargs.oValue = "[object Arguments]".Clone();
+                eargs.oValue = new Arguments();
                 eargs.ValueType = JSObjectType.Object;
                 eargs.GetField("length", false, true).Assign(10);
                 eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
@@ -462,7 +462,7 @@ namespace NiL.JS.Core.BaseTypes
             public void Invoke<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10, T11 a11)
             {
                 var eargs = new JSObject();
-                eargs.oValue = "[object Arguments]".Clone();
+                eargs.oValue = new Arguments();
                 eargs.ValueType = JSObjectType.Object;
                 eargs.GetField("length", false, true).Assign(11);
                 eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
@@ -482,7 +482,7 @@ namespace NiL.JS.Core.BaseTypes
             public void Invoke<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10, T11 a11, T12 a12)
             {
                 var eargs = new JSObject();
-                eargs.oValue = "[object Arguments]".Clone();
+                eargs.oValue = new Arguments();
                 eargs.ValueType = JSObjectType.Object;
                 eargs.GetField("length", false, true).Assign(12);
                 eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
@@ -503,7 +503,7 @@ namespace NiL.JS.Core.BaseTypes
             public void Invoke<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10, T11 a11, T12 a12, T13 a13)
             {
                 var eargs = new JSObject();
-                eargs.oValue = "[object Arguments]".Clone();
+                eargs.oValue = new Arguments();
                 eargs.ValueType = JSObjectType.Object;
                 eargs.GetField("length", false, true).Assign(13);
                 eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
@@ -525,7 +525,7 @@ namespace NiL.JS.Core.BaseTypes
             public void Invoke<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10, T11 a11, T12 a12, T13 a13, T14 a14)
             {
                 var eargs = new JSObject();
-                eargs.oValue = "[object Arguments]".Clone();
+                eargs.oValue = new Arguments();
                 eargs.ValueType = JSObjectType.Object;
                 eargs.GetField("length", false, true).Assign(14);
                 eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
@@ -548,7 +548,7 @@ namespace NiL.JS.Core.BaseTypes
             public void Invoke<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10, T11 a11, T12 a12, T13 a13, T14 a14, T15 a15)
             {
                 var eargs = new JSObject();
-                eargs.oValue = "[object Arguments]".Clone();
+                eargs.oValue = new Arguments();
                 eargs.ValueType = JSObjectType.Object;
                 eargs.GetField("length", false, true).Assign(15);
                 eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
@@ -572,7 +572,7 @@ namespace NiL.JS.Core.BaseTypes
             public void Invoke<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10, T11 a11, T12 a12, T13 a13, T14 a14, T15 a15, T16 a16)
             {
                 var eargs = new JSObject();
-                eargs.oValue = "[object Arguments]".Clone();
+                eargs.oValue = new Arguments();
                 eargs.ValueType = JSObjectType.Object;
                 eargs.GetField("length", false, true).Assign(16);
                 eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
@@ -593,7 +593,7 @@ namespace NiL.JS.Core.BaseTypes
                 eargs.GetField("15", false, true).Assign(TypeProxy.Proxy(a16));
                 function.Invoke(eargs);
             }
-        
+
         }
 
         [Hidden]
@@ -716,13 +716,13 @@ namespace NiL.JS.Core.BaseTypes
         {
             return Invoke(args);
         }
-        
+
         [Hidden]
         public virtual JSObject Invoke(Context contextOverride, JSObject thisOverride, JSObject args)
         {
             return Invoke(thisOverride, args);
         }
-        
+
         [Hidden]
         public virtual JSObject Invoke(JSObject thisOverride, JSObject args)
         {
@@ -756,9 +756,9 @@ namespace NiL.JS.Core.BaseTypes
                 int i = 0;
                 int min = System.Math.Min(args.GetField("length", true, false).iValue, argumentsNames.Length);
                 for (; i < min; i++)
-                    internalContext.InitField(argumentsNames[i]).Assign(args.GetField(i.ToString(), true, false));
+                    internalContext.fields[argumentsNames[i]] = args.GetField(i.ToString(), true, false);
                 for (; i < argumentsNames.Length; i++)
-                    internalContext.InitField(argumentsNames[i]).Assign(null);
+                    internalContext.fields[argumentsNames[i]] = new JSObject();
 
                 body.Invoke(internalContext);
                 return internalContext.abortInfo;

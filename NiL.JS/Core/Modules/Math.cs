@@ -6,9 +6,6 @@ namespace NiL.JS.Core.Modules
 {
     internal static class Math
     {
-        [Hidden]
-        private static Number result = new Number(0.0);
-
         private static class _Random
         {
             public readonly static Random random = new Random((int)DateTime.Now.Ticks);
@@ -23,9 +20,9 @@ namespace NiL.JS.Core.Modules
         [Protected]
         public static readonly double LN10 = System.Math.Log(10);
         [Protected]
-        public static readonly double LOG2E = 1.0 / System.Math.Log(2);
+        public static readonly double LOG2E = 1.0 / LN2;
         [Protected]
-        public static readonly double LOG10E = 1.0 / System.Math.Log(10);
+        public static readonly double LOG10E = 1.0 / LN10;
         [Protected]
         public static readonly double SQRT1_2 = System.Math.Sqrt(0.5);
         [Protected]
@@ -51,6 +48,7 @@ namespace NiL.JS.Core.Modules
             return System.Math.Atan(Tools.JSObjectToDouble(args.Length > 0 ? args[0] : null));
         }
 
+        [ParametersCount(2)]
         public static JSObject atan2(JSObject[] args)
         {
             if (args.Length < 2)
@@ -80,6 +78,7 @@ namespace NiL.JS.Core.Modules
                 a = 0;
             if (a > 0 && a < -1e-15)
                 a = 0;
+            JSObject result = 0;
             result.dValue = System.Math.Floor(a);
             result.ValueType = JSObjectType.Double;
             return result;
@@ -121,6 +120,7 @@ namespace NiL.JS.Core.Modules
         [ParametersCount(2)]
         public static JSObject pow(JSObject[] args)
         {
+            JSObject result = 0;
             if (args.Length < 2)
                 result.dValue = double.NaN;
             else
@@ -167,6 +167,7 @@ namespace NiL.JS.Core.Modules
 
         #region Exclusives
 
+        [ParametersCount(2)]
         public static JSObject IEEERemainder(JSObject[] args)
         {
             if (args.Length < 2)

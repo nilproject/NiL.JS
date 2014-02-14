@@ -32,7 +32,8 @@ namespace NiL.JS.Core
         DontEnum = 1 << 0,
         DontDelete = 1 << 1,
         ReadOnly = 1 << 2,
-        Immutable = 1 << 16
+        Immutable = 1 << 3,
+        Argument = 1 << 16
     }
 
     public class JSObject : IEnumerable<string>, IEnumerable, ICloneable
@@ -206,10 +207,10 @@ namespace NiL.JS.Core
 
         [Modules.Hidden]
         protected JSObject DefaultFieldGetter(string name, bool fast, bool own)
-        {            
+        {
             switch (name)
             {
-                case "__proto__": 
+                case "__proto__":
                     return prototype ?? (fast ? Null : prototype = new JSObject(false) { ValueType = JSObjectType.Object, oValue = null });
                 default:
                     {
@@ -388,7 +389,7 @@ namespace NiL.JS.Core
                 GetField("__proto__", true, true);
             var res = ToPrimitiveValue_String_Value().Value;
             if (res is bool)
-                return (bool)res ? "true":"false";
+                return (bool)res ? "true" : "false";
             if (res is double)
                 return Tools.DoubleToString((double)res);
             return (res ?? "null").ToString();

@@ -17,7 +17,7 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         public EvalError(JSObject args)
-            :base(args.GetField("0", true, false).ToString())
+            : base(args.GetField("0", true, false).ToString())
         {
 
         }

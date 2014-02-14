@@ -22,7 +22,7 @@ namespace NiL.JS.Core
 
         public MethodProxy(MethodBase methodinfo)
         {
-            info = methodinfo; 
+            info = methodinfo;
             if (info is MethodInfo)
             {
                 var mi = info as MethodInfo;
@@ -35,7 +35,7 @@ namespace NiL.JS.Core
                 }
                 else
                 {
-                    
+
                 }
             }
         }
@@ -122,7 +122,7 @@ namespace NiL.JS.Core
                 return source;
             if (source.GetType().IsSubclassOf(targetType))
                 return source;
-            
+
             switch (source.ValueType)
             {
                 case JSObjectType.Int:

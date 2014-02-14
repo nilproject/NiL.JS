@@ -130,6 +130,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Core\Arguments.cs" />
     <Compile Include="Core\BaseTypes\Array.cs" />
     <Compile Include="Core\BaseTypes\Boolean.cs" />
     <Compile Include="Core\EmbeddedType.cs" />

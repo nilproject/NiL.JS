@@ -30,7 +30,7 @@ namespace NiL.JS.Core.BaseTypes
             NaN.assignCallback = null;
             NaN.Protect();
         }
-        
+
         public Number()
         {
             ValueType = JSObjectType.Int;
@@ -289,7 +289,7 @@ namespace NiL.JS.Core.BaseTypes
                 var ar = radix.GetField("0", true, false);
                 if (ar.ValueType == JSObjectType.Object && ar.oValue == null)
                     throw new JSException(TypeProxy.Proxy(new Error("Radix can't be null.")));
-                switch(ar.ValueType)
+                switch (ar.ValueType)
                 {
                     case JSObjectType.Int:
                     case JSObjectType.Bool:

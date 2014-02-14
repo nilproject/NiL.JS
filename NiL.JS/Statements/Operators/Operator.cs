@@ -32,7 +32,7 @@ namespace NiL.JS.Statements.Operators
                 if (first is ImmidateValueStatement && second is ImmidateValueStatement)
                     _this = new ImmidateValueStatement(this.Invoke(null));
             }
-            catch(NullReferenceException)
+            catch (NullReferenceException)
             { }
             return false;
         }

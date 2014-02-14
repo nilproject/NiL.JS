@@ -17,7 +17,7 @@ namespace NiL.JS.Core.BaseTypes
                 this.owner = owner;
                 index = -1;
             }
-            
+
             public object Current { get { return index.ToString(System.Globalization.CultureInfo.InvariantCulture); } }
             string IEnumerator<string>.Current { get { return index.ToString(System.Globalization.CultureInfo.InvariantCulture); } }
 
@@ -100,7 +100,7 @@ namespace NiL.JS.Core.BaseTypes
                         {
                             if (data.Count <= tempElement.iValue)
                             {
-                                data.Capacity = tempElement.iValue + 1; 
+                                data.Capacity = tempElement.iValue + 1;
                                 while (data.Count <= tempElement.iValue)
                                     data.Add(null);
                             }
@@ -601,7 +601,7 @@ namespace NiL.JS.Core.BaseTypes
                 });
             return this;
         }
-        
+
         public JSObject unshift(JSObject[] args)
         {
             data.InsertRange(0, args);

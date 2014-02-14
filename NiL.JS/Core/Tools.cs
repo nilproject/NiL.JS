@@ -579,7 +579,7 @@ namespace NiL.JS.Core
 
             public override string ToString()
             {
-                return "(" + line + ": " + column + ")"; 
+                return "(" + line + ": " + column + ")";
             }
         }
 

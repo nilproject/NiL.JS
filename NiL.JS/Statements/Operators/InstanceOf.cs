@@ -11,7 +11,7 @@ namespace NiL.JS.Statements.Operators
 
         }
 
-        public override JSObject Invoke (Context context)
+        public override JSObject Invoke(Context context)
         {
             var a = Tools.RaiseIfNotExist(first.Invoke(context));
             var oassc = a.assignCallback;

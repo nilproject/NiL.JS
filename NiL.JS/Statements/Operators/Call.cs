@@ -45,7 +45,7 @@ namespace NiL.JS.Statements.Operators
             JSObject arguments = new JSObject(true)
                 {
                     ValueType = JSObjectType.Object,
-                    oValue = "[object Arguments]".Clone(),
+                    oValue = new Arguments(),
                     attributes = ObjectAttributes.DontDelete | ObjectAttributes.DontEnum
                 };
             var field = arguments.GetField("length", false, true);
@@ -57,14 +57,16 @@ namespace NiL.JS.Statements.Operators
             field.attributes = ObjectAttributes.DontEnum;
             for (int i = 0; i < field.iValue; i++)
             {
-                arguments.fields[i.ToString()] = Tools.RaiseIfNotExist(args[i].Invoke(context)).Clone() as JSObject;
+                var a = Tools.RaiseIfNotExist(args[i].Invoke(context)).Clone() as JSObject;
+                arguments.fields[i.ToString()] = a;
+                a.attributes |= ObjectAttributes.Argument;
             }
             arguments.prototype = JSObject.GlobalPrototype;
             arguments.fields["callee"] = field = new JSObject();
             field.ValueType = JSObjectType.Function;
             field.oValue = func;
             field.Protect();
-            field.attributes = ObjectAttributes.DontEnum;            
+            field.attributes = ObjectAttributes.DontEnum;
             return func.Invoke(context, newThisBind, arguments);
         }
 

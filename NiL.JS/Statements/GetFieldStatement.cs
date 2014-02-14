@@ -13,7 +13,6 @@ namespace NiL.JS.Statements
         {
             objStatement = obj;
             fieldNameStatement = fieldName;
-            
         }
 
         public GetFieldStatement(Statement obj, string fieldName)
@@ -63,7 +62,7 @@ namespace NiL.JS.Statements
             var res = objStatement.ToString();
             var field = fieldNameStatement.ToString();
             int i = 0;
-            if (fieldNameStatement is ImmidateValueStatement 
+            if (fieldNameStatement is ImmidateValueStatement
                 && field.Length > 0
                 && ((field[0] == field[field.Length - 1]) && (field[0] == '"') && Parser.ValidateName(field.Substring(1, field.Length - 2), ref i, true, true)))
                 res += "." + field.Substring(1, field.Length - 2);

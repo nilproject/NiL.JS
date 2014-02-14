@@ -86,32 +86,32 @@ namespace NiL.JS.Statements
                 {
                     case OperationType.Multiply:
                         {
-                            fastImpl = new Operators.Mul(first, second);                            
+                            fastImpl = new Operators.Mul(first, second);
                             break;
                         }
                     case OperationType.None:
                         {
-                            fastImpl = new Operators.None(first, second);                            
+                            fastImpl = new Operators.None(first, second);
                             break;
                         }
                     case OperationType.Assign:
                         {
-                            fastImpl = new Operators.Assign(first, second);                            
+                            fastImpl = new Operators.Assign(first, second);
                             break;
                         }
                     case OperationType.Less:
                         {
-                            fastImpl = new Operators.Less(first, second);                            
+                            fastImpl = new Operators.Less(first, second);
                             break;
                         }
                     case OperationType.Incriment:
                         {
-                            fastImpl = new Operators.Incriment(first, second);                            
+                            fastImpl = new Operators.Incriment(first, second);
                             break;
                         }
                     case OperationType.Call:
                         {
-                            fastImpl = new Operators.Call(first, second);                            
+                            fastImpl = new Operators.Call(first, second);
                             break;
                         }
                     case OperationType.Decriment:
@@ -131,7 +131,7 @@ namespace NiL.JS.Statements
                         }
                     case OperationType.StrictNotEqual:
                         {
-                            fastImpl = new Operators.StrictNotEqual(first, second);                            
+                            fastImpl = new Operators.StrictNotEqual(first, second);
                             break;
                         }
                     case OperationType.More:
@@ -141,18 +141,18 @@ namespace NiL.JS.Statements
                         }
                     case OperationType.MoreOrEqual:
                         {
-                            fastImpl = new Operators.MoreOrEqual(first, second);                            
+                            fastImpl = new Operators.MoreOrEqual(first, second);
                             break;
                         }
                     case OperationType.Division:
                         {
                             fastImpl = new Operators.Division(first, second);
-                            
+
                             break;
                         }
                     case OperationType.Equal:
                         {
-                            fastImpl = new Operators.Equal(first, second);                            
+                            fastImpl = new Operators.Equal(first, second);
                             break;
                         }
                     case OperationType.Substract:
@@ -162,77 +162,77 @@ namespace NiL.JS.Statements
                         }
                     case OperationType.StrictEqual:
                         {
-                            fastImpl = new Operators.StrictEqual(first, second);                            
+                            fastImpl = new Operators.StrictEqual(first, second);
                             break;
                         }
                     case OperationType.LogicalOr:
                         {
-                            fastImpl = new Operators.LogicalOr(first, second);                            
+                            fastImpl = new Operators.LogicalOr(first, second);
                             break;
                         }
                     case OperationType.LogicalAnd:
                         {
-                            fastImpl = new Operators.LogicalAnd(first, second);                            
+                            fastImpl = new Operators.LogicalAnd(first, second);
                             break;
                         }
                     case OperationType.NotEqual:
                         {
-                            fastImpl = new Operators.NotEqual(first, second);                            
+                            fastImpl = new Operators.NotEqual(first, second);
                             break;
                         }
                     case OperationType.UnsignedShiftLeft:
                         {
-                            fastImpl = new Operators.UnsignedShiftLeft(first, second);                            
+                            fastImpl = new Operators.UnsignedShiftLeft(first, second);
                             break;
                         }
                     case OperationType.UnsignedShiftRight:
                         {
-                            fastImpl = new Operators.UnsignedShiftRight(first, second);                            
+                            fastImpl = new Operators.UnsignedShiftRight(first, second);
                             break;
                         }
                     case OperationType.SignedShiftLeft:
                         {
-                            fastImpl = new Operators.SignedShiftLeft(first, second);                            
+                            fastImpl = new Operators.SignedShiftLeft(first, second);
                             break;
                         }
                     case OperationType.SignedShiftRight:
                         {
-                            fastImpl = new Operators.SignedShiftRight(first, second);                            
+                            fastImpl = new Operators.SignedShiftRight(first, second);
                             break;
                         }
                     case OperationType.Module:
                         {
-                            fastImpl = new Operators.Mod(first, second);                            
+                            fastImpl = new Operators.Mod(first, second);
                             break;
                         }
                     case OperationType.LogicalNot:
                         {
-                            fastImpl = new Operators.LogicalNot(first, second);                            
+                            fastImpl = new Operators.LogicalNot(first, second);
                             break;
                         }
                     case OperationType.Not:
                         {
-                            fastImpl = new Operators.Not(first, second);                            
+                            fastImpl = new Operators.Not(first, second);
                             break;
                         }
                     case OperationType.Xor:
                         {
-                            fastImpl = new Operators.Xor(first, second);                            
+                            fastImpl = new Operators.Xor(first, second);
                             break;
                         }
                     case OperationType.Or:
                         {
-                            fastImpl = new Operators.Or(first, second);                            
+                            fastImpl = new Operators.Or(first, second);
                             break;
                         }
                     case OperationType.And:
                         {
-                            fastImpl = new Operators.And(first, second);                            
+                            fastImpl = new Operators.And(first, second);
                             break;
                         }
                     case OperationType.Ternary:
                         {
-                            fastImpl = new Operators.Ternary(first, second);                            
+                            fastImpl = new Operators.Ternary(first, second);
                             break;
                         }
                     case OperationType.TypeOf:

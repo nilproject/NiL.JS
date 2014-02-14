@@ -8,7 +8,7 @@ namespace NiL.JS.Core.BaseTypes
     internal sealed class RegExp : EmbeddedType
     {
         private JSObject lIndex = 0;
-        private System.Text.RegularExpressions.Regex regEx;
+        internal System.Text.RegularExpressions.Regex regEx;
 
         public RegExp()
         {
@@ -81,7 +81,7 @@ namespace NiL.JS.Core.BaseTypes
                 throw new JSException(TypeProxy.Proxy(new SyntaxError(e.Message)));
             }
         }
-        
+
         public RegExp(string pattern, string flags)
         {
             global = false;

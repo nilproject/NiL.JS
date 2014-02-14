@@ -13,7 +13,7 @@ namespace NiL.JS.Statements
             get,
             set
         }
-                
+
         private string[] argumentsNames;
         private CodeBlock body;
         internal readonly string Name;

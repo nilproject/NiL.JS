@@ -6,7 +6,7 @@ namespace NiL.JS.Statements
     internal class ContinueStatement : Statement
     {
         private JSObject label;
-        
+
         internal static ParseResult Parse(ParsingState state, ref int index)
         {
             string code = state.Code;

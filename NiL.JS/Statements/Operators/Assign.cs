@@ -5,7 +5,7 @@ namespace NiL.JS.Statements.Operators
 {
     internal class Assign : Operator
     {
-        private JSObject setterArgs = new JSObject(true) { ValueType = JSObjectType.Object, oValue = "[object Arguments]" };
+        private JSObject setterArgs = new JSObject(true) { ValueType = JSObjectType.Object, oValue = new Arguments() };
         private JSObject setterArg = new JSObject();
 
         public Assign(Statement first, Statement second)

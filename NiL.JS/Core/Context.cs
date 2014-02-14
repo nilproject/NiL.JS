@@ -201,7 +201,7 @@ namespace NiL.JS.Core
         internal JSObject abortInfo;
         internal JSObject thisBind;
         internal bool strict;
-        
+
         private Context()
         {
         }
@@ -229,7 +229,7 @@ namespace NiL.JS.Core
             };
             return res;
         }
-        
+
         public virtual JSObject InitField(string name)
         {
             if (name == "this")
