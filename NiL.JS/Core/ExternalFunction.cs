@@ -4,12 +4,16 @@ using System;
 
 namespace NiL.JS.Core
 {
+    /// <summary>
+    /// Представляет функцию платформы с фиксированной сигнатурой.
+    /// </summary>
     [Modules.Prototype(typeof(Function))]
-    internal sealed class ExternalFunction : Function
+    public sealed class ExternalFunction : Function
     {
-        private readonly CallableField del;
+        public delegate JSObject ExternalFunctionDelegate(Context context, JSObject args);
+        private readonly ExternalFunctionDelegate del;
 
-        public ExternalFunction(CallableField del)
+        public ExternalFunction(ExternalFunctionDelegate del)
             : base(Context.globalContext, null, null, del.Method.Name)
         {
             this.del = del;

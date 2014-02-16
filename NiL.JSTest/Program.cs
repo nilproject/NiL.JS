@@ -44,22 +44,22 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * i + 3 - 2 / 2; }
             var s = new Script(sr.ReadToEnd());
             sw.Stop();
             Console.WriteLine("Compile time: " + sw.Elapsed);
-            s.Context.GetField("$ERROR").Assign(new CallableField((t, x) =>
+            s.Context.GetField("$ERROR").Assign(new ExternalFunction((t, x) =>
             {
                 Console.WriteLine("ERROR: " + x.GetField("0", true, false).Value);
                 return null;
             }));
-            s.Context.GetField("ERROR").Assign(new CallableField((t, x) =>
+            s.Context.GetField("ERROR").Assign(new ExternalFunction((t, x) =>
             {
                 Console.WriteLine("ERROR: " + x.GetField("0", true, false).Value);
                 return null;
             }));
-            s.Context.GetField("$PRINT").Assign(new CallableField((t, x) =>
+            s.Context.GetField("$PRINT").Assign(new ExternalFunction((t, x) =>
             {
                 Console.WriteLine("PRINT: " + x.GetField("0", true, false).Value);
                 return null;
             }));
-            s.Context.GetField("$FAIL").Assign(new CallableField((t, x) =>
+            s.Context.GetField("$FAIL").Assign(new ExternalFunction((t, x) =>
             {
                 Console.WriteLine("FAIL: " + x.GetField("0", true, false).Value);
                 return null;
@@ -101,29 +101,29 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * i + 3 - 2 / 2; }
                     if (negative)
                         pass = false;
                     var s = new Script(code);
-                    s.Context.GetField("$ERROR").Assign(new CallableField((t, x) =>
+                    s.Context.GetField("$ERROR").Assign(new ExternalFunction((t, x) =>
                     {
                         Console.WriteLine("ERROR: " + x.GetField("0", true, false).Value);
                         pass = false;
                         return null;
                     }));
-                    s.Context.GetField("ERROR").Assign(new CallableField((t, x) =>
+                    s.Context.GetField("ERROR").Assign(new ExternalFunction((t, x) =>
                     {
                         Console.WriteLine("ERROR: " + x.GetField("0", true, false).Value);
                         pass = false;
                         return null;
                     }));
-                    s.Context.GetField("PRINT").Assign(new CallableField((t, x) =>
+                    s.Context.GetField("PRINT").Assign(new ExternalFunction((t, x) =>
                     {
                         Console.WriteLine("PRINT: " + x.GetField("0", true, false).Value);
                         return null;
                     }));
-                    s.Context.GetField("$PRINT").Assign(new CallableField((t, x) =>
+                    s.Context.GetField("$PRINT").Assign(new ExternalFunction((t, x) =>
                     {
                         Console.WriteLine("PRINT: " + x.GetField("0", true, false).Value);
                         return null;
                     }));
-                    s.Context.GetField("$FAIL").Assign(new CallableField((t, x) =>
+                    s.Context.GetField("$FAIL").Assign(new ExternalFunction((t, x) =>
                     {
                         Console.WriteLine("FAIL: " + x.GetField("0", true, false).Value);
                         pass = false;
@@ -210,12 +210,12 @@ console.log(utc);
             typeof(System.Windows.Forms.Button).GetType();
             NiL.JS.Core.Context.GlobalContext.InitField("platform").Assign("NiL.JS");
             NiL.JS.Core.Context.GlobalContext.InitField("System").Assign(new SubspaceProvider("System"));
-            NiL.JS.Core.Context.GlobalContext.InitField("load").Assign(new CallableField((context, eargs) =>
+            NiL.JS.Core.Context.GlobalContext.InitField("load").Assign(new ExternalFunction((context, eargs) =>
             {
                 var f = new FileStream("Benchmarks\\" + eargs.GetField("0", true, false).ToString(), FileMode.Open, FileAccess.Read);
                 var sr = new StreamReader(f);
                 eargs.GetField("0", true, false).Assign(sr.ReadToEnd());
-                return NiL.JS.Core.Context.Eval(context, eargs);
+                return context.Eval(eargs);
             }));
             //benchmark();
             runFile(@"ftest.js");

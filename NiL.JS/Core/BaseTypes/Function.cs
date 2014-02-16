@@ -644,7 +644,9 @@ namespace NiL.JS.Core.BaseTypes
         #region Runtime
         [Hidden]
         private JSObject _arguments;
-        [Hidden]
+        /// <summary>
+        /// Объект, содержащий параметры вызова функции либо null если в данный момент функция не выполняется.
+        /// </summary>
         public JSObject arguments
         {
             get

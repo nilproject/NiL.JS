@@ -6,14 +6,26 @@ using System.Threading;
 
 namespace NiL.JS
 {
+    /// <summary>
+    /// Управляет выполнением скрипта на языке JavaScript.
+    /// </summary>
     [Serializable]
     public sealed class Script
     {
         private Statement root;
-
+        /// <summary>
+        /// Исходный код скрипта, переданный при создании объекта.
+        /// </summary>
         public string Code { get; private set; }
+        /// <summary>
+        /// Корневой контекст выполнения скрипта.
+        /// </summary>
         public Context Context { get; private set; }
 
+        /// <summary>
+        /// Инициализирует объект типа Script и преобрзует код скрипта во внутреннее представление.
+        /// </summary>
+        /// <param name="code">Код скрипта на языке JavaScript</param>
         public Script(string code)
         {
             Context = new Context(NiL.JS.Core.Context.globalContext);
@@ -26,6 +38,9 @@ namespace NiL.JS
             Parser.Optimize(ref root, new System.Collections.Generic.Dictionary<string, Statement>());
         }
 
+        /// <summary>
+        /// Запускает выполнение скрипта.
+        /// </summary>
         public void Invoke()
         {
             var lm = System.Runtime.GCSettings.LatencyMode;

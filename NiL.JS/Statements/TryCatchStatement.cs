@@ -12,11 +12,6 @@ namespace NiL.JS.Statements
         private Statement finallyBody;
         private string exptName;
 
-        public TryCatchStatement()
-        {
-
-        }
-
         internal static ParseResult Parse(ParsingState state, ref int index)
         {
             string code = state.Code;

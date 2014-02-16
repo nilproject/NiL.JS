@@ -16,7 +16,7 @@ namespace NiL.JS.Statements
             initializators = new[] { init };
         }
 
-        private VaribleDefineStatement(Statement[] initializators, string[] names)
+        private VaribleDefineStatement(string[] names, Statement[] initializators)
         {
             this.initializators = initializators;
             this.names = names;
@@ -65,7 +65,7 @@ namespace NiL.JS.Statements
             {
                 IsParsed = true,
                 Message = "",
-                Statement = new VaribleDefineStatement(inits, names.ToArray())
+                Statement = new VaribleDefineStatement(names.ToArray(), inits)
             };
         }
 

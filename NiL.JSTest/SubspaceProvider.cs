@@ -33,7 +33,7 @@ namespace NiL.JSTest
             }
             if (createSubNode)
                 return NiL.JS.Core.TypeProxy.Proxy(new SubspaceProvider(reqname));
-            return NiL.JS.Core.JSObject.undefined;
+            return new JS.Core.JSObject();
         }
     }
 }

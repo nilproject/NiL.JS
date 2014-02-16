@@ -5,6 +5,10 @@ using System.Text;
 
 namespace NiL.JS.Core.Modules
 {
+    /// <summary>
+    /// Объект-прослойка, созданный для типа, помеченного данным аттрибутом, 
+    /// не будет допускать создание полей, которые не существуют в помеченном типе.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct)]
     public sealed class ImmutableAttribute : Attribute
     {

@@ -6,6 +6,11 @@ using NiL.JS.Core.Modules;
 
 namespace NiL.JS.Core
 {
+    /// <summary>
+    /// Базовый объект для создания пользовательских встроенных типов. 
+    /// Предоставляет возможность переопределить обработчики получения поля объекта 
+    /// и получения перечислителя полей объекта.
+    /// </summary>
     public abstract class EmbeddedType : JSObject
     {
         protected EmbeddedType()

@@ -14,6 +14,9 @@ namespace NiL.JS.Core
         Exception,
     }
 
+    /// <summary>
+    /// Контекст выполнения скрипта. Хранит значения переменных, созданных во время выполнения либо из пользовательского кода.
+    /// </summary>
     public class Context
     {
         private static Dictionary<int, WeakReference> _executedContexts = new Dictionary<int, WeakReference>();
@@ -39,9 +42,15 @@ namespace NiL.JS.Core
         }
 
         internal readonly static Context globalContext = new Context();
+        /// <summary>
+        /// Глобальный контекст выполнения. Хранит глобальные объекты, определённые спецификацией.
+        /// Создание переменных в этом контексте невозможно во время выполнения скрипта.
+        /// </summary>
         public static Context GlobalContext { get { return globalContext; } }
-        public static CallableField Eval { get; private set; }
 
+        /// <summary>
+        /// Очищает глобальный контекст, после чего создаёт в нём глобальные объекты, определённые спецификацией, 
+        /// </summary>
         public static void RefreshGlobalContext()
         {
             if (globalContext.fields != null)
@@ -77,18 +86,8 @@ namespace NiL.JS.Core
             globalContext.AttachModule(typeof(Modules.console));
 
             #region Base Function
-            globalContext.InitField("eval").Assign(Eval = new CallableField((context, x) =>
-            {
-                int i = 0;
-                string c = "{" + Tools.RemoveComments(x.GetField("0", true, false).ToString()) + "}";
-                var cb = CodeBlock.Parse(new ParsingState(c), ref i).Statement;
-                if (i != c.Length)
-                    throw new System.ArgumentException("Invalid char");
-                Parser.Optimize(ref cb, -1, null);
-                var res = cb.Invoke(context);
-                return res;
-            }));
-            globalContext.InitField("isNaN").Assign(new CallableField((t, x) =>
+            globalContext.InitField("eval").Assign(new ExternalFunction((context, x) => context.Eval(x)));
+            globalContext.InitField("isNaN").Assign(new ExternalFunction((t, x) =>
             {
                 var r = x.GetField("0", true, false);
                 if (r.ValueType == JSObjectType.Double)
@@ -105,34 +104,34 @@ namespace NiL.JS.Core
                 }
                 return true;
             }));
-            globalContext.InitField("unescape").Assign(new CallableField((t, x) =>
+            globalContext.InitField("unescape").Assign(new ExternalFunction((t, x) =>
             {
                 return System.Web.HttpUtility.HtmlDecode(x.GetField("0", true, false).ToString());
             }));
-            globalContext.InitField("escape").Assign(new CallableField((t, x) =>
+            globalContext.InitField("escape").Assign(new ExternalFunction((t, x) =>
             {
                 return System.Web.HttpUtility.HtmlEncode(x.GetField("0", true, false).ToString());
             }));
-            globalContext.InitField("encodeURI").Assign(new CallableField((t, x) =>
+            globalContext.InitField("encodeURI").Assign(new ExternalFunction((t, x) =>
             {
                 return System.Web.HttpServerUtility.UrlTokenEncode(System.Text.UTF8Encoding.Default.GetBytes(x.GetField("0", true, false).ToString()));
             }));
             globalContext.InitField("encodeURIComponent").Assign(globalContext.GetField("encodeURI"));
-            globalContext.InitField("decodeURI").Assign(new CallableField((t, x) =>
+            globalContext.InitField("decodeURI").Assign(new ExternalFunction((t, x) =>
             {
                 return System.Text.UTF8Encoding.Default.GetString(System.Web.HttpServerUtility.UrlTokenDecode(x.GetField("0", true, false).ToString()));
             }));
             globalContext.InitField("decodeURIComponent").Assign(globalContext.GetField("decodeURI"));
-            globalContext.InitField("isFinite").Assign(new CallableField((t, x) =>
+            globalContext.InitField("isFinite").Assign(new ExternalFunction((t, x) =>
             {
                 var d = Tools.JSObjectToDouble(x.GetField("0", true, false));
                 return !double.IsNaN(d) && !double.IsInfinity(d);
             }));
-            globalContext.InitField("parseFloat").Assign(new CallableField((t, x) =>
+            globalContext.InitField("parseFloat").Assign(new ExternalFunction((t, x) =>
             {
                 return Tools.JSObjectToDouble(x.GetField("0", true, false));
             }));
-            globalContext.InitField("parseInt").Assign(new CallableField((t, x) =>
+            globalContext.InitField("parseInt").Assign(new ExternalFunction((t, x) =>
             {
                 var r = x.GetField("0", true, false);
                 for (; ; )
@@ -299,6 +298,13 @@ namespace NiL.JS.Core
             return res;
         }
 
+        /// <summary>
+        /// Добавляет в указанный контекст объект, представляющий переданный тип.
+        /// Имя созданного объекта будет совпадать с именем переданного типа. 
+        /// Статические члены типа будут доступны как поля созданного объекта. 
+        /// Если тип не являлся статическим, то созданный объект будет функцией (с поздним связыванием), представляющей конструкторы указанного типа.
+        /// </summary>
+        /// <param name="moduleType">Тип, для которого будет создан внутренний объект.</param>
         public void AttachModule(Type moduleType)
         {
             if (fields == null)
@@ -306,6 +312,24 @@ namespace NiL.JS.Core
             fields.Add(moduleType.Name, TypeProxy.GetConstructor(moduleType));
             Statements.GetVaribleStatement.ResetCache(moduleType.Name);
             fields[moduleType.Name].attributes |= ObjectAttributes.DontDelete;
+        }
+
+        /// <summary>
+        /// Ожидается один аргумент.
+        /// Выполняет переданный код скрипта в указанном контексте.
+        /// </summary>
+        /// <param name="args">Код скрипта на языке JavaScript</param>
+        /// <returns>Результат выполнения кода (аргумент оператора "return" либо результат выполнения последней выполненной строки кода).</returns>
+        public JSObject Eval(JSObject args)
+        {
+            int i = 0;
+            string c = "{" + Tools.RemoveComments(args.GetField("0", true, false).ToString()) + "}";
+            var cb = CodeBlock.Parse(new ParsingState(c), ref i).Statement;
+            if (i != c.Length)
+                throw new System.ArgumentException("Invalid char");
+            Parser.Optimize(ref cb, -1, null);
+            var res = cb.Invoke(this);
+            return res;
         }
 
         internal void ValidateThreadID()

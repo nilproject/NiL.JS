@@ -2,6 +2,9 @@
 
 namespace NiL.JS.Core
 {
+    /// <summary>
+    /// Представляет ошибки, возникшие во время выполнения скрипта.
+    /// </summary>
     [Serializable]
     public class JSException : Exception
     {

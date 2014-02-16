@@ -6,7 +6,7 @@ using System.Text;
 namespace NiL.JS.Core.Modules
 {
     /// <summary>
-    /// Служит для передачи в среду выполнения сценария информации о количестве ожидаемых параметров метода.
+    /// Служит для передачи в среду выполнения скрипта информации о количестве ожидаемых параметров метода.
     /// </summary>
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Constructor)]
     public sealed class ParametersCountAttribute : Attribute

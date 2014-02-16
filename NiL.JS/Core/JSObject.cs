@@ -8,8 +8,6 @@ using System.Runtime.Serialization;
 
 namespace NiL.JS.Core
 {
-    public delegate JSObject CallableField(Context context, JSObject args);
-
     internal enum JSObjectType : int
     {
         NotExist = 0,
@@ -36,6 +34,10 @@ namespace NiL.JS.Core
         Argument = 1 << 16
     }
 
+    /// <summary>
+    /// Базовый объект для всех объектов, участвующих в выполнении скрипта.
+    /// Для создания пользовательских объектов, в качестве базового типа, рекомендуется использовать тип NiL.JS.Core.EmbeddedType
+    /// </summary>
     public class JSObject : IEnumerable<string>, IEnumerable, ICloneable
     {
         private NiL.JS.Core.BaseTypes.String @string;
@@ -45,9 +47,9 @@ namespace NiL.JS.Core
         [Modules.Hidden]
         internal protected static readonly IEnumerator<string> EmptyEnumerator = ((IEnumerable<string>)(new string[0])).GetEnumerator();
         [Modules.Hidden]
-        public static readonly JSObject undefined = new JSObject() { ValueType = JSObjectType.Undefined, attributes = ObjectAttributes.DontDelete | ObjectAttributes.DontEnum | ObjectAttributes.ReadOnly };
+        internal static readonly JSObject undefined = new JSObject() { ValueType = JSObjectType.Undefined, attributes = ObjectAttributes.DontDelete | ObjectAttributes.DontEnum | ObjectAttributes.ReadOnly };
         [Modules.Hidden]
-        public static readonly JSObject Null = new JSObject() { ValueType = JSObjectType.Object, oValue = null, assignCallback = ErrorAssignCallback, attributes = ObjectAttributes.DontDelete | ObjectAttributes.DontEnum };
+        internal static readonly JSObject Null = new JSObject() { ValueType = JSObjectType.Object, oValue = null, assignCallback = ErrorAssignCallback, attributes = ObjectAttributes.DontDelete | ObjectAttributes.DontEnum };
         [Modules.Hidden]
         internal static readonly JSObject nullString = new JSObject() { ValueType = JSObjectType.String, oValue = "null", assignCallback = ErrorAssignCallback, attributes = ObjectAttributes.DontDelete | ObjectAttributes.DontEnum };
         [Modules.Hidden]
@@ -649,11 +651,6 @@ namespace NiL.JS.Core
         public static implicit operator JSObject(object[] value)
         {
             return new JSObject() { ValueType = JSObjectType.Object, oValue = value, assignCallback = ErrorAssignCallback };
-        }
-
-        public static implicit operator JSObject(CallableField value)
-        {
-            return new JSObject() { ValueType = JSObjectType.Function, oValue = new ExternalFunction(value), assignCallback = ErrorAssignCallback };
         }
 
 #if INLINE

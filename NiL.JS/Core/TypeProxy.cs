@@ -15,6 +15,11 @@ namespace NiL.JS.Core
         internal object prototypeInstance;
         internal BindingFlags bindFlags = BindingFlags.Public | BindingFlags.NonPublic;
 
+        /// <summary>
+        /// Создаёт объект-прослойку указанного объекта для доступа к этому объекту из скрипта. 
+        /// </summary>
+        /// <param name="value">Объект, который необходимо представить.</param>
+        /// <returns>Объект-прослойка, представляющий переданный объект.</returns>
         public static JSObject Proxy(object value)
         {
             if (value == null)
@@ -84,7 +89,7 @@ namespace NiL.JS.Core
             return constructor;
         }
 
-        public static void Clear()
+        internal static void Clear()
         {
             constructors.Clear();
             prototypes.Clear();
@@ -180,7 +185,7 @@ namespace NiL.JS.Core
                     if (!(m[i] is MethodInfo))
                         throw new JSException(Proxy(new TypeError("Incompatible fields type.")));
                 var cache = new Function[m.Length];
-                r = new CallableField((context, args) =>
+                r = new ExternalFunction((context, args) =>
                 {
                     context.ValidateThreadID();
                     int l = args.GetField("length", true, false).iValue;

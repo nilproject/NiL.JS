@@ -5,6 +5,9 @@ using System.Text;
 
 namespace NiL.JS.Core
 {
+    /// <summary>
+    /// Содержит функции, используемые на разных этапах выполнения скрипта.
+    /// </summary>
     public static class Tools
     {
         internal static readonly char[] NumChars = new[] { 
@@ -62,6 +65,9 @@ namespace NiL.JS.Core
         /// </summary>
         /// <param name="arg">JSObject, значение которого нужно преобразовать.</param>
         /// <returns>Целочисленное значение, представленное в объекте arg.</returns>
+#if INLINE
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+#endif
         public static int JSObjectToInt(JSObject arg)
         {
             return JSObjectToInt(arg, 0, false);
@@ -73,6 +79,9 @@ namespace NiL.JS.Core
         /// <param name="arg">JSObject, значение которого нужно преобразовать.</param>
         /// <param name="alternateInfinity">Если истина, для значений +Infinity и -Infinity будут возвращены значения int.MaxValue и int.MinValue соответственно.</param>
         /// <returns>Целочисленное значение, представленное в объекте arg.</returns>
+#if INLINE
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+#endif
         public static int JSObjectToInt(JSObject arg, bool alternateInfinity)
         {
             return JSObjectToInt(arg, 0, alternateInfinity);
@@ -84,6 +93,9 @@ namespace NiL.JS.Core
         /// <param name="arg">JSObject, значение которого нужно преобразовать.</param>
         /// <param name="nullOrUndef">Значение, которое будет возвращено, если значение arg null или undefined.</param>
         /// <returns>Целочисленное значение, представленное в объекте arg.</returns>
+#if INLINE
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+#endif
         public static int JSObjectToInt(JSObject arg, int nullOrUndef)
         {
             return JSObjectToInt(arg, nullOrUndef, false);
@@ -96,6 +108,9 @@ namespace NiL.JS.Core
         /// <param name="nullOrUndef">Значение, которое будет возвращено, если значение arg null или undefined.</param>
         /// <param name="alternateInfinity">Если истина, для значений +Infinity и -Infinity будут возвращены значения int.MaxValue и int.MinValue соответственно.</param>
         /// <returns>Целочисленное значение, представленное в объекте arg.</returns>
+#if INLINE
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+#endif
         public static int JSObjectToInt(JSObject arg, int nullOrUndef, bool alternateInfinity)
         {
             if (arg == null)
@@ -144,6 +159,9 @@ namespace NiL.JS.Core
             }
         }
 
+#if INLINE
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+#endif
         public static JSObject JSObjectToNumber(JSObject arg)
         {
             if (arg == null)
@@ -184,6 +202,9 @@ namespace NiL.JS.Core
             }
         }
 
+#if INLINE
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+#endif
         internal static string DoubleToString(double d)
         {
             if (0.0 == d || double.IsInfinity(d) || double.IsNaN(d))
@@ -205,6 +226,9 @@ namespace NiL.JS.Core
             return d.ToString("0.##########", System.Globalization.CultureInfo.InvariantCulture);
         }
 
+#if INLINE
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+#endif
         public static bool ParseNumber(string code, ref int index, bool move, out double value)
         {
             return ParseNumber(code, ref index, move, out value, 0, false);
@@ -404,6 +428,9 @@ namespace NiL.JS.Core
             }
         }
 
+#if INLINE
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+#endif
         public static string Unescape(string code)
         {
             return Unescape(code, true);
@@ -498,6 +525,9 @@ namespace NiL.JS.Core
             return res.ToString();
         }
 
+#if INLINE
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+#endif
         internal static bool isLineTerminator(char c)
         {
             return (c == '\u000A') || (c == '\u000D') || (c == '\u2028') || (c == '\u2029');
@@ -565,6 +595,9 @@ namespace NiL.JS.Core
             return res.ToString();
         }
 
+#if INLINE
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+#endif
         internal static JSObject RaiseIfNotExist(JSObject obj)
         {
             if (obj != null && obj.ValueType == JSObjectType.NotExist)

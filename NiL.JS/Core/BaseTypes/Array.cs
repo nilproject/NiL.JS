@@ -665,7 +665,7 @@ namespace NiL.JS.Core.BaseTypes
          */
 
         [Hidden]
-        private static readonly JSObject forEachCF = new CallableField(forEach);
+        private static readonly JSObject forEachCF = new ExternalFunction(forEach);
 
         [Hidden]
         private static JSObject forEach(Context context, JSObject args)
