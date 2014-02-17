@@ -247,7 +247,7 @@ namespace NiL.JS.Core
                 else
                 {
                     var target = getTargetObject(thisOverride ?? context.thisBind, info.DeclaringType);
-                    if (target != null && target.GetType() != info.ReflectedType && info is MemberInfo) // you bunny wrote
+                    if (target != null && target.GetType() != info.ReflectedType) // you bunny wrote
                     {
                         var minfo = info as MethodInfo;
                         if (minfo.ReturnType.IsValueType)
