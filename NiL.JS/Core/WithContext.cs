@@ -31,8 +31,7 @@ namespace NiL.JS.Core
                 return prototype.GetField(name);
             else
             {
-                if (updateThisBind)
-                    thisBind = @object;
+                objectSource = @object;
                 return res;
             }
         }

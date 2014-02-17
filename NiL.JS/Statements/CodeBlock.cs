@@ -97,6 +97,10 @@ namespace NiL.JS.Statements
             for (int i = length; i >= 0; i--)
             {
                 res = Tools.RaiseIfNotExist(body[i].Invoke(context)) ?? res;
+#if DEBUG
+                if (JSObject.undefined.ValueType != JSObjectType.Undefined)
+                    throw new ApplicationException("undefined was rewrite");
+#endif
                 if (context.abort != AbortType.None)
                     return context.abort == AbortType.Return ? context.abortInfo : res;
             }

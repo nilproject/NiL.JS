@@ -18,7 +18,7 @@ namespace NiL.JS.Statements.Operators
 
             public override JSObject Invoke(Context context)
             {
-                context.thisBind = _this;
+                context.objectSource = _this;
                 return value;
             }
         }

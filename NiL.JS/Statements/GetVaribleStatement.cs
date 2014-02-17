@@ -31,8 +31,7 @@ namespace NiL.JS.Statements
 
         public override JSObject InvokeForAssing(Context context)
         {
-            if (varibleName != "this" && context.updateThisBind)
-                context.thisBind = null;
+            context.objectSource = null;
             if (context == cacheContext)
                 if (cacheRes == null)
                     return (cacheRes = context.GetField(varibleName));
@@ -44,8 +43,7 @@ namespace NiL.JS.Statements
 
         public override JSObject Invoke(Context context)
         {
-            if (varibleName != "this" && context.updateThisBind)
-                context.thisBind = null;
+            context.objectSource = null;
             if (context == cacheContext)
                 if (cacheRes == null)
                     return (cacheRes = context.GetField(varibleName));
@@ -53,15 +51,11 @@ namespace NiL.JS.Statements
                     return cacheRes;
             if (context.GetType() == typeof(WithContext))
             {
-                var outb = context.updateThisBind;
-                context.updateThisBind = true;
                 cacheContext = context;
                 cacheRes = context.GetField(varibleName);
                 if (cacheRes.ValueType == JSObjectType.Property)
                     cacheRes = (cacheRes.oValue as NiL.JS.Core.BaseTypes.Function[])[1].Invoke(null);
-                if (!outb)
-                    context.thisBind = null;
-                context.updateThisBind = outb;
+                context.objectSource = context.thisBind;
                 return cacheRes;
             }
             else

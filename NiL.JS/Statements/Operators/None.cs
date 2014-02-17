@@ -15,14 +15,13 @@ namespace NiL.JS.Statements.Operators
         public override JSObject Invoke(Context context)
         {
             JSObject temp = null;
-            var otb = context.thisBind;
             temp = Tools.RaiseIfNotExist(first.Invoke(context));
             if (second != null)
             {
-                context.thisBind = otb;
+                context.thisBind = null;
                 temp = Tools.RaiseIfNotExist(second.Invoke(context));
             }
-            context.thisBind = otb;
+            context.objectSource = null;
             return temp;
         }
 

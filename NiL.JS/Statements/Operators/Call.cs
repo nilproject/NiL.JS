@@ -18,29 +18,18 @@ namespace NiL.JS.Statements.Operators
         {
             JSObject newThisBind = null;
             Function func = null;
-            JSObject oldThisBind = context.thisBind;
-            bool oldutb = context.updateThisBind;
-            try
+            var temp = first.Invoke(context);
+            if (temp.ValueType == JSObjectType.NotExist)
             {
-                context.updateThisBind = true;
-                var temp = first.Invoke(context);
-                if (temp.ValueType <= JSObjectType.NotExistInObject)
-                {
-                    if (context.thisBind == null)
-                        throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible not defined.")));
-                    else
-                        throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError(First + " not exist.")));
-                }
-                if (temp.ValueType != JSObjectType.Function && !(temp.ValueType == JSObjectType.Object && temp.oValue is Function))
-                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError(first + " is not callable")));
-                func = temp.oValue as Function;
-                newThisBind = context.thisBind;
+                if (context.thisBind == null)
+                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible not defined.")));
+                else
+                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError(First + " not exist.")));
             }
-            finally
-            {
-                context.thisBind = oldThisBind;
-                context.updateThisBind = oldutb;
-            }
+            if (temp.ValueType != JSObjectType.Function && !(temp.ValueType == JSObjectType.Object && temp.oValue is Function))
+                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError(first + " is not callable")));
+            func = temp.oValue as Function;
+            newThisBind = context.objectSource;
 
             JSObject arguments = new JSObject(true)
                 {

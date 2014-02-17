@@ -22,30 +22,26 @@ namespace NiL.JS.Statements.Operators
 
         public override JSObject Invoke(Context context)
         {
-            var otb = context.thisBind;
-            var outb = context.updateThisBind;
             JSObject field = null;
-            try
+            field = first.InvokeForAssing(context);
+            if (field.ValueType == JSObjectType.Property)
             {
-                context.updateThisBind = true;
-                field = first.InvokeForAssing(context);
-                if (field.ValueType == JSObjectType.Property)
+                var fieldSource = context.objectSource;
+                setterArg.Assign(Tools.RaiseIfNotExist(second.Invoke(context)));
+                var setter = (field.oValue as NiL.JS.Core.BaseTypes.Function[])[0];
+                var otb = context.thisBind;
+                context.thisBind = fieldSource;
+                try
                 {
-                    var _this = context.thisBind;
-                    setterArg.Assign(Tools.RaiseIfNotExist(second.Invoke(context)));
-                    var setter = (field.oValue as NiL.JS.Core.BaseTypes.Function[])[0];
                     if (setter != null)
-                    {
-                        context.thisBind = _this;
                         setter.Invoke(context, setterArgs);
-                    }
                     return setterArg;
                 }
-            }
-            finally
-            {
-                context.updateThisBind = outb;
-                context.thisBind = otb;
+                finally
+                {
+                    context.thisBind = otb;
+                    context.objectSource = null;
+                }
             }
             if (context.strict)
                 Tools.RaiseIfNotExist(field);

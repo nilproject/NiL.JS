@@ -196,7 +196,7 @@ namespace NiL.JS.Core
 
         internal Dictionary<string, JSObject> fields;
         internal AbortType abort;
-        internal bool updateThisBind;
+        internal JSObject objectSource;
         internal JSObject abortInfo;
         internal JSObject thisBind;
         internal bool strict;

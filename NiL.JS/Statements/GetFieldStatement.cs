@@ -42,8 +42,7 @@ namespace NiL.JS.Statements
             if (n.ValueType == JSObjectType.NotExist)
                 throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible not defined.")));
 
-            if (context.updateThisBind)
-                context.thisBind = th;
+            context.objectSource = th;
             var res = th.GetField(n.ToString(), callProp, false);
             if (callProp && res.ValueType == JSObjectType.Property)
                 res = (res.oValue as Function[])[1].Invoke(th, null);
