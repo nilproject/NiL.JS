@@ -1,4 +1,10 @@
 ﻿var x = 1;
+function f0() {
+    if (this.x != 1) {
+        $ERROR("#0. this linking error.");
+    }
+}
+f0();
 function f1() {
     if (this.x != 1) {
         $ERROR("#1. this linking error.");
@@ -56,3 +62,25 @@ var o = { x: 1, getx: function () { return function () { return this.x }; } };
 var x = 2;
 if (o.getx().call(null) != 2)
 console.log("#9");
+
+var x = 1;
+var o = {
+    x: 2,
+    s: {
+        '2': function () { return 'fail'; },
+        '1': function () { return 'pass'; }
+    }
+};
+var t = o.s[this.x]();
+if (t == 'fail')
+    console.log('#10');
+
+function f11() {
+    this.x = 2;
+}
+var x = 1;
+function f12() {
+    return this.x;
+}
+if (f12(new f11()) != 1)
+    console.log('#11');
