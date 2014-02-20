@@ -26,7 +26,7 @@ namespace NiL.JS.Core
             ValueType = JSObjectType.Object;
             oValue = this;
             prototype = thisProto ?? createThisProto();
-            assignCallback = () => { throw new InvalidOperationException("Invalid left-hand side in assignment"); };
+            assignCallback = (sender) => { throw new InvalidOperationException("Invalid left-hand side in assignment"); };
         }
 
         public override JSObject GetField(string name, bool fast, bool own)

@@ -38,7 +38,7 @@ namespace NiL.JS.Statements.Operators
                     attributes = ObjectAttributes.DontDelete | ObjectAttributes.DontEnum
                 };
             var field = arguments.GetField("length", false, true);
-            field.assignCallback();
+            field.assignCallback(field);
             field.ValueType = JSObjectType.Int;
             if (args == null)
                 args = second.Invoke(null).oValue as Statement[];

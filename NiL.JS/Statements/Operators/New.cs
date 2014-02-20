@@ -38,14 +38,13 @@ namespace NiL.JS.Statements.Operators
                 throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible not defined.")));
             if (temp.ValueType != JSObjectType.Function && !(temp.ValueType == JSObjectType.Object && temp.oValue is Function))
                 throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError(temp + " is not callable")));
+            if (temp.oValue is MethodProxy)
+                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError(temp + " can't be used as a constructor")));
 
             JSObject _this = new JSObject() { ValueType = JSObjectType.Object };
             _this.prototype = temp.GetField("prototype", true, false);
-            if (_this.prototype.ValueType > JSObjectType.Undefined && _this.prototype.ValueType < JSObjectType.Object)
+            if (_this.prototype.ValueType < JSObjectType.Object)
                 _this.prototype = JSObject.GlobalPrototype;
-            else
-                if (_this.prototype.oValue == null)
-                    throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.TypeError("Can't create object.")));
             if (!(temp.oValue is TypeProxyConstructor))
             {
                 _this.prototype = _this.prototype.Clone() as JSObject;

@@ -96,7 +96,7 @@ namespace NiL.JS.Core.BaseTypes
                         var pv = (prototype ?? GetField("__proto__", true, false)).GetField(index.ToString(), true, false);
                         if (pv != undefined)
                             tempElement.Assign(pv);
-                        tempElement.assignCallback = () =>
+                        tempElement.assignCallback = (sender) =>
                         {
                             if (data.Count <= tempElement.iValue)
                             {
@@ -526,16 +526,25 @@ namespace NiL.JS.Core.BaseTypes
 
         private sealed class JSComparer : IComparer<JSObject>
         {
-            private Func<JSObject, JSObject, int> comparer;
+            JSObject args;
+            JSObject first;
+            JSObject second; 
+            Function comparer;
 
-            public JSComparer(Func<JSObject, JSObject, int> comparer)
+            public JSComparer(JSObject args, JSObject first, JSObject second, Function comparer)
             {
+                this.args = args;
+                this.first = first;
+                this.second = second;
                 this.comparer = comparer;
             }
 
             public int Compare(JSObject x, JSObject y)
             {
-                return comparer(x, y);
+                first.Assign(x);
+                second.Assign(y);
+                var res = Tools.JSObjectToInt(comparer.Invoke(JSObject.undefined, args));
+                return res;
             }
         }
 
@@ -586,13 +595,7 @@ namespace NiL.JS.Core.BaseTypes
                     }
                 }
 
-                data.Sort(0, undefBlockStart, new JSComparer((JSObject l, JSObject r) =>
-                {
-                    first.Assign(l);
-                    second.Assign(r);
-                    var res = Tools.JSObjectToInt(comparer.Invoke(JSObject.undefined, args));
-                    return res;
-                }));
+                data.Sort(0, undefBlockStart, new JSComparer(args, first, second, comparer));
             }
             else
                 data.Sort((JSObject l, JSObject r) =>

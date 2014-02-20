@@ -219,12 +219,13 @@ namespace NiL.JS.Core
             }
             else
                 res = new JSObject() { ValueType = JSObjectType.NotExist };
-            res.assignCallback = () =>
+            res.lastRequestedName = name;
+            res.assignCallback = (sender) =>
             {
                 if (fields == null)
                     fields = new Dictionary<string, JSObject>();
-                fields[name] = res;
-                res.assignCallback = null;
+                fields[sender.lastRequestedName] = sender;
+                sender.assignCallback = null;
             };
             return res;
         }
@@ -238,6 +239,7 @@ namespace NiL.JS.Core
             JSObject res = null;
             if (!fields.TryGetValue(name, out res))
                 fields[name] = res = new JSObject();
+            res.lastRequestedName = name;
             Statements.GetVaribleStatement.ResetCache(name);
             res.attributes |= ObjectAttributes.DontDelete;
             return res;
@@ -295,6 +297,7 @@ namespace NiL.JS.Core
                 if (fromProto && fields != null)
                     fields[name] = res;
             }
+            res.lastRequestedName = name;
             return res;
         }
 

@@ -15,7 +15,7 @@ namespace NiL.JS.Statements.Operators
         {
             var a = Tools.RaiseIfNotExist(first.Invoke(context));
             var oassc = a.assignCallback;
-            a.assignCallback = () => { a = a.Clone() as JSObject; };
+            a.assignCallback = (sender) => { a = sender.Clone() as JSObject; };
             try
             {
                 var c = Tools.RaiseIfNotExist(second.Invoke(context));

@@ -102,7 +102,7 @@ namespace NiL.JS.Statements
                         v.ValueType = JSObjectType.String;
                         v.oValue = o;
                         if (v.assignCallback != null)
-                            v.assignCallback();
+                            v.assignCallback(v);
                         res = body.Invoke(context) ?? res;
                         if (context.abort != AbortType.None)
                         {

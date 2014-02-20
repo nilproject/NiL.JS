@@ -126,9 +126,9 @@ namespace NiL.JS.Statements
                 {
                     var gs = val.oValue as Statement[];
                     var prop = res.GetField(fields[i], false, true);
+                    prop.assignCallback(prop);
                     prop.oValue = new Function[] { gs[0] != null ? gs[0].Invoke(context) as Function : null, gs[1] != null ? gs[1].Invoke(context) as Function : null };
                     prop.ValueType = JSObjectType.Property;
-                    prop.assignCallback();
                 }
                 else
                     res.fields[this.fields[i]] = val.Clone() as JSObject;

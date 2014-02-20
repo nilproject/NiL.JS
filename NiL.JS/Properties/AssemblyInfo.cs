@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyCopyrightAttribute("Copyright © NiLProject 2013")]
 [assembly: AssemblyTrademarkAttribute("NiL.JS")]
 [assembly: AssemblyVersionAttribute("0.9.20.2")]
-[assembly: AssemblyFileVersionAttribute("0.9.20.2")]
+[assembly: AssemblyFileVersionAttribute("0.9.21.1")]
 [assembly: NeutralResourcesLanguageAttribute("en-US")]
 [assembly: ComVisibleAttribute(false)]
 [assembly: GuidAttribute("a70afe5a-2b29-49fd-afbf-28794042ea21")]

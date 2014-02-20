@@ -43,7 +43,7 @@ namespace NiL.JS.Core
         private NiL.JS.Core.BaseTypes.String @string;
 
         [Modules.Hidden]
-        internal static readonly Action ErrorAssignCallback = () => { throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Invalid left-hand side"))); };
+        internal static readonly Action<JSObject> ErrorAssignCallback = (sender) => { throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Invalid left-hand side"))); };
         [Modules.Hidden]
         internal protected static readonly IEnumerator<string> EmptyEnumerator = ((IEnumerable<string>)(new string[0])).GetEnumerator();
         [Modules.Hidden]
@@ -63,12 +63,14 @@ namespace NiL.JS.Core
         [Modules.Hidden]
         [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
         [System.ComponentModel.Browsable(false)]
-        internal Action assignCallback;
+        internal Action<JSObject> assignCallback;
         [Modules.Hidden]
         internal JSObject prototype;
         [Modules.Hidden]
         internal Dictionary<string, JSObject> fields;
 
+        [Modules.Hidden]
+        internal string lastRequestedName;
         [Modules.Hidden]
         internal JSObjectType ValueType;
         [Modules.Hidden]
@@ -232,30 +234,37 @@ namespace NiL.JS.Core
                                 return undefined;
                             res = new JSObject()
                             {
-                                assignCallback = () =>
+                                oValue = this,
+                                lastRequestedName = name,
+                                assignCallback = (sender) =>
                                 {
-                                    if (fields == null)
-                                        fields = new Dictionary<string, JSObject>();
-                                    fields[name] = res;
-                                    res.assignCallback = null;
+                                    var owner = sender.oValue as JSObject;
+                                    sender.oValue = null;
+                                    if (owner.fields == null)
+                                        owner.fields = new Dictionary<string, JSObject>();
+                                    owner.fields[sender.lastRequestedName] = sender;
+                                    sender.assignCallback = null;
                                 },
                                 ValueType = JSObjectType.NotExistInObject
                             };
                         }
                         else if (fromProto && !fast)
                         {
-                            var t = new JSObject() { ValueType = JSObjectType.NotExistInObject };
+                            var t = new JSObject();
                             t.Assign(res);
-                            t.assignCallback = () =>
+                            t.lastRequestedName = name;
+                            t.assignCallback = (sender) =>
                             {
                                 if (fields == null)
                                     fields = new Dictionary<string, JSObject>();
-                                fields[name] = t;
-                                t.assignCallback = null;
+                                fields[sender.lastRequestedName] = sender;
+                                sender.assignCallback = null;
                             };
                             t.attributes = res.attributes;
                             res = t;
                         }
+                        else
+                            res.lastRequestedName = name;
                         if (res.ValueType == JSObjectType.NotExist)
                             res.ValueType = JSObjectType.NotExistInObject;
                         return res;
@@ -267,7 +276,7 @@ namespace NiL.JS.Core
         public void Protect()
         {
             if (assignCallback != null)
-                assignCallback();
+                assignCallback(this);
             attributes |= ObjectAttributes.DontDelete | ObjectAttributes.ReadOnly;
         }
 
@@ -352,7 +361,7 @@ namespace NiL.JS.Core
         public void Assign(JSObject right)
         {
             if (this.assignCallback != null)
-                this.assignCallback();
+                this.assignCallback(this);
             if ((attributes & ObjectAttributes.ReadOnly) != 0)
                 return;
             if (right == this)

@@ -18,7 +18,7 @@ namespace NiL.JS.Statements.Operators
             if (val.ValueType == JSObjectType.NotExist)
                 throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible not defined.")));
             if (val.assignCallback != null)
-                val.assignCallback();
+                val.assignCallback(val);
             if ((val.attributes & ObjectAttributes.ReadOnly) != 0)
                 return double.NaN;
             switch (val.ValueType)

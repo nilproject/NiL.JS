@@ -15,7 +15,7 @@ namespace NiL.JS.Statements.Operators
         {
             var val = Tools.RaiseIfNotExist((first ?? second).Invoke(context));
             if (val.assignCallback != null)
-                val.assignCallback();
+                val.assignCallback(val);
             if ((val.attributes & ObjectAttributes.ReadOnly) != 0)
                 return double.NaN;
             switch (val.ValueType)
