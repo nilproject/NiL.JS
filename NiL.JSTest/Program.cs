@@ -209,7 +209,7 @@ console.log(utc);
         {
             typeof(System.Windows.Forms.Button).GetType();
             NiL.JS.Core.Context.GlobalContext.InitField("platform").Assign("NiL.JS");
-            NiL.JS.Core.Context.GlobalContext.InitField("System").Assign(new SubspaceProvider("System"));
+            NiL.JS.Core.Context.GlobalContext.InitField("System").Assign(new NamespaceProvider("System"));
             NiL.JS.Core.Context.GlobalContext.InitField("load").Assign(new ExternalFunction((context, eargs) =>
             {
                 var f = new FileStream("Benchmarks\\" + eargs.GetField("0", true, false).ToString(), FileMode.Open, FileAccess.Read);
@@ -218,13 +218,13 @@ console.log(utc);
                 return context.Eval(eargs);
             }));
             //benchmark();
-            //runFile(@"ftest.js");
+            runFile(@"ftest.js");
             //runFile(@"Benchmarks\run.js");
             //sputnicTests();
             //sputnicTests(@"tests\Conformance\15_Native_ECMA_Script_Objects\15.5_String_Objects");
             //sputnicTests(@"tests\Conformance\15_Native_ECMA_Script_Objects\15.2_Object_Objects");
             //sputnicTests(@"tests\Conformance\15_Native_ECMA_Script_Objects\15.4_Array_Objects");
-            sputnicTests(@"tests\Conformance\15_Native_ECMA_Script_Objects\15.7_Number_Objects");
+            //sputnicTests(@"tests\Conformance\15_Native_ECMA_Script_Objects\15.7_Number_Objects");
             //testEx();
 
             GC.Collect();
