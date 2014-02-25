@@ -129,8 +129,10 @@ namespace NiL.JS.Statements
                 foreach (var v in vars)
                     if (v.Value != null || !varibles.ContainsKey(v.Key))
                         varibles[v.Key] = v.Value;
+                this.varibles = new string[0];
                 foreach (var f in functions)
                     varibles[f.Name] = f;
+                functions = new FunctionStatement[0];
                 if (body.Length == 1)
                     _this = body[0];
                 if (body.Length == 0)

@@ -168,7 +168,6 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * i + 3 - 2 / 2; }
             _("failed: " + failed);
 
             _("Sputnik testing complite");
-            Console.ReadLine();
         }
 
         private class TestClass
@@ -218,27 +217,31 @@ console.log(utc);
                 return context.Eval(eargs);
             }));
             //benchmark();
-            runFile(@"ftest.js");
+            //runFile(@"ftest.js");
             //runFile(@"Benchmarks\run.js");
             //sputnicTests();
             //sputnicTests(@"tests\Conformance\15_Native_ECMA_Script_Objects\15.5_String_Objects");
             //sputnicTests(@"tests\Conformance\15_Native_ECMA_Script_Objects\15.2_Object_Objects");
             //sputnicTests(@"tests\Conformance\15_Native_ECMA_Script_Objects\15.4_Array_Objects");
-            //sputnicTests(@"tests\Conformance\15_Native_ECMA_Script_Objects\15.7_Number_Objects");
+            sputnicTests(@"tests\Conformance\15_Native_ECMA_Script_Objects\15.7_Number_Objects");
             //testEx();
 
             GC.Collect();
             GC.WaitForPendingFinalizers();
+            Console.WriteLine("GC.GetTotalMemory: " + GC.GetTotalMemory(true));
             Console.WriteLine("GC.CollectionCount: " + GC.CollectionCount(0));
             Console.WriteLine("GC.CollectionCount: " + GC.CollectionCount(1));
             Console.WriteLine("GC.CollectionCount: " + GC.CollectionCount(2));
             Console.WriteLine("GC.MaxGeneration: " + GC.MaxGeneration);
-            Console.WriteLine("GC.GetTotalMemory: " + GC.GetTotalMemory(false));
-            while (System.Windows.Forms.Application.OpenForms.Count != 0)
+            if (System.Windows.Forms.Application.OpenForms.Count != 0)
             {
-                System.Threading.Thread.Sleep(1);
-                System.Windows.Forms.Application.DoEvents();
+                while (System.Windows.Forms.Application.OpenForms.Count != 0)
+                {
+                    System.Threading.Thread.Sleep(1);
+                    System.Windows.Forms.Application.DoEvents();
+                }
             }
+            else Console.ReadKey();
         }
     }
 }

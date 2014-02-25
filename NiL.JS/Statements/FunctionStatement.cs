@@ -128,7 +128,7 @@ namespace NiL.JS.Statements
             if (!inExp)
             {
                 var tindex = i;
-                while (i < code.Length && char.IsWhiteSpace(code[i])) i++;
+                while (i < code.Length && char.IsWhiteSpace(code[i]) && !Tools.isLineTerminator(code[i])) i++;
                 if (i < code.Length && code[i] == '(')
                 {
                     List<Statement> args = new List<Statement>();
