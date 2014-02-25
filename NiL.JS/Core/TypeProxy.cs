@@ -12,6 +12,8 @@ namespace NiL.JS.Core
         private static readonly Dictionary<Type, TypeProxy> prototypes = new Dictionary<Type, TypeProxy>();
 
         internal Type hostedType;
+        [NonSerialized]
+        internal Dictionary<string, List<MemberInfo>> members;
         internal object prototypeInstance;
         internal BindingFlags bindFlags = BindingFlags.Public | BindingFlags.NonPublic;
 
@@ -178,18 +180,50 @@ namespace NiL.JS.Core
                     r.Assign(DefaultFieldGetter(name, fast, own));
                 return r;
             }
-            var m = hostedType.GetMember(name, bindFlags);
-            if (m.Length > 1)
+            List<MemberInfo> m = null;
+            if (members == null)
             {
-                for (int i = 0; i < m.Length; i++)
+                members = new Dictionary<string, List<MemberInfo>>();
+                var mmbrs = hostedType.GetMembers(bindFlags);
+                string prewName = null;
+                List<MemberInfo> temp = null;
+                for (int i = 0; i < mmbrs.Length; i++)
+                {
+                    if (prewName != mmbrs[i].Name && !members.TryGetValue(mmbrs[i].Name, out temp))
+                    {
+                        members[mmbrs[i].Name] = temp = new List<MemberInfo>();
+                        prewName = mmbrs[i].Name;
+                    }
+                    temp.Add(mmbrs[i]);
+                }
+            }
+            members.TryGetValue(name, out m);
+            if (m == null || name == "GetType" || m[0].GetCustomAttributes(typeof(HiddenAttribute), false).Length != 0)
+            {
+                switch (name)
+                {
+                    case "toString":
+                        {
+                            return GetField("ToString", true, true);
+                        }
+                    default:
+                        {
+                            r = DefaultFieldGetter(name, fast, own);
+                            return r;
+                        }
+                }
+            }
+            if (m.Count > 1)
+            {
+                for (int i = 0; i < m.Count; i++)
                     if (!(m[i] is MethodInfo))
                         throw new JSException(Proxy(new TypeError("Incompatible fields type.")));
-                var cache = new Function[m.Length];
+                var cache = new Function[m.Count];
                 r = new ExternalFunction((context, args) =>
                 {
                     context.ValidateThreadID();
                     int l = args.GetField("length", true, false).iValue;
-                    for (int i = 0; i < m.Length; i++)
+                    for (int i = 0; i < m.Count; i++)
                     {
                         var mi = m[i] as MethodInfo;
                         if (mi.GetParameters().Length == l && mi.GetCustomAttributes(typeof(HiddenAttribute), false).Length == 0)
@@ -200,21 +234,6 @@ namespace NiL.JS.Core
             }
             else
             {
-                if (m.Length == 0 || name == "GetType" || m[0].GetCustomAttributes(typeof(HiddenAttribute), false).Length != 0)
-                {
-                    switch (name)
-                    {
-                        case "toString":
-                            {
-                                return GetField("ToString", true, true);
-                            }
-                        default:
-                            {
-                                r = DefaultFieldGetter(name, fast, own);
-                                return r;
-                            }
-                    }
-                }
                 switch (m[0].MemberType)
                 {
                     case MemberTypes.Constructor:
