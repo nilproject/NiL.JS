@@ -170,7 +170,7 @@ namespace NiL.JS.Core
                     throw new JSException(TypeProxy.Proxy(new ReferenceError("Varible not defined.")));
                 case JSObjectType.Undefined:
                 case JSObjectType.NotExistInObject:
-                    throw new JSException(TypeProxy.Proxy(new TypeError("Can't access to property value of \"undefined\".")));
+                    throw new JSException(TypeProxy.Proxy(new TypeError("Can't get property \"" + name + "\" of \"undefined\".")));
                 case JSObjectType.Int:
                 case JSObjectType.Double:
                     {
@@ -198,13 +198,13 @@ namespace NiL.JS.Core
                         if (oValue != this && (oValue is JSObject) && ((oValue as JSObject).ValueType >= JSObjectType.Object))
                             return (oValue as JSObject).GetField(name, fast, own);
                         if (oValue == null)
-                            throw new JSException(TypeProxy.Proxy(new TypeError("Can't access to property value of \"null\"")));
+                            throw new JSException(TypeProxy.Proxy(new TypeError("Can't get property \"" + name + "\" of \"null\"")));
                         break;
                     }
                 case JSObjectType.Function:
                     {
                         if (oValue == null)
-                            throw new JSException(TypeProxy.Proxy(new TypeError("Can't access to property value of \"null\"")));
+                            throw new JSException(TypeProxy.Proxy(new TypeError("Can't get property \"" + name + "\" of \"null\"")));
                         if (oValue == this)
                             break;
                         return (oValue as JSObject).GetField(name, false, own);

@@ -756,7 +756,10 @@ namespace NiL.JS.Core.BaseTypes
                 if (!string.IsNullOrEmpty(Name))
                     internalContext.InitField(Name).Assign(this);
                 int i = 0;
-                int min = System.Math.Min(args.GetField("length", true, false).iValue, argumentsNames.Length);
+                JSObject argsLength = args.GetField("length", true, false);
+                if (argsLength.ValueType == JSObjectType.Property)
+                    argsLength = (argsLength.oValue as Function[])[1].Invoke(args, null);
+                int min = System.Math.Min(argsLength.iValue, argumentsNames.Length);
                 for (; i < min; i++)
                     internalContext.fields[argumentsNames[i]] = args.GetField(i.ToString(), true, false);
                 for (; i < argumentsNames.Length; i++)
