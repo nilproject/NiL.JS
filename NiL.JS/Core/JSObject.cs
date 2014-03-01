@@ -154,6 +154,12 @@ namespace NiL.JS.Core
         }
 
         [Modules.Hidden]
+        public JSObject GetField(string name)
+        {
+            return GetField(name, true, false);
+        }
+
+        [Modules.Hidden]
         public virtual JSObject GetField(string name, bool fast, bool own)
         {
             if ((attributes & ObjectAttributes.Immutable) != 0)
@@ -358,23 +364,23 @@ namespace NiL.JS.Core
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
         [Modules.Hidden]
-        public void Assign(JSObject right)
+        public void Assign(JSObject value)
         {
             if (this.assignCallback != null)
                 this.assignCallback(this);
             if ((attributes & ObjectAttributes.ReadOnly) != 0)
                 return;
-            if (right == this)
+            if (value == this)
                 return;
-            if (right != null)
+            if (value != null)
             {
-                this.ValueType = right.ValueType;
-                this.iValue = right.iValue;
-                this.oValue = right.oValue;
-                this.dValue = right.dValue;
-                this.prototype = right.prototype;
-                this.fields = right.fields;
-                this.attributes = this.attributes & ~ObjectAttributes.Immutable | (right.attributes & ObjectAttributes.Immutable);
+                this.ValueType = value.ValueType;
+                this.iValue = value.iValue;
+                this.oValue = value.oValue;
+                this.dValue = value.dValue;
+                this.prototype = value.prototype;
+                this.fields = value.fields;
+                this.attributes = this.attributes & ~ObjectAttributes.Immutable | (value.attributes & ObjectAttributes.Immutable);
                 return;
             }
             this.fields = null;
