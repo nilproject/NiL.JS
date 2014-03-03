@@ -154,7 +154,7 @@ namespace NiL.JS.Core
                 if (hostedType.GetCustomAttributes(typeof(ImmutableAttribute), false).Length != 0)
                     attributes |= ObjectAttributes.Immutable;
                 var ctorProxy = new TypeProxy() { hostedType = type, bindFlags = bindFlags | BindingFlags.Static };
-                if (prototypeInstance == null) // Static
+                if (hostedType.IsAbstract)
                 {
                     constructors[type] = ctorProxy;
                 }
