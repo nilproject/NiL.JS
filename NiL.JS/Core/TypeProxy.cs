@@ -140,7 +140,7 @@ namespace NiL.JS.Core
                                         (prototypeInstance as JSObject).ValueType = JSObjectType.Object;
                                 }
                             }
-                            catch(System.Runtime.InteropServices.COMException)
+                            catch (System.Runtime.InteropServices.COMException)
                             {
 
                             }
@@ -196,6 +196,8 @@ namespace NiL.JS.Core
                 List<MemberInfo> temp = null;
                 for (int i = 0; i < mmbrs.Length; i++)
                 {
+                    if (mmbrs[i].GetCustomAttributes(typeof(HiddenAttribute), false).Length != 0)
+                        continue;
                     if (prewName != mmbrs[i].Name && !members.TryGetValue(mmbrs[i].Name, out temp))
                     {
                         members[mmbrs[i].Name] = temp = new List<MemberInfo>();
@@ -205,7 +207,7 @@ namespace NiL.JS.Core
                 }
             }
             members.TryGetValue(name, out m);
-            if (m == null || name == "GetType" || m[0].GetCustomAttributes(typeof(HiddenAttribute), false).Length != 0)
+            if (m == null || name == "GetType" || m.Count == 0)
             {
                 switch (name)
                 {
