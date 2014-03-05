@@ -235,7 +235,7 @@ namespace NiL.JS.Core
                     for (int i = 0; i < m.Count; i++)
                     {
                         var mi = m[i] as MethodInfo;
-                        if (mi.GetParameters().Length == l && mi.GetCustomAttributes(typeof(HiddenAttribute), false).Length == 0)
+                        if (mi.GetParameters().Length == l)
                             return (cache[i] ?? (cache[i] = new MethodProxy(m[i] as MethodInfo))).Invoke(context, args);
                     }
                     return null;
@@ -260,30 +260,15 @@ namespace NiL.JS.Core
                     case MemberTypes.Field:
                         {
                             var field = (m[0] as FieldInfo);
-                            if (field.IsStatic)
+                            r = new JSObject()
                             {
-                                var val = field.GetValue(null);
-                                if (val == null)
-                                    r = JSObject.Null;
-                                else if (val is JSObject)
-                                    r = val as JSObject;
-                                else
-                                {
-                                    r = Proxy(val);
-                                    r.assignCallback = null;
-                                }
-                            }
-                            else
-                            {
-                                r = new JSObject()
-                                {
-                                    ValueType = JSObjectType.Property,
-                                    oValue = new Function[] {
-                                    null, // Запись не поддерживается. Временно, надеюсь
-                                    new ExternalFunction((c,a)=>{ return Proxy(field.GetValue(c.thisBind.oValue));})
-                                }
-                                };
-                            }
+                                ValueType = JSObjectType.Property,
+                                oValue = new Function[] 
+                                    {
+                                        new ExternalFunction((c,a)=>{ field.SetValue(field.IsStatic ? null : c.thisBind.oValue, a.GetField("0", true, false).Value); return null; }),
+                                        new ExternalFunction((c,a)=>{ return Proxy(field.GetValue(field.IsStatic ? null : c.thisBind.oValue));})
+                                    }
+                            };
                             break;
                         }
                     case MemberTypes.Property:
