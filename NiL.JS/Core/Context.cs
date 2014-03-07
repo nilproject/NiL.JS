@@ -200,6 +200,7 @@ namespace NiL.JS.Core
         internal JSObject abortInfo;
         internal JSObject thisBind;
         internal bool strict;
+        internal bool inEval;
 
         private Context()
         {
@@ -241,6 +242,8 @@ namespace NiL.JS.Core
                 fields[name] = res = new JSObject();
             res.lastRequestedName = name;
             Statements.GetVaribleStatement.ResetCache(name);
+            if (inEval)
+                return res;
             res.attributes |= ObjectAttributes.DontDelete;
             return res;
         }
@@ -325,14 +328,22 @@ namespace NiL.JS.Core
         /// <returns>Результат выполнения кода (аргумент оператора "return" либо результат выполнения последней выполненной строки кода).</returns>
         public JSObject Eval(JSObject args)
         {
-            int i = 0;
-            string c = "{" + Tools.RemoveComments(args.GetField("0", true, false).ToString()) + "}";
-            var cb = CodeBlock.Parse(new ParsingState(c), ref i).Statement;
-            if (i != c.Length)
-                throw new System.ArgumentException("Invalid char");
-            Parser.Optimize(ref cb, -1, null);
-            var res = cb.Invoke(this);
-            return res;
+            try
+            {
+                inEval = true;
+                int i = 0;
+                string c = "{" + Tools.RemoveComments(args.GetField("0", true, false).ToString()) + "}";
+                var cb = CodeBlock.Parse(new ParsingState(c), ref i).Statement;
+                if (i != c.Length)
+                    throw new System.ArgumentException("Invalid char");
+                Parser.Optimize(ref cb, -1, null);
+                var res = cb.Invoke(this);
+                return res;
+            }
+            finally
+            {
+                inEval = false;
+            }
         }
 
         internal void ValidateThreadID()
