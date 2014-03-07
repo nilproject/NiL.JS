@@ -52,8 +52,12 @@ namespace NiL.JS
             {
                 if (types[j].FullName == reqname)
                     return NiL.JS.Core.TypeProxy.GetConstructor(types[j]);
-                if (!createSubNode && types[j].Namespace != null && types[j].Namespace.Length >= reqname.Length && types[j].Namespace.IndexOf(reqname) == 0)
-                    createSubNode = true;
+                if (!createSubNode)
+                {
+                    var nspace = types[j].Namespace;
+                    if (nspace != null && nspace.Length >= reqname.Length && (nspace == reqname || (nspace.StartsWith(reqname) && nspace[reqname.Length] == '.')))
+                        createSubNode = true;
+                }
             }
             if (createSubNode)
                 return NiL.JS.Core.TypeProxy.Proxy(new NamespaceProvider(reqname));
