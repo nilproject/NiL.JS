@@ -21,7 +21,7 @@ namespace NiL.JS.Core.BaseTypes
 
         public Date()
         {
-            host = DateTime.Now;
+            host = DateTime.Now.ToUniversalTime();
         }
 
         public Date(JSObject args)
@@ -75,7 +75,7 @@ namespace NiL.JS.Core.BaseTypes
         {
             if (error)
                 return double.NaN;
-            var res = host.Ticks - UTCBase;
+            var res = getTime();
             return res;
         }
 
@@ -83,7 +83,7 @@ namespace NiL.JS.Core.BaseTypes
         {
             if (error)
                 return double.NaN;
-            var res = host.Ticks - UTCBase;
+            var res = (host.Ticks - UTCBase) / 10000;
             return res;
         }
 
@@ -174,7 +174,7 @@ namespace NiL.JS.Core.BaseTypes
 
         public int setTime(int time)
         {
-            host = new DateTime(time + UTCBase);
+            host = new DateTime(time * 10000 + UTCBase);
             return time;
         }
 
