@@ -153,6 +153,7 @@
     <Compile Include="Core\IOptimizable.cs" />
     <Compile Include="Core\JSException.cs" />
     <Compile Include="Core\Modules\DontDeleteAttribute.cs" />
+    <Compile Include="Core\Modules\JSON.cs" />
     <Compile Include="Core\Modules\ParametersCountAttribute.cs" />
     <Compile Include="Core\Modules\PrototypeAttribute.cs" />
     <Compile Include="Core\ParsingState.cs" />

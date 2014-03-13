@@ -6,6 +6,18 @@ namespace NiL.JS.Core
     {
         private JSObject @object;
 
+        internal override bool inEval
+        {
+            get
+            {
+                return prototype.inEval;
+            }
+            set
+            {
+                prototype.inEval = value;
+            }
+        }
+
         public WithContext(JSObject obj, Context prototype)
             : base(prototype)
         {

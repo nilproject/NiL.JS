@@ -83,6 +83,7 @@ namespace NiL.JS.Core
             globalContext.AttachModule(typeof(BaseTypes.SyntaxError));
             globalContext.AttachModule(typeof(BaseTypes.RegExp));
             globalContext.AttachModule(typeof(Modules.Math));
+            globalContext.AttachModule(typeof(Modules.JSON));
             globalContext.AttachModule(typeof(Modules.console));
 
             #region Base Function
@@ -200,7 +201,7 @@ namespace NiL.JS.Core
         internal JSObject abortInfo;
         internal JSObject thisBind;
         internal bool strict;
-        internal bool inEval;
+        internal virtual bool inEval { get; set; }
 
         private Context()
         {

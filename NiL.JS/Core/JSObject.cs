@@ -153,6 +153,13 @@ namespace NiL.JS.Core
                 fields = new Dictionary<string, JSObject>();
         }
 
+        public static JSObject CreateObject()
+        {
+            var t = new JSObject(true) { ValueType = JSObjectType.Object };
+            t.oValue = t;
+            return t;
+        }
+
         [Modules.Hidden]
         public JSObject GetField(string name)
         {
