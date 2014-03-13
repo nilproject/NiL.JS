@@ -155,7 +155,7 @@ namespace NiL.JS.Core
 
         public static JSObject CreateObject()
         {
-            var t = new JSObject(true) { ValueType = JSObjectType.Object };
+            var t = new JSObject(true) { ValueType = JSObjectType.Object, prototype = GlobalPrototype };
             t.oValue = t;
             return t;
         }

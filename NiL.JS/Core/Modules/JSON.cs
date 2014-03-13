@@ -15,7 +15,8 @@ namespace NiL.JS.Core.Modules
         {
             Value,
             Name,
-            IndexedValue
+            Object,
+            Array
         }
 
         private class StackFrame
@@ -54,44 +55,28 @@ namespace NiL.JS.Core.Modules
                         if (!Tools.ParseNumber(code, ref start, true, out value))
                             throw new JSException(TypeProxy.Proxy(new SyntaxError("Invalid number definition.")));
                         JSObject val = value;
-                        if (stack.Peek().state == ParseState.Value)
+                        var v = stack.Pop();
+                        if (reviewer != null)
                         {
-                            var v = stack.Pop();
-                            if (reviewer != null)
-                            {
-                                revargs.data[0] = v.fieldName;
-                                revargs.data[1] = val;
-                                val = reviewer.Invoke(revargs);
-                                if (val.ValueType <= JSObjectType.Undefined)
-                                    val = null;
-                            }
-                            if (val != null)
-                                stack.Peek().obj.GetField(v.fieldName, false, true).Assign(val);
+                            revargs.data[0] = v.fieldName;
+                            revargs.data[1] = val;
+                            val = reviewer.Invoke(revargs);
+                            if (val.ValueType <= JSObjectType.Undefined)
+                                val = null;
                         }
-                        else
-                        {
-                            var v = stack.Peek();
-                            if (reviewer != null)
-                            {
-                                revargs.data[0] = v.valuesCount;
-                                revargs.data[1] = val;
-                                val = reviewer.Invoke(revargs);
-                                if (val.ValueType <= JSObjectType.Undefined)
-                                    val = null;
-                            }
-                            if (val != null)
-                                stack.Peek().obj.GetField((v.valuesCount++).ToString(), false, true).Assign(val);
-                        }
+                        if (val != null)
+                            stack.Peek().obj.GetField(v.fieldName, false, true).Assign(val);
                     }
                     else
                     {
                         string value = code.Substring(start, pos - start);
                         if (value[0] != '"')
                             throw new JSException(TypeProxy.Proxy(new SyntaxError("Unexpected token.")));
-                        value = value.Substring(1, value.Length - 2);
+                        value = Tools.Unescape(value.Substring(1, value.Length - 2));
                         if (stack.Peek().state == ParseState.Name)
                         {
-                            stack.Push(new StackFrame() { fieldName = value, state = ParseState.Value });
+                            stack.Peek().fieldName = value;
+                            stack.Peek().state = ParseState.Value;
                             while (char.IsWhiteSpace(code[pos])) pos++;
                             if (code[pos] != ':')
                                 throw new JSException(TypeProxy.Proxy(new SyntaxError("Unexpected token.")));
@@ -99,7 +84,7 @@ namespace NiL.JS.Core.Modules
                             waitControlChar = false;
                             waitComma = false;
                         }
-                        else if (stack.Peek().state == ParseState.Value)
+                        else
                         {
                             var v = stack.Pop();
                             JSObject val = value;
@@ -114,27 +99,14 @@ namespace NiL.JS.Core.Modules
                             if (val != null)
                                 stack.Peek().obj.GetField(v.fieldName, false, true).Assign(val);
                         }
-                        else if (stack.Peek().state == ParseState.IndexedValue)
-                        {
-                            JSObject val = value;
-                            if (reviewer != null)
-                            {
-                                revargs.data[0] = stack.Peek().valuesCount;
-                                revargs.data[1] = val;
-                                val = reviewer.Invoke(revargs);
-                                if (val.ValueType <= JSObjectType.Undefined)
-                                    val = null;
-                            }
-                            if (val != null)
-                                stack.Peek().obj.GetField((stack.Peek().valuesCount++).ToString(), false, true).Assign(val);
-                        }
                     }
                 }
                 else if (code[pos] == '{')
                 {
                     if (stack.Peek().state == ParseState.Name)
                         throw new JSException(TypeProxy.Proxy(new SyntaxError("Unexpected token.")));
-                    stack.Push(new StackFrame() { state = ParseState.Name, obj = JSObject.CreateObject() });
+                    stack.Peek().obj = JSObject.CreateObject();
+                    stack.Peek().state = ParseState.Object;
                     waitComma = false;
                     pos++;
                 }
@@ -142,7 +114,8 @@ namespace NiL.JS.Core.Modules
                 {
                     if (stack.Peek().state == ParseState.Name)
                         throw new JSException(TypeProxy.Proxy(new SyntaxError("Unexpected token.")));
-                    stack.Push(new StackFrame() { state = ParseState.IndexedValue, obj = new BaseTypes.Array() });
+                    stack.Peek().obj = new BaseTypes.Array();
+                    stack.Peek().state = ParseState.Array;
                     waitComma = false;
                     pos++;
                 }
@@ -150,25 +123,10 @@ namespace NiL.JS.Core.Modules
                 while (code.Length > pos && char.IsWhiteSpace(code[pos])) pos++;
                 while (waitControlChar)
                 {
-                    if (stack.Peek().state == ParseState.Name || stack.Peek().state == ParseState.IndexedValue)
+                    if (stack.Peek().state == ParseState.Object || stack.Peek().state == ParseState.Array)
                     {
-                        if (stack.Peek().state == ParseState.IndexedValue && code[pos] == ']')
-                        {
-                            var t = stack.Pop();
-                            if (reviewer != null)
-                            {
-                                revargs.data[0] = t.fieldName;
-                                revargs.data[1] = t.obj;
-                                t.obj = reviewer.Invoke(revargs);
-                                if (t.obj.ValueType <= JSObjectType.Undefined)
-                                    t.obj = null;
-                            }
-                            if (t.obj != null)
-                                stack.Peek().obj.GetField(t.fieldName, false, true).Assign(t.obj);
-                            do pos++; while (code.Length > pos && char.IsWhiteSpace(code[pos]));
-                            continue;
-                        }
-                        else if (stack.Peek().state == ParseState.Name && code[pos] == '}')
+                        if ((stack.Peek().state == ParseState.Array && code[pos] == ']') 
+                            || (stack.Peek().state == ParseState.Object && code[pos] == '}'))
                         {
                             var t = stack.Pop();
                             if (reviewer != null)
@@ -197,6 +155,10 @@ namespace NiL.JS.Core.Modules
                     }
                     else break;
                 }
+                if (stack.Peek().state == ParseState.Array)
+                    stack.Push(new StackFrame() { fieldName = (stack.Peek().valuesCount++).ToString(), state = ParseState.Value });
+                else if (stack.Peek().state == ParseState.Object)
+                    stack.Push(new StackFrame() { state = ParseState.Name });
             }
             return stack.Peek().obj.GetField("");
         }
