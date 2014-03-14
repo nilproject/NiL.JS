@@ -74,21 +74,39 @@ namespace NiL.JS.Statements
 
         internal override JSObject Invoke(Context context)
         {
-            throw new InvalidOperationException("VaribleDefineStatement.Invoke");
+            JSObject res = null;
+            for (int i = 0; i < initializators.Length; i++)
+                res = initializators[i].Invoke(context);
+            return res;
         }
 
         internal override bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> varibles)
         {
-            if (initializators.Length > 1)
-                _this = new CodeBlock(initializators, false);
-            else
-                _this = initializators[0];
+            for (int i = 0; i < initializators.Length; i++)
+                Parser.Optimize(ref initializators[i], 1, varibles);
             for (var i = 0; i < names.Length; i++)
             {
                 if (!varibles.ContainsKey(names[i]))
                     varibles.Add(names[i], null);
             }
-            return true;
+            return false;
+        }
+
+        public override string ToString()
+        {
+            var res = "var ";
+            for (var i = 0; i < initializators.Length; i++)
+            {
+                var t = initializators[i].ToString();
+                if (string.IsNullOrEmpty(t))
+                    continue;
+                if (t[0] == '(')
+                    t = t.Substring(1, t.Length - 2);
+                if (i > 0)
+                    res += ", ";
+                res += t;
+            }
+            return res;
         }
     }
 }

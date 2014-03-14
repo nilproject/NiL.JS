@@ -126,9 +126,6 @@ namespace NiL.JS.Statements
                 functions[i] = stat as FunctionStatement;
             }
 
-            //for (int i = functions.Length - 1; i >= 0; i--)
-            //    vars.Remove((functions[i] as FunctionStatement).Name);
-
             if (depth > 0)
             {
                 foreach (var v in vars)
@@ -168,8 +165,6 @@ namespace NiL.JS.Statements
             string res = " {" + Environment.NewLine;
             var replp = Environment.NewLine;
             var replt = Environment.NewLine + "  ";
-            for (var i = 0; i < varibles.Length; i++)
-                res += "  var " + varibles[i] + ";" + Environment.NewLine;
             for (var i = 0; i < functions.Length; i++)
             {
                 var func = functions[i].ToString().Replace(replp, replt);
@@ -177,7 +172,10 @@ namespace NiL.JS.Statements
             }
             for (int i = body.Length; i-- > 0; )
             {
-                string lc = body[i].ToString().Replace(replp, replt);
+                string lc = body[i].ToString();
+                if (lc[0] == '(')
+                    lc = lc.Substring(1, lc.Length - 2);
+                lc = lc.Replace(replp, replt);
                 res += "  " + lc + (lc[lc.Length - 1] != '}' ? ";" + Environment.NewLine : Environment.NewLine);
             }
             return res + "}";

@@ -19,6 +19,11 @@ namespace NiL.JS.Core
             oValue = this;
         }
 
+        public override JSObject toString(JSObject args)
+        {
+            return ToString();
+        }
+
         public override string ToString()
         {
             if (oValue != this || ValueType < JSObjectType.Object)

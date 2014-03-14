@@ -65,7 +65,13 @@ namespace NiL.JS.Statements.Operators
 
         public override string ToString()
         {
-            return "(" + first + " = " + second + ")";
+            string f = first.ToString();
+            if (f[0] == '(')
+                f = f.Substring(1, f.Length - 2);
+            string t = second.ToString();
+            if (t[0] == '(')
+                t = t.Substring(1, t.Length - 2);
+            return "(" + f + " = " + t + ")";
         }
     }
 }
