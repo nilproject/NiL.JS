@@ -4,23 +4,25 @@ using System;
 
 namespace NiL.JS.Statements
 {
-    internal sealed class ImmidateValueStatement : Statement, IOptimizable
+    public sealed class ImmidateValueStatement : Statement
     {
-        internal JSObject Value;
+        internal JSObject value;
+
+        public JSObject Value { get { return value; } }
 
         public ImmidateValueStatement(JSObject value)
         {
-            Value = value;
+            this.value = value;
         }
 
-        public override JSObject Invoke(Context context)
+        internal override JSObject Invoke(Context context)
         {
-            return Value;
+            return value;
         }
 
-        public bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> varibles)
+        internal override bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> varibles)
         {
-            var vss = Value.Value as Statement[];
+            var vss = value.Value as Statement[];
             if (vss != null)
             {
                 for (int i = 0; i < vss.Length; i++)
@@ -31,9 +33,9 @@ namespace NiL.JS.Statements
 
         public override string ToString()
         {
-            if (Value.ValueType == JSObjectType.String)
-                return "\"" + Value.oValue + "\"";
-            return Value.ToString();
+            if (value.ValueType == JSObjectType.String)
+                return "\"" + value.oValue + "\"";
+            return value.ToString();
         }
     }
 }

@@ -11,7 +11,7 @@ namespace NiL.JS.Statements.Operators
 
         }
 
-        public override JSObject Invoke(Context context)
+        internal override JSObject Invoke(Context context)
         {
             tempResult.dValue = Tools.JSObjectToDouble(first.Invoke(context)) * Tools.JSObjectToDouble(second.Invoke(context));
             tempResult.ValueType = JSObjectType.Double;

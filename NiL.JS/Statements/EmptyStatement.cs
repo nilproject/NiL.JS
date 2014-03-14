@@ -3,9 +3,9 @@ using NiL.JS.Core;
 
 namespace NiL.JS.Statements
 {
-    internal sealed class EmptyStatement : Statement
+    public sealed class EmptyStatement : Statement
     {
-        public override JSObject Invoke(Context context)
+        internal override JSObject Invoke(Context context)
         {
             return JSObject.undefined;
         }

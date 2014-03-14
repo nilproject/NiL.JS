@@ -3,7 +3,7 @@ using System;
 
 namespace NiL.JS.Statements.Operators
 {
-    internal class SignedShiftRight : Operator
+    public sealed class SignedShiftRight : Operator
     {
         public SignedShiftRight(Statement first, Statement second)
             : base(first, second)
@@ -11,7 +11,7 @@ namespace NiL.JS.Statements.Operators
 
         }
 
-        public override JSObject Invoke(Context context)
+        internal override JSObject Invoke(Context context)
         {
             var left = Tools.JSObjectToInt(first.Invoke(context));
             tempResult.iValue = (int)(left >> Tools.JSObjectToInt(second.Invoke(context)));

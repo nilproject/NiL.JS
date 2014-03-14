@@ -223,7 +223,7 @@ namespace NiL.JS.Core.BaseTypes
             var opeq = new NiL.JS.Statements.Operators.Equal(left, right);
             for (int i = 0; i < data.Count; i++)
             {
-                right.Value = data[i];
+                right.value = data[i];
                 if ((bool)opeq.Invoke(null))
                     return i;
             }
@@ -285,7 +285,7 @@ namespace NiL.JS.Core.BaseTypes
             var opeq = new NiL.JS.Statements.Operators.Equal(left, right);
             for (int i = data.Count; i-- > 0; )
             {
-                right.Value = data[i];
+                right.value = data[i];
                 if ((bool)opeq.Invoke(null))
                     return i;
             }

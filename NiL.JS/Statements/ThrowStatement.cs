@@ -3,9 +3,11 @@ using NiL.JS.Core;
 
 namespace NiL.JS.Statements
 {
-    internal sealed class ThrowStatement : Statement, IOptimizable
+    internal sealed class ThrowStatement : Statement
     {
         private Statement body;
+
+        public Statement Body { get { return body; } }
 
         internal static ParseResult Parse(ParsingState state, ref int index)
         {
@@ -28,12 +30,12 @@ namespace NiL.JS.Statements
             };
         }
 
-        public override JSObject Invoke(Context context)
+        internal override JSObject Invoke(Context context)
         {
             throw new JSException(body.Invoke(context));
         }
 
-        public bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> varibles)
+        internal override bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> varibles)
         {
             Parser.Optimize(ref body, 2, varibles);
             return false;

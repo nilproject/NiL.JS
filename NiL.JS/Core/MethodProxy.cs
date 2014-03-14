@@ -317,6 +317,7 @@ namespace NiL.JS.Core
             finally
             {
                 context = oldContext;
+                context.ValidateThreadID();
             }
         }
 
@@ -334,6 +335,7 @@ namespace NiL.JS.Core
             finally
             {
                 context = oldContext;
+                context.ValidateThreadID();
             }
         }
 

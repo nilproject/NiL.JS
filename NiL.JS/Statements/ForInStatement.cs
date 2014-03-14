@@ -6,7 +6,7 @@ using System.Reflection;
 
 namespace NiL.JS.Statements
 {
-    internal sealed class ForInStatement : Statement, IOptimizable
+    public sealed class ForInStatement : Statement
     {
         private FieldInfo indexMember = (FieldInfo)typeof(Dictionary<string, JSObject>.KeyCollection.Enumerator).GetMember("index", BindingFlags.Instance | BindingFlags.NonPublic)[0];
 
@@ -14,6 +14,11 @@ namespace NiL.JS.Statements
         private Statement source;
         private Statement body;
         private List<string> labels;
+
+        public Statement Varible { get { return varible; } }
+        public Statement Source { get { return source; } }
+        public Statement Body { get { return body; } }
+        public string[] Labels { get { return labels.ToArray(); } }
 
         private ForInStatement()
         {
@@ -73,7 +78,7 @@ namespace NiL.JS.Statements
             };
         }
 
-        public override JSObject Invoke(Context context)
+        internal override JSObject Invoke(Context context)
         {
             JSObject res = JSObject.undefined;
             var s = Tools.RaiseIfNotExist(source.Invoke(context));
@@ -122,7 +127,7 @@ namespace NiL.JS.Statements
             return res;
         }
 
-        public bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> varibles)
+        internal override bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> varibles)
         {
             Parser.Optimize(ref varible, 1, varibles);
             Parser.Optimize(ref source, 1, varibles);

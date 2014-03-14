@@ -3,7 +3,7 @@ using System;
 
 namespace NiL.JS.Statements.Operators
 {
-    internal class Mod : Operator
+    public sealed class Mod : Operator
     {
         public Mod(Statement first, Statement second)
             : base(first, second)
@@ -11,7 +11,7 @@ namespace NiL.JS.Statements.Operators
 
         }
 
-        public override JSObject Invoke(Context context)
+        internal override JSObject Invoke(Context context)
         {
             double left = Tools.JSObjectToDouble(first.Invoke(context));
             tempResult.dValue = left % Tools.JSObjectToDouble(second.Invoke(context));

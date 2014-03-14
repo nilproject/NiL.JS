@@ -3,15 +3,15 @@ using System;
 
 namespace NiL.JS.Statements.Operators
 {
-    internal class Less : Operator
+    public class Less : Operator
     {
-        public Less(Statement first, Statement second)
+        internal Less(Statement first, Statement second)
             : base(first, second)
         {
 
         }
 
-        public override JSObject Invoke(Context context)
+        internal override JSObject Invoke(Context context)
         {
             var temp = first.Invoke(context);
 

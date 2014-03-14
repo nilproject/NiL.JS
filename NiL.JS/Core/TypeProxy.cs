@@ -15,7 +15,7 @@ namespace NiL.JS.Core
         [NonSerialized]
         internal Dictionary<string, List<MemberInfo>> members;
         internal object prototypeInstance;
-        internal BindingFlags bindFlags = BindingFlags.Public | BindingFlags.NonPublic;
+        internal BindingFlags bindFlags = BindingFlags.Public;
 
         /// <summary>
         /// Создаёт объект-прослойку указанного объекта для доступа к этому объекту из скрипта. 
@@ -262,15 +262,15 @@ namespace NiL.JS.Core
                     case MemberTypes.Field:
                         {
                             var field = (m[0] as FieldInfo);
-                                r = new JSObject()
-                                {
-                                    ValueType = JSObjectType.Property,
+                            r = new JSObject()
+                            {
+                                ValueType = JSObjectType.Property,
                                 oValue = new Function[] 
                                     {
-                                        new ExternalFunction((c,a)=>{ field.SetValue(field.IsStatic ? null : c.thisBind.oValue, a.GetField("0", true, false).Value); return null; }),
+                                        m[0].GetCustomAttributes(typeof(Modules.ProtectedAttribute), false).Length == 0 ? new ExternalFunction((c,a)=>{ field.SetValue(field.IsStatic ? null : (c.thisBind ?? c.GetField("this")).oValue, a.GetField("0", true, false).Value); return null; }) : null,
                                         new ExternalFunction((c,a)=>{ return Proxy(field.GetValue(field.IsStatic ? null : c.thisBind.oValue));})
-                                }
-                                };
+                                    }
+                            };
                             break;
                         }
                     case MemberTypes.Property:
@@ -280,8 +280,8 @@ namespace NiL.JS.Core
                             {
                                 ValueType = JSObjectType.Property,
                                 oValue = new Function[] { 
-                                    pinfo.CanWrite && pinfo.GetSetMethod(true).IsPublic ? new MethodProxy(pinfo.GetSetMethod(false)) : null,
-                                    pinfo.CanRead && pinfo.GetGetMethod(true).IsPublic ? new MethodProxy(pinfo.GetGetMethod(false)) : null 
+                                    pinfo.CanWrite && pinfo.GetSetMethod(false) != null ? new MethodProxy(pinfo.GetSetMethod(false)) : null,
+                                    pinfo.CanRead && pinfo.GetGetMethod(false) != null ? new MethodProxy(pinfo.GetGetMethod(false)) : null 
                                 }
                             };
                             break;

@@ -65,15 +65,15 @@ namespace NiL.JS.Statements
 
     internal delegate JSObject OpDelegate(Context context);
 
-    internal class OperatorStatement : Statement, IOptimizable
+    internal sealed class OperatorStatement : Statement
     {
         private Statement fastImpl;
 
-        public Statement First { get { return first; } }
-        public Statement Second { get { return second; } }
+        internal Statement First { get { return first; } }
+        internal Statement Second { get { return second; } }
 
         private OperationType _type;
-        public OperationType Type
+        internal OperationType Type
         {
             get
             {
@@ -1021,12 +1021,12 @@ namespace NiL.JS.Statements
             };
         }
 
-        public override JSObject Invoke(Context context)
+        internal override JSObject Invoke(Context context)
         {
             throw new InvalidOperationException();
         }
 
-        public bool Optimize(ref Statement _this, int depth, Dictionary<string, Statement> vars)
+        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, Statement> vars)
         {
             Type = Type;
             _this = fastImpl;

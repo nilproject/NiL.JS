@@ -4,7 +4,7 @@ using System;
 
 namespace NiL.JS.Statements.Operators
 {
-    internal class In : Operator
+    public sealed class In : Operator
     {
         public In(Statement first, Statement second)
             : base(first, second)
@@ -12,7 +12,7 @@ namespace NiL.JS.Statements.Operators
 
         }
 
-        public override JSObject Invoke(Context context)
+        internal override JSObject Invoke(Context context)
         {
             var fn = Tools.RaiseIfNotExist(first.Invoke(context));
             var oassc = fn.assignCallback;
@@ -33,12 +33,10 @@ namespace NiL.JS.Statements.Operators
             }
         }
 
-        public override bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> vars)
+        internal override bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> vars)
         {
-            if (first is IOptimizable)
-                Parser.Optimize(ref first, depth + 1, vars);
-            if (second is IOptimizable)
-                Parser.Optimize(ref second, depth + 1, vars);
+            Parser.Optimize(ref first, depth + 1, vars);
+            Parser.Optimize(ref second, depth + 1, vars);
             return false;
         }
 

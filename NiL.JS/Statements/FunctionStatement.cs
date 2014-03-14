@@ -5,7 +5,7 @@ using NiL.JS.Core;
 
 namespace NiL.JS.Statements
 {
-    internal sealed class FunctionStatement : Statement, IOptimizable
+    public sealed class FunctionStatement : Statement
     {
         public enum FunctionParseMode
         {
@@ -16,12 +16,15 @@ namespace NiL.JS.Statements
 
         private string[] argumentsNames;
         private CodeBlock body;
-        internal readonly string Name;
+        internal readonly string name;
         internal FunctionParseMode mode;
+
+        public CodeBlock Body { get { return body; } }
+        public string Name { get { return name; } }
 
         private FunctionStatement(string name)
         {
-            this.Name = name;
+            this.name = name;
         }
 
         internal static ParseResult Parse(ParsingState state, ref int index)
@@ -178,23 +181,23 @@ namespace NiL.JS.Statements
             };
         }
 
-        public override JSObject Invoke(Context context)
+        internal override JSObject Invoke(Context context)
         {
-            Function res = new Function(context, body, argumentsNames, Name);
+            Function res = new Function(context, body, argumentsNames, name);
             return res;
         }
 
-        public bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> varibles)
+        internal override bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> varibles)
         {
             var stat = body as Statement;
-            (body as IOptimizable).Optimize(ref stat, 0, varibles);
+            body.Optimize(ref stat, 0, varibles);
             body = stat as CodeBlock;
             return false;
         }
 
         public override string ToString()
         {
-            var res = mode + " " + Name + "(";
+            var res = mode + " " + name + "(";
             if (argumentsNames != null)
                 for (int i = 0; i < argumentsNames.Length; )
                     res += argumentsNames[i] + (++i < argumentsNames.Length ? "," : "");

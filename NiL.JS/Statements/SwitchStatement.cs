@@ -4,9 +4,9 @@ using System.Collections.Generic;
 
 namespace NiL.JS.Statements
 {
-    internal class SwitchStatement : Statement, IOptimizable
+    public sealed class SwitchStatement : Statement
     {
-        private class Case
+        public sealed class Case
         {
             public int index;
             public Statement statement;
@@ -18,7 +18,12 @@ namespace NiL.JS.Statements
         private Case[] cases;
         private Statement image;
 
-        public SwitchStatement(Statement[] body)
+        public FunctionStatement[] Functions { get { return functions; } }
+        public Statement[] Body { get { return body; } }
+        public Case[] Cases { get { return cases; } }
+        public Statement Image { get { return image; } }
+
+        internal SwitchStatement(Statement[] body)
         {
             this.body = body;
             length = body.Length - 1;
@@ -101,7 +106,7 @@ namespace NiL.JS.Statements
             };
         }
 
-        public override JSObject Invoke(Context context)
+        internal override JSObject Invoke(Context context)
         {
             if (functions != null)
                 throw new InvalidOperationException();
@@ -127,7 +132,7 @@ namespace NiL.JS.Statements
             return null;
         }
 
-        public bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> varibles)
+        internal override bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> varibles)
         {
             if (depth < 1)
                 throw new InvalidOperationException();
@@ -138,7 +143,7 @@ namespace NiL.JS.Statements
             {
                 Statement stat = functions[i];
                 Parser.Optimize(ref stat, 1, varibles);
-                varibles[functions[i].Name] = stat;
+                varibles[functions[i].name] = stat;
                 functions[i] = null;
             }
             functions = null;

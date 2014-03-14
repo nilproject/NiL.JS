@@ -4,29 +4,32 @@ using NiL.JS.Core;
 
 namespace NiL.JS.Statements
 {
-    internal class GetFieldStatement : Statement, IOptimizable
+    public sealed class GetFieldStatement : Statement
     {
         private Statement objStatement;
         private Statement fieldNameStatement;
 
-        public GetFieldStatement(Statement obj, Statement fieldName)
+        public Statement Source { get { return objStatement; } }
+        public Statement FieldName { get { return fieldNameStatement; } }
+
+        internal GetFieldStatement(Statement obj, Statement fieldName)
         {
             objStatement = obj;
             fieldNameStatement = fieldName;
         }
 
-        public GetFieldStatement(Statement obj, string fieldName)
+        internal GetFieldStatement(Statement obj, string fieldName)
         {
             objStatement = obj;
             fieldNameStatement = new ImmidateValueStatement(fieldName);
         }
 
-        public override JSObject InvokeForAssing(Context context)
+        internal override JSObject InvokeForAssing(Context context)
         {
             return impl(context, false);
         }
 
-        public override JSObject Invoke(Context context)
+        internal override JSObject Invoke(Context context)
         {
             var res = impl(context, true);
             return res;
@@ -49,7 +52,7 @@ namespace NiL.JS.Statements
             return res;
         }
 
-        public bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> varibles)
+        internal override bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> varibles)
         {
             Parser.Optimize(ref objStatement, depth + 1, varibles);
             Parser.Optimize(ref fieldNameStatement, depth + 1, varibles);

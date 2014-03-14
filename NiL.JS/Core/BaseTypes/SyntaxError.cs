@@ -7,7 +7,7 @@ using NiL.JS.Core.Modules;
 namespace NiL.JS.Core.BaseTypes
 {
     [Immutable]
-    public class SyntaxError : Error
+    public sealed class SyntaxError : Error
     {
         public override JSObject name { get { return "SyntaxError"; } }
 

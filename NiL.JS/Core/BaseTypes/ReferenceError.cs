@@ -8,7 +8,7 @@ namespace NiL.JS.Core.BaseTypes
 {
     [Immutable]
     [Prototype(typeof(Error))]
-    public class ReferenceError : Error
+    public sealed class ReferenceError : Error
     {
         public override JSObject name
         {

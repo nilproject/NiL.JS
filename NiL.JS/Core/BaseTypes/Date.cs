@@ -3,7 +3,7 @@ using NiL.JS.Core.Modules;
 
 namespace NiL.JS.Core.BaseTypes
 {
-    public class Date
+    public sealed class Date
     {
         [Hidden]
         private readonly String tempSResult = "";
@@ -37,7 +37,13 @@ namespace NiL.JS.Core.BaseTypes
                         case JSObjectType.Bool:
                         case JSObjectType.Double:
                             {
-                                host = new DateTime((long)Tools.JSObjectToDouble(arg) + UTCBase);
+                                var d = Tools.JSObjectToDouble(arg);
+                                if (double.IsNaN(d) || double.IsInfinity(d))
+                                {
+                                    error = true;
+                                    break;
+                                }
+                                host = new DateTime((long)d * 10000 + UTCBase);
                                 break;
                             }
                         case JSObjectType.String:

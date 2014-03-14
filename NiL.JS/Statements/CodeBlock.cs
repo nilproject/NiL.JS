@@ -4,13 +4,18 @@ using System.Collections.Generic;
 
 namespace NiL.JS.Statements
 {
-    internal class CodeBlock : Statement, IOptimizable
+    public sealed class CodeBlock : Statement
     {
         private FunctionStatement[] functions;
         private string[] varibles;
         private int length;
-        public readonly Statement[] body;
-        public readonly bool strict;
+        internal readonly Statement[] body;
+        internal readonly bool strict;
+
+        public FunctionStatement[] Functions { get { return functions; } }
+        public string[] Varibles { get { return varibles; } }
+        public Statement[] Body { get { return body; } }
+        public bool Strict { get { return strict; } }
 
         public CodeBlock(Statement[] body, bool strict)
         {
@@ -21,7 +26,7 @@ namespace NiL.JS.Statements
             this.strict = strict;
         }
 
-        public static ParseResult Parse(ParsingState state, ref int index)
+        internal static ParseResult Parse(ParsingState state, ref int index)
         {
             string code = state.Code;
             int i = index;
@@ -46,7 +51,7 @@ namespace NiL.JS.Statements
                     if (t is OperatorStatement && ((t as OperatorStatement).Type == OperationType.None))
                     {
                         var op = t as OperatorStatement;
-                        if (op.Second == null && (op.First is ImmidateValueStatement) && "use strict".Equals((op.First as ImmidateValueStatement).Value.Value))
+                        if (op.Second == null && (op.First is ImmidateValueStatement) && "use strict".Equals((op.First as ImmidateValueStatement).value.Value))
                         {
                             state.strict.Push(true);
                             strictSwitch = true;
@@ -80,16 +85,16 @@ namespace NiL.JS.Statements
             };
         }
 
-        public override JSObject Invoke(Context context)
+        internal override JSObject Invoke(Context context)
         {
             context.strict |= strict;
             for (int i = varibles.Length - 1; i >= 0; i--)
                 context.InitField(varibles[i]);
             for (int i = functions.Length - 1; i >= 0; i--)
             {
-                if (string.IsNullOrEmpty((functions[i] as FunctionStatement).Name))
+                if (string.IsNullOrEmpty((functions[i] as FunctionStatement).name))
                     throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.SyntaxError("Declarated function must have name.")));
-                var f = context.InitField((functions[i] as FunctionStatement).Name);
+                var f = context.InitField((functions[i] as FunctionStatement).name);
                 f.Assign(functions[i].Invoke(context));
                 f.assignCallback = null;
             }
@@ -107,7 +112,7 @@ namespace NiL.JS.Statements
             return res;
         }
 
-        public bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> varibles)
+        internal override bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> varibles)
         {
             var vars = new Dictionary<string, Statement>();
             for (int i = 0; i < body.Length; i++)
@@ -131,7 +136,7 @@ namespace NiL.JS.Statements
                         varibles[v.Key] = v.Value;
                 this.varibles = new string[0];
                 foreach (var f in functions)
-                    varibles[f.Name] = f;
+                    varibles[f.name] = f;
                 functions = new FunctionStatement[0];
                 if (body.Length == 1)
                     _this = body[0];

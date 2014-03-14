@@ -6,10 +6,13 @@ using NiL.JS.Core;
 
 namespace NiL.JS.Statements
 {
-    internal sealed class WithStatement : Statement, IOptimizable
+    internal sealed class WithStatement : Statement
     {
         private Statement obj;
         private Statement body;
+
+        public Statement Body { get { return body; } }
+        public Statement Scope { get { return obj; } }
 
         internal static ParseResult Parse(ParsingState state, ref int index)
         {
@@ -38,7 +41,7 @@ namespace NiL.JS.Statements
             };
         }
 
-        public override JSObject Invoke(Context context)
+        internal override JSObject Invoke(Context context)
         {
             var intcontext = new WithContext(obj.Invoke(context), context);
             body.Invoke(intcontext);
@@ -47,7 +50,7 @@ namespace NiL.JS.Statements
             return JSObject.undefined;
         }
 
-        public bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> varibles)
+        internal override bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> varibles)
         {
             Parser.Optimize(ref obj, depth, varibles);
             Parser.Optimize(ref body, depth, varibles);

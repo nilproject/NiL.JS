@@ -13,6 +13,7 @@ namespace NiL.JS
     public sealed class Script
     {
         private Statement root;
+        public CodeBlock Root { get { return root as CodeBlock; } }
         /// <summary>
         /// Исходный код скрипта, переданный при создании объекта.
         /// </summary>

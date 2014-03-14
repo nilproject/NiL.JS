@@ -5,16 +5,18 @@ using NiL.JS.Core;
 
 namespace NiL.JS.Statements
 {
-    internal class ArrayStatement : Statement, IOptimizable
+    public sealed class ArrayStatement : Statement
     {
         private Statement[] elements;
 
-        public ArrayStatement()
+        public Statement[] Elements { get { return elements; } }
+
+        private ArrayStatement()
         {
 
         }
 
-        public static ParseResult Parse(ParsingState state, ref int index)
+        internal static ParseResult Parse(ParsingState state, ref int index)
         {
             string code = state.Code;
             int i = index;
@@ -50,7 +52,7 @@ namespace NiL.JS.Statements
             };
         }
 
-        public override JSObject Invoke(Context context)
+        internal override JSObject Invoke(Context context)
         {
             var res = new NiL.JS.Core.BaseTypes.Array(elements.Length);
             for (int i = 0; i < elements.Length; i++)
@@ -58,7 +60,7 @@ namespace NiL.JS.Statements
             return res;
         }
 
-        public bool Optimize(ref Statement _this, int depth, Dictionary<string, Statement> vars)
+        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, Statement> vars)
         {
             for (int i = 0; i < elements.Length; i++)
                 Parser.Optimize(ref elements[i], 2, vars);

@@ -4,11 +4,15 @@ using NiL.JS.Core;
 
 namespace NiL.JS.Statements
 {
-    internal class IfElseStatement : Statement, IOptimizable
+    public sealed class IfElseStatement : Statement
     {
         private Statement condition;
         private Statement body;
         private Statement elseBody;
+
+        public Statement Body { get { return body; } }
+        public Statement ElseBody { get { return elseBody; } }
+        public Statement Condition { get { return condition; } }
 
         private IfElseStatement()
         {
@@ -58,7 +62,7 @@ namespace NiL.JS.Statements
             };
         }
 
-        public override JSObject Invoke(Context context)
+        internal override JSObject Invoke(Context context)
         {
             if ((bool)condition.Invoke(context))
                 return body.Invoke(context);
@@ -67,7 +71,7 @@ namespace NiL.JS.Statements
             return null;
         }
 
-        public bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> varibles)
+        internal override bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> varibles)
         {
             Parser.Optimize(ref body, depth, varibles);
             Parser.Optimize(ref condition, 2, varibles);

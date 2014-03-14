@@ -529,12 +529,12 @@ namespace NiL.JS.Core
 
         internal static void Optimize(ref Statement s, int depth, Dictionary<string, Statement> varibles)
         {
-            while ((s is IOptimizable) && (s as IOptimizable).Optimize(ref s, depth, varibles)) { }
+            while (s != null && s.Optimize(ref s, depth, varibles)) { }
         }
 
         internal static void Optimize(ref Statement s, Dictionary<string, Statement> varibles)
         {
-            while ((s is IOptimizable) && (s as IOptimizable).Optimize(ref s, 0, varibles)) { }
+            while (s != null && s.Optimize(ref s, 0, varibles)) { }
         }
     }
 }

@@ -3,7 +3,7 @@ using System;
 
 namespace NiL.JS.Statements
 {
-    internal class TryCatchStatement : Statement, IOptimizable
+    public sealed class TryCatchStatement : Statement
     {
         private static JSObject tempContainer = new JSObject();
 
@@ -11,6 +11,11 @@ namespace NiL.JS.Statements
         private Statement catchBody;
         private Statement finallyBody;
         private string exptName;
+
+        public Statement Body { get { return body; } }
+        public Statement CatchBody { get { return catchBody; } }
+        public Statement FinalBody { get { return finallyBody; } }
+        public string ExceptionVaribleName { get { return exptName; } }
 
         internal static ParseResult Parse(ParsingState state, ref int index)
         {
@@ -66,7 +71,7 @@ namespace NiL.JS.Statements
             };
         }
 
-        public override JSObject Invoke(Context context)
+        internal override JSObject Invoke(Context context)
         {
             Exception except = null;
             try
@@ -75,35 +80,41 @@ namespace NiL.JS.Statements
             }
             catch (JSException e)
             {
-                if (catchBody != null)
+                lock (tempContainer)
                 {
-                    var cvar = context.GetField(exptName);
-                    tempContainer.Assign(cvar);
-                    tempContainer.attributes = cvar.attributes;
-                    cvar.Assign(e.Avatar);
-                    cvar.attributes = ObjectAttributes.DontDelete;
-                    catchBody.Invoke(context);
-                    cvar.Assign(tempContainer);
-                    cvar.attributes = tempContainer.attributes;
-                    tempContainer.attributes = ObjectAttributes.None;
+                    if (catchBody != null)
+                    {
+                        var cvar = context.GetField(exptName);
+                        tempContainer.Assign(cvar);
+                        tempContainer.attributes = cvar.attributes;
+                        cvar.Assign(e.Avatar);
+                        cvar.attributes = ObjectAttributes.DontDelete;
+                        catchBody.Invoke(context);
+                        cvar.Assign(tempContainer);
+                        cvar.attributes = tempContainer.attributes;
+                        tempContainer.attributes = ObjectAttributes.None;
+                    }
+                    else except = e;
                 }
-                else except = e;
             }
             catch (Exception e)
             {
-                if (catchBody != null)
+                lock (tempContainer)
                 {
-                    var cvar = context.GetField(exptName);
-                    tempContainer.Assign(cvar);
-                    tempContainer.attributes = cvar.attributes;
-                    cvar.Assign(TypeProxy.Proxy(e));
-                    cvar.attributes = ObjectAttributes.DontDelete;
-                    catchBody.Invoke(context);
-                    cvar.Assign(tempContainer);
-                    cvar.attributes = tempContainer.attributes;
-                    tempContainer.attributes = ObjectAttributes.None;
+                    if (catchBody != null)
+                    {
+                        var cvar = context.GetField(exptName);
+                        tempContainer.Assign(cvar);
+                        tempContainer.attributes = cvar.attributes;
+                        cvar.Assign(TypeProxy.Proxy(e));
+                        cvar.attributes = ObjectAttributes.DontDelete;
+                        catchBody.Invoke(context);
+                        cvar.Assign(tempContainer);
+                        cvar.attributes = tempContainer.attributes;
+                        tempContainer.attributes = ObjectAttributes.None;
+                    }
+                    else except = e;
                 }
-                else except = e;
             }
             finally
             {
@@ -134,7 +145,7 @@ namespace NiL.JS.Statements
             return null;
         }
 
-        public bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> varibles)
+        internal override bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> varibles)
         {
             Parser.Optimize(ref body, 1, varibles);
             Parser.Optimize(ref catchBody, 1, varibles);

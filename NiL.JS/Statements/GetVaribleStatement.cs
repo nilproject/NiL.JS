@@ -4,12 +4,18 @@ using NiL.JS.Core;
 
 namespace NiL.JS.Statements
 {
-    internal sealed class GetVaribleStatement : Statement, IOptimizable
+    public sealed class GetVaribleStatement : Statement
     {
         private Context cacheContext;
         private JSObject cacheRes;
         private string varibleName;
 
+        public string VaribleName { get { return varibleName; } }
+
+        /// <summary>
+        /// Создан для того, чтобы запросами одной переменной в разных местах управлял один экземпляр объекта.
+        /// Такое решение экономит пямять и позваляет эффективнее кешировать результат.
+        /// </summary>
         private static System.Collections.Generic.Dictionary<string, GetVaribleStatement> cache = new System.Collections.Generic.Dictionary<string, GetVaribleStatement>();
 
         internal static void ResetCache(string name)
@@ -19,7 +25,7 @@ namespace NiL.JS.Statements
                 gvs.cacheRes = null;
         }
 
-        public GetVaribleStatement(string name)
+        internal GetVaribleStatement(string name)
         {
             int i = 0;
             if ((name != "this") && !Parser.ValidateName(name, ref i, false, true, true, false))
@@ -29,7 +35,7 @@ namespace NiL.JS.Statements
                 cache[name] = this;
         }
 
-        public override JSObject InvokeForAssing(Context context)
+        internal override JSObject InvokeForAssing(Context context)
         {
             context.objectSource = null;
             if (context == cacheContext)
@@ -41,7 +47,7 @@ namespace NiL.JS.Statements
             return cacheRes = context.GetField(varibleName);
         }
 
-        public override JSObject Invoke(Context context)
+        internal override JSObject Invoke(Context context)
         {
             context.objectSource = null;
             if (context == cacheContext)
@@ -68,7 +74,7 @@ namespace NiL.JS.Statements
             return varibleName;
         }
 
-        public bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> varibles)
+        internal override bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> varibles)
         {
             _this = cache[varibleName];
             return false;

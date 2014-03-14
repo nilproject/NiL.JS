@@ -2,7 +2,7 @@
 
 namespace NiL.JS.Core
 {
-    internal class WithContext : Context
+    public sealed class WithContext : Context
     {
         private JSObject @object;
 

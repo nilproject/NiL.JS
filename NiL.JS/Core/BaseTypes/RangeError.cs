@@ -7,7 +7,7 @@ using NiL.JS.Core.Modules;
 namespace NiL.JS.Core.BaseTypes
 {
     [Immutable]
-    public class RangeError : Error
+    public sealed class RangeError : Error
     {
         public override JSObject name { get { return "RangeError"; } }
 

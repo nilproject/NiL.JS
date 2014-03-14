@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace NiL.JS.Statements.Operators
 {
-    internal class None : Operator
+    public sealed class None : Operator
     {
         public None(Statement first, Statement second)
             : base(first, second)
@@ -12,7 +12,7 @@ namespace NiL.JS.Statements.Operators
 
         }
 
-        public override JSObject Invoke(Context context)
+        internal override JSObject Invoke(Context context)
         {
             JSObject temp = null;
             temp = Tools.RaiseIfNotExist(first.Invoke(context));
@@ -25,17 +25,15 @@ namespace NiL.JS.Statements.Operators
             return temp;
         }
 
-        public override bool Optimize(ref Statement _this, int depth, Dictionary<string, Statement> vars)
+        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, Statement> vars)
         {
             if (second == null)
             {
                 _this = first;
                 return true;
             }
-            if (first is IOptimizable)
-                Parser.Optimize(ref first, depth, vars);
-            if (second is IOptimizable)
-                Parser.Optimize(ref second, depth, vars);
+            Parser.Optimize(ref first, depth, vars);
+            Parser.Optimize(ref second, depth, vars);
             return false;
         }
     }

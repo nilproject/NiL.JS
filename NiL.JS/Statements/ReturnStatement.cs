@@ -4,11 +4,13 @@ using NiL.JS.Core;
 
 namespace NiL.JS.Statements
 {
-    internal sealed class ReturnStatement : Statement, IOptimizable
+    internal sealed class ReturnStatement : Statement
     {
         private Statement body;
 
-        public ReturnStatement()
+        public Statement Body { get { return body; } }
+
+        internal ReturnStatement()
         {
 
         }
@@ -34,14 +36,14 @@ namespace NiL.JS.Statements
             };
         }
 
-        public override JSObject Invoke(Context context)
+        internal override JSObject Invoke(Context context)
         {
             context.abortInfo = Tools.RaiseIfNotExist(body.Invoke(context));
             context.abort = AbortType.Return;
             return null;
         }
 
-        public bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> varibles)
+        internal override bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> varibles)
         {
             Parser.Optimize(ref body, 2, varibles);
             return false;

@@ -3,7 +3,7 @@ using System;
 
 namespace NiL.JS.Statements.Operators
 {
-    internal class TypeOf : Operator
+    public sealed class TypeOf : Operator
     {
         public TypeOf(Statement first, Statement second)
             : base(first, second)
@@ -11,7 +11,7 @@ namespace NiL.JS.Statements.Operators
 
         }
 
-        public override JSObject Invoke(Context context)
+        internal override JSObject Invoke(Context context)
         {
             var val = first.Invoke(context);
             var vt = val.ValueType;
@@ -49,10 +49,9 @@ namespace NiL.JS.Statements.Operators
             }
         }
 
-        public override bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> vars)
+        internal override bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> vars)
         {
-            if (first is IOptimizable)
-                Parser.Optimize(ref first, depth + 1, vars);
+            Parser.Optimize(ref first, depth + 1, vars);
             return false;
         }
 

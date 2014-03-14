@@ -5,10 +5,13 @@ using NiL.JS.Core;
 
 namespace NiL.JS.Statements
 {
-    internal class VaribleDefineStatement : Statement, IOptimizable
+    public sealed class VaribleDefineStatement : Statement
     {
-        public readonly Statement[] initializators;
-        public readonly string[] names;
+        internal readonly Statement[] initializators;
+        internal readonly string[] names;
+
+        public Statement[] Initializators { get { return initializators; } }
+        public string[] Names { get { return names; } }
 
         public VaribleDefineStatement(string name, Statement init)
         {
@@ -69,12 +72,12 @@ namespace NiL.JS.Statements
             };
         }
 
-        public override JSObject Invoke(Context context)
+        internal override JSObject Invoke(Context context)
         {
             throw new InvalidOperationException("VaribleDefineStatement.Invoke");
         }
 
-        public bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> varibles)
+        internal override bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> varibles)
         {
             if (initializators.Length > 1)
                 _this = new CodeBlock(initializators, false);
@@ -85,7 +88,7 @@ namespace NiL.JS.Statements
                 if (!varibles.ContainsKey(names[i]))
                     varibles.Add(names[i], null);
             }
-            return _this is IOptimizable;
+            return true;
         }
     }
 }

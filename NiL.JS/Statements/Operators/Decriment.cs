@@ -3,7 +3,7 @@ using System;
 
 namespace NiL.JS.Statements.Operators
 {
-    internal class Decriment : Operator
+    public sealed class Decriment : Operator
     {
         public Decriment(Statement first, Statement second)
             : base(first, second)
@@ -11,7 +11,7 @@ namespace NiL.JS.Statements.Operators
             tempResult.assignCallback = null;
         }
 
-        public override JSObject Invoke(Context context)
+        internal override JSObject Invoke(Context context)
         {
             var val = Tools.RaiseIfNotExist((first ?? second).Invoke(context));
             if (val.assignCallback != null)

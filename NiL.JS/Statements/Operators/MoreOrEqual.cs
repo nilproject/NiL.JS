@@ -3,7 +3,7 @@ using System;
 
 namespace NiL.JS.Statements.Operators
 {
-    internal class MoreOrEqual : Less
+    public sealed class MoreOrEqual : Less
     {
         public MoreOrEqual(Statement first, Statement second)
             : base(first, second)
@@ -11,7 +11,7 @@ namespace NiL.JS.Statements.Operators
 
         }
 
-        public override JSObject Invoke(Context context)
+        internal override JSObject Invoke(Context context)
         {
             var t = base.Invoke(context);
             t.iValue ^= 1;

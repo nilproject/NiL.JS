@@ -3,7 +3,7 @@ using System;
 
 namespace NiL.JS.Statements.Operators
 {
-    internal class Delete : Operator
+    public sealed class Delete : Operator
     {
         public Delete(Statement first, Statement second)
             : base(first, second)
@@ -11,7 +11,7 @@ namespace NiL.JS.Statements.Operators
 
         }
 
-        public override JSObject Invoke(Context context)
+        internal override JSObject Invoke(Context context)
         {
             var temp = first.InvokeForAssing(context);
             tempResult.ValueType = JSObjectType.Bool;

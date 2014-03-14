@@ -4,17 +4,19 @@ using NiL.JS.Core.BaseTypes;
 
 namespace NiL.JS.Statements.Operators
 {
-    internal class Call : Operator
+    public sealed class Call : Operator
     {
         private Statement[] args;
 
-        public Call(Statement first, Statement second)
+        public Statement[] Arguments { get { return args; } }
+
+        internal Call(Statement first, Statement second)
             : base(first, second)
         {
 
         }
 
-        public override JSObject Invoke(Context context)
+        internal override JSObject Invoke(Context context)
         {
             JSObject newThisBind = null;
             Function func = null;
@@ -47,6 +49,7 @@ namespace NiL.JS.Statements.Operators
             for (int i = 0; i < field.iValue; i++)
             {
                 var a = Tools.RaiseIfNotExist(args[i].Invoke(context)).Clone() as JSObject;
+                context.objectSource = newThisBind;
                 arguments.fields[i.ToString()] = a;
                 a.attributes |= ObjectAttributes.Argument;
             }
@@ -72,12 +75,10 @@ namespace NiL.JS.Statements.Operators
             return res + ")";
         }
 
-        public override bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> vars)
+        internal override bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> vars)
         {
-            if (first is IOptimizable)
-                Parser.Optimize(ref first, depth + 1, vars);
-            if (second is IOptimizable)
-                Parser.Optimize(ref second, depth + 1, vars);
+            Parser.Optimize(ref first, depth + 1, vars);
+            Parser.Optimize(ref second, depth + 1, vars);
             args = second.Invoke(null).oValue as Statement[];
             return false;
         }

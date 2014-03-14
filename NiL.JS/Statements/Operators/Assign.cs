@@ -3,7 +3,7 @@ using System;
 
 namespace NiL.JS.Statements.Operators
 {
-    internal class Assign : Operator
+    public sealed class Assign : Operator
     {
         private JSObject setterArgs = new JSObject(true) { ValueType = JSObjectType.Object, oValue = new Arguments() };
         private JSObject setterArg = new JSObject();
@@ -20,7 +20,7 @@ namespace NiL.JS.Statements.Operators
             setterArgs.fields["0"] = setterArg;
         }
 
-        public override JSObject Invoke(Context context)
+        internal override JSObject Invoke(Context context)
         {
             JSObject field = null;
             field = first.InvokeForAssing(context);
@@ -52,7 +52,7 @@ namespace NiL.JS.Statements.Operators
             return t;
         }
 
-        public override bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> vars)
+        internal override bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> vars)
         {
             var res = base.Optimize(ref _this, depth, vars);
             var t = first;

@@ -7,7 +7,7 @@ using NiL.JS.Core.Modules;
 namespace NiL.JS.Core.BaseTypes
 {
     [Immutable]
-    public class URIError : Error
+    public sealed class URIError : Error
     {
         public override JSObject name { get { return "URIError"; } }
 

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace NiL.JS.Statements
 {
-    internal sealed class ForStatement : Statement, IOptimizable
+    public sealed class ForStatement : Statement
     {
         private Statement init;
         private Statement condition;
@@ -13,6 +13,12 @@ namespace NiL.JS.Statements
         private Statement body;
         private List<string> labels;
         private int implId;
+
+        public Statement Initializator { get { return init; } }
+        public Statement Condition { get { return condition; } }
+        public Statement Post { get { return post; } }
+        public Statement Body { get { return body; } }
+        public string[] Labels { get { return labels.ToArray(); } }
 
         private ForStatement()
         {
@@ -180,7 +186,7 @@ namespace NiL.JS.Statements
             return JSObject.undefined;
         }
 
-        public override JSObject Invoke(Context context)
+        internal override JSObject Invoke(Context context)
         {
             if (init != null)
                 init.Invoke(context);
@@ -196,7 +202,7 @@ namespace NiL.JS.Statements
                 return impl4(context);
         }
 
-        public bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> varibles)
+        internal override bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> varibles)
         {
             Parser.Optimize(ref init, 1, varibles);
             Parser.Optimize(ref condition, 2, varibles);

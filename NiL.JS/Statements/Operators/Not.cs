@@ -3,7 +3,7 @@ using System;
 
 namespace NiL.JS.Statements.Operators
 {
-    internal class Not : Operator
+    public sealed class Not : Operator
     {
         public Not(Statement first, Statement second)
             : base(first, second)
@@ -11,7 +11,7 @@ namespace NiL.JS.Statements.Operators
 
         }
 
-        public override JSObject Invoke(Context context)
+        internal override JSObject Invoke(Context context)
         {
             tempResult.iValue = Tools.JSObjectToInt(first.Invoke(context)) ^ -1;
             tempResult.ValueType = JSObjectType.Int;

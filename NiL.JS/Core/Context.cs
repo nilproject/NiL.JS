@@ -349,19 +349,17 @@ namespace NiL.JS.Core
 
         internal void ValidateThreadID()
         {
-            if (threadid != System.Threading.Thread.CurrentThread.ManagedThreadId)
+            if (prototype != null && prototype != globalContext)
             {
-                if (prototype != null && prototype != globalContext)
-                {
-                    prototype.ValidateThreadID();
-                }
-                else
-                {
-                    if (threadid != 0)
-                        _executedContexts.Remove(threadid);
-                    _executedContexts[threadid = System.Threading.Thread.CurrentThread.ManagedThreadId] = new WeakReference(this);
-                    GC.ReRegisterForFinalize(this);
-                }
+                prototype.ValidateThreadID();
+            }
+            else
+            {
+                WeakReference wr = null;
+                if (_executedContexts.TryGetValue(System.Threading.Thread.CurrentThread.ManagedThreadId, out wr))
+                    GC.SuppressFinalize(wr.Target);
+                _executedContexts[threadid = System.Threading.Thread.CurrentThread.ManagedThreadId] = new WeakReference(this);
+                GC.ReRegisterForFinalize(this);
             }
         }
 

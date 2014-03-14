@@ -3,9 +3,11 @@ using NiL.JS.Core;
 
 namespace NiL.JS.Statements
 {
-    internal class ContinueStatement : Statement
+    public sealed class ContinueStatement : Statement
     {
         private JSObject label;
+
+        public JSObject Label { get { return label; } }
 
         internal static ParseResult Parse(ParsingState state, ref int index)
         {
@@ -36,7 +38,7 @@ namespace NiL.JS.Statements
             };
         }
 
-        public override JSObject Invoke(Context context)
+        internal override JSObject Invoke(Context context)
         {
             context.abort = AbortType.Continue;
             context.abortInfo = label;

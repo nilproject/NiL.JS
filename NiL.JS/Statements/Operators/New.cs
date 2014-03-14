@@ -4,9 +4,9 @@ using System;
 
 namespace NiL.JS.Statements.Operators
 {
-    internal class New : Operator
+    public sealed class New : Operator
     {
-        private class ThisSetStat : Statement
+        private sealed class ThisSetStat : Statement
         {
             public JSObject _this;
             public JSObject value;
@@ -16,7 +16,7 @@ namespace NiL.JS.Statements.Operators
 
             }
 
-            public override JSObject Invoke(Context context)
+            internal override JSObject Invoke(Context context)
             {
                 context.objectSource = _this;
                 return value;
@@ -31,7 +31,7 @@ namespace NiL.JS.Statements.Operators
 
         }
 
-        public override JSObject Invoke(Context context)
+        internal override JSObject Invoke(Context context)
         {
             JSObject temp = first.Invoke(context);
             if (temp.ValueType <= JSObjectType.NotExistInObject)
@@ -60,19 +60,19 @@ namespace NiL.JS.Statements.Operators
             return _this;
         }
 
-        public override bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> vars)
+        internal override bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> vars)
         {
             if (second == null)
-                (CallInstance.Second as ImmidateValueStatement).Value = new Statement[0];
+                (CallInstance.Second as ImmidateValueStatement).value = new Statement[0];
             else
-                (CallInstance.Second as ImmidateValueStatement).Value = second.Invoke(null);
+                (CallInstance.Second as ImmidateValueStatement).value = second.Invoke(null);
             return base.Optimize(ref _this, depth, vars);
         }
 
         public override string ToString()
         {
             string res = "new " + first + "(";
-            var args = (CallInstance.Second as ImmidateValueStatement).Value.oValue as Statement[];
+            var args = (CallInstance.Second as ImmidateValueStatement).value.oValue as Statement[];
             for (int i = 0; i < args.Length; i++)
             {
                 res += args[i];

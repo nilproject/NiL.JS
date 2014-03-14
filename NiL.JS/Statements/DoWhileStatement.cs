@@ -5,11 +5,15 @@ using System.Collections.Generic;
 
 namespace NiL.JS.Statements
 {
-    internal sealed class DoWhileStatement : Statement, IOptimizable
+    public sealed class DoWhileStatement : Statement
     {
         private Statement condition;
         private Statement body;
         private List<string> labels;
+
+        public Statement Condition { get { return condition; } }
+        public Statement Body { get { return body; } }
+        public string[] Labels { get { return labels.ToArray(); } }
 
         private DoWhileStatement()
         {
@@ -61,7 +65,7 @@ namespace NiL.JS.Statements
             };
         }
 
-        public override JSObject Invoke(Context context)
+        internal override JSObject Invoke(Context context)
         {
             JSObject res = null;
             do
@@ -83,7 +87,7 @@ namespace NiL.JS.Statements
             return res;
         }
 
-        public bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> varibles)
+        internal override bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> varibles)
         {
             depth = System.Math.Max(1, depth);
             Parser.Optimize(ref body, depth, varibles);
