@@ -8,8 +8,11 @@ namespace NiL.JS.Statements
     {
         public sealed class Case
         {
-            public int index;
-            public Statement statement;
+            internal int index;
+            internal Statement statement;
+
+            public int Index { get { return index; } }
+            public Statement Statement { get { return statement; } }
         }
 
         private FunctionStatement[] functions;
@@ -119,7 +122,7 @@ namespace NiL.JS.Statements
                     break;
                 }
             }
-            for (; i <= length; i++)
+            while (i-- > 0)
             {
                 body[i].Invoke(context);
                 if (context.abort != AbortType.None)
@@ -149,6 +152,14 @@ namespace NiL.JS.Statements
             functions = null;
             for (int i = 1; i < cases.Length; i++)
                 Parser.Optimize(ref cases[i].statement, 2, varibles);
+            for (int i = 0; i < body.Length / 2; i++)
+            {
+                var t = body[i];
+                body[i] = body[body.Length - 1 - i];
+                body[body.Length - 1 - i] = t;
+            }
+            for (int i = cases[0] != null ? 0 : 1; i < cases.Length; i++)
+                cases[i].index = body.Length - cases[i].index;
             return false;
         }
 
@@ -157,13 +168,7 @@ namespace NiL.JS.Statements
             string res = "switch (" + image + ") {" + Environment.NewLine;
             var replp = Environment.NewLine;
             var replt = Environment.NewLine + "  ";
-            if (functions != null)
-                for (var i = 0; i < functions.Length; i++)
-                {
-                    var func = functions[i].ToString().Replace(replp, replt);
-                    res += "  " + func + Environment.NewLine;
-                }
-            for (int i = 0; i < body.Length; i++)
+            for (int i = body.Length; i --> 0; )
             {
                 for (int j = 0; j < cases.Length; j++)
                 {
@@ -175,6 +180,12 @@ namespace NiL.JS.Statements
                 string lc = body[i].ToString().Replace(replp, replt);
                 res += "  " + lc + (lc[lc.Length - 1] != '}' ? ";" + Environment.NewLine : Environment.NewLine);
             }
+            if (functions != null)
+                for (var i = 0; i < functions.Length; i++)
+                {
+                    var func = functions[i].ToString().Replace(replp, replt);
+                    res += "  " + func + Environment.NewLine;
+                }
             return res + "}";
         }
     }
