@@ -54,8 +54,6 @@ namespace NiL.JS.Core
                 return value.ToString();
             else if (value is bool)
                 return (bool)value;
-            else if (value.GetType().IsArray)
-                return new BaseTypes.Array((object[])value);
             else
             {
                 var type = value.GetType();
