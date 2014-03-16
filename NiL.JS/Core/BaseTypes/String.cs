@@ -381,7 +381,7 @@ namespace NiL.JS.Core.BaseTypes
             if (args.Length == 0)
                 return this;
             int pos0 = 0;
-            if (args.Length > 1)
+            if (args.Length > 0)
             {
                 switch (args[0].ValueType)
                 {
@@ -408,7 +408,7 @@ namespace NiL.JS.Core.BaseTypes
                         }
                 }
             }
-            int len = 0;
+            int len = (oValue as string).Length - pos0;
             if (args.Length > 1)
             {
                 switch (args[1].ValueType)
