@@ -77,6 +77,17 @@ namespace NiL.JS.Core.BaseTypes
             }
         }
 
+        public Array(IEnumerable enumerable)
+        {
+            data = new List<JSObject>();
+            foreach (var o in enumerable)
+            {
+                var t = TypeProxy.Proxy(o);
+                t.assignCallback = null;
+                data.Add(t);
+            }
+        }
+
         public void Add(JSObject obj)
         {
             data.Add(obj);
