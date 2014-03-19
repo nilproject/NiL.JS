@@ -184,6 +184,7 @@ namespace NiL.JS.Core.Modules
             StringBuilder res = new StringBuilder("{");
             var args = new BaseTypes.Array(2);
             args.data[0] = "";
+            bool first = true;
             foreach (var f in obj.fields)
             {
                 if ((f.Value.ValueType < JSObjectType.Undefined) && ((f.Value.attributes & ObjectAttributes.DontEnum) == 0))
@@ -199,7 +200,10 @@ namespace NiL.JS.Core.Modules
                     value = t;
                 }
                 string strval = stringify(value, replacer, space);
+                if (!first)
+                    res.Append(", ");
                 res.Append('"').Append(f.Key).Append("\": ").Append(strval).Append(space);
+                first = false;
             }
             return res.Append("}").ToString();
         }
