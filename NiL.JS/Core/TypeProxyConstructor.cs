@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Reflection;
 using NiL.JS.Core.BaseTypes;
+using NiL.JS.Core.Modules;
 
 namespace NiL.JS.Core
 {
@@ -226,9 +227,16 @@ namespace NiL.JS.Core
             }
         }
 
+        [Hidden]
         public override string ToString()
         {
             return "function " + proxy.hostedType.Name + "() { [native code] }";
+        }
+
+        [Hidden]
+        public override JSObject toString(JSObject args)
+        {
+            return base.toString(args);
         }
     }
 }

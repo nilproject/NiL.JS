@@ -213,10 +213,6 @@ namespace NiL.JS.Core
             {
                 switch (name)
                 {
-                    case "toString":
-                        {
-                            return GetField("ToString", true, true);
-                        }
                     default:
                         {
                             r = DefaultFieldGetter(name, fast, own);

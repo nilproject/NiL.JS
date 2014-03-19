@@ -77,6 +77,7 @@ namespace NiL.JS.Core.BaseTypes
             }
         }
 
+        [Hidden]
         public Array(IEnumerable enumerable)
         {
             data = new List<JSObject>();

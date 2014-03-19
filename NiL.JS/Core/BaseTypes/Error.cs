@@ -31,5 +31,10 @@ namespace NiL.JS.Core.BaseTypes
         {
             return name + ": " + message;
         }
+
+        public JSObject toString()
+        {
+            return ToString();
+        }
     }
 }
