@@ -191,17 +191,19 @@ namespace NiL.JS.Core
             if (members == null)
             {
                 members = new Dictionary<string, List<MemberInfo>>();
-                var mmbrs = hostedType.GetMembers(bindFlags);
+                var mmbrs = hostedType.GetMembers(bindFlags | (hostedType.IsVisible ? BindingFlags.Default : BindingFlags.NonPublic));
                 string prewName = null;
                 List<MemberInfo> temp = null;
                 for (int i = 0; i < mmbrs.Length; i++)
                 {
                     if (mmbrs[i].GetCustomAttributes(typeof(HiddenAttribute), false).Length != 0)
                         continue;
-                    if (prewName != mmbrs[i].Name && !members.TryGetValue(mmbrs[i].Name, out temp))
+                    var membername = mmbrs[i].Name;
+                    membername = membername.Substring(membername.LastIndexOf('.') + 1);
+                    if (prewName != membername && !members.TryGetValue(membername, out temp))
                     {
-                        members[mmbrs[i].Name] = temp = new List<MemberInfo>();
-                        prewName = mmbrs[i].Name;
+                        members[membername] = temp = new List<MemberInfo>();
+                        prewName = membername;
                     }
                     temp.Add(mmbrs[i]);
                 }
