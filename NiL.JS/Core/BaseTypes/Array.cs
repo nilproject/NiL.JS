@@ -662,7 +662,8 @@ namespace NiL.JS.Core.BaseTypes
             }
             int index = 0;
             double dindex = 0.0;
-            if (Tools.ParseNumber(name, ref index, false, out dindex))
+            if (name != "NaN" && name != "Infinity" && name != "-Infinity" &&
+                Tools.ParseNumber(name, ref index, false, out dindex))
             {
                 if (dindex > 0x7fffffff || dindex < 0)
                     throw new JSException(TypeProxy.Proxy(new RangeError("Invalid array index")));
