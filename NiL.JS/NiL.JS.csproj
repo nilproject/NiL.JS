@@ -172,6 +172,7 @@
     <Compile Include="Core\TypeProxyConstructor.cs" />
     <Compile Include="Core\WithContext.cs" />
     <Compile Include="NamespaceProvider.cs" />
+    <Compile Include="Statements\DebuggerOperator.cs" />
     <Compile Include="Statements\LabeledStatement.cs" />
     <Compile Include="Statements\Operators\NotEqual.cs" />
     <Compile Include="Statements\Operators\MoreOrEqual.cs" />

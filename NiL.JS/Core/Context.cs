@@ -203,6 +203,17 @@ namespace NiL.JS.Core
         internal bool strict;
         internal virtual bool inEval { get; set; }
 
+        /// <summary>
+        /// Событие, возникающее в случае использования оператора "debugger".
+        /// </summary>
+        public event ExternalFunction.ExternalFunctionDelegate DebuggerCallback;
+
+        internal void raiseDebugger()
+        {
+            if (DebuggerCallback != null)
+                DebuggerCallback(this, JSObject.undefined);
+        }
+
         private Context()
         {
         }
