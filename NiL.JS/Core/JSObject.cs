@@ -34,6 +34,8 @@ namespace NiL.JS.Core
         Argument = 1 << 16
     }
 
+    public delegate void AssignCallback(JSObject sender);
+
     /// <summary>
     /// Базовый объект для всех объектов, участвующих в выполнении скрипта.
     /// Для создания пользовательских объектов, в качестве базового типа, рекомендуется использовать тип NiL.JS.Core.EmbeddedType
@@ -43,7 +45,7 @@ namespace NiL.JS.Core
         private NiL.JS.Core.BaseTypes.String @string;
 
         [Modules.Hidden]
-        internal static readonly Action<JSObject> ErrorAssignCallback = (sender) => { throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Invalid left-hand side"))); };
+        internal static readonly AssignCallback ErrorAssignCallback = (sender) => { throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Invalid left-hand side"))); };
         [Modules.Hidden]
         internal protected static readonly IEnumerator<string> EmptyEnumerator = ((IEnumerable<string>)(new string[0])).GetEnumerator();
         [Modules.Hidden]
@@ -63,7 +65,7 @@ namespace NiL.JS.Core
         [Modules.Hidden]
         [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
         [System.ComponentModel.Browsable(false)]
-        internal Action<JSObject> assignCallback;
+        internal AssignCallback assignCallback;
         [Modules.Hidden]
         internal JSObject prototype;
         [Modules.Hidden]
