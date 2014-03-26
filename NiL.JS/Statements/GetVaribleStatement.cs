@@ -59,7 +59,7 @@ namespace NiL.JS.Statements
             {
                 cacheRes = context.GetField(varibleName);
                 if (cacheRes.ValueType == JSObjectType.Property)
-                    cacheRes = (cacheRes.oValue as NiL.JS.Core.BaseTypes.Function[])[1].Invoke(context, null);
+                    cacheRes = (cacheRes.oValue as NiL.JS.Core.BaseTypes.Function[])[1].Invoke(context.objectSource, null);
                 return cacheRes;
             }
             else
