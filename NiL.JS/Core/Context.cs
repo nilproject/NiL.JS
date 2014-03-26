@@ -203,6 +203,17 @@ namespace NiL.JS.Core
         internal bool strict;
         internal virtual bool inEval { get; set; }
 
+        /// <summary>
+        /// Событие, возникающее в случае использования оператора "debugger".
+        /// </summary>
+        public event ExternalFunction.ExternalFunctionDelegate DebuggerCallback;
+
+        internal void raiseDebugger()
+        {
+            if (DebuggerCallback != null)
+                DebuggerCallback(this, JSObject.undefined);
+        }
+
         private Context()
         {
         }
@@ -232,6 +243,11 @@ namespace NiL.JS.Core
             return res;
         }
 
+        /// <summary>
+        /// Действие аналогично функции GeField с тем отличием, что возвращённое поле всегда определено в указанном контектсе.
+        /// </summary>
+        /// <param name="name">Имя поля, которое необходимо вернуть.</param>
+        /// <returns>Поле, соответствующее указанному имени.</returns>
         public virtual JSObject InitField(string name)
         {
             if (name == "this")
@@ -250,9 +266,9 @@ namespace NiL.JS.Core
         }
 
         /// <summary>
-        /// Получает переменную, определённую в этом или одном из родительских объектов. 
-        /// Если переменная не существовала, вернётся объект, после присваивания значения которому,
-        /// будет создана переменная в базовом контексте выполнения (не в GlobalContext).
+        /// Получает поле, определённое в этом или одном из родительских контекстов. 
+        /// Если переменная не существовала, вернётся поле, после присваивания значения которому,
+        /// будет создано соответствующее поле в базовом контексте выполнения (не в GlobalContext).
         /// </summary>
         /// <remarks>Делать fast версию этого метода не имеет смысла. 
         /// Если переменная была получена с целью прочитать значение, 
@@ -368,6 +384,8 @@ namespace NiL.JS.Core
             this.prototype = prototype;
             this.thisBind = prototype.thisBind;
             this.abortInfo = JSObject.undefined;
+            if (prototype.DebuggerCallback != null)
+                this.DebuggerCallback += prototype.DebuggerCallback;
             GC.SuppressFinalize(this);
         }
 

@@ -234,6 +234,7 @@
     <Compile Include="Statements\VaribleDefineStatement.cs" />
     <Compile Include="Statements\WhileStatement.cs" />
     <Compile Include="Statements\WithStatement.cs" />
+    <Compile Include="Statements\DebuggerOperator.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

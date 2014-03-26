@@ -65,6 +65,7 @@ namespace NiL.JS.Core
                 new _Rule(ValidateName, LabeledStatement.Parse),
                 new _Rule(ValidateName, OperatorStatement.Parse),
                 new _Rule(ValidateValue, OperatorStatement.Parse),
+                new _Rule("debugger", DebuggerOperator.Parse)
             },
             // 1
             new _Rule[] // Для операторов
@@ -153,6 +154,7 @@ namespace NiL.JS.Core
                 new _Rule(ValidateName, LabeledStatement.Parse),
                 new _Rule(ValidateName, OperatorStatement.Parse),
                 new _Rule(ValidateValue, OperatorStatement.Parse),
+                new _Rule("debugger", DebuggerOperator.Parse)
             }
         };
 
