@@ -213,8 +213,7 @@ console.log(utc);
             {
                 var f = new FileStream("Benchmarks\\" + eargs.GetField("0", true, false).ToString(), FileMode.Open, FileAccess.Read);
                 var sr = new StreamReader(f);
-                eargs.GetField("0", true, false).Assign(sr.ReadToEnd());
-                return context.Eval(eargs);
+                return context.Eval(sr.ReadToEnd());
             }));
             //benchmark();
             runFile(@"ftest.js");

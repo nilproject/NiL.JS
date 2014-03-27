@@ -87,7 +87,7 @@ namespace NiL.JS.Core
             globalContext.AttachModule(typeof(Modules.console));
 
             #region Base Function
-            globalContext.InitField("eval").Assign(new ExternalFunction((context, x) => context.Eval(x)));
+            globalContext.InitField("eval").Assign(new ExternalFunction((context, x) => context.eval(x)));
             globalContext.InitField("isNaN").Assign(new ExternalFunction((t, x) =>
             {
                 var r = x.GetField("0", true, false);
