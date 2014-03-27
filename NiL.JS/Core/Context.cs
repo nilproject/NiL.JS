@@ -208,10 +208,10 @@ namespace NiL.JS.Core
         /// </summary>
         public event ExternalFunction.ExternalFunctionDelegate DebuggerCallback;
 
-        internal void raiseDebugger(int position)
+        internal void raiseDebugger(int position, Tools.TextCord textCord)
         {
             if (DebuggerCallback != null)
-                DebuggerCallback(this, new BaseTypes.Array() { position });
+                DebuggerCallback(this, new BaseTypes.Array() { position, textCord.line, textCord.column });
         }
 
         private Context()
