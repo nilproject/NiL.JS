@@ -89,6 +89,7 @@ namespace NiL.JS.Core.BaseTypes
             }
         }
 
+        [Hidden]
         public void Add(JSObject obj)
         {
             data.Add(obj);

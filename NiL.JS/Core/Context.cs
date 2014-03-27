@@ -208,10 +208,10 @@ namespace NiL.JS.Core
         /// </summary>
         public event ExternalFunction.ExternalFunctionDelegate DebuggerCallback;
 
-        internal void raiseDebugger()
+        internal void raiseDebugger(int position)
         {
             if (DebuggerCallback != null)
-                DebuggerCallback(this, JSObject.undefined);
+                DebuggerCallback(this, new BaseTypes.Array() { position });
         }
 
         private Context()
