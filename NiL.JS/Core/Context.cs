@@ -343,13 +343,13 @@ namespace NiL.JS.Core
         /// </summary>
         /// <param name="args">Код скрипта на языке JavaScript</param>
         /// <returns>Результат выполнения кода (аргумент оператора "return" либо результат выполнения последней выполненной строки кода).</returns>
-        public JSObject Eval(JSObject args)
+        public JSObject Eval(string code)
         {
             try
             {
                 inEval = true;
                 int i = 0;
-                string c = "{" + Tools.RemoveComments(args.GetField("0", true, false).ToString()) + "}";
+                string c = "{" + Tools.RemoveComments(code) + "}";
                 var cb = CodeBlock.Parse(new ParsingState(c), ref i).Statement;
                 if (i != c.Length)
                     throw new System.ArgumentException("Invalid char");
@@ -361,6 +361,11 @@ namespace NiL.JS.Core
             {
                 inEval = false;
             }
+        }
+
+        private JSObject eval(JSObject args)
+        {
+            return Eval(args.GetField("0", true, false).ToString());
         }
 
         internal void ValidateThreadID()
