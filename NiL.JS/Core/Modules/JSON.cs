@@ -125,7 +125,7 @@ namespace NiL.JS.Core.Modules
                 {
                     if (stack.Peek().state == ParseState.Object || stack.Peek().state == ParseState.Array)
                     {
-                        if ((stack.Peek().state == ParseState.Array && code[pos] == ']') 
+                        if ((stack.Peek().state == ParseState.Array && code[pos] == ']')
                             || (stack.Peek().state == ParseState.Object && code[pos] == '}'))
                         {
                             var t = stack.Pop();
@@ -178,7 +178,13 @@ namespace NiL.JS.Core.Modules
             if (obj.ValueType < JSObjectType.Object)
             {
                 if (obj.ValueType == JSObjectType.String)
-                    return "\"" + obj.Value + '"';
+                    return "\"" + (obj.oValue as string)
+                        .Replace("\\", "\\\\")
+                        .Replace("\"", "\\\"")
+                        .Replace("\n", "\\\n")
+                        .Replace("\r", "\\\r")
+                        .Replace("\n\\\r", "\n\r")
+                        .Replace("\r\\\n", "\r\n") + '"';
                 return obj.Value.ToString();
             }
             StringBuilder res = new StringBuilder("{");
