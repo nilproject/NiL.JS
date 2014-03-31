@@ -223,6 +223,7 @@ console.log(utc);
             //sputnicTests(@"tests\Conformance\15_Native_ECMA_Script_Objects\15.2_Object_Objects");
             //sputnicTests(@"tests\Conformance\15_Native_ECMA_Script_Objects\15.4_Array_Objects");
             //sputnicTests(@"tests\Conformance\15_Native_ECMA_Script_Objects\15.7_Number_Objects");
+            //sputnicTests(@"tests\Conformance\15_Native_ECMA_Script_Objects\15.12_The_JSON_Object");
             //testEx();
 
             GC.Collect();

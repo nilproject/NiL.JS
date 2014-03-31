@@ -55,19 +55,15 @@ namespace NiL.JS.Core
         {
             if (globalContext.fields != null)
                 globalContext.fields.Clear();
+            else
+                globalContext.fields = new Dictionary<string, JSObject>();
             ThisObject.thisProto = null;
             JSObject.GlobalPrototype = null;
             TypeProxy.Clear();
-            var Object = new ExternalFunction(JSObject.Object);
+            globalContext.fields.Add("Object", TypeProxy.GetConstructor(typeof(JSObject)));
+            globalContext.fields["Object"].attributes |= ObjectAttributes.DontDelete;
             JSObject.GlobalPrototype = TypeProxy.GetPrototype(typeof(JSObject));
-            var ctor = JSObject.GlobalPrototype.GetField("constructor", false, true);
-            var oa = ctor.attributes;
-            ctor.attributes = 0;
-            ctor.Assign(Object);
-            ctor.attributes = oa;
-            Object.GetField("prototype", false, true).Assign(JSObject.GlobalPrototype);
-            Object.GetField("prototype", false, true).attributes |= ObjectAttributes.ReadOnly | ObjectAttributes.DontDelete;
-            globalContext.InitField("Object").Assign(Object);
+            JSObject.GlobalPrototype.attributes |= ObjectAttributes.ReadOnly;
             globalContext.AttachModule(typeof(BaseTypes.Date));
             globalContext.AttachModule(typeof(BaseTypes.Array));
             globalContext.AttachModule(typeof(BaseTypes.String));

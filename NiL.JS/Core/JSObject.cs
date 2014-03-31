@@ -157,7 +157,7 @@ namespace NiL.JS.Core
 
         public static JSObject CreateObject()
         {
-            var t = new JSObject(true) { ValueType = JSObjectType.Object, prototype = GlobalPrototype };
+            var t = new JSObject(true) { ValueType = JSObjectType.Object, prototype = GlobalPrototype.Clone() as JSObject };
             t.oValue = t;
             return t;
         }
@@ -640,6 +640,13 @@ namespace NiL.JS.Core
             var res = GetField(n, true, true);
             res = (res.ValueType >= JSObjectType.Undefined) && (res != JSObject.undefined) && ((res.attributes & ObjectAttributes.DontEnum) == 0);
             return res;
+        }
+
+        public static JSObject getPrototypeOf(JSObject args)
+        {
+            if (args.GetField("0", true, false).ValueType < JSObjectType.Object)
+                throw new JSException(TypeProxy.Proxy(new TypeError("Parameter isn't an Object.")));
+            return args.GetField("0", true, false).prototype;
         }
 
         public static implicit operator JSObject(char value)

@@ -9,7 +9,7 @@ using NiL.JS.Core.Modules;
 namespace NiL.JS.Core
 {
     [Modules.Prototype(typeof(Function))]
-    internal sealed class TypeProxyConstructor : Function
+    internal class TypeProxyConstructor : Function
     {
         private static readonly new object Object = new object();
         internal readonly TypeProxy proxy;
@@ -71,16 +71,15 @@ namespace NiL.JS.Core
         {
             if (thisOverride == null)
                 return Invoke(args);
-            var oldContext = context;
+            var oldThis = context.thisBind;
             try
             {
-                context = new Context(context);
                 context.thisBind = thisOverride;
                 return Invoke(args);
             }
             finally
             {
-                context = oldContext;
+                context.thisBind = oldThis;
             }
         }
 

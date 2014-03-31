@@ -1,1 +1,1 @@
-﻿console.log(JSON.parse('{ "array" : [1, 2, { "obj in array": 3 }], "obj":{ "num": 3, "str":"value", "obj":{ "num": 4, "str":"value2" }}}'));
+﻿console.log(Object.propertyIsEnumerable)

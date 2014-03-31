@@ -243,6 +243,11 @@ namespace NiL.JS.Core.BaseTypes
             return -1;
         }
 
+        public static JSObject isArray(JSObject args)
+        {
+            return args.GetField("0", false, true).oValue is Array;
+        }
+
         public JSObject join(JSObject[] separator)
         {
             if (separator.Length == 0)
