@@ -1,1 +1,1 @@
-﻿console.log(Object.propertyIsEnumerable)
+﻿console.log(1..Clone())

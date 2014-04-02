@@ -205,7 +205,11 @@ namespace NiL.JS.Core
                         members[membername] = temp = new List<MemberInfo>();
                         prewName = membername;
                     }
+                    if (temp.Count == 1)
+                        members.Add(membername + "$0", new List<MemberInfo>() { mmbrs[0] });
                     temp.Add(mmbrs[i]);
+                    if (temp.Count != 1)
+                        members.Add(membername + "$" + (temp.Count - 1), new List<MemberInfo>() { mmbrs[i] });
                 }
             }
             members.TryGetValue(name, out m);
@@ -234,7 +238,7 @@ namespace NiL.JS.Core
                     {
                         var mi = m[i] as MethodInfo;
                         if (mi.GetParameters().Length == l)
-                            return (cache[i] ?? (cache[i] = new MethodProxy(m[i] as MethodInfo))).Invoke(context, args);
+                            return (cache[i] ?? (cache[i] = new MethodProxy(mi))).Invoke(context, args);
                     }
                     return null;
                 });
