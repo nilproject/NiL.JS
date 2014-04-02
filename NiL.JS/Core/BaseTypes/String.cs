@@ -153,6 +153,8 @@ namespace NiL.JS.Core.BaseTypes
 
         public JSObject match(JSObject args)
         {
+            if (ValueType <= JSObjectType.Undefined || (ValueType >= JSObjectType.Object && oValue == null))
+                throw new JSException(TypeProxy.Proxy(new TypeError("String.prototype.match called on null or undefined")));
             var a0 = args.GetField("0", true, false);
             if (a0.ValueType == JSObjectType.Object && a0.oValue is RegExp)
             {
