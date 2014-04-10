@@ -28,7 +28,7 @@ namespace NiL.JS.Statements.Operators
                             temp = temp.ToPrimitiveValue_Value_String();
                         if (temp.ValueType == JSObjectType.Int || temp.ValueType == JSObjectType.Bool)
                         {
-                            if (((ir & temp.iValue) & (int)0x60000000) == 0)
+                            if (((ir | temp.iValue) & (int)0x40000000) == 0)
                             {
                                 tempResult.ValueType = JSObjectType.Int;
                                 tempResult.iValue = ir + temp.iValue;
