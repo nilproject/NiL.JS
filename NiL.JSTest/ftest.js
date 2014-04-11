@@ -1,1 +1,1 @@
-﻿console.log(1..Clone())
+﻿console.log(Date(1234, 1))

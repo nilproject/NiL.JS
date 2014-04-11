@@ -21,7 +21,7 @@ namespace NiL.JS.Core.BaseTypes
 
         public Date()
         {
-            host = DateTime.Now.ToUniversalTime();
+            host = DateTime.Now;
         }
 
         public Date(JSObject args)
@@ -43,7 +43,7 @@ namespace NiL.JS.Core.BaseTypes
                                     error = true;
                                     break;
                                 }
-                                host = new DateTime((long)d * 10000 + UTCBase);
+                                host = new DateTime((long)d * 10000 + UTCBase + TimeZone.CurrentTimeZone.GetUtcOffset(DateTime.Now).Ticks);
                                 break;
                             }
                         case JSObjectType.String:
@@ -61,14 +61,13 @@ namespace NiL.JS.Core.BaseTypes
                     int h = Tools.JSObjectToInt(args.GetField("3", true, false), 0);
                     int n = Tools.JSObjectToInt(args.GetField("4", true, false), 0);
                     int s = Tools.JSObjectToInt(args.GetField("5", true, false), 0);
-                    host = new System.DateTime();
+                    host = new System.DateTime(TimeZone.CurrentTimeZone.GetUtcOffset(DateTime.Now).Ticks);
                     host = host.AddYears(y - host.Year);
                     host = host.AddMonths(m - host.Month);
                     host = host.AddDays(d - host.Day);
                     host = host.AddHours(h - host.Hour);
                     host = host.AddMinutes(n - host.Minute);
                     host = host.AddSeconds(s - host.Second);
-                    string test = host.ToLongDateString();
                 }
             }
             catch

@@ -1,6 +1,7 @@
 ﻿using NiL.JS;
 using NiL.JS.Core;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
@@ -14,24 +15,27 @@ namespace NiL.JSTest
             const int iterations = 100000000;
             Console.WriteLine("iterations count: " + iterations);
 
-            long init = DateTime.Now.Ticks;
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
             Script s = new Script(@"
 var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * i + 3 - 2 / 2; }
 ");
-            init = DateTime.Now.Ticks - init;
-            long start = DateTime.Now.Ticks;
+            sw.Stop();
+            var init = sw.Elapsed;
+            sw.Restart();
             s.Invoke();
-            long l = (DateTime.Now.Ticks - start);
-            Console.WriteLine("script: " + (l / 10000).ToString());
-            Console.WriteLine("initialization: " + (init / 10000).ToString());
+            sw.Stop();
+            var l = sw.Elapsed;
+            Console.WriteLine("script: " + (sw.Elapsed.Ticks / 10000).ToString());
+            Console.WriteLine("initialization: " + (init.Ticks / 10000).ToString());
             var a = 1.0;
-            long nativeStart = DateTime.Now.Ticks;
+            sw.Restart();
             for (var i = 0; i < iterations; i++)
                 a = a * i + 3 - 2 / 2;
-            long nativeL = (DateTime.Now.Ticks - nativeStart);
+            sw.Stop();
             Console.WriteLine(a == Tools.JSObjectToDouble(s.Context.GetField("a")) ? "valid" : "invalid");
-            Console.WriteLine("native: " + (nativeL / 10000).ToString());
-            Console.WriteLine("rate: " + ((double)l / (double)nativeL).ToString());
+            Console.WriteLine("native: " + (sw.Elapsed.Ticks / 10000).ToString());
+            Console.WriteLine("rate: " + ((double)l.Ticks / (double)sw.Elapsed.Ticks).ToString());
         }
 
         private static void runFile(string filename)
