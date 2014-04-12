@@ -5,7 +5,7 @@ using System.Reflection.Emit;
 
 namespace NiL.JS.Core
 {
-    internal class MethodProxy : Function
+    public class MethodProxy : Function
     {
         private NiL.JS.Core.BaseTypes.String @string;// = new BaseTypes.String();
         private NiL.JS.Core.BaseTypes.Number number;// = new Number();
@@ -19,6 +19,9 @@ namespace NiL.JS.Core
 
         private MethodBase info;
         private Func<JSObject[], object> @delegate = null;
+
+        [Modules.Hidden]
+        public MethodBase Method { get { return info; } }
 
         public MethodProxy(MethodBase methodinfo)
         {
@@ -67,7 +70,8 @@ namespace NiL.JS.Core
             if (targetTypes.Length == 0)
                 return null;
             object[] res;
-            var len = source == null ? 0 : source.GetField("length", true, false).iValue;
+            var length = source.GetField("length", true, false);
+            var len = source == null ? 0 : length.ValueType == JSObjectType.Property ? (length.oValue as Function[])[1].Invoke(source, null).iValue : length.iValue;
             if (targetTypes.Length == 1)
             {
                 if (targetTypes[0].ParameterType == typeof(JSObject))

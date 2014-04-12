@@ -1,5 +1,6 @@
 ﻿using NiL.JS;
 using NiL.JS.Core;
+using NiL.JS.Core.BaseTypes;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -179,29 +180,23 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * i + 3 - 2 / 2; }
             public float dfield = 1;
             public static float sfield = 2.468f;
 
-            public static void smethod()
+            public static void smethod(string a)
             {
 
             }
 
-            public void dmethod(double a)
+            public void dmethod(string a)
             {
-                dfield = (float)a;
-            }
-
-            public void dmethod(float a)
-            {
-                dfield = a;
             }
         }
 
         private static void testEx()
         {
             Context.GlobalContext.AttachModule(typeof(TestClass));
-            var s = new Script(@"
-System.Windows.Forms.Form().ShowDialog();
-");
+            var s = new Script(@"var f = TestClass.smethod");
             s.Invoke();
+            var f = s.Context.GetField("f").Value;
+            var r = (f as Function).Invoke(new NiL.JS.Core.BaseTypes.Array(new object[] { "hello" }));
         }
 
         static void Main(string[] args)
@@ -219,9 +214,9 @@ System.Windows.Forms.Form().ShowDialog();
             //runFile(@"ftest.js");
             //runFile(@"Benchmarks\run.js");
             //sputnicTests();
-            //testEx();
+            testEx();
             //sputnicTests(@"tests\Conformance\15_Native_ECMA_Script_Objects\15.5_String_Objects");
-            sputnicTests(@"tests\Conformance\15_Native_ECMA_Script_Objects\15.2_Object_Objects");
+            //sputnicTests(@"tests\Conformance\15_Native_ECMA_Script_Objects\15.2_Object_Objects");
             //sputnicTests(@"tests\Conformance\15_Native_ECMA_Script_Objects\15.4_Array_Objects");
             //sputnicTests(@"tests\Conformance\15_Native_ECMA_Script_Objects\15.7_Number_Objects");
             //sputnicTests(@"tests\Conformance\15_Native_ECMA_Script_Objects\15.12_The_JSON_Object");

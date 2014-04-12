@@ -14,7 +14,7 @@ namespace NiL.JS
         {
             var types = assembly.GetTypes();
             for (var i = 0; i < types.Length; i++)
-                NamespaceProvider.types.Add(types[i].FullName, types[i]);
+                NamespaceProvider.types[types[i].FullName] = types[i];
         }
 
         static NamespaceProvider()
