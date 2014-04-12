@@ -69,7 +69,7 @@ namespace NiL.JS.Core
         [Modules.Hidden]
         internal JSObject prototype;
         [Modules.Hidden]
-        internal Dictionary<string, JSObject> fields;
+        internal IDictionary<string, JSObject> fields;
 
         [Modules.Hidden]
         internal string lastRequestedName;

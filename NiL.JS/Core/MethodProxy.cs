@@ -349,7 +349,16 @@ namespace NiL.JS.Core
 
         public override string ToString()
         {
-            return "function " + info.Name + "(){ [native code] }";
+            var res = "function " + info.Name + "(";
+            var prms = info.GetParameters();
+            for (int i = 0; i < prms.Length; i++)
+            {
+                if (i > 0)
+                    res += ", ";
+                res += prms[i].Name + "/*:" + prms[i].ParameterType.Name + "*/";
+            }
+            res += "){ [native code] }";
+            return res;
         }
 
         public override JSObject call(JSObject args)

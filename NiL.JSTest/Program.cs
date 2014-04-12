@@ -199,11 +199,7 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * i + 3 - 2 / 2; }
         {
             Context.GlobalContext.AttachModule(typeof(TestClass));
             var s = new Script(@"
-var d = new Date('January 11, 1980 06:30:00');
-gmt = d.toGMTString();
-utc = d.toUTCString();
-console.log(gmt);
-console.log(utc);
+System.Windows.Forms.Form().ShowDialog();
 ");
             s.Invoke();
         }
@@ -220,15 +216,15 @@ console.log(utc);
                 return context.Eval(sr.ReadToEnd());
             }));
             //benchmark();
-            runFile(@"ftest.js");
+            //runFile(@"ftest.js");
             //runFile(@"Benchmarks\run.js");
             //sputnicTests();
+            //testEx();
             //sputnicTests(@"tests\Conformance\15_Native_ECMA_Script_Objects\15.5_String_Objects");
-            //sputnicTests(@"tests\Conformance\15_Native_ECMA_Script_Objects\15.2_Object_Objects");
+            sputnicTests(@"tests\Conformance\15_Native_ECMA_Script_Objects\15.2_Object_Objects");
             //sputnicTests(@"tests\Conformance\15_Native_ECMA_Script_Objects\15.4_Array_Objects");
             //sputnicTests(@"tests\Conformance\15_Native_ECMA_Script_Objects\15.7_Number_Objects");
             //sputnicTests(@"tests\Conformance\15_Native_ECMA_Script_Objects\15.12_The_JSON_Object");
-            //testEx();
 
             GC.Collect();
             GC.WaitForPendingFinalizers();

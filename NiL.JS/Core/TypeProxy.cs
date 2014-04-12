@@ -206,7 +206,7 @@ namespace NiL.JS.Core
                         prewName = membername;
                     }
                     if (temp.Count == 1)
-                        members.Add(membername + "$0", new List<MemberInfo>() { mmbrs[0] });
+                        members.Add(membername + "$0", new List<MemberInfo>() { temp[0] });
                     temp.Add(mmbrs[i]);
                     if (temp.Count != 1)
                         members.Add(membername + "$" + (temp.Count - 1), new List<MemberInfo>() { mmbrs[i] });

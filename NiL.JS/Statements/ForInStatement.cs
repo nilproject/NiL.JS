@@ -8,8 +8,6 @@ namespace NiL.JS.Statements
 {
     public sealed class ForInStatement : Statement
     {
-        private FieldInfo indexMember = (FieldInfo)typeof(Dictionary<string, JSObject>.KeyCollection.Enumerator).GetMember("index", BindingFlags.Instance | BindingFlags.NonPublic)[0];
-
         private Statement varible;
         private Statement source;
         private Statement body;
@@ -83,6 +81,7 @@ namespace NiL.JS.Statements
             JSObject res = JSObject.undefined;
             var s = Tools.RaiseIfNotExist(source.Invoke(context));
             var v = varible.Invoke(context);
+            int index = 0;
             while (s != null)
             {
                 var keys = s.GetEnumerator();
@@ -95,10 +94,8 @@ namespace NiL.JS.Statements
                     }
                     catch (InvalidOperationException)
                     {
-                        var index = (int)indexMember.GetValue(keys);
                         keys = s.GetEnumerator();
-                        while (index-- > 0)
-                            keys.MoveNext();
+                        for (int i = 0; i < index && keys.MoveNext(); i++) ;
                     }
                     var o = keys.Current;
                     var t = s.GetField(o, true, false);
@@ -121,6 +118,7 @@ namespace NiL.JS.Statements
                                 return null;
                         }
                     }
+                    index++;
                 }
                 s = s.prototype;
             }

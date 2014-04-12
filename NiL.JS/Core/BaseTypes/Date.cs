@@ -88,7 +88,7 @@ namespace NiL.JS.Core.BaseTypes
         {
             if (error)
                 return double.NaN;
-            var res = (host.Ticks - UTCBase) / 10000;
+            var res = (host.Ticks - UTCBase - TimeZone.CurrentTimeZone.GetUtcOffset(DateTime.Now).Ticks) / 10000;
             return res;
         }
 

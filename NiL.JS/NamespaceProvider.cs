@@ -8,13 +8,13 @@ namespace NiL.JS
     /// </summary>
     public class NamespaceProvider : NiL.JS.Core.EmbeddedType
     {
-        private static List<Type> types = new List<Type>();
+        private static BinaryTree<Type> types = new BinaryTree<Type>();
 
         private static void addTypes(System.Reflection.Assembly assembly)
         {
             var types = assembly.GetTypes();
             for (var i = 0; i < types.Length; i++)
-                NamespaceProvider.types.Add(types[i]);
+                NamespaceProvider.types.Add(types[i].FullName, types[i]);
         }
 
         static NamespaceProvider()
@@ -44,20 +44,13 @@ namespace NiL.JS
         public override JS.Core.JSObject GetField(string name, bool fast, bool own)
         {
             string reqname = Namespace + "." + name;
-            bool createSubNode = false;
-            for (var j = 0; j < types.Count; j++)
+            var selection = types.StartedWith(reqname);
+            if (selection.MoveNext())
             {
-                if (types[j].FullName == reqname)
-                    return NiL.JS.Core.TypeProxy.GetConstructor(types[j]);
-                if (!createSubNode)
-                {
-                    var nspace = types[j].Namespace;
-                    if (nspace != null && nspace.Length >= reqname.Length && (nspace == reqname || (nspace.StartsWith(reqname) && nspace[reqname.Length] == '.')))
-                        createSubNode = true;
-                }
-            }
-            if (createSubNode)
+                if (selection.Current.Key == reqname)
+                    return NiL.JS.Core.TypeProxy.GetConstructor(selection.Current.Value);
                 return NiL.JS.Core.TypeProxy.Proxy(new NamespaceProvider(reqname));
+            }
             return new JS.Core.JSObject();
         }
     }

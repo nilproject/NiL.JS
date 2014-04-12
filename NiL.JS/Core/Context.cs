@@ -56,7 +56,7 @@ namespace NiL.JS.Core
             if (globalContext.fields != null)
                 globalContext.fields.Clear();
             else
-                globalContext.fields = new Dictionary<string, JSObject>();
+                globalContext.fields = new BinaryTree<JSObject>();
             ThisObject.thisProto = null;
             JSObject.GlobalPrototype = null;
             TypeProxy.Clear();
@@ -191,7 +191,7 @@ namespace NiL.JS.Core
 
         private int threadid = 0;
 
-        internal Dictionary<string, JSObject> fields;
+        internal IDictionary<string, JSObject> fields;
         internal AbortType abort;
         internal JSObject objectSource;
         internal JSObject abortInfo;
@@ -232,7 +232,7 @@ namespace NiL.JS.Core
             res.assignCallback = (sender) =>
             {
                 if (fields == null)
-                    fields = new Dictionary<string, JSObject>();
+                    fields = new BinaryTree<JSObject>();
                 fields[sender.lastRequestedName] = sender;
                 sender.assignCallback = null;
             };
@@ -327,7 +327,7 @@ namespace NiL.JS.Core
         public void AttachModule(Type moduleType)
         {
             if (fields == null)
-                fields = new Dictionary<string, JSObject>();
+                fields = new BinaryTree<JSObject>();
             fields.Add(moduleType.Name, TypeProxy.GetConstructor(moduleType));
             Statements.GetVaribleStatement.ResetCache(moduleType.Name);
             fields[moduleType.Name].attributes |= ObjectAttributes.DontDelete;
