@@ -70,8 +70,12 @@ namespace NiL.JS.Core
             if (targetTypes.Length == 0)
                 return null;
             object[] res;
-            var length = source.GetField("length", true, false);
-            var len = source == null ? 0 : length.ValueType == JSObjectType.Property ? (length.oValue as Function[])[1].Invoke(source, null).iValue : length.iValue;
+            int len = 0;
+            if (source != null)
+            {
+                var length = source.GetField("length", true, false);
+                len = length.ValueType == JSObjectType.Property ? (length.oValue as Function[])[1].Invoke(source, null).iValue : length.iValue;
+            }
             if (targetTypes.Length == 1)
             {
                 if (targetTypes[0].ParameterType == typeof(JSObject))

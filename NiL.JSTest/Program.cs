@@ -192,11 +192,7 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * i + 3 - 2 / 2; }
 
         private static void testEx()
         {
-            Context.GlobalContext.AttachModule(typeof(TestClass));
-            var s = new Script(@"var f = TestClass.smethod");
-            s.Invoke();
-            var f = s.Context.GetField("f").Value;
-            var r = (f as Function).Invoke(new NiL.JS.Core.BaseTypes.Array(new object[] { "hello" }));
+            var t = Context.GlobalContext.Eval("'hello'").Value as string;
         }
 
         static void Main(string[] args)
