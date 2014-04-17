@@ -175,24 +175,43 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * i + 3 - 2 / 2; }
             _("Sputnik testing complite");
         }
 
-        private class TestClass
+        private sealed class DoubleStringConverter : NiL.JS.Core.Modules.ConvertValueAttribute
         {
-            public float dfield = 1;
-            public static float sfield = 2.468f;
-
-            public static void smethod(string a)
+            public override object From(object source)
             {
-
+                return ((double)source).ToString(System.Globalization.CultureInfo.InvariantCulture);
             }
 
-            public void dmethod(string a)
+            public override object To(object source)
             {
+                return double.Parse(source as string, System.Globalization.CultureInfo.InvariantCulture);
+            }
+        }
+
+        private class TestClass
+        {
+            [DoubleStringConverter]
+            public double Value
+            {
+                get { return 1.0; }
+
+                set { }
+            }
+
+            static void test(object o)
+            {
+
             }
         }
 
         private static void testEx()
         {
-            var t = Context.GlobalContext.Eval("'hello'").Value as string;
+            var s = new Script(@"
+TestClass.test(TestClass().Value);
+TestClass().Value = '2.0';
+");
+            s.Context.AttachModule(typeof(TestClass));
+            s.Invoke();
         }
 
         static void Main(string[] args)

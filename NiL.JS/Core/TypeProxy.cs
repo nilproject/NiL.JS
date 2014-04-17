@@ -262,28 +262,62 @@ namespace NiL.JS.Core
                     case MemberTypes.Field:
                         {
                             var field = (m[0] as FieldInfo);
-                            r = new JSObject()
+                            var cva = field.GetCustomAttribute(typeof(ConvertValueAttribute)) as ConvertValueAttribute;
+                            if (cva != null)
                             {
-                                ValueType = JSObjectType.Property,
-                                oValue = new Function[] 
+                                r = new JSObject()
+                                {
+                                    ValueType = JSObjectType.Property,
+                                    oValue = new Function[] 
+                                    {
+                                        m[0].GetCustomAttributes(typeof(Modules.ProtectedAttribute), false).Length == 0 ? 
+                                            new ExternalFunction((c,a)=>{ field.SetValue(field.IsStatic ? null : (c.thisBind ?? c.GetField("this")).oValue, cva.To(a.GetField("0", true, false).Value)); return null; }) : null,
+                                        new ExternalFunction((c,a)=>{ return Proxy(cva.From(field.GetValue(field.IsStatic ? null : c.thisBind.oValue)));})
+                                    }
+                                };
+                            }
+                            else
+                            {
+                                r = new JSObject()
+                                {
+                                    ValueType = JSObjectType.Property,
+                                    oValue = new Function[] 
                                     {
                                         m[0].GetCustomAttributes(typeof(Modules.ProtectedAttribute), false).Length == 0 ? new ExternalFunction((c,a)=>{ field.SetValue(field.IsStatic ? null : (c.thisBind ?? c.GetField("this")).oValue, a.GetField("0", true, false).Value); return null; }) : null,
                                         new ExternalFunction((c,a)=>{ return Proxy(field.GetValue(field.IsStatic ? null : c.thisBind.oValue));})
                                     }
-                            };
+                                };
+                            }
                             break;
                         }
                     case MemberTypes.Property:
                         {
                             var pinfo = (PropertyInfo)m[0];
-                            r = new JSObject()
+                            var cva = pinfo.GetCustomAttribute(typeof(ConvertValueAttribute)) as ConvertValueAttribute;
+                            if (cva != null)
                             {
-                                ValueType = JSObjectType.Property,
-                                oValue = new Function[] { 
-                                    pinfo.CanWrite && pinfo.GetSetMethod(false) != null ? new MethodProxy(pinfo.GetSetMethod(false)) : null,
-                                    pinfo.CanRead && pinfo.GetGetMethod(false) != null ? new MethodProxy(pinfo.GetGetMethod(false)) : null 
-                                }
-                            };
+                                r = new JSObject()
+                                    {
+                                        ValueType = JSObjectType.Property,
+                                        oValue = new Function[] 
+                                        { 
+                                            pinfo.CanWrite && pinfo.GetSetMethod(false) != null ? new MethodProxy(pinfo.GetSetMethod(false), cva, new[]{ cva }) : null,
+                                            pinfo.CanRead && pinfo.GetGetMethod(false) != null ? new MethodProxy(pinfo.GetGetMethod(false), cva, null) : null 
+                                        }
+                                    };
+                            }
+                            else
+                            {
+                                r = new JSObject()
+                                {
+                                    ValueType = JSObjectType.Property,
+                                    oValue = new Function[] 
+                                        { 
+                                            pinfo.CanWrite && pinfo.GetSetMethod(false) != null ? new MethodProxy(pinfo.GetSetMethod(false)) : null,
+                                            pinfo.CanRead && pinfo.GetGetMethod(false) != null ? new MethodProxy(pinfo.GetGetMethod(false)) : null 
+                                        }
+                                };
+                            }
                             break;
                         }
                     case MemberTypes.Event:

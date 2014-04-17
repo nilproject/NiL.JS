@@ -156,6 +156,7 @@
     <Compile Include="Core\Modules\JSON.cs" />
     <Compile Include="Core\Modules\ParametersCountAttribute.cs" />
     <Compile Include="Core\Modules\PrototypeAttribute.cs" />
+    <Compile Include="Core\Modules\ConvertValueAttribute.cs" />
     <Compile Include="Core\ObjectConstructor.cs" />
     <Compile Include="Core\ParsingState.cs" />
     <Compile Include="Core\Statement.cs" />

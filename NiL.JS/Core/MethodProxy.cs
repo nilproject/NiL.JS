@@ -11,17 +11,20 @@ namespace NiL.JS.Core
         private NiL.JS.Core.BaseTypes.Number number;// = new Number();
         private NiL.JS.Core.BaseTypes.Boolean boolean;// = new BaseTypes.Boolean();
 
-        /*
-        private static DynamicMethod dynamicMethod;
-        private static ILGenerator il;
-        private static FieldInfo ilOffset;
-        */
-
         private MethodBase info;
         private Func<JSObject[], object> @delegate = null;
+        private Modules.ConvertValueAttribute converter;
+        private Modules.ConvertValueAttribute[] paramsConverters;
 
         [Modules.Hidden]
         public MethodBase Method { get { return info; } }
+
+        public MethodProxy(MethodBase methodinfo, Modules.ConvertValueAttribute converter, Modules.ConvertValueAttribute[] paramsConverters)
+            : this(methodinfo)
+        {
+            this.converter = converter;
+            this.paramsConverters = paramsConverters;
+        }
 
         public MethodProxy(MethodBase methodinfo)
         {
@@ -29,11 +32,23 @@ namespace NiL.JS.Core
             if (info is MethodInfo)
             {
                 var mi = info as MethodInfo;
+                converter = mi.ReturnParameter.GetCustomAttribute(typeof(Modules.ConvertValueAttribute), false) as Modules.ConvertValueAttribute;
+                var prmtrs = mi.GetParameters();
+                for (int i = 0; i < prmtrs.Length; i++)
+                {
+                    var t = prmtrs[i].GetCustomAttribute(typeof(Modules.ConvertValueAttribute)) as Modules.ConvertValueAttribute;
+                    if (t != null)
+                    {
+                        if (paramsConverters == null)
+                            paramsConverters = new Modules.ConvertValueAttribute[prmtrs.Length];
+                        paramsConverters[i] = t;
+                    }
+                }
                 if (methodinfo.IsStatic)
                 {
                     if (mi.ReturnType.IsSubclassOf(typeof(object))
-                        && info.GetParameters().Length == 1
-                        && info.GetParameters()[0].ParameterType == typeof(JSObject[]))
+                        && prmtrs.Length == 1
+                        && prmtrs[0].ParameterType == typeof(JSObject[]))
                         this.@delegate = (Func<JSObject[], object>)Delegate.CreateDelegate(typeof(Func<JSObject[], object>), mi);
                 }
                 else
@@ -120,6 +135,8 @@ namespace NiL.JS.Core
                     else
                         res[i] = v;
                 }
+                if (paramsConverters != null && paramsConverters[i] != null)
+                    res[i] = paramsConverters[i].To(res[i]);
             }
             return res;
         }
@@ -204,45 +221,6 @@ namespace NiL.JS.Core
             }
         }
 
-        /* // До лучших времён
-        private static ILGenerator getIl()
-        {
-            if (il != null)
-            {
-                ilOffset.SetValue(il, 0);
-                return il;
-            }
-            dynamicMethod = new DynamicMethod("", typeof(object), new Type[] { typeof(object), typeof(object) }, typeof(MethodProxy).Module);
-            var iLGenerator = dynamicMethod.GetILGenerator();
-            il = iLGenerator;
-            ilOffset = typeof(ILGenerator).GetField("m_length", BindingFlags.NonPublic | BindingFlags.Instance);
-            return il;
-        }
-
-        public static object InvokeNotOverride(MethodInfo minfo, object targetObject, object[] arguments)
-        {
-            var iLGenerator = getIl();
-            var parameters = minfo.GetParameters();
-            iLGenerator.Emit(OpCodes.Ldarg_0);
-            for (var i = 0; i < parameters.Length; i++)
-            {
-                var parameter = parameters[i];
-                iLGenerator.Emit(OpCodes.Ldarg_1);
-                iLGenerator.Emit(OpCodes.Ldc_I4_S, i);
-                iLGenerator.Emit(OpCodes.Ldelem_Ref);
-                var parameterType = parameter.ParameterType;
-                if (parameterType.IsPrimitive)
-                    iLGenerator.Emit(OpCodes.Unbox_Any, parameterType);
-                else if (parameterType == typeof(object))
-                { }
-                else
-                    iLGenerator.Emit(OpCodes.Castclass, parameterType);
-            }
-            iLGenerator.Emit(OpCodes.Call, minfo);
-            iLGenerator.Emit(OpCodes.Ret);
-            return dynamicMethod.Invoke(null, new object[] { targetObject, arguments });
-        }
-        */
         [Modules.Hidden]
         public override JSObject Invoke(JSObject thisOverride, JSObject args)
         {
@@ -300,6 +278,8 @@ namespace NiL.JS.Core
                             System.Globalization.CultureInfo.InvariantCulture);
                     }
                 }
+                if (converter != null)
+                    res = converter.From(res);
                 return TypeProxy.Proxy(res);
             }
             catch (Exception e)
