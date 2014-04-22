@@ -180,13 +180,10 @@ namespace NiL.JS.Core
             if (constructor == null)
                 throw new JSException(TypeProxy.Proxy(new BaseTypes.TypeError(proxy.hostedType.Name + " can't be created.")));
             var _this = thisBind;
-            JSObject thproto = null;
             bool bynew = false;
             if (_this != null)
             {
-                thproto = _this.GetField("__proto__", true, true);
-                if (thproto.oValue is TypeProxy)
-                    bynew = (thproto.oValue as TypeProxy).hostedType == proxy.hostedType;
+                bynew = _this.oValue is Statements.Operators.New;
             }
             try
             {
