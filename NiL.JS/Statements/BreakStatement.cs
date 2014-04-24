@@ -16,7 +16,7 @@ namespace NiL.JS.Statements
             if (!Parser.Validate(code, "break", ref i) || !Parser.isIdentificatorTerminator(code[i]))
                 return new ParseResult();
             if (state.AllowBreak <= 0)
-                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.SyntaxError("Invalid use continue statement")));
+                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.SyntaxError("Invalid use break statement")));
             while (char.IsWhiteSpace(code[i]) && !Tools.isLineTerminator(code[i])) i++;
             int sl = i;
             JSObject label = null;
@@ -24,7 +24,7 @@ namespace NiL.JS.Statements
             {
                 label = Tools.Unescape(code.Substring(sl, i - sl));
                 if (!state.Labels.Contains(label.oValue as string))
-                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.SyntaxError("Try to continue to undefined label.")));
+                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.SyntaxError("Try to break to undefined label.")));
             }
             index = i;
             return new ParseResult()
