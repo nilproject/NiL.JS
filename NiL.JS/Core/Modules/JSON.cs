@@ -47,7 +47,7 @@ namespace NiL.JS.Core.Modules
                 bool waitComma = true;
                 if (Parser.ValidateValue(code, ref pos, true))
                 {
-                    if (char.IsDigit(code[start]))
+                    if (char.IsDigit(code[start]) || (code[start] == '-' && char.IsDigit(code[start + 1])))
                     {
                         if (stack.Peek().state == ParseState.Name)
                             throw new JSException(TypeProxy.Proxy(new SyntaxError("Unexpected token.")));
