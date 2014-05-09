@@ -631,7 +631,7 @@ namespace NiL.JS.Core.BaseTypes
         [Hidden]
         internal protected Context context;
         [Hidden]
-        internal protected JSObject protorypeField;
+        internal protected JSObject prototypeField;
         [Hidden]
         public Context Context { get { return context; } }
         [Hidden]
@@ -740,7 +740,8 @@ namespace NiL.JS.Core.BaseTypes
                     {
                         ValueType = JSObjectType.Object,
                         oValue = @this,
-                        attributes = ObjectAttributes.DontEnum | ObjectAttributes.DontDelete | ObjectAttributes.Immutable
+                        attributes = ObjectAttributes.DontEnum | ObjectAttributes.DontDelete | ObjectAttributes.Immutable,
+                        prototype = @this.prototype
                     };
                 }
                 internalContext.thisBind = @this;
@@ -779,20 +780,20 @@ namespace NiL.JS.Core.BaseTypes
         {
             if (name == "prototype")
             {
-                if (protorypeField == null)
+                if (prototypeField == null)
                 {
-                    protorypeField = new JSObject()
+                    prototypeField = new JSObject()
                     {
                         ValueType = JSObjectType.Object,
                         prototype = JSObject.GlobalPrototype,
                         attributes = ObjectAttributes.DontDelete | ObjectAttributes.DontEnum
                     };
-                    protorypeField.oValue = protorypeField;
-                    var ctor = protorypeField.GetField("constructor", false, true);
+                    prototypeField.oValue = prototypeField;
+                    var ctor = prototypeField.GetField("constructor", false, true);
                     ctor.attributes = ObjectAttributes.DontDelete | ObjectAttributes.DontEnum;
                     ctor.Assign(this);
                 }
-                return protorypeField;
+                return prototypeField;
             }
             if (prototype == null)
                 prototype = TypeProxy.GetPrototype(this.GetType());

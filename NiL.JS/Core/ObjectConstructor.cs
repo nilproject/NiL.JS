@@ -17,7 +17,7 @@ namespace NiL.JS.Core
         {
             var res = JSObject.Object(context, argsObj);
             if (res.prototype == null)
-                res.prototype = (this.protorypeField ?? JSObject.GlobalPrototype).Clone() as JSObject;
+                res.prototype = (this.prototypeField ?? JSObject.GlobalPrototype).Clone() as JSObject;
             return res;
         }
 
