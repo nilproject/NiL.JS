@@ -5,6 +5,7 @@ using System.Text;
 
 namespace NiL.JS.Core.BaseTypes
 {
+    [Serializable]
     [Modules.Immutable]
     internal class Boolean : EmbeddedType
     {

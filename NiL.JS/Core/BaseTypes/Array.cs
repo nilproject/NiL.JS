@@ -5,6 +5,7 @@ using NiL.JS.Core.Modules;
 
 namespace NiL.JS.Core.BaseTypes
 {
+    [Serializable]
     public sealed class Array : EmbeddedType
     {
         private class Enumerator : IEnumerator<string>
