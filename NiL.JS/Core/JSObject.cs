@@ -8,6 +8,7 @@ using System.Runtime.Serialization;
 
 namespace NiL.JS.Core
 {
+    [Serializable]
     internal enum JSObjectType : int
     {
         NotExist = 0,
@@ -23,6 +24,7 @@ namespace NiL.JS.Core
         Property = 10
     }
 
+    [Serializable]
     [Flags]
     internal enum ObjectAttributes : int
     {
@@ -36,6 +38,7 @@ namespace NiL.JS.Core
 
     public delegate void AssignCallback(JSObject sender);
 
+    [Serializable]
     /// <summary>
     /// Базовый объект для всех объектов, участвующих в выполнении скрипта.
     /// Для создания пользовательских объектов, в качестве базового типа, рекомендуется использовать тип NiL.JS.Core.EmbeddedType
@@ -62,6 +65,7 @@ namespace NiL.JS.Core
             undefined.Protect();
         }
 
+        [NonSerialized]
         [Modules.Hidden]
         [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
         [System.ComponentModel.Browsable(false)]

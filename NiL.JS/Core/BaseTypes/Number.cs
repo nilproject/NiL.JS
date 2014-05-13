@@ -3,6 +3,7 @@ using NiL.JS.Core.Modules;
 
 namespace NiL.JS.Core.BaseTypes
 {
+    [Serializable]
     [Immutable]
     internal class Number : EmbeddedType
     {
