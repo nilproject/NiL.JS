@@ -4,6 +4,7 @@ using System;
 
 namespace NiL.JS.Statements.Operators
 {
+    [Serializable]
     public sealed class New : Operator
     {
         private sealed class ThisSetStat : Statement

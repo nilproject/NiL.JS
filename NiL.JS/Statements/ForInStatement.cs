@@ -6,6 +6,7 @@ using System.Reflection;
 
 namespace NiL.JS.Statements
 {
+    [Serializable]
     public sealed class ForInStatement : Statement
     {
         private Statement varible;

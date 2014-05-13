@@ -3,6 +3,7 @@ using System;
 
 namespace NiL.JS.Statements.Operators
 {
+    [Serializable]
     public class Equal : Operator
     {
         public Equal(Statement first, Statement second)

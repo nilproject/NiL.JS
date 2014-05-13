@@ -3,6 +3,7 @@ using System;
 
 namespace NiL.JS.Statements.Operators
 {
+    [Serializable]
     public sealed class Mod : Operator
     {
         public Mod(Statement first, Statement second)

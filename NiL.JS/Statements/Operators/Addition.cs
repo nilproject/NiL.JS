@@ -3,6 +3,7 @@ using System;
 
 namespace NiL.JS.Statements.Operators
 {
+    [Serializable]
     public sealed class Addition : Operator
     {
         public Addition(Statement first, Statement second)

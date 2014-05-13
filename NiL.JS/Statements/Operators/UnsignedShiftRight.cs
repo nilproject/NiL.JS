@@ -3,6 +3,7 @@ using System;
 
 namespace NiL.JS.Statements.Operators
 {
+    [Serializable]
     public sealed class UnsignedShiftRight : Operator
     {
         public UnsignedShiftRight(Statement first, Statement second)

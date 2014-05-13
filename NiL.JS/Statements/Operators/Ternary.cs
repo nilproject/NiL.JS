@@ -3,6 +3,7 @@ using System;
 
 namespace NiL.JS.Statements.Operators
 {
+    [Serializable]
     public sealed class Ternary : Operator
     {
         private Statement[] threads;

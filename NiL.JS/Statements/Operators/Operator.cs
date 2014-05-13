@@ -5,6 +5,7 @@ using NiL.JS.Core.BaseTypes;
 
 namespace NiL.JS.Statements.Operators
 {
+    [Serializable]
     public abstract class Operator : Statement
     {
         protected internal readonly JSObject tempResult = new JSObject() { attributes = ObjectAttributes.DontDelete, assignCallback = JSObject.ErrorAssignCallback };

@@ -3,6 +3,7 @@ using System;
 
 namespace NiL.JS.Statements.Operators
 {
+    [Serializable]
     public sealed class LogicalAnd : Operator
     {
         public LogicalAnd(Statement first, Statement second)

@@ -5,6 +5,7 @@ using System;
 
 namespace NiL.JS.Core
 {
+    [Serializable]
     internal enum AbortType
     {
         None = 0,
@@ -17,6 +18,7 @@ namespace NiL.JS.Core
     /// <summary>
     /// Контекст выполнения скрипта. Хранит значения переменных, созданных во время выполнения либо из пользовательского кода.
     /// </summary>
+    [Serializable]
     public class Context
     {
         private static Dictionary<int, WeakReference> _executedContexts = new Dictionary<int, WeakReference>();

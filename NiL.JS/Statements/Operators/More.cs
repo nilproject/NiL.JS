@@ -3,6 +3,7 @@ using System;
 
 namespace NiL.JS.Statements.Operators
 {
+    [Serializable]
     public class More : Operator
     {
         public More(Statement first, Statement second)

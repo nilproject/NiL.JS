@@ -7,6 +7,7 @@ using NiL.JS.Core.Modules;
 namespace NiL.JS.Core.BaseTypes
 {
     [Immutable]
+    [Serializable]
     public sealed class EvalError : Error
     {
         public override JSObject name { get { return "EvalError"; } }

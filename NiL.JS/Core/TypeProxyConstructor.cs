@@ -8,6 +8,7 @@ using NiL.JS.Core.Modules;
 
 namespace NiL.JS.Core
 {
+    [Serializable]
     [Modules.Prototype(typeof(Function))]
     internal class TypeProxyConstructor : Function
     {

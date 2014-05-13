@@ -4,6 +4,7 @@ using NiL.JS.Core;
 
 namespace NiL.JS.Statements
 {
+    [Serializable]
     internal sealed class ReturnStatement : Statement
     {
         private Statement body;

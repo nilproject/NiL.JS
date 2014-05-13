@@ -3,6 +3,7 @@ using System;
 
 namespace NiL.JS.Statements.Operators
 {
+    [Serializable]
     public sealed class Delete : Operator
     {
         public Delete(Statement first, Statement second)

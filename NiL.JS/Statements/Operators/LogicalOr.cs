@@ -3,6 +3,7 @@ using System;
 
 namespace NiL.JS.Statements.Operators
 {
+    [Serializable]
     public sealed class LogicalOr : Operator
     {
         public LogicalOr(Statement first, Statement second)

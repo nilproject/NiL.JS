@@ -5,6 +5,7 @@ using System.Text;
 
 namespace NiL.JS.Core.BaseTypes
 {
+    [Serializable]
     internal sealed class RegExp : EmbeddedType
     {
         private JSObject lIndex = 0;

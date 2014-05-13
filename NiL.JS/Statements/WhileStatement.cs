@@ -5,6 +5,7 @@ using System.Collections.Generic;
 
 namespace NiL.JS.Statements
 {
+    [Serializable]
     internal sealed class WhileStatement : Statement
     {
         private Statement condition;

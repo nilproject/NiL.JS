@@ -8,6 +8,7 @@ namespace NiL.JS.Core
     /// Представляет функцию платформы с фиксированной сигнатурой.
     /// </summary>
     [Modules.Prototype(typeof(Function))]
+    [Serializable]
     public sealed class ExternalFunction : Function
     {
         public delegate JSObject ExternalFunctionDelegate(Context context, JSObject args);

@@ -4,6 +4,7 @@ using NiL.JS.Core;
 
 namespace NiL.JS.Statements
 {
+    [Serializable]
     public sealed class IfElseStatement : Statement
     {
         private Statement condition;

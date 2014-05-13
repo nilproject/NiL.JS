@@ -5,6 +5,7 @@ using System.Reflection.Emit;
 
 namespace NiL.JS.Core
 {
+    [Serializable]
     public class MethodProxy : Function
     {
         private NiL.JS.Core.BaseTypes.String @string;// = new BaseTypes.String();

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 
 namespace NiL.JS.Statements
 {
+    [Serializable]
     public sealed class CodeBlock : Statement
     {
         private FunctionStatement[] functions;

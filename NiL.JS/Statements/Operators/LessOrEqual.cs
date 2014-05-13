@@ -3,6 +3,7 @@ using System;
 
 namespace NiL.JS.Statements.Operators
 {
+    [Serializable]
     public sealed class LessOrEqual : More
     {
         public LessOrEqual(Statement first, Statement second)

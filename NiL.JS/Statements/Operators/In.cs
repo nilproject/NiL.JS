@@ -4,6 +4,7 @@ using System;
 
 namespace NiL.JS.Statements.Operators
 {
+    [Serializable]
     public sealed class In : Operator
     {
         public In(Statement first, Statement second)

@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Windows.Forms;
 
 namespace NiL.JSTest
@@ -207,11 +208,20 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * i + 3 - 2 / 2; }
         private static void testEx()
         {
             var s = new Script(@"
-TestClass.test(TestClass().Value);
-TestClass().Value = '2.0';
+console.log(1+2);
 ");
-            s.Context.AttachModule(typeof(TestClass));
-            s.Invoke();
+            try
+            {
+                BinaryFormatter bf = new BinaryFormatter();
+                MemoryStream ms = new MemoryStream();
+                bf.Serialize(ms, s);
+                ms.Position = 0;
+                (bf.Deserialize(ms) as Script).Invoke();
+            }
+            catch
+            {
+
+            }
         }
 
         static void Main(string[] args)
@@ -226,10 +236,10 @@ TestClass().Value = '2.0';
                 return context.Eval(sr.ReadToEnd());
             }));
             //benchmark();
-            runFile(@"ftest.js");
+            //runFile(@"ftest.js");
             //runFile(@"Benchmarks\run.js");
             //sputnicTests();
-            //testEx();
+            testEx();
             //sputnicTests(@"tests\Conformance\15_Native_ECMA_Script_Objects\15.5_String_Objects");
             //sputnicTests(@"tests\Conformance\15_Native_ECMA_Script_Objects\15.2_Object_Objects");
             //sputnicTests(@"tests\Conformance\15_Native_ECMA_Script_Objects\15.4_Array_Objects");

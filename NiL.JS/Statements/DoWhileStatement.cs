@@ -5,6 +5,7 @@ using System.Collections.Generic;
 
 namespace NiL.JS.Statements
 {
+    [Serializable]
     public sealed class DoWhileStatement : Statement
     {
         private Statement condition;

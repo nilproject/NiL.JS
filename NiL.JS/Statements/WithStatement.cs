@@ -6,6 +6,7 @@ using NiL.JS.Core;
 
 namespace NiL.JS.Statements
 {
+    [Serializable]
     internal sealed class WithStatement : Statement
     {
         private Statement obj;

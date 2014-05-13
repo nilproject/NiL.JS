@@ -3,6 +3,7 @@ using System;
 
 namespace NiL.JS.Statements
 {
+    [Serializable]
     public sealed class TryCatchStatement : Statement
     {
         private static JSObject tempContainer = new JSObject();

@@ -3,6 +3,7 @@ using System;
 
 namespace NiL.JS.Statements.Operators
 {
+    [Serializable]
     public class Less : Operator
     {
         internal Less(Statement first, Statement second)

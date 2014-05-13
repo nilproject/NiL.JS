@@ -4,6 +4,7 @@ using System;
 
 namespace NiL.JS.Statements
 {
+    [Serializable]
     public sealed class ImmidateValueStatement : Statement
     {
         internal JSObject value;

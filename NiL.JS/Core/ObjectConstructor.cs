@@ -5,6 +5,7 @@ using System.Text;
 
 namespace NiL.JS.Core
 {
+    [Serializable]
     internal class ObjectConstructor : TypeProxyConstructor
     {
         public ObjectConstructor(TypeProxy proxy)

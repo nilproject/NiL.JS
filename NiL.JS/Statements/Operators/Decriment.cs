@@ -3,6 +3,7 @@ using System;
 
 namespace NiL.JS.Statements.Operators
 {
+    [Serializable]
     public sealed class Decriment : Operator
     {
         public Decriment(Statement first, Statement second)

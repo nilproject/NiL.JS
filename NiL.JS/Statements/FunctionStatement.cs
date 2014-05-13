@@ -5,6 +5,7 @@ using NiL.JS.Core;
 
 namespace NiL.JS.Statements
 {
+    [Serializable]
     public sealed class FunctionStatement : Statement
     {
         public enum FunctionParseMode

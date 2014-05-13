@@ -4,6 +4,7 @@ using System.Collections.Generic;
 
 namespace NiL.JS.Core
 {
+    [Serializable]
     internal sealed class ThisObject : JSObject
     {
         internal static JSObject thisProto;

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 
 namespace NiL.JS.Statements.Operators
 {
+    [Serializable]
     internal sealed class Incriment : Operator
     {
         public Incriment(Statement first, Statement second)

@@ -6,6 +6,7 @@ using System.Reflection;
 
 namespace NiL.JS.Core
 {
+    [Serializable]
     public sealed class TypeProxy : JSObject
     {
         private static readonly Dictionary<Type, JSObject> constructors = new Dictionary<Type, JSObject>();

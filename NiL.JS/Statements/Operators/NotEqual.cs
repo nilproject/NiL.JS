@@ -3,6 +3,7 @@ using System;
 
 namespace NiL.JS.Statements.Operators
 {
+    [Serializable]
     public sealed class NotEqual : Equal
     {
         public NotEqual(Statement first, Statement second)

@@ -3,6 +3,7 @@ using NiL.JS.Core;
 
 namespace NiL.JS.Statements
 {
+    [Serializable]
     public sealed class EmptyStatement : Statement
     {
         internal override JSObject Invoke(Context context)

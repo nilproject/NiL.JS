@@ -7,6 +7,7 @@ using NiL.JS.Core.Modules;
 namespace NiL.JS.Core.BaseTypes
 {
     [Immutable]
+    [Serializable]
     public class Error
     {
         public virtual JSObject message { get; private set; }

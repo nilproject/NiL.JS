@@ -3,9 +3,10 @@ using System;
 
 namespace NiL.JS.Statements.Operators
 {
+    [Serializable]
     public sealed class Assign : Operator
     {
-        private JSObject setterArgs = new JSObject(true) { ValueType = JSObjectType.Object, oValue = new Arguments() };
+        private JSObject setterArgs = new JSObject(true) { ValueType = JSObjectType.Object, oValue = Arguments.Instance };
         private JSObject setterArg = new JSObject();
 
         public Assign(Statement first, Statement second)

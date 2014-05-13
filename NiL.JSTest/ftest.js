@@ -7,4 +7,8 @@
     }
     return true;
 }
-console.log(8..isPrime());
+for (var i = 2; i < 100; i++)
+{
+    if (i.isPrime())
+        console.log(i);
+}

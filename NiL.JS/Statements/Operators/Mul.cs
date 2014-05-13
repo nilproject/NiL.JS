@@ -3,6 +3,7 @@ using System;
 
 namespace NiL.JS.Statements.Operators
 {
+    [Serializable]
     internal sealed class Mul : Operator
     {
         public Mul(Statement first, Statement second)

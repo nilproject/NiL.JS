@@ -1,7 +1,9 @@
 ﻿using NiL.JS.Core.BaseTypes;
+using System;
 
 namespace NiL.JS.Core
 {
+    [Serializable]
     public sealed class WithContext : Context
     {
         private JSObject @object;

@@ -4,6 +4,7 @@ using NiL.JS.Core.BaseTypes;
 
 namespace NiL.JS.Statements.Operators
 {
+    [Serializable]
     public sealed class Call : Operator
     {
         private Statement[] args;
@@ -36,7 +37,7 @@ namespace NiL.JS.Statements.Operators
             JSObject arguments = new JSObject(true)
                 {
                     ValueType = JSObjectType.Object,
-                    oValue = new Arguments(),
+                    oValue = NiL.JS.Core.Arguments.Instance,
                     attributes = ObjectAttributes.DontDelete | ObjectAttributes.DontEnum
                 };
             var field = arguments.GetField("length", false, true);

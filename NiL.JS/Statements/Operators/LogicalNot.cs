@@ -3,6 +3,7 @@ using System;
 
 namespace NiL.JS.Statements.Operators
 {
+    [Serializable]
     public sealed class LogicalNot : Operator
     {
         public LogicalNot(Statement first, Statement second)

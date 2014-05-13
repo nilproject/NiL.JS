@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 
 namespace NiL.JS.Statements
 {
+    [Serializable]
     internal enum OperationTypeGroups : int
     {
         None = 0x0,
@@ -22,6 +23,7 @@ namespace NiL.JS.Statements
         Special = 0xF0
     }
 
+    [Serializable]
     internal enum OperationType : int
     {
         None = OperationTypeGroups.None + 0,
@@ -65,6 +67,7 @@ namespace NiL.JS.Statements
 
     internal delegate JSObject OpDelegate(Context context);
 
+    [Serializable]
     internal sealed class OperatorStatement : Statement
     {
         private Statement fastImpl;

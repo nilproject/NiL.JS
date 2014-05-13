@@ -4,6 +4,7 @@ using System.Collections.Generic;
 
 namespace NiL.JS.Statements
 {
+    [Serializable]
     public sealed class SwitchStatement : Statement
     {
         public sealed class Case

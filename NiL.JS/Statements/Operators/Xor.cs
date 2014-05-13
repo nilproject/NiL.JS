@@ -3,6 +3,7 @@ using System;
 
 namespace NiL.JS.Statements.Operators
 {
+    [Serializable]
     public sealed class Xor : Operator
     {
         public Xor(Statement first, Statement second)

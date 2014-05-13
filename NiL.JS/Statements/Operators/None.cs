@@ -4,6 +4,7 @@ using System.Collections.Generic;
 
 namespace NiL.JS.Statements.Operators
 {
+    [Serializable]
     public sealed class None : Operator
     {
         public None(Statement first, Statement second)

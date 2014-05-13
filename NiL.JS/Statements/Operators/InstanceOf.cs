@@ -3,6 +3,7 @@ using System;
 
 namespace NiL.JS.Statements.Operators
 {
+    [Serializable]
     public sealed class InstanceOf : Operator
     {
         public InstanceOf(Statement first, Statement second)

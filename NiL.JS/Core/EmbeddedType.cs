@@ -11,6 +11,7 @@ namespace NiL.JS.Core
     /// Предоставляет возможность переопределить обработчики получения поля объекта 
     /// и получения перечислителя полей объекта.
     /// </summary>
+    [Serializable]
     public abstract class EmbeddedType : JSObject
     {
         protected EmbeddedType()
