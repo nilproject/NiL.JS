@@ -188,6 +188,16 @@ namespace NiL.JS.Statements
             return res;
         }
 
+        /// <summary>
+        /// Создаёт функцию, описанную выбранным выражением в контексте указанного сценария.
+        /// </summary>
+        /// <param name="script">Сценарий, контекст которого будет родительским для контекста выполнения функции.</param>
+        /// <returns></returns>
+        public Function MakeFunction(Script script)
+        {
+            return new Function(script.Context, body, argumentsNames, name);
+        }
+
         internal override bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> varibles)
         {
             var stat = body as Statement;
