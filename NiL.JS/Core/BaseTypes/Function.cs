@@ -763,7 +763,7 @@ namespace NiL.JS.Core.BaseTypes
                     argsLength = (argsLength.oValue as Function[])[1].Invoke(args, null);
                 int min = System.Math.Min(argsLength.iValue, argumentsNames.Length);
                 for (; i < min; i++)
-                    internalContext.fields[argumentsNames[i]] = args.GetField(i.ToString(), true, false);
+                    internalContext.fields[argumentsNames[i]] = args.GetField(i < 10 ? Tools.NumString[i] : i.ToString(), true, false);
                 for (; i < argumentsNames.Length; i++)
                     internalContext.fields[argumentsNames[i]] = new JSObject();
 

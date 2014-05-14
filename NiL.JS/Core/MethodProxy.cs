@@ -70,14 +70,12 @@ namespace NiL.JS.Core
             return arg;
         }
 
-        private static readonly string[] intStringCache = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" };
-
         private static JSObject[] argumentsToArray(JSObject source)
         {
             var len = source.GetField("length", true, false).iValue;
             var res = new JSObject[len];
             for (int i = 0; i < len; i++)
-                res[i] = source.GetField(i < 10 ? intStringCache[i] : i.ToString(), true, true);
+                res[i] = source.GetField(i < 10 ? Tools.NumString[i] : i.ToString(), true, true);
             return res;
         }
 
@@ -109,7 +107,7 @@ namespace NiL.JS.Core
             res = targetCount != 0 ? new object[targetCount] : null;
             for (int i = 0; i < targetCount; i++)
             {
-                var obj = source.GetField(i.ToString(), true, true);
+                var obj = source.GetField(i < 10 ? Tools.NumString[i] : i.ToString(), true, true);
                 if (source == null || obj == null)
                     continue;
                 res[i] = embeddedTypeConvert(obj, targetTypes[i].ParameterType);
