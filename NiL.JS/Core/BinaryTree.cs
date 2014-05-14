@@ -268,7 +268,7 @@ namespace NiL.JS
                     var c = root;
                     do
                     {
-                        var cmp = string.Compare(key, c.key, StringComparison.Ordinal);
+                        var cmp = string.CompareOrdinal(key, c.key);
                         if (cmp == 0)
                         {
                             c.value = value;
@@ -340,7 +340,7 @@ namespace NiL.JS
                 var stack = new Stack<Node>();
                 do
                 {
-                    var cmp = string.Compare(key, c.key, StringComparison.Ordinal);
+                    var cmp = string.CompareOrdinal(key, c.key);
                     if (cmp == 0)
                         throw new ArgumentException();
                     else if (cmp > 0)

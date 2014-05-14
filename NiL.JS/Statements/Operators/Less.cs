@@ -176,7 +176,7 @@ namespace NiL.JS.Statements.Operators
                                 }
                             case JSObjectType.String:
                                 {
-                                    tempResult.iValue = string.Compare(left, temp.oValue as string, StringComparison.Ordinal) < 0 ? 1 : 0;
+                                    tempResult.iValue = string.CompareOrdinal(left, temp.oValue as string) < 0 ? 1 : 0;
                                     break;
                                 }
                             case JSObjectType.Function:
@@ -208,7 +208,7 @@ namespace NiL.JS.Statements.Operators
                                             }
                                         case JSObjectType.String:
                                             {
-                                                tempResult.iValue = string.Compare(left, temp.Value.ToString(), StringComparison.Ordinal) < 0 ? 1 : 0;
+                                                tempResult.iValue = string.CompareOrdinal(left, temp.Value.ToString()) < 0 ? 1 : 0;
                                                 break;
                                             }
                                         case JSObjectType.Object:

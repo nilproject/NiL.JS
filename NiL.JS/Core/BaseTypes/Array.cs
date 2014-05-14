@@ -619,7 +619,7 @@ namespace NiL.JS.Core.BaseTypes
             else
                 data.Sort((JSObject l, JSObject r) =>
                 {
-                    return string.Compare((l ?? "undefined").ToString(), (r ?? "undefined").ToString(), StringComparison.Ordinal);
+                    return string.CompareOrdinal((l ?? "undefined").ToString(), (r ?? "undefined").ToString());
                 });
             return this;
         }

@@ -106,7 +106,7 @@ namespace NiL.JS.Core.BaseTypes
                         }
                 }
             }
-            return (oValue as string).IndexOf(fstr, pos, StringComparison.Ordinal);
+            return (oValue as string).IndexOf(fstr, pos);
         }
 
         public JSObject lastIndexOf(JSObject[] args)
@@ -142,14 +142,14 @@ namespace NiL.JS.Core.BaseTypes
                         }
                 }
             }
-            return (oValue as string).LastIndexOf(fstr, pos, StringComparison.Ordinal);
+            return (oValue as string).LastIndexOf(fstr, pos);
         }
 
         public JSObject localeCompare(JSObject[] args)
         {
             string str0 = oValue.ToString();
             string str1 = args.Length > 0 ? args[0].ToString() : "";
-            return string.Compare(str0, str1, StringComparison.Ordinal);
+            return string.CompareOrdinal(str0, str1);
         }
 
         public JSObject match(JSObject args)
