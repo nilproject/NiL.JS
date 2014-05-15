@@ -151,17 +151,16 @@ namespace NiL.JS.Statements
                     while (i < code.Length && char.IsWhiteSpace(code[i])) i++;
                     if (i < code.Length && code[i] == ';')
                         throw new JSException(TypeProxy.Proxy(new SyntaxError("Expression can not start with word \"function\"")));
-                    return new ParseResult()
-                    {
-                        IsParsed = true,
-                        Message = "",
-                        Statement = new Operators.Call(new FunctionStatement(name)
-                        {
-                            argumentsNames = arguments.ToArray(),
-                            body = body
-                        },
-                        new ImmidateValueStatement(args.ToArray()))
-                    };
+					return new ParseResult()
+					{
+						IsParsed = true,
+						Message = "",
+						Statement = new Operators.Call(new FunctionStatement(name)
+						{
+							argumentsNames = arguments.ToArray(),
+							body = body
+						}, new ImmidateValueStatement(new JSObject() { ValueType = JSObjectType.Object, oValue = args.ToArray() }))
+					};
                 }
                 else
                     i = tindex;
@@ -188,15 +187,15 @@ namespace NiL.JS.Statements
             return res;
         }
 
-        /// <summary>
-        /// Создаёт функцию, описанную выбранным выражением в контексте указанного сценария.
-        /// </summary>
+		/// <summary>
+		/// Создаёт функцию, описанную выбранным выражением в контексте указанного сценария.
+		/// </summary>
         /// <param name="script">Сценарий, контекст которого будет родительским для контекста выполнения функции.</param>
         /// <returns></returns>
-        public Function MakeFunction(Script script)
-        {
-            return new Function(script.Context, body, argumentsNames, name);
-        }
+		public Function MakeFunction(Script script)
+		{
+			return new Function(script.Context, body, argumentsNames, name);
+		}
 
         internal override bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> varibles)
         {

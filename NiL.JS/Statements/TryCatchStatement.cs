@@ -89,11 +89,11 @@ namespace NiL.JS.Statements
                         tempContainer.Assign(cvar);
                         tempContainer.attributes = cvar.attributes;
                         cvar.Assign(e.Avatar);
-                        cvar.attributes = ObjectAttributes.DontDelete;
+                        cvar.attributes = JSObjectAttributes.DontDelete;
                         catchBody.Invoke(context);
                         cvar.Assign(tempContainer);
                         cvar.attributes = tempContainer.attributes;
-                        tempContainer.attributes = ObjectAttributes.None;
+                        tempContainer.attributes = JSObjectAttributes.None;
                     }
                     else except = e;
                 }
@@ -108,11 +108,11 @@ namespace NiL.JS.Statements
                         tempContainer.Assign(cvar);
                         tempContainer.attributes = cvar.attributes;
                         cvar.Assign(TypeProxy.Proxy(e));
-                        cvar.attributes = ObjectAttributes.DontDelete;
+                        cvar.attributes = JSObjectAttributes.DontDelete;
                         catchBody.Invoke(context);
                         cvar.Assign(tempContainer);
                         cvar.attributes = tempContainer.attributes;
-                        tempContainer.attributes = ObjectAttributes.None;
+                        tempContainer.attributes = JSObjectAttributes.None;
                     }
                     else except = e;
                 }

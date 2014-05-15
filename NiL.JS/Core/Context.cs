@@ -63,9 +63,9 @@ namespace NiL.JS.Core
             JSObject.GlobalPrototype = null;
             TypeProxy.Clear();
             globalContext.fields.Add("Object", TypeProxy.GetConstructor(typeof(JSObject)));
-            globalContext.fields["Object"].attributes |= ObjectAttributes.DontDelete;
+            globalContext.fields["Object"].attributes |= JSObjectAttributes.DontDelete;
             JSObject.GlobalPrototype = TypeProxy.GetPrototype(typeof(JSObject));
-            JSObject.GlobalPrototype.attributes |= ObjectAttributes.ReadOnly;
+            JSObject.GlobalPrototype.attributes |= JSObjectAttributes.ReadOnly;
             globalContext.AttachModule(typeof(BaseTypes.Date));
             globalContext.AttachModule(typeof(BaseTypes.Array));
             globalContext.AttachModule(typeof(BaseTypes.String));
@@ -181,7 +181,7 @@ namespace NiL.JS.Core
             #endregion
 
             foreach (var v in globalContext.fields.Values)
-                v.attributes |= ObjectAttributes.DontEnum;
+                v.attributes |= JSObjectAttributes.DontEnum;
         }
 
         static Context()
@@ -259,7 +259,7 @@ namespace NiL.JS.Core
             Statements.GetVaribleStatement.ResetCache(name);
             if (inEval)
                 return res;
-            res.attributes |= ObjectAttributes.DontDelete;
+            res.attributes |= JSObjectAttributes.DontDelete;
             return res;
         }
 
@@ -332,7 +332,7 @@ namespace NiL.JS.Core
                 fields = new BinaryTree<JSObject>();
             fields.Add(moduleType.Name, TypeProxy.GetConstructor(moduleType));
             Statements.GetVaribleStatement.ResetCache(moduleType.Name);
-            fields[moduleType.Name].attributes |= ObjectAttributes.DontDelete;
+            fields[moduleType.Name].attributes |= JSObjectAttributes.DontDelete;
         }
 
         /// <summary>

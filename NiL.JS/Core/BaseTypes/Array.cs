@@ -703,14 +703,16 @@ namespace NiL.JS.Core.BaseTypes
             if (len.ValueType == JSObjectType.Property)
                 len = (len.oValue as NiL.JS.Core.BaseTypes.Function[])[1].Invoke(obj, null);
             var count = Tools.JSObjectToDouble(len);
-            var cbargs = new JSObject[3];
-            cbargs[2] = obj;
-            cbargs[1] = new JSObject(false) { ValueType = JSObjectType.Int };
+            var cbargs = JSObject.CreateObject();
+            cbargs.GetField("length", false, true).Assign(3);
+			var index = new JSObject(false) { ValueType = JSObjectType.Int };
+            cbargs.GetField("1", false, true).Assign(index);
+            cbargs.GetField("2", false, true).Assign(obj);
             var stat = args.GetField("0", true, false).oValue as Function;
             for (int i = 0; i < count; i++)
             {
-                cbargs[0] = obj.GetField(i.ToString(System.Globalization.CultureInfo.InvariantCulture), true, false);
-                cbargs[1].iValue = i;
+                cbargs.GetField("0", false, true).Assign(obj.GetField(i < 10 ? Tools.NumString[i] : i.ToString(System.Globalization.CultureInfo.InvariantCulture), true, false));
+                index.iValue = i;
                 if (alen > 1)
                     res &= (bool)stat.Invoke(args.GetField("1", true, false), cbargs);
                 else

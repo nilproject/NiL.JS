@@ -100,7 +100,7 @@ namespace NiL.JS.Statements
                     }
                     var o = keys.Current;
                     var t = s.GetField(o, true, false);
-                    if (t.ValueType > JSObjectType.NotExistInObject && ((t.attributes & ObjectAttributes.DontEnum) == 0))
+                    if (t.ValueType > JSObjectType.NotExistInObject && ((t.attributes & JSObjectAttributes.DontEnum) == 0))
                     {
                         v.ValueType = JSObjectType.String;
                         v.oValue = o;

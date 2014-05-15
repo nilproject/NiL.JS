@@ -2,6 +2,7 @@
 
 namespace NiL.JS.Core.Modules
 {
+	[Serializable]
     [AttributeUsage(
         AttributeTargets.Field
         | AttributeTargets.Property

@@ -38,7 +38,7 @@ namespace NiL.JS.Statements.Operators
                 {
                     ValueType = JSObjectType.Object,
                     oValue = NiL.JS.Core.Arguments.Instance,
-                    attributes = ObjectAttributes.DontDelete | ObjectAttributes.DontEnum
+                    attributes = JSObjectAttributes.DontDelete | JSObjectAttributes.DontEnum
                 };
             var field = arguments.GetField("length", false, true);
             field.assignCallback(field);
@@ -46,20 +46,20 @@ namespace NiL.JS.Statements.Operators
             if (args == null)
                 args = second.Invoke(null).oValue as Statement[];
             field.iValue = args.Length;
-            field.attributes = ObjectAttributes.DontEnum;
+            field.attributes = JSObjectAttributes.DontEnum;
             for (int i = 0; i < field.iValue; i++)
             {
                 var a = Tools.RaiseIfNotExist(args[i].Invoke(context)).Clone() as JSObject;
                 context.objectSource = newThisBind;
                 arguments.fields[i.ToString()] = a;
-                a.attributes |= ObjectAttributes.Argument;
+                a.attributes |= JSObjectAttributes.Argument;
             }
             arguments.prototype = JSObject.GlobalPrototype;
             arguments.fields["callee"] = field = new JSObject();
             field.ValueType = JSObjectType.Function;
             field.oValue = func;
             field.Protect();
-            field.attributes = ObjectAttributes.DontEnum;
+            field.attributes = JSObjectAttributes.DontEnum;
             return func.Invoke(context, newThisBind, arguments);
         }
 

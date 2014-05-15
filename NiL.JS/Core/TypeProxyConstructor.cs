@@ -90,7 +90,7 @@ namespace NiL.JS.Core
             get
             {
                 if (_length == null)
-                    _length = new Number(0) { attributes = ObjectAttributes.ReadOnly | ObjectAttributes.DontDelete | ObjectAttributes.DontEnum };
+                    _length = new Number(0) { attributes = JSObjectAttributes.ReadOnly | JSObjectAttributes.DontDelete | JSObjectAttributes.DontEnum };
                 if (proxy.hostedType == typeof(Function))
                     _length.iValue = 1;
                 else
@@ -104,7 +104,7 @@ namespace NiL.JS.Core
             ConstructorInfo constructor = null;
             var len = argObj == null ? 0 : argObj.GetField("length", false, false).iValue;
             if (len == 0)
-                constructor = proxy.hostedType.GetConstructor(Type.EmptyTypes);
+                constructor = proxy.hostedType.GetConstructor(System.Type.EmptyTypes);
             if (constructor != null && constructor.GetCustomAttributes(typeof(Modules.HiddenAttribute), false).Length == 0)
                 return constructor;
             Type[] argtypes = new[] { typeof(JSObject) };
@@ -167,7 +167,7 @@ namespace NiL.JS.Core
                     args[i] = argObj.GetField(i.ToString(), true, false);
                 return constructor;
             }
-            constructor = proxy.hostedType.GetConstructor(Type.EmptyTypes);
+            constructor = proxy.hostedType.GetConstructor(System.Type.EmptyTypes);
             args = null;
             return constructor;
         }

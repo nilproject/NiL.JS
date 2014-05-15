@@ -210,7 +210,7 @@ namespace NiL.JS.Core
             get
             {
                 if (_length == null)
-                    _length = new Number(0) { attributes = ObjectAttributes.ReadOnly | ObjectAttributes.DontDelete | ObjectAttributes.DontEnum };
+                    _length = new Number(0) { attributes = JSObjectAttributes.ReadOnly | JSObjectAttributes.DontDelete | JSObjectAttributes.DontEnum };
                 var pc = info.GetCustomAttributes(typeof(Modules.ParametersCountAttribute), false);
                 if (pc.Length != 0)
                     _length.iValue = (pc[0] as Modules.ParametersCountAttribute).Count;

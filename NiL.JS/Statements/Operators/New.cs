@@ -64,9 +64,16 @@ namespace NiL.JS.Statements.Operators
         internal override bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> vars)
         {
             if (second == null)
-                (CallInstance.Second as ImmidateValueStatement).value = new Statement[0];
+				(CallInstance.Second as ImmidateValueStatement).value = new JSObject() { ValueType = JSObjectType.Object, oValue = new Statement[0] };
             else
-                (CallInstance.Second as ImmidateValueStatement).value = second.Invoke(null);
+				try
+				{
+					(CallInstance.Second as ImmidateValueStatement).value = second.Invoke(null);
+				}
+				catch
+				{
+
+				}
             return base.Optimize(ref _this, depth, vars);
         }
 

@@ -193,7 +193,7 @@ namespace NiL.JS.Core.Modules
             bool first = true;
             foreach (var f in obj.fields)
             {
-                if ((f.Value.ValueType < JSObjectType.Undefined) && ((f.Value.attributes & ObjectAttributes.DontEnum) == 0))
+                if ((f.Value.ValueType < JSObjectType.Undefined) && ((f.Value.attributes & JSObjectAttributes.DontEnum) == 0))
                     continue;
                 var value = f.Value;
                 if (replacer != null)

@@ -31,7 +31,7 @@ namespace NiL.JS.Core.BaseTypes
             oValue = s;
             ValueType = JSObjectType.String;
             assignCallback = JSObject.ErrorAssignCallback;
-            attributes |= ObjectAttributes.Immutable;
+            attributes |= JSObjectAttributes.Immutable;
         }
 
         public String(JSObject[] s)
@@ -45,7 +45,7 @@ namespace NiL.JS.Core.BaseTypes
             {
                 if ((pos < 0) || (pos >= (oValue as string).Length))
                     return JSObject.undefined;
-                return new JSObject(false) { ValueType = JSObjectType.String, oValue = (oValue as string)[pos].ToString(), attributes = ObjectAttributes.ReadOnly };
+                return new JSObject(false) { ValueType = JSObjectType.String, oValue = (oValue as string)[pos].ToString(), attributes = JSObjectAttributes.ReadOnly };
             }
         }
 
@@ -201,7 +201,7 @@ namespace NiL.JS.Core.BaseTypes
                     var margs = new JSObject(true) { ValueType = JSObjectType.Object, oValue = Arguments.Instance, prototype = JSObject.GlobalPrototype };
                     JSObject len = 1;
                     len.assignCallback = null;
-                    len.attributes = ObjectAttributes.DontDelete | ObjectAttributes.DontEnum | ObjectAttributes.ReadOnly;
+                    len.attributes = JSObjectAttributes.DontDelete | JSObjectAttributes.DontEnum | JSObjectAttributes.ReadOnly;
                     margs.fields["length"] = len;
                     margs.fields["0"] = match;
                     match.oValue = (args[0].oValue as RegExp).regEx.Replace(oValue.ToString(), new System.Text.RegularExpressions.MatchEvaluator(
@@ -247,7 +247,7 @@ namespace NiL.JS.Core.BaseTypes
                     var margs = new JSObject(true) { ValueType = JSObjectType.Object, oValue = Arguments.Instance, prototype = JSObject.GlobalPrototype };
                     JSObject alen = 3;
                     alen.assignCallback = null;
-                    alen.attributes = ObjectAttributes.DontDelete | ObjectAttributes.DontEnum | ObjectAttributes.ReadOnly;
+                    alen.attributes = JSObjectAttributes.DontDelete | JSObjectAttributes.DontEnum | JSObjectAttributes.ReadOnly;
                     margs.fields["length"] = alen;
                     margs.fields["0"] = pattern;
                     margs.fields["2"] = this;
@@ -495,7 +495,7 @@ namespace NiL.JS.Core.BaseTypes
             get
             {
                 if (_length == null)
-                    _length = new Number(0) { attributes = ObjectAttributes.ReadOnly | ObjectAttributes.DontDelete | ObjectAttributes.DontEnum };
+                    _length = new Number(0) { attributes = JSObjectAttributes.ReadOnly | JSObjectAttributes.DontDelete | JSObjectAttributes.DontEnum };
                 _length.iValue = (oValue as string).Length;
                 return _length;
             }

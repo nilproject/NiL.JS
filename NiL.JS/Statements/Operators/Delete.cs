@@ -18,7 +18,7 @@ namespace NiL.JS.Statements.Operators
             tempResult.ValueType = JSObjectType.Bool;
             if (temp.ValueType <= JSObjectType.NotExistInObject)
                 tempResult.iValue = 1;
-            else if ((temp.attributes & ObjectAttributes.Argument) != 0)
+            else if ((temp.attributes & JSObjectAttributes.Argument) != 0)
             {
                 if (first is GetFieldStatement)
                 {
@@ -39,7 +39,7 @@ namespace NiL.JS.Statements.Operators
                     return tempResult;
                 }
             }
-            else if ((temp.attributes & ObjectAttributes.DontDelete) == 0)
+            else if ((temp.attributes & JSObjectAttributes.DontDelete) == 0)
             {
                 tempResult.iValue = 1;
                 temp.ValueType = JSObjectType.NotExist;

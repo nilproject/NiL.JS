@@ -9,7 +9,7 @@ using System.Runtime.Serialization;
 namespace NiL.JS.Core
 {
     [Serializable]
-    internal enum JSObjectType : int
+    public enum JSObjectType : int
     {
         NotExist = 0,
         NotExistInObject = 1,
@@ -26,7 +26,7 @@ namespace NiL.JS.Core
 
     [Serializable]
     [Flags]
-    internal enum ObjectAttributes : int
+    public enum JSObjectAttributes : int
     {
         None = 0,
         DontEnum = 1 << 0,
@@ -50,13 +50,13 @@ namespace NiL.JS.Core
         [Modules.Hidden]
         internal static readonly AssignCallback ErrorAssignCallback = (sender) => { throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Invalid left-hand side"))); };
         [Modules.Hidden]
-        internal protected static readonly IEnumerator<string> EmptyEnumerator = ((IEnumerable<string>)(new string[0])).GetEnumerator();
+        internal static readonly IEnumerator<string> EmptyEnumerator = ((IEnumerable<string>)(new string[0])).GetEnumerator();
         [Modules.Hidden]
-        internal static readonly JSObject undefined = new JSObject() { ValueType = JSObjectType.Undefined, attributes = ObjectAttributes.DontDelete | ObjectAttributes.DontEnum | ObjectAttributes.ReadOnly };
+        internal static readonly JSObject undefined = new JSObject() { ValueType = JSObjectType.Undefined, attributes = JSObjectAttributes.DontDelete | JSObjectAttributes.DontEnum | JSObjectAttributes.ReadOnly };
         [Modules.Hidden]
-        internal static readonly JSObject Null = new JSObject() { ValueType = JSObjectType.Object, oValue = null, assignCallback = ErrorAssignCallback, attributes = ObjectAttributes.DontDelete | ObjectAttributes.DontEnum };
+        internal static readonly JSObject Null = new JSObject() { ValueType = JSObjectType.Object, oValue = null, assignCallback = ErrorAssignCallback, attributes = JSObjectAttributes.DontDelete | JSObjectAttributes.DontEnum };
         [Modules.Hidden]
-        internal static readonly JSObject nullString = new JSObject() { ValueType = JSObjectType.String, oValue = "null", assignCallback = ErrorAssignCallback, attributes = ObjectAttributes.DontDelete | ObjectAttributes.DontEnum };
+        internal static readonly JSObject nullString = new JSObject() { ValueType = JSObjectType.String, oValue = "null", assignCallback = ErrorAssignCallback, attributes = JSObjectAttributes.DontDelete | JSObjectAttributes.DontEnum };
         [Modules.Hidden]
         internal static JSObject GlobalPrototype;
 
@@ -86,7 +86,7 @@ namespace NiL.JS.Core
         [Modules.Hidden]
         internal object oValue;
         [Modules.Hidden]
-        internal ObjectAttributes attributes;
+        internal JSObjectAttributes attributes;
 
         [Modules.Hidden]
         public object Value
@@ -113,6 +113,24 @@ namespace NiL.JS.Core
                 }
             }
         }
+
+		[Modules.Hidden]
+		public JSObjectType Type
+		{
+			get
+			{
+				return ValueType;
+			}
+		}
+
+		[Modules.Hidden]
+		public JSObjectAttributes Attributes
+		{
+			get
+			{
+				return attributes;
+			}
+		}
 
         internal static JSObject Object(Context context, JSObject args)
         {
@@ -175,7 +193,7 @@ namespace NiL.JS.Core
         [Modules.Hidden]
         public virtual JSObject GetField(string name, bool fast, bool own)
         {
-            if ((attributes & ObjectAttributes.Immutable) != 0)
+            if ((attributes & JSObjectAttributes.Immutable) != 0)
                 fast = true;
             switch (ValueType)
             {
@@ -296,7 +314,7 @@ namespace NiL.JS.Core
         {
             if (assignCallback != null)
                 assignCallback(this);
-            attributes |= ObjectAttributes.DontDelete | ObjectAttributes.ReadOnly;
+            attributes |= JSObjectAttributes.DontDelete | JSObjectAttributes.ReadOnly;
         }
 
         [Modules.Hidden]
@@ -381,7 +399,7 @@ namespace NiL.JS.Core
         {
             if (this.assignCallback != null)
                 this.assignCallback(this);
-            if ((attributes & ObjectAttributes.ReadOnly) != 0)
+            if ((attributes & JSObjectAttributes.ReadOnly) != 0)
                 return;
             if (value == this)
                 return;
@@ -393,7 +411,7 @@ namespace NiL.JS.Core
                 this.dValue = value.dValue;
                 this.prototype = value.prototype;
                 this.fields = value.fields;
-                this.attributes = this.attributes & ~ObjectAttributes.Immutable | (value.attributes & ObjectAttributes.Immutable);
+                this.attributes = this.attributes & ~JSObjectAttributes.Immutable | (value.attributes & JSObjectAttributes.Immutable);
                 return;
             }
             this.fields = null;
@@ -642,7 +660,7 @@ namespace NiL.JS.Core
                     throw new NotImplementedException("Object.hasOwnProperty. Invalid Value Type");
             }
             var res = GetField(n, true, true);
-            res = (res.ValueType >= JSObjectType.Undefined) && (res != JSObject.undefined) && ((res.attributes & ObjectAttributes.DontEnum) == 0);
+            res = (res.ValueType >= JSObjectType.Undefined) && (res != JSObject.undefined) && ((res.attributes & JSObjectAttributes.DontEnum) == 0);
             return res;
         }
 
@@ -681,11 +699,6 @@ namespace NiL.JS.Core
         public static implicit operator JSObject(string value)
         {
             return new BaseTypes.String(value);
-        }
-
-        public static implicit operator JSObject(object[] value)
-        {
-            return new JSObject() { ValueType = JSObjectType.Object, oValue = value, assignCallback = ErrorAssignCallback };
         }
 
 #if INLINE

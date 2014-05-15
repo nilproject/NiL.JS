@@ -8,7 +8,7 @@ namespace NiL.JS.Statements.Operators
     [Serializable]
     public abstract class Operator : Statement
     {
-        protected internal readonly JSObject tempResult = new JSObject() { attributes = ObjectAttributes.DontDelete, assignCallback = JSObject.ErrorAssignCallback };
+        protected internal readonly JSObject tempResult = new JSObject() { attributes = JSObjectAttributes.DontDelete, assignCallback = JSObject.ErrorAssignCallback };
 
         protected internal Statement first;
         protected internal Statement second;

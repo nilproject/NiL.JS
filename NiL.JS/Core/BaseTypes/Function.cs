@@ -702,7 +702,7 @@ namespace NiL.JS.Core.BaseTypes
             get
             {
                 if (_length == null)
-                    _length = new Number(0) { attributes = ObjectAttributes.ReadOnly | ObjectAttributes.DontDelete | ObjectAttributes.DontEnum };
+                    _length = new Number(0) { attributes = JSObjectAttributes.ReadOnly | JSObjectAttributes.DontDelete | JSObjectAttributes.DontEnum };
                 _length.iValue = argumentsNames.Length;
                 return _length;
             }
@@ -741,7 +741,7 @@ namespace NiL.JS.Core.BaseTypes
                     {
                         ValueType = JSObjectType.Object,
                         oValue = @this,
-                        attributes = ObjectAttributes.DontEnum | ObjectAttributes.DontDelete | ObjectAttributes.Immutable,
+                        attributes = JSObjectAttributes.DontEnum | JSObjectAttributes.DontDelete | JSObjectAttributes.Immutable,
                         prototype = @this.prototype
                     };
                 }
@@ -787,11 +787,11 @@ namespace NiL.JS.Core.BaseTypes
                     {
                         ValueType = JSObjectType.Object,
                         prototype = JSObject.GlobalPrototype,
-                        attributes = ObjectAttributes.DontDelete | ObjectAttributes.DontEnum
+                        attributes = JSObjectAttributes.DontDelete | JSObjectAttributes.DontEnum
                     };
                     prototypeField.oValue = prototypeField;
                     var ctor = prototypeField.GetField("constructor", false, true);
-                    ctor.attributes = ObjectAttributes.DontDelete | ObjectAttributes.DontEnum;
+                    ctor.attributes = JSObjectAttributes.DontDelete | JSObjectAttributes.DontEnum;
                     ctor.Assign(this);
                 }
                 return prototypeField;

@@ -374,11 +374,15 @@ namespace NiL.JS.Statements
                         {
                             s = value.LastIndexOf('/') + 1;
                             string flags = value.Substring(s);
-                            first = new Operators.Call(new GetVaribleStatement("RegExp"), new ImmidateValueStatement(new Statement[2]
-                            {
-                                new ImmidateValueStatement(value.Substring(1, s - 2)),
-                                new ImmidateValueStatement(flags)
-                            }));
+							first = new Operators.Call(new GetVaribleStatement("RegExp"), new ImmidateValueStatement(new JSObject()
+							{
+								ValueType = JSObjectType.Object,
+								oValue = new Statement[2]
+								{
+									new ImmidateValueStatement(value.Substring(1, s - 2)),
+									new ImmidateValueStatement(flags)
+								}
+							}));
                         }
                         else
                             throw new ArgumentException("Invalid process value (" + value + ")");
@@ -596,7 +600,7 @@ namespace NiL.JS.Statements
                             do i++; while (char.IsWhiteSpace(code[i]));
                             sec[1] = Parser.Parse(state, ref i, 1);
                             state.InExpression = true;
-                            second = new ImmidateValueStatement(sec);
+							second = new ImmidateValueStatement(new JSObject() { ValueType = JSObjectType.Object, oValue = sec });
                             binar = false;
                             repeat = false;
                             break;
@@ -945,12 +949,12 @@ namespace NiL.JS.Statements
                                     do i++; while (char.IsWhiteSpace(code[i]));
                                 args.Add(OperatorStatement.Parse(state, ref i, false).Statement);
                             }
-                            first = new OperatorStatement()
-                            {
-                                first = first,
-                                second = new ImmidateValueStatement(args.ToArray()),
-                                _type = OperationType.Call
-                            };
+							first = new OperatorStatement()
+							{
+								first = first,
+								second = new ImmidateValueStatement(new JSObject() { ValueType = JSObjectType.Object, oValue = args.ToArray() }),
+								_type = OperationType.Call
+							};
                             i++;
                             repeat = !forNew;
                             canAsign = false;

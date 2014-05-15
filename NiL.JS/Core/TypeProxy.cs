@@ -59,7 +59,7 @@ namespace NiL.JS.Core
             {
                 var type = value.GetType();
                 var res = new JSObject() { oValue = value, ValueType = JSObjectType.Object, prototype = GetPrototype(type) };
-                res.attributes |= res.prototype.attributes & ObjectAttributes.Immutable;
+                res.attributes |= res.prototype.attributes & JSObjectAttributes.Immutable;
                 return res;
             }
         }
@@ -128,7 +128,7 @@ namespace NiL.JS.Core
                     }
                     else
                     {
-                        var ictor = type.GetConstructor(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy, null, Type.EmptyTypes, null);
+                        var ictor = type.GetConstructor(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy, null, System.Type.EmptyTypes, null);
                         if (ictor != null)
                         {
                             try
@@ -151,9 +151,9 @@ namespace NiL.JS.Core
 
                 ValueType = prototypeInstance is JSObject ? (JSObjectType)System.Math.Max((int)(prototypeInstance as JSObject).ValueType, (int)JSObjectType.Object) : JSObjectType.Object;
                 oValue = this;
-                attributes |= ObjectAttributes.DontDelete | ObjectAttributes.DontEnum | ObjectAttributes.ReadOnly;
+                attributes |= JSObjectAttributes.DontDelete | JSObjectAttributes.DontEnum | JSObjectAttributes.ReadOnly;
                 if (hostedType.GetCustomAttributes(typeof(ImmutableAttribute), false).Length != 0)
-                    attributes |= ObjectAttributes.Immutable;
+                    attributes |= JSObjectAttributes.Immutable;
                 var ctorProxy = new TypeProxy() { hostedType = type, bindFlags = bindFlags | BindingFlags.Static };
                 if (hostedType.IsAbstract)
                 {
@@ -163,7 +163,7 @@ namespace NiL.JS.Core
                 {
                     var prot = ctorProxy.DefaultFieldGetter("prototype", false, false);
                     prot.Assign(this);
-                    prot.attributes = ObjectAttributes.DontDelete | ObjectAttributes.DontEnum | ObjectAttributes.ReadOnly;
+                    prot.attributes = JSObjectAttributes.DontDelete | JSObjectAttributes.DontEnum | JSObjectAttributes.ReadOnly;
                     var ctor = type == typeof(JSObject) ? new ObjectConstructor(ctorProxy) : new TypeProxyConstructor(ctorProxy);
                     ctorProxy.DefaultFieldGetter("__proto__", false, false).Assign(GetPrototype(typeof(TypeProxyConstructor)));
                     ctor.attributes = attributes;
@@ -339,9 +339,9 @@ namespace NiL.JS.Core
                 if (m[0].GetCustomAttributes(typeof(ProtectedAttribute), false).Length != 0)
                     r.Protect();
                 if (m[0].GetCustomAttributes(typeof(DoNotDeleteAttribute), false).Length != 0)
-                    r.attributes |= ObjectAttributes.DontDelete;
+                    r.attributes |= JSObjectAttributes.DontDelete;
             }
-            r.attributes |= ObjectAttributes.DontEnum;
+            r.attributes |= JSObjectAttributes.DontEnum;
             fields[name] = r;
             return r;
         }
