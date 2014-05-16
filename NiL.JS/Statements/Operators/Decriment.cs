@@ -14,6 +14,8 @@ namespace NiL.JS.Statements.Operators
 
         internal override JSObject Invoke(Context context)
         {
+            if (first != null && second != null)
+                throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid decriment operand.")));
             var val = Tools.RaiseIfNotExist((first ?? second).Invoke(context));
             if (val.assignCallback != null)
                 val.assignCallback(val);

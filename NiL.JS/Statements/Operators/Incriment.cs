@@ -15,6 +15,8 @@ namespace NiL.JS.Statements.Operators
 
         internal override JSObject Invoke(Context context)
         {
+            if (first != null && second != null)
+                throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid incriment operand.")));
             var val = (first ?? second).InvokeForAssing(context);
             if (val.ValueType == JSObjectType.NotExist)
                 throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible not defined.")));

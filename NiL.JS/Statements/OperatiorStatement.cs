@@ -408,7 +408,10 @@ namespace NiL.JS.Statements
                                 do i++; while (char.IsWhiteSpace(code[i]));
                                 first = Parse(state, ref i, true, true, false, true).Statement;
                                 if (first == null || (first as OperatorStatement)._type != OperationType.None)
-                                    throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid prefix operation")));
+                                {
+                                    var cord = Tools.PositionToTextcord(code, i);
+                                    throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid prefix operation. " + cord)));
+                                }
                                 (first as OperatorStatement)._type = OperationType.Incriment;
                             }
                             else
@@ -428,7 +431,10 @@ namespace NiL.JS.Statements
                                 do i++; while (char.IsWhiteSpace(code[i]));
                                 first = Parse(state, ref i, true, true, false, true).Statement;
                                 if (first == null || (first as OperatorStatement)._type != OperationType.None)
-                                    throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid prefix operation")));
+                                {
+                                    var cord = Tools.PositionToTextcord(code, i);
+                                    throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid prefix operation. " + cord)));
+                                }
                                 (first as OperatorStatement)._type = OperationType.Decriment;
                             }
                             else
@@ -444,12 +450,22 @@ namespace NiL.JS.Statements
                         {
                             do i++; while (char.IsWhiteSpace(code[i]));
                             first = new OperatorStatement() { first = Parse(state, ref i, true, true, false, true).Statement, _type = OperationType.LogicalNot };
+                            if (first == null)
+                            {
+                                var cord = Tools.PositionToTextcord(code, i);
+                                throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid prefix operation. " + cord)));
+                            }
                             break;
                         }
                     case '~':
                         {
                             do i++; while (char.IsWhiteSpace(code[i]));
                             first = Parse(state, ref i, true, true, false, true).Statement;
+                            if (first == null)
+                            {
+                                var cord = Tools.PositionToTextcord(code, i);
+                                throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid prefix operation. " + cord)));
+                            }
                             if ((first as OperatorStatement)._type == OperationType.None)
                                 (first as OperatorStatement)._type = OperationType.Not;
                             else
@@ -461,6 +477,11 @@ namespace NiL.JS.Statements
                             i += 5;
                             do i++; while (char.IsWhiteSpace(code[i]));
                             first = Parse(state, ref i, false, true, false, true).Statement;
+                            if (first == null)
+                            {
+                                var cord = Tools.PositionToTextcord(code, i);
+                                throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid prefix operation. " + cord)));
+                            }
                             if ((first as OperatorStatement)._type == OperationType.None)
                                 (first as OperatorStatement)._type = OperationType.TypeOf;
                             else
@@ -472,6 +493,11 @@ namespace NiL.JS.Statements
                             i += 3;
                             do i++; while (char.IsWhiteSpace(code[i]));
                             first = new Operators.None(Parse(state, ref i, false, true, false, true).Statement, new ImmidateValueStatement(JSObject.undefined));
+                            if (first == null)
+                            {
+                                var cord = Tools.PositionToTextcord(code, i);
+                                throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid prefix operation. " + cord)));
+                            }
                             break;
                         }
                     case 'n':
@@ -479,6 +505,11 @@ namespace NiL.JS.Statements
                             i += 2;
                             do i++; while (char.IsWhiteSpace(code[i]));
                             first = Parse(state, ref i, false, true, true, true).Statement;
+                            if (first == null)
+                            {
+                                var cord = Tools.PositionToTextcord(code, i);
+                                throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid prefix operation. " + cord)));
+                            }
                             if ((first as OperatorStatement)._type == OperationType.None || (first as OperatorStatement)._type == OperationType.Call)
                                 (first as OperatorStatement)._type = OperationType.New;
                             else
@@ -490,6 +521,11 @@ namespace NiL.JS.Statements
                             i += 5;
                             do i++; while (char.IsWhiteSpace(code[i]));
                             first = Parse(state, ref i, false, true, false, true).Statement;
+                            if (first == null)
+                            {
+                                var cord = Tools.PositionToTextcord(code, i);
+                                throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid prefix operation. " + cord)));
+                            }
                             if ((first as OperatorStatement)._type == OperationType.None)
                                 (first as OperatorStatement)._type = OperationType.Delete;
                             else
