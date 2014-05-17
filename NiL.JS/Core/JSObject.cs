@@ -433,8 +433,6 @@ namespace NiL.JS.Core
         {
             if (ValueType <= JSObjectType.Undefined)
                 return "undefined";
-            if (ValueType < JSObjectType.Object)
-                GetField("__proto__", true, true);
             var res = ToPrimitiveValue_String_Value().Value;
             if (res is bool)
                 return (bool)res ? "true" : "false";
