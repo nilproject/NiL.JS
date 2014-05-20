@@ -33,7 +33,7 @@ namespace NiL.JS
             Code = code;
             int i = 0;
             string c = "{" + Tools.RemoveComments(Code) + "}";
-            root = CodeBlock.Parse(new ParsingState(c), ref i).Statement;
+            root = CodeBlock.Parse(new ParsingState(c, code), ref i).Statement;
             if (i != c.Length)
                 throw new System.ArgumentException("Invalid char");
             Parser.Optimize(ref root, new System.Collections.Generic.Dictionary<string, Statement>());

@@ -675,7 +675,8 @@ namespace NiL.JS.Core.BaseTypes
             var argn = "";
             for (int i = 0; i < len; i++)
                 argn += args.GetField(i.ToString(), true, false) + (i + 1 < len ? "," : "");
-            var fs = NiL.JS.Statements.FunctionStatement.Parse(new ParsingState("function(" + argn + "){" + args.GetField(len.ToString(), true, false) + "}"), ref index);
+            string code = "function(" + argn + "){" + args.GetField(len.ToString(), true, false) + "}";
+            var fs = NiL.JS.Statements.FunctionStatement.Parse(new ParsingState(code, code), ref index);
             if (fs.IsParsed)
             {
                 Parser.Optimize(ref fs.Statement, new Dictionary<string, Statement>());

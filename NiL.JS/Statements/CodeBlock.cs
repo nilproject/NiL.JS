@@ -9,7 +9,9 @@ namespace NiL.JS.Statements
     {
         private FunctionStatement[] functions;
         private string[] varibles;
-        private int length;
+        private int linesCount;
+        private string code;
+        private int codeLength;
         internal readonly Statement[] body;
         internal readonly bool strict;
 
@@ -17,11 +19,32 @@ namespace NiL.JS.Statements
         public string[] Varibles { get { return varibles; } }
         public Statement[] Body { get { return body; } }
         public bool Strict { get { return strict; } }
+        public int CodeOffset { get; private set; }
+        public string Code
+        {
+            get
+            {
+                if (codeLength >= 0)
+                {
+                    try
+                    {
+                        return code = code.Substring(CodeOffset, codeLength);
+                    }
+                    finally
+                    {
+                        codeLength = -1;
+                    }
+                }
+                else
+                    return code;
+            }
+        }
 
         public CodeBlock(Statement[] body, bool strict)
         {
+            code = "";
             this.body = body;
-            length = body.Length - 1;
+            linesCount = body.Length - 1;
             functions = null;
             varibles = new string[0];
             this.strict = strict;
@@ -73,6 +96,7 @@ namespace NiL.JS.Statements
                     body.Add(t);
             }
             i++;
+            int startPos = index;
             index = i;
             body.Reverse();
             return new ParseResult()
@@ -81,7 +105,10 @@ namespace NiL.JS.Statements
                 Message = "",
                 Statement = new CodeBlock(body.ToArray(), strictSwitch && state.strict.Pop())
                 {
-                    functions = funcs.ToArray()
+                    functions = funcs.ToArray(),
+                    CodeOffset = startPos,
+                    code = state.SourceCode,
+                    codeLength = i - startPos - 2
                 }
             };
         }
@@ -100,7 +127,7 @@ namespace NiL.JS.Statements
                 f.assignCallback = null;
             }
             JSObject res = JSObject.undefined;
-            for (int i = length; i >= 0; i--)
+            for (int i = linesCount; i >= 0; i--)
             {
                 res = Tools.RaiseIfNotExist(body[i].Invoke(context)) ?? res;
 #if DEBUG
@@ -161,25 +188,35 @@ namespace NiL.JS.Statements
 
         public override string ToString()
         {
-            if (body == null || body.Length == 0)
-                return "{ }";
-            string res = " {" + Environment.NewLine;
-            var replp = Environment.NewLine;
-            var replt = Environment.NewLine + "  ";
-            for (var i = 0; i < functions.Length; i++)
+            return ToString(false);
+        }
+
+        public string ToString(bool parsed)
+        {
+            if (parsed)
             {
-                var func = functions[i].ToString().Replace(replp, replt);
-                res += "  " + func + Environment.NewLine;
+                if (body == null || body.Length == 0)
+                    return "{ }";
+                string res = " {" + Environment.NewLine;
+                var replp = Environment.NewLine;
+                var replt = Environment.NewLine + "  ";
+                for (var i = 0; i < functions.Length; i++)
+                {
+                    var func = functions[i].ToString().Replace(replp, replt);
+                    res += "  " + func + Environment.NewLine;
+                }
+                for (int i = body.Length; i-- > 0; )
+                {
+                    string lc = body[i].ToString();
+                    if (lc[0] == '(')
+                        lc = lc.Substring(1, lc.Length - 2);
+                    lc = lc.Replace(replp, replt);
+                    res += "  " + lc + (lc[lc.Length - 1] != '}' ? ";" + Environment.NewLine : Environment.NewLine);
+                }
+                return res + "}";
             }
-            for (int i = body.Length; i-- > 0; )
-            {
-                string lc = body[i].ToString();
-                if (lc[0] == '(')
-                    lc = lc.Substring(1, lc.Length - 2);
-                lc = lc.Replace(replp, replt);
-                res += "  " + lc + (lc[lc.Length - 1] != '}' ? ";" + Environment.NewLine : Environment.NewLine);
-            }
-            return res + "}";
+            else
+                return '{' + Code + '}';
         }
     }
 }
