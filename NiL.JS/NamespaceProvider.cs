@@ -54,5 +54,18 @@ namespace NiL.JS
             }
             return new JS.Core.JSObject();
         }
+
+        /// <summary>
+        /// Возвращает тип, доступный в текущем домене по его имени.
+        /// </summary>
+        /// <param name="name">Имя типа, который необходимо вернуть.</param>
+        /// <returns>Запрошенный тип или null, если такой тип не загружен в домен.</returns>
+        public static Type GetType(string name)
+        {
+            var selection = types.StartedWith(name);
+            if (selection.MoveNext())
+                return selection.Current.Value;
+            return null;
+        }
     }
 }
