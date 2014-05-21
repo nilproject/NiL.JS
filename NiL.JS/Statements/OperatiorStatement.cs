@@ -983,6 +983,8 @@ namespace NiL.JS.Statements
                                     break;
                                 else if (code[i] == ',')
                                     do i++; while (char.IsWhiteSpace(code[i]));
+                                if (i + 1 == code.Length)
+                                    throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Unexpected end of line")));
                                 args.Add(OperatorStatement.Parse(state, ref i, false).Statement);
                             }
 							first = new OperatorStatement()

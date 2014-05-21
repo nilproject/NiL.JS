@@ -1,7 +1,9 @@
 ﻿using NiL.JS.Core.BaseTypes;
 using System;
 using System.Collections.Generic;
+using System.Collections;
 using NiL.JS.Core;
+using System.Collections.ObjectModel;
 
 namespace NiL.JS.Statements
 {
@@ -15,13 +17,14 @@ namespace NiL.JS.Statements
             set
         }
 
-        private string[] argumentsNames;
+        private string[] parameters;
         private CodeBlock body;
         internal readonly string name;
         internal FunctionParseMode mode;
 
         public CodeBlock Body { get { return body; } }
         public string Name { get { return name; } }
+        public ReadOnlyCollection<string> Parameters { get { return new ReadOnlyCollection<string>(parameters); } }
 
         private FunctionStatement(string name)
         {
@@ -151,16 +154,16 @@ namespace NiL.JS.Statements
                     while (i < code.Length && char.IsWhiteSpace(code[i])) i++;
                     if (i < code.Length && code[i] == ';')
                         throw new JSException(TypeProxy.Proxy(new SyntaxError("Expression can not start with word \"function\"")));
-					return new ParseResult()
-					{
-						IsParsed = true,
-						Message = "",
-						Statement = new Operators.Call(new FunctionStatement(name)
-						{
-							argumentsNames = arguments.ToArray(),
-							body = body
-						}, new ImmidateValueStatement(new JSObject() { ValueType = JSObjectType.Object, oValue = args.ToArray() }))
-					};
+                    return new ParseResult()
+                    {
+                        IsParsed = true,
+                        Message = "",
+                        Statement = new Operators.Call(new FunctionStatement(name)
+                        {
+                            parameters = arguments.ToArray(),
+                            body = body
+                        }, new ImmidateValueStatement(new JSObject() { ValueType = JSObjectType.Object, oValue = args.ToArray() }))
+                    };
                 }
                 else
                     i = tindex;
@@ -168,11 +171,11 @@ namespace NiL.JS.Statements
             state.InExpression = inExp;
             index = i;
             FunctionStatement res = new FunctionStatement(name)
-                {
-                    argumentsNames = arguments.ToArray(),
-                    body = body,
-                    mode = mode
-                };
+            {
+                parameters = arguments.ToArray(),
+                body = body,
+                mode = mode
+            };
             return new ParseResult()
             {
                 IsParsed = true,
@@ -183,19 +186,19 @@ namespace NiL.JS.Statements
 
         internal override JSObject Invoke(Context context)
         {
-            Function res = new Function(context, body, argumentsNames, name);
+            Function res = new Function(context, body, parameters, name);
             return res;
         }
 
-		/// <summary>
-		/// Создаёт функцию, описанную выбранным выражением в контексте указанного сценария.
-		/// </summary>
+        /// <summary>
+        /// Создаёт функцию, описанную выбранным выражением в контексте указанного сценария.
+        /// </summary>
         /// <param name="script">Сценарий, контекст которого будет родительским для контекста выполнения функции.</param>
         /// <returns></returns>
-		public Function MakeFunction(Script script)
-		{
-			return new Function(script.Context, body, argumentsNames, name);
-		}
+        public Function MakeFunction(Script script)
+        {
+            return new Function(script.Context, body, parameters, name);
+        }
 
         internal override bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> varibles)
         {
@@ -208,9 +211,9 @@ namespace NiL.JS.Statements
         public override string ToString()
         {
             var res = mode + " " + name + "(";
-            if (argumentsNames != null)
-                for (int i = 0; i < argumentsNames.Length; )
-                    res += argumentsNames[i] + (++i < argumentsNames.Length ? "," : "");
+            if (parameters != null)
+                for (int i = 0; i < parameters.Length; )
+                    res += parameters[i] + (++i < parameters.Length ? "," : "");
             res += ")" + ((object)body ?? "{ [native code] }").ToString();
             return res;
         }
