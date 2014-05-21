@@ -955,6 +955,7 @@ namespace NiL.JS.Statements
                         {
                             List<Statement> args = new List<Statement>();
                             i++;
+                            int startPos = i;
                             for (; ; )
                             {
                                 while (char.IsWhiteSpace(code[i])) i++;
@@ -963,6 +964,8 @@ namespace NiL.JS.Statements
                                 else if (code[i] == ',')
                                     do i++; while (char.IsWhiteSpace(code[i]));
                                 args.Add(Parser.Parse(state, ref i, 1));
+                                if (args[args.Count - 1] == null)
+                                    throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \"]\" at " + Tools.PositionToTextcord(code, startPos))));
                                 if ((args[args.Count - 1] is OperatorStatement) && (args[args.Count - 1] as OperatorStatement)._type == OperationType.None)
                                     args[args.Count - 1] = (args[args.Count - 1] as OperatorStatement).first;
                             }
@@ -976,6 +979,7 @@ namespace NiL.JS.Statements
                         {
                             List<Statement> args = new List<Statement>();
                             i++;
+                            int startPos = i;
                             for (; ; )
                             {
                                 while (char.IsWhiteSpace(code[i])) i++;
@@ -987,7 +991,7 @@ namespace NiL.JS.Statements
                                     throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Unexpected end of line")));
                                 args.Add(OperatorStatement.Parse(state, ref i, false).Statement);
                                 if (args[args.Count - 1] == null)
-                                    throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid field access at " + Tools.PositionToTextcord(code, i))));
+                                    throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \")\" at " + Tools.PositionToTextcord(code, startPos))));
                             }
 							first = new OperatorStatement()
 							{

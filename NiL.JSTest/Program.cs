@@ -208,7 +208,7 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * i + 3 - 2 / 2; }
         private static void testEx()
         {
             var s = new Script(@"
-console.log(1+2);
+console.log[
 ");
             try
             {
