@@ -72,7 +72,7 @@ namespace NiL.JS
         /// Перечисляет типы, полные имена которых начинаются с указанного префикса.
         /// </summary>
         /// <param name="name">Префикс имен типов.</param>
-        public static IEnumerator<Type> GetTypesByPrefix(string prefix)
+        public static IEnumerable<Type> GetTypesByPrefix(string prefix)
         {
             foreach (KeyValuePair<string, Type> type in types.StartedWith(prefix))
                 yield return type.Value;
