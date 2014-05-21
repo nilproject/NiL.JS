@@ -45,7 +45,7 @@ namespace NiL.JS
         public override JS.Core.JSObject GetField(string name, bool fast, bool own)
         {
             string reqname = Namespace + "." + name;
-            var selection = types.StartedWith(reqname);
+            var selection = types.StartedWith(reqname).GetEnumerator();
             if (selection.MoveNext())
             {
                 if (selection.Current.Key == reqname)
@@ -62,10 +62,20 @@ namespace NiL.JS
         /// <returns>Запрошенный тип или null, если такой тип не загружен в домен.</returns>
         public static Type GetType(string name)
         {
-            var selection = types.StartedWith(name);
+            var selection = types.StartedWith(name).GetEnumerator();
             if (selection.MoveNext())
                 return selection.Current.Value;
             return null;
+        }
+
+        /// <summary>
+        /// Перечисляет типы, полные имена которых начинаются с указанного префикса.
+        /// </summary>
+        /// <param name="name">Префикс имен типов.</param>
+        public static IEnumerator<Type> GetTypesByPrefix(string prefix)
+        {
+            foreach (KeyValuePair<string, Type> type in types.StartedWith(prefix))
+                yield return type.Value;
         }
     }
 }

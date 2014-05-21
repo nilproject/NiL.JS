@@ -726,22 +726,22 @@ namespace NiL.JS
             return (this as IEnumerable<KeyValuePair<string, T>>).GetEnumerator();
         }
 
-        public IEnumerator<KeyValuePair<string, T>> StartedWith(string prefix)
+        public IEnumerable<KeyValuePair<string, T>> StartedWith(string prefix)
         {
             return StartedWith(prefix, false, 0, int.MaxValue);
         }
 
-        public IEnumerator<KeyValuePair<string, T>> StartedWith(string prefix, bool reversed)
+        public IEnumerable<KeyValuePair<string, T>> StartedWith(string prefix, bool reversed)
         {
             return StartedWith(prefix, reversed, 0, int.MaxValue);
         }
 
-        public IEnumerator<KeyValuePair<string, T>> StartedWith(string prefix, bool reversed, long offset)
+        public IEnumerable<KeyValuePair<string, T>> StartedWith(string prefix, bool reversed, long offset)
         {
             return StartedWith(prefix, reversed, offset, int.MaxValue);
         }
 
-        public IEnumerator<KeyValuePair<string, T>> StartedWith(string prefix, bool reversed, long offset, long count)
+        public IEnumerable<KeyValuePair<string, T>> StartedWith(string prefix, bool reversed, long offset, long count)
         {
             var sstate = state;
             var c = root;
