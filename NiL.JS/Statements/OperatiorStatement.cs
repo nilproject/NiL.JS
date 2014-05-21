@@ -987,7 +987,7 @@ namespace NiL.JS.Statements
                                     throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Unexpected end of line")));
                                 args.Add(OperatorStatement.Parse(state, ref i, false).Statement);
                                 if (args[args.Count - 1] == null)
-                                    throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid function call at " + Tools.PositionToTextcord(code, i))));
+                                    throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid field access at " + Tools.PositionToTextcord(code, i))));
                             }
 							first = new OperatorStatement()
 							{
