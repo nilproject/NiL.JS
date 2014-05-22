@@ -2,6 +2,7 @@
 using System.Reflection;
 using NiL.JS.Core.BaseTypes;
 using System.Reflection.Emit;
+using System.Runtime.InteropServices;
 
 namespace NiL.JS.Core
 {
@@ -16,9 +17,12 @@ namespace NiL.JS.Core
         private Func<JSObject[], object> @delegate = null;
         private Modules.ConvertValueAttribute converter;
         private Modules.ConvertValueAttribute[] paramsConverters;
+        private ParameterInfo[] parameters;
 
         [Modules.Hidden]
         public MethodBase Method { get { return info; } }
+        [Modules.Hidden]
+        public ParameterInfo[] Parameters { get { return parameters; } }
 
         public MethodProxy(MethodBase methodinfo, Modules.ConvertValueAttribute converter, Modules.ConvertValueAttribute[] paramsConverters)
             : this(methodinfo)
@@ -30,11 +34,12 @@ namespace NiL.JS.Core
         public MethodProxy(MethodBase methodinfo)
         {
             info = methodinfo;
+            parameters = info.GetParameters();
             if (info is MethodInfo)
             {
                 var mi = info as MethodInfo;
                 converter = mi.ReturnParameter.GetCustomAttribute(typeof(Modules.ConvertValueAttribute), false) as Modules.ConvertValueAttribute;
-                var prmtrs = mi.GetParameters();
+                var prmtrs = parameters;
                 for (int i = 0; i < prmtrs.Length; i++)
                 {
                     var t = prmtrs[i].GetCustomAttribute(typeof(Modules.ConvertValueAttribute)) as Modules.ConvertValueAttribute;
@@ -79,9 +84,9 @@ namespace NiL.JS.Core
             return res;
         }
 
-        private object[] convertArgs(JSObject source, ParameterInfo[] targetTypes)
+        internal object[] ConvertArgs(JSObject source)
         {
-            if (targetTypes.Length == 0)
+            if (parameters.Length == 0)
                 return null;
             object[] res;
             int len = 0;
@@ -90,11 +95,11 @@ namespace NiL.JS.Core
                 var length = source.GetField("length", true, false);
                 len = length.ValueType == JSObjectType.Property ? (length.oValue as Function[])[1].Invoke(source, null).iValue : length.iValue;
             }
-            if (targetTypes.Length == 1)
+            if (parameters.Length == 1)
             {
-                if (targetTypes[0].ParameterType == typeof(JSObject))
+                if (parameters[0].ParameterType == typeof(JSObject))
                     return new object[] { source };
-                if (targetTypes[0].ParameterType == typeof(JSObject[]))
+                if (parameters[0].ParameterType == typeof(JSObject[]))
                 {
                     res = new JSObject[len];
                     for (int i = 0; i < len; i++)
@@ -102,40 +107,42 @@ namespace NiL.JS.Core
                     return new object[] { res };
                 }
             }
-            int targetCount = targetTypes.Length;
+            int targetCount = parameters.Length;
             targetCount = System.Math.Min(targetCount, len);
             res = targetCount != 0 ? new object[targetCount] : null;
             for (int i = 0; i < targetCount; i++)
             {
                 var obj = source.GetField(i < 10 ? Tools.NumString[i] : i.ToString(), true, true);
-                if (source == null || obj == null)
-                    continue;
-                res[i] = embeddedTypeConvert(obj, targetTypes[i].ParameterType);
-                if (res[i] != null)
-                    continue;
-                if (targetTypes[i].ParameterType == typeof(JSObject))
-                    res[i] = obj;
-                else
+                if (obj != null)
                 {
-                    var v = obj.ValueType == JSObjectType.Object && obj.oValue != null && obj.oValue.GetType() == typeof(object) ? obj : obj.Value;
-                    if (v is Core.BaseTypes.Array)
-                        res[i] = convertArray(v as Core.BaseTypes.Array);
-                    else if (v is TypeProxy)
+                    res[i] = embeddedTypeConvert(obj, parameters[i].ParameterType);
+                    if (res[i] == null)
                     {
-                        var tp = v as TypeProxy;
-                        res[i] = (tp.bindFlags & BindingFlags.Static) != 0 ? tp.hostedType : tp.prototypeInstance;
+                        if (parameters[i].ParameterType == typeof(JSObject))
+                            res[i] = obj;
+                        else
+                        {
+                            var v = obj.ValueType == JSObjectType.Object && obj.oValue != null && obj.oValue.GetType() == typeof(object) ? obj : obj.Value;
+                            if (v is Core.BaseTypes.Array)
+                                res[i] = convertArray(v as Core.BaseTypes.Array);
+                            else if (v is TypeProxy)
+                            {
+                                var tp = v as TypeProxy;
+                                res[i] = (tp.bindFlags & BindingFlags.Static) != 0 ? tp.hostedType : tp.prototypeInstance;
+                            }
+                            else if (v is TypeProxyConstructor)
+                                res[i] = (v as TypeProxyConstructor).proxy.hostedType;
+                            else if (v is Function && parameters[i].ParameterType.IsSubclassOf(typeof(Delegate)))
+                            {
+                                res[i] = (v as Function).MakeDelegate(parameters[i].ParameterType);
+                            }
+                            else
+                                res[i] = v;
+                        }
+                        if (paramsConverters != null && paramsConverters[i] != null)
+                            res[i] = paramsConverters[i].To(res[i]);
                     }
-                    else if (v is TypeProxyConstructor)
-                        res[i] = (v as TypeProxyConstructor).proxy.hostedType;
-                    else if (v is Function && targetTypes[i].ParameterType.IsSubclassOf(typeof(Delegate)))
-                    {
-                        res[i] = (v as Function).MakeDelegate(targetTypes[i].ParameterType);
-                    }
-                    else
-                        res[i] = v;
                 }
-                if (paramsConverters != null && paramsConverters[i] != null)
-                    res[i] = paramsConverters[i].To(res[i]);
             }
             return res;
         }
@@ -187,21 +194,17 @@ namespace NiL.JS.Core
         {
             if (info.IsStatic)
                 return null;
-            object obj = _this;
-            if (obj == null)
+            if (_this == null)
                 return JSObject.undefined;
-            if (obj is EmbeddedType)
-                return obj;
-            var objasjso = obj as JSObject;
-            if (obj is JSObject && objasjso.ValueType >= JSObjectType.Object && objasjso.oValue is JSObject)
-            {
-                obj = objasjso.oValue ?? obj;
-                objasjso = obj as JSObject;
-            }
-            obj = embeddedTypeConvert(objasjso, targetType) ?? objasjso.oValue;
-            if (obj is TypeProxy)
-                return (obj as TypeProxy).prototypeInstance;
-            return obj;
+            if (_this is EmbeddedType)
+                return _this;
+            object res = null;
+            if (_this.ValueType >= JSObjectType.Object && _this.oValue is JSObject)
+                _this = _this.oValue as JSObject;
+            res = embeddedTypeConvert(_this, targetType) ?? _this.oValue;
+            if (res is TypeProxy)
+                res = (res as TypeProxy).prototypeInstance;
+            return res;
         }
 
         [Modules.DoNotDelete]
@@ -215,7 +218,7 @@ namespace NiL.JS.Core
                 if (pc.Length != 0)
                     _length.iValue = (pc[0] as Modules.ParametersCountAttribute).Count;
                 else
-                    _length.iValue = info.GetParameters().Length;
+                    _length.iValue = parameters.Length;
                 return _length;
             }
         }
@@ -237,13 +240,13 @@ namespace NiL.JS.Core
                         var minfo = info as MethodInfo;
                         if (minfo.ReturnType.IsValueType)
                             throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError("Invalid return type of method " + minfo)));
-                        var prms = minfo.GetParameters();
+                        var prms = parameters;
                         if (prms.Length > 16)
                             throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError("Invalid parameters count of method " + minfo)));
                         for (int i = 0; i < prms.Length; i++)
                             if (prms[i].ParameterType.IsValueType)
                                 throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError("Invalid parameter (" + prms[i].Name + ") type of method " + minfo)));
-                        var cargs = convertArgs(args, prms);
+                        var cargs = ConvertArgs(args);
                         Delegate del = null;
                         switch (prms.Length)
                         {
@@ -273,7 +276,7 @@ namespace NiL.JS.Core
                             target,
                             BindingFlags.ExactBinding | BindingFlags.FlattenHierarchy,
                             null,
-                            convertArgs(args, info.GetParameters()),
+                            ConvertArgs(args),
                             System.Globalization.CultureInfo.InvariantCulture);
                     }
                 }
@@ -337,7 +340,7 @@ namespace NiL.JS.Core
         public override string ToString()
         {
             var res = "function " + info.Name + "(";
-            var prms = info.GetParameters();
+            var prms = parameters;
             for (int i = 0; i < prms.Length; i++)
             {
                 if (i > 0)

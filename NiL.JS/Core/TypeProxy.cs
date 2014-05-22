@@ -3,6 +3,7 @@ using NiL.JS.Core.Modules;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Runtime.InteropServices;
 
 namespace NiL.JS.Core
 {
@@ -14,8 +15,28 @@ namespace NiL.JS.Core
 
         internal Type hostedType;
         [NonSerialized]
-        internal Dictionary<string, List<MemberInfo>> members;
-        internal object prototypeInstance;
+        internal Dictionary<string, IList<MemberInfo>> members;
+        private object _prototypeInstance;
+        internal object prototypeInstance
+        {
+            get
+            {
+                if (_prototypeInstance == null)
+                {
+                    try
+                    {
+                        var ictor = hostedType.GetConstructor(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy, null, System.Type.EmptyTypes, null);
+                        if (ictor != null)
+                            _prototypeInstance = ictor.Invoke(null);
+                    }
+                    catch (COMException)
+                    {
+
+                    }
+                }
+                return _prototypeInstance;
+            }
+        }
         internal BindingFlags bindFlags = BindingFlags.Public;
 
         /// <summary>
@@ -112,15 +133,17 @@ namespace NiL.JS.Core
                 throw new InvalidOperationException("Type \"" + type + "\" already proxied.");
             else
             {
+                if (!type.IsVisible)
+                    bindFlags |= BindingFlags.NonPublic;
                 hostedType = type;
                 prototypes[type] = this;
                 if (type.IsValueType)
-                    prototypeInstance = Activator.CreateInstance(type);
+                    _prototypeInstance = Activator.CreateInstance(type);
                 else
                 {
                     if (hostedType == typeof(JSObject))
                     {
-                        prototypeInstance = new JSObject()
+                        _prototypeInstance = new JSObject()
                         {
                             ValueType = JSObjectType.Object,
                             oValue = this // Не убирать!
@@ -128,22 +151,15 @@ namespace NiL.JS.Core
                     }
                     else
                     {
-                        var ictor = type.GetConstructor(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy, null, System.Type.EmptyTypes, null);
-                        if (ictor != null)
+                        if (typeof(JSObject).IsAssignableFrom(hostedType))
                         {
-                            try
+                            var ictor = type.GetConstructor(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy, null, System.Type.EmptyTypes, null);
+                            if (ictor != null)
                             {
-                                prototypeInstance = ictor.Invoke(null);
-                                if (prototypeInstance is JSObject)
-                                {
-                                    (prototypeInstance as JSObject).fields = this.fields;
-                                    if ((prototypeInstance as JSObject).ValueType < JSObjectType.Object)
-                                        (prototypeInstance as JSObject).ValueType = JSObjectType.Object;
-                                }
-                            }
-                            catch (System.Runtime.InteropServices.COMException)
-                            {
-
+                                _prototypeInstance = ictor.Invoke(null);
+                                (_prototypeInstance as JSObject).fields = this.fields;
+                                if ((_prototypeInstance as JSObject).ValueType < JSObjectType.Object)
+                                    (_prototypeInstance as JSObject).ValueType = JSObjectType.Object;
                             }
                         }
                     }
@@ -188,13 +204,13 @@ namespace NiL.JS.Core
                     r.Assign(DefaultFieldGetter(name, fast, own));
                 return r;
             }
-            List<MemberInfo> m = null;
+            IList<MemberInfo> m = null;
             if (members == null)
             {
-                members = new Dictionary<string, List<MemberInfo>>();
-                var mmbrs = hostedType.GetMembers(bindFlags | (hostedType.IsVisible ? BindingFlags.Default : BindingFlags.NonPublic));
+                members = new Dictionary<string, IList<MemberInfo>>();
+                var mmbrs = hostedType.GetMembers(bindFlags);
                 string prewName = null;
-                List<MemberInfo> temp = null;
+                IList<MemberInfo> temp = null;
                 for (int i = 0; i < mmbrs.Length; i++)
                 {
                     if (mmbrs[i].GetCustomAttributes(typeof(HiddenAttribute), false).Length != 0)
@@ -203,14 +219,17 @@ namespace NiL.JS.Core
                     membername = membername.Substring(membername.LastIndexOf('.') + 1);
                     if (prewName != membername && !members.TryGetValue(membername, out temp))
                     {
-                        members[membername] = temp = new List<MemberInfo>();
+                        members[membername] = temp = new List<MemberInfo>() { mmbrs[i] };
                         prewName = membername;
                     }
-                    if (temp.Count == 1)
-                        members.Add(membername + "$0", new List<MemberInfo>() { temp[0] });
-                    temp.Add(mmbrs[i]);
-                    if (temp.Count != 1)
-                        members.Add(membername + "$" + (temp.Count - 1), new List<MemberInfo>() { mmbrs[i] });
+                    else
+                    {
+                        if (temp.Count == 1)
+                            members.Add(membername + "$0", new[] { temp[0] });
+                        temp.Add(mmbrs[i]);
+                        if (temp.Count != 1)
+                            members.Add(membername + "$" + (temp.Count - 1), new[] { mmbrs[i] });
+                    }
                 }
             }
             members.TryGetValue(name, out m);
@@ -230,16 +249,33 @@ namespace NiL.JS.Core
                 for (int i = 0; i < m.Count; i++)
                     if (!(m[i] is MethodInfo))
                         throw new JSException(Proxy(new TypeError("Incompatible fields type.")));
-                var cache = new Function[m.Count];
+                var cache = new MethodProxy[m.Count];
+                for (int i = 0; i < m.Count; i++)
+                    cache[i] = new MethodProxy(m[i] as MethodInfo);
                 r = new ExternalFunction((context, args) =>
                 {
                     context.ValidateThreadID();
                     int l = args.GetField("length", true, false).iValue;
                     for (int i = 0; i < m.Count; i++)
                     {
-                        var mi = m[i] as MethodInfo;
-                        if (mi.GetParameters().Length == l)
-                            return (cache[i] ?? (cache[i] = new MethodProxy(mi))).Invoke(context, args);
+                        if (cache[i].Parameters.Length == l)
+                        {
+                            if (l != 0)
+                            {
+                                var cargs = cache[i].ConvertArgs(args);
+                                for (var j = cargs.Length; j-- > 0; )
+                                {
+                                    if (!cache[i].Parameters[j].ParameterType.IsAssignableFrom(cargs[j] != null ? cargs[j].GetType() : typeof(object)))
+                                    {
+                                        j = 0;
+                                        cargs = null;
+                                    }
+                                }
+                                if (cargs == null)
+                                    continue;
+                            }
+                            return cache[i].Invoke(context, args);
+                        }
                     }
                     return null;
                 });
