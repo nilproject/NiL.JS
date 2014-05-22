@@ -1060,14 +1060,14 @@ namespace NiL.JS.Statements
                 else
                     res = new OperatorStatement() { first = first, second = second, _type = type };
             }
-            index = i;
             if (root)
                 res = deicstra(res) as OperatorStatement;
+            res.Position = index;
+            index = i;
             state.InExpression = !root;
             return new ParseResult()
             {
                 Statement = res,
-                Message = "",
                 IsParsed = true
             };
         }
@@ -1081,6 +1081,7 @@ namespace NiL.JS.Statements
         {
             Type = Type;
             _this = fastImpl;
+            fastImpl.Position = Position;
             return true;
         }
     }

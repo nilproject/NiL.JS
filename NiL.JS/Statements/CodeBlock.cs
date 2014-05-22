@@ -19,7 +19,6 @@ namespace NiL.JS.Statements
         public string[] Varibles { get { return varibles; } }
         public Statement[] Body { get { return body; } }
         public bool Strict { get { return strict; } }
-        public int CodeOffset { get; private set; }
         public string Code
         {
             get
@@ -28,7 +27,7 @@ namespace NiL.JS.Statements
                 {
                     try
                     {
-                        return code = code.Substring(CodeOffset, codeLength);
+                        return code = code.Substring(Position, codeLength);
                     }
                     finally
                     {
@@ -102,11 +101,10 @@ namespace NiL.JS.Statements
             return new ParseResult()
             {
                 IsParsed = true,
-                Message = "",
                 Statement = new CodeBlock(body.ToArray(), strictSwitch && state.strict.Pop())
                 {
                     functions = funcs.ToArray(),
-                    CodeOffset = startPos,
+                    Position = startPos,
                     code = state.SourceCode,
                     codeLength = i - startPos - 2
                 }

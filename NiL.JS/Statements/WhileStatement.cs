@@ -37,17 +37,18 @@ namespace NiL.JS.Statements
                 throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
             state.AllowBreak--;
             state.AllowContinue--;
+            var pos = index;
             index = i;
             return new ParseResult()
             {
                 IsParsed = true,
-                Message = "",
                 Statement = new WhileStatement()
                 {
 
                     body = body,
                     condition = condition,
-                    labels = state.Labels.GetRange(state.Labels.Count - labelsCount, labelsCount)
+                    labels = state.Labels.GetRange(state.Labels.Count - labelsCount, labelsCount),
+                    Position = pos
                 }
             };
         }

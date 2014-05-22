@@ -22,6 +22,7 @@ namespace NiL.JS.Statements
             var flds = new List<string>();
             var vls = new List<Statement>();
             int i = index;
+            int pos = 0;
             while (code[i] != '}')
             {
                 do i++; while (char.IsWhiteSpace(code[i]));
@@ -30,7 +31,7 @@ namespace NiL.JS.Statements
                     break;
                 if (Parser.Validate(code, "set", i) && (Tools.isLineTerminator(code[i + 3]) || char.IsWhiteSpace(code[i + 3])))
                 {
-                    int pos = i;
+                    pos = i;
                     var setter = FunctionStatement.Parse(state, ref i, FunctionStatement.FunctionParseMode.set).Statement as FunctionStatement;
                     if (flds.IndexOf(setter.name) == -1)
                     {
@@ -51,7 +52,7 @@ namespace NiL.JS.Statements
                 }
                 else if (Parser.Validate(code, "get", i) && (Tools.isLineTerminator(code[i + 3]) || char.IsWhiteSpace(code[i + 3])))
                 {
-                    int pos = i;
+                    pos = i;
                     var getter = FunctionStatement.Parse(state, ref i, FunctionStatement.FunctionParseMode.get).Statement as FunctionStatement;
                     if (flds.IndexOf(getter.name) == -1)
                     {
@@ -104,15 +105,16 @@ namespace NiL.JS.Statements
                     return new ParseResult();
             }
             i++;
+            pos = index;
             index = i;
             return new ParseResult()
             {
                 IsParsed = true,
-                Message = "",
                 Statement = new Json()
                 {
                     fields = flds.ToArray(),
-                    values = vls.ToArray()
+                    values = vls.ToArray(),
+                    Position = pos
                 }
             };
         }

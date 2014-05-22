@@ -5,6 +5,8 @@ namespace NiL.JS.Core
     [Serializable]
     public abstract class Statement
     {
+        public virtual int Position { get; internal set; }
+
         internal virtual JSObject InvokeForAssing(Context context)
         {
             return Invoke(context);

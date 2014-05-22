@@ -57,17 +57,18 @@ namespace NiL.JS.Statements
             }
             if (cb == null && f == null)
                 throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("try block must contain 'catch' or/and 'finally' block")));
+            var pos = index;
             index = i;
             return new ParseResult()
             {
                 IsParsed = true,
-                Message = "",
                 Statement = new TryCatchStatement()
                 {
                     body = b,
                     catchBody = cb,
                     finallyBody = f,
-                    exptName = exptn
+                    exptName = exptn,
+                    Position = pos
                 }
             };
         }

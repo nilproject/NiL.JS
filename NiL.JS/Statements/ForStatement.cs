@@ -83,7 +83,6 @@ namespace NiL.JS.Statements
             return new ParseResult()
             {
                 IsParsed = true,
-                Message = "",
                 Statement = new ForStatement()
                 {
                     body = body,
@@ -215,7 +214,7 @@ namespace NiL.JS.Statements
         public override string ToString()
         {
             var istring = init.ToString();
-            return "for (" + istring.Substring(1, istring.Length - 2) + "; " + condition + "; " + post + ")" + (body is CodeBlock ? "" : Environment.NewLine + "  ") + body;
+            return "for (" + istring + "; " + condition + "; " + post + ")" + (body is CodeBlock ? "" : Environment.NewLine + "  ") + body;
         }
     }
 }

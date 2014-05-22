@@ -47,7 +47,7 @@ namespace NiL.JS.Statements
                         if (!Parser.Validate(code, "function", ref i))
                             return new ParseResult();
                         if ((code[i] != '(') && (!char.IsWhiteSpace(code[i])))
-                            return new ParseResult() { IsParsed = false, Message = "Invalid char in function definition" };
+                            return new ParseResult() { IsParsed = false };
                         break;
                     }
                 case FunctionParseMode.get:
@@ -55,7 +55,7 @@ namespace NiL.JS.Statements
                         if (!Parser.Validate(code, "get", ref i))
                             return new ParseResult();
                         if ((!char.IsWhiteSpace(code[i])))
-                            return new ParseResult() { IsParsed = false, Message = "Invalid char in function definition" };
+                            return new ParseResult() { IsParsed = false };
                         break;
                     }
                 case FunctionParseMode.set:
@@ -63,7 +63,7 @@ namespace NiL.JS.Statements
                         if (!Parser.Validate(code, "set", ref i))
                             return new ParseResult();
                         if ((!char.IsWhiteSpace(code[i])))
-                            return new ParseResult() { IsParsed = false, Message = "Invalid char in function definition" };
+                            return new ParseResult() { IsParsed = false };
                         break;
                     }
             }
@@ -157,7 +157,6 @@ namespace NiL.JS.Statements
                     return new ParseResult()
                     {
                         IsParsed = true,
-                        Message = "",
                         Statement = new Operators.Call(new FunctionStatement(name)
                         {
                             parameters = arguments.ToArray(),
@@ -169,17 +168,17 @@ namespace NiL.JS.Statements
                     i = tindex;
             }
             state.InExpression = inExp;
-            index = i;
             FunctionStatement res = new FunctionStatement(name)
             {
                 parameters = arguments.ToArray(),
                 body = body,
-                mode = mode
+                mode = mode,
+                Position = index
             };
+            index = i;
             return new ParseResult()
             {
                 IsParsed = true,
-                Message = "",
                 Statement = res
             };
         }

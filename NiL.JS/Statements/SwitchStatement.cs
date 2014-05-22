@@ -96,16 +96,17 @@ namespace NiL.JS.Statements
             }
             state.AllowBreak--;
             i++;
+            var pos = index;
             index = i;
             return new ParseResult()
             {
                 IsParsed = true,
-                Message = "",
                 Statement = new SwitchStatement(body.ToArray())
                 {
                     functions = funcs.ToArray(),
                     cases = cases.ToArray(),
-                    image = image
+                    image = image,
+                    Position = pos
                 }
             };
         }

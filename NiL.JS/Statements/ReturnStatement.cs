@@ -25,14 +25,15 @@ namespace NiL.JS.Statements
             if (state.AllowReturn == 0)
                 throw new JSException(TypeProxy.Proxy(new SyntaxError("Invalid use of return statement.")));
             var body = Parser.Parse(state, ref i, 1, true);
+            var pos = index;
             index = i;
             return new ParseResult()
             {
                 IsParsed = true,
-                Message = "",
                 Statement = new ReturnStatement()
                 {
                     body = body,
+                    Position = pos
                 }
             };
         }

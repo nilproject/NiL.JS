@@ -19,14 +19,15 @@ namespace NiL.JS.Statements
             var b = Parser.Parse(state, ref i, 1, true);
             if (b is EmptyStatement)
                 throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Can't throw result of EmptyStatement " + Tools.PositionToTextcord(code, i - 1))));
+            var pos = index;
             index = i;
             return new ParseResult()
             {
                 IsParsed = true,
-                Message = "",
                 Statement = new ThrowStatement()
                 {
-                    body = b
+                    body = b,
+                    Position = pos
                 }
             };
         }

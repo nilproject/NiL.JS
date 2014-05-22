@@ -30,6 +30,7 @@ namespace NiL.JS.Statements
             state.AllowBreak--;
             state.Labels.Remove(label);
             state.LabelCount = oldlc;
+            var pos = index;
             index = i;
             return new ParseResult()
             {
@@ -37,7 +38,8 @@ namespace NiL.JS.Statements
                 Statement = new LabeledStatement()
                 {
                     statement = stat,
-                    label = label
+                    label = label,
+                    Position = pos
                 }
             };
         }

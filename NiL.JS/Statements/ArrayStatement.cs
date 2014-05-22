@@ -41,14 +41,15 @@ namespace NiL.JS.Statements
                     throw new ArgumentException();
             }
             i++;
+            var pos = index;
             index = i;
             return new ParseResult()
             {
                 IsParsed = true,
-                Message = "",
                 Statement = new ArrayStatement()
                 {
-                    elements = elms.ToArray()
+                    elements = elms.ToArray(),
+                    Position = pos
                 }
             };
         }

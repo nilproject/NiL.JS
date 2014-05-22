@@ -29,15 +29,16 @@ namespace NiL.JS.Statements
                 throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.SyntaxError("Invalid syntax WithStatement.")));
             do i++; while (char.IsWhiteSpace(code[i]));
             var body = Parser.Parse(state, ref i, 0);
+            var pos = index;
             index = i;
             return new ParseResult()
             {
                 IsParsed = true,
-                Message = "",
                 Statement = new WithStatement()
                 {
                     obj = obj,
-                    body = body
+                    body = body,
+                    Position = pos
                 }
             };
         }

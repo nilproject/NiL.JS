@@ -52,16 +52,17 @@ namespace NiL.JS.Statements
             if (code[i] != ')')
                 throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \")\" at + " + Tools.PositionToTextcord(code, i))));
             i++;
+            var pos = index;
             index = i;
             return new ParseResult()
             {
                 IsParsed = true,
-                Message = "",
                 Statement = new DoWhileStatement()
                 {
                     body = body,
                     condition = condition,
-                    labels = state.Labels.GetRange(state.Labels.Count - labelsCount, labelsCount)
+                    labels = state.Labels.GetRange(state.Labels.Count - labelsCount, labelsCount),
+                    Position = pos
                 }
             };
         }

@@ -6,7 +6,6 @@ namespace NiL.JS.Statements
     [Serializable]
     public sealed class DebuggerOperator : Statement
     {
-        private int position;
         private Tools.TextCord textCord;
 
         internal static ParseResult Parse(ParsingState state, ref int index)
@@ -21,13 +20,13 @@ namespace NiL.JS.Statements
             return new ParseResult()
             {
                 IsParsed = true,
-                Statement = new DebuggerOperator() { position = pos, textCord = tc }
+                Statement = new DebuggerOperator() { Position = pos, textCord = tc }
             };
         }
 
         internal override JSObject Invoke(Context context)
         {
-            context.raiseDebugger(position, textCord);
+            context.raiseDebugger(Position, textCord);
             return JSObject.undefined;
         }
 

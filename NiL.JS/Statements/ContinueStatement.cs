@@ -27,14 +27,15 @@ namespace NiL.JS.Statements
                 if (!state.Labels.Contains(label.oValue as string))
                     throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.SyntaxError("Try to continue to undefined label.")));
             }
+            int pos = index;
             index = i;
             return new ParseResult()
             {
                 IsParsed = true,
-                Message = "",
                 Statement = new ContinueStatement()
                 {
-                    label = label
+                    label = label,
+                    Position = pos
                 }
             };
         }

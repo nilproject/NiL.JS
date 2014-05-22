@@ -64,12 +64,12 @@ namespace NiL.JS.Statements
             if (!isDef)
                 throw new ArgumentException("code (" + i + ")");
             var inits = initializator.ToArray();
+            var pos = index;
             index = i;
             return new ParseResult()
             {
                 IsParsed = true,
-                Message = "",
-                Statement = new VaribleDefineStatement(names.ToArray(), inits)
+                Statement = new VaribleDefineStatement(names.ToArray(), inits) { Position = pos }
             };
         }
 
