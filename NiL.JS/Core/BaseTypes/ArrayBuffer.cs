@@ -44,19 +44,32 @@ namespace NiL.JS.Core.BaseTypes
             }
         }
 
+        [Modules.Hidden]
         public ArrayBuffer slice(int begin, int end)
         {
             if (end < begin || begin >= Data.Length || end >= Data.Length)
                 throw new JSException(TypeProxy.Proxy(new RangeError("Invalid begin or end index")));
-            var res = new ArrayBuffer(end - begin);
+            var res = new ArrayBuffer(end - begin + 1);
             for (int i = 0, j = begin; j <= end; j++, i++)
                 res.Data[i] = Data[j];
             return res;
         }
 
+        [Modules.Hidden]
         public ArrayBuffer slice(int begin)
         {
             return slice(begin, Data.Length - 1);
+        }
+
+        public ArrayBuffer slice(JSObject args)
+        {
+            var l = Tools.JSObjectToInt(args.GetField("length", true, false));
+            if (l == 0)
+                return this;
+            if (l == 1)
+                return slice(Tools.JSObjectToInt(args.GetField("0", true, false)), Data.Length - 1);
+            else
+                return slice(Tools.JSObjectToInt(args.GetField("0", true, false)), Tools.JSObjectToInt(args.GetField("1", true, false)));
         }
 
         [Modules.Hidden]
