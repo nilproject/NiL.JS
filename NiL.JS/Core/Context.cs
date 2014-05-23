@@ -2,6 +2,7 @@
 using NiL.JS.Statements;
 using System.Collections.Generic;
 using System;
+using System.Collections;
 
 namespace NiL.JS.Core
 {
@@ -19,7 +20,7 @@ namespace NiL.JS.Core
     /// Контекст выполнения скрипта. Хранит значения переменных, созданных во время выполнения либо из пользовательского кода.
     /// </summary>
     [Serializable]
-    public class Context
+    public class Context : IEnumerable<string>
     {
         private static Dictionary<int, WeakReference> _executedContexts = new Dictionary<int, WeakReference>();
         internal static Context currentRootContext
@@ -381,6 +382,16 @@ namespace NiL.JS.Core
                 _executedContexts[threadid = System.Threading.Thread.CurrentThread.ManagedThreadId] = new WeakReference(this);
                 GC.ReRegisterForFinalize(this);
             }
+        }
+
+        public virtual IEnumerator<string> GetEnumerator()
+        {
+            return fields.Keys.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return ((IEnumerable<string>)this).GetEnumerator();
         }
 
         internal Context(Context prototype)
