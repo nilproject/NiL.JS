@@ -133,9 +133,9 @@ namespace NiL.JS.Core
                             else if (v is TypeProxyConstructor)
                                 res[i] = (v as TypeProxyConstructor).proxy.hostedType;
                             else if (v is Function && parameters[i].ParameterType.IsSubclassOf(typeof(Delegate)))
-                            {
                                 res[i] = (v as Function).MakeDelegate(parameters[i].ParameterType);
-                            }
+                            else if (v is ArrayBuffer && typeof(byte[]).IsAssignableFrom(parameters[i].ParameterType))
+                                res[i] = (v as ArrayBuffer).Data;
                             else
                                 res[i] = v;
                         }
