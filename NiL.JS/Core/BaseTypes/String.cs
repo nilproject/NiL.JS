@@ -5,7 +5,7 @@ namespace NiL.JS.Core.BaseTypes
 {
     [Serializable]
     [Immutable]
-    internal class String : EmbeddedType
+    public class String : EmbeddedType
     {
         public static JSObject fromCharCode(JSObject[] code)
         {

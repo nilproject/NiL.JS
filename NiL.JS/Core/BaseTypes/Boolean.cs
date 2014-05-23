@@ -7,7 +7,7 @@ namespace NiL.JS.Core.BaseTypes
 {
     [Serializable]
     [Modules.Immutable]
-    internal class Boolean : EmbeddedType
+    public class Boolean : EmbeddedType
     {
         [Modules.Protected]
         public static Boolean True = true;

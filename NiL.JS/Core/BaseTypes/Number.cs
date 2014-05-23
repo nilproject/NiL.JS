@@ -5,7 +5,7 @@ namespace NiL.JS.Core.BaseTypes
 {
     [Serializable]
     [Immutable]
-    internal class Number : EmbeddedType
+    public class Number : EmbeddedType
     {
         [Modules.Protected]
         public static JSObject NaN = double.NaN;
