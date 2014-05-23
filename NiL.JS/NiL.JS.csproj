@@ -138,6 +138,7 @@
     <Compile Include="Core\Arguments.cs" />
     <Compile Include="Core\Backward.cs" />
     <Compile Include="Core\BaseTypes\Array.cs" />
+    <Compile Include="Core\BaseTypes\ArrayBuffer.cs" />
     <Compile Include="Core\BaseTypes\Boolean.cs" />
     <Compile Include="Core\BinaryTree.cs" />
     <Compile Include="Core\EmbeddedType.cs" />

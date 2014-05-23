@@ -41,6 +41,40 @@ namespace NiL.JS.Core.BaseTypes
             }
         }
 
+        private class Element : JSObject
+        {
+            private Array owner;
+            [NonSerialized]
+            private int index;
+
+            public Element(Array owner, int index)
+            {
+                this.owner = owner;
+                this.index = index;
+                if (owner.data.Count <= index)
+                {
+                    var pv = (owner.prototype ?? owner.GetField("__proto__", true, false)).GetField(index.ToString(), true, false);
+                    if (pv != undefined)
+                        base.Assign(pv);
+                    else
+                        this.ValueType = JSObjectType.NotExistInObject;
+                }
+                else
+                    base.Assign(owner[index]);
+            }
+
+            public override void Assign(JSObject value)
+            {
+                if (owner.data.Count < index + 1)
+                {
+                    while (owner.data.Count < index)
+                        owner.Add(new JSObject { ValueType = JSObjectType.Undefined });
+                    owner.data.Add(this);
+                }
+                base.Assign(value);
+            }
+        }
+
         [Hidden]
         internal List<JSObject> data;
 
@@ -96,47 +130,13 @@ namespace NiL.JS.Core.BaseTypes
             data.Add(obj);
         }
 
-        private JSObject tempElement;
-
+        [Modules.Hidden]
         public JSObject this[int index]
         {
             get
             {
                 if (data.Count <= index || data[index] == null)
-                {
-                    if (tempElement == null)
-                    {
-                        tempElement = new JSObject(false) { ValueType = JSObjectType.NotExistInObject, iValue = index };
-                        var pv = (prototype ?? GetField("__proto__", true, false)).GetField(index.ToString(), true, false);
-                        if (pv != undefined)
-                            tempElement.Assign(pv);
-                        tempElement.assignCallback = (sender) =>
-                        {
-                            if (data.Count <= tempElement.iValue)
-                            {
-                                data.Capacity = tempElement.iValue + 1;
-                                while (data.Count <= tempElement.iValue)
-                                    data.Add(null);
-                            }
-                            data[tempElement.iValue] = tempElement;
-                            tempElement.assignCallback = null;
-                            tempElement = null;
-                        };
-                    }
-                    else
-                    {
-                        tempElement.iValue = index;
-                        var pv = (prototype ?? GetField("__proto__", true, false)).GetField(index.ToString(), true, false);
-                        if (pv != undefined)
-                        {
-                            var t = tempElement.assignCallback;
-                            tempElement.assignCallback = null;
-                            tempElement.Assign(pv);
-                            tempElement.assignCallback = t;
-                        }
-                    }
-                    return tempElement;
-                }
+                    return new Element(this, index);
                 else
                     return data[index];
             }
@@ -672,10 +672,13 @@ namespace NiL.JS.Core.BaseTypes
             if (name != "NaN" && name != "Infinity" && name != "-Infinity" &&
                 Tools.ParseNumber(name, ref index, false, out dindex))
             {
-                if (dindex > 0x7fffffff || dindex < 0)
-                    throw new JSException(TypeProxy.Proxy(new RangeError("Invalid array index")));
-                if (((index = (int)dindex) == dindex))
-                    return this[index];
+                if (dindex >= 0)
+                {
+                    if (dindex > 0x7fffffff)
+                        throw new JSException(TypeProxy.Proxy(new RangeError("Invalid array index")));
+                    if (((index = (int)dindex) == dindex))
+                        return this[index];
+                }
             }
             return base.GetField(name, fast, own);
         }

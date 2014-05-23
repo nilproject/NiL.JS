@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using NiL.JS.Core.BaseTypes;
 
 namespace NiL.JS.Core
 {
@@ -27,7 +28,7 @@ namespace NiL.JS.Core
             ValueType = JSObjectType.Object;
             oValue = this;
             prototype = thisProto ?? createThisProto();
-            assignCallback = (sender) => { throw new InvalidOperationException("Invalid left-hand side in assignment"); };
+            assignCallback = (sender) => { throw new JSException(TypeProxy.Proxy(new ReferenceError("Invalid left-hand side in assignment"))); };
         }
 
         public override JSObject GetField(string name, bool fast, bool own)

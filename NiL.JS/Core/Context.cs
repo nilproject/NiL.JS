@@ -68,6 +68,7 @@ namespace NiL.JS.Core
             JSObject.GlobalPrototype.attributes |= JSObjectAttributes.ReadOnly;
             globalContext.AttachModule(typeof(BaseTypes.Date));
             globalContext.AttachModule(typeof(BaseTypes.Array));
+            globalContext.AttachModule(typeof(BaseTypes.ArrayBuffer));
             globalContext.AttachModule(typeof(BaseTypes.String));
             globalContext.AttachModule(typeof(BaseTypes.Number));
             globalContext.AttachModule(typeof(BaseTypes.Function));

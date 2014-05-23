@@ -395,7 +395,7 @@ namespace NiL.JS.Core
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
         [Modules.Hidden]
-        public void Assign(JSObject value)
+        public virtual void Assign(JSObject value)
         {
             if (this.assignCallback != null)
                 this.assignCallback(this);
