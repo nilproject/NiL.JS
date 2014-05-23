@@ -5,8 +5,10 @@ using System.Text;
 
 namespace NiL.JS.Core.BaseTypes
 {
+    [Serializable]
     public sealed class ArrayBuffer : EmbeddedType
     {
+        [Serializable]
         private sealed class Element : JSObject
         {
             private int index;

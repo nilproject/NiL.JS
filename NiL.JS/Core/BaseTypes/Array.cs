@@ -41,6 +41,7 @@ namespace NiL.JS.Core.BaseTypes
             }
         }
 
+        [Serializable]
         private class Element : JSObject
         {
             private Array owner;
