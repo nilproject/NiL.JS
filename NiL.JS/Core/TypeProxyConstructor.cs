@@ -5,6 +5,7 @@ using System.Text;
 using System.Reflection;
 using NiL.JS.Core.BaseTypes;
 using NiL.JS.Core.Modules;
+using System.Collections;
 
 namespace NiL.JS.Core
 {
@@ -12,8 +13,10 @@ namespace NiL.JS.Core
     [Modules.Prototype(typeof(Function))]
     internal class TypeProxyConstructor : Function
     {
-        private static readonly new object Object = new object();
+        private static readonly new object _object = new object();
+        private static readonly new object[] _objectA = new object[0];
         internal readonly TypeProxy proxy;
+        private MethodProxy[] constructors;
 
         private static JSObject empty(Context context, JSObject args)
         {
@@ -23,6 +26,15 @@ namespace NiL.JS.Core
         public TypeProxyConstructor(TypeProxy typeProxy)
         {
             proxy = typeProxy;
+            var ctors = typeProxy.hostedType.GetConstructors();
+            List<MethodProxy> ctorsL = new List<MethodProxy>(ctors.Length);
+            for (int i = 0; i < ctors.Length; i++)
+            {
+                if (ctors[i].GetCustomAttributes(typeof(Modules.HiddenAttribute), false).Length == 0)
+                    ctorsL.Add(new MethodProxy(ctors[i]));
+            }
+            ctorsL.Sort((x, y) => x.Parameters.Length - y.Parameters.Length);
+            constructors = ctorsL.ToArray();
         }
 
         public override JSObject GetField(string name, bool fast, bool own)
@@ -99,88 +111,47 @@ namespace NiL.JS.Core
             }
         }
 
-        private ConstructorInfo findConstructor(JSObject argObj, ref object[] args)
+        private MethodProxy findConstructor(JSObject argObj, ref object[] args)
         {
-            ConstructorInfo constructor = null;
-            var len = argObj == null ? 0 : argObj.GetField("length", false, false).iValue;
-            if (len == 0)
-                constructor = proxy.hostedType.GetConstructor(System.Type.EmptyTypes);
-            if (constructor != null && constructor.GetCustomAttributes(typeof(Modules.HiddenAttribute), false).Length == 0)
-                return constructor;
-            Type[] argtypes = new[] { typeof(JSObject) };
-            if (len == 1)
-            {
-                var val = argObj.GetField("0", true, true).Value;
-                if (val == null)
-                    argtypes[0] = typeof(object);
-                else
-                    argtypes[0] = val.GetType();
-                if (argtypes[0] != typeof(JSObject) && !argtypes[0].IsSubclassOf(typeof(JSObject)))
-                {
-                    constructor = proxy.hostedType.GetConstructor(argtypes);
-                    if (constructor != null && constructor.GetCustomAttributes(typeof(Modules.HiddenAttribute), false).Length == 0)
-                    {
-                        args = new object[] { val };
-                        return constructor;
-                    }
-                }
-                argtypes[0] = typeof(JSObject);
-            }
-            constructor = proxy.hostedType.GetConstructor(argtypes);
-            if (constructor != null && constructor.GetCustomAttributes(typeof(Modules.HiddenAttribute), false).Length == 0)
-            {
-                args = new object[] { argObj };
-                return constructor;
-            }
-            argtypes[0] = typeof(JSObject[]);
-            constructor = proxy.hostedType.GetConstructor(argtypes);
-            if (constructor != null && constructor.GetCustomAttributes(typeof(Modules.HiddenAttribute), false).Length == 0)
-            {
-                args = new JSObject[len];
-                for (int i = 0; i < len; i++)
-                    args[i] = argObj.GetField(i.ToString(), true, false);
-                args = new[] { args };
-                return constructor;
-            }
-            if (len != 1)
-                argtypes = new Type[len];
-            for (int i = 0; i < len; i++)
-            {
-                var a = argObj.GetField(i.ToString(), true, false);
-                argtypes[i] = (a.Value ?? Object).GetType();
-            }
-            constructor = proxy.hostedType.GetConstructor(argtypes);
-            if (constructor != null && constructor.GetCustomAttributes(typeof(Modules.HiddenAttribute), false).Length == 0)
-            {
-                args = new object[len];
-                for (int i = 0; i < len; i++)
-                    args[i] = argObj.GetField(i.ToString(), true, false).Value;
-                return constructor;
-            }
-            for (int i = 0; i < len; i++)
-                argtypes[i] = typeof(JSObject);
-            constructor = proxy.hostedType.GetConstructor(argtypes);
-            if (constructor != null && constructor.GetCustomAttributes(typeof(Modules.HiddenAttribute), false).Length == 0)
-            {
-                args = new object[len];
-                for (int i = 0; i < len; i++)
-                    args[i] = argObj.GetField(i.ToString(), true, false);
-                return constructor;
-            }
-            constructor = proxy.hostedType.GetConstructor(System.Type.EmptyTypes);
             args = null;
-            return constructor;
+            var len = argObj == null ? 0 : argObj.GetField("length", false, false).iValue;
+            for (int i = 0; i < constructors.Length; i++)
+            {
+                if (constructors[i].Parameters.Length == len
+                    || (constructors[i].Parameters.Length == 1
+                        && (constructors[i].Parameters[0].ParameterType == typeof(JSObject) 
+                            || typeof(ICollection).IsAssignableFrom(constructors[i].Parameters[0].ParameterType))))
+                {
+                    if (len == 0)
+                        args = _objectA;
+                    else
+                    {
+                        args = constructors[i].ConvertArgs(argObj);
+                        for (var j = args.Length; j-- > 0; )
+                        {
+                            if (!constructors[i].Parameters[j].ParameterType.IsAssignableFrom(args[j] != null ? args[j].GetType() : typeof(object)))
+                            {
+                                j = 0;
+                                args = null;
+                            }
+                        }
+                        if (args == null)
+                            continue;
+                    }
+                    return constructors[i];
+                }
+            }
+            return null;
         }
 
         public override JSObject Invoke(JSObject argsObj)
         {
             context.ValidateThreadID();
-            var thisBind = context.thisBind;
+            var _this = context.thisBind;
             object[] args = null;
-            ConstructorInfo constructor = findConstructor(argsObj, ref args);
+            MethodProxy constructor = findConstructor(argsObj, ref args);
             if (constructor == null)
                 throw new JSException(TypeProxy.Proxy(new BaseTypes.TypeError(proxy.hostedType.Name + " can't be created.")));
-            var _this = thisBind;
             bool bynew = false;
             if (_this != null)
             {
@@ -188,7 +159,7 @@ namespace NiL.JS.Core
             }
             try
             {
-                var obj = constructor.Invoke(args);
+                var obj = constructor.InvokeRaw(context, null, args);
                 JSObject res = null;
                 if (bynew)
                 {

@@ -96,7 +96,7 @@ namespace NiL.JS.Core.BaseTypes
                     throw new JSException(TypeProxy.Proxy(new RangeError("Invalid array index")));
                 if (((index = (int)dindex) == dindex))
                 {
-                    if (index < 0 || index >= Data.Length)
+                    if (index >= Data.Length)
                         return undefined;
                     return new Element(index, Data);
                 }

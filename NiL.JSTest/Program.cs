@@ -81,7 +81,7 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * i + 3 - 2 / 2; }
         private static void sputnicTests(string folderPath = "tests\\")
         {
             Action<string> _ = Console.WriteLine;
-
+            var sw = new Stopwatch();
             int passed = 0;
             int failed = 0;
             string code;
@@ -92,7 +92,7 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * i + 3 - 2 / 2; }
             _("Scaning directory...");
             var fls = Directory.EnumerateFiles(folderPath, "*.js", SearchOption.AllDirectories).ToArray();
             _("Founded " + fls.Length + " js-files");
-
+            sw.Start();
             for (int i = 0; i < fls.Length; i++)
             {
                 bool pass = true;
@@ -169,10 +169,10 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * i + 3 - 2 / 2; }
                     failed++;
                 }
             }
-
+            sw.Stop();
             _("passed: " + passed);
             _("failed: " + failed);
-
+            _("time: " + sw.Elapsed);
             _("Sputnik testing complite");
         }
 
@@ -199,7 +199,12 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * i + 3 - 2 / 2; }
                 set { }
             }
 
-            static void test(object o)
+            void test(JSObject o)
+            {
+
+            }
+
+            void test(object o)
             {
 
             }
@@ -207,21 +212,15 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * i + 3 - 2 / 2; }
 
         private static void testEx()
         {
+            var sw = new Stopwatch();
             var s = new Script(@"
-console.log[
+TestClass().test('1');
 ");
-            try
-            {
-                BinaryFormatter bf = new BinaryFormatter();
-                MemoryStream ms = new MemoryStream();
-                bf.Serialize(ms, s);
-                ms.Position = 0;
-                (bf.Deserialize(ms) as Script).Invoke();
-            }
-            catch
-            {
-
-            }
+            s.Context.AttachModule(typeof(TestClass));
+            sw.Start();
+            s.Invoke();
+            sw.Stop();
+            Console.WriteLine(sw.Elapsed);
         }
 
         static void Main(string[] args)
@@ -240,6 +239,7 @@ console.log[
             //runFile(@"Benchmarks\run.js");
             //sputnicTests();
             testEx();
+            //runFile(@"C:\Users\Дмитрий\Documents\Projects\NiL.JS\NiL.JSTest\tests\Conformance\08_Types\8.7_The_Reference_Type\S8.7_A3.js");
             //sputnicTests(@"tests\Conformance\15_Native_ECMA_Script_Objects\15.5_String_Objects");
             //sputnicTests(@"tests\Conformance\15_Native_ECMA_Script_Objects\15.2_Object_Objects");
             //sputnicTests(@"tests\Conformance\15_Native_ECMA_Script_Objects\15.4_Array_Objects");

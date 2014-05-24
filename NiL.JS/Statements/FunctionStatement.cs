@@ -199,7 +199,7 @@ namespace NiL.JS.Statements
             return new Function(script.Context, body, parameters, name);
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> varibles)
+        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, Statement> varibles)
         {
             var stat = body as Statement;
             body.Optimize(ref stat, 0, varibles);

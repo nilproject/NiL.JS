@@ -27,6 +27,13 @@ namespace NiL.JS.Core.BaseTypes
             assignCallback = JSObject.ErrorAssignCallback;
         }
 
+        public Boolean(JSObject obj)
+        {
+            ValueType = JSObjectType.Bool;
+            iValue = (bool)(obj.GetField("0", true, false)) ? 1 : 0;
+            assignCallback = JSObject.ErrorAssignCallback;
+        }
+
         public Boolean(bool value)
         {
             ValueType = JSObjectType.Bool;
@@ -52,13 +59,6 @@ namespace NiL.JS.Core.BaseTypes
         {
             ValueType = JSObjectType.Bool;
             iValue = !string.IsNullOrEmpty(value) ? 1 : 0;
-            assignCallback = JSObject.ErrorAssignCallback;
-        }
-
-        public Boolean(JSObject obj)
-        {
-            ValueType = JSObjectType.Bool;
-            iValue = (bool)(obj.GetField("0", true, false)) ? 1 : 0;
             assignCallback = JSObject.ErrorAssignCallback;
         }
 

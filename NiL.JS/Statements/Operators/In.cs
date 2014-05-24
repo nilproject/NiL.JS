@@ -1,6 +1,7 @@
 ﻿using NiL.JS.Core;
 using NiL.JS.Core.BaseTypes;
 using System;
+using System.Collections.Generic;
 
 namespace NiL.JS.Statements.Operators
 {
@@ -34,7 +35,7 @@ namespace NiL.JS.Statements.Operators
             }
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> vars)
+        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, Statement> vars)
         {
             Parser.Optimize(ref first, depth + 1, vars);
             Parser.Optimize(ref second, depth + 1, vars);

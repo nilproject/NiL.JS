@@ -1,6 +1,7 @@
 ﻿using NiL.JS.Core;
 using NiL.JS.Core.BaseTypes;
 using System;
+using System.Collections.Generic;
 
 namespace NiL.JS.Statements.Operators
 {
@@ -61,7 +62,7 @@ namespace NiL.JS.Statements.Operators
             return _this;
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> vars)
+        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, Statement> vars)
         {
             if (second == null)
 				(CallInstance.Second as ImmidateValueStatement).value = new JSObject() { ValueType = JSObjectType.Object, oValue = new Statement[0] };

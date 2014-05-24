@@ -755,7 +755,7 @@ namespace NiL.JS.Core.BaseTypes
                     args.GetField("length", false, true).Assign(0);
                 }
                 _arguments = args;
-                internalContext.InitField("arguments").Assign(_arguments);
+                internalContext.fields["arguments"] = _arguments;
                 if (!string.IsNullOrEmpty(Name))
                     internalContext.InitField(Name).Assign(this);
                 int i = 0;
@@ -764,7 +764,7 @@ namespace NiL.JS.Core.BaseTypes
                     argsLength = (argsLength.oValue as Function[])[1].Invoke(args, null);
                 int min = System.Math.Min(argsLength.iValue, argumentsNames.Length);
                 for (; i < min; i++)
-                    internalContext.fields[argumentsNames[i]] = args.GetField(i < 10 ? Tools.NumString[i] : i.ToString(), true, false);
+                    internalContext.fields[argumentsNames[i]] = args.GetField(i < 16 ? Tools.NumString[i] : i.ToString(), true, false);
                 for (; i < argumentsNames.Length; i++)
                     internalContext.fields[argumentsNames[i]] = new JSObject();
 

@@ -109,9 +109,7 @@ namespace NiL.JS.Core.BaseTypes
                         double d = 0;
                         int i = 0;
                         if (Tools.ParseNumber(digits.oValue.ToString(), ref i, false, out d))
-                        {
                             dgts = (int)d;
-                        }
                         break;
                     }
                 case JSObjectType.Object:
@@ -173,9 +171,7 @@ namespace NiL.JS.Core.BaseTypes
                         double d = 0;
                         int i = 0;
                         if (Tools.ParseNumber(digits.oValue.ToString(), ref i, false, out d))
-                        {
                             dgts = (int)d;
-                        }
                         break;
                     }
                 case JSObjectType.Object:
@@ -245,9 +241,7 @@ namespace NiL.JS.Core.BaseTypes
                         double d = 0;
                         int i = 0;
                         if (Tools.ParseNumber(digits.oValue.ToString(), ref i, false, out d))
-                        {
                             dgts = (int)d;
-                        }
                         break;
                     }
                 case JSObjectType.Object:
@@ -358,7 +352,7 @@ namespace NiL.JS.Core.BaseTypes
 
         public override string ToString()
         {
-            return ValueType == JSObjectType.Int ? iValue.ToString(System.Globalization.CultureInfo.InvariantCulture) : Tools.DoubleToString(dValue);
+            return ValueType == JSObjectType.Int ? iValue >= 0 && iValue < 16 ? Tools.NumString[iValue] : iValue.ToString(System.Globalization.CultureInfo.InvariantCulture) : Tools.DoubleToString(dValue);
         }
 
         public override int GetHashCode()

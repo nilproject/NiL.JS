@@ -73,7 +73,7 @@ namespace NiL.JS.Core
         [Modules.Hidden]
         internal JSObject prototype;
         [Modules.Hidden]
-        internal IDictionary<string, JSObject> fields;
+        internal Dictionary<string, JSObject> fields;
 
         [Modules.Hidden]
         internal string lastRequestedName;
@@ -114,23 +114,23 @@ namespace NiL.JS.Core
             }
         }
 
-		[Modules.Hidden]
-		public JSObjectType Type
-		{
-			get
-			{
-				return ValueType;
-			}
-		}
+        [Modules.Hidden]
+        public JSObjectType Type
+        {
+            get
+            {
+                return ValueType;
+            }
+        }
 
-		[Modules.Hidden]
-		public JSObjectAttributes Attributes
-		{
-			get
-			{
-				return attributes;
-			}
-		}
+        [Modules.Hidden]
+        public JSObjectAttributes Attributes
+        {
+            get
+            {
+                return attributes;
+            }
+        }
 
         internal static JSObject Object(Context context, JSObject args)
         {
@@ -193,8 +193,7 @@ namespace NiL.JS.Core
         [Modules.Hidden]
         public virtual JSObject GetField(string name, bool fast, bool own)
         {
-            if ((attributes & JSObjectAttributes.Immutable) != 0)
-                fast = true;
+            fast |= (attributes & JSObjectAttributes.Immutable) != 0;
             switch (ValueType)
             {
                 case JSObjectType.NotExist:
@@ -309,6 +308,9 @@ namespace NiL.JS.Core
             }
         }
 
+#if INLINE
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+#endif
         [Modules.Hidden]
         public void Protect()
         {
@@ -433,12 +435,20 @@ namespace NiL.JS.Core
         {
             if (ValueType <= JSObjectType.Undefined)
                 return "undefined";
-            var res = ToPrimitiveValue_String_Value().Value;
-            if (res is bool)
-                return (bool)res ? "true" : "false";
-            if (res is double)
-                return Tools.DoubleToString((double)res);
-            return (res ?? "null").ToString();
+            var res = ToPrimitiveValue_String_Value();
+            switch (res.ValueType)
+            {
+                case JSObjectType.Bool:
+                    return res.iValue != 0 ? "true" : "false";
+                case JSObjectType.Int:
+                    return res.iValue >= 0 && res.iValue < 16 ? Tools.NumString[res.iValue] : res.iValue.ToString();
+                case JSObjectType.Double:
+                    return Tools.DoubleToString(res.dValue);
+                case JSObjectType.String:
+                    return res.oValue as string;
+                default:
+                    return (res.oValue ?? "null").ToString();
+            }
         }
 
         [Modules.Hidden]
@@ -696,6 +706,8 @@ namespace NiL.JS.Core
 
         public static implicit operator JSObject(string value)
         {
+            if (string.IsNullOrEmpty(value))
+                return BaseTypes.String.EmptyString;
             return new BaseTypes.String(value);
         }
 

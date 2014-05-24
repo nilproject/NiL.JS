@@ -7,9 +7,6 @@ namespace NiL.JS.Core.BaseTypes
     public sealed class Date
     {
         [Hidden]
-        private readonly String tempSResult = "";
-
-        [Hidden]
         private readonly static long UTCBase = new DateTime(1970, 1, 1).Ticks;
 
         [Hidden]
@@ -282,26 +279,22 @@ namespace NiL.JS.Core.BaseTypes
 
         public JSObject toString()
         {
-            tempSResult.oValue = ToString();
-            return tempSResult;
+            return ToString();
         }
 
         public JSObject toLocaleString()
         {
-            tempSResult.oValue = ToString();
-            return tempSResult;
+            return ToString();
         }
 
         public JSObject toUTCString()
         {
-            tempSResult.oValue = ToString();
-            return tempSResult;
+            return ToString();
         }
 
         public JSObject toGMTString()
         {
-            tempSResult.oValue = ToString();
-            return tempSResult;
+            return ToString();
         }
 
         public override string ToString()
@@ -310,7 +303,7 @@ namespace NiL.JS.Core.BaseTypes
             var offset = TimeZone.CurrentTimeZone.GetUtcOffset(host);
             var res = host.DayOfWeek.ToString().Substring(0, 3) + " "
                 + month[host.Month - 1] + " " + host.Day + " " + host.Year + " " + lt
-                + " GMT+" + offset.Hours.ToString("00") + offset.Minutes.ToString("00") + " (" + TimeZone.CurrentTimeZone.DaylightName + ")";
+                + " GMT+" + (offset.Hours * 100 + offset.Minutes).ToString("0000 (") + TimeZone.CurrentTimeZone.DaylightName + ")";
             return res;
         }
 

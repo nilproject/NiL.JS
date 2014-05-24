@@ -12,5 +12,7 @@ namespace NiL.JS.Core
     internal sealed class Arguments
     {
         public static readonly Arguments Instance = new Arguments();
+
+        private Arguments() { }
     }
 }

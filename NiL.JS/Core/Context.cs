@@ -22,7 +22,7 @@ namespace NiL.JS.Core
     [Serializable]
     public class Context : IEnumerable<string>
     {
-        private static Dictionary<int, WeakReference> _executedContexts = new Dictionary<int, WeakReference>();
+        private static IDictionary<int, WeakReference> _executedContexts = new Dictionary<int, WeakReference>();
         internal static Context currentRootContext
         {
             get
@@ -59,7 +59,7 @@ namespace NiL.JS.Core
             if (globalContext.fields != null)
                 globalContext.fields.Clear();
             else
-                globalContext.fields = new BinaryTree<JSObject>();
+                globalContext.fields = new Dictionary<string, JSObject>();
             ThisObject.thisProto = null;
             JSObject.GlobalPrototype = null;
             TypeProxy.Clear();
@@ -195,7 +195,7 @@ namespace NiL.JS.Core
 
         private int threadid = 0;
 
-        internal IDictionary<string, JSObject> fields;
+        internal Dictionary<string, JSObject> fields;
         internal AbortType abort;
         internal JSObject objectSource;
         internal JSObject abortInfo;
@@ -236,7 +236,7 @@ namespace NiL.JS.Core
             res.assignCallback = (sender) =>
             {
                 if (fields == null)
-                    fields = new BinaryTree<JSObject>();
+                    fields = new Dictionary<string, JSObject>();
                 fields[sender.lastRequestedName] = sender;
                 sender.assignCallback = null;
             };
@@ -252,10 +252,10 @@ namespace NiL.JS.Core
         {
             if (name == "this")
                 return GetField(name);
-            if (fields == null)
-                fields = new Dictionary<string, JSObject>();
             JSObject res = null;
-            if (!fields.TryGetValue(name, out res))
+            if (fields == null)
+                (fields = new Dictionary<string, JSObject>())[name] = res = new JSObject();
+            else if (!fields.TryGetValue(name, out res))
                 fields[name] = res = new JSObject();
             res.lastRequestedName = name;
             Statements.GetVaribleStatement.ResetCache(name);
@@ -314,8 +314,6 @@ namespace NiL.JS.Core
             {
                 if (res.ValueType == JSObjectType.NotExistInObject)
                     res.ValueType = JSObjectType.NotExist;
-                if (fromProto && fields != null)
-                    fields[name] = res;
             }
             res.lastRequestedName = name;
             return res;
@@ -331,7 +329,7 @@ namespace NiL.JS.Core
         public void AttachModule(Type moduleType)
         {
             if (fields == null)
-                fields = new BinaryTree<JSObject>();
+                fields = new Dictionary<string, JSObject>();
             fields.Add(moduleType.Name, TypeProxy.GetConstructor(moduleType));
             Statements.GetVaribleStatement.ResetCache(moduleType.Name);
             fields[moduleType.Name].attributes |= JSObjectAttributes.DontDelete;
@@ -396,6 +394,19 @@ namespace NiL.JS.Core
 
         internal Context(Context prototype)
         {
+            this.fields = new Dictionary<string, JSObject>();
+            this.prototype = prototype;
+            this.thisBind = prototype.thisBind;
+            this.abortInfo = JSObject.undefined;
+            if (prototype.DebuggerCallback != null)
+                this.DebuggerCallback += prototype.DebuggerCallback;
+            GC.SuppressFinalize(this);
+        }
+
+        internal Context(Context prototype, bool createFields)
+        {
+            if (createFields)
+                this.fields = new Dictionary<string, JSObject>();
             this.prototype = prototype;
             this.thisBind = prototype.thisBind;
             this.abortInfo = JSObject.undefined;

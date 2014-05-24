@@ -224,7 +224,7 @@ namespace NiL.JS
         private long state = 0;
         [NonSerialized]
         private Stack<Node> stack = new Stack<Node>();
-        public int Height { get { return root.height; } }
+        public int Height { get { return root == null ? 0 : root.height; } }
         public int Count { get; private set; }
         public bool IsReadOnly { get { return false; } }
         [NonSerialized]
@@ -640,78 +640,84 @@ namespace NiL.JS
 
         private IEnumerator<KeyValuePair<string, T>> enumerateReversed(Node node)
         {
-            var sstate = state;
-            Node[] stack = new Node[node.height];
-            int[] step = new int[node.height];
-            int sindex = -1;
             if (node != null)
             {
-                stack[++sindex] = node;
-                while (sindex >= 0)
+                var sstate = state;
+                Node[] stack = new Node[node.height];
+                int[] step = new int[node.height];
+                int sindex = -1;
+                if (node != null)
                 {
-                    if (step[sindex] == 0 && stack[sindex].greater != null)
+                    stack[++sindex] = node;
+                    while (sindex >= 0)
                     {
-                        stack[sindex + 1] = stack[sindex].greater;
-                        step[sindex] = 1;
-                        sindex++;
-                        step[sindex] = 0;
-                        continue;
+                        if (step[sindex] == 0 && stack[sindex].greater != null)
+                        {
+                            stack[sindex + 1] = stack[sindex].greater;
+                            step[sindex] = 1;
+                            sindex++;
+                            step[sindex] = 0;
+                            continue;
+                        }
+                        if (step[sindex] < 2)
+                        {
+                            step[sindex] = 2;
+                            yield return new KeyValuePair<string, T>(stack[sindex].key, stack[sindex].value);
+                            if (sstate != state)
+                                throw new InvalidOperationException("Коллекция была изменена после создания перечислителя.");
+                        }
+                        if (step[sindex] < 3 && stack[sindex].less != null)
+                        {
+                            stack[sindex + 1] = stack[sindex].less;
+                            step[sindex] = 3;
+                            sindex++;
+                            step[sindex] = 0;
+                            continue;
+                        }
+                        sindex--;
                     }
-                    if (step[sindex] < 2)
-                    {
-                        step[sindex] = 2;
-                        yield return new KeyValuePair<string, T>(stack[sindex].key, stack[sindex].value);
-                        if (sstate != state)
-                            throw new InvalidOperationException("Коллекция была изменена после создания перечислителя.");
-                    }
-                    if (step[sindex] < 3 && stack[sindex].less != null)
-                    {
-                        stack[sindex + 1] = stack[sindex].less;
-                        step[sindex] = 3;
-                        sindex++;
-                        step[sindex] = 0;
-                        continue;
-                    }
-                    sindex--;
                 }
             }
         }
 
         private IEnumerator<KeyValuePair<string, T>> enumerate(Node node)
         {
-            var sstate = state;
-            Node[] stack = new Node[node.height];
-            int[] step = new int[node.height];
-            int sindex = -1;
             if (node != null)
             {
-                stack[++sindex] = node;
-                while (sindex >= 0)
+                var sstate = state;
+                Node[] stack = new Node[node.height];
+                int[] step = new int[node.height];
+                int sindex = -1;
+                if (node != null)
                 {
-                    if (step[sindex] == 0 && stack[sindex].less != null)
+                    stack[++sindex] = node;
+                    while (sindex >= 0)
                     {
-                        stack[sindex + 1] = stack[sindex].less;
-                        step[sindex] = 1;
-                        sindex++;
-                        step[sindex] = 0;
-                        continue;
+                        if (step[sindex] == 0 && stack[sindex].less != null)
+                        {
+                            stack[sindex + 1] = stack[sindex].less;
+                            step[sindex] = 1;
+                            sindex++;
+                            step[sindex] = 0;
+                            continue;
+                        }
+                        if (step[sindex] < 2)
+                        {
+                            step[sindex] = 2;
+                            yield return new KeyValuePair<string, T>(stack[sindex].key, stack[sindex].value);
+                            if (sstate != state)
+                                throw new InvalidOperationException("Коллекция была изменена после создания перечислителя.");
+                        }
+                        if (step[sindex] < 3 && stack[sindex].greater != null)
+                        {
+                            stack[sindex + 1] = stack[sindex].greater;
+                            step[sindex] = 3;
+                            sindex++;
+                            step[sindex] = 0;
+                            continue;
+                        }
+                        sindex--;
                     }
-                    if (step[sindex] < 2)
-                    {
-                        step[sindex] = 2;
-                        yield return new KeyValuePair<string, T>(stack[sindex].key, stack[sindex].value);
-                        if (sstate != state)
-                            throw new InvalidOperationException("Коллекция была изменена после создания перечислителя.");
-                    }
-                    if (step[sindex] < 3 && stack[sindex].greater != null)
-                    {
-                        stack[sindex + 1] = stack[sindex].greater;
-                        step[sindex] = 3;
-                        sindex++;
-                        step[sindex] = 0;
-                        continue;
-                    }
-                    sindex--;
                 }
             }
         }

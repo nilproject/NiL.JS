@@ -69,7 +69,7 @@ namespace NiL.JS.Core.BaseTypes
                 if (owner.data.Count < index + 1)
                 {
                     while (owner.data.Count < index)
-                        owner.Add(new JSObject { ValueType = JSObjectType.Undefined });
+                        owner.Add(null);
                     owner.data.Add(this);
                 }
                 base.Assign(value);
@@ -548,7 +548,7 @@ namespace NiL.JS.Core.BaseTypes
         {
             JSObject args;
             JSObject first;
-            JSObject second; 
+            JSObject second;
             Function comparer;
 
             public JSComparer(JSObject args, JSObject first, JSObject second, Function comparer)
@@ -709,13 +709,13 @@ namespace NiL.JS.Core.BaseTypes
             var count = Tools.JSObjectToDouble(len);
             var cbargs = JSObject.CreateObject();
             cbargs.GetField("length", false, true).Assign(3);
-			var index = new JSObject(false) { ValueType = JSObjectType.Int };
+            var index = new JSObject(false) { ValueType = JSObjectType.Int };
             cbargs.GetField("1", false, true).Assign(index);
             cbargs.GetField("2", false, true).Assign(obj);
             var stat = args.GetField("0", true, false).oValue as Function;
             for (int i = 0; i < count; i++)
             {
-                cbargs.GetField("0", false, true).Assign(obj.GetField(i < 10 ? Tools.NumString[i] : i.ToString(System.Globalization.CultureInfo.InvariantCulture), true, false));
+                cbargs.GetField("0", false, true).Assign(obj.GetField(i < 16 ? Tools.NumString[i] : i.ToString(System.Globalization.CultureInfo.InvariantCulture), true, false));
                 index.iValue = i;
                 if (alen > 1)
                     res &= (bool)stat.Invoke(args.GetField("1", true, false), cbargs);

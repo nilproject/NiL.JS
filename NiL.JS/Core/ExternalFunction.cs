@@ -26,13 +26,15 @@ namespace NiL.JS.Core
             context = contextOverride;
             try
             {
-                context.ValidateThreadID();
                 return Invoke(args);
             }
             finally
             {
-                context = oldContext;
-                oldContext.ValidateThreadID();
+                if (context != oldContext)
+                {
+                    context = oldContext;
+                    oldContext.ValidateThreadID();
+                }
             }
         }
 
@@ -44,13 +46,15 @@ namespace NiL.JS.Core
             context = contextOverride;
             try
             {
-                context.ValidateThreadID();
                 return Invoke(thisOverride, args);
             }
             finally
             {
-                context = oldContext;
-                oldContext.ValidateThreadID();
+                if (context != oldContext)
+                {
+                    context = oldContext;
+                    oldContext.ValidateThreadID();
+                }
             }
         }
 
@@ -58,18 +62,15 @@ namespace NiL.JS.Core
         {
             if (thisOverride == null)
                 return Invoke(args);
-            var oldContext = context;
+            var oldThisBind = context.thisBind;
             try
             {
-                context = new Context(context);
                 context.thisBind = thisOverride;
-                context.ValidateThreadID();
                 return Invoke(args);
             }
             finally
             {
-                context = oldContext;
-                oldContext.ValidateThreadID();
+                context.thisBind = oldThisBind;
             }
         }
 
@@ -87,6 +88,7 @@ namespace NiL.JS.Core
 
         public override JSObject Invoke(JSObject args)
         {
+            context.ValidateThreadID();
             var res = del(context, args);
             if (res == null)
                 return JSObject.Null;

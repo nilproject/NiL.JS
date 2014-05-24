@@ -89,7 +89,7 @@ namespace NiL.JS.Statements
             return res;
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> varibles)
+        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, Statement> varibles)
         {
             depth = System.Math.Max(1, depth);
             Parser.Optimize(ref body, depth, varibles);

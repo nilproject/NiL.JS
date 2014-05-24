@@ -1,6 +1,7 @@
 ﻿using NiL.JS.Core;
 using System;
 using NiL.JS.Core.BaseTypes;
+using System.Collections.Generic;
 
 namespace NiL.JS.Statements.Operators
 {
@@ -32,6 +33,7 @@ namespace NiL.JS.Statements.Operators
             if (temp.ValueType != JSObjectType.Function && !(temp.ValueType == JSObjectType.Object && temp.oValue is Function))
                 throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError(first + " is not callable")));
             func = temp.oValue as Function;
+
             newThisBind = context.objectSource;
 
             JSObject arguments = new JSObject(true)
@@ -40,9 +42,9 @@ namespace NiL.JS.Statements.Operators
                     oValue = NiL.JS.Core.Arguments.Instance,
                     attributes = JSObjectAttributes.DontDelete | JSObjectAttributes.DontEnum
                 };
-            var field = arguments.GetField("length", false, true);
-            field.assignCallback(field);
-            field.ValueType = JSObjectType.Int;
+            JSObject field = 0;
+            field.assignCallback = null;
+            arguments.fields["length"] = field;
             if (args == null)
                 args = second.Invoke(null).oValue as Statement[];
             field.iValue = args.Length;
@@ -50,8 +52,7 @@ namespace NiL.JS.Statements.Operators
             for (int i = 0; i < field.iValue; i++)
             {
                 var a = Tools.RaiseIfNotExist(args[i].Invoke(context)).Clone() as JSObject;
-                context.objectSource = newThisBind;
-                arguments.fields[i.ToString()] = a;
+                arguments.fields[i < 16 ? Tools.NumString[i] : i.ToString()] = a;
                 a.attributes |= JSObjectAttributes.Argument;
             }
             arguments.prototype = JSObject.GlobalPrototype;
@@ -76,7 +77,7 @@ namespace NiL.JS.Statements.Operators
             return res + ")";
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> vars)
+        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, Statement> vars)
         {
             Parser.Optimize(ref first, depth + 1, vars);
             Parser.Optimize(ref second, depth + 1, vars);

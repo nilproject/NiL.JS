@@ -1,6 +1,7 @@
 using NiL.JS.Core.BaseTypes;
 using NiL.JS.Core.Modules;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -254,15 +255,18 @@ namespace NiL.JS.Core
                     cache[i] = new MethodProxy(m[i] as MethodInfo);
                 r = new ExternalFunction((context, args) =>
                 {
-                    context.ValidateThreadID();
                     int l = args.GetField("length", true, false).iValue;
                     for (int i = 0; i < m.Count; i++)
                     {
-                        if (cache[i].Parameters.Length == l)
+                        if (cache[i].Parameters.Length == l
+                        || (cache[i].Parameters.Length == 1
+                            && (cache[i].Parameters[0].ParameterType == typeof(JSObject)
+                                || cache[i].Parameters[0].ParameterType == typeof(JSObject[]))))
                         {
+                            object[] cargs = null;
                             if (l != 0)
                             {
-                                var cargs = cache[i].ConvertArgs(args);
+                                cargs = cache[i].ConvertArgs(args);
                                 for (var j = cargs.Length; j-- > 0; )
                                 {
                                     if (!cache[i].Parameters[j].ParameterType.IsAssignableFrom(cargs[j] != null ? cargs[j].GetType() : typeof(object)))
@@ -274,7 +278,9 @@ namespace NiL.JS.Core
                                 if (cargs == null)
                                     continue;
                             }
-                            return cache[i].Invoke(context, args);
+                            if (cargs.Length == 1 && cargs[0] is JSObject && (cargs[0] as JSObject).oValue == Arguments.Instance)
+                                (cargs[0] as JSObject).fields["callee"] = cache[i];
+                            return TypeProxy.Proxy(cache[i].InvokeRaw(context, null, cargs));
                         }
                     }
                     return null;

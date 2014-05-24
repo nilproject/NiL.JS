@@ -27,7 +27,7 @@ namespace NiL.JS.Statements
                 {
                     try
                     {
-                        return code = code.Substring(Position, codeLength);
+                        return code = code.Substring(Position + 1, codeLength);
                     }
                     finally
                     {
@@ -131,6 +131,8 @@ namespace NiL.JS.Statements
 #if DEBUG
                 if (JSObject.undefined.ValueType != JSObjectType.Undefined)
                     throw new ApplicationException("undefined was rewrite");
+                if (Core.BaseTypes.String.EmptyString.oValue as string != "")
+                    throw new ApplicationException("EmptyString was rewrite");
 #endif
                 if (context.abort != AbortType.None)
                     return context.abort == AbortType.Return ? context.abortInfo : res;
@@ -138,7 +140,7 @@ namespace NiL.JS.Statements
             return res;
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> varibles)
+        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, Statement> varibles)
         {
             var vars = new Dictionary<string, Statement>();
             for (int i = 0; i < body.Length; i++)

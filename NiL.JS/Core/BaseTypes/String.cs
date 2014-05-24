@@ -7,6 +7,8 @@ namespace NiL.JS.Core.BaseTypes
     [Immutable]
     public class String : EmbeddedType
     {
+        public static readonly String EmptyString = new String("");
+
         public static JSObject fromCharCode(JSObject[] code)
         {
             int chc = 0;
@@ -26,17 +28,17 @@ namespace NiL.JS.Core.BaseTypes
         {
         }
 
+        public String(JSObject args)
+            : this(Tools.JSObjectToInt(args.GetField("length", true, false)) == 0 ? "" : args.GetField("0", true, false).ToString())
+        {
+        }
+
         public String(string s)
         {
             oValue = s;
             ValueType = JSObjectType.String;
             assignCallback = JSObject.ErrorAssignCallback;
             attributes |= JSObjectAttributes.Immutable;
-        }
-
-        public String(JSObject[] s)
-            : this(s.Length > 0 ? s[0].ToString() : "")
-        {
         }
 
         public JSObject this[int pos]
@@ -600,6 +602,8 @@ namespace NiL.JS.Core.BaseTypes
 
         public static implicit operator String(string val)
         {
+            if (string.IsNullOrEmpty(val))
+                return EmptyString;
             return new String(val);
         }
     }

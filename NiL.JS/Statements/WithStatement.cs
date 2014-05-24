@@ -52,7 +52,7 @@ namespace NiL.JS.Statements
             return JSObject.undefined;
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, Statement> varibles)
+        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, Statement> varibles)
         {
             Parser.Optimize(ref obj, depth, varibles);
             Parser.Optimize(ref body, depth, varibles);
