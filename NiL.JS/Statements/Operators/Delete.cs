@@ -14,39 +14,42 @@ namespace NiL.JS.Statements.Operators
 
         internal override JSObject Invoke(Context context)
         {
-            var temp = first.InvokeForAssing(context);
-            tempResult.ValueType = JSObjectType.Bool;
-            if (temp.ValueType <= JSObjectType.NotExistInObject)
-                tempResult.iValue = 1;
-            else if ((temp.attributes & JSObjectAttributes.Argument) != 0)
+            lock (this)
             {
-                if (first is GetFieldStatement)
-                {
+                var temp = first.InvokeForAssing(context);
+                tempResult.ValueType = JSObjectType.Bool;
+                if (temp.ValueType <= JSObjectType.NotExistInObject)
                     tempResult.iValue = 1;
-                    var args = context.objectSource;
-                    foreach (var a in args.fields)
+                else if ((temp.attributes & JSObjectAttributes.Argument) != 0)
+                {
+                    if (first is GetFieldStatement)
                     {
-                        if (a.Value == temp)
+                        tempResult.iValue = 1;
+                        var args = context.objectSource;
+                        foreach (var a in args.fields)
                         {
-                            args.fields.Remove(a.Key);
-                            return tempResult;
+                            if (a.Value == temp)
+                            {
+                                args.fields.Remove(a.Key);
+                                return tempResult;
+                            }
                         }
                     }
+                    else
+                    {
+                        tempResult.iValue = 0;
+                        return tempResult;
+                    }
+                }
+                else if ((temp.attributes & JSObjectAttributes.DontDelete) == 0)
+                {
+                    tempResult.iValue = 1;
+                    temp.ValueType = JSObjectType.NotExist;
                 }
                 else
-                {
                     tempResult.iValue = 0;
-                    return tempResult;
-                }
+                return tempResult;
             }
-            else if ((temp.attributes & JSObjectAttributes.DontDelete) == 0)
-            {
-                tempResult.iValue = 1;
-                temp.ValueType = JSObjectType.NotExist;
-            }
-            else
-                tempResult.iValue = 0;
-            return tempResult;
         }
 
         public override string ToString()

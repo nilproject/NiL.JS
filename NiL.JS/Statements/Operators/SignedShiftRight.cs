@@ -14,10 +14,13 @@ namespace NiL.JS.Statements.Operators
 
         internal override JSObject Invoke(Context context)
         {
-            var left = Tools.JSObjectToInt(first.Invoke(context));
-            tempResult.iValue = (int)(left >> Tools.JSObjectToInt(second.Invoke(context)));
-            tempResult.ValueType = JSObjectType.Int;
-            return tempResult;
+            lock (this)
+            {
+                var left = Tools.JSObjectToInt(first.Invoke(context));
+                tempResult.iValue = (int)(left >> Tools.JSObjectToInt(second.Invoke(context)));
+                tempResult.ValueType = JSObjectType.Int;
+                return tempResult;
+            }
         }
 
         public override string ToString()

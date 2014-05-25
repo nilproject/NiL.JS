@@ -3,6 +3,7 @@ using NiL.JS.Statements;
 using System.Collections.Generic;
 using System;
 using System.Collections;
+using System.Threading;
 
 namespace NiL.JS.Core
 {
@@ -17,7 +18,7 @@ namespace NiL.JS.Core
     }
 
     /// <summary>
-    /// Контекст выполнения скрипта. Хранит значения переменных, созданных во время выполнения либо из пользовательского кода.
+    /// Контекст выполнения скрипта. Хранит состояние выполнения сценария.
     /// </summary>
     [Serializable]
     public class Context : IEnumerable<string>
@@ -174,6 +175,7 @@ namespace NiL.JS.Core
                             throw new NotImplementedException();
                     }
             }));
+            globalContext.InitField("__pinvoke").Assign(new ExternalFunction(__pinvoke));
             #endregion
             #region Consts
             globalContext.fields["undefined"] = JSObject.undefined;
@@ -184,6 +186,42 @@ namespace NiL.JS.Core
 
             foreach (var v in globalContext.fields.Values)
                 v.attributes |= JSObjectAttributes.DontEnum;
+        }
+
+        private static JSObject __pinvoke(Context context, JSObject args)
+        {
+            var argsCount = Tools.JSObjectToInt(args.GetField("length", true, false));
+            var threadsCount = 1;
+            if (argsCount == 0)
+                return null;
+            if (argsCount > 1)
+                threadsCount = Tools.JSObjectToInt(args.GetField("1", true, false));
+            var function = args.GetField("0", true, false).oValue as Function;
+            if (function != null)
+            {
+                for (var i = 0; i < threadsCount; i++)
+                {
+                    new Thread((o) =>
+                    {
+                        var targs = new JSObject(true)
+                        {
+                            oValue = Arguments.Instance,
+                            ValueType = JSObjectType.Object,
+                            attributes = JSObjectAttributes.DontDelete | JSObjectAttributes.DontEnum
+                        };
+                        targs.fields["length"] = new Number(1) { assignCallback = null, attributes = JSObjectAttributes.DontEnum };
+                        targs.fields["0"] = new Number((int)o) { assignCallback = null, attributes = JSObjectAttributes.Argument };
+                        (targs.fields["callee"] = new JSObject()
+                        {
+                            ValueType = JSObjectType.Function,
+                            oValue = function,
+                            attributes = JSObjectAttributes.DontEnum
+                        }).Protect();
+                        function.Invoke(context, targs);
+                    }).Start(i);
+                }
+            }
+            return null;
         }
 
         static Context()

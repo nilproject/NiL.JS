@@ -14,10 +14,13 @@ namespace NiL.JS.Statements.Operators
 
         internal override JSObject Invoke(Context context)
         {
-            double left = Tools.JSObjectToDouble(first.Invoke(context));
-            tempResult.dValue = left % Tools.JSObjectToDouble(second.Invoke(context));
-            tempResult.ValueType = JSObjectType.Double;
-            return tempResult;
+            lock (this)
+            {
+                double left = Tools.JSObjectToDouble(first.Invoke(context));
+                tempResult.dValue = left % Tools.JSObjectToDouble(second.Invoke(context));
+                tempResult.ValueType = JSObjectType.Double;
+                return tempResult;
+            }
         }
 
         public override string ToString()

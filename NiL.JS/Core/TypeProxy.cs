@@ -198,30 +198,36 @@ namespace NiL.JS.Core
 
         private void fillMembers()
         {
-            members = new Dictionary<string, IList<MemberInfo>>();
-            var mmbrs = hostedType.GetMembers(bindFlags);
-            string prewName = null;
-            IList<MemberInfo> temp = null;
-            for (int i = 0; i < mmbrs.Length; i++)
+            lock (this)
             {
-                if (mmbrs[i].IsDefined(typeof(HiddenAttribute), false))
-                    continue;
-                var membername = mmbrs[i].Name;
-                if (membername.EndsWith("GetType"))
-                    continue;
-                membername = membername[0] == '.' ? membername : membername.Contains(".") ? membername.Substring(membername.LastIndexOf('.') + 1) : membername;
-                if (prewName != membername && !members.TryGetValue(membername, out temp))
+                lock (fields)
                 {
-                    members[membername] = temp = new List<MemberInfo>() { mmbrs[i] };
-                    prewName = membername;
-                }
-                else
-                {
-                    if (temp.Count == 1)
-                        members.Add(membername + "$0", new[] { temp[0] });
-                    temp.Add(mmbrs[i]);
-                    if (temp.Count != 1)
-                        members.Add(membername + "$" + (temp.Count - 1), new[] { mmbrs[i] });
+                    members = new Dictionary<string, IList<MemberInfo>>();
+                    var mmbrs = hostedType.GetMembers(bindFlags);
+                    string prewName = null;
+                    IList<MemberInfo> temp = null;
+                    for (int i = 0; i < mmbrs.Length; i++)
+                    {
+                        if (mmbrs[i].IsDefined(typeof(HiddenAttribute), false))
+                            continue;
+                        var membername = mmbrs[i].Name;
+                        if (membername.EndsWith("GetType"))
+                            continue;
+                        membername = membername[0] == '.' ? membername : membername.Contains(".") ? membername.Substring(membername.LastIndexOf('.') + 1) : membername;
+                        if (prewName != membername && !members.TryGetValue(membername, out temp))
+                        {
+                            members[membername] = temp = new List<MemberInfo>() { mmbrs[i] };
+                            prewName = membername;
+                        }
+                        else
+                        {
+                            if (temp.Count == 1)
+                                members.Add(membername + "$0", new[] { temp[0] });
+                            temp.Add(mmbrs[i]);
+                            if (temp.Count != 1)
+                                members.Add(membername + "$" + (temp.Count - 1), new[] { mmbrs[i] });
+                        }
+                    }
                 }
             }
         }
@@ -389,7 +395,8 @@ namespace NiL.JS.Core
                     r.attributes |= JSObjectAttributes.DontDelete;
             }
             r.attributes |= JSObjectAttributes.DontEnum;
-            fields[name] = r;
+            lock (fields)
+                fields[name] = r;
             for (var i = m.Count; i-- > 0; )
             {
                 if (!m[i].IsDefined(typeof(DoNotEnumerateAttribute)))

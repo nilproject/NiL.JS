@@ -57,17 +57,20 @@ namespace NiL.JS.Statements
                     return (cacheRes = context.GetField(varibleName));
                 else
                     return cacheRes;
-            if (context.GetType() == typeof(WithContext))
+            lock (this)
             {
-                cacheRes = context.GetField(varibleName);
-                if (cacheRes.ValueType == JSObjectType.Property)
-                    cacheRes = (cacheRes.oValue as NiL.JS.Core.BaseTypes.Function[])[1].Invoke(context, null);
-                return cacheRes;
-            }
-            else
-            {
-                cacheContext = context;
-                return cacheRes = context.GetField(varibleName);
+                if (context.GetType() == typeof(WithContext))
+                {
+                    cacheRes = context.GetField(varibleName);
+                    if (cacheRes.ValueType == JSObjectType.Property)
+                        cacheRes = (cacheRes.oValue as NiL.JS.Core.BaseTypes.Function[])[1].Invoke(context, null);
+                    return cacheRes;
+                }
+                else
+                {
+                    cacheContext = context;
+                    return cacheRes = context.GetField(varibleName);
+                }
             }
         }
 

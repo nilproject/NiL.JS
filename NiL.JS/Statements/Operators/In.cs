@@ -16,22 +16,25 @@ namespace NiL.JS.Statements.Operators
 
         internal override JSObject Invoke(Context context)
         {
-            var fn = Tools.RaiseIfNotExist(first.Invoke(context));
-            var oassc = fn.assignCallback;
-            fn.assignCallback = (sender) => { fn = fn.Clone() as JSObject; };
-            try
+            lock (this)
             {
-                var source = Tools.RaiseIfNotExist(second.Invoke(context));
-                if (source.ValueType < JSObjectType.Object)
-                    throw new JSException(TypeProxy.Proxy(new TypeError("Right-hand value of instanceof is not object.")));
-                var t = source.GetField(fn.ToString(), true, false);
-                tempResult.iValue = t != JSObject.undefined && t.ValueType >= JSObjectType.Undefined ? 1 : 0;
-                tempResult.ValueType = JSObjectType.Bool;
-                return tempResult;
-            }
-            finally
-            {
-                fn.assignCallback = oassc;
+                var fn = Tools.RaiseIfNotExist(first.Invoke(context));
+                var oassc = fn.assignCallback;
+                fn.assignCallback = (sender) => { fn = fn.Clone() as JSObject; };
+                try
+                {
+                    var source = Tools.RaiseIfNotExist(second.Invoke(context));
+                    if (source.ValueType < JSObjectType.Object)
+                        throw new JSException(TypeProxy.Proxy(new TypeError("Right-hand value of instanceof is not object.")));
+                    var t = source.GetField(fn.ToString(), true, false);
+                    tempResult.iValue = t != JSObject.undefined && t.ValueType >= JSObjectType.Undefined ? 1 : 0;
+                    tempResult.ValueType = JSObjectType.Bool;
+                    return tempResult;
+                }
+                finally
+                {
+                    fn.assignCallback = oassc;
+                }
             }
         }
 

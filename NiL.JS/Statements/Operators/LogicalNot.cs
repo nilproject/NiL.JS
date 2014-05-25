@@ -14,11 +14,14 @@ namespace NiL.JS.Statements.Operators
 
         internal override JSObject Invoke(Context context)
         {
-            var val = first.Invoke(context);
+            lock (this)
+            {
+                var val = first.Invoke(context);
 
-            tempResult.iValue = (bool)val ? 0 : 1;
-            tempResult.ValueType = JSObjectType.Bool;
-            return tempResult;
+                tempResult.iValue = (bool)val ? 0 : 1;
+                tempResult.ValueType = JSObjectType.Bool;
+                return tempResult;
+            }
         }
 
         public override string ToString()

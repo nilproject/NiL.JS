@@ -24,34 +24,37 @@ namespace NiL.JS.Statements.Operators
 
         internal override JSObject Invoke(Context context)
         {
-            JSObject field = null;
-            field = first.InvokeForAssing(context);
-            if (field.ValueType == JSObjectType.Property)
+            lock (this)
             {
-                var fieldSource = context.objectSource;
-                setterArg.Assign(Tools.RaiseIfNotExist(second.Invoke(context)));
-                var setter = (field.oValue as NiL.JS.Core.BaseTypes.Function[])[0];
-                var otb = context.thisBind;
-                context.thisBind = fieldSource;
-                try
+                JSObject field = null;
+                field = first.InvokeForAssing(context);
+                if (field.ValueType == JSObjectType.Property)
                 {
-                    if (setter != null)
-                        setter.Invoke(context, setterArgs);
-                    return setterArg;
+                    var fieldSource = context.objectSource;
+                    setterArg.Assign(Tools.RaiseIfNotExist(second.Invoke(context)));
+                    var setter = (field.oValue as NiL.JS.Core.BaseTypes.Function[])[0];
+                    var otb = context.thisBind;
+                    context.thisBind = fieldSource;
+                    try
+                    {
+                        if (setter != null)
+                            setter.Invoke(context, setterArgs);
+                        return setterArg;
+                    }
+                    finally
+                    {
+                        context.thisBind = otb;
+                        context.objectSource = null;
+                    }
                 }
-                finally
-                {
-                    context.thisBind = otb;
-                    context.objectSource = null;
-                }
+                if (context.strict)
+                    Tools.RaiseIfNotExist(field);
+                var t = second.Invoke(context);
+                if (t.ValueType == JSObjectType.NotExist)
+                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible is not defined.")));
+                field.Assign(t);
+                return t;
             }
-            if (context.strict)
-                Tools.RaiseIfNotExist(field);
-            var t = second.Invoke(context);
-            if (t.ValueType == JSObjectType.NotExist)
-                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible is not defined.")));
-            field.Assign(t);
-            return t;
         }
 
         internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, Statement> vars)

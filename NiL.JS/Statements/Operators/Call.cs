@@ -42,13 +42,12 @@ namespace NiL.JS.Statements.Operators
                     oValue = NiL.JS.Core.Arguments.Instance,
                     attributes = JSObjectAttributes.DontDelete | JSObjectAttributes.DontEnum
                 };
-            JSObject field = 0;
-            field.assignCallback = null;
-            arguments.fields["length"] = field;
             if (args == null)
                 args = second.Invoke(null).oValue as Statement[];
-            field.iValue = args.Length;
+            JSObject field = args.Length;
+            field.assignCallback = null;
             field.attributes = JSObjectAttributes.DontEnum;
+            arguments.fields["length"] = field;
             for (int i = 0; i < field.iValue; i++)
             {
                 var a = Tools.RaiseIfNotExist(args[i].Invoke(context)).Clone() as JSObject;
