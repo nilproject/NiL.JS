@@ -648,8 +648,10 @@ namespace NiL.JS.Core.BaseTypes
         /// <summary>
         /// Объект, содержащий параметры вызова функции либо null если в данный момент функция не выполняется.
         /// </summary>
+        [DoNotEnumerate]
         public JSObject arguments
         {
+            [Modules.Hidden]
             get
             {
                 return _arguments;
@@ -697,9 +699,11 @@ namespace NiL.JS.Core.BaseTypes
 
         internal Number _length = null;
 
+        [Modules.DoNotEnumerate]
         [Modules.DoNotDelete]
         public virtual JSObject length
         {
+            [Modules.Hidden]
             get
             {
                 if (_length == null)
@@ -824,6 +828,11 @@ namespace NiL.JS.Core.BaseTypes
                 return Invoke(newThis, args);
             else
                 return Invoke(Context.currentRootContext.thisBind ?? Context.currentRootContext.GetField("this"), args);
+        }
+
+        public override IEnumerator<string> GetEnumerator()
+        {
+            return EmptyEnumerator;
         }
     }
 }

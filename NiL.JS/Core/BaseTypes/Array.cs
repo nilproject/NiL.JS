@@ -79,11 +79,13 @@ namespace NiL.JS.Core.BaseTypes
         [Hidden]
         internal List<JSObject> data;
 
+        [Modules.DoNotEnumerateAttribute]
         public Array()
         {
             data = new List<JSObject>();
         }
 
+        [Modules.DoNotEnumerateAttribute]
         public Array(int length)
         {
             if (length < 0)
@@ -93,6 +95,7 @@ namespace NiL.JS.Core.BaseTypes
                 data.Add(null);
         }
 
+        [Modules.DoNotEnumerateAttribute]
         public Array(double d)
         {
             if (((long)d != d) || (d < 0) || (d > 0x7fffffff))
@@ -102,6 +105,7 @@ namespace NiL.JS.Core.BaseTypes
                 data.Add(null);
         }
 
+        [Modules.DoNotEnumerateAttribute]
         public Array(ICollection collection)
         {
             data = new List<JSObject>(collection.Count);
@@ -134,6 +138,7 @@ namespace NiL.JS.Core.BaseTypes
         [Modules.Hidden]
         public JSObject this[int index]
         {
+            [Modules.Hidden]
             get
             {
                 if (data.Count <= index || data[index] == null)
@@ -141,6 +146,7 @@ namespace NiL.JS.Core.BaseTypes
                 else
                     return data[index];
             }
+            [Modules.Hidden]
             internal set
             {
                 if (data.Capacity < index)
@@ -151,12 +157,15 @@ namespace NiL.JS.Core.BaseTypes
             }
         }
 
+        [Modules.DoNotEnumerateAttribute]
         public int length
         {
+            [Modules.Hidden]
             get
             {
                 return data.Count;
             }
+            [Modules.Hidden]
             set
             {
                 if (data.Count > value)
@@ -171,6 +180,7 @@ namespace NiL.JS.Core.BaseTypes
             }
         }
 
+        [Modules.DoNotEnumerateAttribute]
         public JSObject concat(JSObject[] args)
         {
             var res = new List<JSObject>(data.Count + args.Length);
@@ -200,6 +210,7 @@ namespace NiL.JS.Core.BaseTypes
             return new Array(res);
         }
 
+        [Modules.DoNotEnumerateAttribute]
         public JSObject indexOf(JSObject[] args)
         {
             if (args.Length == 0)
@@ -245,11 +256,13 @@ namespace NiL.JS.Core.BaseTypes
             return -1;
         }
 
+        [Modules.DoNotEnumerateAttribute]
         public static JSObject isArray(JSObject args)
         {
             return args.GetField("0", false, true).oValue is Array;
         }
 
+        [Modules.DoNotEnumerateAttribute]
         public JSObject join(JSObject[] separator)
         {
             if (separator.Length == 0)
@@ -267,6 +280,7 @@ namespace NiL.JS.Core.BaseTypes
             return sb.ToString();
         }
 
+        [Modules.DoNotEnumerateAttribute]
         public JSObject lastIndexOf(JSObject[] args)
         {
             if (args.Length == 0)
@@ -312,6 +326,7 @@ namespace NiL.JS.Core.BaseTypes
             return -1;
         }
 
+        [Modules.DoNotEnumerateAttribute]
         public JSObject pop()
         {
             if (data.Count == 0)
@@ -321,18 +336,21 @@ namespace NiL.JS.Core.BaseTypes
             return res;
         }
 
+        [Modules.DoNotEnumerateAttribute]
         public JSObject push(JSObject[] args)
         {
             data.AddRange(args);
             return this;
         }
 
+        [Modules.DoNotEnumerateAttribute]
         public JSObject reverse()
         {
             data.Reverse();
             return this;
         }
 
+        [Modules.DoNotEnumerateAttribute]
         public JSObject shift()
         {
             if (data.Count == 0)
@@ -342,6 +360,7 @@ namespace NiL.JS.Core.BaseTypes
             return res;
         }
 
+        [Modules.DoNotEnumerateAttribute]
         [ParametersCount(2)]
         public JSObject slice(JSObject[] args)
         {
@@ -433,6 +452,7 @@ namespace NiL.JS.Core.BaseTypes
             }
         }
 
+        [Modules.DoNotEnumerateAttribute]
         [ParametersCount(2)]
         public JSObject splice(JSObject[] args)
         {
@@ -568,6 +588,7 @@ namespace NiL.JS.Core.BaseTypes
             }
         }
 
+        [Modules.DoNotEnumerateAttribute]
         public JSObject sort(JSObject args)
         {
             if (!(((object)this) is Array)) // Да, Array sealed, но тут и не такое возможно.
@@ -625,12 +646,14 @@ namespace NiL.JS.Core.BaseTypes
             return this;
         }
 
+        [Modules.DoNotEnumerateAttribute]
         public JSObject unshift(JSObject[] args)
         {
             data.InsertRange(0, args);
             return length;
         }
 
+        [Modules.Hidden]
         public override string ToString()
         {
             if (data.Count == 0)
@@ -641,6 +664,7 @@ namespace NiL.JS.Core.BaseTypes
             return res;
         }
 
+        [Modules.DoNotEnumerateAttribute]
         public override JSObject toString(JSObject args)
         {
             if (this.GetType() != typeof(Array) && !this.GetType().IsSubclassOf(typeof(Array)))
@@ -648,17 +672,19 @@ namespace NiL.JS.Core.BaseTypes
             return this.ToString();
         }
 
+        [Modules.Hidden]
         public override IEnumerator<string> GetEnumerator()
         {
             return new Enumerator(this);
         }
 
-        [Modules.Hidden]
+        [Modules.DoNotEnumerate]
         public override JSObject valueOf()
         {
             return base.valueOf();
         }
 
+        [Modules.Hidden]
         public override JSObject GetField(string name, bool fast, bool own)
         {
             switch (name)

@@ -59,7 +59,7 @@ namespace NiL.JS.Statements
             state.AllowContinue--;
             index = i;
             int id = 0;
-            if (body != null)
+            if (body != null && !(body is EmptyStatement))
             {
                 if (condition == null)
                 {
@@ -78,7 +78,12 @@ namespace NiL.JS.Statements
             }
             else
             {
-                id = 4;
+                if (post != null)
+                    id = 4;
+                else if (condition != null)
+                    id = 5;
+                else
+                    id = 6;
             }
             return new ParseResult()
             {
@@ -186,6 +191,12 @@ namespace NiL.JS.Statements
             return JSObject.undefined;
         }
 
+        private JSObject impl5(Context context)
+        {
+            while ((bool)condition.Invoke(context)) ;
+            return JSObject.undefined;
+        }
+
         internal override JSObject Invoke(Context context)
         {
             if (init != null)
@@ -198,8 +209,11 @@ namespace NiL.JS.Statements
                 return impl2(context);
             else if (implId == 3)
                 return impl3(context);
-            else
+            else if (implId == 4)
                 return impl4(context);
+            else if (implId == 5)
+                return impl5(context);
+            for (; ; ) ;
         }
 
         internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, Statement> varibles)

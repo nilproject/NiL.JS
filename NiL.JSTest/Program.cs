@@ -168,6 +168,8 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * i + 3 - 2 / 2; }
                     _("Failed");
                     failed++;
                 }
+                if (failed == 2)
+                    break;
             }
             sw.Stop();
             _("passed: " + passed);
@@ -213,8 +215,19 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * i + 3 - 2 / 2; }
         private static void testEx()
         {
             var sw = new Stopwatch();
-            var s = new Script(@"
-TestClass().test('1');
+            var s = new Script(@"var count=0;
+var x;
+var mycars = new Array();
+mycars[0] = ""Saab"";
+mycars[1] = ""Volvo"";
+mycars[2] = ""BMW"";
+
+// CHECK#1
+var fin=0;
+var i=0;
+for (x in mycars){
+console.log(x);
+}
 ");
             s.Context.AttachModule(typeof(TestClass));
             sw.Start();
@@ -238,12 +251,12 @@ TestClass().test('1');
             //runFile(@"ftest.js");
             //runFile(@"Benchmarks\run.js");
             //sputnicTests();
-            testEx();
+            //testEx();
             //runFile(@"C:\Users\Дмитрий\Documents\Projects\NiL.JS\NiL.JSTest\tests\Conformance\08_Types\8.7_The_Reference_Type\S8.7_A3.js");
             //sputnicTests(@"tests\Conformance\15_Native_ECMA_Script_Objects\15.5_String_Objects");
             //sputnicTests(@"tests\Conformance\15_Native_ECMA_Script_Objects\15.2_Object_Objects");
             //sputnicTests(@"tests\Conformance\15_Native_ECMA_Script_Objects\15.4_Array_Objects");
-            //sputnicTests(@"tests\Conformance\15_Native_ECMA_Script_Objects\15.7_Number_Objects");
+            sputnicTests(@"tests\Conformance\15_Native_ECMA_Script_Objects\15.7_Number_Objects");
             //sputnicTests(@"tests\Conformance\15_Native_ECMA_Script_Objects\15.12_The_JSON_Object");
 
             GC.Collect();

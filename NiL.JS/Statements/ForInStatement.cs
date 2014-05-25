@@ -99,25 +99,21 @@ namespace NiL.JS.Statements
                         for (int i = 0; i < index && keys.MoveNext(); i++) ;
                     }
                     var o = keys.Current;
-                    var t = s.GetField(o, true, false);
-                    if (t.ValueType > JSObjectType.NotExistInObject && ((t.attributes & JSObjectAttributes.DontEnum) == 0))
+                    v.ValueType = JSObjectType.String;
+                    v.oValue = o;
+                    if (v.assignCallback != null)
+                        v.assignCallback(v);
+                    res = body.Invoke(context) ?? res;
+                    if (context.abort != AbortType.None)
                     {
-                        v.ValueType = JSObjectType.String;
-                        v.oValue = o;
-                        if (v.assignCallback != null)
-                            v.assignCallback(v);
-                        res = body.Invoke(context) ?? res;
-                        if (context.abort != AbortType.None)
+                        bool _break = (context.abort > AbortType.Continue) || ((context.abortInfo != null) && (labels.IndexOf(context.abortInfo.oValue as string) == -1));
+                        if (context.abort < AbortType.Return && ((context.abortInfo == null) || (labels.IndexOf(context.abortInfo.oValue as string) != -1)))
                         {
-                            bool _break = (context.abort > AbortType.Continue) || ((context.abortInfo != null) && (labels.IndexOf(context.abortInfo.oValue as string) == -1));
-                            if (context.abort < AbortType.Return && ((context.abortInfo == null) || (labels.IndexOf(context.abortInfo.oValue as string) != -1)))
-                            {
-                                context.abort = AbortType.None;
-                                context.abortInfo = null;
-                            }
-                            if (_break)
-                                return null;
+                            context.abort = AbortType.None;
+                            context.abortInfo = null;
                         }
+                        if (_break)
+                            return null;
                     }
                     index++;
                 }

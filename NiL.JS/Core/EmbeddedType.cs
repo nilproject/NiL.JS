@@ -25,6 +25,7 @@ namespace NiL.JS.Core
             return ToString();
         }
 
+        [Modules.Hidden]
         public override string ToString()
         {
             if (oValue != this || ValueType < JSObjectType.Object)
@@ -47,9 +48,14 @@ namespace NiL.JS.Core
 
         public override IEnumerator<string> GetEnumerator()
         {
-            if (fields == null)
-                return JSObject.EmptyEnumerator;
-            return fields.Keys.GetEnumerator();
+            if (fields != null)
+                foreach (var r in fields)
+                    if (r.Value.ValueType >= JSObjectType.Undefined)
+                        yield return r.Key;
+            if (prototype == null)
+                prototype = TypeProxy.GetPrototype(this.GetType());
+            foreach (var r in prototype)
+                yield return r;
         }
     }
 }

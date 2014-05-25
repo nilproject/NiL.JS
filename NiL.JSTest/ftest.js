@@ -1,86 +1,15 @@
-﻿var x = 1;
-function f0() {
-    if (this.x != 1) {
-        $ERROR("#0. this linking error.");
-    }
-}
-f0();
-function f1() {
-    if (this.x != 1) {
-        $ERROR("#1. this linking error.");
-    }
+﻿if (!(Object.prototype.toString.hasOwnProperty('length'))) {
+    $FAIL('#0: the Object.prototype.toString has length property.');
 }
 
-var o = {
-    x: 2,
-    f: function () {
-        f1();
-    },
-    getx:function(){
-        return this.x;
-    }
-};
-o.f();
 
-if ((1,o.getx)() != 1)
-    console.log("#1.1");
-
-function (a) {
-    if (a != this)
-        console.log("#2.");
-} (this)
-
-if (function () { return this } () != this)
-    console.log("#3.");
-
-var o1 = { x: 4, set p(v){this.x = v;} };
-var o2 = { y: 3, set p(v){this.y = v;} };
-o2.p = (o1.x / 2);
-if (o1.y)
-    $ERROR("#4");
-if (o1.x != 4)
-    $ERROR("#5");
-if (o2.y != 2)
-    $ERROR("#6");
-if (o2.x)
-    $ERROR("#7");
-
-String(Math.PI)
-
-var c = function () { }
-c.prototype.m1 = function () { return this.m2(); };
-c.prototype.m2 = function () { return this.x; };
-var t = function () {
-    var o = new c();
-    o.x = 1;
-    return o.m1()
-}();
-if (t != 1)
-    console.log("#8");
-
-var o = { x: 1, getx: function () { return function () { return this.x }; } };
-var x = 2;
-if (o.getx().call(null) != 2)
-    console.log("#9");
-
-var x = 1;
-var o = {
-    x: 2,
-    s: {
-        '2': function () { return 'fail'; },
-        '1': function () { return 'pass'; }
-    }
-};
-var t = o.s[this.x]();
-if (t == 'fail')
-    console.log('#10');
-
-function f11() {
-    this.x = 2;
+// CHECK#1
+if (Object.prototype.toString.propertyIsEnumerable('length')) {
+    $ERROR('#1: the Object.prototype.toString.length property has the attributes DontEnum');
 }
-var x = 1;
-function f12() {
-    return this.x;
+
+// CHECK#2
+for (var p in Object.prototype.toString) {
+    if (p === "length")
+        $ERROR('#2: the Object.prototype.toString.length property has the attributes DontEnum');
 }
-if (f12(new f11()) != 1)
-    console.log('#11');

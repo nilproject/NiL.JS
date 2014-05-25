@@ -157,6 +157,7 @@
     <Compile Include="Core\Delegates.cs" />
     <Compile Include="Core\ExternalFunction.cs" />
     <Compile Include="Core\JSException.cs" />
+    <Compile Include="Core\Modules\DoNotEnumerateAttribute.cs" />
     <Compile Include="Core\Modules\DontDeleteAttribute.cs" />
     <Compile Include="Core\Modules\JSON.cs" />
     <Compile Include="Core\Modules\ParametersCountAttribute.cs" />

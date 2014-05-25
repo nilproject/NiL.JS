@@ -1,5 +1,6 @@
 ﻿using System;
 using NiL.JS.Core.Modules;
+using System.Collections.Generic;
 
 namespace NiL.JS.Core.BaseTypes
 {
@@ -7,17 +8,23 @@ namespace NiL.JS.Core.BaseTypes
     [Immutable]
     public class Number : EmbeddedType
     {
+        [Modules.DoNotEnumerate]
         [Modules.Protected]
         public static JSObject NaN = double.NaN;
+        [Modules.DoNotEnumerate]
         [Modules.Protected]
         public static JSObject POSITIVE_INFINITY = double.PositiveInfinity;
+        [Modules.DoNotEnumerate]
         [Modules.Protected]
         public static JSObject NEGATIVE_INFINITY = double.NegativeInfinity;
+        [Modules.DoNotEnumerate]
         [Modules.Protected]
         public static JSObject MAX_VALUE = double.MaxValue;
+        [Modules.DoNotEnumerate]
         [Modules.Protected]
         public static JSObject MIN_VALUE = double.Epsilon;
 
+        [Modules.DoNotEnumerate]
         static Number()
         {
             POSITIVE_INFINITY.assignCallback = null;
@@ -32,6 +39,7 @@ namespace NiL.JS.Core.BaseTypes
             NaN.Protect();
         }
 
+        [Modules.DoNotEnumerate]
         public Number()
         {
             ValueType = JSObjectType.Int;
@@ -39,6 +47,7 @@ namespace NiL.JS.Core.BaseTypes
             assignCallback = JSObject.ErrorAssignCallback;
         }
 
+        [Modules.DoNotEnumerate]
         public Number(int value)
         {
             ValueType = JSObjectType.Int;
@@ -46,6 +55,7 @@ namespace NiL.JS.Core.BaseTypes
             assignCallback = JSObject.ErrorAssignCallback;
         }
 
+        [Modules.DoNotEnumerate]
         public Number(double value)
         {
             ValueType = JSObjectType.Double;
@@ -53,6 +63,7 @@ namespace NiL.JS.Core.BaseTypes
             assignCallback = JSObject.ErrorAssignCallback;
         }
 
+        [Modules.DoNotEnumerate]
         public Number(string value)
         {
             ValueType = JSObjectType.Int;
@@ -66,6 +77,7 @@ namespace NiL.JS.Core.BaseTypes
                 dValue = d;
         }
 
+        [Modules.DoNotEnumerate]
         public Number(JSObject obj)
         {
             ValueType = JSObjectType.Double;
@@ -73,6 +85,7 @@ namespace NiL.JS.Core.BaseTypes
             assignCallback = JSObject.ErrorAssignCallback;
         }
 
+        [Modules.DoNotEnumerate]
         public JSObject toPrecision(JSObject digits)
         {
             double res = 0;
@@ -135,6 +148,7 @@ namespace NiL.JS.Core.BaseTypes
             return sres;
         }
 
+        [Modules.DoNotEnumerate]
         public JSObject toExponential(JSObject digits)
         {
             double res = 0;
@@ -193,6 +207,7 @@ namespace NiL.JS.Core.BaseTypes
             return res.ToString("e" + dgts, System.Globalization.CultureInfo.InvariantCulture);
         }
 
+        [Modules.DoNotEnumerate]
         public JSObject toFixed(JSObject digits)
         {
             double res = 0;
@@ -269,11 +284,13 @@ namespace NiL.JS.Core.BaseTypes
             return System.Math.Round(res, dgts).ToString("0.00000000000000000000".Substring(0, dgts + 1), System.Globalization.CultureInfo.InvariantCulture);
         }
 
+        [Modules.DoNotEnumerate]
         public override JSObject toLocaleString()
         {
             return ValueType == JSObjectType.Int ? iValue.ToString(System.Globalization.CultureInfo.CurrentCulture) : dValue.ToString(System.Globalization.CultureInfo.CurrentCulture);
         }
 
+        [Modules.DoNotEnumerate]
         public override JSObject toString(JSObject radix)
         {
             if (!typeof(Number).IsAssignableFrom(this.GetType()))
@@ -341,6 +358,7 @@ namespace NiL.JS.Core.BaseTypes
             }
         }
 
+        [Modules.DoNotEnumerate]
         public override JSObject valueOf()
         {
             if (!typeof(Number).IsAssignableFrom(GetType()))
@@ -350,11 +368,19 @@ namespace NiL.JS.Core.BaseTypes
             return base.valueOf();
         }
 
+        [Modules.DoNotEnumerate]
+        public override IEnumerator<string> GetEnumerator()
+        {
+            return EmptyEnumerator;
+        }
+
+        [Modules.Hidden]
         public override string ToString()
         {
             return ValueType == JSObjectType.Int ? iValue >= 0 && iValue < 16 ? Tools.NumString[iValue] : iValue.ToString(System.Globalization.CultureInfo.InvariantCulture) : Tools.DoubleToString(dValue);
         }
 
+        [Modules.Hidden]
         public override int GetHashCode()
         {
             return ValueType == JSObjectType.Int ? iValue.GetHashCode() : dValue.GetHashCode();

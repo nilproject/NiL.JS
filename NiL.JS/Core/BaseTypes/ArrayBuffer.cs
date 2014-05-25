@@ -29,8 +29,21 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [Modules.Hidden]
-        public byte[] Data { get; private set; }
+        public byte[] Data
+        {
+            [Modules.Hidden]
+            get;
+            [Modules.Hidden]
+            private set;
+        }
 
+        [Modules.DoNotEnumerateAttribute]
+        public ArrayBuffer()
+        {
+            Data = new byte[0];
+        }
+
+        [Modules.DoNotEnumerateAttribute]
         public ArrayBuffer(int length)
         {
             Data = new byte[length];
@@ -38,6 +51,7 @@ namespace NiL.JS.Core.BaseTypes
 
         public int byteLength
         {
+            [Modules.Hidden]
             get
             {
                 return Data.Length;
@@ -75,16 +89,19 @@ namespace NiL.JS.Core.BaseTypes
         [Modules.Hidden]
         public byte this[int index]
         {
+            [Modules.Hidden]
             get
             {
                 return Data[index];
             }
+            [Modules.Hidden]
             set
             {
                 Data[index] = value;
             }
         }
 
+        [Modules.Hidden]
         public override JSObject GetField(string name, bool fast, bool own)
         {
             int index = 0;
@@ -102,6 +119,16 @@ namespace NiL.JS.Core.BaseTypes
                 }
             }
             return base.GetField(name, fast, own);
+        }
+
+        [Modules.Hidden]
+        public override IEnumerator<string> GetEnumerator()
+        {
+            var be = base.GetEnumerator();
+            while (be.MoveNext())
+                yield return be.Current;
+            for (var i = 0; i < Data.Length; i++)
+                yield return i < 16 ? Tools.NumString[i] : i.ToString();
         }
     }
 }

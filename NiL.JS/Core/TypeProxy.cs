@@ -169,7 +169,7 @@ namespace NiL.JS.Core
                 ValueType = prototypeInstance is JSObject ? (JSObjectType)System.Math.Max((int)(prototypeInstance as JSObject).ValueType, (int)JSObjectType.Object) : JSObjectType.Object;
                 oValue = this;
                 attributes |= JSObjectAttributes.DontDelete | JSObjectAttributes.DontEnum | JSObjectAttributes.ReadOnly;
-                if (hostedType.GetCustomAttributes(typeof(ImmutableAttribute), false).Length != 0)
+                if (hostedType.IsDefined(typeof(ImmutableAttribute), false))
                     attributes |= JSObjectAttributes.Immutable;
                 var ctorProxy = new TypeProxy() { hostedType = type, bindFlags = bindFlags | BindingFlags.Static };
                 if (hostedType.IsAbstract)
@@ -196,6 +196,36 @@ namespace NiL.JS.Core
             }
         }
 
+        private void fillMembers()
+        {
+            members = new Dictionary<string, IList<MemberInfo>>();
+            var mmbrs = hostedType.GetMembers(bindFlags);
+            string prewName = null;
+            IList<MemberInfo> temp = null;
+            for (int i = 0; i < mmbrs.Length; i++)
+            {
+                if (mmbrs[i].IsDefined(typeof(HiddenAttribute), false))
+                    continue;
+                var membername = mmbrs[i].Name;
+                if (membername.EndsWith("GetType"))
+                    continue;
+                membername = membername[0] == '.' ? membername : membername.Contains(".") ? membername.Substring(membername.LastIndexOf('.') + 1) : membername;
+                if (prewName != membername && !members.TryGetValue(membername, out temp))
+                {
+                    members[membername] = temp = new List<MemberInfo>() { mmbrs[i] };
+                    prewName = membername;
+                }
+                else
+                {
+                    if (temp.Count == 1)
+                        members.Add(membername + "$0", new[] { temp[0] });
+                    temp.Add(mmbrs[i]);
+                    if (temp.Count != 1)
+                        members.Add(membername + "$" + (temp.Count - 1), new[] { mmbrs[i] });
+                }
+            }
+        }
+
         public override JSObject GetField(string name, bool fast, bool own)
         {
             JSObject r = null;
@@ -207,34 +237,9 @@ namespace NiL.JS.Core
             }
             IList<MemberInfo> m = null;
             if (members == null)
-            {
-                members = new Dictionary<string, IList<MemberInfo>>();
-                var mmbrs = hostedType.GetMembers(bindFlags);
-                string prewName = null;
-                IList<MemberInfo> temp = null;
-                for (int i = 0; i < mmbrs.Length; i++)
-                {
-                    if (mmbrs[i].GetCustomAttributes(typeof(HiddenAttribute), false).Length != 0)
-                        continue;
-                    var membername = mmbrs[i].Name;
-                    membername = membername.Substring(membername.LastIndexOf('.') + 1);
-                    if (prewName != membername && !members.TryGetValue(membername, out temp))
-                    {
-                        members[membername] = temp = new List<MemberInfo>() { mmbrs[i] };
-                        prewName = membername;
-                    }
-                    else
-                    {
-                        if (temp.Count == 1)
-                            members.Add(membername + "$0", new[] { temp[0] });
-                        temp.Add(mmbrs[i]);
-                        if (temp.Count != 1)
-                            members.Add(membername + "$" + (temp.Count - 1), new[] { mmbrs[i] });
-                    }
-                }
-            }
+                fillMembers();
             members.TryGetValue(name, out m);
-            if (m == null || name == "GetType" || m.Count == 0)
+            if (m == null || m.Count == 0)
             {
                 switch (name)
                 {
@@ -248,11 +253,11 @@ namespace NiL.JS.Core
             if (m.Count > 1)
             {
                 for (int i = 0; i < m.Count; i++)
-                    if (!(m[i] is MethodInfo))
+                    if (!(m[i] is MethodBase))
                         throw new JSException(Proxy(new TypeError("Incompatible fields type.")));
                 var cache = new MethodProxy[m.Count];
                 for (int i = 0; i < m.Count; i++)
-                    cache[i] = new MethodProxy(m[i] as MethodInfo);
+                    cache[i] = new MethodProxy(m[i] as MethodBase);
                 r = new ExternalFunction((context, args) =>
                 {
                     int l = args.GetField("length", true, false).iValue;
@@ -269,7 +274,7 @@ namespace NiL.JS.Core
                                 cargs = cache[i].ConvertArgs(args);
                                 for (var j = cargs.Length; j-- > 0; )
                                 {
-                                    if (!cache[i].Parameters[j].ParameterType.IsAssignableFrom(cargs[j] != null ? cargs[j].GetType() : typeof(object)))
+                                    if (cargs[j] == null ? cache[i].Parameters[j].ParameterType.IsValueType : !cache[i].Parameters[j].ParameterType.IsAssignableFrom(cargs[j].GetType()))
                                     {
                                         j = 0;
                                         cargs = null;
@@ -313,7 +318,7 @@ namespace NiL.JS.Core
                                     ValueType = JSObjectType.Property,
                                     oValue = new Function[] 
                                     {
-                                        m[0].GetCustomAttributes(typeof(Modules.ProtectedAttribute), false).Length == 0 ? 
+                                        m[0].IsDefined(typeof(Modules.ProtectedAttribute), false) ? 
                                             new ExternalFunction((c,a)=>{ field.SetValue(field.IsStatic ? null : (c.thisBind ?? c.GetField("this")).oValue, cva.To(a.GetField("0", true, false).Value)); return null; }) : null,
                                         new ExternalFunction((c,a)=>{ return Proxy(cva.From(field.GetValue(field.IsStatic ? null : c.thisBind.oValue)));})
                                     }
@@ -326,7 +331,7 @@ namespace NiL.JS.Core
                                     ValueType = JSObjectType.Property,
                                     oValue = new Function[] 
                                     {
-                                        m[0].GetCustomAttributes(typeof(Modules.ProtectedAttribute), false).Length == 0 ? new ExternalFunction((c,a)=>{ field.SetValue(field.IsStatic ? null : (c.thisBind ?? c.GetField("this")).oValue, a.GetField("0", true, false).Value); return null; }) : null,
+                                        !m[0].IsDefined(typeof(Modules.ProtectedAttribute), false) ? new ExternalFunction((c,a)=>{ field.SetValue(field.IsStatic ? null : (c.thisBind ?? c.GetField("this")).oValue, a.GetField("0", true, false).Value); return null; }) : null,
                                         new ExternalFunction((c,a)=>{ return Proxy(field.GetValue(field.IsStatic ? null : c.thisBind.oValue));})
                                     }
                                 };
@@ -378,21 +383,57 @@ namespace NiL.JS.Core
                         }
                     default: throw new NotImplementedException("Convertion from " + m[0].MemberType + " not implemented");
                 }
-                if (m[0].GetCustomAttributes(typeof(ProtectedAttribute), false).Length != 0)
+                if (m[0].IsDefined(typeof(ProtectedAttribute), false))
                     r.Protect();
-                if (m[0].GetCustomAttributes(typeof(DoNotDeleteAttribute), false).Length != 0)
+                if (m[0].IsDefined(typeof(DoNotDeleteAttribute), false))
                     r.attributes |= JSObjectAttributes.DontDelete;
             }
             r.attributes |= JSObjectAttributes.DontEnum;
             fields[name] = r;
+            for (var i = m.Count; i-- > 0; )
+            {
+                if (!m[i].IsDefined(typeof(DoNotEnumerateAttribute)))
+                {
+                    r.attributes &= ~JSObjectAttributes.DontEnum;
+                    break;
+                }
+            }
             return r;
         }
 
+        public override JSObject propertyIsEnumerable(JSObject args)
+        {
+            var name = args.GetField("0", true, false).ToString();
+            JSObject temp;
+            if (fields != null && fields.TryGetValue(name, out temp))
+                return temp.ValueType >= JSObjectType.Undefined && (temp.attributes & JSObjectAttributes.DontEnum) == 0;
+            IList<MemberInfo> m = null;
+            if (members.TryGetValue(name, out m))
+            {
+                for (var i = m.Count; i-- > 0; )
+                    if (!m[i].IsDefined(typeof(DoNotEnumerateAttribute), false))
+                        return false;
+                return true;
+            }
+            return false;
+        }
+
+        [Hidden]
         public override IEnumerator<string> GetEnumerator()
         {
-            if (fields == null)
-                return JSObject.EmptyEnumerator;
-            return fields.Keys.GetEnumerator();
+            if (members == null)
+                fillMembers();
+            foreach (var m in members)
+            {
+                for (var i = m.Value.Count; i-- > 0; )
+                {
+                    if (!m.Value[i].IsDefined(typeof(DoNotEnumerateAttribute)))
+                    {
+                        yield return m.Key;
+                        break;
+                    }
+                }
+            }
         }
 
         public override string ToString()
