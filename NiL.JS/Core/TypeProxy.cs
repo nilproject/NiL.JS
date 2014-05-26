@@ -399,7 +399,7 @@ namespace NiL.JS.Core
                 fields[name] = r;
             for (var i = m.Count; i-- > 0; )
             {
-                if (!m[i].IsDefined(typeof(DoNotEnumerateAttribute)))
+                if (!m[i].IsDefined(typeof(DoNotEnumerateAttribute), false))
                 {
                     r.attributes &= ~JSObjectAttributes.DontEnum;
                     break;
@@ -434,7 +434,7 @@ namespace NiL.JS.Core
             {
                 for (var i = m.Value.Count; i-- > 0; )
                 {
-                    if (!m.Value[i].IsDefined(typeof(DoNotEnumerateAttribute)))
+                    if (!m.Value[i].IsDefined(typeof(DoNotEnumerateAttribute), false))
                     {
                         yield return m.Key;
                         break;

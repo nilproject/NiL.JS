@@ -13,8 +13,8 @@ namespace NiL.JS.Core
     [Modules.Prototype(typeof(Function))]
     internal class TypeProxyConstructor : Function
     {
-        private static readonly new object _object = new object();
-        private static readonly new object[] _objectA = new object[0];
+        private static readonly object _object = new object();
+        private static readonly object[] _objectA = new object[0];
         internal readonly TypeProxy proxy;
         private MethodProxy[] constructors;
 
