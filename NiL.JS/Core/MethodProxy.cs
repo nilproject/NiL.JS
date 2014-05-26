@@ -38,6 +38,7 @@ namespace NiL.JS.Core
 
         public MethodProxy(MethodBase methodinfo, object hardTarget)
         {
+            var gp = methodinfo.GetGenericArguments();
             this.hardTarget = hardTarget;
             info = methodinfo;
             parameters = info.GetParameters();
@@ -246,7 +247,7 @@ namespace NiL.JS.Core
                 else
                 {
                     if (info is ConstructorInfo)
-                        info.Invoke(res = FormatterServices.GetUninitializedObject(info.ReflectedType), args);
+                        res = (info as ConstructorInfo).Invoke(args);
                     else
                     {
                         var target = hardTarget ?? getTargetObject(thisOverride ?? context.thisBind, info.DeclaringType);

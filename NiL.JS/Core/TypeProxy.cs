@@ -168,7 +168,7 @@ namespace NiL.JS.Core
                     }
                 }
 
-                ValueType = prototypeInstance is JSObject ? (JSObjectType)System.Math.Max((int)(prototypeInstance as JSObject).ValueType, (int)JSObjectType.Object) : JSObjectType.Object;
+                ValueType = _prototypeInstance is JSObject ? (JSObjectType)System.Math.Max((int)(_prototypeInstance as JSObject).ValueType, (int)JSObjectType.Object) : JSObjectType.Object;
                 oValue = this;
                 attributes |= JSObjectAttributes.DontDelete | JSObjectAttributes.DontEnum | JSObjectAttributes.ReadOnly;
                 if (hostedType.IsDefined(typeof(ImmutableAttribute), false))
@@ -210,10 +210,11 @@ namespace NiL.JS.Core
                     IList<MemberInfo> temp = null;
                     for (int i = 0; i < mmbrs.Length; i++)
                     {
+                        mmbrs[i].ToString();
                         if (mmbrs[i].IsDefined(typeof(HiddenAttribute), false))
                             continue;
                         var membername = mmbrs[i].Name;
-                        if (membername.EndsWith("GetType"))
+                        if (mmbrs[i].MemberType == MemberTypes.Method && membername.EndsWith("GetType"))
                             continue;
                         membername = membername[0] == '.' ? membername : membername.Contains(".") ? membername.Substring(membername.LastIndexOf('.') + 1) : membername;
                         if (prewName != membername && !members.TryGetValue(membername, out temp))

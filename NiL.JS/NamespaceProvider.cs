@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using NiL.JS.Core;
 
 namespace NiL.JS
 {
@@ -15,7 +18,9 @@ namespace NiL.JS
         {
             var types = assembly.GetTypes();
             for (var i = 0; i < types.Length; i++)
+            {
                 NamespaceProvider.types[types[i].FullName] = types[i];
+            }
         }
 
         static NamespaceProvider()
@@ -31,6 +36,12 @@ namespace NiL.JS
             addTypes(args.LoadedAssembly);
         }
 
+        private Dictionary<string, GenericType> unions;
+        private BinaryTree<JS.Core.JSObject> childs;
+
+        /// <summary>
+        /// Пространство имён, доступ к которому предоставляет указанный экземпляр.
+        /// </summary>
         public string Namespace { get; private set; }
 
         /// <summary>
@@ -40,17 +51,55 @@ namespace NiL.JS
         public NamespaceProvider(string @namespace)
         {
             Namespace = @namespace;
+            childs = new BinaryTree<JS.Core.JSObject>();
+        }
+
+        /// <summary>
+        /// Создаёт экземпляр объекта, предоставляющего доступ к указанному пространству имён.
+        /// </summary>
+        /// <param name="namespace">Пространство имён, доступ к которому требуется предоставить.</param>
+        /// <param name="union">Если установлено, одноимённые обобщённые типы будут объеденены в псевдотип под общим названием без указания количества обобщённых аргументов,
+        /// конструктор которого будет возвращать соответствующую реализацию обобщённого типа.</param>
+        public NamespaceProvider(string @namespace, bool union)
+            : this(@namespace)
+        {
+            unions = new Dictionary<string, GenericType>();
         }
 
         public override JS.Core.JSObject GetField(string name, bool fast, bool own)
         {
+            JS.Core.JSObject res = null;
+            if (childs.TryGetValue(name, out res))
+                return res;
             string reqname = Namespace + "." + name;
             var selection = types.StartedWith(reqname).GetEnumerator();
             if (selection.MoveNext())
             {
+                if (unions != null && selection.Current.Key != reqname && selection.Current.Value.FullName[reqname.Length] == '`')
+                {
+                    var ut = new GenericType(reqname);
+                    ut.Add(selection.Current.Value);
+                    while (selection.MoveNext())
+                        if (selection.Current.Value.FullName[reqname.Length] == '`')
+                        {
+                            string fn = selection.Current.Value.FullName;
+                            for (var i = fn.Length - 1; i > reqname.Length; i--)
+                                if (!char.IsDigit(fn[i]))
+                                {
+                                    fn = null;
+                                    break;
+                                }
+                            if (fn != null)
+                                ut.Add(selection.Current.Value);
+                        }
+                    res = TypeProxy.GetConstructor(ut);
+                    childs[name] = res;
+                    return res;
+                }
                 if (selection.Current.Key == reqname)
                     return NiL.JS.Core.TypeProxy.GetConstructor(selection.Current.Value);
-                return NiL.JS.Core.TypeProxy.Proxy(new NamespaceProvider(reqname));
+                res = TypeProxy.Proxy(new NamespaceProvider(reqname));
+                childs.Add(name, res);
             }
             return new JS.Core.JSObject();
         }

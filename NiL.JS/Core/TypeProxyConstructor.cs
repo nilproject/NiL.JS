@@ -18,11 +18,6 @@ namespace NiL.JS.Core
         internal readonly TypeProxy proxy;
         private MethodProxy[] constructors;
 
-        private static JSObject empty(Context context, JSObject args)
-        {
-            return null;
-        }
-
         public TypeProxyConstructor(TypeProxy typeProxy)
         {
             proxy = typeProxy;
@@ -147,6 +142,8 @@ namespace NiL.JS.Core
         public override JSObject Invoke(JSObject argsObj)
         {
             context.ValidateThreadID();
+            if (proxy.hostedType.ContainsGenericParameters)
+                throw new JSException(TypeProxy.Proxy(new BaseTypes.TypeError(proxy.hostedType.Name + " can't be created because it's generic type.")));
             var _this = context.thisBind;
             object[] args = null;
             MethodProxy constructor = findConstructor(argsObj, ref args);
@@ -193,6 +190,11 @@ namespace NiL.JS.Core
             {
                 throw e.InnerException;
             }
+        }
+
+        public override IEnumerator<string> GetEnumerator()
+        {
+            return proxy.GetEnumerator();
         }
 
         [Hidden]

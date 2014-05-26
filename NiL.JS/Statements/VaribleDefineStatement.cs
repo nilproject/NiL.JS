@@ -41,7 +41,11 @@ namespace NiL.JS.Statements
             {
                 int s = i;
                 if (!Parser.ValidateName(code, ref i, true, state.strict.Peek()))
+                {
+                    if (Parser.ValidateName(code, ref i, true, false, true, state.strict.Peek()))
+                        throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError('\"' + Tools.Unescape(code.Substring(s, i - s)) + "\" is a reserved word at " + Tools.PositionToTextcord(code, s))));
                     throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid varible definition at " + Tools.PositionToTextcord(code, s))));
+                }
                 string name = Tools.Unescape(code.Substring(s, i - s));
                 names.Add(name);
                 while (char.IsWhiteSpace(code[i]) && !Tools.isLineTerminator(code[i])) i++;

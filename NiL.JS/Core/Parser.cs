@@ -218,7 +218,6 @@ namespace NiL.JS.Core
         internal static bool ValidateName(string code, ref int index, bool move, bool reserveControl, bool allowEscape, bool strict)
         {
             int j = index;
-            int startI = j;
             if ((!allowEscape || code[j] != '\\') && (code[j] != '$') && (code[j] != '_') && (!char.IsLetter(code[j])))
                 return false;
             j++;
@@ -228,7 +227,7 @@ namespace NiL.JS.Core
                     break;
                 j++;
             }
-            if (startI == j)
+            if (index == j)
                 return false;
             string name = code.Substring(index, j - index);
             if (allowEscape)
@@ -296,6 +295,82 @@ namespace NiL.JS.Core
             if (move)
                 index = j;
             return true;
+        }
+
+        internal static bool IsReserevedWord(string code, int index, bool allowEscape, bool strict)
+        {
+            int j = index;
+            if ((!allowEscape || code[j] != '\\') && (code[j] != '$') && (code[j] != '_') && (!char.IsLetter(code[j])))
+                return false;
+            j++;
+            while (j < code.Length)
+            {
+                if ((!allowEscape || code[j] != '\\') && (code[j] != '$') && (code[j] != '_') && (!char.IsLetterOrDigit(code[j])))
+                    break;
+                j++;
+            }
+            if (index == j)
+                return false;
+            string name = code.Substring(index, j - index);
+            if (allowEscape)
+            {
+                int i = 0;
+                name = Tools.Unescape(name, false);
+                return IsReserevedWord(name, i, false, strict) && i == name.Length;
+            }
+            switch (name)
+            {
+                case "break":
+                case "case":
+                case "catch":
+                case "continue":
+                case "delete":
+                case "default":
+                case "do":
+                case "else":
+                case "finally":
+                case "for":
+                case "function":
+                case "if":
+                case "in":
+                case "instanceof":
+                case "new":
+                case "return":
+                case "switch":
+                case "this":
+                case "throw":
+                case "try":
+                case "typeof":
+                case "var":
+                case "void":
+                case "while":
+                case "with":
+                case "true":
+                case "false":
+                case "null":
+                case "export":
+                case "extends":
+                case "import":
+                case "super":
+                case "class":
+                case "const":
+                case "debugger":
+                case "enum":
+                    return true;
+                case "implements":
+                case "interface":
+                case "package":
+                case "private":
+                case "protected":
+                case "public":
+                case "static":
+                    {
+                        if (strict)
+                            return true;
+                        break;
+                    }
+            }
+            return false;
         }
 
         internal static bool ValidateNumber(string code, ref int index, bool move)

@@ -9,13 +9,13 @@ namespace NiL.JS
     /// Предоставляет реализацию бинарного дерева поиска со строковым аргументом.
     /// </summary>
     [Serializable]
-    internal class BinaryTree<T> : IDictionary<string, T>
+    internal class BinaryTree<TKey, TValue> : IDictionary<TKey, TValue> where TKey : IComparable
     {
-        private sealed class _Values : ICollection<T>
+        private sealed class _Values : ICollection<TValue>
         {
-            private BinaryTree<T> owner;
+            private BinaryTree<TKey, TValue> owner;
 
-            public _Values(BinaryTree<T> owner)
+            public _Values(BinaryTree<TKey, TValue> owner)
             {
                 this.owner = owner;
             }
@@ -23,7 +23,7 @@ namespace NiL.JS
             public int Count { get { return owner.Count; } }
             public bool IsReadOnly { get { return true; } }
 
-            public void Add(T item)
+            public void Add(TValue item)
             {
                 throw new NotSupportedException();
             }
@@ -33,7 +33,7 @@ namespace NiL.JS
                 throw new NotSupportedException();
             }
 
-            public bool Contains(T item)
+            public bool Contains(TValue item)
             {
                 foreach (var i in owner)
                 {
@@ -43,7 +43,7 @@ namespace NiL.JS
                 return false;
             }
 
-            public void CopyTo(T[] array, int arrayIndex)
+            public void CopyTo(TValue[] array, int arrayIndex)
             {
                 if (array.Length - arrayIndex < owner.Count)
                     throw new ArgumentOutOfRangeException();
@@ -51,12 +51,12 @@ namespace NiL.JS
                     array[arrayIndex++] = i.Value;
             }
 
-            public bool Remove(T item)
+            public bool Remove(TValue item)
             {
                 throw new NotSupportedException();
             }
 
-            public IEnumerator<T> GetEnumerator()
+            public IEnumerator<TValue> GetEnumerator()
             {
                 foreach (var kvp in owner)
                 {
@@ -66,15 +66,15 @@ namespace NiL.JS
 
             IEnumerator IEnumerable.GetEnumerator()
             {
-                return (this as IEnumerable<T>).GetEnumerator();
+                return (this as IEnumerable<TValue>).GetEnumerator();
             }
         }
 
-        private sealed class _Keys : ICollection<string>
+        private sealed class _Keys : ICollection<TKey>
         {
-            private BinaryTree<T> owner;
+            private BinaryTree<TKey, TValue> owner;
 
-            public _Keys(BinaryTree<T> owner)
+            public _Keys(BinaryTree<TKey, TValue> owner)
             {
                 this.owner = owner;
             }
@@ -82,7 +82,7 @@ namespace NiL.JS
             public int Count { get { return owner.Count; } }
             public bool IsReadOnly { get { return true; } }
 
-            public void Add(string item)
+            public void Add(TKey item)
             {
                 throw new NotSupportedException();
             }
@@ -92,12 +92,12 @@ namespace NiL.JS
                 throw new NotSupportedException();
             }
 
-            public bool Contains(string item)
+            public bool Contains(TKey item)
             {
                 return owner.ContainsKey(item);
             }
 
-            public void CopyTo(string[] array, int arrayIndex)
+            public void CopyTo(TKey[] array, int arrayIndex)
             {
                 if (array.Length - arrayIndex < owner.Count)
                     throw new ArgumentOutOfRangeException();
@@ -105,12 +105,12 @@ namespace NiL.JS
                     array[arrayIndex++] = i.Key;
             }
 
-            public bool Remove(string item)
+            public bool Remove(TKey item)
             {
                 throw new NotSupportedException();
             }
 
-            public IEnumerator<string> GetEnumerator()
+            public IEnumerator<TKey> GetEnumerator()
             {
                 foreach (var kvp in owner)
                 {
@@ -120,15 +120,15 @@ namespace NiL.JS
 
             IEnumerator IEnumerable.GetEnumerator()
             {
-                return (this as IEnumerable<string>).GetEnumerator();
+                return (this as IEnumerable<TKey>).GetEnumerator();
             }
         }
 
         [Serializable]
-        private sealed class Node
+        protected sealed class Node
         {
-            public string key = null;
-            public T value = default(T);
+            public TKey key;
+            public TValue value = default(TValue);
             public Node less = null;
             public Node greater = null;
             public int height;
@@ -228,12 +228,13 @@ namespace NiL.JS
         public int Count { get; private set; }
         public bool IsReadOnly { get { return false; } }
         [NonSerialized]
-        private ICollection<string> keys;
-        public ICollection<string> Keys { get { return keys ?? (keys = new _Keys(this)); } }
+        private ICollection<TKey> keys;
+        public ICollection<TKey> Keys { get { return keys ?? (keys = new _Keys(this)); } }
         [NonSerialized]
-        private ICollection<T> values;
-        public ICollection<T> Values { get { return values ?? (values = new _Values(this)); } }
+        private ICollection<TValue> values;
+        public ICollection<TValue> Values { get { return values ?? (values = new _Values(this)); } }
         private Node root;
+        protected Node Root { get { return root; } }
 
         public BinaryTree()
         {
@@ -242,13 +243,13 @@ namespace NiL.JS
             state = DateTime.UtcNow.Ticks;
         }
 
-        public T this[string key]
+        public TValue this[TKey key]
         {
             get
             {
                 if (key == null)
                     throw new ArgumentNullException();
-                T res;
+                TValue res;
                 if (!TryGetValue(key, out res))
                     throw new ArgumentException("Key not found.");
                 return res;
@@ -268,7 +269,7 @@ namespace NiL.JS
                     var c = root;
                     do
                     {
-                        var cmp = string.CompareOrdinal(key, c.key);
+                        var cmp = key.CompareTo(c.key);
                         if (cmp == 0)
                         {
                             c.value = value;
@@ -319,12 +320,12 @@ namespace NiL.JS
             root = null;
         }
 
-        public void Add(KeyValuePair<string, T> keyValuePair)
+        public void Add(KeyValuePair<TKey, TValue> keyValuePair)
         {
             Add(keyValuePair.Key, keyValuePair.Value);
         }
 
-        public void Add(string key, T value)
+        public void Add(TKey key, TValue value)
         {
             if (key == null)
                 throw new ArgumentNullException();
@@ -340,7 +341,7 @@ namespace NiL.JS
                 var stack = new Stack<Node>();
                 do
                 {
-                    var cmp = string.CompareOrdinal(key, c.key);
+                    var cmp = key.CompareTo(c.key);
                     if (cmp == 0)
                         throw new ArgumentException();
                     else if (cmp > 0)
@@ -382,11 +383,11 @@ namespace NiL.JS
 #if INLINE
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-        public bool TryGetValue(string key, out T value)
+        public bool TryGetValue(TKey key, out TValue value)
         {
             if (root == null)
             {
-                value = default(T);
+                value = default(TValue);
                 return false;
             }
             else
@@ -394,7 +395,7 @@ namespace NiL.JS
                 var c = root;
                 do
                 {
-                    var cmp = string.CompareOrdinal(key, c.key);
+                    var cmp = key.CompareTo(c.key);
                     if (cmp == 0)
                     {
                         value = c.value;
@@ -404,7 +405,7 @@ namespace NiL.JS
                     {
                         if (c.greater == null)
                         {
-                            value = default(T);
+                            value = default(TValue);
                             return false;
                         }
                         c = c.greater;
@@ -413,7 +414,7 @@ namespace NiL.JS
                     {
                         if (c.less == null)
                         {
-                            value = default(T);
+                            value = default(TValue);
                             return false;
                         }
                         c = c.less;
@@ -423,26 +424,26 @@ namespace NiL.JS
             }
         }
 
-        public bool ContainsKey(string key)
+        public bool ContainsKey(TKey key)
         {
-            T temp;
+            TValue temp;
             return TryGetValue(key, out temp);
         }
 
-        public bool Contains(KeyValuePair<string, T> keyValuePair)
+        public bool Contains(KeyValuePair<TKey, TValue> keyValuePair)
         {
-            T temp;
+            TValue temp;
             return TryGetValue(keyValuePair.Key, out temp) && keyValuePair.Value.Equals(temp);
         }
 
-        public bool Remove(string key)
+        public bool Remove(TKey key)
         {
             Node prev = null;
             var c = root;
             var stack = new Stack<Node>();
             do
             {
-                var cmp = string.CompareOrdinal(key, c.key);
+                var cmp = key.CompareTo(c.key);
                 if (cmp == 0)
                 {
                     if (c.greater == null)
@@ -529,7 +530,7 @@ namespace NiL.JS
             while (true);
         }
 
-        public bool Remove(KeyValuePair<string, T> keyValuePair)
+        public bool Remove(KeyValuePair<TKey, TValue> keyValuePair)
         {
             var key = keyValuePair.Key;
             Node prev = null;
@@ -537,7 +538,7 @@ namespace NiL.JS
             var stack = new Stack<Node>();
             do
             {
-                var cmp = string.CompareOrdinal(key, c.key);
+                var cmp = key.CompareTo(c.key);
                 if (cmp == 0)
                 {
                     if (!keyValuePair.Value.Equals(c.value))
@@ -626,7 +627,7 @@ namespace NiL.JS
             while (true);
         }
 
-        public void CopyTo(KeyValuePair<string, T>[] array, int index)
+        public void CopyTo(KeyValuePair<TKey, TValue>[] array, int index)
         {
             if (array == null)
                 throw new ArgumentNullException();
@@ -638,7 +639,7 @@ namespace NiL.JS
                 array[index++] = kvp;
         }
 
-        private IEnumerator<KeyValuePair<string, T>> enumerateReversed(Node node)
+        protected IEnumerator<KeyValuePair<TKey, TValue>> enumerateReversed(Node node)
         {
             if (node != null)
             {
@@ -662,7 +663,7 @@ namespace NiL.JS
                         if (step[sindex] < 2)
                         {
                             step[sindex] = 2;
-                            yield return new KeyValuePair<string, T>(stack[sindex].key, stack[sindex].value);
+                            yield return new KeyValuePair<TKey, TValue>(stack[sindex].key, stack[sindex].value);
                             if (sstate != state)
                                 throw new InvalidOperationException("Коллекция была изменена после создания перечислителя.");
                         }
@@ -680,7 +681,7 @@ namespace NiL.JS
             }
         }
 
-        private IEnumerator<KeyValuePair<string, T>> enumerate(Node node)
+        protected IEnumerator<KeyValuePair<TKey, TValue>> enumerate(Node node)
         {
             if (node != null)
             {
@@ -704,7 +705,7 @@ namespace NiL.JS
                         if (step[sindex] < 2)
                         {
                             step[sindex] = 2;
-                            yield return new KeyValuePair<string, T>(stack[sindex].key, stack[sindex].value);
+                            yield return new KeyValuePair<TKey, TValue>(stack[sindex].key, stack[sindex].value);
                             if (sstate != state)
                                 throw new InvalidOperationException("Коллекция была изменена после создания перечислителя.");
                         }
@@ -722,39 +723,41 @@ namespace NiL.JS
             }
         }
 
-        public IEnumerator<KeyValuePair<string, T>> GetEnumerator()
+        public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
         {
             return enumerate(root);
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return (this as IEnumerable<KeyValuePair<string, T>>).GetEnumerator();
+            return (this as IEnumerable<KeyValuePair<TKey, TValue>>).GetEnumerator();
         }
+    }
 
-        public IEnumerable<KeyValuePair<string, T>> StartedWith(string prefix)
+    internal sealed class BinaryTree<TValue> : BinaryTree<string, TValue>
+    {
+        public IEnumerable<KeyValuePair<string, TValue>> StartedWith(string prefix)
         {
             return StartedWith(prefix, false, 0, int.MaxValue);
         }
 
-        public IEnumerable<KeyValuePair<string, T>> StartedWith(string prefix, bool reversed)
+        public IEnumerable<KeyValuePair<string, TValue>> StartedWith(string prefix, bool reversed)
         {
             return StartedWith(prefix, reversed, 0, int.MaxValue);
         }
 
-        public IEnumerable<KeyValuePair<string, T>> StartedWith(string prefix, bool reversed, long offset)
+        public IEnumerable<KeyValuePair<string, TValue>> StartedWith(string prefix, bool reversed, long offset)
         {
             return StartedWith(prefix, reversed, offset, int.MaxValue);
         }
 
-        public IEnumerable<KeyValuePair<string, T>> StartedWith(string prefix, bool reversed, long offset, long count)
+        public IEnumerable<KeyValuePair<string, TValue>> StartedWith(string prefix, bool reversed, long offset, long count)
         {
-            var sstate = state;
-            var c = root;
+            var c = Root;
             if (c != null)
                 do
                 {
-                    var cmp = c.key.StartsWith(prefix) ? 0 : string.CompareOrdinal(prefix, c.key);
+                    var cmp = c.key.StartsWith(prefix) ? 0 : prefix.CompareTo(c.key);
                     if (cmp == 0)
                     {
                         var enmrtr = reversed ? enumerateReversed(c) : enumerate(c);
@@ -769,8 +772,6 @@ namespace NiL.JS
                             if (crnt.Key.StartsWith(prefix))
                             {
                                 yield return crnt;
-                                if (sstate != state)
-                                    throw new InvalidOperationException("Коллекция была изменена после создания перечислителя.");
                             }
                         }
                         break;

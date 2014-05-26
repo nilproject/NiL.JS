@@ -156,6 +156,7 @@
     <Compile Include="Core\BaseTypes\TypeError.cs" />
     <Compile Include="Core\Delegates.cs" />
     <Compile Include="Core\ExternalFunction.cs" />
+    <Compile Include="Core\GenericType.cs" />
     <Compile Include="Core\JSException.cs" />
     <Compile Include="Core\Modules\DoNotEnumerateAttribute.cs" />
     <Compile Include="Core\Modules\DontDeleteAttribute.cs" />
