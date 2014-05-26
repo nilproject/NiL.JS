@@ -12,10 +12,7 @@ namespace NiL.JS.Core
     [Serializable]
     public class MethodProxy : Function
     {
-        private NiL.JS.Core.BaseTypes.String @string;// = new BaseTypes.String();
-        private NiL.JS.Core.BaseTypes.Number number;// = new Number();
-        private NiL.JS.Core.BaseTypes.Boolean boolean;// = new BaseTypes.Boolean();
-
+        private object hardTarget = null;
         private MethodBase info;
         private Func<object[], object> @delegate = null;
         private Modules.ConvertValueAttribute converter;
@@ -28,14 +25,20 @@ namespace NiL.JS.Core
         public ParameterInfo[] Parameters { get { return parameters; } }
 
         public MethodProxy(MethodBase methodinfo, Modules.ConvertValueAttribute converter, Modules.ConvertValueAttribute[] paramsConverters)
-            : this(methodinfo)
+            : this(methodinfo, null)
         {
             this.converter = converter;
             this.paramsConverters = paramsConverters;
         }
 
         public MethodProxy(MethodBase methodinfo)
+            : this(methodinfo, null)
         {
+        }
+
+        public MethodProxy(MethodBase methodinfo, object hardTarget)
+        {
+            this.hardTarget = hardTarget;
             info = methodinfo;
             parameters = info.GetParameters();
             if (info is MethodInfo)
@@ -173,8 +176,7 @@ namespace NiL.JS.Core
                     {
                         if (typeof(BaseTypes.Number) != targetType && !typeof(BaseTypes.Number).IsSubclassOf(targetType))
                             return null;
-                        if (number == null)
-                            number = new Number();
+                        var number = new Number();
                         number.iValue = source.iValue;
                         number.dValue = source.dValue;
                         number.ValueType = source.ValueType;
@@ -184,8 +186,7 @@ namespace NiL.JS.Core
                     {
                         if (typeof(BaseTypes.String) != targetType && !typeof(BaseTypes.String).IsSubclassOf(targetType))
                             return null;
-                        if (@string == null)
-                            @string = new BaseTypes.String();
+                        var @string = new BaseTypes.String();
                         @string.oValue = source.oValue;
                         return @string;
                     }
@@ -193,8 +194,7 @@ namespace NiL.JS.Core
                     {
                         if (typeof(BaseTypes.Boolean) != targetType && !typeof(BaseTypes.Boolean).IsSubclassOf(targetType))
                             return null;
-                        if (boolean == null)
-                            boolean = new BaseTypes.Boolean();
+                        var boolean = new BaseTypes.Boolean();
                         boolean.iValue = source.iValue;
                         return boolean;
                     }
@@ -249,11 +249,11 @@ namespace NiL.JS.Core
                         info.Invoke(res = FormatterServices.GetUninitializedObject(info.ReflectedType), args);
                     else
                     {
-                        var target = getTargetObject(thisOverride ?? context.thisBind, info.DeclaringType);
+                        var target = hardTarget ?? getTargetObject(thisOverride ?? context.thisBind, info.DeclaringType);
                         if (target != null && target.GetType() != info.ReflectedType) // you bunny wrote
                         {
                             var minfo = info as MethodInfo;
-                            if (minfo.ReturnType.IsValueType)
+                            if (minfo.ReturnType != typeof(void) && minfo.ReturnType.IsValueType)
                                 throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError("Invalid return type of method " + minfo)));
                             if (parameters.Length > 16)
                                 throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError("Invalid parameters count of method " + minfo)));

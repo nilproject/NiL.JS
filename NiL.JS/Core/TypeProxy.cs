@@ -77,6 +77,8 @@ namespace NiL.JS.Core
                 return value.ToString();
             else if (value is bool)
                 return (bool)value;
+            else if (value is Delegate)
+                return new MethodProxy(((Delegate)value).Method, ((Delegate)value).Target);
             else
             {
                 var type = value.GetType();
@@ -355,7 +357,7 @@ namespace NiL.JS.Core
                                         ValueType = JSObjectType.Property,
                                         oValue = new Function[] 
                                         { 
-                                            pinfo.CanWrite && pinfo.GetSetMethod(false) != null ? new MethodProxy(pinfo.GetSetMethod(false), cva, new[]{ cva }) : null,
+                                            pinfo.CanWrite && pinfo.GetSetMethod(false) != null && !pinfo.IsDefined(typeof(ProtectedAttribute), false) ? new MethodProxy(pinfo.GetSetMethod(false), cva, new[]{ cva }) : null,
                                             pinfo.CanRead && pinfo.GetGetMethod(false) != null ? new MethodProxy(pinfo.GetGetMethod(false), cva, null) : null 
                                         }
                                     };
@@ -367,7 +369,7 @@ namespace NiL.JS.Core
                                     ValueType = JSObjectType.Property,
                                     oValue = new Function[] 
                                         { 
-                                            pinfo.CanWrite && pinfo.GetSetMethod(false) != null ? new MethodProxy(pinfo.GetSetMethod(false)) : null,
+                                            pinfo.CanWrite && pinfo.GetSetMethod(false) != null && !pinfo.IsDefined(typeof(ProtectedAttribute), false) ? new MethodProxy(pinfo.GetSetMethod(false)) : null,
                                             pinfo.CanRead && pinfo.GetGetMethod(false) != null ? new MethodProxy(pinfo.GetGetMethod(false)) : null 
                                         }
                                 };

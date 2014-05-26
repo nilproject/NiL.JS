@@ -197,11 +197,13 @@ namespace NiL.JS.Core
             if (argsCount > 1)
                 threadsCount = Tools.JSObjectToInt(args.GetField("1", true, false));
             var function = args.GetField("0", true, false).oValue as Function;
-            if (function != null)
+            Thread[] threads = null;
+            if (function != null && threadsCount > 0)
             {
+                threads = new Thread[threadsCount];
                 for (var i = 0; i < threadsCount; i++)
                 {
-                    new Thread((o) =>
+                    (threads[i] = new Thread((o) =>
                     {
                         var targs = new JSObject(true)
                         {
@@ -218,10 +220,46 @@ namespace NiL.JS.Core
                             attributes = JSObjectAttributes.DontEnum
                         }).Protect();
                         function.Invoke(context, targs);
-                    }).Start(i);
+                    })).Start(i);
                 }
             }
-            return null;
+            return TypeProxy.Proxy(new
+            {
+                isAlive = new Func<JSObject, bool>((arg) =>
+                {
+                    if (threads == null)
+                        return false;
+                    argsCount = Tools.JSObjectToInt(arg.GetField("length", true, false));
+                    if (argsCount == 0)
+                    {
+                        for (int i = 0; i < threads.Length; i++)
+                        {
+                            if (threads[i].IsAlive)
+                                return true;
+                        }
+                    }
+                    else
+                    {
+                        var threadIndex = Tools.JSObjectToInt(args.GetField("0", true, false));
+                        if (threadIndex < threads.Length && threadIndex >= 0)
+                            return threads[threadIndex].IsAlive;
+                    }
+                    return false;
+                }),
+                waitEnd = new Action(() =>
+                {
+                    if (threads == null)
+                        return;
+                    for (int i = 0; i < threads.Length; i++)
+                    {
+                        if (threads[i].IsAlive)
+                        {
+                            Thread.Sleep(1);
+                            i = -1;
+                        }
+                    }
+                })
+            });
         }
 
         static Context()

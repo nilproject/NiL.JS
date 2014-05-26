@@ -68,8 +68,9 @@ namespace NiL.JS.Statements
                 }
                 else
                 {
+                    cacheRes = context.GetField(varibleName);
                     cacheContext = context;
-                    return cacheRes = context.GetField(varibleName);
+                    return cacheRes;
                 }
             }
         }

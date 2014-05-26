@@ -33,8 +33,7 @@ namespace NiL.JS.Statements
 
         internal override JSObject Invoke(Context context)
         {
-            var res = impl(context, true);
-            return res;
+            return impl(context, true);
         }
 
         private JSObject impl(Context context, bool callProp)
