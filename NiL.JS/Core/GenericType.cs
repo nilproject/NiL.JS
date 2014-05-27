@@ -384,11 +384,6 @@ namespace NiL.JS.Core
             return null;
         }
 
-        protected override TypeCode GetTypeCodeImpl()
-        {
-            return TypeCode.Empty;
-        }
-
         public override Guid GUID
         {
             get { return Guid.Empty; }
@@ -430,24 +425,6 @@ namespace NiL.JS.Core
         }
 
         public override bool IsDefined(Type attributeType, bool inherit)
-        {
-            return false;
-        }
-
-        public override bool IsEnum
-        {
-            get
-            {
-                return false;
-            }
-        }
-
-        public override bool IsEnumDefined(object value)
-        {
-            return false;
-        }
-
-        public override bool IsEquivalentTo(Type other)
         {
             return false;
         }
