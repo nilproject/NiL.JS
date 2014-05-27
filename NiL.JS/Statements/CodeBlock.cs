@@ -26,14 +26,11 @@ namespace NiL.JS.Statements
                 if (codeLength >= 0)
                 {
                     lock (this)
-                        try
-                        {
-                            return code = code.Substring(Position + 1, codeLength);
-                        }
-                        finally
-                        {
-                            codeLength = -1;
-                        }
+                    {
+                        code = code.Substring(Position + 1, codeLength);
+                        codeLength = -1;
+                        return code;
+                    }
                 }
                 else
                     return code;
