@@ -292,7 +292,7 @@ namespace NiL.JS.Core
                                 if (cargs == null)
                                     continue;
                             }
-                            if (cargs.Length == 1 && cargs[0] is JSObject && (cargs[0] as JSObject).oValue == Arguments.Instance)
+                            if (cargs != null && cargs.Length == 1 && cargs[0] is JSObject && (cargs[0] as JSObject).oValue == Arguments.Instance)
                                 (cargs[0] as JSObject).fields["callee"] = cache[i];
                             return TypeProxy.Proxy(cache[i].InvokeRaw(context, null, cargs));
                         }
