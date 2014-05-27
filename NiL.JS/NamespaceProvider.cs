@@ -100,6 +100,7 @@ namespace NiL.JS
                     return NiL.JS.Core.TypeProxy.GetConstructor(selection.Current.Value);
                 res = TypeProxy.Proxy(new NamespaceProvider(reqname));
                 childs.Add(name, res);
+                return res;
             }
             return new JS.Core.JSObject();
         }
