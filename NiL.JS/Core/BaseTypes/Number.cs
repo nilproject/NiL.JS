@@ -386,21 +386,25 @@ namespace NiL.JS.Core.BaseTypes
             return ValueType == JSObjectType.Int ? iValue.GetHashCode() : dValue.GetHashCode();
         }
 
+        [Modules.Hidden]
         public static implicit operator Number(int value)
         {
             return new Number(value);
         }
 
+        [Modules.Hidden]
         public static implicit operator Number(double value)
         {
             return new Number(value);
         }
 
+        [Modules.Hidden]
         public static implicit operator double(Number value)
         {
             return value == null ? 0 : value.ValueType == JSObjectType.Int ? value.iValue : value.dValue;
         }
 
+        [Modules.Hidden]
         public static explicit operator int(Number value)
         {
             return value == null ? 0 : value.ValueType == JSObjectType.Int ? value.iValue : (int)value.dValue;

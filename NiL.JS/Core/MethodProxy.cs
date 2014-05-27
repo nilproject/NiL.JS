@@ -38,7 +38,6 @@ namespace NiL.JS.Core
 
         public MethodProxy(MethodBase methodinfo, object hardTarget)
         {
-            var gp = methodinfo.GetGenericArguments();
             this.hardTarget = hardTarget;
             info = methodinfo;
             parameters = info.GetParameters();
