@@ -325,7 +325,7 @@ namespace NiL.JS.Core
             try
             {
                 context.ValidateThreadID();
-                return Invoke(null as JSObject, args);
+                return TypeProxy.Proxy(InvokeRaw(context, null, @delegate != null ? argumentsToArray(args) : ConvertArgs(args)));
             }
             finally
             {
@@ -344,7 +344,7 @@ namespace NiL.JS.Core
             try
             {
                 context.ValidateThreadID();
-                return Invoke(thisOverride, args);
+                return TypeProxy.Proxy(InvokeRaw(context, thisOverride, @delegate != null ? argumentsToArray(args) : ConvertArgs(args)));
             }
             finally
             {
