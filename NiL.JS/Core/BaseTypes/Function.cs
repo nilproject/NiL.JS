@@ -748,7 +748,7 @@ namespace NiL.JS.Core.BaseTypes
                         ValueType = JSObjectType.Object,
                         oValue = @this,
                         attributes = JSObjectAttributes.DontEnum | JSObjectAttributes.DontDelete | JSObjectAttributes.Immutable,
-                        prototype = @this.prototype ?? @this.GetField("__proto__", true, false)
+                        prototype = @this.prototype ?? (@this.ValueType <= JSObjectType.Undefined ? @this.prototype : @this.GetField("__proto__", true, false))
                     };
                 }
                 internalContext.thisBind = @this;
