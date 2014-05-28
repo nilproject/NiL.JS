@@ -280,14 +280,19 @@ namespace NiL.JS.Core
         internal virtual bool inEval { get; set; }
 
         /// <summary>
-        /// Событие, возникающее в случае использования оператора "debugger".
+        /// Событие, возникающее при попытке выполнения оператора "debugger".
         /// </summary>
         public event ExternalFunction.ExternalFunctionDelegate DebuggerCallback;
 
         internal void raiseDebugger(int position, Tools.TextCord textCord)
         {
-            if (DebuggerCallback != null)
-                DebuggerCallback(this, new BaseTypes.Array() { position, textCord.line, textCord.column });
+            var p = this;
+            while (p != null)
+            {
+                if (p.DebuggerCallback != null)
+                    p.DebuggerCallback(this, new BaseTypes.Array() { position, textCord.line, textCord.column });
+                p = p.prototype;
+            }
         }
 
         private Context()

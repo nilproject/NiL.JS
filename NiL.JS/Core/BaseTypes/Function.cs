@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using NiL.JS.Core.Modules;
+using System.Diagnostics;
 
 namespace NiL.JS.Core.BaseTypes
 {
@@ -747,7 +748,7 @@ namespace NiL.JS.Core.BaseTypes
                         ValueType = JSObjectType.Object,
                         oValue = @this,
                         attributes = JSObjectAttributes.DontEnum | JSObjectAttributes.DontDelete | JSObjectAttributes.Immutable,
-                        prototype = @this.prototype
+                        prototype = @this.prototype ?? @this.GetField("__proto__", true, false)
                     };
                 }
                 internalContext.thisBind = @this;
@@ -822,12 +823,62 @@ namespace NiL.JS.Core.BaseTypes
             var newThis = args.GetField("0", true, false);
             var prmlen = --args.GetField("length", true, false).iValue;
             for (int i = 0; i < prmlen; i++)
-                args.fields[i.ToString()] = args.GetField((i + 1).ToString(), true, false);
-            args.fields.Remove(prmlen.ToString());
+                args.fields[i < 16 ? Tools.NumString[i] : i.ToString()] = args.GetField(i < 15 ? Tools.NumString[i + 1] : (i + 1).ToString(), true, false);
+            args.fields.Remove(prmlen < 16 ? Tools.NumString[prmlen] : prmlen.ToString());
             if (newThis.ValueType < JSObjectType.Object || newThis.oValue != null)
                 return Invoke(newThis, args);
             else
                 return Invoke(Context.currentRootContext.thisBind ?? Context.currentRootContext.GetField("this"), args);
+        }
+
+        public virtual JSObject apply(JSObject args)
+        {
+            var newThis = args.GetField("0", true, false);
+            var iargs = args.GetField("1", true, false);
+            var lengthO = args.GetField("length", false, true);
+            var callee = args.GetField("callee", true, true);
+            args.fields.Clear();
+            var prmsC = 0;
+            if (iargs != undefined)
+            {
+                var prmsCR = iargs.GetField("length", true, false);
+                prmsC = Tools.JSObjectToInt(prmsCR.ValueType == JSObjectType.Property ? (prmsCR.oValue as Function[])[1].Invoke(iargs, null) : prmsCR);
+                for (int i = 0; i < prmsC; i++)
+                    args.fields[i < 16 ? Tools.NumString[i] : i.ToString()] = iargs.GetField(i < 16 ? Tools.NumString[i] : i.ToString(), true, false);
+            }
+            if (callee != undefined)
+            {
+                callee.oValue = this;
+                args.fields["callee"] = callee;
+            }
+#if DEBUG
+            Debug.Assert(lengthO.assignCallback == null);
+#endif
+            if (lengthO.assignCallback != null)
+                lengthO.assignCallback = null;
+            args.fields["length"] = lengthO;
+            lengthO.ValueType = JSObjectType.Int;
+            lengthO.iValue = prmsC;
+            if (newThis.ValueType < JSObjectType.Object || newThis.oValue != null)
+                return Invoke(newThis, args);
+            else
+                return Invoke(Context.currentRootContext.thisBind ?? Context.currentRootContext.GetField("this"), args);
+        }
+
+        public virtual JSObject bind(JSObject args)
+        {
+            var prmsCR = args.GetField("length", true, false);
+            var prmsC = Tools.JSObjectToInt(prmsCR.ValueType == JSObjectType.Property ? (prmsCR.oValue as Function[])[1].Invoke(args, null) : prmsCR);
+            if (prmsC > 0)
+            {
+                var newThis = args.GetField("0", true, false);
+                if (newThis != undefined)
+                    return new ExternalFunction((context, bargs) =>
+                    {
+                        return Invoke(newThis, bargs);
+                    });
+            }
+            return this;
         }
 
         public override IEnumerator<string> GetEnumerator()
