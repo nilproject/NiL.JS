@@ -25,6 +25,8 @@ namespace NiL.JS.Statements.Operators
         internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, Statement> vars)
         {
             threads = ((second as ImmidateValueStatement).value.oValue as Statement[]);
+            Parser.Optimize(ref threads[0], depth + 1, vars);
+            Parser.Optimize(ref threads[1], depth + 1, vars);
             return base.Optimize(ref _this, depth, vars);
         }
 

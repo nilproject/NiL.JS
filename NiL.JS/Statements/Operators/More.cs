@@ -14,9 +14,9 @@ namespace NiL.JS.Statements.Operators
 
         internal override JSObject Invoke(Context context)
         {
-            var temp = first.Invoke(context);
             lock (this)
             {
+                var temp = first.Invoke(context);
                 var lvt = temp.ValueType;
                 switch (lvt)
                 {

@@ -51,12 +51,14 @@ namespace NiL.JS.Statements
 
         internal override JSObject Invoke(Context context)
         {
-            context.objectSource = null;
             if (context == cacheContext)
+            {
+                context.objectSource = null;
                 if (cacheRes == null)
                     return (cacheRes = context.GetField(varibleName));
                 else
                     return cacheRes;
+            }
             lock (this)
             {
                 if (context.GetType() == typeof(WithContext))

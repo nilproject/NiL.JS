@@ -220,8 +220,9 @@ namespace NiL.JS.Core
                             attributes = JSObjectAttributes.DontEnum
                         }).Protect();
                         function.Invoke(context, targs);
-                    })).Start(i);
+                    }) { Name = "NiL.JS __pinvoke thread (" + __pinvokeCalled + ":" + i + ")" }).Start(i);
                 }
+                __pinvokeCalled++;
             }
             return TypeProxy.Proxy(new
             {
@@ -270,6 +271,7 @@ namespace NiL.JS.Core
         protected readonly Context prototype;
 
         private int threadid = 0;
+        private static uint __pinvokeCalled;
 
         internal Dictionary<string, JSObject> fields;
         internal AbortType abort;

@@ -14,9 +14,9 @@ namespace NiL.JS.Statements.Operators
 
         internal override JSObject Invoke(Context context)
         {
-            JSObject temp = first.Invoke(context);
             lock (this)
             {
+                JSObject temp = first.Invoke(context);
                 switch (temp.ValueType)
                 {
                     case JSObjectType.Bool:

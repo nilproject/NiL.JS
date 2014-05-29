@@ -204,7 +204,9 @@ namespace NiL.JS.Core
             {
                 lock (fields)
                 {
-                    members = new Dictionary<string, IList<MemberInfo>>();
+                    if (members != null)
+                        return;
+                    var tempmemb = new Dictionary<string, IList<MemberInfo>>();
                     var mmbrs = hostedType.GetMembers(bindFlags);
                     string prewName = null;
                     IList<MemberInfo> temp = null;
@@ -217,20 +219,21 @@ namespace NiL.JS.Core
                         if (mmbrs[i].MemberType == MemberTypes.Method && membername.EndsWith("GetType"))
                             continue;
                         membername = membername[0] == '.' ? membername : membername.Contains(".") ? membername.Substring(membername.LastIndexOf('.') + 1) : membername;
-                        if (prewName != membername && !members.TryGetValue(membername, out temp))
+                        if (prewName != membername && !tempmemb.TryGetValue(membername, out temp))
                         {
-                            members[membername] = temp = new List<MemberInfo>() { mmbrs[i] };
+                            tempmemb[membername] = temp = new List<MemberInfo>() { mmbrs[i] };
                             prewName = membername;
                         }
                         else
                         {
                             if (temp.Count == 1)
-                                members.Add(membername + "$0", new[] { temp[0] });
+                                tempmemb.Add(membername + "$0", new[] { temp[0] });
                             temp.Add(mmbrs[i]);
                             if (temp.Count != 1)
-                                members.Add(membername + "$" + (temp.Count - 1), new[] { mmbrs[i] });
+                                tempmemb.Add(membername + "$" + (temp.Count - 1), new[] { mmbrs[i] });
                         }
                     }
+                    members = tempmemb;
                 }
             }
         }
