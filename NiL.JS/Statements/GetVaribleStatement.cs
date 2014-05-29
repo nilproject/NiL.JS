@@ -85,6 +85,7 @@ namespace NiL.JS.Statements
         internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, Statement> varibles)
         {
             _this = cache[varibleName];
+            _this.Position = -1;
             return false;
         }
     }

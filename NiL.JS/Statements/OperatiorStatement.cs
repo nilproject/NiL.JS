@@ -1003,7 +1003,8 @@ namespace NiL.JS.Statements
                             {
                                 first = first,
                                 second = new ImmidateValueStatement(new JSObject() { ValueType = JSObjectType.Object, oValue = args.ToArray() }) { Position = startPos - 1 },
-                                _type = OperationType.Call
+                                _type = OperationType.Call,
+                                Position = startPos - 1
                             };
                             i++;
                             repeat = !forNew;
