@@ -12,7 +12,7 @@ namespace NiL.JS.Statements
         private JSObject cacheRes;
         private string varibleName;
         private GetVaribleStatement unionGetter;
-        
+
         public string VaribleName { get { return varibleName; } }
 
         internal GetVaribleStatement(string name)
@@ -37,11 +37,9 @@ namespace NiL.JS.Statements
 
         internal override JSObject Invoke(Context context)
         {
+            context.objectSource = null;
             if (context == cacheContext)
-            {
-                context.objectSource = null;
                 return (cacheRes = context.GetField(varibleName));
-            }
             lock (this)
             {
                 if (context.GetType() == typeof(WithContext))
