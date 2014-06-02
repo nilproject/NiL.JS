@@ -54,6 +54,7 @@ namespace NiL.JS.Statements.Operators
                 arguments.fields[i < 16 ? Tools.NumString[i] : i.ToString()] = a;
                 a.attributes |= JSObjectAttributes.Argument;
             }
+            context.objectSource = null;
             arguments.prototype = JSObject.GlobalPrototype;
             arguments.fields["callee"] = field = new JSObject();
             field.ValueType = JSObjectType.Function;

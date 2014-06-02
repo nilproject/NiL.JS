@@ -125,7 +125,9 @@ namespace NiL.JS.Statements
                             funcs = new List<FunctionStatement>();
                         funcs.AddRange(cb.functions);
                     }
+                    int s = body.Count;
                     body.AddRange(cb.body);
+                    body.Reverse(s, cb.body.Length);
                 }
                 else body.Add(t);
             }
@@ -133,6 +135,8 @@ namespace NiL.JS.Statements
             int startPos = index;
             index = i;
             body.Reverse();
+            if (funcs != null)
+                funcs.Reverse();
             return new ParseResult()
             {
                 IsParsed = true,
@@ -187,6 +191,11 @@ namespace NiL.JS.Statements
                     functions[i] = f as FunctionStatement;
                 }
             }
+            if (this.varibles != null)
+            {
+                for (var i = this.varibles.Length; i-- > 0; )
+                    varibles[this.varibles[i]] = null;
+            }
             for (int i = body.Length; i-- > 0; )
                 Parser.Optimize(ref body[i], depth < 0 ? 2 : Math.Max(1, depth), varibles);
 
@@ -219,15 +228,9 @@ namespace NiL.JS.Statements
                     }
                 }
                 if (funcs != null)
-                {
-                    funcs.Reverse();
                     this.functions = funcs.ToArray();
-                }
                 if (vars != null)
-                {
-                    vars.Reverse();
                     this.varibles = vars.ToArray();
-                }
             }
             return false;
         }

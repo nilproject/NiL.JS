@@ -1,15 +1,23 @@
-﻿if (!(Object.prototype.toString.hasOwnProperty('length'))) {
-    $FAIL('#0: the Object.prototype.toString has length property.');
+﻿try {
+    var __result = __func();
+} catch (e) {
+    $FAIL("#1: Function call can appears in the program before the FunctionDeclaration appears");
 }
-
-
-// CHECK#1
-if (Object.prototype.toString.propertyIsEnumerable('length')) {
-    $ERROR('#1: the Object.prototype.toString.length property has the attributes DontEnum');
+if (__result !== "SECOND") {
+    $ERROR('#1.1: __result === "SECOND". Actual: __result ===' + __result);
 }
+//
+//////////////////////////////////////////////////////////////////////////////
 
-// CHECK#2
-for (var p in Object.prototype.toString) {
-    if (p === "length")
-        $ERROR('#2: the Object.prototype.toString.length property has the attributes DontEnum');
+function __func() { return "FIRST"; };
+
+//////////////////////////////////////////////////////////////////////////////
+//CHECK#2
+__result = __func();
+if (__result !== "SECOND") {
+    $ERROR('#2: __result === "SECOND". Actual: __result ===' + __result);
 }
+//
+//////////////////////////////////////////////////////////////////////////////
+
+function __func() { return "SECOND"; };

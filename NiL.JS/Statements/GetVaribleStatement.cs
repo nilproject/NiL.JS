@@ -12,7 +12,7 @@ namespace NiL.JS.Statements
         private JSObject cacheRes;
         private string varibleName;
         private GetVaribleStatement unionGetter;
-
+        
         public string VaribleName { get { return varibleName; } }
 
         internal GetVaribleStatement(string name)
@@ -37,8 +37,6 @@ namespace NiL.JS.Statements
 
         internal override JSObject Invoke(Context context)
         {
-            if (unionGetter != null)
-                return unionGetter.Invoke(context);
             if (context == cacheContext)
             {
                 context.objectSource = null;
@@ -69,11 +67,6 @@ namespace NiL.JS.Statements
 
         internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, Statement> varibles)
         {
-            Statement vgetter = null;
-            if (varibles.TryGetValue(varibleName, out vgetter) && vgetter == null)
-                varibles[varibleName] = this;
-            else
-                this.unionGetter = vgetter as GetVaribleStatement;
             return false;
         }
     }
