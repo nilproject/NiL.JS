@@ -35,7 +35,8 @@ namespace NiL.JS.Statements
                 Statement = new BreakStatement()
                 {
                     label = label,
-                    Position = pos
+                    Position = pos - 1,
+                    Length = index - pos
                 }
             };
         }

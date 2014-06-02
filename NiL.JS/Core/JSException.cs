@@ -15,6 +15,12 @@ namespace NiL.JS.Core
             Avatar = avatar;
         }
 
+        public JSException(JSObject avatar, Exception innerException)
+            :base("", innerException)
+        {
+            Avatar = avatar;
+        }
+
         public override string Message
         {
             get

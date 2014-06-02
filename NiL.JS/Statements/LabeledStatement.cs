@@ -40,7 +40,8 @@ namespace NiL.JS.Statements
                 {
                     statement = stat,
                     label = label,
-                    Position = pos
+                    Position = pos - 1,
+                    Length = index - pos
                 }
             };
         }

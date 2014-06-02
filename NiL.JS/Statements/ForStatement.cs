@@ -57,6 +57,7 @@ namespace NiL.JS.Statements
                 throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
             state.AllowBreak--;
             state.AllowContinue--;
+            int startPos = index;
             index = i;
             int id = 0;
             if (body != null && !(body is EmptyStatement))
@@ -95,7 +96,9 @@ namespace NiL.JS.Statements
                     init = init,
                     post = post,
                     implId = id,
-                    labels = state.Labels.GetRange(state.Labels.Count - labelsCount, labelsCount)
+                    labels = state.Labels.GetRange(state.Labels.Count - labelsCount, labelsCount),
+                    Position = startPos,
+                    Length = index - startPos
                 }
             };
         }

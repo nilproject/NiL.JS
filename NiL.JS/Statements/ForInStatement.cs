@@ -69,6 +69,7 @@ namespace NiL.JS.Statements
             state.AllowBreak--;
             state.AllowContinue--;
             res.Position = index;
+            res.Length = i - index;
             index = i;
             return new ParseResult()
             {

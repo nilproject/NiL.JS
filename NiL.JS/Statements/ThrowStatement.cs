@@ -28,7 +28,8 @@ namespace NiL.JS.Statements
                 Statement = new ThrowStatement()
                 {
                     body = b,
-                    Position = pos
+                    Position = pos - 1,
+                    Length = index - pos
                 }
             };
         }

@@ -173,7 +173,8 @@ namespace NiL.JS.Statements
                 parameters = arguments.ToArray(),
                 body = body,
                 mode = mode,
-                Position = index
+                Position = index - 1,
+                Length = i - index
             };
             index = i;
             return new ParseResult()
@@ -202,7 +203,7 @@ namespace NiL.JS.Statements
         internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, Statement> varibles)
         {
             var stat = body as Statement;
-            body.Optimize(ref stat, 0, varibles);
+            body.Optimize(ref stat, 0, new Dictionary<string,Statement>());
             body = stat as CodeBlock;
             return false;
         }

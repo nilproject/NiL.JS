@@ -49,7 +49,8 @@ namespace NiL.JS.Statements
                 Statement = new ArrayStatement()
                 {
                     elements = elms.ToArray(),
-                    Position = pos
+                    Position = pos - 1,
+                    Length = index - pos
                 }
             };
         }

@@ -114,7 +114,8 @@ namespace NiL.JS.Statements
                 {
                     fields = flds.ToArray(),
                     values = vls.ToArray(),
-                    Position = pos
+                    Position = pos - 1,
+                    Length = index - pos
                 }
             };
         }

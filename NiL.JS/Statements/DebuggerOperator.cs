@@ -20,7 +20,12 @@ namespace NiL.JS.Statements
             return new ParseResult()
             {
                 IsParsed = true,
-                Statement = new DebuggerOperator() { Position = pos, textCord = tc }
+                Statement = new DebuggerOperator()
+                {
+                    Position = pos - 1,
+                    Length = index - pos,
+                    textCord = tc
+                }
             };
         }
 

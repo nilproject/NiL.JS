@@ -60,7 +60,8 @@ namespace NiL.JS.Statements
                     body = body,
                     condition = condition,
                     elseBody = elseBody,
-                    Position = pos
+                    Position = pos - 1,
+                    Length = index - pos
                 }
             };
         }

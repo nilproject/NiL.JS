@@ -73,7 +73,11 @@ namespace NiL.JS.Statements
             return new ParseResult()
             {
                 IsParsed = true,
-                Statement = new VaribleDefineStatement(names.ToArray(), inits) { Position = pos }
+                Statement = new VaribleDefineStatement(names.ToArray(), inits)
+                {
+                    Position = pos - 1,
+                    Length = index - pos
+                }
             };
         }
 

@@ -37,5 +37,10 @@ namespace NiL.JS.Statements.Operators
             Parser.Optimize(ref second, depth, vars);
             return false;
         }
+
+        public override string ToString()
+        {
+            return "(" + first + (second != null ? ", " + second : "") + ")";
+        }
     }
 }

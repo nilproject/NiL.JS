@@ -341,7 +341,6 @@ namespace NiL.JS.Core
             else if (!fields.TryGetValue(name, out res))
                 fields[name] = res = new JSObject();
             res.lastRequestedName = name;
-            Statements.GetVaribleStatement.ResetCache(name);
             if (inEval)
                 return res;
             res.attributes |= JSObjectAttributes.DontDelete;
@@ -414,7 +413,6 @@ namespace NiL.JS.Core
             if (fields == null)
                 fields = new Dictionary<string, JSObject>();
             fields.Add(moduleType.Name, TypeProxy.GetConstructor(moduleType));
-            Statements.GetVaribleStatement.ResetCache(moduleType.Name);
             fields[moduleType.Name].attributes |= JSObjectAttributes.DontDelete;
         }
 
@@ -434,7 +432,7 @@ namespace NiL.JS.Core
                 var cb = CodeBlock.Parse(new ParsingState(c, code), ref i).Statement;
                 if (i != c.Length)
                     throw new System.ArgumentException("Invalid char");
-                Parser.Optimize(ref cb, -1, null);
+                Parser.Optimize(ref cb, -1, new Dictionary<string,Statement>());
                 var res = cb.Invoke(this);
                 return res;
             }

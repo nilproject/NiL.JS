@@ -1,5 +1,6 @@
 ﻿using NiL.JS.Core;
 using System;
+using NiL.JS.Core.BaseTypes;
 
 namespace NiL.JS.Statements.Operators
 {
@@ -24,6 +25,10 @@ namespace NiL.JS.Statements.Operators
 
         public override string ToString()
         {
+            if (first is ImmidateValueStatement
+                && ((first as ImmidateValueStatement).value.ValueType == JSObjectType.Int)
+                && ((first as ImmidateValueStatement).value.iValue == -1))
+                return "-" + second;
             return "(" + first + " * " + second + ")";
         }
     }

@@ -11,21 +11,9 @@ namespace NiL.JS.Statements
         private Context cacheContext;
         private JSObject cacheRes;
         private string varibleName;
+        private GetVaribleStatement unionGetter;
 
         public string VaribleName { get { return varibleName; } }
-
-        /// <summary>
-        /// Создан для того, чтобы запросами одной переменной в разных местах управлял один экземпляр объекта.
-        /// Такое решение экономит пямять и позваляет эффективнее кешировать результат.
-        /// </summary>
-        private static System.Collections.Generic.Dictionary<string, GetVaribleStatement> cache = new System.Collections.Generic.Dictionary<string, GetVaribleStatement>();
-
-        internal static void ResetCache(string name)
-        {
-            GetVaribleStatement gvs = null;
-            if (cache.TryGetValue(name, out gvs))
-                gvs.cacheRes = null;
-        }
 
         internal GetVaribleStatement(string name)
         {
@@ -33,8 +21,6 @@ namespace NiL.JS.Statements
             if ((name != "this") && !Parser.ValidateName(name, ref i, false, true, true, false))
                 throw new ArgumentException("Invalid varible name");
             this.varibleName = name;
-            if (!cache.ContainsKey(name))
-                cache[name] = this;
         }
 
         internal override JSObject InvokeForAssing(Context context)
@@ -51,13 +37,12 @@ namespace NiL.JS.Statements
 
         internal override JSObject Invoke(Context context)
         {
+            if (unionGetter != null)
+                return unionGetter.Invoke(context);
             if (context == cacheContext)
             {
                 context.objectSource = null;
-                if (cacheRes == null)
-                    return (cacheRes = context.GetField(varibleName));
-                else
-                    return cacheRes;
+                return (cacheRes = context.GetField(varibleName));
             }
             lock (this)
             {
@@ -84,8 +69,11 @@ namespace NiL.JS.Statements
 
         internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, Statement> varibles)
         {
-            _this = cache[varibleName];
-            _this.Position = -1;
+            Statement vgetter = null;
+            if (varibles.TryGetValue(varibleName, out vgetter) && vgetter == null)
+                varibles[varibleName] = this;
+            else
+                this.unionGetter = vgetter as GetVaribleStatement;
             return false;
         }
     }

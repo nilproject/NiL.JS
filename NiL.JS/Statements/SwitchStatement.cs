@@ -106,7 +106,8 @@ namespace NiL.JS.Statements
                     functions = funcs.ToArray(),
                     cases = cases.ToArray(),
                     image = image,
-                    Position = pos
+                    Position = pos - 1,
+                    Length = index - pos
                 }
             };
         }

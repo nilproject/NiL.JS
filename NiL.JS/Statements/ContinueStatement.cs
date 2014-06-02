@@ -35,7 +35,8 @@ namespace NiL.JS.Statements
                 Statement = new ContinueStatement()
                 {
                     label = label,
-                    Position = pos
+                    Position = pos - 1,
+                    Length = index - pos
                 }
             };
         }

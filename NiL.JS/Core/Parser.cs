@@ -588,7 +588,7 @@ namespace NiL.JS.Core
             if (code[index] == ';' || (lineAutoComplite && Tools.isLineTerminator(code[index])))
             {
                 index++;
-                return new EmptyStatement();
+                return  EmptyStatement.Instance;
             }
             for (int i = 0; i < rules[ruleset].Length; i++)
             {

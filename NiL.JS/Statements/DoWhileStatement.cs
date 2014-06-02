@@ -62,7 +62,8 @@ namespace NiL.JS.Statements
                     body = body,
                     condition = condition,
                     labels = state.Labels.GetRange(state.Labels.Count - labelsCount, labelsCount),
-                    Position = pos
+                    Position = pos - 1,
+                    Length = index - pos
                 }
             };
         }

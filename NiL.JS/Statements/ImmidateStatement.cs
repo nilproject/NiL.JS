@@ -37,6 +37,13 @@ namespace NiL.JS.Statements
         {
             if (value.ValueType == JSObjectType.String)
                 return "\"" + value.oValue + "\"";
+            if (value.oValue is Statement[])
+            {
+                string res = "";
+                for (var i = (value.oValue as Statement[]).Length; i-- > 0; )
+                    res += (value.oValue as Statement[])[i] + (i != 0 ? ", " : "");
+                return res;
+            }
             return value.ToString();
         }
     }

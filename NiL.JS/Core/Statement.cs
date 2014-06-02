@@ -7,6 +7,7 @@ namespace NiL.JS.Core
     public abstract class Statement
     {
         public virtual int Position { get; internal set; }
+        public virtual int Length { get; internal set; }
 
         internal virtual JSObject InvokeForAssing(Context context)
         {

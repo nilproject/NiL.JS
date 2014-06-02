@@ -69,7 +69,8 @@ namespace NiL.JS.Statements
                     catchBody = cb,
                     finallyBody = f,
                     exptName = exptn,
-                    Position = pos
+                    Position = pos - 1,
+                    Length = index - pos
                 }
             };
         }

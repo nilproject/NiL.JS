@@ -306,7 +306,7 @@ namespace NiL.JS.Core
                     e = e.InnerException;
                 if (e is JSException)
                     throw e;
-                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError(e.Message)));
+                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError(e.Message)), e);
             }
         }
 

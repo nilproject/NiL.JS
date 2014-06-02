@@ -279,49 +279,46 @@ namespace NiL.JS.Statements
         private static Statement deicstra(OperatorStatement statement)
         {
             Stack<Statement> stats = new Stack<Statement>();
-            Stack<OperationType> types = new Stack<OperationType>();
-            Stack<int> positions = new Stack<int>();
+            Stack<Statement> types = new Stack<Statement>();
             OperatorStatement cur = statement.second as OperatorStatement;
             if (cur == null)
                 return statement;
-            types.Push(statement._type);
+            types.Push(statement);
             stats.Push(statement.first);
-            positions.Push(statement.Position);
             while (cur != null)
             {
                 stats.Push(cur.first);
                 for (; types.Count > 0; )
                 {
-                    var topType = (int)types.Peek();
+                    var topType = (int)(types.Peek() as OperatorStatement)._type;
                     if (((topType & (int)OperationTypeGroups.Special) > ((int)cur._type & (int)OperationTypeGroups.Special))
                         || (((topType & (int)OperationTypeGroups.Special) == ((int)cur._type & (int)OperationTypeGroups.Special))
                             && (((int)cur._type & (int)OperationTypeGroups.Special) > 0x10)))
                     {
-                        stats.Push(new OperatorStatement()
-                        {
-                            _type = types.Pop(),
-                            second = stats.Pop(),
-                            first = stats.Pop(),
-                            Position = positions.Pop()
-                        });
+                        var stat = types.Pop() as OperatorStatement;
+                        stat.second = stats.Pop();
+                        stat.first = stats.Pop();
+                        stat.Position = (stat.first ?? stat).Position;
+                        stat.Length = (stat.second ?? stat.first ?? stat).Length + (stat.second ?? stat.first ?? stat).Position - stat.Position;
+                        stats.Push(stat);
                     }
                     else
                         break;
                 }
-                types.Push(cur._type);
-                positions.Push(cur.Position);
+                types.Push(cur);
                 if (!(cur.second is OperatorStatement))
                     stats.Push(cur.second);
                 cur = cur.second as OperatorStatement;
             }
             while (stats.Count > 1)
-                stats.Push(new OperatorStatement()
-                {
-                    _type = types.Pop(),
-                    second = stats.Pop(),
-                    first = stats.Pop(),
-                    Position = positions.Pop()
-                });
+            {
+                var stat = types.Pop() as OperatorStatement;
+                stat.second = stats.Pop();
+                stat.first = stats.Pop();
+                stat.Position = (stat.first ?? stat).Position;
+                stat.Length = (stat.second ?? stat.first ?? stat).Length + (stat.second ?? stat.first ?? stat).Position - stat.Position;
+                stats.Push(stat);
+            }
             return stats.Peek();
         }
 
@@ -351,19 +348,19 @@ namespace NiL.JS.Statements
             int s = i;
             state.InExpression = true;
             if (Parser.ValidateName(code, ref i, true, state.strict.Peek()) || Parser.Validate(code, "this", ref i))
-                first = new GetVaribleStatement(Tools.Unescape(code.Substring(s, i - s))) { Position = index };
+                first = new GetVaribleStatement(Tools.Unescape(code.Substring(s, i - s))) { Position = index - 1, Length = i - index };
             else if (Parser.ValidateValue(code, ref i, true))
             {
                 string value = code.Substring(s, i - s);
                 if ((value[0] == '\'') || (value[0] == '"'))
-                    first = new ImmidateValueStatement(Tools.Unescape(value.Substring(1, value.Length - 2))) { Position = index };
+                    first = new ImmidateValueStatement(Tools.Unescape(value.Substring(1, value.Length - 2))) { Position = index - 1, Length = i - s };
                 else
                 {
                     bool b = false;
                     if (value == "null")
                         first = new ImmidateValueStatement(JSObject.Null);
                     else if (bool.TryParse(value, out b))
-                        first = new ImmidateValueStatement(b) { Position = index };
+                        first = new ImmidateValueStatement(b) { Position = index - 1, Length = i - s };
                     else
                     {
                         int n = 0;
@@ -371,21 +368,21 @@ namespace NiL.JS.Statements
                         if (Tools.ParseNumber(code, ref s, true, out d))
                         {
                             if ((n = (int)d) == d && !double.IsNegativeInfinity(1.0 / d))
-                                first = new ImmidateValueStatement(n) { Position = index };
+                                first = new ImmidateValueStatement(n) { Position = index - 1, Length = i - index };
                             else
-                                first = new ImmidateValueStatement(d) { Position = index };
+                                first = new ImmidateValueStatement(d) { Position = index - 1, Length = i - index };
                         }
                         else if (Parser.ValidateRegex(code, ref s, true, true))
                         {
                             s = value.LastIndexOf('/') + 1;
                             string flags = value.Substring(s);
-                            first = new Operators.Call(new GetVaribleStatement("RegExp") { Position = i }, new ImmidateValueStatement(new JSObject()
+                            first = new Operators.Call(new GetVaribleStatement("RegExp") { Position = i - 1 }, new ImmidateValueStatement(new JSObject()
                             {
                                 ValueType = JSObjectType.Object,
                                 oValue = new Statement[2]
 								{
-									new ImmidateValueStatement(value.Substring(1, s - 2)) { Position = i },
-									new ImmidateValueStatement(flags) { Position = s }
+									new ImmidateValueStatement(value.Substring(1, s - 2)) { Position = i - 1, Length = s - 2 },
+									new ImmidateValueStatement(flags) { Position = s - 1 }
 								}
                             }));
                         }
@@ -423,8 +420,7 @@ namespace NiL.JS.Statements
                             {
                                 while (char.IsWhiteSpace(code[i])) i++;
                                 var f = Parse(state, ref i, true, true, false, true).Statement;
-                                first = new Operators.Mul(new ImmidateValueStatement(1), f) { Position = index };
-                                index = i;
+                                first = new Operators.Mul(new ImmidateValueStatement(1), f) { Position = index, Length = i - index };
                             }
                             break;
                         }
@@ -446,15 +442,14 @@ namespace NiL.JS.Statements
                             {
                                 while (char.IsWhiteSpace(code[i])) i++;
                                 var f = Parse(state, ref i, true, true, false, true).Statement;
-                                first = new Operators.Mul(new ImmidateValueStatement(-1), f) { Position = index };
-                                index = i;
+                                first = new Operators.Mul(new ImmidateValueStatement(-1), f) { Position = index - 1, Length = i - index };
                             }
                             break;
                         }
                     case '!':
                         {
                             do i++; while (char.IsWhiteSpace(code[i]));
-                            first = new OperatorStatement() { Position = i, first = Parse(state, ref i, true, true, false, true).Statement, _type = OperationType.LogicalNot };
+                            first = new OperatorStatement() { first = Parse(state, ref i, true, true, false, true).Statement, Position = index, Length = i - index, _type = OperationType.LogicalNot };
                             if (first == null)
                             {
                                 var cord = Tools.PositionToTextcord(code, i);
@@ -474,7 +469,7 @@ namespace NiL.JS.Statements
                             if ((first as OperatorStatement)._type == OperationType.None)
                                 (first as OperatorStatement)._type = OperationType.Not;
                             else
-                                first = new OperatorStatement() { first = first, _type = OperationType.Not, Position = index };
+                                first = new OperatorStatement() { first = first, _type = OperationType.Not, Position = index, Length = i - index };
                             break;
                         }
                     case 't':
@@ -490,14 +485,14 @@ namespace NiL.JS.Statements
                             if ((first as OperatorStatement)._type == OperationType.None)
                                 (first as OperatorStatement)._type = OperationType.TypeOf;
                             else
-                                first = new Operators.TypeOf(first, second) { Position = index };
+                                first = new Operators.TypeOf(first, second) { Position = index, Length = i - index };
                             break;
                         }
                     case 'v':
                         {
                             i += 3;
                             do i++; while (char.IsWhiteSpace(code[i]));
-                            first = new Operators.None(Parse(state, ref i, false, true, false, true).Statement, new ImmidateValueStatement(JSObject.undefined)) { Position = index };
+                            first = new Operators.None(Parse(state, ref i, false, true, false, true).Statement, new ImmidateValueStatement(JSObject.undefined)) { Position = index, Length = i - index };
                             if (first == null)
                             {
                                 var cord = Tools.PositionToTextcord(code, i);
@@ -518,7 +513,7 @@ namespace NiL.JS.Statements
                             if ((first as OperatorStatement)._type == OperationType.None || (first as OperatorStatement)._type == OperationType.Call)
                                 (first as OperatorStatement)._type = OperationType.New;
                             else
-                                first = new Operators.New(first, second) { Position = index };
+                                first = new Operators.New(first, second) { Position = index, Length = i - index };
                             break;
                         }
                     case 'd':
@@ -534,7 +529,7 @@ namespace NiL.JS.Statements
                             if ((first as OperatorStatement)._type == OperationType.None)
                                 (first as OperatorStatement)._type = OperationType.Delete;
                             else
-                                first = new Operators.Delete(first, second) { Position = index };
+                                first = new Operators.Delete(first, second) { Position = index, Length = i - index };
                             break;
                         }
                     default:
@@ -630,8 +625,8 @@ namespace NiL.JS.Statements
                                 break;
                             }
                             type = OperationType.Ternary;
-                            position = i;
                             do i++; while (char.IsWhiteSpace(code[i]));
+                            position = i;
                             var sec = new Statement[]
                                 {
                                     Parser.Parse(state, ref i, 1),
@@ -641,8 +636,9 @@ namespace NiL.JS.Statements
                                 throw new ArgumentException("Invalid char in ternary operator");
                             do i++; while (char.IsWhiteSpace(code[i]));
                             state.InExpression = true;
-                            second = new ImmidateValueStatement(new JSObject() { ValueType = JSObjectType.Object, oValue = sec }) { Position = position };
+                            second = new ImmidateValueStatement(new JSObject() { ValueType = JSObjectType.Object, oValue = sec }) { Position = position - 1 };
                             sec[1] = Parser.Parse(state, ref i, 1);
+                            second.Length = i - second.Position;
                             binar = false;
                             repeat = false;
                             break;
@@ -691,7 +687,7 @@ namespace NiL.JS.Statements
                             {
                                 if (rollbackPos != i)
                                     goto default;
-                                first = new OperatorStatement() { second = first, _type = OperationType.Incriment, Position = i };
+                                first = new OperatorStatement() { second = first, _type = OperationType.Incriment, Position = first.Position, Length = i + 2 - first.Position };
                                 repeat = true;
                                 i += 2;
                             }
@@ -720,7 +716,7 @@ namespace NiL.JS.Statements
                             {
                                 if (rollbackPos != i)
                                     goto default;
-                                first = new OperatorStatement() { second = first, _type = OperationType.Decriment, Position = i };
+                                first = new OperatorStatement() { second = first, _type = OperationType.Decriment, Position = first.Position, Length = i + 2 - first.Position };
                                 repeat = true;
                                 i += 2;
                             }
@@ -952,7 +948,7 @@ namespace NiL.JS.Statements
                             if (!Parser.ValidateName(code, ref i, true, false, true, state.strict.Peek()))
                                 throw new ArgumentException("code (" + i + ")");
                             string name = code.Substring(s, i - s);
-                            first = new GetFieldStatement(first, name) { Position = s - 1 };
+                            first = new GetFieldStatement(first, name) { Position = first.Position, Length = i - first.Position - 1 };
                             repeat = true;
                             canAsign = true;
                             break;
@@ -975,7 +971,7 @@ namespace NiL.JS.Statements
                                 if ((args[args.Count - 1] is OperatorStatement) && (args[args.Count - 1] as OperatorStatement)._type == OperationType.None)
                                     args[args.Count - 1] = (args[args.Count - 1] as OperatorStatement).first;
                             }
-                            first = new GetFieldStatement(first, args[0]) { Position = startPos - 1 };
+                            first = new GetFieldStatement(first, args[0]) { Position = first.Position, Length = i + 1 - first.Position };
                             i++;
                             repeat = true;
                             canAsign = true;
@@ -1002,9 +998,10 @@ namespace NiL.JS.Statements
                             first = new OperatorStatement()
                             {
                                 first = first,
-                                second = new ImmidateValueStatement(new JSObject() { ValueType = JSObjectType.Object, oValue = args.ToArray() }) { Position = startPos - 1 },
+                                second = new ImmidateValueStatement(new JSObject() { ValueType = JSObjectType.Object, oValue = args.ToArray() }) { Position = startPos - 1, Length = i - startPos },
                                 _type = OperationType.Call,
-                                Position = startPos - 1
+                                Position = first.Position,
+                                Length = i - first.Position
                             };
                             i++;
                             repeat = !forNew;
@@ -1050,7 +1047,6 @@ namespace NiL.JS.Statements
             } while (repeat);
             if ((!canAsign) && ((type == OperationType.Assign) || (assign)))
                 throw new InvalidOperationException("invalid left-hand side in assignment");
-            position = i;
             if (binar && !forUnary)
             {
                 do i++; while (char.IsWhiteSpace(code[i]));
@@ -1060,13 +1056,13 @@ namespace NiL.JS.Statements
             if (first == second && first == null)
                 return new ParseResult();
             if (assign)
-                res = new OperatorStatement() { first = first, second = new OperatorStatement() { first = first, second = second, _type = type, Position = position }, _type = OperationType.Assign, Position = position };
+                res = new OperatorStatement() { first = first, second = new OperatorStatement() { first = first, second = second, _type = type, Position = index, Length = i - index }, _type = OperationType.Assign, Position = index, Length = i - index };
             else
             {
                 if (forUnary && (type == OperationType.None) && (first is OperatorStatement))
                     res = first as OperatorStatement;
                 else
-                    res = new OperatorStatement() { first = first, second = second, _type = type, Position = position };
+                    res = new OperatorStatement() { first = first, second = second, _type = type, Position = index - 1, Length = i - index };
             }
             if (root)
                 res = deicstra(res) as OperatorStatement;
@@ -1089,6 +1085,7 @@ namespace NiL.JS.Statements
             Type = Type;
             _this = fastImpl;
             fastImpl.Position = Position;
+            fastImpl.Length = Length;
             return true;
         }
     }
