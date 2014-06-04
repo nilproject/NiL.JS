@@ -948,7 +948,15 @@ namespace NiL.JS.Statements
                             if (!Parser.ValidateName(code, ref i, true, false, true, state.strict.Peek()))
                                 throw new ArgumentException("code (" + i + ")");
                             string name = code.Substring(s, i - s);
-                            first = new GetFieldStatement(first, name) { Position = first.Position, Length = i - first.Position - 1 };
+                            first = new GetFieldStatement(first, new ImmidateValueStatement(name)
+                                                                     {
+                                                                         Position = s,
+                                                                         Length = i - s
+                                                                     })
+                                    {
+                                        Position = first.Position,
+                                        Length = i - first.Position - 1
+                                    };
                             repeat = true;
                             canAsign = true;
                             break;

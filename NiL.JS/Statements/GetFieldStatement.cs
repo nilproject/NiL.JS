@@ -20,12 +20,6 @@ namespace NiL.JS.Statements
             fieldNameStatement = fieldName;
         }
 
-        internal GetFieldStatement(Statement obj, string fieldName)
-        {
-            objStatement = obj;
-            fieldNameStatement = new ImmidateValueStatement(fieldName);
-        }
-
         internal override JSObject InvokeForAssing(Context context)
         {
             return impl(context, false);
