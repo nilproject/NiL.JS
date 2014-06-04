@@ -218,10 +218,12 @@ namespace NiL.JS.Core
                 res = (res as TypeProxy).prototypeInstance;
             return res;
         }
-
+        
+        [Modules.DoNotEnumerate]
         [Modules.DoNotDelete]
         public override JSObject length
         {
+            [Modules.Hidden]
             get
             {
                 if (_length == null)
