@@ -8,6 +8,7 @@ namespace NiL.JS.Core
     {
         public virtual int Position { get; internal set; }
         public virtual int Length { get; internal set; }
+        public virtual int EndPosition { get { return Position + Length; } }
 
         internal virtual JSObject InvokeForAssing(Context context)
         {
