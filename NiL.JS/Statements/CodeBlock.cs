@@ -194,7 +194,8 @@ namespace NiL.JS.Statements
             if (this.varibles != null)
             {
                 for (var i = this.varibles.Length; i-- > 0; )
-                    varibles[this.varibles[i]] = null;
+                    if (!varibles.ContainsKey(this.varibles[i]))
+                        varibles.Add(this.varibles[i], null);
             }
             for (int i = body.Length; i-- > 0; )
                 Parser.Optimize(ref body[i], depth < 0 ? 2 : Math.Max(1, depth), varibles);
@@ -217,13 +218,13 @@ namespace NiL.JS.Statements
                     if (v.Value is FunctionStatement)
                     {
                         if (funcs == null)
-                            funcs = this.functions == null ? new List<FunctionStatement>() : new List<FunctionStatement>(this.functions);
+                            funcs = new List<FunctionStatement>();
                         funcs.Add(v.Value as FunctionStatement);
                     }
                     else
                     {
                         if (vars == null)
-                            vars = this.varibles == null ? new List<string>() : new List<string>(this.varibles);
+                            vars = new List<string>();
                         vars.Add(v.Key);
                     }
                 }

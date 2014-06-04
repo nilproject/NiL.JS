@@ -17,7 +17,8 @@ namespace NiL.JS.Statements.Operators
         public TypeOf(Statement first, Statement second)
             : base(first, second)
         {
-
+            if (second != null)
+                throw new InvalidOperationException("Second operand not allowed for typeof operator/");
         }
 
         internal override JSObject Invoke(Context context)
@@ -56,12 +57,6 @@ namespace NiL.JS.Statements.Operators
                     }
                 default: throw new NotImplementedException();
             }
-        }
-
-        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, Statement> vars)
-        {
-            Parser.Optimize(ref first, depth + 1, vars);
-            return false;
         }
 
         public override string ToString()

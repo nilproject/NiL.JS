@@ -8,6 +8,14 @@ namespace NiL.JS.Statements.Operators
     [Serializable]
     public sealed class Call : Operator
     {
+        public override bool IsContextIndependent
+        {
+            get
+            {
+                return false;
+            }
+        }
+
         private Statement[] args;
 
         public Statement[] Arguments { get { return args; } }
@@ -79,8 +87,7 @@ namespace NiL.JS.Statements.Operators
 
         internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, Statement> vars)
         {
-            Parser.Optimize(ref first, depth + 1, vars);
-            Parser.Optimize(ref second, depth + 1, vars);
+            base.Optimize(ref _this, depth, vars);
             args = second.Invoke(null).oValue as Statement[];
             return false;
         }

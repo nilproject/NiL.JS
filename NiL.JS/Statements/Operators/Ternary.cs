@@ -9,10 +9,25 @@ namespace NiL.JS.Statements.Operators
     {
         private Statement[] threads;
 
+        public override bool IsContextIndependent
+        {
+            get
+            {
+                return base.IsContextIndependent
+                    && (threads[0] is ImmidateValueStatement || (threads[0] is Operator && (threads[0] as Operator).IsContextIndependent))
+                    && (threads[1] is ImmidateValueStatement || (threads[1] is Operator && (threads[1] as Operator).IsContextIndependent));
+            }
+        }
+
         public Ternary(Statement first, Statement second)
             : base(first, second)
         {
-
+            if (!(second is ImmidateValueStatement)
+                || !((second as ImmidateValueStatement).value.oValue is Statement[]))
+                throw new ArgumentException("Second");
+            threads = ((second as ImmidateValueStatement).value.oValue as Statement[]);
+            if (threads.Length != 2)
+                throw new ArgumentException("Second has invalid length");
         }
 
         internal override JSObject Invoke(Context context)
@@ -24,10 +39,8 @@ namespace NiL.JS.Statements.Operators
 
         internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, Statement> vars)
         {
-            threads = ((second as ImmidateValueStatement).value.oValue as Statement[]);
-            Parser.Optimize(ref threads[0], depth + 1, vars);
-            Parser.Optimize(ref threads[1], depth + 1, vars);
-            return base.Optimize(ref _this, depth, vars);
+            base.Optimize(ref _this, depth, vars);
+            return false;
         }
 
         public override string ToString()

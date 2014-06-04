@@ -6,6 +6,14 @@ namespace NiL.JS.Statements.Operators
     [Serializable]
     public sealed class Decriment : Operator
     {
+        public override bool IsContextIndependent
+        {
+            get
+            {
+                return false;
+            }
+        }
+
         public Decriment(Statement first, Statement second)
             : base(first, second)
         {

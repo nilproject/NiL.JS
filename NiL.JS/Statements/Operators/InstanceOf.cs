@@ -53,13 +53,6 @@ namespace NiL.JS.Statements.Operators
             }
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, Statement> vars)
-        {
-            Parser.Optimize(ref first, depth + 1, vars);
-            Parser.Optimize(ref second, depth + 1, vars);
-            return false;
-        }
-
         public override string ToString()
         {
             return "(" + first + " instanceof " + second + ")";

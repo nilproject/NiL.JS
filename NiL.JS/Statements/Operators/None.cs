@@ -19,10 +19,12 @@ namespace NiL.JS.Statements.Operators
             temp = Tools.RaiseIfNotExist(first.Invoke(context));
             if (second != null)
             {
-                context.thisBind = null;
+                if (context != null)
+                    context.thisBind = null;
                 temp = Tools.RaiseIfNotExist(second.Invoke(context));
             }
-            context.objectSource = null;
+            if (context != null)
+                context.objectSource = null;
             return temp;
         }
 

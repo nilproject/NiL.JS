@@ -16,6 +16,15 @@ namespace NiL.JS.Statements.Operators
         public Statement First { get { return first; } }
         public Statement Second { get { return second; } }
 
+        public virtual bool IsContextIndependent
+        {
+            get
+            {
+                return (first == null || first is ImmidateValueStatement || (first is Operator && (first as Operator).IsContextIndependent)) 
+                    && (second == null || second is ImmidateValueStatement || (second is Operator && (second as Operator).IsContextIndependent));
+            }
+        }
+
         protected Operator(Statement first, Statement second)
         {
             this.first = first;
@@ -28,10 +37,10 @@ namespace NiL.JS.Statements.Operators
             Parser.Optimize(ref second, depth + 1, vars);
             try
             {
-                if (first is ImmidateValueStatement && second is ImmidateValueStatement)
+                if (this.IsContextIndependent)
                     _this = new ImmidateValueStatement(this.Invoke(null));
             }
-            catch (NullReferenceException)
+            catch
             { }
             return false;
         }

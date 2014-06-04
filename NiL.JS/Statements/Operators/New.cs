@@ -27,6 +27,14 @@ namespace NiL.JS.Statements.Operators
 
         public readonly Call CallInstance = new Call(new ThisSetStat(), new ImmidateValueStatement(null));
 
+        public override bool IsContextIndependent
+        {
+            get
+            {
+                return false;
+            }
+        }
+
         public New(Statement first, Statement second)
             : base(first, second)
         {
@@ -68,16 +76,9 @@ namespace NiL.JS.Statements.Operators
         internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, Statement> vars)
         {
             if (second == null)
-				(CallInstance.Second as ImmidateValueStatement).value = new JSObject() { ValueType = JSObjectType.Object, oValue = new Statement[0] };
+                (CallInstance.Second as ImmidateValueStatement).value = new JSObject() { ValueType = JSObjectType.Object, oValue = new Statement[0] };
             else
-				try
-				{
-					(CallInstance.Second as ImmidateValueStatement).value = second.Invoke(null);
-				}
-				catch
-				{
-
-				}
+                (CallInstance.Second as ImmidateValueStatement).value = second.Invoke(null);
             return base.Optimize(ref _this, depth, vars);
         }
 

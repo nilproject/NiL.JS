@@ -10,6 +10,14 @@ namespace NiL.JS.Statements.Operators
         private JSObject setterArgs = new JSObject(true) { ValueType = JSObjectType.Object, oValue = Arguments.Instance };
         private JSObject setterArg = new JSObject();
 
+        public override bool IsContextIndependent
+        {
+            get
+            {
+                return false;
+            }
+        }
+
         public Assign(Statement first, Statement second)
             : base(first, second)
         {
@@ -26,6 +34,8 @@ namespace NiL.JS.Statements.Operators
         {
             lock (this)
             {
+                if (first is Operators.Call)
+                    throw new InvalidOperationException("Invalid left-hand side in assignment.");
                 JSObject field = null;
                 field = first.InvokeForAssing(context);
                 if (field.ValueType == JSObjectType.Property)
@@ -55,17 +65,6 @@ namespace NiL.JS.Statements.Operators
                 field.Assign(t);
                 return t;
             }
-        }
-
-        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, Statement> vars)
-        {
-            var res = base.Optimize(ref _this, depth, vars);
-            var t = first;
-            while (t is Operators.None)
-                t = (t as Operators.None).Second;
-            if (t is Operators.Call)
-                throw new InvalidOperationException("Invalid left-hand side in assignment.");
-            return res;
         }
 
         public override string ToString()

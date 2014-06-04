@@ -7,6 +7,14 @@ namespace NiL.JS.Statements.Operators
     [Serializable]
     internal sealed class Incriment : Operator
     {
+        public override bool IsContextIndependent
+        {
+            get
+            {
+                return false;
+            }
+        }
+
         public Incriment(Statement first, Statement second)
             : base(first, second)
         {

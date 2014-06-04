@@ -103,7 +103,7 @@ namespace NiL.JS.Statements
 
         public override string ToString()
         {
-            var res = "var ";
+            var res = "";// "var ";
             for (var i = 0; i < initializators.Length; i++)
             {
                 var t = initializators[i].ToString();
