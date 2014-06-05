@@ -411,7 +411,7 @@ namespace NiL.JS.Statements
                             {
                                 do i++; while (char.IsWhiteSpace(code[i]));
                                 first = Parse(state, ref i, true, true, false, true).Statement;
-                                if (((first as GetFieldStatement) as object ?? (first as GetVaribleStatement)) == null)
+                                if (((first as GetMemberStatement) as object ?? (first as GetVaribleStatement)) == null)
                                 {
                                     var cord = Tools.PositionToTextcord(code, i);
                                     throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid prefix operation. " + cord)));
@@ -433,7 +433,7 @@ namespace NiL.JS.Statements
                             {
                                 do i++; while (char.IsWhiteSpace(code[i]));
                                 first = Parse(state, ref i, true, true, false, true).Statement;
-                                if (((first as GetFieldStatement) as object ?? (first as GetVaribleStatement)) == null)
+                                if (((first as GetMemberStatement) as object ?? (first as GetVaribleStatement)) == null)
                                 {
                                     var cord = Tools.PositionToTextcord(code, i);
                                     throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid prefix operation. " + cord)));
@@ -948,7 +948,7 @@ namespace NiL.JS.Statements
                             if (!Parser.ValidateName(code, ref i, true, false, true, state.strict.Peek()))
                                 throw new ArgumentException("code (" + i + ")");
                             string name = code.Substring(s, i - s);
-                            first = new GetFieldStatement(first, new ImmidateValueStatement(name)
+                            first = new GetMemberStatement(first, new ImmidateValueStatement(name)
                                                                      {
                                                                          Position = s,
                                                                          Length = i - s
@@ -979,7 +979,7 @@ namespace NiL.JS.Statements
                                 if ((args[args.Count - 1] is OperatorStatement) && (args[args.Count - 1] as OperatorStatement)._type == OperationType.None)
                                     args[args.Count - 1] = (args[args.Count - 1] as OperatorStatement).first;
                             }
-                            first = new GetFieldStatement(first, args[0]) { Position = first.Position, Length = i + 1 - first.Position };
+                            first = new GetMemberStatement(first, args[0]) { Position = first.Position, Length = i + 1 - first.Position };
                             i++;
                             repeat = true;
                             canAsign = true;

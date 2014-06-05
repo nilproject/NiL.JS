@@ -22,7 +22,7 @@ namespace NiL.JS.Statements.Operators
                     tempResult.iValue = 1;
                 else if ((temp.attributes & JSObjectAttributes.Argument) != 0)
                 {
-                    if (first is GetFieldStatement)
+                    if (first is GetMemberStatement)
                     {
                         tempResult.iValue = 1;
                         var args = context.objectSource;

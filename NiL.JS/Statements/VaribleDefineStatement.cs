@@ -99,8 +99,6 @@ namespace NiL.JS.Statements
                 Parser.Optimize(ref initializators[i], 1, varibles);
             for (var i = 0; i < names.Length; i++)
                 (varibles[names[i]] as GetVaribleStatement).Descriptor.Defined = true;
-            if (initializators.Length == 1)
-                _this = initializators[0];
             return false;
         }
 

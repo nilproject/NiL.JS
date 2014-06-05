@@ -6,7 +6,7 @@ using System.Collections.Generic;
 namespace NiL.JS.Statements
 {
     [Serializable]
-    public sealed class GetFieldStatement : Statement
+    public sealed class GetMemberStatement : Statement
     {
         private Statement objStatement;
         private Statement fieldNameStatement;
@@ -14,7 +14,7 @@ namespace NiL.JS.Statements
         public Statement Source { get { return objStatement; } }
         public Statement FieldName { get { return fieldNameStatement; } }
 
-        internal GetFieldStatement(Statement obj, Statement fieldName)
+        internal GetMemberStatement(Statement obj, Statement fieldName)
         {
             objStatement = obj;
             fieldNameStatement = fieldName;
@@ -57,14 +57,13 @@ namespace NiL.JS.Statements
         public override string ToString()
         {
             var res = objStatement.ToString();
-            var field = fieldNameStatement.ToString();
             int i = 0;
             if (fieldNameStatement is ImmidateValueStatement
-                && field.Length > 0
-                && ((field[0] == field[field.Length - 1]) && (field[0] == '"') && Parser.ValidateName(field.Substring(1, field.Length - 2), ref i, true, true)))
-                res += "." + field.Substring(1, field.Length - 2);
+                && (fieldNameStatement as ImmidateValueStatement).value.oValue.ToString().Length > 0
+                && (Parser.ValidateName((fieldNameStatement as ImmidateValueStatement).value.oValue.ToString(), ref i, true, true)))
+                res += "." + (fieldNameStatement as ImmidateValueStatement).value.oValue;
             else
-                res += "[" + field + "]";
+                res += "[" + fieldNameStatement.ToString() + "]";
             return res;
         }
     }

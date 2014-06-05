@@ -494,7 +494,7 @@ namespace NiL.JS.Core
             {
                 char fchar = code[j];
                 j++;
-                while ((j < code.Length) && (code[j] != fchar))
+                while (code[j] != fchar)
                 {
                     if (code[j] == '\\')
                     {
@@ -504,7 +504,7 @@ namespace NiL.JS.Core
                         else if ((code[j] == '\n') && (code[j + 1] == '\r'))
                             j++;
                     }
-                    else if (Tools.isLineTerminator(code[j]))
+                    else if (Tools.isLineTerminator(code[j]) || (j + 1 >= code.Length))
                         throw new JSException(TypeProxy.Proxy(new BaseTypes.SyntaxError("Unterminated string constant")));
                     j++;
                 }
