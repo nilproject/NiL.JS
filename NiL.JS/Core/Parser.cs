@@ -32,7 +32,7 @@ namespace NiL.JS.Core
         {
             // 0
             new _Rule[] // Общий
-            {
+            {                
                 new _Rule("[", OperatorStatement.Parse),
                 new _Rule("{", CodeBlock.Parse),
                 new _Rule("var ", VaribleDefineStatement.Parse),
@@ -122,6 +122,8 @@ namespace NiL.JS.Core
             // 4
             new _Rule[] // Общий без JSON
             {
+                new _Rule("//", SinglelineComment.Parse),
+                new _Rule("/*", MultilineComment.Parse),
                 new _Rule("[", OperatorStatement.Parse),
                 new _Rule("{", CodeBlock.Parse),
                 new _Rule("var ", VaribleDefineStatement.Parse),
@@ -164,9 +166,9 @@ namespace NiL.JS.Core
             int j = index;
             while (i < patern.Length)
             {
-                if ((code[j] != patern[i]) && (!char.IsWhiteSpace(patern[i]) || (!char.IsWhiteSpace(code[j]))))
+                if (j == code.Length)
                     return false;
-                if (i + 1 == code.Length)
+                if ((code[j] != patern[i]) && (!char.IsWhiteSpace(patern[i]) || (!char.IsWhiteSpace(code[j]))))
                     return false;
                 i++;
                 j++;
@@ -181,6 +183,8 @@ namespace NiL.JS.Core
             bool needInc = false;
             while (i < patern.Length)
             {
+                if (j >= code.Length)
+                    return false;
                 if (char.IsWhiteSpace(patern[i]) && char.IsWhiteSpace(code[j]))
                 {
                     j++;
@@ -195,8 +199,6 @@ namespace NiL.JS.Core
                     needInc = false;
                 }
                 if (code[j] != patern[i])
-                    return false;
-                if (i + 1 == code.Length)
                     return false;
                 i++;
                 j++;
@@ -233,11 +235,16 @@ namespace NiL.JS.Core
             if (allowEscape)
             {
                 int i = 0;
-                name = Tools.Unescape(name, false);
-                var res = ValidateName(name, ref i, true, reserveControl, false, strict) && i == name.Length;
-                if (res && move)
-                    index = j;
-                return res;
+                var nname = Tools.Unescape(name, false);
+                if (nname != name)
+                {
+                    var res = ValidateName(nname, ref i, true, reserveControl, false, strict) && i == nname.Length;
+                    if (res && move)
+                        index = j;
+                    return res;
+                }
+                else if (nname.IndexOf('\\') != -1)
+                    return false;
             }
             if (reserveControl)
                 switch (name)
@@ -582,14 +589,16 @@ namespace NiL.JS.Core
         {
             string code = state.Code;
             while ((index < code.Length) && (char.IsWhiteSpace(code[index])) && (!lineAutoComplite || !Tools.isLineTerminator(code[index]))) index++;
-            if (code[index] == '}')
+            if (index >= code.Length || code[index] == '}')
                 return null;
             int sindex = index;
             if (code[index] == ';' || (lineAutoComplite && Tools.isLineTerminator(code[index])))
             {
                 index++;
-                return  EmptyStatement.Instance;
+                return EmptyStatement.Instance;
             }
+            if (index >= code.Length)
+                return null;
             for (int i = 0; i < rules[ruleset].Length; i++)
             {
                 if (rules[ruleset][i].Validate(code, ref index))

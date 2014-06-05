@@ -6,8 +6,8 @@ namespace NiL.JS.Statements.Operators
     [Serializable]
     public sealed class Delete : Operator
     {
-        public Delete(Statement first, Statement second)
-            : base(first, second)
+        public Delete(Statement first)
+            : base(first, null)
         {
 
         }

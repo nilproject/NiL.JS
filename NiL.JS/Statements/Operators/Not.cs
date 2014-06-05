@@ -6,8 +6,8 @@ namespace NiL.JS.Statements.Operators
     [Serializable]
     public sealed class Not : Operator
     {
-        public Not(Statement first, Statement second)
-            : base(first, second)
+        public Not(Statement first)
+            : base(first, null)
         {
 
         }

@@ -183,6 +183,8 @@
     <Compile Include="Core\WithContext.cs" />
     <Compile Include="NamespaceProvider.cs" />
     <Compile Include="Statements\LabeledStatement.cs" />
+    <Compile Include="Statements\MultilineComment.cs" />
+    <Compile Include="Statements\SinglelineComment.cs" />
     <Compile Include="Statements\Operators\NotEqual.cs" />
     <Compile Include="Statements\Operators\MoreOrEqual.cs" />
     <Compile Include="Statements\Operators\Equal.cs" />

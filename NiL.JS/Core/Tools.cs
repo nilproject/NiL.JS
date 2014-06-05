@@ -443,11 +443,17 @@ namespace NiL.JS.Core
 
         public static string Unescape(string code, bool defaultUnescape)
         {
-            StringBuilder res = new StringBuilder(code.Length);
+            StringBuilder res = null;// new StringBuilder(code.Length);
             for (int i = 0; i < code.Length; i++)
             {
                 if (code[i] == '\\' && i + 1 < code.Length)
                 {
+                    if (res == null)
+                    {
+                        res = new StringBuilder(code.Length);
+                        for (var j = 0; j < i; j++)
+                            res.Append(code[j]);
+                    }
                     i++;
                     switch (code[i])
                     {
@@ -524,10 +530,10 @@ namespace NiL.JS.Core
                             }
                     }
                 }
-                else
+                else if (res != null)
                     res.Append(code[i]);
             }
-            return res.ToString();
+            return (res as object ?? code).ToString();
         }
 
 #if INLINE
@@ -576,12 +582,21 @@ namespace NiL.JS.Core
 
         internal static string RemoveComments(string code)
         {
-            StringBuilder res = new StringBuilder(code.Length);
+            StringBuilder res = null;// new StringBuilder(code.Length);
             for (int i = 0; i < code.Length; )
             {
-                while (i < code.Length && char.IsWhiteSpace(code[i])) res.Append(code[i++]);
+                while (i < code.Length && char.IsWhiteSpace(code[i])) 
+                    if (res != null)
+                        res.Append(code[i++]);
+                    else i++;
                 var s = i;
                 skipComment(code, ref i, false);
+                if (s != i && res == null)
+                {
+                    res = new StringBuilder(code.Length);
+                    for (var j = 0; j < s; j++)
+                        res.Append(code[j]);
+                }
                 for (; s < i; s++)
                     res.Append(' ');
                 if (i >= code.Length)
@@ -591,13 +606,15 @@ namespace NiL.JS.Core
                     || Parser.ValidateRegex(code, ref i, true, false)
                     || Parser.ValidateString(code, ref i, true))
                 {
-                    for (; s < i; s++)
-                        res.Append(code[s]);
+                    if (res != null)
+                        for (; s < i; s++)
+                            res.Append(code[s]);
                 }
-                else
+                else if (res != null)
                     res.Append(code[i++]);
+                else i++;
             }
-            return res.ToString();
+            return (res as object ?? code).ToString();
         }
 
 #if INLINE
@@ -606,7 +623,7 @@ namespace NiL.JS.Core
         internal static JSObject RaiseIfNotExist(JSObject obj)
         {
             if (obj != null && obj.ValueType == JSObjectType.NotExist)
-                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible is not defined.")));
+                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible \"" + obj.lastRequestedName + "\" is not defined.")));
             return obj;
         }
 

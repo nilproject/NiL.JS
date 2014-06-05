@@ -36,7 +36,7 @@ namespace NiL.JS.Statements
                     if (flds.IndexOf(setter.name) == -1)
                     {
                         flds.Add(setter.name);
-						var vle = new ImmidateValueStatement(new JSObject() { ValueType = JSObjectType.Object, oValue = new Statement[2] { setter, null } });
+                        var vle = new ImmidateValueStatement(new JSObject() { ValueType = JSObjectType.Object, oValue = new Statement[2] { setter, null } });
                         vle.value.ValueType = JSObjectType.Property;
                         vls.Add(vle);
                     }
@@ -57,7 +57,7 @@ namespace NiL.JS.Statements
                     if (flds.IndexOf(getter.name) == -1)
                     {
                         flds.Add(getter.name);
-						var vle = new ImmidateValueStatement(new JSObject() { ValueType = JSObjectType.Object, oValue = new Statement[2] { null, getter } });
+                        var vle = new ImmidateValueStatement(new JSObject() { ValueType = JSObjectType.Object, oValue = new Statement[2] { null, getter } });
                         vle.value.ValueType = JSObjectType.Property;
                         vls.Add(vle);
                     }
@@ -114,7 +114,7 @@ namespace NiL.JS.Statements
                 {
                     fields = flds.ToArray(),
                     values = vls.ToArray(),
-                    Position = pos - 1,
+                    Position = pos,
                     Length = index - pos
                 }
             };

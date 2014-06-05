@@ -215,15 +215,16 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * i + 3 - 2 / 2; }
         private static void testEx()
         {
             var sw = new Stopwatch();
-            var s = new Script(@"
-var c = 0;
-__pinvoke(function(index){ 
-    var t;
-    for (var i = 0; i < 100; i++)
-    {
-        console.log(c += 1);
-    } 
-}, 200);
+            var s = new Script(
+@"for (var x in this) {
+  if ( x === 'NaN' ) {
+    $ERROR(""#1: 'NaN' have attribute DontEnum"");
+  } else if ( x === 'Infinity' ) {
+    $ERROR(""#1: 'Infinity' have attribute DontEnum"");
+  } else if ( x === 'undefined' ) {
+    $ERROR(""#1: 'undefined' have attribute DontEnum"");
+  } 
+}
 ");
             s.Context.AttachModule(typeof(TestClass));
             sw.Start();

@@ -26,13 +26,15 @@ namespace NiL.JS.Statements
                 {
                     lock (this)
                     {
-                        code = code.Substring(Position, Length - 2);
-                        Length = -1;
-                        return code;
+                        if (base.Length >= 0)
+                        {
+                            code = code.Substring(Position + 1, Length - 2);
+                            Length = -1;
+                            return code;
+                        }
                     }
                 }
-                else
-                    return code;
+                return code;
             }
         }
 
@@ -62,11 +64,15 @@ namespace NiL.JS.Statements
         {
             string code = state.Code;
             int i = index;
-            if (code[i] != '{')
-                throw new ArgumentException("code (" + i + ")");
-            do
-                i++;
-            while (char.IsWhiteSpace(code[i]));
+            bool sroot = i == 0;
+            if (!sroot)
+            {
+                if (code[i] != '{')
+                    throw new ArgumentException("code (" + i + ")");
+                do
+                    i++;
+                while (char.IsWhiteSpace(code[i]));
+            }
             var body = new List<Statement>();
             List<FunctionStatement> funcs = null;
             List<string> varibles = null;
@@ -75,16 +81,16 @@ namespace NiL.JS.Statements
             bool allowStrict = state.AllowStrict;
             bool root = state.AllowStrict;
             state.AllowStrict = false;
-            while (code[i] != '}')
+            while ((sroot && i < code.Length) || (!sroot && code[i] != '}'))
             {
                 var t = Parser.Parse(state, ref i, 0);
                 if (allowStrict)
                 {
                     allowStrict = false;
-                    if (t is OperatorStatement && ((t as OperatorStatement).Type == OperationType.None))
+                    if (t is ImmidateValueStatement)
                     {
-                        var op = t as OperatorStatement;
-                        if (op.Second == null && (op.First is ImmidateValueStatement) && "use strict".Equals((op.First as ImmidateValueStatement).value.Value))
+                        var op = (t as ImmidateValueStatement).value.Value;
+                        if ("use strict".Equals(op))
                         {
                             state.strict.Push(true);
                             strictSwitch = true;
@@ -108,7 +114,7 @@ namespace NiL.JS.Statements
                     if (varibles == null)
                         varibles = new List<string>();
                     varibles.AddRange((t as VaribleDefineStatement).names);
-                    body.AddRange((t as VaribleDefineStatement).initializators);
+                    body.Add(t);
                 }
                 else if (t is CodeBlock)
                 {
@@ -131,7 +137,8 @@ namespace NiL.JS.Statements
                 }
                 else body.Add(t);
             }
-            i++;
+            if (!sroot)
+                i++;
             int startPos = index;
             index = i;
             body.Reverse();
@@ -167,7 +174,7 @@ namespace NiL.JS.Statements
             JSObject res = JSObject.undefined;
             for (int i = linesCount; i >= 0; i--)
             {
-                res = Tools.RaiseIfNotExist(body[i].Invoke(context)) ?? res;
+                res = body[i].Invoke(context) ?? res;
 #if DEBUG
                 if (JSObject.undefined.ValueType != JSObjectType.Undefined)
                     throw new ApplicationException("undefined was rewrite");
@@ -223,9 +230,12 @@ namespace NiL.JS.Statements
                     }
                     else
                     {
-                        if (vars == null)
-                            vars = new List<string>();
-                        vars.Add(v.Key);
+                        if (v.Value is GetVaribleStatement && (v.Value as GetVaribleStatement).Descriptor.Defined)
+                        {
+                            if (vars == null)
+                                vars = new List<string>();
+                            vars.Add(v.Key);
+                        }
                     }
                 }
                 if (funcs != null)
@@ -254,12 +264,6 @@ namespace NiL.JS.Statements
                 {
                     var func = functions[i].ToString().Replace(replp, replt);
                     res += "  " + func + Environment.NewLine;
-                }
-                if (varibles.Length > 0)
-                {
-                    res += "var ";
-                    for (var i = varibles.Length; i-- > 0; )
-                        res += varibles[i] + (i == 0 ? "" : ", ");
                 }
                 for (int i = body.Length; i-- > 0; )
                 {

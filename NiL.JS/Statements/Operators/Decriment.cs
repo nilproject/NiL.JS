@@ -6,6 +6,12 @@ namespace NiL.JS.Statements.Operators
     [Serializable]
     public sealed class Decriment : Operator
     {
+        public enum Type
+        {
+            Predecriment,
+            Postdecriment
+        }
+
         public override bool IsContextIndependent
         {
             get
@@ -14,9 +20,13 @@ namespace NiL.JS.Statements.Operators
             }
         }
 
-        public Decriment(Statement first, Statement second)
-            : base(first, second)
+        public Decriment(Statement op, Type type)
+            : base(type == Type.Predecriment ? op : null, type == Type.Postdecriment ? op : null)
         {
+            if (type > Type.Postdecriment)
+                throw new ArgumentException("type");
+            if (op == null)
+                throw new ArgumentNullException("op");
             tempResult.assignCallback = null;
         }
 

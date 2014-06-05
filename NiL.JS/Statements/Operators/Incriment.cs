@@ -7,6 +7,12 @@ namespace NiL.JS.Statements.Operators
     [Serializable]
     internal sealed class Incriment : Operator
     {
+        public enum Type
+        {
+            Preincriment,
+            Postincriment
+        }
+
         public override bool IsContextIndependent
         {
             get
@@ -15,9 +21,13 @@ namespace NiL.JS.Statements.Operators
             }
         }
 
-        public Incriment(Statement first, Statement second)
-            : base(first, second)
+        public Incriment(Statement op, Type type)
+            : base(type == Type.Preincriment ? op : null, type == Type.Postincriment ? op : null)
         {
+            if (type > Type.Postincriment)
+                throw new ArgumentException("type");
+            if (op == null)
+                throw new ArgumentNullException("op");
             tempResult.assignCallback = null;
         }
 

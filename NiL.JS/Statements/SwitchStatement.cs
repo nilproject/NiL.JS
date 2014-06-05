@@ -106,7 +106,7 @@ namespace NiL.JS.Statements
                     functions = funcs.ToArray(),
                     cases = cases.ToArray(),
                     image = image,
-                    Position = pos - 1,
+                    Position = pos,
                     Length = index - pos
                 }
             };
@@ -171,7 +171,7 @@ namespace NiL.JS.Statements
             string res = "switch (" + image + ") {" + Environment.NewLine;
             var replp = Environment.NewLine;
             var replt = Environment.NewLine + "  ";
-            for (int i = body.Length; i --> 0; )
+            for (int i = body.Length; i-- > 0; )
             {
                 for (int j = 0; j < cases.Length; j++)
                 {

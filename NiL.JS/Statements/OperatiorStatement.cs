@@ -109,7 +109,7 @@ namespace NiL.JS.Statements
                         }
                     case OperationType.Incriment:
                         {
-                            fastImpl = new Operators.Incriment(first, second);
+                            fastImpl = new Operators.Incriment(first ?? second, first == null ? Operators.Incriment.Type.Postincriment : Operators.Incriment.Type.Preincriment);
                             break;
                         }
                     case OperationType.Call:
@@ -119,7 +119,7 @@ namespace NiL.JS.Statements
                         }
                     case OperationType.Decriment:
                         {
-                            fastImpl = new Operators.Decriment(first, second);
+                            fastImpl = new Operators.Decriment(first ?? second, first == null ? Operators.Decriment.Type.Postdecriment : Operators.Decriment.Type.Postdecriment);
                             break;
                         }
                     case OperationType.LessOrEqual:
@@ -210,12 +210,12 @@ namespace NiL.JS.Statements
                         }
                     case OperationType.LogicalNot:
                         {
-                            fastImpl = new Operators.LogicalNot(first, second);
+                            fastImpl = new Operators.LogicalNot(first);
                             break;
                         }
                     case OperationType.Not:
                         {
-                            fastImpl = new Operators.Not(first, second);
+                            fastImpl = new Operators.Not(first);
                             break;
                         }
                     case OperationType.Xor:
@@ -240,7 +240,7 @@ namespace NiL.JS.Statements
                         }
                     case OperationType.TypeOf:
                         {
-                            fastImpl = new Operators.TypeOf(first, second);
+                            fastImpl = new Operators.TypeOf(first);
                             break;
                         }
                     case OperationType.New:
@@ -250,7 +250,7 @@ namespace NiL.JS.Statements
                         }
                     case OperationType.Delete:
                         {
-                            fastImpl = new Operators.Delete(first, second);
+                            fastImpl = new Operators.Delete(first);
                             break;
                         }
                     case OperationType.InstanceOf:
@@ -278,11 +278,13 @@ namespace NiL.JS.Statements
 
         private static Statement deicstra(OperatorStatement statement)
         {
-            Stack<Statement> stats = new Stack<Statement>();
-            Stack<Statement> types = new Stack<Statement>();
+            if (statement == null)
+                return null;
             OperatorStatement cur = statement.second as OperatorStatement;
             if (cur == null)
                 return statement;
+            Stack<Statement> stats = new Stack<Statement>();
+            Stack<Statement> types = new Stack<Statement>();
             types.Push(statement);
             stats.Push(statement.first);
             while (cur != null)
@@ -348,19 +350,19 @@ namespace NiL.JS.Statements
             int s = i;
             state.InExpression = true;
             if (Parser.ValidateName(code, ref i, true, state.strict.Peek()) || Parser.Validate(code, "this", ref i))
-                first = new GetVaribleStatement(Tools.Unescape(code.Substring(s, i - s))) { Position = index - 1, Length = i - index };
+                first = new GetVaribleStatement(Tools.Unescape(code.Substring(s, i - s))) { Position = index, Length = i - index };
             else if (Parser.ValidateValue(code, ref i, true))
             {
                 string value = code.Substring(s, i - s);
                 if ((value[0] == '\'') || (value[0] == '"'))
-                    first = new ImmidateValueStatement(Tools.Unescape(value.Substring(1, value.Length - 2))) { Position = index - 1, Length = i - s };
+                    first = new ImmidateValueStatement(Tools.Unescape(value.Substring(1, value.Length - 2))) { Position = index, Length = i - s };
                 else
                 {
                     bool b = false;
                     if (value == "null")
                         first = new ImmidateValueStatement(JSObject.Null);
                     else if (bool.TryParse(value, out b))
-                        first = new ImmidateValueStatement(b) { Position = index - 1, Length = i - s };
+                        first = new ImmidateValueStatement(b) { Position = index, Length = i - s };
                     else
                     {
                         int n = 0;
@@ -368,21 +370,21 @@ namespace NiL.JS.Statements
                         if (Tools.ParseNumber(code, ref s, true, out d))
                         {
                             if ((n = (int)d) == d && !double.IsNegativeInfinity(1.0 / d))
-                                first = new ImmidateValueStatement(n) { Position = index - 1, Length = i - index };
+                                first = new ImmidateValueStatement(n) { Position = index, Length = i - index };
                             else
-                                first = new ImmidateValueStatement(d) { Position = index - 1, Length = i - index };
+                                first = new ImmidateValueStatement(d) { Position = index, Length = i - index };
                         }
                         else if (Parser.ValidateRegex(code, ref s, true, true))
                         {
                             s = value.LastIndexOf('/') + 1;
                             string flags = value.Substring(s);
-                            first = new Operators.Call(new GetVaribleStatement("RegExp") { Position = i - 1 }, new ImmidateValueStatement(new JSObject()
+                            first = new Operators.Call(new GetVaribleStatement("RegExp") { Position = i }, new ImmidateValueStatement(new JSObject()
                             {
                                 ValueType = JSObjectType.Object,
                                 oValue = new Statement[2]
 								{
-									new ImmidateValueStatement(value.Substring(1, s - 2)) { Position = i - 1, Length = s - 2 },
-									new ImmidateValueStatement(flags) { Position = s - 1 }
+									new ImmidateValueStatement(value.Substring(1, s - 2)) { Position = i , Length = s - 2 },
+									new ImmidateValueStatement(flags) { Position = s  }
 								}
                             }));
                         }
@@ -409,12 +411,12 @@ namespace NiL.JS.Statements
                             {
                                 do i++; while (char.IsWhiteSpace(code[i]));
                                 first = Parse(state, ref i, true, true, false, true).Statement;
-                                if (first == null || (first as OperatorStatement)._type != OperationType.None)
+                                if (((first as GetFieldStatement) as object ?? (first as GetVaribleStatement)) == null)
                                 {
                                     var cord = Tools.PositionToTextcord(code, i);
                                     throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid prefix operation. " + cord)));
                                 }
-                                (first as OperatorStatement)._type = OperationType.Incriment;
+                                first = new Operators.Incriment(first, Operators.Incriment.Type.Preincriment);
                             }
                             else
                             {
@@ -431,25 +433,25 @@ namespace NiL.JS.Statements
                             {
                                 do i++; while (char.IsWhiteSpace(code[i]));
                                 first = Parse(state, ref i, true, true, false, true).Statement;
-                                if (first == null || (first as OperatorStatement)._type != OperationType.None)
+                                if (((first as GetFieldStatement) as object ?? (first as GetVaribleStatement)) == null)
                                 {
                                     var cord = Tools.PositionToTextcord(code, i);
                                     throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid prefix operation. " + cord)));
                                 }
-                                (first as OperatorStatement)._type = OperationType.Decriment;
+                                first = new Operators.Decriment(first, Operators.Decriment.Type.Predecriment);
                             }
                             else
                             {
                                 while (char.IsWhiteSpace(code[i])) i++;
                                 var f = Parse(state, ref i, true, true, false, true).Statement;
-                                first = new Operators.Mul(new ImmidateValueStatement(-1), f) { Position = index - 1, Length = i - index };
+                                first = new Operators.Mul(new ImmidateValueStatement(-1), f) { Position = index, Length = i - index };
                             }
                             break;
                         }
                     case '!':
                         {
                             do i++; while (char.IsWhiteSpace(code[i]));
-                            first = new OperatorStatement() { first = Parse(state, ref i, true, true, false, true).Statement, Position = index, Length = i - index, _type = OperationType.LogicalNot };
+                            first = new Operators.LogicalNot(Parse(state, ref i, true, true, false, true).Statement) { Position = index, Length = i - index };
                             if (first == null)
                             {
                                 var cord = Tools.PositionToTextcord(code, i);
@@ -466,10 +468,7 @@ namespace NiL.JS.Statements
                                 var cord = Tools.PositionToTextcord(code, i);
                                 throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid prefix operation. " + cord)));
                             }
-                            if ((first as OperatorStatement)._type == OperationType.None)
-                                (first as OperatorStatement)._type = OperationType.Not;
-                            else
-                                first = new OperatorStatement() { first = first, _type = OperationType.Not, Position = index, Length = i - index };
+                            first = new Operators.Not(first) { Position = index, Length = i - index };
                             break;
                         }
                     case 't':
@@ -482,10 +481,7 @@ namespace NiL.JS.Statements
                                 var cord = Tools.PositionToTextcord(code, i);
                                 throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid prefix operation. " + cord)));
                             }
-                            if ((first as OperatorStatement)._type == OperationType.None)
-                                (first as OperatorStatement)._type = OperationType.TypeOf;
-                            else
-                                first = new Operators.TypeOf(first, second) { Position = index, Length = i - index };
+                            first = new Operators.TypeOf(first) { Position = index, Length = i - index };
                             break;
                         }
                     case 'v':
@@ -510,7 +506,7 @@ namespace NiL.JS.Statements
                                 var cord = Tools.PositionToTextcord(code, i);
                                 throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid prefix operation. " + cord)));
                             }
-                            if ((first as OperatorStatement)._type == OperationType.None || (first as OperatorStatement)._type == OperationType.Call)
+                            if (first is OperatorStatement && ((first as OperatorStatement)._type == OperationType.None || (first as OperatorStatement)._type == OperationType.Call))
                                 (first as OperatorStatement)._type = OperationType.New;
                             else
                                 first = new Operators.New(first, second) { Position = index, Length = i - index };
@@ -526,10 +522,7 @@ namespace NiL.JS.Statements
                                 var cord = Tools.PositionToTextcord(code, i);
                                 throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid prefix operation. " + cord)));
                             }
-                            if ((first as OperatorStatement)._type == OperationType.None)
-                                (first as OperatorStatement)._type = OperationType.Delete;
-                            else
-                                first = new Operators.Delete(first, second) { Position = index, Length = i - index };
+                            first = new Operators.Delete(first) { Position = index, Length = i - index };
                             break;
                         }
                     default:
@@ -551,15 +544,22 @@ namespace NiL.JS.Statements
                 throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid operator argument at " + Tools.PositionToTextcord(code, i))));
             bool canAsign = true && !forUnary; // на случай f() = x
             bool assign = false; // на случай операторов 'x='
-            bool binar = false;
+            bool binary = false;
             bool repeat; // лёгкая замена goto. Тот самый случай, когда он уместен.
             int rollbackPos;
             do
             {
                 repeat = false;
-                while (char.IsWhiteSpace(code[i]) && !Tools.isLineTerminator(code[i])) i++;
+                while (i < code.Length && char.IsWhiteSpace(code[i]) && !Tools.isLineTerminator(code[i])) i++;
+                if (code.Length <= i)
+                    break;
                 rollbackPos = i;
-                while (char.IsWhiteSpace(code[i])) i++;
+                while (i < code.Length && char.IsWhiteSpace(code[i])) i++;
+                if (code.Length <= i)
+                {
+                    i = rollbackPos;
+                    break;
+                }
                 switch (code[i])
                 {
                     case '\v':
@@ -571,14 +571,14 @@ namespace NiL.JS.Statements
                     case '}':
                     case ':':
                         {
-                            binar = false;
+                            binary = false;
                             break;
                         }
                     case '!':
                         {
                             if (forUnary)
                             {
-                                binar = false;
+                                binary = false;
                                 repeat = false;
                                 i = rollbackPos;
                                 break;
@@ -589,12 +589,12 @@ namespace NiL.JS.Statements
                                 if (code[i + 1] == '=')
                                 {
                                     i++;
-                                    binar = true;
+                                    binary = true;
                                     type = OperationType.StrictNotEqual;
                                 }
                                 else
                                 {
-                                    binar = true;
+                                    binary = true;
                                     type = OperationType.NotEqual;
                                 }
                             }
@@ -605,13 +605,13 @@ namespace NiL.JS.Statements
                         {
                             if (forUnary || !processComma)
                             {
-                                binar = false;
+                                binary = false;
                                 repeat = false;
                                 i = rollbackPos;
                                 break;
                             }
                             type = OperationType.None;
-                            binar = true;
+                            binary = true;
                             repeat = false;
                             break;
                         }
@@ -619,7 +619,7 @@ namespace NiL.JS.Statements
                         {
                             if (forUnary)
                             {
-                                binar = false;
+                                binary = false;
                                 repeat = false;
                                 i = rollbackPos;
                                 break;
@@ -636,10 +636,10 @@ namespace NiL.JS.Statements
                                 throw new ArgumentException("Invalid char in ternary operator");
                             do i++; while (char.IsWhiteSpace(code[i]));
                             state.InExpression = true;
-                            second = new ImmidateValueStatement(new JSObject() { ValueType = JSObjectType.Object, oValue = sec }) { Position = position - 1 };
+                            second = new ImmidateValueStatement(new JSObject() { ValueType = JSObjectType.Object, oValue = sec }) { Position = position };
                             sec[1] = Parser.Parse(state, ref i, 1);
                             second.Length = i - second.Position;
-                            binar = false;
+                            binary = false;
                             repeat = false;
                             break;
                         }
@@ -647,7 +647,7 @@ namespace NiL.JS.Statements
                         {
                             if (forUnary)
                             {
-                                binar = false;
+                                binary = false;
                                 repeat = false;
                                 i = rollbackPos;
                                 break;
@@ -658,18 +658,18 @@ namespace NiL.JS.Statements
                                 if (code[i + 1] == '=')
                                 {
                                     i++;
-                                    binar = true;
+                                    binary = true;
                                     type = OperationType.StrictEqual;
                                 }
                                 else
                                 {
-                                    binar = true;
+                                    binary = true;
                                     type = OperationType.Equal;
                                 }
                             }
                             else
                             {
-                                binar = true;
+                                binary = true;
                                 type = OperationType.Assign;
                             }
                             break;
@@ -678,7 +678,7 @@ namespace NiL.JS.Statements
                         {
                             if (forUnary)
                             {
-                                binar = false;
+                                binary = false;
                                 repeat = false;
                                 i = rollbackPos;
                                 break;
@@ -693,7 +693,7 @@ namespace NiL.JS.Statements
                             }
                             else
                             {
-                                binar = true;
+                                binary = true;
                                 type = OperationType.Addition;
                                 if (code[i + 1] == '=')
                                 {
@@ -707,7 +707,7 @@ namespace NiL.JS.Statements
                         {
                             if (forUnary)
                             {
-                                binar = false;
+                                binary = false;
                                 repeat = false;
                                 i = rollbackPos;
                                 break;
@@ -722,7 +722,7 @@ namespace NiL.JS.Statements
                             }
                             else
                             {
-                                binar = true;
+                                binary = true;
                                 type = OperationType.Substract;
                                 if (code[i + 1] == '=')
                                 {
@@ -736,12 +736,12 @@ namespace NiL.JS.Statements
                         {
                             if (forUnary)
                             {
-                                binar = false;
+                                binary = false;
                                 repeat = false;
                                 i = rollbackPos;
                                 break;
                             }
-                            binar = true;
+                            binary = true;
                             type = OperationType.Multiply;
                             if (code[i + 1] == '=')
                             {
@@ -754,7 +754,7 @@ namespace NiL.JS.Statements
                         {
                             if (forUnary)
                             {
-                                binar = false;
+                                binary = false;
                                 repeat = false;
                                 i = rollbackPos;
                                 break;
@@ -762,14 +762,14 @@ namespace NiL.JS.Statements
                             if (code[i + 1] == '&')
                             {
                                 i++;
-                                binar = true;
+                                binary = true;
                                 assign = false;
                                 type = OperationType.LogicalAnd;
                                 break;
                             }
                             else
                             {
-                                binar = true;
+                                binary = true;
                                 assign = false;
                                 type = OperationType.And;
                                 if (code[i + 1] == '=')
@@ -784,7 +784,7 @@ namespace NiL.JS.Statements
                         {
                             if (forUnary)
                             {
-                                binar = false;
+                                binary = false;
                                 repeat = false;
                                 i = rollbackPos;
                                 break;
@@ -792,14 +792,14 @@ namespace NiL.JS.Statements
                             if (code[i + 1] == '|')
                             {
                                 i++;
-                                binar = true;
+                                binary = true;
                                 assign = false;
                                 type = OperationType.LogicalOr;
                                 break;
                             }
                             else
                             {
-                                binar = true;
+                                binary = true;
                                 assign = false;
                                 type = OperationType.Or;
                                 if (code[i + 1] == '=')
@@ -814,12 +814,12 @@ namespace NiL.JS.Statements
                         {
                             if (forUnary)
                             {
-                                binar = false;
+                                binary = false;
                                 repeat = false;
                                 i = rollbackPos;
                                 break;
                             }
-                            binar = true;
+                            binary = true;
                             type = OperationType.Xor;
                             if (code[i + 1] == '=')
                             {
@@ -832,12 +832,12 @@ namespace NiL.JS.Statements
                         {
                             if (forUnary)
                             {
-                                binar = false;
+                                binary = false;
                                 repeat = false;
                                 i = rollbackPos;
                                 break;
                             }
-                            binar = true;
+                            binary = true;
                             type = OperationType.Division;
                             if (code[i + 1] == '=')
                             {
@@ -850,11 +850,11 @@ namespace NiL.JS.Statements
                         {
                             if (forUnary)
                             {
-                                binar = false;
+                                binary = false;
                                 repeat = false;
                                 break;
                             }
-                            binar = true;
+                            binary = true;
                             type = OperationType.Module;
                             if (code[i + 1] == '=')
                             {
@@ -867,12 +867,12 @@ namespace NiL.JS.Statements
                         {
                             if (forUnary)
                             {
-                                binar = false;
+                                binary = false;
                                 repeat = false;
                                 i = rollbackPos;
                                 break;
                             }
-                            binar = true;
+                            binary = true;
                             if (code[i + 1] == '<')
                             {
                                 i++;
@@ -904,12 +904,12 @@ namespace NiL.JS.Statements
                         {
                             if (forUnary)
                             {
-                                binar = false;
+                                binary = false;
                                 repeat = false;
                                 i = rollbackPos;
                                 break;
                             }
-                            binar = true;
+                            binary = true;
                             if (code[i + 1] == '>')
                             {
                                 i++;
@@ -941,7 +941,7 @@ namespace NiL.JS.Statements
                         }
                     case '.':
                         {
-                            binar = true;
+                            binary = true;
                             i++;
                             while (char.IsWhiteSpace(code[i])) i++;
                             s = i;
@@ -955,7 +955,7 @@ namespace NiL.JS.Statements
                                                                      })
                                     {
                                         Position = first.Position,
-                                        Length = i - first.Position - 1
+                                        Length = i - first.Position
                                     };
                             repeat = true;
                             canAsign = true;
@@ -1006,7 +1006,7 @@ namespace NiL.JS.Statements
                             first = new OperatorStatement()
                             {
                                 first = first,
-                                second = new ImmidateValueStatement(new JSObject() { ValueType = JSObjectType.Object, oValue = args.ToArray() }) { Position = startPos - 1, Length = i - startPos },
+                                second = new ImmidateValueStatement(new JSObject() { ValueType = JSObjectType.Object, oValue = args.ToArray() }) { Position = startPos, Length = i - startPos },
                                 _type = OperationType.Call,
                                 Position = first.Position,
                                 Length = i - first.Position
@@ -1014,14 +1014,14 @@ namespace NiL.JS.Statements
                             i++;
                             repeat = !forNew;
                             canAsign = false;
-                            binar = false;
+                            binary = false;
                             break;
                         }
                     case 'i':
                         {
                             if (forUnary)
                             {
-                                binar = false;
+                                binary = false;
                                 repeat = false;
                                 i = rollbackPos;
                                 break;
@@ -1029,13 +1029,13 @@ namespace NiL.JS.Statements
                             if (Parser.Validate(code, "instanceof", ref i))
                             {
                                 type = OperationType.InstanceOf;
-                                binar = true;
+                                binary = true;
                                 break;
                             }
                             else if (Parser.Validate(code, "in", ref i))
                             {
                                 type = OperationType.In;
-                                binar = true;
+                                binary = true;
                                 break;
                             }
                             goto default;
@@ -1055,25 +1055,31 @@ namespace NiL.JS.Statements
             } while (repeat);
             if ((!canAsign) && ((type == OperationType.Assign) || (assign)))
                 throw new InvalidOperationException("invalid left-hand side in assignment");
-            if (binar && !forUnary)
+            if (binary && !forUnary)
             {
-                do i++; while (char.IsWhiteSpace(code[i]));
-                second = OperatorStatement.Parse(state, ref i, processComma, false, false, false).Statement;
+                do i++; while (code.Length > i && char.IsWhiteSpace(code[i]));
+                if (code.Length > i)
+                    second = OperatorStatement.Parse(state, ref i, processComma, false, false, false).Statement;
             }
-            OperatorStatement res = null;
+            Statement res = null;
             if (first == second && first == null)
                 return new ParseResult();
             if (assign)
                 res = new OperatorStatement() { first = first, second = new OperatorStatement() { first = first, second = second, _type = type, Position = index, Length = i - index }, _type = OperationType.Assign, Position = index, Length = i - index };
             else
             {
-                if (forUnary && (type == OperationType.None) && (first is OperatorStatement))
-                    res = first as OperatorStatement;
+                if (!root || type != OperationType.None || second != null)
+                {
+                    if (forUnary && (type == OperationType.None) && (first is OperatorStatement))
+                        res = first as OperatorStatement;
+                    else
+                        res = new OperatorStatement() { first = first, second = second, _type = type, Position = index, Length = i - index };
+                }
                 else
-                    res = new OperatorStatement() { first = first, second = second, _type = type, Position = index - 1, Length = i - index };
+                    res = first;
             }
             if (root)
-                res = deicstra(res) as OperatorStatement;
+                res = deicstra(res as OperatorStatement) ?? res;
             index = i;
             state.InExpression = !root;
             return new ParseResult()

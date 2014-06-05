@@ -82,7 +82,7 @@ namespace NiL.JS.Statements
         {
             JSObject res = JSObject.undefined;
             var s = Tools.RaiseIfNotExist(source.Invoke(context));
-            var v = varible.Invoke(context);
+            var v = varible.InvokeForAssing(context);
             int index = 0;
             while (s != null)
             {

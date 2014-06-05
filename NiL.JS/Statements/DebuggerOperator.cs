@@ -22,7 +22,7 @@ namespace NiL.JS.Statements
                 IsParsed = true,
                 Statement = new DebuggerOperator()
                 {
-                    Position = pos - 1,
+                    Position = pos,
                     Length = index - pos,
                     textCord = tc
                 }

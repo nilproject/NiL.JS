@@ -31,11 +31,9 @@ namespace NiL.JS
         {
             Context = new Context(NiL.JS.Core.Context.globalContext);
             Code = code;
-            code = "{" + code + "}";
             int i = 0;
-            string c = Tools.RemoveComments(code);
-            root = CodeBlock.Parse(new ParsingState(c, Code), ref i).Statement;
-            if (i != c.Length)
+            root = CodeBlock.Parse(new ParsingState(Tools.RemoveComments(code), Code), ref i).Statement;
+            if (i < code.Length)
                 throw new System.ArgumentException("Invalid char");
             Parser.Optimize(ref root, new System.Collections.Generic.Dictionary<string, Statement>());
         }

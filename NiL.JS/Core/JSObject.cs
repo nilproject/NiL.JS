@@ -33,7 +33,8 @@ namespace NiL.JS.Core
         DontDelete = 1 << 1,
         ReadOnly = 1 << 2,
         Immutable = 1 << 3,
-        Argument = 1 << 16
+        Argument = 1 << 16,
+        GetValue = 1 << 17
     }
 
     public delegate void AssignCallback(JSObject sender);

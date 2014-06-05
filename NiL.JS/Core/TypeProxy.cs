@@ -348,6 +348,7 @@ namespace NiL.JS.Core
                                     }
                                 };
                             }
+                            r.attributes |= JSObjectAttributes.GetValue;
                             break;
                         }
                     case MemberTypes.Property:
@@ -378,6 +379,7 @@ namespace NiL.JS.Core
                                         }
                                 };
                             }
+                            r.attributes |= JSObjectAttributes.GetValue;
                             break;
                         }
                     case MemberTypes.Event:

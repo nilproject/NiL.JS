@@ -20,7 +20,7 @@ namespace NiL.JS.Statements
             if (!Parser.ValidateName(code, ref i, true, state.strict.Peek()))
                 return new ParseResult();
             int l = i;
-            if (!Parser.Validate(code, " :", ref i) && code[i++] != ':')
+            if (i >= code.Length || (!Parser.Validate(code, " :", ref i) && code[i++] != ':'))
                 return new ParseResult();
             var label = code.Substring(index, l - index);
             state.Labels.Add(label);
@@ -40,7 +40,7 @@ namespace NiL.JS.Statements
                 {
                     statement = stat,
                     label = label,
-                    Position = pos - 1,
+                    Position = pos,
                     Length = index - pos
                 }
             };

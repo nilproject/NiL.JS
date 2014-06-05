@@ -428,9 +428,9 @@ namespace NiL.JS.Core
             {
                 inEval = true;
                 int i = 0;
-                string c = "{" + Tools.RemoveComments(code) + "}";
+                string c = Tools.RemoveComments(code);
                 var cb = CodeBlock.Parse(new ParsingState(c, code), ref i).Statement;
-                if (i != c.Length)
+                if (i < c.Length)
                     throw new System.ArgumentException("Invalid char");
                 Parser.Optimize(ref cb, -1, new Dictionary<string,Statement>());
                 var res = cb.Invoke(this);

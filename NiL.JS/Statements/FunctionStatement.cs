@@ -173,7 +173,7 @@ namespace NiL.JS.Statements
                 parameters = arguments.ToArray(),
                 body = body,
                 mode = mode,
-                Position = index - 1,
+                Position = index,
                 Length = i - index
             };
             index = i;
@@ -203,7 +203,7 @@ namespace NiL.JS.Statements
         internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, Statement> varibles)
         {
             var stat = body as Statement;
-            body.Optimize(ref stat, 0, new Dictionary<string,Statement>());
+            body.Optimize(ref stat, 0, new Dictionary<string, Statement>());
             body = stat as CodeBlock;
             return false;
         }

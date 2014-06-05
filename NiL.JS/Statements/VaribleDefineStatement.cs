@@ -48,14 +48,19 @@ namespace NiL.JS.Statements
                 }
                 string name = Tools.Unescape(code.Substring(s, i - s));
                 names.Add(name);
-                while (char.IsWhiteSpace(code[i]) && !Tools.isLineTerminator(code[i])) i++;
-                if ((code[i] != ',') && (code[i] != ';') && (code[i] != '=') && (code[i] != '}') && (!Tools.isLineTerminator(code[i])))
+                isDef = true;
+                while (i < code.Length && char.IsWhiteSpace(code[i]) && !Tools.isLineTerminator(code[i])) i++;
+                if (i < code.Length && (code[i] != ',') && (code[i] != ';') && (code[i] != '=') && (code[i] != '}') && (!Tools.isLineTerminator(code[i])))
                     throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \";\", \",\", \"=\" or \"}\" at + " + Tools.PositionToTextcord(code, i))));
                 initializator.Add(OperatorStatement.Parse(state, ref s, false).Statement);
                 i = s;
+                if (i >= code.Length)
+                    break;
                 if ((code[i] != ',') && (code[i] != ';') && (code[i] != '=') && (code[i] != '}') && (!Tools.isLineTerminator(code[i])))
                     throw new ArgumentException("code (" + i + ")");
-                while (char.IsWhiteSpace(code[s])) s++;
+                while (s < code.Length && char.IsWhiteSpace(code[s])) s++;
+                if (s >= code.Length)
+                    break;
                 if (code[s] == ',')
                 {
                     i = s;
@@ -63,7 +68,6 @@ namespace NiL.JS.Statements
                 }
                 else
                     while (char.IsWhiteSpace(code[i]) && !Tools.isLineTerminator(code[i])) i++;
-                isDef = true;
             }
             if (!isDef)
                 throw new ArgumentException("code (" + i + ")");
@@ -75,7 +79,7 @@ namespace NiL.JS.Statements
                 IsParsed = true,
                 Statement = new VaribleDefineStatement(names.ToArray(), inits)
                 {
-                    Position = pos - 1,
+                    Position = pos,
                     Length = index - pos
                 }
             };
@@ -94,16 +98,15 @@ namespace NiL.JS.Statements
             for (int i = 0; i < initializators.Length; i++)
                 Parser.Optimize(ref initializators[i], 1, varibles);
             for (var i = 0; i < names.Length; i++)
-            {
-                if (!varibles.ContainsKey(names[i]))
-                    varibles.Add(names[i], null);
-            }
+                (varibles[names[i]] as GetVaribleStatement).Descriptor.Defined = true;
+            if (initializators.Length == 1)
+                _this = initializators[0];
             return false;
         }
 
         public override string ToString()
         {
-            var res = "";// "var ";
+            var res = "var ";
             for (var i = 0; i < initializators.Length; i++)
             {
                 var t = initializators[i].ToString();

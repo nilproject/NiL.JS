@@ -45,7 +45,7 @@ namespace NiL.JS.Statements
                 if (code[i] != '{')
                     throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid catch block statement definition at " + Tools.PositionToTextcord(code, i))));
                 cb = CodeBlock.Parse(state, ref i).Statement;
-                while (char.IsWhiteSpace(code[i])) i++;
+                while (i < code.Length && char.IsWhiteSpace(code[i])) i++;
             }
             Statement f = null;
             if (Parser.Validate(code, "finally", i) && Parser.isIdentificatorTerminator(code[i + 7]))
@@ -69,7 +69,7 @@ namespace NiL.JS.Statements
                     catchBody = cb,
                     finallyBody = f,
                     exptName = exptn,
-                    Position = pos - 1,
+                    Position = pos,
                     Length = index - pos
                 }
             };

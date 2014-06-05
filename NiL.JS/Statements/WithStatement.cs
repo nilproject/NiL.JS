@@ -38,7 +38,7 @@ namespace NiL.JS.Statements
                 {
                     obj = obj,
                     body = body,
-                    Position = pos - 1,
+                    Position = pos,
                     Length = index - pos
                 }
             };

@@ -37,12 +37,9 @@ namespace NiL.JS.Statements
             if (body is FunctionStatement && state.strict.Peek())
                 throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
             Statement elseBody = null;
-            while (char.IsWhiteSpace(code[i])) i++;
-            if (!(body is CodeBlock) && (code[i] == ';'))
-            {
-                i++;
-                while (char.IsWhiteSpace(code[i])) i++;
-            }
+            while (i < code.Length && char.IsWhiteSpace(code[i])) i++;
+            if (i < code.Length && !(body is CodeBlock) && (code[i] == ';'))
+                do i++; while (char.IsWhiteSpace(code[i]));
             if (Parser.Validate(code, "else", ref i))
             {
                 while (char.IsWhiteSpace(code[i])) i++;
@@ -60,7 +57,7 @@ namespace NiL.JS.Statements
                     body = body,
                     condition = condition,
                     elseBody = elseBody,
-                    Position = pos - 1,
+                    Position = pos,
                     Length = index - pos
                 }
             };
