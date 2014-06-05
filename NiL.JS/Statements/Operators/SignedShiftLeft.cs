@@ -7,7 +7,7 @@ namespace NiL.JS.Statements.Operators
     public sealed class SignedShiftLeft : Operator
     {
         public SignedShiftLeft(Statement first, Statement second)
-            : base(first, second)
+            : base(first, second, true)
         {
 
         }

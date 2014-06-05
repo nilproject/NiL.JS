@@ -22,6 +22,13 @@ namespace NiL.JS.Statements
             return value;
         }
 
+        protected override Statement[] getChildsImpl()
+        {
+            if (value.Value is Statement[])
+                return value.Value as Statement[];
+            return null;
+        }
+
         internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, Statement> varibles)
         {
             var vss = value.Value as Statement[];

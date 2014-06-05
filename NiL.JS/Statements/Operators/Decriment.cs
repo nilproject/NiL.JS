@@ -21,13 +21,14 @@ namespace NiL.JS.Statements.Operators
         }
 
         public Decriment(Statement op, Type type)
-            : base(type == Type.Predecriment ? op : null, type == Type.Postdecriment ? op : null)
+            : base(type == Type.Predecriment ? op : null, type == Type.Postdecriment ? op : null, type == Type.Postdecriment)
         {
             if (type > Type.Postdecriment)
                 throw new ArgumentException("type");
             if (op == null)
                 throw new ArgumentNullException("op");
-            tempResult.assignCallback = null;
+            if (tempResult != null)
+                tempResult.assignCallback = null;
         }
 
         internal override JSObject Invoke(Context context)

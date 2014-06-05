@@ -7,7 +7,7 @@ namespace NiL.JS.Statements.Operators
     public sealed class And : Operator
     {
         public And(Statement first, Statement second)
-            : base(first, second)
+            : base(first, second, true)
         {
 
         }

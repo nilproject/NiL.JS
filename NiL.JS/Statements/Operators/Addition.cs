@@ -7,7 +7,7 @@ namespace NiL.JS.Statements.Operators
     public sealed class Addition : Operator
     {
         public Addition(Statement first, Statement second)
-            : base(first, second)
+            : base(first, second, true)
         {
 
         }

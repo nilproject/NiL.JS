@@ -18,6 +18,11 @@ namespace NiL.JS.Statements.Operators
 
             }
 
+            protected override Statement[] getChildsImpl()
+            {
+                throw new InvalidOperationException();
+            }
+
             internal override JSObject Invoke(Context context)
             {
                 context.objectSource = _this;
@@ -36,7 +41,7 @@ namespace NiL.JS.Statements.Operators
         }
 
         public New(Statement first, Statement second)
-            : base(first, second)
+            : base(first, second, false)
         {
 
         }
@@ -56,10 +61,11 @@ namespace NiL.JS.Statements.Operators
                 JSObject _this = new JSObject() { ValueType = JSObjectType.Object };
                 _this.prototype = temp.GetField("prototype", true, false);
                 if (_this.prototype.ValueType < JSObjectType.Object)
-                    _this.prototype = JSObject.GlobalPrototype;
+                    _this.prototype = null;
                 if (!(temp.oValue is TypeProxyConstructor))
                 {
-                    _this.prototype = _this.prototype.Clone() as JSObject;
+                    if (_this.prototype != null)
+                        _this.prototype = _this.prototype.Clone() as JSObject;
                     _this.oValue = _this;
                 }
                 else

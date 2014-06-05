@@ -8,7 +8,7 @@ namespace NiL.JS.Statements.Operators
     public sealed class None : Operator
     {
         public None(Statement first, Statement second)
-            : base(first, second)
+            : base(first, second, false)
         {
 
         }

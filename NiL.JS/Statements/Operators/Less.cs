@@ -7,7 +7,7 @@ namespace NiL.JS.Statements.Operators
     public class Less : Operator
     {
         internal Less(Statement first, Statement second)
-            : base(first, second)
+            : base(first, second, true)
         {
 
         }

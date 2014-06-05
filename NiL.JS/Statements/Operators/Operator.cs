@@ -8,7 +8,7 @@ namespace NiL.JS.Statements.Operators
     [Serializable]
     public abstract class Operator : Statement
     {
-        protected readonly JSObject tempResult = new JSObject() { attributes = JSObjectAttributes.DontDelete, assignCallback = JSObject.ErrorAssignCallback };
+        protected readonly JSObject tempResult;
 
         protected internal Statement first;
         protected internal Statement second;
@@ -25,8 +25,10 @@ namespace NiL.JS.Statements.Operators
             }
         }
 
-        protected Operator(Statement first, Statement second)
+        protected Operator(Statement first, Statement second, bool createResultContainer)
         {
+            if (createResultContainer)
+                tempResult = new JSObject() { attributes = JSObjectAttributes.DontDelete, assignCallback = JSObject.ErrorAssignCallback };
             this.first = first;
             this.second = second;
         }
@@ -43,6 +45,24 @@ namespace NiL.JS.Statements.Operators
             catch
             { }
             return false;
+        }
+
+        protected override Statement[] getChildsImpl()
+        {
+            if (first != null && second != null)
+                return new[]{
+                    first,
+                    second
+                };
+            if (first != null)
+                return new[]{
+                    first
+                };
+            if (second != null)
+                return new[]{
+                    second
+                };
+            return null;
         }
     }
 }

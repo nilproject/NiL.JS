@@ -39,6 +39,16 @@ namespace NiL.JS.Statements
             throw new JSException(body.Invoke(context));
         }
 
+        protected override Statement[] getChildsImpl()
+        {
+            var res = new List<Statement>()
+            {
+                body
+            };
+            res.RemoveAll(x => x == null);
+            return res.ToArray();
+        }
+
         internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, Statement> varibles)
         {
             Parser.Optimize(ref body, 2, varibles);

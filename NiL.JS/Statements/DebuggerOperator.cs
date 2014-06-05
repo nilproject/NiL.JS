@@ -39,5 +39,10 @@ namespace NiL.JS.Statements
         {
             return "";
         }
+
+        protected override Statement[] getChildsImpl()
+        {
+            return null;
+        }
     }
 }

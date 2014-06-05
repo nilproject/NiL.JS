@@ -20,7 +20,7 @@ namespace NiL.JS.Statements.Operators
         }
 
         public Ternary(Statement first, Statement second)
-            : base(first, second)
+            : base(first, second, false)
         {
             if (!(second is ImmidateValueStatement)
                 || !((second as ImmidateValueStatement).value.oValue is Statement[]))

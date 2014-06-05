@@ -18,6 +18,11 @@ namespace NiL.JS.Statements
             return JSObject.undefined;
         }
 
+        protected override Statement[] getChildsImpl()
+        {
+            return null;
+        }
+
         public override string ToString()
         {
             return "";

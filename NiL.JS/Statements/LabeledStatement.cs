@@ -57,6 +57,11 @@ namespace NiL.JS.Statements
             return JSObject.undefined;
         }
 
+        protected override Statement[] getChildsImpl()
+        {
+            return null;
+        }
+
         internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, Statement> varibles)
         {
             Parser.Optimize(ref statement, depth, varibles);

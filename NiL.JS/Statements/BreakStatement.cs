@@ -48,6 +48,11 @@ namespace NiL.JS.Statements
             return null;
         }
 
+        protected override Statement[] getChildsImpl()
+        {
+            return null;
+        }
+
         public override string ToString()
         {
             return "break" + (label != null ? " " + label : "");

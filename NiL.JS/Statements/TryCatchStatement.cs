@@ -157,6 +157,18 @@ namespace NiL.JS.Statements
             return false;
         }
 
+        protected override Statement[] getChildsImpl()
+        {
+            var res = new List<Statement>()
+            {
+                body,
+                catchBody,
+                finallyBody
+            };
+            res.RemoveAll(x => x == null);
+            return res.ToArray();
+        }
+
         public override string ToString()
         {
             var sbody = body.ToString();

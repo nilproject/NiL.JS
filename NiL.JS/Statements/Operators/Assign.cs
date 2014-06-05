@@ -19,7 +19,7 @@ namespace NiL.JS.Statements.Operators
         }
 
         public Assign(Statement first, Statement second)
-            : base(first, second)
+            : base(first, second, false)
         {
             setterArgs.fields["length"] = new JSObject()
             {

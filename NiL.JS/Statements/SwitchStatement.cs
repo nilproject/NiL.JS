@@ -1,6 +1,7 @@
 ﻿using NiL.JS.Core;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace NiL.JS.Statements
 {
@@ -64,7 +65,7 @@ namespace NiL.JS.Statements
                         if (code[i] != ':')
                             throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \":\" at + " + Tools.PositionToTextcord(code, i))));
                         i++;
-                        cases.Add(new Case() { index = body.Count, statement = new Operators.StrictEqual(image, sample) });
+                        cases.Add(new Case() { index = body.Count, statement = sample });
                     }
                     else if (Parser.Validate(code, "default", i) && Parser.isIdentificatorTerminator(code[i + 7]))
                     {
@@ -117,9 +118,10 @@ namespace NiL.JS.Statements
             if (functions != null)
                 throw new InvalidOperationException();
             int i = cases[0] != null ? cases[0].index : length + 1;
+            var imageVal = image.Invoke(context);
             for (int j = 1; j < cases.Length; j++)
             {
-                if ((bool)cases[j].statement.Invoke(context))
+                if (Operators.StrictEqual.Check(imageVal, cases[j].statement, context))
                 {
                     i = cases[j].index;
                     break;
@@ -150,7 +152,6 @@ namespace NiL.JS.Statements
                 Statement stat = functions[i];
                 Parser.Optimize(ref stat, 1, varibles);
                 varibles[functions[i].name] = stat;
-                functions[i] = null;
             }
             functions = null;
             for (int i = 1; i < cases.Length; i++)
@@ -164,6 +165,19 @@ namespace NiL.JS.Statements
             for (int i = cases[0] != null ? 0 : 1; i < cases.Length; i++)
                 cases[i].index = body.Length - cases[i].index;
             return false;
+        }
+
+        protected override Statement[] getChildsImpl()
+        {
+            var res = new List<Statement>()
+            {
+                image
+            };
+            res.AddRange(body);
+            res.AddRange(functions);
+            res.AddRange(from c in cases select c.statement);
+            res.RemoveAll(x => x == null);
+            return res.ToArray();
         }
 
         public override string ToString()

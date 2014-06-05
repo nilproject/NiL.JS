@@ -9,7 +9,7 @@ namespace NiL.JS.Statements.Operators
     public sealed class In : Operator
     {
         public In(Statement first, Statement second)
-            : base(first, second)
+            : base(first, second, true)
         {
 
         }

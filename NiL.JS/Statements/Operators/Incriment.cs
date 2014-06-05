@@ -22,13 +22,14 @@ namespace NiL.JS.Statements.Operators
         }
 
         public Incriment(Statement op, Type type)
-            : base(type == Type.Preincriment ? op : null, type == Type.Postincriment ? op : null)
+            : base(type == Type.Preincriment ? op : null, type == Type.Postincriment ? op : null, type == Type.Postincriment)
         {
             if (type > Type.Postincriment)
                 throw new ArgumentException("type");
             if (op == null)
                 throw new ArgumentNullException("op");
-            tempResult.assignCallback = null;
+            if (tempResult != null)
+                tempResult.assignCallback = null;
         }
 
         internal override JSObject Invoke(Context context)

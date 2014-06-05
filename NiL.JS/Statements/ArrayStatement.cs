@@ -63,6 +63,11 @@ namespace NiL.JS.Statements
             return res;
         }
 
+        protected override Statement[] getChildsImpl()
+        {
+            return elements;
+        }
+
         internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, Statement> vars)
         {
             for (int i = 0; i < elements.Length; i++)

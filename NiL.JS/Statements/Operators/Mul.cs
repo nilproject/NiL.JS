@@ -8,7 +8,7 @@ namespace NiL.JS.Statements.Operators
     internal sealed class Mul : Operator
     {
         public Mul(Statement first, Statement second)
-            : base(first, second)
+            : base(first, second, true)
         {
 
         }

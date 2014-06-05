@@ -219,6 +219,19 @@ namespace NiL.JS.Statements
             for (; ; ) ;
         }
 
+        protected override Statement[] getChildsImpl()
+        {
+            var res = new List<Statement>()
+            {
+                init, 
+                condition,
+                post,
+                body
+            };
+            res.RemoveAll(x => x == null);
+            return res.ToArray();
+        }
+
         internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, Statement> varibles)
         {
             Parser.Optimize(ref init, 1, varibles);

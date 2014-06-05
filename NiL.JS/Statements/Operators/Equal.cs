@@ -7,7 +7,7 @@ namespace NiL.JS.Statements.Operators
     public class Equal : Operator
     {
         public Equal(Statement first, Statement second)
-            : base(first, second)
+            : base(first, second, true)
         {
 
         }

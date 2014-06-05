@@ -152,14 +152,14 @@ namespace NiL.JS.Core
             if (context.thisBind != null && context.thisBind.ValueType == JSObjectType.Object && context.thisBind.prototype != null && context.thisBind.prototype.oValue == GlobalPrototype)
                 res = context.thisBind;
             else
-                res = new JSObject(true) { prototype = GlobalPrototype };
+                res = CreateObject();
 
             res.ValueType = JSObjectType.Object;
             res.oValue = oVal ?? res;
             if (oVal is JSObject)
                 res.prototype = (oVal as JSObject).GetField("__proto__", true, true);
             else
-                res.prototype = GlobalPrototype;
+                res.prototype = null;
             return res;
         }
 
@@ -181,9 +181,7 @@ namespace NiL.JS.Core
         {
             var t = new JSObject(true)
             {
-                ValueType = JSObjectType.Object,
-                prototype = GlobalPrototype.Clone()
-                as JSObject
+                ValueType = JSObjectType.Object
             };
             t.oValue = t;
             return t;
@@ -256,14 +254,20 @@ namespace NiL.JS.Core
             switch (name)
             {
                 case "__proto__":
-                    return prototype ?? (fast ? Null : prototype = new JSObject(false) { ValueType = JSObjectType.Object, oValue = null });
+                    //return prototype ?? (fast ? Null : prototype = new JSObject(false) { ValueType = JSObjectType.Object, oValue = null });
+                    if (JSObject.GlobalPrototype == this)
+                        return prototype ?? (fast ? Null : prototype = Null.Clone() as JSObject);
+                    return prototype ?? (fast ? JSObject.GlobalPrototype ?? Null : prototype = (JSObject.GlobalPrototype ?? Null).Clone() as JSObject);
                 default:
                     {
                         JSObject res = null;
-                        bool fromProto = (fields == null || !fields.TryGetValue(name, out res) || res.ValueType < JSObjectType.Undefined) && (prototype != null) && (!own || prototype.oValue is TypeProxy);
+                        bool fromProto = 
+                            (fields == null || !fields.TryGetValue(name, out res) || res.ValueType < JSObjectType.Undefined) 
+                            && (prototype != null || (GlobalPrototype != this && GlobalPrototype != null)) 
+                            && (!own || (prototype != null && prototype.oValue is TypeProxy));
                         if (fromProto)
                         {
-                            res = prototype.GetField(name, true, own);
+                            res = (prototype ?? GlobalPrototype).GetField(name, true, own);
                             if (own && (prototype.oValue as TypeProxy).prototypeInstance != this.oValue && res.ValueType != JSObjectType.Property)
                                 res = null;
                             if (res == undefined)

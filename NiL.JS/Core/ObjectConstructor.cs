@@ -17,8 +17,6 @@ namespace NiL.JS.Core
         public override NiL.JS.Core.JSObject Invoke(NiL.JS.Core.JSObject argsObj)
         {
             var res = JSObject.Object(context, argsObj);
-            if (res.prototype == null)
-                res.prototype = (this.prototypeField ?? JSObject.GlobalPrototype).Clone() as JSObject;
             return res;
         }
 

@@ -7,109 +7,107 @@ namespace NiL.JS.Statements.Operators
     public class StrictEqual : Operator
     {
         public StrictEqual(Statement first, Statement second)
-            : base(first, second)
+            : base(first, second, false)
         {
 
         }
 
+        internal static bool Check(JSObject first, Statement second, Context context)
+        {
+            var temp = first;
+            var lvt = temp.ValueType;
+
+            switch (lvt)
+            {
+                case JSObjectType.Int:
+                case JSObjectType.Bool:
+                    {
+                        var l = temp.iValue;
+                        temp = Tools.RaiseIfNotExist(second.Invoke(context));
+                        if (temp.ValueType == JSObjectType.Double)
+                            return l == temp.dValue;
+                        else if (lvt != temp.ValueType)
+                            return false;
+                        else
+                            return l == temp.iValue;
+                    }
+                case JSObjectType.Double:
+                    {
+                        var l = temp.dValue;
+                        temp = Tools.RaiseIfNotExist(second.Invoke(context));
+                        if (temp.ValueType == JSObjectType.Int)
+                            return l == temp.iValue;
+                        else if (lvt != temp.ValueType)
+                            return false;
+                        else
+                            return l == temp.dValue;
+                    }
+                case JSObjectType.Function:
+                    {
+                        var l = temp.oValue;
+                        temp = Tools.RaiseIfNotExist(second.Invoke(context));
+                        if (lvt != temp.ValueType)
+                            return false;
+                        else
+                            return l == temp.oValue;
+                    }
+                case JSObjectType.Object:
+                    {
+                        var l = temp.oValue;
+                        temp = Tools.RaiseIfNotExist(second.Invoke(context));
+                        if (temp.ValueType != JSObjectType.Object)
+                            return false;
+                        else if (l == null || temp.oValue == null)
+                            return l == temp.oValue;
+                        else
+                            return l.Equals(temp.oValue);
+                    }
+                case JSObjectType.Date:
+                    {
+                        var l = temp.oValue;
+                        temp = Tools.RaiseIfNotExist(second.Invoke(context));
+                        if (temp.ValueType != JSObjectType.Date)
+                            return false;
+                        else if (l == null || temp.oValue == null)
+                            return l == temp.oValue;
+                        else
+                            return l.Equals(temp.oValue);
+                    }
+                case JSObjectType.String:
+                    {
+                        var l = temp.oValue;
+                        temp = Tools.RaiseIfNotExist(second.Invoke(context));
+                        if (lvt != temp.ValueType)
+                            return false;
+                        else
+                            return l.Equals(temp.oValue);
+                    }
+                case JSObjectType.Undefined:
+                case JSObjectType.NotExistInObject:
+                    {
+                        var l = temp.dValue;
+                        temp = second.Invoke(context);
+                        return temp.ValueType == JSObjectType.Undefined || temp.ValueType == JSObjectType.NotExistInObject;
+                    }
+            }
+            if (lvt == JSObjectType.NotExist)
+                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible not defined.")));
+            throw new NotImplementedException();
+        }
+
+        private static readonly ImmidateValueStatement ivsInstance = new ImmidateValueStatement(null);
+        internal static bool Check(JSObject first, JSObject second)
+        {
+            lock (ivsInstance)
+            {
+                ivsInstance.value = second;
+                return Check(first, ivsInstance, null);
+            }
+        }
+
         internal override JSObject Invoke(Context context)
         {
-            lock (this)
-            {
-                var temp = first.Invoke(context);
-                var lvt = temp.ValueType;
-
-                switch (lvt)
-                {
-                    case JSObjectType.Int:
-                    case JSObjectType.Bool:
-                        {
-                            var l = temp.iValue;
-                            temp = Tools.RaiseIfNotExist(second.Invoke(context));
-                            if (temp.ValueType == JSObjectType.Double)
-                                tempResult.iValue = l == temp.dValue ? 1 : 0;
-                            else if (lvt != temp.ValueType)
-                                tempResult.iValue = 0;
-                            else
-                                tempResult.iValue = l == temp.iValue ? 1 : 0;
-                            tempResult.ValueType = JSObjectType.Bool;
-                            return tempResult;
-                        }
-                    case JSObjectType.Double:
-                        {
-                            var l = temp.dValue;
-                            temp = Tools.RaiseIfNotExist(second.Invoke(context));
-                            if (temp.ValueType == JSObjectType.Int)
-                                tempResult.iValue = l == temp.iValue ? 1 : 0;
-                            else if (lvt != temp.ValueType)
-                                tempResult.iValue = 0;
-                            else
-                                tempResult.iValue = l == temp.dValue ? 1 : 0;
-                            tempResult.ValueType = JSObjectType.Bool;
-                            return tempResult;
-                        }
-                    case JSObjectType.Function:
-                        {
-                            var l = temp.oValue;
-                            temp = Tools.RaiseIfNotExist(second.Invoke(context));
-                            if (lvt != temp.ValueType)
-                                tempResult.iValue = 0;
-                            else
-                                tempResult.iValue = l == temp.oValue ? 1 : 0;
-                            tempResult.ValueType = JSObjectType.Bool;
-                            return tempResult;
-                        }
-                    case JSObjectType.Object:
-                        {
-                            var l = temp.oValue;
-                            temp = Tools.RaiseIfNotExist(second.Invoke(context));
-                            if (temp.ValueType != JSObjectType.Object)
-                                tempResult.iValue = 0;
-                            else if (l == null || temp.oValue == null)
-                                tempResult.iValue = l == temp.oValue ? 1 : 0;
-                            else
-                                tempResult.iValue = l.Equals(temp.oValue) ? 1 : 0;
-                            tempResult.ValueType = JSObjectType.Bool;
-                            return tempResult;
-                        }
-                    case JSObjectType.Date:
-                        {
-                            var l = temp.oValue;
-                            temp = Tools.RaiseIfNotExist(second.Invoke(context));
-                            if (temp.ValueType != JSObjectType.Date)
-                                tempResult.iValue = 0;
-                            else if (l == null || temp.oValue == null)
-                                tempResult.iValue = l == temp.oValue ? 1 : 0;
-                            else
-                                tempResult.iValue = l.Equals(temp.oValue) ? 1 : 0;
-                            tempResult.ValueType = JSObjectType.Bool;
-                            return tempResult;
-                        }
-                    case JSObjectType.String:
-                        {
-                            var l = temp.oValue;
-                            temp = Tools.RaiseIfNotExist(second.Invoke(context));
-                            if (lvt != temp.ValueType)
-                                tempResult.iValue = 0;
-                            else
-                                tempResult.iValue = l.Equals(temp.oValue) ? 1 : 0;
-                            tempResult.ValueType = JSObjectType.Bool;
-                            return tempResult;
-                        }
-                    case JSObjectType.Undefined:
-                    case JSObjectType.NotExistInObject:
-                        {
-                            var l = temp.dValue;
-                            temp = second.Invoke(context);
-                            tempResult.iValue = temp.ValueType == JSObjectType.Undefined || temp.ValueType == JSObjectType.NotExistInObject ? 1 : 0;
-                            tempResult.ValueType = JSObjectType.Bool;
-                            return tempResult;
-                        }
-                }
-                if (lvt == JSObjectType.NotExist)
-                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible not defined.")));
-                throw new NotImplementedException();
-            }
+            return Check(first.Invoke(context), second, context);
         }
 
         public override string ToString()

@@ -7,7 +7,7 @@ namespace NiL.JS.Statements.Operators
     public sealed class Division : Operator
     {
         public Division(Statement first, Statement second)
-            : base(first, second)
+            : base(first, second, true)
         {
 
         }

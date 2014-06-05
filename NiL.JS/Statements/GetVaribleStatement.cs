@@ -95,6 +95,11 @@ namespace NiL.JS.Statements
             return res;
         }
 
+        protected override Statement[] getChildsImpl()
+        {
+            return null;
+        }
+
         public override string ToString()
         {
             return varibleName;

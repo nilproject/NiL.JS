@@ -7,7 +7,7 @@ namespace NiL.JS.Statements.Operators
     public sealed class Mod : Operator
     {
         public Mod(Statement first, Statement second)
-            : base(first, second)
+            : base(first, second, true)
         {
 
         }

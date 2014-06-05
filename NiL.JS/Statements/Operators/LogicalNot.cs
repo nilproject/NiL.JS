@@ -7,7 +7,7 @@ namespace NiL.JS.Statements.Operators
     public sealed class LogicalNot : Operator
     {
         public LogicalNot(Statement first)
-            : base(first, null)
+            : base(first, null, true)
         {
 
         }

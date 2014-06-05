@@ -200,7 +200,7 @@ namespace NiL.JS.Core.BaseTypes
                     var f = args[1].oValue as Function;
                     var match = new String();
                     match.assignCallback = null;
-                    var margs = new JSObject(true) { ValueType = JSObjectType.Object, oValue = Arguments.Instance, prototype = JSObject.GlobalPrototype };
+                    var margs = CreateObject();
                     JSObject len = 1;
                     len.assignCallback = null;
                     len.attributes = JSObjectAttributes.DontDelete | JSObjectAttributes.DontEnum | JSObjectAttributes.ReadOnly;
@@ -246,7 +246,8 @@ namespace NiL.JS.Core.BaseTypes
                     string othis = this.oValue as string;
                     var f = args[1].oValue as Function;
                     var match = new String();
-                    var margs = new JSObject(true) { ValueType = JSObjectType.Object, oValue = Arguments.Instance, prototype = JSObject.GlobalPrototype };
+                    var margs = CreateObject();
+                    margs.oValue = Arguments.Instance;
                     JSObject alen = 3;
                     alen.assignCallback = null;
                     alen.attributes = JSObjectAttributes.DontDelete | JSObjectAttributes.DontEnum | JSObjectAttributes.ReadOnly;

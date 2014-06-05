@@ -7,7 +7,7 @@ namespace NiL.JS.Statements.Operators
     public sealed class Not : Operator
     {
         public Not(Statement first)
-            : base(first, null)
+            : base(first, null, true)
         {
 
         }

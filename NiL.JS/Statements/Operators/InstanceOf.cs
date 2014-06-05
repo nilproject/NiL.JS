@@ -8,7 +8,7 @@ namespace NiL.JS.Statements.Operators
     public sealed class InstanceOf : Operator
     {
         public InstanceOf(Statement first, Statement second)
-            : base(first, second)
+            : base(first, second, true)
         {
 
         }

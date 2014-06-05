@@ -7,7 +7,7 @@ namespace NiL.JS.Statements.Operators
     public sealed class Delete : Operator
     {
         public Delete(Statement first)
-            : base(first, null)
+            : base(first, null, true)
         {
 
         }

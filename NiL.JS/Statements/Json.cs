@@ -125,7 +125,6 @@ namespace NiL.JS.Statements
             var res = new JSObject(true);
             res.ValueType = JSObjectType.Object;
             res.oValue = res;
-            res.prototype = JSObject.GlobalPrototype.Clone() as JSObject;
             for (int i = 0; i < fields.Length; i++)
             {
                 var val = values[i].Invoke(context);
@@ -157,6 +156,11 @@ namespace NiL.JS.Statements
                     Parser.Optimize(ref values[i], 2, vars);
             }
             return false;
+        }
+
+        protected override Statement[] getChildsImpl()
+        {
+            return values;
         }
 
         public override string ToString()

@@ -15,7 +15,7 @@ namespace NiL.JS.Statements.Operators
         private static readonly JSObject objectString = "object";
 
         public TypeOf(Statement first)
-            : base(first, null)
+            : base(first, null, false)
         {
             if (second != null)
                 throw new InvalidOperationException("Second operand not allowed for typeof operator/");

@@ -65,8 +65,6 @@ namespace NiL.JS.Statements
         Delete = OperationTypeGroups.Special + 3
     }
 
-    internal delegate JSObject OpDelegate(Context context);
-
     [Serializable]
     internal sealed class OperatorStatement : Statement
     {
@@ -264,7 +262,7 @@ namespace NiL.JS.Statements
                             break;
                         }
                     default:
-                        throw new NotImplementedException();
+                        throw new ArgumentException("invalid operation type");
                 }
                 _type = value;
             }
@@ -1090,6 +1088,11 @@ namespace NiL.JS.Statements
         }
 
         internal override JSObject Invoke(Context context)
+        {
+            throw new InvalidOperationException();
+        }
+
+        protected override Statement[] getChildsImpl()
         {
             throw new InvalidOperationException();
         }

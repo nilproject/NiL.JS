@@ -21,7 +21,7 @@ namespace NiL.JS.Statements.Operators
         public Statement[] Arguments { get { return args; } }
 
         internal Call(Statement first, Statement second)
-            : base(first, second)
+            : base(first, second, false)
         {
 
         }
@@ -44,7 +44,7 @@ namespace NiL.JS.Statements.Operators
 
             newThisBind = context.objectSource;
 
-            JSObject arguments = new JSObject(true)
+            JSObject arguments = new JSObject(false)
                 {
                     ValueType = JSObjectType.Object,
                     oValue = NiL.JS.Core.Arguments.Instance,
@@ -55,20 +55,22 @@ namespace NiL.JS.Statements.Operators
             JSObject field = args.Length;
             field.assignCallback = null;
             field.attributes = JSObjectAttributes.DontEnum;
+            arguments.fields = new Dictionary<string, JSObject>(args.Length + 3);
             arguments.fields["length"] = field;
             for (int i = 0; i < field.iValue; i++)
             {
-                var a = Tools.RaiseIfNotExist(args[i].Invoke(context)).Clone() as JSObject;
+                var a = args[i].Invoke(context).Clone() as JSObject;
                 arguments.fields[i < 16 ? Tools.NumString[i] : i.ToString()] = a;
                 a.attributes |= JSObjectAttributes.Argument;
                 context.objectSource = null;
             }
-            arguments.prototype = JSObject.GlobalPrototype;
-            arguments.fields["callee"] = field = new JSObject();
-            field.ValueType = JSObjectType.Function;
-            field.oValue = func;
-            field.Protect();
-            field.attributes = JSObjectAttributes.DontEnum;
+            //arguments.prototype = JSObject.GlobalPrototype;
+            arguments.fields["callee"] = field = new JSObject()
+            {
+                ValueType = JSObjectType.Function,
+                oValue = func,
+                attributes = JSObjectAttributes.DontEnum
+            };
             return func.Invoke(context, newThisBind, arguments);
         }
 

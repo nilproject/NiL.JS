@@ -190,6 +190,11 @@ namespace NiL.JS.Statements
             return res;
         }
 
+        protected override Statement[] getChildsImpl()
+        {
+            return new[] { body };
+        }
+
         /// <summary>
         /// Создаёт функцию, описанную выбранным выражением в контексте указанного сценария.
         /// </summary>

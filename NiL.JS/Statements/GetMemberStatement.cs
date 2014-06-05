@@ -9,15 +9,15 @@ namespace NiL.JS.Statements
     public sealed class GetMemberStatement : Statement
     {
         private Statement objStatement;
-        private Statement fieldNameStatement;
+        private Statement memberNameStatement;
 
         public Statement Source { get { return objStatement; } }
-        public Statement FieldName { get { return fieldNameStatement; } }
+        public Statement FieldName { get { return memberNameStatement; } }
 
         internal GetMemberStatement(Statement obj, Statement fieldName)
         {
             objStatement = obj;
-            fieldNameStatement = fieldName;
+            memberNameStatement = fieldName;
         }
 
         internal override JSObject InvokeForAssing(Context context)
@@ -36,7 +36,7 @@ namespace NiL.JS.Statements
             if (th.ValueType == JSObjectType.NotExist)
                 throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible not defined.")));
 
-            var n = fieldNameStatement.Invoke(context);
+            var n = memberNameStatement.Invoke(context);
             if (n.ValueType == JSObjectType.NotExist)
                 throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible not defined.")));
 
@@ -47,10 +47,21 @@ namespace NiL.JS.Statements
             return res;
         }
 
+        protected override Statement[] getChildsImpl()
+        {
+            var res = new List<Statement>()
+            {
+                objStatement,
+                memberNameStatement
+            };
+            res.RemoveAll(x => x == null);
+            return res.ToArray();
+        }
+
         internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, Statement> varibles)
         {
             Parser.Optimize(ref objStatement, depth + 1, varibles);
-            Parser.Optimize(ref fieldNameStatement, depth + 1, varibles);
+            Parser.Optimize(ref memberNameStatement, depth + 1, varibles);
             return false;
         }
 
@@ -58,12 +69,12 @@ namespace NiL.JS.Statements
         {
             var res = objStatement.ToString();
             int i = 0;
-            if (fieldNameStatement is ImmidateValueStatement
-                && (fieldNameStatement as ImmidateValueStatement).value.oValue.ToString().Length > 0
-                && (Parser.ValidateName((fieldNameStatement as ImmidateValueStatement).value.oValue.ToString(), ref i, true, true)))
-                res += "." + (fieldNameStatement as ImmidateValueStatement).value.oValue;
+            if (memberNameStatement is ImmidateValueStatement
+                && (memberNameStatement as ImmidateValueStatement).value.oValue.ToString().Length > 0
+                && (Parser.ValidateName((memberNameStatement as ImmidateValueStatement).value.oValue.ToString(), ref i, true, true)))
+                res += "." + (memberNameStatement as ImmidateValueStatement).value.oValue;
             else
-                res += "[" + fieldNameStatement.ToString() + "]";
+                res += "[" + memberNameStatement.ToString() + "]";
             return res;
         }
     }

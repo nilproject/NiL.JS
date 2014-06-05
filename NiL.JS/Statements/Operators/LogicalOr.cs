@@ -7,7 +7,7 @@ namespace NiL.JS.Statements.Operators
     public sealed class LogicalOr : Operator
     {
         public LogicalOr(Statement first, Statement second)
-            : base(first, second)
+            : base(first, second, true)
         {
 
         }
