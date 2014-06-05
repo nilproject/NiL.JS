@@ -113,7 +113,7 @@ namespace NiL.JS
         public static Type GetType(string name)
         {
             var selection = types.StartedWith(name).GetEnumerator();
-            if (selection.MoveNext())
+            if (selection.MoveNext() && selection.Current.Key == name)
                 return selection.Current.Value;
             return null;
         }

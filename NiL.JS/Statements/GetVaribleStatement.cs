@@ -9,7 +9,7 @@ namespace NiL.JS.Statements
     [Serializable]
     public sealed class GetVaribleStatement : Statement
     {
-        public sealed class GVSDescriptor : IEnumerable<GetVaribleStatement>
+        public sealed class GVSDescriptor
         {
             private string name;
             private Context cacheContext;
@@ -19,14 +19,13 @@ namespace NiL.JS.Statements
             public string Name { get { return name; } }
             public bool Defined { get; internal set; }
 
-            public IEnumerator<GetVaribleStatement> GetEnumerator()
+            public IEnumerable<GetVaribleStatement> References
             {
-                return items.GetEnumerator();
-            }
-
-            IEnumerator IEnumerable.GetEnumerator()
-            {
-                return items.GetEnumerator();
+                get
+                {
+                    foreach (var item in items)
+                        yield return item;
+                }
             }
 
             internal GVSDescriptor(GetVaribleStatement proto, bool defined)
