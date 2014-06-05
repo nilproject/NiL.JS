@@ -14,7 +14,8 @@
     <TargetFrameworkVersion Condition=" '$(VisualStudioVersion)' == '10.0' ">v4.0</TargetFrameworkVersion>
     <TargetFrameworkVersion Condition=" '$(VisualStudioVersion)' == '11.0' ">v4.5</TargetFrameworkVersion>
     <TargetFrameworkVersion Condition=" '$(VisualStudioVersion)' == '12.0' ">v4.5.1</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
+ 
+    <BaseIntermediateOutputPath>obj\$(TargetFrameworkVersion)\</BaseIntermediateOutputPath>   <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile>
     </TargetFrameworkProfile>
     <SccProjectName>
