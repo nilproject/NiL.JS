@@ -48,7 +48,7 @@ namespace NiL.JS.Statements
             {
                 context.objectSource = null;
                 if (context == cacheContext)
-                    return cacheRes = context.GetField(name);
+                    return cacheRes.ValueType == JSObjectType.NotExist ? cacheRes = context.GetField(name) : cacheRes;
                 lock (this)
                 {
                     if (context.GetType() == typeof(WithContext))

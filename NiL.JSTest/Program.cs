@@ -216,15 +216,9 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * i + 3 - 2 / 2; }
         {
             var sw = new Stopwatch();
             var s = new Script(
-@"for (var x in this) {
-  if ( x === 'NaN' ) {
-    $ERROR(""#1: 'NaN' have attribute DontEnum"");
-  } else if ( x === 'Infinity' ) {
-    $ERROR(""#1: 'Infinity' have attribute DontEnum"");
-  } else if ( x === 'undefined' ) {
-    $ERROR(""#1: 'undefined' have attribute DontEnum"");
-  } 
-}
+@"
+var a = 1;
+console.log(a);
 ");
             s.Context.AttachModule(typeof(TestClass));
             sw.Start();
