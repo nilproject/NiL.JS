@@ -28,8 +28,9 @@ namespace NiL.JS.Statements
                     {
                         if (base.Length >= 0)
                         {
-                            code = code.Substring(Position + 1, Length - 2);
-                            Length = -1;
+                            if (Position != 0)
+                                code = code.Substring(Position + 1, Length - 2);
+                            Length = -base.Length;
                             return code;
                         }
                     }
@@ -42,7 +43,7 @@ namespace NiL.JS.Statements
         {
             get
             {
-                return base.Length < 0 ? code.Length : base.Length;
+                return base.Length < 0 ? -base.Length : base.Length;
             }
             internal set
             {

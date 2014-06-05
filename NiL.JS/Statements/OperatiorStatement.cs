@@ -438,7 +438,7 @@ namespace NiL.JS.Statements
                                     var cord = Tools.PositionToTextcord(code, i);
                                     throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid prefix operation. " + cord)));
                                 }
-                                first = new Operators.Decriment(first, Operators.Decriment.Type.Predecriment);
+                                first = new Operators.Decriment(first, Operators.Decriment.Type.Predecriment) { Position = index, Length = i - index };
                             }
                             else
                             {
@@ -1009,7 +1009,7 @@ namespace NiL.JS.Statements
                                 second = new ImmidateValueStatement(new JSObject() { ValueType = JSObjectType.Object, oValue = args.ToArray() }) { Position = startPos, Length = i - startPos },
                                 _type = OperationType.Call,
                                 Position = first.Position,
-                                Length = i - first.Position
+                                Length = i - first.Position + 1
                             };
                             i++;
                             repeat = !forNew;

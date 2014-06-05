@@ -41,7 +41,7 @@ namespace NiL.JS.Statements
             {
                 string res = "";
                 for (var i = (value.oValue as Statement[]).Length; i-- > 0; )
-                    res += (value.oValue as Statement[])[i] + (i != 0 ? ", " : "");
+                    res = (i != 0 ? ", " : "") + (value.oValue as Statement[])[i] + res;
                 return res;
             }
             return value.ToString();
