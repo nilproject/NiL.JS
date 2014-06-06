@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using NiL.JS.Core;
+using NiL.JS.Statements.Operators;
 
 namespace NiL.JS.Statements
 {
@@ -52,10 +53,37 @@ namespace NiL.JS.Statements
                 while (i < code.Length && char.IsWhiteSpace(code[i]) && !Tools.isLineTerminator(code[i])) i++;
                 if (i < code.Length && (code[i] != ',') && (code[i] != ';') && (code[i] != '=') && (code[i] != '}') && (!Tools.isLineTerminator(code[i])))
                     throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \";\", \",\", \"=\" or \"}\" at + " + Tools.PositionToTextcord(code, i))));
-                initializator.Add(OperatorStatement.Parse(state, ref s, false).Statement);
-                i = s;
+                if (i >= code.Length)
+                {
+                    initializator.Add(new GetVaribleStatement(name) { Position = s, Length = name.Length });
+                    break;
+                }
+                if (Tools.isLineTerminator(code[i]))
+                {
+                    s = i;
+                    do i++; while (i < code.Length && char.IsWhiteSpace(code[i]));
+                    if (i >= code.Length)
+                        break;
+                    if (code[i] != '=')
+                        i = s;
+                }
+                if (code[i] == '=')
+                {
+                    do i++; while (i < code.Length && char.IsWhiteSpace(code[i]));
+                    if (i == code.Length)
+                        throw new JSException(TypeProxy.Proxy(new SyntaxError("Unexpected end of line in varible defenition.")));
+                    initializator.Add(
+                        new Assign(new GetVaribleStatement(name) { Position = s, Length = name.Length }, OperatorStatement.Parse(state, ref i, false).Statement)
+                        {
+                            Position = s,
+                            Length = i - s
+                        });
+                }
+                else
+                    initializator.Add(new GetVaribleStatement(name) { Position = s, Length = name.Length });
                 if (i >= code.Length)
                     break;
+                s = i;
                 if ((code[i] != ',') && (code[i] != ';') && (code[i] != '=') && (code[i] != '}') && (!Tools.isLineTerminator(code[i])))
                     throw new ArgumentException("code (" + i + ")");
                 while (s < code.Length && char.IsWhiteSpace(code[s])) s++;
@@ -95,20 +123,18 @@ namespace NiL.JS.Statements
 
         protected override Statement[] getChildsImpl()
         {
-            var res = new List<Statement>()
-            {
-            };
+            var res = new List<Statement>();
             res.AddRange(initializators);
             res.RemoveAll(x => x == null);
             return res.ToArray();
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, Statement> varibles)
+        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VaribleDescriptor> varibles)
         {
             for (int i = 0; i < initializators.Length; i++)
                 Parser.Optimize(ref initializators[i], 1, varibles);
             for (var i = 0; i < names.Length; i++)
-                (varibles[names[i]] as GetVaribleStatement).Descriptor.Defined = true;
+                varibles[names[i]].Defined = true;
             return false;
         }
 

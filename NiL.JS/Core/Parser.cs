@@ -613,12 +613,12 @@ namespace NiL.JS.Core
                 + code.Substring(index, Math.Min(20, code.Length - index)).Split(new[] { ' ', '\n', '\r' })[0])));
         }
 
-        internal static void Optimize(ref Statement s, int depth, Dictionary<string, Statement> varibles)
+        internal static void Optimize(ref Statement s, int depth, Dictionary<string, VaribleDescriptor> varibles)
         {
             while (s != null && s.Optimize(ref s, depth, varibles)) { }
         }
 
-        internal static void Optimize(ref Statement s, Dictionary<string, Statement> varibles)
+        internal static void Optimize(ref Statement s, Dictionary<string, VaribleDescriptor> varibles)
         {
             while (s != null && s.Optimize(ref s, 0, varibles)) { }
         }

@@ -64,7 +64,6 @@ namespace NiL.JS.Statements.Operators
                 a.attributes |= JSObjectAttributes.Argument;
                 context.objectSource = null;
             }
-            //arguments.prototype = JSObject.GlobalPrototype;
             arguments.fields["callee"] = field = new JSObject()
             {
                 ValueType = JSObjectType.Function,
@@ -87,7 +86,7 @@ namespace NiL.JS.Statements.Operators
             return res + ")";
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, Statement> vars)
+        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VaribleDescriptor> vars)
         {
             base.Optimize(ref _this, depth, vars);
             args = second.Invoke(null).oValue as Statement[];

@@ -46,7 +46,7 @@ namespace NiL.JS.Statements
 
         internal override JSObject Invoke(Context context)
         {
-            var intcontext = new WithContext(obj.Invoke(context), context);
+            var intcontext = new WithContext(obj.Invoke(context), context, this);
             body.Invoke(intcontext);
             context.abort = intcontext.abort;
             context.abortInfo = intcontext.abortInfo;
@@ -64,10 +64,16 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, Statement> varibles)
+        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VaribleDescriptor> varibles)
         {
             Parser.Optimize(ref obj, depth, varibles);
-            Parser.Optimize(ref body, depth, varibles);
+            var nvars = new Dictionary<string, VaribleDescriptor>();
+            Parser.Optimize(ref body, depth, nvars);
+            foreach(var v in nvars)
+            {
+                if (v.Value.Defined)
+                    varibles[v.Key] = v.Value;
+            }
             return false;
         }
 

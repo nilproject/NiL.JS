@@ -33,7 +33,7 @@ namespace NiL.JS.Statements.Operators
             this.second = second;
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, Statement> vars)
+        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VaribleDescriptor> vars)
         {
             Parser.Optimize(ref first, depth + 1, vars);
             Parser.Optimize(ref second, depth + 1, vars);

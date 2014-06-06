@@ -1,21 +1,21 @@
 ﻿using NiL.JS.Core;
+using NiL.JS.Statements.Operators;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace NiL.JS.Statements
 {
     [Serializable]
     public sealed class CodeBlock : Statement
     {
-        private FunctionStatement[] functions;
-        private string[] varibles;
         private int linesCount;
         private string code;
+        internal VaribleDescriptor[] varibles;
         internal readonly Statement[] body;
         internal readonly bool strict;
 
-        public FunctionStatement[] Functions { get { return functions; } }
-        public string[] Varibles { get { return varibles; } }
+        public VaribleDescriptor[] Varibles { get { return varibles; } }
         public Statement[] Body { get { return body; } }
         public bool Strict { get { return strict; } }
         public string Code
@@ -56,7 +56,6 @@ namespace NiL.JS.Statements
             code = "";
             this.body = body;
             linesCount = body.Length - 1;
-            functions = null;
             varibles = null;
             this.strict = strict;
         }
@@ -75,13 +74,12 @@ namespace NiL.JS.Statements
                 while (char.IsWhiteSpace(code[i]));
             }
             var body = new List<Statement>();
-            List<FunctionStatement> funcs = null;
-            List<string> varibles = null;
             state.LabelCount = 0;
             bool strictSwitch = false;
             bool allowStrict = state.AllowStrict;
             bool root = state.AllowStrict;
             state.AllowStrict = false;
+            Dictionary<string, VaribleDescriptor> vars = null;
             while ((sroot && i < code.Length) || (!sroot && code[i] != '}'))
             {
                 var t = Parser.Parse(state, ref i, 0);
@@ -106,52 +104,48 @@ namespace NiL.JS.Statements
                     if (state.strict.Peek())
                         if (!root)
                             throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
-                    if (funcs == null)
-                        funcs = new List<FunctionStatement>();
-                    funcs.Add(t as FunctionStatement);
+                    if (string.IsNullOrEmpty((t as FunctionStatement).name))
+                        throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.SyntaxError("Declarated function must have name.")));
+                    if (vars == null)
+                        vars = new Dictionary<string, VaribleDescriptor>();
+                    VaribleDescriptor vd = null;
+                    var f = (t as FunctionStatement);
+                    if (!vars.TryGetValue(f.Name, out vd))
+                        vars[f.Name] = new VaribleDescriptor(f.Reference, true);
+                    else
+                    {
+                        vd.Add(f.Reference);
+                        vd.Inititalizator = f.Reference;
+                    }
                 }
                 else if (t is VaribleDefineStatement)
                 {
-                    if (varibles == null)
-                        varibles = new List<string>();
-                    varibles.AddRange((t as VaribleDefineStatement).names);
-                    body.Add(t);
-                }
-                else if (t is CodeBlock)
-                {
-                    var cb = t as CodeBlock;
-                    if (cb.varibles != null && cb.varibles.Length > 0)
+                    var inits = (t as VaribleDefineStatement).initializators;
+                    if (vars == null)
+                        vars = new Dictionary<string, VaribleDescriptor>();
+                    for (var j = inits.Length; j-- > 0; )
                     {
-                        if (varibles == null)
-                            varibles = new List<string>();
-                        varibles.AddRange(cb.varibles);
+                        VaribleDescriptor vd = null;
+                        var gvs = (inits[j] as GetVaribleStatement) ?? ((inits[j] as Assign).first as GetVaribleStatement);
+                        if (!vars.TryGetValue(gvs.Name, out vd))
+                            vars[gvs.Name] = new VaribleDescriptor(gvs, true);
+                        else
+                            vd.Add(gvs);
                     }
-                    if (cb.functions != null && cb.functions.Length > 0)
-                    {
-                        if (funcs == null)
-                            funcs = new List<FunctionStatement>();
-                        funcs.AddRange(cb.functions);
-                    }
-                    int s = body.Count;
-                    body.AddRange(cb.body);
-                    body.Reverse(s, cb.body.Length);
                 }
-                else body.Add(t);
+                body.Add(t);
             }
             if (!sroot)
                 i++;
             int startPos = index;
             index = i;
             body.Reverse();
-            if (funcs != null)
-                funcs.Reverse();
             return new ParseResult()
             {
                 IsParsed = true,
                 Statement = new CodeBlock(body.ToArray(), strictSwitch && state.strict.Pop())
                 {
-                    functions = funcs != null ? funcs.ToArray() : null,
-                    varibles = varibles != null ? varibles.ToArray() : null,
+                    varibles = vars != null ? vars.Values.ToArray() : null,
                     Position = startPos,
                     code = state.SourceCode,
                     Length = i - startPos
@@ -163,18 +157,19 @@ namespace NiL.JS.Statements
         {
             context.strict |= strict;
             for (int i = varibles == null ? 0 : varibles.Length; i-- > 0; )
-                context.InitField(varibles[i]);
-            for (int i = functions == null ? 0 : functions.Length; i-- > 0; )
             {
-                if (string.IsNullOrEmpty((functions[i] as FunctionStatement).name))
-                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.SyntaxError("Declarated function must have name.")));
-                var f = context.InitField((functions[i] as FunctionStatement).name);
-                f.Assign(functions[i].Invoke(context));
-                f.assignCallback = null;
+                if (varibles[i].Defined)
+                {
+                    var f = context.InitField(varibles[i].Name);
+                    if (varibles[i].Inititalizator != null)
+                        f.Assign(varibles[i].Inititalizator.Invoke(context));
+                }
             }
             JSObject res = JSObject.undefined;
             for (int i = linesCount; i >= 0; i--)
             {
+                if (body[i].GetType() == typeof(FunctionStatement))
+                    continue;
                 res = body[i].Invoke(context) ?? res;
 #if DEBUG
                 if (JSObject.undefined.ValueType != JSObjectType.Undefined)
@@ -192,34 +187,27 @@ namespace NiL.JS.Statements
         {
             var res = new List<Statement>();
             res.AddRange(body);
-            res.AddRange(functions);
-            res.RemoveAll(x => x == null);
+            res.RemoveAll(x => x == null || x is FunctionStatement);
+            res.AddRange(from v in varibles where v.Inititalizator != null select v.Inititalizator);
             return res.ToArray();
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, Statement> varibles)
+        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VaribleDescriptor> varibles)
         {
-            if (functions != null)
-            {
-                for (var i = functions.Length; i-- > 0; )
-                {
-                    Statement f = functions[i];
-                    Parser.Optimize(ref f, 0, null);
-                    functions[i] = f as FunctionStatement;
-                }
-            }
             if (this.varibles != null)
             {
                 for (var i = this.varibles.Length; i-- > 0; )
-                    if (!varibles.ContainsKey(this.varibles[i]))
-                        varibles.Add(this.varibles[i], null);
+                {
+                    varibles[this.varibles[i].Name] = this.varibles[i];
+                    if (depth == 0)
+                        this.varibles[i].Owner = this;
+                }
             }
             for (int i = body.Length; i-- > 0; )
                 Parser.Optimize(ref body[i], depth < 0 ? 2 : Math.Max(1, depth), varibles);
 
-            if (depth > 0)
+            if (depth != 0)
             {
-                functions = null;
                 varibles = null;
                 if (body.Length == 1)
                     _this = body[0];
@@ -228,28 +216,16 @@ namespace NiL.JS.Statements
             }
             else
             {
-                List<FunctionStatement> funcs = null;
-                List<string> vars = null;
-                foreach (var v in varibles)
+                List<VaribleDescriptor> vars = null;
+                foreach(var v in varibles)
                 {
-                    if (v.Value is FunctionStatement)
+                    if (v.Value.Defined && v.Value.Owner == null)
                     {
-                        if (funcs == null)
-                            funcs = new List<FunctionStatement>();
-                        funcs.Add(v.Value as FunctionStatement);
-                    }
-                    else
-                    {
-                        if (v.Value is GetVaribleStatement && (v.Value as GetVaribleStatement).Descriptor.Defined)
-                        {
-                            if (vars == null)
-                                vars = new List<string>();
-                            vars.Add(v.Key);
-                        }
+                        if (vars == null)
+                            vars = this.varibles != null ? new List<VaribleDescriptor>(this.varibles) : new List<VaribleDescriptor>();
+                        vars.Add(v.Value);
                     }
                 }
-                if (funcs != null)
-                    this.functions = funcs.ToArray();
                 if (vars != null)
                     this.varibles = vars.ToArray();
             }
@@ -270,11 +246,6 @@ namespace NiL.JS.Statements
                 string res = " {" + Environment.NewLine;
                 var replp = Environment.NewLine;
                 var replt = Environment.NewLine + "  ";
-                for (var i = 0; i < functions.Length; i++)
-                {
-                    var func = functions[i].ToString().Replace(replp, replt);
-                    res += "  " + func + Environment.NewLine;
-                }
                 for (int i = body.Length; i-- > 0; )
                 {
                     string lc = body[i].ToString();

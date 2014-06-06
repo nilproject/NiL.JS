@@ -279,7 +279,7 @@ namespace NiL.JS.Core
         internal JSObject abortInfo;
         internal JSObject thisBind;
         internal bool strict;
-        internal virtual bool inEval { get; set; }
+        internal Statement owner;
 
         /// <summary>
         /// Событие, возникающее при попытке выполнения оператора "debugger".
@@ -339,11 +339,11 @@ namespace NiL.JS.Core
             if (fields == null)
                 (fields = new Dictionary<string, JSObject>())[name] = res = new JSObject();
             else if (!fields.TryGetValue(name, out res))
+            {
                 fields[name] = res = new JSObject();
+                res.attributes |= JSObjectAttributes.DontDelete;
+            }
             res.lastRequestedName = name;
-            if (inEval)
-                return res;
-            res.attributes |= JSObjectAttributes.DontDelete;
             return res;
         }
 
@@ -426,19 +426,27 @@ namespace NiL.JS.Core
         {
             try
             {
-                inEval = true;
                 int i = 0;
                 string c = Tools.RemoveComments(code);
                 var cb = CodeBlock.Parse(new ParsingState(c, code), ref i).Statement;
                 if (i < c.Length)
                     throw new System.ArgumentException("Invalid char");
-                Parser.Optimize(ref cb, -1, new Dictionary<string,Statement>());
+                var vars = new Dictionary<string, VaribleDescriptor>();
+                Parser.Optimize(ref cb, -1, vars);
+                foreach (var v in vars)
+                {
+                    if (v.Value.Defined)
+                    {
+                        var f = this.InitField(v.Key);
+                        if (v.Value.Inititalizator != null)
+                            f.Assign(v.Value.Inititalizator.Invoke(this));
+                    }
+                }
                 var res = cb.Invoke(this);
                 return res;
             }
             finally
             {
-                inEval = false;
             }
         }
 
@@ -473,19 +481,14 @@ namespace NiL.JS.Core
             return ((IEnumerable<string>)this).GetEnumerator();
         }
 
-        internal Context(Context prototype)
+        internal Context(Context prototype, Statement owner)
+            : this(prototype, owner, true)
         {
-            this.fields = new Dictionary<string, JSObject>();
-            this.prototype = prototype;
-            this.thisBind = prototype.thisBind;
-            this.abortInfo = JSObject.undefined;
-            if (prototype.DebuggerCallback != null)
-                this.DebuggerCallback += prototype.DebuggerCallback;
-            GC.SuppressFinalize(this);
         }
 
-        internal Context(Context prototype, bool createFields)
+        internal Context(Context prototype, Statement owner, bool createFields)
         {
+            this.owner = owner;
             if (createFields)
                 this.fields = new Dictionary<string, JSObject>();
             this.prototype = prototype;

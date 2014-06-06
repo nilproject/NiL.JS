@@ -29,13 +29,13 @@ namespace NiL.JS
         /// <param name="code">Код скрипта на языке JavaScript</param>
         public Script(string code)
         {
-            Context = new Context(NiL.JS.Core.Context.globalContext);
             Code = code;
             int i = 0;
             root = CodeBlock.Parse(new ParsingState(Tools.RemoveComments(code), Code), ref i).Statement;
             if (i < code.Length)
                 throw new System.ArgumentException("Invalid char");
-            Parser.Optimize(ref root, new System.Collections.Generic.Dictionary<string, Statement>());
+            Parser.Optimize(ref root, new System.Collections.Generic.Dictionary<string, VaribleDescriptor>());
+            Context = new Context(NiL.JS.Core.Context.globalContext, root);
         }
 
         /// <summary>

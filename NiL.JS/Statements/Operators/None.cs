@@ -16,19 +16,19 @@ namespace NiL.JS.Statements.Operators
         internal override JSObject Invoke(Context context)
         {
             JSObject temp = null;
-            temp = Tools.RaiseIfNotExist(first.Invoke(context));
+            temp = first.Invoke(context);
             if (second != null)
             {
                 if (context != null)
-                    context.thisBind = null;
-                temp = Tools.RaiseIfNotExist(second.Invoke(context));
+                    context.objectSource = null;
+                temp = second.Invoke(context);
             }
             if (context != null)
                 context.objectSource = null;
             return temp;
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, Statement> vars)
+        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VaribleDescriptor> vars)
         {
             if (second == null)
             {

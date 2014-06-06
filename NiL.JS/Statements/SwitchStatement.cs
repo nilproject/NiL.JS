@@ -140,7 +140,7 @@ namespace NiL.JS.Statements
             return null;
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, Statement> varibles)
+        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VaribleDescriptor> varibles)
         {
             if (depth < 1)
                 throw new InvalidOperationException();
@@ -151,7 +151,7 @@ namespace NiL.JS.Statements
             {
                 Statement stat = functions[i];
                 Parser.Optimize(ref stat, 1, varibles);
-                varibles[functions[i].name] = stat;
+                varibles[functions[i].name] = new VaribleDescriptor(functions[i].Reference, true);
             }
             functions = null;
             for (int i = 1; i < cases.Length; i++)

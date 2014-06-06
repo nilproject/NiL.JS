@@ -682,7 +682,7 @@ namespace NiL.JS.Core.BaseTypes
             var fs = NiL.JS.Statements.FunctionStatement.Parse(new ParsingState(code, code), ref index);
             if (fs.IsParsed)
             {
-                Parser.Optimize(ref fs.Statement, new Dictionary<string, Statement>());
+                Parser.Optimize(ref fs.Statement, new Dictionary<string, VaribleDescriptor>());
                 var func = fs.Statement.Invoke(context) as Function;
                 body = func.body;
                 argumentsNames = func.argumentsNames;
@@ -739,7 +739,7 @@ namespace NiL.JS.Core.BaseTypes
             var oldargs = _arguments;
             try
             {
-                Context internalContext = new Context(context);
+                Context internalContext = new Context(context, body);
                 var @this = thisOverride ?? context.thisBind;
                 if (@this != null && @this.ValueType < JSObjectType.Object && !body.strict)
                 {

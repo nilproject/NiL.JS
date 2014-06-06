@@ -56,7 +56,7 @@ namespace NiL.JS.Statements
 
         internal override JSObject Invoke(Context context)
         {
-            JSObject res = null;
+            JSObject res = JSObject.undefined;
             while ((bool)condition.Invoke(context))
             {
                 res = body.Invoke(context);
@@ -86,7 +86,7 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, Statement> varibles)
+        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VaribleDescriptor> varibles)
         {
             depth = System.Math.Max(1, depth);
             Parser.Optimize(ref body, depth, varibles);

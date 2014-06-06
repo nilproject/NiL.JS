@@ -68,7 +68,7 @@ namespace NiL.JS.Statements
             return elements;
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, Statement> vars)
+        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VaribleDescriptor> vars)
         {
             for (int i = 0; i < elements.Length; i++)
                 Parser.Optimize(ref elements[i], 2, vars);

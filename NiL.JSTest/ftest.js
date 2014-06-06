@@ -1,18 +1,21 @@
-﻿function __FACTORY() { };
-__FACTORY.prototype = 1;
+﻿THE_ANSWER = "Answer to Life, the Universe, and Everything";
+
+var arguments = THE_ANSWER;
+
+function __func() {
+    return arguments;
+};
 
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#1
-if (typeof __FACTORY.prototype !== 'number') {
-    $ERROR('#1: typeof __FACTORY.prototype === \'number\'. Actual: typeof __FACTORY.prototype ===' + (typeof __FACTORY.prototype));
+if (__func() === THE_ANSWER) {
+    $ERROR('#1: __func() !== THE_ANSWER');
 }
 //
 //////////////////////////////////////////////////////////////////////////////
 
-var __device = new __FACTORY();
-
 //////////////////////////////////////////////////////////////////////////////
 //CHECK#2
-if (!(Object.prototype.isPrototypeOf(__device))) {
-    $ERROR('#2: Object.prototype.isPrototypeOf(__device) === true');
+if (__func("The Ultimate Question") === "The Ultimate Question") {
+    $ERROR('#2: __func("The Ultimate Question") !== "The Ultimate Question"');
 }

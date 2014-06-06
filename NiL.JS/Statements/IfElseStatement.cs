@@ -39,7 +39,7 @@ namespace NiL.JS.Statements
             Statement elseBody = null;
             while (i < code.Length && char.IsWhiteSpace(code[i])) i++;
             if (i < code.Length && !(body is CodeBlock) && (code[i] == ';'))
-                do i++; while (char.IsWhiteSpace(code[i]));
+                do i++; while (i < code.Length && char.IsWhiteSpace(code[i]));
             if (Parser.Validate(code, "else", ref i))
             {
                 while (char.IsWhiteSpace(code[i])) i++;
@@ -84,7 +84,7 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, Statement> varibles)
+        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VaribleDescriptor> varibles)
         {
             Parser.Optimize(ref body, depth, varibles);
             Parser.Optimize(ref condition, 2, varibles);

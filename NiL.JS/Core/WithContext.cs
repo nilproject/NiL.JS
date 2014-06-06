@@ -8,20 +8,8 @@ namespace NiL.JS.Core
     {
         private JSObject @object;
 
-        internal override bool inEval
-        {
-            get
-            {
-                return prototype.inEval;
-            }
-            set
-            {
-                prototype.inEval = value;
-            }
-        }
-
-        public WithContext(JSObject obj, Context prototype)
-            : base(prototype)
+        public WithContext(JSObject obj, Context prototype, Statement owner)
+            : base(prototype, owner)
         {
             if (obj.ValueType == JSObjectType.NotExist)
                 throw new JSException(TypeProxy.Proxy(new ReferenceError("Varible not defined.")));

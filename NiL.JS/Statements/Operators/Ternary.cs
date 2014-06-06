@@ -37,7 +37,7 @@ namespace NiL.JS.Statements.Operators
             return threads[1].Invoke(context);
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, Statement> vars)
+        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VaribleDescriptor> vars)
         {
             base.Optimize(ref _this, depth, vars);
             return false;

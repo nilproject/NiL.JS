@@ -656,20 +656,14 @@ namespace NiL.JS.Statements
                                 if (code[i + 1] == '=')
                                 {
                                     i++;
-                                    binary = true;
                                     type = OperationType.StrictEqual;
                                 }
                                 else
-                                {
-                                    binary = true;
                                     type = OperationType.Equal;
-                                }
                             }
                             else
-                            {
-                                binary = true;
                                 type = OperationType.Assign;
-                            }
+                            binary = true;
                             break;
                         }
                     case '+':
@@ -1097,7 +1091,7 @@ namespace NiL.JS.Statements
             throw new InvalidOperationException();
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, Statement> vars)
+        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VaribleDescriptor> vars)
         {
             Type = Type;
             _this = fastImpl;

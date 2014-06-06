@@ -7,66 +7,13 @@ using System.Collections;
 namespace NiL.JS.Statements
 {
     [Serializable]
-    public sealed class GetVaribleStatement : Statement
+    public sealed class GetVaribleStatement : VaribleReference
     {
-        public sealed class GVSDescriptor
-        {
-            private string name;
-            private Context cacheContext;
-            private JSObject cacheRes;
-            private HashSet<GetVaribleStatement> items;
-
-            public string Name { get { return name; } }
-            public bool Defined { get; internal set; }
-
-            public IEnumerable<GetVaribleStatement> References
-            {
-                get
-                {
-                    foreach (var item in items)
-                        yield return item;
-                }
-            }
-
-            internal GVSDescriptor(GetVaribleStatement proto, bool defined)
-            {
-                this.name = proto.varibleName;
-                items = new HashSet<GetVaribleStatement>() { proto };
-                Defined = defined;
-            }
-
-            internal void Add(GetVaribleStatement item)
-            {
-                if (item.varibleName != Name)
-                    throw new ArgumentException("Try to add " + typeof(GetVaribleStatement).Name + " to union with different name.");
-                items.Add(item);
-                item.descriptor = this;
-            }
-
-            internal JSObject Get(Context context)
-            {
-                context.objectSource = null;
-                if (context == cacheContext)
-                    return cacheRes.ValueType == JSObjectType.NotExist ? cacheRes = context.GetField(name) : cacheRes;
-                lock (this)
-                {
-                    if (context.GetType() == typeof(WithContext))
-                        return context.GetField(name);
-                    else
-                    {
-                        cacheRes = context.GetField(name);
-                        cacheContext = context;
-                        return cacheRes;
-                    }
-                }
-            }
-        }
-
         private string varibleName;
-        private GVSDescriptor descriptor;
-        public GVSDescriptor Descriptor { get { return descriptor; } }
+        private VaribleDescriptor descriptor;
+        public override VaribleDescriptor Descriptor { get { return descriptor; } internal set { descriptor = value; } }
 
-        public string VaribleName { get { return varibleName; } }
+        public override string Name { get { return varibleName; } }
 
         internal GetVaribleStatement(string name)
         {
@@ -105,16 +52,16 @@ namespace NiL.JS.Statements
             return varibleName;
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, Statement> varibles)
+        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VaribleDescriptor> varibles)
         {
-            Statement desc = null;
+            VaribleDescriptor desc = null;
             if (!varibles.TryGetValue(varibleName, out desc) || desc == null)
             {
-                varibles[varibleName] = desc = this;
-                this.descriptor = new GVSDescriptor(this, false);
+                this.descriptor = new VaribleDescriptor(this, desc != null);
+                varibles[varibleName] = this.descriptor;
             }
             else
-                (desc as GetVaribleStatement).descriptor.Add(this);
+                desc.Add(this);
             return false;
         }
     }
