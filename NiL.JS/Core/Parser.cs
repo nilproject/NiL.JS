@@ -162,18 +162,7 @@ namespace NiL.JS.Core
 
         internal static bool Validate(string code, string patern, int index)
         {
-            int i = 0;
-            int j = index;
-            while (i < patern.Length)
-            {
-                if (j == code.Length)
-                    return false;
-                if ((code[j] != patern[i]) && (!char.IsWhiteSpace(patern[i]) || (!char.IsWhiteSpace(code[j]))))
-                    return false;
-                i++;
-                j++;
-            }
-            return true;
+            return Validate(code, patern, ref index);
         }
 
         internal static bool Validate(string code, string patern, ref int index)
@@ -302,82 +291,6 @@ namespace NiL.JS.Core
             if (move)
                 index = j;
             return true;
-        }
-
-        internal static bool IsReserevedWord(string code, int index, bool allowEscape, bool strict)
-        {
-            int j = index;
-            if ((!allowEscape || code[j] != '\\') && (code[j] != '$') && (code[j] != '_') && (!char.IsLetter(code[j])))
-                return false;
-            j++;
-            while (j < code.Length)
-            {
-                if ((!allowEscape || code[j] != '\\') && (code[j] != '$') && (code[j] != '_') && (!char.IsLetterOrDigit(code[j])))
-                    break;
-                j++;
-            }
-            if (index == j)
-                return false;
-            string name = code.Substring(index, j - index);
-            if (allowEscape)
-            {
-                int i = 0;
-                name = Tools.Unescape(name, false);
-                return IsReserevedWord(name, i, false, strict) && i == name.Length;
-            }
-            switch (name)
-            {
-                case "break":
-                case "case":
-                case "catch":
-                case "continue":
-                case "delete":
-                case "default":
-                case "do":
-                case "else":
-                case "finally":
-                case "for":
-                case "function":
-                case "if":
-                case "in":
-                case "instanceof":
-                case "new":
-                case "return":
-                case "switch":
-                case "this":
-                case "throw":
-                case "try":
-                case "typeof":
-                case "var":
-                case "void":
-                case "while":
-                case "with":
-                case "true":
-                case "false":
-                case "null":
-                case "export":
-                case "extends":
-                case "import":
-                case "super":
-                case "class":
-                case "const":
-                case "debugger":
-                case "enum":
-                    return true;
-                case "implements":
-                case "interface":
-                case "package":
-                case "private":
-                case "protected":
-                case "public":
-                case "static":
-                    {
-                        if (strict)
-                            return true;
-                        break;
-                    }
-            }
-            return false;
         }
 
         internal static bool ValidateNumber(string code, ref int index, bool move)
