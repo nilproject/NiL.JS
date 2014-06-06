@@ -11,6 +11,7 @@ namespace NiL.JS.Statements
     [Serializable]
     public sealed class FunctionStatement : Statement
     {
+        [Serializable]
         internal sealed class FunctionReference : VaribleReference
         {
             private FunctionStatement owner;
@@ -39,6 +40,7 @@ namespace NiL.JS.Statements
             }
         }
 
+        [Serializable]
         internal sealed class ParameterReference : VaribleReference
         {
             private string name;

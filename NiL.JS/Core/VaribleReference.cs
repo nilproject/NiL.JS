@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace NiL.JS.Core
 {
+    [Serializable]
     public abstract class VaribleReference : Statement
     {
         public abstract string Name { get; }

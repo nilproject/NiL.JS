@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace NiL.JS.Core
 {
+    [Serializable]
     public sealed class VaribleDescriptor
     {
         private HashSet<VaribleReference> references;

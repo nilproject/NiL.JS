@@ -14,10 +14,7 @@ namespace NiL.JS.Core
 
             public _Rule(string token, ParseDelegate parseDel)
             {
-                this.Validate = (string code, ref int pos) =>
-                {
-                    return Parser.Validate(code, token, pos);
-                };
+                this.Validate = (string code, ref int pos) => Parser.Validate(code, token, pos);
                 this.Parse = parseDel;
             }
 
