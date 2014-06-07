@@ -53,6 +53,8 @@ namespace NiL.JS.Statements
 
         public CodeBlock(Statement[] body, bool strict)
         {
+            if (body == null)
+                throw new ArgumentNullException("body");
             code = "";
             this.body = body;
             linesCount = body.Length - 1;
@@ -169,14 +171,22 @@ namespace NiL.JS.Statements
             for (int i = linesCount; i >= 0; i--)
             {
                 if (body[i] is FunctionStatement) continue;
+#if DEV
                 if (context.debugging)
                     context.raiseDebugger(body[i]);
+#endif
                 res = body[i].Invoke(context) ?? res;
 #if DEBUG
                 if (JSObject.undefined.ValueType != JSObjectType.Undefined)
                     throw new ApplicationException("undefined was rewrite");
                 if (Core.BaseTypes.String.EmptyString.oValue as string != "")
                     throw new ApplicationException("EmptyString was rewrite");
+                if (Core.BaseTypes.Boolean.False.ValueType != JSObjectType.Bool
+                    || Core.BaseTypes.Boolean.False.iValue != 0)
+                    throw new ApplicationException("Boolean.False was rewrite");
+                if (Core.BaseTypes.Boolean.True.ValueType != JSObjectType.Bool
+                    || Core.BaseTypes.Boolean.True.iValue != 1)
+                    throw new ApplicationException("Boolean.True was rewrite");
 #endif
                 if (context.abort != AbortType.None)
                     return context.abort == AbortType.Return ? context.abortInfo : res;

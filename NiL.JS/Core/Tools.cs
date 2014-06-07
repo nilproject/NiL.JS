@@ -241,6 +241,8 @@ namespace NiL.JS.Core
 
         public static bool ParseNumber(string code, ref int index, bool move, out double value, int radix, bool allowOctal)
         {
+            if (code == null)
+                throw new ArgumentNullException("code");
             value = double.NaN;
             if (radix != 0 && (radix < 2 || radix > 36))
                 return true;
@@ -443,7 +445,9 @@ namespace NiL.JS.Core
 
         public static string Unescape(string code, bool defaultUnescape)
         {
-            StringBuilder res = null;// new StringBuilder(code.Length);
+            if (code == null)
+                throw new ArgumentNullException("code");
+            StringBuilder res = null;
             for (int i = 0; i < code.Length; i++)
             {
                 if (code[i] == '\\' && i + 1 < code.Length)
@@ -471,11 +475,7 @@ namespace NiL.JS.Core
                                     i += c.Length;
                                 }
                                 else
-                                {
                                     throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid escape sequence '\\" + code[i] + c + "'")));
-                                    //res.Append(code[i - 1]);
-                                    //res.Append(code[i]);
-                                }
                                 break;
                             }
                         case 't':
@@ -646,6 +646,10 @@ namespace NiL.JS.Core
 
         public static TextCord PositionToTextcord(string text, int position)
         {
+            if (text == null)
+                throw new ArgumentNullException("text");
+            if (position < 0)
+                throw new ArgumentOutOfRangeException("position");
             int line = 1;
             int column = 1;
             for (int i = 0; i < position; i++)

@@ -7,7 +7,7 @@ namespace NiL.JS.Core.Modules
     public static class Math
     {
         [Hidden]
-        public readonly static Random randomInstance = new Random((int)DateTime.Now.Ticks);
+        internal readonly static Random randomInstance = new Random((int)DateTime.Now.Ticks);
 
         [Protected]
         public const double E = System.Math.E;

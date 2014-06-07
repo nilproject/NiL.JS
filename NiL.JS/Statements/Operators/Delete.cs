@@ -41,7 +41,7 @@ namespace NiL.JS.Statements.Operators
                         return tempResult;
                     }
                 }
-                else if ((temp.attributes & JSObjectAttributes.DontDelete) == 0)
+                else if ((temp.attributes & JSObjectAttributes.DoNotDelete) == 0)
                 {
                     tempResult.iValue = 1;
                     temp.ValueType = JSObjectType.NotExist;

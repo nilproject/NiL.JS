@@ -70,7 +70,7 @@ namespace NiL.JS.Core
             JSObject.GlobalPrototype = null;
             TypeProxy.Clear();
             globalContext.fields.Add("Object", TypeProxy.GetConstructor(typeof(JSObject)));
-            globalContext.fields["Object"].attributes |= JSObjectAttributes.DontDelete;
+            globalContext.fields["Object"].attributes |= JSObjectAttributes.DoNotDelete;
             JSObject.GlobalPrototype = TypeProxy.GetPrototype(typeof(JSObject));
             JSObject.GlobalPrototype.attributes |= JSObjectAttributes.ReadOnly;
             globalContext.AttachModule(typeof(BaseTypes.Date));
@@ -190,7 +190,7 @@ namespace NiL.JS.Core
             #endregion
 
             foreach (var v in globalContext.fields.Values)
-                v.attributes |= JSObjectAttributes.DontEnum;
+                v.attributes |= JSObjectAttributes.DoNotEnum;
         }
 
         private static JSObject __pinvoke(Context context, JSObject args)
@@ -214,15 +214,15 @@ namespace NiL.JS.Core
                         {
                             oValue = Arguments.Instance,
                             ValueType = JSObjectType.Object,
-                            attributes = JSObjectAttributes.DontDelete | JSObjectAttributes.DontEnum
+                            attributes = JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum
                         };
-                        targs.fields["length"] = new Number(1) { assignCallback = null, attributes = JSObjectAttributes.DontEnum };
+                        targs.fields["length"] = new Number(1) { assignCallback = null, attributes = JSObjectAttributes.DoNotEnum };
                         targs.fields["0"] = new Number((int)o) { assignCallback = null, attributes = JSObjectAttributes.Argument };
                         (targs.fields["callee"] = new JSObject()
                         {
                             ValueType = JSObjectType.Function,
                             oValue = function,
-                            attributes = JSObjectAttributes.DontEnum
+                            attributes = JSObjectAttributes.DoNotEnum
                         }).Protect();
                         function.Invoke(context, targs);
                     }) { Name = "NiL.JS __pinvoke thread (" + __pinvokeCalled + ":" + i + ")" }).Start(i);
@@ -273,7 +273,7 @@ namespace NiL.JS.Core
             RefreshGlobalContext();
         }
 
-        protected readonly Context prototype;
+        internal readonly Context prototype;
 
         private int threadid = 0;
         private static uint __pinvokeCalled;
@@ -284,22 +284,30 @@ namespace NiL.JS.Core
         internal JSObject abortInfo;
         internal JSObject thisBind;
         internal bool strict;
+#if DEV
         internal bool debugging;
+#endif
         internal Statement owner;
 
         /// <summary>
         /// Событие, возникающее при попытке выполнения оператора "debugger".
         /// </summary>
         public event DebuggerCallback DebuggerCallback;
+#if DEV
         public bool Debugging { get { return debugging; } set { debugging = value; } }
+#endif
 
         internal void raiseDebugger(Statement nextStatement)
         {
             var p = this;
             while (p != null)
             {
+#if DEV
                 if (p.debugging && p.DebuggerCallback != null)
-                    p.DebuggerCallback(this, nextStatement);
+#else
+                if (p.DebuggerCallback != null)
+#endif
+                    p.DebuggerCallback(this, new DebuggerCallbackEventArgs() { Statement = nextStatement });
                 p = p.prototype;
             }
         }
@@ -348,7 +356,7 @@ namespace NiL.JS.Core
             else if (!fields.TryGetValue(name, out res))
             {
                 fields[name] = res = new JSObject();
-                res.attributes |= JSObjectAttributes.DontDelete;
+                res.attributes |= JSObjectAttributes.DoNotDelete;
             }
             res.lastRequestedName = name;
             return res;
@@ -420,7 +428,7 @@ namespace NiL.JS.Core
             if (fields == null)
                 fields = new Dictionary<string, JSObject>();
             fields.Add(moduleType.Name, TypeProxy.GetConstructor(moduleType));
-            fields[moduleType.Name].attributes |= JSObjectAttributes.DontDelete;
+            fields[moduleType.Name].attributes |= JSObjectAttributes.DoNotDelete;
         }
 
         /// <summary>
@@ -431,8 +439,10 @@ namespace NiL.JS.Core
         /// <returns>Результат выполнения кода (аргумент оператора "return" либо результат выполнения последней выполненной строки кода).</returns>
         public JSObject Eval(string code)
         {
+#if DEV
             var debugging = this.debugging;
             this.debugging = false;
+#endif
             try
             {
                 int i = 0;
@@ -456,7 +466,9 @@ namespace NiL.JS.Core
             }
             finally
             {
+#if DEV
                 this.debugging = debugging;
+#endif
             }
         }
 
@@ -504,7 +516,9 @@ namespace NiL.JS.Core
             this.prototype = prototype;
             this.thisBind = prototype.thisBind;
             this.abortInfo = JSObject.undefined;
+#if DEV
             this.debugging = prototype.debugging;
+#endif
             GC.SuppressFinalize(this);
         }
 

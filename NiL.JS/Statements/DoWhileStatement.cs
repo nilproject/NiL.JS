@@ -14,7 +14,7 @@ namespace NiL.JS.Statements
 
         public Statement Condition { get { return condition; } }
         public Statement Body { get { return body; } }
-        public string[] Labels { get { return labels.ToArray(); } }
+        public ICollection<string> Labels { get { return labels.AsReadOnly(); } }
 
         private DoWhileStatement()
         {
@@ -73,8 +73,10 @@ namespace NiL.JS.Statements
             JSObject res = null;
             do
             {
+#if DEV
                 if (context.debugging && !(body is CodeBlock))
                     context.raiseDebugger(body);
+#endif
                 res = body.Invoke(context);
                 if (context.abort != AbortType.None)
                 {
@@ -87,8 +89,10 @@ namespace NiL.JS.Statements
                     if (_break)
                         return res;
                 }
+#if DEV
                 if (context.debugging)
                     context.raiseDebugger(condition);
+#endif
             }
             while ((bool)condition.Invoke(context));
             return res;

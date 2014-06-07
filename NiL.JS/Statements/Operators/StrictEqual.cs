@@ -23,7 +23,7 @@ namespace NiL.JS.Statements.Operators
                 case JSObjectType.Bool:
                     {
                         var l = temp.iValue;
-                        temp = Tools.RaiseIfNotExist(second.Invoke(context));
+                        temp = second.Invoke(context);
                         if (temp.ValueType == JSObjectType.Double)
                             return l == temp.dValue;
                         else if (lvt != temp.ValueType)
@@ -34,7 +34,7 @@ namespace NiL.JS.Statements.Operators
                 case JSObjectType.Double:
                     {
                         var l = temp.dValue;
-                        temp = Tools.RaiseIfNotExist(second.Invoke(context));
+                        temp = second.Invoke(context);
                         if (temp.ValueType == JSObjectType.Int)
                             return l == temp.iValue;
                         else if (lvt != temp.ValueType)
@@ -45,7 +45,7 @@ namespace NiL.JS.Statements.Operators
                 case JSObjectType.Function:
                     {
                         var l = temp.oValue;
-                        temp = Tools.RaiseIfNotExist(second.Invoke(context));
+                        temp = second.Invoke(context);
                         if (lvt != temp.ValueType)
                             return false;
                         else
@@ -54,7 +54,7 @@ namespace NiL.JS.Statements.Operators
                 case JSObjectType.Object:
                     {
                         var l = temp.oValue;
-                        temp = Tools.RaiseIfNotExist(second.Invoke(context));
+                        temp = second.Invoke(context);
                         if (temp.ValueType != JSObjectType.Object)
                             return false;
                         else if (l == null || temp.oValue == null)
@@ -65,7 +65,7 @@ namespace NiL.JS.Statements.Operators
                 case JSObjectType.Date:
                     {
                         var l = temp.oValue;
-                        temp = Tools.RaiseIfNotExist(second.Invoke(context));
+                        temp = second.Invoke(context);
                         if (temp.ValueType != JSObjectType.Date)
                             return false;
                         else if (l == null || temp.oValue == null)
@@ -76,7 +76,7 @@ namespace NiL.JS.Statements.Operators
                 case JSObjectType.String:
                     {
                         var l = temp.oValue;
-                        temp = Tools.RaiseIfNotExist(second.Invoke(context));
+                        temp = second.Invoke(context);
                         if (lvt != temp.ValueType)
                             return false;
                         else

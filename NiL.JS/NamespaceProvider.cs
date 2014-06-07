@@ -63,7 +63,8 @@ namespace NiL.JS
         public NamespaceProvider(string @namespace, bool union)
             : this(@namespace)
         {
-            unions = new Dictionary<string, GenericType>();
+            if (union)
+                unions = new Dictionary<string, GenericType>();
         }
 
         public override JS.Core.JSObject GetField(string name, bool fast, bool own)

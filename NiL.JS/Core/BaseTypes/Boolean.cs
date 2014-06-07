@@ -9,16 +9,10 @@ namespace NiL.JS.Core.BaseTypes
     [Modules.Immutable]
     public class Boolean : EmbeddedType
     {
-        [Modules.Protected]
-        public static Boolean True = true;
-        [Modules.Protected]
-        public static Boolean False = false;
         [Modules.Hidden]
-        [Modules.Protected]
-        public static Boolean TrueEr = new Boolean(true) { assignCallback = JSObject.ErrorAssignCallback };
+        internal static readonly Boolean True = new Boolean(true);
         [Modules.Hidden]
-        [Modules.Protected]
-        public static Boolean FalseEr = new Boolean(false) { assignCallback = JSObject.ErrorAssignCallback };
+        internal static readonly Boolean False = new Boolean(false);
 
         public Boolean()
         {
@@ -29,8 +23,10 @@ namespace NiL.JS.Core.BaseTypes
 
         public Boolean(JSObject obj)
         {
+            if (obj == null)
+                throw new ArgumentNullException("obj");
             ValueType = JSObjectType.Bool;
-            iValue = (bool)(obj.GetField("0", true, false)) ? 1 : 0;
+            iValue = (bool)obj.GetField("0", true, false) ? 1 : 0;
             assignCallback = JSObject.ErrorAssignCallback;
         }
 
@@ -62,9 +58,14 @@ namespace NiL.JS.Core.BaseTypes
             assignCallback = JSObject.ErrorAssignCallback;
         }
 
+#if INLINE
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+#endif
         public static implicit operator Boolean(bool value)
         {
-            return new Boolean(value);
+            var res = value ? BaseTypes.Boolean.True : BaseTypes.Boolean.False;
+            res.iValue = value ? 1 : 0;
+            return res;
         }
 
         public static implicit operator bool(Boolean value)

@@ -33,6 +33,7 @@ namespace NiL.JS.Core.BaseTypes
             return name + ": " + message;
         }
 
+        [CLSCompliant(false)]
         public JSObject toString()
         {
             return ToString();

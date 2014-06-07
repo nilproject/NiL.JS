@@ -11,6 +11,8 @@ namespace NiL.JS.Core
         public WithContext(JSObject obj, Context prototype, Statement owner)
             : base(prototype, owner)
         {
+            if (obj == null)
+                throw new ArgumentNullException("obj");
             if (obj.ValueType == JSObjectType.NotExist)
                 throw new JSException(TypeProxy.Proxy(new ReferenceError("Varible not defined.")));
             if (obj.ValueType <= JSObjectType.Undefined)

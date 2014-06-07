@@ -45,8 +45,10 @@ namespace NiL.JS
 
             public void CopyTo(TValue[] array, int arrayIndex)
             {
+                if (array == null)
+                    throw new ArgumentNullException("array");
                 if (array.Length - arrayIndex < owner.Count)
-                    throw new ArgumentOutOfRangeException();
+                    throw new ArgumentOutOfRangeException("arrayIndex");
                 foreach (var i in owner)
                     array[arrayIndex++] = i.Value;
             }
@@ -99,8 +101,10 @@ namespace NiL.JS
 
             public void CopyTo(TKey[] array, int arrayIndex)
             {
+                if (array == null)
+                    throw new ArgumentNullException("array");
                 if (array.Length - arrayIndex < owner.Count)
-                    throw new ArgumentOutOfRangeException();
+                    throw new ArgumentOutOfRangeException("arrayIndex");
                 foreach (var i in owner)
                     array[arrayIndex++] = i.Key;
             }
@@ -248,7 +252,7 @@ namespace NiL.JS
             get
             {
                 if (key == null)
-                    throw new ArgumentNullException();
+                    throw new ArgumentNullException("key");
                 TValue res;
                 if (!TryGetValue(key, out res))
                     throw new ArgumentException("Key not found.");
@@ -259,7 +263,7 @@ namespace NiL.JS
                 lock (this)
                 {
                     if (key == null)
-                        throw new ArgumentNullException();
+                        throw new ArgumentNullException("key");
                     if (root == null)
                     {
                         root = new Node() { value = value, key = key };
@@ -269,6 +273,7 @@ namespace NiL.JS
                     else
                     {
                         var c = root;
+                        stack.Clear();
                         do
                         {
                             var cmp = key.CompareTo(c.key);
@@ -333,7 +338,7 @@ namespace NiL.JS
             lock (this)
             {
                 if (key == null)
-                    throw new ArgumentNullException();
+                    throw new ArgumentNullException("key");
                 if (root == null)
                 {
                     root = new Node() { value = value, key = key };
@@ -343,12 +348,12 @@ namespace NiL.JS
                 else
                 {
                     var c = root;
-                    var stack = new Stack<Node>();
+                    stack.Clear();
                     do
                     {
                         var cmp = key.CompareTo(c.key);
                         if (cmp == 0)
-                            throw new ArgumentException();
+                            throw new ArgumentException("Element exists");
                         else if (cmp > 0)
                         {
                             if (c.greater == null)
@@ -451,6 +456,7 @@ namespace NiL.JS
             {
                 Node prev = null;
                 var c = root;
+                stack.Clear();
                 do
                 {
                     var cmp = key.CompareTo(c.key);
@@ -550,6 +556,7 @@ namespace NiL.JS
                 var key = keyValuePair.Key;
                 Node prev = null;
                 var c = root;
+                stack.Clear();
                 do
                 {
                     var cmp = key.CompareTo(c.key);
@@ -645,11 +652,11 @@ namespace NiL.JS
         public void CopyTo(KeyValuePair<TKey, TValue>[] array, int index)
         {
             if (array == null)
-                throw new ArgumentNullException();
+                throw new ArgumentNullException("array");
             if (index < 0)
-                throw new ArgumentOutOfRangeException();
+                throw new ArgumentOutOfRangeException("index");
             if (array.Length - index < Count)
-                throw new ArgumentException();
+                throw new ArgumentException("index and array incompatible with count of elements");
             foreach (var kvp in this)
                 array[index++] = kvp;
         }

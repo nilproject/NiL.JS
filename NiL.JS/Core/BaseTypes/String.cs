@@ -1,5 +1,6 @@
 ﻿using System;
 using NiL.JS.Core.Modules;
+using System.Globalization;
 
 namespace NiL.JS.Core.BaseTypes
 {
@@ -7,7 +8,7 @@ namespace NiL.JS.Core.BaseTypes
     [Immutable]
     public class String : EmbeddedType
     {
-        public static readonly String EmptyString = new String("");
+        internal static readonly String EmptyString = new String("");
 
         public static JSObject fromCharCode(JSObject[] code)
         {
@@ -108,7 +109,7 @@ namespace NiL.JS.Core.BaseTypes
                         }
                 }
             }
-            return (oValue as string).IndexOf(fstr, pos);
+            return (oValue as string).IndexOf(fstr, pos, StringComparison.CurrentCulture);
         }
 
         public JSObject lastIndexOf(JSObject[] args)
@@ -144,7 +145,7 @@ namespace NiL.JS.Core.BaseTypes
                         }
                 }
             }
-            return (oValue as string).LastIndexOf(fstr, pos);
+            return (oValue as string).LastIndexOf(fstr, pos, StringComparison.CurrentCulture);
         }
 
         public JSObject localeCompare(JSObject[] args)
@@ -178,10 +179,12 @@ namespace NiL.JS.Core.BaseTypes
             }
             else
             {
-                var groups = new System.Text.RegularExpressions.Regex((a0.ValueType > JSObjectType.Undefined ? (object)a0 : "").ToString(), System.Text.RegularExpressions.RegexOptions.ECMAScript).Match(oValue as string ?? this.ToString()).Groups;
-                var res = new Array(groups.Count);
-                for (int i = 0; i < groups.Count; i++)
-                    res.data[i] = groups[i].Value;
+                var match = new System.Text.RegularExpressions.Regex((a0.ValueType > JSObjectType.Undefined ? (object)a0 : "").ToString(), System.Text.RegularExpressions.RegexOptions.ECMAScript).Match(oValue as string ?? this.ToString());
+                var res = new Array(match.Groups.Count);
+                for (int i = 0; i < match.Groups.Count; i++)
+                    res.data[i] = match.Groups[i].Value;
+                res.GetField("index", false, true).Assign(match.Index);
+                res.GetField("input", false, true).Assign(this);
                 return res;
             }
         }
@@ -203,7 +206,7 @@ namespace NiL.JS.Core.BaseTypes
                     var margs = CreateObject();
                     JSObject len = 1;
                     len.assignCallback = null;
-                    len.attributes = JSObjectAttributes.DontDelete | JSObjectAttributes.DontEnum | JSObjectAttributes.ReadOnly;
+                    len.attributes = JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum | JSObjectAttributes.ReadOnly;
                     margs.fields["length"] = len;
                     margs.fields["0"] = match;
                     match.oValue = (args[0].oValue as RegExp).regEx.Replace(oValue.ToString(), new System.Text.RegularExpressions.MatchEvaluator(
@@ -218,7 +221,7 @@ namespace NiL.JS.Core.BaseTypes
                             {
                                 t = m.Groups[i].Value;
                                 t.assignCallback = null;
-                                margs.fields[(i + 1).ToString()] = t;
+                                margs.fields[(i + 1).ToString(CultureInfo.InvariantCulture)] = t;
                             }
                             t = m.Index;
                             t.assignCallback = null;
@@ -245,12 +248,11 @@ namespace NiL.JS.Core.BaseTypes
                     assignCallback = null;
                     string othis = this.oValue as string;
                     var f = args[1].oValue as Function;
-                    var match = new String();
                     var margs = CreateObject();
                     margs.oValue = Arguments.Instance;
                     JSObject alen = 3;
                     alen.assignCallback = null;
-                    alen.attributes = JSObjectAttributes.DontDelete | JSObjectAttributes.DontEnum | JSObjectAttributes.ReadOnly;
+                    alen.attributes = JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum | JSObjectAttributes.ReadOnly;
                     margs.fields["length"] = alen;
                     margs.fields["0"] = pattern;
                     margs.fields["2"] = this;
@@ -491,15 +493,16 @@ namespace NiL.JS.Core.BaseTypes
                 throw new JSException(TypeProxy.Proxy(new TypeError("Try to call String.valueOf for not string object.")));
         }
 
-        private Number _length = null;// new Number(0) { attributes = ObjectAttributes.ReadOnly | ObjectAttributes.DontDelete | ObjectAttributes.DontEnum };
+        private Number _length = null;
 
         public JSObject length
         {
             get
             {
                 if (_length == null)
-                    _length = new Number(0) { attributes = JSObjectAttributes.ReadOnly | JSObjectAttributes.DontDelete | JSObjectAttributes.DontEnum };
-                _length.iValue = (oValue as string).Length;
+                    _length = new Number((oValue as string).Length) { attributes = JSObjectAttributes.ReadOnly | JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum };
+                else
+                    _length.iValue = (oValue as string).Length;
                 return _length;
             }
         }

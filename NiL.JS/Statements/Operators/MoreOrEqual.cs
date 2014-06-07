@@ -14,9 +14,7 @@ namespace NiL.JS.Statements.Operators
 
         internal override JSObject Invoke(Context context)
         {
-            var t = base.Invoke(context);
-            t.iValue ^= 1;
-            return t;
+            return base.Invoke(context).iValue == 0;
         }
 
         public override string ToString()

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
+using System.Globalization;
 
 namespace NiL.JS.Core
 {
@@ -29,8 +30,8 @@ namespace NiL.JS.Core
     public enum JSObjectAttributes : int
     {
         None = 0,
-        DontEnum = 1 << 0,
-        DontDelete = 1 << 1,
+        DoNotEnum = 1 << 0,
+        DoNotDelete = 1 << 1,
         ReadOnly = 1 << 2,
         Immutable = 1 << 3,
         Argument = 1 << 16,
@@ -53,11 +54,11 @@ namespace NiL.JS.Core
         [Modules.Hidden]
         internal static readonly IEnumerator<string> EmptyEnumerator = ((IEnumerable<string>)(new string[0])).GetEnumerator();
         [Modules.Hidden]
-        internal static readonly JSObject undefined = new JSObject() { ValueType = JSObjectType.Undefined, attributes = JSObjectAttributes.DontDelete | JSObjectAttributes.DontEnum | JSObjectAttributes.ReadOnly };
+        internal static readonly JSObject undefined = new JSObject() { ValueType = JSObjectType.Undefined, attributes = JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum | JSObjectAttributes.ReadOnly };
         [Modules.Hidden]
-        internal static readonly JSObject Null = new JSObject() { ValueType = JSObjectType.Object, oValue = null, assignCallback = ErrorAssignCallback, attributes = JSObjectAttributes.DontDelete | JSObjectAttributes.DontEnum };
+        internal static readonly JSObject Null = new JSObject() { ValueType = JSObjectType.Object, oValue = null, assignCallback = ErrorAssignCallback, attributes = JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum };
         [Modules.Hidden]
-        internal static readonly JSObject nullString = new JSObject() { ValueType = JSObjectType.String, oValue = "null", assignCallback = ErrorAssignCallback, attributes = JSObjectAttributes.DontDelete | JSObjectAttributes.DontEnum };
+        internal static readonly JSObject nullString = new JSObject() { ValueType = JSObjectType.String, oValue = "null", assignCallback = ErrorAssignCallback, attributes = JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum };
         [Modules.Hidden]
         internal static JSObject GlobalPrototype;
 
@@ -325,7 +326,7 @@ namespace NiL.JS.Core
         {
             if (assignCallback != null)
                 assignCallback(this);
-            attributes |= JSObjectAttributes.DontDelete | JSObjectAttributes.ReadOnly;
+            attributes |= JSObjectAttributes.DoNotDelete | JSObjectAttributes.ReadOnly;
         }
 
         [Modules.Hidden]
@@ -451,7 +452,7 @@ namespace NiL.JS.Core
                 case JSObjectType.Bool:
                     return res.iValue != 0 ? "true" : "false";
                 case JSObjectType.Int:
-                    return res.iValue >= 0 && res.iValue < 16 ? Tools.NumString[res.iValue] : res.iValue.ToString();
+                    return res.iValue >= 0 && res.iValue < 16 ? Tools.NumString[res.iValue] : res.iValue.ToString(CultureInfo.InvariantCulture);
                 case JSObjectType.Double:
                     return Tools.DoubleToString(res.dValue);
                 case JSObjectType.String:
@@ -484,11 +485,12 @@ namespace NiL.JS.Core
         {
             foreach (var f in fields)
             {
-                if (f.Value.ValueType >= JSObjectType.Undefined && (f.Value.attributes & JSObjectAttributes.DontEnum) == 0)
+                if (f.Value.ValueType >= JSObjectType.Undefined && (f.Value.attributes & JSObjectAttributes.DoNotEnum) == 0)
                     yield return f.Key;
             }
         }
 
+        [CLSCompliant(false)]
         [Modules.DoNotEnumerateAttribute]
         [Modules.ParametersCount(0)]
         public virtual JSObject toString(JSObject args)
@@ -570,27 +572,18 @@ namespace NiL.JS.Core
             if (args.GetField("length", true, false).iValue == 0)
                 return false;
             var a = args.GetField("0", true, false);
-            JSObject o = false;
-            o.ValueType = JSObjectType.Bool;
-            o.iValue = 0;
             if (this.ValueType >= JSObjectType.Object && this.oValue != null)
             {
                 while (a.ValueType >= JSObjectType.Object && a.oValue != null)
                 {
                     if (a.oValue == this.oValue)
-                    {
-                        o.iValue = 1;
-                        return o;
-                    }
+                        return true;
                     if ((a.oValue is TypeProxy) && (a.oValue as TypeProxy).prototypeInstance == this)
-                    {
-                        o.iValue = 1;
-                        return o;
-                    }
+                        return true;
                     a = a.GetField("__proto__", true, false);
                 }
             }
-            return o;
+            return false;
         }
 
         [Modules.DoNotEnumerateAttribute]
@@ -652,7 +645,7 @@ namespace NiL.JS.Core
             JSObject name = args.GetField("0", true, false);
             string n = name.ToString();
             var res = GetField(n, true, true);
-            res = (res.ValueType >= JSObjectType.Undefined) && (res != JSObject.undefined) && ((res.attributes & JSObjectAttributes.DontEnum) == 0);
+            res = (res.ValueType >= JSObjectType.Undefined) && (res != JSObject.undefined) && ((res.attributes & JSObjectAttributes.DoNotEnum) == 0);
             return res;
         }
 
@@ -680,24 +673,27 @@ namespace NiL.JS.Core
             return new BaseTypes.String(value.ToString());
         }
 
+#if INLINE
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+#endif
         public static implicit operator JSObject(bool value)
         {
-            return new BaseTypes.Boolean(value);
+            return (BaseTypes.Boolean)value;
         }
 
         public static implicit operator JSObject(int value)
         {
-            return new BaseTypes.Number(value);
+            return (BaseTypes.Number)value;
         }
 
         public static implicit operator JSObject(long value)
         {
-            return new BaseTypes.Number((double)value);
+            return (BaseTypes.Number)(double)value;
         }
 
         public static implicit operator JSObject(double value)
         {
-            return new BaseTypes.Number(value);
+            return (BaseTypes.Number)value;
         }
 
         public static implicit operator JSObject(string value)

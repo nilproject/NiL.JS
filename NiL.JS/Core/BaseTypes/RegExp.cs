@@ -144,7 +144,7 @@ namespace NiL.JS.Core.BaseTypes
             }
         }
 
-        public Boolean global { get; private set; }
+        public bool global { get; private set; }
 
         public String source
         {
@@ -177,7 +177,7 @@ namespace NiL.JS.Core.BaseTypes
                 lIndex.ValueType = JSObjectType.Int;
                 lIndex.iValue = (int)lIndex.dValue;
             }
-            if (lIndex.iValue >= input.Length || lIndex.iValue < 0)
+            if ((lIndex.iValue >= input.Length || lIndex.iValue < 0) && (input.Length > 0))
             {
                 lIndex.iValue = 0;
                 return JSObject.Null;

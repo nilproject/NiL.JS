@@ -77,6 +77,8 @@ namespace NiL.JS.Core.BaseTypes
 
         public ArrayBuffer slice(JSObject args)
         {
+            if (args == null)
+                throw new ArgumentNullException("args");
             var l = Tools.JSObjectToInt(args.GetField("length", true, false));
             if (l == 0)
                 return this;

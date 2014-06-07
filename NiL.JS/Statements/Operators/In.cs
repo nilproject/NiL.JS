@@ -9,32 +9,27 @@ namespace NiL.JS.Statements.Operators
     public sealed class In : Operator
     {
         public In(Statement first, Statement second)
-            : base(first, second, true)
+            : base(first, second, false)
         {
 
         }
 
         internal override JSObject Invoke(Context context)
         {
-            lock (this)
+            var fn = Tools.RaiseIfNotExist(first.Invoke(context));
+            var oassc = fn.assignCallback;
+            fn.assignCallback = (sender) => { fn = fn.Clone() as JSObject; };
+            try
             {
-                var fn = Tools.RaiseIfNotExist(first.Invoke(context));
-                var oassc = fn.assignCallback;
-                fn.assignCallback = (sender) => { fn = fn.Clone() as JSObject; };
-                try
-                {
-                    var source = Tools.RaiseIfNotExist(second.Invoke(context));
-                    if (source.ValueType < JSObjectType.Object)
-                        throw new JSException(TypeProxy.Proxy(new TypeError("Right-hand value of instanceof is not object.")));
-                    var t = source.GetField(fn.ToString(), true, false);
-                    tempResult.iValue = t != JSObject.undefined && t.ValueType >= JSObjectType.Undefined ? 1 : 0;
-                    tempResult.ValueType = JSObjectType.Bool;
-                    return tempResult;
-                }
-                finally
-                {
-                    fn.assignCallback = oassc;
-                }
+                var source = Tools.RaiseIfNotExist(second.Invoke(context));
+                if (source.ValueType < JSObjectType.Object)
+                    throw new JSException(TypeProxy.Proxy(new TypeError("Right-hand value of instanceof is not object.")));
+                var t = source.GetField(fn.ToString(), true, false);
+                return t != JSObject.undefined && t.ValueType >= JSObjectType.Undefined ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+            }
+            finally
+            {
+                fn.assignCallback = oassc;
             }
         }
 

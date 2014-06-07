@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 using System.Collections.Generic;
 using System.Collections;
+using System.Globalization;
 
 namespace NiL.JS.Core
 {
@@ -87,7 +88,7 @@ namespace NiL.JS.Core
             var len = source.GetField("length", true, false).iValue;
             var res = new JSObject[len];
             for (int i = 0; i < len; i++)
-                res[i] = source.GetField(i < 16 ? Tools.NumString[i] : i.ToString(), true, true);
+                res[i] = source.GetField(i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture), true, true);
             return res;
         }
 
@@ -118,7 +119,7 @@ namespace NiL.JS.Core
                 {
                     res = new JSObject[len];
                     for (int i = 0; i < len; i++)
-                        res[i] = source.GetField(i < 16 ? Tools.NumString[i] : i.ToString(), true, true);
+                        res[i] = source.GetField(i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture), true, true);
                     return new object[] { res };
                 }
             }
@@ -127,7 +128,7 @@ namespace NiL.JS.Core
             res = targetCount != 0 ? new object[targetCount] : null;
             for (int i = targetCount; i-- > 0; )
             {
-                var obj = source.GetField(i < 16 ? Tools.NumString[i] : i.ToString(), true, true);
+                var obj = source.GetField(i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture), true, true);
                 if (obj != null)
                 {
                     res[i] = embeddedTypeConvert(obj, parameters[i].ParameterType);
@@ -227,7 +228,7 @@ namespace NiL.JS.Core
             get
             {
                 if (_length == null)
-                    _length = new Number(0) { attributes = JSObjectAttributes.ReadOnly | JSObjectAttributes.DontDelete | JSObjectAttributes.DontEnum };
+                    _length = new Number(0) { attributes = JSObjectAttributes.ReadOnly | JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum };
                 var pc = info.GetCustomAttributes(typeof(Modules.ParametersCountAttribute), false);
                 if (pc.Length != 0)
                     _length.iValue = (pc[0] as Modules.ParametersCountAttribute).Count;
@@ -251,7 +252,7 @@ namespace NiL.JS.Core
                         res = (info as ConstructorInfo).Invoke(args);
                     else
                     {
-                        var target = hardTarget ?? getTargetObject(thisOverride ?? context.thisBind, info.DeclaringType);
+                        var target = hardTarget ?? getTargetObject(thisOverride ?? context.thisBind ?? context.GetField("this"), info.DeclaringType);
                         if (target != null && target.GetType() != info.ReflectedType) // you bunny wrote
                         {
                             var minfo = info as MethodInfo;
@@ -303,7 +304,6 @@ namespace NiL.JS.Core
             }
             catch (Exception e)
             {
-                var st = e.StackTrace;
                 while (e.InnerException != null)
                     e = e.InnerException;
                 if (e is JSException)
@@ -382,8 +382,8 @@ namespace NiL.JS.Core
             var newThis = args.GetField("0", true, false);
             var prmlen = --args.GetField("length", true, false).iValue;
             for (int i = 0; i < prmlen; i++)
-                args.fields[i < 16 ? Tools.NumString[i] : i.ToString()] = args.GetField(i < 14 ? Tools.NumString[i + 1] : (i + 1).ToString(), true, false);
-            args.fields.Remove(prmlen < 16 ? Tools.NumString[prmlen] : prmlen.ToString());
+                args.fields[i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture)] = args.GetField(i < 14 ? Tools.NumString[i + 1] : (i + 1).ToString(CultureInfo.InvariantCulture), true, false);
+            args.fields.Remove(prmlen < 16 ? Tools.NumString[prmlen] : prmlen.ToString(CultureInfo.InvariantCulture));
             if (newThis.ValueType < JSObjectType.Object || newThis.oValue != null || (info.DeclaringType == typeof(JSObject)))
                 return Invoke(newThis, args);
             else

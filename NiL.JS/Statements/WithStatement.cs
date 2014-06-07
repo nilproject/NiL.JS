@@ -46,11 +46,15 @@ namespace NiL.JS.Statements
 
         internal override JSObject Invoke(Context context)
         {
+#if DEV
             if (context.debugging)
                 context.raiseDebugger(obj);
+#endif
             var intcontext = new WithContext(obj.Invoke(context), context, this);
+#if DEV
             if (context.debugging && !(body is CodeBlock))
                 context.raiseDebugger(body);
+#endif
             body.Invoke(intcontext);
             context.abort = intcontext.abort;
             context.abortInfo = intcontext.abortInfo;

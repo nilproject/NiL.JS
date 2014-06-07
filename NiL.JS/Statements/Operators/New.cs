@@ -30,7 +30,7 @@ namespace NiL.JS.Statements.Operators
             }
         }
 
-        public readonly Call CallInstance = new Call(new ThisSetStat(), new ImmidateValueStatement(null));
+        private readonly Call CallInstance = new Call(new ThisSetStat(), new ImmidateValueStatement(null));
 
         public override bool IsContextIndependent
         {
@@ -70,8 +70,8 @@ namespace NiL.JS.Statements.Operators
                 }
                 else
                     _this.oValue = this;
-                (CallInstance.First as ThisSetStat).value = temp;
-                (CallInstance.First as ThisSetStat)._this = _this;
+                (CallInstance.FirstOperand as ThisSetStat).value = temp;
+                (CallInstance.FirstOperand as ThisSetStat)._this = _this;
                 var res = CallInstance.Invoke(context);
                 if (res.ValueType >= JSObjectType.Object && res.oValue != null)
                     return res;
@@ -82,16 +82,16 @@ namespace NiL.JS.Statements.Operators
         internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VaribleDescriptor> vars)
         {
             if (second == null)
-                (CallInstance.Second as ImmidateValueStatement).value = new JSObject() { ValueType = JSObjectType.Object, oValue = new Statement[0] };
+                (CallInstance.SecondOperand as ImmidateValueStatement).value = new JSObject() { ValueType = JSObjectType.Object, oValue = new Statement[0] };
             else
-                (CallInstance.Second as ImmidateValueStatement).value = second.Invoke(null);
+                (CallInstance.SecondOperand as ImmidateValueStatement).value = second.Invoke(null);
             return base.Optimize(ref _this, depth, vars);
         }
 
         public override string ToString()
         {
             string res = "new " + first + "(";
-            var args = (CallInstance.Second as ImmidateValueStatement).value.oValue as Statement[];
+            var args = (CallInstance.SecondOperand as ImmidateValueStatement).value.oValue as Statement[];
             for (int i = 0; i < args.Length; i++)
             {
                 res += args[i];

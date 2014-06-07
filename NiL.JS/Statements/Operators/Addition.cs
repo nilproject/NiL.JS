@@ -1,5 +1,6 @@
 ﻿using NiL.JS.Core;
 using System;
+using System.Globalization;
 
 namespace NiL.JS.Statements.Operators
 {
@@ -50,7 +51,7 @@ namespace NiL.JS.Statements.Operators
                             }
                             else if (temp.ValueType == JSObjectType.String)
                             {
-                                tempResult.oValue = (type == JSObjectType.Bool ? (ir != 0 ? "true" : "false") : ir.ToString()) + (string)temp.oValue;
+                                tempResult.oValue = (type == JSObjectType.Bool ? (ir != 0 ? "true" : "false") : ir.ToString(CultureInfo.InvariantCulture)) + (string)temp.oValue;
                                 tempResult.ValueType = JSObjectType.String;
                                 return tempResult;
                             }

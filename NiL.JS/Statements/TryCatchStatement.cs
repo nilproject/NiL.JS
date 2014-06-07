@@ -84,8 +84,10 @@ namespace NiL.JS.Statements
             }
             catch (JSException e)
             {
+#if DEV
                 if (context.debugging && catchBody != null)
                     context.raiseDebugger(catchBody);
+#endif
                 lock (tempContainer)
                 {
                     if (catchBody != null)
@@ -94,7 +96,7 @@ namespace NiL.JS.Statements
                         tempContainer.Assign(cvar);
                         tempContainer.attributes = cvar.attributes;
                         cvar.Assign(e.Avatar);
-                        cvar.attributes = JSObjectAttributes.DontDelete;
+                        cvar.attributes = JSObjectAttributes.DoNotDelete;
                         catchBody.Invoke(context);
                         cvar.Assign(tempContainer);
                         cvar.attributes = tempContainer.attributes;
@@ -105,8 +107,10 @@ namespace NiL.JS.Statements
             }
             catch (Exception e)
             {
+#if DEV
                 if (context.debugging && catchBody != null)
                     context.raiseDebugger(catchBody);
+#endif
                 lock (tempContainer)
                 {
                     if (catchBody != null)
@@ -115,7 +119,7 @@ namespace NiL.JS.Statements
                         tempContainer.Assign(cvar);
                         tempContainer.attributes = cvar.attributes;
                         cvar.Assign(TypeProxy.Proxy(e));
-                        cvar.attributes = JSObjectAttributes.DontDelete;
+                        cvar.attributes = JSObjectAttributes.DoNotDelete;
                         catchBody.Invoke(context);
                         cvar.Assign(tempContainer);
                         cvar.attributes = tempContainer.attributes;
@@ -128,8 +132,10 @@ namespace NiL.JS.Statements
             {
                 if (finallyBody != null)
                 {
+#if DEV
                     if (context.debugging)
                         context.raiseDebugger(finallyBody);
+#endif
                     var abort = context.abort;
                     var ainfo = context.abortInfo;
                     context.abort = AbortType.None;

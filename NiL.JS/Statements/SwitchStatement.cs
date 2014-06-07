@@ -6,26 +6,27 @@ using System.Linq;
 namespace NiL.JS.Statements
 {
     [Serializable]
+    public sealed class SwitchCase
+    {
+        internal int index;
+        internal Statement statement;
+
+        public int Index { get { return index; } }
+        public Statement Statement { get { return statement; } }
+    }
+
+    [Serializable]
     public sealed class SwitchStatement : Statement
     {
-        public sealed class Case
-        {
-            internal int index;
-            internal Statement statement;
-
-            public int Index { get { return index; } }
-            public Statement Statement { get { return statement; } }
-        }
-
         private FunctionStatement[] functions;
         private int length;
         private readonly Statement[] body;
-        private Case[] cases;
+        private SwitchCase[] cases;
         private Statement image;
 
         public FunctionStatement[] Functions { get { return functions; } }
         public Statement[] Body { get { return body; } }
-        public Case[] Cases { get { return cases; } }
+        public SwitchCase[] Cases { get { return cases; } }
         public Statement Image { get { return image; } }
 
         internal SwitchStatement(Statement[] body)
@@ -50,7 +51,7 @@ namespace NiL.JS.Statements
             do i++; while (char.IsWhiteSpace(code[i]));
             var body = new List<Statement>();
             var funcs = new List<FunctionStatement>();
-            var cases = new List<Case>();
+            var cases = new List<SwitchCase>();
             cases.Add(null);
             state.AllowBreak++;
             while (code[i] != '}')
@@ -65,7 +66,7 @@ namespace NiL.JS.Statements
                         if (code[i] != ':')
                             throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \":\" at + " + Tools.PositionToTextcord(code, i))));
                         i++;
-                        cases.Add(new Case() { index = body.Count, statement = sample });
+                        cases.Add(new SwitchCase() { index = body.Count, statement = sample });
                     }
                     else if (Parser.Validate(code, "default", i) && Parser.isIdentificatorTerminator(code[i + 7]))
                     {
@@ -75,7 +76,7 @@ namespace NiL.JS.Statements
                         if (code[i] != ':')
                             throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \":\" at + " + Tools.PositionToTextcord(code, i))));
                         i++;
-                        cases[0] = new Case() { index = body.Count, statement = null };
+                        cases[0] = new SwitchCase() { index = body.Count, statement = null };
                     }
                     else break;
                     while (char.IsWhiteSpace(code[i]) || (code[i] == ';')) i++;
@@ -121,8 +122,10 @@ namespace NiL.JS.Statements
             var imageVal = image.Invoke(context);
             for (int j = 1; j < cases.Length; j++)
             {
+#if DEV
                 if (context.debugging)
                     context.raiseDebugger(cases[j].statement);
+#endif
                 if (Operators.StrictEqual.Check(imageVal, cases[j].statement, context))
                 {
                     i = cases[j].index;
@@ -193,7 +196,7 @@ namespace NiL.JS.Statements
                 {
                     if (cases[j] != null && cases[j].index == i)
                     {
-                        res += "case " + (cases[j].statement as Operators.StrictEqual).Second + ":" + Environment.NewLine;
+                        res += "case " + (cases[j].statement as Operators.StrictEqual).SecondOperand + ":" + Environment.NewLine;
                     }
                 }
                 string lc = body[i].ToString().Replace(replp, replt);

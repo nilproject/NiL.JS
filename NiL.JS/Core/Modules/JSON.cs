@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using NiL.JS.Core.BaseTypes;
+using System.Globalization;
 
 namespace NiL.JS.Core.Modules
 {
@@ -156,7 +157,7 @@ namespace NiL.JS.Core.Modules
                     else break;
                 }
                 if (stack.Peek().state == ParseState.Array)
-                    stack.Push(new StackFrame() { fieldName = (stack.Peek().valuesCount++).ToString(), state = ParseState.Value });
+                    stack.Push(new StackFrame() { fieldName = (stack.Peek().valuesCount++).ToString(CultureInfo.InvariantCulture), state = ParseState.Value });
                 else if (stack.Peek().state == ParseState.Object)
                     stack.Push(new StackFrame() { state = ParseState.Name });
             }
@@ -193,7 +194,7 @@ namespace NiL.JS.Core.Modules
             bool first = true;
             foreach (var f in obj.fields)
             {
-                if ((f.Value.ValueType < JSObjectType.Undefined) && ((f.Value.attributes & JSObjectAttributes.DontEnum) == 0))
+                if ((f.Value.ValueType < JSObjectType.Undefined) && ((f.Value.attributes & JSObjectAttributes.DoNotEnum) == 0))
                     continue;
                 var value = f.Value;
                 if (replacer != null)

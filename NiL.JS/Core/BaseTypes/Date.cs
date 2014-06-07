@@ -1,5 +1,6 @@
 ﻿using System;
 using NiL.JS.Core.Modules;
+using System.Globalization;
 
 namespace NiL.JS.Core.BaseTypes
 {
@@ -46,7 +47,7 @@ namespace NiL.JS.Core.BaseTypes
                             }
                         case JSObjectType.String:
                             {
-                                host = DateTime.Parse(arg.ToString());
+                                host = DateTime.Parse(arg.ToString(), CultureInfo.CurrentCulture);
                                 break;
                             }
                     }
@@ -277,6 +278,7 @@ namespace NiL.JS.Core.BaseTypes
             return time;
         }
 
+        [CLSCompliant(false)]
         public JSObject toString()
         {
             return ToString();
@@ -309,14 +311,10 @@ namespace NiL.JS.Core.BaseTypes
 
         public static double parse(string dateTime)
         {
-            try
-            {
-                return System.DateTime.Parse(dateTime).Ticks - UTCBase;
-            }
-            catch
-            {
-                return double.NaN;
-            }
+            System.DateTime res;
+            if (System.DateTime.TryParse(dateTime, CultureInfo.CurrentCulture, DateTimeStyles.None, out res))
+                return res.Ticks - UTCBase;
+            return double.NaN;
         }
 
         public static double UTC(JSObject dateTime)

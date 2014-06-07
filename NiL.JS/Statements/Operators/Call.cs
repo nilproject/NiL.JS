@@ -2,6 +2,7 @@
 using System;
 using NiL.JS.Core.BaseTypes;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace NiL.JS.Statements.Operators
 {
@@ -16,9 +17,9 @@ namespace NiL.JS.Statements.Operators
             }
         }
 
-        private Statement[] args;
+        private Statement[] arguments;
 
-        public Statement[] Arguments { get { return args; } }
+        public Statement[] Arguments { get { return arguments; } }
 
         internal Call(Statement first, Statement second)
             : base(first, second, false)
@@ -36,7 +37,7 @@ namespace NiL.JS.Statements.Operators
                 if (context.thisBind == null)
                     throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible not defined.")));
                 else
-                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError(First + " not exist.")));
+                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError(FirstOperand + " not exist.")));
             }
             if (temp.ValueType != JSObjectType.Function && !(temp.ValueType == JSObjectType.Object && temp.oValue is Function))
                 throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError(first + " is not callable")));
@@ -48,19 +49,19 @@ namespace NiL.JS.Statements.Operators
                 {
                     ValueType = JSObjectType.Object,
                     oValue = NiL.JS.Core.Arguments.Instance,
-                    attributes = JSObjectAttributes.DontDelete | JSObjectAttributes.DontEnum
+                    attributes = JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum
                 };
-            if (args == null)
-                args = second.Invoke(null).oValue as Statement[];
-            JSObject field = args.Length;
+            if (this.arguments == null)
+                this.arguments = second.Invoke(null).oValue as Statement[];
+            JSObject field = this.arguments.Length;
             field.assignCallback = null;
-            field.attributes = JSObjectAttributes.DontEnum;
-            arguments.fields = new Dictionary<string, JSObject>(args.Length + 3);
+            field.attributes = JSObjectAttributes.DoNotEnum;
+            arguments.fields = new Dictionary<string, JSObject>(this.arguments.Length + 3);
             arguments.fields["length"] = field;
             for (int i = 0; i < field.iValue; i++)
             {
-                var a = args[i].Invoke(context).Clone() as JSObject;
-                arguments.fields[i < 16 ? Tools.NumString[i] : i.ToString()] = a;
+                var a = this.arguments[i].Invoke(context).Clone() as JSObject;
+                arguments.fields[i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture)] = a;
                 a.attributes |= JSObjectAttributes.Argument;
                 context.objectSource = null;
             }
@@ -68,7 +69,7 @@ namespace NiL.JS.Statements.Operators
             {
                 ValueType = JSObjectType.Function,
                 oValue = func,
-                attributes = JSObjectAttributes.DontEnum
+                attributes = JSObjectAttributes.DoNotEnum
             };
             return func.Invoke(context, newThisBind, arguments);
         }
@@ -89,7 +90,7 @@ namespace NiL.JS.Statements.Operators
         internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VaribleDescriptor> vars)
         {
             base.Optimize(ref _this, depth, vars);
-            args = second.Invoke(null).oValue as Statement[];
+            arguments = second.Invoke(null).oValue as Statement[];
             return false;
         }
     }

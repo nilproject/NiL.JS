@@ -6,7 +6,7 @@ using System.Collections.Generic;
 namespace NiL.JS.Statements
 {
     [Serializable]
-    internal sealed class ReturnStatement : Statement
+    public sealed class ReturnStatement : Statement
     {
         private Statement body;
 

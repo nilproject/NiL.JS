@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using NiL.JS.Core.Modules;
 using System.Diagnostics;
+using System.Globalization;
 
 namespace NiL.JS.Core.BaseTypes
 {
@@ -605,7 +606,7 @@ namespace NiL.JS.Core.BaseTypes
             var prms = del.GetParameters();
             if (prms.Length <= 16)
             {
-                var temp = typeof(_DelegateWraper).GetMember("Invoke");
+                var invokes = typeof(_DelegateWraper).GetMember("Invoke");
                 if (del.ReturnType != typeof(void))
                 {
                     Type[] argtypes = new Type[prms.Length + 1];
@@ -613,7 +614,7 @@ namespace NiL.JS.Core.BaseTypes
                         argtypes[i + 1] = prms[i].ParameterType;
                     argtypes[0] = del.ReturnType;
                     var instance = new _DelegateWraper(this);
-                    var method = ((System.Reflection.MethodInfo)typeof(_DelegateWraper).GetMember("Invoke")[prms.Length]).MakeGenericMethod(argtypes);
+                    var method = ((System.Reflection.MethodInfo)invokes[prms.Length]).MakeGenericMethod(argtypes);
                     return Delegate.CreateDelegate(delegateType, instance, method);
                 }
                 else
@@ -622,7 +623,7 @@ namespace NiL.JS.Core.BaseTypes
                     for (int i = 0; i < prms.Length; i++)
                         argtypes[i] = prms[i].ParameterType;
                     var instance = new _DelegateWraper(this);
-                    var method = ((System.Reflection.MethodInfo)typeof(_DelegateWraper).GetMember("Invoke")[17 + prms.Length]).MakeGenericMethod(argtypes);
+                    var method = ((System.Reflection.MethodInfo)invokes[17 + prms.Length]).MakeGenericMethod(argtypes);
                     return Delegate.CreateDelegate(delegateType, instance, method);
                 }
             }
@@ -631,6 +632,7 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [Hidden]
+        [CLSCompliant(false)]
         internal protected Context context;
         [Hidden]
         internal protected JSObject prototypeField;
@@ -677,8 +679,8 @@ namespace NiL.JS.Core.BaseTypes
             int len = args.GetField("length", true, false).iValue - 1;
             var argn = "";
             for (int i = 0; i < len; i++)
-                argn += args.GetField(i.ToString(), true, false) + (i + 1 < len ? "," : "");
-            string code = "function(" + argn + "){" + args.GetField(len.ToString(), true, false) + "}";
+                argn += args.GetField(i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture), true, false) + (i + 1 < len ? "," : "");
+            string code = "function(" + argn + "){" + args.GetField(len < 16 ? Tools.NumString[len] : len.ToString(CultureInfo.InvariantCulture), true, false) + "}";
             var fs = NiL.JS.Statements.FunctionStatement.Parse(new ParsingState(code, code), ref index);
             if (fs.IsParsed)
             {
@@ -708,7 +710,7 @@ namespace NiL.JS.Core.BaseTypes
             get
             {
                 if (_length == null)
-                    _length = new Number(0) { attributes = JSObjectAttributes.ReadOnly | JSObjectAttributes.DontDelete | JSObjectAttributes.DontEnum };
+                    _length = new Number(0) { attributes = JSObjectAttributes.ReadOnly | JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum };
                 _length.iValue = argumentsNames.Length;
                 return _length;
             }
@@ -747,7 +749,7 @@ namespace NiL.JS.Core.BaseTypes
                     {
                         ValueType = JSObjectType.Object,
                         oValue = @this,
-                        attributes = JSObjectAttributes.DontEnum | JSObjectAttributes.DontDelete | JSObjectAttributes.Immutable,
+                        attributes = JSObjectAttributes.DoNotEnum | JSObjectAttributes.DoNotDelete | JSObjectAttributes.Immutable,
                         prototype = @this.prototype ?? (@this.ValueType <= JSObjectType.Undefined ? @this.prototype : @this.GetField("__proto__", true, false))
                     };
                 }
@@ -769,7 +771,7 @@ namespace NiL.JS.Core.BaseTypes
                     argsLength = (argsLength.oValue as Function[])[1].Invoke(args, null);
                 int min = System.Math.Min(argsLength.iValue, argumentsNames.Length);
                 for (; i < min; i++)
-                    internalContext.fields[argumentsNames[i]] = args.GetField(i < 16 ? Tools.NumString[i] : i.ToString(), true, false);
+                    internalContext.fields[argumentsNames[i]] = args.GetField(i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture), true, false);
                 for (; i < argumentsNames.Length; i++)
                     internalContext.fields[argumentsNames[i]] = new JSObject();
 
@@ -793,11 +795,11 @@ namespace NiL.JS.Core.BaseTypes
                     {
                         ValueType = JSObjectType.Object,
                         prototype = JSObject.GlobalPrototype,
-                        attributes = JSObjectAttributes.DontDelete | JSObjectAttributes.DontEnum
+                        attributes = JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum
                     };
                     prototypeField.oValue = prototypeField;
                     var ctor = prototypeField.GetField("constructor", false, true);
-                    ctor.attributes = JSObjectAttributes.DontDelete | JSObjectAttributes.DontEnum;
+                    ctor.attributes = JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum;
                     ctor.Assign(this);
                 }
                 return prototypeField;
@@ -823,8 +825,8 @@ namespace NiL.JS.Core.BaseTypes
             var newThis = args.GetField("0", true, false);
             var prmlen = --args.GetField("length", true, false).iValue;
             for (int i = 0; i < prmlen; i++)
-                args.fields[i < 16 ? Tools.NumString[i] : i.ToString()] = args.GetField(i < 15 ? Tools.NumString[i + 1] : (i + 1).ToString(), true, false);
-            args.fields.Remove(prmlen < 16 ? Tools.NumString[prmlen] : prmlen.ToString());
+                args.fields[i < 16 ? Tools.NumString[i] : i.ToString()] = args.GetField(i < 15 ? Tools.NumString[i + 1] : (i + 1).ToString(CultureInfo.InvariantCulture), true, false);
+            args.fields.Remove(prmlen < 16 ? Tools.NumString[prmlen] : prmlen.ToString(CultureInfo.InvariantCulture));
             if (newThis.ValueType < JSObjectType.Object || newThis.oValue != null)
                 return Invoke(newThis, args);
             else
@@ -844,7 +846,7 @@ namespace NiL.JS.Core.BaseTypes
                 var prmsCR = iargs.GetField("length", true, false);
                 prmsC = Tools.JSObjectToInt(prmsCR.ValueType == JSObjectType.Property ? (prmsCR.oValue as Function[])[1].Invoke(iargs, null) : prmsCR);
                 for (int i = 0; i < prmsC; i++)
-                    args.fields[i < 16 ? Tools.NumString[i] : i.ToString()] = iargs.GetField(i < 16 ? Tools.NumString[i] : i.ToString(), true, false);
+                    args.fields[i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture)] = iargs.GetField(i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture), true, false);
             }
             if (callee != undefined)
             {

@@ -2,6 +2,7 @@
 using NiL.JS.Core.BaseTypes;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace NiL.JS.Statements
 {
@@ -85,7 +86,7 @@ namespace NiL.JS.Statements
                             int n = 0;
                             double d = 0.0;
                             if (int.TryParse(value, out n))
-                                flds.Add(n.ToString());
+                                flds.Add(n < 16 ? Tools.NumString[n] : n.ToString(CultureInfo.InvariantCulture));
                             else if (double.TryParse(value, out d))
                                 flds.Add(Tools.DoubleToString(d));
                             else

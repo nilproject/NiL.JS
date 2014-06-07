@@ -1,6 +1,7 @@
 ﻿using System;
 using NiL.JS.Core.Modules;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace NiL.JS.Core.BaseTypes
 {
@@ -141,7 +142,7 @@ namespace NiL.JS.Core.BaseTypes
                 default:
                     return Tools.DoubleToString(res);
             }
-            string integerPart = ((int)res).ToString();
+            string integerPart = ((int)res).ToString(CultureInfo.InvariantCulture);
             if (integerPart.Length <= dgts)
                 return Tools.DoubleToString(System.Math.Round(res, dgts - integerPart.Length));
             var sres = ((int)res).ToString("e" + (dgts - 1), System.Globalization.CultureInfo.InvariantCulture);
@@ -273,7 +274,7 @@ namespace NiL.JS.Core.BaseTypes
                 case JSObjectType.NotExist:
                     throw new InvalidOperationException("Varible not defined.");
                 default:
-                    return ((int)res).ToString();
+                    return ((int)res).ToString(CultureInfo.InvariantCulture);
             }
             if (System.Math.Abs(dValue) >= 1e+21)
                 return dValue.ToString("0.####e+0", System.Globalization.CultureInfo.InvariantCulture);

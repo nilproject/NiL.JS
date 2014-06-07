@@ -8,13 +8,13 @@ namespace NiL.JS.Statements.Operators
     [Serializable]
     public abstract class Operator : Statement
     {
-        protected readonly JSObject tempResult;
+        internal readonly JSObject tempResult;
 
         protected internal Statement first;
         protected internal Statement second;
 
-        public Statement First { get { return first; } }
-        public Statement Second { get { return second; } }
+        public Statement FirstOperand { get { return first; } }
+        public Statement SecondOperand { get { return second; } }
 
         public virtual bool IsContextIndependent
         {
@@ -28,7 +28,7 @@ namespace NiL.JS.Statements.Operators
         protected Operator(Statement first, Statement second, bool createResultContainer)
         {
             if (createResultContainer)
-                tempResult = new JSObject() { attributes = JSObjectAttributes.DontDelete, assignCallback = JSObject.ErrorAssignCallback };
+                tempResult = new JSObject() { attributes = JSObjectAttributes.DoNotDelete, assignCallback = JSObject.ErrorAssignCallback };
             this.first = first;
             this.second = second;
         }

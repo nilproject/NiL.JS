@@ -108,8 +108,10 @@ namespace NiL.JS.Statements
             JSObject res = JSObject.undefined;
             for (; ; )
             {
+#if DEV
                 if (context.debugging && !(body is CodeBlock))
                     context.raiseDebugger(body);
+#endif
                 res = body.Invoke(context) ?? res;
                 if (context.abort != AbortType.None)
                 {
@@ -130,8 +132,10 @@ namespace NiL.JS.Statements
             JSObject res = JSObject.undefined;
             for (; ; )
             {
+#if DEV
                 if (context.debugging && !(body is CodeBlock))
                     context.raiseDebugger(body);
+#endif
                 res = body.Invoke(context) ?? res;
                 if (context.abort != AbortType.None)
                 {
@@ -144,8 +148,10 @@ namespace NiL.JS.Statements
                     if (_break)
                         return res;
                 }
+#if DEV
                 if (context.debugging)
                     context.raiseDebugger(post);
+#endif
                 post.Invoke(context);
             }
         }
@@ -153,12 +159,16 @@ namespace NiL.JS.Statements
         private JSObject impl2(Context context)
         {
             JSObject res = JSObject.undefined;
+#if DEV
             if (context.debugging)
                 context.raiseDebugger(condition);
+#endif
             while ((bool)condition.Invoke(context))
             {
+#if DEV
                 if (context.debugging && !(body is CodeBlock))
                     context.raiseDebugger(body);
+#endif
                 res = body.Invoke(context) ?? res;
                 if (context.abort != AbortType.None)
                 {
@@ -171,8 +181,10 @@ namespace NiL.JS.Statements
                     if (_break)
                         return res;
                 }
+#if DEV
                 if (context.debugging)
                     context.raiseDebugger(condition);
+#endif
             }
             return res;
         }
@@ -180,12 +192,16 @@ namespace NiL.JS.Statements
         private JSObject impl3(Context context)
         {
             JSObject res = JSObject.undefined;
+#if DEV
             if (context.debugging)
                 context.raiseDebugger(condition);
+#endif
             while ((bool)condition.Invoke(context))
             {
+#if DEV
                 if (context.debugging && !(body is CodeBlock))
                     context.raiseDebugger(body);
+#endif
                 res = body.Invoke(context) ?? res;
                 if (context.abort != AbortType.None)
                 {
@@ -198,6 +214,7 @@ namespace NiL.JS.Statements
                     if (_break)
                         return res;
                 }
+#if DEV
                 if (context.debugging)
                 {
                     context.raiseDebugger(post);
@@ -206,16 +223,22 @@ namespace NiL.JS.Statements
                 }
                 else
                     post.Invoke(context);
+#else
+                post.Invoke(context);
+#endif
             }
             return res;
         }
 
         private JSObject impl4(Context context)
         {
+#if DEV
             if (context.debugging)
                 context.raiseDebugger(condition);
+#endif
             while ((bool)condition.Invoke(context))
             {
+#if DEV
                 if (context.debugging)
                 {
                     context.raiseDebugger(post);
@@ -224,24 +247,38 @@ namespace NiL.JS.Statements
                 }
                 else
                     post.Invoke(context);
+#else
+                post.Invoke(context);
+#endif
             }
             return JSObject.undefined;
         }
 
         private JSObject impl5(Context context)
         {
+#if DEV
             if (context.debugging)
                 context.raiseDebugger(condition);
+#endif
             while ((bool)condition.Invoke(context))
-                if (context.debugging)
-                    context.raiseDebugger(condition);
+#if DEV
+            if (context.debugging)
+                context.raiseDebugger(condition);
+#endif
+                ;
             return JSObject.undefined;
         }
 
         internal override JSObject Invoke(Context context)
         {
             if (init != null)
+            {
+#if DEV
+                if (context.debugging)
+                    context.raiseDebugger(init);
+#endif
                 init.Invoke(context);
+            }
             if (implId == 0)
                 return impl0(context);
             else if (implId == 1)

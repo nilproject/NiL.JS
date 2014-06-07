@@ -104,8 +104,10 @@ namespace NiL.JS.Statements
                     v.oValue = o;
                     if (v.assignCallback != null)
                         v.assignCallback(v);
+#if DEV
                     if (context.debugging && !(body is CodeBlock))
                         context.raiseDebugger(body);
+#endif
                     res = body.Invoke(context) ?? res;
                     if (context.abort != AbortType.None)
                     {
@@ -144,9 +146,9 @@ namespace NiL.JS.Statements
             Parser.Optimize(ref body, System.Math.Max(1, depth), varibles);
             if (varible is Operators.None)
             {
-                if ((varible as Operators.None).Second != null)
+                if ((varible as Operators.None).SecondOperand != null)
                     throw new InvalidOperationException("Invalid left-hand side in for-in");
-                varible = (varible as Operators.None).First;
+                varible = (varible as Operators.None).FirstOperand;
             }
             return false;
         }

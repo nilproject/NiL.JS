@@ -57,12 +57,16 @@ namespace NiL.JS.Statements
         internal override JSObject Invoke(Context context)
         {
             JSObject res = JSObject.undefined;
+#if DEV
             if (context.debugging)
                 context.raiseDebugger(condition);
+#endif
             while ((bool)condition.Invoke(context))
             {
+#if DEV
                 if (context.debugging && !(body is CodeBlock))
                     context.raiseDebugger(body);
+#endif
                 res = body.Invoke(context);
                 if (context.abort != AbortType.None)
                 {
@@ -75,8 +79,10 @@ namespace NiL.JS.Statements
                     if (_break)
                         return res;
                 }
+#if DEV
                 if (context.debugging)
                     context.raiseDebugger(condition);
+#endif
             }
             return res;
         }

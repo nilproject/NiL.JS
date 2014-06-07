@@ -14,7 +14,7 @@ namespace NiL.JS.Core
         {
             thisProto = CreateObject();
             thisProto.oValue = thisProto;
-            thisProto.attributes |= JSObjectAttributes.ReadOnly | JSObjectAttributes.Immutable | JSObjectAttributes.DontEnum | JSObjectAttributes.DontDelete;
+            thisProto.attributes |= JSObjectAttributes.ReadOnly | JSObjectAttributes.Immutable | JSObjectAttributes.DoNotEnum | JSObjectAttributes.DoNotDelete;
             return thisProto;
         }
 

@@ -65,18 +65,24 @@ namespace NiL.JS.Statements
 
         internal override JSObject Invoke(Context context)
         {
+#if DEV
             if (context.debugging)
                 context.raiseDebugger(condition);
+#endif
             if ((bool)condition.Invoke(context))
             {
+#if DEV
                 if (context.debugging && !(body is CodeBlock))
                     context.raiseDebugger(body);
+#endif
                 return body.Invoke(context);
             }
             else if (elseBody != null)
             {
+#if DEV
                 if (context.debugging && !(elseBody is CodeBlock))
                     context.raiseDebugger(elseBody);
+#endif
                 return elseBody.Invoke(context);
             }
             return null;

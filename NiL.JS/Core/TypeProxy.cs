@@ -170,7 +170,7 @@ namespace NiL.JS.Core
 
                 ValueType = _prototypeInstance is JSObject ? (JSObjectType)System.Math.Max((int)(_prototypeInstance as JSObject).ValueType, (int)JSObjectType.Object) : JSObjectType.Object;
                 oValue = this;
-                attributes |= JSObjectAttributes.DontDelete | JSObjectAttributes.DontEnum | JSObjectAttributes.ReadOnly;
+                attributes |= JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum | JSObjectAttributes.ReadOnly;
                 if (hostedType.IsDefined(typeof(ImmutableAttribute), false))
                     attributes |= JSObjectAttributes.Immutable;
                 var ctorProxy = new TypeProxy() { hostedType = type, bindFlags = bindFlags | BindingFlags.Static };
@@ -182,7 +182,7 @@ namespace NiL.JS.Core
                 {
                     var prot = ctorProxy.DefaultFieldGetter("prototype", false, false);
                     prot.Assign(this);
-                    prot.attributes = JSObjectAttributes.DontDelete | JSObjectAttributes.DontEnum | JSObjectAttributes.ReadOnly;
+                    prot.attributes = JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum | JSObjectAttributes.ReadOnly;
                     var ctor = type == typeof(JSObject) ? new ObjectConstructor(ctorProxy) : new TypeProxyConstructor(ctorProxy);
                     ctorProxy.DefaultFieldGetter("__proto__", false, false).Assign(GetPrototype(typeof(TypeProxyConstructor)));
                     ctor.attributes = attributes;
@@ -398,16 +398,16 @@ namespace NiL.JS.Core
                 if (m[0].IsDefined(typeof(ProtectedAttribute), false))
                     r.Protect();
                 if (m[0].IsDefined(typeof(DoNotDeleteAttribute), false))
-                    r.attributes |= JSObjectAttributes.DontDelete;
+                    r.attributes |= JSObjectAttributes.DoNotDelete;
             }
-            r.attributes |= JSObjectAttributes.DontEnum;
+            r.attributes |= JSObjectAttributes.DoNotEnum;
             lock (fields)
                 fields[name] = r;
             for (var i = m.Count; i-- > 0; )
             {
                 if (!m[i].IsDefined(typeof(DoNotEnumerateAttribute), false))
                 {
-                    r.attributes &= ~JSObjectAttributes.DontEnum;
+                    r.attributes &= ~JSObjectAttributes.DoNotEnum;
                     break;
                 }
             }
@@ -416,10 +416,12 @@ namespace NiL.JS.Core
 
         public override JSObject propertyIsEnumerable(JSObject args)
         {
+            if (args == null)
+                throw new ArgumentNullException("args");
             var name = args.GetField("0", true, false).ToString();
             JSObject temp;
             if (fields != null && fields.TryGetValue(name, out temp))
-                return temp.ValueType >= JSObjectType.Undefined && (temp.attributes & JSObjectAttributes.DontEnum) == 0;
+                return temp.ValueType >= JSObjectType.Undefined && (temp.attributes & JSObjectAttributes.DoNotEnum) == 0;
             IList<MemberInfo> m = null;
             if (members.TryGetValue(name, out m))
             {

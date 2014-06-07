@@ -10,7 +10,7 @@ namespace NiL.JS.Statements
     {
         private Statement[] elements;
 
-        public Statement[] Elements { get { return elements; } }
+        public ICollection<Statement> Elements { get { return elements; } }
 
         private ArrayStatement()
         {
@@ -22,7 +22,7 @@ namespace NiL.JS.Statements
             string code = state.Code;
             int i = index;
             if (code[index] != '[')
-                throw new ArgumentException();
+                throw new ArgumentException("Syntax error. Expected '['");
             do i++; while (char.IsWhiteSpace(code[i]));
             var elms = new List<Statement>();
             while (code[i] != ']')
@@ -38,7 +38,7 @@ namespace NiL.JS.Statements
                     while (char.IsWhiteSpace(code[i]));
                 }
                 else if (code[i] != ']')
-                    throw new ArgumentException();
+                    throw new ArgumentException("Syntax error. Expected ']'");
             }
             i++;
             var pos = index;

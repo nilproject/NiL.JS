@@ -97,7 +97,7 @@ namespace NiL.JS.Core
             get
             {
                 if (_length == null)
-                    _length = new Number(0) { attributes = JSObjectAttributes.ReadOnly | JSObjectAttributes.DontDelete | JSObjectAttributes.DontEnum };
+                    _length = new Number(0) { attributes = JSObjectAttributes.ReadOnly | JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum };
                 if (proxy.hostedType == typeof(Function))
                     _length.iValue = 1;
                 else

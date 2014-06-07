@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections;
 using NiL.JS.Core.Modules;
+using System.Globalization;
 
 namespace NiL.JS.Core.BaseTypes
 {
@@ -54,7 +55,7 @@ namespace NiL.JS.Core.BaseTypes
                 this.index = index;
                 if (owner.data.Count <= index)
                 {
-                    var pv = (owner.prototype ?? owner.GetField("__proto__", true, false)).GetField(index.ToString(), true, false);
+                    var pv = (owner.prototype ?? owner.GetField("__proto__", true, false)).GetField(index.ToString(CultureInfo.InvariantCulture), true, false);
                     if (pv != undefined)
                         base.Assign(pv);
                     else
@@ -108,6 +109,8 @@ namespace NiL.JS.Core.BaseTypes
         [Modules.DoNotEnumerateAttribute]
         public Array(ICollection collection)
         {
+            if (collection == null)
+                throw new ArgumentNullException("collection");
             data = new List<JSObject>(collection.Count);
             foreach (var o in collection)
             {
@@ -120,6 +123,8 @@ namespace NiL.JS.Core.BaseTypes
         [Hidden]
         public Array(IEnumerable enumerable)
         {
+            if (enumerable == null)
+                throw new ArgumentNullException("enumerable");
             data = new List<JSObject>();
             foreach (var o in enumerable)
             {
@@ -183,6 +188,8 @@ namespace NiL.JS.Core.BaseTypes
         [Modules.DoNotEnumerateAttribute]
         public JSObject concat(JSObject[] args)
         {
+            if (args == null)
+                throw new ArgumentNullException("args");
             var res = new List<JSObject>(data.Count + args.Length);
             for (int i = 0; i < data.Count; i++)
             {
@@ -213,6 +220,8 @@ namespace NiL.JS.Core.BaseTypes
         [Modules.DoNotEnumerateAttribute]
         public JSObject indexOf(JSObject[] args)
         {
+            if (args == null)
+                throw new ArgumentNullException("args");
             if (args.Length == 0)
                 return -1;
             var el = args[0];
@@ -259,12 +268,16 @@ namespace NiL.JS.Core.BaseTypes
         [Modules.DoNotEnumerateAttribute]
         public static JSObject isArray(JSObject args)
         {
-            return args.GetField("0", false, true).oValue is Array;
+            if (args == null)
+                throw new ArgumentNullException("args");
+            return args.GetField("0", false, true).Value is Array;
         }
 
         [Modules.DoNotEnumerateAttribute]
         public JSObject join(JSObject[] separator)
         {
+            if (separator == null)
+                throw new ArgumentNullException("separator");
             if (separator.Length == 0)
                 return ToString();
             var el = separator[0].ToString();
@@ -283,6 +296,8 @@ namespace NiL.JS.Core.BaseTypes
         [Modules.DoNotEnumerateAttribute]
         public JSObject lastIndexOf(JSObject[] args)
         {
+            if (args == null)
+                throw new ArgumentNullException("args");
             if (args.Length == 0)
                 return -1;
             var el = args[0];
@@ -364,6 +379,8 @@ namespace NiL.JS.Core.BaseTypes
         [ParametersCount(2)]
         public JSObject slice(JSObject[] args)
         {
+            if (args == null)
+                throw new ArgumentNullException("args");
             if (args.Length == 0)
                 return this;
             if ((object)this is Array) // Да, Array sealed, но тут и не такое возможно.
@@ -409,7 +426,7 @@ namespace NiL.JS.Core.BaseTypes
                     var t = new Array(len);
                     for (int i = 0; i < t.data.Count; i++)
                     {
-                        var val = this.GetField(i.ToString(), true, false);
+                        var val = this.GetField(i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture), true, false);
                         if (val.ValueType > JSObjectType.Undefined)
                             t.data[i] = val.Clone() as JSObject;
                     }
@@ -444,7 +461,7 @@ namespace NiL.JS.Core.BaseTypes
                             int i = 0;
                             double d = 0;
                             if (Tools.ParseNumber(p.Key, ref i, true, out d) && i == p.Key.Length && (long)d == d && d >= pos0 && d < pos1)
-                                t.GetField((d - pos0).ToString(), false, true).Assign(p.Value);
+                                t.GetField((d - pos0).ToString(CultureInfo.InvariantCulture), false, true).Assign(p.Value);
                         }
                     }
                     return t;
@@ -456,6 +473,8 @@ namespace NiL.JS.Core.BaseTypes
         [ParametersCount(2)]
         public JSObject splice(JSObject[] args)
         {
+            if (args == null)
+                throw new ArgumentNullException("args");
             if (args.Length == 0)
                 return this;
             if ((object)this is Array) // Да, Array sealed, но тут и не такое возможно.
@@ -537,7 +556,7 @@ namespace NiL.JS.Core.BaseTypes
                             }
                             else if (d < len)
                             {
-                                ritems.Add(new KeyValuePair<string, JSObject>((d - pos1 + pos0 + addCount).ToString(), p.Value));
+                                ritems.Add(new KeyValuePair<string, JSObject>((d - pos1 + pos0 + addCount).ToString(CultureInfo.InvariantCulture), p.Value));
                                 keysForDelete.Add(p.Key);
                             }
                         }
@@ -547,7 +566,7 @@ namespace NiL.JS.Core.BaseTypes
                     for (int i = 0; i < ritems.Count; i++)
                         this.fields[ritems[i].Key] = ritems[i].Value;
                     for (int i = 0; i < addCount; i++)
-                        this.fields[(pos0 + i).ToString()] = args[i + 2];
+                        this.fields[(pos0 + i).ToString(CultureInfo.InvariantCulture)] = args[i + 2];
                     pos0 += addCount + ritems.Count;
                     if (pos0 < 0x7fffffff)
                     {
@@ -597,14 +616,16 @@ namespace NiL.JS.Core.BaseTypes
                 var t = new Array(l);
                 for (int i = 0; i < l; i++)
                 {
-                    var val = this.GetField(i.ToString(), true, false);
+                    var val = this.GetField(i.ToString(CultureInfo.InvariantCulture), true, false);
                     t.data[i] = val;
                 }
                 t.sort(args);
                 for (int i = 0; i < l; i++)
-                    this.fields[i.ToString()] = t.data[i];
+                    this.fields[i.ToString(CultureInfo.InvariantCulture)] = t.data[i];
                 return this;
             }
+            if (args == null)
+                throw new ArgumentNullException("args");
             var length = args.GetField("length", false, true);
             var first = args.GetField("0", false, true);
             var len = Tools.JSObjectToInt(length);

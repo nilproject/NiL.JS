@@ -70,9 +70,6 @@ namespace NiL.JS.Statements
     {
         private Statement fastImpl;
 
-        internal Statement First { get { return first; } }
-        internal Statement Second { get { return second; } }
-
         private OperationType _type;
         internal OperationType Type
         {

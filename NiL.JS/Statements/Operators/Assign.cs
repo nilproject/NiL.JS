@@ -25,7 +25,7 @@ namespace NiL.JS.Statements.Operators
             {
                 iValue = 1,
                 ValueType = JSObjectType.Int,
-                attributes = JSObjectAttributes.DontEnum | JSObjectAttributes.DontDelete | JSObjectAttributes.ReadOnly
+                attributes = JSObjectAttributes.DoNotEnum | JSObjectAttributes.DoNotDelete | JSObjectAttributes.ReadOnly
             };
             setterArgs.fields["0"] = setterArg;
         }
