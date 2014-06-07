@@ -168,8 +168,9 @@ namespace NiL.JS.Statements
             JSObject res = JSObject.undefined;
             for (int i = linesCount; i >= 0; i--)
             {
-                if (body[i].GetType() == typeof(FunctionStatement))
-                    continue;
+                if (body[i] is FunctionStatement) continue;
+                if (context.debugging)
+                    context.raiseDebugger(body[i]);
                 res = body[i].Invoke(context) ?? res;
 #if DEBUG
                 if (JSObject.undefined.ValueType != JSObjectType.Undefined)
@@ -204,7 +205,10 @@ namespace NiL.JS.Statements
                 }
             }
             for (int i = body.Length; i-- > 0; )
+            {
                 Parser.Optimize(ref body[i], depth < 0 ? 2 : Math.Max(1, depth), varibles);
+                //if (depth >= 0 && (body[i] is FunctionStatement)) body[i] = null;
+            }
 
             if (depth != 0)
             {
@@ -217,7 +221,7 @@ namespace NiL.JS.Statements
             else
             {
                 List<VaribleDescriptor> vars = null;
-                foreach(var v in varibles)
+                foreach (var v in varibles)
                 {
                     if (v.Value.Defined && v.Value.Owner == null)
                     {
