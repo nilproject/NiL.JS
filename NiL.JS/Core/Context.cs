@@ -23,7 +23,12 @@ namespace NiL.JS.Core
     [Serializable]
     public class Context : IEnumerable<string>
     {
+#if NET35
+        private static IDictionary<int, WeakReference> _executedContexts = new BinaryTree<int, WeakReference>();
+#else
         private static IDictionary<int, WeakReference> _executedContexts = new System.Collections.Concurrent.ConcurrentDictionary<int, WeakReference>();
+#endif
+
         internal static Context currentRootContext
         {
             get
