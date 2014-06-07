@@ -291,6 +291,7 @@ namespace NiL.JS.Core
         /// Событие, возникающее при попытке выполнения оператора "debugger".
         /// </summary>
         public event DebuggerCallback DebuggerCallback;
+        public bool Debugging { get { return debugging; } set { debugging = value; } }
 
         internal void raiseDebugger(Statement nextStatement)
         {

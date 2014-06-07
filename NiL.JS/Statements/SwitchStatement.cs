@@ -121,6 +121,8 @@ namespace NiL.JS.Statements
             var imageVal = image.Invoke(context);
             for (int j = 1; j < cases.Length; j++)
             {
+                if (context.debugging)
+                    context.raiseDebugger(cases[j].statement);
                 if (Operators.StrictEqual.Check(imageVal, cases[j].statement, context))
                 {
                     i = cases[j].index;

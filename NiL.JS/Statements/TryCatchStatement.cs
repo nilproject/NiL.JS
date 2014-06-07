@@ -84,6 +84,8 @@ namespace NiL.JS.Statements
             }
             catch (JSException e)
             {
+                if (context.debugging && catchBody != null)
+                    context.raiseDebugger(catchBody);
                 lock (tempContainer)
                 {
                     if (catchBody != null)
@@ -103,6 +105,8 @@ namespace NiL.JS.Statements
             }
             catch (Exception e)
             {
+                if (context.debugging && catchBody != null)
+                    context.raiseDebugger(catchBody);
                 lock (tempContainer)
                 {
                     if (catchBody != null)
@@ -124,6 +128,8 @@ namespace NiL.JS.Statements
             {
                 if (finallyBody != null)
                 {
+                    if (context.debugging)
+                        context.raiseDebugger(finallyBody);
                     var abort = context.abort;
                     var ainfo = context.abortInfo;
                     context.abort = AbortType.None;

@@ -108,6 +108,8 @@ namespace NiL.JS.Statements
             JSObject res = JSObject.undefined;
             for (; ; )
             {
+                if (context.debugging && !(body is CodeBlock))
+                    context.raiseDebugger(body);
                 res = body.Invoke(context) ?? res;
                 if (context.abort != AbortType.None)
                 {
@@ -128,6 +130,8 @@ namespace NiL.JS.Statements
             JSObject res = JSObject.undefined;
             for (; ; )
             {
+                if (context.debugging && !(body is CodeBlock))
+                    context.raiseDebugger(body);
                 res = body.Invoke(context) ?? res;
                 if (context.abort != AbortType.None)
                 {
@@ -140,6 +144,8 @@ namespace NiL.JS.Statements
                     if (_break)
                         return res;
                 }
+                if (context.debugging)
+                    context.raiseDebugger(post);
                 post.Invoke(context);
             }
         }
@@ -147,8 +153,12 @@ namespace NiL.JS.Statements
         private JSObject impl2(Context context)
         {
             JSObject res = JSObject.undefined;
+            if (context.debugging)
+                context.raiseDebugger(condition);
             while ((bool)condition.Invoke(context))
             {
+                if (context.debugging && !(body is CodeBlock))
+                    context.raiseDebugger(body);
                 res = body.Invoke(context) ?? res;
                 if (context.abort != AbortType.None)
                 {
@@ -161,6 +171,8 @@ namespace NiL.JS.Statements
                     if (_break)
                         return res;
                 }
+                if (context.debugging)
+                    context.raiseDebugger(condition);
             }
             return res;
         }
@@ -168,8 +180,12 @@ namespace NiL.JS.Statements
         private JSObject impl3(Context context)
         {
             JSObject res = JSObject.undefined;
+            if (context.debugging)
+                context.raiseDebugger(condition);
             while ((bool)condition.Invoke(context))
             {
+                if (context.debugging && !(body is CodeBlock))
+                    context.raiseDebugger(body);
                 res = body.Invoke(context) ?? res;
                 if (context.abort != AbortType.None)
                 {
@@ -182,21 +198,43 @@ namespace NiL.JS.Statements
                     if (_break)
                         return res;
                 }
-                post.Invoke(context);
+                if (context.debugging)
+                {
+                    context.raiseDebugger(post);
+                    post.Invoke(context);
+                    context.raiseDebugger(condition);
+                }
+                else
+                    post.Invoke(context);
             }
             return res;
         }
 
         private JSObject impl4(Context context)
         {
+            if (context.debugging)
+                context.raiseDebugger(condition);
             while ((bool)condition.Invoke(context))
-                post.Invoke(context);
+            {
+                if (context.debugging)
+                {
+                    context.raiseDebugger(post);
+                    post.Invoke(context);
+                    context.raiseDebugger(condition);
+                }
+                else
+                    post.Invoke(context);
+            }
             return JSObject.undefined;
         }
 
         private JSObject impl5(Context context)
         {
-            while ((bool)condition.Invoke(context)) ;
+            if (context.debugging)
+                context.raiseDebugger(condition);
+            while ((bool)condition.Invoke(context))
+                if (context.debugging)
+                    context.raiseDebugger(condition);
             return JSObject.undefined;
         }
 

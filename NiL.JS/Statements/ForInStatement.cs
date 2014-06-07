@@ -104,6 +104,8 @@ namespace NiL.JS.Statements
                     v.oValue = o;
                     if (v.assignCallback != null)
                         v.assignCallback(v);
+                    if (context.debugging && !(body is CodeBlock))
+                        context.raiseDebugger(body);
                     res = body.Invoke(context) ?? res;
                     if (context.abort != AbortType.None)
                     {

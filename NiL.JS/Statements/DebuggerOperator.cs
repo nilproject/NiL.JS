@@ -6,8 +6,6 @@ namespace NiL.JS.Statements
     [Serializable]
     public sealed class DebuggerOperator : Statement
     {
-        private Tools.TextCord textCord;
-
         internal static ParseResult Parse(ParsingState state, ref int index)
         {
             string code = state.Code;
@@ -15,7 +13,6 @@ namespace NiL.JS.Statements
             if (!Parser.Validate(code, "debugger", ref i) || !Parser.isIdentificatorTerminator(code[i]))
                 return new ParseResult();
             int pos = index;
-            var tc = Tools.PositionToTextcord(state.Code, pos);
             index = i;
             return new ParseResult()
             {
@@ -23,8 +20,7 @@ namespace NiL.JS.Statements
                 Statement = new DebuggerOperator()
                 {
                     Position = pos,
-                    Length = index - pos,
-                    textCord = tc
+                    Length = index - pos
                 }
             };
         }

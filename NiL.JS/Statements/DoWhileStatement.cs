@@ -73,6 +73,8 @@ namespace NiL.JS.Statements
             JSObject res = null;
             do
             {
+                if (context.debugging && !(body is CodeBlock))
+                    context.raiseDebugger(body);
                 res = body.Invoke(context);
                 if (context.abort != AbortType.None)
                 {
@@ -85,6 +87,8 @@ namespace NiL.JS.Statements
                     if (_break)
                         return res;
                 }
+                if (context.debugging)
+                    context.raiseDebugger(condition);
             }
             while ((bool)condition.Invoke(context));
             return res;
