@@ -11,7 +11,6 @@ namespace NiL.JS.Core
     [Serializable]
     public sealed class ExternalFunction : Function
     {
-        public delegate JSObject ExternalFunctionDelegate(Context context, JSObject args);
         private readonly ExternalFunctionDelegate del;
 
         public ExternalFunction(ExternalFunctionDelegate del)

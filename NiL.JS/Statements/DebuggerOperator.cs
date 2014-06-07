@@ -31,7 +31,7 @@ namespace NiL.JS.Statements
 
         internal override JSObject Invoke(Context context)
         {
-            context.raiseDebugger(Position, textCord);
+            context.raiseDebugger(this);
             return JSObject.undefined;
         }
 

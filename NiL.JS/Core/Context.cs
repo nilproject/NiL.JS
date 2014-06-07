@@ -23,7 +23,7 @@ namespace NiL.JS.Core
     [Serializable]
     public class Context : IEnumerable<string>
     {
-        private static IDictionary<int, WeakReference> _executedContexts = new Dictionary<int, WeakReference>();
+        private static IDictionary<int, WeakReference> _executedContexts = new System.Collections.Concurrent.ConcurrentDictionary<int, WeakReference>();
         internal static Context currentRootContext
         {
             get
@@ -279,20 +279,21 @@ namespace NiL.JS.Core
         internal JSObject abortInfo;
         internal JSObject thisBind;
         internal bool strict;
+        internal bool debugging;
         internal Statement owner;
 
         /// <summary>
         /// Событие, возникающее при попытке выполнения оператора "debugger".
         /// </summary>
-        public event ExternalFunction.ExternalFunctionDelegate DebuggerCallback;
+        public event DebuggerCallback DebuggerCallback;
 
-        internal void raiseDebugger(int position, Tools.TextCord textCord)
+        internal void raiseDebugger(Statement nextStatement)
         {
             var p = this;
             while (p != null)
             {
-                if (p.DebuggerCallback != null)
-                    p.DebuggerCallback(this, new BaseTypes.Array() { position, textCord.line, textCord.column });
+                if (p.debugging && p.DebuggerCallback != null)
+                    p.DebuggerCallback(this, nextStatement);
                 p = p.prototype;
             }
         }
@@ -424,6 +425,8 @@ namespace NiL.JS.Core
         /// <returns>Результат выполнения кода (аргумент оператора "return" либо результат выполнения последней выполненной строки кода).</returns>
         public JSObject Eval(string code)
         {
+            var debugging = this.debugging;
+            this.debugging = false;
             try
             {
                 int i = 0;
@@ -447,6 +450,7 @@ namespace NiL.JS.Core
             }
             finally
             {
+                this.debugging = debugging;
             }
         }
 
@@ -457,18 +461,18 @@ namespace NiL.JS.Core
 
         internal void ValidateThreadID()
         {
-            if (prototype != null && prototype != globalContext)
+            var cntxt = this;
+            while (cntxt.prototype != null && cntxt.prototype != globalContext) cntxt = cntxt.prototype;
+            WeakReference wr = null;
+            if (_executedContexts.TryGetValue(System.Threading.Thread.CurrentThread.ManagedThreadId, out wr))
             {
-                prototype.ValidateThreadID();
+                var t = wr.Target;
+                if (t == cntxt)
+                    return;
+                GC.SuppressFinalize(t);
             }
-            else
-            {
-                WeakReference wr = null;
-                if (_executedContexts.TryGetValue(System.Threading.Thread.CurrentThread.ManagedThreadId, out wr))
-                    GC.SuppressFinalize(wr.Target);
-                _executedContexts[threadid = System.Threading.Thread.CurrentThread.ManagedThreadId] = new WeakReference(this);
-                GC.ReRegisterForFinalize(this);
-            }
+            _executedContexts[cntxt.threadid = System.Threading.Thread.CurrentThread.ManagedThreadId] = new WeakReference(cntxt);
+            GC.ReRegisterForFinalize(cntxt);
         }
 
         public virtual IEnumerator<string> GetEnumerator()
@@ -494,8 +498,7 @@ namespace NiL.JS.Core
             this.prototype = prototype;
             this.thisBind = prototype.thisBind;
             this.abortInfo = JSObject.undefined;
-            if (prototype.DebuggerCallback != null)
-                this.DebuggerCallback += prototype.DebuggerCallback;
+            this.debugging = prototype.debugging;
             GC.SuppressFinalize(this);
         }
 

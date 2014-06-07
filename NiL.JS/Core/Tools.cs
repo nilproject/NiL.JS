@@ -627,18 +627,24 @@ namespace NiL.JS.Core
             return obj;
         }
 
-        internal sealed class TextCord
+        public sealed class TextCord
         {
-            internal int line;
-            internal int column;
+            public int Line { get; private set; }
+            public int Column { get; private set; }
+
+            public TextCord(int line, int column)
+            {
+                Line = line;
+                Column = column;
+            }
 
             public override string ToString()
             {
-                return "(" + line + ": " + column + ")";
+                return "(" + Line + ": " + Column + ")";
             }
         }
 
-        internal static TextCord PositionToTextcord(string text, int position)
+        public static TextCord PositionToTextcord(string text, int position)
         {
             int line = 1;
             int column = 1;
@@ -660,7 +666,7 @@ namespace NiL.JS.Core
                 }
                 column++;
             }
-            return new TextCord() { line = line, column = column };
+            return new TextCord(line, column);
         }
     }
 }

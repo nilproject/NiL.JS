@@ -256,6 +256,82 @@ namespace NiL.JS
             }
             set
             {
+                lock (this)
+                {
+                    if (key == null)
+                        throw new ArgumentNullException();
+                    if (root == null)
+                    {
+                        root = new Node() { value = value, key = key };
+                        Count++;
+                        state = state ^ state << 1;
+                    }
+                    else
+                    {
+                        var c = root;
+                        do
+                        {
+                            var cmp = key.CompareTo(c.key);
+                            if (cmp == 0)
+                            {
+                                c.value = value;
+                                return;
+                            }
+                            else if (cmp > 0)
+                            {
+                                if (c.greater == null)
+                                {
+                                    c.greater = new Node() { key = key, value = value };
+                                    c.height = 0;
+                                    while (stack.Count != 0)
+                                        stack.Pop().height = 0;
+                                    root.Balance(ref root);
+                                    Count++;
+                                    state = state ^ state << 1;
+                                    return;
+                                }
+                                stack.Push(c);
+                                c = c.greater;
+                            }
+                            else if (cmp < 0)
+                            {
+                                if (c.less == null)
+                                {
+                                    c.less = new Node() { key = key, value = value };
+                                    c.height = 0;
+                                    while (stack.Count != 0)
+                                        stack.Pop().height = 0;
+                                    root.Balance(ref root);
+                                    Count++;
+                                    state = state ^ state << 1;
+                                    return;
+                                }
+                                stack.Push(c);
+                                c = c.less;
+                            }
+                        }
+                        while (true);
+                    }
+                }
+            }
+        }
+
+        public void Clear()
+        {
+            Count = 0;
+            root = null;
+            state = state ^ state << 1;
+        }
+
+        public void Add(KeyValuePair<TKey, TValue> keyValuePair)
+        {
+            Add(keyValuePair.Key, keyValuePair.Value);
+        }
+
+        public void Add(TKey key, TValue value)
+        {
+            lock (this)
+            {
                 if (key == null)
                     throw new ArgumentNullException();
                 if (root == null)
@@ -267,14 +343,12 @@ namespace NiL.JS
                 else
                 {
                     var c = root;
+                    var stack = new Stack<Node>();
                     do
                     {
                         var cmp = key.CompareTo(c.key);
                         if (cmp == 0)
-                        {
-                            c.value = value;
-                            return;
-                        }
+                            throw new ArgumentException();
                         else if (cmp > 0)
                         {
                             if (c.greater == null)
@@ -312,115 +386,50 @@ namespace NiL.JS
                 }
             }
         }
-
-        public void Clear()
-        {
-            Count = 0;
-            state = state ^ state << 1;
-            root = null;
-        }
-
-        public void Add(KeyValuePair<TKey, TValue> keyValuePair)
-        {
-            Add(keyValuePair.Key, keyValuePair.Value);
-        }
-
-        public void Add(TKey key, TValue value)
-        {
-            if (key == null)
-                throw new ArgumentNullException();
-            if (root == null)
-            {
-                root = new Node() { value = value, key = key };
-                Count++;
-                state = state ^ state << 1;
-            }
-            else
-            {
-                var c = root;
-                var stack = new Stack<Node>();
-                do
-                {
-                    var cmp = key.CompareTo(c.key);
-                    if (cmp == 0)
-                        throw new ArgumentException();
-                    else if (cmp > 0)
-                    {
-                        if (c.greater == null)
-                        {
-                            c.greater = new Node() { key = key, value = value };
-                            c.height = 0;
-                            while (stack.Count != 0)
-                                stack.Pop().height = 0;
-                            root.Balance(ref root);
-                            Count++;
-                            state = state ^ state << 1;
-                            return;
-                        }
-                        stack.Push(c);
-                        c = c.greater;
-                    }
-                    else if (cmp < 0)
-                    {
-                        if (c.less == null)
-                        {
-                            c.less = new Node() { key = key, value = value };
-                            c.height = 0;
-                            while (stack.Count != 0)
-                                stack.Pop().height = 0;
-                            root.Balance(ref root);
-                            Count++;
-                            state = state ^ state << 1;
-                            return;
-                        }
-                        stack.Push(c);
-                        c = c.less;
-                    }
-                }
-                while (true);
-            }
-        }
 #if INLINE
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         public bool TryGetValue(TKey key, out TValue value)
         {
-            if (root == null)
+            lock (this)
             {
-                value = default(TValue);
-                return false;
-            }
-            else
-            {
-                var c = root;
-                do
+                if (root == null)
                 {
-                    var cmp = key.CompareTo(c.key);
-                    if (cmp == 0)
-                    {
-                        value = c.value;
-                        return true;
-                    }
-                    else if (cmp > 0)
-                    {
-                        if (c.greater == null)
-                        {
-                            value = default(TValue);
-                            return false;
-                        }
-                        c = c.greater;
-                    }
-                    else
-                    {
-                        if (c.less == null)
-                        {
-                            value = default(TValue);
-                            return false;
-                        }
-                        c = c.less;
-                    }
+                    value = default(TValue);
+                    return false;
                 }
-                while (true);
+                else
+                {
+                    var c = root;
+                    do
+                    {
+                        var cmp = key.CompareTo(c.key);
+                        if (cmp == 0)
+                        {
+                            value = c.value;
+                            return true;
+                        }
+                        else if (cmp > 0)
+                        {
+                            if (c.greater == null)
+                            {
+                                value = default(TValue);
+                                return false;
+                            }
+                            c = c.greater;
+                        }
+                        else
+                        {
+                            if (c.less == null)
+                            {
+                                value = default(TValue);
+                                return false;
+                            }
+                            c = c.less;
+                        }
+                    }
+                    while (true);
+                }
             }
         }
 
@@ -438,193 +447,199 @@ namespace NiL.JS
 
         public bool Remove(TKey key)
         {
-            Node prev = null;
-            var c = root;
-            var stack = new Stack<Node>();
-            do
+            lock (this)
             {
-                var cmp = key.CompareTo(c.key);
-                if (cmp == 0)
+                Node prev = null;
+                var c = root;
+                do
                 {
-                    if (c.greater == null)
+                    var cmp = key.CompareTo(c.key);
+                    if (cmp == 0)
                     {
-                        if (prev == null)
-                            root = c.less;
+                        if (c.greater == null)
+                        {
+                            if (prev == null)
+                                root = c.less;
+                            else
+                            {
+                                if (prev.greater == c)
+                                    prev.greater = c.less;
+                                else
+                                    prev.less = c.less;
+                            }
+                        }
+                        else if (c.less == null)
+                        {
+                            if (prev == null)
+                                root = c.greater;
+                            else
+                            {
+                                if (prev.greater == c)
+                                    prev.greater = c.greater;
+                                else
+                                    prev.less = c.greater;
+                            }
+                        }
                         else
                         {
-                            if (prev.greater == c)
-                                prev.greater = c.less;
+                            var caret = c.less;
+                            if (caret.greater != null)
+                            {
+                                caret.height = 0;
+                                var pcaret = c;
+                                while (caret.greater != null)
+                                {
+                                    pcaret = caret;
+                                    caret = caret.greater;
+                                    caret.height = 0;
+                                }
+                                pcaret.greater = caret.less;
+                                caret.greater = c.greater;
+                                caret.less = c.less;
+                                if (prev == null)
+                                    root = caret;
+                                else if (prev.greater == c)
+                                    prev.greater = caret;
+                                else
+                                    prev.less = caret;
+                            }
                             else
-                                prev.less = c.less;
+                            {
+                                caret.height = 0;
+                                caret.greater = c.greater;
+                                if (prev == null)
+                                    root = caret;
+                                else if (prev.greater == c)
+                                    prev.greater = caret;
+                                else
+                                    prev.less = caret;
+                            }
                         }
+                        while (stack.Count > 0)
+                            stack.Pop().height = 0;
+                        if (root != null)
+                            root.Balance(ref root);
+                        Count--;
+                        return true;
                     }
-                    else if (c.less == null)
+                    else if (cmp > 0)
                     {
-                        if (prev == null)
-                            root = c.greater;
-                        else
-                        {
-                            if (prev.greater == c)
-                                prev.greater = c.greater;
-                            else
-                                prev.less = c.greater;
-                        }
+                        if (c.greater == null)
+                            return false;
+                        prev = c;
+                        stack.Push(c);
+                        c = c.greater;
                     }
                     else
                     {
-                        var caret = c.less;
-                        if (caret.greater != null)
-                        {
-                            caret.height = 0;
-                            var pcaret = c;
-                            while (caret.greater != null)
-                            {
-                                pcaret = caret;
-                                caret = caret.greater;
-                                caret.height = 0;
-                            }
-                            pcaret.greater = caret.less;
-                            caret.greater = c.greater;
-                            caret.less = c.less;
-                            if (prev == null)
-                                root = caret;
-                            else if (prev.greater == c)
-                                prev.greater = caret;
-                            else
-                                prev.less = caret;
-                        }
-                        else
-                        {
-                            caret.height = 0;
-                            caret.greater = c.greater;
-                            if (prev == null)
-                                root = caret;
-                            else if (prev.greater == c)
-                                prev.greater = caret;
-                            else
-                                prev.less = caret;
-                        }
+                        if (c.less == null)
+                            return false;
+                        prev = c;
+                        stack.Push(c);
+                        c = c.less;
                     }
-                    while (stack.Count > 0)
-                        stack.Pop().height = 0;
-                    root.Balance(ref root);
-                    return true;
                 }
-                else if (cmp > 0)
-                {
-                    if (c.greater == null)
-                        return false;
-                    prev = c;
-                    stack.Push(c);
-                    c = c.greater;
-                }
-                else
-                {
-                    if (c.less == null)
-                        return false;
-                    prev = c;
-                    stack.Push(c);
-                    c = c.less;
-                }
+                while (true);
             }
-            while (true);
         }
 
         public bool Remove(KeyValuePair<TKey, TValue> keyValuePair)
         {
-            var key = keyValuePair.Key;
-            Node prev = null;
-            var c = root;
-            var stack = new Stack<Node>();
-            do
+            lock (this)
             {
-                var cmp = key.CompareTo(c.key);
-                if (cmp == 0)
+                var key = keyValuePair.Key;
+                Node prev = null;
+                var c = root;
+                do
                 {
-                    if (!keyValuePair.Value.Equals(c.value))
-                        return false;
-                    if (c.greater == null)
+                    var cmp = key.CompareTo(c.key);
+                    if (cmp == 0)
                     {
-                        if (prev == null)
-                            root = c.less;
+                        if (!keyValuePair.Value.Equals(c.value))
+                            return false;
+                        if (c.greater == null)
+                        {
+                            if (prev == null)
+                                root = c.less;
+                            else
+                            {
+                                if (prev.greater == c)
+                                    prev.greater = c.less;
+                                else
+                                    prev.less = c.less;
+                            }
+                        }
+                        else if (c.less == null)
+                        {
+                            if (prev == null)
+                                root = c.greater;
+                            else
+                            {
+                                if (prev.greater == c)
+                                    prev.greater = c.greater;
+                                else
+                                    prev.less = c.greater;
+                            }
+                        }
                         else
                         {
-                            if (prev.greater == c)
-                                prev.greater = c.less;
+                            var caret = c.less;
+                            if (caret.greater != null)
+                            {
+                                caret.height = 0;
+                                var pcaret = c;
+                                while (caret.greater != null)
+                                {
+                                    pcaret = caret;
+                                    caret = caret.greater;
+                                    caret.height = 0;
+                                }
+                                pcaret.greater = caret.less;
+                                caret.greater = c.greater;
+                                caret.less = c.less;
+                                if (prev == null)
+                                    root = caret;
+                                else if (prev.greater == c)
+                                    prev.greater = caret;
+                                else
+                                    prev.less = caret;
+                            }
                             else
-                                prev.less = c.less;
+                            {
+                                caret.height = 0;
+                                caret.greater = c.greater;
+                                if (prev == null)
+                                    root = caret;
+                                else if (prev.greater == c)
+                                    prev.greater = caret;
+                                else
+                                    prev.less = caret;
+                            }
                         }
+                        while (stack.Count > 0)
+                            stack.Pop().height = 0;
+                        root.Balance(ref root);
+                        return true;
                     }
-                    else if (c.less == null)
+                    else if (cmp > 0)
                     {
-                        if (prev == null)
-                            root = c.greater;
-                        else
-                        {
-                            if (prev.greater == c)
-                                prev.greater = c.greater;
-                            else
-                                prev.less = c.greater;
-                        }
+                        if (c.greater == null)
+                            return false;
+                        prev = c;
+                        stack.Push(c);
+                        c = c.greater;
                     }
                     else
                     {
-                        var caret = c.less;
-                        if (caret.greater != null)
-                        {
-                            caret.height = 0;
-                            var pcaret = c;
-                            while (caret.greater != null)
-                            {
-                                pcaret = caret;
-                                caret = caret.greater;
-                                caret.height = 0;
-                            }
-                            pcaret.greater = caret.less;
-                            caret.greater = c.greater;
-                            caret.less = c.less;
-                            if (prev == null)
-                                root = caret;
-                            else if (prev.greater == c)
-                                prev.greater = caret;
-                            else
-                                prev.less = caret;
-                        }
-                        else
-                        {
-                            caret.height = 0;
-                            caret.greater = c.greater;
-                            if (prev == null)
-                                root = caret;
-                            else if (prev.greater == c)
-                                prev.greater = caret;
-                            else
-                                prev.less = caret;
-                        }
+                        if (c.less == null)
+                            return false;
+                        prev = c;
+                        stack.Push(c);
+                        c = c.less;
                     }
-                    while (stack.Count > 0)
-                        stack.Pop().height = 0;
-                    root.Balance(ref root);
-                    return true;
                 }
-                else if (cmp > 0)
-                {
-                    if (c.greater == null)
-                        return false;
-                    prev = c;
-                    stack.Push(c);
-                    c = c.greater;
-                }
-                else
-                {
-                    if (c.less == null)
-                        return false;
-                    prev = c;
-                    stack.Push(c);
-                    c = c.less;
-                }
+                while (true);
             }
-            while (true);
         }
 
         public void CopyTo(KeyValuePair<TKey, TValue>[] array, int index)
