@@ -4,12 +4,10 @@ using System;
 
 namespace NiL.JS.Core.Modules
 {
-    internal static class Math
+    public static class Math
     {
-        private static class _Random
-        {
-            public readonly static Random random = new Random((int)DateTime.Now.Ticks);
-        }
+        [Hidden]
+        public readonly static Random randomInstance = new Random((int)DateTime.Now.Ticks);
 
         [Protected]
         public const double E = System.Math.E;
@@ -142,7 +140,7 @@ namespace NiL.JS.Core.Modules
 
         public static JSObject random()
         {
-            return _Random.random.NextDouble();
+            return randomInstance.NextDouble();
         }
 
         public static JSObject round(JSObject[] args)

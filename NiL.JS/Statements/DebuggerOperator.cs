@@ -27,7 +27,10 @@ namespace NiL.JS.Statements
 
         internal override JSObject Invoke(Context context)
         {
-            context.raiseDebugger(this);
+            if (!context.debugging) 
+                // Без этого условия обработчик остановки вызывается дважды с одним выражением.
+                // Первый вызов происходит из цикла CodeBlock, второй из строки ниже.
+                context.raiseDebugger(this);
             return JSObject.undefined;
         }
 
