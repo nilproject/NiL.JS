@@ -1,4 +1,7 @@
-﻿using NiL.JS.Core;
+﻿
+#define TYPE_SAFE
+
+using NiL.JS.Core;
 using System;
 
 namespace NiL.JS.Statements.Operators
@@ -16,9 +19,38 @@ namespace NiL.JS.Statements.Operators
         {
             lock (this)
             {
-                tempResult.dValue = Tools.JSObjectToDouble(first.Invoke(context)) - Tools.JSObjectToDouble(second.Invoke(context));
-                tempResult.ValueType = JSObjectType.Double;
+#if TYPE_SAFE
+                double da = 0.0;
+                JSObject f = first.Invoke(context);
+                JSObject s = null;
+                if (f.valueType == JSObjectType.Int
+                    || f.valueType == JSObjectType.Bool)
+                {
+                    int a = f.iValue;
+                    s = second.Invoke(context);
+                    if (s.valueType == JSObjectType.Int
+                    || s.valueType == JSObjectType.Bool)
+                    {
+                        tempResult.iValue = a - s.iValue;
+                        tempResult.valueType = JSObjectType.Int;
+                        return tempResult;
+                    }
+                    else
+                        da = a;
+                }
+                else
+                {
+                    da = Tools.JSObjectToDouble(f);
+                    s = second.Invoke(context);
+                }
+                tempResult.dValue = da - Tools.JSObjectToDouble(s);
+                tempResult.valueType = JSObjectType.Double;
                 return tempResult;
+#else
+                tempResult.dValue = Tools.JSObjectToDouble(first.Invoke(context)) - Tools.JSObjectToDouble(second.Invoke(context));
+                tempResult.valueType = JSObjectType.Double;
+                return tempResult;
+#endif
             }
         }
 

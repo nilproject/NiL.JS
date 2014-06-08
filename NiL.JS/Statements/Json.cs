@@ -37,8 +37,8 @@ namespace NiL.JS.Statements
                     if (flds.IndexOf(setter.name) == -1)
                     {
                         flds.Add(setter.name);
-                        var vle = new ImmidateValueStatement(new JSObject() { ValueType = JSObjectType.Object, oValue = new Statement[2] { setter, null } });
-                        vle.value.ValueType = JSObjectType.Property;
+                        var vle = new ImmidateValueStatement(new JSObject() { valueType = JSObjectType.Object, oValue = new Statement[2] { setter, null } });
+                        vle.value.valueType = JSObjectType.Property;
                         vls.Add(vle);
                     }
                     else
@@ -58,8 +58,8 @@ namespace NiL.JS.Statements
                     if (flds.IndexOf(getter.name) == -1)
                     {
                         flds.Add(getter.name);
-                        var vle = new ImmidateValueStatement(new JSObject() { ValueType = JSObjectType.Object, oValue = new Statement[2] { null, getter } });
-                        vle.value.ValueType = JSObjectType.Property;
+                        var vle = new ImmidateValueStatement(new JSObject() { valueType = JSObjectType.Object, oValue = new Statement[2] { null, getter } });
+                        vle.value.valueType = JSObjectType.Property;
                         vls.Add(vle);
                     }
                     else
@@ -124,18 +124,18 @@ namespace NiL.JS.Statements
         internal override JSObject Invoke(Context context)
         {
             var res = new JSObject(true);
-            res.ValueType = JSObjectType.Object;
+            res.valueType = JSObjectType.Object;
             res.oValue = res;
             for (int i = 0; i < fields.Length; i++)
             {
                 var val = values[i].Invoke(context);
-                if (val.ValueType == JSObjectType.Property)
+                if (val.valueType == JSObjectType.Property)
                 {
                     var gs = val.oValue as Statement[];
                     var prop = res.GetField(fields[i], false, true);
                     prop.assignCallback(prop);
                     prop.oValue = new Function[] { gs[0] != null ? gs[0].Invoke(context) as Function : null, gs[1] != null ? gs[1].Invoke(context) as Function : null };
-                    prop.ValueType = JSObjectType.Property;
+                    prop.valueType = JSObjectType.Property;
                 }
                 else
                     res.fields[this.fields[i]] = val.Clone() as JSObject;
@@ -147,7 +147,7 @@ namespace NiL.JS.Statements
         {
             for (int i = 0; i < values.Length; i++)
             {
-                if ((values[i] is ImmidateValueStatement) && ((values[i] as ImmidateValueStatement).value.ValueType == JSObjectType.Property))
+                if ((values[i] is ImmidateValueStatement) && ((values[i] as ImmidateValueStatement).value.valueType == JSObjectType.Property))
                 {
                     var gs = (values[i] as ImmidateValueStatement).value.oValue as Statement[];
                     Parser.Optimize(ref gs[0], 1, vars);
@@ -169,7 +169,7 @@ namespace NiL.JS.Statements
             string res = "{ ";
             for (int i = 0; i < fields.Length; i++)
             {
-                if ((values[i] is ImmidateValueStatement) && ((values[i] as ImmidateValueStatement).value.ValueType == JSObjectType.Property))
+                if ((values[i] is ImmidateValueStatement) && ((values[i] as ImmidateValueStatement).value.valueType == JSObjectType.Property))
                 {
                     var gs = (values[i] as ImmidateValueStatement).value.oValue as Statement[];
                     res += gs[0];

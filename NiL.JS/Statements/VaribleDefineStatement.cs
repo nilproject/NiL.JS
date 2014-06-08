@@ -121,6 +121,13 @@ namespace NiL.JS.Statements
             return res;
         }
 
+        internal override JSObject InvokeForAssing(Context context)
+        {
+            if (initializators.Length == 1)
+                return Invoke(context);
+            return base.InvokeForAssing(context);
+        }
+
         protected override Statement[] getChildsImpl()
         {
             var res = new List<Statement>();

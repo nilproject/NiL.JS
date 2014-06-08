@@ -223,7 +223,7 @@ namespace NiL.JS.Statements
                         {
                             parameters = parameters.ToArray(),
                             body = body
-                        }, new ImmidateValueStatement(new JSObject() { ValueType = JSObjectType.Object, oValue = args.ToArray() }))
+                        }, new ImmidateValueStatement(new JSObject() { valueType = JSObjectType.Object, oValue = args.ToArray() }))
                     };
                 }
                 else

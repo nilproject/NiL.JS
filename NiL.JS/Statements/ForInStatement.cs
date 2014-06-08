@@ -100,7 +100,7 @@ namespace NiL.JS.Statements
                         for (int i = 0; i < index && keys.MoveNext(); i++) ;
                     }
                     var o = keys.Current;
-                    v.ValueType = JSObjectType.String;
+                    v.valueType = JSObjectType.String;
                     v.oValue = o;
                     if (v.assignCallback != null)
                         v.assignCallback(v);

@@ -16,7 +16,7 @@ namespace NiL.JS.Core.BaseTypes
 
             public Element(int index, byte[] data)
             {
-                this.ValueType = JSObjectType.Int;
+                this.valueType = JSObjectType.Int;
                 this.index = index;
                 this.iValue = data[index];
                 this.data = data;

@@ -30,7 +30,7 @@ namespace NiL.JS.Core.BaseTypes
                 if (args.GetField("length", true, false).iValue == 1)
                 {
                     var arg = args.GetField("0", true, false);
-                    switch (arg.ValueType)
+                    switch (arg.valueType)
                     {
                         case JSObjectType.Int:
                         case JSObjectType.Bool:

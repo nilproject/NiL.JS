@@ -15,7 +15,7 @@ namespace NiL.JS.Statements.Operators
         internal static bool Check(JSObject first, Statement second, Context context)
         {
             var temp = first;
-            var lvt = temp.ValueType;
+            var lvt = temp.valueType;
 
             switch (lvt)
             {
@@ -24,9 +24,9 @@ namespace NiL.JS.Statements.Operators
                     {
                         var l = temp.iValue;
                         temp = second.Invoke(context);
-                        if (temp.ValueType == JSObjectType.Double)
+                        if (temp.valueType == JSObjectType.Double)
                             return l == temp.dValue;
-                        else if (lvt != temp.ValueType)
+                        else if (lvt != temp.valueType)
                             return false;
                         else
                             return l == temp.iValue;
@@ -35,9 +35,9 @@ namespace NiL.JS.Statements.Operators
                     {
                         var l = temp.dValue;
                         temp = second.Invoke(context);
-                        if (temp.ValueType == JSObjectType.Int)
+                        if (temp.valueType == JSObjectType.Int)
                             return l == temp.iValue;
-                        else if (lvt != temp.ValueType)
+                        else if (lvt != temp.valueType)
                             return false;
                         else
                             return l == temp.dValue;
@@ -46,7 +46,7 @@ namespace NiL.JS.Statements.Operators
                     {
                         var l = temp.oValue;
                         temp = second.Invoke(context);
-                        if (lvt != temp.ValueType)
+                        if (lvt != temp.valueType)
                             return false;
                         else
                             return l == temp.oValue;
@@ -55,7 +55,7 @@ namespace NiL.JS.Statements.Operators
                     {
                         var l = temp.oValue;
                         temp = second.Invoke(context);
-                        if (temp.ValueType != JSObjectType.Object)
+                        if (temp.valueType != JSObjectType.Object)
                             return false;
                         else if (l == null || temp.oValue == null)
                             return l == temp.oValue;
@@ -66,7 +66,7 @@ namespace NiL.JS.Statements.Operators
                     {
                         var l = temp.oValue;
                         temp = second.Invoke(context);
-                        if (temp.ValueType != JSObjectType.Date)
+                        if (temp.valueType != JSObjectType.Date)
                             return false;
                         else if (l == null || temp.oValue == null)
                             return l == temp.oValue;
@@ -77,7 +77,7 @@ namespace NiL.JS.Statements.Operators
                     {
                         var l = temp.oValue;
                         temp = second.Invoke(context);
-                        if (lvt != temp.ValueType)
+                        if (lvt != temp.valueType)
                             return false;
                         else
                             return l.Equals(temp.oValue);
@@ -87,7 +87,7 @@ namespace NiL.JS.Statements.Operators
                     {
                         var l = temp.dValue;
                         temp = second.Invoke(context);
-                        return temp.ValueType == JSObjectType.Undefined || temp.ValueType == JSObjectType.NotExistInObject;
+                        return temp.valueType == JSObjectType.Undefined || temp.valueType == JSObjectType.NotExistInObject;
                     }
             }
             if (lvt == JSObjectType.NotExist)

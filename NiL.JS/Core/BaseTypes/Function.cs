@@ -23,7 +23,7 @@ namespace NiL.JS.Core.BaseTypes
             {
                 var eargs = new JSObject();
                 eargs.oValue = Arguments.Instance;
-                eargs.ValueType = JSObjectType.Object;
+                eargs.valueType = JSObjectType.Object;
                 eargs.GetField("length", false, true).Assign(0);
                 return (RT)function.Invoke(eargs).Value;
             }
@@ -32,7 +32,7 @@ namespace NiL.JS.Core.BaseTypes
             {
                 var eargs = new JSObject();
                 eargs.oValue = Arguments.Instance;
-                eargs.ValueType = JSObjectType.Object;
+                eargs.valueType = JSObjectType.Object;
                 eargs.GetField("length", false, true).Assign(2);
                 eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
                 return (RT)function.Invoke(eargs).Value;
@@ -42,7 +42,7 @@ namespace NiL.JS.Core.BaseTypes
             {
                 var eargs = new JSObject();
                 eargs.oValue = Arguments.Instance;
-                eargs.ValueType = JSObjectType.Object;
+                eargs.valueType = JSObjectType.Object;
                 eargs.GetField("length", false, true).Assign(2);
                 eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
                 eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
@@ -53,7 +53,7 @@ namespace NiL.JS.Core.BaseTypes
             {
                 var eargs = new JSObject();
                 eargs.oValue = Arguments.Instance;
-                eargs.ValueType = JSObjectType.Object;
+                eargs.valueType = JSObjectType.Object;
                 eargs.GetField("length", false, true).Assign(3);
                 eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
                 eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
@@ -65,7 +65,7 @@ namespace NiL.JS.Core.BaseTypes
             {
                 var eargs = new JSObject();
                 eargs.oValue = Arguments.Instance;
-                eargs.ValueType = JSObjectType.Object;
+                eargs.valueType = JSObjectType.Object;
                 eargs.GetField("length", false, true).Assign(4);
                 eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
                 eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
@@ -78,7 +78,7 @@ namespace NiL.JS.Core.BaseTypes
             {
                 var eargs = new JSObject();
                 eargs.oValue = Arguments.Instance;
-                eargs.ValueType = JSObjectType.Object;
+                eargs.valueType = JSObjectType.Object;
                 eargs.GetField("length", false, true).Assign(5);
                 eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
                 eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
@@ -92,7 +92,7 @@ namespace NiL.JS.Core.BaseTypes
             {
                 var eargs = new JSObject();
                 eargs.oValue = Arguments.Instance;
-                eargs.ValueType = JSObjectType.Object;
+                eargs.valueType = JSObjectType.Object;
                 eargs.GetField("length", false, true).Assign(6);
                 eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
                 eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
@@ -107,7 +107,7 @@ namespace NiL.JS.Core.BaseTypes
             {
                 var eargs = new JSObject();
                 eargs.oValue = Arguments.Instance;
-                eargs.ValueType = JSObjectType.Object;
+                eargs.valueType = JSObjectType.Object;
                 eargs.GetField("length", false, true).Assign(7);
                 eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
                 eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
@@ -123,7 +123,7 @@ namespace NiL.JS.Core.BaseTypes
             {
                 var eargs = new JSObject();
                 eargs.oValue = Arguments.Instance;
-                eargs.ValueType = JSObjectType.Object;
+                eargs.valueType = JSObjectType.Object;
                 eargs.GetField("length", false, true).Assign(8);
                 eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
                 eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
@@ -140,7 +140,7 @@ namespace NiL.JS.Core.BaseTypes
             {
                 var eargs = new JSObject();
                 eargs.oValue = Arguments.Instance;
-                eargs.ValueType = JSObjectType.Object;
+                eargs.valueType = JSObjectType.Object;
                 eargs.GetField("length", false, true).Assign(9);
                 eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
                 eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
@@ -158,7 +158,7 @@ namespace NiL.JS.Core.BaseTypes
             {
                 var eargs = new JSObject();
                 eargs.oValue = Arguments.Instance;
-                eargs.ValueType = JSObjectType.Object;
+                eargs.valueType = JSObjectType.Object;
                 eargs.GetField("length", false, true).Assign(10);
                 eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
                 eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
@@ -177,7 +177,7 @@ namespace NiL.JS.Core.BaseTypes
             {
                 var eargs = new JSObject();
                 eargs.oValue = Arguments.Instance;
-                eargs.ValueType = JSObjectType.Object;
+                eargs.valueType = JSObjectType.Object;
                 eargs.GetField("length", false, true).Assign(11);
                 eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
                 eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
@@ -197,7 +197,7 @@ namespace NiL.JS.Core.BaseTypes
             {
                 var eargs = new JSObject();
                 eargs.oValue = Arguments.Instance;
-                eargs.ValueType = JSObjectType.Object;
+                eargs.valueType = JSObjectType.Object;
                 eargs.GetField("length", false, true).Assign(12);
                 eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
                 eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
@@ -218,7 +218,7 @@ namespace NiL.JS.Core.BaseTypes
             {
                 var eargs = new JSObject();
                 eargs.oValue = Arguments.Instance;
-                eargs.ValueType = JSObjectType.Object;
+                eargs.valueType = JSObjectType.Object;
                 eargs.GetField("length", false, true).Assign(13);
                 eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
                 eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
@@ -240,7 +240,7 @@ namespace NiL.JS.Core.BaseTypes
             {
                 var eargs = new JSObject();
                 eargs.oValue = Arguments.Instance;
-                eargs.ValueType = JSObjectType.Object;
+                eargs.valueType = JSObjectType.Object;
                 eargs.GetField("length", false, true).Assign(14);
                 eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
                 eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
@@ -263,7 +263,7 @@ namespace NiL.JS.Core.BaseTypes
             {
                 var eargs = new JSObject();
                 eargs.oValue = Arguments.Instance;
-                eargs.ValueType = JSObjectType.Object;
+                eargs.valueType = JSObjectType.Object;
                 eargs.GetField("length", false, true).Assign(15);
                 eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
                 eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
@@ -287,7 +287,7 @@ namespace NiL.JS.Core.BaseTypes
             {
                 var eargs = new JSObject();
                 eargs.oValue = Arguments.Instance;
-                eargs.ValueType = JSObjectType.Object;
+                eargs.valueType = JSObjectType.Object;
                 eargs.GetField("length", false, true).Assign(16);
                 eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
                 eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
@@ -312,7 +312,7 @@ namespace NiL.JS.Core.BaseTypes
             {
                 var eargs = new JSObject();
                 eargs.oValue = Arguments.Instance;
-                eargs.ValueType = JSObjectType.Object;
+                eargs.valueType = JSObjectType.Object;
                 eargs.GetField("length", false, true).Assign(0);
                 function.Invoke(eargs);
             }
@@ -321,7 +321,7 @@ namespace NiL.JS.Core.BaseTypes
             {
                 var eargs = new JSObject();
                 eargs.oValue = Arguments.Instance;
-                eargs.ValueType = JSObjectType.Object;
+                eargs.valueType = JSObjectType.Object;
                 eargs.GetField("length", false, true).Assign(2);
                 eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
                 function.Invoke(eargs);
@@ -331,7 +331,7 @@ namespace NiL.JS.Core.BaseTypes
             {
                 var eargs = new JSObject();
                 eargs.oValue = Arguments.Instance;
-                eargs.ValueType = JSObjectType.Object;
+                eargs.valueType = JSObjectType.Object;
                 eargs.GetField("length", false, true).Assign(2);
                 eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
                 eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
@@ -342,7 +342,7 @@ namespace NiL.JS.Core.BaseTypes
             {
                 var eargs = new JSObject();
                 eargs.oValue = Arguments.Instance;
-                eargs.ValueType = JSObjectType.Object;
+                eargs.valueType = JSObjectType.Object;
                 eargs.GetField("length", false, true).Assign(3);
                 eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
                 eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
@@ -354,7 +354,7 @@ namespace NiL.JS.Core.BaseTypes
             {
                 var eargs = new JSObject();
                 eargs.oValue = Arguments.Instance;
-                eargs.ValueType = JSObjectType.Object;
+                eargs.valueType = JSObjectType.Object;
                 eargs.GetField("length", false, true).Assign(4);
                 eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
                 eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
@@ -367,7 +367,7 @@ namespace NiL.JS.Core.BaseTypes
             {
                 var eargs = new JSObject();
                 eargs.oValue = Arguments.Instance;
-                eargs.ValueType = JSObjectType.Object;
+                eargs.valueType = JSObjectType.Object;
                 eargs.GetField("length", false, true).Assign(5);
                 eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
                 eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
@@ -381,7 +381,7 @@ namespace NiL.JS.Core.BaseTypes
             {
                 var eargs = new JSObject();
                 eargs.oValue = Arguments.Instance;
-                eargs.ValueType = JSObjectType.Object;
+                eargs.valueType = JSObjectType.Object;
                 eargs.GetField("length", false, true).Assign(6);
                 eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
                 eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
@@ -396,7 +396,7 @@ namespace NiL.JS.Core.BaseTypes
             {
                 var eargs = new JSObject();
                 eargs.oValue = Arguments.Instance;
-                eargs.ValueType = JSObjectType.Object;
+                eargs.valueType = JSObjectType.Object;
                 eargs.GetField("length", false, true).Assign(7);
                 eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
                 eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
@@ -412,7 +412,7 @@ namespace NiL.JS.Core.BaseTypes
             {
                 var eargs = new JSObject();
                 eargs.oValue = Arguments.Instance;
-                eargs.ValueType = JSObjectType.Object;
+                eargs.valueType = JSObjectType.Object;
                 eargs.GetField("length", false, true).Assign(8);
                 eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
                 eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
@@ -429,7 +429,7 @@ namespace NiL.JS.Core.BaseTypes
             {
                 var eargs = new JSObject();
                 eargs.oValue = Arguments.Instance;
-                eargs.ValueType = JSObjectType.Object;
+                eargs.valueType = JSObjectType.Object;
                 eargs.GetField("length", false, true).Assign(9);
                 eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
                 eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
@@ -447,7 +447,7 @@ namespace NiL.JS.Core.BaseTypes
             {
                 var eargs = new JSObject();
                 eargs.oValue = Arguments.Instance;
-                eargs.ValueType = JSObjectType.Object;
+                eargs.valueType = JSObjectType.Object;
                 eargs.GetField("length", false, true).Assign(10);
                 eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
                 eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
@@ -466,7 +466,7 @@ namespace NiL.JS.Core.BaseTypes
             {
                 var eargs = new JSObject();
                 eargs.oValue = Arguments.Instance;
-                eargs.ValueType = JSObjectType.Object;
+                eargs.valueType = JSObjectType.Object;
                 eargs.GetField("length", false, true).Assign(11);
                 eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
                 eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
@@ -486,7 +486,7 @@ namespace NiL.JS.Core.BaseTypes
             {
                 var eargs = new JSObject();
                 eargs.oValue = Arguments.Instance;
-                eargs.ValueType = JSObjectType.Object;
+                eargs.valueType = JSObjectType.Object;
                 eargs.GetField("length", false, true).Assign(12);
                 eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
                 eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
@@ -507,7 +507,7 @@ namespace NiL.JS.Core.BaseTypes
             {
                 var eargs = new JSObject();
                 eargs.oValue = Arguments.Instance;
-                eargs.ValueType = JSObjectType.Object;
+                eargs.valueType = JSObjectType.Object;
                 eargs.GetField("length", false, true).Assign(13);
                 eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
                 eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
@@ -529,7 +529,7 @@ namespace NiL.JS.Core.BaseTypes
             {
                 var eargs = new JSObject();
                 eargs.oValue = Arguments.Instance;
-                eargs.ValueType = JSObjectType.Object;
+                eargs.valueType = JSObjectType.Object;
                 eargs.GetField("length", false, true).Assign(14);
                 eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
                 eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
@@ -552,7 +552,7 @@ namespace NiL.JS.Core.BaseTypes
             {
                 var eargs = new JSObject();
                 eargs.oValue = Arguments.Instance;
-                eargs.ValueType = JSObjectType.Object;
+                eargs.valueType = JSObjectType.Object;
                 eargs.GetField("length", false, true).Assign(15);
                 eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
                 eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
@@ -576,7 +576,7 @@ namespace NiL.JS.Core.BaseTypes
             {
                 var eargs = new JSObject();
                 eargs.oValue = Arguments.Instance;
-                eargs.ValueType = JSObjectType.Object;
+                eargs.valueType = JSObjectType.Object;
                 eargs.GetField("length", false, true).Assign(16);
                 eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
                 eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
@@ -669,7 +669,7 @@ namespace NiL.JS.Core.BaseTypes
             body = new Statements.CodeBlock(new Statement[0], false);
             argumentsNames = new string[0];
             Name = "";
-            ValueType = JSObjectType.Function;
+            valueType = JSObjectType.Function;
         }
 
         public Function(JSObject args)
@@ -697,7 +697,7 @@ namespace NiL.JS.Core.BaseTypes
             this.argumentsNames = argumentsNames;
             this.body = body;
             Name = name;
-            ValueType = JSObjectType.Function;
+            valueType = JSObjectType.Function;
         }
 
         internal Number _length = null;
@@ -743,20 +743,20 @@ namespace NiL.JS.Core.BaseTypes
             {
                 Context internalContext = new Context(context, body);
                 var @this = thisOverride ?? context.thisBind;
-                if (@this != null && @this.ValueType < JSObjectType.Object && !body.strict)
+                if (@this != null && @this.valueType < JSObjectType.Object && !body.strict)
                 {
                     @this = new JSObject(false)
                     {
-                        ValueType = JSObjectType.Object,
+                        valueType = JSObjectType.Object,
                         oValue = @this,
                         attributes = JSObjectAttributes.DoNotEnum | JSObjectAttributes.DoNotDelete | JSObjectAttributes.Immutable,
-                        prototype = @this.prototype ?? (@this.ValueType <= JSObjectType.Undefined ? @this.prototype : @this.GetField("__proto__", true, false))
+                        prototype = @this.prototype ?? (@this.valueType <= JSObjectType.Undefined ? @this.prototype : @this.GetField("__proto__", true, false))
                     };
                 }
                 internalContext.thisBind = @this;
                 if (args == null)
                 {
-                    args = new JSObject(true) { ValueType = JSObjectType.Object };
+                    args = new JSObject(true) { valueType = JSObjectType.Object };
                     args.oValue = args;
                     args.GetField("callee", false, true).Assign(this);
                     args.GetField("length", false, true).Assign(0);
@@ -767,7 +767,7 @@ namespace NiL.JS.Core.BaseTypes
                     internalContext.InitField(Name).Assign(this);
                 int i = 0;
                 JSObject argsLength = args.GetField("length", true, false);
-                if (argsLength.ValueType == JSObjectType.Property)
+                if (argsLength.valueType == JSObjectType.Property)
                     argsLength = (argsLength.oValue as Function[])[1].Invoke(args, null);
                 int min = System.Math.Min(argsLength.iValue, argumentsNames.Length);
                 for (; i < min; i++)
@@ -793,7 +793,7 @@ namespace NiL.JS.Core.BaseTypes
                 {
                     prototypeField = new JSObject()
                     {
-                        ValueType = JSObjectType.Object,
+                        valueType = JSObjectType.Object,
                         prototype = JSObject.GlobalPrototype,
                         attributes = JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum
                     };
@@ -827,7 +827,7 @@ namespace NiL.JS.Core.BaseTypes
             for (int i = 0; i < prmlen; i++)
                 args.fields[i < 16 ? Tools.NumString[i] : i.ToString()] = args.GetField(i < 15 ? Tools.NumString[i + 1] : (i + 1).ToString(CultureInfo.InvariantCulture), true, false);
             args.fields.Remove(prmlen < 16 ? Tools.NumString[prmlen] : prmlen.ToString(CultureInfo.InvariantCulture));
-            if (newThis.ValueType < JSObjectType.Object || newThis.oValue != null)
+            if (newThis.valueType < JSObjectType.Object || newThis.oValue != null)
                 return Invoke(newThis, args);
             else
                 return Invoke(Context.currentRootContext.thisBind ?? Context.currentRootContext.GetField("this"), args);
@@ -844,7 +844,7 @@ namespace NiL.JS.Core.BaseTypes
             if (iargs != undefined)
             {
                 var prmsCR = iargs.GetField("length", true, false);
-                prmsC = Tools.JSObjectToInt(prmsCR.ValueType == JSObjectType.Property ? (prmsCR.oValue as Function[])[1].Invoke(iargs, null) : prmsCR);
+                prmsC = Tools.JSObjectToInt(prmsCR.valueType == JSObjectType.Property ? (prmsCR.oValue as Function[])[1].Invoke(iargs, null) : prmsCR);
                 for (int i = 0; i < prmsC; i++)
                     args.fields[i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture)] = iargs.GetField(i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture), true, false);
             }
@@ -859,9 +859,9 @@ namespace NiL.JS.Core.BaseTypes
             if (lengthO.assignCallback != null)
                 lengthO.assignCallback = null;
             args.fields["length"] = lengthO;
-            lengthO.ValueType = JSObjectType.Int;
+            lengthO.valueType = JSObjectType.Int;
             lengthO.iValue = prmsC;
-            if (newThis.ValueType < JSObjectType.Object || newThis.oValue != null)
+            if (newThis.valueType < JSObjectType.Object || newThis.oValue != null)
                 return Invoke(newThis, args);
             else
                 return Invoke(Context.currentRootContext.thisBind ?? Context.currentRootContext.GetField("this"), args);
@@ -870,7 +870,7 @@ namespace NiL.JS.Core.BaseTypes
         public virtual JSObject bind(JSObject args)
         {
             var prmsCR = args.GetField("length", true, false);
-            var prmsC = Tools.JSObjectToInt(prmsCR.ValueType == JSObjectType.Property ? (prmsCR.oValue as Function[])[1].Invoke(args, null) : prmsCR);
+            var prmsC = Tools.JSObjectToInt(prmsCR.valueType == JSObjectType.Property ? (prmsCR.oValue as Function[])[1].Invoke(args, null) : prmsCR);
             if (prmsC > 0)
             {
                 var newThis = args.GetField("0", true, false);

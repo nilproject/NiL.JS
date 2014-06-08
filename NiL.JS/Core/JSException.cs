@@ -27,13 +27,13 @@ namespace NiL.JS.Core
             {
                 var name = "Error";
                 var n = Avatar.GetField("name", true, false);
-                if (n.ValueType == JSObjectType.Property)
+                if (n.valueType == JSObjectType.Property)
                     name = (n.oValue as BaseTypes.Function[])[1].Invoke(Avatar, null).ToString();
                 else
                     name = n.ToString();
 
                 var m = Avatar.GetField("message", true, false);
-                if (m.ValueType == JSObjectType.Property)
+                if (m.valueType == JSObjectType.Property)
                     return name + ": " + (m.oValue as BaseTypes.Function[])[1].Invoke(Avatar, null).ToString();
                 else
                     return name + ": " + m.ToString();

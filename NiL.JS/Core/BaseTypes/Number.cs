@@ -43,7 +43,7 @@ namespace NiL.JS.Core.BaseTypes
         [Modules.DoNotEnumerate]
         public Number()
         {
-            ValueType = JSObjectType.Int;
+            valueType = JSObjectType.Int;
             iValue = 0;
             assignCallback = JSObject.ErrorAssignCallback;
         }
@@ -51,7 +51,7 @@ namespace NiL.JS.Core.BaseTypes
         [Modules.DoNotEnumerate]
         public Number(int value)
         {
-            ValueType = JSObjectType.Int;
+            valueType = JSObjectType.Int;
             iValue = value;
             assignCallback = JSObject.ErrorAssignCallback;
         }
@@ -59,7 +59,7 @@ namespace NiL.JS.Core.BaseTypes
         [Modules.DoNotEnumerate]
         public Number(double value)
         {
-            ValueType = JSObjectType.Double;
+            valueType = JSObjectType.Double;
             dValue = value;
             assignCallback = JSObject.ErrorAssignCallback;
         }
@@ -67,10 +67,10 @@ namespace NiL.JS.Core.BaseTypes
         [Modules.DoNotEnumerate]
         public Number(string value)
         {
-            ValueType = JSObjectType.Int;
+            valueType = JSObjectType.Int;
             assignCallback = JSObject.ErrorAssignCallback;
             dValue = double.NaN;
-            ValueType = JSObjectType.Double;
+            valueType = JSObjectType.Double;
             double d = 0;
             int i = 0;
             value = value.Trim();
@@ -81,7 +81,7 @@ namespace NiL.JS.Core.BaseTypes
         [Modules.DoNotEnumerate]
         public Number(JSObject obj)
         {
-            ValueType = JSObjectType.Double;
+            valueType = JSObjectType.Double;
             dValue = Tools.JSObjectToDouble(obj.GetField("0", true, false));
             assignCallback = JSObject.ErrorAssignCallback;
         }
@@ -90,7 +90,7 @@ namespace NiL.JS.Core.BaseTypes
         public JSObject toPrecision(JSObject digits)
         {
             double res = 0;
-            switch (ValueType)
+            switch (valueType)
             {
                 case JSObjectType.Int:
                     {
@@ -106,7 +106,7 @@ namespace NiL.JS.Core.BaseTypes
                     throw new InvalidOperationException();
             }
             int dgts = 0;
-            switch ((digits ?? JSObject.undefined).ValueType)
+            switch ((digits ?? JSObject.undefined).valueType)
             {
                 case JSObjectType.Int:
                     {
@@ -129,11 +129,11 @@ namespace NiL.JS.Core.BaseTypes
                 case JSObjectType.Object:
                     {
                         digits = digits.GetField("0", true, false).ToPrimitiveValue_Value_String();
-                        if (digits.ValueType == JSObjectType.String)
+                        if (digits.valueType == JSObjectType.String)
                             goto case JSObjectType.String;
-                        if (digits.ValueType == JSObjectType.Int)
+                        if (digits.valueType == JSObjectType.Int)
                             goto case JSObjectType.Int;
-                        if (digits.ValueType == JSObjectType.Double)
+                        if (digits.valueType == JSObjectType.Double)
                             goto case JSObjectType.Double;
                         break;
                     }
@@ -153,7 +153,7 @@ namespace NiL.JS.Core.BaseTypes
         public JSObject toExponential(JSObject digits)
         {
             double res = 0;
-            switch (ValueType)
+            switch (valueType)
             {
                 case JSObjectType.Int:
                     {
@@ -169,7 +169,7 @@ namespace NiL.JS.Core.BaseTypes
                     throw new InvalidOperationException();
             }
             int dgts = 0;
-            switch ((digits ?? JSObject.undefined).ValueType)
+            switch ((digits ?? JSObject.undefined).valueType)
             {
                 case JSObjectType.Int:
                     {
@@ -192,11 +192,11 @@ namespace NiL.JS.Core.BaseTypes
                 case JSObjectType.Object:
                     {
                         digits = digits.GetField("0", true, false).ToPrimitiveValue_Value_String();
-                        if (digits.ValueType == JSObjectType.String)
+                        if (digits.valueType == JSObjectType.String)
                             goto case JSObjectType.String;
-                        if (digits.ValueType == JSObjectType.Int)
+                        if (digits.valueType == JSObjectType.Int)
                             goto case JSObjectType.Int;
-                        if (digits.ValueType == JSObjectType.Double)
+                        if (digits.valueType == JSObjectType.Double)
                             goto case JSObjectType.Double;
                         break;
                     }
@@ -212,7 +212,7 @@ namespace NiL.JS.Core.BaseTypes
         public JSObject toFixed(JSObject digits)
         {
             double res = 0;
-            switch (ValueType)
+            switch (valueType)
             {
                 case JSObjectType.Int:
                     {
@@ -235,7 +235,7 @@ namespace NiL.JS.Core.BaseTypes
                     throw new InvalidOperationException();
             }
             int dgts = 0;
-            switch ((digits ?? JSObject.undefined).ValueType)
+            switch ((digits ?? JSObject.undefined).valueType)
             {
                 case JSObjectType.Int:
                     {
@@ -263,11 +263,11 @@ namespace NiL.JS.Core.BaseTypes
                 case JSObjectType.Object:
                     {
                         digits = digits.GetField("0", true, false).ToPrimitiveValue_Value_String();
-                        if (digits.ValueType == JSObjectType.String)
+                        if (digits.valueType == JSObjectType.String)
                             goto case JSObjectType.String;
-                        if (digits.ValueType == JSObjectType.Int)
+                        if (digits.valueType == JSObjectType.Int)
                             goto case JSObjectType.Int;
-                        if (digits.ValueType == JSObjectType.Double)
+                        if (digits.valueType == JSObjectType.Double)
                             goto case JSObjectType.Double;
                         break;
                     }
@@ -288,7 +288,7 @@ namespace NiL.JS.Core.BaseTypes
         [Modules.DoNotEnumerate]
         public override JSObject toLocaleString()
         {
-            return ValueType == JSObjectType.Int ? iValue.ToString(System.Globalization.CultureInfo.CurrentCulture) : dValue.ToString(System.Globalization.CultureInfo.CurrentCulture);
+            return valueType == JSObjectType.Int ? iValue.ToString(System.Globalization.CultureInfo.CurrentCulture) : dValue.ToString(System.Globalization.CultureInfo.CurrentCulture);
         }
 
         [Modules.DoNotEnumerate]
@@ -300,9 +300,9 @@ namespace NiL.JS.Core.BaseTypes
             if (radix != null && radix.GetField("length", true, false).iValue > 0)
             {
                 var ar = radix.GetField("0", true, false);
-                if (ar.ValueType == JSObjectType.Object && ar.oValue == null)
+                if (ar.valueType == JSObjectType.Object && ar.oValue == null)
                     throw new JSException(TypeProxy.Proxy(new Error("Radix can't be null.")));
-                switch (ar.ValueType)
+                switch (ar.valueType)
                 {
                     case JSObjectType.Int:
                     case JSObjectType.Bool:
@@ -335,7 +335,7 @@ namespace NiL.JS.Core.BaseTypes
             else
             {
                 long res = iValue;
-                if (ValueType == JSObjectType.Double)
+                if (valueType == JSObjectType.Double)
                 {
                     if (double.IsNaN(dValue))
                         return "NaN";
@@ -364,7 +364,7 @@ namespace NiL.JS.Core.BaseTypes
         {
             if (!typeof(Number).IsAssignableFrom(GetType()))
                 throw new JSException(TypeProxy.Proxy(new TypeError("Try to call Number.valueOf on not number object.")));
-            if (ValueType == JSObjectType.Object) // prototype instance
+            if (valueType == JSObjectType.Object) // prototype instance
                 return 0;
             return base.valueOf();
         }
@@ -378,13 +378,13 @@ namespace NiL.JS.Core.BaseTypes
         [Modules.Hidden]
         public override string ToString()
         {
-            return ValueType == JSObjectType.Int ? iValue >= 0 && iValue < 16 ? Tools.NumString[iValue] : iValue.ToString(System.Globalization.CultureInfo.InvariantCulture) : Tools.DoubleToString(dValue);
+            return valueType == JSObjectType.Int ? iValue >= 0 && iValue < 16 ? Tools.NumString[iValue] : iValue.ToString(System.Globalization.CultureInfo.InvariantCulture) : Tools.DoubleToString(dValue);
         }
 
         [Modules.Hidden]
         public override int GetHashCode()
         {
-            return ValueType == JSObjectType.Int ? iValue.GetHashCode() : dValue.GetHashCode();
+            return valueType == JSObjectType.Int ? iValue.GetHashCode() : dValue.GetHashCode();
         }
 
         [Modules.Hidden]
@@ -402,13 +402,13 @@ namespace NiL.JS.Core.BaseTypes
         [Modules.Hidden]
         public static implicit operator double(Number value)
         {
-            return value == null ? 0 : value.ValueType == JSObjectType.Int ? value.iValue : value.dValue;
+            return value == null ? 0 : value.valueType == JSObjectType.Int ? value.iValue : value.dValue;
         }
 
         [Modules.Hidden]
         public static explicit operator int(Number value)
         {
-            return value == null ? 0 : value.ValueType == JSObjectType.Int ? value.iValue : (int)value.dValue;
+            return value == null ? 0 : value.valueType == JSObjectType.Int ? value.iValue : (int)value.dValue;
         }
     }
 }

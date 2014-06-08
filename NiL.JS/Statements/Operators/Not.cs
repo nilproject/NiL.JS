@@ -17,7 +17,7 @@ namespace NiL.JS.Statements.Operators
             lock (this)
             {
                 tempResult.iValue = Tools.JSObjectToInt(first.Invoke(context)) ^ -1;
-                tempResult.ValueType = JSObjectType.Int;
+                tempResult.valueType = JSObjectType.Int;
                 return tempResult;
             }
         }

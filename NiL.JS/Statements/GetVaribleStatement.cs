@@ -33,12 +33,8 @@ namespace NiL.JS.Statements
         internal override JSObject Invoke(Context context)
         {
             var res = Tools.RaiseIfNotExist(descriptor.Get(context));
-            if (context.GetType() == typeof(WithContext))
-            {
-                if (res.ValueType == JSObjectType.Property)
-                    return (res.oValue as NiL.JS.Core.BaseTypes.Function[])[1].Invoke(context, context.objectSource, null);
-                return res;
-            }
+            if (res.valueType == JSObjectType.Property)
+                return (res.oValue as NiL.JS.Core.BaseTypes.Function[])[1].Invoke(context, context.objectSource, null);
             return res;
         }
 

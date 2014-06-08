@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NiL.JS.Core.BaseTypes;
+using System;
 using System.Collections.Generic;
 
 namespace NiL.JS.Core
@@ -17,9 +18,9 @@ namespace NiL.JS.Core
 
         protected abstract Statement[] getChildsImpl();
 
-        internal virtual JSObject InvokeForAssing(Context context)
+        internal virtual NiL.JS.Core.JSObject InvokeForAssing(NiL.JS.Core.Context context)
         {
-            return Invoke(context);
+            throw new JSException(TypeProxy.Proxy(new ReferenceError("Invalid left-hand side in assignment.")));
         }
 
         internal abstract JSObject Invoke(Context context);

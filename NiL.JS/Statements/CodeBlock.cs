@@ -210,7 +210,17 @@ namespace NiL.JS.Statements
             {
                 for (var i = this.varibles.Length; i-- > 0; )
                 {
-                    varibles[this.varibles[i].Name] = this.varibles[i];
+                    VaribleDescriptor desc = null;
+                    if (depth == 0 || !varibles.TryGetValue(this.varibles[i].Name, out desc) || desc == null)
+                        varibles[this.varibles[i].Name] = this.varibles[i];
+                    else
+                    {
+                        foreach(var r in this.varibles[i].References)
+                        {
+                            this.varibles[i].Remove(r);
+                            desc.Add(r);
+                        }
+                    }
                     if (depth == 0)
                         this.varibles[i].Owner = this;
                 }

@@ -26,7 +26,7 @@ namespace NiL.JS.Core
         {
             if (arg == null)
                 return double.NaN;
-            switch (arg.ValueType)
+            switch (arg.valueType)
             {
                 case JSObjectType.Bool:
                 case JSObjectType.Int:
@@ -121,7 +121,7 @@ namespace NiL.JS.Core
             if (arg == null)
                 return nullOrUndef;
             var r = arg;
-            switch (r.ValueType)
+            switch (r.valueType)
             {
                 case JSObjectType.Bool:
                 case JSObjectType.Int:
@@ -171,7 +171,7 @@ namespace NiL.JS.Core
         {
             if (arg == null)
                 return 0;
-            switch (arg.ValueType)
+            switch (arg.valueType)
             {
                 case JSObjectType.Bool:
                 case JSObjectType.Int:
@@ -622,7 +622,7 @@ namespace NiL.JS.Core
 #endif
         internal static JSObject RaiseIfNotExist(JSObject obj)
         {
-            if (obj != null && obj.ValueType == JSObjectType.NotExist)
+            if (obj != null && obj.valueType == JSObjectType.NotExist)
                 throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible \"" + obj.lastRequestedName + "\" is not defined.")));
             return obj;
         }

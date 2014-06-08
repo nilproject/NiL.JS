@@ -8,6 +8,42 @@ namespace NiL.JS.Statements.Operators
     [Serializable]
     public abstract class Operator : Statement
     {
+        public sealed class SafeVaribleGetter : VaribleReference
+        {
+            private VaribleDescriptor desc;
+
+            internal SafeVaribleGetter(GetVaribleStatement gvs)
+            {
+                desc = gvs.Descriptor;
+                desc.Remove(gvs);
+                desc.Add(this);
+                Position = gvs.Position;
+                Length = gvs.Length;
+            }
+
+            public override string Name
+            {
+                get { return desc.Name; }
+            }
+
+            public override VaribleDescriptor Descriptor { get; internal set; }
+
+            internal override JSObject Invoke(Context context)
+            {
+                return desc.Get(context);
+            }
+
+            internal override JSObject InvokeForAssing(Context context)
+            {
+                return desc.Get(context);
+            }
+
+            public override string ToString()
+            {
+                return desc.Name;
+            }
+        }
+
         internal readonly JSObject tempResult;
 
         protected internal Statement first;
@@ -40,7 +76,17 @@ namespace NiL.JS.Statements.Operators
             try
             {
                 if (this.IsContextIndependent)
-                    _this = new ImmidateValueStatement(this.Invoke(null));
+                {
+                    var res = this.Invoke(null);
+                    if (res.valueType == JSObjectType.Double
+                        && !double.IsNegativeInfinity(1.0 / res.dValue)
+                        && res.dValue == (double)(int)res.dValue)
+                    {
+                        res.iValue = (int)res.dValue;
+                        res.valueType = JSObjectType.Int;
+                    }
+                    _this = new ImmidateValueStatement(res);
+                }
             }
             catch
             { }

@@ -18,7 +18,7 @@ namespace NiL.JS.Statements.Operators
             {
                 double left = Tools.JSObjectToDouble(first.Invoke(context));
                 tempResult.dValue = left % Tools.JSObjectToDouble(second.Invoke(context));
-                tempResult.ValueType = JSObjectType.Double;
+                tempResult.valueType = JSObjectType.Double;
                 return tempResult;
             }
         }

@@ -16,7 +16,7 @@ namespace NiL.JS.Core
     {
         protected EmbeddedType()
         {
-            ValueType = JSObjectType.Object;
+            valueType = JSObjectType.Object;
             oValue = this;
         }
 
@@ -28,7 +28,7 @@ namespace NiL.JS.Core
         [Modules.Hidden]
         public override string ToString()
         {
-            if (oValue != this || ValueType < JSObjectType.Object)
+            if (oValue != this || valueType < JSObjectType.Object)
                 return base.ToString();
             else
                 return GetType().ToString();
@@ -50,7 +50,7 @@ namespace NiL.JS.Core
         {
             if (fields != null)
                 foreach (var r in fields)
-                    if (r.Value.ValueType >= JSObjectType.Undefined)
+                    if (r.Value.valueType >= JSObjectType.Undefined)
                         yield return r.Key;
             if (prototype == null)
                 prototype = TypeProxy.GetPrototype(this.GetType());

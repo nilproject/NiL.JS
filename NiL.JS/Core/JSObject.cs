@@ -54,11 +54,11 @@ namespace NiL.JS.Core
         [Modules.Hidden]
         internal static readonly IEnumerator<string> EmptyEnumerator = ((IEnumerable<string>)(new string[0])).GetEnumerator();
         [Modules.Hidden]
-        internal static readonly JSObject undefined = new JSObject() { ValueType = JSObjectType.Undefined, attributes = JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum | JSObjectAttributes.ReadOnly };
+        internal static readonly JSObject undefined = new JSObject() { valueType = JSObjectType.Undefined, attributes = JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum | JSObjectAttributes.ReadOnly };
         [Modules.Hidden]
-        internal static readonly JSObject Null = new JSObject() { ValueType = JSObjectType.Object, oValue = null, assignCallback = ErrorAssignCallback, attributes = JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum };
+        internal static readonly JSObject Null = new JSObject() { valueType = JSObjectType.Object, oValue = null, assignCallback = ErrorAssignCallback, attributes = JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum };
         [Modules.Hidden]
-        internal static readonly JSObject nullString = new JSObject() { ValueType = JSObjectType.String, oValue = "null", assignCallback = ErrorAssignCallback, attributes = JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum };
+        internal static readonly JSObject nullString = new JSObject() { valueType = JSObjectType.String, oValue = "null", assignCallback = ErrorAssignCallback, attributes = JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum };
         [Modules.Hidden]
         internal static JSObject GlobalPrototype;
 
@@ -80,7 +80,7 @@ namespace NiL.JS.Core
         [Modules.Hidden]
         internal string lastRequestedName;
         [Modules.Hidden]
-        internal JSObjectType ValueType;
+        internal JSObjectType valueType;
         [Modules.Hidden]
         internal int iValue;
         [Modules.Hidden]
@@ -96,7 +96,7 @@ namespace NiL.JS.Core
             [Modules.Hidden]
             get
             {
-                switch (ValueType)
+                switch (valueType)
                 {
                     case JSObjectType.Bool:
                         return iValue != 0;
@@ -118,12 +118,12 @@ namespace NiL.JS.Core
         }
 
         [Modules.Hidden]
-        public JSObjectType Type
+        public JSObjectType ValueType
         {
             [Modules.Hidden]
             get
             {
-                return ValueType;
+                return valueType;
             }
         }
 
@@ -145,17 +145,17 @@ namespace NiL.JS.Core
                 oVal = args.GetField("0", true, false);
             JSObject res = null;
             if ((oVal == null) ||
-                (oVal is JSObject && (((oVal as JSObject).ValueType >= JSObjectType.Object && (oVal as JSObject).oValue == null) || (oVal as JSObject).ValueType <= JSObjectType.Undefined)))
+                (oVal is JSObject && (((oVal as JSObject).valueType >= JSObjectType.Object && (oVal as JSObject).oValue == null) || (oVal as JSObject).valueType <= JSObjectType.Undefined)))
                 return CreateObject();
-            else if ((oVal as JSObject).ValueType >= JSObjectType.Object && (oVal as JSObject).oValue != null)
+            else if ((oVal as JSObject).valueType >= JSObjectType.Object && (oVal as JSObject).oValue != null)
                 return oVal as JSObject;
 
-            if (context.thisBind != null && context.thisBind.ValueType == JSObjectType.Object && context.thisBind.prototype != null && context.thisBind.prototype.oValue == GlobalPrototype)
+            if (context.thisBind != null && context.thisBind.valueType == JSObjectType.Object && context.thisBind.prototype != null && context.thisBind.prototype.oValue == GlobalPrototype)
                 res = context.thisBind;
             else
                 res = CreateObject();
 
-            res.ValueType = JSObjectType.Object;
+            res.valueType = JSObjectType.Object;
             res.oValue = oVal ?? res;
             if (oVal is JSObject)
                 res.prototype = (oVal as JSObject).GetField("__proto__", true, true);
@@ -167,7 +167,7 @@ namespace NiL.JS.Core
         [Modules.Hidden]
         public JSObject()
         {
-            ValueType = JSObjectType.Undefined;
+            valueType = JSObjectType.Undefined;
         }
 
         [Modules.Hidden]
@@ -182,7 +182,7 @@ namespace NiL.JS.Core
         {
             var t = new JSObject(true)
             {
-                ValueType = JSObjectType.Object
+                valueType = JSObjectType.Object
             };
             t.oValue = t;
             return t;
@@ -198,7 +198,7 @@ namespace NiL.JS.Core
         public virtual JSObject GetField(string name, bool fast, bool own)
         {
             fast |= (attributes & JSObjectAttributes.Immutable) != 0;
-            switch (ValueType)
+            switch (valueType)
             {
                 case JSObjectType.NotExist:
                     throw new JSException(TypeProxy.Proxy(new ReferenceError("Varible not defined.")));
@@ -229,7 +229,7 @@ namespace NiL.JS.Core
                 case JSObjectType.Object:
                 case JSObjectType.Property:
                     {
-                        if (oValue != this && (oValue is JSObject) && ((oValue as JSObject).ValueType >= JSObjectType.Object))
+                        if (oValue != this && (oValue is JSObject) && ((oValue as JSObject).valueType >= JSObjectType.Object))
                             return (oValue as JSObject).GetField(name, fast, own);
                         if (oValue == null)
                             throw new JSException(TypeProxy.Proxy(new TypeError("Can't get property \"" + name + "\" of \"null\"")));
@@ -263,13 +263,13 @@ namespace NiL.JS.Core
                     {
                         JSObject res = null;
                         bool fromProto = 
-                            (fields == null || !fields.TryGetValue(name, out res) || res.ValueType < JSObjectType.Undefined) 
+                            (fields == null || !fields.TryGetValue(name, out res) || res.valueType < JSObjectType.Undefined) 
                             && (prototype != null || (GlobalPrototype != this && GlobalPrototype != null)) 
                             && (!own || (prototype != null && prototype.oValue is TypeProxy));
                         if (fromProto)
                         {
                             res = (prototype ?? GlobalPrototype).GetField(name, true, own);
-                            if (own && (prototype.oValue as TypeProxy).prototypeInstance != this.oValue && res.ValueType != JSObjectType.Property)
+                            if (own && (prototype.oValue as TypeProxy).prototypeInstance != this.oValue && res.valueType != JSObjectType.Property)
                                 res = null;
                             if (res == undefined)
                                 res = null;
@@ -291,7 +291,7 @@ namespace NiL.JS.Core
                                     owner.fields[sender.lastRequestedName] = sender;
                                     sender.assignCallback = null;
                                 },
-                                ValueType = JSObjectType.NotExistInObject
+                                valueType = JSObjectType.NotExistInObject
                             };
                         }
                         else if (fromProto && !fast)
@@ -311,8 +311,8 @@ namespace NiL.JS.Core
                         }
                         else
                             res.lastRequestedName = name;
-                        if (res.ValueType == JSObjectType.NotExist)
-                            res.ValueType = JSObjectType.NotExistInObject;
+                        if (res.valueType == JSObjectType.NotExist)
+                            res.valueType = JSObjectType.NotExistInObject;
                         return res;
                     }
             }
@@ -332,33 +332,33 @@ namespace NiL.JS.Core
         [Modules.Hidden]
         internal JSObject ToPrimitiveValue_Value_String()
         {
-            if (ValueType >= JSObjectType.Object && oValue != null)
+            if (valueType >= JSObjectType.Object && oValue != null)
             {
                 if (oValue == null)
                     return nullString;
                 var tpvs = GetField("valueOf", true, false);
                 JSObject res = null;
-                if (tpvs.ValueType == JSObjectType.Function)
+                if (tpvs.valueType == JSObjectType.Function)
                 {
                     res = (tpvs.oValue as NiL.JS.Core.BaseTypes.Function).Invoke(this, null);
-                    if (res.ValueType == JSObjectType.Object)
+                    if (res.valueType == JSObjectType.Object)
                     {
                         if (res.oValue is BaseTypes.String)
                             res = res.oValue as BaseTypes.String;
                     }
-                    if (res.ValueType < JSObjectType.Object)
+                    if (res.valueType < JSObjectType.Object)
                         return res;
                 }
                 tpvs = GetField("toString", true, false);
-                if (tpvs.ValueType == JSObjectType.Function)
+                if (tpvs.valueType == JSObjectType.Function)
                 {
                     res = (tpvs.oValue as NiL.JS.Core.BaseTypes.Function).Invoke(this, null);
-                    if (res.ValueType == JSObjectType.Object)
+                    if (res.valueType == JSObjectType.Object)
                     {
                         if (res.oValue is BaseTypes.String)
                             res = res.oValue as BaseTypes.String;
                     }
-                    if (res.ValueType < JSObjectType.Object)
+                    if (res.valueType < JSObjectType.Object)
                         return res;
                 }
                 throw new JSException(TypeProxy.Proxy(new TypeError("Can't convert object to primitive value.")));
@@ -369,33 +369,33 @@ namespace NiL.JS.Core
         [Modules.Hidden]
         internal JSObject ToPrimitiveValue_String_Value()
         {
-            if (ValueType >= JSObjectType.Object && oValue != null)
+            if (valueType >= JSObjectType.Object && oValue != null)
             {
                 if (oValue == null)
                     return nullString;
                 var tpvs = GetField("toString", true, false);
                 JSObject res = null;
-                if (tpvs.ValueType == JSObjectType.Function)
+                if (tpvs.valueType == JSObjectType.Function)
                 {
                     res = (tpvs.oValue as NiL.JS.Core.BaseTypes.Function).Invoke(this, null);
-                    if (res.ValueType == JSObjectType.Object)
+                    if (res.valueType == JSObjectType.Object)
                     {
                         if (res.oValue is BaseTypes.String)
                             res = res.oValue as BaseTypes.String;
                     }
-                    if (res.ValueType < JSObjectType.Object)
+                    if (res.valueType < JSObjectType.Object)
                         return res;
                 }
                 tpvs = GetField("valueOf", true, false);
-                if (tpvs.ValueType == JSObjectType.Function)
+                if (tpvs.valueType == JSObjectType.Function)
                 {
                     res = (tpvs.oValue as NiL.JS.Core.BaseTypes.Function).Invoke(this, null);
-                    if (res.ValueType == JSObjectType.Object)
+                    if (res.valueType == JSObjectType.Object)
                     {
                         if (res.oValue is BaseTypes.String)
                             res = res.oValue as BaseTypes.String;
                     }
-                    if (res.ValueType < JSObjectType.Object)
+                    if (res.valueType < JSObjectType.Object)
                         return res;
                 }
                 throw new JSException(TypeProxy.Proxy(new TypeError("Can't convert object to primitive value.")));
@@ -417,7 +417,7 @@ namespace NiL.JS.Core
                 return;
             if (value != null)
             {
-                this.ValueType = value.ValueType;
+                this.valueType = value.valueType;
                 this.iValue = value.iValue;
                 this.oValue = value.oValue;
                 this.dValue = value.dValue;
@@ -428,7 +428,7 @@ namespace NiL.JS.Core
             }
             this.fields = null;
             this.prototype = null;
-            this.ValueType = JSObjectType.Undefined;
+            this.valueType = JSObjectType.Undefined;
             this.oValue = null;
             this.prototype = null;
         }
@@ -444,10 +444,10 @@ namespace NiL.JS.Core
         [Modules.Hidden]
         public override string ToString()
         {
-            if (ValueType <= JSObjectType.Undefined)
+            if (valueType <= JSObjectType.Undefined)
                 return "undefined";
             var res = ToPrimitiveValue_String_Value();
-            switch (res.ValueType)
+            switch (res.valueType)
             {
                 case JSObjectType.Bool:
                     return res.iValue != 0 ? "true" : "false";
@@ -471,7 +471,7 @@ namespace NiL.JS.Core
         [Modules.Hidden]
         public virtual IEnumerator<string> GetEnumerator()
         {
-            if (this.GetType() == typeof(JSObject) && ValueType >= JSObjectType.Object)
+            if (this.GetType() == typeof(JSObject) && valueType >= JSObjectType.Object)
             {
                 if (oValue != this && oValue is JSObject)
                     return (oValue as JSObject).GetEnumerator();
@@ -485,7 +485,7 @@ namespace NiL.JS.Core
         {
             foreach (var f in fields)
             {
-                if (f.Value.ValueType >= JSObjectType.Undefined && (f.Value.attributes & JSObjectAttributes.DoNotEnum) == 0)
+                if (f.Value.valueType >= JSObjectType.Undefined && (f.Value.attributes & JSObjectAttributes.DoNotEnum) == 0)
                     yield return f.Key;
             }
         }
@@ -495,7 +495,7 @@ namespace NiL.JS.Core
         [Modules.ParametersCount(0)]
         public virtual JSObject toString(JSObject args)
         {
-            switch (this.ValueType)
+            switch (this.valueType)
             {
                 case JSObjectType.Int:
                 case JSObjectType.Double:
@@ -542,9 +542,9 @@ namespace NiL.JS.Core
         [Modules.DoNotEnumerateAttribute]
         public virtual JSObject toLocaleString()
         {
-            if (ValueType >= JSObjectType.Object && oValue == null)
+            if (valueType >= JSObjectType.Object && oValue == null)
                 throw new JSException(TypeProxy.Proxy(new TypeError("toLocaleString calling on null.")));
-            if (ValueType <= JSObjectType.Undefined)
+            if (valueType <= JSObjectType.Undefined)
                 throw new JSException(TypeProxy.Proxy(new TypeError("toLocaleString calling on undefined value.")));
             return toString(null);
         }
@@ -552,11 +552,11 @@ namespace NiL.JS.Core
         [Modules.DoNotEnumerateAttribute]
         public virtual JSObject valueOf()
         {
-            if (ValueType >= JSObjectType.Object && oValue == null)
-                throw new JSException(TypeProxy.Proxy(new TypeError("toLocaleString calling on null.")));
-            if (ValueType <= JSObjectType.Undefined)
-                throw new JSException(TypeProxy.Proxy(new TypeError("toLocaleString calling on undefined value.")));
-            if (ValueType >= JSObjectType.Object && oValue is JSObject && oValue != this)
+            if (valueType >= JSObjectType.Object && oValue == null)
+                throw new JSException(TypeProxy.Proxy(new TypeError("valueOf calling on null.")));
+            if (valueType <= JSObjectType.Undefined)
+                throw new JSException(TypeProxy.Proxy(new TypeError("valueOf calling on undefined value.")));
+            if (valueType >= JSObjectType.Object && oValue is JSObject && oValue != this)
                 return (oValue as JSObject).valueOf();
             else
                 return this;
@@ -565,16 +565,16 @@ namespace NiL.JS.Core
         [Modules.DoNotEnumerateAttribute]
         public virtual JSObject isPrototypeOf(JSObject args)
         {
-            if (ValueType >= JSObjectType.Object && oValue == null)
-                throw new JSException(TypeProxy.Proxy(new TypeError("toLocaleString calling on null.")));
-            if (ValueType <= JSObjectType.Undefined)
-                throw new JSException(TypeProxy.Proxy(new TypeError("toLocaleString calling on undefined value.")));
+            if (valueType >= JSObjectType.Object && oValue == null)
+                throw new JSException(TypeProxy.Proxy(new TypeError("isPrototypeOf calling on null.")));
+            if (valueType <= JSObjectType.Undefined)
+                throw new JSException(TypeProxy.Proxy(new TypeError("isPrototypeOf calling on undefined value.")));
             if (args.GetField("length", true, false).iValue == 0)
                 return false;
             var a = args.GetField("0", true, false);
-            if (this.ValueType >= JSObjectType.Object && this.oValue != null)
+            if (this.valueType >= JSObjectType.Object && this.oValue != null)
             {
-                while (a.ValueType >= JSObjectType.Object && a.oValue != null)
+                while (a.valueType >= JSObjectType.Object && a.oValue != null)
                 {
                     if (a.oValue == this.oValue)
                         return true;
@@ -591,7 +591,7 @@ namespace NiL.JS.Core
         {
             JSObject name = args.GetField("0", true, false);
             string n = "";
-            switch (name.ValueType)
+            switch (name.valueType)
             {
                 case JSObjectType.Undefined:
                 case JSObjectType.NotExistInObject:
@@ -617,11 +617,11 @@ namespace NiL.JS.Core
                 case JSObjectType.Object:
                     {
                         args = name.ToPrimitiveValue_Value_String();
-                        if (args.ValueType == JSObjectType.String)
+                        if (args.valueType == JSObjectType.String)
                             n = name.oValue as string;
-                        if (args.ValueType == JSObjectType.Int)
+                        if (args.valueType == JSObjectType.Int)
                             n = name.iValue.ToString(System.Globalization.CultureInfo.InvariantCulture);
-                        if (args.ValueType == JSObjectType.Double)
+                        if (args.valueType == JSObjectType.Double)
                             n = Tools.DoubleToString(name.dValue);
                         break;
                     }
@@ -631,21 +631,21 @@ namespace NiL.JS.Core
                     throw new NotImplementedException("Object.hasOwnProperty. Invalid Value Type");
             }
             var res = GetField(n, true, true);
-            res = (res.ValueType >= JSObjectType.Undefined) && (res != JSObject.undefined);
+            res = (res.valueType >= JSObjectType.Undefined) && (res != JSObject.undefined);
             return res;
         }
 
         [Modules.DoNotEnumerateAttribute]
         public virtual JSObject propertyIsEnumerable(JSObject args)
         {
-            if (ValueType >= JSObjectType.Object && oValue == null)
+            if (valueType >= JSObjectType.Object && oValue == null)
                 throw new JSException(TypeProxy.Proxy(new TypeError("propertyIsEnumerable calling on null.")));
-            if (ValueType <= JSObjectType.Undefined)
+            if (valueType <= JSObjectType.Undefined)
                 throw new JSException(TypeProxy.Proxy(new TypeError("propertyIsEnumerable calling on undefined value.")));
             JSObject name = args.GetField("0", true, false);
             string n = name.ToString();
             var res = GetField(n, true, true);
-            res = (res.ValueType >= JSObjectType.Undefined) && (res != JSObject.undefined) && ((res.attributes & JSObjectAttributes.DoNotEnum) == 0);
+            res = (res.valueType >= JSObjectType.Undefined) && (res != JSObject.undefined) && ((res.attributes & JSObjectAttributes.DoNotEnum) == 0);
             return res;
         }
 
@@ -663,7 +663,7 @@ namespace NiL.JS.Core
 
         public static JSObject getPrototypeOf(JSObject args)
         {
-            if (args.GetField("0", true, false).ValueType < JSObjectType.Object)
+            if (args.GetField("0", true, false).valueType < JSObjectType.Object)
                 throw new JSException(TypeProxy.Proxy(new TypeError("Parameter isn't an Object.")));
             return args.GetField("0", true, false).prototype;
         }
@@ -708,7 +708,7 @@ namespace NiL.JS.Core
 #endif
         public static explicit operator bool(JSObject obj)
         {
-            var vt = obj.ValueType;
+            var vt = obj.valueType;
             switch (vt)
             {
                 case JSObjectType.Int:

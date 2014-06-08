@@ -97,11 +97,11 @@ namespace NiL.JS.Core
             globalContext.InitField("isNaN").Assign(new ExternalFunction((t, x) =>
             {
                 var r = x.GetField("0", true, false);
-                if (r.ValueType == JSObjectType.Double)
+                if (r.valueType == JSObjectType.Double)
                     return double.IsNaN(r.dValue);
-                if (r.ValueType == JSObjectType.Bool || r.ValueType == JSObjectType.Int || r.ValueType == JSObjectType.Date)
+                if (r.valueType == JSObjectType.Bool || r.valueType == JSObjectType.Int || r.valueType == JSObjectType.Date)
                     return false;
-                if (r.ValueType == JSObjectType.String)
+                if (r.valueType == JSObjectType.String)
                 {
                     double d = 0;
                     int i = 0;
@@ -142,7 +142,7 @@ namespace NiL.JS.Core
             {
                 var r = x.GetField("0", true, false);
                 for (; ; )
-                    switch (r.ValueType)
+                    switch (r.valueType)
                     {
                         case JSObjectType.Bool:
                         case JSObjectType.Int:
@@ -213,14 +213,14 @@ namespace NiL.JS.Core
                         var targs = new JSObject(true)
                         {
                             oValue = Arguments.Instance,
-                            ValueType = JSObjectType.Object,
+                            valueType = JSObjectType.Object,
                             attributes = JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum
                         };
                         targs.fields["length"] = new Number(1) { assignCallback = null, attributes = JSObjectAttributes.DoNotEnum };
                         targs.fields["0"] = new Number((int)o) { assignCallback = null, attributes = JSObjectAttributes.Argument };
                         (targs.fields["callee"] = new JSObject()
                         {
-                            ValueType = JSObjectType.Function,
+                            valueType = JSObjectType.Function,
                             oValue = function,
                             attributes = JSObjectAttributes.DoNotEnum
                         }).Protect();
@@ -324,12 +324,12 @@ namespace NiL.JS.Core
             {
                 res = baseProto.GetField(name, true, true);
                 if (res == JSObject.undefined)
-                    res = new JSObject() { ValueType = JSObjectType.NotExist };
+                    res = new JSObject() { valueType = JSObjectType.NotExist };
                 else
                     res = res.Clone() as JSObject;
             }
             else
-                res = new JSObject() { ValueType = JSObjectType.NotExist };
+                res = new JSObject() { valueType = JSObjectType.NotExist };
             res.lastRequestedName = name;
             res.assignCallback = (sender) =>
             {
@@ -394,8 +394,8 @@ namespace NiL.JS.Core
                             thisBind = c.thisBind;
                     }
                 }
-                else if (thisBind.ValueType < JSObjectType.Undefined) // было "delete this". Просто вернём к жизни существующий объект
-                    thisBind.ValueType = JSObjectType.Object;
+                else if (thisBind.valueType < JSObjectType.Undefined) // было "delete this". Просто вернём к жизни существующий объект
+                    thisBind.valueType = JSObjectType.Object;
                 return thisBind;
             }
             bool fromProto = (fields == null || !fields.TryGetValue(name, out res)) && (prototype != null);
@@ -409,8 +409,8 @@ namespace NiL.JS.Core
             }
             else
             {
-                if (res.ValueType == JSObjectType.NotExistInObject)
-                    res.ValueType = JSObjectType.NotExist;
+                if (res.valueType == JSObjectType.NotExistInObject)
+                    res.valueType = JSObjectType.NotExist;
             }
             res.lastRequestedName = name;
             return res;

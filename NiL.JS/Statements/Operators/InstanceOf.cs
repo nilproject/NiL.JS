@@ -23,10 +23,10 @@ namespace NiL.JS.Statements.Operators
                 try
                 {
                     var c = Tools.RaiseIfNotExist(second.Invoke(context));
-                    if (c.ValueType != JSObjectType.Function)
+                    if (c.valueType != JSObjectType.Function)
                         throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError("Right-hand value of instanceof is not function.")));
                     c = c.GetField("prototype", true, false);
-                    tempResult.ValueType = JSObjectType.Bool;
+                    tempResult.valueType = JSObjectType.Bool;
                     tempResult.iValue = 0;
                     if (c.oValue != null)
                     {
@@ -34,7 +34,7 @@ namespace NiL.JS.Statements.Operators
                         Type type = null;
                         if (tpmode)
                             type = (c.oValue as TypeProxy).hostedType;
-                        while (a.ValueType >= JSObjectType.Object && a.oValue != null)
+                        while (a.valueType >= JSObjectType.Object && a.oValue != null)
                         {
                             if (a.oValue == c.oValue || (tpmode && a.oValue is TypeProxy && (a.oValue as TypeProxy).hostedType == type))
                             {

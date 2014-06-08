@@ -162,16 +162,16 @@ namespace NiL.JS.Core
                 {
                     _this.oValue = obj;
                     if (obj is BaseTypes.Date)
-                        _this.ValueType = JSObjectType.Date;
+                        _this.valueType = JSObjectType.Date;
                     else if (obj is JSObject)
-                        _this.ValueType = (JSObjectType)System.Math.Max((int)JSObjectType.Object, (int)(obj as JSObject).ValueType);
+                        _this.valueType = (JSObjectType)System.Math.Max((int)JSObjectType.Object, (int)(obj as JSObject).valueType);
                     res = _this;
                 }
                 else
                 {
                     if (proxy.hostedType == typeof(JSObject))
                     {
-                        if (((obj as JSObject).oValue is JSObject) && ((obj as JSObject).oValue as JSObject).ValueType >= JSObjectType.Object)
+                        if (((obj as JSObject).oValue is JSObject) && ((obj as JSObject).oValue as JSObject).valueType >= JSObjectType.Object)
                             return (obj as JSObject).oValue as JSObject;
                     }
                     if (proxy.hostedType == typeof(Date))
@@ -180,7 +180,7 @@ namespace NiL.JS.Core
                         res = obj is JSObject ? obj as JSObject : new JSObject(false)
                         {
                             oValue = obj,
-                            ValueType = JSObjectType.Object,
+                            valueType = JSObjectType.Object,
                             prototype = TypeProxy.GetPrototype(proxy.hostedType)
                         };
                 }

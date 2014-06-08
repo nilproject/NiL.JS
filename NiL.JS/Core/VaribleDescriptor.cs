@@ -11,9 +11,10 @@ namespace NiL.JS.Core
         private string name;
         private Context cacheContext;
         private JSObject cacheRes;
+        private Statement owner;
 
         public bool Defined { get; internal set; }
-        public Statement Owner { get; internal set; }
+        public Statement Owner { get { return owner; } internal set { owner = value; } }
         public Statement Inititalizator { get; internal set; }
         public string Name { get { return name; } }
 
@@ -28,16 +29,21 @@ namespace NiL.JS.Core
 
         internal JSObject Get(Context context)
         {
+            if (context == null)
+                throw new ArgumentNullException("context");
             context.objectSource = null;
-            if (context.GetType() == typeof(WithContext))
+            if (context is WithContext)
                 return context.GetField(name);
-            if (cacheRes == null
-                || cacheRes.ValueType < JSObjectType.Undefined
-                || (null == Owner && cacheContext != context) // необъявленные переменные
-                || (context.owner == Owner && cacheContext != context)) // объявленные переменные
+            if (cacheContext != context && (
+                cacheRes == null
+                || context.owner == owner // объявленные переменные
+                || null == owner)) // необъявленные переменные
             {
+                var res = context.GetField(name);
+                if (res.valueType < JSObjectType.Undefined)
+                    return res;
                 cacheContext = context;
-                return cacheRes = context.GetField(name);
+                return cacheRes = res;
             }
             return cacheRes;
         }
@@ -46,8 +52,24 @@ namespace NiL.JS.Core
         {
             if (reference.Name != name)
                 throw new ArgumentException("Try to add reference with different name.");
+            if (reference.Descriptor == this)
+                return;
+            if (reference.Descriptor != null)
+                throw new ArgumentException("Try to double registration reference.");
             references.Add(reference);
             reference.Descriptor = this;
+        }
+
+        internal void Remove(VaribleReference reference)
+        {
+            if (reference.Name != name)
+                throw new ArgumentException("Try to remove reference with different name.");
+            if (reference.Descriptor == null)
+                return;
+            if (reference.Descriptor != this)
+                throw new ArgumentException("Try to remove reference from another descriptor.");
+            references.Remove(reference);
+            reference.Descriptor = null;
         }
 
         internal VaribleDescriptor(VaribleReference proto, bool defined)

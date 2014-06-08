@@ -82,7 +82,7 @@ namespace NiL.JS.Core
             else
             {
                 var type = value.GetType();
-                var res = new JSObject() { oValue = value, ValueType = JSObjectType.Object, prototype = GetPrototype(type) };
+                var res = new JSObject() { oValue = value, valueType = JSObjectType.Object, prototype = GetPrototype(type) };
                 res.attributes |= res.prototype.attributes & JSObjectAttributes.Immutable;
                 return res;
             }
@@ -125,7 +125,7 @@ namespace NiL.JS.Core
         private TypeProxy()
             : base(true)
         {
-            ValueType = JSObjectType.Object;
+            valueType = JSObjectType.Object;
             oValue = this;
         }
 
@@ -148,7 +148,7 @@ namespace NiL.JS.Core
                     {
                         _prototypeInstance = new JSObject()
                         {
-                            ValueType = JSObjectType.Object,
+                            valueType = JSObjectType.Object,
                             oValue = this // Не убирать!
                         };
                     }
@@ -161,14 +161,14 @@ namespace NiL.JS.Core
                             {
                                 _prototypeInstance = ictor.Invoke(null);
                                 (_prototypeInstance as JSObject).fields = this.fields;
-                                if ((_prototypeInstance as JSObject).ValueType < JSObjectType.Object)
-                                    (_prototypeInstance as JSObject).ValueType = JSObjectType.Object;
+                                if ((_prototypeInstance as JSObject).valueType < JSObjectType.Object)
+                                    (_prototypeInstance as JSObject).valueType = JSObjectType.Object;
                             }
                         }
                     }
                 }
 
-                ValueType = _prototypeInstance is JSObject ? (JSObjectType)System.Math.Max((int)(_prototypeInstance as JSObject).ValueType, (int)JSObjectType.Object) : JSObjectType.Object;
+                valueType = _prototypeInstance is JSObject ? (JSObjectType)System.Math.Max((int)(_prototypeInstance as JSObject).valueType, (int)JSObjectType.Object) : JSObjectType.Object;
                 oValue = this;
                 attributes |= JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum | JSObjectAttributes.ReadOnly;
                 if (hostedType.IsDefined(typeof(ImmutableAttribute), false))
@@ -241,7 +241,7 @@ namespace NiL.JS.Core
             JSObject r = null;
             if (fields.TryGetValue(name, out r))
             {
-                if (r.ValueType < JSObjectType.Undefined)
+                if (r.valueType < JSObjectType.Undefined)
                     r.Assign(DefaultFieldGetter(name, fast, own));
                 return r;
             }
@@ -325,7 +325,7 @@ namespace NiL.JS.Core
                             {
                                 r = new JSObject()
                                 {
-                                    ValueType = JSObjectType.Property,
+                                    valueType = JSObjectType.Property,
                                     oValue = new Function[] 
                                     {
                                         m[0].IsDefined(typeof(Modules.ProtectedAttribute), false) ? 
@@ -338,7 +338,7 @@ namespace NiL.JS.Core
                             {
                                 r = new JSObject()
                                 {
-                                    ValueType = JSObjectType.Property,
+                                    valueType = JSObjectType.Property,
                                     oValue = new Function[] 
                                     {
                                         !m[0].IsDefined(typeof(Modules.ProtectedAttribute), false) ? new ExternalFunction((c,a)=>{ field.SetValue(field.IsStatic ? null : (c.thisBind ?? c.GetField("this")).oValue, a.GetField("0", true, false).Value); return null; }) : null,
@@ -357,7 +357,7 @@ namespace NiL.JS.Core
                             {
                                 r = new JSObject()
                                     {
-                                        ValueType = JSObjectType.Property,
+                                        valueType = JSObjectType.Property,
                                         oValue = new Function[] 
                                         { 
                                             pinfo.CanWrite && pinfo.GetSetMethod(false) != null && !pinfo.IsDefined(typeof(ProtectedAttribute), false) ? new MethodProxy(pinfo.GetSetMethod(false), cva, new[]{ cva }) : null,
@@ -369,7 +369,7 @@ namespace NiL.JS.Core
                             {
                                 r = new JSObject()
                                 {
-                                    ValueType = JSObjectType.Property,
+                                    valueType = JSObjectType.Property,
                                     oValue = new Function[] 
                                         { 
                                             pinfo.CanWrite && pinfo.GetSetMethod(false) != null && !pinfo.IsDefined(typeof(ProtectedAttribute), false) ? new MethodProxy(pinfo.GetSetMethod(false)) : null,
@@ -385,7 +385,7 @@ namespace NiL.JS.Core
                             var pinfo = (EventInfo)m[0];
                             r = new JSObject()
                             {
-                                ValueType = JSObjectType.Property,
+                                valueType = JSObjectType.Property,
                                 oValue = new Function[] { 
                                     new MethodProxy(pinfo.GetAddMethod()),
                                     null
@@ -421,7 +421,7 @@ namespace NiL.JS.Core
             var name = args.GetField("0", true, false).ToString();
             JSObject temp;
             if (fields != null && fields.TryGetValue(name, out temp))
-                return temp.ValueType >= JSObjectType.Undefined && (temp.attributes & JSObjectAttributes.DoNotEnum) == 0;
+                return temp.valueType >= JSObjectType.Undefined && (temp.attributes & JSObjectAttributes.DoNotEnum) == 0;
             IList<MemberInfo> m = null;
             if (members.TryGetValue(name, out m))
             {

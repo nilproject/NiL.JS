@@ -32,14 +32,14 @@ namespace NiL.JS.Statements.Operators
             JSObject newThisBind = null;
             Function func = null;
             var temp = first.Invoke(context);
-            if (temp.ValueType == JSObjectType.NotExist)
+            if (temp.valueType == JSObjectType.NotExist)
             {
                 if (context.thisBind == null)
                     throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible not defined.")));
                 else
                     throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError(FirstOperand + " not exist.")));
             }
-            if (temp.ValueType != JSObjectType.Function && !(temp.ValueType == JSObjectType.Object && temp.oValue is Function))
+            if (temp.valueType != JSObjectType.Function && !(temp.valueType == JSObjectType.Object && temp.oValue is Function))
                 throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError(first + " is not callable")));
             func = temp.oValue as Function;
 
@@ -47,7 +47,7 @@ namespace NiL.JS.Statements.Operators
 
             JSObject arguments = new JSObject(false)
                 {
-                    ValueType = JSObjectType.Object,
+                    valueType = JSObjectType.Object,
                     oValue = NiL.JS.Core.Arguments.Instance,
                     attributes = JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum
                 };
@@ -67,7 +67,7 @@ namespace NiL.JS.Statements.Operators
             }
             arguments.fields["callee"] = field = new JSObject()
             {
-                ValueType = JSObjectType.Function,
+                valueType = JSObjectType.Function,
                 oValue = func,
                 attributes = JSObjectAttributes.DoNotEnum
             };

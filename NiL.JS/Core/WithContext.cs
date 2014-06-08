@@ -13,11 +13,11 @@ namespace NiL.JS.Core
         {
             if (obj == null)
                 throw new ArgumentNullException("obj");
-            if (obj.ValueType == JSObjectType.NotExist)
+            if (obj.valueType == JSObjectType.NotExist)
                 throw new JSException(TypeProxy.Proxy(new ReferenceError("Varible not defined.")));
-            if (obj.ValueType <= JSObjectType.Undefined)
+            if (obj.valueType <= JSObjectType.Undefined)
                 throw new JSException(TypeProxy.Proxy(new TypeError("Can't access to property value of \"undefined\".")));
-            if (obj.ValueType >= JSObjectType.Object && obj.oValue == null)
+            if (obj.valueType >= JSObjectType.Object && obj.oValue == null)
                 throw new JSException(TypeProxy.Proxy(new TypeError("Can't access to property value of \"null\".")));
             @object = obj.Clone() as JSObject;
         }
@@ -31,7 +31,7 @@ namespace NiL.JS.Core
         {
             thisBind = prototype.thisBind;
             var res = @object.GetField(name, true, false);
-            if (res.ValueType < JSObjectType.Undefined || res == JSObject.undefined)
+            if (res.valueType < JSObjectType.Undefined || res == JSObject.undefined)
                 return prototype.GetField(name);
             else
             {

@@ -42,7 +42,7 @@ namespace NiL.JS.Statements
 
         public override string ToString()
         {
-            if (value.ValueType == JSObjectType.String)
+            if (value.valueType == JSObjectType.String)
                 return "\"" + value.oValue + "\"";
             if (value.oValue is Statement[])
             {

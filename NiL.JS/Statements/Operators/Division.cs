@@ -17,7 +17,7 @@ namespace NiL.JS.Statements.Operators
             lock (this)
             {
                 tempResult.dValue = Tools.JSObjectToDouble(first.Invoke(context)) / Tools.JSObjectToDouble(second.Invoke(context));
-                tempResult.ValueType = JSObjectType.Double;
+                tempResult.valueType = JSObjectType.Double;
                 return tempResult;
             }
         }

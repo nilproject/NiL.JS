@@ -25,7 +25,7 @@ namespace NiL.JS.Core
         {
             this.context = context;
             fields = context.fields;
-            ValueType = JSObjectType.Object;
+            valueType = JSObjectType.Object;
             oValue = this;
             prototype = thisProto ?? createThisProto();
             assignCallback = (sender) => { throw new JSException(TypeProxy.Proxy(new ReferenceError("Invalid left-hand side in assignment"))); };
@@ -34,8 +34,8 @@ namespace NiL.JS.Core
         public override JSObject GetField(string name, bool fast, bool own)
         {
             var res = context.GetField(name);
-            if (res.ValueType == JSObjectType.NotExist)
-                res.ValueType = JSObjectType.NotExistInObject;
+            if (res.valueType == JSObjectType.NotExist)
+                res.valueType = JSObjectType.NotExistInObject;
             return res;
         }
 

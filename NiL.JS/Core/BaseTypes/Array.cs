@@ -27,7 +27,7 @@ namespace NiL.JS.Core.BaseTypes
             {
                 do
                     index++;
-                while (index < owner.data.Count && (owner.data[index] == null || owner.data[index].ValueType < JSObjectType.Undefined));
+                while (index < owner.data.Count && (owner.data[index] == null || owner.data[index].valueType < JSObjectType.Undefined));
                 return index < owner.data.Count;
             }
 
@@ -59,7 +59,7 @@ namespace NiL.JS.Core.BaseTypes
                     if (pv != undefined)
                         base.Assign(pv);
                     else
-                        this.ValueType = JSObjectType.NotExistInObject;
+                        this.valueType = JSObjectType.NotExistInObject;
                 }
                 else
                     base.Assign(owner[index]);
@@ -199,7 +199,7 @@ namespace NiL.JS.Core.BaseTypes
             for (int i = 0; i < args.Length; i++)
             {
                 var arg = args[i];
-                if (arg.ValueType == JSObjectType.Object && arg.oValue is Array)
+                if (arg.valueType == JSObjectType.Object && arg.oValue is Array)
                 {
                     Array arr = arg.oValue as Array;
                     for (int j = 0; j < arr.data.Count; j++)
@@ -228,7 +228,7 @@ namespace NiL.JS.Core.BaseTypes
             int pos = 0;
             if (args.Length > 1)
             {
-                switch (args[1].ValueType)
+                switch (args[1].valueType)
                 {
                     case JSObjectType.Int:
                     case JSObjectType.Bool:
@@ -304,7 +304,7 @@ namespace NiL.JS.Core.BaseTypes
             int pos = 0;
             if (args.Length > 1)
             {
-                switch (args[1].ValueType)
+                switch (args[1].valueType)
                 {
                     case JSObjectType.Int:
                     case JSObjectType.Bool:
@@ -389,7 +389,7 @@ namespace NiL.JS.Core.BaseTypes
                 int pos1 = 0;
                 if (args.Length > 1)
                 {
-                    if (args[1].ValueType <= JSObjectType.Undefined)
+                    if (args[1].valueType <= JSObjectType.Undefined)
                         pos1 = data.Count;
                     else
                         pos1 = System.Math.Min(Tools.JSObjectToInt(args[1], true), data.Count);
@@ -427,7 +427,7 @@ namespace NiL.JS.Core.BaseTypes
                     for (int i = 0; i < t.data.Count; i++)
                     {
                         var val = this.GetField(i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture), true, false);
-                        if (val.ValueType > JSObjectType.Undefined)
+                        if (val.valueType > JSObjectType.Undefined)
                             t.data[i] = val.Clone() as JSObject;
                     }
                     return t.slice(args);
@@ -438,7 +438,7 @@ namespace NiL.JS.Core.BaseTypes
                     long pos1 = 0;
                     if (args.Length > 1)
                     {
-                        if (args[1].ValueType <= JSObjectType.Undefined)
+                        if (args[1].valueType <= JSObjectType.Undefined)
                             pos1 = data.Count;
                         else
                             pos1 = (long)Tools.JSObjectToDouble(args[1]);
@@ -483,7 +483,7 @@ namespace NiL.JS.Core.BaseTypes
                 int pos1 = 0;
                 if (args.Length > 1)
                 {
-                    if (args[1].ValueType <= JSObjectType.Undefined)
+                    if (args[1].valueType <= JSObjectType.Undefined)
                         pos1 = 0;
                     else
                         pos1 = System.Math.Min(Tools.JSObjectToInt(args[1], true), data.Count);
@@ -521,7 +521,7 @@ namespace NiL.JS.Core.BaseTypes
                 long pos1 = 0;
                 if (args.Length > 1)
                 {
-                    if (args[1].ValueType <= JSObjectType.Undefined)
+                    if (args[1].valueType <= JSObjectType.Undefined)
                         pos1 = data.Count;
                     else
                         pos1 = (long)Tools.JSObjectToDouble(args[1]);
@@ -571,12 +571,12 @@ namespace NiL.JS.Core.BaseTypes
                     if (pos0 < 0x7fffffff)
                     {
                         lobj.iValue = (int)(pos0);
-                        lobj.ValueType = JSObjectType.Int;
+                        lobj.valueType = JSObjectType.Int;
                     }
                     else
                     {
                         lobj.dValue = pos0;
-                        lobj.ValueType = JSObjectType.Double;
+                        lobj.valueType = JSObjectType.Double;
                     }
                 }
                 return t;
@@ -640,7 +640,7 @@ namespace NiL.JS.Core.BaseTypes
                 length.assignCallback = null;
                 args.fields.Clear();
                 length.iValue = 2;
-                length.ValueType = JSObjectType.Int;
+                length.valueType = JSObjectType.Int;
                 args.fields["length"] = length;
                 args.fields["0"] = first;
                 args.fields["1"] = second;
@@ -648,7 +648,7 @@ namespace NiL.JS.Core.BaseTypes
                 int undefBlockStart = data.Count;
                 for (int i = 0; i < undefBlockStart; i++)
                 {
-                    if (data[i] == null || data[i].ValueType <= JSObjectType.Undefined)
+                    if (data[i] == null || data[i].valueType <= JSObjectType.Undefined)
                     {
                         undefBlockStart--;
                         var t = data[i];
@@ -751,12 +751,12 @@ namespace NiL.JS.Core.BaseTypes
             bool res = true;
             var obj = context.thisBind;
             var len = obj.GetField("length", true, false);
-            if (len.ValueType == JSObjectType.Property)
+            if (len.valueType == JSObjectType.Property)
                 len = (len.oValue as NiL.JS.Core.BaseTypes.Function[])[1].Invoke(obj, null);
             var count = Tools.JSObjectToDouble(len);
             var cbargs = JSObject.CreateObject();
             cbargs.GetField("length", false, true).Assign(3);
-            var index = new JSObject(false) { ValueType = JSObjectType.Int };
+            var index = new JSObject(false) { valueType = JSObjectType.Int };
             cbargs.GetField("1", false, true).Assign(index);
             cbargs.GetField("2", false, true).Assign(obj);
             var stat = args.GetField("0", true, false).oValue as Function;

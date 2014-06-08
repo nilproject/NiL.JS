@@ -375,7 +375,7 @@ namespace NiL.JS.Statements
                             string flags = value.Substring(s);
                             first = new Operators.Call(new GetVaribleStatement("RegExp") { Position = i }, new ImmidateValueStatement(new JSObject()
                             {
-                                ValueType = JSObjectType.Object,
+                                valueType = JSObjectType.Object,
                                 oValue = new Statement[2]
 								{
 									new ImmidateValueStatement(value.Substring(1, s - 2)) { Position = i , Length = s - 2 },
@@ -631,7 +631,7 @@ namespace NiL.JS.Statements
                                 throw new ArgumentException("Invalid char in ternary operator");
                             do i++; while (char.IsWhiteSpace(code[i]));
                             state.InExpression = true;
-                            second = new ImmidateValueStatement(new JSObject() { ValueType = JSObjectType.Object, oValue = sec }) { Position = position };
+                            second = new ImmidateValueStatement(new JSObject() { valueType = JSObjectType.Object, oValue = sec }) { Position = position };
                             sec[1] = Parser.Parse(state, ref i, 1);
                             second.Length = i - second.Position;
                             binary = false;
@@ -995,7 +995,7 @@ namespace NiL.JS.Statements
                             first = new OperatorStatement()
                             {
                                 first = first,
-                                second = new ImmidateValueStatement(new JSObject() { ValueType = JSObjectType.Object, oValue = args.ToArray() }) { Position = startPos, Length = i - startPos },
+                                second = new ImmidateValueStatement(new JSObject() { valueType = JSObjectType.Object, oValue = args.ToArray() }) { Position = startPos, Length = i - startPos },
                                 _type = OperationType.Call,
                                 Position = first.Position,
                                 Length = i - first.Position + 1

@@ -39,13 +39,13 @@ namespace NiL.JS.Statements.Operators
                 if (first != null && second != null)
                     throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid incriment operand.")));
                 var val = (first ?? second).InvokeForAssing(context);
-                if (val.ValueType == JSObjectType.NotExist)
+                if (val.valueType == JSObjectType.NotExist)
                     throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible not defined.")));
                 if (val.assignCallback != null)
                     val.assignCallback(val);
                 if ((val.attributes & JSObjectAttributes.ReadOnly) != 0)
                     return double.NaN;
-                switch (val.ValueType)
+                switch (val.valueType)
                 {
                     case JSObjectType.Object:
                     case JSObjectType.Date:
@@ -55,11 +55,11 @@ namespace NiL.JS.Statements.Operators
                             break;
                         }
                 }
-                switch (val.ValueType)
+                switch (val.valueType)
                 {
                     case JSObjectType.Bool:
                         {
-                            val.ValueType = JSObjectType.Int;
+                            val.valueType = JSObjectType.Int;
                             break;
                         }
                     case JSObjectType.String:
@@ -68,7 +68,7 @@ namespace NiL.JS.Statements.Operators
                             int i = 0;
                             if (!Tools.ParseNumber(val.oValue as string, ref i, false, out resd))
                                 resd = double.NaN;
-                            val.ValueType = JSObjectType.Double;
+                            val.valueType = JSObjectType.Double;
                             val.dValue = resd;
                             break;
                         }
@@ -77,26 +77,26 @@ namespace NiL.JS.Statements.Operators
                     case JSObjectType.Object: // null
                         {
                             val.iValue = 0;
-                            val.ValueType = JSObjectType.Int;
+                            val.valueType = JSObjectType.Int;
                             break;
                         }
                 }
                 JSObject o = null;
-                if ((second != null) && (val.ValueType != JSObjectType.Undefined) && (val.ValueType != JSObjectType.NotExistInObject))
+                if ((second != null) && (val.valueType != JSObjectType.Undefined) && (val.valueType != JSObjectType.NotExistInObject))
                 {
                     o = tempResult;
                     o.Assign(val);
                 }
                 else
                     o = val;
-                switch (val.ValueType)
+                switch (val.valueType)
                 {
                     case JSObjectType.Int:
                         {
                             if (val.iValue == 0x7FFFFFFF)
                             {
                                 val.dValue = val.iValue + 1.0;
-                                val.ValueType = JSObjectType.Double;
+                                val.valueType = JSObjectType.Double;
                             }
                             else
                                 val.iValue++;
@@ -110,7 +110,7 @@ namespace NiL.JS.Statements.Operators
                     case JSObjectType.Undefined:
                     case JSObjectType.NotExistInObject:
                         {
-                            val.ValueType = JSObjectType.Double;
+                            val.valueType = JSObjectType.Double;
                             val.dValue = double.NaN;
                             break;
                         }

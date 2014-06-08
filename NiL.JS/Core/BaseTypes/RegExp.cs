@@ -20,16 +20,16 @@ namespace NiL.JS.Core.BaseTypes
         public RegExp(JSObject x)
         {
             var ptrn = x.GetField("0", true, false);
-            if (ptrn.ValueType == JSObjectType.Object && ptrn.oValue is RegExp)
+            if (ptrn.valueType == JSObjectType.Object && ptrn.oValue is RegExp)
             {
-                if (x.GetField("length", true, false).iValue > 1 && x.GetField("1", true, false).ValueType > JSObjectType.Undefined)
+                if (x.GetField("length", true, false).iValue > 1 && x.GetField("1", true, false).valueType > JSObjectType.Undefined)
                     throw new JSException(TypeProxy.Proxy(new TypeError("Cannot supply flags when constructing one RegExp from another")));
                 oValue = ptrn.oValue;
                 return;
             }
             global = false;
-            var pattern = ptrn.ValueType > JSObjectType.Undefined ? ptrn.ToString().Replace("\\P", "P") : "";
-            var flags = x.GetField("length", false, true).iValue > 1 && x.GetField("1", true, false).ValueType > JSObjectType.Undefined ? x.GetField("1", true, false).ToString() : "";
+            var pattern = ptrn.valueType > JSObjectType.Undefined ? ptrn.ToString().Replace("\\P", "P") : "";
+            var flags = x.GetField("length", false, true).iValue > 1 && x.GetField("1", true, false).valueType > JSObjectType.Undefined ? x.GetField("1", true, false).ToString() : "";
             try
             {
                 System.Text.RegularExpressions.RegexOptions options = System.Text.RegularExpressions.RegexOptions.ECMAScript;
@@ -172,9 +172,9 @@ namespace NiL.JS.Core.BaseTypes
                 throw new JSException(TypeProxy.Proxy(new TypeError("Try to call RegExp.exec on not RegExp object.")));
             string input = args.GetField("0", true, false).ToString();
             lIndex = Tools.JSObjectToNumber(lIndex);
-            if (lIndex.ValueType == JSObjectType.Double)
+            if (lIndex.valueType == JSObjectType.Double)
             {
-                lIndex.ValueType = JSObjectType.Int;
+                lIndex.valueType = JSObjectType.Int;
                 lIndex.iValue = (int)lIndex.dValue;
             }
             if ((lIndex.iValue >= input.Length || lIndex.iValue < 0) && (input.Length > 0))
@@ -202,9 +202,9 @@ namespace NiL.JS.Core.BaseTypes
         {
             string input = args.GetField("0", true, false).ToString();
             lIndex = Tools.JSObjectToNumber(lIndex);
-            if (lIndex.ValueType == JSObjectType.Double)
+            if (lIndex.valueType == JSObjectType.Double)
             {
-                lIndex.ValueType = JSObjectType.Int;
+                lIndex.valueType = JSObjectType.Int;
                 lIndex.iValue = (int)lIndex.dValue;
             }
             if (lIndex.iValue >= input.Length || lIndex.iValue < 0)

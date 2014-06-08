@@ -7,7 +7,7 @@ namespace NiL.JS.Statements.Operators
     [Serializable]
     public sealed class Assign : Operator
     {
-        private JSObject setterArgs = new JSObject(true) { ValueType = JSObjectType.Object, oValue = Arguments.Instance };
+        private JSObject setterArgs = new JSObject(true) { valueType = JSObjectType.Object, oValue = Arguments.Instance };
         private JSObject setterArg = new JSObject();
 
         public override bool IsContextIndependent
@@ -24,7 +24,7 @@ namespace NiL.JS.Statements.Operators
             setterArgs.fields["length"] = new JSObject()
             {
                 iValue = 1,
-                ValueType = JSObjectType.Int,
+                valueType = JSObjectType.Int,
                 attributes = JSObjectAttributes.DoNotEnum | JSObjectAttributes.DoNotDelete | JSObjectAttributes.ReadOnly
             };
             setterArgs.fields["0"] = setterArg;
@@ -34,11 +34,9 @@ namespace NiL.JS.Statements.Operators
         {
             lock (this)
             {
-                if (first is Operators.Call)
-                    throw new InvalidOperationException("Invalid left-hand side in assignment.");
                 JSObject field = null;
                 field = first.InvokeForAssing(context);
-                if (field.ValueType == JSObjectType.Property)
+                if (field.valueType == JSObjectType.Property)
                 {
                     var fieldSource = context.objectSource;
                     setterArg.Assign(Tools.RaiseIfNotExist(second.Invoke(context)));
@@ -57,11 +55,7 @@ namespace NiL.JS.Statements.Operators
                         context.objectSource = null;
                     }
                 }
-                if (context.strict)
-                    Tools.RaiseIfNotExist(field);
                 var t = second.Invoke(context);
-                if (t.ValueType == JSObjectType.NotExist)
-                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible is not defined.")));
                 field.Assign(t);
                 return t;
             }

@@ -23,10 +23,10 @@ namespace NiL.JS.Statements.Operators
 
         internal override JSObject Invoke(Context context)
         {
-            var val = first.InvokeForAssing(context);
-            if ((val.attributes & JSObjectAttributes.GetValue) != 0)
-                val = (val.oValue as NiL.JS.Core.BaseTypes.Function[])[1].Invoke(context, context.objectSource, null);
-            var vt = val.ValueType;
+            var val = first.Invoke(context);
+            if (val.valueType == JSObjectType.Property)
+                return (val.oValue as NiL.JS.Core.BaseTypes.Function[])[1].Invoke(context, context.objectSource, null);
+            var vt = val.valueType;
             switch (vt)
             {
                 case JSObjectType.Int:
@@ -60,6 +60,14 @@ namespace NiL.JS.Statements.Operators
                     }
                 default: throw new NotImplementedException();
             }
+        }
+
+        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VaribleDescriptor> vars)
+        {
+            base.Optimize(ref _this, depth, vars);
+            if (first is GetVaribleStatement)
+                first = new SafeVaribleGetter(first as GetVaribleStatement);
+            return false;
         }
 
         public override string ToString()

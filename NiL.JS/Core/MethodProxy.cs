@@ -101,7 +101,7 @@ namespace NiL.JS.Core
             if (source != null)
             {
                 var length = source.GetField("length", true, false);
-                len = length.ValueType == JSObjectType.Property ? (length.oValue as Function[])[1].Invoke(source, null).iValue : length.iValue;
+                len = length.valueType == JSObjectType.Property ? (length.oValue as Function[])[1].Invoke(source, null).iValue : length.iValue;
             }
             if (parameters.Length == 1)
             {
@@ -138,7 +138,7 @@ namespace NiL.JS.Core
                             res[i] = obj;
                         else
                         {
-                            var v = obj.ValueType == JSObjectType.Object && obj.oValue != null && obj.oValue.GetType() == typeof(object) ? obj : obj.Value;
+                            var v = obj.valueType == JSObjectType.Object && obj.oValue != null && obj.oValue.GetType() == typeof(object) ? obj : obj.Value;
                             if (v is Core.BaseTypes.Array)
                                 res[i] = convertArray(v as Core.BaseTypes.Array);
                             else if (v is TypeProxy)
@@ -170,7 +170,7 @@ namespace NiL.JS.Core
             if (source.GetType().IsSubclassOf(targetType))
                 return source;
 
-            switch (source.ValueType)
+            switch (source.valueType)
             {
                 case JSObjectType.Int:
                 case JSObjectType.Double:
@@ -180,7 +180,7 @@ namespace NiL.JS.Core
                         var number = new Number();
                         number.iValue = source.iValue;
                         number.dValue = source.dValue;
-                        number.ValueType = source.ValueType;
+                        number.valueType = source.valueType;
                         return number;
                     }
                 case JSObjectType.String:
@@ -212,7 +212,7 @@ namespace NiL.JS.Core
             if (_this is EmbeddedType)
                 return _this;
             object res = null;
-            if (_this.ValueType >= JSObjectType.Object && _this.oValue is JSObject)
+            if (_this.valueType >= JSObjectType.Object && _this.oValue is JSObject)
                 _this = _this.oValue as JSObject;
             res = embeddedTypeConvert(_this, targetType) ?? _this.oValue;
             if (res is TypeProxy)
@@ -252,7 +252,7 @@ namespace NiL.JS.Core
                         res = (info as ConstructorInfo).Invoke(args);
                     else
                     {
-                        var target = hardTarget ?? getTargetObject(thisOverride ?? context.thisBind ?? context.GetField("this"), info.DeclaringType);
+                        var target = hardTarget ?? getTargetObject(thisOverride ?? context.thisBind ?? JSObject.Null, info.DeclaringType);
                         if (target != null && target.GetType() != info.ReflectedType) // you bunny wrote
                         {
                             var minfo = info as MethodInfo;
@@ -384,7 +384,7 @@ namespace NiL.JS.Core
             for (int i = 0; i < prmlen; i++)
                 args.fields[i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture)] = args.GetField(i < 14 ? Tools.NumString[i + 1] : (i + 1).ToString(CultureInfo.InvariantCulture), true, false);
             args.fields.Remove(prmlen < 16 ? Tools.NumString[prmlen] : prmlen.ToString(CultureInfo.InvariantCulture));
-            if (newThis.ValueType < JSObjectType.Object || newThis.oValue != null || (info.DeclaringType == typeof(JSObject)))
+            if (newThis.valueType < JSObjectType.Object || newThis.oValue != null || (info.DeclaringType == typeof(JSObject)))
                 return Invoke(newThis, args);
             else
                 return Invoke(Context.thisBind ?? Context.GetField("this"), args);

@@ -15,7 +15,7 @@ namespace NiL.JS.Statements.Operators
         internal override JSObject Invoke(Context context)
         {
             var temp = first.Invoke(context);
-            var lvt = temp.ValueType;
+            var lvt = temp.valueType;
             switch (lvt)
             {
                 case JSObjectType.Bool:
@@ -23,7 +23,7 @@ namespace NiL.JS.Statements.Operators
                     {
                         int left = temp.iValue;
                         temp = second.Invoke(context);
-                        switch (temp.ValueType)
+                        switch (temp.valueType)
                         {
                             case JSObjectType.Bool:
                             case JSObjectType.Int:
@@ -50,15 +50,15 @@ namespace NiL.JS.Statements.Operators
                             case JSObjectType.Object:
                                 {
                                     temp = temp.ToPrimitiveValue_Value_String();
-                                    if (temp.ValueType == JSObjectType.Int)
+                                    if (temp.valueType == JSObjectType.Int)
                                         goto case JSObjectType.Int;
-                                    if (temp.ValueType == JSObjectType.Bool)
+                                    if (temp.valueType == JSObjectType.Bool)
                                         goto case JSObjectType.Int;
-                                    if (temp.ValueType == JSObjectType.Double)
+                                    if (temp.valueType == JSObjectType.Double)
                                         goto case JSObjectType.Double;
-                                    if (temp.ValueType == JSObjectType.String)
+                                    if (temp.valueType == JSObjectType.String)
                                         goto case JSObjectType.String;
-                                    if (temp.ValueType >= JSObjectType.Object) // null
+                                    if (temp.valueType >= JSObjectType.Object) // null
                                     {
                                         temp.iValue = 0;
                                         goto case JSObjectType.Int;
@@ -83,7 +83,7 @@ namespace NiL.JS.Statements.Operators
                         if (double.IsNaN(left))
                             return this is MoreOrEqual ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False; // Костыль. Для его устранения нужно делать полноценную реализацию оператора MoreOrEqual.
                         else
-                            switch (temp.ValueType)
+                            switch (temp.valueType)
                             {
                                 case JSObjectType.Bool:
                                 case JSObjectType.Int:
@@ -115,15 +115,15 @@ namespace NiL.JS.Statements.Operators
                                 case JSObjectType.Object:
                                     {
                                         temp = temp.ToPrimitiveValue_Value_String();
-                                        if (temp.ValueType == JSObjectType.Int)
+                                        if (temp.valueType == JSObjectType.Int)
                                             goto case JSObjectType.Int;
-                                        if (temp.ValueType == JSObjectType.Bool)
+                                        if (temp.valueType == JSObjectType.Bool)
                                             goto case JSObjectType.Int;
-                                        if (temp.ValueType == JSObjectType.Double)
+                                        if (temp.valueType == JSObjectType.Double)
                                             goto case JSObjectType.Double;
-                                        if (temp.ValueType == JSObjectType.String)
+                                        if (temp.valueType == JSObjectType.String)
                                             goto case JSObjectType.String;
-                                        if (temp.ValueType >= JSObjectType.Object) // null
+                                        if (temp.valueType >= JSObjectType.Object) // null
                                         {
                                             temp.iValue = 0;
                                             goto case JSObjectType.Int;
@@ -140,7 +140,7 @@ namespace NiL.JS.Statements.Operators
                     {
                         string left = temp.oValue as string;
                         temp = second.Invoke(context);
-                        switch (temp.ValueType)
+                        switch (temp.valueType)
                         {
                             case JSObjectType.Bool:
                             case JSObjectType.Int:
@@ -169,7 +169,7 @@ namespace NiL.JS.Statements.Operators
                             case JSObjectType.Object:
                                 {
                                     temp = temp.ToPrimitiveValue_Value_String();
-                                    switch (temp.ValueType)
+                                    switch (temp.valueType)
                                     {
                                         case JSObjectType.Int:
                                         case JSObjectType.Bool:
@@ -223,15 +223,15 @@ namespace NiL.JS.Statements.Operators
                 case JSObjectType.Object:
                     {
                         temp = temp.ToPrimitiveValue_Value_String();
-                        if (temp.ValueType == JSObjectType.Int)
+                        if (temp.valueType == JSObjectType.Int)
                             goto case JSObjectType.Int;
-                        if (temp.ValueType == JSObjectType.Bool)
+                        if (temp.valueType == JSObjectType.Bool)
                             goto case JSObjectType.Int;
-                        if (temp.ValueType == JSObjectType.Double)
+                        if (temp.valueType == JSObjectType.Double)
                             goto case JSObjectType.Double;
-                        if (temp.ValueType == JSObjectType.String)
+                        if (temp.valueType == JSObjectType.String)
                             goto case JSObjectType.String;
-                        if (temp.ValueType >= JSObjectType.Object) // null
+                        if (temp.valueType >= JSObjectType.Object) // null
                         {
                             temp.iValue = 0;
                             goto case JSObjectType.Int;

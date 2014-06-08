@@ -18,7 +18,7 @@ namespace NiL.JS.Statements.Operators
             {
                 var left = Tools.JSObjectToInt(first.Invoke(context));
                 tempResult.iValue = left | Tools.JSObjectToInt(second.Invoke(context));
-                tempResult.ValueType = JSObjectType.Int;
+                tempResult.valueType = JSObjectType.Int;
                 return tempResult;
             }
         }

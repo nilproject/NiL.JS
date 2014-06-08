@@ -22,10 +22,10 @@ namespace NiL.JS.Statements.Operators
             try
             {
                 var source = Tools.RaiseIfNotExist(second.Invoke(context));
-                if (source.ValueType < JSObjectType.Object)
+                if (source.valueType < JSObjectType.Object)
                     throw new JSException(TypeProxy.Proxy(new TypeError("Right-hand value of instanceof is not object.")));
                 var t = source.GetField(fn.ToString(), true, false);
-                return t != JSObject.undefined && t.ValueType >= JSObjectType.Undefined ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+                return t != JSObject.undefined && t.valueType >= JSObjectType.Undefined ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
             }
             finally
             {

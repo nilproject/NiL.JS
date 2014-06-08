@@ -51,16 +51,16 @@ namespace NiL.JS.Statements.Operators
             lock (this)
             {
                 JSObject temp = first.Invoke(context);
-                if (temp.ValueType <= JSObjectType.NotExistInObject)
+                if (temp.valueType <= JSObjectType.NotExistInObject)
                     throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible not defined.")));
-                if (temp.ValueType != JSObjectType.Function && !(temp.ValueType == JSObjectType.Object && temp.oValue is Function))
+                if (temp.valueType != JSObjectType.Function && !(temp.valueType == JSObjectType.Object && temp.oValue is Function))
                     throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError(temp + " is not callable")));
                 if (temp.oValue is MethodProxy)
                     throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError(temp + " can't be used as a constructor")));
 
-                JSObject _this = new JSObject() { ValueType = JSObjectType.Object };
+                JSObject _this = new JSObject() { valueType = JSObjectType.Object };
                 _this.prototype = temp.GetField("prototype", true, false);
-                if (_this.prototype.ValueType < JSObjectType.Object)
+                if (_this.prototype.valueType < JSObjectType.Object)
                     _this.prototype = null;
                 if (!(temp.oValue is TypeProxyConstructor))
                 {
@@ -73,7 +73,7 @@ namespace NiL.JS.Statements.Operators
                 (CallInstance.FirstOperand as ThisSetStat).value = temp;
                 (CallInstance.FirstOperand as ThisSetStat)._this = _this;
                 var res = CallInstance.Invoke(context);
-                if (res.ValueType >= JSObjectType.Object && res.oValue != null)
+                if (res.valueType >= JSObjectType.Object && res.oValue != null)
                     return res;
                 return _this;
             }
@@ -82,7 +82,7 @@ namespace NiL.JS.Statements.Operators
         internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VaribleDescriptor> vars)
         {
             if (second == null)
-                (CallInstance.SecondOperand as ImmidateValueStatement).value = new JSObject() { ValueType = JSObjectType.Object, oValue = new Statement[0] };
+                (CallInstance.SecondOperand as ImmidateValueStatement).value = new JSObject() { valueType = JSObjectType.Object, oValue = new Statement[0] };
             else
                 (CallInstance.SecondOperand as ImmidateValueStatement).value = second.Invoke(null);
             return base.Optimize(ref _this, depth, vars);

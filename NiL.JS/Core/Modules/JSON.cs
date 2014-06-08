@@ -62,7 +62,7 @@ namespace NiL.JS.Core.Modules
                             revargs.data[0] = v.fieldName;
                             revargs.data[1] = val;
                             val = reviewer.Invoke(revargs);
-                            if (val.ValueType <= JSObjectType.Undefined)
+                            if (val.valueType <= JSObjectType.Undefined)
                                 val = null;
                         }
                         if (val != null)
@@ -94,7 +94,7 @@ namespace NiL.JS.Core.Modules
                                 revargs.data[0] = v.fieldName;
                                 revargs.data[1] = val;
                                 val = reviewer.Invoke(revargs);
-                                if (val.ValueType <= JSObjectType.Undefined)
+                                if (val.valueType <= JSObjectType.Undefined)
                                     val = null;
                             }
                             if (val != null)
@@ -135,7 +135,7 @@ namespace NiL.JS.Core.Modules
                                 revargs.data[0] = t.fieldName;
                                 revargs.data[1] = t.obj;
                                 t.obj = reviewer.Invoke(revargs);
-                                if (t.obj.ValueType <= JSObjectType.Undefined)
+                                if (t.obj.valueType <= JSObjectType.Undefined)
                                     t.obj = null;
                             }
                             if (t.obj != null)
@@ -176,9 +176,9 @@ namespace NiL.JS.Core.Modules
 
         public static string stringify(JSObject obj, Function replacer, string space)
         {
-            if (obj.ValueType < JSObjectType.Object)
+            if (obj.valueType < JSObjectType.Object)
             {
-                if (obj.ValueType == JSObjectType.String)
+                if (obj.valueType == JSObjectType.String)
                     return "\"" + (obj.oValue as string)
                         .Replace("\\", "\\\\")
                         .Replace("\"", "\\\"")
@@ -194,7 +194,7 @@ namespace NiL.JS.Core.Modules
             bool first = true;
             foreach (var f in obj.fields)
             {
-                if ((f.Value.ValueType < JSObjectType.Undefined) && ((f.Value.attributes & JSObjectAttributes.DoNotEnum) == 0))
+                if ((f.Value.valueType < JSObjectType.Undefined) && ((f.Value.attributes & JSObjectAttributes.DoNotEnum) == 0))
                     continue;
                 var value = f.Value;
                 if (replacer != null)
@@ -202,7 +202,7 @@ namespace NiL.JS.Core.Modules
                     args.data[0].oValue = f.Key;
                     args.data[1] = f.Value;
                     var t = replacer.Invoke(args);
-                    if (t.ValueType <= JSObjectType.Undefined || (t.ValueType >= JSObjectType.Object && t.oValue == null))
+                    if (t.valueType <= JSObjectType.Undefined || (t.valueType >= JSObjectType.Object && t.oValue == null))
                         continue;
                     value = t;
                 }

@@ -19,7 +19,7 @@ namespace NiL.JS.Statements.Operators
                 var val = first.Invoke(context);
 
                 tempResult.iValue = (bool)val ? 0 : 1;
-                tempResult.ValueType = JSObjectType.Bool;
+                tempResult.valueType = JSObjectType.Bool;
                 return tempResult;
             }
         }

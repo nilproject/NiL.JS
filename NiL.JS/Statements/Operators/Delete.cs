@@ -6,6 +6,33 @@ namespace NiL.JS.Statements.Operators
     [Serializable]
     public sealed class Delete : Operator
     {
+        public sealed class SafeMemberGetter : Statement
+        {
+            private GetMemberStatement proto;
+
+            internal SafeMemberGetter(GetMemberStatement gms)
+            {
+                proto = gms;
+                Position = gms.Position;
+                Length = gms.Length;
+            }
+
+            protected override Statement[] getChildsImpl()
+            {
+                return new[] { proto };
+            }
+
+            internal override JSObject Invoke(Context context)
+            {
+                return proto.InvokeForAssing(context);
+            }
+
+            public override string ToString()
+            {
+                return proto.ToString();
+            }
+        }
+
         public Delete(Statement first)
             : base(first, null, true)
         {
@@ -16,13 +43,13 @@ namespace NiL.JS.Statements.Operators
         {
             lock (this)
             {
-                var temp = first.InvokeForAssing(context);
-                tempResult.ValueType = JSObjectType.Bool;
-                if (temp.ValueType <= JSObjectType.NotExistInObject)
+                var temp = first.Invoke(context);
+                tempResult.valueType = JSObjectType.Bool;
+                if (temp.valueType <= JSObjectType.NotExistInObject)
                     tempResult.iValue = 1;
                 else if ((temp.attributes & JSObjectAttributes.Argument) != 0)
                 {
-                    if (first is GetMemberStatement)
+                    if (first is SafeMemberGetter)
                     {
                         tempResult.iValue = 1;
                         var args = context.objectSource;
@@ -44,12 +71,24 @@ namespace NiL.JS.Statements.Operators
                 else if ((temp.attributes & JSObjectAttributes.DoNotDelete) == 0)
                 {
                     tempResult.iValue = 1;
-                    temp.ValueType = JSObjectType.NotExist;
+                    temp.valueType = JSObjectType.NotExist;
                 }
                 else
                     tempResult.iValue = 0;
                 return tempResult;
             }
+        }
+
+        internal override bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, VaribleDescriptor> vars)
+        {
+            base.Optimize(ref _this, depth, vars);
+            if (first is GetVaribleStatement)
+                first = new SafeVaribleGetter(first as GetVaribleStatement);
+            if (first is GetMemberStatement)
+                first = new SafeMemberGetter(first as GetMemberStatement);
+            if (first is ImmidateValueStatement)
+                _this = new ImmidateValueStatement(true);
+            return false;
         }
 
         public override string ToString()

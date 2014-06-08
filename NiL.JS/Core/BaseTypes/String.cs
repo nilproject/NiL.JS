@@ -37,7 +37,7 @@ namespace NiL.JS.Core.BaseTypes
         public String(string s)
         {
             oValue = s;
-            ValueType = JSObjectType.String;
+            valueType = JSObjectType.String;
             assignCallback = JSObject.ErrorAssignCallback;
             attributes |= JSObjectAttributes.Immutable;
         }
@@ -48,7 +48,7 @@ namespace NiL.JS.Core.BaseTypes
             {
                 if ((pos < 0) || (pos >= (oValue as string).Length))
                     return JSObject.undefined;
-                return new JSObject(false) { ValueType = JSObjectType.String, oValue = (oValue as string)[pos].ToString(), attributes = JSObjectAttributes.ReadOnly };
+                return new JSObject(false) { valueType = JSObjectType.String, oValue = (oValue as string)[pos].ToString(), attributes = JSObjectAttributes.ReadOnly };
             }
         }
 
@@ -84,7 +84,7 @@ namespace NiL.JS.Core.BaseTypes
             int pos = 0;
             if (args.Length > 1)
             {
-                switch (args[1].ValueType)
+                switch (args[1].valueType)
                 {
                     case JSObjectType.Int:
                     case JSObjectType.Bool:
@@ -120,7 +120,7 @@ namespace NiL.JS.Core.BaseTypes
             int pos = 0;
             if (args.Length > 1)
             {
-                switch (args[1].ValueType)
+                switch (args[1].valueType)
                 {
                     case JSObjectType.Int:
                     case JSObjectType.Bool:
@@ -157,10 +157,10 @@ namespace NiL.JS.Core.BaseTypes
 
         public JSObject match(JSObject args)
         {
-            if (ValueType <= JSObjectType.Undefined || (ValueType >= JSObjectType.Object && oValue == null))
+            if (valueType <= JSObjectType.Undefined || (valueType >= JSObjectType.Object && oValue == null))
                 throw new JSException(TypeProxy.Proxy(new TypeError("String.prototype.match called on null or undefined")));
             var a0 = args.GetField("0", true, false);
-            if (a0.ValueType == JSObjectType.Object && a0.oValue is RegExp)
+            if (a0.valueType == JSObjectType.Object && a0.oValue is RegExp)
             {
                 var regex = a0.oValue as RegExp;
                 if (!regex.global)
@@ -179,7 +179,7 @@ namespace NiL.JS.Core.BaseTypes
             }
             else
             {
-                var match = new System.Text.RegularExpressions.Regex((a0.ValueType > JSObjectType.Undefined ? (object)a0 : "").ToString(), System.Text.RegularExpressions.RegexOptions.ECMAScript).Match(oValue as string ?? this.ToString());
+                var match = new System.Text.RegularExpressions.Regex((a0.valueType > JSObjectType.Undefined ? (object)a0 : "").ToString(), System.Text.RegularExpressions.RegexOptions.ECMAScript).Match(oValue as string ?? this.ToString());
                 var res = new Array(match.Groups.Count);
                 for (int i = 0; i < match.Groups.Count; i++)
                     res.data[i] = match.Groups[i].Value;
@@ -193,7 +193,7 @@ namespace NiL.JS.Core.BaseTypes
         {
             if (args.Length == 0)
                 return this;
-            if (args[0].ValueType == JSObjectType.Object && args[0].oValue is RegExp)
+            if (args[0].valueType == JSObjectType.Object && args[0].oValue is RegExp)
             {
                 if (args.Length > 1 && args[1].oValue is Function)
                 {
@@ -213,7 +213,7 @@ namespace NiL.JS.Core.BaseTypes
                         (m) =>
                         {
                             this.oValue = temp;
-                            this.ValueType = JSObjectType.String;
+                            this.valueType = JSObjectType.String;
                             len.iValue = 1 + m.Groups.Count + 1 + 1;
                             match.oValue = m.Value;
                             JSObject t = m.Index;
@@ -230,7 +230,7 @@ namespace NiL.JS.Core.BaseTypes
                             return f.Invoke(margs).ToString();
                         }), (args[0].oValue as RegExp).global ? int.MaxValue : 1);
                     this.oValue = temp;
-                    this.ValueType = JSObjectType.String;
+                    this.valueType = JSObjectType.String;
                     assignCallback = oac;
                     return match;
                 }
@@ -262,7 +262,7 @@ namespace NiL.JS.Core.BaseTypes
                     margs.fields["1"] = index;
                     var res = othis.Substring(0, index) + f.Invoke(margs).ToString() + othis.Substring(index + pattern.Length);
                     oValue = othis;
-                    ValueType = JSObjectType.String;
+                    valueType = JSObjectType.String;
                     assignCallback = oac;
                     return res;
                 }
@@ -281,7 +281,7 @@ namespace NiL.JS.Core.BaseTypes
             if (args.Length == 0)
                 return this;
             int pos0 = 0;
-            switch (args[0].ValueType)
+            switch (args[0].valueType)
             {
                 case JSObjectType.Int:
                 case JSObjectType.Bool:
@@ -308,7 +308,7 @@ namespace NiL.JS.Core.BaseTypes
             int pos1 = 0;
             if (args.Length > 1)
             {
-                switch (args[1].ValueType)
+                switch (args[1].valueType)
                 {
                     case JSObjectType.Int:
                     case JSObjectType.Bool:
@@ -346,7 +346,7 @@ namespace NiL.JS.Core.BaseTypes
             int limit = int.MaxValue;
             if (args.Length > 1)
             {
-                switch (args[1].ValueType)
+                switch (args[1].valueType)
                 {
                     case JSObjectType.Int:
                     case JSObjectType.Bool:
@@ -391,7 +391,7 @@ namespace NiL.JS.Core.BaseTypes
             int pos0 = 0;
             if (args.Length > 0)
             {
-                switch (args[0].ValueType)
+                switch (args[0].valueType)
                 {
                     case JSObjectType.Int:
                     case JSObjectType.Bool:
@@ -419,7 +419,7 @@ namespace NiL.JS.Core.BaseTypes
             int len = (oValue as string).Length - pos0;
             if (args.Length > 1)
             {
-                switch (args[1].ValueType)
+                switch (args[1].valueType)
                 {
                     case JSObjectType.Int:
                     case JSObjectType.Bool:
@@ -477,7 +477,7 @@ namespace NiL.JS.Core.BaseTypes
         {
             if (typeof(String).IsAssignableFrom(this.GetType()))
             {
-                if (ValueType == JSObjectType.Object)
+                if (valueType == JSObjectType.Object)
                     return "";
                 return this;
             }
