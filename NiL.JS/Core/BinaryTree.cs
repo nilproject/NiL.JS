@@ -452,6 +452,8 @@ namespace NiL.JS
 
         public bool Remove(TKey key)
         {
+            if (root == null)
+                return false;
             lock (this)
             {
                 Node prev = null;
@@ -551,6 +553,8 @@ namespace NiL.JS
 
         public bool Remove(KeyValuePair<TKey, TValue> keyValuePair)
         {
+            if (root == null)
+                return false;
             lock (this)
             {
                 var key = keyValuePair.Key;
