@@ -50,27 +50,28 @@ namespace NiL.JS.Statements.Operators
         {
             lock (this)
             {
-                JSObject temp = first.Invoke(context);
-                if (temp.valueType <= JSObjectType.NotExistInObject)
+                JSObject ctor = first.Invoke(context);
+                if (ctor.valueType <= JSObjectType.NotExistInObject)
                     throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible not defined.")));
-                if (temp.valueType != JSObjectType.Function && !(temp.valueType == JSObjectType.Object && temp.oValue is Function))
-                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError(temp + " is not callable")));
-                if (temp.oValue is MethodProxy)
-                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError(temp + " can't be used as a constructor")));
+                if (ctor.valueType != JSObjectType.Function && !(ctor.valueType == JSObjectType.Object && ctor.oValue is Function))
+                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError(ctor + " is not callable")));
+                if (ctor.oValue is MethodProxy)
+                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError(ctor + " can't be used as a constructor")));
 
                 JSObject _this = new JSObject() { valueType = JSObjectType.Object };
-                _this.prototype = temp.GetField("prototype", true, false);
+                _this.prototype = ctor.GetMember("prototype");
                 if (_this.prototype.valueType < JSObjectType.Object)
                     _this.prototype = null;
-                if (!(temp.oValue is TypeProxyConstructor))
+                if (!(ctor.oValue is TypeProxyConstructor))
                 {
                     if (_this.prototype != null)
                         _this.prototype = _this.prototype.Clone() as JSObject;
                     _this.oValue = _this;
+                    _this.DefineMember("constructor").Assign(ctor);
                 }
                 else
                     _this.oValue = this;
-                (CallInstance.FirstOperand as ThisSetStat).value = temp;
+                (CallInstance.FirstOperand as ThisSetStat).value = ctor;
                 (CallInstance.FirstOperand as ThisSetStat)._this = _this;
                 var res = CallInstance.Invoke(context);
                 if (res.valueType >= JSObjectType.Object && res.oValue != null)

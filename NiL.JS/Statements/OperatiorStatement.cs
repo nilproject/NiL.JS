@@ -344,13 +344,13 @@ namespace NiL.JS.Statements
             Statement second = null;
             int s = i;
             state.InExpression = true;
-            if (Parser.ValidateName(code, ref i, true, state.strict.Peek()) || Parser.Validate(code, "this", ref i))
-                first = new GetVaribleStatement(Tools.Unescape(code.Substring(s, i - s))) { Position = index, Length = i - index };
-            else if (Parser.ValidateValue(code, ref i, true))
+            if (Parser.ValidateName(code, ref i, state.strict.Peek()) || Parser.Validate(code, "this", ref i))
+                first = new GetVaribleStatement(Tools.Unescape(code.Substring(s, i - s), state.strict.Peek())) { Position = index, Length = i - index };
+            else if (Parser.ValidateValue(code, ref i))
             {
                 string value = code.Substring(s, i - s);
                 if ((value[0] == '\'') || (value[0] == '"'))
-                    first = new ImmidateValueStatement(Tools.Unescape(value.Substring(1, value.Length - 2))) { Position = index, Length = i - s };
+                    first = new ImmidateValueStatement(Tools.Unescape(value.Substring(1, value.Length - 2), state.strict.Peek())) { Position = index, Length = i - s };
                 else
                 {
                     bool b = false;
@@ -362,14 +362,14 @@ namespace NiL.JS.Statements
                     {
                         int n = 0;
                         double d = 0;
-                        if (Tools.ParseNumber(code, ref s, true, out d))
+                        if (Tools.ParseNumber(code, ref s, out d, 0, !state.strict.Peek()))
                         {
                             if ((n = (int)d) == d && !double.IsNegativeInfinity(1.0 / d))
                                 first = new ImmidateValueStatement(n) { Position = index, Length = i - index };
                             else
                                 first = new ImmidateValueStatement(d) { Position = index, Length = i - index };
                         }
-                        else if (Parser.ValidateRegex(code, ref s, true, true))
+                        else if (Parser.ValidateRegex(code, ref s, true))
                         {
                             s = value.LastIndexOf('/') + 1;
                             string flags = value.Substring(s);
@@ -934,7 +934,7 @@ namespace NiL.JS.Statements
                             i++;
                             while (char.IsWhiteSpace(code[i])) i++;
                             s = i;
-                            if (!Parser.ValidateName(code, ref i, true, false, true, state.strict.Peek()))
+                            if (!Parser.ValidateName(code, ref i, false, true, state.strict.Peek()))
                                 throw new ArgumentException("code (" + i + ")");
                             string name = code.Substring(s, i - s);
                             first = new GetMemberStatement(first, new ImmidateValueStatement(name)

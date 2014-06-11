@@ -20,6 +20,11 @@ namespace NiL.JS.Core
 
         internal virtual NiL.JS.Core.JSObject InvokeForAssing(NiL.JS.Core.Context context)
         {
+            return raiseInvalidAssignment();
+        }
+
+        protected static JSObject raiseInvalidAssignment()
+        {
             throw new JSException(TypeProxy.Proxy(new ReferenceError("Invalid left-hand side in assignment.")));
         }
 

@@ -53,7 +53,7 @@ namespace NiL.JS
             finally
             {
                 System.Runtime.GCSettings.LatencyMode = lm;
-                Context.currentRootContext = null;
+                Context.CurrentContext = null;
             }
         }
     }

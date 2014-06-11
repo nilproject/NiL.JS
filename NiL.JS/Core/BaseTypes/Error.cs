@@ -20,7 +20,7 @@ namespace NiL.JS.Core.BaseTypes
 
         public Error(JSObject args)
         {
-            message = args.GetField("0", true, false).ToString();
+            message = args.GetMember("0").ToString();
         }
 
         public Error(string message)

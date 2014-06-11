@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NiL.JS.Core.BaseTypes;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -42,7 +43,7 @@ namespace NiL.JS.Core
                         double x = double.NaN;
                         int ix = 0;
                         string s = (arg.oValue as string).Trim();
-                        if (Tools.ParseNumber(s, ref ix, true, out x) && ix < s.Length)
+                        if (Tools.ParseNumber(s, ref ix, out x) && ix < s.Length)
                             return double.NaN;
                         return x;
                     }
@@ -141,7 +142,7 @@ namespace NiL.JS.Core
                         double x = 0;
                         int ix = 0;
                         string s = (r.oValue as string).Trim();
-                        if (!Tools.ParseNumber(s, ref ix, true, out x) || ix < s.Length)
+                        if (!Tools.ParseNumber(s, ref ix, out x) || ix < s.Length)
                             return 0;
                         return (int)x;
                     }
@@ -184,7 +185,7 @@ namespace NiL.JS.Core
                         double x = 0;
                         int ix = 0;
                         string s = (arg.oValue as string).Trim();
-                        if (!Tools.ParseNumber(s, ref ix, true, out x) || ix < s.Length)
+                        if (!Tools.ParseNumber(s, ref ix, out x) || ix < s.Length)
                             return 0;
                         return x;
                     }
@@ -234,12 +235,38 @@ namespace NiL.JS.Core
 #if INLINE
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
-        public static bool ParseNumber(string code, ref int index, bool move, out double value)
+        public static bool ParseNumber(string str, out double value)
         {
-            return ParseNumber(code, ref index, move, out value, 0, false);
+            int index = 0;
+            return ParseNumber(str, ref index, out value, 0, false);
         }
 
-        public static bool ParseNumber(string code, ref int index, bool move, out double value, int radix, bool allowOctal)
+#if INLINE
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+#endif
+        public static bool ParseNumber(string str, out double value, int radix)
+        {
+            int index = 0;
+            return ParseNumber(str, ref index, out value, radix, false);
+        }
+
+#if INLINE
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+#endif
+        internal static bool ParseNumber(string code, int index, out double value)
+        {
+            return ParseNumber(code, ref index, out value, 0, false);
+        }
+
+#if INLINE
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+#endif
+        internal static bool ParseNumber(string code, ref int index, out double value)
+        {
+            return ParseNumber(code, ref index, out value, 0, false);
+        }
+
+        internal static bool ParseNumber(string code, ref int index, out double value, int radix, bool allowOctal)
         {
             if (code == null)
                 throw new ArgumentNullException("code");
@@ -268,22 +295,29 @@ namespace NiL.JS.Core
                     break;
                 else if (code[j] == 'y')
                 {
-                    if (move)
-                        index = j + 1;
+                    index = j + 1;
                     value = sig * double.PositiveInfinity;
                     return true;
                 }
             }
             bool res = false;
+            bool skiped = false;
             if (i + 1 < code.Length)
             {
+                while (code[i] == '0' && i + 1 < code.Length && code[i + 1] == '0')
+                {
+                    skiped = true;
+                    i++;
+                }
                 if ((radix == 0 || radix == 16) && (code[i] == '0') && (code[i + 1] == 'x' || code[i + 1] == 'X'))
                 {
                     i += 2;
                     radix = 16;
                 }
-                else if (allowOctal && (radix == 0 && code[i] == '0' && char.IsDigit(code[i + 1])))
+                else if (radix == 0 && code[i] == '0' && char.IsDigit(code[i + 1]))
                 {
+                    if (!allowOctal)
+                        throw new JSException(TypeProxy.Proxy(new SyntaxError("Octal literals not allowed in strict mode")));
                     i += 1;
                     radix = 8;
                     res = true;
@@ -343,6 +377,7 @@ namespace NiL.JS.Core
                     i++;
                     int td = 0;
                     int esign = code[i] >= 43 && code[i] <= 45 ? 44 - code[i++] : 1;
+                    scount = 0;
                     while (i < code.Length)
                     {
                         if (!char.IsDigit(code[i]))
@@ -351,6 +386,8 @@ namespace NiL.JS.Core
                         {
                             if (scount <= 18)
                                 td = td * 10 + (code[i++] - '0');
+                            else
+                                i++;
                         }
                     }
                     deg += td * esign;
@@ -359,10 +396,10 @@ namespace NiL.JS.Core
                 {
                     if (deg < 0)
                     {
-                        if (deg < -16)
+                        if (deg < -18)
                         {
-                            value = (double)((decimal)temp * 0.0000000000000001M);
-                            deg += 16;
+                            value = (double)((decimal)temp * 0.000000000000000001M);
+                            deg += 18;
                         }
                         else
                         {
@@ -385,15 +422,24 @@ namespace NiL.JS.Core
                     }
                     if (deg != 0)
                     {
-                        var exp = Math.Pow(10.0, deg);
-                        value *= exp;
+                        if (deg == -324)
+                        {
+                            value *= 1e-323;
+                            value *= 0.1;
+                        }
+                        else
+                        {
+                            var exp = Math.Pow(10.0, deg);
+                            value *= exp;
+                        }
                     }
                 }
                 else
                     value = temp;
+                if (value == 0 && skiped)
+                    throw new JSException(TypeProxy.Proxy(new SyntaxError("Octal literals not allowed in strict mode")));
                 value *= sig;
-                if (move)
-                    index = i;
+                index = i;
                 return true;
             }
             else
@@ -429,21 +475,20 @@ namespace NiL.JS.Core
                 }
                 value = temp;
                 value *= sig;
-                if (move)
-                    index = i;
+                index = i;
                 return true;
             }
         }
-
+        /*
 #if INLINE
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
         public static string Unescape(string code)
         {
-            return Unescape(code, true);
+            return Unescape(code, false);
         }
-
-        public static string Unescape(string code, bool defaultUnescape)
+        */
+        public static string Unescape(string code, bool strict)
         {
             if (code == null)
                 throw new ArgumentNullException("code");
@@ -512,6 +557,8 @@ namespace NiL.JS.Core
                             {
                                 if (char.IsDigit(code[i]))
                                 {
+                                    if (strict)
+                                        throw new JSException(TypeProxy.Proxy(new SyntaxError("Octal literals are not allowed in strict mode.")));
                                     var ccode = code[i] - '0';
                                     if (i + 1 < code.Length && char.IsDigit(code[i + 1]))
                                         ccode = ccode * 10 + (code[++i] - '0');
@@ -519,13 +566,17 @@ namespace NiL.JS.Core
                                         ccode = ccode * 10 + (code[++i] - '0');
                                     res.Append((char)ccode);
                                 }
-                                else if (defaultUnescape)
+                                else
+                                    res.Append(code[i]);
+                                /*
+                                if (defaultUnescape)
                                     res.Append(code[i]);
                                 else
                                 {
                                     res.Append('\\');
                                     res.Append(code[i]);
                                 }
+                                */
                                 break;
                             }
                     }
@@ -585,7 +636,7 @@ namespace NiL.JS.Core
             StringBuilder res = null;// new StringBuilder(code.Length);
             for (int i = 0; i < code.Length; )
             {
-                while (i < code.Length && char.IsWhiteSpace(code[i])) 
+                while (i < code.Length && char.IsWhiteSpace(code[i]))
                     if (res != null)
                         res.Append(code[i++]);
                     else i++;
@@ -601,10 +652,10 @@ namespace NiL.JS.Core
                     res.Append(' ');
                 if (i >= code.Length)
                     continue;
-                if (Parser.ValidateName(code, ref i, true, false)
-                    || Parser.ValidateNumber(code, ref i, true)
-                    || Parser.ValidateRegex(code, ref i, true, false)
-                    || Parser.ValidateString(code, ref i, true))
+                if (Parser.ValidateName(code, ref i, false)
+                    || Parser.ValidateNumber(code, ref i)
+                    || Parser.ValidateRegex(code, ref i, false)
+                    || Parser.ValidateString(code, ref i))
                 {
                     if (res != null)
                         for (; s < i; s++)

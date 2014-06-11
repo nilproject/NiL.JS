@@ -25,7 +25,7 @@ namespace NiL.JS.Statements.Operators
                     var c = Tools.RaiseIfNotExist(second.Invoke(context));
                     if (c.valueType != JSObjectType.Function)
                         throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError("Right-hand value of instanceof is not function.")));
-                    c = c.GetField("prototype", true, false);
+                    c = c.GetMember("prototype");
                     tempResult.valueType = JSObjectType.Bool;
                     tempResult.iValue = 0;
                     if (c.oValue != null)
@@ -41,7 +41,7 @@ namespace NiL.JS.Statements.Operators
                                 tempResult.iValue = 1;
                                 return tempResult;
                             }
-                            a = a.GetField("__proto__", true, false);
+                            a = a.GetMember("__proto__");
                         }
                     }
                     return tempResult;

@@ -47,6 +47,8 @@ namespace NiL.JS
             {
                 if (array == null)
                     throw new ArgumentNullException("array");
+                if (arrayIndex < 0)
+                    throw new ArgumentOutOfRangeException("arrayIndex");
                 if (array.Length - arrayIndex < owner.Count)
                     throw new ArgumentOutOfRangeException("arrayIndex");
                 foreach (var i in owner)
@@ -103,6 +105,8 @@ namespace NiL.JS
             {
                 if (array == null)
                     throw new ArgumentNullException("array");
+                if (arrayIndex < 0)
+                    throw new ArgumentOutOfRangeException("arrayIndex");
                 if (array.Length - arrayIndex < owner.Count)
                     throw new ArgumentOutOfRangeException("arrayIndex");
                 foreach (var i in owner)

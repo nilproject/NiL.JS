@@ -22,17 +22,17 @@ namespace NiL.JS.Core
             @object = obj.Clone() as JSObject;
         }
 
-        public override JSObject InitField(string name)
+        public override JSObject DefineVarible(string name)
         {
-            return prototype.InitField(name);
+            return prototype.DefineVarible(name);
         }
 
-        public override JSObject GetField(string name)
+        public override JSObject GetVarible(string name)
         {
             thisBind = prototype.thisBind;
-            var res = @object.GetField(name, true, false);
-            if (res.valueType < JSObjectType.Undefined || res == JSObject.undefined)
-                return prototype.GetField(name);
+            var res = @object.GetMember(name);
+            if (res.valueType < JSObjectType.Undefined)
+                return prototype.GetVarible(name);
             else
             {
                 objectSource = @object;

@@ -180,11 +180,11 @@ namespace NiL.JS.Core
                 }
                 else
                 {
-                    var prot = ctorProxy.DefaultFieldGetter("prototype", false, false);
+                    var prot = ctorProxy.DefaultFieldGetter("prototype", true, true);
                     prot.Assign(this);
                     prot.attributes = JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum | JSObjectAttributes.ReadOnly;
                     var ctor = type == typeof(JSObject) ? new ObjectConstructor(ctorProxy) : new TypeProxyConstructor(ctorProxy);
-                    ctorProxy.DefaultFieldGetter("__proto__", false, false).Assign(GetPrototype(typeof(TypeProxyConstructor)));
+                    ctorProxy.DefaultFieldGetter("__proto__", true, false).Assign(GetPrototype(typeof(TypeProxyConstructor)));
                     ctor.attributes = attributes;
                     constructors[type] = ctor;
                     fields["constructor"] = ctor;
@@ -236,13 +236,13 @@ namespace NiL.JS.Core
             }
         }
 
-        public override JSObject GetField(string name, bool fast, bool own)
+        internal override JSObject GetMember(string name, bool create, bool own)
         {
             JSObject r = null;
             if (fields.TryGetValue(name, out r))
             {
                 if (r.valueType < JSObjectType.Undefined)
-                    r.Assign(DefaultFieldGetter(name, fast, own));
+                    r.Assign(DefaultFieldGetter(name, create, own));
                 return r;
             }
             IList<MemberInfo> m = null;
@@ -255,7 +255,7 @@ namespace NiL.JS.Core
                 {
                     default:
                         {
-                            r = DefaultFieldGetter(name, fast, own);
+                            r = DefaultFieldGetter(name, create, own);
                             return r;
                         }
                 }
@@ -270,7 +270,7 @@ namespace NiL.JS.Core
                     cache[i] = new MethodProxy(m[i] as MethodBase);
                 r = new ExternalFunction((context, args) =>
                 {
-                    int l = args.GetField("length", true, false).iValue;
+                    int l = args.GetMember("length").iValue;
                     for (int i = 0; i < m.Count; i++)
                     {
                         if (cache[i].Parameters.Length == l
@@ -329,7 +329,7 @@ namespace NiL.JS.Core
                                     oValue = new Function[] 
                                     {
                                         m[0].IsDefined(typeof(Modules.ProtectedAttribute), false) ? 
-                                            new ExternalFunction((c,a)=>{ field.SetValue(field.IsStatic ? null : (c.thisBind ?? c.GetField("this")).oValue, cva.To(a.GetField("0", true, false).Value)); return null; }) : null,
+                                            new ExternalFunction((c,a)=>{ field.SetValue(field.IsStatic ? null : (c.thisBind ?? c.GetVarible("this")).oValue, cva.To(a.GetMember("0").Value)); return null; }) : null,
                                         new ExternalFunction((c,a)=>{ return Proxy(cva.From(field.GetValue(field.IsStatic ? null : c.thisBind.oValue)));})
                                     }
                                 };
@@ -341,7 +341,7 @@ namespace NiL.JS.Core
                                     valueType = JSObjectType.Property,
                                     oValue = new Function[] 
                                     {
-                                        !m[0].IsDefined(typeof(Modules.ProtectedAttribute), false) ? new ExternalFunction((c,a)=>{ field.SetValue(field.IsStatic ? null : (c.thisBind ?? c.GetField("this")).oValue, a.GetField("0", true, false).Value); return null; }) : null,
+                                        !m[0].IsDefined(typeof(Modules.ProtectedAttribute), false) ? new ExternalFunction((c,a)=>{ field.SetValue(field.IsStatic ? null : (c.thisBind ?? c.GetVarible("this")).oValue, a.GetMember("0").Value); return null; }) : null,
                                         new ExternalFunction((c,a)=>{ return Proxy(field.GetValue(field.IsStatic ? null : c.thisBind.oValue));})
                                     }
                                 };
@@ -418,7 +418,7 @@ namespace NiL.JS.Core
         {
             if (args == null)
                 throw new ArgumentNullException("args");
-            var name = args.GetField("0", true, false).ToString();
+            var name = args.GetMember("0").ToString();
             JSObject temp;
             if (fields != null && fields.TryGetValue(name, out temp))
                 return temp.valueType >= JSObjectType.Undefined && (temp.attributes & JSObjectAttributes.DoNotEnum) == 0;

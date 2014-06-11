@@ -262,10 +262,10 @@ namespace NiL.JS.Statements
 #endif
             while ((bool)condition.Invoke(context))
 #if DEV
-            if (context.debugging)
-                context.raiseDebugger(condition);
+                if (context.debugging)
+                    context.raiseDebugger(condition);
 #endif
-                ;
+            ;
             return JSObject.undefined;
         }
 
@@ -279,14 +279,14 @@ namespace NiL.JS.Statements
 #endif
                 init.Invoke(context);
             }
-            if (implId == 0)
+            if (implId == 3)
+                return impl3(context);
+            else if (implId == 0)
                 return impl0(context);
             else if (implId == 1)
                 return impl1(context);
             else if (implId == 2)
                 return impl2(context);
-            else if (implId == 3)
-                return impl3(context);
             else if (implId == 4)
                 return impl4(context);
             else if (implId == 5)

@@ -37,7 +37,7 @@ namespace NiL.JS.Statements.Operators
             {
                 if (first != null && second != null)
                     throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid decriment operand.")));
-                var val = Tools.RaiseIfNotExist((first ?? second).Invoke(context));
+                var val = Tools.RaiseIfNotExist((first ?? second).InvokeForAssing(context));
                 if (val.assignCallback != null)
                     val.assignCallback(val);
                 if ((val.attributes & JSObjectAttributes.ReadOnly) != 0)
@@ -63,7 +63,7 @@ namespace NiL.JS.Statements.Operators
                         {
                             double resd;
                             int i = 0;
-                            if (!Tools.ParseNumber(val.oValue as string, ref i, false, out resd))
+                            if (!Tools.ParseNumber(val.oValue as string, i, out resd))
                                 resd = double.NaN;
                             val.valueType = JSObjectType.Double;
                             val.dValue = resd;

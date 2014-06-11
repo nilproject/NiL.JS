@@ -8,7 +8,7 @@ namespace NiL.JS.Core.Modules
     {
         public static JSObject log(JSObject args)
         {
-            var r = args.GetField("0", true, false).ToString();
+            var r = args.GetMember("0").ToString();
             System.Console.WriteLine(r);
             return JSObject.undefined;
         }

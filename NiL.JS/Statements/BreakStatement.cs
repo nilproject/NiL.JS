@@ -21,9 +21,9 @@ namespace NiL.JS.Statements
             while (char.IsWhiteSpace(code[i]) && !Tools.isLineTerminator(code[i])) i++;
             int sl = i;
             JSObject label = null;
-            if (Parser.ValidateName(code, ref i, true, state.strict.Peek()))
+            if (Parser.ValidateName(code, ref i, state.strict.Peek()))
             {
-                label = Tools.Unescape(code.Substring(sl, i - sl));
+                label = Tools.Unescape(code.Substring(sl, i - sl), state.strict.Peek());
                 if (!state.Labels.Contains(label.oValue as string))
                     throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.SyntaxError("Try to break to undefined label.")));
             }

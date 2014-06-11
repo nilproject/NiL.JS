@@ -66,20 +66,18 @@ namespace NiL.JS.Statements
                 this.name = name;
                 Descriptor = new VaribleDescriptor(this, true);
             }
-        }
 
-        public enum FunctionParseMode
-        {
-            function = 0,
-            get,
-            set
+            public override string ToString()
+            {
+                return name;
+            }
         }
 
         private string[] parametersNames;
         private VaribleReference[] parameters;
         private CodeBlock body;
         internal readonly string name;
-        internal FunctionParseMode mode;
+        internal FunctionType mode;
 
         public CodeBlock Body { get { return body; } }
         public string Name { get { return name; } }
@@ -94,16 +92,16 @@ namespace NiL.JS.Statements
 
         internal static ParseResult Parse(ParsingState state, ref int index)
         {
-            return Parse(state, ref index, FunctionParseMode.function);
+            return Parse(state, ref index, FunctionType.Regular);
         }
 
-        internal static ParseResult Parse(ParsingState state, ref int index, FunctionParseMode mode)
+        internal static ParseResult Parse(ParsingState state, ref int index, FunctionType mode)
         {
             string code = state.Code;
             int i = index;
             switch (mode)
             {
-                case FunctionParseMode.function:
+                case FunctionType.Regular:
                     {
                         if (!Parser.Validate(code, "function", ref i))
                             return new ParseResult();
@@ -111,7 +109,7 @@ namespace NiL.JS.Statements
                             return new ParseResult() { IsParsed = false };
                         break;
                     }
-                case FunctionParseMode.get:
+                case FunctionType.Getter:
                     {
                         if (!Parser.Validate(code, "get", ref i))
                             return new ParseResult();
@@ -119,7 +117,7 @@ namespace NiL.JS.Statements
                             return new ParseResult() { IsParsed = false };
                         break;
                     }
-                case FunctionParseMode.set:
+                case FunctionType.Setter:
                     {
                         if (!Parser.Validate(code, "set", ref i))
                             return new ParseResult();
@@ -137,14 +135,14 @@ namespace NiL.JS.Statements
             if (code[i] != '(')
             {
                 nameStartPos = i;
-                if (!Parser.ValidateName(code, ref i, true, state.strict.Peek()))
-                    throw new JSException(TypeProxy.Proxy(new SyntaxError("Invalid function parameters definition " + (string.IsNullOrEmpty(name) ? "for function \"" + name + "\" " : "") + "at " + Tools.PositionToTextcord(code, nameStartPos))));
-                name = Tools.Unescape(code.Substring(nameStartPos, i - nameStartPos));
+                if (!Parser.ValidateName(code, ref i, false, true, state.strict.Peek()))
+                    throw new JSException(TypeProxy.Proxy(new SyntaxError("Invalid function name at " + Tools.PositionToTextcord(code, nameStartPos))));
+                name = Tools.Unescape(code.Substring(nameStartPos, i - nameStartPos), state.strict.Peek());
                 while (char.IsWhiteSpace(code[i])) i++;
                 if (code[i] != '(')
                     throw new ArgumentException("Invalid char at " + i + ": '" + code[i] + "'");
             }
-            else if (mode != FunctionParseMode.function)
+            else if (mode != FunctionType.Regular)
                 throw new ArgumentException("Getters and Setters must have name");
             do i++; while (char.IsWhiteSpace(code[i]));
             if (code[i] == ',')
@@ -154,20 +152,20 @@ namespace NiL.JS.Statements
                 if (code[i] == ',')
                     do i++; while (char.IsWhiteSpace(code[i]));
                 int n = i;
-                if (!Parser.ValidateName(code, ref i, true, state.strict.Peek()))
-                    throw new JSException(TypeProxy.Proxy(new SyntaxError("Invalid description of function arguments.")));
-                parameters.Add(new ParameterReference(Tools.Unescape(code.Substring(n, i - n))) { Position = n, Length = i - n });
+                if (!Parser.ValidateName(code, ref i, state.strict.Peek()))
+                    throw new JSException(TypeProxy.Proxy(new SyntaxError("Invalid description of function arguments at " + Tools.PositionToTextcord(code, nameStartPos))));
+                parameters.Add(new ParameterReference(Tools.Unescape(code.Substring(n, i - n), state.strict.Peek())) { Position = n, Length = i - n });
                 while (char.IsWhiteSpace(code[i])) i++;
             }
             switch (mode)
             {
-                case FunctionParseMode.get:
+                case FunctionType.Getter:
                     {
                         if (parameters.Count != 0)
                             throw new ArgumentException("getter have many arguments");
                         break;
                     }
-                case FunctionParseMode.set:
+                case FunctionType.Setter:
                     {
                         if (parameters.Count != 1)
                             throw new ArgumentException("setter have invalid arguments");
@@ -288,35 +286,37 @@ namespace NiL.JS.Statements
                 for (var i = 0; i < parametersNames.Length; i++)
                     parametersNames[i] = parameters[i].Name;
             }
-            return new Function(context, body, parametersNames, name);
+            return new Function(context, body, parametersNames, name, mode);
         }
 
         internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VaribleDescriptor> varibles)
         {
             var stat = body as Statement;
             var nvars = new Dictionary<string, VaribleDescriptor>();
-            List<VaribleDescriptor> needToReset = null;
-            if (varibles != null)
-                foreach (var d in varibles)
-                {
-                    if (d.Key == "arguments")
-                        continue;
-                    nvars[d.Key] = d.Value;
-                    if (d.Value.Owner == null)
-                    {
-                        d.Value.Owner = this;
-                        if (needToReset == null)
-                            needToReset = new List<VaribleDescriptor>();
-                        needToReset.Add(d.Value);
-                    }
-                }
             for (var i = 0; i < parameters.Length; i++)
                 nvars[parameters[i].Name] = parameters[i].Descriptor;
             body.Optimize(ref stat, 0, nvars);
             body = stat as CodeBlock;
-            if (needToReset != null)
-                for (var i = needToReset.Count; i-- > 0; )
-                    needToReset[i].Owner = null;
+            if (body.varibles != null)
+            {
+                for (var i = body.varibles.Length; i-->0;)
+                {
+                    if (!body.varibles[i].Defined)
+                    {
+                        VaribleDescriptor desc = null;
+                        if (varibles.TryGetValue(body.varibles[i].Name, out desc))
+                        {
+                            foreach (var r in body.varibles[i].References)
+                            {
+                                desc.references.Add(r);
+                                r.Descriptor = desc;
+                            }
+                            body.varibles[i] = desc;
+                        }
+                        else varibles.Add(body.varibles[i].Name, body.varibles[i]);
+                    }
+                }
+            }
             return false;
         }
 

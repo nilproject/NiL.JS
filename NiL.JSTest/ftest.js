@@ -1,21 +1,12 @@
-﻿THE_ANSWER = "Answer to Life, the Universe, and Everything";
+﻿var __10_4_2_1_1_1 = "str";
+(function testcase() {
+    try {
 
-var arguments = THE_ANSWER;
-
-function __func() {
-    return arguments;
-};
-
-//////////////////////////////////////////////////////////////////////////////
-//CHECK#1
-if (__func() === THE_ANSWER) {
-    $ERROR('#1: __func() !== THE_ANSWER');
-}
-//
-//////////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////////
-//CHECK#2
-if (__func("The Ultimate Question") === "The Ultimate Question") {
-    $ERROR('#2: __func("The Ultimate Question") !== "The Ultimate Question"');
-}
+        var _eval = eval;
+        var __10_4_2_1_1_1 = "str1";
+        console.log(_eval("__10_4_2_1_1_1"));
+        console.log(eval("__10_4_2_1_1_1"));
+    } finally {
+        delete this.__10_4_2_1_1_1;
+    }
+})();

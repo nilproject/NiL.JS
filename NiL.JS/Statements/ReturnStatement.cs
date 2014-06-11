@@ -42,7 +42,7 @@ namespace NiL.JS.Statements
 
         internal override JSObject Invoke(Context context)
         {
-            context.abortInfo = body != null ? Tools.RaiseIfNotExist(body.Invoke(context)) : JSObject.undefined;
+            context.abortInfo = body != null ? body.Invoke(context) : JSObject.undefined;
             context.abort = AbortType.Return;
             return null;
         }

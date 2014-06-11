@@ -46,14 +46,14 @@ namespace NiL.JS.Core.Modules
                 int start = pos;
                 bool waitControlChar = true;
                 bool waitComma = true;
-                if (Parser.ValidateValue(code, ref pos, true))
+                if (Parser.ValidateValue(code, ref pos))
                 {
                     if (char.IsDigit(code[start]) || (code[start] == '-' && char.IsDigit(code[start + 1])))
                     {
                         if (stack.Peek().state == ParseState.Name)
                             throw new JSException(TypeProxy.Proxy(new SyntaxError("Unexpected token.")));
                         double value;
-                        if (!Tools.ParseNumber(code, ref start, true, out value))
+                        if (!Tools.ParseNumber(code, ref start, out value))
                             throw new JSException(TypeProxy.Proxy(new SyntaxError("Invalid number definition.")));
                         JSObject val = value;
                         var v = stack.Pop();
@@ -66,14 +66,14 @@ namespace NiL.JS.Core.Modules
                                 val = null;
                         }
                         if (val != null)
-                            stack.Peek().obj.GetField(v.fieldName, false, true).Assign(val);
+                            stack.Peek().obj.GetMember(v.fieldName, true, true).Assign(val);
                     }
                     else
                     {
                         string value = code.Substring(start, pos - start);
                         if (value[0] != '"')
                             throw new JSException(TypeProxy.Proxy(new SyntaxError("Unexpected token.")));
-                        value = Tools.Unescape(value.Substring(1, value.Length - 2));
+                        value = Tools.Unescape(value.Substring(1, value.Length - 2), false);
                         if (stack.Peek().state == ParseState.Name)
                         {
                             stack.Peek().fieldName = value;
@@ -98,7 +98,7 @@ namespace NiL.JS.Core.Modules
                                     val = null;
                             }
                             if (val != null)
-                                stack.Peek().obj.GetField(v.fieldName, false, true).Assign(val);
+                                stack.Peek().obj.GetMember(v.fieldName, true, true).Assign(val);
                         }
                     }
                 }
@@ -139,7 +139,7 @@ namespace NiL.JS.Core.Modules
                                     t.obj = null;
                             }
                             if (t.obj != null)
-                                stack.Peek().obj.GetField(t.fieldName, false, true).Assign(t.obj);
+                                stack.Peek().obj.GetMember(t.fieldName, true, true).Assign(t.obj);
                             do pos++; while (code.Length > pos && char.IsWhiteSpace(code[pos]));
                             continue;
                         }
@@ -161,12 +161,12 @@ namespace NiL.JS.Core.Modules
                 else if (stack.Peek().state == ParseState.Object)
                     stack.Push(new StackFrame() { state = ParseState.Name });
             }
-            return stack.Peek().obj.GetField("");
+            return stack.Peek().obj.GetMember("");
         }
 
         public static string stringify(JSObject obj)
         {
-            return stringify(obj.GetField("0", true, false), null, null);
+            return stringify(obj.GetMember("0"), null, null);
         }
 
         public static string stringify(JSObject obj, Function replacer)

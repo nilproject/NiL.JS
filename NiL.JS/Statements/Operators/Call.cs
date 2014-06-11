@@ -65,12 +65,6 @@ namespace NiL.JS.Statements.Operators
                 a.attributes |= JSObjectAttributes.Argument;
                 context.objectSource = null;
             }
-            arguments.fields["callee"] = field = new JSObject()
-            {
-                valueType = JSObjectType.Function,
-                oValue = func,
-                attributes = JSObjectAttributes.DoNotEnum
-            };
             return func.Invoke(context, newThisBind, arguments);
         }
 

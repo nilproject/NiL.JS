@@ -22,28 +22,28 @@ namespace NiL.JS.Statements
 
         internal override JSObject InvokeForAssing(Context context)
         {
-            return impl(context, false);
+            return impl(context, true);
         }
 
         internal override JSObject Invoke(Context context)
         {
-            return impl(context, true);
+            return impl(context, false);
         }
 
-        private JSObject impl(Context context, bool callProp)
+        private JSObject impl(Context context, bool forAssign)
         {
-            var th = objStatement.Invoke(context);
-            if (th.valueType == JSObjectType.NotExist)
+            var source = objStatement.Invoke(context);
+            if (source.valueType == JSObjectType.NotExist)
                 throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible not defined.")));
 
             var n = memberNameStatement.Invoke(context);
             if (n.valueType == JSObjectType.NotExist)
                 throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible not defined.")));
 
-            context.objectSource = th;
-            var res = th.GetField(n.ToString(), callProp, false);
-            if (callProp && res.valueType == JSObjectType.Property)
-                res = (res.oValue as Function[])[1].Invoke(th, null);
+            context.objectSource = source;
+            var res = source.GetMember(n.ToString(), forAssign, false);
+            if (!forAssign && res.valueType == JSObjectType.Property)
+                res = (res.oValue as Function[])[1].Invoke(source, null);
             return res;
         }
 
@@ -71,7 +71,7 @@ namespace NiL.JS.Statements
             int i = 0;
             if (memberNameStatement is ImmidateValueStatement
                 && (memberNameStatement as ImmidateValueStatement).value.oValue.ToString().Length > 0
-                && (Parser.ValidateName((memberNameStatement as ImmidateValueStatement).value.oValue.ToString(), ref i, true, true)))
+                && (Parser.ValidateName((memberNameStatement as ImmidateValueStatement).value.oValue.ToString(), ref i, true)))
                 res += "." + (memberNameStatement as ImmidateValueStatement).value.oValue;
             else
                 res += "[" + memberNameStatement.ToString() + "]";

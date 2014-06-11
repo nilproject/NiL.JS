@@ -1,7 +1,9 @@
-﻿using System;
+﻿using NiL.JS.Core.Modules;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace NiL.JS.Core.BaseTypes
 {
@@ -9,27 +11,28 @@ namespace NiL.JS.Core.BaseTypes
     public sealed class RegExp : EmbeddedType
     {
         private JSObject lIndex = 0;
-        internal System.Text.RegularExpressions.Regex regEx;
+        internal Regex regEx;
 
+        [DoNotEnumerate]
         public RegExp()
         {
             global = false;
             regEx = new System.Text.RegularExpressions.Regex("");
         }
 
-        public RegExp(JSObject x)
+        private void makeRegex(JSObject args)
         {
-            var ptrn = x.GetField("0", true, false);
+            var ptrn = args.GetMember("0");
             if (ptrn.valueType == JSObjectType.Object && ptrn.oValue is RegExp)
             {
-                if (x.GetField("length", true, false).iValue > 1 && x.GetField("1", true, false).valueType > JSObjectType.Undefined)
+                if (args.GetMember("length").iValue > 1 && args.GetMember("1").valueType > JSObjectType.Undefined)
                     throw new JSException(TypeProxy.Proxy(new TypeError("Cannot supply flags when constructing one RegExp from another")));
                 oValue = ptrn.oValue;
                 return;
             }
             global = false;
             var pattern = ptrn.valueType > JSObjectType.Undefined ? ptrn.ToString().Replace("\\P", "P") : "";
-            var flags = x.GetField("length", false, true).iValue > 1 && x.GetField("1", true, false).valueType > JSObjectType.Undefined ? x.GetField("1", true, false).ToString() : "";
+            var flags = args.GetMember("length").iValue > 1 && args.GetMember("1").valueType > JSObjectType.Undefined ? args.GetMember("1").ToString() : "";
             try
             {
                 System.Text.RegularExpressions.RegexOptions options = System.Text.RegularExpressions.RegexOptions.ECMAScript;
@@ -43,7 +46,7 @@ namespace NiL.JS.Core.BaseTypes
                             len = 5;
                         else if (flags[i + 1] == 'x')
                             len = 3;
-                        c = Tools.Unescape(flags.Substring(i, len + 1))[0];
+                        c = Tools.Unescape(flags.Substring(i, len + 1), false)[0];
                         i += len;
                     }
                     switch (c)
@@ -83,6 +86,13 @@ namespace NiL.JS.Core.BaseTypes
             }
         }
 
+        [DoNotEnumerate]
+        public RegExp(JSObject args)
+        {
+            makeRegex(args);
+        }
+
+        [DoNotEnumerate]
         public RegExp(string pattern, string flags)
         {
             global = false;
@@ -128,6 +138,7 @@ namespace NiL.JS.Core.BaseTypes
             }
         }
 
+        [DoNotEnumerate]
         public Boolean ignoreCase
         {
             get
@@ -136,6 +147,7 @@ namespace NiL.JS.Core.BaseTypes
             }
         }
 
+        [DoNotEnumerate]
         public Boolean multiline
         {
             get
@@ -144,8 +156,10 @@ namespace NiL.JS.Core.BaseTypes
             }
         }
 
+        [DoNotEnumerate]
         public bool global { get; private set; }
 
+        [DoNotEnumerate]
         public String source
         {
             get
@@ -154,6 +168,7 @@ namespace NiL.JS.Core.BaseTypes
             }
         }
 
+        [DoNotEnumerate]
         public JSObject lastIndex
         {
             get
@@ -162,15 +177,23 @@ namespace NiL.JS.Core.BaseTypes
             }
             set
             {
-                lIndex = value.GetField("0", true, false);
+                lIndex = value.GetMember("0");
             }
         }
+        
+        [DoNotEnumerate]
+        public JSObject compile(JSObject args)
+        {
+            makeRegex(args);
+            return this;
+        }
 
+        [DoNotEnumerate]
         public JSObject exec(JSObject args)
         {
             if (this.GetType() != typeof(RegExp))
                 throw new JSException(TypeProxy.Proxy(new TypeError("Try to call RegExp.exec on not RegExp object.")));
-            string input = args.GetField("0", true, false).ToString();
+            string input = args.GetMember("0").ToString();
             lIndex = Tools.JSObjectToNumber(lIndex);
             if (lIndex.valueType == JSObjectType.Double)
             {
@@ -193,14 +216,15 @@ namespace NiL.JS.Core.BaseTypes
                 res[i] = m.Groups[i].Success ? (JSObject)m.Groups[i].Value : null;
             if (global)
                 lastIndex.iValue = m.Index + m.Length;
-            res.GetField("index", false, true).Assign(m.Index);
-            res.GetField("input", false, true).Assign(input);
+            res.GetMember("index", true, true).Assign(m.Index);
+            res.GetMember("input", true, true).Assign(input);
             return res;
         }
 
+        [DoNotEnumerate]
         public bool test(JSObject args)
         {
-            string input = args.GetField("0", true, false).ToString();
+            string input = args.GetMember("0").ToString();
             lIndex = Tools.JSObjectToNumber(lIndex);
             if (lIndex.valueType == JSObjectType.Double)
             {
@@ -223,6 +247,7 @@ namespace NiL.JS.Core.BaseTypes
             return m.Success;
         }
 
+        [Hidden]
         public override string ToString()
         {
             return "/" + regEx.ToString() + "/"

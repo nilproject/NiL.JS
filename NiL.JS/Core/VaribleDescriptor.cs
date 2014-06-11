@@ -7,7 +7,7 @@ namespace NiL.JS.Core
     [Serializable]
     public sealed class VaribleDescriptor
     {
-        private HashSet<VaribleReference> references;
+        internal HashSet<VaribleReference> references;
         private string name;
         private Context cacheContext;
         private JSObject cacheRes;
@@ -27,24 +27,32 @@ namespace NiL.JS.Core
             }
         }
 
-        internal JSObject Get(Context context)
+        internal JSObject Get(Context context, bool create)
         {
             if (context == null)
                 throw new ArgumentNullException("context");
             context.objectSource = null;
             if (context is WithContext)
-                return context.GetField(name);
+                return context.GetVarible(name);
             if (cacheContext != context && (
                 cacheRes == null
                 || context.owner == owner // объявленные переменные
                 || null == owner)) // необъявленные переменные
             {
-                var res = context.GetField(name);
+                var res = context.GetVarible(name, create);
+                if (create && !Defined && res.valueType == JSObjectType.NotExist)
+                    res.attributes = JSObjectAttributes.None;
                 if (res.valueType < JSObjectType.Undefined)
                     return res;
                 cacheContext = context;
                 return cacheRes = res;
             }
+#if DEBUG
+            if (create)
+                cacheRes.attributes &= ~JSObjectAttributes.DBGGettedOverGM;
+            else
+                cacheRes.attributes |= JSObjectAttributes.DBGGettedOverGM;
+#endif
             return cacheRes;
         }
 

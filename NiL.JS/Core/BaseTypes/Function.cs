@@ -7,6 +7,17 @@ using System.Globalization;
 
 namespace NiL.JS.Core.BaseTypes
 {
+    /// <summary>
+    /// Возможные типы функции в контексте использования.
+    /// </summary>
+    [Serializable]
+    public enum FunctionType
+    {
+        Regular = 0,
+        Getter,
+        Setter
+    }
+
     [Serializable]
     public class Function : EmbeddedType
     {
@@ -24,7 +35,7 @@ namespace NiL.JS.Core.BaseTypes
                 var eargs = new JSObject();
                 eargs.oValue = Arguments.Instance;
                 eargs.valueType = JSObjectType.Object;
-                eargs.GetField("length", false, true).Assign(0);
+                eargs.DefineMember("length").Assign(0);
                 return (RT)function.Invoke(eargs).Value;
             }
 
@@ -33,8 +44,8 @@ namespace NiL.JS.Core.BaseTypes
                 var eargs = new JSObject();
                 eargs.oValue = Arguments.Instance;
                 eargs.valueType = JSObjectType.Object;
-                eargs.GetField("length", false, true).Assign(2);
-                eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
+                eargs.DefineMember("length").Assign(2);
+                eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
                 return (RT)function.Invoke(eargs).Value;
             }
 
@@ -43,9 +54,9 @@ namespace NiL.JS.Core.BaseTypes
                 var eargs = new JSObject();
                 eargs.oValue = Arguments.Instance;
                 eargs.valueType = JSObjectType.Object;
-                eargs.GetField("length", false, true).Assign(2);
-                eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
-                eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
+                eargs.DefineMember("length").Assign(2);
+                eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
+                eargs.DefineMember("1").Assign(TypeProxy.Proxy(a2));
                 return (RT)function.Invoke(eargs).Value;
             }
 
@@ -54,10 +65,10 @@ namespace NiL.JS.Core.BaseTypes
                 var eargs = new JSObject();
                 eargs.oValue = Arguments.Instance;
                 eargs.valueType = JSObjectType.Object;
-                eargs.GetField("length", false, true).Assign(3);
-                eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
-                eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
-                eargs.GetField("2", false, true).Assign(TypeProxy.Proxy(a3));
+                eargs.DefineMember("length").Assign(3);
+                eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
+                eargs.DefineMember("1").Assign(TypeProxy.Proxy(a2));
+                eargs.DefineMember("2").Assign(TypeProxy.Proxy(a3));
                 return (RT)function.Invoke(eargs).Value;
             }
 
@@ -66,11 +77,11 @@ namespace NiL.JS.Core.BaseTypes
                 var eargs = new JSObject();
                 eargs.oValue = Arguments.Instance;
                 eargs.valueType = JSObjectType.Object;
-                eargs.GetField("length", false, true).Assign(4);
-                eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
-                eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
-                eargs.GetField("2", false, true).Assign(TypeProxy.Proxy(a3));
-                eargs.GetField("3", false, true).Assign(TypeProxy.Proxy(a4));
+                eargs.DefineMember("length").Assign(4);
+                eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
+                eargs.DefineMember("1").Assign(TypeProxy.Proxy(a2));
+                eargs.DefineMember("2").Assign(TypeProxy.Proxy(a3));
+                eargs.DefineMember("3").Assign(TypeProxy.Proxy(a4));
                 return (RT)function.Invoke(eargs).Value;
             }
 
@@ -79,12 +90,12 @@ namespace NiL.JS.Core.BaseTypes
                 var eargs = new JSObject();
                 eargs.oValue = Arguments.Instance;
                 eargs.valueType = JSObjectType.Object;
-                eargs.GetField("length", false, true).Assign(5);
-                eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
-                eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
-                eargs.GetField("2", false, true).Assign(TypeProxy.Proxy(a3));
-                eargs.GetField("3", false, true).Assign(TypeProxy.Proxy(a4));
-                eargs.GetField("4", false, true).Assign(TypeProxy.Proxy(a5));
+                eargs.DefineMember("length").Assign(5);
+                eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
+                eargs.DefineMember("1").Assign(TypeProxy.Proxy(a2));
+                eargs.DefineMember("2").Assign(TypeProxy.Proxy(a3));
+                eargs.DefineMember("3").Assign(TypeProxy.Proxy(a4));
+                eargs.DefineMember("4").Assign(TypeProxy.Proxy(a5));
                 return (RT)function.Invoke(eargs).Value;
             }
 
@@ -93,13 +104,13 @@ namespace NiL.JS.Core.BaseTypes
                 var eargs = new JSObject();
                 eargs.oValue = Arguments.Instance;
                 eargs.valueType = JSObjectType.Object;
-                eargs.GetField("length", false, true).Assign(6);
-                eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
-                eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
-                eargs.GetField("2", false, true).Assign(TypeProxy.Proxy(a3));
-                eargs.GetField("3", false, true).Assign(TypeProxy.Proxy(a4));
-                eargs.GetField("4", false, true).Assign(TypeProxy.Proxy(a5));
-                eargs.GetField("5", false, true).Assign(TypeProxy.Proxy(a6));
+                eargs.DefineMember("length").Assign(6);
+                eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
+                eargs.DefineMember("1").Assign(TypeProxy.Proxy(a2));
+                eargs.DefineMember("2").Assign(TypeProxy.Proxy(a3));
+                eargs.DefineMember("3").Assign(TypeProxy.Proxy(a4));
+                eargs.DefineMember("4").Assign(TypeProxy.Proxy(a5));
+                eargs.DefineMember("5").Assign(TypeProxy.Proxy(a6));
                 return (RT)function.Invoke(eargs).Value;
             }
 
@@ -108,14 +119,14 @@ namespace NiL.JS.Core.BaseTypes
                 var eargs = new JSObject();
                 eargs.oValue = Arguments.Instance;
                 eargs.valueType = JSObjectType.Object;
-                eargs.GetField("length", false, true).Assign(7);
-                eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
-                eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
-                eargs.GetField("2", false, true).Assign(TypeProxy.Proxy(a3));
-                eargs.GetField("3", false, true).Assign(TypeProxy.Proxy(a4));
-                eargs.GetField("4", false, true).Assign(TypeProxy.Proxy(a5));
-                eargs.GetField("5", false, true).Assign(TypeProxy.Proxy(a6));
-                eargs.GetField("6", false, true).Assign(TypeProxy.Proxy(a7));
+                eargs.DefineMember("length").Assign(7);
+                eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
+                eargs.DefineMember("1").Assign(TypeProxy.Proxy(a2));
+                eargs.DefineMember("2").Assign(TypeProxy.Proxy(a3));
+                eargs.DefineMember("3").Assign(TypeProxy.Proxy(a4));
+                eargs.DefineMember("4").Assign(TypeProxy.Proxy(a5));
+                eargs.DefineMember("5").Assign(TypeProxy.Proxy(a6));
+                eargs.DefineMember("6").Assign(TypeProxy.Proxy(a7));
                 return (RT)function.Invoke(eargs).Value;
             }
 
@@ -124,15 +135,15 @@ namespace NiL.JS.Core.BaseTypes
                 var eargs = new JSObject();
                 eargs.oValue = Arguments.Instance;
                 eargs.valueType = JSObjectType.Object;
-                eargs.GetField("length", false, true).Assign(8);
-                eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
-                eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
-                eargs.GetField("2", false, true).Assign(TypeProxy.Proxy(a3));
-                eargs.GetField("3", false, true).Assign(TypeProxy.Proxy(a4));
-                eargs.GetField("4", false, true).Assign(TypeProxy.Proxy(a5));
-                eargs.GetField("5", false, true).Assign(TypeProxy.Proxy(a6));
-                eargs.GetField("6", false, true).Assign(TypeProxy.Proxy(a7));
-                eargs.GetField("7", false, true).Assign(TypeProxy.Proxy(a8));
+                eargs.DefineMember("length").Assign(8);
+                eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
+                eargs.DefineMember("1").Assign(TypeProxy.Proxy(a2));
+                eargs.DefineMember("2").Assign(TypeProxy.Proxy(a3));
+                eargs.DefineMember("3").Assign(TypeProxy.Proxy(a4));
+                eargs.DefineMember("4").Assign(TypeProxy.Proxy(a5));
+                eargs.DefineMember("5").Assign(TypeProxy.Proxy(a6));
+                eargs.DefineMember("6").Assign(TypeProxy.Proxy(a7));
+                eargs.DefineMember("7").Assign(TypeProxy.Proxy(a8));
                 return (RT)function.Invoke(eargs).Value;
             }
 
@@ -141,16 +152,16 @@ namespace NiL.JS.Core.BaseTypes
                 var eargs = new JSObject();
                 eargs.oValue = Arguments.Instance;
                 eargs.valueType = JSObjectType.Object;
-                eargs.GetField("length", false, true).Assign(9);
-                eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
-                eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
-                eargs.GetField("2", false, true).Assign(TypeProxy.Proxy(a3));
-                eargs.GetField("3", false, true).Assign(TypeProxy.Proxy(a4));
-                eargs.GetField("4", false, true).Assign(TypeProxy.Proxy(a5));
-                eargs.GetField("5", false, true).Assign(TypeProxy.Proxy(a6));
-                eargs.GetField("6", false, true).Assign(TypeProxy.Proxy(a7));
-                eargs.GetField("7", false, true).Assign(TypeProxy.Proxy(a8));
-                eargs.GetField("8", false, true).Assign(TypeProxy.Proxy(a9));
+                eargs.DefineMember("length").Assign(9);
+                eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
+                eargs.DefineMember("1").Assign(TypeProxy.Proxy(a2));
+                eargs.DefineMember("2").Assign(TypeProxy.Proxy(a3));
+                eargs.DefineMember("3").Assign(TypeProxy.Proxy(a4));
+                eargs.DefineMember("4").Assign(TypeProxy.Proxy(a5));
+                eargs.DefineMember("5").Assign(TypeProxy.Proxy(a6));
+                eargs.DefineMember("6").Assign(TypeProxy.Proxy(a7));
+                eargs.DefineMember("7").Assign(TypeProxy.Proxy(a8));
+                eargs.DefineMember("8").Assign(TypeProxy.Proxy(a9));
                 return (RT)function.Invoke(eargs).Value;
             }
 
@@ -159,17 +170,17 @@ namespace NiL.JS.Core.BaseTypes
                 var eargs = new JSObject();
                 eargs.oValue = Arguments.Instance;
                 eargs.valueType = JSObjectType.Object;
-                eargs.GetField("length", false, true).Assign(10);
-                eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
-                eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
-                eargs.GetField("2", false, true).Assign(TypeProxy.Proxy(a3));
-                eargs.GetField("3", false, true).Assign(TypeProxy.Proxy(a4));
-                eargs.GetField("4", false, true).Assign(TypeProxy.Proxy(a5));
-                eargs.GetField("5", false, true).Assign(TypeProxy.Proxy(a6));
-                eargs.GetField("6", false, true).Assign(TypeProxy.Proxy(a7));
-                eargs.GetField("7", false, true).Assign(TypeProxy.Proxy(a8));
-                eargs.GetField("8", false, true).Assign(TypeProxy.Proxy(a9));
-                eargs.GetField("9", false, true).Assign(TypeProxy.Proxy(a10));
+                eargs.DefineMember("length").Assign(10);
+                eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
+                eargs.DefineMember("1").Assign(TypeProxy.Proxy(a2));
+                eargs.DefineMember("2").Assign(TypeProxy.Proxy(a3));
+                eargs.DefineMember("3").Assign(TypeProxy.Proxy(a4));
+                eargs.DefineMember("4").Assign(TypeProxy.Proxy(a5));
+                eargs.DefineMember("5").Assign(TypeProxy.Proxy(a6));
+                eargs.DefineMember("6").Assign(TypeProxy.Proxy(a7));
+                eargs.DefineMember("7").Assign(TypeProxy.Proxy(a8));
+                eargs.DefineMember("8").Assign(TypeProxy.Proxy(a9));
+                eargs.DefineMember("9").Assign(TypeProxy.Proxy(a10));
                 return (RT)function.Invoke(eargs).Value;
             }
 
@@ -178,18 +189,18 @@ namespace NiL.JS.Core.BaseTypes
                 var eargs = new JSObject();
                 eargs.oValue = Arguments.Instance;
                 eargs.valueType = JSObjectType.Object;
-                eargs.GetField("length", false, true).Assign(11);
-                eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
-                eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
-                eargs.GetField("2", false, true).Assign(TypeProxy.Proxy(a3));
-                eargs.GetField("3", false, true).Assign(TypeProxy.Proxy(a4));
-                eargs.GetField("4", false, true).Assign(TypeProxy.Proxy(a5));
-                eargs.GetField("5", false, true).Assign(TypeProxy.Proxy(a6));
-                eargs.GetField("6", false, true).Assign(TypeProxy.Proxy(a7));
-                eargs.GetField("7", false, true).Assign(TypeProxy.Proxy(a8));
-                eargs.GetField("8", false, true).Assign(TypeProxy.Proxy(a9));
-                eargs.GetField("9", false, true).Assign(TypeProxy.Proxy(a10));
-                eargs.GetField("10", false, true).Assign(TypeProxy.Proxy(a11));
+                eargs.DefineMember("length").Assign(11);
+                eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
+                eargs.DefineMember("1").Assign(TypeProxy.Proxy(a2));
+                eargs.DefineMember("2").Assign(TypeProxy.Proxy(a3));
+                eargs.DefineMember("3").Assign(TypeProxy.Proxy(a4));
+                eargs.DefineMember("4").Assign(TypeProxy.Proxy(a5));
+                eargs.DefineMember("5").Assign(TypeProxy.Proxy(a6));
+                eargs.DefineMember("6").Assign(TypeProxy.Proxy(a7));
+                eargs.DefineMember("7").Assign(TypeProxy.Proxy(a8));
+                eargs.DefineMember("8").Assign(TypeProxy.Proxy(a9));
+                eargs.DefineMember("9").Assign(TypeProxy.Proxy(a10));
+                eargs.DefineMember("10").Assign(TypeProxy.Proxy(a11));
                 return (RT)function.Invoke(eargs).Value;
             }
 
@@ -198,19 +209,19 @@ namespace NiL.JS.Core.BaseTypes
                 var eargs = new JSObject();
                 eargs.oValue = Arguments.Instance;
                 eargs.valueType = JSObjectType.Object;
-                eargs.GetField("length", false, true).Assign(12);
-                eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
-                eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
-                eargs.GetField("2", false, true).Assign(TypeProxy.Proxy(a3));
-                eargs.GetField("3", false, true).Assign(TypeProxy.Proxy(a4));
-                eargs.GetField("4", false, true).Assign(TypeProxy.Proxy(a5));
-                eargs.GetField("5", false, true).Assign(TypeProxy.Proxy(a6));
-                eargs.GetField("6", false, true).Assign(TypeProxy.Proxy(a7));
-                eargs.GetField("7", false, true).Assign(TypeProxy.Proxy(a8));
-                eargs.GetField("8", false, true).Assign(TypeProxy.Proxy(a9));
-                eargs.GetField("9", false, true).Assign(TypeProxy.Proxy(a10));
-                eargs.GetField("10", false, true).Assign(TypeProxy.Proxy(a11));
-                eargs.GetField("11", false, true).Assign(TypeProxy.Proxy(a12));
+                eargs.DefineMember("length").Assign(12);
+                eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
+                eargs.DefineMember("1").Assign(TypeProxy.Proxy(a2));
+                eargs.DefineMember("2").Assign(TypeProxy.Proxy(a3));
+                eargs.DefineMember("3").Assign(TypeProxy.Proxy(a4));
+                eargs.DefineMember("4").Assign(TypeProxy.Proxy(a5));
+                eargs.DefineMember("5").Assign(TypeProxy.Proxy(a6));
+                eargs.DefineMember("6").Assign(TypeProxy.Proxy(a7));
+                eargs.DefineMember("7").Assign(TypeProxy.Proxy(a8));
+                eargs.DefineMember("8").Assign(TypeProxy.Proxy(a9));
+                eargs.DefineMember("9").Assign(TypeProxy.Proxy(a10));
+                eargs.DefineMember("10").Assign(TypeProxy.Proxy(a11));
+                eargs.DefineMember("11").Assign(TypeProxy.Proxy(a12));
                 return (RT)function.Invoke(eargs).Value;
             }
 
@@ -219,20 +230,20 @@ namespace NiL.JS.Core.BaseTypes
                 var eargs = new JSObject();
                 eargs.oValue = Arguments.Instance;
                 eargs.valueType = JSObjectType.Object;
-                eargs.GetField("length", false, true).Assign(13);
-                eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
-                eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
-                eargs.GetField("2", false, true).Assign(TypeProxy.Proxy(a3));
-                eargs.GetField("3", false, true).Assign(TypeProxy.Proxy(a4));
-                eargs.GetField("4", false, true).Assign(TypeProxy.Proxy(a5));
-                eargs.GetField("5", false, true).Assign(TypeProxy.Proxy(a6));
-                eargs.GetField("6", false, true).Assign(TypeProxy.Proxy(a7));
-                eargs.GetField("7", false, true).Assign(TypeProxy.Proxy(a8));
-                eargs.GetField("8", false, true).Assign(TypeProxy.Proxy(a9));
-                eargs.GetField("9", false, true).Assign(TypeProxy.Proxy(a10));
-                eargs.GetField("10", false, true).Assign(TypeProxy.Proxy(a11));
-                eargs.GetField("11", false, true).Assign(TypeProxy.Proxy(a12));
-                eargs.GetField("12", false, true).Assign(TypeProxy.Proxy(a13));
+                eargs.DefineMember("length").Assign(13);
+                eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
+                eargs.DefineMember("1").Assign(TypeProxy.Proxy(a2));
+                eargs.DefineMember("2").Assign(TypeProxy.Proxy(a3));
+                eargs.DefineMember("3").Assign(TypeProxy.Proxy(a4));
+                eargs.DefineMember("4").Assign(TypeProxy.Proxy(a5));
+                eargs.DefineMember("5").Assign(TypeProxy.Proxy(a6));
+                eargs.DefineMember("6").Assign(TypeProxy.Proxy(a7));
+                eargs.DefineMember("7").Assign(TypeProxy.Proxy(a8));
+                eargs.DefineMember("8").Assign(TypeProxy.Proxy(a9));
+                eargs.DefineMember("9").Assign(TypeProxy.Proxy(a10));
+                eargs.DefineMember("10").Assign(TypeProxy.Proxy(a11));
+                eargs.DefineMember("11").Assign(TypeProxy.Proxy(a12));
+                eargs.DefineMember("12").Assign(TypeProxy.Proxy(a13));
                 return (RT)function.Invoke(eargs).Value;
             }
 
@@ -241,21 +252,21 @@ namespace NiL.JS.Core.BaseTypes
                 var eargs = new JSObject();
                 eargs.oValue = Arguments.Instance;
                 eargs.valueType = JSObjectType.Object;
-                eargs.GetField("length", false, true).Assign(14);
-                eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
-                eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
-                eargs.GetField("2", false, true).Assign(TypeProxy.Proxy(a3));
-                eargs.GetField("3", false, true).Assign(TypeProxy.Proxy(a4));
-                eargs.GetField("4", false, true).Assign(TypeProxy.Proxy(a5));
-                eargs.GetField("5", false, true).Assign(TypeProxy.Proxy(a6));
-                eargs.GetField("6", false, true).Assign(TypeProxy.Proxy(a7));
-                eargs.GetField("7", false, true).Assign(TypeProxy.Proxy(a8));
-                eargs.GetField("8", false, true).Assign(TypeProxy.Proxy(a9));
-                eargs.GetField("9", false, true).Assign(TypeProxy.Proxy(a10));
-                eargs.GetField("10", false, true).Assign(TypeProxy.Proxy(a11));
-                eargs.GetField("11", false, true).Assign(TypeProxy.Proxy(a12));
-                eargs.GetField("12", false, true).Assign(TypeProxy.Proxy(a13));
-                eargs.GetField("13", false, true).Assign(TypeProxy.Proxy(a14));
+                eargs.DefineMember("length").Assign(14);
+                eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
+                eargs.DefineMember("1").Assign(TypeProxy.Proxy(a2));
+                eargs.DefineMember("2").Assign(TypeProxy.Proxy(a3));
+                eargs.DefineMember("3").Assign(TypeProxy.Proxy(a4));
+                eargs.DefineMember("4").Assign(TypeProxy.Proxy(a5));
+                eargs.DefineMember("5").Assign(TypeProxy.Proxy(a6));
+                eargs.DefineMember("6").Assign(TypeProxy.Proxy(a7));
+                eargs.DefineMember("7").Assign(TypeProxy.Proxy(a8));
+                eargs.DefineMember("8").Assign(TypeProxy.Proxy(a9));
+                eargs.DefineMember("9").Assign(TypeProxy.Proxy(a10));
+                eargs.DefineMember("10").Assign(TypeProxy.Proxy(a11));
+                eargs.DefineMember("11").Assign(TypeProxy.Proxy(a12));
+                eargs.DefineMember("12").Assign(TypeProxy.Proxy(a13));
+                eargs.DefineMember("13").Assign(TypeProxy.Proxy(a14));
                 return (RT)function.Invoke(eargs).Value;
             }
 
@@ -264,22 +275,22 @@ namespace NiL.JS.Core.BaseTypes
                 var eargs = new JSObject();
                 eargs.oValue = Arguments.Instance;
                 eargs.valueType = JSObjectType.Object;
-                eargs.GetField("length", false, true).Assign(15);
-                eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
-                eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
-                eargs.GetField("2", false, true).Assign(TypeProxy.Proxy(a3));
-                eargs.GetField("3", false, true).Assign(TypeProxy.Proxy(a4));
-                eargs.GetField("4", false, true).Assign(TypeProxy.Proxy(a5));
-                eargs.GetField("5", false, true).Assign(TypeProxy.Proxy(a6));
-                eargs.GetField("6", false, true).Assign(TypeProxy.Proxy(a7));
-                eargs.GetField("7", false, true).Assign(TypeProxy.Proxy(a8));
-                eargs.GetField("8", false, true).Assign(TypeProxy.Proxy(a9));
-                eargs.GetField("9", false, true).Assign(TypeProxy.Proxy(a10));
-                eargs.GetField("10", false, true).Assign(TypeProxy.Proxy(a11));
-                eargs.GetField("11", false, true).Assign(TypeProxy.Proxy(a12));
-                eargs.GetField("12", false, true).Assign(TypeProxy.Proxy(a13));
-                eargs.GetField("13", false, true).Assign(TypeProxy.Proxy(a14));
-                eargs.GetField("14", false, true).Assign(TypeProxy.Proxy(a15));
+                eargs.DefineMember("length").Assign(15);
+                eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
+                eargs.DefineMember("1").Assign(TypeProxy.Proxy(a2));
+                eargs.DefineMember("2").Assign(TypeProxy.Proxy(a3));
+                eargs.DefineMember("3").Assign(TypeProxy.Proxy(a4));
+                eargs.DefineMember("4").Assign(TypeProxy.Proxy(a5));
+                eargs.DefineMember("5").Assign(TypeProxy.Proxy(a6));
+                eargs.DefineMember("6").Assign(TypeProxy.Proxy(a7));
+                eargs.DefineMember("7").Assign(TypeProxy.Proxy(a8));
+                eargs.DefineMember("8").Assign(TypeProxy.Proxy(a9));
+                eargs.DefineMember("9").Assign(TypeProxy.Proxy(a10));
+                eargs.DefineMember("10").Assign(TypeProxy.Proxy(a11));
+                eargs.DefineMember("11").Assign(TypeProxy.Proxy(a12));
+                eargs.DefineMember("12").Assign(TypeProxy.Proxy(a13));
+                eargs.DefineMember("13").Assign(TypeProxy.Proxy(a14));
+                eargs.DefineMember("14").Assign(TypeProxy.Proxy(a15));
                 return (RT)function.Invoke(eargs).Value;
             }
 
@@ -288,23 +299,23 @@ namespace NiL.JS.Core.BaseTypes
                 var eargs = new JSObject();
                 eargs.oValue = Arguments.Instance;
                 eargs.valueType = JSObjectType.Object;
-                eargs.GetField("length", false, true).Assign(16);
-                eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
-                eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
-                eargs.GetField("2", false, true).Assign(TypeProxy.Proxy(a3));
-                eargs.GetField("3", false, true).Assign(TypeProxy.Proxy(a4));
-                eargs.GetField("4", false, true).Assign(TypeProxy.Proxy(a5));
-                eargs.GetField("5", false, true).Assign(TypeProxy.Proxy(a6));
-                eargs.GetField("6", false, true).Assign(TypeProxy.Proxy(a7));
-                eargs.GetField("7", false, true).Assign(TypeProxy.Proxy(a8));
-                eargs.GetField("8", false, true).Assign(TypeProxy.Proxy(a9));
-                eargs.GetField("9", false, true).Assign(TypeProxy.Proxy(a10));
-                eargs.GetField("10", false, true).Assign(TypeProxy.Proxy(a11));
-                eargs.GetField("11", false, true).Assign(TypeProxy.Proxy(a12));
-                eargs.GetField("12", false, true).Assign(TypeProxy.Proxy(a13));
-                eargs.GetField("13", false, true).Assign(TypeProxy.Proxy(a14));
-                eargs.GetField("14", false, true).Assign(TypeProxy.Proxy(a15));
-                eargs.GetField("15", false, true).Assign(TypeProxy.Proxy(a16));
+                eargs.DefineMember("length").Assign(16);
+                eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
+                eargs.DefineMember("1").Assign(TypeProxy.Proxy(a2));
+                eargs.DefineMember("2").Assign(TypeProxy.Proxy(a3));
+                eargs.DefineMember("3").Assign(TypeProxy.Proxy(a4));
+                eargs.DefineMember("4").Assign(TypeProxy.Proxy(a5));
+                eargs.DefineMember("5").Assign(TypeProxy.Proxy(a6));
+                eargs.DefineMember("6").Assign(TypeProxy.Proxy(a7));
+                eargs.DefineMember("7").Assign(TypeProxy.Proxy(a8));
+                eargs.DefineMember("8").Assign(TypeProxy.Proxy(a9));
+                eargs.DefineMember("9").Assign(TypeProxy.Proxy(a10));
+                eargs.DefineMember("10").Assign(TypeProxy.Proxy(a11));
+                eargs.DefineMember("11").Assign(TypeProxy.Proxy(a12));
+                eargs.DefineMember("12").Assign(TypeProxy.Proxy(a13));
+                eargs.DefineMember("13").Assign(TypeProxy.Proxy(a14));
+                eargs.DefineMember("14").Assign(TypeProxy.Proxy(a15));
+                eargs.DefineMember("15").Assign(TypeProxy.Proxy(a16));
                 return (RT)function.Invoke(eargs).Value;
             }
 
@@ -313,7 +324,7 @@ namespace NiL.JS.Core.BaseTypes
                 var eargs = new JSObject();
                 eargs.oValue = Arguments.Instance;
                 eargs.valueType = JSObjectType.Object;
-                eargs.GetField("length", false, true).Assign(0);
+                eargs.DefineMember("length").Assign(0);
                 function.Invoke(eargs);
             }
 
@@ -322,8 +333,8 @@ namespace NiL.JS.Core.BaseTypes
                 var eargs = new JSObject();
                 eargs.oValue = Arguments.Instance;
                 eargs.valueType = JSObjectType.Object;
-                eargs.GetField("length", false, true).Assign(2);
-                eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
+                eargs.DefineMember("length").Assign(2);
+                eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
                 function.Invoke(eargs);
             }
 
@@ -332,9 +343,9 @@ namespace NiL.JS.Core.BaseTypes
                 var eargs = new JSObject();
                 eargs.oValue = Arguments.Instance;
                 eargs.valueType = JSObjectType.Object;
-                eargs.GetField("length", false, true).Assign(2);
-                eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
-                eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
+                eargs.DefineMember("length").Assign(2);
+                eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
+                eargs.DefineMember("1").Assign(TypeProxy.Proxy(a2));
                 function.Invoke(eargs);
             }
 
@@ -343,10 +354,10 @@ namespace NiL.JS.Core.BaseTypes
                 var eargs = new JSObject();
                 eargs.oValue = Arguments.Instance;
                 eargs.valueType = JSObjectType.Object;
-                eargs.GetField("length", false, true).Assign(3);
-                eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
-                eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
-                eargs.GetField("2", false, true).Assign(TypeProxy.Proxy(a3));
+                eargs.DefineMember("length").Assign(3);
+                eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
+                eargs.DefineMember("1").Assign(TypeProxy.Proxy(a2));
+                eargs.DefineMember("2").Assign(TypeProxy.Proxy(a3));
                 function.Invoke(eargs);
             }
 
@@ -355,11 +366,11 @@ namespace NiL.JS.Core.BaseTypes
                 var eargs = new JSObject();
                 eargs.oValue = Arguments.Instance;
                 eargs.valueType = JSObjectType.Object;
-                eargs.GetField("length", false, true).Assign(4);
-                eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
-                eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
-                eargs.GetField("2", false, true).Assign(TypeProxy.Proxy(a3));
-                eargs.GetField("3", false, true).Assign(TypeProxy.Proxy(a4));
+                eargs.DefineMember("length").Assign(4);
+                eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
+                eargs.DefineMember("1").Assign(TypeProxy.Proxy(a2));
+                eargs.DefineMember("2").Assign(TypeProxy.Proxy(a3));
+                eargs.DefineMember("3").Assign(TypeProxy.Proxy(a4));
                 function.Invoke(eargs);
             }
 
@@ -368,12 +379,12 @@ namespace NiL.JS.Core.BaseTypes
                 var eargs = new JSObject();
                 eargs.oValue = Arguments.Instance;
                 eargs.valueType = JSObjectType.Object;
-                eargs.GetField("length", false, true).Assign(5);
-                eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
-                eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
-                eargs.GetField("2", false, true).Assign(TypeProxy.Proxy(a3));
-                eargs.GetField("3", false, true).Assign(TypeProxy.Proxy(a4));
-                eargs.GetField("4", false, true).Assign(TypeProxy.Proxy(a5));
+                eargs.DefineMember("length").Assign(5);
+                eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
+                eargs.DefineMember("1").Assign(TypeProxy.Proxy(a2));
+                eargs.DefineMember("2").Assign(TypeProxy.Proxy(a3));
+                eargs.DefineMember("3").Assign(TypeProxy.Proxy(a4));
+                eargs.DefineMember("4").Assign(TypeProxy.Proxy(a5));
                 function.Invoke(eargs);
             }
 
@@ -382,13 +393,13 @@ namespace NiL.JS.Core.BaseTypes
                 var eargs = new JSObject();
                 eargs.oValue = Arguments.Instance;
                 eargs.valueType = JSObjectType.Object;
-                eargs.GetField("length", false, true).Assign(6);
-                eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
-                eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
-                eargs.GetField("2", false, true).Assign(TypeProxy.Proxy(a3));
-                eargs.GetField("3", false, true).Assign(TypeProxy.Proxy(a4));
-                eargs.GetField("4", false, true).Assign(TypeProxy.Proxy(a5));
-                eargs.GetField("5", false, true).Assign(TypeProxy.Proxy(a6));
+                eargs.DefineMember("length").Assign(6);
+                eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
+                eargs.DefineMember("1").Assign(TypeProxy.Proxy(a2));
+                eargs.DefineMember("2").Assign(TypeProxy.Proxy(a3));
+                eargs.DefineMember("3").Assign(TypeProxy.Proxy(a4));
+                eargs.DefineMember("4").Assign(TypeProxy.Proxy(a5));
+                eargs.DefineMember("5").Assign(TypeProxy.Proxy(a6));
                 function.Invoke(eargs);
             }
 
@@ -397,14 +408,14 @@ namespace NiL.JS.Core.BaseTypes
                 var eargs = new JSObject();
                 eargs.oValue = Arguments.Instance;
                 eargs.valueType = JSObjectType.Object;
-                eargs.GetField("length", false, true).Assign(7);
-                eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
-                eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
-                eargs.GetField("2", false, true).Assign(TypeProxy.Proxy(a3));
-                eargs.GetField("3", false, true).Assign(TypeProxy.Proxy(a4));
-                eargs.GetField("4", false, true).Assign(TypeProxy.Proxy(a5));
-                eargs.GetField("5", false, true).Assign(TypeProxy.Proxy(a6));
-                eargs.GetField("6", false, true).Assign(TypeProxy.Proxy(a7));
+                eargs.DefineMember("length").Assign(7);
+                eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
+                eargs.DefineMember("1").Assign(TypeProxy.Proxy(a2));
+                eargs.DefineMember("2").Assign(TypeProxy.Proxy(a3));
+                eargs.DefineMember("3").Assign(TypeProxy.Proxy(a4));
+                eargs.DefineMember("4").Assign(TypeProxy.Proxy(a5));
+                eargs.DefineMember("5").Assign(TypeProxy.Proxy(a6));
+                eargs.DefineMember("6").Assign(TypeProxy.Proxy(a7));
                 function.Invoke(eargs);
             }
 
@@ -413,15 +424,15 @@ namespace NiL.JS.Core.BaseTypes
                 var eargs = new JSObject();
                 eargs.oValue = Arguments.Instance;
                 eargs.valueType = JSObjectType.Object;
-                eargs.GetField("length", false, true).Assign(8);
-                eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
-                eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
-                eargs.GetField("2", false, true).Assign(TypeProxy.Proxy(a3));
-                eargs.GetField("3", false, true).Assign(TypeProxy.Proxy(a4));
-                eargs.GetField("4", false, true).Assign(TypeProxy.Proxy(a5));
-                eargs.GetField("5", false, true).Assign(TypeProxy.Proxy(a6));
-                eargs.GetField("6", false, true).Assign(TypeProxy.Proxy(a7));
-                eargs.GetField("7", false, true).Assign(TypeProxy.Proxy(a8));
+                eargs.DefineMember("length").Assign(8);
+                eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
+                eargs.DefineMember("1").Assign(TypeProxy.Proxy(a2));
+                eargs.DefineMember("2").Assign(TypeProxy.Proxy(a3));
+                eargs.DefineMember("3").Assign(TypeProxy.Proxy(a4));
+                eargs.DefineMember("4").Assign(TypeProxy.Proxy(a5));
+                eargs.DefineMember("5").Assign(TypeProxy.Proxy(a6));
+                eargs.DefineMember("6").Assign(TypeProxy.Proxy(a7));
+                eargs.DefineMember("7").Assign(TypeProxy.Proxy(a8));
                 function.Invoke(eargs);
             }
 
@@ -430,16 +441,16 @@ namespace NiL.JS.Core.BaseTypes
                 var eargs = new JSObject();
                 eargs.oValue = Arguments.Instance;
                 eargs.valueType = JSObjectType.Object;
-                eargs.GetField("length", false, true).Assign(9);
-                eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
-                eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
-                eargs.GetField("2", false, true).Assign(TypeProxy.Proxy(a3));
-                eargs.GetField("3", false, true).Assign(TypeProxy.Proxy(a4));
-                eargs.GetField("4", false, true).Assign(TypeProxy.Proxy(a5));
-                eargs.GetField("5", false, true).Assign(TypeProxy.Proxy(a6));
-                eargs.GetField("6", false, true).Assign(TypeProxy.Proxy(a7));
-                eargs.GetField("7", false, true).Assign(TypeProxy.Proxy(a8));
-                eargs.GetField("8", false, true).Assign(TypeProxy.Proxy(a9));
+                eargs.DefineMember("length").Assign(9);
+                eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
+                eargs.DefineMember("1").Assign(TypeProxy.Proxy(a2));
+                eargs.DefineMember("2").Assign(TypeProxy.Proxy(a3));
+                eargs.DefineMember("3").Assign(TypeProxy.Proxy(a4));
+                eargs.DefineMember("4").Assign(TypeProxy.Proxy(a5));
+                eargs.DefineMember("5").Assign(TypeProxy.Proxy(a6));
+                eargs.DefineMember("6").Assign(TypeProxy.Proxy(a7));
+                eargs.DefineMember("7").Assign(TypeProxy.Proxy(a8));
+                eargs.DefineMember("8").Assign(TypeProxy.Proxy(a9));
                 function.Invoke(eargs);
             }
 
@@ -448,17 +459,17 @@ namespace NiL.JS.Core.BaseTypes
                 var eargs = new JSObject();
                 eargs.oValue = Arguments.Instance;
                 eargs.valueType = JSObjectType.Object;
-                eargs.GetField("length", false, true).Assign(10);
-                eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
-                eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
-                eargs.GetField("2", false, true).Assign(TypeProxy.Proxy(a3));
-                eargs.GetField("3", false, true).Assign(TypeProxy.Proxy(a4));
-                eargs.GetField("4", false, true).Assign(TypeProxy.Proxy(a5));
-                eargs.GetField("5", false, true).Assign(TypeProxy.Proxy(a6));
-                eargs.GetField("6", false, true).Assign(TypeProxy.Proxy(a7));
-                eargs.GetField("7", false, true).Assign(TypeProxy.Proxy(a8));
-                eargs.GetField("8", false, true).Assign(TypeProxy.Proxy(a9));
-                eargs.GetField("9", false, true).Assign(TypeProxy.Proxy(a10));
+                eargs.DefineMember("length").Assign(10);
+                eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
+                eargs.DefineMember("1").Assign(TypeProxy.Proxy(a2));
+                eargs.DefineMember("2").Assign(TypeProxy.Proxy(a3));
+                eargs.DefineMember("3").Assign(TypeProxy.Proxy(a4));
+                eargs.DefineMember("4").Assign(TypeProxy.Proxy(a5));
+                eargs.DefineMember("5").Assign(TypeProxy.Proxy(a6));
+                eargs.DefineMember("6").Assign(TypeProxy.Proxy(a7));
+                eargs.DefineMember("7").Assign(TypeProxy.Proxy(a8));
+                eargs.DefineMember("8").Assign(TypeProxy.Proxy(a9));
+                eargs.DefineMember("9").Assign(TypeProxy.Proxy(a10));
                 function.Invoke(eargs);
             }
 
@@ -467,18 +478,18 @@ namespace NiL.JS.Core.BaseTypes
                 var eargs = new JSObject();
                 eargs.oValue = Arguments.Instance;
                 eargs.valueType = JSObjectType.Object;
-                eargs.GetField("length", false, true).Assign(11);
-                eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
-                eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
-                eargs.GetField("2", false, true).Assign(TypeProxy.Proxy(a3));
-                eargs.GetField("3", false, true).Assign(TypeProxy.Proxy(a4));
-                eargs.GetField("4", false, true).Assign(TypeProxy.Proxy(a5));
-                eargs.GetField("5", false, true).Assign(TypeProxy.Proxy(a6));
-                eargs.GetField("6", false, true).Assign(TypeProxy.Proxy(a7));
-                eargs.GetField("7", false, true).Assign(TypeProxy.Proxy(a8));
-                eargs.GetField("8", false, true).Assign(TypeProxy.Proxy(a9));
-                eargs.GetField("9", false, true).Assign(TypeProxy.Proxy(a10));
-                eargs.GetField("10", false, true).Assign(TypeProxy.Proxy(a11));
+                eargs.DefineMember("length").Assign(11);
+                eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
+                eargs.DefineMember("1").Assign(TypeProxy.Proxy(a2));
+                eargs.DefineMember("2").Assign(TypeProxy.Proxy(a3));
+                eargs.DefineMember("3").Assign(TypeProxy.Proxy(a4));
+                eargs.DefineMember("4").Assign(TypeProxy.Proxy(a5));
+                eargs.DefineMember("5").Assign(TypeProxy.Proxy(a6));
+                eargs.DefineMember("6").Assign(TypeProxy.Proxy(a7));
+                eargs.DefineMember("7").Assign(TypeProxy.Proxy(a8));
+                eargs.DefineMember("8").Assign(TypeProxy.Proxy(a9));
+                eargs.DefineMember("9").Assign(TypeProxy.Proxy(a10));
+                eargs.DefineMember("10").Assign(TypeProxy.Proxy(a11));
                 function.Invoke(eargs);
             }
 
@@ -487,19 +498,19 @@ namespace NiL.JS.Core.BaseTypes
                 var eargs = new JSObject();
                 eargs.oValue = Arguments.Instance;
                 eargs.valueType = JSObjectType.Object;
-                eargs.GetField("length", false, true).Assign(12);
-                eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
-                eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
-                eargs.GetField("2", false, true).Assign(TypeProxy.Proxy(a3));
-                eargs.GetField("3", false, true).Assign(TypeProxy.Proxy(a4));
-                eargs.GetField("4", false, true).Assign(TypeProxy.Proxy(a5));
-                eargs.GetField("5", false, true).Assign(TypeProxy.Proxy(a6));
-                eargs.GetField("6", false, true).Assign(TypeProxy.Proxy(a7));
-                eargs.GetField("7", false, true).Assign(TypeProxy.Proxy(a8));
-                eargs.GetField("8", false, true).Assign(TypeProxy.Proxy(a9));
-                eargs.GetField("9", false, true).Assign(TypeProxy.Proxy(a10));
-                eargs.GetField("10", false, true).Assign(TypeProxy.Proxy(a11));
-                eargs.GetField("11", false, true).Assign(TypeProxy.Proxy(a12));
+                eargs.DefineMember("length").Assign(12);
+                eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
+                eargs.DefineMember("1").Assign(TypeProxy.Proxy(a2));
+                eargs.DefineMember("2").Assign(TypeProxy.Proxy(a3));
+                eargs.DefineMember("3").Assign(TypeProxy.Proxy(a4));
+                eargs.DefineMember("4").Assign(TypeProxy.Proxy(a5));
+                eargs.DefineMember("5").Assign(TypeProxy.Proxy(a6));
+                eargs.DefineMember("6").Assign(TypeProxy.Proxy(a7));
+                eargs.DefineMember("7").Assign(TypeProxy.Proxy(a8));
+                eargs.DefineMember("8").Assign(TypeProxy.Proxy(a9));
+                eargs.DefineMember("9").Assign(TypeProxy.Proxy(a10));
+                eargs.DefineMember("10").Assign(TypeProxy.Proxy(a11));
+                eargs.DefineMember("11").Assign(TypeProxy.Proxy(a12));
                 function.Invoke(eargs);
             }
 
@@ -508,20 +519,20 @@ namespace NiL.JS.Core.BaseTypes
                 var eargs = new JSObject();
                 eargs.oValue = Arguments.Instance;
                 eargs.valueType = JSObjectType.Object;
-                eargs.GetField("length", false, true).Assign(13);
-                eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
-                eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
-                eargs.GetField("2", false, true).Assign(TypeProxy.Proxy(a3));
-                eargs.GetField("3", false, true).Assign(TypeProxy.Proxy(a4));
-                eargs.GetField("4", false, true).Assign(TypeProxy.Proxy(a5));
-                eargs.GetField("5", false, true).Assign(TypeProxy.Proxy(a6));
-                eargs.GetField("6", false, true).Assign(TypeProxy.Proxy(a7));
-                eargs.GetField("7", false, true).Assign(TypeProxy.Proxy(a8));
-                eargs.GetField("8", false, true).Assign(TypeProxy.Proxy(a9));
-                eargs.GetField("9", false, true).Assign(TypeProxy.Proxy(a10));
-                eargs.GetField("10", false, true).Assign(TypeProxy.Proxy(a11));
-                eargs.GetField("11", false, true).Assign(TypeProxy.Proxy(a12));
-                eargs.GetField("12", false, true).Assign(TypeProxy.Proxy(a13));
+                eargs.DefineMember("length").Assign(13);
+                eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
+                eargs.DefineMember("1").Assign(TypeProxy.Proxy(a2));
+                eargs.DefineMember("2").Assign(TypeProxy.Proxy(a3));
+                eargs.DefineMember("3").Assign(TypeProxy.Proxy(a4));
+                eargs.DefineMember("4").Assign(TypeProxy.Proxy(a5));
+                eargs.DefineMember("5").Assign(TypeProxy.Proxy(a6));
+                eargs.DefineMember("6").Assign(TypeProxy.Proxy(a7));
+                eargs.DefineMember("7").Assign(TypeProxy.Proxy(a8));
+                eargs.DefineMember("8").Assign(TypeProxy.Proxy(a9));
+                eargs.DefineMember("9").Assign(TypeProxy.Proxy(a10));
+                eargs.DefineMember("10").Assign(TypeProxy.Proxy(a11));
+                eargs.DefineMember("11").Assign(TypeProxy.Proxy(a12));
+                eargs.DefineMember("12").Assign(TypeProxy.Proxy(a13));
                 function.Invoke(eargs);
             }
 
@@ -530,21 +541,21 @@ namespace NiL.JS.Core.BaseTypes
                 var eargs = new JSObject();
                 eargs.oValue = Arguments.Instance;
                 eargs.valueType = JSObjectType.Object;
-                eargs.GetField("length", false, true).Assign(14);
-                eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
-                eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
-                eargs.GetField("2", false, true).Assign(TypeProxy.Proxy(a3));
-                eargs.GetField("3", false, true).Assign(TypeProxy.Proxy(a4));
-                eargs.GetField("4", false, true).Assign(TypeProxy.Proxy(a5));
-                eargs.GetField("5", false, true).Assign(TypeProxy.Proxy(a6));
-                eargs.GetField("6", false, true).Assign(TypeProxy.Proxy(a7));
-                eargs.GetField("7", false, true).Assign(TypeProxy.Proxy(a8));
-                eargs.GetField("8", false, true).Assign(TypeProxy.Proxy(a9));
-                eargs.GetField("9", false, true).Assign(TypeProxy.Proxy(a10));
-                eargs.GetField("10", false, true).Assign(TypeProxy.Proxy(a11));
-                eargs.GetField("11", false, true).Assign(TypeProxy.Proxy(a12));
-                eargs.GetField("12", false, true).Assign(TypeProxy.Proxy(a13));
-                eargs.GetField("13", false, true).Assign(TypeProxy.Proxy(a14));
+                eargs.DefineMember("length").Assign(14);
+                eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
+                eargs.DefineMember("1").Assign(TypeProxy.Proxy(a2));
+                eargs.DefineMember("2").Assign(TypeProxy.Proxy(a3));
+                eargs.DefineMember("3").Assign(TypeProxy.Proxy(a4));
+                eargs.DefineMember("4").Assign(TypeProxy.Proxy(a5));
+                eargs.DefineMember("5").Assign(TypeProxy.Proxy(a6));
+                eargs.DefineMember("6").Assign(TypeProxy.Proxy(a7));
+                eargs.DefineMember("7").Assign(TypeProxy.Proxy(a8));
+                eargs.DefineMember("8").Assign(TypeProxy.Proxy(a9));
+                eargs.DefineMember("9").Assign(TypeProxy.Proxy(a10));
+                eargs.DefineMember("10").Assign(TypeProxy.Proxy(a11));
+                eargs.DefineMember("11").Assign(TypeProxy.Proxy(a12));
+                eargs.DefineMember("12").Assign(TypeProxy.Proxy(a13));
+                eargs.DefineMember("13").Assign(TypeProxy.Proxy(a14));
                 function.Invoke(eargs);
             }
 
@@ -553,22 +564,22 @@ namespace NiL.JS.Core.BaseTypes
                 var eargs = new JSObject();
                 eargs.oValue = Arguments.Instance;
                 eargs.valueType = JSObjectType.Object;
-                eargs.GetField("length", false, true).Assign(15);
-                eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
-                eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
-                eargs.GetField("2", false, true).Assign(TypeProxy.Proxy(a3));
-                eargs.GetField("3", false, true).Assign(TypeProxy.Proxy(a4));
-                eargs.GetField("4", false, true).Assign(TypeProxy.Proxy(a5));
-                eargs.GetField("5", false, true).Assign(TypeProxy.Proxy(a6));
-                eargs.GetField("6", false, true).Assign(TypeProxy.Proxy(a7));
-                eargs.GetField("7", false, true).Assign(TypeProxy.Proxy(a8));
-                eargs.GetField("8", false, true).Assign(TypeProxy.Proxy(a9));
-                eargs.GetField("9", false, true).Assign(TypeProxy.Proxy(a10));
-                eargs.GetField("10", false, true).Assign(TypeProxy.Proxy(a11));
-                eargs.GetField("11", false, true).Assign(TypeProxy.Proxy(a12));
-                eargs.GetField("12", false, true).Assign(TypeProxy.Proxy(a13));
-                eargs.GetField("13", false, true).Assign(TypeProxy.Proxy(a14));
-                eargs.GetField("14", false, true).Assign(TypeProxy.Proxy(a15));
+                eargs.DefineMember("length").Assign(15);
+                eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
+                eargs.DefineMember("1").Assign(TypeProxy.Proxy(a2));
+                eargs.DefineMember("2").Assign(TypeProxy.Proxy(a3));
+                eargs.DefineMember("3").Assign(TypeProxy.Proxy(a4));
+                eargs.DefineMember("4").Assign(TypeProxy.Proxy(a5));
+                eargs.DefineMember("5").Assign(TypeProxy.Proxy(a6));
+                eargs.DefineMember("6").Assign(TypeProxy.Proxy(a7));
+                eargs.DefineMember("7").Assign(TypeProxy.Proxy(a8));
+                eargs.DefineMember("8").Assign(TypeProxy.Proxy(a9));
+                eargs.DefineMember("9").Assign(TypeProxy.Proxy(a10));
+                eargs.DefineMember("10").Assign(TypeProxy.Proxy(a11));
+                eargs.DefineMember("11").Assign(TypeProxy.Proxy(a12));
+                eargs.DefineMember("12").Assign(TypeProxy.Proxy(a13));
+                eargs.DefineMember("13").Assign(TypeProxy.Proxy(a14));
+                eargs.DefineMember("14").Assign(TypeProxy.Proxy(a15));
                 function.Invoke(eargs);
             }
 
@@ -577,23 +588,23 @@ namespace NiL.JS.Core.BaseTypes
                 var eargs = new JSObject();
                 eargs.oValue = Arguments.Instance;
                 eargs.valueType = JSObjectType.Object;
-                eargs.GetField("length", false, true).Assign(16);
-                eargs.GetField("0", false, true).Assign(TypeProxy.Proxy(a1));
-                eargs.GetField("1", false, true).Assign(TypeProxy.Proxy(a2));
-                eargs.GetField("2", false, true).Assign(TypeProxy.Proxy(a3));
-                eargs.GetField("3", false, true).Assign(TypeProxy.Proxy(a4));
-                eargs.GetField("4", false, true).Assign(TypeProxy.Proxy(a5));
-                eargs.GetField("5", false, true).Assign(TypeProxy.Proxy(a6));
-                eargs.GetField("6", false, true).Assign(TypeProxy.Proxy(a7));
-                eargs.GetField("7", false, true).Assign(TypeProxy.Proxy(a8));
-                eargs.GetField("8", false, true).Assign(TypeProxy.Proxy(a9));
-                eargs.GetField("9", false, true).Assign(TypeProxy.Proxy(a10));
-                eargs.GetField("10", false, true).Assign(TypeProxy.Proxy(a11));
-                eargs.GetField("11", false, true).Assign(TypeProxy.Proxy(a12));
-                eargs.GetField("12", false, true).Assign(TypeProxy.Proxy(a13));
-                eargs.GetField("13", false, true).Assign(TypeProxy.Proxy(a14));
-                eargs.GetField("14", false, true).Assign(TypeProxy.Proxy(a15));
-                eargs.GetField("15", false, true).Assign(TypeProxy.Proxy(a16));
+                eargs.DefineMember("length").Assign(16);
+                eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
+                eargs.DefineMember("1").Assign(TypeProxy.Proxy(a2));
+                eargs.DefineMember("2").Assign(TypeProxy.Proxy(a3));
+                eargs.DefineMember("3").Assign(TypeProxy.Proxy(a4));
+                eargs.DefineMember("4").Assign(TypeProxy.Proxy(a5));
+                eargs.DefineMember("5").Assign(TypeProxy.Proxy(a6));
+                eargs.DefineMember("6").Assign(TypeProxy.Proxy(a7));
+                eargs.DefineMember("7").Assign(TypeProxy.Proxy(a8));
+                eargs.DefineMember("8").Assign(TypeProxy.Proxy(a9));
+                eargs.DefineMember("9").Assign(TypeProxy.Proxy(a10));
+                eargs.DefineMember("10").Assign(TypeProxy.Proxy(a11));
+                eargs.DefineMember("11").Assign(TypeProxy.Proxy(a12));
+                eargs.DefineMember("12").Assign(TypeProxy.Proxy(a13));
+                eargs.DefineMember("13").Assign(TypeProxy.Proxy(a14));
+                eargs.DefineMember("14").Assign(TypeProxy.Proxy(a15));
+                eargs.DefineMember("15").Assign(TypeProxy.Proxy(a16));
                 function.Invoke(eargs);
             }
 
@@ -642,8 +653,18 @@ namespace NiL.JS.Core.BaseTypes
         private string[] argumentsNames;
         [Hidden]
         private Statements.CodeBlock body;
+        private string name;
         [Hidden]
-        public readonly string Name;
+        public string Name
+        {
+            get { return name; }
+        }
+        private FunctionType type;
+        [Hidden]
+        public FunctionType Type
+        {
+            get { return type; }
+        }
 
         #region Runtime
         [Hidden]
@@ -660,27 +681,27 @@ namespace NiL.JS.Core.BaseTypes
                 return _arguments;
             }
         }
-
+        internal Number _length = null;
         #endregion
 
         public Function()
         {
-            context = Context.currentRootContext ?? Context.globalContext;
+            context = Context.CurrentContext ?? Context.globalContext;
             body = new Statements.CodeBlock(new Statement[0], false);
             argumentsNames = new string[0];
-            Name = "";
+            name = "";
             valueType = JSObjectType.Function;
         }
 
         public Function(JSObject args)
         {
-            context = Context.currentRootContext ?? Context.globalContext;
+            context = Context.CurrentContext ?? Context.globalContext;
             var index = 0;
-            int len = args.GetField("length", true, false).iValue - 1;
+            int len = args.GetMember("length").iValue - 1;
             var argn = "";
             for (int i = 0; i < len; i++)
-                argn += args.GetField(i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture), true, false) + (i + 1 < len ? "," : "");
-            string code = "function(" + argn + "){" + args.GetField(len < 16 ? Tools.NumString[len] : len.ToString(CultureInfo.InvariantCulture), true, false) + "}";
+                argn += args.GetMember(i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture)) + (i + 1 < len ? "," : "");
+            string code = "function(" + argn + "){" + args.GetMember(len < 16 ? Tools.NumString[len] : len.ToString(CultureInfo.InvariantCulture)) + "}";
             var fs = NiL.JS.Statements.FunctionStatement.Parse(new ParsingState(code, code), ref index);
             if (fs.IsParsed)
             {
@@ -691,16 +712,15 @@ namespace NiL.JS.Core.BaseTypes
             }
         }
 
-        internal Function(Context context, Statements.CodeBlock body, string[] argumentsNames, string name)
+        internal Function(Context context, Statements.CodeBlock body, string[] argumentsNames, string name, FunctionType type)
         {
             this.context = context;
             this.argumentsNames = argumentsNames;
             this.body = body;
-            Name = name;
+            this.name = name;
+            this.type = type;
             valueType = JSObjectType.Function;
         }
-
-        internal Number _length = null;
 
         [Modules.DoNotEnumerate]
         [Modules.DoNotDelete]
@@ -719,7 +739,7 @@ namespace NiL.JS.Core.BaseTypes
         [Hidden]
         public virtual JSObject Invoke(JSObject args)
         {
-            return Invoke(null as JSObject, args);
+            return Invoke(undefined, args);
         }
 
         [Hidden]
@@ -731,7 +751,7 @@ namespace NiL.JS.Core.BaseTypes
         [Hidden]
         public virtual JSObject Invoke(Context contextOverride, JSObject thisOverride, JSObject args)
         {
-            return Invoke(thisOverride, args);
+            return Invoke(thisOverride ?? context.thisBind, args);
         }
 
         [Hidden]
@@ -742,36 +762,61 @@ namespace NiL.JS.Core.BaseTypes
             try
             {
                 Context internalContext = new Context(context, body);
-                var @this = thisOverride ?? context.thisBind;
-                if (@this != null && @this.valueType < JSObjectType.Object && !body.strict)
+                var thisBind = thisOverride;
+                if (!body.strict)
                 {
-                    @this = new JSObject(false)
+                    if (thisBind != null)
                     {
-                        valueType = JSObjectType.Object,
-                        oValue = @this,
-                        attributes = JSObjectAttributes.DoNotEnum | JSObjectAttributes.DoNotDelete | JSObjectAttributes.Immutable,
-                        prototype = @this.prototype ?? (@this.valueType <= JSObjectType.Undefined ? @this.prototype : @this.GetField("__proto__", true, false))
-                    };
+                        if (thisBind.valueType > JSObjectType.Undefined && thisBind.valueType < JSObjectType.Object)
+                        {
+                            thisBind = new JSObject(false)
+                            {
+                                valueType = JSObjectType.Object,
+                                oValue = thisBind,
+                                attributes = JSObjectAttributes.DoNotEnum | JSObjectAttributes.DoNotDelete | JSObjectAttributes.Immutable,
+                                prototype = thisBind.prototype ?? (thisBind.valueType <= JSObjectType.Undefined ? thisBind.prototype : thisBind.GetMember("__proto__"))
+                            };
+                        }
+                        else if (thisBind.valueType <= JSObjectType.Undefined || thisBind.oValue == null)
+                        {
+                            var thc = context;
+                            while (thc.prototype != Context.globalContext && !(thc.thisBind is ThisObject))
+                                thc = thc.prototype;
+                            thisBind = thc.thisBind ?? thc.GetVarible("this");
+                        }
+                        internalContext.thisBind = thisBind;
+                    }
                 }
-                internalContext.thisBind = @this;
+                else
+                    internalContext.thisBind = thisBind ?? undefined;
                 if (args == null)
                 {
                     args = new JSObject(true) { valueType = JSObjectType.Object };
                     args.oValue = args;
-                    args.GetField("callee", false, true).Assign(this);
-                    args.GetField("length", false, true).Assign(0);
+                    args.DefineMember("length").Assign(0);
                 }
-                _arguments = args;
-                internalContext.fields["arguments"] = _arguments;
-                if (!string.IsNullOrEmpty(Name))
-                    internalContext.InitField(Name).Assign(this);
+                if (body.strict)
+                {
+                    _arguments = strictModeArgumentsPropertyDammy;
+                    args.DefineMember("callee").Assign(strictModeArgumentsPropertyDammy);
+                }
+                else
+                {
+                    _arguments = args;
+                    var callee = args.DefineMember("callee");
+                    callee.Assign(this);
+                    callee.attributes |= JSObjectAttributes.DoNotEnum;
+                }
+                internalContext.fields["arguments"] = args;
+                if (type != FunctionType.Regular && Parser.ValidateName(name))
+                    internalContext.DefineVarible(name).Assign(this);
                 int i = 0;
-                JSObject argsLength = args.GetField("length", true, false);
+                JSObject argsLength = args.GetMember("length");
                 if (argsLength.valueType == JSObjectType.Property)
                     argsLength = (argsLength.oValue as Function[])[1].Invoke(args, null);
                 int min = System.Math.Min(argsLength.iValue, argumentsNames.Length);
                 for (; i < min; i++)
-                    internalContext.fields[argumentsNames[i]] = args.GetField(i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture), true, false);
+                    internalContext.fields[argumentsNames[i]] = args.GetMember(i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture));
                 for (; i < argumentsNames.Length; i++)
                     internalContext.fields[argumentsNames[i]] = new JSObject();
 
@@ -785,20 +830,20 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [Hidden]
-        public override JSObject GetField(string name, bool fast, bool own)
+        internal override JSObject GetMember(string name, bool create, bool own)
         {
             if (name == "prototype")
             {
                 if (prototypeField == null)
                 {
-                    prototypeField = new JSObject()
+                    prototypeField = new JSObject(true)
                     {
                         valueType = JSObjectType.Object,
                         prototype = JSObject.GlobalPrototype,
                         attributes = JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum
                     };
                     prototypeField.oValue = prototypeField;
-                    var ctor = prototypeField.GetField("constructor", false, true);
+                    var ctor = prototypeField.GetMember("constructor", true, true);
                     ctor.attributes = JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum;
                     ctor.Assign(this);
                 }
@@ -806,7 +851,7 @@ namespace NiL.JS.Core.BaseTypes
             }
             if (prototype == null)
                 prototype = TypeProxy.GetPrototype(this.GetType());
-            return DefaultFieldGetter(name, fast, own);
+            return DefaultFieldGetter(name, create, own);
         }
 
         [Hidden]
@@ -822,33 +867,33 @@ namespace NiL.JS.Core.BaseTypes
 
         public virtual JSObject call(JSObject args)
         {
-            var newThis = args.GetField("0", true, false);
-            var prmlen = --args.GetField("length", true, false).iValue;
-            for (int i = 0; i < prmlen; i++)
-                args.fields[i < 16 ? Tools.NumString[i] : i.ToString()] = args.GetField(i < 15 ? Tools.NumString[i + 1] : (i + 1).ToString(CultureInfo.InvariantCulture), true, false);
-            args.fields.Remove(prmlen < 16 ? Tools.NumString[prmlen] : prmlen.ToString(CultureInfo.InvariantCulture));
-            if (newThis.valueType < JSObjectType.Object || newThis.oValue != null)
-                return Invoke(newThis, args);
-            else
-                return Invoke(Context.currentRootContext.thisBind ?? Context.currentRootContext.GetField("this"), args);
+            var newThis = args.GetMember("0");
+            var prmlen = args.GetMember("length").iValue - 1;
+            if (prmlen >= 0)
+            {
+                for (int i = 0; i < prmlen; i++)
+                    args.fields[i < 16 ? Tools.NumString[i] : i.ToString()] = args.GetMember(i < 15 ? Tools.NumString[i + 1] : (i + 1).ToString(CultureInfo.InvariantCulture));
+                args.fields.Remove(prmlen < 16 ? Tools.NumString[prmlen] : prmlen.ToString(CultureInfo.InvariantCulture));
+            }
+            return Invoke(newThis, args);
         }
 
         public virtual JSObject apply(JSObject args)
         {
-            var newThis = args.GetField("0", true, false);
-            var iargs = args.GetField("1", true, false);
-            var lengthO = args.GetField("length", false, true);
-            var callee = args.GetField("callee", true, true);
+            var newThis = args.GetMember("0");
+            var iargs = args.GetMember("1");
+            var lengthO = args.GetMember("length");
+            var callee = args.DefineMember("callee");
             args.fields.Clear();
             var prmsC = 0;
-            if (iargs != undefined)
+            if (iargs != notExist)
             {
-                var prmsCR = iargs.GetField("length", true, false);
+                var prmsCR = iargs.GetMember("length");
                 prmsC = Tools.JSObjectToInt(prmsCR.valueType == JSObjectType.Property ? (prmsCR.oValue as Function[])[1].Invoke(iargs, null) : prmsCR);
                 for (int i = 0; i < prmsC; i++)
-                    args.fields[i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture)] = iargs.GetField(i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture), true, false);
+                    args.fields[i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture)] = iargs.GetMember(i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture));
             }
-            if (callee != undefined)
+            if (callee != notExist)
             {
                 callee.oValue = this;
                 args.fields["callee"] = callee;
@@ -861,20 +906,18 @@ namespace NiL.JS.Core.BaseTypes
             args.fields["length"] = lengthO;
             lengthO.valueType = JSObjectType.Int;
             lengthO.iValue = prmsC;
-            if (newThis.valueType < JSObjectType.Object || newThis.oValue != null)
-                return Invoke(newThis, args);
-            else
-                return Invoke(Context.currentRootContext.thisBind ?? Context.currentRootContext.GetField("this"), args);
+            return Invoke(newThis, args);
         }
 
         public virtual JSObject bind(JSObject args)
         {
-            var prmsCR = args.GetField("length", true, false);
+            var prmsCR = args.GetMember("length");
             var prmsC = Tools.JSObjectToInt(prmsCR.valueType == JSObjectType.Property ? (prmsCR.oValue as Function[])[1].Invoke(args, null) : prmsCR);
-            if (prmsC > 0)
+            var strict = this.body.strict || Context.CurrentContext.strict;
+            if (prmsC > 0 || strict)
             {
-                var newThis = args.GetField("0", true, false);
-                if (newThis != undefined)
+                var newThis = args.GetMember("0");
+                if (newThis.valueType > JSObjectType.Undefined || strict)
                     return new ExternalFunction((context, bargs) =>
                     {
                         return Invoke(newThis, bargs);

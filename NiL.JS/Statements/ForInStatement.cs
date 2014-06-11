@@ -41,9 +41,9 @@ namespace NiL.JS.Statements
                 while (char.IsWhiteSpace(code[i])) i++;
                 int start = i;
                 string varName;
-                if (!Parser.ValidateName(code, ref i, true, state.strict.Peek()))
+                if (!Parser.ValidateName(code, ref i, state.strict.Peek()))
                     throw new ArgumentException();
-                varName = Tools.Unescape(code.Substring(start, i - start));
+                varName = Tools.Unescape(code.Substring(start, i - start), state.strict.Peek());
                 res.varible = new VaribleDefineStatement(varName, new GetVaribleStatement(varName));
             }
             else
@@ -142,6 +142,8 @@ namespace NiL.JS.Statements
         internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VaribleDescriptor> varibles)
         {
             Parser.Optimize(ref varible, 1, varibles);
+            if (varible is VaribleDefineStatement)
+                varible = (varible as VaribleDefineStatement).initializators[0];
             Parser.Optimize(ref source, 1, varibles);
             Parser.Optimize(ref body, System.Math.Max(1, depth), varibles);
             if (varible is Operators.None)

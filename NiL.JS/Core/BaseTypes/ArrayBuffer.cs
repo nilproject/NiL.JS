@@ -79,13 +79,13 @@ namespace NiL.JS.Core.BaseTypes
         {
             if (args == null)
                 throw new ArgumentNullException("args");
-            var l = Tools.JSObjectToInt(args.GetField("length", true, false));
+            var l = Tools.JSObjectToInt(args.GetMember("length"));
             if (l == 0)
                 return this;
             if (l == 1)
-                return slice(Tools.JSObjectToInt(args.GetField("0", true, false)), Data.Length - 1);
+                return slice(Tools.JSObjectToInt(args.GetMember("0")), Data.Length - 1);
             else
-                return slice(Tools.JSObjectToInt(args.GetField("0", true, false)), Tools.JSObjectToInt(args.GetField("1", true, false)));
+                return slice(Tools.JSObjectToInt(args.GetMember("0")), Tools.JSObjectToInt(args.GetMember("1")));
         }
 
         [Modules.Hidden]
@@ -104,12 +104,12 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [Modules.Hidden]
-        public override JSObject GetField(string name, bool fast, bool own)
+        internal override JSObject GetMember(string name, bool create, bool own)
         {
             int index = 0;
             double dindex = 0.0;
             if (name != "NaN" && name != "Infinity" && name != "-Infinity" &&
-                Tools.ParseNumber(name, ref index, false, out dindex))
+                Tools.ParseNumber(name, index, out dindex))
             {
                 if (dindex > 0x7fffffff || dindex < 0)
                     throw new JSException(TypeProxy.Proxy(new RangeError("Invalid array index")));
@@ -120,7 +120,7 @@ namespace NiL.JS.Core.BaseTypes
                     return new Element(index, Data);
                 }
             }
-            return base.GetField(name, fast, own);
+            return base.GetMember(name, create, own);
         }
 
         [Modules.Hidden]

@@ -14,7 +14,7 @@ namespace NiL.JS.Core
 
             public _Rule(string token, ParseDelegate parseDel)
             {
-                this.Validate = (string code, ref int pos) => Parser.Validate(code, token, pos);
+                this.Validate = (string code, int pos) => Parser.Validate(code, token, pos);
                 this.Parse = parseDel;
             }
 
@@ -171,11 +171,12 @@ namespace NiL.JS.Core
             {
                 if (j >= code.Length)
                     return false;
-                if (char.IsWhiteSpace(patern[i]) && char.IsWhiteSpace(code[j]))
+                while (char.IsWhiteSpace(patern[i])
+                    && code.Length > j
+                    && char.IsWhiteSpace(code[j]))
                 {
                     j++;
                     needInc = true;
-                    continue;
                 }
                 if (needInc)
                 {
@@ -193,17 +194,33 @@ namespace NiL.JS.Core
             return true;
         }
 
+        internal static bool ValidateName(string code)
+        {
+            int index = 0;
+            return ValidateName(code, ref index, true, true, false);
+        }
+
+        internal static bool ValidateName(string code, int index)
+        {
+            return ValidateName(code, ref index, true, true, false);
+        }
+
         internal static bool ValidateName(string code, ref int index)
         {
-            return ValidateName(code, ref index, false, true, true, false);
+            return ValidateName(code, ref index, true, true, false);
         }
 
-        internal static bool ValidateName(string code, ref int index, bool move, bool strict)
+        internal static bool ValidateName(string code, ref int index, bool strict)
         {
-            return ValidateName(code, ref index, move, true, true, strict);
+            return ValidateName(code, ref index, true, true, strict);
         }
 
-        internal static bool ValidateName(string code, ref int index, bool move, bool reserveControl, bool allowEscape, bool strict)
+        internal static bool ValidateName(string name, int index, bool reserveControl, bool allowEscape, bool strict)
+        {
+            return ValidateName(name, ref index, reserveControl, allowEscape, strict);
+        }
+
+        internal static bool ValidateName(string code, ref int index, bool reserveControl, bool allowEscape, bool strict)
         {
             int j = index;
             if ((!allowEscape || code[j] != '\\') && (code[j] != '$') && (code[j] != '_') && (!char.IsLetter(code[j])))
@@ -221,11 +238,11 @@ namespace NiL.JS.Core
             if (allowEscape)
             {
                 int i = 0;
-                var nname = Tools.Unescape(name, false);
+                var nname = Tools.Unescape(name, strict);
                 if (nname != name)
                 {
-                    var res = ValidateName(nname, ref i, true, reserveControl, false, strict) && i == nname.Length;
-                    if (res && move)
+                    var res = ValidateName(nname, ref i, reserveControl, false, strict) && i == nname.Length;
+                    if (res)
                         index = j;
                     return res;
                 }
@@ -279,24 +296,35 @@ namespace NiL.JS.Core
                     case "protected":
                     case "public":
                     case "static":
+                    case "let":
+                    case "yield":
                         {
                             if (strict)
                                 return false;
                             break;
                         }
                 }
-            if (move)
-                index = j;
+            index = j;
             return true;
         }
 
-        internal static bool ValidateNumber(string code, ref int index, bool move)
+        internal static bool ValidateNumber(string code, int index)
         {
-            double fictive = 0.0;
-            return Tools.ParseNumber(code, ref index, move, out fictive);
+            return ValidateNumber(code, ref index);
         }
 
-        internal static bool ValidateRegex(string code, ref int index, bool move, bool except)
+        internal static bool ValidateNumber(string code, ref int index)
+        {
+            double fictive = 0.0;
+            return Tools.ParseNumber(code, ref index, out fictive);
+        }
+
+        internal static bool ValidateRegex(string code, int index, bool except)
+        {
+            return ValidateRegex(code, ref index, except);
+        }
+
+        internal static bool ValidateRegex(string code, ref int index, bool except)
         {
             int j = index;
             if (code[j] == '/')
@@ -341,7 +369,7 @@ namespace NiL.JS.Core
                             len = 5;
                         else if (code[j + 1] == 'x')
                             len = 3;
-                        c = Tools.Unescape(code.Substring(j, len + 1))[0];
+                        c = Tools.Unescape(code.Substring(j, len + 1), false)[0];
                         j += len;
                     }
                     switch (c)
@@ -390,14 +418,18 @@ namespace NiL.JS.Core
                             }
                     }
                 }
-                if (move)
-                    index = j;
+                index = j;
                 return true;
             }
             return false;
         }
 
-        internal static bool ValidateString(string code, ref int index, bool move)
+        internal static bool ValidateString(string code, int index)
+        {
+            return ValidateString(code, ref index);
+        }
+
+        internal static bool ValidateString(string code, ref int index)
         {
             int j = index;
             if ((code[j] == '\'') || (code[j] == '"'))
@@ -418,43 +450,37 @@ namespace NiL.JS.Core
                         throw new JSException(TypeProxy.Proxy(new BaseTypes.SyntaxError("Unterminated string constant")));
                     j++;
                 }
-                if (move)
-                {
-                    index = ++j;
-                    return true;
-                }
-                else
-                    return true;
+                index = ++j;
+                return true;
             }
             return false;
         }
 
-        internal static bool ValidateValue(string code, ref int index)
+        internal static bool ValidateValue(string code, int index)
         {
-            return ValidateValue(code, ref index, false);
+            return ValidateValue(code, ref index);
         }
 
-        internal static bool ValidateValue(string code, ref int index, bool move)
+        internal static bool ValidateValue(string code, ref int index)
         {
             int j = index;
             if (code[j] == '/')
-                return ValidateRegex(code, ref index, move, true);
+                return ValidateRegex(code, ref index, true);
             if ((code[j] == '\'') || (code[j] == '"'))
-                return ValidateString(code, ref index, move);
+                return ValidateString(code, ref index);
             if ((code.Length - j >= 4) && (code[j] == 'n' || code[j] == 't' || code[j] == 'f'))
             {
                 string codeSs4 = code.Substring(j, 4);
                 if ((codeSs4 == "null") || (codeSs4 == "true") || ((code.Length >= 5) && (codeSs4 == "fals") && (code[j + 4] == 'e')))
                 {
-                    if (move)
-                        index += codeSs4 == "fals" ? 5 : 4;
+                    index += codeSs4 == "fals" ? 5 : 4;
                     return true;
                 }
             }
-            return ValidateNumber(code, ref index, move);
+            return ValidateNumber(code, ref index);
         }
 
-        private static bool isOperator(char c)
+        public static bool isOperator(char c)
         {
             return (c == '+')
                 || (c == '-')
@@ -511,7 +537,7 @@ namespace NiL.JS.Core
                 return null;
             for (int i = 0; i < rules[ruleset].Length; i++)
             {
-                if (rules[ruleset][i].Validate(code, ref index))
+                if (rules[ruleset][i].Validate(code, index))
                 {
                     var pr = rules[ruleset][i].Parse(state, ref index);
                     if (pr.IsParsed)

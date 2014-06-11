@@ -18,7 +18,7 @@ namespace NiL.JS.Statements
         internal GetVaribleStatement(string name)
         {
             int i = 0;
-            if ((name != "this") && !Parser.ValidateName(name, ref i, false, true, true, false))
+            if ((name != "this") && !Parser.ValidateName(name, i, true, true, false))
                 throw new ArgumentException("Invalid varible name");
             this.varibleName = name;
         }
@@ -26,13 +26,20 @@ namespace NiL.JS.Statements
         internal override JSObject InvokeForAssing(Context context)
         {
             if (context.strict)
-                return Tools.RaiseIfNotExist(descriptor.Get(context));
-            return descriptor.Get(context);
+#if DEBUG
+            {
+                var res = Tools.RaiseIfNotExist(descriptor.Get(context, false));
+                res.attributes &= ~JSObjectAttributes.DBGGettedOverGM;
+            }
+#else
+                return Tools.RaiseIfNotExist(descriptor.Get(context, false));
+#endif
+            return descriptor.Get(context, true);
         }
 
         internal override JSObject Invoke(Context context)
         {
-            var res = Tools.RaiseIfNotExist(descriptor.Get(context));
+            var res = Tools.RaiseIfNotExist(descriptor.Get(context, false));
             if (res.valueType == JSObjectType.Property)
                 return (res.oValue as NiL.JS.Core.BaseTypes.Function[])[1].Invoke(context, context.objectSource, null);
             return res;

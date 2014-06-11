@@ -20,7 +20,7 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         public TypeError(JSObject args)
-            : base(args.GetField("0", true, false).ToString())
+            : base(args.GetMember("0").ToString())
         {
 
         }

@@ -32,16 +32,16 @@ namespace NiL.JS.Core
             constructors = ctorsL.ToArray();
         }
 
-        public override JSObject GetField(string name, bool fast, bool own)
+        internal override JSObject GetMember(string name, bool create, bool own)
         {
             if (name == "__proto__" && prototype == null)
             {
                 prototype = TypeProxy.GetPrototype(typeof(TypeProxyConstructor)).Clone() as JSObject;
                 return prototype;
             }
-            var res = proxy.GetField(name, true, own);
+            var res = proxy.GetMember(name, false, own);
             if (res == JSObject.undefined)
-                return base.GetField(name, fast, own);
+                return base.GetMember(name, create, own);
             return res;
         }
 
@@ -109,7 +109,7 @@ namespace NiL.JS.Core
         private MethodProxy findConstructor(JSObject argObj, ref object[] args)
         {
             args = null;
-            var len = argObj == null ? 0 : argObj.GetField("length", false, false).iValue;
+            var len = argObj == null ? 0 : argObj.GetMember("length", false, false).iValue;
             for (int i = 0; i < constructors.Length; i++)
             {
                 if (constructors[i].Parameters.Length == len

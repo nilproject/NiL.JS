@@ -38,7 +38,7 @@ namespace NiL.JS.Statements.Operators
                                 {
                                     var index = 0;
                                     double td = 0;
-                                    if (Tools.ParseNumber(temp.oValue as string, ref index, true, out td) && (index == (temp.oValue as string).Length))
+                                    if (Tools.ParseNumber(temp.oValue as string, ref index, out td) && (index == (temp.oValue as string).Length))
                                         return left == td ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
                                     else
                                         return false;
@@ -91,7 +91,7 @@ namespace NiL.JS.Statements.Operators
                                 {
                                     var index = 0;
                                     double td = 0;
-                                    if (Tools.ParseNumber(temp.oValue as string, ref index, true, out td) && (index == (temp.oValue as string).Length))
+                                    if (Tools.ParseNumber(temp.oValue as string, ref index, out td) && (index == (temp.oValue as string).Length))
                                         return left == td ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
                                     else
                                         return false;
@@ -137,7 +137,7 @@ namespace NiL.JS.Statements.Operators
                                 {
                                     double d = 0;
                                     int i = 0;
-                                    if (Tools.ParseNumber(left, ref i, true, out d) && (i == left.Length))
+                                    if (Tools.ParseNumber(left, ref i, out d) && (i == left.Length))
                                         return d == temp.iValue ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
                                     else
                                         return false;
@@ -146,7 +146,7 @@ namespace NiL.JS.Statements.Operators
                                 {
                                     double d = 0;
                                     int i = 0;
-                                    if (Tools.ParseNumber(left, ref i, true, out d) && (i == left.Length))
+                                    if (Tools.ParseNumber(left, ref i, out d) && (i == left.Length))
                                         return d == temp.dValue ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
                                     else
                                         return false;
@@ -166,7 +166,7 @@ namespace NiL.JS.Statements.Operators
                                             {
                                                 double t = 0.0;
                                                 int i = 0;
-                                                if (Tools.ParseNumber(left, ref i, true, out t) && (i == left.Length))
+                                                if (Tools.ParseNumber(left, ref i, out t) && (i == left.Length))
                                                     return t == temp.iValue ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
                                                 else goto
                                                     case JSObjectType.String;
@@ -175,7 +175,7 @@ namespace NiL.JS.Statements.Operators
                                             {
                                                 double t = 0.0;
                                                 int i = 0;
-                                                if (Tools.ParseNumber(left, ref i, true, out t) && (i == left.Length))
+                                                if (Tools.ParseNumber(left, ref i, out t) && (i == left.Length))
                                                     return t == temp.dValue ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
                                                 else
                                                     goto case JSObjectType.String;
@@ -232,7 +232,7 @@ namespace NiL.JS.Statements.Operators
                                             {
                                                 double d = 0;
                                                 int i = 0;
-                                                if (Tools.ParseNumber(temp.oValue as string, ref i, true, out d) && (i == (temp.oValue as string).Length))
+                                                if (Tools.ParseNumber(temp.oValue as string, ref i, out d) && (i == (temp.oValue as string).Length))
                                                     return d == secondNValue ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
                                                 else
                                                     return false;
@@ -253,7 +253,7 @@ namespace NiL.JS.Statements.Operators
                                                 secondNValue = temp.valueType == JSObjectType.Double ? temp.dValue : temp.iValue;
                                                 double d = 0;
                                                 int i = 0;
-                                                if (Tools.ParseNumber(str, ref i, true, out d) && (i == str.Length))
+                                                if (Tools.ParseNumber(str, ref i, out d) && (i == str.Length))
                                                     return d == secondNValue ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
                                                 else
                                                     return false;

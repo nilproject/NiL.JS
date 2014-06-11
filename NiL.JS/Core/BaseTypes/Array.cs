@@ -55,14 +55,14 @@ namespace NiL.JS.Core.BaseTypes
                 this.index = index;
                 if (owner.data.Count <= index)
                 {
-                    var pv = (owner.prototype ?? owner.GetField("__proto__", true, false)).GetField(index.ToString(CultureInfo.InvariantCulture), true, false);
+                    var pv = (owner.prototype ?? owner.GetMember("__proto__")).GetMember(index.ToString(CultureInfo.InvariantCulture));
                     if (pv != undefined)
                         base.Assign(pv);
                     else
                         this.valueType = JSObjectType.NotExistInObject;
                 }
                 else
-                    base.Assign(owner[index]);
+                    base.Assign(owner.data[index] ?? undefined);
             }
 
             public override void Assign(JSObject value)
@@ -146,10 +146,11 @@ namespace NiL.JS.Core.BaseTypes
             [Modules.Hidden]
             get
             {
-                if (data.Count <= index || data[index] == null)
+                if (data.Count <= index)
                     return new Element(this, index);
-                else
-                    return data[index];
+                else if (data[index] == null)
+                    data[index] = new Element(this, index);
+                return data[index];
             }
             [Modules.Hidden]
             internal set
@@ -247,7 +248,7 @@ namespace NiL.JS.Core.BaseTypes
                     case JSObjectType.String:
                         {
                             double d;
-                            Tools.ParseNumber(args[1].ToString(), ref pos, false, out d);
+                            Tools.ParseNumber(args[1].ToString(), pos, out d);
                             pos = (int)d;
                             break;
                         }
@@ -270,7 +271,7 @@ namespace NiL.JS.Core.BaseTypes
         {
             if (args == null)
                 throw new ArgumentNullException("args");
-            return args.GetField("0", false, true).Value is Array;
+            return args.GetMember("0", false, true).Value is Array;
         }
 
         [Modules.DoNotEnumerateAttribute]
@@ -323,7 +324,7 @@ namespace NiL.JS.Core.BaseTypes
                     case JSObjectType.String:
                         {
                             double d;
-                            Tools.ParseNumber(args[1].ToString(), ref pos, false, out d);
+                            Tools.ParseNumber(args[1].ToString(), pos, out d);
                             pos = (int)d;
                             break;
                         }
@@ -363,6 +364,41 @@ namespace NiL.JS.Core.BaseTypes
         {
             data.Reverse();
             return this;
+        }
+
+        [Modules.DoNotEnumerateAttribute]
+        public JSObject reduce(JSObject args)
+        {
+            var funco = args.GetMember("0");
+            if (funco.valueType != JSObjectType.Function)
+                throw new JSException(TypeProxy.Proxy(new TypeError("First argument on reduce mast be a function.")));
+            var func = funco.oValue as Function;
+            var accum = args.GetMember("1", false, false);
+            var index = 0;
+            if (accum.valueType < JSObjectType.Undefined)
+            {
+                if (data.Count == 0)
+                    throw new JSException(TypeProxy.Proxy(new TypeError("Array is empty.")));
+                index++;
+                accum.assignCallback = null;
+                accum.attributes = 0;
+                accum.Assign(data[0]);
+            }
+            else
+                args.fields.Remove("1");
+            if (index >= data.Count)
+                return accum;
+            args["length"] = 4;
+            args.fields["0"] = accum;
+            args["3"] = this;
+            while (index < data.Count)
+            {
+                args["1"] = data[index];
+                args["2"] = index;
+                accum.Assign(func.Invoke(args));
+                index++;
+            }
+            return accum;
         }
 
         [Modules.DoNotEnumerateAttribute]
@@ -420,13 +456,16 @@ namespace NiL.JS.Core.BaseTypes
             }
             else // кто-то отправил объект с полем length
             {
-                int len = Tools.JSObjectToInt(this.GetField("length", true, false));
+                var leno = this.GetMember("length");
+                if (leno.valueType < JSObjectType.Undefined)
+                    throw new JSException(TypeProxy.Proxy(new TypeError("Array.property.slice call for incompatible object.")));
+                int len = Tools.JSObjectToInt(leno);
                 if (len >= 0)
                 {
                     var t = new Array(len);
                     for (int i = 0; i < t.data.Count; i++)
                     {
-                        var val = this.GetField(i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture), true, false);
+                        var val = this.GetMember(i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture));
                         if (val.valueType > JSObjectType.Undefined)
                             t.data[i] = val.Clone() as JSObject;
                     }
@@ -460,8 +499,8 @@ namespace NiL.JS.Core.BaseTypes
                         {
                             int i = 0;
                             double d = 0;
-                            if (Tools.ParseNumber(p.Key, ref i, true, out d) && i == p.Key.Length && (long)d == d && d >= pos0 && d < pos1)
-                                t.GetField((d - pos0).ToString(CultureInfo.InvariantCulture), false, true).Assign(p.Value);
+                            if (Tools.ParseNumber(p.Key, ref i, out d) && i == p.Key.Length && (long)d == d && d >= pos0 && d < pos1)
+                                t.GetMember((d - pos0).ToString(CultureInfo.InvariantCulture), true, true).Assign(p.Value);
                         }
                     }
                     return t;
@@ -514,7 +553,7 @@ namespace NiL.JS.Core.BaseTypes
             }
             else // кто-то отправил объект с полем length
             {
-                var lobj = this.GetField("length", true, false);
+                var lobj = this.GetMember("length");
                 long len = (long)Tools.JSObjectToDouble(lobj);
                 len &= 0xffffffff;
                 long pos0 = (long)Tools.JSObjectToDouble(args[0]);
@@ -547,7 +586,7 @@ namespace NiL.JS.Core.BaseTypes
                     {
                         int i = 0;
                         double d = 0;
-                        if (Tools.ParseNumber(p.Key, ref i, true, out d) && i == p.Key.Length && (long)d == d && d >= pos0)
+                        if (Tools.ParseNumber(p.Key, ref i, out d) && i == p.Key.Length && (long)d == d && d >= pos0)
                         {
                             if (d < pos1)
                             {
@@ -612,11 +651,11 @@ namespace NiL.JS.Core.BaseTypes
         {
             if (!(((object)this) is Array)) // Да, Array sealed, но тут и не такое возможно.
             {
-                int l = System.Math.Max(0, Tools.JSObjectToInt(this.GetField("length", true, false)));
+                int l = System.Math.Max(0, Tools.JSObjectToInt(this.GetMember("length")));
                 var t = new Array(l);
                 for (int i = 0; i < l; i++)
                 {
-                    var val = this.GetField(i.ToString(CultureInfo.InvariantCulture), true, false);
+                    var val = this.GetMember(i.ToString(CultureInfo.InvariantCulture));
                     t.data[i] = val;
                 }
                 t.sort(args);
@@ -626,15 +665,15 @@ namespace NiL.JS.Core.BaseTypes
             }
             if (args == null)
                 throw new ArgumentNullException("args");
-            var length = args.GetField("length", false, true);
-            var first = args.GetField("0", false, true);
+            var length = args.GetMember("length");
+            var first = args.GetMember("0", true, true);
             var len = Tools.JSObjectToInt(length);
             Function comparer = null;
             if (len > 0)
-                comparer = args.GetField("0", true, false).Value as Function;
+                comparer = args.GetMember("0").Value as Function;
             if (comparer != null)
             {
-                var second = args.GetField("1", false, true);
+                var second = args.GetMember("1", true, true);
                 second.assignCallback = null;
                 first.assignCallback = null;
                 length.assignCallback = null;
@@ -706,7 +745,7 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [Modules.Hidden]
-        public override JSObject GetField(string name, bool fast, bool own)
+        internal override JSObject GetMember(string name, bool create, bool own)
         {
             switch (name)
             {
@@ -718,17 +757,28 @@ namespace NiL.JS.Core.BaseTypes
             int index = 0;
             double dindex = 0.0;
             if (name != "NaN" && name != "Infinity" && name != "-Infinity" &&
-                Tools.ParseNumber(name, ref index, false, out dindex))
+                Tools.ParseNumber(name, index, out dindex))
             {
                 if (dindex >= 0)
                 {
                     if (dindex > 0x7fffffff)
                         throw new JSException(TypeProxy.Proxy(new RangeError("Invalid array index")));
                     if (((index = (int)dindex) == dindex))
+#if DEBUG
+                    {
+                        var res = this[index];
+                        if (create)
+                            res.attributes &= ~JSObjectAttributes.DBGGettedOverGM;
+                        else
+                            res.attributes |= JSObjectAttributes.DBGGettedOverGM;
+                        return res;
+                    }
+#else
                         return this[index];
+#endif
                 }
             }
-            return base.GetField(name, fast, own);
+            return base.GetMember(name, create, own);
         }
 
         #region functions with callback
@@ -744,28 +794,28 @@ namespace NiL.JS.Core.BaseTypes
         [Hidden]
         private static JSObject forEach(Context context, JSObject args)
         {
-            var alen = args.GetField("length", true, false).iValue;
+            var alen = args.GetMember("length").iValue;
             if (alen == 0)
                 throw new ArgumentException("Undefined is not function");
 
             bool res = true;
             var obj = context.thisBind;
-            var len = obj.GetField("length", true, false);
+            var len = obj.GetMember("length");
             if (len.valueType == JSObjectType.Property)
                 len = (len.oValue as NiL.JS.Core.BaseTypes.Function[])[1].Invoke(obj, null);
             var count = Tools.JSObjectToDouble(len);
             var cbargs = JSObject.CreateObject();
-            cbargs.GetField("length", false, true).Assign(3);
+            cbargs.GetMember("length").Assign(3);
             var index = new JSObject(false) { valueType = JSObjectType.Int };
-            cbargs.GetField("1", false, true).Assign(index);
-            cbargs.GetField("2", false, true).Assign(obj);
-            var stat = args.GetField("0", true, false).oValue as Function;
+            cbargs.DefineMember("1").Assign(index);
+            cbargs.DefineMember("2").Assign(obj);
+            var stat = args.GetMember("0").oValue as Function;
             for (int i = 0; i < count; i++)
             {
-                cbargs.GetField("0", false, true).Assign(obj.GetField(i < 16 ? Tools.NumString[i] : i.ToString(System.Globalization.CultureInfo.InvariantCulture), true, false));
+                cbargs.DefineMember("0").Assign(obj.GetMember(i < 16 ? Tools.NumString[i] : i.ToString(System.Globalization.CultureInfo.InvariantCulture)));
                 index.iValue = i;
                 if (alen > 1)
-                    res &= (bool)stat.Invoke(args.GetField("1", true, false), cbargs);
+                    res &= (bool)stat.Invoke(args.GetMember("1"), cbargs);
                 else
                     res &= (bool)stat.Invoke(cbargs);
             }

@@ -85,10 +85,10 @@ namespace NiL.JS.Core
 
         private static JSObject[] argumentsToArray(JSObject source)
         {
-            var len = source.GetField("length", true, false).iValue;
+            var len = source.GetMember("length").iValue;
             var res = new JSObject[len];
             for (int i = 0; i < len; i++)
-                res[i] = source.GetField(i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture), true, true);
+                res[i] = source.GetMember(i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture));
             return res;
         }
 
@@ -100,7 +100,7 @@ namespace NiL.JS.Core
             int len = 0;
             if (source != null)
             {
-                var length = source.GetField("length", true, false);
+                var length = source.GetMember("length");
                 len = length.valueType == JSObjectType.Property ? (length.oValue as Function[])[1].Invoke(source, null).iValue : length.iValue;
             }
             if (parameters.Length == 1)
@@ -119,7 +119,7 @@ namespace NiL.JS.Core
                 {
                     res = new JSObject[len];
                     for (int i = 0; i < len; i++)
-                        res[i] = source.GetField(i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture), true, true);
+                        res[i] = source.GetMember(i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture));
                     return new object[] { res };
                 }
             }
@@ -128,7 +128,7 @@ namespace NiL.JS.Core
             res = targetCount != 0 ? new object[targetCount] : null;
             for (int i = targetCount; i-- > 0; )
             {
-                var obj = source.GetField(i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture), true, true);
+                var obj = source.GetMember(i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture));
                 if (obj != null)
                 {
                     res[i] = embeddedTypeConvert(obj, parameters[i].ParameterType);
@@ -219,7 +219,7 @@ namespace NiL.JS.Core
                 res = (res as TypeProxy).prototypeInstance;
             return res;
         }
-        
+
         [Modules.DoNotEnumerate]
         [Modules.DoNotDelete]
         public override JSObject length
@@ -252,7 +252,7 @@ namespace NiL.JS.Core
                         res = (info as ConstructorInfo).Invoke(args);
                     else
                     {
-                        var target = hardTarget ?? getTargetObject(thisOverride ?? context.thisBind ?? JSObject.Null, info.DeclaringType);
+                        var target = hardTarget ?? getTargetObject(thisOverride ?? JSObject.Null, info.DeclaringType);
                         if (target != null && target.GetType() != info.ReflectedType) // you bunny wrote
                         {
                             var minfo = info as MethodInfo;
@@ -356,11 +356,11 @@ namespace NiL.JS.Core
         }
 
         [Modules.Hidden]
-        public override JSObject GetField(string name, bool fast, bool own)
+        internal override JSObject GetMember(string name, bool create, bool own)
         {
             if (prototype == null)
                 prototype = TypeProxy.GetPrototype(this.GetType());
-            return DefaultFieldGetter(name, fast, own);
+            return DefaultFieldGetter(name, create, own);
         }
 
         public override string ToString()
@@ -379,15 +379,15 @@ namespace NiL.JS.Core
 
         public override JSObject call(JSObject args)
         {
-            var newThis = args.GetField("0", true, false);
-            var prmlen = --args.GetField("length", true, false).iValue;
+            var newThis = args.GetMember("0");
+            var prmlen = --args.GetMember("length").iValue;
             for (int i = 0; i < prmlen; i++)
-                args.fields[i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture)] = args.GetField(i < 14 ? Tools.NumString[i + 1] : (i + 1).ToString(CultureInfo.InvariantCulture), true, false);
+                args.fields[i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture)] = args.GetMember(i < 14 ? Tools.NumString[i + 1] : (i + 1).ToString(CultureInfo.InvariantCulture));
             args.fields.Remove(prmlen < 16 ? Tools.NumString[prmlen] : prmlen.ToString(CultureInfo.InvariantCulture));
             if (newThis.valueType < JSObjectType.Object || newThis.oValue != null || (info.DeclaringType == typeof(JSObject)))
                 return Invoke(newThis, args);
             else
-                return Invoke(Context.thisBind ?? Context.GetField("this"), args);
+                return Invoke(Context.thisBind ?? Context.GetVarible("this"), args);
         }
     }
 }

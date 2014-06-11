@@ -74,7 +74,7 @@ namespace NiL.JS.Core.BaseTypes
             double d = 0;
             int i = 0;
             value = value.Trim();
-            if (Tools.ParseNumber(value, ref i, true, out d) && i == value.Length)
+            if (Tools.ParseNumber(value, ref i, out d, 0, !Context.CurrentContext.strict) && i == value.Length)
                 dValue = d;
         }
 
@@ -82,7 +82,7 @@ namespace NiL.JS.Core.BaseTypes
         public Number(JSObject obj)
         {
             valueType = JSObjectType.Double;
-            dValue = Tools.JSObjectToDouble(obj.GetField("0", true, false));
+            dValue = Tools.JSObjectToDouble(obj.GetMember("0"));
             assignCallback = JSObject.ErrorAssignCallback;
         }
 
@@ -122,13 +122,13 @@ namespace NiL.JS.Core.BaseTypes
                     {
                         double d = 0;
                         int i = 0;
-                        if (Tools.ParseNumber(digits.oValue.ToString(), ref i, false, out d))
+                        if (Tools.ParseNumber(digits.oValue.ToString(), i, out d))
                             dgts = (int)d;
                         break;
                     }
                 case JSObjectType.Object:
                     {
-                        digits = digits.GetField("0", true, false).ToPrimitiveValue_Value_String();
+                        digits = digits.GetMember("0").ToPrimitiveValue_Value_String();
                         if (digits.valueType == JSObjectType.String)
                             goto case JSObjectType.String;
                         if (digits.valueType == JSObjectType.Int)
@@ -185,13 +185,13 @@ namespace NiL.JS.Core.BaseTypes
                     {
                         double d = 0;
                         int i = 0;
-                        if (Tools.ParseNumber(digits.oValue.ToString(), ref i, false, out d))
+                        if (Tools.ParseNumber(digits.oValue.ToString(), i, out d))
                             dgts = (int)d;
                         break;
                     }
                 case JSObjectType.Object:
                     {
-                        digits = digits.GetField("0", true, false).ToPrimitiveValue_Value_String();
+                        digits = digits.GetMember("0").ToPrimitiveValue_Value_String();
                         if (digits.valueType == JSObjectType.String)
                             goto case JSObjectType.String;
                         if (digits.valueType == JSObjectType.Int)
@@ -256,13 +256,13 @@ namespace NiL.JS.Core.BaseTypes
                     {
                         double d = 0;
                         int i = 0;
-                        if (Tools.ParseNumber(digits.oValue.ToString(), ref i, false, out d))
+                        if (Tools.ParseNumber(digits.oValue.ToString(), i, out d))
                             dgts = (int)d;
                         break;
                     }
                 case JSObjectType.Object:
                     {
-                        digits = digits.GetField("0", true, false).ToPrimitiveValue_Value_String();
+                        digits = digits.GetMember("0").ToPrimitiveValue_Value_String();
                         if (digits.valueType == JSObjectType.String)
                             goto case JSObjectType.String;
                         if (digits.valueType == JSObjectType.Int)
@@ -297,9 +297,9 @@ namespace NiL.JS.Core.BaseTypes
             if (!typeof(Number).IsAssignableFrom(this.GetType()))
                 throw new JSException(TypeProxy.Proxy(new TypeError("Try to call Number.toString on not Number object")));
             int r = 10;
-            if (radix != null && radix.GetField("length", true, false).iValue > 0)
+            if (radix != null && radix.GetMember("length").iValue > 0)
             {
-                var ar = radix.GetField("0", true, false);
+                var ar = radix.GetMember("0");
                 if (ar.valueType == JSObjectType.Object && ar.oValue == null)
                     throw new JSException(TypeProxy.Proxy(new Error("Radix can't be null.")));
                 switch (ar.valueType)

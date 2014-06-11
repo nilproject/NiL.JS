@@ -1,4 +1,5 @@
 ﻿using NiL.JS.Core;
+using NiL.JS.Core.BaseTypes;
 using System;
 using System.Collections.Generic;
 
@@ -36,26 +37,26 @@ namespace NiL.JS.Statements.Operators
             {
                 JSObject field = null;
                 field = first.InvokeForAssing(context);
+                if ((field.attributes & JSObjectAttributes.ReadOnly) != 0 && context.strict)
+                    throw new JSException(TypeProxy.Proxy(new TypeError("Can not assign to readonly property \"" + first + "\"")));
                 if (field.valueType == JSObjectType.Property)
                 {
                     var fieldSource = context.objectSource;
                     setterArg.Assign(Tools.RaiseIfNotExist(second.Invoke(context)));
                     var setter = (field.oValue as NiL.JS.Core.BaseTypes.Function[])[0];
-                    var otb = context.thisBind;
-                    context.thisBind = fieldSource;
-                    try
-                    {
-                        if (setter != null)
-                            setter.Invoke(context, setterArgs);
-                        return setterArg;
-                    }
-                    finally
-                    {
-                        context.thisBind = otb;
-                        context.objectSource = null;
-                    }
+                    if (setter != null)
+                        setter.Invoke(context, fieldSource, setterArgs);
+                    else if (context.strict)
+                        throw new JSException(TypeProxy.Proxy(new TypeError("Can not assign to readonly property \"" + first + "\"")));
+                    return setterArg;
                 }
+#if DEBUG
+                var tempAtrbt = field.attributes & JSObjectAttributes.DBGGettedOverGM;
+#endif
                 var t = second.Invoke(context);
+#if DEBUG
+                field.attributes = (field.attributes & ~JSObjectAttributes.DBGGettedOverGM) | tempAtrbt;
+#endif
                 field.Assign(t);
                 return t;
             }

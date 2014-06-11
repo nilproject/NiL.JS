@@ -72,6 +72,7 @@ namespace NiL.JS.Statements.Operators
                 {
                     tempResult.iValue = 1;
                     temp.valueType = JSObjectType.NotExist;
+                    temp.oValue = null;
                 }
                 else
                     tempResult.iValue = 0;

@@ -8,7 +8,10 @@ namespace NiL.JS.Statements.Operators
     [Serializable]
     public abstract class Operator : Statement
     {
-        public sealed class SafeVaribleGetter : VaribleReference
+        /// <remarks>
+        /// Используется в typeof и delete.
+        /// </remarks>
+        protected sealed class SafeVaribleGetter : VaribleReference
         {
             private VaribleDescriptor desc;
 
@@ -30,12 +33,12 @@ namespace NiL.JS.Statements.Operators
 
             internal override JSObject Invoke(Context context)
             {
-                return desc.Get(context);
+                return desc.Get(context, false);
             }
 
             internal override JSObject InvokeForAssing(Context context)
             {
-                return desc.Get(context);
+                return desc.Get(context, false);
             }
 
             public override string ToString()

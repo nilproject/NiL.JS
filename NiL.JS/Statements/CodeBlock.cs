@@ -71,41 +71,67 @@ namespace NiL.JS.Statements
             {
                 if (code[i] != '{')
                     throw new ArgumentException("code (" + i + ")");
-                do
-                    i++;
-                while (char.IsWhiteSpace(code[i]));
+                i++;
             }
+            while (i < code.Length && char.IsWhiteSpace(code[i])) i++;
             var body = new List<Statement>();
             state.LabelCount = 0;
             bool strictSwitch = false;
             bool allowStrict = state.AllowStrict;
-            bool root = state.AllowStrict;
+            HashSet<string> directives = null;
             state.AllowStrict = false;
+            if (allowStrict)
+            {
+                do
+                {
+                    var s = i;
+                    if (i >= code.Length)
+                        break;
+                    if (Parser.ValidateValue(code, ref i))
+                    {
+                        while (i < code.Length && char.IsWhiteSpace(code[i])) i++;
+                        if (i < code.Length && Parser.isOperator(code[i]))
+                        {
+                            i = s;
+                            break;
+                        }
+                        var t = s;
+                        if (Parser.ValidateString(code, ref t))
+                        {
+                            var str = code.Substring(s + 1, t - s - 2);
+                            if (!strictSwitch && str == "use strict")
+                            {
+                                state.strict.Push(true);
+                                strictSwitch = true;
+                            }
+                            if (directives == null)
+                                directives = new HashSet<string>();
+                            directives.Add(str);
+                            body.Add(new ImmidateValueStatement(str));
+                        }
+                        else
+                        {
+                            i = s;
+                            break;
+                        }
+                    }
+                    else if (code[i] == ';')
+                        do i++; while (i < code.Length && char.IsWhiteSpace(code[i]));
+                    else break;
+                } while (true);
+            }
+            for (var j = body.Count; j-- > 0; )
+                (body[j] as ImmidateValueStatement).value.oValue = Tools.Unescape((body[j] as ImmidateValueStatement).value.oValue.ToString(), state.strict.Peek());
             Dictionary<string, VaribleDescriptor> vars = null;
             while ((sroot && i < code.Length) || (!sroot && code[i] != '}'))
             {
                 var t = Parser.Parse(state, ref i, 0);
-                if (allowStrict)
-                {
-                    allowStrict = false;
-                    if (t is ImmidateValueStatement)
-                    {
-                        var op = (t as ImmidateValueStatement).value.Value;
-                        if ("use strict".Equals(op))
-                        {
-                            state.strict.Push(true);
-                            strictSwitch = true;
-                            continue;
-                        }
-                    }
-                }
                 if (t == null || t is EmptyStatement)
                     continue;
                 if (t is FunctionStatement)
                 {
-                    if (state.strict.Peek())
-                        if (!root)
-                            throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
+                    if (state.strict.Peek() && !allowStrict)
+                        throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
                     if (string.IsNullOrEmpty((t as FunctionStatement).name))
                         throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.SyntaxError("Declarated function must have name.")));
                     if (vars == null)
@@ -145,7 +171,7 @@ namespace NiL.JS.Statements
             return new ParseResult()
             {
                 IsParsed = true,
-                Statement = new CodeBlock(body.ToArray(), strictSwitch && state.strict.Pop())
+                Statement = new CodeBlock(body.ToArray(), strictSwitch ? state.strict.Pop() : state.strict.Peek())
                 {
                     varibles = vars != null ? vars.Values.ToArray() : null,
                     Position = startPos,
@@ -160,9 +186,9 @@ namespace NiL.JS.Statements
             context.strict |= strict;
             for (int i = varibles == null ? 0 : varibles.Length; i-- > 0; )
             {
-                if (varibles[i].Defined)
+                if (varibles[i].Defined && varibles[i].Owner == this)
                 {
-                    var f = context.InitField(varibles[i].Name);
+                    var f = context.DefineVarible(varibles[i].Name);
                     if (varibles[i].Inititalizator != null)
                         f.Assign(varibles[i].Inititalizator.Invoke(context));
                 }
@@ -177,14 +203,18 @@ namespace NiL.JS.Statements
 #endif
                 res = body[i].Invoke(context) ?? res;
 #if DEBUG
-                if (JSObject.undefined.ValueType != JSObjectType.Undefined)
+                if (NiL.JS.Core.BaseTypes.Number.NaN.valueType != JSObjectType.Double || !double.IsNaN(NiL.JS.Core.BaseTypes.Number.NaN.dValue))
                     throw new ApplicationException("undefined was rewrite");
+                if (JSObject.undefined.valueType != JSObjectType.Undefined)
+                    throw new ApplicationException("undefined was rewrite");
+                if (JSObject.notExist.valueType >= JSObjectType.Undefined)
+                    throw new ApplicationException("notExist was rewrite");
                 if (Core.BaseTypes.String.EmptyString.oValue as string != "")
                     throw new ApplicationException("EmptyString was rewrite");
-                if (Core.BaseTypes.Boolean.False.ValueType != JSObjectType.Bool
+                if (Core.BaseTypes.Boolean.False.valueType != JSObjectType.Bool
                     || Core.BaseTypes.Boolean.False.iValue != 0)
                     throw new ApplicationException("Boolean.False was rewrite");
-                if (Core.BaseTypes.Boolean.True.ValueType != JSObjectType.Bool
+                if (Core.BaseTypes.Boolean.True.valueType != JSObjectType.Bool
                     || Core.BaseTypes.Boolean.True.iValue != 1)
                     throw new ApplicationException("Boolean.True was rewrite");
 #endif
@@ -215,7 +245,7 @@ namespace NiL.JS.Statements
                         varibles[this.varibles[i].Name] = this.varibles[i];
                     else
                     {
-                        foreach(var r in this.varibles[i].References)
+                        foreach (var r in this.varibles[i].References)
                         {
                             this.varibles[i].Remove(r);
                             desc.Add(r);
@@ -241,18 +271,13 @@ namespace NiL.JS.Statements
             }
             else
             {
-                List<VaribleDescriptor> vars = null;
-                foreach (var v in varibles)
-                {
-                    if (v.Value.Defined && v.Value.Owner == null)
-                    {
-                        if (vars == null)
-                            vars = this.varibles != null ? new List<VaribleDescriptor>(this.varibles) : new List<VaribleDescriptor>();
-                        vars.Add(v.Value);
-                    }
-                }
-                if (vars != null)
-                    this.varibles = vars.ToArray();
+                if (varibles.Count != 0 &&
+                    (this.varibles == null || this.varibles.Length != varibles.Count))
+                    this.varibles = varibles.Values.ToArray();
+                if (this.varibles != null)
+                    for (var i = this.varibles.Length; i-- > 0; )
+                        if (this.varibles[i].Defined)
+                            this.varibles[i].Owner = this;
             }
             return false;
         }

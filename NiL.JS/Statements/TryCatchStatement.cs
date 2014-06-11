@@ -35,9 +35,9 @@ namespace NiL.JS.Statements
             if (Parser.Validate(code, "catch (", ref i) || Parser.Validate(code, "catch(", ref i))
             {
                 int s = i;
-                if (!Parser.ValidateName(code, ref i, true, state.strict.Peek()))
+                if (!Parser.ValidateName(code, ref i, state.strict.Peek()))
                     throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Catch block must contain varible name " + Tools.PositionToTextcord(code, i))));
-                exptn = Tools.Unescape(code.Substring(s, i - s));
+                exptn = Tools.Unescape(code.Substring(s, i - s), state.strict.Peek());
                 while (char.IsWhiteSpace(code[i])) i++;
                 if (!Parser.Validate(code, ")", ref i))
                     throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \")\" at + " + Tools.PositionToTextcord(code, i))));
@@ -92,12 +92,15 @@ namespace NiL.JS.Statements
                 {
                     if (catchBody != null)
                     {
-                        var cvar = context.GetField(exptName);
+                        var cvar = context.DefineVarible(exptName);
                         tempContainer.Assign(cvar);
                         tempContainer.attributes = cvar.attributes;
                         cvar.Assign(e.Avatar);
-                        cvar.attributes = JSObjectAttributes.DoNotDelete;
+                        cvar.attributes |= JSObjectAttributes.DoNotDelete;
                         catchBody.Invoke(context);
+#if DEBUG
+                        cvar.attributes &= ~JSObjectAttributes.DBGGettedOverGM;
+#endif
                         cvar.Assign(tempContainer);
                         cvar.attributes = tempContainer.attributes;
                         tempContainer.attributes = JSObjectAttributes.None;
@@ -115,14 +118,14 @@ namespace NiL.JS.Statements
                 {
                     if (catchBody != null)
                     {
-                        var cvar = context.GetField(exptName);
+                        var cvar = context.DefineVarible(exptName);
                         tempContainer.Assign(cvar);
                         tempContainer.attributes = cvar.attributes;
                         cvar.Assign(TypeProxy.Proxy(e));
-                        cvar.attributes = JSObjectAttributes.DoNotDelete;
+                        cvar.attributes |= JSObjectAttributes.DoNotDelete;
                         catchBody.Invoke(context);
                         cvar.Assign(tempContainer);
-                        cvar.attributes = tempContainer.attributes;
+                        cvar.attributes |= tempContainer.attributes;
                         tempContainer.attributes = JSObjectAttributes.None;
                     }
                     else except = e;

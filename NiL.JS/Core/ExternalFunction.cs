@@ -13,8 +13,10 @@ namespace NiL.JS.Core
     {
         private readonly ExternalFunctionDelegate del;
 
+        public ExternalFunctionDelegate Delegate { get { return del; } }
+
         public ExternalFunction(ExternalFunctionDelegate del)
-            : base(Context.globalContext, null, null, del.Method.Name)
+            : base(Context.globalContext, null, null, del.Method.Name, FunctionType.Regular)
         {
             this.del = del;
         }

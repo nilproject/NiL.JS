@@ -30,10 +30,11 @@ namespace NiL.JS.Statements
                 int s = i;
                 if (code[i] == '}')
                     break;
-                if (Parser.Validate(code, "set", i) && (Tools.isLineTerminator(code[i + 3]) || char.IsWhiteSpace(code[i + 3])))
+                pos = i;
+                if (Parser.Validate(code, "set ", ref i) && !Parser.isIdentificatorTerminator(code[i]))
                 {
-                    pos = i;
-                    var setter = FunctionStatement.Parse(state, ref i, FunctionStatement.FunctionParseMode.set).Statement as FunctionStatement;
+                    i = pos;
+                    var setter = FunctionStatement.Parse(state, ref i, FunctionType.Setter).Statement as FunctionStatement;
                     if (flds.IndexOf(setter.name) == -1)
                     {
                         flds.Add(setter.name);
@@ -51,10 +52,10 @@ namespace NiL.JS.Statements
                         ((vle as ImmidateValueStatement).value.oValue as Statement[])[0] = setter;
                     }
                 }
-                else if (Parser.Validate(code, "get", i) && (Tools.isLineTerminator(code[i + 3]) || char.IsWhiteSpace(code[i + 3])))
+                else if ((i = pos) >= 0 && Parser.Validate(code, "get ", ref i) && !Parser.isIdentificatorTerminator(code[i]))
                 {
-                    pos = i;
-                    var getter = FunctionStatement.Parse(state, ref i, FunctionStatement.FunctionParseMode.get).Statement as FunctionStatement;
+                    i = pos;
+                    var getter = FunctionStatement.Parse(state, ref i, FunctionType.Getter).Statement as FunctionStatement;
                     if (flds.IndexOf(getter.name) == -1)
                     {
                         flds.Add(getter.name);
@@ -74,9 +75,10 @@ namespace NiL.JS.Statements
                 }
                 else
                 {
-                    if (Parser.ValidateName(code, ref i, true, state.strict.Peek()))
-                        flds.Add(Tools.Unescape(code.Substring(s, i - s)));
-                    else if (Parser.ValidateValue(code, ref i, true))
+                    i = pos;
+                    if (Parser.ValidateName(code, ref i, false, true, state.strict.Peek()))
+                        flds.Add(Tools.Unescape(code.Substring(s, i - s), state.strict.Peek()));
+                    else if (Parser.ValidateValue(code, ref i))
                     {
                         string value = code.Substring(s, i - s);
                         if ((value[0] == '\'') || (value[0] == '"'))
@@ -132,8 +134,7 @@ namespace NiL.JS.Statements
                 if (val.valueType == JSObjectType.Property)
                 {
                     var gs = val.oValue as Statement[];
-                    var prop = res.GetField(fields[i], false, true);
-                    prop.assignCallback(prop);
+                    var prop = res.GetMember(fields[i], true, true);
                     prop.oValue = new Function[] { gs[0] != null ? gs[0].Invoke(context) as Function : null, gs[1] != null ? gs[1].Invoke(context) as Function : null };
                     prop.valueType = JSObjectType.Property;
                 }

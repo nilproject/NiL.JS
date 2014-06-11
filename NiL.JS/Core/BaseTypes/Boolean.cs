@@ -26,7 +26,7 @@ namespace NiL.JS.Core.BaseTypes
             if (obj == null)
                 throw new ArgumentNullException("obj");
             valueType = JSObjectType.Bool;
-            iValue = (bool)obj.GetField("0", true, false) ? 1 : 0;
+            iValue = (bool)obj.GetMember("0") ? 1 : 0;
             assignCallback = JSObject.ErrorAssignCallback;
         }
 

@@ -6,10 +6,11 @@ namespace NiL.JS.Core.BaseTypes
 {
     [Serializable]
     [Immutable]
-    public class String : EmbeddedType
+    public sealed class String : EmbeddedType
     {
         internal static readonly String EmptyString = new String("");
 
+        [DoNotEnumerate]
         public static JSObject fromCharCode(JSObject[] code)
         {
             int chc = 0;
@@ -24,16 +25,19 @@ namespace NiL.JS.Core.BaseTypes
             return res;
         }
 
+        [DoNotEnumerate]
         public String()
             : this("")
         {
         }
 
+        [DoNotEnumerate]
         public String(JSObject args)
-            : this(Tools.JSObjectToInt(args.GetField("length", true, false)) == 0 ? "" : args.GetField("0", true, false).ToString())
+            : this(Tools.JSObjectToInt(args.GetMember("length")) == 0 ? "" : args.GetMember("0").ToString())
         {
         }
 
+        [DoNotEnumerate]
         public String(string s)
         {
             oValue = s;
@@ -42,8 +46,10 @@ namespace NiL.JS.Core.BaseTypes
             attributes |= JSObjectAttributes.Immutable;
         }
 
+        [DoNotEnumerate]
         public JSObject this[int pos]
         {
+            [Hidden]
             get
             {
                 if ((pos < 0) || (pos >= (oValue as string).Length))
@@ -52,22 +58,25 @@ namespace NiL.JS.Core.BaseTypes
             }
         }
 
+        [DoNotEnumerate]
         public string charAt(JSObject pos)
         {
-            int p = Tools.JSObjectToInt(pos.GetField("0", true, false));
+            int p = Tools.JSObjectToInt(pos.GetMember("0"));
             if ((p < 0) || (p >= (oValue as string).Length))
                 return "";
             return (oValue as string)[p].ToString();
         }
 
+        [DoNotEnumerate]
         public double charCodeAt(JSObject pos)
         {
-            int p = Tools.JSObjectToInt(pos.GetField("0", true, false));
+            int p = Tools.JSObjectToInt(pos.GetMember("0"));
             if ((p < 0) || (p >= (oValue as string).Length))
                 return double.NaN;
             return (int)(oValue as string)[p];
         }
 
+        [DoNotEnumerate]
         public JSObject concat(JSObject[] args)
         {
             string res = oValue.ToString();
@@ -76,6 +85,7 @@ namespace NiL.JS.Core.BaseTypes
             return res;
         }
 
+        [DoNotEnumerate]
         public JSObject indexOf(JSObject[] args)
         {
             if (args.Length == 0)
@@ -103,7 +113,7 @@ namespace NiL.JS.Core.BaseTypes
                     case JSObjectType.String:
                         {
                             double d;
-                            Tools.ParseNumber(args[1].ToString(), ref pos, false, out d);
+                            Tools.ParseNumber(args[1].ToString(), pos, out d);
                             pos = (int)d;
                             break;
                         }
@@ -112,6 +122,7 @@ namespace NiL.JS.Core.BaseTypes
             return (oValue as string).IndexOf(fstr, pos, StringComparison.CurrentCulture);
         }
 
+        [DoNotEnumerate]
         public JSObject lastIndexOf(JSObject[] args)
         {
             if (args.Length == 0)
@@ -139,7 +150,7 @@ namespace NiL.JS.Core.BaseTypes
                     case JSObjectType.String:
                         {
                             double d;
-                            Tools.ParseNumber(args[1].ToString(), ref pos, false, out d);
+                            Tools.ParseNumber(args[1].ToString(), pos, out d);
                             pos = (int)d;
                             break;
                         }
@@ -148,6 +159,7 @@ namespace NiL.JS.Core.BaseTypes
             return (oValue as string).LastIndexOf(fstr, pos, StringComparison.CurrentCulture);
         }
 
+        [DoNotEnumerate]
         public JSObject localeCompare(JSObject[] args)
         {
             string str0 = oValue.ToString();
@@ -155,17 +167,18 @@ namespace NiL.JS.Core.BaseTypes
             return string.CompareOrdinal(str0, str1);
         }
 
+        [DoNotEnumerate]
         public JSObject match(JSObject args)
         {
             if (valueType <= JSObjectType.Undefined || (valueType >= JSObjectType.Object && oValue == null))
                 throw new JSException(TypeProxy.Proxy(new TypeError("String.prototype.match called on null or undefined")));
-            var a0 = args.GetField("0", true, false);
+            var a0 = args.GetMember("0");
             if (a0.valueType == JSObjectType.Object && a0.oValue is RegExp)
             {
                 var regex = a0.oValue as RegExp;
                 if (!regex.global)
                 {
-                    args.GetField("0", false, true).Assign(this);
+                    args.GetMember("0", true, true).Assign(this);
                     return regex.exec(args);
                 }
                 else
@@ -183,12 +196,13 @@ namespace NiL.JS.Core.BaseTypes
                 var res = new Array(match.Groups.Count);
                 for (int i = 0; i < match.Groups.Count; i++)
                     res.data[i] = match.Groups[i].Value;
-                res.GetField("index", false, true).Assign(match.Index);
-                res.GetField("input", false, true).Assign(this);
+                res.GetMember("index", true, true).Assign(match.Index);
+                res.GetMember("input", true, true).Assign(this);
                 return res;
             }
         }
 
+        [DoNotEnumerate]
         public JSObject replace(JSObject[] args)
         {
             if (args.Length == 0)
@@ -276,6 +290,7 @@ namespace NiL.JS.Core.BaseTypes
             }
         }
 
+        [DoNotEnumerate]
         public JSObject slice(JSObject[] args)
         {
             if (args.Length == 0)
@@ -300,7 +315,7 @@ namespace NiL.JS.Core.BaseTypes
                 case JSObjectType.String:
                     {
                         double d;
-                        Tools.ParseNumber(args[0].ToString(), ref pos0, false, out d);
+                        Tools.ParseNumber(args[0].ToString(), pos0, out d);
                         pos0 = (int)d;
                         break;
                     }
@@ -327,7 +342,7 @@ namespace NiL.JS.Core.BaseTypes
                     case JSObjectType.String:
                         {
                             double d;
-                            Tools.ParseNumber(args[1].ToString(), ref pos1, false, out d);
+                            Tools.ParseNumber(args[1].ToString(), pos1, out d);
                             pos1 = (int)d;
                             break;
                         }
@@ -338,6 +353,7 @@ namespace NiL.JS.Core.BaseTypes
             return (oValue as string).Substring(pos0, pos1 - pos0);
         }
 
+        [DoNotEnumerate]
         public JSObject split(JSObject[] args)
         {
             if (args.Length == 0)
@@ -365,7 +381,7 @@ namespace NiL.JS.Core.BaseTypes
                     case JSObjectType.String:
                         {
                             double d;
-                            Tools.ParseNumber(args[1].ToString(), ref limit, false, out d);
+                            Tools.ParseNumber(args[1].ToString(), limit, out d);
                             limit = (int)d;
                             break;
                         }
@@ -379,11 +395,13 @@ namespace NiL.JS.Core.BaseTypes
             return new Array(res);
         }
 
+        [DoNotEnumerate]
         public JSObject substring(JSObject[] args)
         {
             return slice(args);
         }
 
+        [DoNotEnumerate]
         public JSObject substr(JSObject[] args)
         {
             if (args.Length == 0)
@@ -410,7 +428,7 @@ namespace NiL.JS.Core.BaseTypes
                     case JSObjectType.String:
                         {
                             double d;
-                            Tools.ParseNumber(args[0].ToString(), ref pos0, false, out d);
+                            Tools.ParseNumber(args[0].ToString(), pos0, out d);
                             pos0 = (int)d;
                             break;
                         }
@@ -438,7 +456,7 @@ namespace NiL.JS.Core.BaseTypes
                     case JSObjectType.String:
                         {
                             double d;
-                            Tools.ParseNumber(args[1].ToString(), ref len, false, out d);
+                            Tools.ParseNumber(args[1].ToString(), len, out d);
                             len = (int)d;
                             break;
                         }
@@ -447,27 +465,32 @@ namespace NiL.JS.Core.BaseTypes
             return (oValue as string).Substring(pos0, len);
         }
 
+        [DoNotEnumerate]
         public JSObject toLocaleLowerCase()
         {
             return (oValue as string).ToLower(System.Threading.Thread.CurrentThread.CurrentUICulture);
         }
 
+        [DoNotEnumerate]
         public JSObject toLocaleUpperCase()
         {
             return (oValue as string).ToUpper(System.Threading.Thread.CurrentThread.CurrentUICulture);
         }
 
+        [DoNotEnumerate]
         public JSObject toLowerCase()
         {
             return (oValue as string).ToLowerInvariant();
         }
 
+        [DoNotEnumerate]
         public JSObject toUpperCase()
         {
             return (oValue as string).ToUpperInvariant();
         }
 
-        public JSObject Trim()
+        [DoNotEnumerate]
+        public JSObject trim()
         {
             return (oValue as string).Trim();
         }
@@ -485,6 +508,7 @@ namespace NiL.JS.Core.BaseTypes
                 throw new JSException(TypeProxy.Proxy(new TypeError("Try to call String.toString for not string object.")));
         }
 
+        [DoNotEnumerate]
         public override JSObject valueOf()
         {
             if (typeof(String).IsAssignableFrom(this.GetType()))
@@ -495,8 +519,10 @@ namespace NiL.JS.Core.BaseTypes
 
         private Number _length = null;
 
+        [DoNotEnumerate]
         public JSObject length
         {
+            [Hidden]
             get
             {
                 if (_length == null)
@@ -507,14 +533,16 @@ namespace NiL.JS.Core.BaseTypes
             }
         }
 
+        [Hidden]
         public override string ToString()
         {
-            if (typeof(String).IsAssignableFrom(this.GetType()))
+            if (this is String)
                 return oValue as string;
             else
                 throw new JSException(TypeProxy.Proxy(new TypeError("Try to call String.toString for not string object.")));
         }
 
+        [Hidden]
         public override bool Equals(object obj)
         {
             if (obj is String)
@@ -522,88 +550,106 @@ namespace NiL.JS.Core.BaseTypes
             return false;
         }
 
+        [Hidden]
         public override int GetHashCode()
         {
             return oValue.GetHashCode();
         }
 
-        public override JSObject GetField(string name, bool fast, bool own)
+        [Hidden]
+        internal override JSObject GetMember(string name, bool create, bool own)
         {
             if (prototype == null)
                 prototype = TypeProxy.GetPrototype(typeof(String));
             int index = 0;
             double dindex = 0.0;
-            if (Tools.ParseNumber(name, ref index, false, out dindex) && ((index = (int)dindex) == dindex))
+            if (Tools.ParseNumber(name, index, out dindex) && ((index = (int)dindex) == dindex))
                 return this[index];
             else
-                return DefaultFieldGetter(name, fast, false);
+                return DefaultFieldGetter(name, create, false);
         }
 
         #region HTML Wraping
+        [DoNotEnumerate]
         public JSObject anchor(JSObject arg)
         {
             return "<a name=\"" + arg.Value + "\">" + oValue + "</a>";
         }
 
+        [DoNotEnumerate]
         public JSObject big()
         {
             return "<big>" + oValue + "</big>";
         }
 
+        [DoNotEnumerate]
         public JSObject blink()
         {
             return "<blink>" + oValue + "</blink>";
         }
 
+        [DoNotEnumerate]
         public JSObject bold()
         {
             return "<bold>" + oValue + "</bold>";
         }
 
+        [DoNotEnumerate]
         public JSObject @fixed()
         {
             return "<tt>" + oValue + "</tt>";
         }
 
+        [DoNotEnumerate]
         public JSObject fontcolor(JSObject arg)
         {
             return "<font color=\"" + arg.Value + "\">" + oValue + "</font>";
         }
 
+        [DoNotEnumerate]
         public JSObject fontsize(JSObject arg)
         {
             return "<font size=\"" + arg.Value + "\">" + oValue + "</font>";
         }
 
+        [DoNotEnumerate]
         public JSObject italics()
         {
             return "<i>" + oValue + "</i>";
         }
+
+        [DoNotEnumerate]
         public JSObject link(JSObject arg)
         {
             return "<a href=\"" + arg.Value + "\">" + oValue + "</a>";
         }
 
+        [DoNotEnumerate]
         public JSObject small()
         {
             return "<small>" + oValue + "</small>";
         }
+
+        [DoNotEnumerate]
         public JSObject strike()
         {
             return "<strike>" + oValue + "</strike>";
         }
 
+        [DoNotEnumerate]
         public JSObject sub()
         {
             return "<sub>" + oValue + "</sub>";
         }
 
+        [DoNotEnumerate]
         public JSObject sup()
         {
             return "<sup>" + oValue + "</sup>";
         }
         #endregion
 
+        [Hidden]
         public static implicit operator String(string val)
         {
             if (string.IsNullOrEmpty(val))

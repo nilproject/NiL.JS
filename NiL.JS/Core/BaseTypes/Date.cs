@@ -18,18 +18,20 @@ namespace NiL.JS.Core.BaseTypes
         [Hidden]
         private bool error = false;
 
+        [DoNotEnumerate]
         public Date()
         {
             host = DateTime.Now;
         }
 
+        [DoNotEnumerate]
         public Date(JSObject args)
         {
             try
             {
-                if (args.GetField("length", true, false).iValue == 1)
+                if (args.GetMember("length").iValue == 1)
                 {
-                    var arg = args.GetField("0", true, false);
+                    var arg = args.GetMember("0");
                     switch (arg.valueType)
                     {
                         case JSObjectType.Int:
@@ -54,12 +56,12 @@ namespace NiL.JS.Core.BaseTypes
                 }
                 else
                 {
-                    int y = Tools.JSObjectToInt(args.GetField("0", true, false), 1);
-                    int m = Tools.JSObjectToInt(args.GetField("1", true, false), 0) + 1;
-                    int d = Tools.JSObjectToInt(args.GetField("2", true, false), 1);
-                    int h = Tools.JSObjectToInt(args.GetField("3", true, false), 0);
-                    int n = Tools.JSObjectToInt(args.GetField("4", true, false), 0);
-                    int s = Tools.JSObjectToInt(args.GetField("5", true, false), 0);
+                    int y = Tools.JSObjectToInt(args.GetMember("0"), 1);
+                    int m = Tools.JSObjectToInt(args.GetMember("1"), 0) + 1;
+                    int d = Tools.JSObjectToInt(args.GetMember("2"), 1);
+                    int h = Tools.JSObjectToInt(args.GetMember("3"), 0);
+                    int n = Tools.JSObjectToInt(args.GetMember("4"), 0);
+                    int s = Tools.JSObjectToInt(args.GetMember("5"), 0);
                     host = new System.DateTime(TimeZone.CurrentTimeZone.GetUtcOffset(DateTime.Now).Ticks);
                     host = host.AddYears(y - host.Year);
                     host = host.AddMonths(m - host.Month);
@@ -75,6 +77,7 @@ namespace NiL.JS.Core.BaseTypes
             }
         }
 
+        [DoNotEnumerate]
         public double valueOf()
         {
             if (error)
@@ -83,6 +86,7 @@ namespace NiL.JS.Core.BaseTypes
             return res;
         }
 
+        [DoNotEnumerate]
         public double getTime()
         {
             if (error)
@@ -91,214 +95,253 @@ namespace NiL.JS.Core.BaseTypes
             return res;
         }
 
+        [DoNotEnumerate]
         public int getYear()
         {
             return host.Year - 1900;
         }
 
+        [DoNotEnumerate]
         public int getFullYear()
         {
             return host.Year;
         }
 
+        [DoNotEnumerate]
         public int getUTCFullYear()
         {
             return host.Year;
         }
 
+        [DoNotEnumerate]
         public int getMonth()
         {
             return host.Month - 1;
         }
 
+        [DoNotEnumerate]
         public int getUTCMonth()
         {
             return host.Month - 1;
         }
 
+        [DoNotEnumerate]
         public int getDate()
         {
             return host.Day;
         }
 
+        [DoNotEnumerate]
         public int getUTCDate()
         {
             return host.Day;
         }
 
+        [DoNotEnumerate]
         public int getDay()
         {
             return (int)host.DayOfWeek;
         }
 
+        [DoNotEnumerate]
         public int getUTCDay()
         {
             return (int)host.DayOfWeek;
         }
 
+        [DoNotEnumerate]
         public int getHours()
         {
             return host.Hour;
         }
 
+        [DoNotEnumerate]
         public int getUTCHours()
         {
             return host.Hour;
         }
 
+        [DoNotEnumerate]
         public int getMinutes()
         {
             return host.Minute;
         }
 
+        [DoNotEnumerate]
         public int getUTCMinutes()
         {
             return host.Minute;
         }
 
+        [DoNotEnumerate]
         public int getSeconds()
         {
             return host.Second;
         }
 
+        [DoNotEnumerate]
         public int getUTCSeconds()
         {
             return host.Second;
         }
 
+        [DoNotEnumerate]
         public int getMilliseconds()
         {
             return host.Millisecond;
         }
 
+        [DoNotEnumerate]
         public int getUTCMilliseconds()
         {
             return host.Millisecond;
         }
 
+        [DoNotEnumerate]
         public int setTime(int time)
         {
             host = new DateTime(time * 10000 + UTCBase);
             return time;
         }
 
+        [DoNotEnumerate]
         public int setMilliseconds(int time)
         {
             host = host.AddMilliseconds(time - host.Millisecond);
             return time;
         }
 
+        [DoNotEnumerate]
         public int setUTCMilliseconds(int time)
         {
             host = host.AddMilliseconds(time - host.Millisecond);
             return time;
         }
 
+        [DoNotEnumerate]
         public int setSeconds(int time)
         {
             host = host.AddSeconds(time - host.Second);
             return time;
         }
 
+        [DoNotEnumerate]
         public int setUTCSeconds(int time)
         {
             host = host.AddSeconds(time - host.Second);
             return time;
         }
 
+        [DoNotEnumerate]
         public int setMinutes(int time)
         {
             host = host.AddMinutes(time - host.Minute);
             return time;
         }
 
+        [DoNotEnumerate]
         public int setUTCMinutes(int time)
         {
             host = host.AddMinutes(time - host.Minute);
             return time;
         }
 
+        [DoNotEnumerate]
         public int setHours(int time)
         {
             host = host.AddHours(time - host.Hour);
             return time;
         }
 
+        [DoNotEnumerate]
         public int setUTCHours(int time)
         {
             host = host.AddHours(time - host.Hour);
             return time;
         }
 
+        [DoNotEnumerate]
         public int setDate(int time)
         {
             host = host.AddDays(time - host.Day);
             return time;
         }
 
+        [DoNotEnumerate]
         public int setUTCDate(int time)
         {
             host = host.AddDays(time - host.Day);
             return time;
         }
 
+        [DoNotEnumerate]
         public int setMonth(int time)
         {
             host = host.AddMonths(time - host.Month);
             return time;
         }
 
+        [DoNotEnumerate]
         public int setUTCMonth(int time)
         {
             host = host = host.AddMonths(time - host.Month);
             return time;
         }
 
+        [DoNotEnumerate]
         public int setYear(int time)
         {
             host = host.AddYears(time - host.Year);
             return time;
         }
 
+        [DoNotEnumerate]
         public int setUTCYear(int time)
         {
             host = host.AddYears(time - host.Year);
             return time;
         }
 
+        [DoNotEnumerate]
         public int setFullYear(int time)
         {
             host = host.AddYears(time - host.Year);
             return time;
         }
 
+        [DoNotEnumerate]
         public int setUTCFullYear(int time)
         {
             host = host.AddYears(time - host.Year);
             return time;
         }
 
+        [DoNotEnumerate]
         [CLSCompliant(false)]
         public JSObject toString()
         {
             return ToString();
         }
 
+        [DoNotEnumerate]
         public JSObject toLocaleString()
         {
             return ToString();
         }
 
+        [DoNotEnumerate]
         public JSObject toUTCString()
         {
             return ToString();
         }
 
+        [DoNotEnumerate]
         public JSObject toGMTString()
         {
             return ToString();
         }
 
+        [Hidden]
         public override string ToString()
         {
             var lt = host.ToLongTimeString();
@@ -309,6 +352,7 @@ namespace NiL.JS.Core.BaseTypes
             return res;
         }
 
+        [DoNotEnumerate]
         public static double parse(string dateTime)
         {
             System.DateTime res;
@@ -317,17 +361,18 @@ namespace NiL.JS.Core.BaseTypes
             return double.NaN;
         }
 
+        [DoNotEnumerate]
         public static double UTC(JSObject dateTime)
         {
             try
             {
                 return new System.DateTime(
-                    Tools.JSObjectToInt(dateTime.GetField("0", true, false)),
-                    Tools.JSObjectToInt(dateTime.GetField("1", true, false)),
-                    Tools.JSObjectToInt(dateTime.GetField("2", true, false)),
-                    Tools.JSObjectToInt(dateTime.GetField("3", true, false)),
-                    Tools.JSObjectToInt(dateTime.GetField("4", true, false)),
-                    Tools.JSObjectToInt(dateTime.GetField("5", true, false))).Ticks - UTCBase;
+                    Tools.JSObjectToInt(dateTime.GetMember("0")),
+                    Tools.JSObjectToInt(dateTime.GetMember("1")),
+                    Tools.JSObjectToInt(dateTime.GetMember("2")),
+                    Tools.JSObjectToInt(dateTime.GetMember("3")),
+                    Tools.JSObjectToInt(dateTime.GetMember("4")),
+                    Tools.JSObjectToInt(dateTime.GetMember("5"))).Ticks - UTCBase;
             }
             catch
             {

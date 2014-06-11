@@ -38,16 +38,16 @@ namespace NiL.JS.Statements
             while (char.IsWhiteSpace(code[i])) i++;
             var initializator = new List<Statement>();
             var names = new List<string>();
-            while ((code[i] != '\n') && (code[i] != '\r') && (code[i] != ';') && (code[i] != '}'))
+            while ((code[i] != ';') && (code[i] != '}') && !Tools.isLineTerminator(code[i]))
             {
                 int s = i;
-                if (!Parser.ValidateName(code, ref i, true, state.strict.Peek()))
+                if (!Parser.ValidateName(code, ref i, state.strict.Peek()))
                 {
-                    if (Parser.ValidateName(code, ref i, true, false, true, state.strict.Peek()))
-                        throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError('\"' + Tools.Unescape(code.Substring(s, i - s)) + "\" is a reserved word at " + Tools.PositionToTextcord(code, s))));
+                    if (Parser.ValidateName(code, ref i, false, true, state.strict.Peek()))
+                        throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError('\"' + Tools.Unescape(code.Substring(s, i - s), state.strict.Peek()) + "\" is a reserved word at " + Tools.PositionToTextcord(code, s))));
                     throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid varible definition at " + Tools.PositionToTextcord(code, s))));
                 }
-                string name = Tools.Unescape(code.Substring(s, i - s));
+                string name = Tools.Unescape(code.Substring(s, i - s), state.strict.Peek());
                 names.Add(name);
                 isDef = true;
                 while (i < code.Length && char.IsWhiteSpace(code[i]) && !Tools.isLineTerminator(code[i])) i++;
@@ -115,17 +115,9 @@ namespace NiL.JS.Statements
 
         internal override JSObject Invoke(Context context)
         {
-            JSObject res = null;
             for (int i = 0; i < initializators.Length; i++)
-                res = initializators[i].Invoke(context);
-            return res;
-        }
-
-        internal override JSObject InvokeForAssing(Context context)
-        {
-            if (initializators.Length == 1)
-                return Invoke(context);
-            return base.InvokeForAssing(context);
+                initializators[i].Invoke(context);
+            return JSObject.undefined;
         }
 
         protected override Statement[] getChildsImpl()
