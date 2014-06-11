@@ -67,7 +67,7 @@ namespace NiL.JS
                 unions = new Dictionary<string, GenericType>();
         }
 
-        internal override JS.Core.JSObject GetMember(string name, bool create, bool own)
+        internal protected override JS.Core.JSObject GetMember(string name, bool create, bool own)
         {
             JS.Core.JSObject res = null;
             if (childs.TryGetValue(name, out res))

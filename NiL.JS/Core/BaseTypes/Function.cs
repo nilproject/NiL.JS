@@ -830,7 +830,7 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [Hidden]
-        internal override JSObject GetMember(string name, bool create, bool own)
+        internal protected override JSObject GetMember(string name, bool create, bool own)
         {
             if (name == "prototype")
             {

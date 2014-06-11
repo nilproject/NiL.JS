@@ -34,7 +34,7 @@ namespace NiL.JS.Core
                 return GetType().ToString();
         }
 
-        internal override JSObject GetMember(string name, bool fast, bool own)
+        internal protected override JSObject GetMember(string name, bool fast, bool own)
         {
             if (prototype == null)
                 prototype = TypeProxy.GetPrototype(this.GetType());

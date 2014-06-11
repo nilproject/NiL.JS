@@ -104,7 +104,7 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [Modules.Hidden]
-        internal override JSObject GetMember(string name, bool create, bool own)
+        internal protected override JSObject GetMember(string name, bool create, bool own)
         {
             int index = 0;
             double dindex = 0.0;

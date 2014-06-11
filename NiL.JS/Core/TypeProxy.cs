@@ -236,7 +236,7 @@ namespace NiL.JS.Core
             }
         }
 
-        internal override JSObject GetMember(string name, bool create, bool own)
+        internal protected override JSObject GetMember(string name, bool create, bool own)
         {
             JSObject r = null;
             if (fields.TryGetValue(name, out r))

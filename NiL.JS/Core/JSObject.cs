@@ -1,12 +1,8 @@
-using NiL.JS.Core;
 using NiL.JS.Core.BaseTypes;
 using System;
-using System.Collections.Generic;
 using System.Collections;
-using System.Runtime.InteropServices;
-using System.Runtime.Serialization;
+using System.Collections.Generic;
 using System.Globalization;
-using System.Dynamic;
 
 namespace NiL.JS.Core
 {
@@ -375,7 +371,7 @@ namespace NiL.JS.Core
         }
 
         [Modules.Hidden]
-        internal virtual JSObject GetMember(string name, bool createMember, bool own)
+        internal protected virtual JSObject GetMember(string name, bool createMember, bool own)
         {
             createMember &= (attributes & JSObjectAttributes.Immutable) == 0;
             switch (valueType)

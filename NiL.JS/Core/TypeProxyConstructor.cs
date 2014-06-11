@@ -32,7 +32,7 @@ namespace NiL.JS.Core
             constructors = ctorsL.ToArray();
         }
 
-        internal override JSObject GetMember(string name, bool create, bool own)
+        internal protected override JSObject GetMember(string name, bool create, bool own)
         {
             if (name == "__proto__" && prototype == null)
             {
