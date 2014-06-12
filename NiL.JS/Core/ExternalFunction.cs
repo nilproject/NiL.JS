@@ -16,63 +16,17 @@ namespace NiL.JS.Core
         public ExternalFunctionDelegate Delegate { get { return del; } }
 
         public ExternalFunction(ExternalFunctionDelegate del)
-            : base(Context.globalContext, null, null, del.Method.Name, FunctionType.Regular)
+            : base(Context.globalContext, null, null, del.Method.Name, FunctionType.Function)
         {
             this.del = del;
         }
 
-        public override JSObject Invoke(Context contextOverride, JSObject args)
+        public override JSObject Invoke(JSObject thisBind, JSObject args)
         {
-            var oldContext = context;
-            context = contextOverride;
-            try
-            {
-                return Invoke(args);
-            }
-            finally
-            {
-                if (context != oldContext)
-                {
-                    context = oldContext;
-                    oldContext.ValidateThreadID();
-                }
-            }
-        }
-
-        public override JSObject Invoke(Context contextOverride, JSObject thisOverride, JSObject args)
-        {
-            var oldContext = context;
-            if (contextOverride == null || oldContext == contextOverride)
-                return Invoke(thisOverride, args);
-            context = contextOverride;
-            try
-            {
-                return Invoke(thisOverride, args);
-            }
-            finally
-            {
-                if (context != oldContext)
-                {
-                    context = oldContext;
-                    oldContext.ValidateThreadID();
-                }
-            }
-        }
-
-        public override JSObject Invoke(JSObject thisOverride, JSObject args)
-        {
-            if (thisOverride == null)
-                return Invoke(args);
-            var oldThisBind = context.thisBind;
-            try
-            {
-                context.thisBind = thisOverride;
-                return Invoke(args);
-            }
-            finally
-            {
-                context.thisBind = oldThisBind;
-            }
+            var res = del(thisBind, args);
+            if (res == null)
+                return JSObject.Null;
+            return res;
         }
 
         [Modules.DoNotDelete]
@@ -85,15 +39,6 @@ namespace NiL.JS.Core
                 _length.iValue = 1;
                 return _length;
             }
-        }
-
-        public override JSObject Invoke(JSObject args)
-        {
-            context.ValidateThreadID();
-            var res = del(context, args);
-            if (res == null)
-                return JSObject.Null;
-            return res;
         }
     }
 }

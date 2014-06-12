@@ -192,7 +192,9 @@ namespace NiL.JS.Core
                 bindFlags |= BindingFlags.Instance;
                 var pa = type.GetCustomAttributes(typeof(PrototypeAttribute), false);
                 if (pa.Length != 0)
+                {
                     prototype = GetPrototype((pa[0] as PrototypeAttribute).PrototypeType).Clone() as JSObject;
+                }
             }
         }
 
@@ -268,7 +270,7 @@ namespace NiL.JS.Core
                 var cache = new MethodProxy[m.Count];
                 for (int i = 0; i < m.Count; i++)
                     cache[i] = new MethodProxy(m[i] as MethodBase);
-                r = new ExternalFunction((context, args) =>
+                r = new ExternalFunction((thisBind, args) =>
                 {
                     int l = args.GetMember("length").iValue;
                     for (int i = 0; i < m.Count; i++)
@@ -295,7 +297,7 @@ namespace NiL.JS.Core
                             }
                             if (cargs != null && cargs.Length == 1 && cargs[0] is JSObject && (cargs[0] as JSObject).oValue == Arguments.Instance)
                                 (cargs[0] as JSObject).fields["callee"] = cache[i];
-                            return TypeProxy.Proxy(cache[i].InvokeRaw(context, null, cargs));
+                            return TypeProxy.Proxy(cache[i].InvokeRaw(null, cargs));
                         }
                     }
                     return null;
@@ -329,8 +331,15 @@ namespace NiL.JS.Core
                                     oValue = new Function[] 
                                     {
                                         m[0].IsDefined(typeof(Modules.ProtectedAttribute), false) ? 
-                                            new ExternalFunction((c,a)=>{ field.SetValue(field.IsStatic ? null : (c.thisBind ?? c.GetVarible("this")).oValue, cva.To(a.GetMember("0").Value)); return null; }) : null,
-                                        new ExternalFunction((c,a)=>{ return Proxy(cva.From(field.GetValue(field.IsStatic ? null : c.thisBind.oValue)));})
+                                            new ExternalFunction((thisBind, a)=>
+                                            {
+                                                field.SetValue(field.IsStatic ? null : thisBind.oValue, cva.To(a.GetMember("0").Value)); 
+                                                return null; 
+                                            }) : null,
+                                        new ExternalFunction((thisBind, a)=>
+                                        { 
+                                            return Proxy(cva.From(field.GetValue(field.IsStatic ? null : thisBind.oValue)));
+                                        })
                                     }
                                 };
                             }
@@ -341,8 +350,15 @@ namespace NiL.JS.Core
                                     valueType = JSObjectType.Property,
                                     oValue = new Function[] 
                                     {
-                                        !m[0].IsDefined(typeof(Modules.ProtectedAttribute), false) ? new ExternalFunction((c,a)=>{ field.SetValue(field.IsStatic ? null : (c.thisBind ?? c.GetVarible("this")).oValue, a.GetMember("0").Value); return null; }) : null,
-                                        new ExternalFunction((c,a)=>{ return Proxy(field.GetValue(field.IsStatic ? null : c.thisBind.oValue));})
+                                        !m[0].IsDefined(typeof(Modules.ProtectedAttribute), false) ? new ExternalFunction((thisBind, a)=>
+                                        {
+                                            field.SetValue(field.IsStatic ? null : thisBind.oValue, a.GetMember("0").Value); 
+                                            return null; 
+                                        }) : null,
+                                        new ExternalFunction((thisBind, a)=>
+                                        { 
+                                            return Proxy(field.GetValue(field.IsStatic ? null : Context.CurrentContext.thisBind.oValue));
+                                        })
                                     }
                                 };
                             }

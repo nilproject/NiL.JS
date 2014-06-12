@@ -12,12 +12,12 @@ namespace NiL.JS.Statements
     public sealed class FunctionStatement : Statement
     {
         [Serializable]
-        internal sealed class FunctionReference : VaribleReference
+        internal sealed class FunctionReference : VariableReference
         {
             private FunctionStatement owner;
 
             public FunctionStatement Owner { get { return owner; } }
-            public override VaribleDescriptor Descriptor { get; internal set; }
+            public override VariableDescriptor Descriptor { get; internal set; }
 
             public override string Name
             {
@@ -41,7 +41,7 @@ namespace NiL.JS.Statements
         }
 
         [Serializable]
-        internal sealed class ParameterReference : VaribleReference
+        internal sealed class ParameterReference : VariableReference
         {
             private string name;
 
@@ -50,7 +50,7 @@ namespace NiL.JS.Statements
                 get { return name; }
             }
 
-            public override VaribleDescriptor Descriptor
+            public override VariableDescriptor Descriptor
             {
                 get;
                 internal set;
@@ -64,7 +64,7 @@ namespace NiL.JS.Statements
             public ParameterReference(string name)
             {
                 this.name = name;
-                Descriptor = new VaribleDescriptor(this, true);
+                Descriptor = new VariableDescriptor(this, true);
             }
 
             public override string ToString()
@@ -74,15 +74,15 @@ namespace NiL.JS.Statements
         }
 
         private string[] parametersNames;
-        private VaribleReference[] parameters;
+        private VariableReference[] parameters;
         private CodeBlock body;
-        internal readonly string name;
-        internal FunctionType mode;
+        private readonly string name;
+        private FunctionType type;
 
         public CodeBlock Body { get { return body; } }
         public string Name { get { return name; } }
-        public VaribleReference[] Parameters { get { return parameters; } }
-        public VaribleReference Reference { get; private set; }
+        public VariableReference[] Parameters { get { return parameters; } }
+        public VariableReference Reference { get; private set; }
 
         private FunctionStatement(string name)
         {
@@ -92,7 +92,7 @@ namespace NiL.JS.Statements
 
         internal static ParseResult Parse(ParsingState state, ref int index)
         {
-            return Parse(state, ref index, FunctionType.Regular);
+            return Parse(state, ref index, FunctionType.Function);
         }
 
         internal static ParseResult Parse(ParsingState state, ref int index, FunctionType mode)
@@ -101,7 +101,7 @@ namespace NiL.JS.Statements
             int i = index;
             switch (mode)
             {
-                case FunctionType.Regular:
+                case FunctionType.Function:
                     {
                         if (!Parser.Validate(code, "function", ref i))
                             return new ParseResult();
@@ -109,7 +109,7 @@ namespace NiL.JS.Statements
                             return new ParseResult() { IsParsed = false };
                         break;
                     }
-                case FunctionType.Getter:
+                case FunctionType.Get:
                     {
                         if (!Parser.Validate(code, "get", ref i))
                             return new ParseResult();
@@ -117,7 +117,7 @@ namespace NiL.JS.Statements
                             return new ParseResult() { IsParsed = false };
                         break;
                     }
-                case FunctionType.Setter:
+                case FunctionType.Set:
                     {
                         if (!Parser.Validate(code, "set", ref i))
                             return new ParseResult();
@@ -142,7 +142,7 @@ namespace NiL.JS.Statements
                 if (code[i] != '(')
                     throw new ArgumentException("Invalid char at " + i + ": '" + code[i] + "'");
             }
-            else if (mode != FunctionType.Regular)
+            else if (mode != FunctionType.Function)
                 throw new ArgumentException("Getters and Setters must have name");
             do i++; while (char.IsWhiteSpace(code[i]));
             if (code[i] == ',')
@@ -159,13 +159,13 @@ namespace NiL.JS.Statements
             }
             switch (mode)
             {
-                case FunctionType.Getter:
+                case FunctionType.Get:
                     {
                         if (parameters.Count != 0)
                             throw new ArgumentException("getter have many arguments");
                         break;
                     }
-                case FunctionType.Setter:
+                case FunctionType.Set:
                     {
                         if (parameters.Count != 1)
                             throw new ArgumentException("setter have invalid arguments");
@@ -232,7 +232,7 @@ namespace NiL.JS.Statements
             {
                 parameters = parameters.ToArray(),
                 body = body,
-                mode = mode,
+                type = mode,
                 Position = index,
                 Length = i - index
             };
@@ -286,34 +286,34 @@ namespace NiL.JS.Statements
                 for (var i = 0; i < parametersNames.Length; i++)
                     parametersNames[i] = parameters[i].Name;
             }
-            return new Function(context, body, parametersNames, name, mode);
+            return new Function(context, body, parametersNames, name, type);
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VaribleDescriptor> varibles)
+        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VariableDescriptor> variables)
         {
             var stat = body as Statement;
-            var nvars = new Dictionary<string, VaribleDescriptor>();
+            var nvars = new Dictionary<string, VariableDescriptor>();
             for (var i = 0; i < parameters.Length; i++)
                 nvars[parameters[i].Name] = parameters[i].Descriptor;
             body.Optimize(ref stat, 0, nvars);
             body = stat as CodeBlock;
-            if (body.varibles != null)
+            if (body.variables != null)
             {
-                for (var i = body.varibles.Length; i-->0;)
+                for (var i = body.variables.Length; i-- > 0; )
                 {
-                    if (!body.varibles[i].Defined)
+                    if (!body.variables[i].Defined)
                     {
-                        VaribleDescriptor desc = null;
-                        if (varibles.TryGetValue(body.varibles[i].Name, out desc))
+                        VariableDescriptor desc = null;
+                        if (variables.TryGetValue(body.variables[i].Name, out desc))
                         {
-                            foreach (var r in body.varibles[i].References)
+                            foreach (var r in body.variables[i].References)
                             {
                                 desc.references.Add(r);
                                 r.Descriptor = desc;
                             }
-                            body.varibles[i] = desc;
+                            body.variables[i] = desc;
                         }
-                        else varibles.Add(body.varibles[i].Name, body.varibles[i]);
+                        else variables.Add(body.variables[i].Name, body.variables[i]);
                     }
                 }
             }
@@ -322,7 +322,7 @@ namespace NiL.JS.Statements
 
         public override string ToString()
         {
-            var res = mode + " " + name + "(";
+            var res = type.ToString().ToLowerInvariant() + " " + name + "(";
             if (parameters != null)
                 for (int i = 0; i < parameters.Length; )
                     res += parameters[i] + (++i < parameters.Length ? "," : "");

@@ -91,7 +91,7 @@ namespace NiL.JS.Statements.Operators
                     }
             }
             if (lvt == JSObjectType.NotExist)
-                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible not defined.")));
+                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable not defined.")));
             throw new NotImplementedException();
         }
 

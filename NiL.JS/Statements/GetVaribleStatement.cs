@@ -7,20 +7,20 @@ using System.Collections;
 namespace NiL.JS.Statements
 {
     [Serializable]
-    public sealed class GetVaribleStatement : VaribleReference
+    public sealed class GetVariableStatement : VariableReference
     {
-        private string varibleName;
-        private VaribleDescriptor descriptor;
-        public override VaribleDescriptor Descriptor { get { return descriptor; } internal set { descriptor = value; } }
+        private string variableName;
+        private VariableDescriptor descriptor;
+        public override VariableDescriptor Descriptor { get { return descriptor; } internal set { descriptor = value; } }
 
-        public override string Name { get { return varibleName; } }
+        public override string Name { get { return variableName; } }
 
-        internal GetVaribleStatement(string name)
+        internal GetVariableStatement(string name)
         {
             int i = 0;
             if ((name != "this") && !Parser.ValidateName(name, i, true, true, false))
-                throw new ArgumentException("Invalid varible name");
-            this.varibleName = name;
+                throw new ArgumentException("Invalid variable name");
+            this.variableName = name;
         }
 
         internal override JSObject InvokeForAssing(Context context)
@@ -41,7 +41,7 @@ namespace NiL.JS.Statements
         {
             var res = Tools.RaiseIfNotExist(descriptor.Get(context, false));
             if (res.valueType == JSObjectType.Property)
-                return (res.oValue as NiL.JS.Core.BaseTypes.Function[])[1].Invoke(context, context.objectSource, null);
+                return (res.oValue as NiL.JS.Core.BaseTypes.Function[])[1].Invoke(context.objectSource, null);
             return res;
         }
 
@@ -52,16 +52,16 @@ namespace NiL.JS.Statements
 
         public override string ToString()
         {
-            return varibleName;
+            return variableName;
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VaribleDescriptor> varibles)
+        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VariableDescriptor> variables)
         {
-            VaribleDescriptor desc = null;
-            if (!varibles.TryGetValue(varibleName, out desc) || desc == null)
+            VariableDescriptor desc = null;
+            if (!variables.TryGetValue(variableName, out desc) || desc == null)
             {
-                this.descriptor = new VaribleDescriptor(this, desc != null);
-                varibles[varibleName] = this.descriptor;
+                this.descriptor = new VariableDescriptor(this, desc != null) { caching = variableName != "this" };
+                variables[variableName] = this.descriptor;
             }
             else
                 desc.Add(this);

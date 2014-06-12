@@ -80,11 +80,11 @@ namespace NiL.JS.Statements.Operators
             }
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, VaribleDescriptor> vars)
+        internal override bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> vars)
         {
             base.Optimize(ref _this, depth, vars);
-            if (first is GetVaribleStatement)
-                first = new SafeVaribleGetter(first as GetVaribleStatement);
+            if (first is GetVariableStatement)
+                first = new SafeVariableGetter(first as GetVariableStatement);
             if (first is GetMemberStatement)
                 first = new SafeMemberGetter(first as GetMemberStatement);
             if (first is ImmidateValueStatement)

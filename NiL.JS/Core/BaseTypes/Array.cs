@@ -218,6 +218,84 @@ namespace NiL.JS.Core.BaseTypes
             return new Array(res);
         }
 
+        public JSObject every(JSObject[] args)
+        {
+            if (args.Length < 1)
+                return undefined;
+            var f = args[0] == null ? null : args[0].oValue as Function;
+            if (f == null)
+                throw new JSException(TypeProxy.Proxy(new TypeError("Callback argument is not a function.")));
+            var tb = args.Length > 1 ? args[1] : null;
+            var ao = new JSObject() { oValue = Arguments.Instance, valueType = JSObjectType.Object };
+            ao["length"] = 3;
+            ao["1"] = 0;
+            ao["2"] = this;
+            bool res = true;
+            bool isArray = this.GetType() == typeof(Array);
+            var len = isArray ? data.Count : Tools.JSObjectToInt(this["length"]);
+            for (var i = 0; i < len && res; i++)
+            {
+                if (isArray && (data[i] == null || data[i].valueType < JSObjectType.Undefined))
+                    continue;
+                ao["0"] = isArray ? data[i] : this[i.ToString(CultureInfo.InvariantCulture)];
+                ao["1"].iValue = i;
+                res &= (bool)f.Invoke(tb, ao);
+            }
+            return res;
+        }
+
+        public JSObject filter(JSObject[] args)
+        {
+            if (args.Length < 1)
+                return undefined;
+            var f = args[0] == null ? null : args[0].oValue as Function;
+            if (f == null)
+                throw new JSException(TypeProxy.Proxy(new TypeError("Callback argument is not a function.")));
+            var tb = args.Length > 1 ? args[1] : null;
+            var ao = new JSObject() { oValue = Arguments.Instance, valueType = JSObjectType.Object };
+            ao["length"] = 3;
+            ao["1"] = 0;
+            ao["2"] = this;
+            var res = new Array();
+            bool isArray = this.GetType() == typeof(Array);
+            var len = isArray ? data.Count : Tools.JSObjectToInt(this["length"]);
+            for (var i = 0; i < len; i++)
+            {
+                if (isArray && (data[i] == null || data[i].valueType < JSObjectType.Undefined))
+                    continue;
+                ao["0"] = isArray ? data[i] : this[i.ToString(CultureInfo.InvariantCulture)];
+                ao["1"].iValue = i;
+                if ((bool)f.Invoke(tb, ao))
+                    res.data.Add(data[i].Clone() as JSObject);
+            }
+            return res;
+        }
+
+        public JSObject forEach(JSObject[] args)
+        {
+            if (args.Length < 1)
+                return undefined;
+            var f = args[0] == null ? null : args[0].oValue as Function;
+            if (f == null)
+                throw new JSException(TypeProxy.Proxy(new TypeError("Callback argument is not a function.")));
+            var tb = args.Length > 1 ? args[1] : null;
+            var ao = new JSObject() { oValue = Arguments.Instance, valueType = JSObjectType.Object };
+            ao["length"] = 3;
+            ao["1"] = 0;
+            ao["2"] = this;
+            bool isArray = this.GetType() == typeof(Array);
+            var len = isArray ? data.Count : Tools.JSObjectToInt(this["length"]);
+            for (var i = 0; i < len; i++)
+            {
+                if (isArray && (data[i] == null || data[i].valueType < JSObjectType.Undefined))
+                    continue;
+                ao["0"] = isArray ? data[i] : this[i.ToString(CultureInfo.InvariantCulture)];
+                ao["1"].iValue = i;
+                f.Invoke(tb, ao);
+            }
+            return undefined;
+        }
+
         [Modules.DoNotEnumerateAttribute]
         public JSObject indexOf(JSObject[] args)
         {
@@ -747,13 +825,6 @@ namespace NiL.JS.Core.BaseTypes
         [Modules.Hidden]
         internal protected override JSObject GetMember(string name, bool create, bool own)
         {
-            switch (name)
-            {
-                case "forEach":
-                    {
-                        return forEachCF;
-                    }
-            }
             int index = 0;
             double dindex = 0.0;
             if (name != "NaN" && name != "Infinity" && name != "-Infinity" &&
@@ -780,48 +851,5 @@ namespace NiL.JS.Core.BaseTypes
             }
             return base.GetMember(name, create, own);
         }
-
-        #region functions with callback
-        /*
-         * В таких функциях необходимо делать callback, 
-         * а для этого нам будет нужен контекст. 
-         * Контекст можно получить только для CallableField'ов
-         */
-
-        [Hidden]
-        private static readonly JSObject forEachCF = new ExternalFunction(forEach);
-
-        [Hidden]
-        private static JSObject forEach(Context context, JSObject args)
-        {
-            var alen = args.GetMember("length").iValue;
-            if (alen == 0)
-                throw new ArgumentException("Undefined is not function");
-
-            bool res = true;
-            var obj = context.thisBind;
-            var len = obj.GetMember("length");
-            if (len.valueType == JSObjectType.Property)
-                len = (len.oValue as NiL.JS.Core.BaseTypes.Function[])[1].Invoke(obj, null);
-            var count = Tools.JSObjectToDouble(len);
-            var cbargs = JSObject.CreateObject();
-            cbargs.GetMember("length").Assign(3);
-            var index = new JSObject(false) { valueType = JSObjectType.Int };
-            cbargs.DefineMember("1").Assign(index);
-            cbargs.DefineMember("2").Assign(obj);
-            var stat = args.GetMember("0").oValue as Function;
-            for (int i = 0; i < count; i++)
-            {
-                cbargs.DefineMember("0").Assign(obj.GetMember(i < 16 ? Tools.NumString[i] : i.ToString(System.Globalization.CultureInfo.InvariantCulture)));
-                index.iValue = i;
-                if (alen > 1)
-                    res &= (bool)stat.Invoke(args.GetMember("1"), cbargs);
-                else
-                    res &= (bool)stat.Invoke(cbargs);
-            }
-            return res;
-        }
-
-        #endregion
     }
 }

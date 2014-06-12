@@ -29,13 +29,13 @@ namespace NiL.JS.Statements
             return null;
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VaribleDescriptor> varibles)
+        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VariableDescriptor> variables)
         {
             var vss = value.Value as Statement[];
             if (vss != null)
             {
                 for (int i = 0; i < vss.Length; i++)
-                    Parser.Optimize(ref vss[i], depth + 1, varibles);
+                    Parser.Optimize(ref vss[i], depth + 1, variables);
             }
             return false;
         }

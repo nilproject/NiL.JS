@@ -138,7 +138,7 @@ namespace NiL.JS.Core.BaseTypes
                         break;
                     }
                 case JSObjectType.NotExist:
-                    throw new InvalidOperationException("Varible not defined.");
+                    throw new InvalidOperationException("Variable not defined.");
                 default:
                     return Tools.DoubleToString(res);
             }
@@ -201,7 +201,7 @@ namespace NiL.JS.Core.BaseTypes
                         break;
                     }
                 case JSObjectType.NotExist:
-                    throw new InvalidOperationException("Varible not defined.");
+                    throw new InvalidOperationException("Variable not defined.");
                 default:
                     return res.ToString("e", System.Globalization.CultureInfo.InvariantCulture);
             }
@@ -272,7 +272,7 @@ namespace NiL.JS.Core.BaseTypes
                         break;
                     }
                 case JSObjectType.NotExist:
-                    throw new InvalidOperationException("Varible not defined.");
+                    throw new InvalidOperationException("Variable not defined.");
                 default:
                     return ((int)res).ToString(CultureInfo.InvariantCulture);
             }

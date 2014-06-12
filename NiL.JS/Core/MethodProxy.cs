@@ -15,7 +15,8 @@ namespace NiL.JS.Core
     {
         private object hardTarget = null;
         private MethodBase info;
-        private Func<object[], object> @delegate = null;
+        private Func<object, object, object> dynDelegate = null;
+        private Func<object, object> statDelegate = null;
         private Modules.ConvertValueAttribute converter;
         private Modules.ConvertValueAttribute[] paramsConverters;
         private ParameterInfo[] parameters;
@@ -61,13 +62,21 @@ namespace NiL.JS.Core
                 {
                     if (mi.ReturnType.IsSubclassOf(typeof(object))
                         && prmtrs.Length == 1
-                        && prmtrs[0].ParameterType == typeof(JSObject[]))
-                        this.@delegate = Activator.CreateInstance(
-                            typeof(Func<object[], object>), null, mi.MethodHandle.GetFunctionPointer()) as Func<object[], object>;
+                        && (prmtrs[0].ParameterType == typeof(JSObject[])
+                        || prmtrs[0].ParameterType == typeof(object[])))
+                    {
+                        this.statDelegate = Activator.CreateInstance(
+                            typeof(Func<object, object>), null, mi.MethodHandle.GetFunctionPointer()) as Func<object, object>;
+                    }
                 }
                 else
                 {
-
+                    if (mi.ReturnType.IsSubclassOf(typeof(object))
+                        && prmtrs.Length == 1
+                        && (prmtrs[0].ParameterType == typeof(JSObject[])
+                        || prmtrs[0].ParameterType == typeof(object[])))
+                        this.dynDelegate = Activator.CreateInstance(
+                            typeof(Func<object, object, object>), null, mi.MethodHandle.GetFunctionPointer()) as Func<object, object, object>;
                 }
             }
         }
@@ -83,10 +92,10 @@ namespace NiL.JS.Core
             return arg;
         }
 
-        private static JSObject[] argumentsToArray(JSObject source)
+        private static object[] argumentsToArray(JSObject source)
         {
             var len = source.GetMember("length").iValue;
-            var res = new JSObject[len];
+            var res = new object[len];
             for (int i = 0; i < len; i++)
                 res[i] = source.GetMember(i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture));
             return res;
@@ -239,20 +248,22 @@ namespace NiL.JS.Core
         }
 
         [Modules.Hidden]
-        internal object InvokeRaw(Context context, JSObject thisOverride, object[] args)
+        internal object InvokeRaw(JSObject thisBind, object[] args)
         {
             try
             {
                 object res = null;
-                if (@delegate != null)
-                    res = @delegate(args);
+                if (dynDelegate != null)
+                    res = dynDelegate(hardTarget ?? getTargetObject(thisBind ?? JSObject.Null, info.DeclaringType), args);
+                else if (statDelegate != null)
+                    res = statDelegate(args);
                 else
                 {
                     if (info is ConstructorInfo)
                         res = (info as ConstructorInfo).Invoke(args);
                     else
                     {
-                        var target = hardTarget ?? getTargetObject(thisOverride ?? JSObject.Null, info.DeclaringType);
+                        var target = hardTarget ?? getTargetObject(thisBind ?? JSObject.Null, info.DeclaringType);
                         if (target != null && target.GetType() != info.ReflectedType) // you bunny wrote
                         {
                             var minfo = info as MethodInfo;
@@ -315,44 +326,7 @@ namespace NiL.JS.Core
         [Modules.Hidden]
         public override JSObject Invoke(JSObject thisOverride, JSObject args)
         {
-            context.ValidateThreadID();
-            return TypeProxy.Proxy(InvokeRaw(context, thisOverride, @delegate != null ? argumentsToArray(args) : ConvertArgs(args)));
-        }
-
-        [Modules.Hidden]
-        public override JSObject Invoke(Context contextOverride, JSObject args)
-        {
-            var oldContext = context;
-            context = contextOverride;
-            try
-            {
-                context.ValidateThreadID();
-                return TypeProxy.Proxy(InvokeRaw(context, null, @delegate != null ? argumentsToArray(args) : ConvertArgs(args)));
-            }
-            finally
-            {
-                context = oldContext;
-                context.ValidateThreadID();
-            }
-        }
-
-        [Modules.Hidden]
-        public override JSObject Invoke(Context contextOverride, JSObject thisOverride, JSObject args)
-        {
-            var oldContext = context;
-            if (contextOverride == null || oldContext == contextOverride)
-                return Invoke(thisOverride, args);
-            context = contextOverride;
-            try
-            {
-                context.ValidateThreadID();
-                return TypeProxy.Proxy(InvokeRaw(context, thisOverride, @delegate != null ? argumentsToArray(args) : ConvertArgs(args)));
-            }
-            finally
-            {
-                context = oldContext;
-                context.ValidateThreadID();
-            }
+            return TypeProxy.Proxy(InvokeRaw(thisOverride, statDelegate != null || dynDelegate != null ? argumentsToArray(args) : ConvertArgs(args)));
         }
 
         [Modules.Hidden]
@@ -384,10 +358,10 @@ namespace NiL.JS.Core
             for (int i = 0; i < prmlen; i++)
                 args.fields[i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture)] = args.GetMember(i < 14 ? Tools.NumString[i + 1] : (i + 1).ToString(CultureInfo.InvariantCulture));
             args.fields.Remove(prmlen < 16 ? Tools.NumString[prmlen] : prmlen.ToString(CultureInfo.InvariantCulture));
-            if (newThis.valueType < JSObjectType.Object || newThis.oValue != null || (info.DeclaringType == typeof(JSObject)))
-                return Invoke(newThis, args);
-            else
-                return Invoke(Context.thisBind ?? Context.GetVarible("this"), args);
+            //if (newThis.valueType < JSObjectType.Object || newThis.oValue != null || (info.DeclaringType == typeof(JSObject)))
+            return Invoke(newThis, args);
+            //else
+            //return Invoke(Context.thisBind ?? Context.GetVariable("this"), args);
         }
     }
 }

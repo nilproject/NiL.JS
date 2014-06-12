@@ -3,10 +3,10 @@
 namespace NiL.JS.Core
 {
     [Serializable]
-    public abstract class VaribleReference : Statement
+    public abstract class VariableReference : Statement
     {
         public abstract string Name { get; }
-        public abstract VaribleDescriptor Descriptor { get; internal set; }
+        public abstract VariableDescriptor Descriptor { get; internal set; }
 
         protected override Statement[] getChildsImpl()
         {

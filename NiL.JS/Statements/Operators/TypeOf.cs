@@ -25,7 +25,7 @@ namespace NiL.JS.Statements.Operators
         {
             var val = first.Invoke(context);
             if (val.valueType == JSObjectType.Property)
-                return (val.oValue as NiL.JS.Core.BaseTypes.Function[])[1].Invoke(context, context.objectSource, null);
+                return (val.oValue as NiL.JS.Core.BaseTypes.Function[])[1].Invoke(context.objectSource, null);
             var vt = val.valueType;
             switch (vt)
             {
@@ -62,11 +62,11 @@ namespace NiL.JS.Statements.Operators
             }
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VaribleDescriptor> vars)
+        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VariableDescriptor> vars)
         {
             base.Optimize(ref _this, depth, vars);
-            if (first is GetVaribleStatement)
-                first = new SafeVaribleGetter(first as GetVaribleStatement);
+            if (first is GetVariableStatement)
+                first = new SafeVariableGetter(first as GetVariableStatement);
             return false;
         }
 

@@ -50,7 +50,7 @@ namespace NiL.JS.Statements
             if (context.debugging)
                 context.raiseDebugger(obj);
 #endif
-            var intcontext = new WithContext(obj.Invoke(context), context, this);
+            var intcontext = new WithContext(obj.Invoke(context), context);
 #if DEV
             if (context.debugging && !(body is CodeBlock))
                 context.raiseDebugger(body);
@@ -72,15 +72,17 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VaribleDescriptor> varibles)
+        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VariableDescriptor> variables)
         {
-            Parser.Optimize(ref obj, depth, varibles);
-            var nvars = new Dictionary<string, VaribleDescriptor>();
+            Parser.Optimize(ref obj, depth, variables);
+            var nvars = new Dictionary<string, VariableDescriptor>();
             Parser.Optimize(ref body, depth, nvars);
-            foreach(var v in nvars)
+            foreach(var v in nvars.Values)
             {
-                if (v.Value.Defined)
-                    varibles[v.Key] = v.Value;
+                VariableDescriptor desc = null;
+                if (v.Defined && !variables.TryGetValue(v.Name, out desc))
+                    variables[v.Name] = new VariableDescriptor(v.Name, true);
+                v.caching = false;
             }
             return false;
         }

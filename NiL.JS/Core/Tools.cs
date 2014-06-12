@@ -60,7 +60,7 @@ namespace NiL.JS.Core
                 case JSObjectType.NotExistInObject:
                     return double.NaN;
                 case JSObjectType.NotExist:
-                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible not defined.")));
+                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable not defined.")));
                 default:
                     throw new NotImplementedException();
             }
@@ -159,7 +159,7 @@ namespace NiL.JS.Core
                 case JSObjectType.NotExistInObject:
                     return nullOrUndef;
                 case JSObjectType.NotExist:
-                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible not defined.")));
+                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable not defined.")));
                 default:
                     throw new NotImplementedException();
             }
@@ -202,7 +202,7 @@ namespace NiL.JS.Core
                 case JSObjectType.NotExistInObject:
                     return 0;
                 case JSObjectType.NotExist:
-                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible not defined.")));
+                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable not defined.")));
                 default:
                     throw new NotImplementedException();
             }
@@ -674,7 +674,7 @@ namespace NiL.JS.Core
         internal static JSObject RaiseIfNotExist(JSObject obj)
         {
             if (obj != null && obj.valueType == JSObjectType.NotExist)
-                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible \"" + obj.lastRequestedName + "\" is not defined.")));
+                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable \"" + obj.lastRequestedName + "\" is not defined.")));
             return obj;
         }
 

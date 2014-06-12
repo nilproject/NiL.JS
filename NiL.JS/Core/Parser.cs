@@ -32,7 +32,7 @@ namespace NiL.JS.Core
             {                
                 new _Rule("[", OperatorStatement.Parse),
                 new _Rule("{", CodeBlock.Parse),
-                new _Rule("var ", VaribleDefineStatement.Parse),
+                new _Rule("var ", VariableDefineStatement.Parse),
                 new _Rule("if", IfElseStatement.Parse),
                 new _Rule("for", ForInStatement.Parse),
                 new _Rule("for", ForStatement.Parse),
@@ -97,7 +97,7 @@ namespace NiL.JS.Core
             // 3
             new _Rule[] // Для for
             {
-                new _Rule("var ", VaribleDefineStatement.Parse),
+                new _Rule("var ", VariableDefineStatement.Parse),
                 new _Rule("(", OperatorStatement.Parse),
                 new _Rule("+", OperatorStatement.Parse),
                 new _Rule("-", OperatorStatement.Parse),
@@ -123,7 +123,7 @@ namespace NiL.JS.Core
                 new _Rule("/*", MultilineComment.Parse),
                 new _Rule("[", OperatorStatement.Parse),
                 new _Rule("{", CodeBlock.Parse),
-                new _Rule("var ", VaribleDefineStatement.Parse),
+                new _Rule("var ", VariableDefineStatement.Parse),
                 new _Rule("if", IfElseStatement.Parse),
                 new _Rule("for", ForInStatement.Parse),
                 new _Rule("for", ForStatement.Parse),
@@ -344,16 +344,6 @@ namespace NiL.JS.Core
                 }
                 if (j == code.Length)
                     return false;
-                try
-                {
-                    new System.Text.RegularExpressions.Regex(code.Substring(index + 1, j - index - 1)
-                        .Replace("\\P", "P")
-                        , System.Text.RegularExpressions.RegexOptions.ECMAScript);
-                }
-                catch
-                {
-                    return false;
-                }
                 bool w = true;
                 bool g = false, i = false, m = false;
                 while (w)
@@ -549,14 +539,14 @@ namespace NiL.JS.Core
                 + code.Substring(index, Math.Min(20, code.Length - index)).Split(new[] { ' ', '\n', '\r' })[0])));
         }
 
-        internal static void Optimize(ref Statement s, int depth, Dictionary<string, VaribleDescriptor> varibles)
+        internal static void Optimize(ref Statement s, int depth, Dictionary<string, VariableDescriptor> variables)
         {
-            while (s != null && s.Optimize(ref s, depth, varibles)) { }
+            while (s != null && s.Optimize(ref s, depth, variables)) { }
         }
 
-        internal static void Optimize(ref Statement s, Dictionary<string, VaribleDescriptor> varibles)
+        internal static void Optimize(ref Statement s, Dictionary<string, VariableDescriptor> variables)
         {
-            while (s != null && s.Optimize(ref s, 0, varibles)) { }
+            while (s != null && s.Optimize(ref s, 0, variables)) { }
         }
     }
 }

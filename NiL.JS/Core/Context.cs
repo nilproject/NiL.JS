@@ -24,33 +24,76 @@ namespace NiL.JS.Core
     public class Context : IEnumerable<string>
     {
 #if NET35
-        private static IDictionary<int, WeakReference> _executedContexts = new BinaryTree<int, WeakReference>();
+        private static IDictionary<int, Context> _executedContexts = new BinaryTree<int, Context>();
 #else
-        private static IDictionary<int, WeakReference> _executedContexts = new System.Collections.Concurrent.ConcurrentDictionary<int, WeakReference>();
+        private static IDictionary<int, Context> _executedContexts = new System.Collections.Concurrent.ConcurrentDictionary<int, Context>();
 #endif
 
-        internal static Context CurrentContext
+        public static Context CurrentContext
         {
             get
             {
-                WeakReference res = null;
-                if (_executedContexts.TryGetValue(System.Threading.Thread.CurrentThread.ManagedThreadId, out res))
-                    return res.Target as Context;
-                else
-                    return null;
-            }
-            set
-            {
-                if (value != null)
-                    throw new InvalidOperationException();
-                var cc = CurrentContext;
-                GC.SuppressFinalize(cc);
-                cc.threadid = 0;
-                _executedContexts.Remove(System.Threading.Thread.CurrentThread.ManagedThreadId);
+                Context res = null;
+                _executedContexts.TryGetValue(Thread.CurrentThread.ManagedThreadId, out res);
+                return res;
             }
         }
 
-        internal readonly static Context globalContext = new Context();
+        /// <summary>
+        /// Указывает, присутствует ли контекст в каскаде выполняющихся контекстов непосредственно
+        /// или в качестве одного из прототипов
+        /// </summary>
+        public bool IsExcecuting
+        {
+            get
+            {
+                var ccontext = CurrentContext;
+                do
+                {
+                    if (ccontext == this)
+                        return true;
+                    var pc = ccontext.prototype;
+                    while (pc != null)
+                    {
+                        if (pc == this)
+                            return true;
+                        pc = pc.prototype;
+                    }
+                    ccontext = ccontext.oldContext;
+                } while (ccontext != null);
+                return false;
+            }
+        }
+
+        private Context oldContext;
+        internal bool Run()
+        {
+            Context ccntxt = null;
+            _executedContexts.TryGetValue(Thread.CurrentThread.ManagedThreadId, out ccntxt);
+            if (ccntxt != this)
+            {
+                _executedContexts[Thread.CurrentThread.ManagedThreadId] = this;
+                if (oldContext != null)
+                    System.Diagnostics.Debug.Fail("Try to rewrite oldContext");
+                this.oldContext = ccntxt;
+                return true;
+            }
+            return false;
+        }
+
+        internal void Stop()
+        {
+#if DEBUG
+            if (oldContext == globalContext)
+                System.Diagnostics.Debug.Print("Return to global context.");
+#endif
+            if (this != CurrentContext)
+                throw new InvalidOperationException("Context not runned");
+            _executedContexts[Thread.CurrentThread.ManagedThreadId] = oldContext;
+            oldContext = null;
+        }
+
+        internal readonly static Context globalContext = new Context() { strict = true };
         /// <summary>
         /// Глобальный контекст выполнения. Хранит глобальные объекты, определённые спецификацией.
         /// Создание переменных в этом контексте невозможно во время выполнения скрипта.
@@ -62,6 +105,10 @@ namespace NiL.JS.Core
         /// </summary>
         public static void RefreshGlobalContext()
         {
+#if DEBUG
+            if (CurrentContext != globalContext)
+                throw new InvalidOperationException("Try to refresh global context while script executing.");
+#endif
             if (globalContext.fields != null)
                 globalContext.fields.Clear();
             else
@@ -70,7 +117,7 @@ namespace NiL.JS.Core
             JSObject.GlobalPrototype = null;
             TypeProxy.Clear();
             globalContext.fields.Add("Object", TypeProxy.GetConstructor(typeof(JSObject)).Clone() as JSObject);
-            globalContext.fields["Object"].attributes |= JSObjectAttributes.DoNotDelete;
+            globalContext.fields["Object"].attributes = JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum;
             JSObject.GlobalPrototype = TypeProxy.GetPrototype(typeof(JSObject));
             globalContext.AttachModule(typeof(BaseTypes.Date));
             globalContext.AttachModule(typeof(BaseTypes.Array));
@@ -92,8 +139,8 @@ namespace NiL.JS.Core
             globalContext.AttachModule(typeof(Modules.console));
 
             #region Base Function
-            globalContext.DefineVarible("eval").Assign(new ExternalFunction(eval));
-            globalContext.DefineVarible("isNaN").Assign(new ExternalFunction((t, x) =>
+            globalContext.DefineVariable("eval").Assign(new ExternalFunction((t, x) => { return CurrentContext.Eval(x["0"].ToString()); }));
+            globalContext.DefineVariable("isNaN").Assign(new ExternalFunction((t, x) =>
             {
                 var r = x.GetMember("0");
                 if (r.valueType == JSObjectType.Double)
@@ -110,31 +157,31 @@ namespace NiL.JS.Core
                 }
                 return true;
             }));
-            globalContext.DefineVarible("unescape").Assign(new ExternalFunction((t, x) =>
+            globalContext.DefineVariable("unescape").Assign(new ExternalFunction((t, x) =>
             {
                 return System.Web.HttpUtility.HtmlDecode(x.GetMember("0").ToString());
             }));
-            globalContext.DefineVarible("escape").Assign(new ExternalFunction(escape));
-            globalContext.DefineVarible("encodeURI").Assign(new ExternalFunction((t, x) =>
+            globalContext.DefineVariable("escape").Assign(new ExternalFunction(escape));
+            globalContext.DefineVariable("encodeURI").Assign(new ExternalFunction((thisBind, x) =>
             {
                 return System.Web.HttpServerUtility.UrlTokenEncode(System.Text.UTF8Encoding.Default.GetBytes(x.GetMember("0").ToString()));
             }));
-            globalContext.DefineVarible("encodeURIComponent").Assign(globalContext.GetVarible("encodeURI"));
-            globalContext.DefineVarible("decodeURI").Assign(new ExternalFunction((t, x) =>
+            globalContext.DefineVariable("encodeURIComponent").Assign(globalContext.GetVariable("encodeURI"));
+            globalContext.DefineVariable("decodeURI").Assign(new ExternalFunction((thisBind, x) =>
             {
                 return System.Text.UTF8Encoding.Default.GetString(System.Web.HttpServerUtility.UrlTokenDecode(x.GetMember("0").ToString()));
             }));
-            globalContext.DefineVarible("decodeURIComponent").Assign(globalContext.GetVarible("decodeURI"));
-            globalContext.DefineVarible("isFinite").Assign(new ExternalFunction((t, x) =>
+            globalContext.DefineVariable("decodeURIComponent").Assign(globalContext.GetVariable("decodeURI"));
+            globalContext.DefineVariable("isFinite").Assign(new ExternalFunction((thisBind, x) =>
             {
                 var d = Tools.JSObjectToDouble(x.GetMember("0"));
                 return !double.IsNaN(d) && !double.IsInfinity(d);
             }));
-            globalContext.DefineVarible("parseFloat").Assign(new ExternalFunction((t, x) =>
+            globalContext.DefineVariable("parseFloat").Assign(new ExternalFunction((thisBind, x) =>
             {
                 return Tools.JSObjectToDouble(x.GetMember("0"));
             }));
-            globalContext.DefineVarible("parseInt").Assign(new ExternalFunction((t, x) =>
+            globalContext.DefineVariable("parseInt").Assign(new ExternalFunction((thisBind, x) =>
             {
                 var r = x.GetMember("0");
                 for (; ; )
@@ -176,7 +223,7 @@ namespace NiL.JS.Core
                             throw new NotImplementedException();
                     }
             }));
-            globalContext.DefineVarible("__pinvoke").Assign(new ExternalFunction(__pinvoke));
+            globalContext.DefineVariable("__pinvoke").Assign(new ExternalFunction(__pinvoke));
             #endregion
             #region Consts
             globalContext.fields["undefined"] = JSObject.undefined;
@@ -189,12 +236,12 @@ namespace NiL.JS.Core
                 v.attributes |= JSObjectAttributes.DoNotEnum;
         }
 
-        private static JSObject escape(Context t, JSObject x)
+        private static JSObject escape(JSObject thisBind, JSObject x)
         {
             return System.Web.HttpUtility.HtmlEncode(x.GetMember("0").ToString());
         }
 
-        private static JSObject __pinvoke(Context context, JSObject args)
+        private static JSObject __pinvoke(JSObject thisBind, JSObject args)
         {
             var argsCount = Tools.JSObjectToInt(args.GetMember("length"));
             var threadsCount = 1;
@@ -225,7 +272,7 @@ namespace NiL.JS.Core
                             oValue = function,
                             attributes = JSObjectAttributes.DoNotEnum
                         }).Protect();
-                        function.Invoke(context, targs);
+                        function.Invoke(null, targs);
                     }) { Name = "NiL.JS __pinvoke thread (" + __pinvokeCalled + ":" + i + ")" }).Start(i);
                 }
                 __pinvokeCalled++;
@@ -271,14 +318,13 @@ namespace NiL.JS.Core
 
         static Context()
         {
+            globalContext.Run();
             RefreshGlobalContext();
         }
 
         internal readonly Context prototype;
 
-        private int threadid = 0;
         private static uint __pinvokeCalled;
-
         internal Dictionary<string, JSObject> fields;
         internal AbortType abort;
         internal JSObject objectSource;
@@ -288,7 +334,7 @@ namespace NiL.JS.Core
 #if DEV
         internal bool debugging;
 #endif
-        internal Statement owner;
+        internal VariableDescriptor[] variables;
         public Context Root
         {
             get
@@ -331,10 +377,10 @@ namespace NiL.JS.Core
         /// </summary>
         /// <param name="name">Имя поля, которое необходимо вернуть.</param>
         /// <returns>Поле, соответствующее указанному имени.</returns>
-        public virtual JSObject DefineVarible(string name)
+        public virtual JSObject DefineVariable(string name)
         {
             if (name == "this")
-                return GetVarible(name);
+                return GetVariable(name);
             JSObject res = null;
             if (fields == null)
                 (fields = new Dictionary<string, JSObject>())[name] = res = new JSObject();
@@ -355,13 +401,17 @@ namespace NiL.JS.Core
         /// </summary>
         /// <param name="name">Имя переменной</param>
         /// <returns></returns>
-        public virtual JSObject GetVarible(string name)
+        public JSObject GetVariable(string name)
         {
-            return GetVarible(name, false);
+            return GetVariable(name, false);
         }
 
-        internal virtual JSObject GetVarible(string name, bool create)
+        internal protected virtual JSObject GetVariable(string name, bool create)
         {
+#if DEBUG
+            if (!IsExcecuting)
+                System.Diagnostics.Debug.Fail("Try to get varible from stoped context.");
+#endif
             JSObject res = null;
             if (name == "this")
             {
@@ -388,7 +438,7 @@ namespace NiL.JS.Core
             }
             bool fromProto = (fields == null || !fields.TryGetValue(name, out res)) && (prototype != null);
             if (fromProto)
-                res = prototype.GetVarible(name, create);
+                res = prototype.GetVariable(name, create);
             if (res == null || res == JSObject.notExist)
             {
                 if (this == globalContext)
@@ -429,7 +479,7 @@ namespace NiL.JS.Core
             if (fields == null)
                 fields = new Dictionary<string, JSObject>();
             fields.Add(moduleType.Name, TypeProxy.GetConstructor(moduleType).Clone() as JSObject);
-            fields[moduleType.Name].attributes |= JSObjectAttributes.DoNotDelete;
+            fields[moduleType.Name].attributes = JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum;
         }
 
         /// <summary>
@@ -455,20 +505,31 @@ namespace NiL.JS.Core
                 bool leak = !(strict || (cb as CodeBlock).strict);
                 if (i < c.Length)
                     throw new System.ArgumentException("Invalid char");
-                var vars = new Dictionary<string, VaribleDescriptor>();
-                Parser.Optimize(ref cb, -1, vars);
-                var context = leak ? this : new Context(this, cb) { strict = true };
-                foreach (var v in vars)
+                var vars = new Dictionary<string, VariableDescriptor>();
+                Parser.Optimize(ref cb, leak ? -1 : -2, vars);
+                var context = leak ? this : new Context(this) { strict = true };
+                var cvars = this.variables ??
+                    (this.variables = new VariableDescriptor[0]); // если всё правильно, эта ветка не выполнится.
+                for (i = cvars.Length; i-- > 0; )
                 {
-                    if (v.Value.Defined)
+                    VariableDescriptor desc = null;
+                    if (vars.TryGetValue(cvars[i].Name, out desc))
                     {
-                        var f = context.DefineVarible(v.Key);
-                        if (v.Value.Inititalizator != null)
-                            f.Assign(v.Value.Inititalizator.Invoke(context));
+                        foreach (var r in desc.references)
+                            r.Descriptor = cvars[i];
                     }
                 }
-                var res = cb.Invoke(context);
-                return res;
+                var run = context.Run();
+                try
+                {
+                    var res = cb.Invoke(context);
+                    return res;
+                }
+                finally
+                {
+                    if (run)
+                        context.Stop();
+                }
             }
             finally
             {
@@ -476,26 +537,6 @@ namespace NiL.JS.Core
                 this.debugging = debugging;
 #endif
             }
-        }
-
-        private static JSObject eval(Context context, JSObject args)
-        {
-            return context.Eval(args.GetMember("0").ToString());
-        }
-
-        internal void ValidateThreadID()
-        {
-            var cntxt = this;
-            WeakReference wr = null;
-            if (_executedContexts.TryGetValue(System.Threading.Thread.CurrentThread.ManagedThreadId, out wr))
-            {
-                var t = wr.Target;
-                if (t == cntxt)
-                    return;
-                GC.SuppressFinalize(t);
-            }
-            _executedContexts[cntxt.threadid = System.Threading.Thread.CurrentThread.ManagedThreadId] = new WeakReference(cntxt);
-            GC.ReRegisterForFinalize(cntxt);
         }
 
         public virtual IEnumerator<string> GetEnumerator()
@@ -508,14 +549,13 @@ namespace NiL.JS.Core
             return ((IEnumerable<string>)this).GetEnumerator();
         }
 
-        internal Context(Context prototype, Statement owner)
-            : this(prototype, owner, true)
+        internal Context(Context prototype)
+            : this(prototype, true)
         {
         }
 
-        internal Context(Context prototype, Statement owner, bool createFields)
+        internal Context(Context prototype, bool createFields)
         {
-            this.owner = owner;
             if (createFields)
                 this.fields = new Dictionary<string, JSObject>();
             this.prototype = prototype;
@@ -527,9 +567,9 @@ namespace NiL.JS.Core
             GC.SuppressFinalize(this);
         }
 
-        ~Context()
+        public override string ToString()
         {
-            _executedContexts.Remove(threadid);
+            return this == globalContext ? "Global context" : "Context";
         }
     }
 }

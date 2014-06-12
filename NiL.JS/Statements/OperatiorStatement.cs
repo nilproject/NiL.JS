@@ -345,7 +345,7 @@ namespace NiL.JS.Statements
             int s = i;
             state.InExpression = true;
             if (Parser.ValidateName(code, ref i, state.strict.Peek()) || Parser.Validate(code, "this", ref i))
-                first = new GetVaribleStatement(Tools.Unescape(code.Substring(s, i - s), state.strict.Peek())) { Position = index, Length = i - index };
+                first = new GetVariableStatement(Tools.Unescape(code.Substring(s, i - s), state.strict.Peek())) { Position = index, Length = i - index };
             else if (Parser.ValidateValue(code, ref i))
             {
                 string value = code.Substring(s, i - s);
@@ -373,7 +373,7 @@ namespace NiL.JS.Statements
                         {
                             s = value.LastIndexOf('/') + 1;
                             string flags = value.Substring(s);
-                            first = new Operators.Call(new GetVaribleStatement("RegExp") { Position = i }, new ImmidateValueStatement(new JSObject()
+                            first = new Operators.Call(new GetVariableStatement("RegExp") { Position = i }, new ImmidateValueStatement(new JSObject()
                             {
                                 valueType = JSObjectType.Object,
                                 oValue = new Statement[2]
@@ -406,7 +406,7 @@ namespace NiL.JS.Statements
                             {
                                 do i++; while (char.IsWhiteSpace(code[i]));
                                 first = Parse(state, ref i, true, true, false, true).Statement;
-                                if (((first as GetMemberStatement) as object ?? (first as GetVaribleStatement)) == null)
+                                if (((first as GetMemberStatement) as object ?? (first as GetVariableStatement)) == null)
                                 {
                                     var cord = Tools.PositionToTextcord(code, i);
                                     throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid prefix operation. " + cord)));
@@ -428,7 +428,7 @@ namespace NiL.JS.Statements
                             {
                                 do i++; while (char.IsWhiteSpace(code[i]));
                                 first = Parse(state, ref i, true, true, false, true).Statement;
-                                if (((first as GetMemberStatement) as object ?? (first as GetVaribleStatement)) == null)
+                                if (((first as GetMemberStatement) as object ?? (first as GetVariableStatement)) == null)
                                 {
                                     var cord = Tools.PositionToTextcord(code, i);
                                     throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid prefix operation. " + cord)));
@@ -1088,7 +1088,7 @@ namespace NiL.JS.Statements
             throw new InvalidOperationException();
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VaribleDescriptor> vars)
+        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VariableDescriptor> vars)
         {
             Type = Type;
             _this = fastImpl;

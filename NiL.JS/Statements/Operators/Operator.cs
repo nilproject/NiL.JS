@@ -11,11 +11,11 @@ namespace NiL.JS.Statements.Operators
         /// <remarks>
         /// Используется в typeof и delete.
         /// </remarks>
-        protected sealed class SafeVaribleGetter : VaribleReference
+        protected sealed class SafeVariableGetter : VariableReference
         {
-            private VaribleDescriptor desc;
+            private VariableDescriptor desc;
 
-            internal SafeVaribleGetter(GetVaribleStatement gvs)
+            internal SafeVariableGetter(GetVariableStatement gvs)
             {
                 desc = gvs.Descriptor;
                 desc.Remove(gvs);
@@ -29,7 +29,7 @@ namespace NiL.JS.Statements.Operators
                 get { return desc.Name; }
             }
 
-            public override VaribleDescriptor Descriptor { get; internal set; }
+            public override VariableDescriptor Descriptor { get; internal set; }
 
             internal override JSObject Invoke(Context context)
             {
@@ -72,7 +72,7 @@ namespace NiL.JS.Statements.Operators
             this.second = second;
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VaribleDescriptor> vars)
+        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VariableDescriptor> vars)
         {
             Parser.Optimize(ref first, depth + 1, vars);
             Parser.Optimize(ref second, depth + 1, vars);

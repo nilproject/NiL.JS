@@ -33,7 +33,7 @@ namespace NiL.JS.Core
 
         internal protected override JSObject GetMember(string name, bool create, bool own)
         {
-            var res = context.GetVarible(name, create);
+            var res = context.GetVariable(name, create);
             if (res.valueType == JSObjectType.NotExist)
                 res.valueType = JSObjectType.NotExistInObject;
             return res;

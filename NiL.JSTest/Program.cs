@@ -35,7 +35,7 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * i + 3 - 2 / 2; }
             for (var i = 0; i < iterations; i++)
                 a = a * i + 3 - 2 / 2;
             sw.Stop();
-            Console.WriteLine(a == Tools.JSObjectToDouble(s.Context.GetVarible("a")) ? "valid" : "invalid");
+            Console.WriteLine(a == Tools.JSObjectToDouble(s.Context.GetVariable("a")) ? "valid" : "invalid");
             Console.WriteLine("native: " + (sw.Elapsed.Ticks / 10000).ToString());
             Console.WriteLine("rate: " + ((double)l.Ticks / (double)sw.Elapsed.Ticks).ToString());
         }
@@ -50,22 +50,22 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * i + 3 - 2 / 2; }
             var s = new Script(sr.ReadToEnd());
             sw.Stop();
             Console.WriteLine("Compile time: " + sw.Elapsed);
-            s.Context.DefineVarible("$ERROR").Assign(new ExternalFunction((t, x) =>
+            s.Context.DefineVariable("$ERROR").Assign(new ExternalFunction((t, x) =>
             {
                 Console.WriteLine("ERROR: " + x.GetMember("0").Value);
                 return null;
             }));
-            s.Context.DefineVarible("ERROR").Assign(new ExternalFunction((t, x) =>
+            s.Context.DefineVariable("ERROR").Assign(new ExternalFunction((t, x) =>
             {
                 Console.WriteLine("ERROR: " + x.GetMember("0").Value);
                 return null;
             }));
-            s.Context.DefineVarible("$PRINT").Assign(new ExternalFunction((t, x) =>
+            s.Context.DefineVariable("$PRINT").Assign(new ExternalFunction((t, x) =>
             {
                 Console.WriteLine("PRINT: " + x.GetMember("0").Value);
                 return null;
             }));
-            s.Context.DefineVarible("$FAIL").Assign(new ExternalFunction((t, x) =>
+            s.Context.DefineVariable("$FAIL").Assign(new ExternalFunction((t, x) =>
             {
                 Console.WriteLine("FAIL: " + x.GetMember("0").Value);
                 return null;
@@ -107,29 +107,29 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * i + 3 - 2 / 2; }
                     if (negative)
                         pass = false;
                     var s = new Script(code);
-                    s.Context.DefineVarible("$ERROR").Assign(new ExternalFunction((t, x) =>
+                    s.Context.DefineVariable("$ERROR").Assign(new ExternalFunction((t, x) =>
                     {
                         Console.WriteLine("ERROR: " + x.GetMember("0").Value);
                         pass = false;
                         return null;
                     }));
-                    s.Context.DefineVarible("ERROR").Assign(new ExternalFunction((t, x) =>
+                    s.Context.DefineVariable("ERROR").Assign(new ExternalFunction((t, x) =>
                     {
                         Console.WriteLine("ERROR: " + x.GetMember("0").Value);
                         pass = false;
                         return null;
                     }));
-                    s.Context.DefineVarible("PRINT").Assign(new ExternalFunction((t, x) =>
+                    s.Context.DefineVariable("PRINT").Assign(new ExternalFunction((t, x) =>
                     {
                         Console.WriteLine("PRINT: " + x.GetMember("0").Value);
                         return null;
                     }));
-                    s.Context.DefineVarible("$PRINT").Assign(new ExternalFunction((t, x) =>
+                    s.Context.DefineVariable("$PRINT").Assign(new ExternalFunction((t, x) =>
                     {
                         Console.WriteLine("PRINT: " + x.GetMember("0").Value);
                         return null;
                     }));
-                    s.Context.DefineVarible("$FAIL").Assign(new ExternalFunction((t, x) =>
+                    s.Context.DefineVariable("$FAIL").Assign(new ExternalFunction((t, x) =>
                     {
                         Console.WriteLine("FAIL: " + x.GetMember("0").Value);
                         pass = false;
@@ -169,7 +169,7 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * i + 3 - 2 / 2; }
                     failed++;
                 }
                 Console.Title = "passed: " + passed + ". failed: " + failed;
-                if (failed == 2) break;
+                if (failed == 3) break;
             }
             sw.Stop();
             _("passed: " + passed);
@@ -229,13 +229,13 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * i + 3 - 2 / 2; }
         static void Main(string[] args)
         {
             typeof(System.Windows.Forms.Button).GetType();
-            NiL.JS.Core.Context.GlobalContext.DefineVarible("platform").Assign("NiL.JS");
-            NiL.JS.Core.Context.GlobalContext.DefineVarible("System").Assign(new NamespaceProvider("System"));
-            NiL.JS.Core.Context.GlobalContext.DefineVarible("load").Assign(new ExternalFunction((context, eargs) =>
+            NiL.JS.Core.Context.GlobalContext.DefineVariable("platform").Assign("NiL.JS");
+            NiL.JS.Core.Context.GlobalContext.DefineVariable("System").Assign(new NamespaceProvider("System"));
+            NiL.JS.Core.Context.GlobalContext.DefineVariable("load").Assign(new ExternalFunction((context, eargs) =>
             {
                 var f = new FileStream("Benchmarks\\" + eargs.GetMember("0").ToString(), FileMode.Open, FileAccess.Read);
                 var sr = new StreamReader(f);
-                return context.Eval(sr.ReadToEnd());
+                return Context.CurrentContext.Eval(sr.ReadToEnd());
             }));
             //benchmark();
             //runFile(@"ftest.js");

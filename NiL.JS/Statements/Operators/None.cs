@@ -28,7 +28,7 @@ namespace NiL.JS.Statements.Operators
             return temp;
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VaribleDescriptor> vars)
+        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VariableDescriptor> vars)
         {
             if (second == null)
             {

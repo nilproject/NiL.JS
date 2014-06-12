@@ -45,7 +45,7 @@ namespace NiL.JS.Statements.Operators
                     setterArg.Assign(Tools.RaiseIfNotExist(second.Invoke(context)));
                     var setter = (field.oValue as NiL.JS.Core.BaseTypes.Function[])[0];
                     if (setter != null)
-                        setter.Invoke(context, fieldSource, setterArgs);
+                        setter.Invoke(fieldSource, setterArgs);
                     else if (context.strict)
                         throw new JSException(TypeProxy.Proxy(new TypeError("Can not assign to readonly property \"" + first + "\"")));
                     return setterArg;

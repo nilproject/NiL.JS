@@ -7,7 +7,7 @@ using NiL.JS.Statements.Operators;
 namespace NiL.JS.Statements
 {
     [Serializable]
-    public sealed class VaribleDefineStatement : Statement
+    public sealed class VariableDefineStatement : Statement
     {
         internal readonly Statement[] initializators;
         internal readonly string[] names;
@@ -15,13 +15,13 @@ namespace NiL.JS.Statements
         public Statement[] Initializators { get { return initializators; } }
         public string[] Names { get { return names; } }
 
-        public VaribleDefineStatement(string name, Statement init)
+        public VariableDefineStatement(string name, Statement init)
         {
             names = new[] { name };
             initializators = new[] { init };
         }
 
-        private VaribleDefineStatement(string[] names, Statement[] initializators)
+        private VariableDefineStatement(string[] names, Statement[] initializators)
         {
             this.initializators = initializators;
             this.names = names;
@@ -45,7 +45,7 @@ namespace NiL.JS.Statements
                 {
                     if (Parser.ValidateName(code, ref i, false, true, state.strict.Peek()))
                         throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError('\"' + Tools.Unescape(code.Substring(s, i - s), state.strict.Peek()) + "\" is a reserved word at " + Tools.PositionToTextcord(code, s))));
-                    throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid varible definition at " + Tools.PositionToTextcord(code, s))));
+                    throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid variable definition at " + Tools.PositionToTextcord(code, s))));
                 }
                 string name = Tools.Unescape(code.Substring(s, i - s), state.strict.Peek());
                 names.Add(name);
@@ -55,7 +55,7 @@ namespace NiL.JS.Statements
                     throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \";\", \",\", \"=\" or \"}\" at + " + Tools.PositionToTextcord(code, i))));
                 if (i >= code.Length)
                 {
-                    initializator.Add(new GetVaribleStatement(name) { Position = s, Length = name.Length });
+                    initializator.Add(new GetVariableStatement(name) { Position = s, Length = name.Length });
                     break;
                 }
                 if (Tools.isLineTerminator(code[i]))
@@ -71,16 +71,16 @@ namespace NiL.JS.Statements
                 {
                     do i++; while (i < code.Length && char.IsWhiteSpace(code[i]));
                     if (i == code.Length)
-                        throw new JSException(TypeProxy.Proxy(new SyntaxError("Unexpected end of line in varible defenition.")));
+                        throw new JSException(TypeProxy.Proxy(new SyntaxError("Unexpected end of line in variable defenition.")));
                     initializator.Add(
-                        new Assign(new GetVaribleStatement(name) { Position = s, Length = name.Length }, OperatorStatement.Parse(state, ref i, false).Statement)
+                        new Assign(new GetVariableStatement(name) { Position = s, Length = name.Length }, OperatorStatement.Parse(state, ref i, false).Statement)
                         {
                             Position = s,
                             Length = i - s
                         });
                 }
                 else
-                    initializator.Add(new GetVaribleStatement(name) { Position = s, Length = name.Length });
+                    initializator.Add(new GetVariableStatement(name) { Position = s, Length = name.Length });
                 if (i >= code.Length)
                     break;
                 s = i;
@@ -105,7 +105,7 @@ namespace NiL.JS.Statements
             return new ParseResult()
             {
                 IsParsed = true,
-                Statement = new VaribleDefineStatement(names.ToArray(), inits)
+                Statement = new VariableDefineStatement(names.ToArray(), inits)
                 {
                     Position = pos,
                     Length = index - pos
@@ -128,12 +128,12 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VaribleDescriptor> varibles)
+        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VariableDescriptor> variables)
         {
             for (int i = 0; i < initializators.Length; i++)
-                Parser.Optimize(ref initializators[i], 1, varibles);
+                Parser.Optimize(ref initializators[i], 1, variables);
             for (var i = 0; i < names.Length; i++)
-                varibles[names[i]].Defined = true;
+                variables[names[i]].Defined = true;
             return false;
         }
 

@@ -35,13 +35,14 @@ namespace NiL.JS.Statements.Operators
             if (temp.valueType == JSObjectType.NotExist)
             {
                 if (context.thisBind == null)
-                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible not defined.")));
+                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable not defined.")));
                 else
                     throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError(FirstOperand + " not exist.")));
             }
             if (temp.valueType != JSObjectType.Function && !(temp.valueType == JSObjectType.Object && temp.oValue is Function))
                 throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError(first + " is not callable")));
             func = temp.oValue as Function;
+            func.lastRequestedName = temp.lastRequestedName;
 
             newThisBind = context.objectSource;
 
@@ -65,7 +66,7 @@ namespace NiL.JS.Statements.Operators
                 a.attributes |= JSObjectAttributes.Argument;
                 context.objectSource = null;
             }
-            return func.Invoke(context, newThisBind, arguments);
+            return func.Invoke(newThisBind, arguments);
         }
 
         public override string ToString()
@@ -81,7 +82,7 @@ namespace NiL.JS.Statements.Operators
             return res + ")";
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VaribleDescriptor> vars)
+        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VariableDescriptor> vars)
         {
             base.Optimize(ref _this, depth, vars);
             arguments = second.Invoke(null).oValue as Statement[];

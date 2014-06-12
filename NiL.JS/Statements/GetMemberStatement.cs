@@ -34,11 +34,11 @@ namespace NiL.JS.Statements
         {
             var source = objStatement.Invoke(context);
             if (source.valueType == JSObjectType.NotExist)
-                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible not defined.")));
+                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable not defined.")));
 
             var n = memberNameStatement.Invoke(context);
             if (n.valueType == JSObjectType.NotExist)
-                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible not defined.")));
+                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable not defined.")));
 
             context.objectSource = source;
             var res = source.GetMember(n.ToString(), forAssign, false);
@@ -58,10 +58,10 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VaribleDescriptor> varibles)
+        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VariableDescriptor> variables)
         {
-            Parser.Optimize(ref objStatement, depth + 1, varibles);
-            Parser.Optimize(ref memberNameStatement, depth + 1, varibles);
+            Parser.Optimize(ref objStatement, depth + 1, variables);
+            Parser.Optimize(ref memberNameStatement, depth + 1, variables);
             return false;
         }
 

@@ -13,9 +13,9 @@ namespace NiL.JS.Core.BaseTypes
     [Serializable]
     public enum FunctionType
     {
-        Regular = 0,
-        Getter,
-        Setter
+        Function = 0,
+        Get,
+        Set
     }
 
     [Serializable]
@@ -644,7 +644,7 @@ namespace NiL.JS.Core.BaseTypes
 
         [Hidden]
         [CLSCompliant(false)]
-        internal protected Context context;
+        internal protected readonly Context context;
         [Hidden]
         internal protected JSObject prototypeField;
         [Hidden]
@@ -655,13 +655,13 @@ namespace NiL.JS.Core.BaseTypes
         private Statements.CodeBlock body;
         private string name;
         [Hidden]
-        public string Name
+        public virtual string Name
         {
             get { return name; }
         }
         private FunctionType type;
         [Hidden]
-        public FunctionType Type
+        public virtual FunctionType Type
         {
             get { return type; }
         }
@@ -705,7 +705,7 @@ namespace NiL.JS.Core.BaseTypes
             var fs = NiL.JS.Statements.FunctionStatement.Parse(new ParsingState(code, code), ref index);
             if (fs.IsParsed)
             {
-                Parser.Optimize(ref fs.Statement, new Dictionary<string, VaribleDescriptor>());
+                Parser.Optimize(ref fs.Statement, new Dictionary<string, VariableDescriptor>());
                 var func = fs.Statement.Invoke(context) as Function;
                 body = func.body;
                 argumentsNames = func.argumentsNames;
@@ -737,31 +737,12 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [Hidden]
-        public virtual JSObject Invoke(JSObject args)
-        {
-            return Invoke(undefined, args);
-        }
-
-        [Hidden]
-        public virtual JSObject Invoke(Context contextOverride, JSObject args)
-        {
-            return Invoke(args);
-        }
-
-        [Hidden]
-        public virtual JSObject Invoke(Context contextOverride, JSObject thisOverride, JSObject args)
-        {
-            return Invoke(thisOverride ?? context.thisBind, args);
-        }
-
-        [Hidden]
         public virtual JSObject Invoke(JSObject thisOverride, JSObject args)
         {
-            context.ValidateThreadID();
             var oldargs = _arguments;
+            Context internalContext = new Context(context);
             try
             {
-                Context internalContext = new Context(context, body);
                 var thisBind = thisOverride;
                 if (!body.strict)
                 {
@@ -782,7 +763,7 @@ namespace NiL.JS.Core.BaseTypes
                             var thc = context;
                             while (thc.prototype != Context.globalContext && !(thc.thisBind is ThisObject))
                                 thc = thc.prototype;
-                            thisBind = thc.thisBind ?? thc.GetVarible("this");
+                            thisBind = thc.thisBind ?? thc.GetVariable("this");
                         }
                         internalContext.thisBind = thisBind;
                     }
@@ -808,8 +789,8 @@ namespace NiL.JS.Core.BaseTypes
                     callee.attributes |= JSObjectAttributes.DoNotEnum;
                 }
                 internalContext.fields["arguments"] = args;
-                if (type != FunctionType.Regular && Parser.ValidateName(name))
-                    internalContext.DefineVarible(name).Assign(this);
+                if (type == FunctionType.Function && name != null && Parser.ValidateName(name))
+                    internalContext.DefineVariable(name).Assign(this);
                 int i = 0;
                 JSObject argsLength = args.GetMember("length");
                 if (argsLength.valueType == JSObjectType.Property)
@@ -820,13 +801,21 @@ namespace NiL.JS.Core.BaseTypes
                 for (; i < argumentsNames.Length; i++)
                     internalContext.fields[argumentsNames[i]] = new JSObject();
 
+                internalContext.Run();
                 body.Invoke(internalContext);
                 return internalContext.abortInfo;
             }
             finally
             {
+                internalContext.Stop();
                 _arguments = oldargs;
             }
+        }
+
+        [Hidden]
+        public JSObject Invoke(JSObject args)
+        {
+            return Invoke(undefined, args);
         }
 
         [Hidden]
@@ -857,7 +846,7 @@ namespace NiL.JS.Core.BaseTypes
         [Hidden]
         public override string ToString()
         {
-            var res = "function " + Name + "(";
+            var res = type.ToString().ToLowerInvariant() + " " + Name + "(";
             if (argumentsNames != null)
                 for (int i = 0; i < argumentsNames.Length; )
                     res += argumentsNames[i] + (++i < argumentsNames.Length ? "," : "");

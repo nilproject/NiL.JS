@@ -34,42 +34,42 @@ namespace NiL.JS.Statements
                 if (Parser.Validate(code, "set ", ref i) && !Parser.isIdentificatorTerminator(code[i]))
                 {
                     i = pos;
-                    var setter = FunctionStatement.Parse(state, ref i, FunctionType.Setter).Statement as FunctionStatement;
-                    if (flds.IndexOf(setter.name) == -1)
+                    var setter = FunctionStatement.Parse(state, ref i, FunctionType.Set).Statement as FunctionStatement;
+                    if (flds.IndexOf(setter.Name) == -1)
                     {
-                        flds.Add(setter.name);
+                        flds.Add(setter.Name);
                         var vle = new ImmidateValueStatement(new JSObject() { valueType = JSObjectType.Object, oValue = new Statement[2] { setter, null } });
                         vle.value.valueType = JSObjectType.Property;
                         vls.Add(vle);
                     }
                     else
                     {
-                        var vle = vls[flds.IndexOf(setter.name)];
+                        var vle = vls[flds.IndexOf(setter.Name)];
                         if (!(vle is ImmidateValueStatement))
                             throw new JSException(TypeProxy.Proxy(new SyntaxError("Try to define setter for defined field at " + Tools.PositionToTextcord(code, pos))));
                         if (((vle as ImmidateValueStatement).value.oValue as Statement[])[0] != null)
-                            throw new JSException(TypeProxy.Proxy(new SyntaxError("Try to redefine setter " + setter.name + " at " + Tools.PositionToTextcord(code, pos))));
+                            throw new JSException(TypeProxy.Proxy(new SyntaxError("Try to redefine setter " + setter.Name + " at " + Tools.PositionToTextcord(code, pos))));
                         ((vle as ImmidateValueStatement).value.oValue as Statement[])[0] = setter;
                     }
                 }
                 else if ((i = pos) >= 0 && Parser.Validate(code, "get ", ref i) && !Parser.isIdentificatorTerminator(code[i]))
                 {
                     i = pos;
-                    var getter = FunctionStatement.Parse(state, ref i, FunctionType.Getter).Statement as FunctionStatement;
-                    if (flds.IndexOf(getter.name) == -1)
+                    var getter = FunctionStatement.Parse(state, ref i, FunctionType.Get).Statement as FunctionStatement;
+                    if (flds.IndexOf(getter.Name) == -1)
                     {
-                        flds.Add(getter.name);
+                        flds.Add(getter.Name);
                         var vle = new ImmidateValueStatement(new JSObject() { valueType = JSObjectType.Object, oValue = new Statement[2] { null, getter } });
                         vle.value.valueType = JSObjectType.Property;
                         vls.Add(vle);
                     }
                     else
                     {
-                        var vle = vls[flds.IndexOf(getter.name)];
+                        var vle = vls[flds.IndexOf(getter.Name)];
                         if (!(vle is ImmidateValueStatement))
                             throw new JSException(TypeProxy.Proxy(new SyntaxError("Try to define getter for defined field at " + Tools.PositionToTextcord(code, pos))));
                         if (((vle as ImmidateValueStatement).value.oValue as Statement[])[1] != null)
-                            throw new JSException(TypeProxy.Proxy(new SyntaxError("Try to redefine getter " + getter.name + " at " + Tools.PositionToTextcord(code, pos))));
+                            throw new JSException(TypeProxy.Proxy(new SyntaxError("Try to redefine getter " + getter.Name + " at " + Tools.PositionToTextcord(code, pos))));
                         ((vle as ImmidateValueStatement).value.oValue as Statement[])[1] = getter;
                     }
                 }
@@ -144,7 +144,7 @@ namespace NiL.JS.Statements
             return res;
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VaribleDescriptor> vars)
+        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VariableDescriptor> vars)
         {
             for (int i = 0; i < values.Length; i++)
             {

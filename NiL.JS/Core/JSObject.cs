@@ -33,8 +33,9 @@ namespace NiL.JS.Core
         Immutable = 1 << 3,
         Argument = 1 << 16,
         GetValue = 1 << 17,
+        TrueEval = 1 << 18,
 #if DEBUG
-        DBGGettedOverGM = 1 << 18
+        DBGGettedOverGM = 1 << 30
 #endif
     }
 
@@ -62,7 +63,7 @@ namespace NiL.JS.Core
         [Modules.Hidden]
         internal static readonly JSObject nullString = new JSObject() { valueType = JSObjectType.String, oValue = "null", assignCallback = ErrorAssignCallback, attributes = JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum };
         [Modules.Hidden]
-        internal static readonly JSObject strictModeArgumentsPropertyDammy = new JSObject() { valueType = JSObjectType.Property, oValue = new Function[] { null, new ExternalFunction((c, a) => { throw new JSException(TypeProxy.Proxy(new TypeError("'caller', 'callee', and 'arguments' properties may not be accessed on strict mode functions or the arguments objects for calls to them"))); }) }, assignCallback = ErrorAssignCallback, attributes = JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum };
+        internal static readonly JSObject strictModeArgumentsPropertyDammy = new JSObject() { valueType = JSObjectType.Property, oValue = new Function[] { null, new ExternalFunction((t, a) => { throw new JSException(TypeProxy.Proxy(new TypeError("'caller', 'callee', and 'arguments' properties may not be accessed on strict mode functions or the arguments objects for calls to them"))); }) }, assignCallback = ErrorAssignCallback, attributes = JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum };
         [Modules.Hidden]
         internal static JSObject GlobalPrototype;
 
@@ -159,33 +160,6 @@ namespace NiL.JS.Core
             {
                 return attributes;
             }
-        }
-
-        [Modules.Hidden]
-        internal static JSObject Object(Context context, JSObject args)
-        {
-            object oVal = null;
-            if (args != null && args.GetMember("length").iValue > 0)
-                oVal = args.GetMember("0");
-            JSObject res = null;
-            if ((oVal == null) ||
-                (oVal is JSObject && (((oVal as JSObject).valueType >= JSObjectType.Object && (oVal as JSObject).oValue == null) || (oVal as JSObject).valueType <= JSObjectType.Undefined)))
-                return CreateObject();
-            else if ((oVal as JSObject).valueType >= JSObjectType.Object && (oVal as JSObject).oValue != null)
-                return oVal as JSObject;
-
-            if (context.thisBind != null && context.thisBind.valueType == JSObjectType.Object && context.thisBind.prototype != null && context.thisBind.prototype.oValue == GlobalPrototype)
-                res = context.thisBind;
-            else
-                res = CreateObject();
-
-            res.valueType = JSObjectType.Object;
-            res.oValue = oVal ?? res;
-            if (oVal is JSObject)
-                res.prototype = (oVal as JSObject).GetMember("__proto__", false, true).Clone() as JSObject;
-            else
-                res.prototype = null;
-            return res;
         }
 
         [Modules.Hidden]
@@ -377,7 +351,7 @@ namespace NiL.JS.Core
             switch (valueType)
             {
                 case JSObjectType.NotExist:
-                    throw new JSException(TypeProxy.Proxy(new ReferenceError("Varible not defined.")));
+                    throw new JSException(TypeProxy.Proxy(new ReferenceError("Variable not defined.")));
                 case JSObjectType.Undefined:
                 case JSObjectType.NotExistInObject:
                     throw new JSException(TypeProxy.Proxy(new TypeError("Can't get property \"" + name + "\" of \"undefined\".")));
@@ -461,17 +435,6 @@ namespace NiL.JS.Core
                             res = new JSObject()
                             {
                                 lastRequestedName = name,
-                                /*
-                                oValue = this,
-                                assignCallback = (sender) =>
-                                {
-                                    var owner = sender.oValue as JSObject;
-                                    sender.oValue = null;
-                                    if (owner.fields == null)
-                                        owner.fields = new Dictionary<string, JSObject>();
-                                    owner.fields[sender.lastRequestedName] = sender;
-                                    sender.assignCallback = null;
-                                },*/
                                 valueType = JSObjectType.NotExistInObject
                             };
                             if (fields == null)
@@ -485,13 +448,6 @@ namespace NiL.JS.Core
                                 var t = new JSObject();
                                 t.Assign(res);
                                 t.lastRequestedName = name;
-                                /*t.assignCallback = (sender) =>
-                                {
-                                    if (fields == null)
-                                        fields = new Dictionary<string, JSObject>();
-                                    fields[sender.lastRequestedName] = sender;
-                                    sender.assignCallback = null;
-                                };*/
                                 if (fields == null)
                                     fields = new Dictionary<string, JSObject>();
                                 fields[name] = t;
@@ -595,7 +551,7 @@ namespace NiL.JS.Core
         {
 #if DEBUG
             if ((attributes & JSObjectAttributes.DBGGettedOverGM) != 0)
-            { }
+                System.Diagnostics.Debug.Fail("(attributes & JSObjectAttributes.DBGGettedOverGM) != 0");
 #endif
             if (this.assignCallback != null)
                 this.assignCallback(this);
@@ -611,7 +567,6 @@ namespace NiL.JS.Core
                 this.dValue = value.dValue;
                 this.prototype = value.prototype;
                 this.fields = value.fields;
-                //this.attributes = this.attributes & ~(JSObjectAttributes.Immutable | JSObjectAttributes.ReadOnly) | (value.attributes & JSObjectAttributes.Immutable);
                 return;
             }
             this.fields = null;
@@ -626,6 +581,7 @@ namespace NiL.JS.Core
         {
             var res = new JSObject();
             res.Assign(this);
+            res.attributes = this.attributes;
             return res;
         }
 
@@ -814,7 +770,7 @@ namespace NiL.JS.Core
                         break;
                     }
                 case JSObjectType.NotExist:
-                    throw new InvalidOperationException("Varible not defined.");
+                    throw new InvalidOperationException("Variable not defined.");
                 default:
                     throw new NotImplementedException("Object.hasOwnProperty. Invalid Value Type");
             }
@@ -957,7 +913,7 @@ namespace NiL.JS.Core
                 case JSObjectType.NotExistInObject:
                     return false;
                 case JSObjectType.NotExist:
-                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Varible not defined.")));
+                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable not defined.")));
                 default:
                     throw new NotImplementedException();
             }

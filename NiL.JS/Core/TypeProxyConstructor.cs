@@ -45,106 +45,11 @@ namespace NiL.JS.Core
             return res;
         }
 
-        public override JSObject Invoke(Context contextOverride, JSObject args)
+        public override JSObject Invoke(JSObject thisOverride, JSObject argsObj)
         {
-            var oldContext = context;
-            context = contextOverride;
-            try
-            {
-                return Invoke(args);
-            }
-            finally
-            {
-                context = oldContext;
-            }
-        }
-
-        public override JSObject Invoke(Context contextOverride, JSObject thisOverride, JSObject args)
-        {
-            var oldContext = context;
-            if (contextOverride == null || oldContext == contextOverride)
-                return Invoke(thisOverride, args);
-            context = contextOverride;
-            try
-            {
-                return Invoke(thisOverride, args);
-            }
-            finally
-            {
-                context = oldContext;
-            }
-        }
-
-        public override JSObject Invoke(JSObject thisOverride, JSObject args)
-        {
-            if (thisOverride == null)
-                return Invoke(args);
-            var oldThis = context.thisBind;
-            try
-            {
-                context.thisBind = thisOverride;
-                return Invoke(args);
-            }
-            finally
-            {
-                context.thisBind = oldThis;
-            }
-        }
-
-        [Modules.DoNotDelete]
-        public override JSObject length
-        {
-            get
-            {
-                if (_length == null)
-                    _length = new Number(0) { attributes = JSObjectAttributes.ReadOnly | JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum };
-                if (proxy.hostedType == typeof(Function))
-                    _length.iValue = 1;
-                else
-                    _length.iValue = proxy.hostedType.GetConstructors().Last().GetParameters().Length;
-                return _length;
-            }
-        }
-
-        private MethodProxy findConstructor(JSObject argObj, ref object[] args)
-        {
-            args = null;
-            var len = argObj == null ? 0 : argObj.GetMember("length", false, false).iValue;
-            for (int i = 0; i < constructors.Length; i++)
-            {
-                if (constructors[i].Parameters.Length == len
-                    || (constructors[i].Parameters.Length == 1
-                        && (constructors[i].Parameters[0].ParameterType == typeof(JSObject) 
-                            || typeof(ICollection).IsAssignableFrom(constructors[i].Parameters[0].ParameterType))))
-                {
-                    if (len == 0)
-                        args = _objectA;
-                    else
-                    {
-                        args = constructors[i].ConvertArgs(argObj);
-                        for (var j = args.Length; j-- > 0; )
-                        {
-                            if (!constructors[i].Parameters[j].ParameterType.IsAssignableFrom(args[j] != null ? args[j].GetType() : typeof(object)))
-                            {
-                                j = 0;
-                                args = null;
-                            }
-                        }
-                        if (args == null)
-                            continue;
-                    }
-                    return constructors[i];
-                }
-            }
-            return null;
-        }
-
-        public override JSObject Invoke(JSObject argsObj)
-        {
-            context.ValidateThreadID();
             if (proxy.hostedType.ContainsGenericParameters)
                 throw new JSException(TypeProxy.Proxy(new BaseTypes.TypeError(proxy.hostedType.Name + " can't be created because it's generic type.")));
-            var _this = context.thisBind;
+            var _this = thisOverride;
             object[] args = null;
             MethodProxy constructor = findConstructor(argsObj, ref args);
             if (constructor == null)
@@ -156,7 +61,7 @@ namespace NiL.JS.Core
             }
             try
             {
-                var obj = constructor.InvokeRaw(context, null, args);
+                var obj = constructor.InvokeRaw(null, args);
                 JSObject res = null;
                 if (bynew)
                 {
@@ -190,6 +95,54 @@ namespace NiL.JS.Core
             {
                 throw e.InnerException;
             }
+        }
+
+        [Modules.DoNotDelete]
+        public override JSObject length
+        {
+            get
+            {
+                if (_length == null)
+                    _length = new Number(0) { attributes = JSObjectAttributes.ReadOnly | JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum };
+                if (proxy.hostedType == typeof(Function))
+                    _length.iValue = 1;
+                else
+                    _length.iValue = proxy.hostedType.GetConstructors().Last().GetParameters().Length;
+                return _length;
+            }
+        }
+
+        private MethodProxy findConstructor(JSObject argObj, ref object[] args)
+        {
+            args = null;
+            var len = argObj == null ? 0 : argObj.GetMember("length").iValue;
+            for (int i = 0; i < constructors.Length; i++)
+            {
+                if (constructors[i].Parameters.Length == len
+                    || (constructors[i].Parameters.Length == 1
+                        && (constructors[i].Parameters[0].ParameterType == typeof(JSObject) 
+                            || typeof(ICollection).IsAssignableFrom(constructors[i].Parameters[0].ParameterType))))
+                {
+                    if (len == 0)
+                        args = _objectA;
+                    else
+                    {
+                        args = constructors[i].ConvertArgs(argObj);
+                        for (var j = args.Length; j-- > 0; )
+                        {
+                            if (!constructors[i].Parameters[j].ParameterType.IsAssignableFrom(args[j] != null ? args[j].GetType() : typeof(object)))
+                            {
+                                j = 0;
+                                args = null;
+                            }
+                        }
+                        if (args == null)
+                            continue;
+                    }
+                    return constructors[i];
+                }
+            }
+            return null;
         }
 
         public override IEnumerator<string> GetEnumerator()

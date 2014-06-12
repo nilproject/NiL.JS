@@ -40,8 +40,8 @@ namespace NiL.JS.Statements.Operators
                 var val = Tools.RaiseIfNotExist((first ?? second).InvokeForAssing(context));
                 if (val.assignCallback != null)
                     val.assignCallback(val);
-                if ((val.attributes & JSObjectAttributes.ReadOnly) != 0)
-                    return double.NaN;
+                //if ((val.attributes & JSObjectAttributes.ReadOnly) != 0)
+                //    return double.NaN;
                 switch (val.valueType)
                 {
                     case JSObjectType.Object:

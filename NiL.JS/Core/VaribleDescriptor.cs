@@ -5,11 +5,11 @@ using NiL.JS.Statements;
 namespace NiL.JS.Core
 {
     [Serializable]
-    public sealed class VaribleDescriptor
+    public sealed class VariableDescriptor
     {
-        internal HashSet<VaribleReference> references;
+        internal readonly HashSet<VariableReference> references;
+        internal bool caching;
         private string name;
-        private Context cacheContext;
         private JSObject cacheRes;
         private Statement owner;
 
@@ -18,7 +18,7 @@ namespace NiL.JS.Core
         public Statement Inititalizator { get; internal set; }
         public string Name { get { return name; } }
 
-        public IEnumerable<VaribleReference> References
+        public IEnumerable<VariableReference> References
         {
             get
             {
@@ -29,34 +29,32 @@ namespace NiL.JS.Core
 
         internal JSObject Get(Context context, bool create)
         {
-            if (context == null)
-                throw new ArgumentNullException("context");
             context.objectSource = null;
-            if (context is WithContext)
-                return context.GetVarible(name);
-            if (cacheContext != context && (
-                cacheRes == null
-                || context.owner == owner // объявленные переменные
-                || null == owner)) // необъявленные переменные
+            if (!caching)
+                return context.GetVariable(name, create);
+            if (cacheRes == null)
             {
-                var res = context.GetVarible(name, create);
+                var res = context.GetVariable(name, create);
                 if (create && !Defined && res.valueType == JSObjectType.NotExist)
                     res.attributes = JSObjectAttributes.None;
                 if (res.valueType < JSObjectType.Undefined)
                     return res;
-                cacheContext = context;
                 return cacheRes = res;
             }
+
 #if DEBUG
-            if (create)
-                cacheRes.attributes &= ~JSObjectAttributes.DBGGettedOverGM;
             else
-                cacheRes.attributes |= JSObjectAttributes.DBGGettedOverGM;
+            {
+                if (create)
+                    cacheRes.attributes &= ~JSObjectAttributes.DBGGettedOverGM;
+                else
+                    cacheRes.attributes |= JSObjectAttributes.DBGGettedOverGM;
+            }
 #endif
             return cacheRes;
         }
 
-        internal void Add(VaribleReference reference)
+        internal void Add(VariableReference reference)
         {
             if (reference.Name != name)
                 throw new ArgumentException("Try to add reference with different name.");
@@ -68,7 +66,7 @@ namespace NiL.JS.Core
             reference.Descriptor = this;
         }
 
-        internal void Remove(VaribleReference reference)
+        internal void Remove(VariableReference reference)
         {
             if (reference.Name != name)
                 throw new ArgumentException("Try to remove reference with different name.");
@@ -80,14 +78,33 @@ namespace NiL.JS.Core
             reference.Descriptor = null;
         }
 
-        internal VaribleDescriptor(VaribleReference proto, bool defined)
+        internal void ClearCache()
         {
+            cacheRes = null;
+        }
+
+        internal VariableDescriptor(string name, bool defined)
+        {
+            this.caching = true;
+            this.name = name;
+            references = new HashSet<VariableReference>();
+            Defined = defined;
+        }
+
+        internal VariableDescriptor(VariableReference proto, bool defined)
+        {
+            this.caching = true;
             this.name = proto.Name;
             if (proto is FunctionStatement.FunctionReference)
                 Inititalizator = (proto as FunctionStatement.FunctionReference).Owner;
-            references = new HashSet<VaribleReference>();
+            references = new HashSet<VariableReference>();
             references.Add(proto);
             Defined = defined;
+        }
+
+        public override string ToString()
+        {
+            return "Name: \"" + name + "\". Reference count: " + references.Count;
         }
     }
 }

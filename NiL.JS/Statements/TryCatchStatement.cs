@@ -17,7 +17,7 @@ namespace NiL.JS.Statements
         public Statement Body { get { return body; } }
         public Statement CatchBody { get { return catchBody; } }
         public Statement FinalBody { get { return finallyBody; } }
-        public string ExceptionVaribleName { get { return exptName; } }
+        public string ExceptionVariableName { get { return exptName; } }
 
         internal static ParseResult Parse(ParsingState state, ref int index)
         {
@@ -36,7 +36,7 @@ namespace NiL.JS.Statements
             {
                 int s = i;
                 if (!Parser.ValidateName(code, ref i, state.strict.Peek()))
-                    throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Catch block must contain varible name " + Tools.PositionToTextcord(code, i))));
+                    throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Catch block must contain variable name " + Tools.PositionToTextcord(code, i))));
                 exptn = Tools.Unescape(code.Substring(s, i - s), state.strict.Peek());
                 while (char.IsWhiteSpace(code[i])) i++;
                 if (!Parser.Validate(code, ")", ref i))
@@ -92,7 +92,7 @@ namespace NiL.JS.Statements
                 {
                     if (catchBody != null)
                     {
-                        var cvar = context.DefineVarible(exptName);
+                        var cvar = context.DefineVariable(exptName);
                         tempContainer.Assign(cvar);
                         tempContainer.attributes = cvar.attributes;
                         cvar.Assign(e.Avatar);
@@ -118,7 +118,7 @@ namespace NiL.JS.Statements
                 {
                     if (catchBody != null)
                     {
-                        var cvar = context.DefineVarible(exptName);
+                        var cvar = context.DefineVariable(exptName);
                         tempContainer.Assign(cvar);
                         tempContainer.attributes = cvar.attributes;
                         cvar.Assign(TypeProxy.Proxy(e));
@@ -164,11 +164,11 @@ namespace NiL.JS.Statements
             return null;
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VaribleDescriptor> varibles)
+        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VariableDescriptor> variables)
         {
-            Parser.Optimize(ref body, 1, varibles);
-            Parser.Optimize(ref catchBody, 1, varibles);
-            Parser.Optimize(ref finallyBody, 1, varibles);
+            Parser.Optimize(ref body, 1, variables);
+            Parser.Optimize(ref catchBody, 1, variables);
+            Parser.Optimize(ref finallyBody, 1, variables);
             return false;
         }
 

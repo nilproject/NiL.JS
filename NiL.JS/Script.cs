@@ -34,8 +34,8 @@ namespace NiL.JS
             root = CodeBlock.Parse(new ParsingState(Tools.RemoveComments(code), Code), ref i).Statement;
             if (i < code.Length)
                 throw new System.ArgumentException("Invalid char");
-            Parser.Optimize(ref root, new System.Collections.Generic.Dictionary<string, VaribleDescriptor>());
-            Context = new Context(NiL.JS.Core.Context.globalContext, root);
+            Parser.Optimize(ref root, new System.Collections.Generic.Dictionary<string, VariableDescriptor>());
+            Context = new Context(NiL.JS.Core.Context.globalContext);
         }
 
         /// <summary>
@@ -47,13 +47,13 @@ namespace NiL.JS
             System.Runtime.GCSettings.LatencyMode = System.Runtime.GCLatencyMode.Interactive;
             try
             {
-                Context.ValidateThreadID();
+                Context.Run();
                 root.Invoke(Context);
             }
             finally
             {
                 System.Runtime.GCSettings.LatencyMode = lm;
-                Context.CurrentContext = null;
+                Context.Stop();
             }
         }
     }

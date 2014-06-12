@@ -41,8 +41,8 @@ namespace NiL.JS.Statements.Operators
                 var val = (first ?? second).InvokeForAssing(context);
                 if (val.assignCallback != null)
                     val.assignCallback(val);
-                if ((val.attributes & JSObjectAttributes.ReadOnly) != 0)
-                    return double.NaN;
+                //if ((val.attributes & JSObjectAttributes.ReadOnly) != 0)
+                //    return double.NaN;
                 switch (val.valueType)
                 {
                     case JSObjectType.Object:
@@ -80,7 +80,9 @@ namespace NiL.JS.Statements.Operators
                         }
                 }
                 JSObject o = null;
-                if ((second != null) && (val.valueType != JSObjectType.Undefined) && (val.valueType != JSObjectType.NotExistInObject))
+                if ((second != null) 
+                    && (val.valueType != JSObjectType.Undefined) 
+                    && (val.valueType != JSObjectType.NotExistInObject))
                 {
                     o = tempResult;
                     o.Assign(val);
@@ -119,7 +121,7 @@ namespace NiL.JS.Statements.Operators
             }
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VaribleDescriptor> vars)
+        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VariableDescriptor> vars)
         {
             base.Optimize(ref _this, depth, vars);
             if (depth <= 1 && second != null)

@@ -9,12 +9,12 @@ namespace NiL.JS.Statements
     [Serializable]
     public sealed class ForInStatement : Statement
     {
-        private Statement varible;
+        private Statement variable;
         private Statement source;
         private Statement body;
         private List<string> labels;
 
-        public Statement Varible { get { return varible; } }
+        public Statement Variable { get { return variable; } }
         public Statement Source { get { return source; } }
         public Statement Body { get { return body; } }
         public string[] Labels { get { return labels.ToArray(); } }
@@ -44,13 +44,13 @@ namespace NiL.JS.Statements
                 if (!Parser.ValidateName(code, ref i, state.strict.Peek()))
                     throw new ArgumentException();
                 varName = Tools.Unescape(code.Substring(start, i - start), state.strict.Peek());
-                res.varible = new VaribleDefineStatement(varName, new GetVaribleStatement(varName));
+                res.variable = new VariableDefineStatement(varName, new GetVariableStatement(varName));
             }
             else
             {
                 if (code[i] == ';')
                     return new ParseResult();
-                res.varible = OperatorStatement.Parse(state, ref i, true, true).Statement;
+                res.variable = OperatorStatement.Parse(state, ref i, true, true).Statement;
             }
             while (char.IsWhiteSpace(code[i])) i++;
             if (!Parser.Validate(code, "in", ref i))
@@ -82,7 +82,7 @@ namespace NiL.JS.Statements
         {
             JSObject res = JSObject.undefined;
             var s = Tools.RaiseIfNotExist(source.Invoke(context));
-            var v = varible.InvokeForAssing(context);
+            var v = variable.InvokeForAssing(context);
             int index = 0;
             while (s != null)
             {
@@ -132,32 +132,32 @@ namespace NiL.JS.Statements
             var res = new List<Statement>()
             {
                 body,
-                varible,
+                variable,
                 source
             };
             res.RemoveAll(x => x == null);
             return res.ToArray();
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VaribleDescriptor> varibles)
+        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VariableDescriptor> variables)
         {
-            Parser.Optimize(ref varible, 1, varibles);
-            if (varible is VaribleDefineStatement)
-                varible = (varible as VaribleDefineStatement).initializators[0];
-            Parser.Optimize(ref source, 1, varibles);
-            Parser.Optimize(ref body, System.Math.Max(1, depth), varibles);
-            if (varible is Operators.None)
+            Parser.Optimize(ref variable, 1, variables);
+            if (variable is VariableDefineStatement)
+                variable = (variable as VariableDefineStatement).initializators[0];
+            Parser.Optimize(ref source, 1, variables);
+            Parser.Optimize(ref body, System.Math.Max(1, depth), variables);
+            if (variable is Operators.None)
             {
-                if ((varible as Operators.None).SecondOperand != null)
+                if ((variable as Operators.None).SecondOperand != null)
                     throw new InvalidOperationException("Invalid left-hand side in for-in");
-                varible = (varible as Operators.None).FirstOperand;
+                variable = (variable as Operators.None).FirstOperand;
             }
             return false;
         }
 
         public override string ToString()
         {
-            return "for (" + varible + " in " + source + ")" + (body is CodeBlock ? "" : Environment.NewLine + "  ") + body;
+            return "for (" + variable + " in " + source + ")" + (body is CodeBlock ? "" : Environment.NewLine + "  ") + body;
         }
     }
 }
