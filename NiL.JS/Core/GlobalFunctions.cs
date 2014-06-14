@@ -41,6 +41,9 @@ namespace NiL.JS.Core
                 switch (r.valueType)
                 {
                     case JSObjectType.Bool:
+                        {
+                            return double.NaN;
+                        }
                     case JSObjectType.Int:
                         {
                             return r.iValue;
@@ -56,6 +59,8 @@ namespace NiL.JS.Core
                             double dres = 0;
                             int ix = 0;
                             string s = (r.oValue as string).Trim();
+                            if (s == "")
+                                return double.NaN;
                             if (!Tools.ParseNumber(s, ref ix, out dres, Tools.JSObjectToInt(x.GetMember("1")), true))
                                 return 0;
                             if (double.IsNaN(dres) || double.IsInfinity(dres))

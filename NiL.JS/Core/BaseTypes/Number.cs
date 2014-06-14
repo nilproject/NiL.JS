@@ -72,14 +72,14 @@ namespace NiL.JS.Core.BaseTypes
         [Modules.DoNotEnumerate]
         public Number(string value)
         {
+            value = value.Trim();
             valueType = JSObjectType.Int;
             assignCallback = JSObject.ErrorAssignCallback;
-            dValue = double.NaN;
+            dValue = value.Length != 0 ? double.NaN : 0;
             valueType = JSObjectType.Double;
             double d = 0;
             int i = 0;
-            value = value.Trim();
-            if (Tools.ParseNumber(value, ref i, out d, 0, !Context.CurrentContext.strict) && i == value.Length)
+            if (value.Length != 0 && Tools.ParseNumber(value, ref i, out d, 0, !Context.CurrentContext.strict) && i == value.Length)
                 dValue = d;
         }
 

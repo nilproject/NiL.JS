@@ -272,10 +272,10 @@ namespace NiL.JS.Core
                 throw new ArgumentNullException("code");
             value = double.NaN;
             if (radix != 0 && (radix < 2 || radix > 36))
-                return true;
+                return false;
             if (code.Length == 0)
             {
-                value = double.NaN;
+                value = 0;
                 return true;
             }
             int i = index;
@@ -284,6 +284,18 @@ namespace NiL.JS.Core
             {
                 value = 0.0;
                 return true;
+            }
+            const string nan = "NaN";
+            for (int j = i; ((j - i) < nan.Length) && (j < code.Length); j++)
+            {
+                if (code[j] != nan[j - i])
+                    break;
+                else if (j > i && code[j] == 'n')
+                {
+                    index = j + 1;
+                    value = double.NaN;
+                    return true;
+                }
             }
             int sig = 1;
             if (code[i] == '-' || code[i] == '+')
