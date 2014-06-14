@@ -644,6 +644,23 @@ namespace NiL.JS.Core.BaseTypes
                 throw new ArgumentException("Parameters count must be no more 16.");
         }
 
+        private static readonly FunctionStatement creatorDummy = new FunctionStatement("anonymous");
+        private static readonly Function TTEProxy = new MethodProxy(typeof(Function).GetMethod("ThrowTypeError", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic)) { attributes = JSObjectAttributes.DoNotDelete | JSObjectAttributes.Immutable | JSObjectAttributes.DoNotEnum | JSObjectAttributes.ReadOnly };
+        private static void ThrowTypeError()
+        {
+            throw new JSException(new TypeError("Properties caller and arguments not allowed in strict mode."));
+        }
+        private static readonly JSObject propertiesDummySM = new JSObject()
+        {
+            valueType = JSObjectType.Property,
+            oValue = new Function[2] 
+            { 
+                TTEProxy,
+                TTEProxy
+            },
+            attributes = JSObjectAttributes.DoNotDelete | JSObjectAttributes.Immutable | JSObjectAttributes.DoNotEnum | JSObjectAttributes.ReadOnly
+        };
+
         private readonly FunctionStatement creator;
         [Hidden]
         [CLSCompliant(false)]
@@ -669,29 +686,36 @@ namespace NiL.JS.Core.BaseTypes
             get { return creator.type; }
         }
 
+        [Hidden]
+        public virtual bool IsRecursive
+        {
+            [Hidden]
+            get { return creator.recursive; }
+        }
+
         #region Runtime
         [Hidden]
         private JSObject _arguments;
         /// <summary>
         /// Объект, содержащий параметры вызова функции либо null если в данный момент функция не выполняется.
         /// </summary>
+        [DoNotDelete]
         [DoNotEnumerate]
         public JSObject arguments
         {
-            [Modules.Hidden]
-            get
-            {
-                return _arguments;
-            }
+            [Hidden]
+            get { if (creator.body.strict) throw new JSException(new TypeError("Property arguments not allowed in strict mode.")); return _arguments; }
+            [Hidden]
+            set { if (creator.body.strict) throw new JSException(new TypeError("Property arguments not allowed in strict mode.")); }
         }
 
         [Hidden]
         internal Number _length = null;
-        [Modules.DoNotEnumerate]
-        [Modules.DoNotDelete]
+        [DoNotDelete]
+        [DoNotEnumerate]
         public virtual JSObject length
         {
-            [Modules.Hidden]
+            [Hidden]
             get
             {
                 if (_length == null)
@@ -702,15 +726,28 @@ namespace NiL.JS.Core.BaseTypes
                 return _length;
             }
         }
+
+        internal JSObject _caller;
+        [DoNotDelete]
+        [DoNotEnumerate]
+        public JSObject caller
+        {
+            [Hidden]
+            get { if (creator.body.strict) throw new JSException(new TypeError("Property caller not allowed in strict mode.")); return _caller; }
+            [Hidden]
+            set { if (creator.body.strict) throw new JSException(new TypeError("Property caller not allowed in strict mode.")); }
+        }
         #endregion
 
+        [DoNotEnumerate]
         public Function()
         {
             attributes = JSObjectAttributes.ReadOnly | JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum;
-            creator = new FunctionStatement("anonymous") { type = FunctionType.AnonymousFunction };
+            creator = creatorDummy;
             valueType = JSObjectType.Function;
         }
 
+        [DoNotEnumerate]
         public Function(JSObject[] args)
         {
             attributes = JSObjectAttributes.ReadOnly | JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum;
@@ -745,10 +782,10 @@ namespace NiL.JS.Core.BaseTypes
         public virtual JSObject Invoke(JSObject thisBind, JSObject args)
         {
             var oldargs = _arguments;
-            Context internalContext = new Context(context);
+            Context internalContext = new Context(context, this);
+            var body = creator.body;
             try
             {
-                var body = creator.body;
                 if (creator.type == FunctionType.AnonymousFunction)
                     internalContext.thisBind = thisBind ?? (body.strict ? undefined : Context.CurrentContext.Root.GetVariable("this"));
                 else if (!body.strict)
@@ -782,8 +819,8 @@ namespace NiL.JS.Core.BaseTypes
                 if (body.strict)
                 {
                     args.attributes |= JSObjectAttributes.ReadOnly;
-                    args.fields["callee"] = strictModeUnavailablePropertDammy;
-                    args.fields["caller"] = strictModeUnavailablePropertDammy;
+                    args.fields["callee"] = propertiesDummySM;
+                    args.fields["caller"] = propertiesDummySM;
                 }
                 else
                 {
@@ -792,7 +829,7 @@ namespace NiL.JS.Core.BaseTypes
                     callee.attributes = JSObjectAttributes.DoNotEnum;
                 }
                 internalContext.fields["arguments"] = args;
-                if (creator.type == FunctionType.Function && creator.name != null && Parser.ValidateName(creator.name))
+                if (creator.type == FunctionType.Function && !string.IsNullOrEmpty(creator.name))
                     internalContext.fields[creator.name] = this;
                 int i = 0;
                 JSObject argsLength = args.GetMember("length");
@@ -838,6 +875,16 @@ namespace NiL.JS.Core.BaseTypes
             }
             finally
             {
+                if (oldargs != null)
+                {
+                    creator.recursive = true;
+                    for (var i = body.variables.Length; i-- > 0; )
+                    {
+                        if (body.variables[i].Owner == creator
+                            || body.variables[i].Owner == body)
+                            body.variables[i].ClearCache();
+                    }
+                }
                 internalContext.Deactivate();
                 _arguments = oldargs;
             }
@@ -849,10 +896,11 @@ namespace NiL.JS.Core.BaseTypes
             return Invoke(undefined, args);
         }
 
-
         [Hidden]
         internal protected override JSObject GetMember(string name, bool create, bool own)
         {
+            if (creator.body.strict && (name == "caller" || name == "arguments"))
+                return propertiesDummySM;
             if (name == "prototype")
             {
                 if (prototypeField == null)
@@ -886,6 +934,7 @@ namespace NiL.JS.Core.BaseTypes
             return res;
         }
 
+        [DoNotEnumerate]
         public virtual JSObject call(JSObject args)
         {
             var newThis = args.GetMember("0");
@@ -899,6 +948,7 @@ namespace NiL.JS.Core.BaseTypes
             return Invoke(newThis, args);
         }
 
+        [DoNotEnumerate]
         public virtual JSObject apply(JSObject args)
         {
             var newThis = args.GetMember("0");
@@ -930,17 +980,13 @@ namespace NiL.JS.Core.BaseTypes
             return Invoke(newThis, args);
         }
 
+        [DoNotEnumerate]
         public virtual JSObject bind(JSObject[] args)
         {
             var newThis = args.Length > 0 ? args[0] : null;
-            var strict = creator.body.strict || Context.CurrentContext.strict;
+            var strict = (creator != null && creator.body != null && creator.body.strict) || Context.CurrentContext.strict;
             if ((newThis != null && newThis.valueType > JSObjectType.Undefined) || strict)
-            {
-                return new ExternalFunction((context, bargs) =>
-                {
-                    return Invoke(newThis, bargs);
-                });
-            }
+                return new BindedFunction(newThis, this);
             return this;
         }
 

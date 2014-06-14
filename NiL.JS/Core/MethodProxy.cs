@@ -7,24 +7,66 @@ using System.Runtime.Serialization;
 using System.Collections.Generic;
 using System.Collections;
 using System.Globalization;
+using NiL.JS.Core.Modules;
 
 namespace NiL.JS.Core
 {
     [Serializable]
     public class MethodProxy : Function
     {
+        private enum CallMode
+        {
+            Default = 0,
+            FuncDynamicOne,
+            FuncDynamicOneArray,
+            FuncDynamicOneRaw,
+            FuncDynamicZero,
+            FuncStaticOne,
+            FuncStaticOneArray,
+            FuncStaticOneRaw,
+            FuncStaticZero,
+        }
+
         private object hardTarget = null;
         private MethodBase info;
-        private int mode;
-        private Func<object, object, object> dynamicDelegate = null;
-        private Func<object, object> staticDelegate = null;
+        private CallMode mode;
+        private Func<object> delegateF0 = null;
+        private Func<object, object> delegateF1 = null;
+        private Func<object, object, object> delegateF2 = null;
+        //private Action delegateA0 = null;
+        //private Action<object> delegateA1 = null;
+        //private Action<object, object> delegateA2 = null;
         private Modules.ConvertValueAttribute converter;
         private Modules.ConvertValueAttribute[] paramsConverters;
         private ParameterInfo[] parameters;
 
-        [Modules.Hidden]
+        [Hidden]
+        public override bool IsRecursive
+        {
+            get
+            {
+                return false;
+            }
+        }
+        [Hidden]
+        public override FunctionType Type
+        {
+            get
+            {
+                return FunctionType.Function;
+            }
+        }
+        [Hidden]
+        public override string Name
+        {
+            get
+            {
+                return info.Name;
+            }
+        }
+        [Hidden]
         public MethodBase Method { get { return info; } }
-        [Modules.Hidden]
+        [Hidden]
         public ParameterInfo[] Parameters { get { return parameters; } }
 
         public MethodProxy(MethodBase methodinfo, Modules.ConvertValueAttribute converter, Modules.ConvertValueAttribute[] paramsConverters)
@@ -60,60 +102,73 @@ namespace NiL.JS.Core
                         paramsConverters[i] = t;
                     }
                 }
-                if (!retType.IsValueType
-                    && parameters.Length == 1)
+                if (!retType.IsValueType)
                 {
-                    if (methodinfo.IsStatic)
+                    switch (parameters.Length)
                     {
-
-                        if (parameters[0].ParameterType == typeof(JSObject[]))
-                        {
-                            this.staticDelegate = Activator.CreateInstance(
-                                typeof(Func<object, object>), null, info.MethodHandle.GetFunctionPointer()) as Func<object, object>;
-                            mode = 1;
-                        }
-                        else if (parameters[0].ParameterType == typeof(JSObject))
-                        {
-                            this.staticDelegate = Activator.CreateInstance(
-                                typeof(Func<object, object>), null, info.MethodHandle.GetFunctionPointer()) as Func<object, object>;
-                            mode = 3;
-                        }
-                        else if (typeof(object).IsAssignableFrom(parameters[0].ParameterType))
-                        {
-                            this.staticDelegate = Activator.CreateInstance(
-                                typeof(Func<object, object>), null, info.MethodHandle.GetFunctionPointer()) as Func<object, object>;
-                            mode = 5;
-                        }
-                    }
-                    else
-                    {
-                        if (parameters[0].ParameterType == typeof(JSObject[]))
-                        {
-                            this.dynamicDelegate = Activator.CreateInstance(
-                                typeof(Func<object, object, object>), null, info.MethodHandle.GetFunctionPointer()) as Func<object, object, object>;
-                            mode = 2;
-                        }
-                        else if (parameters[0].ParameterType == typeof(JSObject))
-                        {
-                            this.dynamicDelegate = Activator.CreateInstance(
-                                typeof(Func<object, object, object>), null, info.MethodHandle.GetFunctionPointer()) as Func<object, object, object>;
-                            mode = 4;
-                        }
-                        else if (typeof(object).IsAssignableFrom(parameters[0].ParameterType))
-                        {
-                            this.dynamicDelegate = Activator.CreateInstance(
-                                typeof(Func<object, object, object>), null, info.MethodHandle.GetFunctionPointer()) as Func<object, object, object>;
-                            mode = 6;
-                        }
+                        case 0:
+                            {
+                                if (methodinfo.IsStatic)
+                                {
+                                    this.delegateF0 = Activator.CreateInstance(typeof(Func<object>), null, info.MethodHandle.GetFunctionPointer()) as Func<object>;
+                                    mode = CallMode.FuncStaticZero;
+                                }
+                                else
+                                {
+                                    this.delegateF1 = Activator.CreateInstance(typeof(Func<object, object>), null, info.MethodHandle.GetFunctionPointer()) as Func<object, object>;
+                                    mode = CallMode.FuncDynamicZero;
+                                }
+                                break;
+                            }
+                        case 1:
+                            {
+                                if (methodinfo.IsStatic)
+                                {
+                                    if (parameters[0].ParameterType == typeof(JSObject[]))
+                                    {
+                                        this.delegateF1 = Activator.CreateInstance(typeof(Func<object, object>), null, info.MethodHandle.GetFunctionPointer()) as Func<object, object>;
+                                        mode = CallMode.FuncStaticOneArray;
+                                    }
+                                    else if (parameters[0].ParameterType == typeof(JSObject))
+                                    {
+                                        this.delegateF1 = Activator.CreateInstance(typeof(Func<object, object>), null, info.MethodHandle.GetFunctionPointer()) as Func<object, object>;
+                                        mode = CallMode.FuncStaticOneRaw;
+                                    }
+                                    else if (typeof(object).IsAssignableFrom(parameters[0].ParameterType))
+                                    {
+                                        this.delegateF1 = Activator.CreateInstance(typeof(Func<object, object>), null, info.MethodHandle.GetFunctionPointer()) as Func<object, object>;
+                                        mode = CallMode.FuncStaticOne;
+                                    }
+                                }
+                                else
+                                {
+                                    if (parameters[0].ParameterType == typeof(JSObject[]))
+                                    {
+                                        this.delegateF2 = Activator.CreateInstance(typeof(Func<object, object, object>), null, info.MethodHandle.GetFunctionPointer()) as Func<object, object, object>;
+                                        mode = CallMode.FuncDynamicOneArray;
+                                    }
+                                    else if (parameters[0].ParameterType == typeof(JSObject))
+                                    {
+                                        this.delegateF2 = Activator.CreateInstance(typeof(Func<object, object, object>), null, info.MethodHandle.GetFunctionPointer()) as Func<object, object, object>;
+                                        mode = CallMode.FuncDynamicOneRaw;
+                                    }
+                                    else if (typeof(object).IsAssignableFrom(parameters[0].ParameterType))
+                                    {
+                                        this.delegateF2 = Activator.CreateInstance(typeof(Func<object, object, object>), null, info.MethodHandle.GetFunctionPointer()) as Func<object, object, object>;
+                                        mode = CallMode.FuncDynamicOne;
+                                    }
+                                }
+                                break;
+                            }
                     }
                 }
             }
             else if (info is ConstructorInfo)
             {
-
+                // TODO.
             }
             else
-                throw new ArgumentException("methodinfo");            
+                throw new ArgumentException("methodinfo");
         }
 
         private static object[] convertArray(NiL.JS.Core.BaseTypes.Array array)
@@ -274,7 +329,7 @@ namespace NiL.JS.Core
         [Modules.DoNotDelete]
         public override JSObject length
         {
-            [Modules.Hidden]
+            [Hidden]
             get
             {
                 if (_length == null)
@@ -288,7 +343,7 @@ namespace NiL.JS.Core
             }
         }
 
-        [Modules.Hidden]
+        [Hidden]
         internal object InvokeImpl(JSObject thisBind, object[] args, JSObject argsSource)
         {
             try
@@ -296,34 +351,44 @@ namespace NiL.JS.Core
                 object res = null;
                 switch (mode)
                 {
-                    case 1:
+                    case CallMode.FuncDynamicZero:
                         {
-                            res = staticDelegate(args ?? argumentsToArray(argsSource));
+                            res = delegateF1(hardTarget ?? getTargetObject(thisBind ?? JSObject.Null, info.DeclaringType, false));
                             break;
                         }
-                    case 2:
+                    case CallMode.FuncStaticZero:
                         {
-                            res = dynamicDelegate(hardTarget ?? getTargetObject(thisBind ?? JSObject.Null, info.DeclaringType, false), args ?? argumentsToArray(argsSource));
+                            res = delegateF0();
                             break;
                         }
-                    case 3:
+                    case CallMode.FuncStaticOneArray:
                         {
-                            res = staticDelegate(argsSource);
+                            res = delegateF1(args ?? argumentsToArray(argsSource));
                             break;
                         }
-                    case 4:
+                    case CallMode.FuncDynamicOneArray:
                         {
-                            res = dynamicDelegate(hardTarget ?? getTargetObject(thisBind ?? JSObject.Null, info.DeclaringType, false), argsSource);
+                            res = delegateF2(hardTarget ?? getTargetObject(thisBind ?? JSObject.Null, info.DeclaringType, false), args ?? argumentsToArray(argsSource));
                             break;
                         }
-                    case 5:
+                    case CallMode.FuncStaticOneRaw:
                         {
-                            res = staticDelegate((args ?? ConvertArgs(argsSource))[0]);
+                            res = delegateF1(argsSource);
                             break;
                         }
-                    case 6:
+                    case CallMode.FuncDynamicOneRaw:
                         {
-                            res = dynamicDelegate(hardTarget ?? getTargetObject(thisBind ?? JSObject.Null, info.DeclaringType, false), (args ?? ConvertArgs(argsSource))[0]);
+                            res = delegateF2(hardTarget ?? getTargetObject(thisBind ?? JSObject.Null, info.DeclaringType, false), argsSource);
+                            break;
+                        }
+                    case CallMode.FuncStaticOne:
+                        {
+                            res = delegateF1((args ?? ConvertArgs(argsSource))[0]);
+                            break;
+                        }
+                    case CallMode.FuncDynamicOne:
+                        {
+                            res = delegateF2(hardTarget ?? getTargetObject(thisBind ?? JSObject.Null, info.DeclaringType, false), (args ?? ConvertArgs(argsSource))[0]);
                             break;
                         }
                     default:
@@ -396,13 +461,13 @@ namespace NiL.JS.Core
             }
         }
 
-        [Modules.Hidden]
+        [Hidden]
         public override JSObject Invoke(JSObject thisBind, JSObject args)
         {
             return TypeProxy.Proxy(InvokeImpl(thisBind, null, args));
         }
 
-        [Modules.Hidden]
+        [Hidden]
         internal protected override JSObject GetMember(string name, bool create, bool own)
         {
             if (prototype == null)

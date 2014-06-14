@@ -22,7 +22,7 @@ namespace NiL.JS.Core
         }
 
         public JSException(JSObject avatar, Exception innerException)
-            :base("", innerException)
+            : base("", innerException)
         {
             Avatar = avatar;
         }
@@ -31,18 +31,19 @@ namespace NiL.JS.Core
         {
             get
             {
-                var name = "Error";
-                var n = Avatar.GetMember("name");
-                if (n.valueType == JSObjectType.Property)
-                    name = (n.oValue as BaseTypes.Function[])[1].Invoke(Avatar, null).ToString();
-                else
-                    name = n.ToString();
+                if (Avatar.oValue is Error)
+                {
+                    var n = Avatar.GetMember("name");
+                    if (n.valueType == JSObjectType.Property)
+                        n = (n.oValue as BaseTypes.Function[])[1].Invoke(Avatar, null).ToString();
 
-                var m = Avatar.GetMember("message");
-                if (m.valueType == JSObjectType.Property)
-                    return name + ": " + (m.oValue as BaseTypes.Function[])[1].Invoke(Avatar, null).ToString();
-                else
-                    return name + ": " + m.ToString();
+                    var m = Avatar.GetMember("message");
+                    if (m.valueType == JSObjectType.Property)
+                        return n + ": " + (m.oValue as BaseTypes.Function[])[1].Invoke(Avatar, null).ToString();
+                    else
+                        return n + ": " + m.ToString();
+                }
+                else return Avatar.ToString();
             }
         }
     }

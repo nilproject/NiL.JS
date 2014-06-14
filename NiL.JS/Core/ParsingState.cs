@@ -7,7 +7,7 @@ namespace NiL.JS.Core
         public int AllowBreak;
         public int AllowContinue;
         public int AllowReturn;
-        public bool InExpression;
+        public int InExpression;
         public List<string> Labels;
         public readonly Stack<bool> strict;
         public int LabelCount;

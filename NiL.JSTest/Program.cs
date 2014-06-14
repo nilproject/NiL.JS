@@ -49,7 +49,10 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * i + 3 - 2 / 2; }
             sw.Start();
             var s = new Script(sr.ReadToEnd());
             sw.Stop();
+            sr.Dispose();
+            f.Dispose();
             Console.WriteLine("Compile time: " + sw.Elapsed);
+            Context.GlobalContext.AttachModule(typeof(Test262Error));
             s.Context.DefineVariable("fnExists").Assign(new ExternalFunction((t, x) =>
             {
                 return x["0"].ValueType >= JSObjectType.Undefined;
@@ -60,30 +63,46 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * i + 3 - 2 / 2; }
             }));
             s.Context.DefineVariable("$ERROR").Assign(new ExternalFunction((t, x) =>
             {
-                Console.WriteLine("ERROR: " + x.GetMember("0").Value);
-                return null;
+                throw new Test262Error(x.GetMember("0").Value.ToString());
             }));
             s.Context.DefineVariable("ERROR").Assign(new ExternalFunction((t, x) =>
             {
-                Console.WriteLine("ERROR: " + x.GetMember("0").Value);
+                throw new Test262Error(x.GetMember("0").Value.ToString());
+            }));
+            s.Context.DefineVariable("PRINT").Assign(new ExternalFunction((t, x) =>
+            {
                 return null;
             }));
             s.Context.DefineVariable("$PRINT").Assign(new ExternalFunction((t, x) =>
             {
-                Console.WriteLine("PRINT: " + x.GetMember("0").Value);
                 return null;
             }));
             s.Context.DefineVariable("$FAIL").Assign(new ExternalFunction((t, x) =>
             {
-                Console.WriteLine("FAIL: " + x.GetMember("0").Value);
-                return null;
+                throw new Test262Error(x.GetMember("0").Value.ToString());
             }));
             Console.WriteLine("-------------------------------------");
             s.Invoke();
-            sr.Dispose();
-            f.Dispose();
             Console.WriteLine("-------------------------------------");
             Console.WriteLine("Complite.");
+        }
+
+        private sealed class Test262Error : Exception
+        {
+            private string message;
+
+            public override string Message
+            {
+                get
+                {
+                    return message;
+                }
+            }
+
+            public Test262Error(string message)
+            {
+                this.message = message;
+            }
         }
 
         private static void sputnicTests(string folderPath = "tests\\")
@@ -108,12 +127,13 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * i + 3 - 2 / 2; }
                 {
                     Console.Write("Processing file \"" + fls[i] + "\" ");
                     Context.RefreshGlobalContext();
+                    Context.GlobalContext.AttachModule(typeof(Test262Error));
                     var f = new FileStream(fls[i], FileMode.Open, FileAccess.Read);
                     var sr = new StreamReader(f);
                     code = sr.ReadToEnd() + "\nfunction runTestCase(a){ if (!a()) ERROR('Test failed') };";
+                    sr.Dispose();
+                    f.Dispose();
                     negative = code.IndexOf("@negative") != -1;
-                    if (negative)
-                        pass = false;
                     var s = new Script(code);
                     s.Context.DefineVariable("fnExists").Assign(new ExternalFunction((t, x) =>
                     {
@@ -125,54 +145,48 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * i + 3 - 2 / 2; }
                     }));
                     s.Context.DefineVariable("$ERROR").Assign(new ExternalFunction((t, x) =>
                     {
-                        Console.WriteLine("ERROR: " + x.GetMember("0").Value);
-                        pass = false;
-                        return null;
+                        throw new Test262Error(x.GetMember("0").Value.ToString());
                     }));
                     s.Context.DefineVariable("ERROR").Assign(new ExternalFunction((t, x) =>
                     {
-                        Console.WriteLine("ERROR: " + x.GetMember("0").Value);
-                        pass = false;
-                        return null;
+                        throw new Test262Error(x.GetMember("0").Value.ToString());
                     }));
                     s.Context.DefineVariable("PRINT").Assign(new ExternalFunction((t, x) =>
                     {
-                        Console.WriteLine("PRINT: " + x.GetMember("0").Value);
                         return null;
                     }));
                     s.Context.DefineVariable("$PRINT").Assign(new ExternalFunction((t, x) =>
                     {
-                        Console.WriteLine("PRINT: " + x.GetMember("0").Value);
                         return null;
                     }));
                     s.Context.DefineVariable("$FAIL").Assign(new ExternalFunction((t, x) =>
                     {
-                        Console.WriteLine("FAIL: " + x.GetMember("0").Value);
-                        pass = false;
-                        return null;
+                        throw new Test262Error(x.GetMember("0").Value.ToString());
                     }));
-                    s.Invoke();
-                    sr.Dispose();
-                    f.Dispose();
+                    try
+                    {
+                        s.Invoke();
+                    }
+                    finally
+                    {
+                        pass ^= negative;
+                    }
                 }
-                catch (NotImplementedException e)
+                catch (JSException e)
+                {
+                    pass = negative;
+                    if (!pass)
+                        Console.WriteLine(e.Message);
+                }
+                catch (Test262Error e)
+                {
+                    pass = negative;
+                    if (!pass)
+                        Console.WriteLine(e.Message);
+                }
+                catch (Exception)
                 {
                     pass = false;
-                }
-                catch (ArgumentException)
-                {
-                    pass = false;
-                }
-                catch (NullReferenceException)
-                {
-                    pass = false;
-                }
-                catch (Exception e)
-                {
-                    if (!negative)
-                        pass = false;
-                    else
-                        pass = true;
                 }
                 if (pass)
                 {

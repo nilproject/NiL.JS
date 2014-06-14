@@ -1,4 +1,5 @@
 ﻿using NiL.JS.Core.BaseTypes;
+using NiL.JS.Core.Modules;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,24 +10,31 @@ namespace NiL.JS.Core
 {
     public sealed class EvalFunction : Function
     {
+        [Hidden]
         public override string Name
         {
+            [Hidden]
             get
             {
                 return "eval";
             }
         }
 
+        [Hidden]
         public override FunctionType Type
         {
+            [Hidden]
             get
             {
                 return FunctionType.Function;
             }
         }
 
+        [DoNotDelete]
+        [DoNotEnumerate]
         public override JSObject length
         {
+            [Hidden]
             get
             {
                 return 1;
@@ -34,15 +42,17 @@ namespace NiL.JS.Core
         }
 
         public EvalFunction()
-            : base(null, null)
         {
 
         }
 
-        public override NiL.JS.Core.JSObject Invoke(NiL.JS.Core.JSObject thisOverride, NiL.JS.Core.JSObject args)
+        public override NiL.JS.Core.JSObject Invoke(NiL.JS.Core.JSObject thisBind, NiL.JS.Core.JSObject args)
         {
+            var arg = args["0"];
+            if (arg.valueType != JSObjectType.String)
+                return arg;
             if (this.lastRequestedName == "eval")
-                return Context.CurrentContext.Eval(args["0"].ToString());
+                return Context.CurrentContext.Eval(arg.ToString());
             Stack<Context> stack = new Stack<Context>();
             try
             {
@@ -59,6 +69,13 @@ namespace NiL.JS.Core
             {
                 while (stack.Count != 0) stack.Pop().Activate();
             }
+        }
+
+        protected internal override JSObject GetMember(string name, bool create, bool own)
+        {
+            if (name == "prototype")
+                return undefined;
+            return base.GetMember(name, create, own);
         }
     }
 }

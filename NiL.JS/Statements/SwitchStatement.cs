@@ -142,7 +142,7 @@ namespace NiL.JS.Statements
                     return context.abortInfo;
                 }
             }
-            return null;
+            return JSObject.undefined;
         }
 
         internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)

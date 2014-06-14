@@ -275,7 +275,7 @@ namespace NiL.JS.Core
                 return true;
             if (code.Length == 0)
             {
-                value = 0.0;
+                value = double.NaN;
                 return true;
             }
             int i = index;
@@ -479,16 +479,16 @@ namespace NiL.JS.Core
                 return true;
             }
         }
-        /*
+
 #if INLINE
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
-        public static string Unescape(string code)
-        {
-            return Unescape(code, false);
-        }
-        */
         public static string Unescape(string code, bool strict)
+        {
+            return Unescape(code, strict, true);
+        }
+
+        public static string Unescape(string code, bool strict, bool processUnknown)
         {
             if (code == null)
                 throw new ArgumentNullException("code");
@@ -566,17 +566,13 @@ namespace NiL.JS.Core
                                         ccode = ccode * 10 + (code[++i] - '0');
                                     res.Append((char)ccode);
                                 }
-                                else
-                                    res.Append(code[i]);
-                                /*
-                                if (defaultUnescape)
+                                else if (processUnknown)
                                     res.Append(code[i]);
                                 else
                                 {
                                     res.Append('\\');
                                     res.Append(code[i]);
                                 }
-                                */
                                 break;
                             }
                     }
@@ -618,8 +614,10 @@ namespace NiL.JS.Core
                         case '*':
                             {
                                 index += 2;
-                                while (code[index] != '*' || code[index + 1] != '/')
+                                while (index + 1 < code.Length && (code[index] != '*' || code[index + 1] != '/'))
                                     index++;
+                                if (index + 1 >= code.Length)
+                                    throw new JSException(new SyntaxError("Unexpected end of source."));
                                 index += 2;
                                 work = true;
                                 break;

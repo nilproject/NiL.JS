@@ -50,7 +50,7 @@ namespace NiL.JS.Core
             List<MethodProxy> ctorsL = new List<MethodProxy>(ctors.Length);
             for (int i = 0; i < ctors.Length; i++)
             {
-                if (ctors[i].GetCustomAttributes(typeof(Modules.HiddenAttribute), false).Length == 0)
+                if (ctors[i].GetCustomAttributes(typeof(HiddenAttribute), false).Length == 0)
                     ctorsL.Add(new MethodProxy(ctors[i]));
             }
             ctorsL.Sort((x, y) => x.Parameters.Length - y.Parameters.Length);
@@ -126,6 +126,7 @@ namespace NiL.JS.Core
             }
         }
 
+        [DoNotEnumerate]
         [DoNotDelete]
         public override JSObject length
         {

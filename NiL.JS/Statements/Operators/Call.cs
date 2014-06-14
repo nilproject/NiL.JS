@@ -67,7 +67,16 @@ namespace NiL.JS.Statements.Operators
             func = temp.oValue as Function;
             func.lastRequestedName = temp.lastRequestedName;
 
-            return func.Invoke(newThisBind, arguments);
+            var oldCaller = func._caller;
+            func._caller = context.caller;
+            try
+            {
+                return func.Invoke(newThisBind, arguments);
+            }
+            finally
+            {
+                func._caller = oldCaller;
+            }
         }
 
         public override string ToString()

@@ -343,7 +343,7 @@ namespace NiL.JS.Statements
             Statement first = null;
             Statement second = null;
             int s = i;
-            state.InExpression = true;
+            state.InExpression++;
             if (Parser.ValidateName(code, ref i, state.strict.Peek()) || Parser.Validate(code, "this", ref i))
             {
                 var name = Tools.Unescape(code.Substring(s, i - s), state.strict.Peek());
@@ -410,7 +410,9 @@ namespace NiL.JS.Statements
                             i++;
                             if (code[i] == '+')
                             {
-                                do i++; while (char.IsWhiteSpace(code[i]));
+                                do i++; while (i < code.Length && char.IsWhiteSpace(code[i]));
+                                if (i >= code.Length)
+                                    throw new JSException(new SyntaxError("Unexpected end of source."));
                                 first = Parse(state, ref i, true, true, false, true).Statement;
                                 if (((first as GetMemberStatement) as object ?? (first as GetVariableStatement)) == null)
                                 {
@@ -435,7 +437,9 @@ namespace NiL.JS.Statements
                             i++;
                             if (code[i] == '-')
                             {
-                                do i++; while (char.IsWhiteSpace(code[i]));
+                                do i++; while (i < code.Length && char.IsWhiteSpace(code[i]));
+                                if (i >= code.Length)
+                                    throw new JSException(new SyntaxError("Unexpected end of source."));
                                 first = Parse(state, ref i, true, true, false, true).Statement;
                                 if (((first as GetMemberStatement) as object ?? (first as GetVariableStatement)) == null)
                                 {
@@ -544,6 +548,8 @@ namespace NiL.JS.Statements
                 if (code[i] != ')')
                     throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \")\"")));
                 i++;
+                if (state.InExpression == 1 && first is FunctionStatement)
+                    first = new Operators.None(first, null) { Position = index, Length = i - index };
             }
             else
                 first = Parser.Parse(state, ref i, 2);
@@ -642,7 +648,6 @@ namespace NiL.JS.Statements
                             if (code[i] != ':')
                                 throw new ArgumentException("Invalid char in ternary operator");
                             do i++; while (char.IsWhiteSpace(code[i]));
-                            state.InExpression = true;
                             second = new ImmidateValueStatement(new JSObject() { valueType = JSObjectType.Object, oValue = sec }) { Position = position };
                             sec[1] = Parser.Parse(state, ref i, 1);
                             second.Length = i - second.Position;
@@ -1104,7 +1109,7 @@ namespace NiL.JS.Statements
             if (root)
                 res = deicstra(res as OperatorStatement) ?? res;
             index = i;
-            state.InExpression = !root;
+            state.InExpression--;
             return new ParseResult()
             {
                 Statement = res,

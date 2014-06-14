@@ -1,33 +1,13 @@
-﻿// Copyright 2009 the Sputnik authors.  All rights reserved.
+﻿/// Copyright (c) 2012 Ecma International.  All rights reserved. 
 /**
- * Changing property using "eval" statement containing "with" statement
- *
- * @path ch12/12.10/S12.10_A4_T6.js
- * @description Changing function property
- * @noStrict
+ * @path ch15/15.1/15.1.2/15.1.2.2/15.1.2.2-2-1.js
+ * @description pareseInt - 'S' is the empty string when inputString does not contain any such characters
  */
 
-this.p1 = 'a';
-var myObj = {
-    p1: function () { return 0; },
-}
-eval("with(myObj){p1=function(){return 1;}}");
 
-//////////////////////////////////////////////////////////////////////////////
-//CHECK#1
-if (myObj.p1() !== 1) {
-    $ERROR('#1: myObj.p1 === 1. Actual:  myObj.p1 ===' + myObj.p1);
+function testcase() {
+    return isNaN(parseInt("")) && parseInt("") !== parseInt("");
 }
-//
-//////////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////////
-//CHECK#3
-if (myObj.p1 === 'a') {
-    $ERROR('#2: myObj.p1 !== \'a\'');
-}
-//
-//////////////////////////////////////////////////////////////////////////////
-
+runTestCase(testcase);
 
 function runTestCase(a) { if (!a()) ERROR('Test failed') };

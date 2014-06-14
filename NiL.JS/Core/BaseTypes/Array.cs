@@ -80,13 +80,13 @@ namespace NiL.JS.Core.BaseTypes
         [Hidden]
         internal List<JSObject> data;
 
-        [Modules.DoNotEnumerateAttribute]
+        [DoNotEnumerate]
         public Array()
         {
             data = new List<JSObject>();
         }
 
-        [Modules.DoNotEnumerateAttribute]
+        [DoNotEnumerate]
         public Array(int length)
         {
             if (length < 0)
@@ -96,7 +96,7 @@ namespace NiL.JS.Core.BaseTypes
                 data.Add(null);
         }
 
-        [Modules.DoNotEnumerateAttribute]
+        [DoNotEnumerate]
         public Array(double d)
         {
             if (((long)d != d) || (d < 0) || (d > 0x7fffffff))
@@ -106,7 +106,7 @@ namespace NiL.JS.Core.BaseTypes
                 data.Add(null);
         }
 
-        [Modules.DoNotEnumerateAttribute]
+        [DoNotEnumerate]
         public Array(ICollection collection)
         {
             if (collection == null)
@@ -140,7 +140,7 @@ namespace NiL.JS.Core.BaseTypes
             if (enumerator == null)
                 throw new ArgumentNullException("enumerator");
             data = new List<JSObject>();
-            while(enumerator.MoveNext())
+            while (enumerator.MoveNext())
             {
                 var t = TypeProxy.Proxy(enumerator.Current).Clone() as JSObject;
                 t.assignCallback = null;
@@ -154,10 +154,10 @@ namespace NiL.JS.Core.BaseTypes
             data.Add(obj);
         }
 
-        [Modules.Hidden]
+        [Hidden]
         public JSObject this[int index]
         {
-            [Modules.Hidden]
+            [Hidden]
             get
             {
                 if (data.Count <= index)
@@ -166,7 +166,7 @@ namespace NiL.JS.Core.BaseTypes
                     data[index] = new Element(this, index);
                 return data[index];
             }
-            [Modules.Hidden]
+            [Hidden]
             internal set
             {
                 if (data.Capacity < index)
@@ -181,12 +181,12 @@ namespace NiL.JS.Core.BaseTypes
         [DoNotEnumerateAttribute]
         public int length
         {
-            [Modules.Hidden]
+            [Hidden]
             get
             {
                 return data.Count;
             }
-            [Modules.Hidden]
+            [Hidden]
             set
             {
                 if (data.Count > value)
@@ -201,7 +201,7 @@ namespace NiL.JS.Core.BaseTypes
             }
         }
 
-        [Modules.DoNotEnumerateAttribute]
+        [DoNotEnumerateAttribute]
         public JSObject concat(JSObject[] args)
         {
             if (args == null)
@@ -233,6 +233,7 @@ namespace NiL.JS.Core.BaseTypes
             return new Array(res);
         }
 
+        [DoNotEnumerate]
         public JSObject every(JSObject[] args)
         {
             if (args.Length < 1)
@@ -259,6 +260,7 @@ namespace NiL.JS.Core.BaseTypes
             return res;
         }
 
+        [DoNotEnumerate]
         public JSObject filter(JSObject[] args)
         {
             if (args.Length < 1)
@@ -286,6 +288,7 @@ namespace NiL.JS.Core.BaseTypes
             return res;
         }
 
+        [DoNotEnumerate]
         public JSObject forEach(JSObject[] args)
         {
             if (args.Length < 1)
@@ -311,7 +314,7 @@ namespace NiL.JS.Core.BaseTypes
             return undefined;
         }
 
-        [Modules.DoNotEnumerateAttribute]
+        [DoNotEnumerateAttribute]
         public JSObject indexOf(JSObject[] args)
         {
             if (args == null)
@@ -359,7 +362,7 @@ namespace NiL.JS.Core.BaseTypes
             return -1;
         }
 
-        [Modules.DoNotEnumerateAttribute]
+        [DoNotEnumerateAttribute]
         public static JSObject isArray(JSObject args)
         {
             if (args == null)
@@ -367,7 +370,7 @@ namespace NiL.JS.Core.BaseTypes
             return args.GetMember("0", false, true).Value is Array;
         }
 
-        [Modules.DoNotEnumerateAttribute]
+        [DoNotEnumerate]
         public JSObject join(JSObject[] separator)
         {
             if (separator == null)
@@ -387,7 +390,7 @@ namespace NiL.JS.Core.BaseTypes
             return sb.ToString();
         }
 
-        [Modules.DoNotEnumerateAttribute]
+        [DoNotEnumerate]
         public JSObject lastIndexOf(JSObject[] args)
         {
             if (args == null)
@@ -435,7 +438,7 @@ namespace NiL.JS.Core.BaseTypes
             return -1;
         }
 
-        [Modules.DoNotEnumerateAttribute]
+        [DoNotEnumerate]
         public JSObject pop()
         {
             if (data.Count == 0)
@@ -445,21 +448,21 @@ namespace NiL.JS.Core.BaseTypes
             return res;
         }
 
-        [Modules.DoNotEnumerateAttribute]
+        [DoNotEnumerate]
         public JSObject push(JSObject[] args)
         {
             data.AddRange(args);
             return this;
         }
 
-        [Modules.DoNotEnumerateAttribute]
+        [DoNotEnumerate]
         public JSObject reverse()
         {
             data.Reverse();
             return this;
         }
 
-        [Modules.DoNotEnumerateAttribute]
+        [DoNotEnumerate]
         public JSObject reduce(JSObject args)
         {
             var funco = args.GetMember("0");
@@ -494,7 +497,7 @@ namespace NiL.JS.Core.BaseTypes
             return accum;
         }
 
-        [Modules.DoNotEnumerateAttribute]
+        [DoNotEnumerate]
         public JSObject shift()
         {
             if (data.Count == 0)
@@ -504,7 +507,7 @@ namespace NiL.JS.Core.BaseTypes
             return res;
         }
 
-        [Modules.DoNotEnumerateAttribute]
+        [DoNotEnumerate]
         [ParametersCount(2)]
         public JSObject slice(JSObject[] args)
         {
@@ -601,7 +604,7 @@ namespace NiL.JS.Core.BaseTypes
             }
         }
 
-        [Modules.DoNotEnumerateAttribute]
+        [DoNotEnumerate]
         [ParametersCount(2)]
         public JSObject splice(JSObject[] args)
         {
@@ -734,12 +737,14 @@ namespace NiL.JS.Core.BaseTypes
             {
                 first.Assign(x);
                 second.Assign(y);
+                args.fields["0"] = first;
+                args.fields["1"] = second;
                 var res = Tools.JSObjectToInt(comparer.Invoke(JSObject.undefined, args));
                 return res;
             }
         }
 
-        [Modules.DoNotEnumerateAttribute]
+        [DoNotEnumerate]
         public JSObject sort(JSObject args)
         {
             if (!(((object)this) is Array)) // Да, Array sealed, но тут и не такое возможно.
@@ -759,17 +764,12 @@ namespace NiL.JS.Core.BaseTypes
             if (args == null)
                 throw new ArgumentNullException("args");
             var length = args.GetMember("length");
-            var first = args.GetMember("0", true, true);
+            var comparer = args.GetMember("0").oValue as Function;
             var len = Tools.JSObjectToInt(length);
-            Function comparer = null;
-            if (len > 0)
-                comparer = args.GetMember("0").Value as Function;
             if (comparer != null)
             {
-                var second = args.GetMember("1", true, true);
-                second.assignCallback = null;
-                first.assignCallback = null;
-                length.assignCallback = null;
+                var second = new JSObject();
+                var first = new JSObject();
                 args.fields.Clear();
                 length.iValue = 2;
                 length.valueType = JSObjectType.Int;
@@ -777,7 +777,7 @@ namespace NiL.JS.Core.BaseTypes
                 args.fields["0"] = first;
                 args.fields["1"] = second;
 
-                int undefBlockStart = data.Count;
+                /*int undefBlockStart = data.Count;
                 for (int i = 0; i < undefBlockStart; i++)
                 {
                     if (data[i] == null || data[i].valueType <= JSObjectType.Undefined)
@@ -787,26 +787,23 @@ namespace NiL.JS.Core.BaseTypes
                         data[i] = data[undefBlockStart];
                         data[undefBlockStart] = t;
                     }
-                }
+                }*/
 
-                data.Sort(0, undefBlockStart, new JSComparer(args, first, second, comparer));
+                data.Sort(new JSComparer(args, first, second, comparer));
             }
             else
-                data.Sort((JSObject l, JSObject r) =>
-                {
-                    return string.CompareOrdinal((l ?? "undefined").ToString(), (r ?? "undefined").ToString());
-                });
+                data.Sort((l, r) => string.CompareOrdinal((l ?? "undefined").ToString(), (r ?? "undefined").ToString()));
             return this;
         }
 
-        [Modules.DoNotEnumerateAttribute]
+        [DoNotEnumerate]
         public JSObject unshift(JSObject[] args)
         {
             data.InsertRange(0, args);
             return length;
         }
 
-        [Modules.Hidden]
+        [Hidden]
         public override string ToString()
         {
             if (data.Count == 0)
@@ -817,7 +814,7 @@ namespace NiL.JS.Core.BaseTypes
             return res;
         }
 
-        [Modules.DoNotEnumerateAttribute]
+        [DoNotEnumerate]
         public override JSObject toString(JSObject args)
         {
             if (this.GetType() != typeof(Array) && !this.GetType().IsSubclassOf(typeof(Array)))
@@ -836,7 +833,7 @@ namespace NiL.JS.Core.BaseTypes
             return base.valueOf();
         }
 
-        [Modules.Hidden]
+        [Hidden]
         internal protected override JSObject GetMember(string name, bool create, bool own)
         {
             int index = 0;
@@ -849,20 +846,12 @@ namespace NiL.JS.Core.BaseTypes
                     if (dindex > 0x7fffffff)
                         throw new JSException(TypeProxy.Proxy(new RangeError("Invalid array index")));
                     if (((index = (int)dindex) == dindex))
-#if DEBUG
                     {
                         var res = this[index];
-                        if (create)
-                            res.attributes &= ~JSObjectAttributes.DBGGettedOverGM;
-                        else
-                            res.attributes |= JSObjectAttributes.DBGGettedOverGM;
                         if (res.valueType == JSObjectType.NotExist)
                             res.valueType = JSObjectType.NotExistInObject;
                         return res;
                     }
-#else
-                        return this[index];
-#endif
                 }
             }
             return base.GetMember(name, create, own);

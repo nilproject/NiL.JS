@@ -12,12 +12,12 @@ namespace NiL.JS.Statements
         private Statement body;
         private Statement catchBody;
         private Statement finallyBody;
-        private string exptName;
+        private VariableDescriptor catchVariableDesc;
 
         public Statement Body { get { return body; } }
         public Statement CatchBody { get { return catchBody; } }
         public Statement FinalBody { get { return finallyBody; } }
-        public string ExceptionVariableName { get { return exptName; } }
+        public string ExceptionVariableName { get { return catchVariableDesc.Name; } }
 
         internal static ParseResult Parse(ParsingState state, ref int index)
         {
@@ -38,6 +38,11 @@ namespace NiL.JS.Statements
                 if (!Parser.ValidateName(code, ref i, state.strict.Peek()))
                     throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Catch block must contain variable name " + Tools.PositionToTextcord(code, i))));
                 exptn = Tools.Unescape(code.Substring(s, i - s), state.strict.Peek());
+                if (state.strict.Peek())
+                {
+                    if (exptn == "arguments" || exptn == "eval")
+                        throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Varible name may not be \"arguments\" or \"eval\" in strict mode at " + Tools.PositionToTextcord(code, s))));
+                }
                 while (char.IsWhiteSpace(code[i])) i++;
                 if (!Parser.Validate(code, ")", ref i))
                     throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \")\" at + " + Tools.PositionToTextcord(code, i))));
@@ -68,7 +73,7 @@ namespace NiL.JS.Statements
                     body = b,
                     catchBody = cb,
                     finallyBody = f,
-                    exptName = exptn,
+                    catchVariableDesc = new VariableDescriptor(exptn, true),
                     Position = pos,
                     Length = index - pos
                 }
@@ -82,54 +87,31 @@ namespace NiL.JS.Statements
             {
                 body.Invoke(context);
             }
-            catch (JSException e)
-            {
-#if DEV
-                if (context.debugging && catchBody != null)
-                    context.raiseDebugger(catchBody);
-#endif
-                lock (tempContainer)
-                {
-                    if (catchBody != null)
-                    {
-                        var cvar = context.DefineVariable(exptName);
-                        tempContainer.Assign(cvar);
-                        tempContainer.attributes = cvar.attributes;
-                        cvar.Assign(e.Avatar);
-                        cvar.attributes |= JSObjectAttributes.DoNotDelete;
-                        catchBody.Invoke(context);
-#if DEBUG
-                        cvar.attributes &= ~JSObjectAttributes.DBGGettedOverGM;
-#endif
-                        cvar.Assign(tempContainer);
-                        cvar.attributes = tempContainer.attributes;
-                        tempContainer.attributes = JSObjectAttributes.None;
-                    }
-                    else except = e;
-                }
-            }
             catch (Exception e)
             {
-#if DEV
-                if (context.debugging && catchBody != null)
-                    context.raiseDebugger(catchBody);
-#endif
-                lock (tempContainer)
+                if (catchBody != null)
                 {
-                    if (catchBody != null)
+#if DEV
+                    if (context.debugging)
+                        context.raiseDebugger(catchBody);
+#endif
+                    var catchContext = new Context(context, context.caller) { strict = context.strict, variables = context.variables };
+                    var cvar = catchContext.DefineVariable(catchVariableDesc.Name);
+                    catchVariableDesc.ClearCache();
+                    cvar.Assign(e is JSException ? (e as JSException).Avatar : TypeProxy.Proxy(e));
+                    try
                     {
-                        var cvar = context.DefineVariable(exptName);
-                        tempContainer.Assign(cvar);
-                        tempContainer.attributes = cvar.attributes;
-                        cvar.Assign(TypeProxy.Proxy(e));
-                        cvar.attributes |= JSObjectAttributes.DoNotDelete;
-                        catchBody.Invoke(context);
-                        cvar.Assign(tempContainer);
-                        cvar.attributes |= tempContainer.attributes;
-                        tempContainer.attributes = JSObjectAttributes.None;
+                        catchContext.Activate();
+                        catchBody.Invoke(catchContext);
                     }
-                    else except = e;
+                    finally
+                    {
+                        catchContext.Deactivate();
+                    }
+                    context.abort = catchContext.abort;
+                    context.abortInfo = catchContext.abortInfo;
                 }
+                else except = e;
             }
             finally
             {
@@ -167,7 +149,18 @@ namespace NiL.JS.Statements
         internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
             Parser.Optimize(ref body, 1, variables, strict);
-            Parser.Optimize(ref catchBody, 1, variables, strict);
+            if (catchBody != null)
+            {
+                catchVariableDesc.Owner = this;
+                VariableDescriptor ovd = null;
+                variables.TryGetValue(catchVariableDesc.Name, out ovd);
+                variables[catchVariableDesc.Name] = catchVariableDesc;
+                Parser.Optimize(ref catchBody, 1, variables, strict);
+                if (ovd != null)
+                    variables[catchVariableDesc.Name] = ovd;
+                else
+                    variables.Remove(catchVariableDesc.Name);
+            }
             Parser.Optimize(ref finallyBody, 1, variables, strict);
             return false;
         }
@@ -191,7 +184,7 @@ namespace NiL.JS.Statements
             var cbody = catchBody == null ? "" : catchBody.ToString();
             return "try" + (body is CodeBlock ? sbody : " {" + Environment.NewLine + "  " + sbody + Environment.NewLine + "}") +
                 (catchBody != null ?
-                Environment.NewLine + "catch (" + exptName + ")" +
+                Environment.NewLine + "catch (" + catchVariableDesc + ")" +
                 (catchBody is CodeBlock ? cbody : "{ " + cbody + " }") : "") +
                 (finallyBody != null ?
                 Environment.NewLine + "finally" +

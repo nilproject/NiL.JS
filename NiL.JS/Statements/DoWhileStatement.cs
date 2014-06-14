@@ -40,7 +40,9 @@ namespace NiL.JS.Statements
             state.AllowContinue--;
             if (!(body is CodeBlock) && code[i] == ';')
                 i++;
-            while (char.IsWhiteSpace(code[i])) i++;
+            while (i < code.Length && char.IsWhiteSpace(code[i])) i++;
+            if (i >= code.Length)
+                throw new JSException(new SyntaxError("Unexpected end of source."));
             if (!Parser.Validate(code, "while", ref i))
                 throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \"while\" at + " + Tools.PositionToTextcord(code, i))));
             while (char.IsWhiteSpace(code[i])) i++;

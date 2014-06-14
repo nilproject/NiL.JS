@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NiL.JS.Core.Modules;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -28,22 +29,22 @@ namespace NiL.JS.Core.BaseTypes
             }
         }
 
-        [Modules.Hidden]
+        [Hidden]
         public byte[] Data
         {
-            [Modules.Hidden]
+            [Hidden]
             get;
-            [Modules.Hidden]
+            [Hidden]
             private set;
         }
 
-        [Modules.DoNotEnumerateAttribute]
+        [DoNotEnumerate]
         public ArrayBuffer()
         {
             Data = new byte[0];
         }
 
-        [Modules.DoNotEnumerateAttribute]
+        [DoNotEnumerate]
         public ArrayBuffer(int length)
         {
             Data = new byte[length];
@@ -51,14 +52,14 @@ namespace NiL.JS.Core.BaseTypes
 
         public int byteLength
         {
-            [Modules.Hidden]
+            [Hidden]
             get
             {
                 return Data.Length;
             }
         }
 
-        [Modules.Hidden]
+        [Hidden]
         public ArrayBuffer slice(int begin, int end)
         {
             if (end < begin || begin >= Data.Length || end >= Data.Length)
@@ -69,7 +70,7 @@ namespace NiL.JS.Core.BaseTypes
             return res;
         }
 
-        [Modules.Hidden]
+        [Hidden]
         public ArrayBuffer slice(int begin)
         {
             return slice(begin, Data.Length - 1);
@@ -88,22 +89,22 @@ namespace NiL.JS.Core.BaseTypes
                 return slice(Tools.JSObjectToInt(args.GetMember("0")), Tools.JSObjectToInt(args.GetMember("1")));
         }
 
-        [Modules.Hidden]
+        [Hidden]
         public byte this[int index]
         {
-            [Modules.Hidden]
+            [Hidden]
             get
             {
                 return Data[index];
             }
-            [Modules.Hidden]
+            [Hidden]
             set
             {
                 Data[index] = value;
             }
         }
 
-        [Modules.Hidden]
+        [Hidden]
         internal protected override JSObject GetMember(string name, bool create, bool own)
         {
             int index = 0;

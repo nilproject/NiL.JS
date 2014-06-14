@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NiL.JS.Core.Modules;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,12 +7,12 @@ using System.Text;
 namespace NiL.JS.Core.BaseTypes
 {
     [Serializable]
-    [Modules.Immutable]
+    [Immutable]
     public class Boolean : EmbeddedType
     {
-        [Modules.Hidden]
+        [Hidden]
         internal static readonly Boolean True = new Boolean(true) { attributes = JSObjectAttributes.SystemConstant };
-        [Modules.Hidden]
+        [Hidden]
         internal static readonly Boolean False = new Boolean(false) { attributes = JSObjectAttributes.SystemConstant };
 
         public Boolean()

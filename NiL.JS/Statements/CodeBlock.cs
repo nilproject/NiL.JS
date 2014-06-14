@@ -64,7 +64,7 @@ namespace NiL.JS.Statements
         {
             string code = state.Code;
             int i = index;
-            bool sroot = i == 0;
+            bool sroot = i == 0 && state.AllowStrict;
             if (!sroot)
             {
                 if (code[i] != '{')
@@ -116,7 +116,11 @@ namespace NiL.JS.Statements
                         }
                     }
                     else if (code[i] == ';')
+                    {
+                        if (directives == null)
+                            break;
                         do i++; while (i < code.Length && char.IsWhiteSpace(code[i]));
+                    }
                     else break;
                 } while (true);
             }
@@ -132,7 +136,7 @@ namespace NiL.JS.Statements
                 {
                     if (state.strict.Peek() && !allowStrict)
                         throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
-                    if (string.IsNullOrEmpty((t as FunctionStatement).Name))
+                    if (state.InExpression == 0 && string.IsNullOrEmpty((t as FunctionStatement).Name))
                         throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.SyntaxError("Declarated function must have name.")));
                     if (vars == null)
                         vars = new Dictionary<string, VariableDescriptor>();

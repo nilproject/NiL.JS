@@ -365,6 +365,7 @@ namespace NiL.JS.Core
                                     }
                                 };
                             }
+                            r.attributes = JSObjectAttributes.Immutable;
                             if ((r.oValue as Function[])[0] == null)
                                 r.attributes |= JSObjectAttributes.ReadOnly;
                             break;
@@ -397,6 +398,7 @@ namespace NiL.JS.Core
                                         }
                                 };
                             }
+                            r.attributes = JSObjectAttributes.Immutable;
                             if ((r.oValue as Function[])[0] == null)
                                 r.attributes |= JSObjectAttributes.ReadOnly;
                             break;

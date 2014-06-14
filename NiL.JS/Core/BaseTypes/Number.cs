@@ -379,37 +379,37 @@ namespace NiL.JS.Core.BaseTypes
             return EmptyEnumerator;
         }
 
-        [Modules.Hidden]
+        [Hidden]
         public override string ToString()
         {
             return valueType == JSObjectType.Int ? iValue >= 0 && iValue < 16 ? Tools.NumString[iValue] : iValue.ToString(System.Globalization.CultureInfo.InvariantCulture) : Tools.DoubleToString(dValue);
         }
 
-        [Modules.Hidden]
+        [Hidden]
         public override int GetHashCode()
         {
             return valueType == JSObjectType.Int ? iValue.GetHashCode() : dValue.GetHashCode();
         }
 
-        [Modules.Hidden]
+        [Hidden]
         public static implicit operator Number(int value)
         {
             return new Number(value);
         }
 
-        [Modules.Hidden]
+        [Hidden]
         public static implicit operator Number(double value)
         {
             return new Number(value);
         }
 
-        [Modules.Hidden]
+        [Hidden]
         public static implicit operator double(Number value)
         {
             return value == null ? 0 : value.valueType == JSObjectType.Int ? value.iValue : value.dValue;
         }
 
-        [Modules.Hidden]
+        [Hidden]
         public static explicit operator int(Number value)
         {
             return value == null ? 0 : value.valueType == JSObjectType.Int ? value.iValue : (int)value.dValue;

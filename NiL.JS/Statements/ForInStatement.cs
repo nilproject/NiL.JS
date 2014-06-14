@@ -44,6 +44,11 @@ namespace NiL.JS.Statements
                 if (!Parser.ValidateName(code, ref i, state.strict.Peek()))
                     throw new ArgumentException();
                 varName = Tools.Unescape(code.Substring(start, i - start), state.strict.Peek());
+                if (state.strict.Peek())
+                {
+                    if (varName == "arguments" || varName == "eval")
+                        throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Parameters name may not be \"arguments\" or \"eval\" in strict mode at " + Tools.PositionToTextcord(code, start))));
+                }
                 res.variable = new VariableDefineStatement(varName, new GetVariableStatement(varName));
             }
             else

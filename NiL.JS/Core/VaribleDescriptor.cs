@@ -51,16 +51,6 @@ namespace NiL.JS.Core
                     return res;
                 return cacheRes = res;
             }
-
-#if DEBUG
-            else
-            {
-                if (create)
-                    cacheRes.attributes &= ~JSObjectAttributes.DBGGettedOverGM;
-                else
-                    cacheRes.attributes |= JSObjectAttributes.DBGGettedOverGM;
-            }
-#endif
             return cacheRes;
         }
 

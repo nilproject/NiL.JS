@@ -75,6 +75,7 @@ namespace NiL.JS.Statements
 
         internal VariableReference[] parameters;
         internal CodeBlock body;
+        internal bool recursive;
         internal readonly string name;
         internal FunctionType type;
 
@@ -87,7 +88,14 @@ namespace NiL.JS.Statements
         {
             Reference = new FunctionReference(this);
             parameters = new VariableReference[0];
+            body = new CodeBlock(new Statement[0], false);
             this.name = name;
+        }
+
+        internal static FunctionStatement Parse(string code)
+        {
+            int index = 0;
+            return Parse(new ParsingState(Tools.RemoveComments(code), code), ref index).Statement as FunctionStatement;
         }
 
         internal static ParseResult Parse(ParsingState state, ref int index)
@@ -126,8 +134,8 @@ namespace NiL.JS.Statements
                         break;
                     }
             }
-            bool inExp = state.InExpression;
-            state.InExpression = false;
+            var inExp = state.InExpression;
+            state.InExpression = 0;
             while (char.IsWhiteSpace(code[i])) i++;
             var parameters = new List<ParameterReference>();
             string name = null;
@@ -140,7 +148,7 @@ namespace NiL.JS.Statements
                 name = Tools.Unescape(code.Substring(nameStartPos, i - nameStartPos), state.strict.Peek());
                 while (char.IsWhiteSpace(code[i])) i++;
                 if (code[i] != '(')
-                    throw new ArgumentException("Invalid char at " + i + ": '" + code[i] + "'");
+                    throw new JSException(new SyntaxError("Unexpected char at " + Tools.PositionToTextcord(code, i)));
             }
             else if (mode != FunctionType.Function)
                 throw new ArgumentException("Getters and Setters must have name");
@@ -155,11 +163,6 @@ namespace NiL.JS.Statements
                 if (!Parser.ValidateName(code, ref i, state.strict.Peek()))
                     throw new JSException(TypeProxy.Proxy(new SyntaxError("Invalid description of function arguments at " + Tools.PositionToTextcord(code, nameStartPos))));
                 var pname = Tools.Unescape(code.Substring(n, i - n), state.strict.Peek());
-                if (state.strict.Peek())
-                {
-                    if (pname == "arguments" || pname == "eval")
-                        throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Parameters name may not be \"arguments\" or \"eval\" in strict mode at " + Tools.PositionToTextcord(code, n))));
-                }
                 parameters.Add(new ParameterReference(pname) { Position = n, Length = i - n });
                 while (char.IsWhiteSpace(code[i])) i++;
             }
@@ -198,15 +201,30 @@ namespace NiL.JS.Statements
                 state.Labels = labels;
                 state.AllowReturn--;
             }
-            if (body.strict && !state.strict.Peek())
+            if (body.strict)
             {
-                for (int j = parameters.Count; j-->0; )
+                for (var j = parameters.Count; j-- > 1; )
+                    for (var k = j; k-- > 0; )
+                        if (parameters[j].Name == parameters[k].Name)
+                            throw new JSException(new SyntaxError("Duplicate names of function parameters not allowed in strict mode."));
+                if (name == "arguments" || name == "eval")
+                    throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Functions name may not be \"arguments\" or \"eval\" in strict mode at " + Tools.PositionToTextcord(code, index))));
+                for (int j = parameters.Count; j-- > 0; )
                 {
                     if (parameters[j].Name == "arguments" || parameters[j].Name == "eval")
                         throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Parameters name may not be \"arguments\" or \"eval\" in strict mode at " + Tools.PositionToTextcord(code, index))));
                 }
             }
-            if (!inExp)
+            if (inExp == 0) // Позволяет делать вызов сразу при объявлении функции 
+            // (в таком случае функция не добавляется в контекст).
+            // Если убрать проверку, то в тех сулчаях,
+            // когда определение и вызов стоят внутри выражения,
+            // будет выдано исключение, потому,
+            // что тогда это уже не определение и вызов функции,
+            // а часть выражения, которые не могут начинаться со слова "function".
+            // За красивыми словами "может/не может" кроется другая хрень: если бы это было выражение, 
+            // то прямо тут надо было бы разбирать тот оператор, который стоит после определения функции,
+            // что не разумно
             {
                 var tindex = i;
                 while (i < code.Length && char.IsWhiteSpace(code[i]) && !Tools.isLineTerminator(code[i])) i++;
@@ -303,8 +321,25 @@ namespace NiL.JS.Statements
             var nvars = new Dictionary<string, VariableDescriptor>();
             for (var i = 0; i < parameters.Length; i++)
                 nvars[parameters[i].Name] = parameters[i].Descriptor;
+            VariableDescriptor fdesc = null;
+            int funcRefs = 0;
+            if (type == FunctionType.Function && !string.IsNullOrEmpty(name))
+            {
+                if (!variables.TryGetValue(name, out fdesc) // Если там не определена
+                    || !fdesc.references.Contains(Reference)) // или определена, но не эта. Для примера: var f = function f1(){ return 1 }; function f1(){ return 2 };
+                    fdesc = new VariableDescriptor(Reference, true); // то создаём новый дескриптор
+                nvars[name] = fdesc;
+                funcRefs = fdesc.references.Count;
+            }
             nvars["arguments"] = new VariableDescriptor("arguments", true) { Owner = this };
-            body.Optimize(ref stat, 0, nvars, strict);
+            stat.Optimize(ref stat, 0, nvars, strict);
+            if (fdesc != null)
+            {
+                recursive = fdesc.references.Count != funcRefs;
+                fdesc.Owner = null; /* Тело функции, увидев здесь null, говорит, что оно хозяйко этого определения. 
+                                     * При таком раскладе функция появится только когда она сама вызовется, что в корне не верно.
+                                     */
+            }
             body = stat as CodeBlock;
             if (body.variables != null)
             {

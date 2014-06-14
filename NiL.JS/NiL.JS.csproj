@@ -174,6 +174,7 @@
     <Compile Include="Core\BaseTypes\ArrayBuffer.cs" />
     <Compile Include="Core\BaseTypes\Boolean.cs" />
     <Compile Include="Core\BinaryTree.cs" />
+    <Compile Include="Core\BindedFunction.cs" />
     <Compile Include="Core\EmbeddedType.cs" />
     <Compile Include="Core\BaseTypes\Date.cs" />
     <Compile Include="Core\BaseTypes\RegExp.cs" />
@@ -190,6 +191,7 @@
     <Compile Include="Core\Delegates.cs" />
     <Compile Include="Core\EvalFunction.cs" />
     <Compile Include="Core\ExternalFunction.cs" />
+    <Compile Include="Core\GlobalFunctions.cs" />
     <Compile Include="Core\VaribleDescriptor.cs" />
     <Compile Include="Core\GenericType.cs" />
     <Compile Include="Core\VaribleReference.cs" />

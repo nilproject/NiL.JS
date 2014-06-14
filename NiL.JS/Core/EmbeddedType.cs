@@ -20,12 +20,13 @@ namespace NiL.JS.Core
             oValue = this;
         }
 
+        [DoNotEnumerate]
         public override JSObject toString(JSObject args)
         {
             return ToString();
         }
 
-        [Modules.Hidden]
+        [Hidden]
         public override string ToString()
         {
             if (oValue != this || valueType < JSObjectType.Object)
@@ -41,6 +42,7 @@ namespace NiL.JS.Core
             return DefaultFieldGetter(name, fast, own);
         }
 
+        [DoNotEnumerate]
         public override JSObject valueOf()
         {
             return this;

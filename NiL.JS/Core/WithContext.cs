@@ -10,7 +10,7 @@ namespace NiL.JS.Core
         private JSObject @object;
 
         public WithContext(JSObject obj, Context prototype)
-            : base(prototype, false)
+            : base(prototype, false, prototype.caller)
         {
             if (obj == null)
                 throw new ArgumentNullException("obj");
@@ -36,12 +36,6 @@ namespace NiL.JS.Core
                 return prototype.GetVariable(name, create);
             else
             {
-#if DEBUG
-                if (create)
-                    res.attributes &= ~JSObjectAttributes.DBGGettedOverGM;
-                else
-                    res.attributes |= JSObjectAttributes.DBGGettedOverGM;
-#endif
                 objectSource = @object;
                 return res;
             }

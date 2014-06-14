@@ -62,7 +62,9 @@ namespace NiL.JS.Statements.Operators
                 _this.prototype = ctor.GetMember("prototype");
                 if (_this.prototype.valueType < JSObjectType.Object)
                     _this.prototype = null;
-                if (!(ctor.oValue is TypeProxyConstructor))
+                if (ctor.oValue is EvalFunction)
+                    throw new JSException(new TypeError("Function \"eval\" is not a constructor."));
+                else if (!(ctor.oValue is TypeProxyConstructor))
                 {
                     if (_this.prototype != null)
                         _this.prototype = _this.prototype.Clone() as JSObject;

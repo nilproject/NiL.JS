@@ -50,13 +50,7 @@ namespace NiL.JS.Statements.Operators
                         throw new JSException(TypeProxy.Proxy(new TypeError("Can not assign to readonly property \"" + first + "\"")));
                     return setterArg;
                 }
-#if DEBUG
-                var tempAtrbt = field.attributes & JSObjectAttributes.DBGGettedOverGM;
-#endif
                 var t = second.Invoke(context);
-#if DEBUG
-                field.attributes = (field.attributes & ~JSObjectAttributes.DBGGettedOverGM) | tempAtrbt;
-#endif
                 field.Assign(t);
                 return t;
             }

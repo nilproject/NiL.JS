@@ -35,9 +35,6 @@ namespace NiL.JS.Core
         Argument = 1 << 16,
         TrueEval = 1 << 17,
         SystemConstant = 1 << 18,
-#if DEBUG
-        DBGGettedOverGM = 1 << 30
-#endif
     }
 
     public delegate void AssignCallback(JSObject sender);
@@ -51,30 +48,21 @@ namespace NiL.JS.Core
     {
         private NiL.JS.Core.BaseTypes.String @string;
 
-        [Modules.Hidden]
+        [Hidden]
         internal static readonly AssignCallback ErrorAssignCallback = (sender) => { throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Invalid left-hand side"))); };
-        [Modules.Hidden]
+        [Hidden]
         internal static readonly IEnumerator<string> EmptyEnumerator = ((IEnumerable<string>)(new string[0])).GetEnumerator();
-        [Modules.Hidden]
-        internal static readonly JSObject undefined = new JSObject() { valueType = JSObjectType.Undefined, attributes = JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum | JSObjectAttributes.ReadOnly | JSObjectAttributes.SystemConstant };
-        [Modules.Hidden]
+        [Hidden]
+        internal static readonly JSObject undefined = new JSObject() { valueType = JSObjectType.Undefined, attributes = JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum | JSObjectAttributes.ReadOnly };
+        [Hidden]
+        internal static readonly JSObject deletableUndefined = new JSObject() { valueType = JSObjectType.Undefined, attributes = JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum | JSObjectAttributes.ReadOnly | JSObjectAttributes.SystemConstant };
+        [Hidden]
         internal static readonly JSObject notExist = new JSObject() { valueType = JSObjectType.NotExist, attributes = JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum | JSObjectAttributes.ReadOnly | JSObjectAttributes.SystemConstant };
-        [Modules.Hidden]
+        [Hidden]
         internal static readonly JSObject Null = new JSObject() { valueType = JSObjectType.Object, oValue = null, assignCallback = ErrorAssignCallback, attributes = JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum | JSObjectAttributes.SystemConstant };
-        [Modules.Hidden]
+        [Hidden]
         internal static readonly JSObject nullString = new JSObject() { valueType = JSObjectType.String, oValue = "null", assignCallback = ErrorAssignCallback, attributes = JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum | JSObjectAttributes.SystemConstant };
-        [Modules.Hidden]
-        internal static readonly JSObject strictModeUnavailablePropertDammy = new JSObject()
-        {
-            valueType = JSObjectType.Property,
-            oValue = new Function[] {
-                new ExternalFunction((t, a)=> { throw new Exception(); }), 
-                new ExternalFunction((t, a) => { throw new JSException(TypeProxy.Proxy(new TypeError("\"" + strictModeUnavailablePropertDammy.lastRequestedName + "\" propertie may not be accessed on strict mode functions or the arguments objects for calls to them"))); }) 
-            },
-            assignCallback = ErrorAssignCallback,
-            attributes = JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum | JSObjectAttributes.ReadOnly | JSObjectAttributes.Immutable
-        };
-        [Modules.Hidden]
+        [Hidden]
         internal static JSObject GlobalPrototype;
 
         static JSObject()
@@ -83,26 +71,26 @@ namespace NiL.JS.Core
         }
 
         [NonSerialized]
-        [Modules.Hidden]
+        [Hidden]
         [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
         [System.ComponentModel.Browsable(false)]
         internal AssignCallback assignCallback;
-        [Modules.Hidden]
+        [Hidden]
         internal JSObject prototype;
-        [Modules.Hidden]
+        [Hidden]
         internal Dictionary<string, JSObject> fields;
 
-        [Modules.Hidden]
+        [Hidden]
         internal string lastRequestedName;
-        [Modules.Hidden]
+        [Hidden]
         internal JSObjectType valueType;
-        [Modules.Hidden]
+        [Hidden]
         internal int iValue;
-        [Modules.Hidden]
+        [Hidden]
         internal double dValue;
-        [Modules.Hidden]
+        [Hidden]
         internal object oValue;
-        [Modules.Hidden]
+        [Hidden]
         internal JSObjectAttributes attributes;
 
         /// <summary>
@@ -110,25 +98,25 @@ namespace NiL.JS.Core
         /// </summary>
         /// <param name="name">»м€ члена.</param>
         /// <returns>„лен объекта с указанным именем.</returns>
-        [Modules.Hidden]
+        [Hidden]
         public JSObject this[string name]
         {
-            [Modules.Hidden]
+            [Hidden]
             get
             {
                 return this.GetMember(name);
             }
-            [Modules.Hidden]
+            [Hidden]
             set
             {
                 this.GetMember(name, true, true).Assign(value);
             }
         }
 
-        [Modules.Hidden]
+        [Hidden]
         public object Value
         {
-            [Modules.Hidden]
+            [Hidden]
             get
             {
                 switch (valueType)
@@ -152,33 +140,33 @@ namespace NiL.JS.Core
             }
         }
 
-        [Modules.Hidden]
+        [Hidden]
         public JSObjectType ValueType
         {
-            [Modules.Hidden]
+            [Hidden]
             get
             {
                 return valueType;
             }
         }
 
-        [Modules.Hidden]
+        [Hidden]
         public JSObjectAttributes Attributes
         {
-            [Modules.Hidden]
+            [Hidden]
             get
             {
                 return attributes;
             }
         }
 
-        [Modules.Hidden]
+        [Hidden]
         public JSObject()
         {
             valueType = JSObjectType.Undefined;
         }
 
-        [Modules.Hidden]
+        [Hidden]
         public JSObject(bool createFields)
         {
             if (createFields)
@@ -252,7 +240,7 @@ namespace NiL.JS.Core
             return res;
         }
 
-        [Modules.Hidden]
+        [Hidden]
         public static JSObject CreateObject()
         {
             var t = new JSObject(true)
@@ -325,7 +313,7 @@ namespace NiL.JS.Core
         /// </summary>
         /// <param name="name">»м€ члена.</param>
         /// <returns>ќбъект, представл€ющий запрошенный член.</returns>
-        [Modules.Hidden]
+        [Hidden]
         public JSObject GetMember(string name)
         {
             return GetMember(name, false, false);
@@ -337,7 +325,7 @@ namespace NiL.JS.Core
         /// <param name="name">»м€ члена.</param>
         /// <param name="own">”казывает, следует ли пропускать прототипы объекта при поиске члена</param>
         /// <returns>ќбъект, представл€ющий запрошенный член.</returns>
-        [Modules.Hidden]
+        [Hidden]
         public JSObject GetMember(string name, bool own)
         {
             return GetMember(name, false, own);
@@ -348,13 +336,13 @@ namespace NiL.JS.Core
         /// </summary>
         /// <param name="name">»м€ члена.</param>
         /// <returns>ќбъект, представл€ющий запрошенный член.</returns>
-        [Modules.Hidden]
+        [Hidden]
         public JSObject DefineMember(string name)
         {
             return GetMember(name, true, true);
         }
 
-        [Modules.Hidden]
+        [Hidden]
         internal protected virtual JSObject GetMember(string name, bool createMember, bool own)
         {
             createMember &= (attributes & JSObjectAttributes.Immutable) == 0;
@@ -409,7 +397,7 @@ namespace NiL.JS.Core
             return DefaultFieldGetter(name, createMember, own);
         }
 
-        [Modules.Hidden]
+        [Hidden]
         protected JSObject DefaultFieldGetter(string name, bool create, bool own)
         {
             switch (name)
@@ -468,18 +456,12 @@ namespace NiL.JS.Core
                             res.lastRequestedName = name;
                         if (res.valueType == JSObjectType.NotExist)
                             res.valueType = JSObjectType.NotExistInObject;
-#if DEBUG
-                        if (create)
-                            res.attributes &= ~JSObjectAttributes.DBGGettedOverGM;
-                        else
-                            res.attributes |= JSObjectAttributes.DBGGettedOverGM;
-#endif
                         return res;
                     }
             }
         }
 
-        [Modules.Hidden]
+        [Hidden]
         internal JSObject ToPrimitiveValue_Value_String()
         {
             if (valueType >= JSObjectType.Object && oValue != null)
@@ -516,7 +498,7 @@ namespace NiL.JS.Core
             return this;
         }
 
-        [Modules.Hidden]
+        [Hidden]
         internal JSObject ToPrimitiveValue_String_Value()
         {
             if (valueType >= JSObjectType.Object && oValue != null)
@@ -556,13 +538,9 @@ namespace NiL.JS.Core
 #if INLINE
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
-        [Modules.Hidden]
+        [Hidden]
         public virtual void Assign(JSObject value)
         {
-#if DEBUG
-            if ((attributes & JSObjectAttributes.DBGGettedOverGM) != 0)
-                System.Diagnostics.Debug.Fail("(attributes & JSObjectAttributes.DBGGettedOverGM) != 0");
-#endif
             if (this.assignCallback != null)
                 this.assignCallback(this);
             if ((attributes & JSObjectAttributes.ReadOnly) != 0)
@@ -586,19 +564,16 @@ namespace NiL.JS.Core
             this.prototype = null;
         }
 
-        [Modules.Hidden]
+        [Hidden]
         public virtual object Clone()
         {
-#if DEBUG
-            this.attributes &= ~JSObjectAttributes.DBGGettedOverGM;
-#endif
             var res = new JSObject();
             res.Assign(this);
             res.attributes = this.attributes;
             return res;
         }
 
-        [Modules.Hidden]
+        [Hidden]
         public override string ToString()
         {
             if (valueType <= JSObjectType.Undefined)
@@ -619,36 +594,37 @@ namespace NiL.JS.Core
             }
         }
 
-        [Modules.Hidden]
+        [Hidden]
         IEnumerator IEnumerable.GetEnumerator()
         {
             return ((IEnumerable<string>)this).GetEnumerator();
         }
 
-        [Modules.Hidden]
+        [Hidden]
         public IEnumerator<string> GetEnumerator()
         {
-            if (this.GetType() == typeof(JSObject) && valueType >= JSObjectType.Object)
+            if (this is JSObject && valueType >= JSObjectType.Object)
             {
                 if (oValue != this && oValue is JSObject)
-                    return (oValue as JSObject).GetEnumerator();
+                    return (oValue as JSObject).GetEnumeratorImpl(true);
             }
-            if (fields == null)
-                return EmptyEnumerator;
             return GetEnumeratorImpl(true);
         }
 
         protected internal virtual IEnumerator<string> GetEnumeratorImpl(bool doNotEnumProcess)
         {
-            foreach (var f in fields)
+            if (fields != null)
             {
-                if (f.Value.valueType >= JSObjectType.Undefined && (!doNotEnumProcess || (f.Value.attributes & JSObjectAttributes.DoNotEnum) == 0))
-                    yield return f.Key;
+                foreach (var f in fields)
+                {
+                    if (f.Value.valueType >= JSObjectType.Undefined && (!doNotEnumProcess || (f.Value.attributes & JSObjectAttributes.DoNotEnum) == 0))
+                        yield return f.Key;
+                }
             }
         }
 
         [CLSCompliant(false)]
-        [Modules.DoNotEnumerateAttribute]
+        [DoNotEnumerate]
         [Modules.ParametersCount(0)]
         public virtual JSObject toString(JSObject args)
         {
@@ -696,7 +672,7 @@ namespace NiL.JS.Core
             }
         }
 
-        [Modules.DoNotEnumerateAttribute]
+        [DoNotEnumerate]
         public virtual JSObject toLocaleString()
         {
             if (valueType >= JSObjectType.Object && oValue == null)
@@ -706,7 +682,7 @@ namespace NiL.JS.Core
             return toString(null);
         }
 
-        [Modules.DoNotEnumerateAttribute]
+        [DoNotEnumerate]
         public virtual JSObject valueOf()
         {
             if (valueType >= JSObjectType.Object && oValue == null)
@@ -719,7 +695,7 @@ namespace NiL.JS.Core
                 return this;
         }
 
-        [Modules.DoNotEnumerateAttribute]
+        [DoNotEnumerate]
         public virtual JSObject isPrototypeOf(JSObject args)
         {
             if (valueType >= JSObjectType.Object && oValue == null)
@@ -743,7 +719,7 @@ namespace NiL.JS.Core
             return false;
         }
 
-        [Modules.DoNotEnumerateAttribute]
+        [DoNotEnumerate]
         public virtual JSObject hasOwnProperty(JSObject args)
         {
             JSObject name = args.GetMember("0");
@@ -816,13 +792,13 @@ namespace NiL.JS.Core
             return res;
         }
 
-        [Modules.Hidden]
+        [Hidden]
         public override bool Equals(object obj)
         {
             return base.Equals(obj);
         }
 
-        [Modules.Hidden]
+        [Hidden]
         public override int GetHashCode()
         {
             return base.GetHashCode();
@@ -852,7 +828,7 @@ namespace NiL.JS.Core
                 res["set"] = (obj.oValue as Function[])[0];
                 res["get"] = (obj.oValue as Function[])[1];
             }
-            res["configurable"] = (obj.attributes & JSObjectAttributes.Immutable) == 0 || (obj.attributes & JSObjectAttributes.DoNotDelete) == 0;
+            res["configurable"] = ((obj.attributes & JSObjectAttributes.Immutable) == 0 && (obj.valueType >= JSObjectType.Object)) || (obj.attributes & JSObjectAttributes.DoNotDelete) == 0;
             res["enumerable"] = (obj.attributes & JSObjectAttributes.DoNotEnum) == 0;
             return res;
         }

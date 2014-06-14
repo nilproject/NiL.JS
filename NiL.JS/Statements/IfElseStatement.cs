@@ -2,6 +2,7 @@
 using System;
 using NiL.JS.Core;
 using System.Collections.Generic;
+using NiL.JS.Statements.Operators;
 
 namespace NiL.JS.Statements
 {

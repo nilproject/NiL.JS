@@ -12,6 +12,8 @@ namespace NiL.JS
     [Serializable]
     public sealed class Script
     {
+        private static readonly Function pseudoCaller = new Function(Context.globalContext, FunctionStatement.Parse("function superCaller(){ (hello, world) }"));
+
         private Statement root;
         public CodeBlock Root { get { return root as CodeBlock; } }
         /// <summary>
@@ -36,7 +38,7 @@ namespace NiL.JS
                 throw new System.ArgumentException("Invalid char");
             Parser.Optimize(ref root, new System.Collections.Generic.Dictionary<string, VariableDescriptor>(), false);
             var body = root as CodeBlock;
-            Context = new Context(NiL.JS.Core.Context.globalContext);
+            Context = new Context(NiL.JS.Core.Context.globalContext, pseudoCaller);
             Context.thisBind = new ThisBind(Context);
             Context.variables = (root as CodeBlock).variables;
             Context.strict = (root as CodeBlock).strict;

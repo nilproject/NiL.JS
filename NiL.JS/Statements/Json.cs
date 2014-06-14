@@ -159,7 +159,11 @@ namespace NiL.JS.Statements
                     prop.valueType = JSObjectType.Property;
                 }
                 else
-                    res.fields[this.fields[i]] = val.Clone() as JSObject;
+                {
+                    val = val.Clone() as JSObject;
+                    val.attributes = JSObjectAttributes.None;
+                    res.fields[this.fields[i]] = val;
+                }
             }
             return res;
         }
