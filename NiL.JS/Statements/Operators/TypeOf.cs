@@ -62,9 +62,9 @@ namespace NiL.JS.Statements.Operators
             }
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VariableDescriptor> vars)
+        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict)
         {
-            base.Optimize(ref _this, depth, vars);
+            base.Optimize(ref _this, depth, vars, strict);
             if (first is GetVariableStatement)
                 first = new SafeVariableGetter(first as GetVariableStatement);
             return false;

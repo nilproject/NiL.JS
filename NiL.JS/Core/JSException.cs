@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NiL.JS.Core.BaseTypes;
+using System;
 
 namespace NiL.JS.Core
 {
@@ -9,6 +10,11 @@ namespace NiL.JS.Core
     public sealed class JSException : Exception
     {
         public JSObject Avatar { get; private set; }
+
+        public JSException(Error avatar)
+        {
+            Avatar = TypeProxy.Proxy(avatar);
+        }
 
         public JSException(JSObject avatar)
         {

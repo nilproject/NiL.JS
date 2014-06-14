@@ -1,6 +1,7 @@
 ﻿using NiL.JS.Core.BaseTypes;
 using NiL.JS.Core;
 using System;
+using NiL.JS.Core.Modules;
 
 namespace NiL.JS.Core
 {
@@ -11,14 +12,35 @@ namespace NiL.JS.Core
     [Serializable]
     public sealed class ExternalFunction : Function
     {
+        public override string Name
+        {
+            get
+            {
+                return del.Method.Name;
+            }
+        }
+
+        public override FunctionType Type
+        {
+            get
+            {
+                return FunctionType.Function;
+            }
+        }
+
         private readonly ExternalFunctionDelegate del;
 
         public ExternalFunctionDelegate Delegate { get { return del; } }
 
         public ExternalFunction(ExternalFunctionDelegate del)
-            : base(Context.globalContext, null, null, del.Method.Name, FunctionType.Function)
+            : base(Context.globalContext, null)
         {
             this.del = del;
+            var pc = del.Method.GetCustomAttributes(typeof(ParametersCountAttribute), false);
+            if (pc != null && pc.Length != 0)
+                _length = (pc[0] as ParametersCountAttribute).Count;
+            else
+                _length = 0;
         }
 
         public override JSObject Invoke(JSObject thisBind, JSObject args)

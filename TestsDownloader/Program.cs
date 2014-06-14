@@ -40,21 +40,40 @@ namespace TestsDownloader
 
         private static void download(string url, string rootDir)
         {
+            string title = "downloading: " + url + " ...";
+            Console.Write(title);
             WebRequest wr = HttpWebRequest.Create(url);
             using (var response = wr.GetResponse())
             {
                 var data = new StreamReader(response.GetResponseStream()).ReadToEnd();
-                var tests = JSON.parse(data).GetMember("testsCollection").GetMember("tests");
+                int line = Console.CursorTop;
+                title = "saving: " + url;
+                Console.SetCursorPosition(0, line);
+                Console.Write(title + "         ");
+                var tests = JSON.parse(data).GetMember("testsCollection");
+                var testsCount = Tools.JSObjectToDouble(tests.GetMember("numTests")) * 0.01;
+                tests = tests.GetMember("tests");
+                double index = 0;
                 foreach (var i in tests)
+                {
+                    Console.SetCursorPosition(title.Length + 1, line);
+                    Console.Write((index++ / testsCount).ToString("00") + "%");
                     saveTest(rootDir, tests.GetMember(i));
+                }
+                Console.SetCursorPosition(0, line);
+                Console.WriteLine(url + "    Complete.");
             }
         }
 
         static void Main(string[] args)
         {
+            if (Directory.Exists("tests"))
+            {
+                Console.WriteLine("Cleaning...");
+                Directory.Delete("tests", true);
+            }
             for (var i = 0; i < TestsSource.Length; i++)
             {
-                Console.WriteLine("downloading: " + TestsSource[i]);
                 download(TestsSource[i], "tests/");
             }
         }

@@ -55,16 +55,22 @@ namespace NiL.JS.Statements
             return variableName;
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VariableDescriptor> variables)
+        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
             VariableDescriptor desc = null;
             if (!variables.TryGetValue(variableName, out desc) || desc == null)
             {
-                this.descriptor = new VariableDescriptor(this, desc != null) { caching = variableName != "this" };
+                this.descriptor = new VariableDescriptor(this, desc != null);
+                if (variableName == "this")
+                    this.descriptor.attributes |= VariableDescriptorAttributes.NoCaching;
                 variables[variableName] = this.descriptor;
             }
             else
-                desc.Add(this);
+            {
+                if ((desc.attributes & VariableDescriptorAttributes.SuppressRefRegistration) == 0)
+                    desc.references.Add(this);
+                this.descriptor = desc;
+            }
             return false;
         }
     }

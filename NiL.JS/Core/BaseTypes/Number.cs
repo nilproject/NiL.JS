@@ -9,35 +9,40 @@ namespace NiL.JS.Core.BaseTypes
     [Immutable]
     public class Number : EmbeddedType
     {
-        [Modules.DoNotEnumerate]
-        [Modules.Protected]
+        [DoNotDelete]
+        [DoNotEnumerate]
+        [ReadOnly]
         public static JSObject NaN = double.NaN;
-        [Modules.DoNotEnumerate]
-        [Modules.Protected]
+        [DoNotDelete]
+        [DoNotEnumerate]
+        [ReadOnly]
         public static JSObject POSITIVE_INFINITY = double.PositiveInfinity;
-        [Modules.DoNotEnumerate]
-        [Modules.Protected]
+        [DoNotDelete]
+        [DoNotEnumerate]
+        [ReadOnly]
         public static JSObject NEGATIVE_INFINITY = double.NegativeInfinity;
-        [Modules.DoNotEnumerate]
-        [Modules.Protected]
+        [DoNotDelete]
+        [DoNotEnumerate]
+        [ReadOnly]
         public static JSObject MAX_VALUE = double.MaxValue;
-        [Modules.DoNotEnumerate]
-        [Modules.Protected]
+        [DoNotDelete]
+        [DoNotEnumerate]
+        [ReadOnly]
         public static JSObject MIN_VALUE = double.Epsilon;
 
         [Modules.DoNotEnumerate]
         static Number()
         {
             POSITIVE_INFINITY.assignCallback = null;
-            POSITIVE_INFINITY.Protect();
+            POSITIVE_INFINITY.attributes |= JSObjectAttributes.DoNotDelete | JSObjectAttributes.ReadOnly;
             NEGATIVE_INFINITY.assignCallback = null;
-            NEGATIVE_INFINITY.Protect();
+            NEGATIVE_INFINITY.attributes |= JSObjectAttributes.DoNotDelete | JSObjectAttributes.ReadOnly;
             MAX_VALUE.assignCallback = null;
-            MAX_VALUE.Protect();
+            MAX_VALUE.attributes |= JSObjectAttributes.DoNotDelete | JSObjectAttributes.ReadOnly;
             MIN_VALUE.assignCallback = null;
-            MIN_VALUE.Protect();
+            MIN_VALUE.attributes |= JSObjectAttributes.DoNotDelete | JSObjectAttributes.ReadOnly;
             NaN.assignCallback = null;
-            NaN.Protect();
+            NaN.attributes |= JSObjectAttributes.DoNotDelete | JSObjectAttributes.ReadOnly;
         }
 
         [Modules.DoNotEnumerate]
@@ -369,8 +374,7 @@ namespace NiL.JS.Core.BaseTypes
             return base.valueOf();
         }
 
-        [Modules.DoNotEnumerate]
-        public override IEnumerator<string> GetEnumerator()
+        protected internal override IEnumerator<string> GetEnumeratorImpl(bool pdef)
         {
             return EmptyEnumerator;
         }

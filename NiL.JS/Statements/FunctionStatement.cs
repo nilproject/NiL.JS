@@ -73,20 +73,20 @@ namespace NiL.JS.Statements
             }
         }
 
-        private string[] parametersNames;
-        private VariableReference[] parameters;
-        private CodeBlock body;
-        private readonly string name;
-        private FunctionType type;
+        internal VariableReference[] parameters;
+        internal CodeBlock body;
+        internal readonly string name;
+        internal FunctionType type;
 
         public CodeBlock Body { get { return body; } }
         public string Name { get { return name; } }
         public VariableReference[] Parameters { get { return parameters; } }
         public VariableReference Reference { get; private set; }
 
-        private FunctionStatement(string name)
+        internal FunctionStatement(string name)
         {
             Reference = new FunctionReference(this);
+            parameters = new VariableReference[0];
             this.name = name;
         }
 
@@ -154,7 +154,13 @@ namespace NiL.JS.Statements
                 int n = i;
                 if (!Parser.ValidateName(code, ref i, state.strict.Peek()))
                     throw new JSException(TypeProxy.Proxy(new SyntaxError("Invalid description of function arguments at " + Tools.PositionToTextcord(code, nameStartPos))));
-                parameters.Add(new ParameterReference(Tools.Unescape(code.Substring(n, i - n), state.strict.Peek())) { Position = n, Length = i - n });
+                var pname = Tools.Unescape(code.Substring(n, i - n), state.strict.Peek());
+                if (state.strict.Peek())
+                {
+                    if (pname == "arguments" || pname == "eval")
+                        throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Parameters name may not be \"arguments\" or \"eval\" in strict mode at " + Tools.PositionToTextcord(code, n))));
+                }
+                parameters.Add(new ParameterReference(pname) { Position = n, Length = i - n });
                 while (char.IsWhiteSpace(code[i])) i++;
             }
             switch (mode)
@@ -191,6 +197,14 @@ namespace NiL.JS.Statements
                 state.AllowStrict = false;
                 state.Labels = labels;
                 state.AllowReturn--;
+            }
+            if (body.strict && !state.strict.Peek())
+            {
+                for (int j = parameters.Count; j-->0; )
+                {
+                    if (parameters[j].Name == "arguments" || parameters[j].Name == "eval")
+                        throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Parameters name may not be \"arguments\" or \"eval\" in strict mode at " + Tools.PositionToTextcord(code, index))));
+                }
             }
             if (!inExp)
             {
@@ -280,22 +294,17 @@ namespace NiL.JS.Statements
         /// <returns></returns>
         public Function MakeFunction(Context context)
         {
-            if (parametersNames == null)
-            {
-                parametersNames = new string[parameters.Length];
-                for (var i = 0; i < parametersNames.Length; i++)
-                    parametersNames[i] = parameters[i].Name;
-            }
-            return new Function(context, body, parametersNames, name, type);
+            return new Function(context, this);
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VariableDescriptor> variables)
+        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
             var stat = body as Statement;
             var nvars = new Dictionary<string, VariableDescriptor>();
             for (var i = 0; i < parameters.Length; i++)
                 nvars[parameters[i].Name] = parameters[i].Descriptor;
-            body.Optimize(ref stat, 0, nvars);
+            nvars["arguments"] = new VariableDescriptor("arguments", true) { Owner = this };
+            body.Optimize(ref stat, 0, nvars, strict);
             body = stat as CodeBlock;
             if (body.variables != null)
             {
@@ -322,7 +331,7 @@ namespace NiL.JS.Statements
 
         public override string ToString()
         {
-            var res = type.ToString().ToLowerInvariant() + " " + name + "(";
+            var res = ((FunctionType)((int)type & 3)).ToString().ToLowerInvariant() + " " + name + "(";
             if (parameters != null)
                 for (int i = 0; i < parameters.Length; )
                     res += parameters[i] + (++i < parameters.Length ? "," : "");

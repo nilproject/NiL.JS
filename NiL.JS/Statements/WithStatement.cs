@@ -11,6 +11,7 @@ namespace NiL.JS.Statements
     {
         private Statement obj;
         private Statement body;
+        private VariableDescriptor[] variables;
 
         public Statement Body { get { return body; } }
         public Statement Scope { get { return obj; } }
@@ -55,10 +56,19 @@ namespace NiL.JS.Statements
             if (context.debugging && !(body is CodeBlock))
                 context.raiseDebugger(body);
 #endif
-            body.Invoke(intcontext);
-            context.abort = intcontext.abort;
-            context.abortInfo = intcontext.abortInfo;
-            return JSObject.undefined;
+            try
+            {
+                intcontext.variables = variables;
+                intcontext.Activate();
+                body.Invoke(intcontext);
+                context.abort = intcontext.abort;
+                context.abortInfo = intcontext.abortInfo;
+                return JSObject.undefined;
+            }
+            finally
+            {
+                intcontext.Deactivate();
+            }
         }
 
         protected override Statement[] getChildsImpl()
@@ -72,18 +82,19 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VariableDescriptor> variables)
+        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
-            Parser.Optimize(ref obj, depth, variables);
+            Parser.Optimize(ref obj, depth, variables, strict);
             var nvars = new Dictionary<string, VariableDescriptor>();
-            Parser.Optimize(ref body, depth, nvars);
+            Parser.Optimize(ref body, depth, nvars, strict);
             foreach(var v in nvars.Values)
             {
                 VariableDescriptor desc = null;
                 if (v.Defined && !variables.TryGetValue(v.Name, out desc))
                     variables[v.Name] = new VariableDescriptor(v.Name, true);
-                v.caching = false;
+                v.attributes |= VariableDescriptorAttributes.NoCaching;
             }
+            this.variables = nvars.Values.ToArray();
             return false;
         }
 

@@ -123,8 +123,7 @@ namespace NiL.JS.Core.BaseTypes
             return base.GetMember(name, create, own);
         }
 
-        [Modules.Hidden]
-        public override IEnumerator<string> GetEnumerator()
+        protected internal override IEnumerator<string> GetEnumeratorImpl(bool pdef)
         {
             var be = base.GetEnumerator();
             while (be.MoveNext())

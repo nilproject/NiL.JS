@@ -114,7 +114,7 @@ namespace NiL.JS.Core.BaseTypes
             data = new List<JSObject>(collection.Count);
             foreach (var o in collection)
             {
-                var t = TypeProxy.Proxy(o);
+                var t = TypeProxy.Proxy(o).Clone() as JSObject;
                 t.assignCallback = null;
                 data.Add(t);
             }
@@ -128,7 +128,21 @@ namespace NiL.JS.Core.BaseTypes
             data = new List<JSObject>();
             foreach (var o in enumerable)
             {
-                var t = TypeProxy.Proxy(o);
+                var t = TypeProxy.Proxy(o).Clone() as JSObject;
+                t.assignCallback = null;
+                data.Add(t);
+            }
+        }
+
+        [Hidden]
+        internal Array(IEnumerator enumerator)
+        {
+            if (enumerator == null)
+                throw new ArgumentNullException("enumerator");
+            data = new List<JSObject>();
+            while(enumerator.MoveNext())
+            {
+                var t = TypeProxy.Proxy(enumerator.Current).Clone() as JSObject;
                 t.assignCallback = null;
                 data.Add(t);
             }
@@ -163,7 +177,8 @@ namespace NiL.JS.Core.BaseTypes
             }
         }
 
-        [Modules.DoNotEnumerateAttribute]
+        [DoNotDelete]
+        [DoNotEnumerateAttribute]
         public int length
         {
             [Modules.Hidden]
@@ -810,8 +825,7 @@ namespace NiL.JS.Core.BaseTypes
             return this.ToString();
         }
 
-        [Modules.Hidden]
-        public override IEnumerator<string> GetEnumerator()
+        protected internal override IEnumerator<string> GetEnumeratorImpl(bool pdef)
         {
             return new Enumerator(this);
         }
@@ -842,6 +856,8 @@ namespace NiL.JS.Core.BaseTypes
                             res.attributes &= ~JSObjectAttributes.DBGGettedOverGM;
                         else
                             res.attributes |= JSObjectAttributes.DBGGettedOverGM;
+                        if (res.valueType == JSObjectType.NotExist)
+                            res.valueType = JSObjectType.NotExistInObject;
                         return res;
                     }
 #else

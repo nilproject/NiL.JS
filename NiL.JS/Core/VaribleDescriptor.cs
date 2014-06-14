@@ -5,10 +5,20 @@ using NiL.JS.Statements;
 namespace NiL.JS.Core
 {
     [Serializable]
+    [Flags]
+    internal enum VariableDescriptorAttributes
+    {
+        None = 0,
+        NoCaching = 1,
+        SMNotAssignable = 2,
+        SuppressRefRegistration = 4
+    }
+
+    [Serializable]
     public sealed class VariableDescriptor
     {
         internal readonly HashSet<VariableReference> references;
-        internal bool caching;
+        internal VariableDescriptorAttributes attributes;
         private string name;
         private JSObject cacheRes;
         private Statement owner;
@@ -30,14 +40,14 @@ namespace NiL.JS.Core
         internal JSObject Get(Context context, bool create)
         {
             context.objectSource = null;
-            if (!caching)
+            if ((attributes & VariableDescriptorAttributes.NoCaching) != 0)
                 return context.GetVariable(name, create);
             if (cacheRes == null)
             {
                 var res = context.GetVariable(name, create);
                 if (create && !Defined && res.valueType == JSObjectType.NotExist)
                     res.attributes = JSObjectAttributes.None;
-                if (res.valueType < JSObjectType.Undefined)
+                if (!create && res.valueType < JSObjectType.Undefined)
                     return res;
                 return cacheRes = res;
             }
@@ -54,30 +64,6 @@ namespace NiL.JS.Core
             return cacheRes;
         }
 
-        internal void Add(VariableReference reference)
-        {
-            if (reference.Name != name)
-                throw new ArgumentException("Try to add reference with different name.");
-            if (reference.Descriptor == this)
-                return;
-            if (reference.Descriptor != null)
-                throw new ArgumentException("Try to double registration reference.");
-            references.Add(reference);
-            reference.Descriptor = this;
-        }
-
-        internal void Remove(VariableReference reference)
-        {
-            if (reference.Name != name)
-                throw new ArgumentException("Try to remove reference with different name.");
-            if (reference.Descriptor == null)
-                return;
-            if (reference.Descriptor != this)
-                throw new ArgumentException("Try to remove reference from another descriptor.");
-            references.Remove(reference);
-            reference.Descriptor = null;
-        }
-
         internal void ClearCache()
         {
             cacheRes = null;
@@ -85,7 +71,6 @@ namespace NiL.JS.Core
 
         internal VariableDescriptor(string name, bool defined)
         {
-            this.caching = true;
             this.name = name;
             references = new HashSet<VariableReference>();
             Defined = defined;
@@ -93,12 +78,12 @@ namespace NiL.JS.Core
 
         internal VariableDescriptor(VariableReference proto, bool defined)
         {
-            this.caching = true;
             this.name = proto.Name;
             if (proto is FunctionStatement.FunctionReference)
                 Inititalizator = (proto as FunctionStatement.FunctionReference).Owner;
             references = new HashSet<VariableReference>();
             references.Add(proto);
+            proto.Descriptor = this;
             Defined = defined;
         }
 

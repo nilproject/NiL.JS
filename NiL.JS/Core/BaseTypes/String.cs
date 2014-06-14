@@ -59,7 +59,7 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [DoNotEnumerate]
-        public string charAt(JSObject pos)
+        public String charAt(JSObject pos)
         {
             int p = Tools.JSObjectToInt(pos.GetMember("0"));
             if ((p < 0) || (p >= (oValue as string).Length))
@@ -68,7 +68,7 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [DoNotEnumerate]
-        public double charCodeAt(JSObject pos)
+        public Number charCodeAt(JSObject pos)
         {
             int p = Tools.JSObjectToInt(pos.GetMember("0"));
             if ((p < 0) || (p >= (oValue as string).Length))

@@ -1,4 +1,5 @@
 ﻿using NiL.JS.Core;
+using NiL.JS.Core.BaseTypes;
 using System;
 using System.Collections.Generic;
 
@@ -36,13 +37,9 @@ namespace NiL.JS.Statements.Operators
         {
             lock (this)
             {
-                if (first != null && second != null)
-                    throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid incriment operand.")));
-                var val = (first ?? second).InvokeForAssing(context);
-                if (val.assignCallback != null)
-                    val.assignCallback(val);
-                //if ((val.attributes & JSObjectAttributes.ReadOnly) != 0)
-                //    return double.NaN;
+                var val = Tools.RaiseIfNotExist((first ?? second).InvokeForAssing(context));
+                if (context.strict && (val.attributes & JSObjectAttributes.ReadOnly) != 0)
+                    throw new JSException(new TypeError("Can not incriment readonly \"" + (first ?? second) + "\""));
                 switch (val.valueType)
                 {
                     case JSObjectType.Object:
@@ -50,6 +47,12 @@ namespace NiL.JS.Statements.Operators
                     case JSObjectType.Function:
                         {
                             val.Assign(val.ToPrimitiveValue_Value_String());
+                            break;
+                        }
+                    default:
+                        {
+                            if (val.assignCallback != null)
+                                val.assignCallback(val);
                             break;
                         }
                 }
@@ -80,8 +83,8 @@ namespace NiL.JS.Statements.Operators
                         }
                 }
                 JSObject o = null;
-                if ((second != null) 
-                    && (val.valueType != JSObjectType.Undefined) 
+                if ((second != null)
+                    && (val.valueType != JSObjectType.Undefined)
                     && (val.valueType != JSObjectType.NotExistInObject))
                 {
                     o = tempResult;
@@ -121,9 +124,9 @@ namespace NiL.JS.Statements.Operators
             }
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VariableDescriptor> vars)
+        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict)
         {
-            base.Optimize(ref _this, depth, vars);
+            base.Optimize(ref _this, depth, vars, strict);
             if (depth <= 1 && second != null)
             {
                 first = second;

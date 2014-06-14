@@ -1,4 +1,5 @@
 ﻿using NiL.JS.Core;
+using NiL.JS.Core.BaseTypes;
 using System;
 
 namespace NiL.JS.Statements.Operators
@@ -35,13 +36,9 @@ namespace NiL.JS.Statements.Operators
         {
             lock (this)
             {
-                if (first != null && second != null)
-                    throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid decriment operand.")));
                 var val = Tools.RaiseIfNotExist((first ?? second).InvokeForAssing(context));
-                if (val.assignCallback != null)
-                    val.assignCallback(val);
-                //if ((val.attributes & JSObjectAttributes.ReadOnly) != 0)
-                //    return double.NaN;
+                if (context.strict && (val.attributes & JSObjectAttributes.ReadOnly) != 0)
+                    throw new JSException(new TypeError("Can not decriment readonly property \"" + (first ?? second) + "\""));
                 switch (val.valueType)
                 {
                     case JSObjectType.Object:
@@ -49,6 +46,12 @@ namespace NiL.JS.Statements.Operators
                     case JSObjectType.Function:
                         {
                             val.Assign(val.ToPrimitiveValue_Value_String());
+                            break;
+                        }
+                    default:
+                        {
+                            if (val.assignCallback != null)
+                                val.assignCallback(val);
                             break;
                         }
                 }

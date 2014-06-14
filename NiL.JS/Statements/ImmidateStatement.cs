@@ -22,6 +22,13 @@ namespace NiL.JS.Statements
             return value;
         }
 
+        internal override NiL.JS.Core.JSObject InvokeForAssing(NiL.JS.Core.Context context)
+        {
+            if (value == JSObject.undefined)
+                return value;
+            return base.InvokeForAssing(context);
+        }
+
         protected override Statement[] getChildsImpl()
         {
             if (value.Value is Statement[])
@@ -29,13 +36,13 @@ namespace NiL.JS.Statements
             return null;
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VariableDescriptor> variables)
+        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
-            var vss = value.Value as Statement[];
+            var vss = value.oValue as Statement[];
             if (vss != null)
             {
                 for (int i = 0; i < vss.Length; i++)
-                    Parser.Optimize(ref vss[i], depth + 1, variables);
+                    Parser.Optimize(ref vss[i], depth + 1, variables, strict);
             }
             return false;
         }

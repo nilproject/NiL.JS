@@ -28,15 +28,15 @@ namespace NiL.JS.Statements.Operators
             return temp;
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VariableDescriptor> vars)
+        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict)
         {
             if (second == null)
             {
                 _this = first;
                 return true;
             }
-            Parser.Optimize(ref first, depth, vars);
-            Parser.Optimize(ref second, depth, vars);
+            Parser.Optimize(ref first, depth, vars, strict);
+            Parser.Optimize(ref second, depth, vars, strict);
             return false;
         }
 

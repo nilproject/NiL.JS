@@ -6,11 +6,11 @@ using NiL.JS.Core.BaseTypes;
 namespace NiL.JS.Core
 {
     [Serializable]
-    internal sealed class ThisObject : JSObject
+    internal sealed class ThisBind : JSObject
     {
-        internal static JSObject thisProto;
+        private static JSObject thisProto;
 
-        private static JSObject createThisProto()
+        internal static JSObject refreshThisBindProto()
         {
             thisProto = CreateObject();
             thisProto.oValue = thisProto;
@@ -20,14 +20,15 @@ namespace NiL.JS.Core
 
         private Context context;
 
-        public ThisObject(Context context)
+        public ThisBind(Context context)
             : base(false)
         {
+            attributes = JSObjectAttributes.SystemConstant;
             this.context = context;
             fields = context.fields;
             valueType = JSObjectType.Object;
             oValue = this;
-            prototype = thisProto ?? createThisProto();
+            prototype = thisProto ?? refreshThisBindProto();
             assignCallback = (sender) => { throw new JSException(TypeProxy.Proxy(new ReferenceError("Invalid left-hand side in assignment"))); };
         }
 
@@ -39,7 +40,7 @@ namespace NiL.JS.Core
             return res;
         }
 
-        public override IEnumerator<string> GetEnumerator()
+        protected internal override IEnumerator<string> GetEnumeratorImpl(bool pdef)
         {
             return context.fields.Keys.GetEnumerator();
         }

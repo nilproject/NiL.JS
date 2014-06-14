@@ -21,25 +21,18 @@ namespace NiL.JS.Core
                 oVal = args.GetMember("0");
             JSObject res = null;
             if ((oVal == null) ||
-                (oVal is JSObject && (((oVal as JSObject).valueType >= JSObjectType.Object && (oVal as JSObject).oValue == null) || (oVal as JSObject).valueType <= JSObjectType.Undefined)))
+                (oVal is JSObject && (((oVal as JSObject).valueType >= JSObjectType.Object && (oVal as JSObject).oValue == null)
+                                        || (oVal as JSObject).valueType <= JSObjectType.Undefined)))
                 return CreateObject();
             else if ((oVal as JSObject).valueType >= JSObjectType.Object && (oVal as JSObject).oValue != null)
                 return oVal as JSObject;
 
-            if (thisBind != null
-                && thisBind.valueType == JSObjectType.Object
-                && thisBind.prototype != null
-                && thisBind.prototype.oValue == GlobalPrototype)
-                res = thisBind;
-            else
-                res = CreateObject();
+            res = CreateObject();
 
             res.valueType = JSObjectType.Object;
-            res.oValue = oVal ?? res;
+            res.oValue = (oVal is JSObject && ((oVal as JSObject).attributes & JSObjectAttributes.SystemConstant) != 0) ? (oVal as JSObject).Clone() : oVal;
             if (oVal is JSObject)
                 res.prototype = (oVal as JSObject).GetMember("__proto__", false, true).Clone() as JSObject;
-            else
-                res.prototype = null;
             return res;
         }
 

@@ -18,7 +18,6 @@ namespace NiL.JS.Statements.Operators
         }
 
         private Statement[] arguments;
-
         public Statement[] Arguments { get { return arguments; } }
 
         internal Call(Statement first, Statement second)
@@ -32,6 +31,30 @@ namespace NiL.JS.Statements.Operators
             JSObject newThisBind = null;
             Function func = null;
             var temp = first.Invoke(context);
+            newThisBind = context.objectSource;
+
+            JSObject arguments = new JSObject(false)
+                {
+                    valueType = JSObjectType.Object,
+                    oValue = NiL.JS.Core.Arguments.Instance,
+                    attributes = JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum
+                };
+            if (this.arguments == null)
+                this.arguments = second.Invoke(null).oValue as Statement[];
+            JSObject field = new JSObject();
+            field.valueType = JSObjectType.Int;
+            field.iValue = this.arguments.Length;
+            field.attributes = JSObjectAttributes.DoNotEnum;
+            arguments.fields = new Dictionary<string, JSObject>(this.arguments.Length + 3);
+            arguments.fields["length"] = field;
+            for (int i = 0; i < field.iValue; i++)
+            {
+                context.objectSource = null;
+                var a = this.arguments[i].Invoke(context);
+                arguments.fields[i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture)] = a;
+            }
+
+            // Аргументы должны быть вычислены даже если функции не существует.
             if (temp.valueType == JSObjectType.NotExist)
             {
                 if (context.thisBind == null)
@@ -44,28 +67,6 @@ namespace NiL.JS.Statements.Operators
             func = temp.oValue as Function;
             func.lastRequestedName = temp.lastRequestedName;
 
-            newThisBind = context.objectSource;
-
-            JSObject arguments = new JSObject(false)
-                {
-                    valueType = JSObjectType.Object,
-                    oValue = NiL.JS.Core.Arguments.Instance,
-                    attributes = JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum
-                };
-            if (this.arguments == null)
-                this.arguments = second.Invoke(null).oValue as Statement[];
-            JSObject field = this.arguments.Length;
-            field.assignCallback = null;
-            field.attributes = JSObjectAttributes.DoNotEnum;
-            arguments.fields = new Dictionary<string, JSObject>(this.arguments.Length + 3);
-            arguments.fields["length"] = field;
-            for (int i = 0; i < field.iValue; i++)
-            {
-                var a = this.arguments[i].Invoke(context).Clone() as JSObject;
-                arguments.fields[i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture)] = a;
-                a.attributes |= JSObjectAttributes.Argument;
-                context.objectSource = null;
-            }
             return func.Invoke(newThisBind, arguments);
         }
 
@@ -82,9 +83,9 @@ namespace NiL.JS.Statements.Operators
             return res + ")";
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VariableDescriptor> vars)
+        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict)
         {
-            base.Optimize(ref _this, depth, vars);
+            base.Optimize(ref _this, depth, vars, strict);
             arguments = second.Invoke(null).oValue as Statement[];
             return false;
         }

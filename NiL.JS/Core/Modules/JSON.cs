@@ -28,11 +28,22 @@ namespace NiL.JS.Core.Modules
             public int valuesCount;
         }
 
+        [DoNotEnumerate]
+        public static JSObject parse(JSObject args)
+        {
+            var length = Tools.JSObjectToInt(args["length"]);
+            var code = args["0"].ToString();
+            Function reviewer = length > 1 ? args["1"].oValue as Function : null;
+            return parse(code, reviewer);
+        }
+
+        [Hidden]
         public static JSObject parse(string code)
         {
             return parse(code, null);
         }
 
+        [Hidden]
         public static JSObject parse(string code, Function reviewer)
         {
             Stack<StackFrame> stack = new Stack<StackFrame>();
@@ -164,16 +175,17 @@ namespace NiL.JS.Core.Modules
             return stack.Peek().obj.GetMember("");
         }
 
+        [DoNotEnumerate]
         public static string stringify(JSObject obj)
         {
-            return stringify(obj.GetMember("0"), null, null);
+            var length = Tools.JSObjectToInt(obj["length"]);
+            obj = obj["0"];
+            Function replacer = length > 1 ? obj["1"].oValue as Function : null;
+            string space = length > 1 ? obj["2"].ToString() : null;
+            return stringify(obj, replacer, space);
         }
 
-        public static string stringify(JSObject obj, Function replacer)
-        {
-            return stringify(obj, replacer, null);
-        }
-
+        [Hidden]
         public static string stringify(JSObject obj, Function replacer, string space)
         {
             if (obj.valueType < JSObjectType.Object)
@@ -186,7 +198,7 @@ namespace NiL.JS.Core.Modules
                         .Replace("\r", "\\\r")
                         .Replace("\n\\\r", "\n\r")
                         .Replace("\r\\\n", "\r\n") + '"';
-                return obj.Value.ToString();
+                return obj.ToString();
             }
             StringBuilder res = new StringBuilder("{");
             var args = new BaseTypes.Array(2);

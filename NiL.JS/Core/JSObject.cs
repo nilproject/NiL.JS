@@ -1,4 +1,5 @@
 using NiL.JS.Core.BaseTypes;
+using NiL.JS.Core.Modules;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -32,8 +33,8 @@ namespace NiL.JS.Core
         ReadOnly = 1 << 2,
         Immutable = 1 << 3,
         Argument = 1 << 16,
-        GetValue = 1 << 17,
-        TrueEval = 1 << 18,
+        TrueEval = 1 << 17,
+        SystemConstant = 1 << 18,
 #if DEBUG
         DBGGettedOverGM = 1 << 30
 #endif
@@ -55,21 +56,30 @@ namespace NiL.JS.Core
         [Modules.Hidden]
         internal static readonly IEnumerator<string> EmptyEnumerator = ((IEnumerable<string>)(new string[0])).GetEnumerator();
         [Modules.Hidden]
-        internal static readonly JSObject undefined = new JSObject() { valueType = JSObjectType.Undefined, attributes = JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum | JSObjectAttributes.ReadOnly };
+        internal static readonly JSObject undefined = new JSObject() { valueType = JSObjectType.Undefined, attributes = JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum | JSObjectAttributes.ReadOnly | JSObjectAttributes.SystemConstant };
         [Modules.Hidden]
-        internal static readonly JSObject notExist = new JSObject() { valueType = JSObjectType.NotExist, attributes = JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum | JSObjectAttributes.ReadOnly };
+        internal static readonly JSObject notExist = new JSObject() { valueType = JSObjectType.NotExist, attributes = JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum | JSObjectAttributes.ReadOnly | JSObjectAttributes.SystemConstant };
         [Modules.Hidden]
-        internal static readonly JSObject Null = new JSObject() { valueType = JSObjectType.Object, oValue = null, assignCallback = ErrorAssignCallback, attributes = JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum };
+        internal static readonly JSObject Null = new JSObject() { valueType = JSObjectType.Object, oValue = null, assignCallback = ErrorAssignCallback, attributes = JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum | JSObjectAttributes.SystemConstant };
         [Modules.Hidden]
-        internal static readonly JSObject nullString = new JSObject() { valueType = JSObjectType.String, oValue = "null", assignCallback = ErrorAssignCallback, attributes = JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum };
+        internal static readonly JSObject nullString = new JSObject() { valueType = JSObjectType.String, oValue = "null", assignCallback = ErrorAssignCallback, attributes = JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum | JSObjectAttributes.SystemConstant };
         [Modules.Hidden]
-        internal static readonly JSObject strictModeArgumentsPropertyDammy = new JSObject() { valueType = JSObjectType.Property, oValue = new Function[] { null, new ExternalFunction((t, a) => { throw new JSException(TypeProxy.Proxy(new TypeError("'caller', 'callee', and 'arguments' properties may not be accessed on strict mode functions or the arguments objects for calls to them"))); }) }, assignCallback = ErrorAssignCallback, attributes = JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum };
+        internal static readonly JSObject strictModeUnavailablePropertDammy = new JSObject()
+        {
+            valueType = JSObjectType.Property,
+            oValue = new Function[] {
+                new ExternalFunction((t, a)=> { throw new Exception(); }), 
+                new ExternalFunction((t, a) => { throw new JSException(TypeProxy.Proxy(new TypeError("\"" + strictModeUnavailablePropertDammy.lastRequestedName + "\" propertie may not be accessed on strict mode functions or the arguments objects for calls to them"))); }) 
+            },
+            assignCallback = ErrorAssignCallback,
+            attributes = JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum | JSObjectAttributes.ReadOnly | JSObjectAttributes.Immutable
+        };
         [Modules.Hidden]
         internal static JSObject GlobalPrototype;
 
         static JSObject()
         {
-            undefined.Protect();
+            undefined.attributes |= JSObjectAttributes.DoNotDelete | JSObjectAttributes.ReadOnly;
         }
 
         [NonSerialized]
@@ -416,7 +426,7 @@ namespace NiL.JS.Core
                             (fields == null || !fields.TryGetValue(name, out res) || res.valueType < JSObjectType.Undefined)
                             && (proto != null)
                             && (proto != this)
-                            && (!own || proto is TypeProxy);
+                            && (!own || (proto is TypeProxy && proto != GlobalPrototype.oValue));
                         if (fromProto)
                         {
                             res = proto.GetMember(name, false, own);
@@ -443,10 +453,10 @@ namespace NiL.JS.Core
                         }
                         else if (fromProto && create)
                         {
-                            if ((res.attributes & JSObjectAttributes.ReadOnly) == 0)
+                            if ((res.attributes & JSObjectAttributes.ReadOnly) == 0
+                                || (res.attributes & JSObjectAttributes.DoNotDelete) == 0)
                             {
-                                var t = new JSObject();
-                                t.Assign(res);
+                                var t = res.Clone() as JSObject;
                                 t.lastRequestedName = name;
                                 if (fields == null)
                                     fields = new Dictionary<string, JSObject>();
@@ -579,6 +589,9 @@ namespace NiL.JS.Core
         [Modules.Hidden]
         public virtual object Clone()
         {
+#if DEBUG
+            this.attributes &= ~JSObjectAttributes.DBGGettedOverGM;
+#endif
             var res = new JSObject();
             res.Assign(this);
             res.attributes = this.attributes;
@@ -613,7 +626,7 @@ namespace NiL.JS.Core
         }
 
         [Modules.Hidden]
-        public virtual IEnumerator<string> GetEnumerator()
+        public IEnumerator<string> GetEnumerator()
         {
             if (this.GetType() == typeof(JSObject) && valueType >= JSObjectType.Object)
             {
@@ -622,14 +635,14 @@ namespace NiL.JS.Core
             }
             if (fields == null)
                 return EmptyEnumerator;
-            return enumerate();
+            return GetEnumeratorImpl(true);
         }
 
-        private IEnumerator<string> enumerate()
+        protected internal virtual IEnumerator<string> GetEnumeratorImpl(bool doNotEnumProcess)
         {
             foreach (var f in fields)
             {
-                if (f.Value.valueType >= JSObjectType.Undefined && (f.Value.attributes & JSObjectAttributes.DoNotEnum) == 0)
+                if (f.Value.valueType >= JSObjectType.Undefined && (!doNotEnumProcess || (f.Value.attributes & JSObjectAttributes.DoNotEnum) == 0))
                     yield return f.Key;
             }
         }
@@ -665,7 +678,7 @@ namespace NiL.JS.Core
                 case JSObjectType.Date:
                 case JSObjectType.Object:
                     {
-                        if (this.oValue is ThisObject)
+                        if (this.oValue is ThisBind)
                             return this.oValue.ToString();
                         if (this.oValue is TypeProxy)
                         {
@@ -803,17 +816,6 @@ namespace NiL.JS.Core
             return res;
         }
 
-#if INLINE
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-#endif
-        [Modules.Hidden]
-        public void Protect()
-        {
-            if (assignCallback != null)
-                assignCallback(this);
-            attributes |= JSObjectAttributes.DoNotDelete | JSObjectAttributes.ReadOnly;
-        }
-
         [Modules.Hidden]
         public override bool Equals(object obj)
         {
@@ -838,7 +840,7 @@ namespace NiL.JS.Core
             var obj = args.GetMember("0");
             if (obj.valueType <= JSObjectType.Undefined)
                 return undefined;
-            obj = obj.GetMember(args.GetMember("1").ToString());
+            obj = obj.GetMember(args.GetMember("1").ToString(), true);
             var res = CreateObject();
             if (obj.valueType != JSObjectType.Property)
             {
@@ -853,6 +855,14 @@ namespace NiL.JS.Core
             res["configurable"] = (obj.attributes & JSObjectAttributes.Immutable) == 0 || (obj.attributes & JSObjectAttributes.DoNotDelete) == 0;
             res["enumerable"] = (obj.attributes & JSObjectAttributes.DoNotEnum) == 0;
             return res;
+        }
+
+        public static JSObject getOwnPropertyNames(JSObject args)
+        {
+            var obj = args.GetMember("0");
+            if (obj.valueType < JSObjectType.Object)
+                throw new JSException(new TypeError("Object.getOwnPropertyNames called on non-object value."));
+            return new BaseTypes.Array((obj.oValue as JSObject).GetEnumeratorImpl(false));
         }
 
         public static implicit operator JSObject(char value)

@@ -4,6 +4,7 @@ using System.Text;
 using NiL.JS.Core.Modules;
 using System.Diagnostics;
 using System.Globalization;
+using NiL.JS.Statements;
 
 namespace NiL.JS.Core.BaseTypes
 {
@@ -14,8 +15,9 @@ namespace NiL.JS.Core.BaseTypes
     public enum FunctionType
     {
         Function = 0,
-        Get,
-        Set
+        Get = 1,
+        Set = 2,
+        AnonymousFunction = 4
     }
 
     [Serializable]
@@ -642,28 +644,29 @@ namespace NiL.JS.Core.BaseTypes
                 throw new ArgumentException("Parameters count must be no more 16.");
         }
 
+        private readonly FunctionStatement creator;
         [Hidden]
         [CLSCompliant(false)]
         internal protected readonly Context context;
         [Hidden]
         internal protected JSObject prototypeField;
         [Hidden]
-        public Context Context { get { return context; } }
-        [Hidden]
-        private string[] argumentsNames;
-        [Hidden]
-        private Statements.CodeBlock body;
-        private string name;
+        public Context Context
+        {
+            [Hidden]
+            get { return context; }
+        }
         [Hidden]
         public virtual string Name
         {
-            get { return name; }
+            [Hidden]
+            get { return creator.name; }
         }
-        private FunctionType type;
         [Hidden]
         public virtual FunctionType Type
         {
-            get { return type; }
+            [Hidden]
+            get { return creator.type; }
         }
 
         #region Runtime
@@ -681,47 +684,9 @@ namespace NiL.JS.Core.BaseTypes
                 return _arguments;
             }
         }
+
+        [Hidden]
         internal Number _length = null;
-        #endregion
-
-        public Function()
-        {
-            context = Context.CurrentContext ?? Context.globalContext;
-            body = new Statements.CodeBlock(new Statement[0], false);
-            argumentsNames = new string[0];
-            name = "";
-            valueType = JSObjectType.Function;
-        }
-
-        public Function(JSObject args)
-        {
-            context = Context.CurrentContext ?? Context.globalContext;
-            var index = 0;
-            int len = args.GetMember("length").iValue - 1;
-            var argn = "";
-            for (int i = 0; i < len; i++)
-                argn += args.GetMember(i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture)) + (i + 1 < len ? "," : "");
-            string code = "function(" + argn + "){" + args.GetMember(len < 16 ? Tools.NumString[len] : len.ToString(CultureInfo.InvariantCulture)) + "}";
-            var fs = NiL.JS.Statements.FunctionStatement.Parse(new ParsingState(code, code), ref index);
-            if (fs.IsParsed)
-            {
-                Parser.Optimize(ref fs.Statement, new Dictionary<string, VariableDescriptor>());
-                var func = fs.Statement.Invoke(context) as Function;
-                body = func.body;
-                argumentsNames = func.argumentsNames;
-            }
-        }
-
-        internal Function(Context context, Statements.CodeBlock body, string[] argumentsNames, string name, FunctionType type)
-        {
-            this.context = context;
-            this.argumentsNames = argumentsNames;
-            this.body = body;
-            this.name = name;
-            this.type = type;
-            valueType = JSObjectType.Function;
-        }
-
         [Modules.DoNotEnumerate]
         [Modules.DoNotDelete]
         public virtual JSObject length
@@ -730,21 +695,63 @@ namespace NiL.JS.Core.BaseTypes
             get
             {
                 if (_length == null)
+                {
                     _length = new Number(0) { attributes = JSObjectAttributes.ReadOnly | JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum };
-                _length.iValue = argumentsNames.Length;
+                    _length.iValue = creator.parameters.Length;
+                }
                 return _length;
             }
         }
+        #endregion
+
+        public Function()
+        {
+            attributes = JSObjectAttributes.ReadOnly | JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum;
+            creator = new FunctionStatement("anonymous") { type = FunctionType.AnonymousFunction };
+            valueType = JSObjectType.Function;
+        }
+
+        public Function(JSObject[] args)
+        {
+            attributes = JSObjectAttributes.ReadOnly | JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum;
+            context = Context.CurrentContext.Root;
+            if (context == Context.globalContext)
+                throw new InvalidOperationException("Special Functions constructor can call only in runtime.");
+            var index = 0;
+            int len = args.Length - 1;
+            var argn = "";
+            for (int i = 0; i < len; i++)
+                argn += args[i] + (i + 1 < len ? "," : "");
+            string code = "function(" + argn + "){" + (len == -1 ? "undefined" : args[len]) + "}";
+            var fs = NiL.JS.Statements.FunctionStatement.Parse(new ParsingState(code, code), ref index);
+            if (fs.IsParsed)
+            {
+                Parser.Optimize(ref fs.Statement, new Dictionary<string, VariableDescriptor>(), context.strict);
+                var func = fs.Statement.Invoke(context) as Function;
+                creator = fs.Statement as FunctionStatement;
+            }
+            else throw new JSException(TypeProxy.Proxy(new SyntaxError()));
+        }
+
+        internal Function(Context context, FunctionStatement creator)
+        {
+            attributes = JSObjectAttributes.ReadOnly | JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum;
+            this.context = context;
+            this.creator = creator;
+            valueType = JSObjectType.Function;
+        }
 
         [Hidden]
-        public virtual JSObject Invoke(JSObject thisOverride, JSObject args)
+        public virtual JSObject Invoke(JSObject thisBind, JSObject args)
         {
             var oldargs = _arguments;
             Context internalContext = new Context(context);
             try
             {
-                var thisBind = thisOverride;
-                if (!body.strict)
+                var body = creator.body;
+                if (creator.type == FunctionType.AnonymousFunction)
+                    internalContext.thisBind = thisBind ?? (body.strict ? undefined : Context.CurrentContext.Root.GetVariable("this"));
+                else if (!body.strict)
                 {
                     if (thisBind != null)
                     {
@@ -759,55 +766,79 @@ namespace NiL.JS.Core.BaseTypes
                             };
                         }
                         else if (thisBind.valueType <= JSObjectType.Undefined || thisBind.oValue == null)
-                        {
-                            var thc = context;
-                            while (thc.prototype != Context.globalContext && !(thc.thisBind is ThisObject))
-                                thc = thc.prototype;
-                            thisBind = thc.thisBind ?? thc.GetVariable("this");
-                        }
+                            thisBind = context.Root.thisBind;
                         internalContext.thisBind = thisBind;
                     }
                 }
                 else
-                    internalContext.thisBind = thisBind ?? undefined;
+                    internalContext.thisBind = thisBind;
                 if (args == null)
                 {
                     args = new JSObject(true) { valueType = JSObjectType.Object };
                     args.oValue = args;
                     args.DefineMember("length").Assign(0);
                 }
+                _arguments = args;
                 if (body.strict)
                 {
-                    _arguments = strictModeArgumentsPropertyDammy;
-                    args.DefineMember("callee").Assign(strictModeArgumentsPropertyDammy);
+                    args.attributes |= JSObjectAttributes.ReadOnly;
+                    args.fields["callee"] = strictModeUnavailablePropertDammy;
+                    args.fields["caller"] = strictModeUnavailablePropertDammy;
                 }
                 else
                 {
-                    _arguments = args;
                     var callee = args.DefineMember("callee");
                     callee.Assign(this);
-                    callee.attributes |= JSObjectAttributes.DoNotEnum;
+                    callee.attributes = JSObjectAttributes.DoNotEnum;
                 }
                 internalContext.fields["arguments"] = args;
-                if (type == FunctionType.Function && name != null && Parser.ValidateName(name))
-                    internalContext.DefineVariable(name).Assign(this);
+                if (creator.type == FunctionType.Function && creator.name != null && Parser.ValidateName(creator.name))
+                    internalContext.fields[creator.name] = this;
                 int i = 0;
                 JSObject argsLength = args.GetMember("length");
                 if (argsLength.valueType == JSObjectType.Property)
                     argsLength = (argsLength.oValue as Function[])[1].Invoke(args, null);
-                int min = System.Math.Min(argsLength.iValue, argumentsNames.Length);
+                int min = System.Math.Min(argsLength.iValue, creator.parameters.Length);
                 for (; i < min; i++)
-                    internalContext.fields[argumentsNames[i]] = args.GetMember(i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture));
-                for (; i < argumentsNames.Length; i++)
-                    internalContext.fields[argumentsNames[i]] = new JSObject();
+                {
+                    var n = i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture);
+                    var t = args.GetMember(n);
+                    args.fields[n] = t = t.Clone() as JSObject;
+                    t.attributes |= JSObjectAttributes.Argument;
+                    if (body.strict)
+                        t = t.Clone() as JSObject;
+                    internalContext.fields[creator.parameters[i].Name] = t;
+                }
+                for (; i < creator.parameters.Length; i++)
+                    internalContext.fields[creator.parameters[i].Name] = new JSObject() { attributes = JSObjectAttributes.Argument };
+                for (; i < argsLength.iValue; i++)
+                {
+                    var n = i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture);
+                    var t = args[n];
+                    args.fields[n] = t = t.Clone() as JSObject;
+                    t.attributes |= JSObjectAttributes.Argument;
+                }
 
-                internalContext.Run();
+                for (i = body.variables.Length; i-- > 0; )
+                {
+                    if (body.variables[i].Owner == creator
+                        || body.variables[i].Owner == body)
+                    {
+                        body.variables[i].ClearCache();
+                        var f = internalContext.DefineVariable(body.variables[i].Name);
+                        if (body.variables[i].Inititalizator != null)
+                            f.Assign(body.variables[i].Inititalizator.Invoke(internalContext));
+                    }
+                }
+                internalContext.strict |= body.strict;
+                internalContext.variables = body.variables;
+                internalContext.Activate();
                 body.Invoke(internalContext);
                 return internalContext.abortInfo;
             }
             finally
             {
-                internalContext.Stop();
+                internalContext.Deactivate();
                 _arguments = oldargs;
             }
         }
@@ -817,6 +848,7 @@ namespace NiL.JS.Core.BaseTypes
         {
             return Invoke(undefined, args);
         }
+
 
         [Hidden]
         internal protected override JSObject GetMember(string name, bool create, bool own)
@@ -846,18 +878,18 @@ namespace NiL.JS.Core.BaseTypes
         [Hidden]
         public override string ToString()
         {
-            var res = type.ToString().ToLowerInvariant() + " " + Name + "(";
-            if (argumentsNames != null)
-                for (int i = 0; i < argumentsNames.Length; )
-                    res += argumentsNames[i] + (++i < argumentsNames.Length ? "," : "");
-            res += ")" + ((object)body ?? "{ [native code] }").ToString();
+            var res = ((FunctionType)(creator != null ? (int)creator.type & 3 : 0)).ToString().ToLowerInvariant() + " " + Name + "(";
+            if (creator != null && creator.parameters != null)
+                for (int i = 0; i < creator.parameters.Length; )
+                    res += creator.parameters[i].Name + (++i < creator.parameters.Length ? "," : "");
+            res += ")" + (creator != null && creator.body != null ? creator.body as object : "{ [native code] }").ToString();
             return res;
         }
 
         public virtual JSObject call(JSObject args)
         {
             var newThis = args.GetMember("0");
-            var prmlen = args.GetMember("length").iValue - 1;
+            var prmlen = --args.GetMember("length").iValue;
             if (prmlen >= 0)
             {
                 for (int i = 0; i < prmlen; i++)
@@ -898,24 +930,21 @@ namespace NiL.JS.Core.BaseTypes
             return Invoke(newThis, args);
         }
 
-        public virtual JSObject bind(JSObject args)
+        public virtual JSObject bind(JSObject[] args)
         {
-            var prmsCR = args.GetMember("length");
-            var prmsC = Tools.JSObjectToInt(prmsCR.valueType == JSObjectType.Property ? (prmsCR.oValue as Function[])[1].Invoke(args, null) : prmsCR);
-            var strict = this.body.strict || Context.CurrentContext.strict;
-            if (prmsC > 0 || strict)
+            var newThis = args.Length > 0 ? args[0] : null;
+            var strict = creator.body.strict || Context.CurrentContext.strict;
+            if ((newThis != null && newThis.valueType > JSObjectType.Undefined) || strict)
             {
-                var newThis = args.GetMember("0");
-                if (newThis.valueType > JSObjectType.Undefined || strict)
-                    return new ExternalFunction((context, bargs) =>
-                    {
-                        return Invoke(newThis, bargs);
-                    });
+                return new ExternalFunction((context, bargs) =>
+                {
+                    return Invoke(newThis, bargs);
+                });
             }
             return this;
         }
 
-        public override IEnumerator<string> GetEnumerator()
+        protected internal override IEnumerator<string> GetEnumeratorImpl(bool pdef)
         {
             return EmptyEnumerator;
         }

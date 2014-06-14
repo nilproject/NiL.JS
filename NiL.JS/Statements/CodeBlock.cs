@@ -88,7 +88,9 @@ namespace NiL.JS.Statements
                     if (Parser.ValidateValue(code, ref i))
                     {
                         while (i < code.Length && char.IsWhiteSpace(code[i])) i++;
-                        if (i < code.Length && Parser.isOperator(code[i]))
+                        if (i < code.Length && (Parser.isOperator(code[i])
+                            || Parser.Validate(code, "instanceof", i)
+                            || Parser.Validate(code, "in", i)))
                         {
                             i = s;
                             break;
@@ -140,7 +142,9 @@ namespace NiL.JS.Statements
                         vars[f.Name] = new VariableDescriptor(f.Reference, true);
                     else
                     {
-                        vd.Add(f.Reference);
+                        if ((vd.attributes & VariableDescriptorAttributes.SuppressRefRegistration) == 0)
+                            vd.references.Add(f.Reference);
+                        f.Reference.Descriptor = vd;
                         vd.Inititalizator = f.Reference;
                     }
                 }
@@ -151,12 +155,16 @@ namespace NiL.JS.Statements
                         vars = new Dictionary<string, VariableDescriptor>();
                     for (var j = inits.Length; j-- > 0; )
                     {
-                        VariableDescriptor vd = null;
+                        VariableDescriptor desc = null;
                         var gvs = (inits[j] as GetVariableStatement) ?? ((inits[j] as Assign).first as GetVariableStatement);
-                        if (!vars.TryGetValue(gvs.Name, out vd))
+                        if (!vars.TryGetValue(gvs.Name, out desc))
                             vars[gvs.Name] = new VariableDescriptor(gvs, true);
                         else
-                            vd.Add(gvs);
+                        {
+                            if ((desc.attributes & VariableDescriptorAttributes.SuppressRefRegistration) == 0)
+                                desc.references.Add(gvs);
+                            gvs.Descriptor = desc;
+                        }
                     }
                 }
                 body.Add(t);
@@ -181,17 +189,6 @@ namespace NiL.JS.Statements
 
         internal override JSObject Invoke(Context context)
         {
-            context.strict |= strict;
-            for (int i = variables == null ? 0 : variables.Length; i-- > 0; )
-            {
-                if (variables[i].Defined && variables[i].Owner == this)
-                {
-                    variables[i].ClearCache();
-                    var f = context.DefineVariable(variables[i].Name);
-                    if (variables[i].Inititalizator != null)
-                        f.Assign(variables[i].Inititalizator.Invoke(context));
-                }
-            }
             JSObject res = JSObject.undefined;
             for (int i = body.Length; i-- > 0; )
             {
@@ -235,7 +232,7 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VariableDescriptor> variables)
+        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
             if (this.variables != null)
             {
@@ -248,16 +245,18 @@ namespace NiL.JS.Statements
                     {
                         foreach (var r in this.variables[i].References)
                         {
-                            this.variables[i].Remove(r);
-                            desc.Add(r);
+                            if ((desc.attributes & VariableDescriptorAttributes.SuppressRefRegistration) == 0)
+                                desc.references.Add(r);
+                            r.Descriptor = desc;
                         }
+                        this.variables[i] = desc;
                     }
                     if (depth == 0)
                         this.variables[i].Owner = this;
                 }
             }
             for (int i = body.Length; i-- > 0; )
-                Parser.Optimize(ref body[i], depth < 0 ? 2 : Math.Max(1, depth), variables);
+                Parser.Optimize(ref body[i], depth < 0 ? 2 : Math.Max(1, depth), variables, this.strict);
 
             if (depth > 0)
             {
@@ -274,8 +273,11 @@ namespace NiL.JS.Statements
                     this.variables = variables.Values.ToArray();
                 if (this.variables != null)
                     for (var i = this.variables.Length; i-- > 0; )
-                        if (this.variables[i].Defined)
+                        if (this.variables[i].Defined && this.variables[i].Owner == null)
+                        {
                             this.variables[i].Owner = this;
+                            this.variables[i].attributes |= VariableDescriptorAttributes.SuppressRefRegistration;
+                        }
             }
             return false;
         }

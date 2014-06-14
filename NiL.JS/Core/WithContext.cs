@@ -20,7 +20,6 @@ namespace NiL.JS.Core
                 throw new JSException(TypeProxy.Proxy(new TypeError("Can't access to property value of \"undefined\".")));
             if (obj.valueType >= JSObjectType.Object && obj.oValue == null)
                 throw new JSException(TypeProxy.Proxy(new TypeError("Can't access to property value of \"null\".")));
-            variables = prototype.variables;
             @object = obj.Clone() as JSObject;
         }
 

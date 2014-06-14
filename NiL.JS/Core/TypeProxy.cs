@@ -136,8 +136,6 @@ namespace NiL.JS.Core
                 throw new InvalidOperationException("Type \"" + type + "\" already proxied.");
             else
             {
-                if (!type.IsVisible)
-                    bindFlags |= BindingFlags.NonPublic;
                 hostedType = type;
                 prototypes[type] = this;
                 if (type.IsValueType)
@@ -182,7 +180,7 @@ namespace NiL.JS.Core
                 {
                     var prot = ctorProxy.DefaultFieldGetter("prototype", true, true);
                     prot.Assign(this);
-                    prot.attributes = JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum | JSObjectAttributes.ReadOnly;
+                    prot.attributes = JSObjectAttributes.DoNotEnum;
                     var ctor = type == typeof(JSObject) ? new ObjectConstructor(ctorProxy) : new TypeProxyConstructor(ctorProxy);
                     ctorProxy.DefaultFieldGetter("__proto__", true, false).Assign(GetPrototype(typeof(TypeProxyConstructor)));
                     ctor.attributes = attributes;
@@ -216,7 +214,8 @@ namespace NiL.JS.Core
                         if (mmbrs[i].IsDefined(typeof(HiddenAttribute), false))
                             continue;
                         var membername = mmbrs[i].Name;
-                        if (mmbrs[i].MemberType == MemberTypes.Method && membername.EndsWith("GetType"))
+                        if (mmbrs[i].MemberType == MemberTypes.Method 
+                            && ((mmbrs[i] as MethodBase).DeclaringType == typeof(object)))
                             continue;
                         membername = membername[0] == '.' ? membername : membername.Contains(".") ? membername.Substring(membername.LastIndexOf('.') + 1) : membername;
                         if (prewName != membername && !tempmemb.TryGetValue(membername, out temp))
@@ -245,6 +244,8 @@ namespace NiL.JS.Core
             {
                 if (r.valueType < JSObjectType.Undefined)
                     r.Assign(DefaultFieldGetter(name, create, own));
+                if (create && r.GetType() != typeof(JSObject))
+                    fields[name] = r = r.Clone() as JSObject;
                 return r;
             }
             IList<MemberInfo> m = null;
@@ -297,7 +298,7 @@ namespace NiL.JS.Core
                             }
                             if (cargs != null && cargs.Length == 1 && cargs[0] is JSObject && (cargs[0] as JSObject).oValue == Arguments.Instance)
                                 (cargs[0] as JSObject).fields["callee"] = cache[i];
-                            return TypeProxy.Proxy(cache[i].InvokeRaw(null, cargs));
+                            return TypeProxy.Proxy(cache[i].InvokeImpl(null, cargs, args));
                         }
                     }
                     return null;
@@ -311,12 +312,14 @@ namespace NiL.JS.Core
                         {
                             var method = (ConstructorInfo)m[0];
                             r = new MethodProxy(method);
+                            r.attributes = JSObjectAttributes.None;
                             break;
                         }
                     case MemberTypes.Method:
                         {
                             var method = (MethodInfo)m[0];
                             r = new MethodProxy(method);
+                            r.attributes = JSObjectAttributes.None;
                             break;
                         }
                     case MemberTypes.Field:
@@ -330,7 +333,7 @@ namespace NiL.JS.Core
                                     valueType = JSObjectType.Property,
                                     oValue = new Function[] 
                                     {
-                                        m[0].IsDefined(typeof(Modules.ProtectedAttribute), false) ? 
+                                        m[0].IsDefined(typeof(Modules.ReadOnlyAttribute), false) ? 
                                             new ExternalFunction((thisBind, a)=>
                                             {
                                                 field.SetValue(field.IsStatic ? null : thisBind.oValue, cva.To(a.GetMember("0").Value)); 
@@ -350,7 +353,7 @@ namespace NiL.JS.Core
                                     valueType = JSObjectType.Property,
                                     oValue = new Function[] 
                                     {
-                                        !m[0].IsDefined(typeof(Modules.ProtectedAttribute), false) ? new ExternalFunction((thisBind, a)=>
+                                        !m[0].IsDefined(typeof(Modules.ReadOnlyAttribute), false) ? new ExternalFunction((thisBind, a)=>
                                         {
                                             field.SetValue(field.IsStatic ? null : thisBind.oValue, a.GetMember("0").Value); 
                                             return null; 
@@ -362,7 +365,8 @@ namespace NiL.JS.Core
                                     }
                                 };
                             }
-                            r.attributes |= JSObjectAttributes.GetValue;
+                            if ((r.oValue as Function[])[0] == null)
+                                r.attributes |= JSObjectAttributes.ReadOnly;
                             break;
                         }
                     case MemberTypes.Property:
@@ -376,7 +380,7 @@ namespace NiL.JS.Core
                                         valueType = JSObjectType.Property,
                                         oValue = new Function[] 
                                         { 
-                                            pinfo.CanWrite && pinfo.GetSetMethod(false) != null && !pinfo.IsDefined(typeof(ProtectedAttribute), false) ? new MethodProxy(pinfo.GetSetMethod(false), cva, new[]{ cva }) : null,
+                                            pinfo.CanWrite && pinfo.GetSetMethod(false) != null && !pinfo.IsDefined(typeof(ReadOnlyAttribute), false) ? new MethodProxy(pinfo.GetSetMethod(false), cva, new[]{ cva }) : null,
                                             pinfo.CanRead && pinfo.GetGetMethod(false) != null ? new MethodProxy(pinfo.GetGetMethod(false), cva, null) : null 
                                         }
                                     };
@@ -388,12 +392,13 @@ namespace NiL.JS.Core
                                     valueType = JSObjectType.Property,
                                     oValue = new Function[] 
                                         { 
-                                            pinfo.CanWrite && pinfo.GetSetMethod(false) != null && !pinfo.IsDefined(typeof(ProtectedAttribute), false) ? new MethodProxy(pinfo.GetSetMethod(false)) : null,
+                                            pinfo.CanWrite && pinfo.GetSetMethod(false) != null && !pinfo.IsDefined(typeof(ReadOnlyAttribute), false) ? new MethodProxy(pinfo.GetSetMethod(false)) : null,
                                             pinfo.CanRead && pinfo.GetGetMethod(false) != null ? new MethodProxy(pinfo.GetGetMethod(false)) : null 
                                         }
                                 };
                             }
-                            r.attributes |= JSObjectAttributes.GetValue;
+                            if ((r.oValue as Function[])[0] == null)
+                                r.attributes |= JSObjectAttributes.ReadOnly;
                             break;
                         }
                     case MemberTypes.Event:
@@ -411,14 +416,14 @@ namespace NiL.JS.Core
                         }
                     default: throw new NotImplementedException("Convertion from " + m[0].MemberType + " not implemented");
                 }
-                if (m[0].IsDefined(typeof(ProtectedAttribute), false))
-                    r.Protect();
-                if (m[0].IsDefined(typeof(DoNotDeleteAttribute), false))
-                    r.attributes |= JSObjectAttributes.DoNotDelete;
             }
             r.attributes |= JSObjectAttributes.DoNotEnum;
             lock (fields)
-                fields[name] = r;
+                fields[name] = create && r.GetType() != typeof(JSObject) ? (r = r.Clone() as JSObject) : r;
+            if (m[0].IsDefined(typeof(ReadOnlyAttribute), false))
+                r.attributes |= JSObjectAttributes.ReadOnly;
+            if (m[0].IsDefined(typeof(DoNotDeleteAttribute), false))
+                r.attributes |= JSObjectAttributes.DoNotDelete;
             for (var i = m.Count; i-- > 0; )
             {
                 if (!m[i].IsDefined(typeof(DoNotEnumerateAttribute), false))
@@ -449,8 +454,7 @@ namespace NiL.JS.Core
             return false;
         }
 
-        [Hidden]
-        public override IEnumerator<string> GetEnumerator()
+        protected internal override IEnumerator<string> GetEnumeratorImpl(bool pdef)
         {
             if (members == null)
                 fillMembers();
@@ -458,7 +462,7 @@ namespace NiL.JS.Core
             {
                 for (var i = m.Value.Count; i-- > 0; )
                 {
-                    if (!m.Value[i].IsDefined(typeof(DoNotEnumerateAttribute), false))
+                    if (!pdef || !m.Value[i].IsDefined(typeof(DoNotEnumerateAttribute), false))
                     {
                         yield return m.Key;
                         break;

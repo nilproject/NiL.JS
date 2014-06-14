@@ -1,24 +1,33 @@
-﻿/// Copyright (c) 2012 Ecma International.  All rights reserved. 
+﻿// Copyright 2009 the Sputnik authors.  All rights reserved.
 /**
- * @path ch10/10.4/10.4.2/10.4.2-1-1.js
- * @description Indirect call to eval has context set to global context
+ * Changing property using "eval" statement containing "with" statement
+ *
+ * @path ch12/12.10/S12.10_A4_T6.js
+ * @description Changing function property
+ * @noStrict
  */
 
-var __10_4_2_1_1_1 = "str";
-function testcase() {
-    try {
-
-        var _eval = eval;
-        var __10_4_2_1_1_1 = "str1";
-        if (_eval("\'str\' === __10_4_2_1_1_1") === true &&  // indirect eval
-           eval("\'str1\' === __10_4_2_1_1_1") === true) {   // direct eval
-            return true;
-        }
-        return false;
-    } finally {
-        delete this.__10_4_2_1_1_1;
-    }
+this.p1 = 'a';
+var myObj = {
+    p1: function () { return 0; },
 }
-runTestCase(testcase);
+eval("with(myObj){p1=function(){return 1;}}");
 
-function runTestCase(a) { if (!a()) ERROR('Test failed') }; function fnGlobalObject() { return this };
+//////////////////////////////////////////////////////////////////////////////
+//CHECK#1
+if (myObj.p1() !== 1) {
+    $ERROR('#1: myObj.p1 === 1. Actual:  myObj.p1 ===' + myObj.p1);
+}
+//
+//////////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////////
+//CHECK#3
+if (myObj.p1 === 'a') {
+    $ERROR('#2: myObj.p1 !== \'a\'');
+}
+//
+//////////////////////////////////////////////////////////////////////////////
+
+
+function runTestCase(a) { if (!a()) ERROR('Test failed') };

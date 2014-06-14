@@ -10,9 +10,9 @@ namespace NiL.JS.Core.BaseTypes
     public class Boolean : EmbeddedType
     {
         [Modules.Hidden]
-        internal static readonly Boolean True = new Boolean(true);
+        internal static readonly Boolean True = new Boolean(true) { attributes = JSObjectAttributes.SystemConstant };
         [Modules.Hidden]
-        internal static readonly Boolean False = new Boolean(false);
+        internal static readonly Boolean False = new Boolean(false) { attributes = JSObjectAttributes.SystemConstant };
 
         public Boolean()
         {

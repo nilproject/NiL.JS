@@ -48,6 +48,11 @@ namespace NiL.JS.Statements
                     throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid variable definition at " + Tools.PositionToTextcord(code, s))));
                 }
                 string name = Tools.Unescape(code.Substring(s, i - s), state.strict.Peek());
+                if (state.strict.Peek())
+                {
+                    if (name == "arguments" || name == "eval")
+                        throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Varible name may not be \"arguments\" or \"eval\" in strict mode at " + Tools.PositionToTextcord(code, s))));
+                }
                 names.Add(name);
                 isDef = true;
                 while (i < code.Length && char.IsWhiteSpace(code[i]) && !Tools.isLineTerminator(code[i])) i++;
@@ -128,10 +133,10 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VariableDescriptor> variables)
+        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
             for (int i = 0; i < initializators.Length; i++)
-                Parser.Optimize(ref initializators[i], 1, variables);
+                Parser.Optimize(ref initializators[i], 1, variables, strict);
             for (var i = 0; i < names.Length; i++)
                 variables[names[i]].Defined = true;
             return false;

@@ -3,6 +3,7 @@ using NiL.JS.Core.BaseTypes;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 
 namespace NiL.JS.Statements
 {
@@ -15,13 +16,24 @@ namespace NiL.JS.Statements
         public Statement[] Body { get { return values; } }
         public string[] Fields { get { return fields; } }
 
+        private Json(Dictionary<string, Statement> fields)
+        {
+            this.fields = new string[fields.Count];
+            this.values = new Statement[fields.Count];
+            int i = 0;
+            foreach (var f in fields)
+            {
+                this.fields[i] = f.Key;
+                this.values[i++] = f.Value;
+            }
+        }
+
         internal static ParseResult Parse(ParsingState state, ref int index)
         {
             string code = state.Code;
             if (code[index] != '{')
                 throw new ArgumentException("Invalid JSON definition");
-            var flds = new List<string>();
-            var vls = new List<Statement>();
+            var flds = new Dictionary<string, Statement>();
             int i = index;
             int pos = 0;
             while (code[i] != '}')
@@ -35,17 +47,17 @@ namespace NiL.JS.Statements
                 {
                     i = pos;
                     var setter = FunctionStatement.Parse(state, ref i, FunctionType.Set).Statement as FunctionStatement;
-                    if (flds.IndexOf(setter.Name) == -1)
+                    if (!flds.ContainsKey(setter.Name))
                     {
-                        flds.Add(setter.Name);
                         var vle = new ImmidateValueStatement(new JSObject() { valueType = JSObjectType.Object, oValue = new Statement[2] { setter, null } });
                         vle.value.valueType = JSObjectType.Property;
-                        vls.Add(vle);
+                        flds.Add(setter.Name, vle);
                     }
                     else
                     {
-                        var vle = vls[flds.IndexOf(setter.Name)];
-                        if (!(vle is ImmidateValueStatement))
+                        var vle = flds[setter.Name];
+                        if (!(vle is ImmidateValueStatement)
+                            || (vle as ImmidateValueStatement).value.valueType != JSObjectType.Property)
                             throw new JSException(TypeProxy.Proxy(new SyntaxError("Try to define setter for defined field at " + Tools.PositionToTextcord(code, pos))));
                         if (((vle as ImmidateValueStatement).value.oValue as Statement[])[0] != null)
                             throw new JSException(TypeProxy.Proxy(new SyntaxError("Try to redefine setter " + setter.Name + " at " + Tools.PositionToTextcord(code, pos))));
@@ -56,17 +68,17 @@ namespace NiL.JS.Statements
                 {
                     i = pos;
                     var getter = FunctionStatement.Parse(state, ref i, FunctionType.Get).Statement as FunctionStatement;
-                    if (flds.IndexOf(getter.Name) == -1)
+                    if (!flds.ContainsKey(getter.Name))
                     {
-                        flds.Add(getter.Name);
                         var vle = new ImmidateValueStatement(new JSObject() { valueType = JSObjectType.Object, oValue = new Statement[2] { null, getter } });
                         vle.value.valueType = JSObjectType.Property;
-                        vls.Add(vle);
+                        flds.Add(getter.Name, vle);
                     }
                     else
                     {
-                        var vle = vls[flds.IndexOf(getter.Name)];
-                        if (!(vle is ImmidateValueStatement))
+                        var vle = flds[getter.Name];
+                        if (!(vle is ImmidateValueStatement) 
+                            || (vle as ImmidateValueStatement).value.valueType != JSObjectType.Property)
                             throw new JSException(TypeProxy.Proxy(new SyntaxError("Try to define getter for defined field at " + Tools.PositionToTextcord(code, pos))));
                         if (((vle as ImmidateValueStatement).value.oValue as Statement[])[1] != null)
                             throw new JSException(TypeProxy.Proxy(new SyntaxError("Try to redefine getter " + getter.Name + " at " + Tools.PositionToTextcord(code, pos))));
@@ -76,21 +88,24 @@ namespace NiL.JS.Statements
                 else
                 {
                     i = pos;
+                    var fieldName = "";
                     if (Parser.ValidateName(code, ref i, false, true, state.strict.Peek()))
-                        flds.Add(Tools.Unescape(code.Substring(s, i - s), state.strict.Peek()));
+                        fieldName = Tools.Unescape(code.Substring(s, i - s), state.strict.Peek());
                     else if (Parser.ValidateValue(code, ref i))
                     {
                         string value = code.Substring(s, i - s);
                         if ((value[0] == '\'') || (value[0] == '"'))
-                            flds.Add(value.Substring(1, value.Length - 2));
+                            fieldName = value.Substring(1, value.Length - 2);
                         else
                         {
                             int n = 0;
                             double d = 0.0;
                             if (int.TryParse(value, out n))
-                                flds.Add(n < 16 ? Tools.NumString[n] : n.ToString(CultureInfo.InvariantCulture));
+                                fieldName = n < 16 ? Tools.NumString[n] : n.ToString(CultureInfo.InvariantCulture);
                             else if (double.TryParse(value, out d))
-                                flds.Add(Tools.DoubleToString(d));
+                                fieldName = Tools.DoubleToString(d);
+                            else if (flds.Count != 0)
+                                throw new JSException(TypeProxy.Proxy(new SyntaxError("Invalid field name at " + Tools.PositionToTextcord(code, pos))));
                             else
                                 return new ParseResult();
                         }
@@ -101,7 +116,14 @@ namespace NiL.JS.Statements
                     if (code[i] != ':')
                         return new ParseResult();
                     do i++; while (char.IsWhiteSpace(code[i]));
-                    vls.Add(OperatorStatement.Parse(state, ref i, false).Statement);
+                    var initializator = OperatorStatement.Parse(state, ref i, false).Statement;
+                    Statement aei = null;
+                    flds.TryGetValue(fieldName, out aei);
+                    if (aei != null 
+                        && ((state.strict.Peek() && (!(aei is ImmidateValueStatement) || (aei as ImmidateValueStatement).value != JSObject.undefined))
+                            || (aei is ImmidateValueStatement && ((aei as ImmidateValueStatement).value.valueType == JSObjectType.Property))))
+                        throw new JSException(new SyntaxError("Try to redefine field \"" + fieldName + "\" at " + Tools.PositionToTextcord(code, pos)));
+                    flds[fieldName] = initializator;
                 }
                 while (char.IsWhiteSpace(code[i])) i++;
                 if ((code[i] != ',') && (code[i] != '}'))
@@ -113,10 +135,8 @@ namespace NiL.JS.Statements
             return new ParseResult()
             {
                 IsParsed = true,
-                Statement = new Json()
+                Statement = new Json(flds)
                 {
-                    fields = flds.ToArray(),
-                    values = vls.ToArray(),
                     Position = pos,
                     Length = index - pos
                 }
@@ -144,18 +164,18 @@ namespace NiL.JS.Statements
             return res;
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VariableDescriptor> vars)
+        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict)
         {
             for (int i = 0; i < values.Length; i++)
             {
                 if ((values[i] is ImmidateValueStatement) && ((values[i] as ImmidateValueStatement).value.valueType == JSObjectType.Property))
                 {
                     var gs = (values[i] as ImmidateValueStatement).value.oValue as Statement[];
-                    Parser.Optimize(ref gs[0], 1, vars);
-                    Parser.Optimize(ref gs[1], 1, vars);
+                    Parser.Optimize(ref gs[0], 1, vars, strict);
+                    Parser.Optimize(ref gs[1], 1, vars, strict);
                 }
                 else
-                    Parser.Optimize(ref values[i], 2, vars);
+                    Parser.Optimize(ref values[i], 2, vars, strict);
             }
             return false;
         }

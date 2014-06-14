@@ -307,12 +307,12 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VariableDescriptor> variables)
+        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
-            Parser.Optimize(ref init, 1, variables);
-            Parser.Optimize(ref condition, 2, variables);
-            Parser.Optimize(ref post, 1, variables);
-            Parser.Optimize(ref body, System.Math.Max(1, depth), variables);
+            Parser.Optimize(ref init, 1, variables, strict);
+            Parser.Optimize(ref condition, 2, variables, strict);
+            Parser.Optimize(ref post, 1, variables, strict);
+            Parser.Optimize(ref body, System.Math.Max(1, depth), variables, strict);
             return false;
         }
 

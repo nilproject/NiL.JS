@@ -10,28 +10,28 @@ namespace NiL.JS.Core.Modules
         internal readonly static Random randomInstance = new Random((int)DateTime.Now.Ticks);
 
         [DoNotDelete]
-        [Protected]
+        [ReadOnly]
         public const double E = System.Math.E;
         [DoNotDelete]
-        [Protected]
+        [ReadOnly]
         public const double PI = System.Math.PI;
         [DoNotDelete]
-        [Protected]
+        [ReadOnly]
         public static readonly double LN2 = System.Math.Log(2);
         [DoNotDelete]
-        [Protected]
+        [ReadOnly]
         public static readonly double LN10 = System.Math.Log(10);
         [DoNotDelete]
-        [Protected]
+        [ReadOnly]
         public static readonly double LOG2E = 1.0 / LN2;
         [DoNotDelete]
-        [Protected]
+        [ReadOnly]
         public static readonly double LOG10E = 1.0 / LN10;
         [DoNotDelete]
-        [Protected]
+        [ReadOnly]
         public static readonly double SQRT1_2 = System.Math.Sqrt(0.5);
         [DoNotDelete]
-        [Protected]
+        [ReadOnly]
         public static readonly double SQRT2 = System.Math.Sqrt(2);
 
         [DoNotDelete]

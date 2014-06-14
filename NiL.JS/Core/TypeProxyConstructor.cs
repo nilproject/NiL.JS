@@ -10,14 +10,39 @@ using System.Collections;
 namespace NiL.JS.Core
 {
     [Serializable]
-    [Modules.Prototype(typeof(Function))]
+    [Prototype(typeof(Function))]
     internal class TypeProxyConstructor : Function
     {
+        [Hidden]
         private static readonly object _object = new object();
+        [Hidden]
         private static readonly object[] _objectA = new object[0];
+        [Hidden]
         internal readonly TypeProxy proxy;
+        [Hidden]
         private MethodProxy[] constructors;
 
+        [Hidden]
+        public override string Name
+        {
+            [Hidden]
+            get
+            {
+                return proxy.hostedType.Name;
+            }
+        }
+
+        [Hidden]
+        public override FunctionType Type
+        {
+            [Hidden]
+            get
+            {
+                return FunctionType.Function;
+            }
+        }
+
+        [Hidden]
         public TypeProxyConstructor(TypeProxy typeProxy)
         {
             proxy = typeProxy;
@@ -32,19 +57,23 @@ namespace NiL.JS.Core
             constructors = ctorsL.ToArray();
         }
 
+        [Hidden]
         internal protected override JSObject GetMember(string name, bool create, bool own)
         {
             if (name == "__proto__" && prototype == null)
             {
-                prototype = TypeProxy.GetPrototype(typeof(TypeProxyConstructor)).Clone() as JSObject;
+                prototype = TypeProxy.GetPrototype(typeof(TypeProxyConstructor));
+                if (create && prototype.GetType() != typeof(JSObject))
+                    prototype = prototype.Clone() as JSObject;
                 return prototype;
             }
             var res = proxy.GetMember(name, false, own);
-            if (res == JSObject.undefined)
+            if (res == JSObject.notExist)
                 return base.GetMember(name, create, own);
             return res;
         }
 
+        [Hidden]
         public override JSObject Invoke(JSObject thisOverride, JSObject argsObj)
         {
             if (proxy.hostedType.ContainsGenericParameters)
@@ -61,7 +90,7 @@ namespace NiL.JS.Core
             }
             try
             {
-                var obj = constructor.InvokeRaw(null, args);
+                var obj = constructor.InvokeImpl(null, args, argsObj);
                 JSObject res = null;
                 if (bynew)
                 {
@@ -97,9 +126,10 @@ namespace NiL.JS.Core
             }
         }
 
-        [Modules.DoNotDelete]
+        [DoNotDelete]
         public override JSObject length
         {
+            [Hidden]
             get
             {
                 if (_length == null)
@@ -112,6 +142,7 @@ namespace NiL.JS.Core
             }
         }
 
+        [Hidden]
         private MethodProxy findConstructor(JSObject argObj, ref object[] args)
         {
             args = null;
@@ -120,7 +151,7 @@ namespace NiL.JS.Core
             {
                 if (constructors[i].Parameters.Length == len
                     || (constructors[i].Parameters.Length == 1
-                        && (constructors[i].Parameters[0].ParameterType == typeof(JSObject) 
+                        && (constructors[i].Parameters[0].ParameterType == typeof(JSObject)
                             || typeof(ICollection).IsAssignableFrom(constructors[i].Parameters[0].ParameterType))))
                 {
                     if (len == 0)
@@ -145,9 +176,15 @@ namespace NiL.JS.Core
             return null;
         }
 
-        public override IEnumerator<string> GetEnumerator()
+        [Hidden]
+        protected internal override IEnumerator<string> GetEnumeratorImpl(bool pdef)
         {
-            return proxy.GetEnumerator();
+            var e = (prototype ?? GetMember("__proto__")).GetEnumeratorImpl(pdef);
+            while (e.MoveNext())
+                yield return e.Current;
+            e = proxy.GetEnumeratorImpl(pdef);
+            while (e.MoveNext())
+                yield return e.Current;
         }
 
         [Hidden]

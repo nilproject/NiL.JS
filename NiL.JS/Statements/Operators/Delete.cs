@@ -1,4 +1,5 @@
 ﻿using NiL.JS.Core;
+using NiL.JS.Core.BaseTypes;
 using System;
 
 namespace NiL.JS.Statements.Operators
@@ -45,7 +46,8 @@ namespace NiL.JS.Statements.Operators
             {
                 var temp = first.Invoke(context);
                 tempResult.valueType = JSObjectType.Bool;
-                if (temp.valueType <= JSObjectType.NotExistInObject)
+                if (temp.valueType <= JSObjectType.NotExistInObject
+                    || (temp.attributes & JSObjectAttributes.SystemConstant) != 0)
                     tempResult.iValue = 1;
                 else if ((temp.attributes & JSObjectAttributes.Argument) != 0)
                 {
@@ -74,21 +76,26 @@ namespace NiL.JS.Statements.Operators
                     temp.valueType = JSObjectType.NotExist;
                     temp.oValue = null;
                 }
+                else if (context.strict)
+                    throw new JSException(new TypeError("Can not delete property \"" + first + "\"."));
                 else
                     tempResult.iValue = 0;
                 return tempResult;
             }
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> vars)
+        internal override bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> vars, bool strict)
         {
-            base.Optimize(ref _this, depth, vars);
+            if (base.Optimize(ref _this, depth, vars, strict))
+                return true;
             if (first is GetVariableStatement)
+            {
+                if (strict)
+                    throw new JSException(new SyntaxError("Can not evalute delete on variable in strict mode"));
                 first = new SafeVariableGetter(first as GetVariableStatement);
+            }
             if (first is GetMemberStatement)
                 first = new SafeMemberGetter(first as GetMemberStatement);
-            if (first is ImmidateValueStatement)
-                _this = new ImmidateValueStatement(true);
             return false;
         }
 

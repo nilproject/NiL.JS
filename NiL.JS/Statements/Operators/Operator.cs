@@ -13,37 +13,35 @@ namespace NiL.JS.Statements.Operators
         /// </remarks>
         protected sealed class SafeVariableGetter : VariableReference
         {
-            private VariableDescriptor desc;
-
             internal SafeVariableGetter(GetVariableStatement gvs)
             {
-                desc = gvs.Descriptor;
-                desc.Remove(gvs);
-                desc.Add(this);
+                Descriptor = gvs.Descriptor;
+                Descriptor.references.Remove(gvs);
+                Descriptor.references.Add(this);
                 Position = gvs.Position;
                 Length = gvs.Length;
             }
 
             public override string Name
             {
-                get { return desc.Name; }
+                get { return Descriptor.Name; }
             }
 
             public override VariableDescriptor Descriptor { get; internal set; }
 
             internal override JSObject Invoke(Context context)
             {
-                return desc.Get(context, false);
+                return Descriptor.Get(context, false);
             }
 
             internal override JSObject InvokeForAssing(Context context)
             {
-                return desc.Get(context, false);
+                return Descriptor.Get(context, false);
             }
 
             public override string ToString()
             {
-                return desc.Name;
+                return Descriptor.Name;
             }
         }
 
@@ -67,15 +65,15 @@ namespace NiL.JS.Statements.Operators
         protected Operator(Statement first, Statement second, bool createResultContainer)
         {
             if (createResultContainer)
-                tempResult = new JSObject() { attributes = JSObjectAttributes.DoNotDelete, assignCallback = JSObject.ErrorAssignCallback };
+                tempResult = new JSObject() { assignCallback = JSObject.ErrorAssignCallback };
             this.first = first;
             this.second = second;
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VariableDescriptor> vars)
+        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict)
         {
-            Parser.Optimize(ref first, depth + 1, vars);
-            Parser.Optimize(ref second, depth + 1, vars);
+            Parser.Optimize(ref first, depth + 1, vars, strict);
+            Parser.Optimize(ref second, depth + 1, vars, strict);
             try
             {
                 if (this.IsContextIndependent)
@@ -89,6 +87,7 @@ namespace NiL.JS.Statements.Operators
                         res.valueType = JSObjectType.Int;
                     }
                     _this = new ImmidateValueStatement(res);
+                    return true;
                 }
             }
             catch

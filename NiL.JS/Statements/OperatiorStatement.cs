@@ -345,7 +345,13 @@ namespace NiL.JS.Statements
             int s = i;
             state.InExpression = true;
             if (Parser.ValidateName(code, ref i, state.strict.Peek()) || Parser.Validate(code, "this", ref i))
-                first = new GetVariableStatement(Tools.Unescape(code.Substring(s, i - s), state.strict.Peek())) { Position = index, Length = i - index };
+            {
+                var name = Tools.Unescape(code.Substring(s, i - s), state.strict.Peek());
+                if (name == "undefined")
+                    first = new ImmidateValueStatement(JSObject.undefined) { Position = index, Length = i - index };
+                else
+                    first = new GetVariableStatement(name) { Position = index, Length = i - index };
+            }
             else if (Parser.ValidateValue(code, ref i))
             {
                 string value = code.Substring(s, i - s);
@@ -411,6 +417,9 @@ namespace NiL.JS.Statements
                                     var cord = Tools.PositionToTextcord(code, i);
                                     throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid prefix operation. " + cord)));
                                 }
+                                if (state.strict.Peek()
+                                    && (first is GetVariableStatement) && ((first as GetVariableStatement).Name == "arguments" || (first as GetVariableStatement).Name == "eval"))
+                                    throw new JSException(new SyntaxError("Can not incriment \"" + (first as GetVariableStatement).Name + "\" in strict mode."));
                                 first = new Operators.Incriment(first, Operators.Incriment.Type.Preincriment);
                             }
                             else
@@ -433,6 +442,9 @@ namespace NiL.JS.Statements
                                     var cord = Tools.PositionToTextcord(code, i);
                                     throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid prefix operation. " + cord)));
                                 }
+                                if (state.strict.Peek()
+                                    && (first is GetVariableStatement) && ((first as GetVariableStatement).Name == "arguments" || (first as GetVariableStatement).Name == "eval"))
+                                    throw new JSException(new SyntaxError("Can not decriment \"" + (first as GetVariableStatement).Name + "\" in strict mode."));
                                 first = new Operators.Decriment(first, Operators.Decriment.Type.Predecriment) { Position = index, Length = i - index };
                             }
                             else
@@ -676,7 +688,14 @@ namespace NiL.JS.Statements
                             {
                                 if (rollbackPos != i)
                                     goto default;
-                                first = new OperatorStatement() { second = first, _type = OperationType.Incriment, Position = first.Position, Length = i + 2 - first.Position };
+                                if (state.strict.Peek())
+                                {
+                                    if ((first is GetVariableStatement) 
+                                        && ((first as GetVariableStatement).Name == "arguments" || (first as GetVariableStatement).Name == "eval"))
+                                        throw new JSException(new SyntaxError("Can not incriment \"" + (first as GetVariableStatement).Name + "\" in strict mode."));
+                                }
+                                first = new Operators.Incriment(first, Operators.Incriment.Type.Postincriment) { Position = first.Position, Length = i + 2 - first.Position };
+                                //first = new OperatorStatement() { second = first, _type = OperationType.Incriment, Position = first.Position, Length = i + 2 - first.Position };
                                 repeat = true;
                                 i += 2;
                             }
@@ -705,7 +724,14 @@ namespace NiL.JS.Statements
                             {
                                 if (rollbackPos != i)
                                     goto default;
-                                first = new OperatorStatement() { second = first, _type = OperationType.Decriment, Position = first.Position, Length = i + 2 - first.Position };
+                                if (state.strict.Peek())
+                                {
+                                    if ((first is GetVariableStatement)
+                                        && ((first as GetVariableStatement).Name == "arguments" || (first as GetVariableStatement).Name == "eval"))
+                                        throw new JSException(new SyntaxError("Can not decriment \"" + (first as GetVariableStatement).Name + "\" in strict mode."));
+                                }
+                                first = new Operators.Decriment(first, Operators.Decriment.Type.Postdecriment ){ Position = first.Position, Length = i + 2 - first.Position };
+                                //first = new OperatorStatement() { second = first, _type = OperationType.Decriment, Position = first.Position, Length = i + 2 - first.Position };
                                 repeat = true;
                                 i += 2;
                             }
@@ -1042,6 +1068,14 @@ namespace NiL.JS.Statements
                         }
                 }
             } while (repeat);
+            if (state.strict.Peek()
+                && (first is GetVariableStatement) && ((first as GetVariableStatement).Name == "arguments" || (first as GetVariableStatement).Name == "eval"))
+            {
+                if (assign || type == OperationType.Assign)
+                    throw new JSException(TypeProxy.Proxy(new SyntaxError("Assignment to eval or arguments is not allowed in strict mode")));
+                //if (type == OperationType.Incriment || type == OperationType.Decriment)
+                //    throw new JSException(new SyntaxError("Can not " + type.ToString().ToLower() + " \"" + (first as GetVariableStatement).Name + "\" in strict mode."));
+            }
             if ((!canAsign) && ((type == OperationType.Assign) || (assign)))
                 throw new InvalidOperationException("invalid left-hand side in assignment");
             if (binary && !forUnary)
@@ -1088,7 +1122,7 @@ namespace NiL.JS.Statements
             throw new InvalidOperationException();
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VariableDescriptor> vars)
+        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict)
         {
             Type = Type;
             _this = fastImpl;

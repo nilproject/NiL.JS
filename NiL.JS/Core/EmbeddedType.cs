@@ -46,7 +46,15 @@ namespace NiL.JS.Core
             return this;
         }
 
-        public override IEnumerator<string> GetEnumerator()
+        [Hidden]
+        public override void Assign(JSObject value)
+        {
+            if ((attributes & JSObjectAttributes.ReadOnly) == 0)
+                throw new InvalidOperationException("Try to assign to EmbeddedType");
+        }
+
+        [Hidden]
+        protected internal override IEnumerator<string> GetEnumeratorImpl(bool pdef)
         {
             if (fields != null)
                 foreach (var r in fields)

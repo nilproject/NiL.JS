@@ -66,22 +66,35 @@ namespace NiL.JS.Core
         }
 
         private Context oldContext;
-        internal bool Run()
+
+        /// <summary>
+        /// Делает контекст активным в текущем потоке выполнения.
+        /// </summary>
+        /// <exception cref="System.ApplicationException">Возникает, если контекст не является активным, 
+        /// но хранит ссылку на предыдущий активный контекст. Обычно это возникает в том случае, 
+        /// когда указанный контекст находится в цепочке вложенности активированных контекстов.</exception>
+        /// <returns>Истина если текущий контекст был активирован данным вызовом. Ложь если контекст уже активен.</returns>
+        internal bool Activate()
         {
             Context ccntxt = null;
             _executedContexts.TryGetValue(Thread.CurrentThread.ManagedThreadId, out ccntxt);
             if (ccntxt != this)
             {
-                _executedContexts[Thread.CurrentThread.ManagedThreadId] = this;
                 if (oldContext != null)
-                    System.Diagnostics.Debug.Fail("Try to rewrite oldContext");
+                    throw new ApplicationException("Try to rewrite oldContext");
+                _executedContexts[Thread.CurrentThread.ManagedThreadId] = this;
                 this.oldContext = ccntxt;
                 return true;
             }
             return false;
         }
 
-        internal void Stop()
+        /// <summary>
+        /// Деактивирует контекст и активирует предыдущий активный контекст.
+        /// </summary>
+        /// <exception cref="System.InvalidOperationException">Возникает, если текущий контекст не активен.</exception>
+        /// <returns>Текущий активный контекст</returns>
+        internal Context Deactivate()
         {
 #if DEBUG
             if (oldContext == globalContext)
@@ -90,7 +103,14 @@ namespace NiL.JS.Core
             if (this != CurrentContext)
                 throw new InvalidOperationException("Context not runned");
             _executedContexts[Thread.CurrentThread.ManagedThreadId] = oldContext;
-            oldContext = null;
+            try
+            {
+                return oldContext;
+            }
+            finally
+            {
+                oldContext = null;
+            }
         }
 
         internal readonly static Context globalContext = new Context() { strict = true };
@@ -113,12 +133,12 @@ namespace NiL.JS.Core
                 globalContext.fields.Clear();
             else
                 globalContext.fields = new Dictionary<string, JSObject>();
-            ThisObject.thisProto = null;
             JSObject.GlobalPrototype = null;
             TypeProxy.Clear();
             globalContext.fields.Add("Object", TypeProxy.GetConstructor(typeof(JSObject)).Clone() as JSObject);
             globalContext.fields["Object"].attributes = JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum;
             JSObject.GlobalPrototype = TypeProxy.GetPrototype(typeof(JSObject));
+            Core.ThisBind.refreshThisBindProto();
             globalContext.AttachModule(typeof(BaseTypes.Date));
             globalContext.AttachModule(typeof(BaseTypes.Array));
             globalContext.AttachModule(typeof(BaseTypes.ArrayBuffer));
@@ -139,7 +159,7 @@ namespace NiL.JS.Core
             globalContext.AttachModule(typeof(Modules.console));
 
             #region Base Function
-            globalContext.DefineVariable("eval").Assign(new ExternalFunction((t, x) => { return CurrentContext.Eval(x["0"].ToString()); }));
+            globalContext.DefineVariable("eval").Assign(new EvalFunction());
             globalContext.DefineVariable("isNaN").Assign(new ExternalFunction((t, x) =>
             {
                 var r = x.GetMember("0");
@@ -271,7 +291,7 @@ namespace NiL.JS.Core
                             valueType = JSObjectType.Function,
                             oValue = function,
                             attributes = JSObjectAttributes.DoNotEnum
-                        }).Protect();
+                        }).attributes |= JSObjectAttributes.DoNotDelete | JSObjectAttributes.ReadOnly;
                         function.Invoke(null, targs);
                     }) { Name = "NiL.JS __pinvoke thread (" + __pinvokeCalled + ":" + i + ")" }).Start(i);
                 }
@@ -318,7 +338,7 @@ namespace NiL.JS.Core
 
         static Context()
         {
-            globalContext.Run();
+            globalContext.Activate();
             RefreshGlobalContext();
         }
 
@@ -414,37 +434,16 @@ namespace NiL.JS.Core
 #endif
             JSObject res = null;
             if (name == "this")
-            {
-                var c = this;
-                if (thisBind == null)
-                {
-                    for (; ; )
-                    {
-                        if (c.prototype == globalContext)
-                        {
-                            thisBind = new ThisObject(c);
-                            c.thisBind = thisBind;
-                            break;
-                        }
-                        else
-                            c = c.prototype;
-                        if (c.thisBind != null)
-                            thisBind = c.thisBind;
-                    }
-                }
-                else if (thisBind.valueType == JSObjectType.NotExist) // было "delete this". Просто вернём к жизни существующий объект
-                    thisBind.valueType = JSObjectType.Object;
-                return thisBind;
-            }
+                return ThisBind;
             bool fromProto = (fields == null || !fields.TryGetValue(name, out res)) && (prototype != null);
             if (fromProto)
                 res = prototype.GetVariable(name, create);
-            if (res == null || res == JSObject.notExist)
+            if (res == null)
             {
                 if (this == globalContext)
                     return null;
                 if (create)
-                    (fields ?? (fields = new Dictionary<string, JSObject>()))[name] = res = new JSObject();
+                    (fields ?? (fields = new Dictionary<string, JSObject>()))[name] = res = new JSObject() { valueType = JSObjectType.NotExist };
                 else
                 {
                     JSObject.notExist.valueType = JSObjectType.NotExist;
@@ -467,6 +466,32 @@ namespace NiL.JS.Core
             return res;
         }
 
+        public JSObject ThisBind
+        {
+            get
+            {
+                var c = this;
+                if (thisBind == null)
+                {
+                    if (strict)
+                        return JSObject.undefined;
+                    for (; c.thisBind == null; )
+                    {
+                        if (c.prototype == globalContext)
+                        {
+                            thisBind = new ThisBind(c);
+                            c.thisBind = thisBind;
+                            break;
+                        }
+                        else
+                            c = c.prototype;
+                    }
+                    thisBind = c.thisBind;
+                }
+                return thisBind;
+            }
+        }
+
         /// <summary>
         /// Добавляет в указанный контекст объект, представляющий переданный тип.
         /// Имя созданного объекта будет совпадать с именем переданного типа. 
@@ -479,7 +504,7 @@ namespace NiL.JS.Core
             if (fields == null)
                 fields = new Dictionary<string, JSObject>();
             fields.Add(moduleType.Name, TypeProxy.GetConstructor(moduleType).Clone() as JSObject);
-            fields[moduleType.Name].attributes = JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum;
+            fields[moduleType.Name].attributes = JSObjectAttributes.DoNotEnum;
         }
 
         /// <summary>
@@ -506,20 +531,34 @@ namespace NiL.JS.Core
                 if (i < c.Length)
                     throw new System.ArgumentException("Invalid char");
                 var vars = new Dictionary<string, VariableDescriptor>();
-                Parser.Optimize(ref cb, leak ? -1 : -2, vars);
-                var context = leak ? this : new Context(this) { strict = true };
-                var cvars = this.variables ??
-                    (this.variables = new VariableDescriptor[0]); // если всё правильно, эта ветка не выполнится.
-                for (i = cvars.Length; i-- > 0; )
+                Parser.Optimize(ref cb, leak ? -1 : -2, vars, strict);
+                Context context = null;
+                var body = cb as CodeBlock;
+                if (leak)
+                    context = this;
+                else
+                    context = new Context(this) { strict = true, variables = body.variables };
+                if (leak)
                 {
-                    VariableDescriptor desc = null;
-                    if (vars.TryGetValue(cvars[i].Name, out desc))
+                    for (i = context.variables.Length; i-- > 0; )
                     {
-                        foreach (var r in desc.references)
-                            r.Descriptor = cvars[i];
+                        VariableDescriptor desc = null;
+                        if (vars.TryGetValue(context.variables[i].Name, out desc) && desc.Defined)
+                            context.variables[i].attributes |= VariableDescriptorAttributes.NoCaching;
                     }
                 }
-                var run = context.Run();
+                if (body.variables != null)
+                    for (i = body.variables.Length; i-- > 0; )
+                    {
+                        if (body.variables[i].Defined)
+                        {
+                            var f = context.DefineVariable(body.variables[i].Name);
+                            if (body.variables[i].Inititalizator != null)
+                                f.Assign(body.variables[i].Inititalizator.Invoke(context));
+                        }
+                    }
+                
+                var run = context.Activate();
                 try
                 {
                     var res = cb.Invoke(context);
@@ -528,7 +567,7 @@ namespace NiL.JS.Core
                 finally
                 {
                     if (run)
-                        context.Stop();
+                        context.Deactivate();
                 }
             }
             finally
