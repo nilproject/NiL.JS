@@ -782,7 +782,7 @@ namespace NiL.JS.Core.BaseTypes
         public virtual JSObject Invoke(JSObject thisBind, JSObject args)
         {
             var oldargs = _arguments;
-            Context internalContext = new Context(context, this);
+            Context internalContext = new Context(context ?? Context.CurrentContext, this);
             var body = creator.body;
             try
             {
@@ -803,7 +803,7 @@ namespace NiL.JS.Core.BaseTypes
                             };
                         }
                         else if (thisBind.valueType <= JSObjectType.Undefined || thisBind.oValue == null)
-                            thisBind = context.Root.thisBind;
+                            thisBind = internalContext.Root.thisBind;
                         internalContext.thisBind = thisBind;
                     }
                 }

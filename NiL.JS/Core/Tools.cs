@@ -207,6 +207,25 @@ namespace NiL.JS.Core
                     throw new NotImplementedException();
             }
         }
+        
+        internal static object convertJStoObj(JSObject jsobj, Type targetType)
+        {
+            if (jsobj == null)
+                return null;
+            if (targetType.IsAssignableFrom(jsobj.GetType()))
+                return jsobj;
+            var res = targetType == typeof(int)
+                || targetType == typeof(double)
+                || targetType == typeof(bool)
+                || jsobj.valueType >= JSObjectType.String ? jsobj.Value : null;
+            if (res == null)
+                return res;
+            if (targetType.IsAssignableFrom(res.GetType()))
+                return res;
+            if (res is TypeProxy && targetType.IsAssignableFrom((res as TypeProxy).hostedType))
+                return (res as TypeProxy).prototypeInstance;
+            return null;
+        }
 
 #if INLINE
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
@@ -290,7 +309,7 @@ namespace NiL.JS.Core
             {
                 if (code[j] != nan[j - i])
                     break;
-                else if (j > i && code[j] == 'n')
+                else if (j > i && code[j] == 'N')
                 {
                     index = j + 1;
                     value = double.NaN;

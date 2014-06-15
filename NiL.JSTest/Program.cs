@@ -199,7 +199,7 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * i + 3 - 2 / 2; }
                     failed++;
                 }
                 Console.Title = "passed: " + passed + ". failed: " + failed;
-                if (failed == 3) break;
+                //if (failed == 3) break;
             }
             sw.Stop();
             _("passed: " + passed);
@@ -268,10 +268,10 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * i + 3 - 2 / 2; }
                 return Context.CurrentContext.Eval(sr.ReadToEnd());
             }));
             //benchmark();
-            runFile(@"ftest.js");
+            //runFile(@"ftest.js");
             //runFile(@"Benchmarks\run.js");
             //runFile(@"C:\Users\Дмитрий\Documents\Projects\NiL.JS\NiL.JSTest\tests\sputnik\ch08\8.5\8.5.1.js");
-            //sputnicTests();
+            sputnicTests();
             //testEx();
             //runFile(@"C:\Users\Дмитрий\Documents\Projects\NiL.JS\NiL.JSTest\tests\Conformance\08_Types\8.7_The_Reference_Type\S8.7_A3.js");
             //sputnicTests(@"tests\Conformance\15_Native_ECMA_Script_Objects\15.5_String_Objects");

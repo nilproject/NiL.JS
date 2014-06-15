@@ -131,6 +131,7 @@ namespace NiL.JS.Core
                     case JSObjectType.Object:
                     case JSObjectType.Function:
                     case JSObjectType.Property:
+                    case JSObjectType.Date:
                         return oValue;
                     case JSObjectType.Undefined:
                     case JSObjectType.NotExistInObject:
@@ -357,7 +358,6 @@ namespace NiL.JS.Core
                 case JSObjectType.Double:
                     {
                         prototype = TypeProxy.GetPrototype(typeof(Number));
-                        createMember = true;
                         break;
                     }
                 case JSObjectType.String:

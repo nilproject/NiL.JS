@@ -78,7 +78,7 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [DoNotEnumerate]
-        public double valueOf()
+        public Number valueOf()
         {
             if (error)
                 return double.NaN;
@@ -87,7 +87,7 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [DoNotEnumerate]
-        public double getTime()
+        public Number getTime()
         {
             if (error)
                 return double.NaN;
@@ -96,221 +96,221 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [DoNotEnumerate]
-        public int getYear()
+        public Number getYear()
         {
             return host.Year - 1900;
         }
 
         [DoNotEnumerate]
-        public int getFullYear()
+        public Number getFullYear()
         {
             return host.Year;
         }
 
         [DoNotEnumerate]
-        public int getUTCFullYear()
+        public Number getUTCFullYear()
         {
             return host.Year;
         }
 
         [DoNotEnumerate]
-        public int getMonth()
+        public Number getMonth()
         {
             return host.Month - 1;
         }
 
         [DoNotEnumerate]
-        public int getUTCMonth()
+        public Number getUTCMonth()
         {
             return host.Month - 1;
         }
 
         [DoNotEnumerate]
-        public int getDate()
+        public Number getDate()
         {
             return host.Day;
         }
 
         [DoNotEnumerate]
-        public int getUTCDate()
+        public Number getUTCDate()
         {
             return host.Day;
         }
 
         [DoNotEnumerate]
-        public int getDay()
+        public Number getDay()
         {
             return (int)host.DayOfWeek;
         }
 
         [DoNotEnumerate]
-        public int getUTCDay()
+        public Number getUTCDay()
         {
             return (int)host.DayOfWeek;
         }
 
         [DoNotEnumerate]
-        public int getHours()
+        public Number getHours()
         {
             return host.Hour;
         }
 
         [DoNotEnumerate]
-        public int getUTCHours()
+        public Number getUTCHours()
         {
             return host.Hour;
         }
 
         [DoNotEnumerate]
-        public int getMinutes()
+        public Number getMinutes()
         {
             return host.Minute;
         }
 
         [DoNotEnumerate]
-        public int getUTCMinutes()
+        public Number getUTCMinutes()
         {
             return host.Minute;
         }
 
         [DoNotEnumerate]
-        public int getSeconds()
+        public Number getSeconds()
         {
             return host.Second;
         }
 
         [DoNotEnumerate]
-        public int getUTCSeconds()
+        public Number getUTCSeconds()
         {
             return host.Second;
         }
 
         [DoNotEnumerate]
-        public int getMilliseconds()
+        public Number getMilliseconds()
         {
             return host.Millisecond;
         }
 
         [DoNotEnumerate]
-        public int getUTCMilliseconds()
+        public Number getUTCMilliseconds()
         {
             return host.Millisecond;
         }
 
         [DoNotEnumerate]
-        public int setTime(int time)
+        public Number setTime(int time)
         {
             host = new DateTime(time * 10000 + UTCBase);
             return time;
         }
 
         [DoNotEnumerate]
-        public int setMilliseconds(int time)
+        public Number setMilliseconds(int time)
         {
             host = host.AddMilliseconds(time - host.Millisecond);
             return time;
         }
 
         [DoNotEnumerate]
-        public int setUTCMilliseconds(int time)
+        public Number setUTCMilliseconds(int time)
         {
             host = host.AddMilliseconds(time - host.Millisecond);
             return time;
         }
 
         [DoNotEnumerate]
-        public int setSeconds(int time)
+        public Number setSeconds(int time)
         {
             host = host.AddSeconds(time - host.Second);
             return time;
         }
 
         [DoNotEnumerate]
-        public int setUTCSeconds(int time)
+        public Number setUTCSeconds(int time)
         {
             host = host.AddSeconds(time - host.Second);
             return time;
         }
 
         [DoNotEnumerate]
-        public int setMinutes(int time)
+        public Number setMinutes(int time)
         {
             host = host.AddMinutes(time - host.Minute);
             return time;
         }
 
         [DoNotEnumerate]
-        public int setUTCMinutes(int time)
+        public Number setUTCMinutes(int time)
         {
             host = host.AddMinutes(time - host.Minute);
             return time;
         }
 
         [DoNotEnumerate]
-        public int setHours(int time)
+        public Number setHours(int time)
         {
             host = host.AddHours(time - host.Hour);
             return time;
         }
 
         [DoNotEnumerate]
-        public int setUTCHours(int time)
+        public Number setUTCHours(int time)
         {
             host = host.AddHours(time - host.Hour);
             return time;
         }
 
         [DoNotEnumerate]
-        public int setDate(int time)
+        public Number setDate(int time)
         {
             host = host.AddDays(time - host.Day);
             return time;
         }
 
         [DoNotEnumerate]
-        public int setUTCDate(int time)
+        public Number setUTCDate(int time)
         {
             host = host.AddDays(time - host.Day);
             return time;
         }
 
         [DoNotEnumerate]
-        public int setMonth(int time)
+        public Number setMonth(int time)
         {
             host = host.AddMonths(time - host.Month);
             return time;
         }
 
         [DoNotEnumerate]
-        public int setUTCMonth(int time)
+        public Number setUTCMonth(int time)
         {
             host = host = host.AddMonths(time - host.Month);
             return time;
         }
 
         [DoNotEnumerate]
-        public int setYear(int time)
+        public Number setYear(int time)
         {
             host = host.AddYears(time - host.Year);
             return time;
         }
 
         [DoNotEnumerate]
-        public int setUTCYear(int time)
+        public Number setUTCYear(int time)
         {
             host = host.AddYears(time - host.Year);
             return time;
         }
 
         [DoNotEnumerate]
-        public int setFullYear(int time)
+        public Number setFullYear(int time)
         {
             host = host.AddYears(time - host.Year);
             return time;
         }
 
         [DoNotEnumerate]
-        public int setUTCFullYear(int time)
+        public Number setUTCFullYear(int time)
         {
             host = host.AddYears(time - host.Year);
             return time;
@@ -327,6 +327,19 @@ namespace NiL.JS.Core.BaseTypes
         public JSObject toLocaleString()
         {
             return ToString();
+        }
+
+        [DoNotEnumerate]
+        public JSObject toISOString()
+        {
+            return this.getUTCFullYear() +
+                    '-' + (this.getUTCMonth() + 1) +
+                    '-' + this.getUTCDate() +
+                    'T' + this.getUTCHours() +
+                    ':' + this.getUTCMinutes() +
+                    ':' + this.getUTCSeconds() +
+                    '.' + (this.getUTCMilliseconds() / 1000).ToString(".000").Substring(1) +
+                    'Z';
         }
 
         [DoNotEnumerate]
@@ -353,7 +366,7 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [DoNotEnumerate]
-        public static double parse(string dateTime)
+        public static Number parse(string dateTime)
         {
             System.DateTime res;
             if (System.DateTime.TryParse(dateTime, CultureInfo.CurrentCulture, DateTimeStyles.None, out res))
@@ -362,7 +375,7 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [DoNotEnumerate]
-        public static double UTC(JSObject dateTime)
+        public static Number UTC(JSObject dateTime)
         {
             try
             {

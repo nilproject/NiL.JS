@@ -14,6 +14,10 @@ namespace NiL.JS.Core
     [Serializable]
     public class MethodProxy : Function
     {
+        private delegate void SetValueDelegate(FieldInfo field, Object obj, Object value, Type fieldType, FieldAttributes fieldAttr, Type declaringType, ref bool domainInitialized);
+        private static readonly SetValueDelegate SetFieldValue = Activator.CreateInstance(typeof(SetValueDelegate), null, typeof(RuntimeFieldHandle).GetMethod("SetValue", BindingFlags.Static | BindingFlags.NonPublic).MethodHandle.GetFunctionPointer()) as SetValueDelegate;
+        private static readonly FieldInfo _targetInfo = typeof(Action).GetMember("_target", BindingFlags.NonPublic | BindingFlags.Instance)[0] as FieldInfo;
+
         private enum CallMode
         {
             Default = 0,
@@ -30,12 +34,10 @@ namespace NiL.JS.Core
         private object hardTarget = null;
         private MethodBase info;
         private CallMode mode;
+        private AllowUnsafeCallAttribute[] alternedTypes;
         private Func<object> delegateF0 = null;
         private Func<object, object> delegateF1 = null;
         private Func<object, object, object> delegateF2 = null;
-        //private Action delegateA0 = null;
-        //private Action<object> delegateA1 = null;
-        //private Action<object, object> delegateA2 = null;
         private Modules.ConvertValueAttribute converter;
         private Modules.ConvertValueAttribute[] paramsConverters;
         private ParameterInfo[] parameters;
@@ -87,6 +89,7 @@ namespace NiL.JS.Core
             info = methodinfo;
             parameters = info.GetParameters();
             Type retType = null;
+            alternedTypes = (AllowUnsafeCallAttribute[])methodinfo.GetCustomAttributes(typeof(AllowUnsafeCallAttribute), false);
             if (info is MethodInfo)
             {
                 var mi = info as MethodInfo;
@@ -116,6 +119,7 @@ namespace NiL.JS.Core
                                 else
                                 {
                                     this.delegateF1 = Activator.CreateInstance(typeof(Func<object, object>), null, info.MethodHandle.GetFunctionPointer()) as Func<object, object>;
+                                    this.delegateF0 = Activator.CreateInstance(typeof(Func<object>), this, info.MethodHandle.GetFunctionPointer()) as Func<object>;
                                     mode = CallMode.FuncDynamicZero;
                                 }
                                 break;
@@ -145,16 +149,19 @@ namespace NiL.JS.Core
                                     if (parameters[0].ParameterType == typeof(JSObject[]))
                                     {
                                         this.delegateF2 = Activator.CreateInstance(typeof(Func<object, object, object>), null, info.MethodHandle.GetFunctionPointer()) as Func<object, object, object>;
+                                        this.delegateF1 = Activator.CreateInstance(typeof(Func<object, object>), this, info.MethodHandle.GetFunctionPointer()) as Func<object, object>;
                                         mode = CallMode.FuncDynamicOneArray;
                                     }
                                     else if (parameters[0].ParameterType == typeof(JSObject))
                                     {
                                         this.delegateF2 = Activator.CreateInstance(typeof(Func<object, object, object>), null, info.MethodHandle.GetFunctionPointer()) as Func<object, object, object>;
+                                        this.delegateF1 = Activator.CreateInstance(typeof(Func<object, object>), this, info.MethodHandle.GetFunctionPointer()) as Func<object, object>;
                                         mode = CallMode.FuncDynamicOneRaw;
                                     }
                                     else if (typeof(object).IsAssignableFrom(parameters[0].ParameterType))
                                     {
                                         this.delegateF2 = Activator.CreateInstance(typeof(Func<object, object, object>), null, info.MethodHandle.GetFunctionPointer()) as Func<object, object, object>;
+                                        this.delegateF1 = Activator.CreateInstance(typeof(Func<object, object>), this, info.MethodHandle.GetFunctionPointer()) as Func<object, object>;
                                         mode = CallMode.FuncDynamicOne;
                                     }
                                 }
@@ -173,7 +180,7 @@ namespace NiL.JS.Core
 
         private static object[] convertArray(NiL.JS.Core.BaseTypes.Array array)
         {
-            var arg = new object[array.length];
+            var arg = new object[array.data.Count];
             for (var j = 0; j < arg.Length; j++)
             {
                 var temp = array[j].Value;
@@ -230,7 +237,7 @@ namespace NiL.JS.Core
                 var obj = source.GetMember(i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture));
                 if (obj != null)
                 {
-                    res[i] = embeddedTypeConvert(obj, parameters[i].ParameterType, true);
+                    res[i] = obj;//embeddedTypeConvert(obj, parameters[i].ParameterType);
                     if (res[i] == null)
                     {
                         if (parameters[i].ParameterType == typeof(JSObject))
@@ -238,21 +245,24 @@ namespace NiL.JS.Core
                         else
                         {
                             var v = obj.valueType == JSObjectType.Object && obj.oValue != null && obj.oValue.GetType() == typeof(object) ? obj : obj.Value;
-                            if (v is Core.BaseTypes.Array)
-                                res[i] = convertArray(v as Core.BaseTypes.Array);
-                            else if (v is TypeProxy)
+                            if (v != null)
                             {
-                                var tp = v as TypeProxy;
-                                res[i] = (tp.bindFlags & BindingFlags.Static) != 0 ? tp.hostedType : tp.prototypeInstance;
+                                if (v is Core.BaseTypes.Array)
+                                    res[i] = convertArray(v as Core.BaseTypes.Array);
+                                else if (v is TypeProxy)
+                                {
+                                    var tp = v as TypeProxy;
+                                    res[i] = (tp.bindFlags & BindingFlags.Static) != 0 ? tp.hostedType : tp.prototypeInstance;
+                                }
+                                else if (v is TypeProxyConstructor)
+                                    res[i] = (v as TypeProxyConstructor).proxy.hostedType;
+                                else if (v is Function && parameters[i].ParameterType.IsSubclassOf(typeof(Delegate)))
+                                    res[i] = (v as Function).MakeDelegate(parameters[i].ParameterType);
+                                else if (v is ArrayBuffer && typeof(byte[]).IsAssignableFrom(parameters[i].ParameterType))
+                                    res[i] = (v as ArrayBuffer).Data;
+                                else
+                                    res[i] = v;
                             }
-                            else if (v is TypeProxyConstructor)
-                                res[i] = (v as TypeProxyConstructor).proxy.hostedType;
-                            else if (v is Function && parameters[i].ParameterType.IsSubclassOf(typeof(Delegate)))
-                                res[i] = (v as Function).MakeDelegate(parameters[i].ParameterType);
-                            else if (v is ArrayBuffer && typeof(byte[]).IsAssignableFrom(parameters[i].ParameterType))
-                                res[i] = (v as ArrayBuffer).Data;
-                            else
-                                res[i] = v;
                         }
                         if (paramsConverters != null && paramsConverters[i] != null)
                             res[i] = paramsConverters[i].To(res[i]);
@@ -262,67 +272,21 @@ namespace NiL.JS.Core
             return res;
         }
 
-        private JSObject embeddedTypeConvert(JSObject source, Type targetType, bool safe)
+        private object getTargetObject(JSObject _this, Type targetType)
         {
-            if (source.GetType() == targetType)
-                return source;
-            if (source.GetType().IsSubclassOf(targetType))
-                return source;
-
-            switch (source.valueType)
+            var res = Tools.convertJStoObj(_this, targetType);
+            if (res != null)
+                return res;
+            for (var i = alternedTypes.Length; i-- > 0; )
             {
-                case JSObjectType.Int:
-                case JSObjectType.Double:
-                    {
-                        if (!safe)
-                            return source;
-                        if (typeof(BaseTypes.Number) != targetType && !typeof(BaseTypes.Number).IsSubclassOf(targetType))
-                            return null;
-                        var number = new Number();
-                        number.iValue = source.iValue;
-                        number.dValue = source.dValue;
-                        number.valueType = source.valueType;
-                        return number;
-                    }
-                case JSObjectType.String:
-                    {
-                        if (!safe)
-                            return source;
-                        if (typeof(BaseTypes.String) != targetType && !typeof(BaseTypes.String).IsSubclassOf(targetType))
-                            return null;
-                        var @string = new BaseTypes.String();
-                        @string.oValue = source.oValue;
-                        return @string;
-                    }
-                case JSObjectType.Bool:
-                    {
-                        if (!safe)
-                            return source;
-                        if (typeof(BaseTypes.Boolean) != targetType && !typeof(BaseTypes.Boolean).IsSubclassOf(targetType))
-                            return null;
-                        var boolean = new BaseTypes.Boolean();
-                        boolean.iValue = source.iValue;
-                        return boolean;
-                    }
+                res = Tools.convertJStoObj(_this, alternedTypes[i].baseType);
+                if (res != null)
+                {
+                    res = alternedTypes[i].Convert(res);
+                    return res;
+                }
             }
             return null;
-        }
-
-        private object getTargetObject(JSObject _this, Type targetType, bool safe)
-        {
-            if (info.IsStatic)
-                return null;
-            if (_this == null)
-                return null;
-            if (_this is EmbeddedType)
-                return _this;
-            object res = null;
-            if (_this.valueType >= JSObjectType.Object && _this.oValue is JSObject)
-                _this = _this.oValue as JSObject;
-            res = embeddedTypeConvert(_this, targetType, safe) ?? _this.oValue;
-            if (res is TypeProxy)
-                res = (res as TypeProxy).prototypeInstance;
-            return res;
         }
 
         [Modules.DoNotEnumerate]
@@ -346,14 +310,64 @@ namespace NiL.JS.Core
         [Hidden]
         internal object InvokeImpl(JSObject thisBind, object[] args, JSObject argsSource)
         {
+            object res = null;
+            object target = null;
+            if (!(info is ConstructorInfo))
+            {
+                target = info.IsStatic ? null : hardTarget ?? getTargetObject(thisBind ?? JSObject.Null, info.DeclaringType);
+                if (target == null && !info.IsStatic)
+                    throw new JSException(new TypeError("Can not call function \"" + this.Name + "\" for object of another type."));
+            }
             try
             {
-                object res = null;
                 switch (mode)
                 {
                     case CallMode.FuncDynamicZero:
                         {
-                            res = delegateF1(hardTarget ?? getTargetObject(thisBind ?? JSObject.Null, info.DeclaringType, false));
+                            if (target != null && info.IsVirtual && target.GetType() != info.DeclaringType) // your bunny wrote
+                            {
+                                bool di = true;
+                                SetFieldValue(_targetInfo, delegateF0, target, typeof(object), _targetInfo.Attributes, typeof(Action), ref di);
+                                res = delegateF0();
+                            }
+                            else
+                                res = delegateF1(target);
+                            break;
+                        }
+                    case CallMode.FuncDynamicOneArray:
+                        {
+                            if (target != null && info.IsVirtual && target.GetType() != info.DeclaringType) // your bunny wrote
+                            {
+                                bool di = true;
+                                SetFieldValue(_targetInfo, delegateF1, target, typeof(object), _targetInfo.Attributes, typeof(Action), ref di);
+                                res = delegateF1(args ?? argumentsToArray(argsSource));
+                            }
+                            else
+                                res = delegateF2(target, args ?? argumentsToArray(argsSource));
+                            break;
+                        }
+                    case CallMode.FuncDynamicOneRaw:
+                        {
+                            if (target != null && info.IsVirtual && target.GetType() != info.DeclaringType) // your bunny wrote
+                            {
+                                bool di = true;
+                                SetFieldValue(_targetInfo, delegateF1, target, typeof(object), _targetInfo.Attributes, typeof(Action), ref di);
+                                res = delegateF1(argsSource);
+                            }
+                            else
+                                res = delegateF2(target, argsSource);
+                            break;
+                        }
+                    case CallMode.FuncDynamicOne:
+                        {
+                            if (target != null && info.IsVirtual && target.GetType() != info.DeclaringType) // your bunny wrote
+                            {
+                                bool di = true;
+                                SetFieldValue(_targetInfo, delegateF1, target, typeof(object), _targetInfo.Attributes, typeof(Action), ref di);
+                                res = delegateF1((args ?? ConvertArgs(argsSource))[0]);
+                            }
+                            else
+                                res = delegateF2(target, (args ?? ConvertArgs(argsSource))[0]);
                             break;
                         }
                     case CallMode.FuncStaticZero:
@@ -366,29 +380,14 @@ namespace NiL.JS.Core
                             res = delegateF1(args ?? argumentsToArray(argsSource));
                             break;
                         }
-                    case CallMode.FuncDynamicOneArray:
-                        {
-                            res = delegateF2(hardTarget ?? getTargetObject(thisBind ?? JSObject.Null, info.DeclaringType, false), args ?? argumentsToArray(argsSource));
-                            break;
-                        }
                     case CallMode.FuncStaticOneRaw:
                         {
                             res = delegateF1(argsSource);
                             break;
                         }
-                    case CallMode.FuncDynamicOneRaw:
-                        {
-                            res = delegateF2(hardTarget ?? getTargetObject(thisBind ?? JSObject.Null, info.DeclaringType, false), argsSource);
-                            break;
-                        }
                     case CallMode.FuncStaticOne:
                         {
                             res = delegateF1((args ?? ConvertArgs(argsSource))[0]);
-                            break;
-                        }
-                    case CallMode.FuncDynamicOne:
-                        {
-                            res = delegateF2(hardTarget ?? getTargetObject(thisBind ?? JSObject.Null, info.DeclaringType, false), (args ?? ConvertArgs(argsSource))[0]);
                             break;
                         }
                     default:
@@ -399,8 +398,7 @@ namespace NiL.JS.Core
                                 res = (info as ConstructorInfo).Invoke(args);
                             else
                             {
-                                var target = hardTarget ?? getTargetObject(thisBind ?? JSObject.Null, info.DeclaringType, true);
-                                if (target != null && target.GetType() != info.ReflectedType) // you bunny wrote
+                                if (target != null && target.GetType() != info.DeclaringType) // your bunny wrote
                                 {
                                     var minfo = info as MethodInfo;
                                     if (minfo.ReturnType != typeof(void) && minfo.ReturnType.IsValueType)

@@ -188,43 +188,58 @@ namespace NiL.JS.Core.Modules
         [Hidden]
         public static string stringify(JSObject obj, Function replacer, string space)
         {
-            if (obj.valueType < JSObjectType.Object)
+            return stringifyImpl(obj, replacer, space, new List<JSObject>());
+        }
+
+        private static string stringifyImpl(JSObject obj, Function replacer, string space, List<JSObject> processed)
+        {
+            if (processed.IndexOf(obj) != -1)
+                throw new JSException(new TypeError("Can not convert circular structure to JSON."));
+            processed.Add(obj);
+            try
             {
-                if (obj.valueType == JSObjectType.String)
-                    return "\"" + (obj.oValue as string)
-                        .Replace("\\", "\\\\")
-                        .Replace("\"", "\\\"")
-                        .Replace("\n", "\\\n")
-                        .Replace("\r", "\\\r")
-                        .Replace("\n\\\r", "\n\r")
-                        .Replace("\r\\\n", "\r\n") + '"';
-                return obj.ToString();
-            }
-            StringBuilder res = new StringBuilder("{");
-            var args = new BaseTypes.Array(2);
-            args.data[0] = "";
-            bool first = true;
-            foreach (var f in obj.fields)
-            {
-                if ((f.Value.valueType < JSObjectType.Undefined) && ((f.Value.attributes & JSObjectAttributes.DoNotEnum) == 0))
-                    continue;
-                var value = f.Value;
-                if (replacer != null)
+                if (obj.valueType < JSObjectType.Object)
                 {
-                    args.data[0].oValue = f.Key;
-                    args.data[1] = f.Value;
-                    var t = replacer.Invoke(args);
-                    if (t.valueType <= JSObjectType.Undefined || (t.valueType >= JSObjectType.Object && t.oValue == null))
-                        continue;
-                    value = t;
+                    if (obj.valueType == JSObjectType.String)
+                        return "\"" + (obj.oValue as string)
+                            .Replace("\\", "\\\\")
+                            .Replace("\"", "\\\"")
+                            .Replace("\n", "\\\n")
+                            .Replace("\r", "\\\r")
+                            .Replace("\n\\\r", "\n\r")
+                            .Replace("\r\\\n", "\r\n") + '"';
+                    return obj.ToString();
                 }
-                string strval = stringify(value, replacer, space);
-                if (!first)
-                    res.Append(", ");
-                res.Append('"').Append(f.Key).Append("\": ").Append(strval).Append(space);
-                first = false;
+                StringBuilder res = new StringBuilder("{");
+                var args = new BaseTypes.Array(2);
+                args.data[0] = "";
+                bool first = true;
+                foreach (var f in obj.fields)
+                {
+                    if ((f.Value.valueType < JSObjectType.Undefined) && ((f.Value.attributes & JSObjectAttributes.DoNotEnum) == 0))
+                        continue;
+                    var value = f.Value;
+                    if (replacer != null)
+                    {
+                        args.data[0].oValue = f.Key;
+                        args.data[1] = f.Value;
+                        var t = replacer.Invoke(args);
+                        if (t.valueType <= JSObjectType.Undefined || (t.valueType >= JSObjectType.Object && t.oValue == null))
+                            continue;
+                        value = t;
+                    }
+                    string strval = stringifyImpl(value, replacer, space, processed);
+                    if (!first)
+                        res.Append(", ");
+                    res.Append('"').Append(f.Key).Append("\": ").Append(strval).Append(space);
+                    first = false;
+                }
+                return res.Append("}").ToString();
             }
-            return res.Append("}").ToString();
+            finally
+            {
+                processed.RemoveAt(processed.Count - 1);
+            }
         }
     }
 }

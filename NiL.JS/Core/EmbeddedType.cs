@@ -20,6 +20,7 @@ namespace NiL.JS.Core
             oValue = this;
         }
 
+        [AllowUnsafeCall(typeof(JSObject))]
         [DoNotEnumerate]
         public override JSObject toString(JSObject args)
         {
@@ -40,12 +41,6 @@ namespace NiL.JS.Core
             if (prototype == null)
                 prototype = TypeProxy.GetPrototype(this.GetType());
             return DefaultFieldGetter(name, fast, own);
-        }
-
-        [DoNotEnumerate]
-        public override JSObject valueOf()
-        {
-            return this;
         }
 
         [Hidden]

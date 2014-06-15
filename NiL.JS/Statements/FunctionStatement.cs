@@ -89,6 +89,7 @@ namespace NiL.JS.Statements
             Reference = new FunctionReference(this);
             parameters = new VariableReference[0];
             body = new CodeBlock(new Statement[0], false);
+            body.variables = new VariableDescriptor[0];
             this.name = name;
         }
 

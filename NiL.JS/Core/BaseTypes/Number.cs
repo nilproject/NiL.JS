@@ -7,7 +7,7 @@ namespace NiL.JS.Core.BaseTypes
 {
     [Serializable]
     [Immutable]
-    public class Number : EmbeddedType
+    public sealed class Number : EmbeddedType
     {
         [DoNotDelete]
         [DoNotEnumerate]
@@ -91,6 +91,7 @@ namespace NiL.JS.Core.BaseTypes
             assignCallback = JSObject.ErrorAssignCallback;
         }
 
+        [AllowUnsafeCall(typeof(JSObject))]
         [Modules.DoNotEnumerate]
         public JSObject toPrecision(JSObject digits)
         {
@@ -154,6 +155,7 @@ namespace NiL.JS.Core.BaseTypes
             return sres;
         }
 
+        [AllowUnsafeCall(typeof(JSObject))]
         [Modules.DoNotEnumerate]
         public JSObject toExponential(JSObject digits)
         {
@@ -213,6 +215,7 @@ namespace NiL.JS.Core.BaseTypes
             return res.ToString("e" + dgts, System.Globalization.CultureInfo.InvariantCulture);
         }
 
+        [AllowUnsafeCall(typeof(JSObject))]
         [Modules.DoNotEnumerate]
         public JSObject toFixed(JSObject digits)
         {
@@ -290,16 +293,18 @@ namespace NiL.JS.Core.BaseTypes
             return System.Math.Round(res, dgts).ToString("0.00000000000000000000".Substring(0, dgts + 1), System.Globalization.CultureInfo.InvariantCulture);
         }
 
+        [AllowUnsafeCall(typeof(JSObject))]
         [Modules.DoNotEnumerate]
         public override JSObject toLocaleString()
         {
             return valueType == JSObjectType.Int ? iValue.ToString(System.Globalization.CultureInfo.CurrentCulture) : dValue.ToString(System.Globalization.CultureInfo.CurrentCulture);
         }
 
+        [AllowUnsafeCall(typeof(JSObject))]
         [Modules.DoNotEnumerate]
         public override JSObject toString(JSObject radix)
         {
-            if (!typeof(Number).IsAssignableFrom(this.GetType()))
+            if (this.valueType != JSObjectType.Int && this.valueType != JSObjectType.Double)
                 throw new JSException(TypeProxy.Proxy(new TypeError("Try to call Number.toString on not Number object")));
             int r = 10;
             if (radix != null && radix.GetMember("length").iValue > 0)
@@ -364,6 +369,7 @@ namespace NiL.JS.Core.BaseTypes
             }
         }
 
+        [AllowUnsafeCall(typeof(JSObject))]
         [Modules.DoNotEnumerate]
         public override JSObject valueOf()
         {

@@ -8,6 +8,21 @@ namespace NiL.JS.Core.BaseTypes
     [Immutable]
     public sealed class String : EmbeddedType
     {
+        [Serializable]
+        private sealed class StringAllowUnsafeCallAttribute : AllowUnsafeCallAttribute
+        {
+            public StringAllowUnsafeCallAttribute(Type type)
+                : base(type)
+            { }
+
+            protected internal override object Convert(object arg)
+            {
+                if (arg is JSObject && (arg as JSObject).valueType == JSObjectType.String)
+                    return arg;
+                return new String(arg.ToString());
+            }
+        }
+
         internal static readonly String EmptyString = new String("");
 
         [DoNotEnumerate]
@@ -46,7 +61,7 @@ namespace NiL.JS.Core.BaseTypes
             attributes |= JSObjectAttributes.Immutable;
         }
 
-        [DoNotEnumerate]
+        [Hidden]
         public JSObject this[int pos]
         {
             [Hidden]
@@ -58,6 +73,7 @@ namespace NiL.JS.Core.BaseTypes
             }
         }
 
+        [StringAllowUnsafeCallAttribute(typeof(JSObject))]
         [DoNotEnumerate]
         public String charAt(JSObject pos)
         {
@@ -67,6 +83,7 @@ namespace NiL.JS.Core.BaseTypes
             return (oValue as string)[p].ToString();
         }
 
+        [StringAllowUnsafeCallAttribute(typeof(JSObject))]
         [DoNotEnumerate]
         public Number charCodeAt(JSObject pos)
         {
@@ -76,6 +93,7 @@ namespace NiL.JS.Core.BaseTypes
             return (int)(oValue as string)[p];
         }
 
+        [StringAllowUnsafeCallAttribute(typeof(JSObject))]
         [DoNotEnumerate]
         public JSObject concat(JSObject[] args)
         {
@@ -85,6 +103,7 @@ namespace NiL.JS.Core.BaseTypes
             return res;
         }
 
+        [StringAllowUnsafeCallAttribute(typeof(JSObject))]
         [DoNotEnumerate]
         public JSObject indexOf(JSObject[] args)
         {
@@ -122,6 +141,7 @@ namespace NiL.JS.Core.BaseTypes
             return (oValue as string).IndexOf(fstr, pos, StringComparison.CurrentCulture);
         }
 
+        [StringAllowUnsafeCallAttribute(typeof(JSObject))]
         [DoNotEnumerate]
         public JSObject lastIndexOf(JSObject[] args)
         {
@@ -159,6 +179,7 @@ namespace NiL.JS.Core.BaseTypes
             return (oValue as string).LastIndexOf(fstr, pos, StringComparison.CurrentCulture);
         }
 
+        [StringAllowUnsafeCallAttribute(typeof(JSObject))]
         [DoNotEnumerate]
         public JSObject localeCompare(JSObject[] args)
         {
@@ -167,6 +188,7 @@ namespace NiL.JS.Core.BaseTypes
             return string.CompareOrdinal(str0, str1);
         }
 
+        [StringAllowUnsafeCallAttribute(typeof(JSObject))]
         [DoNotEnumerate]
         public JSObject match(JSObject args)
         {
@@ -176,7 +198,7 @@ namespace NiL.JS.Core.BaseTypes
             if (a0.valueType == JSObjectType.Object && a0.oValue is RegExp)
             {
                 var regex = a0.oValue as RegExp;
-                if (!regex.global)
+                if (!regex._global)
                 {
                     args.GetMember("0", true, true).Assign(this);
                     return regex.exec(args);
@@ -202,6 +224,7 @@ namespace NiL.JS.Core.BaseTypes
             }
         }
 
+        [StringAllowUnsafeCallAttribute(typeof(JSObject))]
         [DoNotEnumerate]
         public JSObject replace(JSObject[] args)
         {
@@ -242,7 +265,7 @@ namespace NiL.JS.Core.BaseTypes
                             margs.fields[(len.iValue - 2).ToString()] = t;
                             margs.fields[(len.iValue - 1).ToString()] = this;
                             return f.Invoke(margs).ToString();
-                        }), (args[0].oValue as RegExp).global ? int.MaxValue : 1);
+                        }), (args[0].oValue as RegExp)._global ? int.MaxValue : 1);
                     this.oValue = temp;
                     this.valueType = JSObjectType.String;
                     assignCallback = oac;
@@ -250,7 +273,7 @@ namespace NiL.JS.Core.BaseTypes
                 }
                 else
                 {
-                    return (args[0].oValue as RegExp).regEx.Replace(oValue.ToString(), args.Length > 1 ? args[1].ToString() : "undefined", (args[0].oValue as RegExp).global ? int.MaxValue : 1);
+                    return (args[0].oValue as RegExp).regEx.Replace(oValue.ToString(), args.Length > 1 ? args[1].ToString() : "undefined", (args[0].oValue as RegExp)._global ? int.MaxValue : 1);
                 }
             }
             else
@@ -290,6 +313,7 @@ namespace NiL.JS.Core.BaseTypes
             }
         }
 
+        [StringAllowUnsafeCallAttribute(typeof(JSObject))]
         [DoNotEnumerate]
         public JSObject slice(JSObject[] args)
         {
@@ -353,6 +377,7 @@ namespace NiL.JS.Core.BaseTypes
             return (oValue as string).Substring(pos0, pos1 - pos0);
         }
 
+        [StringAllowUnsafeCallAttribute(typeof(JSObject))]
         [DoNotEnumerate]
         public JSObject split(JSObject[] args)
         {
@@ -395,12 +420,14 @@ namespace NiL.JS.Core.BaseTypes
             return new Array(res);
         }
 
+        [StringAllowUnsafeCallAttribute(typeof(JSObject))]
         [DoNotEnumerate]
         public JSObject substring(JSObject[] args)
         {
             return slice(args);
         }
 
+        [StringAllowUnsafeCallAttribute(typeof(JSObject))]
         [DoNotEnumerate]
         public JSObject substr(JSObject[] args)
         {
@@ -465,36 +492,42 @@ namespace NiL.JS.Core.BaseTypes
             return (oValue as string).Substring(pos0, len);
         }
 
+        [StringAllowUnsafeCallAttribute(typeof(JSObject))]
         [DoNotEnumerate]
         public JSObject toLocaleLowerCase()
         {
             return (oValue as string).ToLower(System.Threading.Thread.CurrentThread.CurrentUICulture);
         }
 
+        [StringAllowUnsafeCallAttribute(typeof(JSObject))]
         [DoNotEnumerate]
         public JSObject toLocaleUpperCase()
         {
             return (oValue as string).ToUpper(System.Threading.Thread.CurrentThread.CurrentUICulture);
         }
 
+        [StringAllowUnsafeCallAttribute(typeof(JSObject))]
         [DoNotEnumerate]
         public JSObject toLowerCase()
         {
             return (oValue as string).ToLowerInvariant();
         }
 
+        [StringAllowUnsafeCallAttribute(typeof(JSObject))]
         [DoNotEnumerate]
         public JSObject toUpperCase()
         {
             return (oValue as string).ToUpperInvariant();
         }
 
+        [StringAllowUnsafeCallAttribute(typeof(JSObject))]
         [DoNotEnumerate]
         public JSObject trim()
         {
             return (oValue as string).Trim();
         }
 
+        [StringAllowUnsafeCallAttribute(typeof(JSObject))]
         [ParametersCount(0)]
         public override JSObject toString(JSObject args)
         {
@@ -508,6 +541,7 @@ namespace NiL.JS.Core.BaseTypes
                 throw new JSException(TypeProxy.Proxy(new TypeError("Try to call String.toString for not string object.")));
         }
 
+        [StringAllowUnsafeCallAttribute(typeof(JSObject))]
         [DoNotEnumerate]
         public override JSObject valueOf()
         {
@@ -522,6 +556,7 @@ namespace NiL.JS.Core.BaseTypes
         [DoNotEnumerate]
         public JSObject length
         {
+            [StringAllowUnsafeCallAttribute(typeof(JSObject))]
             [Hidden]
             get
             {

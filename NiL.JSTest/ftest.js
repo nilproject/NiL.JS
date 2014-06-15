@@ -1,19 +1,40 @@
 ﻿// Copyright 2009 the Sputnik authors.  All rights reserved.
 /**
- * Operator use ToString
+ * ToObject conversion from Boolean: create a new Boolean object
+ * whose [[value]] property is set to the value of the boolean
  *
- * @path ch15/15.1/15.1.2/15.1.2.2/S15.1.2.2_A1_T1.js
- * @description Checking for boolean primitive
+ * @path ch09/9.9/S9.9_A3.js
+ * @description Trying to convert from Boolean to Object
  */
 
-//CHECK#1
-if (!(isNaN(parseInt(true)) && isNaN(parseInt("NaN")))) {
-    $ERROR('#1: parseInt(true) === Not-a-Number; parseInt("NaN") === Not-a-Number. Actual: ' + (parseInt("NaN")));
+// CHECK#1
+if (Object(true).valueOf() !== true) {
+    $ERROR('#1: Object(true).valueOf() === true. Actual: ' + (Object(true).valueOf()));
 }
 
-//CHECK#2
-if (String(parseInt(false)) !== "NaN") {
-    $ERROR('#2: String(parseInt(false)) === "NaN". Actual: ' + (String(parseInt(false))));
+// CHECK#2
+if (typeof Object(true) !== "object") {
+    $ERROR('#2: typeof Object(true) === "object". Actual: ' + (typeof Object(true)));
+}
+
+// CHECK#3
+if (Object(true).constructor.prototype !== Boolean.prototype) {
+    $ERROR('#3: Object(true).constructor.prototype === Boolean.prototype. Actual: ' + (Object(true).constructor.prototype));
+}
+
+// CHECK#4
+if (Object(false).valueOf() !== false) {
+    $ERROR('#4: Object(false).valueOf() === false. Actual: ' + (Object(false).valueOf()));
+}
+
+// CHECK#5
+if (typeof Object(false) !== "object") {
+    $ERROR('#5: typeof Object(false) === "object". Actual: ' + (typeof Object(false)));
+}
+
+// CHECK#6
+if (Object(false).constructor.prototype !== Boolean.prototype) {
+    $ERROR('#6: Object(false).constructor.prototype === Boolean.prototype. Actual: ' + (Object(false).constructor.prototype));
 }
 
 

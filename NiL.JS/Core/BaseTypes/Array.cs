@@ -179,7 +179,7 @@ namespace NiL.JS.Core.BaseTypes
 
         [DoNotDelete]
         [DoNotEnumerateAttribute]
-        public int length
+        public JSObject length
         {
             [Hidden]
             get
@@ -189,13 +189,14 @@ namespace NiL.JS.Core.BaseTypes
             [Hidden]
             set
             {
-                if (data.Count > value)
-                    data.RemoveRange(value, data.Count - value);
+                var nlen = Tools.JSObjectToInt(value);
+                if (data.Count > nlen)
+                    data.RemoveRange(nlen, data.Count - nlen);
                 else
                 {
-                    if (data.Capacity < value)
-                        data.Capacity = value;
-                    while (data.Count < value)
+                    if (data.Capacity < nlen)
+                        data.Capacity = nlen;
+                    while (data.Count < nlen)
                         data.Add(null);
                 }
             }

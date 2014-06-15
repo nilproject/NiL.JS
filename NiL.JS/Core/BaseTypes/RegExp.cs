@@ -16,7 +16,7 @@ namespace NiL.JS.Core.BaseTypes
         [DoNotEnumerate]
         public RegExp()
         {
-            global = false;
+            _global = false;
             regEx = new System.Text.RegularExpressions.Regex("");
         }
 
@@ -30,7 +30,7 @@ namespace NiL.JS.Core.BaseTypes
                 oValue = ptrn.oValue;
                 return;
             }
-            global = false;
+            _global = false;
             var pattern = ptrn.valueType > JSObjectType.Undefined ? ptrn.ToString().Replace("\\P", "P") : "";
             var flags = args.GetMember("length").iValue > 1 && args.GetMember("1").valueType > JSObjectType.Undefined ? args.GetMember("1").ToString() : "";
             try
@@ -67,9 +67,9 @@ namespace NiL.JS.Core.BaseTypes
                             }
                         case 'g':
                             {
-                                if (global)
+                                if (_global)
                                     throw new JSException(TypeProxy.Proxy(new SyntaxError("Try to double use RegExp flag \"" + flags[i] + '"')));
-                                global = true;
+                                _global = true;
                                 break;
                             }
                         default:
@@ -95,7 +95,7 @@ namespace NiL.JS.Core.BaseTypes
         [DoNotEnumerate]
         public RegExp(string pattern, string flags)
         {
-            global = false;
+            _global = false;
             try
             {
                 System.Text.RegularExpressions.RegexOptions options = System.Text.RegularExpressions.RegexOptions.ECMAScript;
@@ -119,9 +119,9 @@ namespace NiL.JS.Core.BaseTypes
                             }
                         case 'g':
                             {
-                                if (global)
+                                if (_global)
                                     throw new JSException(TypeProxy.Proxy(new SyntaxError("Try to double use RegExp flag \"" + flags[i] + '"')));
-                                global = true;
+                                _global = true;
                                 break;
                             }
                         default:
@@ -156,8 +156,13 @@ namespace NiL.JS.Core.BaseTypes
             }
         }
 
+        internal bool _global;
         [DoNotEnumerate]
-        public bool global { get; private set; }
+        public Boolean global
+        {
+            [Hidden]
+            get { return _global; }
+        }
 
         [DoNotEnumerate]
         public String source
@@ -180,7 +185,7 @@ namespace NiL.JS.Core.BaseTypes
                 lIndex = value.GetMember("0");
             }
         }
-        
+
         [DoNotEnumerate]
         public JSObject compile(JSObject args)
         {
@@ -214,7 +219,7 @@ namespace NiL.JS.Core.BaseTypes
             var res = new Array(m.Groups.Count);
             for (int i = 0; i < m.Groups.Count; i++)
                 res[i] = m.Groups[i].Success ? (JSObject)m.Groups[i].Value : null;
-            if (global)
+            if (_global)
                 lastIndex.iValue = m.Index + m.Length;
             res.GetMember("index", true, true).Assign(m.Index);
             res.GetMember("input", true, true).Assign(input);
@@ -242,7 +247,7 @@ namespace NiL.JS.Core.BaseTypes
                 lIndex.iValue = 0;
                 return false;
             }
-            if (global)
+            if (_global)
                 lastIndex.iValue = m.Index + m.Length;
             return m.Success;
         }
@@ -253,7 +258,7 @@ namespace NiL.JS.Core.BaseTypes
             return "/" + regEx.ToString() + "/"
                 + ((regEx.Options & System.Text.RegularExpressions.RegexOptions.IgnoreCase) != 0 ? "i" : "")
                 + ((regEx.Options & System.Text.RegularExpressions.RegexOptions.Multiline) != 0 ? "m" : "")
-                + (global ? "g" : "");
+                + (_global ? "g" : "");
         }
     }
 }
