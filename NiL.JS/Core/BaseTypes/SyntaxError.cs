@@ -10,6 +10,13 @@ namespace NiL.JS.Core.BaseTypes
     [Serializable]
     public sealed class SyntaxError : Error
     {
+        public override JSObject message
+        {
+            get
+            {
+                return base.message;
+            }
+        }
         public override JSObject name { get { return "SyntaxError"; } }
 
         public SyntaxError()

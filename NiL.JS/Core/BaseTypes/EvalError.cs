@@ -10,6 +10,13 @@ namespace NiL.JS.Core.BaseTypes
     [Serializable]
     public sealed class EvalError : Error
     {
+        public override JSObject message
+        {
+            get
+            {
+                return base.message;
+            }
+        }
         public override JSObject name { get { return "EvalError"; } }
 
         public EvalError()

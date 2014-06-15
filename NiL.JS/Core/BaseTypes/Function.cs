@@ -935,7 +935,19 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [DoNotEnumerate]
-        public virtual JSObject call(JSObject args)
+        public override JSObject valueOf()
+        {
+            return base.valueOf();
+        }
+
+        [DoNotEnumerate]
+        public override JSObject toString(JSObject args)
+        {
+            return ToString();
+        }
+
+        [DoNotEnumerate]
+        public JSObject call(JSObject args)
         {
             var newThis = args.GetMember("0");
             var prmlen = --args.GetMember("length").iValue;
@@ -949,7 +961,7 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [DoNotEnumerate]
-        public virtual JSObject apply(JSObject args)
+        public JSObject apply(JSObject args)
         {
             var newThis = args.GetMember("0");
             var iargs = args.GetMember("1");
@@ -981,7 +993,7 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [DoNotEnumerate]
-        public virtual JSObject bind(JSObject[] args)
+        public JSObject bind(JSObject[] args)
         {
             var newThis = args.Length > 0 ? args[0] : null;
             var strict = (creator != null && creator.body != null && creator.body.strict) || Context.CurrentContext.strict;

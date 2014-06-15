@@ -486,18 +486,5 @@ namespace NiL.JS.Core
             res += "){ [native code] }";
             return res;
         }
-
-        public override JSObject call(JSObject args)
-        {
-            var newThis = args.GetMember("0");
-            var prmlen = --args.GetMember("length").iValue;
-            for (int i = 0; i < prmlen; i++)
-                args.fields[i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture)] = args.GetMember(i < 14 ? Tools.NumString[i + 1] : (i + 1).ToString(CultureInfo.InvariantCulture));
-            args.fields.Remove(prmlen < 16 ? Tools.NumString[prmlen] : prmlen.ToString(CultureInfo.InvariantCulture));
-            //if (newThis.valueType < JSObjectType.Object || newThis.oValue != null || (info.DeclaringType == typeof(JSObject)))
-            return Invoke(newThis, args);
-            //else
-            //return Invoke(Context.thisBind ?? Context.GetVariable("this"), args);
-        }
     }
 }

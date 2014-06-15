@@ -527,7 +527,7 @@ namespace NiL.JS.Core.BaseTypes
             return (oValue as string).Trim();
         }
 
-        [StringAllowUnsafeCallAttribute(typeof(JSObject))]
+        [AllowUnsafeCall(typeof(JSObject))]
         [ParametersCount(0)]
         public override JSObject toString(JSObject args)
         {
@@ -541,7 +541,7 @@ namespace NiL.JS.Core.BaseTypes
                 throw new JSException(TypeProxy.Proxy(new TypeError("Try to call String.toString for not string object.")));
         }
 
-        [StringAllowUnsafeCallAttribute(typeof(JSObject))]
+        [AllowUnsafeCall(typeof(JSObject))]
         [DoNotEnumerate]
         public override JSObject valueOf()
         {

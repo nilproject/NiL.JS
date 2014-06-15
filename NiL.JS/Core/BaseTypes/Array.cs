@@ -828,12 +828,6 @@ namespace NiL.JS.Core.BaseTypes
             return new Enumerator(this);
         }
 
-        [Modules.DoNotEnumerate]
-        public override JSObject valueOf()
-        {
-            return base.valueOf();
-        }
-
         [Hidden]
         internal protected override JSObject GetMember(string name, bool create, bool own)
         {
