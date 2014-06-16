@@ -200,7 +200,6 @@ namespace NiL.JS.Core
         {
             if (parameters.Length == 0)
                 return null;
-            object[] res;
             int len = 0;
             if (source != null)
             {
@@ -220,51 +219,37 @@ namespace NiL.JS.Core
                     || ptype == typeof(JSObject[])
                     || ptype == typeof(List<object>)
                     || ptype == typeof(object[]))
-                {
-                    res = new JSObject[len];
-                    for (int i = 0; i < len; i++)
-                        res[i] = source.GetMember(i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture));
-                    return new object[] { res };
-                }
+                    return argumentsToArray(source);
             }
             int targetCount = parameters.Length;
-            targetCount = System.Math.Min(targetCount, len);
-            res = targetCount != 0 ? new object[targetCount] : null;
-            for (int i = targetCount; i-- > 0; )
+            object[] res = new object[targetCount];
+            for (int i = len; i-- > 0; )
             {
                 var obj = source.GetMember(i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture));
-                if (obj != null)
+                if (obj != notExist)
                 {
-                    res[i] = obj;//embeddedTypeConvert(obj, parameters[i].ParameterType);
+                    res[i] = Tools.convertJStoObj(obj, parameters[i].ParameterType);
                     if (res[i] == null)
                     {
-                        if (parameters[i].ParameterType == typeof(JSObject))
-                            res[i] = obj;
-                        else
+                        var v = obj.Value;
+                        if (v is Core.BaseTypes.Array)
+                            res[i] = convertArray(v as Core.BaseTypes.Array);
+                        else if (v is TypeProxy)
                         {
-                            var v = obj.valueType == JSObjectType.Object && obj.oValue != null && obj.oValue.GetType() == typeof(object) ? obj : obj.Value;
-                            if (v != null)
-                            {
-                                if (v is Core.BaseTypes.Array)
-                                    res[i] = convertArray(v as Core.BaseTypes.Array);
-                                else if (v is TypeProxy)
-                                {
-                                    var tp = v as TypeProxy;
-                                    res[i] = (tp.bindFlags & BindingFlags.Static) != 0 ? tp.hostedType : tp.prototypeInstance;
-                                }
-                                else if (v is TypeProxyConstructor)
-                                    res[i] = (v as TypeProxyConstructor).proxy.hostedType;
-                                else if (v is Function && parameters[i].ParameterType.IsSubclassOf(typeof(Delegate)))
-                                    res[i] = (v as Function).MakeDelegate(parameters[i].ParameterType);
-                                else if (v is ArrayBuffer && typeof(byte[]).IsAssignableFrom(parameters[i].ParameterType))
-                                    res[i] = (v as ArrayBuffer).Data;
-                                else
-                                    res[i] = v;
-                            }
+                            var tp = v as TypeProxy;
+                            res[i] = (tp.bindFlags & BindingFlags.Static) != 0 ? tp.hostedType : tp.prototypeInstance;
                         }
-                        if (paramsConverters != null && paramsConverters[i] != null)
-                            res[i] = paramsConverters[i].To(res[i]);
+                        else if (v is TypeProxyConstructor)
+                            res[i] = (v as TypeProxyConstructor).proxy.hostedType;
+                        else if (v is Function && parameters[i].ParameterType.IsSubclassOf(typeof(Delegate)))
+                            res[i] = (v as Function).MakeDelegate(parameters[i].ParameterType);
+                        else if (v is ArrayBuffer && parameters[i].ParameterType.IsAssignableFrom(typeof(byte[])))
+                            res[i] = (v as ArrayBuffer).Data;
+                        else
+                            res[i] = v;
                     }
+                    if (paramsConverters != null && paramsConverters[i] != null)
+                        res[i] = paramsConverters[i].To(res[i]);
                 }
             }
             return res;
