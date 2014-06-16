@@ -205,17 +205,14 @@ namespace NiL.JS.Core
                     throw new NotImplementedException();
             }
         }
-        
+
         internal static object convertJStoObj(JSObject jsobj, Type targetType)
         {
             if (jsobj == null)
                 return null;
             if (targetType.IsAssignableFrom(jsobj.GetType()))
                 return jsobj;
-            var res = targetType == typeof(int)
-                || targetType == typeof(double)
-                || targetType == typeof(bool)
-                || jsobj.valueType >= JSObjectType.String ? jsobj.Value : null;
+            var res = targetType.IsValueType || jsobj.valueType >= JSObjectType.String ? jsobj.Value : null;
             if (res == null)
                 return res;
             if (targetType.IsAssignableFrom(res.GetType()))
