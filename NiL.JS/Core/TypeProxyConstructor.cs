@@ -151,7 +151,8 @@ namespace NiL.JS.Core
             {
                 if (constructors[i].Parameters.Length == len
                     || (constructors[i].Parameters.Length == 1 && (constructors[i].Parameters[0].ParameterType == typeof(JSObject)
-                                                                   || constructors[i].Parameters[0].ParameterType == typeof(JSObject[]))))
+                                                                   || constructors[i].Parameters[0].ParameterType == typeof(JSObject[])
+                                                                   || constructors[i].Parameters[0].ParameterType == typeof(object[]))))
                 {
                     if (len == 0)
                         args = _objectA;

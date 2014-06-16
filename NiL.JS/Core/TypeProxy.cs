@@ -279,7 +279,8 @@ namespace NiL.JS.Core
                         if (cache[i].Parameters.Length == l
                         || (cache[i].Parameters.Length == 1
                             && (cache[i].Parameters[0].ParameterType == typeof(JSObject)
-                                || cache[i].Parameters[0].ParameterType == typeof(JSObject[]))))
+                                || cache[i].Parameters[0].ParameterType == typeof(JSObject[])
+                                || cache[i].Parameters[0].ParameterType == typeof(object[]))))
                         {
                             object[] cargs = null;
                             if (l != 0)
@@ -301,7 +302,7 @@ namespace NiL.JS.Core
                             return TypeProxy.Proxy(cache[i].InvokeImpl(thisBind, cargs, args));
                         }
                     }
-                    return null;
+                    throw new JSException(new TypeError("Invalid parameters for function " + m[0].Name));
                 });
             }
             else

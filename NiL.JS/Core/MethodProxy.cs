@@ -329,7 +329,7 @@ namespace NiL.JS.Core
                             {
                                 bool di = true;
                                 SetFieldValue(_targetInfo, delegateF1, target, typeof(object), _targetInfo.Attributes, typeof(Action), ref di);
-                                res = delegateF1(args ?? argumentsToArray<object>(argsSource));
+                                res = delegateF1(args != null ? args[0] : argumentsToArray<object>(argsSource));
                             }
                             else
 #endif
@@ -371,7 +371,7 @@ namespace NiL.JS.Core
                         }
                     case CallMode.FuncStaticOneArray:
                         {
-                            res = delegateF1(args ?? argumentsToArray<object>(argsSource));
+                            res = delegateF1(args != null ? args[0] : argumentsToArray<object>(argsSource));
                             break;
                         }
                     case CallMode.FuncStaticOneRaw:
