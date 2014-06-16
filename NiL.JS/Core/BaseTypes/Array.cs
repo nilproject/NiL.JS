@@ -353,7 +353,7 @@ namespace NiL.JS.Core.BaseTypes
             }
             var left = new NiL.JS.Statements.ImmidateValueStatement(el);
             var right = new NiL.JS.Statements.ImmidateValueStatement(null);
-            var opeq = new NiL.JS.Statements.Operators.Equal(left, right);
+            var opeq = new NiL.JS.Statements.Operators.StrictEqual(left, right);
             for (int i = 0; i < data.Count; i++)
             {
                 right.value = data[i];
@@ -429,7 +429,7 @@ namespace NiL.JS.Core.BaseTypes
             }
             var left = new NiL.JS.Statements.ImmidateValueStatement(el);
             var right = new NiL.JS.Statements.ImmidateValueStatement(null);
-            var opeq = new NiL.JS.Statements.Operators.Equal(left, right);
+            var opeq = new NiL.JS.Statements.Operators.StrictEqual(left, right);
             for (int i = data.Count; i-- > 0; )
             {
                 right.value = data[i];
