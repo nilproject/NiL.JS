@@ -103,7 +103,7 @@ namespace NiL.JS.Core
                         paramsConverters[i] = t;
                     }
                 }
-                if (!retType.IsValueType && !info.DeclaringType.IsValueType)
+                if (!retType.IsValueType && !info.ReflectedType.IsValueType)
                 {
                     switch (parameters.Length)
                     {
@@ -187,12 +187,12 @@ namespace NiL.JS.Core
             return arg;
         }
 
-        private static object[] argumentsToArray(JSObject source)
+        internal static T[] argumentsToArray<T>(JSObject source)
         {
             var len = source.GetMember("length").iValue;
-            var res = new object[len];
+            var res = new T[len];
             for (int i = 0; i < len; i++)
-                res[i] = source.GetMember(i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture));
+                res[i] = (T)(source.GetMember(i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture)) as object);
             return res;
         }
 
@@ -219,7 +219,7 @@ namespace NiL.JS.Core
                     || ptype == typeof(JSObject[])
                     || ptype == typeof(List<object>)
                     || ptype == typeof(object[]))
-                    return argumentsToArray(source);
+                    return new[] { argumentsToArray<JSObject>(source) };
             }
             int targetCount = parameters.Length;
             object[] res = new object[targetCount];
@@ -329,11 +329,11 @@ namespace NiL.JS.Core
                             {
                                 bool di = true;
                                 SetFieldValue(_targetInfo, delegateF1, target, typeof(object), _targetInfo.Attributes, typeof(Action), ref di);
-                                res = delegateF1(args ?? argumentsToArray(argsSource));
+                                res = delegateF1(args ?? argumentsToArray<object>(argsSource));
                             }
                             else
 #endif
-                                res = delegateF2(target, args ?? argumentsToArray(argsSource));
+                                res = delegateF2(target, args ?? argumentsToArray<object>(argsSource));
                             break;
                         }
                     case CallMode.FuncDynamicOneRaw:
@@ -357,7 +357,7 @@ namespace NiL.JS.Core
                             {
                                 bool di = true;
                                 SetFieldValue(_targetInfo, delegateF1, target, typeof(object), _targetInfo.Attributes, typeof(Action), ref di);
-                                res = delegateF1(args == null ? marshal(argsSource["0"], parameters[0].ParameterType) :args[0]);
+                                res = delegateF1(args == null ? marshal(argsSource["0"], parameters[0].ParameterType) : args[0]);
                             }
                             else
 #endif
@@ -371,7 +371,7 @@ namespace NiL.JS.Core
                         }
                     case CallMode.FuncStaticOneArray:
                         {
-                            res = delegateF1(args ?? argumentsToArray(argsSource));
+                            res = delegateF1(args ?? argumentsToArray<object>(argsSource));
                             break;
                         }
                     case CallMode.FuncStaticOneRaw:

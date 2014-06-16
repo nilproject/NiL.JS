@@ -215,7 +215,7 @@ namespace NiL.JS.Core
             var res = targetType.IsValueType || jsobj.valueType >= JSObjectType.String ? jsobj.Value : null;
             if (res == null)
                 return res;
-            if (targetType.IsAssignableFrom(res.GetType()))
+            if ((targetType.IsEnum && Enum.IsDefined(targetType, res)) || targetType.IsAssignableFrom(res.GetType()))
                 return res;
             if (res is TypeProxy && targetType.IsAssignableFrom((res as TypeProxy).hostedType))
                 return (res as TypeProxy).prototypeInstance;

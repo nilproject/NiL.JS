@@ -107,6 +107,13 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [DoNotEnumerate]
+        public Array(JSObject args)
+            : this(MethodProxy.argumentsToArray<object>(args))
+        {
+
+        }
+
+        [Hidden]
         public Array(ICollection collection)
         {
             if (collection == null)

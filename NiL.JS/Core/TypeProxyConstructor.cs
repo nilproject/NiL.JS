@@ -150,9 +150,8 @@ namespace NiL.JS.Core
             for (int i = 0; i < constructors.Length; i++)
             {
                 if (constructors[i].Parameters.Length == len
-                    || (constructors[i].Parameters.Length == 1
-                        && (constructors[i].Parameters[0].ParameterType == typeof(JSObject)
-                            || typeof(ICollection).IsAssignableFrom(constructors[i].Parameters[0].ParameterType))))
+                    || (constructors[i].Parameters.Length == 1 && (constructors[i].Parameters[0].ParameterType == typeof(JSObject)
+                                                                   || constructors[i].Parameters[0].ParameterType == typeof(JSObject[]))))
                 {
                     if (len == 0)
                         args = _objectA;
