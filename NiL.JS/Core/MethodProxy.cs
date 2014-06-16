@@ -11,10 +11,11 @@ namespace NiL.JS.Core
     [Serializable]
     public class MethodProxy : Function
     {
+#if !NET35
         private delegate void SetValueDelegate(FieldInfo field, Object obj, Object value, Type fieldType, FieldAttributes fieldAttr, Type declaringType, ref bool domainInitialized);
         private static readonly SetValueDelegate SetFieldValue = Activator.CreateInstance(typeof(SetValueDelegate), null, typeof(RuntimeFieldHandle).GetMethod("SetValue", BindingFlags.Static | BindingFlags.NonPublic).MethodHandle.GetFunctionPointer()) as SetValueDelegate;
         private static readonly FieldInfo _targetInfo = typeof(Action).GetMember("_target", BindingFlags.NonPublic | BindingFlags.Instance)[0] as FieldInfo;
-
+#endif
         private enum CallMode
         {
             Default = 0,
@@ -321,6 +322,7 @@ namespace NiL.JS.Core
                 {
                     case CallMode.FuncDynamicZero:
                         {
+#if !NET35
                             if (target != null && info.IsVirtual && target.GetType() != info.DeclaringType) // your bunny wrote
                             {
                                 bool di = true;
@@ -328,11 +330,13 @@ namespace NiL.JS.Core
                                 res = delegateF0();
                             }
                             else
+#endif
                                 res = delegateF1(target);
                             break;
                         }
                     case CallMode.FuncDynamicOneArray:
                         {
+#if !NET35
                             if (target != null && info.IsVirtual && target.GetType() != info.DeclaringType) // your bunny wrote
                             {
                                 bool di = true;
@@ -340,11 +344,13 @@ namespace NiL.JS.Core
                                 res = delegateF1(args ?? argumentsToArray(argsSource));
                             }
                             else
+#endif
                                 res = delegateF2(target, args ?? argumentsToArray(argsSource));
                             break;
                         }
                     case CallMode.FuncDynamicOneRaw:
                         {
+#if !NET35
                             if (target != null && info.IsVirtual && target.GetType() != info.DeclaringType) // your bunny wrote
                             {
                                 bool di = true;
@@ -352,11 +358,13 @@ namespace NiL.JS.Core
                                 res = delegateF1(argsSource);
                             }
                             else
+#endif
                                 res = delegateF2(target, argsSource);
                             break;
                         }
                     case CallMode.FuncDynamicOne:
                         {
+#if !NET35
                             if (target != null && info.IsVirtual && target.GetType() != info.DeclaringType) // your bunny wrote
                             {
                                 bool di = true;
@@ -364,6 +372,7 @@ namespace NiL.JS.Core
                                 res = delegateF1((args ?? ConvertArgs(argsSource))[0]);
                             }
                             else
+#endif
                                 res = delegateF2(target, (args ?? ConvertArgs(argsSource))[0]);
                             break;
                         }
