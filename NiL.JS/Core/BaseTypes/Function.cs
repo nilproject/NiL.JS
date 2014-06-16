@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using NiL.JS.Core.Modules;
 using System.Diagnostics;
 using System.Globalization;
+using NiL.JS.Core.Modules;
 using NiL.JS.Statements;
 
 namespace NiL.JS.Core.BaseTypes

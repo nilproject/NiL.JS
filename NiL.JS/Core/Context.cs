@@ -1,9 +1,9 @@
-﻿using NiL.JS.Core.BaseTypes;
-using NiL.JS.Statements;
-using System.Collections.Generic;
-using System;
+﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Threading;
+using NiL.JS.Core.BaseTypes;
+using NiL.JS.Statements;
 
 namespace NiL.JS.Core
 {

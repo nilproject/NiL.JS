@@ -1,8 +1,8 @@
 ﻿
 #define TYPE_SAFE
 
-using NiL.JS.Core;
 using System;
+using NiL.JS.Core;
 
 namespace NiL.JS.Statements.Operators
 {
