@@ -1,9 +1,9 @@
-using NiL.JS.Core.BaseTypes;
-using NiL.JS.Core.Modules;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
+using NiL.JS.Core.BaseTypes;
+using NiL.JS.Core.Modules;
 
 namespace NiL.JS.Core
 {
@@ -78,7 +78,7 @@ namespace NiL.JS.Core
         [Hidden]
         internal JSObject prototype;
         [Hidden]
-        internal Dictionary<string, JSObject> fields;
+        internal IDictionary<string, JSObject> fields;
 
         [Hidden]
         internal string lastRequestedName;

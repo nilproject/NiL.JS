@@ -1,6 +1,6 @@
-﻿using NiL.JS.Core;
+﻿using System;
+using NiL.JS.Core;
 using NiL.JS.Core.BaseTypes;
-using System;
 
 namespace NiL.JS.Statements.Operators
 {

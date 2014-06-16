@@ -1,7 +1,6 @@
-﻿using NiL.JS.Statements;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using NiL.JS.Statements;
 
 namespace NiL.JS.Core
 {

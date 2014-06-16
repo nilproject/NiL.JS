@@ -1,9 +1,7 @@
-using NiL.JS.Core.BaseTypes;
 using System;
 using System.Collections.Generic;
 using NiL.JS.Core;
-using System.Threading;
-using System.Text.RegularExpressions;
+using NiL.JS.Core.BaseTypes;
 
 namespace NiL.JS.Statements
 {

@@ -193,9 +193,9 @@
     <Compile Include="Core\ExternalFunction.cs" />
     <Compile Include="Core\GlobalFunctions.cs" />
     <Compile Include="Core\Modules\AllowUnsafeCallAttribute.cs" />
-    <Compile Include="Core\VaribleDescriptor.cs" />
+    <Compile Include="Core\VariableDescriptor.cs" />
     <Compile Include="Core\GenericType.cs" />
-    <Compile Include="Core\VaribleReference.cs" />
+    <Compile Include="Core\VariableReference.cs" />
     <Compile Include="Core\JSException.cs" />
     <Compile Include="Core\Modules\DoNotEnumerateAttribute.cs" />
     <Compile Include="Core\Modules\DontDeleteAttribute.cs" />
@@ -262,7 +262,7 @@
     <Compile Include="Statements\Operators\In.cs" />
     <Compile Include="Statements\Operators\StrictEqual.cs" />
     <Compile Include="Statements\SwitchStatement.cs" />
-    <Compile Include="Statements\GetVaribleStatement.cs" />
+    <Compile Include="Statements\GetVariableStatement.cs" />
     <Compile Include="Statements\Json.cs" />
     <Compile Include="Statements\Operators\Assign.cs" />
     <Compile Include="Statements\Operators\Call.cs" />
@@ -282,7 +282,7 @@
     <Compile Include="Script.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Statements\TryCatchStatement.cs" />
-    <Compile Include="Statements\VaribleDefineStatement.cs" />
+    <Compile Include="Statements\VariableDefineStatement.cs" />
     <Compile Include="Statements\WhileStatement.cs" />
     <Compile Include="Statements\WithStatement.cs" />
     <Compile Include="Statements\DebuggerOperator.cs" />

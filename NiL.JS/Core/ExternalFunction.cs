@@ -1,6 +1,5 @@
-﻿using NiL.JS.Core.BaseTypes;
-using NiL.JS.Core;
-using System;
+﻿using System;
+using NiL.JS.Core.BaseTypes;
 using NiL.JS.Core.Modules;
 
 namespace NiL.JS.Core

@@ -1,6 +1,6 @@
 ﻿using System;
-using NiL.JS.Core.Modules;
 using System.Globalization;
+using NiL.JS.Core.Modules;
 
 namespace NiL.JS.Core.BaseTypes
 {

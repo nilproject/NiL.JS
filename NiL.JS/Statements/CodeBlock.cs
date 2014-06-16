@@ -1,8 +1,8 @@
-﻿using NiL.JS.Core;
-using NiL.JS.Statements.Operators;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using NiL.JS.Core;
+using NiL.JS.Statements.Operators;
 
 namespace NiL.JS.Statements
 {

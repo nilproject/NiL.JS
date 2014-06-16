@@ -1,8 +1,6 @@
 using System;
-using NiL.JS.Core.BaseTypes;
-using NiL.JS.Core;
 using System.Collections.Generic;
-using System.Collections;
+using NiL.JS.Core;
 
 namespace NiL.JS.Statements
 {

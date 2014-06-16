@@ -1,9 +1,8 @@
-﻿using NiL.JS.Core;
-using NiL.JS.Core.BaseTypes;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
+using NiL.JS.Core;
+using NiL.JS.Core.BaseTypes;
 
 namespace NiL.JS.Statements
 {

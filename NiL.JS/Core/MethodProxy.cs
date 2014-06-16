@@ -1,12 +1,9 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Globalization;
 using System.Reflection;
 using NiL.JS.Core.BaseTypes;
-using System.Reflection.Emit;
-using System.Runtime.InteropServices;
-using System.Runtime.Serialization;
-using System.Collections.Generic;
-using System.Collections;
-using System.Globalization;
 using NiL.JS.Core.Modules;
 
 namespace NiL.JS.Core
@@ -14,10 +11,11 @@ namespace NiL.JS.Core
     [Serializable]
     public class MethodProxy : Function
     {
+#if !NET35
         private delegate void SetValueDelegate(FieldInfo field, Object obj, Object value, Type fieldType, FieldAttributes fieldAttr, Type declaringType, ref bool domainInitialized);
         private static readonly SetValueDelegate SetFieldValue = Activator.CreateInstance(typeof(SetValueDelegate), null, typeof(RuntimeFieldHandle).GetMethod("SetValue", BindingFlags.Static | BindingFlags.NonPublic).MethodHandle.GetFunctionPointer()) as SetValueDelegate;
         private static readonly FieldInfo _targetInfo = typeof(Action).GetMember("_target", BindingFlags.NonPublic | BindingFlags.Instance)[0] as FieldInfo;
-
+#endif
         private enum CallMode
         {
             Default = 0,
@@ -202,7 +200,6 @@ namespace NiL.JS.Core
         {
             if (parameters.Length == 0)
                 return null;
-            object[] res;
             int len = 0;
             if (source != null)
             {
@@ -222,51 +219,37 @@ namespace NiL.JS.Core
                     || ptype == typeof(JSObject[])
                     || ptype == typeof(List<object>)
                     || ptype == typeof(object[]))
-                {
-                    res = new JSObject[len];
-                    for (int i = 0; i < len; i++)
-                        res[i] = source.GetMember(i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture));
-                    return new object[] { res };
-                }
+                    return argumentsToArray(source);
             }
             int targetCount = parameters.Length;
-            targetCount = System.Math.Min(targetCount, len);
-            res = targetCount != 0 ? new object[targetCount] : null;
-            for (int i = targetCount; i-- > 0; )
+            object[] res = new object[targetCount];
+            for (int i = len; i-- > 0; )
             {
                 var obj = source.GetMember(i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture));
-                if (obj != null)
+                if (obj != notExist)
                 {
-                    res[i] = obj;//embeddedTypeConvert(obj, parameters[i].ParameterType);
+                    res[i] = Tools.convertJStoObj(obj, parameters[i].ParameterType);
                     if (res[i] == null)
                     {
-                        if (parameters[i].ParameterType == typeof(JSObject))
-                            res[i] = obj;
-                        else
+                        var v = obj.Value;
+                        if (v is Core.BaseTypes.Array)
+                            res[i] = convertArray(v as Core.BaseTypes.Array);
+                        else if (v is TypeProxy)
                         {
-                            var v = obj.valueType == JSObjectType.Object && obj.oValue != null && obj.oValue.GetType() == typeof(object) ? obj : obj.Value;
-                            if (v != null)
-                            {
-                                if (v is Core.BaseTypes.Array)
-                                    res[i] = convertArray(v as Core.BaseTypes.Array);
-                                else if (v is TypeProxy)
-                                {
-                                    var tp = v as TypeProxy;
-                                    res[i] = (tp.bindFlags & BindingFlags.Static) != 0 ? tp.hostedType : tp.prototypeInstance;
-                                }
-                                else if (v is TypeProxyConstructor)
-                                    res[i] = (v as TypeProxyConstructor).proxy.hostedType;
-                                else if (v is Function && parameters[i].ParameterType.IsSubclassOf(typeof(Delegate)))
-                                    res[i] = (v as Function).MakeDelegate(parameters[i].ParameterType);
-                                else if (v is ArrayBuffer && typeof(byte[]).IsAssignableFrom(parameters[i].ParameterType))
-                                    res[i] = (v as ArrayBuffer).Data;
-                                else
-                                    res[i] = v;
-                            }
+                            var tp = v as TypeProxy;
+                            res[i] = (tp.bindFlags & BindingFlags.Static) != 0 ? tp.hostedType : tp.prototypeInstance;
                         }
-                        if (paramsConverters != null && paramsConverters[i] != null)
-                            res[i] = paramsConverters[i].To(res[i]);
+                        else if (v is TypeProxyConstructor)
+                            res[i] = (v as TypeProxyConstructor).proxy.hostedType;
+                        else if (v is Function && parameters[i].ParameterType.IsSubclassOf(typeof(Delegate)))
+                            res[i] = (v as Function).MakeDelegate(parameters[i].ParameterType);
+                        else if (v is ArrayBuffer && parameters[i].ParameterType.IsAssignableFrom(typeof(byte[])))
+                            res[i] = (v as ArrayBuffer).Data;
+                        else
+                            res[i] = v;
                     }
+                    if (paramsConverters != null && paramsConverters[i] != null)
+                        res[i] = paramsConverters[i].To(res[i]);
                 }
             }
             return res;
@@ -324,6 +307,7 @@ namespace NiL.JS.Core
                 {
                     case CallMode.FuncDynamicZero:
                         {
+#if !NET35
                             if (target != null && info.IsVirtual && target.GetType() != info.DeclaringType) // your bunny wrote
                             {
                                 bool di = true;
@@ -331,11 +315,13 @@ namespace NiL.JS.Core
                                 res = delegateF0();
                             }
                             else
+#endif
                                 res = delegateF1(target);
                             break;
                         }
                     case CallMode.FuncDynamicOneArray:
                         {
+#if !NET35
                             if (target != null && info.IsVirtual && target.GetType() != info.DeclaringType) // your bunny wrote
                             {
                                 bool di = true;
@@ -343,11 +329,13 @@ namespace NiL.JS.Core
                                 res = delegateF1(args ?? argumentsToArray(argsSource));
                             }
                             else
+#endif
                                 res = delegateF2(target, args ?? argumentsToArray(argsSource));
                             break;
                         }
                     case CallMode.FuncDynamicOneRaw:
                         {
+#if !NET35
                             if (target != null && info.IsVirtual && target.GetType() != info.DeclaringType) // your bunny wrote
                             {
                                 bool di = true;
@@ -355,11 +343,13 @@ namespace NiL.JS.Core
                                 res = delegateF1(argsSource);
                             }
                             else
+#endif
                                 res = delegateF2(target, argsSource);
                             break;
                         }
                     case CallMode.FuncDynamicOne:
                         {
+#if !NET35
                             if (target != null && info.IsVirtual && target.GetType() != info.DeclaringType) // your bunny wrote
                             {
                                 bool di = true;
@@ -367,6 +357,7 @@ namespace NiL.JS.Core
                                 res = delegateF1((args ?? ConvertArgs(argsSource))[0]);
                             }
                             else
+#endif
                                 res = delegateF2(target, (args ?? ConvertArgs(argsSource))[0]);
                             break;
                         }

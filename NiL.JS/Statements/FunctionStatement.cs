@@ -1,10 +1,7 @@
-﻿using NiL.JS.Core.BaseTypes;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Collections;
 using NiL.JS.Core;
-using System.Collections.ObjectModel;
-using System.Linq;
+using NiL.JS.Core.BaseTypes;
 
 namespace NiL.JS.Statements
 {
