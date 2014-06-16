@@ -214,7 +214,7 @@ namespace NiL.JS.Core
                         if (mmbrs[i].IsDefined(typeof(HiddenAttribute), false))
                             continue;
                         var membername = mmbrs[i].Name;
-                        if (mmbrs[i].MemberType == MemberTypes.Method 
+                        if (mmbrs[i].MemberType == MemberTypes.Method
                             && ((mmbrs[i] as MethodBase).DeclaringType == typeof(object)))
                             continue;
                         membername = membername[0] == '.' ? membername : membername.Contains(".") ? membername.Substring(membername.LastIndexOf('.') + 1) : membername;
@@ -298,7 +298,7 @@ namespace NiL.JS.Core
                             }
                             if (cargs != null && cargs.Length == 1 && cargs[0] is JSObject && (cargs[0] as JSObject).oValue == Arguments.Instance)
                                 (cargs[0] as JSObject).fields["callee"] = cache[i];
-                            return TypeProxy.Proxy(cache[i].InvokeImpl(null, cargs, args));
+                            return TypeProxy.Proxy(cache[i].InvokeImpl(thisBind, cargs, args));
                         }
                     }
                     return null;
@@ -336,12 +336,12 @@ namespace NiL.JS.Core
                                         m[0].IsDefined(typeof(Modules.ReadOnlyAttribute), false) ? 
                                             new ExternalFunction((thisBind, a)=>
                                             {
-                                                field.SetValue(field.IsStatic ? null : thisBind.oValue, cva.To(a.GetMember("0").Value)); 
+                                                field.SetValue(field.IsStatic ? null : thisBind.Value, cva.To(a.GetMember("0").Value)); 
                                                 return null; 
                                             }) : null,
                                         new ExternalFunction((thisBind, a)=>
                                         { 
-                                            return Proxy(cva.From(field.GetValue(field.IsStatic ? null : thisBind.oValue)));
+                                            return Proxy(cva.From(field.GetValue(field.IsStatic ? null : thisBind.Value)));
                                         })
                                     }
                                 };
@@ -355,12 +355,12 @@ namespace NiL.JS.Core
                                     {
                                         !m[0].IsDefined(typeof(Modules.ReadOnlyAttribute), false) ? new ExternalFunction((thisBind, a)=>
                                         {
-                                            field.SetValue(field.IsStatic ? null : thisBind.oValue, a.GetMember("0").Value); 
+                                            field.SetValue(field.IsStatic ? null : thisBind.Value, a.GetMember("0").Value); 
                                             return null; 
                                         }) : null,
                                         new ExternalFunction((thisBind, a)=>
                                         { 
-                                            return Proxy(field.GetValue(field.IsStatic ? null : thisBind.oValue));
+                                            return Proxy(field.GetValue(field.IsStatic ? null : thisBind.Value));
                                         })
                                     }
                                 };
