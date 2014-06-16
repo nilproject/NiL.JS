@@ -221,6 +221,12 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * i + 3 - 2 / 2; }
             }
         }
 
+        private enum TestEnum : ulong
+        {
+            Default = 0,
+            One = 1
+        }
+
         private class TestClass
         {
             [DoubleStringConverter]
@@ -231,14 +237,9 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * i + 3 - 2 / 2; }
                 set { }
             }
 
-            void test(JSObject o)
+            public static object test(TestEnum o)
             {
-
-            }
-
-            void test(object o)
-            {
-
+                return null;
             }
         }
 
@@ -247,9 +248,10 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * i + 3 - 2 / 2; }
             var sw = new Stopwatch();
             var s = new Script(
 @"
-(1,Object.prototype.valueOf)();
+TestClass.test(TestEnum.One.value__ | 0);
 ");
             s.Context.AttachModule(typeof(TestClass));
+            s.Context.AttachModule(typeof(TestEnum));
             sw.Start();
             s.Invoke();
             sw.Stop();

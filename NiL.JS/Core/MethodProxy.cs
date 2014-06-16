@@ -136,7 +136,7 @@ namespace NiL.JS.Core
                                         this.delegateF1 = Activator.CreateInstance(typeof(Func<object, object>), null, info.MethodHandle.GetFunctionPointer()) as Func<object, object>;
                                         mode = CallMode.FuncStaticOneRaw;
                                     }
-                                    else if (typeof(object).IsAssignableFrom(parameters[0].ParameterType))
+                                    else if (!parameters[0].ParameterType.IsValueType)
                                     {
                                         this.delegateF1 = Activator.CreateInstance(typeof(Func<object, object>), null, info.MethodHandle.GetFunctionPointer()) as Func<object, object>;
                                         mode = CallMode.FuncStaticOne;
@@ -156,7 +156,7 @@ namespace NiL.JS.Core
                                         this.delegateF1 = Activator.CreateInstance(typeof(Func<object, object>), this, info.MethodHandle.GetFunctionPointer()) as Func<object, object>;
                                         mode = CallMode.FuncDynamicOneRaw;
                                     }
-                                    else if (typeof(object).IsAssignableFrom(parameters[0].ParameterType))
+                                    else if (!parameters[0].ParameterType.IsValueType)
                                     {
                                         this.delegateF2 = Activator.CreateInstance(typeof(Func<object, object, object>), null, info.MethodHandle.GetFunctionPointer()) as Func<object, object, object>;
                                         this.delegateF1 = Activator.CreateInstance(typeof(Func<object, object>), this, info.MethodHandle.GetFunctionPointer()) as Func<object, object>;
@@ -228,31 +228,34 @@ namespace NiL.JS.Core
                 var obj = source.GetMember(i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture));
                 if (obj != notExist)
                 {
-                    res[i] = Tools.convertJStoObj(obj, parameters[i].ParameterType);
-                    if (res[i] == null)
-                    {
-                        var v = obj.Value;
-                        if (v is Core.BaseTypes.Array)
-                            res[i] = convertArray(v as Core.BaseTypes.Array);
-                        else if (v is TypeProxy)
-                        {
-                            var tp = v as TypeProxy;
-                            res[i] = (tp.bindFlags & BindingFlags.Static) != 0 ? tp.hostedType : tp.prototypeInstance;
-                        }
-                        else if (v is TypeProxyConstructor)
-                            res[i] = (v as TypeProxyConstructor).proxy.hostedType;
-                        else if (v is Function && parameters[i].ParameterType.IsSubclassOf(typeof(Delegate)))
-                            res[i] = (v as Function).MakeDelegate(parameters[i].ParameterType);
-                        else if (v is ArrayBuffer && parameters[i].ParameterType.IsAssignableFrom(typeof(byte[])))
-                            res[i] = (v as ArrayBuffer).Data;
-                        else
-                            res[i] = v;
-                    }
+                    res[i] = marshal(obj, parameters[i].ParameterType);
                     if (paramsConverters != null && paramsConverters[i] != null)
                         res[i] = paramsConverters[i].To(res[i]);
                 }
             }
             return res;
+        }
+
+        private object marshal(JSObject obj, Type targetType)
+        {
+            var v = Tools.convertJStoObj(obj, targetType);
+            if (v != null)
+                return v;
+            v = obj.Value;
+            if (v is Core.BaseTypes.Array)
+                return convertArray(v as Core.BaseTypes.Array);
+            else if (v is TypeProxy)
+            {
+                var tp = v as TypeProxy;
+                return (tp.bindFlags & BindingFlags.Static) != 0 ? tp.hostedType : tp.prototypeInstance;
+            }
+            else if (v is TypeProxyConstructor)
+                return (v as TypeProxyConstructor).proxy.hostedType;
+            else if (v is Function && targetType.IsSubclassOf(typeof(Delegate)))
+                return (v as Function).MakeDelegate(targetType);
+            else if (v is ArrayBuffer && targetType.IsAssignableFrom(typeof(byte[])))
+                return (v as ArrayBuffer).Data;
+            return v;
         }
 
         private object getTargetObject(JSObject _this, Type targetType)
@@ -354,11 +357,11 @@ namespace NiL.JS.Core
                             {
                                 bool di = true;
                                 SetFieldValue(_targetInfo, delegateF1, target, typeof(object), _targetInfo.Attributes, typeof(Action), ref di);
-                                res = delegateF1((args ?? ConvertArgs(argsSource))[0]);
+                                res = delegateF1(args == null ? marshal(argsSource["0"], parameters[0].ParameterType) :args[0]);
                             }
                             else
 #endif
-                                res = delegateF2(target, (args ?? ConvertArgs(argsSource))[0]);
+                                res = delegateF2(target, args == null ? marshal(argsSource["0"], parameters[0].ParameterType) : args[0]);
                             break;
                         }
                     case CallMode.FuncStaticZero:
@@ -378,7 +381,7 @@ namespace NiL.JS.Core
                         }
                     case CallMode.FuncStaticOne:
                         {
-                            res = delegateF1((args ?? ConvertArgs(argsSource))[0]);
+                            res = delegateF1(args == null ? marshal(argsSource["0"], parameters[0].ParameterType) : args[0]);
                             break;
                         }
                     default:

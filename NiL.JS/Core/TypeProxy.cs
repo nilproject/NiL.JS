@@ -360,7 +360,7 @@ namespace NiL.JS.Core
                                         }) : null,
                                         new ExternalFunction((thisBind, a)=>
                                         { 
-                                            return Proxy(field.GetValue(field.IsStatic ? null : Context.CurrentContext.thisBind.oValue));
+                                            return Proxy(field.GetValue(field.IsStatic ? null : thisBind.oValue));
                                         })
                                     }
                                 };
