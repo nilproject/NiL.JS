@@ -493,6 +493,7 @@ namespace NiL.JS.Core
             return c == ' '
                 || Tools.isLineTerminator(c)
                 || isOperator(c)
+                || char.IsWhiteSpace(c)
                 || (c == '{')
                 || (c == '\v')
                 || (c == '}')
