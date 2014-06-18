@@ -37,11 +37,13 @@ namespace NiL.JS.Core
             }
         }
 
+        [Hidden]
         public EvalFunction()
         {
 
         }
 
+        [Hidden]
         public override NiL.JS.Core.JSObject Invoke(NiL.JS.Core.JSObject thisBind, NiL.JS.Core.JSObject args)
         {
             var arg = args["0"];
@@ -54,12 +56,25 @@ namespace NiL.JS.Core
             {
                 var ccontext = Context.CurrentContext;
                 var root = ccontext.Root;
-                while (ccontext != root)
+                while (ccontext != root && ccontext != null)
                 {
                     stack.Push(ccontext);
                     ccontext = ccontext.Deactivate();
                 }
-                return ccontext.Eval(args["0"].ToString());
+                if (ccontext == null)
+                {
+                    root.Activate();
+                    try
+                    {
+                        return root.Eval(args["0"].ToString());
+                    }
+                    finally
+                    {
+                        root.Deactivate();
+                    }
+                }
+                else
+                    return ccontext.Eval(args["0"].ToString());
             }
             finally
             {

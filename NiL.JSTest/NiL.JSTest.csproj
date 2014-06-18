@@ -136,6 +136,7 @@
     <Content Include="Benchmarks\splay.js" />
     <Content Include="Benchmarks\style.css" />
     <Content Include="Benchmarks\v8-logo.png" />
+    <Content Include="sta.js" />
     <Content Include="tests\sputnik\annexB\B.2.1.js" />
     <Content Include="tests\sputnik\annexB\B.2.1.propertyCheck.js" />
     <Content Include="tests\sputnik\annexB\B.2.2.js" />

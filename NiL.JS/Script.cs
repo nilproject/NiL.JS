@@ -31,6 +31,8 @@ namespace NiL.JS
         /// <param name="code">Код скрипта на языке JavaScript</param>
         public Script(string code)
         {
+            if (code == null)
+                throw new ArgumentNullException();
             Code = code;
             int i = 0;
             root = CodeBlock.Parse(new ParsingState(Tools.RemoveComments(code), Code), ref i).Statement;

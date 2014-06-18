@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using NiL.JS.Core;
+using NiL.JS.Core.BaseTypes;
 
 namespace NiL.JS.Statements
 {
@@ -25,10 +26,14 @@ namespace NiL.JS.Statements
             state.LabelCount = 0;
             while (char.IsWhiteSpace(code[i])) i++;
             var condition = Parser.Parse(state, ref i, 1);
-            while (char.IsWhiteSpace(code[i])) i++;
+            while (i < code.Length && char.IsWhiteSpace(code[i])) i++;
+            if (i >= code.Length)
+                throw new JSException(new SyntaxError("Unexpected end of line."));
             if (code[i] != ')')
                 throw new ArgumentException("code (" + i + ")");
-            do i++; while (char.IsWhiteSpace(code[i]));
+            do i++; while (i < code.Length && char.IsWhiteSpace(code[i]));
+            if (i >= code.Length)
+                throw new JSException(new SyntaxError("Unexpected end of line."));
             state.AllowBreak++;
             state.AllowContinue++;
             var body = Parser.Parse(state, ref i, 0);

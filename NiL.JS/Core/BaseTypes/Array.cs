@@ -55,7 +55,7 @@ namespace NiL.JS.Core.BaseTypes
                 this.index = index;
                 if (owner.data.Count <= index)
                 {
-                    var pv = (owner.prototype ?? owner.GetMember("__proto__")).GetMember(index.ToString(CultureInfo.InvariantCulture));
+                    var pv = (owner.__proto__ ?? owner.GetMember("__proto__")).GetMember(index.ToString(CultureInfo.InvariantCulture));
                     if (pv != undefined)
                         base.Assign(pv);
                     else

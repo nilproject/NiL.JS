@@ -96,6 +96,15 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [DoNotEnumerate]
+        public Number getTimezoneOffset()
+        {
+            if (error)
+                return double.NaN;
+            var res = (TimeZone.CurrentTimeZone.GetUtcOffset(DateTime.Now).Ticks) / 10000;
+            return res;
+        }
+
+        [DoNotEnumerate]
         public Number getYear()
         {
             return host.Year - 1900;

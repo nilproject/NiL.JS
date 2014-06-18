@@ -9,6 +9,8 @@ namespace NiL.JS.Statements
     [Serializable]
     public sealed class CodeBlock : Statement
     {
+        private static readonly VariableDescriptor[] emptyVariables = new VariableDescriptor[0];
+
         private string code;
         internal VariableDescriptor[] variables;
         internal readonly Statement[] body;
@@ -183,7 +185,7 @@ namespace NiL.JS.Statements
                 IsParsed = true,
                 Statement = new CodeBlock(body.ToArray(), strictSwitch ? state.strict.Pop() : state.strict.Peek())
                 {
-                    variables = vars != null ? vars.Values.ToArray() : null,
+                    variables = vars != null ? vars.Values.ToArray() : emptyVariables,
                     Position = startPos,
                     code = state.SourceCode,
                     Length = i - startPos

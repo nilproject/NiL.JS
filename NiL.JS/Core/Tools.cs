@@ -175,16 +175,14 @@ namespace NiL.JS.Core
                 case JSObjectType.Bool:
                 case JSObjectType.Int:
                 case JSObjectType.Double:
-                    {
-                        return arg;
-                    }
+                    return arg;
                 case JSObjectType.String:
                     {
                         double x = 0;
                         int ix = 0;
                         string s = (arg.oValue as string).Trim();
                         if (!Tools.ParseNumber(s, ref ix, out x) || ix < s.Length)
-                            return 0;
+                            return Number.NaN;
                         return x;
                     }
                 case JSObjectType.Date:
@@ -252,7 +250,7 @@ namespace NiL.JS.Core
         public static bool ParseNumber(string str, out double value)
         {
             int index = 0;
-            return ParseNumber(str, ref index, out value, 0, false);
+            return ParseNumber(str, ref index, out value, 0, false, false);
         }
 
 #if INLINE
@@ -261,7 +259,7 @@ namespace NiL.JS.Core
         public static bool ParseNumber(string str, out double value, int radix)
         {
             int index = 0;
-            return ParseNumber(str, ref index, out value, radix, false);
+            return ParseNumber(str, ref index, out value, radix, false, false);
         }
 
 #if INLINE
@@ -269,7 +267,7 @@ namespace NiL.JS.Core
 #endif
         internal static bool ParseNumber(string code, int index, out double value)
         {
-            return ParseNumber(code, ref index, out value, 0, false);
+            return ParseNumber(code, ref index, out value, 0, false, false);
         }
 
 #if INLINE
@@ -277,10 +275,10 @@ namespace NiL.JS.Core
 #endif
         internal static bool ParseNumber(string code, ref int index, out double value)
         {
-            return ParseNumber(code, ref index, out value, 0, false);
+            return ParseNumber(code, ref index, out value, 0, false, false);
         }
 
-        internal static bool ParseNumber(string code, ref int index, out double value, int radix, bool allowOctal)
+        internal static bool ParseNumber(string code, ref int index, out double value, int radix, bool raiseOctal, bool processOctal)
         {
             if (code == null)
                 throw new ArgumentNullException("code");
@@ -342,10 +340,11 @@ namespace NiL.JS.Core
                 }
                 else if (radix == 0 && code[i] == '0' && char.IsDigit(code[i + 1]))
                 {
-                    if (!allowOctal)
+                    if (raiseOctal)
                         throw new JSException(TypeProxy.Proxy(new SyntaxError("Octal literals not allowed in strict mode")));
                     i += 1;
-                    radix = 8;
+                    if (processOctal)
+                        radix = 8;
                     res = true;
                 }
             }
@@ -471,25 +470,30 @@ namespace NiL.JS.Core
             else
             {
                 value = 0;
-                long temp = 0;
+                bool extended = false;
+                double doubleTemp = 0.0;
+                ulong temp = 0;
                 int starti = i;
                 while (i < code.Length)
                 {
                     var sign = ((code[i] % 'a' % 'A' + 10) % ('0' + 10));
                     if (sign >= radix || (NumChars[sign] != code[i] && (NumChars[sign] - ('a' - 'A')) != code[i]))
                     {
-                        if (radix < 10 && i - starti > 1)
-                        {
-                            i = starti;
-                            temp = 0;
-                            radix = 10;
-                        }
-                        else
-                            break;
+                        break;
                     }
                     else
                     {
-                        temp = temp * radix + sign;
+                        if (extended)
+                            doubleTemp = doubleTemp * radix + sign;
+                        else
+                        {
+                            temp = temp * (uint)radix + (uint)sign;
+                            if ((temp & 0xFE00000000000000) != 0)
+                            {
+                                extended = true;
+                                doubleTemp = temp;
+                            }
+                        }
                         res = true;
                     }
                     i++;
@@ -499,7 +503,7 @@ namespace NiL.JS.Core
                     value = double.NaN;
                     return false;
                 }
-                value = temp;
+                value = extended ? doubleTemp : temp;
                 value *= sig;
                 index = i;
                 return true;

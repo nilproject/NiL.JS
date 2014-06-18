@@ -33,13 +33,7 @@ namespace NiL.JS.Statements
         private JSObject impl(Context context, bool forAssign)
         {
             var source = objStatement.Invoke(context);
-            if (source.valueType == JSObjectType.NotExist)
-                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable not defined.")));
-
             var n = memberNameStatement.Invoke(context);
-            if (n.valueType == JSObjectType.NotExist)
-                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable not defined.")));
-
             context.objectSource = source;
             var res = source.GetMember(n.ToString(), forAssign, false);
             if (!forAssign && res.valueType == JSObjectType.Property)

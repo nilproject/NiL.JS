@@ -15,7 +15,12 @@ namespace NiL.JS.Core.Modules
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true, Inherited = false)]
     public class AllowUnsafeCallAttribute : Attribute
     {
-        internal Type baseType;
+        internal readonly Type baseType;
+
+        /// <summary>
+        /// Альтернативный тип для параметра this.
+        /// </summary>
+        public Type BaseType { get { return baseType; } }
 
         /// <summary>
         /// Создаёт экземпляр с указанием типа

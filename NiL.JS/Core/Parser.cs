@@ -182,6 +182,8 @@ namespace NiL.JS.Core
                     i++;
                     if (i == patern.Length)
                         break;
+                    if (code.Length <= j)
+                        return false;
                     needInc = false;
                 }
                 if (code[j] != patern[i])
@@ -193,18 +195,7 @@ namespace NiL.JS.Core
             return true;
         }
 
-        internal static bool ValidateName(string code)
-        {
-            int index = 0;
-            return ValidateName(code, ref index, true, true, false);
-        }
-
         internal static bool ValidateName(string code, int index)
-        {
-            return ValidateName(code, ref index, true, true, false);
-        }
-
-        internal static bool ValidateName(string code, ref int index)
         {
             return ValidateName(code, ref index, true, true, false);
         }
@@ -307,20 +298,10 @@ namespace NiL.JS.Core
             return true;
         }
 
-        internal static bool ValidateNumber(string code, int index)
-        {
-            return ValidateNumber(code, ref index);
-        }
-
         internal static bool ValidateNumber(string code, ref int index)
         {
             double fictive = 0.0;
             return Tools.ParseNumber(code, ref index, out fictive);
-        }
-
-        internal static bool ValidateRegex(string code, int index, bool except)
-        {
-            return ValidateRegex(code, ref index, except);
         }
 
         internal static bool ValidateRegex(string code, ref int index, bool except)
@@ -411,11 +392,6 @@ namespace NiL.JS.Core
                 return true;
             }
             return false;
-        }
-
-        internal static bool ValidateString(string code, int index)
-        {
-            return ValidateString(code, ref index);
         }
 
         internal static bool ValidateString(string code, ref int index)

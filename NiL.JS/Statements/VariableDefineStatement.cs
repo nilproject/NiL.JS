@@ -68,7 +68,10 @@ namespace NiL.JS.Statements
                     s = i;
                     do i++; while (i < code.Length && char.IsWhiteSpace(code[i]));
                     if (i >= code.Length)
+                    {
+                        initializator.Add(new GetVariableStatement(name) { Position = s, Length = name.Length });
                         break;
+                    }
                     if (code[i] != '=')
                         i = s;
                 }

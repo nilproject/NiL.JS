@@ -13,8 +13,6 @@ namespace NiL.JS.Core
     internal class TypeProxyConstructor : Function
     {
         [Hidden]
-        private static readonly object _object = new object();
-        [Hidden]
         private static readonly object[] _objectA = new object[0];
         [Hidden]
         internal readonly TypeProxy proxy;
@@ -59,12 +57,12 @@ namespace NiL.JS.Core
         [Hidden]
         internal protected override JSObject GetMember(string name, bool create, bool own)
         {
-            if (name == "__proto__" && prototype == null)
+            if (name == "__proto__" && __proto__ == null)
             {
-                prototype = TypeProxy.GetPrototype(typeof(TypeProxyConstructor));
-                if (create && prototype.GetType() != typeof(JSObject))
-                    prototype = prototype.Clone() as JSObject;
-                return prototype;
+                __proto__ = TypeProxy.GetPrototype(typeof(TypeProxyConstructor));
+                if (create && __proto__.GetType() != typeof(JSObject))
+                    __proto__ = __proto__.Clone() as JSObject;
+                return __proto__;
             }
             var res = proxy.GetMember(name, false, own);
             if (res == JSObject.notExist)
@@ -114,7 +112,7 @@ namespace NiL.JS.Core
                         {
                             oValue = obj,
                             valueType = JSObjectType.Object,
-                            prototype = TypeProxy.GetPrototype(proxy.hostedType)
+                            __proto__ = TypeProxy.GetPrototype(proxy.hostedType)
                         };
                 }
                 return res;
@@ -179,7 +177,7 @@ namespace NiL.JS.Core
         [Hidden]
         protected internal override IEnumerator<string> GetEnumeratorImpl(bool pdef)
         {
-            var e = (prototype ?? GetMember("__proto__")).GetEnumeratorImpl(pdef);
+            var e = (__proto__ ?? GetMember("__proto__")).GetEnumeratorImpl(pdef);
             while (e.MoveNext())
                 yield return e.Current;
             e = proxy.GetEnumeratorImpl(pdef);

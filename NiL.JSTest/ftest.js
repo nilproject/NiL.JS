@@ -1,41 +1,12 @@
 ﻿// Copyright 2009 the Sputnik authors.  All rights reserved.
 /**
- * ToObject conversion from Boolean: create a new Boolean object
- * whose [[value]] property is set to the value of the boolean
+ * TryStatement: "try Block Catch" or "try Block Finally" or "try Block Catch Finally"
  *
- * @path ch09/9.9/S9.9_A3.js
- * @description Trying to convert from Boolean to Object
+ * @path ch12/12.14/S12.14_A16_T1.js
+ * @description Checking if pure "try" syntax construction passes
+ * @negative
  */
 
 // CHECK#1
-if (Object(true).valueOf() !== true) {
-    $ERROR('#1: Object(true).valueOf() === true. Actual: ' + (Object(true).valueOf()));
-}
+try
 
-// CHECK#2
-if (typeof Object(true) !== "object") {
-    $ERROR('#2: typeof Object(true) === "object". Actual: ' + (typeof Object(true)));
-}
-
-// CHECK#3
-if (Object(true).constructor.prototype !== Boolean.prototype) {
-    $ERROR('#3: Object(true).constructor.prototype === Boolean.prototype. Actual: ' + (Object(true).constructor.prototype));
-}
-
-// CHECK#4
-if (Object(false).valueOf() !== false) {
-    $ERROR('#4: Object(false).valueOf() === false. Actual: ' + (Object(false).valueOf()));
-}
-
-// CHECK#5
-if (typeof Object(false) !== "object") {
-    $ERROR('#5: typeof Object(false) === "object". Actual: ' + (typeof Object(false)));
-}
-
-// CHECK#6
-if (Object(false).constructor.prototype !== Boolean.prototype) {
-    $ERROR('#6: Object(false).constructor.prototype === Boolean.prototype. Actual: ' + (Object(false).constructor.prototype));
-}
-
-
-function runTestCase(a) { if (!a()) ERROR('Test failed') };

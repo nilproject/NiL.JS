@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using NiL.JS.Core.BaseTypes;
+using NiL.JS.Core.Modules;
 
 namespace NiL.JS.Core
 {
@@ -9,6 +10,12 @@ namespace NiL.JS.Core
         public static JSObject dummy(JSObject thisBind, JSObject x)
         {
             throw new NotImplementedException();
+        }
+
+        public static JSObject isFinite(JSObject thisBind, JSObject x)
+        {
+            var d = Tools.JSObjectToDouble(x.GetMember("0"));
+            return !double.IsNaN(d) && !double.IsInfinity(d);
         }
 
         public static JSObject isNaN(JSObject thisBind, JSObject x)
@@ -34,54 +41,30 @@ namespace NiL.JS.Core
             return System.Web.HttpUtility.HtmlDecode(x.GetMember("0").ToString());
         }
 
+        [ParametersCount(2)]
         public static JSObject parseInt(JSObject thisBind, JSObject x)
         {
-            var r = x.GetMember("0");
-            for (; ; )
-                switch (r.valueType)
-                {
-                    case JSObjectType.Bool:
-                        {
-                            return double.NaN;
-                        }
-                    case JSObjectType.Int:
-                        {
-                            return r.iValue;
-                        }
-                    case JSObjectType.Double:
-                        {
-                            if (double.IsNaN(r.dValue) || double.IsInfinity(r.dValue))
-                                return 0;
-                            return (int)((long)r.dValue & 0xFFFFFFFF);
-                        }
-                    case JSObjectType.String:
-                        {
-                            double dres = 0;
-                            int ix = 0;
-                            string s = (r.oValue as string).Trim();
-                            if (s == "")
-                                return double.NaN;
-                            if (!Tools.ParseNumber(s, ref ix, out dres, Tools.JSObjectToInt(x.GetMember("1")), true))
-                                return 0;
-                            if (double.IsNaN(dres) || double.IsInfinity(dres))
-                                return double.NaN;
-                            return (int)dres;
-                        }
-                    case JSObjectType.Date:
-                    case JSObjectType.Function:
-                    case JSObjectType.Object:
-                        {
-                            if (r.oValue == null)
-                                return 0;
-                            r = r.ToPrimitiveValue_Value_String();
-                            break;
-                        }
-                    case JSObjectType.Undefined:
-                    case JSObjectType.NotExistInObject:
-                        return 0;
-                    default:
-                        throw new NotImplementedException();
-                }
+            double result = double.NaN;
+            var radixo = x["1"];
+            double dradix = radixo != JSObject.notExist ? Tools.JSObjectToDouble(radixo) : 0;
+            int radix;
+            if (double.IsNaN(dradix) || double.IsInfinity(dradix))
+                radix = 0;
+            else
+                radix = (int)((long)dradix & 0xFFFFFFFF);
+            if (radix != 0 && (radix < 2 || radix > 36))
+                return Number.NaN;
+            var source = x.GetMember("0");
+            if (source.valueType == JSObjectType.Int)
+                return source;
+            if (source.valueType == JSObjectType.Double)
+                return double.IsInfinity(source.dValue) || double.IsNaN(source.dValue) ? Number.NaN : source.dValue == 0.0 ? (Number)0 : (Number)System.Math.Truncate(source.dValue);
+            var arg = source.ToString().Trim();
+            if (!string.IsNullOrEmpty(arg))
+                Tools.ParseNumber(arg, out result, radix);
+            if (double.IsInfinity(result))
+                return Number.NaN;
+            return System.Math.Truncate(result);
         }
 
         public static JSObject escape(JSObject thisBind, JSObject x)

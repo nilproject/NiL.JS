@@ -125,7 +125,7 @@ namespace NiL.JS.Statements
                     }
                     index++;
                 }
-                s = s.prototype;
+                s = s.__proto__;
             }
             return res;
         }

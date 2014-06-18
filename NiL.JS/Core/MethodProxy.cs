@@ -83,6 +83,7 @@ namespace NiL.JS.Core
 
         public MethodProxy(MethodBase methodinfo, object hardTarget)
         {
+            prototypeField = undefined;
             this.hardTarget = hardTarget;
             info = methodinfo;
             parameters = info.GetParameters();
@@ -236,7 +237,7 @@ namespace NiL.JS.Core
             return res;
         }
 
-        private object marshal(JSObject obj, Type targetType)
+        private static object marshal(JSObject obj, Type targetType)
         {
             var v = Tools.convertJStoObj(obj, targetType);
             if (v != null)
@@ -462,8 +463,8 @@ namespace NiL.JS.Core
         [Hidden]
         internal protected override JSObject GetMember(string name, bool create, bool own)
         {
-            if (prototype == null)
-                prototype = TypeProxy.GetPrototype(this.GetType());
+            if (__proto__ == null)
+                __proto__ = TypeProxy.GetPrototype(this.GetType());
             return DefaultFieldGetter(name, create, own);
         }
 

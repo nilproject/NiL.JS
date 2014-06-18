@@ -36,8 +36,8 @@ namespace NiL.JS.Core
 
         internal protected override JSObject GetMember(string name, bool fast, bool own)
         {
-            if (prototype == null)
-                prototype = TypeProxy.GetPrototype(this.GetType());
+            if (__proto__ == null)
+                __proto__ = TypeProxy.GetPrototype(this.GetType());
             return DefaultFieldGetter(name, fast, own);
         }
 
@@ -55,9 +55,9 @@ namespace NiL.JS.Core
                 foreach (var r in fields)
                     if (r.Value.valueType >= JSObjectType.Undefined)
                         yield return r.Key;
-            if (prototype == null)
-                prototype = TypeProxy.GetPrototype(this.GetType());
-            foreach (var r in prototype)
+            if (__proto__ == null)
+                __proto__ = TypeProxy.GetPrototype(this.GetType());
+            foreach (var r in __proto__)
                 yield return r;
         }
     }

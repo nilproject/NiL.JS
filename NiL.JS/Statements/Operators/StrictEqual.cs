@@ -95,16 +95,6 @@ namespace NiL.JS.Statements.Operators
             throw new NotImplementedException();
         }
 
-        private static readonly ImmidateValueStatement ivsInstance = new ImmidateValueStatement(null);
-        internal static bool Check(JSObject first, JSObject second)
-        {
-            lock (ivsInstance)
-            {
-                ivsInstance.value = second;
-                return Check(first, ivsInstance, null);
-            }
-        }
-
         internal override JSObject Invoke(Context context)
         {
             return Check(first.Invoke(context), second, context);

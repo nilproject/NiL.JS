@@ -12,23 +12,23 @@ namespace NiL.JS.Core.BaseTypes
         [DoNotDelete]
         [DoNotEnumerate]
         [ReadOnly]
-        public static JSObject NaN = double.NaN;
+        public readonly static JSObject NaN = double.NaN;
         [DoNotDelete]
         [DoNotEnumerate]
         [ReadOnly]
-        public static JSObject POSITIVE_INFINITY = double.PositiveInfinity;
+        public readonly static JSObject POSITIVE_INFINITY = double.PositiveInfinity;
         [DoNotDelete]
         [DoNotEnumerate]
         [ReadOnly]
-        public static JSObject NEGATIVE_INFINITY = double.NegativeInfinity;
+        public readonly static JSObject NEGATIVE_INFINITY = double.NegativeInfinity;
         [DoNotDelete]
         [DoNotEnumerate]
         [ReadOnly]
-        public static JSObject MAX_VALUE = double.MaxValue;
+        public readonly static JSObject MAX_VALUE = double.MaxValue;
         [DoNotDelete]
         [DoNotEnumerate]
         [ReadOnly]
-        public static JSObject MIN_VALUE = double.Epsilon;
+        public readonly static JSObject MIN_VALUE = double.Epsilon;
 
         [Modules.DoNotEnumerate]
         static Number()
@@ -79,7 +79,7 @@ namespace NiL.JS.Core.BaseTypes
             valueType = JSObjectType.Double;
             double d = 0;
             int i = 0;
-            if (value.Length != 0 && Tools.ParseNumber(value, ref i, out d, 0, !Context.CurrentContext.strict) && i == value.Length)
+            if (value.Length != 0 && Tools.ParseNumber(value, ref i, out d, 0, Context.CurrentContext.strict, true) && i == value.Length)
                 dValue = d;
         }
 

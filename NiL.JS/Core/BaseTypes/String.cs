@@ -594,8 +594,8 @@ namespace NiL.JS.Core.BaseTypes
         [Hidden]
         internal protected override JSObject GetMember(string name, bool create, bool own)
         {
-            if (prototype == null)
-                prototype = TypeProxy.GetPrototype(typeof(String));
+            if (__proto__ == null)
+                __proto__ = TypeProxy.GetPrototype(typeof(String));
             int index = 0;
             double dindex = 0.0;
             if (Tools.ParseNumber(name, index, out dindex) && ((index = (int)dindex) == dindex))

@@ -7,20 +7,24 @@ namespace NiL.JS.Core
     /// <summary>
     /// Представляет функцию платформы с фиксированной сигнатурой.
     /// </summary>
-    [Modules.Prototype(typeof(Function))]
+    [Prototype(typeof(Function))]
     [Serializable]
     public sealed class ExternalFunction : Function
     {
+        [Hidden]
         public override string Name
         {
+            [Hidden]
             get
             {
                 return del.Method.Name;
             }
         }
 
+        [Hidden]
         public override FunctionType Type
         {
+            [Hidden]
             get
             {
                 return FunctionType.Function;
@@ -29,11 +33,14 @@ namespace NiL.JS.Core
 
         private readonly ExternalFunctionDelegate del;
 
+        [Hidden]
         public ExternalFunctionDelegate Delegate { get { return del; } }
 
         public ExternalFunction(ExternalFunctionDelegate del)
-            : base(Context.globalContext, null)
         {
+            prototypeField = undefined;
+            if (del == null)
+                throw new ArgumentNullException();
             this.del = del;
             var pc = del.Method.GetCustomAttributes(typeof(ParametersCountAttribute), false);
             if (pc != null && pc.Length != 0)
@@ -42,6 +49,7 @@ namespace NiL.JS.Core
                 _length = 0;
         }
 
+        [Hidden]
         public override JSObject Invoke(JSObject thisBind, JSObject args)
         {
             var res = del(thisBind, args);
@@ -50,14 +58,17 @@ namespace NiL.JS.Core
             return res;
         }
 
-        [Modules.DoNotDelete]
+        [DoNotEnumerate]
+        [DoNotDelete]
         public override JSObject length
         {
+            [Hidden]
             get
             {
                 if (_length == null)
                     _length = new Number(0) { attributes = JSObjectAttributes.ReadOnly | JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum };
-                _length.iValue = 1;
+                var paramCountAttrbt = del.Method.GetCustomAttributes(typeof(ParametersCountAttribute), false);
+                _length.iValue = paramCountAttrbt != null && paramCountAttrbt.Length > 0 ? ((ParametersCountAttribute)paramCountAttrbt[0]).Count : 1;
                 return _length;
             }
         }

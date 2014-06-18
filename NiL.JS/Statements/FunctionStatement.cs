@@ -318,7 +318,10 @@ namespace NiL.JS.Statements
             var stat = body as Statement;
             var nvars = new Dictionary<string, VariableDescriptor>();
             for (var i = 0; i < parameters.Length; i++)
+            {
                 nvars[parameters[i].Name] = parameters[i].Descriptor;
+                parameters[i].Descriptor.Owner = this;
+            }
             VariableDescriptor fdesc = null;
             int funcRefs = 0;
             if (type == FunctionType.Function && !string.IsNullOrEmpty(name))

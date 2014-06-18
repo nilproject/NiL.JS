@@ -82,8 +82,8 @@ namespace NiL.JS.Core
             else
             {
                 var type = value.GetType();
-                var res = new JSObject() { oValue = value, valueType = JSObjectType.Object, prototype = GetPrototype(type) };
-                res.attributes |= res.prototype.attributes & JSObjectAttributes.Immutable;
+                var res = new JSObject() { oValue = value, valueType = JSObjectType.Object, __proto__ = GetPrototype(type) };
+                res.attributes |= res.__proto__.attributes & JSObjectAttributes.Immutable;
                 return res;
             }
         }
@@ -191,7 +191,7 @@ namespace NiL.JS.Core
                 var pa = type.GetCustomAttributes(typeof(PrototypeAttribute), false);
                 if (pa.Length != 0)
                 {
-                    prototype = GetPrototype((pa[0] as PrototypeAttribute).PrototypeType).Clone() as JSObject;
+                    __proto__ = GetPrototype((pa[0] as PrototypeAttribute).PrototypeType).Clone() as JSObject;
                 }
             }
         }

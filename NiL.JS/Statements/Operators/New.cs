@@ -59,15 +59,17 @@ namespace NiL.JS.Statements.Operators
                     throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError(ctor + " can't be used as a constructor")));
 
                 JSObject _this = new JSObject() { valueType = JSObjectType.Object };
-                _this.prototype = ctor.GetMember("prototype");
-                if (_this.prototype.valueType < JSObjectType.Object)
-                    _this.prototype = null;
-                if (ctor.oValue is EvalFunction)
-                    throw new JSException(new TypeError("Function \"eval\" is not a constructor."));
+                _this.__proto__ = ctor.GetMember("prototype");
+                if (_this.__proto__.valueType < JSObjectType.Object)
+                    _this.__proto__ = null;
+                if (ctor.oValue is EvalFunction
+                    || ctor.oValue is ExternalFunction
+                    || ctor.oValue is MethodProxy)
+                    throw new JSException(new TypeError("Function \"" + (ctor.oValue as Function).Name + "\" is not a constructor."));
                 else if (!(ctor.oValue is TypeProxyConstructor))
                 {
-                    if (_this.prototype != null)
-                        _this.prototype = _this.prototype.Clone() as JSObject;
+                    if (_this.__proto__ != null)
+                        _this.__proto__ = _this.__proto__.Clone() as JSObject;
                     _this.oValue = _this;
                     _this.DefineMember("constructor").Assign(ctor);
                 }

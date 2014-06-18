@@ -12,108 +12,44 @@ namespace NiL.JSTest
 {
     class Program
     {
-        private static void benchmark()
-        {
-            const int iterations = 100000000;
-            Console.WriteLine("iterations count: " + iterations);
-
-            Stopwatch sw = new Stopwatch();
-            sw.Start();
-            Script s = new Script(@"
-var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * i + 3 - 2 / 2; }
-");
-            sw.Stop();
-            var init = sw.Elapsed;
-            sw.Restart();
-            s.Invoke();
-            sw.Stop();
-            var l = sw.Elapsed;
-            Console.WriteLine("script: " + (sw.Elapsed.Ticks / 10000).ToString());
-            Console.WriteLine("initialization: " + (init.Ticks / 10000).ToString());
-            var a = 1.0;
-            sw.Restart();
-            for (var i = 0; i < iterations; i++)
-                a = a * i + 3 - 2 / 2;
-            sw.Stop();
-            Console.WriteLine(a == Tools.JSObjectToDouble(s.Context.GetVariable("a")) ? "valid" : "invalid");
-            Console.WriteLine("native: " + (sw.Elapsed.Ticks / 10000).ToString());
-            Console.WriteLine("rate: " + ((double)l.Ticks / (double)sw.Elapsed.Ticks).ToString());
-        }
-
         private static void runFile(string filename)
         {
+            string staCode = "";
+            using (var staFile = new FileStream("sta.js", FileMode.Open, FileAccess.Read))
+                staCode = new StreamReader(staFile).ReadToEnd();
             Console.WriteLine("Processing file: " + filename);
             var f = new FileStream(filename, FileMode.Open, FileAccess.Read);
             var sr = new StreamReader(f);
             var sw = new System.Diagnostics.Stopwatch();
             sw.Start();
-            var s = new Script(sr.ReadToEnd());
-            sw.Stop();
-            sr.Dispose();
-            f.Dispose();
-            Console.WriteLine("Compile time: " + sw.Elapsed);
-            Context.GlobalContext.AttachModule(typeof(Test262Error));
-            s.Context.DefineVariable("fnExists").Assign(new ExternalFunction((t, x) =>
-            {
-                return x["0"].ValueType >= JSObjectType.Undefined;
-            }));
-            s.Context.DefineVariable("fnGlobalObject").Assign(new ExternalFunction((t, x) =>
-            {
-                return s.Context.ThisBind;
-            }));
-            s.Context.DefineVariable("$ERROR").Assign(new ExternalFunction((t, x) =>
-            {
-                throw new Test262Error(x.GetMember("0").Value.ToString());
-            }));
-            s.Context.DefineVariable("ERROR").Assign(new ExternalFunction((t, x) =>
-            {
-                throw new Test262Error(x.GetMember("0").Value.ToString());
-            }));
-            s.Context.DefineVariable("PRINT").Assign(new ExternalFunction((t, x) =>
-            {
-                return null;
-            }));
-            s.Context.DefineVariable("$PRINT").Assign(new ExternalFunction((t, x) =>
-            {
-                return null;
-            }));
-            s.Context.DefineVariable("$FAIL").Assign(new ExternalFunction((t, x) =>
-            {
-                throw new Test262Error(x.GetMember("0").Value.ToString());
-            }));
-            Console.WriteLine("-------------------------------------");
+            var s = new Script(staCode);
             s.Invoke();
+            sw.Stop();
+            Console.WriteLine("Compile time: " + sw.Elapsed);
+            Console.WriteLine("-------------------------------------");
+            s.Context.Eval(sr.ReadToEnd());
             Console.WriteLine("-------------------------------------");
             Console.WriteLine("Complite.");
-        }
-
-        private sealed class Test262Error : Exception
-        {
-            private string message;
-
-            public override string Message
-            {
-                get
-                {
-                    return message;
-                }
-            }
-
-            public Test262Error(string message)
-            {
-                this.message = message;
-            }
+            sr.Dispose();
+            f.Dispose();
         }
 
         private static void sputnicTests(string folderPath = "tests\\")
         {
+            bool showAll = false;
+            int lastUpdate = Environment.TickCount;
+
             Action<string> _ = Console.WriteLine;
             var sw = new Stopwatch();
             int passed = 0;
             int failed = 0;
             string code;
             bool negative = false;
+            string staCode = "";
             _("Sputnik testing begin...");
+            _("Load sta.js...");
+            using (var staFile = new FileStream("sta.js", FileMode.Open, FileAccess.Read))
+                staCode = new StreamReader(staFile).ReadToEnd();
             _("Directory: \"" + Directory.GetParent(folderPath) + "\"");
 
             _("Scaning directory...");
@@ -125,47 +61,21 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * i + 3 - 2 / 2; }
                 bool pass = true;
                 try
                 {
-                    Console.Write("Processing file \"" + fls[i] + "\" ");
-                    Context.RefreshGlobalContext();
-                    Context.GlobalContext.AttachModule(typeof(Test262Error));
+                    if (showAll)
+                        Console.Write("Processing file \"" + fls[i] + "\" ");
                     var f = new FileStream(fls[i], FileMode.Open, FileAccess.Read);
                     var sr = new StreamReader(f);
-                    code = sr.ReadToEnd() + "\nfunction runTestCase(a){ if (!a()) ERROR('Test failed') };";
+                    code = sr.ReadToEnd();
                     sr.Dispose();
                     f.Dispose();
                     negative = code.IndexOf("@negative") != -1;
-                    var s = new Script(code);
-                    s.Context.DefineVariable("fnExists").Assign(new ExternalFunction((t, x) =>
-                    {
-                        return x["0"].ValueType >= JSObjectType.Undefined;
-                    }));
-                    s.Context.DefineVariable("fnGlobalObject").Assign(new ExternalFunction((t, x) =>
-                    {
-                        return s.Context.ThisBind;
-                    }));
-                    s.Context.DefineVariable("$ERROR").Assign(new ExternalFunction((t, x) =>
-                    {
-                        throw new Test262Error(x.GetMember("0").Value.ToString());
-                    }));
-                    s.Context.DefineVariable("ERROR").Assign(new ExternalFunction((t, x) =>
-                    {
-                        throw new Test262Error(x.GetMember("0").Value.ToString());
-                    }));
-                    s.Context.DefineVariable("PRINT").Assign(new ExternalFunction((t, x) =>
-                    {
-                        return null;
-                    }));
-                    s.Context.DefineVariable("$PRINT").Assign(new ExternalFunction((t, x) =>
-                    {
-                        return null;
-                    }));
-                    s.Context.DefineVariable("$FAIL").Assign(new ExternalFunction((t, x) =>
-                    {
-                        throw new Test262Error(x.GetMember("0").Value.ToString());
-                    }));
+
+                    Context.RefreshGlobalContext();
+                    var s = new Script(staCode); // инициализация
+                    s.Invoke();
                     try
                     {
-                        s.Invoke();
+                        s.Context.Eval(code);
                     }
                     finally
                     {
@@ -178,31 +88,33 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * i + 3 - 2 / 2; }
                     if (!pass)
                         Console.WriteLine(e.Message);
                 }
-                catch (Test262Error e)
-                {
-                    pass = negative;
-                    if (!pass)
-                        Console.WriteLine(e.Message);
-                }
                 catch (Exception)
                 {
                     pass = false;
                 }
                 if (pass)
                 {
-                    _("Passed");
+                    if (showAll)
+                        _("Passed");
                     passed++;
                 }
                 else
                 {
-                    _("Failed");
+                    if (!showAll)
+                        _("File: \"" + fls[i] + "\"" + Environment.NewLine);
+                    else
+                        _("Failed");
                     failed++;
                 }
-                Console.Title = "passed: " + passed + ". failed: " + failed;
+                if (Environment.TickCount - lastUpdate > 100)
+                {
+                    Console.Title = "passed: " + passed + ". failed: " + failed;
+                    lastUpdate = Environment.TickCount;
+                }
                 //if (failed == 3) break;
             }
             sw.Stop();
-            _("passed: " + passed);
+            _("passed: " + passed + ". (" + (passed * 100 / fls.Length) + "%)");
             _("failed: " + failed);
             _("time: " + sw.Elapsed);
             _("Sputnik testing complite");
@@ -237,7 +149,7 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * i + 3 - 2 / 2; }
                 set { }
             }
 
-            public static object test(TestEnum o)
+            public static object test()
             {
                 return null;
             }
@@ -247,8 +159,11 @@ var a = 1; for(var i = 0; i < " + iterations + @";i++){ a = a * i + 3 - 2 / 2; }
         {
             var sw = new Stopwatch();
             var s = new Script(
-@"
-TestClass.test(TestEnum.One.value__ | 0);
+@"var __globalObject = Function(""return this;"")();
+function fnGlobalObject() {
+     return __globalObject;
+}
+console.log(fnGlobalObject() == this);
 ");
             s.Context.AttachModule(typeof(TestClass));
             s.Context.AttachModule(typeof(TestEnum));
@@ -269,18 +184,26 @@ TestClass.test(TestEnum.One.value__ | 0);
                 var sr = new StreamReader(f);
                 return Context.CurrentContext.Eval(sr.ReadToEnd());
             }));
-            //benchmark();
-            //runFile(@"ftest.js");
-            //runFile(@"Benchmarks\run.js");
-            //runFile(@"C:\Users\Дмитрий\Documents\Projects\NiL.JS\NiL.JSTest\tests\sputnik\ch08\8.5\8.5.1.js");
-            sputnicTests();
-            //testEx();
-            //runFile(@"C:\Users\Дмитрий\Documents\Projects\NiL.JS\NiL.JSTest\tests\Conformance\08_Types\8.7_The_Reference_Type\S8.7_A3.js");
-            //sputnicTests(@"tests\Conformance\15_Native_ECMA_Script_Objects\15.5_String_Objects");
-            //sputnicTests(@"tests\Conformance\15_Native_ECMA_Script_Objects\15.2_Object_Objects");
-            //sputnicTests(@"tests\Conformance\15_Native_ECMA_Script_Objects\15.4_Array_Objects");
-            //sputnicTests(@"tests\Conformance\15_Native_ECMA_Script_Objects\15.7_Number_Objects");
-            //sputnicTests(@"tests\Conformance\15_Native_ECMA_Script_Objects\15.12_The_JSON_Object");
+            int mode = 1
+                ;
+            switch (mode)
+            {
+                case 0:
+                    {
+                        runFile(@"ftest.js");
+                        break;
+                    }
+                case 1:
+                    {
+                        sputnicTests();
+                        break;
+                    }
+                case 2:
+                    {
+                        testEx();
+                        break;
+                    }
+            }
 
             GC.Collect();
             GC.WaitForPendingFinalizers();

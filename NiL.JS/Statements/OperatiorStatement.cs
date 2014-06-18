@@ -366,7 +366,7 @@ namespace NiL.JS.Statements
                     {
                         int n = 0;
                         double d = 0;
-                        if (Tools.ParseNumber(code, ref s, out d, 0, !state.strict.Peek()))
+                        if (Tools.ParseNumber(code, ref s, out d, 0, state.strict.Peek(), true))
                         {
                             if ((n = (int)d) == d && !double.IsNegativeInfinity(1.0 / d))
                                 first = new ImmidateValueStatement(n) { Position = index, Length = i - index };

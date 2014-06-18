@@ -764,6 +764,7 @@ namespace NiL.JS
         }
     }
 
+    [Serializable]
     internal sealed class BinaryTree<TValue> : BinaryTree<string, TValue>
     {
         public IEnumerable<KeyValuePair<string, TValue>> StartedWith(string prefix)

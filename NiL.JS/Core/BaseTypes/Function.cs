@@ -798,7 +798,7 @@ namespace NiL.JS.Core.BaseTypes
                                 valueType = JSObjectType.Object,
                                 oValue = thisBind,
                                 attributes = JSObjectAttributes.DoNotEnum | JSObjectAttributes.DoNotDelete | JSObjectAttributes.Immutable,
-                                prototype = thisBind.prototype ?? (thisBind.valueType <= JSObjectType.Undefined ? thisBind.prototype : thisBind.GetMember("__proto__"))
+                                __proto__ = thisBind.__proto__ ?? (thisBind.valueType <= JSObjectType.Undefined ? thisBind.__proto__ : thisBind.GetMember("__proto__"))
                             };
                         }
                         else if (thisBind.valueType <= JSObjectType.Undefined || thisBind.oValue == null)
@@ -823,15 +823,15 @@ namespace NiL.JS.Core.BaseTypes
                 }
                 else
                 {
-                    var callee = args.DefineMember("callee");
-                    callee.Assign(this);
+                    var callee = this.Clone() as JSObject;
                     callee.attributes = JSObjectAttributes.DoNotEnum;
+                    args.fields["callee"] = callee;
                 }
                 internalContext.fields["arguments"] = args;
                 if (creator.type == FunctionType.Function && !string.IsNullOrEmpty(creator.name))
                     internalContext.fields[creator.name] = this;
                 int i = 0;
-                JSObject argsLength = args.GetMember("length");
+                JSObject argsLength = args.fields["length"];
                 if (argsLength.valueType == JSObjectType.Property)
                     argsLength = (argsLength.oValue as Function[])[1].Invoke(args, null);
                 int min = System.Math.Min(argsLength.iValue, creator.parameters.Length);
@@ -857,14 +857,21 @@ namespace NiL.JS.Core.BaseTypes
 
                 for (i = body.variables.Length; i-- > 0; )
                 {
-                    if (body.variables[i].Owner == creator
-                        || body.variables[i].Owner == body)
+                    if (body.variables[i].Owner == body)
                     {
                         body.variables[i].ClearCache();
-                        var f = internalContext.DefineVariable(body.variables[i].Name);
-                        if (body.variables[i].Inititalizator != null)
-                            f.Assign(body.variables[i].Inititalizator.Invoke(internalContext));
+                        JSObject f = null;
+                        //if (!internalContext.fields.TryGetValue(body.variables[i].Name, out f))
+                        if (body.variables[i].Name != "arguments" // нельзя переменной перебить аргументы
+                            || body.variables[i].Inititalizator != null) // а вот функцией можно
+                        {
+                            internalContext.fields[body.variables[i].Name] = f = new JSObject() { attributes = JSObjectAttributes.DoNotDelete };
+                            if (body.variables[i].Inititalizator != null)
+                                f.Assign(body.variables[i].Inititalizator.Invoke(internalContext));
+                        }
                     }
+                    else if (body.variables[i].Owner == creator)
+                        body.variables[i].ClearCache();
                 }
                 internalContext.strict |= body.strict;
                 internalContext.variables = body.variables;
@@ -907,7 +914,7 @@ namespace NiL.JS.Core.BaseTypes
                     prototypeField = new JSObject(true)
                     {
                         valueType = JSObjectType.Object,
-                        prototype = JSObject.GlobalPrototype,
+                        __proto__ = JSObject.GlobalPrototype,
                         attributes = JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum
                     };
                     prototypeField.oValue = prototypeField;
@@ -917,8 +924,8 @@ namespace NiL.JS.Core.BaseTypes
                 }
                 return prototypeField;
             }
-            if (prototype == null)
-                prototype = TypeProxy.GetPrototype(this.GetType());
+            if (__proto__ == null)
+                __proto__ = TypeProxy.GetPrototype(this.GetType());
             return DefaultFieldGetter(name, create, own);
         }
 
@@ -929,7 +936,7 @@ namespace NiL.JS.Core.BaseTypes
             if (creator != null && creator.parameters != null)
                 for (int i = 0; i < creator.parameters.Length; )
                     res += creator.parameters[i].Name + (++i < creator.parameters.Length ? "," : "");
-            res += ")" + (creator != null && creator.body != null ? creator.body as object : "{ [native code] }").ToString();
+            res += ")" + (creator != creatorDummy ? creator.body as object : "{ [native code] }").ToString();
             return res;
         }
 

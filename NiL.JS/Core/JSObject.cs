@@ -76,7 +76,7 @@ namespace NiL.JS.Core
         [System.ComponentModel.Browsable(false)]
         internal AssignCallback assignCallback;
         [Hidden]
-        internal JSObject prototype;
+        internal JSObject __proto__;
         [Hidden]
         internal IDictionary<string, JSObject> fields;
 
@@ -357,7 +357,7 @@ namespace NiL.JS.Core
                 case JSObjectType.Int:
                 case JSObjectType.Double:
                     {
-                        prototype = TypeProxy.GetPrototype(typeof(Number));
+                        __proto__ = TypeProxy.GetPrototype(typeof(Number));
                         break;
                     }
                 case JSObjectType.String:
@@ -369,7 +369,7 @@ namespace NiL.JS.Core
                     }
                 case JSObjectType.Bool:
                     {
-                        prototype = TypeProxy.GetPrototype(typeof(BaseTypes.Boolean));
+                        __proto__ = TypeProxy.GetPrototype(typeof(BaseTypes.Boolean));
                         createMember = true;
                         break;
                     }
@@ -404,12 +404,12 @@ namespace NiL.JS.Core
             {
                 case "__proto__":
                     if (JSObject.GlobalPrototype == this)
-                        return prototype ?? (!create ? Null : prototype = Null.Clone() as JSObject);
-                    return prototype ?? (!create ? JSObject.GlobalPrototype ?? Null : prototype = (JSObject.GlobalPrototype ?? Null).Clone() as JSObject);
+                        return __proto__ ?? (!create ? Null : __proto__ = Null.Clone() as JSObject);
+                    return __proto__ ?? (!create ? JSObject.GlobalPrototype ?? Null : __proto__ = (JSObject.GlobalPrototype ?? Null).Clone() as JSObject);
                 default:
                     {
                         JSObject res = null;
-                        var proto = (prototype ?? GlobalPrototype ?? Null).oValue as JSObject;
+                        var proto = (__proto__ ?? GlobalPrototype ?? Null).oValue as JSObject;
                         bool fromProto =
                             (fields == null || !fields.TryGetValue(name, out res) || res.valueType < JSObjectType.Undefined)
                             && (proto != null)
@@ -553,15 +553,15 @@ namespace NiL.JS.Core
                 this.iValue = value.iValue;
                 this.oValue = value.oValue;
                 this.dValue = value.dValue;
-                this.prototype = value.prototype;
+                this.__proto__ = value.__proto__;
                 this.fields = value.fields;
                 return;
             }
             this.fields = null;
-            this.prototype = null;
+            this.__proto__ = null;
             this.valueType = JSObjectType.Undefined;
             this.oValue = null;
-            this.prototype = null;
+            this.__proto__ = null;
         }
 
         [Hidden]

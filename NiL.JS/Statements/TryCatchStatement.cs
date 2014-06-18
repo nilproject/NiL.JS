@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using NiL.JS.Core;
+using NiL.JS.Core.BaseTypes;
 
 namespace NiL.JS.Statements
 {
     [Serializable]
     public sealed class TryCatchStatement : Statement
     {
-        private static JSObject tempContainer = new JSObject();
-
         private Statement body;
         private Statement catchBody;
         private Statement finallyBody;
@@ -25,7 +24,9 @@ namespace NiL.JS.Statements
             int i = index;
             if (!Parser.Validate(code, "try", ref i) || !Parser.isIdentificatorTerminator(code[i]))
                 return new ParseResult();
-            while (char.IsWhiteSpace(code[i])) i++;
+            while (i < code.Length && char.IsWhiteSpace(code[i])) i++;
+            if (i >= code.Length)
+                throw new JSException(new SyntaxError("Unexpected end of line."));
             if (code[i] != '{')
                 throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid try statement definition at " + Tools.PositionToTextcord(code, i))));
             var b = CodeBlock.Parse(state, ref i).Statement;

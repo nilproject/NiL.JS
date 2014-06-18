@@ -27,7 +27,7 @@ namespace NiL.JS.Core
             fields = context.fields;
             valueType = JSObjectType.Object;
             oValue = this;
-            prototype = thisProto ?? refreshThisBindProto();
+            __proto__ = thisProto ?? refreshThisBindProto();
             assignCallback = (sender) => { throw new JSException(TypeProxy.Proxy(new ReferenceError("Invalid left-hand side in assignment"))); };
         }
 
