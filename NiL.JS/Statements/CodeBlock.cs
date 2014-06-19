@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using NiL.JS.Core;
+using NiL.JS.Core.BaseTypes;
 using NiL.JS.Statements.Operators;
 
 namespace NiL.JS.Statements
@@ -133,7 +134,11 @@ namespace NiL.JS.Statements
             {
                 var t = Parser.Parse(state, ref i, 0);
                 if (t == null || t is EmptyStatement)
+                {
+                    if (sroot && code[i] == '}')
+                        throw new JSException(new SyntaxError("Unexpected symbol \"}\" at " + Tools.PositionToTextcord(code, i)));
                     continue;
+                }
                 if (t is FunctionStatement)
                 {
                     if (state.strict.Peek() && !allowStrict)
