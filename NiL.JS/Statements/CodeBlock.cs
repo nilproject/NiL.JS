@@ -135,7 +135,7 @@ namespace NiL.JS.Statements
                 var t = Parser.Parse(state, ref i, 0);
                 if (t == null || t is EmptyStatement)
                 {
-                    if (sroot && code[i] == '}')
+                    if (sroot && i < code.Length && code[i] == '}')
                         throw new JSException(new SyntaxError("Unexpected symbol \"}\" at " + Tools.PositionToTextcord(code, i)));
                     continue;
                 }
