@@ -9,8 +9,14 @@ namespace NiL.JS.Statements
         private static readonly EmptyStatement _instance = new EmptyStatement();
         public static EmptyStatement Instance { get { return _instance; } }
 
-        private EmptyStatement()
+        public EmptyStatement()
         {
+        }
+
+        public EmptyStatement(int position)
+        {
+            Position = position;
+            Length = 0;
         }
 
         internal override JSObject Invoke(Context context)
