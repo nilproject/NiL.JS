@@ -9,6 +9,17 @@ namespace NiL.JS.Core
     /// </summary>
     public static class Tools
     {
+        [Flags]
+        public enum ParseNumberOptions
+        {
+            None = 0,
+            RaiseIfOctal = 1,
+            ProcessOctal = 2,
+            AllowFloat = 4,
+            AllowAutoRadix = 8,
+            Default = 2 + 4 + 8
+        }
+
         internal static readonly char[] NumChars = new[] 
         { 
             '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 
@@ -244,42 +255,40 @@ namespace NiL.JS.Core
             return d.ToString("0.##########", System.Globalization.CultureInfo.InvariantCulture);
         }
 
-#if INLINE
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-#endif
-        public static bool ParseNumber(string str, out double value)
+        internal static bool ParseNumber(string code, out double value, int radix)
         {
             int index = 0;
-            return ParseNumber(str, ref index, out value, 0, false, false);
+            return ParseNumber(code, ref index, out value, radix, ParseNumberOptions.Default);
         }
 
-#if INLINE
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-#endif
-        public static bool ParseNumber(string str, out double value, int radix)
+        internal static bool ParseNumber(string code, out double value, ParseNumberOptions options)
         {
             int index = 0;
-            return ParseNumber(str, ref index, out value, radix, false, false);
+            return ParseNumber(code, ref index, out value, 0, options);
         }
 
-#if INLINE
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-#endif
-        internal static bool ParseNumber(string code, int index, out double value)
+        internal static bool ParseNumber(string code, out double value, int radix, ParseNumberOptions options)
         {
-            return ParseNumber(code, ref index, out value, 0, false, false);
+            int index = 0;
+            return ParseNumber(code, ref index, out value, radix, options);
         }
 
-#if INLINE
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-#endif
         internal static bool ParseNumber(string code, ref int index, out double value)
         {
-            return ParseNumber(code, ref index, out value, 0, false, false);
+            return ParseNumber(code, ref index, out value, 0, ParseNumberOptions.Default);
         }
 
-        internal static bool ParseNumber(string code, ref int index, out double value, int radix, bool raiseOctal, bool processOctal)
+        internal static bool ParseNumber(string code, int index, out double value, ParseNumberOptions options)
         {
+            return ParseNumber(code, ref index, out value, 0, options);
+        }
+
+        internal static bool ParseNumber(string code, ref int index, out double value, int radix, ParseNumberOptions options)
+        {
+            bool raiseOctal = (options & ParseNumberOptions.RaiseIfOctal) != 0;
+            bool processOctal = (options & ParseNumberOptions.ProcessOctal) != 0;
+            bool allowAutoRadix = (options & ParseNumberOptions.AllowAutoRadix) != 0;
+            bool allowFloat = (options & ParseNumberOptions.AllowFloat) != 0;
             if (code == null)
                 throw new ArgumentNullException("code");
             value = double.NaN;
@@ -326,7 +335,7 @@ namespace NiL.JS.Core
             }
             bool res = false;
             bool skiped = false;
-            if (i + 1 < code.Length)
+            if (allowAutoRadix && i + 1 < code.Length)
             {
                 while (code[i] == '0' && i + 1 < code.Length && code[i + 1] == '0')
                 {
@@ -348,7 +357,7 @@ namespace NiL.JS.Core
                     res = true;
                 }
             }
-            if (radix == 0)
+            if (allowFloat && radix == 0)
             {
                 long temp = 0;
                 int scount = 0;
@@ -469,6 +478,8 @@ namespace NiL.JS.Core
             }
             else
             {
+                if (radix == 0)
+                    radix = 10;
                 value = 0;
                 bool extended = false;
                 double doubleTemp = 0.0;

@@ -132,7 +132,7 @@ namespace NiL.JS.Core.BaseTypes
                     case JSObjectType.String:
                         {
                             double d;
-                            Tools.ParseNumber(args[1].ToString(), pos, out d);
+                            Tools.ParseNumber(args[1].ToString(), pos, out d, Tools.ParseNumberOptions.Default);
                             pos = (int)d;
                             break;
                         }
@@ -170,7 +170,7 @@ namespace NiL.JS.Core.BaseTypes
                     case JSObjectType.String:
                         {
                             double d;
-                            Tools.ParseNumber(args[1].ToString(), pos, out d);
+                            Tools.ParseNumber(args[1].ToString(), pos, out d, Tools.ParseNumberOptions.Default);
                             pos = (int)d;
                             break;
                         }
@@ -339,7 +339,7 @@ namespace NiL.JS.Core.BaseTypes
                 case JSObjectType.String:
                     {
                         double d;
-                        Tools.ParseNumber(args[0].ToString(), pos0, out d);
+                        Tools.ParseNumber(args[0].ToString(), pos0, out d, Tools.ParseNumberOptions.Default);
                         pos0 = (int)d;
                         break;
                     }
@@ -366,7 +366,7 @@ namespace NiL.JS.Core.BaseTypes
                     case JSObjectType.String:
                         {
                             double d;
-                            Tools.ParseNumber(args[1].ToString(), pos1, out d);
+                            Tools.ParseNumber(args[1].ToString(), pos1, out d, Tools.ParseNumberOptions.Default);
                             pos1 = (int)d;
                             break;
                         }
@@ -406,7 +406,7 @@ namespace NiL.JS.Core.BaseTypes
                     case JSObjectType.String:
                         {
                             double d;
-                            Tools.ParseNumber(args[1].ToString(), limit, out d);
+                            Tools.ParseNumber(args[1].ToString(), limit, out d, Tools.ParseNumberOptions.Default);
                             limit = (int)d;
                             break;
                         }
@@ -455,7 +455,7 @@ namespace NiL.JS.Core.BaseTypes
                     case JSObjectType.String:
                         {
                             double d;
-                            Tools.ParseNumber(args[0].ToString(), pos0, out d);
+                            Tools.ParseNumber(args[0].ToString(), pos0, out d, Tools.ParseNumberOptions.Default);
                             pos0 = (int)d;
                             break;
                         }
@@ -483,7 +483,7 @@ namespace NiL.JS.Core.BaseTypes
                     case JSObjectType.String:
                         {
                             double d;
-                            Tools.ParseNumber(args[1].ToString(), len, out d);
+                            Tools.ParseNumber(args[1].ToString(), len, out d, Tools.ParseNumberOptions.Default);
                             len = (int)d;
                             break;
                         }
@@ -598,7 +598,7 @@ namespace NiL.JS.Core.BaseTypes
                 __proto__ = TypeProxy.GetPrototype(typeof(String));
             int index = 0;
             double dindex = 0.0;
-            if (Tools.ParseNumber(name, index, out dindex) && ((index = (int)dindex) == dindex))
+            if (Tools.ParseNumber(name, index, out dindex, Tools.ParseNumberOptions.Default) && ((index = (int)dindex) == dindex))
                 return this[index];
             else
                 return DefaultFieldGetter(name, create, false);

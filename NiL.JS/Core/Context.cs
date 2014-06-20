@@ -101,10 +101,7 @@ namespace NiL.JS.Core
                 }));
                 globalContext.DefineVariable("decodeURIComponent").Assign(globalContext.GetVariable("decodeURI"));
                 globalContext.DefineVariable("isFinite").Assign(new ExternalFunction(GlobalFunctions.isFinite));
-                globalContext.DefineVariable("parseFloat").Assign(new ExternalFunction((thisBind, x) =>
-                {
-                    return Tools.JSObjectToDouble(x.GetMember("0"));
-                }));
+                globalContext.DefineVariable("parseFloat").Assign(new ExternalFunction(GlobalFunctions.parseFloat));
                 globalContext.DefineVariable("parseInt").Assign(new ExternalFunction(GlobalFunctions.parseInt));
                 globalContext.DefineVariable("__pinvoke").Assign(new ExternalFunction(GlobalFunctions.__pinvoke));
                 #endregion
@@ -189,6 +186,8 @@ namespace NiL.JS.Core
             get
             {
                 var ccontext = CurrentContext;
+                if (ccontext == null)
+                    return false;
                 do
                 {
                     if (ccontext == this)
@@ -212,6 +211,11 @@ namespace NiL.JS.Core
         }
 
         private Context() { }
+
+        public Context(Context prototype)
+            : this(prototype, true, new Function())
+        {
+        }
 
         internal Context(Context prototype, Function caller)
             : this(prototype, true, caller)
@@ -432,31 +436,32 @@ namespace NiL.JS.Core
                     context = new Context(this, this.caller) { strict = true, variables = body.variables };
                 if (leak)
                 {
-                    for (i = context.variables.Length; i-- > 0; )
-                    {
-                        VariableDescriptor desc = null;
-                        if (vars.TryGetValue(context.variables[i].Name, out desc) && desc.Defined)
+                    if (context.variables != null)
+                        for (i = context.variables.Length; i-- > 0; )
                         {
-                            context.variables[i].attributes |= VariableDescriptorAttributes.NoCaching;
-                            // чистить кэш тут не достаточно. 
-                            // Мы не знаем, где объявлена одноимённая переменная 
-                            // и в тех случаях, когда она пришла из функции выше
-                            // или даже глобального контекста, её кэш может быть 
-                            // не сброшен вовремя и значение будет браться из контекста
-                            // eval'а, а не того контекста, в котором её позовут.
-                            /*
-                             * function a(){
-                             *  var c = 1;
-                             *  function b(){
-                             *      eval("var c = 2");
-                             *      // переменная объявлена в контексте b, значит и значение должно быть из
-                             *      // контекста b, но если по выходу из b кэш этой переменной сброшен не будет, 
-                             *      // то в a её значение будет, как бы, 2, но на самом деле 1.
-                             *  }
-                             * }
-                             */
+                            VariableDescriptor desc = null;
+                            if (vars.TryGetValue(context.variables[i].Name, out desc) && desc.Defined)
+                            {
+                                context.variables[i].attributes |= VariableDescriptorAttributes.NoCaching;
+                                // чистить кэш тут не достаточно. 
+                                // Мы не знаем, где объявлена одноимённая переменная 
+                                // и в тех случаях, когда она пришла из функции выше
+                                // или даже глобального контекста, её кэш может быть 
+                                // не сброшен вовремя и значение будет браться из контекста
+                                // eval'а, а не того контекста, в котором её позовут.
+                                /*
+                                 * function a(){
+                                 *  var c = 1;
+                                 *  function b(){
+                                 *      eval("var c = 2");
+                                 *      // переменная объявлена в контексте b, значит и значение должно быть из
+                                 *      // контекста b, но если по выходу из b кэш этой переменной сброшен не будет, 
+                                 *      // то в a её значение будет, как бы, 2, но на самом деле 1.
+                                 *  }
+                                 * }
+                                 */
+                            }
                         }
-                    }
                 }
                 for (i = body.variables.Length; i-- > 0; )
                 {

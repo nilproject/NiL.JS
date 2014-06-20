@@ -37,6 +37,7 @@ namespace NiL.JSTest
         private static void sputnicTests(string folderPath = "tests\\")
         {
             bool showAll = false;
+            bool refresh = true;
             int lastUpdate = Environment.TickCount;
 
             Action<string> _ = Console.WriteLine;
@@ -46,6 +47,7 @@ namespace NiL.JSTest
             string code;
             bool negative = false;
             string staCode = "";
+            Script s = null;
             _("Sputnik testing begin...");
             _("Load sta.js...");
             using (var staFile = new FileStream("sta.js", FileMode.Open, FileAccess.Read))
@@ -69,13 +71,19 @@ namespace NiL.JSTest
                     sr.Dispose();
                     f.Dispose();
                     negative = code.IndexOf("@negative") != -1;
-
-                    Context.RefreshGlobalContext();
-                    var s = new Script(staCode); // инициализация
-                    s.Invoke();
+                    Context econtext = null;
+                    if (refresh || s == null)
+                    {
+                        Context.RefreshGlobalContext();
+                        s = new Script(staCode); // инициализация
+                        s.Invoke();
+                        econtext = s.Context;
+                    }
+                    else
+                        econtext = new Context(s.Context);
                     try
                     {
-                        s.Context.Eval(code);
+                        econtext.Eval(code);
                     }
                     finally
                     {
@@ -139,6 +147,21 @@ namespace NiL.JSTest
             One = 1
         }
 
+        private struct TestStruct
+        {
+            public int value;
+
+            public object test()
+            {
+                return value;
+            }
+
+            public object test(int i)
+            {
+                return i;
+            }
+        }
+
         private class TestClass
         {
             [DoubleStringConverter]
@@ -149,9 +172,14 @@ namespace NiL.JSTest
                 set { }
             }
 
-            public static object test()
+            public object test()
             {
                 return null;
+            }
+
+            public object test(int i)
+            {
+                return i;
             }
         }
 
@@ -159,14 +187,13 @@ namespace NiL.JSTest
         {
             var sw = new Stopwatch();
             var s = new Script(
-@"var __globalObject = Function(""return this;"")();
-function fnGlobalObject() {
-     return __globalObject;
-}
-console.log(fnGlobalObject() == this);
+@"
+console.log(parseInt('010'));
 ");
             s.Context.AttachModule(typeof(TestClass));
             s.Context.AttachModule(typeof(TestEnum));
+            s.Context.AttachModule(typeof(TestStruct));
+            s.Context.AttachModule(typeof(System.Drawing.Point));
             sw.Start();
             s.Invoke();
             sw.Stop();

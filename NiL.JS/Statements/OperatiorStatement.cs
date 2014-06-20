@@ -366,7 +366,7 @@ namespace NiL.JS.Statements
                     {
                         int n = 0;
                         double d = 0;
-                        if (Tools.ParseNumber(code, ref s, out d, 0, state.strict.Peek(), true))
+                        if (Tools.ParseNumber(code, ref s, out d, 0, Tools.ParseNumberOptions.Default | (state.strict.Peek() ? Tools.ParseNumberOptions.RaiseIfOctal : Tools.ParseNumberOptions.None)))
                         {
                             if ((n = (int)d) == d && !double.IsNegativeInfinity(1.0 / d))
                                 first = new ImmidateValueStatement(n) { Position = index, Length = i - index };
@@ -693,7 +693,7 @@ namespace NiL.JS.Statements
                                     goto default;
                                 if (state.strict.Peek())
                                 {
-                                    if ((first is GetVariableStatement) 
+                                    if ((first is GetVariableStatement)
                                         && ((first as GetVariableStatement).Name == "arguments" || (first as GetVariableStatement).Name == "eval"))
                                         throw new JSException(new SyntaxError("Can not incriment \"" + (first as GetVariableStatement).Name + "\" in strict mode."));
                                 }
@@ -733,7 +733,7 @@ namespace NiL.JS.Statements
                                         && ((first as GetVariableStatement).Name == "arguments" || (first as GetVariableStatement).Name == "eval"))
                                         throw new JSException(new SyntaxError("Can not decriment \"" + (first as GetVariableStatement).Name + "\" in strict mode."));
                                 }
-                                first = new Operators.Decriment(first, Operators.Decriment.Type.Postdecriment ){ Position = first.Position, Length = i + 2 - first.Position };
+                                first = new Operators.Decriment(first, Operators.Decriment.Type.Postdecriment) { Position = first.Position, Length = i + 2 - first.Position };
                                 //first = new OperatorStatement() { second = first, _type = OperationType.Decriment, Position = first.Position, Length = i + 2 - first.Position };
                                 repeat = true;
                                 i += 2;

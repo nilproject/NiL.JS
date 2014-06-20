@@ -29,7 +29,7 @@ namespace NiL.JS.Core
             {
                 double d = 0;
                 int i = 0;
-                if (Tools.ParseNumber(r.oValue as string, i, out d))
+                if (Tools.ParseNumber(r.oValue as string, i, out d, Tools.ParseNumberOptions.Default))
                     return double.IsNaN(d);
                 return true;
             }
@@ -58,13 +58,30 @@ namespace NiL.JS.Core
             if (source.valueType == JSObjectType.Int)
                 return source;
             if (source.valueType == JSObjectType.Double)
-                return double.IsInfinity(source.dValue) || double.IsNaN(source.dValue) ? Number.NaN : source.dValue == 0.0 ? (Number)0 : (Number)System.Math.Truncate(source.dValue);
+                return double.IsInfinity(source.dValue) || double.IsNaN(source.dValue) ? 
+                    Number.NaN : source.dValue == 0.0 ? (Number)0 : // +0 и -0 должны стать равными
+                    (Number)System.Math.Truncate(source.dValue);
             var arg = source.ToString().Trim();
             if (!string.IsNullOrEmpty(arg))
-                Tools.ParseNumber(arg, out result, radix);
+                Tools.ParseNumber(arg, out result, radix, Tools.ParseNumberOptions.AllowAutoRadix);
             if (double.IsInfinity(result))
                 return Number.NaN;
             return System.Math.Truncate(result);
+        }
+
+        public static JSObject parseFloat(JSObject thisBind, JSObject x)
+        {
+            double result = double.NaN;
+            var source = x.GetMember("0");
+            if (source.valueType == JSObjectType.Int)
+                return source;
+            if (source.valueType == JSObjectType.Double)
+                return source.dValue == 0.0 ? (Number)0 : // +0 и -0 должны стать равными
+                    (Number)source.dValue;
+            var arg = source.ToString().Trim();
+            if (!string.IsNullOrEmpty(arg))
+                Tools.ParseNumber(arg, out result, Tools.ParseNumberOptions.AllowFloat);
+            return result;
         }
 
         public static JSObject escape(JSObject thisBind, JSObject x)

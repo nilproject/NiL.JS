@@ -218,6 +218,8 @@ namespace NiL.JS.Core
                             && ((mmbrs[i] as MethodBase).DeclaringType == typeof(object)))
                             continue;
                         membername = membername[0] == '.' ? membername : membername.Contains(".") ? membername.Substring(membername.LastIndexOf('.') + 1) : membername;
+                        if (membername == "ToString")
+                            membername = "toString";
                         if (prewName != membername && !tempmemb.TryGetValue(membername, out temp))
                         {
                             tempmemb[membername] = temp = new List<MemberInfo>() { mmbrs[i] };

@@ -44,12 +44,14 @@ namespace NiL.JS.Core
         {
             proxy = typeProxy;
             var ctors = typeProxy.hostedType.GetConstructors();
-            List<MethodProxy> ctorsL = new List<MethodProxy>(ctors.Length);
+            List<MethodProxy> ctorsL = new List<MethodProxy>(ctors.Length + (typeProxy.hostedType.IsValueType ? 1 : 0));
             for (int i = 0; i < ctors.Length; i++)
             {
                 if (ctors[i].GetCustomAttributes(typeof(HiddenAttribute), false).Length == 0)
                     ctorsL.Add(new MethodProxy(ctors[i]));
             }
+            if (typeProxy.hostedType.IsValueType)
+                ctorsL.Add(new MethodProxy(new StructureDefaultConstructorInfo(proxy.hostedType)));
             ctorsL.Sort((x, y) => x.Parameters.Length - y.Parameters.Length);
             constructors = ctorsL.ToArray();
         }

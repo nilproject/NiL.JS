@@ -67,7 +67,7 @@ namespace NiL.JS.Statements.Operators
                         {
                             double resd;
                             int i = 0;
-                            if (!Tools.ParseNumber(val.oValue as string, i, out resd))
+                            if (!Tools.ParseNumber(val.oValue as string, i, out resd, Tools.ParseNumberOptions.Default))
                                 resd = double.NaN;
                             val.valueType = JSObjectType.Double;
                             val.dValue = resd;

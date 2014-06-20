@@ -352,7 +352,7 @@ namespace NiL.JS.Core.BaseTypes
                     case JSObjectType.String:
                         {
                             double d;
-                            Tools.ParseNumber(args[1].ToString(), pos, out d);
+                            Tools.ParseNumber(args[1].ToString(), pos, out d, Tools.ParseNumberOptions.Default);
                             pos = (int)d;
                             break;
                         }
@@ -428,7 +428,7 @@ namespace NiL.JS.Core.BaseTypes
                     case JSObjectType.String:
                         {
                             double d;
-                            Tools.ParseNumber(args[1].ToString(), pos, out d);
+                            Tools.ParseNumber(args[1].ToString(), pos, out d, Tools.ParseNumberOptions.Default);
                             pos = (int)d;
                             break;
                         }
@@ -841,7 +841,7 @@ namespace NiL.JS.Core.BaseTypes
             int index = 0;
             double dindex = 0.0;
             if (name != "NaN" && name != "Infinity" && name != "-Infinity" &&
-                Tools.ParseNumber(name, index, out dindex))
+                Tools.ParseNumber(name, index, out dindex, Tools.ParseNumberOptions.Default))
             {
                 if (dindex >= 0)
                 {
