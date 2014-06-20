@@ -171,19 +171,19 @@ namespace NiL.JS.Core
                 attributes |= JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum | JSObjectAttributes.ReadOnly;
                 if (hostedType.IsDefined(typeof(ImmutableAttribute), false))
                     attributes |= JSObjectAttributes.Immutable;
-                var ctorProxy = new TypeProxy() { hostedType = type, bindFlags = bindFlags | BindingFlags.Static };
+                var staticProxy = new TypeProxy() { hostedType = type, bindFlags = bindFlags | BindingFlags.Static };
                 bindFlags |= BindingFlags.Instance;
                 if (hostedType.IsAbstract)
                 {
-                    constructors[type] = ctorProxy;
+                    constructors[type] = staticProxy;
                 }
                 else
                 {
-                    var prot = ctorProxy.DefaultFieldGetter("prototype", true, true);
+                    var prot = staticProxy.DefaultFieldGetter("prototype", true, true);
                     prot.Assign(this);
                     prot.attributes = JSObjectAttributes.DoNotEnum;
-                    var ctor = type == typeof(JSObject) ? new ObjectConstructor(ctorProxy) : new TypeProxyConstructor(ctorProxy);
-                    ctorProxy.DefaultFieldGetter("__proto__", true, false).Assign(GetPrototype(typeof(TypeProxyConstructor)));
+                    var ctor = type == typeof(JSObject) ? new ObjectConstructor(staticProxy) : new TypeProxyConstructor(staticProxy);
+                    staticProxy.DefaultFieldGetter("__proto__", true, false).Assign(GetPrototype(typeof(TypeProxyConstructor)));
                     ctor.attributes = attributes;
                     constructors[type] = ctor;
                     fields["constructor"] = ctor;
@@ -415,6 +415,11 @@ namespace NiL.JS.Core
                                     null
                                 }
                             };
+                            break;
+                        }
+                    case MemberTypes.NestedType:
+                        {
+                            r = GetConstructor(m[0] as Type);
                             break;
                         }
                     default: throw new NotImplementedException("Convertion from " + m[0].MemberType + " not implemented");

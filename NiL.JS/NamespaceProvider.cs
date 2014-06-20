@@ -128,5 +128,11 @@ namespace NiL.JS
             foreach (KeyValuePair<string, Type> type in types.StartedWith(prefix))
                 yield return type.Value;
         }
+
+        protected internal override IEnumerator<string> GetEnumeratorImpl(bool pdef)
+        {
+            foreach (var type in types.StartedWith(Namespace))
+                yield return type.Key;
+        }
     }
 }
