@@ -18,7 +18,7 @@ namespace NiL.JS.Core
                 throw new ArgumentException("Type is not ValueType.");
             if (type.IsAbstract)
                 throw new ArgumentException("Type is abstract.");
-            if (type.IsGenericType)
+            if (type.IsGenericTypeDefinition)
                 throw new ArgumentException("Type is generic type.");
             structureType = type;
         }

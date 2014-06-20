@@ -172,6 +172,7 @@ namespace NiL.JS.Core
                 if (hostedType.IsDefined(typeof(ImmutableAttribute), false))
                     attributes |= JSObjectAttributes.Immutable;
                 var ctorProxy = new TypeProxy() { hostedType = type, bindFlags = bindFlags | BindingFlags.Static };
+                bindFlags |= BindingFlags.Instance;
                 if (hostedType.IsAbstract)
                 {
                     constructors[type] = ctorProxy;
@@ -187,12 +188,9 @@ namespace NiL.JS.Core
                     constructors[type] = ctor;
                     fields["constructor"] = ctor;
                 }
-                bindFlags |= BindingFlags.Instance;
                 var pa = type.GetCustomAttributes(typeof(PrototypeAttribute), false);
                 if (pa.Length != 0)
-                {
                     __proto__ = GetPrototype((pa[0] as PrototypeAttribute).PrototypeType).Clone() as JSObject;
-                }
             }
         }
 

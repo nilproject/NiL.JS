@@ -239,7 +239,7 @@ namespace NiL.JS.Statements
             res.AddRange(body);
             res.RemoveAll(x => x == null || x is FunctionStatement);
             if (variables != null)
-                res.AddRange(from v in variables where v.Inititalizator != null select v.Inititalizator);
+                res.AddRange(from v in variables where v.Inititalizator != null && (!(v.Inititalizator is FunctionStatement) || (v.Inititalizator as FunctionStatement).body != this) select v.Inititalizator);
             return res.ToArray();
         }
 
