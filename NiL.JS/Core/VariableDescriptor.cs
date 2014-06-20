@@ -27,6 +27,7 @@ namespace NiL.JS.Core
         public Statement Owner { get { return owner; } internal set { owner = value; } }
         public Statement Inititalizator { get; internal set; }
         public string Name { get { return name; } }
+        public int ReferenceCount { get { return references.Count; } }
 
         public IEnumerable<VariableReference> References
         {
