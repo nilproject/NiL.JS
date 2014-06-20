@@ -21,6 +21,8 @@ namespace NiL.JS.Core
         public static JSObject isNaN(JSObject thisBind, JSObject x)
         {
             var r = x.GetMember("0");
+            if (r.valueType == JSObjectType.Object && r.oValue is JSObject)
+                r = r.oValue as JSObject;
             if (r.valueType == JSObjectType.Double)
                 return double.IsNaN(r.dValue);
             if (r.valueType == JSObjectType.Bool || r.valueType == JSObjectType.Int || r.valueType == JSObjectType.Date)

@@ -283,6 +283,11 @@ namespace NiL.JS.Core
             return ParseNumber(code, ref index, out value, 0, options);
         }
 
+        private static bool isDigit(char c)
+        {
+            return c >= '0' && c <= '9';
+        }
+
         internal static bool ParseNumber(string code, ref int index, out double value, int radix, ParseNumberOptions options)
         {
             bool raiseOctal = (options & ParseNumberOptions.RaiseIfOctal) != 0;
@@ -347,7 +352,7 @@ namespace NiL.JS.Core
                     i += 2;
                     radix = 16;
                 }
-                else if (radix == 0 && code[i] == '0' && char.IsDigit(code[i + 1]))
+                else if (radix == 0 && code[i] == '0' && isDigit(code[i + 1]))
                 {
                     if (raiseOctal)
                         throw new JSException(TypeProxy.Proxy(new SyntaxError("Octal literals not allowed in strict mode")));
@@ -364,7 +369,7 @@ namespace NiL.JS.Core
                 int deg = 0;
                 while (i < code.Length)
                 {
-                    if (!char.IsDigit(code[i]))
+                    if (!isDigit(code[i]))
                         break;
                     else
                     {
@@ -388,7 +393,7 @@ namespace NiL.JS.Core
                     i++;
                     while (i < code.Length)
                     {
-                        if (!char.IsDigit(code[i]))
+                        if (!isDigit(code[i]))
                             break;
                         else
                         {
@@ -414,7 +419,7 @@ namespace NiL.JS.Core
                     scount = 0;
                     while (i < code.Length)
                     {
-                        if (!char.IsDigit(code[i]))
+                        if (!isDigit(code[i]))
                             break;
                         else
                         {
@@ -596,14 +601,14 @@ namespace NiL.JS.Core
                             }
                         default:
                             {
-                                if (char.IsDigit(code[i]))
+                                if (isDigit(code[i]))
                                 {
                                     if (strict)
                                         throw new JSException(TypeProxy.Proxy(new SyntaxError("Octal literals are not allowed in strict mode.")));
                                     var ccode = code[i] - '0';
-                                    if (i + 1 < code.Length && char.IsDigit(code[i + 1]))
+                                    if (i + 1 < code.Length && isDigit(code[i + 1]))
                                         ccode = ccode * 10 + (code[++i] - '0');
-                                    if (i + 1 < code.Length && char.IsDigit(code[i + 1]))
+                                    if (i + 1 < code.Length && isDigit(code[i + 1]))
                                         ccode = ccode * 10 + (code[++i] - '0');
                                     res.Append((char)ccode);
                                 }
