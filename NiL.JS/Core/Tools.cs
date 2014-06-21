@@ -85,7 +85,7 @@ namespace NiL.JS.Core
 #endif
         public static int JSObjectToInt(JSObject arg)
         {
-            return JSObjectToInt(arg, 0, false);
+            return JSObjectToInt32(arg, 0, false);
         }
 
         /// <summary>
@@ -99,7 +99,7 @@ namespace NiL.JS.Core
 #endif
         public static int JSObjectToInt(JSObject arg, bool alternateInfinity)
         {
-            return JSObjectToInt(arg, 0, alternateInfinity);
+            return JSObjectToInt32(arg, 0, alternateInfinity);
         }
 
         /// <summary>
@@ -111,22 +111,19 @@ namespace NiL.JS.Core
 #if INLINE
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
-        public static int JSObjectToInt(JSObject arg, int nullOrUndef)
+        public static int JSObjectToInt32(JSObject arg, int nullOrUndef)
         {
-            return JSObjectToInt(arg, nullOrUndef, false);
+            return JSObjectToInt32(arg, nullOrUndef, false);
         }
 
         /// <summary>
-        /// Преобразует JSObject в значение типа integer.
+        /// Преобразует JSObject в значение типа Int32.
         /// </summary>
         /// <param name="arg">JSObject, значение которого нужно преобразовать.</param>
         /// <param name="nullOrUndef">Значение, которое будет возвращено, если значение arg null или undefined.</param>
         /// <param name="alternateInfinity">Если истина, для значений +Infinity и -Infinity будут возвращены значения int.MaxValue и int.MinValue соответственно.</param>
         /// <returns>Целочисленное значение, представленное в объекте arg.</returns>
-#if INLINE
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-#endif
-        public static int JSObjectToInt(JSObject arg, int nullOrUndef, bool alternateInfinity)
+        public static int JSObjectToInt32(JSObject arg, int nullOrUndef, bool alternateInfinity)
         {
             if (arg == null)
                 return nullOrUndef;
@@ -154,6 +151,89 @@ namespace NiL.JS.Core
                         if (!Tools.ParseNumber(s, ref ix, out x) || ix < s.Length)
                             return 0;
                         return (int)x;
+                    }
+                case JSObjectType.Date:
+                case JSObjectType.Function:
+                case JSObjectType.Object:
+                    {
+                        if (r.oValue == null)
+                            return nullOrUndef;
+                        r = r.ToPrimitiveValue_Value_String();
+                        return JSObjectToInt(r);
+                    }
+                case JSObjectType.Undefined:
+                case JSObjectType.NotExistInObject:
+                    return nullOrUndef;
+                case JSObjectType.NotExist:
+                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable not defined.")));
+                default:
+                    throw new NotImplementedException();
+            }
+        }
+
+        /// <summary>
+        /// Преобразует JSObject в значение типа integer.
+        /// </summary>
+        /// <param name="arg">JSObject, значение которого нужно преобразовать.</param>
+        /// <param name="nullOrUndef">Значение, которое будет возвращено, если значение arg null или undefined.</param>
+        /// <returns>Целочисленное значение, представленное в объекте arg.</returns>
+#if INLINE
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+#endif
+        public static long JSObjectToInt64(JSObject arg)
+        {
+            return JSObjectToInt64(arg, 0, false);
+        }
+
+        /// <summary>
+        /// Преобразует JSObject в значение типа integer.
+        /// </summary>
+        /// <param name="arg">JSObject, значение которого нужно преобразовать.</param>
+        /// <param name="nullOrUndef">Значение, которое будет возвращено, если значение arg null или undefined.</param>
+        /// <returns>Целочисленное значение, представленное в объекте arg.</returns>
+#if INLINE
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+#endif
+        public static long JSObjectToInt64(JSObject arg, long nullOrUndef)
+        {
+            return JSObjectToInt64(arg, nullOrUndef, false);
+        }
+
+        /// <summary>
+        /// Преобразует JSObject в значение типа Int64.
+        /// </summary>
+        /// <param name="arg">JSObject, значение которого нужно преобразовать.</param>
+        /// <param name="nullOrUndef">Значение, которое будет возвращено, если значение arg null или undefined.</param>
+        /// <param name="alternateInfinity">Если истина, для значений +Infinity и -Infinity будут возвращены значения int.MaxValue и int.MinValue соответственно.</param>
+        /// <returns>Целочисленное значение, представленное в объекте arg.</returns>
+        public static long JSObjectToInt64(JSObject arg, long nullOrUndef, bool alternateInfinity)
+        {
+            if (arg == null)
+                return nullOrUndef;
+            var r = arg;
+            switch (r.valueType)
+            {
+                case JSObjectType.Bool:
+                case JSObjectType.Int:
+                    {
+                        return r.iValue;
+                    }
+                case JSObjectType.Double:
+                    {
+                        if (double.IsNaN(r.dValue))
+                            return 0;
+                        if (double.IsInfinity(r.dValue))
+                            return alternateInfinity ? double.IsPositiveInfinity(r.dValue) ? long.MaxValue : long.MinValue : 0;
+                        return (long)r.dValue;
+                    }
+                case JSObjectType.String:
+                    {
+                        double x = 0;
+                        int ix = 0;
+                        string s = (r.oValue as string).Trim();
+                        if (!Tools.ParseNumber(s, ref ix, out x) || ix < s.Length)
+                            return 0;
+                        return (long)x;
                     }
                 case JSObjectType.Date:
                 case JSObjectType.Function:

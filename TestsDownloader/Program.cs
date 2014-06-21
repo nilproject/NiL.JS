@@ -34,8 +34,31 @@ namespace TestsDownloader
             var description = testObj["description"].ToString();
             var path = rootDir + testObj["path"];
             Directory.CreateDirectory(Path.GetDirectoryName(path));
-            using (var file = new FileStream( path, FileMode.Create, FileAccess.Write))
+            using (var file = new FileStream(path, FileMode.Create, FileAccess.Write))
                 file.Write(code, 0, code.Length);
+        }
+
+        private static string[] getTestSet(string url)
+        {
+            string title = "downloading: " + url + " ...";
+            int line = Console.CursorTop;
+            Console.Write(title);
+            WebRequest wr = HttpWebRequest.Create(url);
+            using (var response = wr.GetResponse())
+            {
+                var data = new StreamReader(response.GetResponseStream()).ReadToEnd();
+                var tests = JSON.parse(data).GetMember("testSuite");
+                var host = response.ResponseUri.Scheme + "://" + response.ResponseUri.Host + "/";
+                var res = new string[(int)(tests["length"].Value as NiL.JS.Core.BaseTypes.Function[])[1].Invoke(tests, null).Value];
+                int index = 0;
+                foreach (var i in tests)
+                {
+                    res[index++] = host + tests[i].Value.ToString();
+                }
+                Console.SetCursorPosition(0, line);
+                Console.WriteLine(url + " Complete.       ");
+                return res;
+            }
         }
 
         private static void download(string url, string rootDir)
@@ -61,7 +84,7 @@ namespace TestsDownloader
                     saveTest(rootDir, tests.GetMember(i));
                 }
                 Console.SetCursorPosition(0, line);
-                Console.WriteLine(url + "    Complete.");
+                Console.WriteLine(url + " Complete.   ");
             }
         }
 
@@ -72,6 +95,7 @@ namespace TestsDownloader
                 Console.WriteLine("Cleaning...");
                 Directory.Delete("tests", true);
             }
+            var testSet = getTestSet(@"http://test262.ecmascript.org/json/default.json");
             for (var i = 0; i < TestsSource.Length; i++)
             {
                 download(TestsSource[i], "tests/");

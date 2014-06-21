@@ -525,7 +525,7 @@ namespace NiL.JS.Core.BaseTypes
                 return this;
             if ((object)this is Array) // Да, Array sealed, но тут и не такое возможно.
             {
-                int pos0 = Tools.JSObjectToInt(args[0], int.MaxValue, true);
+                int pos0 = Tools.JSObjectToInt32(args[0], int.MaxValue, true);
                 int pos1 = 0;
                 if (args.Length > 1)
                 {
@@ -622,7 +622,7 @@ namespace NiL.JS.Core.BaseTypes
                 return this;
             if ((object)this is Array) // Да, Array sealed, но тут и не такое возможно.
             {
-                int pos0 = Tools.JSObjectToInt(args[0], int.MaxValue, true);
+                int pos0 = Tools.JSObjectToInt32(args[0], int.MaxValue, true);
                 int pos1 = 0;
                 if (args.Length > 1)
                 {

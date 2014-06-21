@@ -188,7 +188,7 @@ namespace NiL.JSTest
             var sw = new Stopwatch();
             var s = new Script(
 @"
-console.log(parseInt('010'));
+console.log(new Date(1970, -10, 1));
 ");
             s.Context.AttachModule(typeof(TestClass));
             s.Context.AttachModule(typeof(TestEnum));
