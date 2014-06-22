@@ -7,7 +7,7 @@ using NiL.JS.Core.Modules;
 namespace NiL.JS.Core.BaseTypes
 {
     [Serializable]
-    public sealed class Array : EmbeddedType
+    public sealed class Array : CustomType
     {
         private class Enumerator : IEnumerator<string>
         {
@@ -196,7 +196,7 @@ namespace NiL.JS.Core.BaseTypes
             [Hidden]
             set
             {
-                var nlen = Tools.JSObjectToInt(value);
+                var nlen = Tools.JSObjectToInt32(value);
                 if (data.Count > nlen)
                     data.RemoveRange(nlen, data.Count - nlen);
                 else
@@ -256,7 +256,7 @@ namespace NiL.JS.Core.BaseTypes
             ao["2"] = this;
             bool res = true;
             bool isArray = this.GetType() == typeof(Array);
-            var len = isArray ? data.Count : Tools.JSObjectToInt(this["length"]);
+            var len = isArray ? data.Count : Tools.JSObjectToInt32(this["length"]);
             for (var i = 0; i < len && res; i++)
             {
                 if (isArray && (data[i] == null || data[i].valueType < JSObjectType.Undefined))
@@ -283,7 +283,7 @@ namespace NiL.JS.Core.BaseTypes
             ao["2"] = this;
             var res = new Array();
             bool isArray = this.GetType() == typeof(Array);
-            var len = isArray ? data.Count : Tools.JSObjectToInt(this["length"]);
+            var len = isArray ? data.Count : Tools.JSObjectToInt32(this["length"]);
             for (var i = 0; i < len; i++)
             {
                 if (isArray && (data[i] == null || data[i].valueType < JSObjectType.Undefined))
@@ -310,7 +310,7 @@ namespace NiL.JS.Core.BaseTypes
             ao["1"] = 0;
             ao["2"] = this;
             bool isArray = this.GetType() == typeof(Array);
-            var len = isArray ? data.Count : Tools.JSObjectToInt(this["length"]);
+            var len = isArray ? data.Count : Tools.JSObjectToInt32(this["length"]);
             for (var i = 0; i < len; i++)
             {
                 if (isArray && (data[i] == null || data[i].valueType < JSObjectType.Undefined))
@@ -532,7 +532,7 @@ namespace NiL.JS.Core.BaseTypes
                     if (args[1].valueType <= JSObjectType.Undefined)
                         pos1 = data.Count;
                     else
-                        pos1 = System.Math.Min(Tools.JSObjectToInt(args[1], true), data.Count);
+                        pos1 = System.Math.Min(Tools.JSObjectToInt32(args[1], true), data.Count);
                 }
                 else
                     pos1 = data.Count;
@@ -563,7 +563,7 @@ namespace NiL.JS.Core.BaseTypes
                 var leno = this.GetMember("length");
                 if (leno.valueType < JSObjectType.Undefined)
                     throw new JSException(TypeProxy.Proxy(new TypeError("Array.property.slice call for incompatible object.")));
-                int len = Tools.JSObjectToInt(leno);
+                int len = Tools.JSObjectToInt32(leno);
                 if (len >= 0)
                 {
                     var t = new Array(len);
@@ -629,7 +629,7 @@ namespace NiL.JS.Core.BaseTypes
                     if (args[1].valueType <= JSObjectType.Undefined)
                         pos1 = 0;
                     else
-                        pos1 = System.Math.Min(Tools.JSObjectToInt(args[1], true), data.Count);
+                        pos1 = System.Math.Min(Tools.JSObjectToInt32(args[1], true), data.Count);
                 }
                 else
                     pos1 = data.Count;
@@ -747,7 +747,7 @@ namespace NiL.JS.Core.BaseTypes
                 second.Assign(y);
                 args.fields["0"] = first;
                 args.fields["1"] = second;
-                var res = Tools.JSObjectToInt(comparer.Invoke(JSObject.undefined, args));
+                var res = Tools.JSObjectToInt32(comparer.Invoke(JSObject.undefined, args));
                 return res;
             }
         }
@@ -757,7 +757,7 @@ namespace NiL.JS.Core.BaseTypes
         {
             if (!(((object)this) is Array)) // Да, Array sealed, но тут и не такое возможно.
             {
-                int l = System.Math.Max(0, Tools.JSObjectToInt(this.GetMember("length")));
+                int l = System.Math.Max(0, Tools.JSObjectToInt32(this.GetMember("length")));
                 var t = new Array(l);
                 for (int i = 0; i < l; i++)
                 {
@@ -773,7 +773,7 @@ namespace NiL.JS.Core.BaseTypes
                 throw new ArgumentNullException("args");
             var length = args.GetMember("length");
             var comparer = args.GetMember("0").oValue as Function;
-            var len = Tools.JSObjectToInt(length);
+            var len = Tools.JSObjectToInt32(length);
             if (comparer != null)
             {
                 var second = new JSObject();

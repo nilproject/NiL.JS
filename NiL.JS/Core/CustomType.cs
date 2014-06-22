@@ -10,12 +10,14 @@ namespace NiL.JS.Core
     /// и получения перечислителя полей объекта.
     /// </summary>
     [Serializable]
-    public abstract class EmbeddedType : JSObject
+    public abstract class CustomType : JSObject
     {
-        protected EmbeddedType()
+        protected CustomType()
         {
             valueType = JSObjectType.Object;
             oValue = this;
+            __proto__ = TypeProxy.GetPrototype(this.GetType());
+            attributes |= JSObjectAttributes.SystemObject;
         }
 
         [AllowUnsafeCall(typeof(JSObject))]
@@ -45,7 +47,7 @@ namespace NiL.JS.Core
         public override void Assign(JSObject value)
         {
             if ((attributes & JSObjectAttributes.ReadOnly) == 0)
-                throw new InvalidOperationException("Try to assign to EmbeddedType");
+                throw new InvalidOperationException("Try to assign to " + this.GetType().Name);
         }
 
         [Hidden]

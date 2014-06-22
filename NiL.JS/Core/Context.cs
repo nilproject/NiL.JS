@@ -62,6 +62,9 @@ namespace NiL.JS.Core
                     globalContext.fields = new Dictionary<string, JSObject>();
                 JSObject.GlobalPrototype = null;
                 TypeProxy.Clear();
+                BaseTypes.Boolean.True.__proto__ = null;
+                BaseTypes.Boolean.False.__proto__ = null;
+                JSObject.nullString.__proto__ = null;
                 globalContext.fields.Add("Object", TypeProxy.GetConstructor(typeof(JSObject)).Clone() as JSObject);
                 globalContext.fields["Object"].attributes = JSObjectAttributes.DoNotDelete;
                 JSObject.GlobalPrototype = TypeProxy.GetPrototype(typeof(JSObject));
@@ -95,10 +98,7 @@ namespace NiL.JS.Core
                     return System.Web.HttpServerUtility.UrlTokenEncode(System.Text.UTF8Encoding.Default.GetBytes(x.GetMember("0").ToString()));
                 }));
                 globalContext.DefineVariable("encodeURIComponent").Assign(globalContext.GetVariable("encodeURI"));
-                globalContext.DefineVariable("decodeURI").Assign(new ExternalFunction((thisBind, x) =>
-                {
-                    return System.Text.UTF8Encoding.Default.GetString(System.Web.HttpServerUtility.UrlTokenDecode(x.GetMember("0").ToString()));
-                }));
+                globalContext.DefineVariable("decodeURI").Assign(new ExternalFunction(GlobalFunctions.decodeURI));
                 globalContext.DefineVariable("decodeURIComponent").Assign(globalContext.GetVariable("decodeURI"));
                 globalContext.DefineVariable("isFinite").Assign(new ExternalFunction(GlobalFunctions.isFinite));
                 globalContext.DefineVariable("parseFloat").Assign(new ExternalFunction(GlobalFunctions.parseFloat));
@@ -229,7 +229,7 @@ namespace NiL.JS.Core
                 this.fields = new Dictionary<string, JSObject>();
             this.prototype = prototype;
             this.thisBind = prototype.thisBind;
-            this.abortInfo = JSObject.deletableUndefined;
+            this.abortInfo = JSObject.notExist;
 #if DEV
             this.debugging = prototype.debugging;
 #endif
@@ -350,21 +350,16 @@ namespace NiL.JS.Core
             bool fromProto = (fields == null || !fields.TryGetValue(name, out res)) && (prototype != null);
             if (fromProto)
                 res = prototype.GetVariable(name, create);
-            if (res == null)
+            if (res == null) // значит вышли из глобального контекста
             {
                 if (this == globalContext)
                     return null;
                 else
                 {
-                    res = JSObject.GlobalPrototype.GetMember(name);
                     if (create)
-                    {
-                        var vt = res.valueType;
-                        fields[name] = res = res.Clone() as JSObject;
-                        if ((res.attributes & JSObjectAttributes.SystemConstant) != 0)
-                            res.attributes = JSObjectAttributes.None;
-                        res.valueType = vt;
-                    }
+                        fields[name] = res = new JSObject() { valueType = JSObjectType.NotExist };
+                    else
+                        res = JSObject.GlobalPrototype.GetMember(name);
                 }
             }
             if (res.valueType == JSObjectType.NotExistInObject)

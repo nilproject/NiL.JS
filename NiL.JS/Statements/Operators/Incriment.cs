@@ -29,8 +29,8 @@ namespace NiL.JS.Statements.Operators
                 throw new ArgumentException("type");
             if (op == null)
                 throw new ArgumentNullException("op");
-            if (tempResult != null)
-                tempResult.assignCallback = null;
+            if (tempContainer != null)
+                tempContainer.assignCallback = null;
         }
 
         internal override JSObject Invoke(Context context)
@@ -87,7 +87,7 @@ namespace NiL.JS.Statements.Operators
                     && (val.valueType != JSObjectType.Undefined)
                     && (val.valueType != JSObjectType.NotExistInObject))
                 {
-                    o = tempResult;
+                    o = tempContainer;
                     o.Assign(val);
                 }
                 else

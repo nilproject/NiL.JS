@@ -30,6 +30,7 @@ namespace NiL.JS.Statements.Operators
             }
         }
 
+        private static readonly JSObject newMarker = new JSObject() { valueType = JSObjectType.Object };
         private readonly Call CallInstance = new Call(new ThisSetStat(), new ImmidateValueStatement(null));
 
         public override bool IsContextIndependent
@@ -57,35 +58,41 @@ namespace NiL.JS.Statements.Operators
                     throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError(ctor + " is not callable")));
                 if (ctor.oValue is MethodProxy)
                     throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError(ctor + " can't be used as a constructor")));
-
-                JSObject _this = new JSObject() { valueType = JSObjectType.Object };
-                _this.__proto__ = ctor.GetMember("prototype");
-                if (_this.__proto__.valueType < JSObjectType.Object)
-                    _this.__proto__ = null;
                 if (ctor.oValue is EvalFunction
                     || ctor.oValue is ExternalFunction
                     || ctor.oValue is MethodProxy)
                     throw new JSException(new TypeError("Function \"" + (ctor.oValue as Function).Name + "\" is not a constructor."));
-                else if (!(ctor.oValue is TypeProxyConstructor))
+
+                JSObject _this = null;
+                if (!(ctor.oValue is ProxyConstructor))
                 {
-                    if (_this.__proto__ != null)
+                    _this = new JSObject(true) { valueType = JSObjectType.Object };
+                    _this.__proto__ = ctor.GetMember("prototype");
+                    if (_this.__proto__.valueType < JSObjectType.Object)
+                        _this.__proto__ = null;
+                    else
                         _this.__proto__ = _this.__proto__.Clone() as JSObject;
                     _this.oValue = _this;
-                    _this.DefineMember("constructor").Assign(ctor);
                 }
                 else
-                    _this.oValue = this;
+                    _this = newMarker;
+
                 (CallInstance.FirstOperand as ThisSetStat).value = ctor;
                 (CallInstance.FirstOperand as ThisSetStat)._this = _this;
                 var res = CallInstance.Invoke(context);
                 if (res.valueType >= JSObjectType.Object && res.oValue != null)
                     return res;
+#if DEBUG
+                System.Diagnostics.Debug.Assert(_this != newMarker, "_this == newMarker");
+#endif
                 return _this;
             }
         }
 
         internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict)
         {
+            newMarker.oValue = this;    // Достаточно один раз туда поставить какой-нибудь
+            // экземпляр оператора New, так как дальше проверка идёт только по "is"
             if (second == null)
                 (CallInstance.SecondOperand as ImmidateValueStatement).value = new JSObject() { valueType = JSObjectType.Object, oValue = new Statement[0] };
             else

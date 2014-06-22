@@ -175,7 +175,7 @@
     <Compile Include="Core\BaseTypes\Boolean.cs" />
     <Compile Include="Core\BinaryTree.cs" />
     <Compile Include="Core\BindedFunction.cs" />
-    <Compile Include="Core\EmbeddedType.cs" />
+    <Compile Include="Core\CustomType.cs" />
     <Compile Include="Core\BaseTypes\Date.cs" />
     <Compile Include="Core\BaseTypes\RegExp.cs" />
     <Compile Include="Core\BaseTypes\URIError.cs" />
@@ -219,7 +219,7 @@
     <Compile Include="Core\MethodProxy.cs" />
     <Compile Include="Core\TypeProxy.cs" />
     <Compile Include="Core\Modules\ReadOnlyAttribute.cs" />
-    <Compile Include="Core\TypeProxyConstructor.cs" />
+    <Compile Include="Core\ProxyConstructor.cs" />
     <Compile Include="Core\WithContext.cs" />
     <Compile Include="NamespaceProvider.cs" />
     <Compile Include="Statements\LabeledStatement.cs" />

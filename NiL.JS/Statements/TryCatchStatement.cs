@@ -99,6 +99,10 @@ namespace NiL.JS.Statements
                     var catchContext = new Context(context, context.caller) { strict = context.strict, variables = context.variables };
                     var cvar = catchContext.DefineVariable(catchVariableDesc.Name);
                     catchVariableDesc.ClearCache();
+#if DEBUG
+                    if (!(e is JSException))
+                        System.Diagnostics.Debugger.Break();
+#endif
                     cvar.Assign(e is JSException ? (e as JSException).Avatar : TypeProxy.Proxy(e));
                     try
                     {

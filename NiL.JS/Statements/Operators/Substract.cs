@@ -31,9 +31,9 @@ namespace NiL.JS.Statements.Operators
                     if (s.valueType == JSObjectType.Int
                     || s.valueType == JSObjectType.Bool)
                     {
-                        tempResult.iValue = a - s.iValue;
-                        tempResult.valueType = JSObjectType.Int;
-                        return tempResult;
+                        tempContainer.iValue = a - s.iValue;
+                        tempContainer.valueType = JSObjectType.Int;
+                        return tempContainer;
                     }
                     else
                         da = a;
@@ -43,9 +43,9 @@ namespace NiL.JS.Statements.Operators
                     da = Tools.JSObjectToDouble(f);
                     s = second.Invoke(context);
                 }
-                tempResult.dValue = da - Tools.JSObjectToDouble(s);
-                tempResult.valueType = JSObjectType.Double;
-                return tempResult;
+                tempContainer.dValue = da - Tools.JSObjectToDouble(s);
+                tempContainer.valueType = JSObjectType.Double;
+                return tempContainer;
 #else
                 tempResult.dValue = Tools.JSObjectToDouble(first.Invoke(context)) - Tools.JSObjectToDouble(second.Invoke(context));
                 tempResult.valueType = JSObjectType.Double;

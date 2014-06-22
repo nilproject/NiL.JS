@@ -7,7 +7,7 @@ namespace NiL.JS.Core.BaseTypes
 {
     [Serializable]
     [Immutable]
-    public sealed class Number : EmbeddedType
+    public sealed class Number : JSObject
     {
         [DoNotDelete]
         [DoNotEnumerate]
@@ -34,15 +34,15 @@ namespace NiL.JS.Core.BaseTypes
         static Number()
         {
             POSITIVE_INFINITY.assignCallback = null;
-            POSITIVE_INFINITY.attributes |= JSObjectAttributes.DoNotDelete | JSObjectAttributes.ReadOnly;
+            POSITIVE_INFINITY.attributes |= JSObjectAttributes.DoNotDelete | JSObjectAttributes.ReadOnly | JSObjectAttributes.SystemObject;
             NEGATIVE_INFINITY.assignCallback = null;
-            NEGATIVE_INFINITY.attributes |= JSObjectAttributes.DoNotDelete | JSObjectAttributes.ReadOnly;
+            NEGATIVE_INFINITY.attributes |= JSObjectAttributes.DoNotDelete | JSObjectAttributes.ReadOnly | JSObjectAttributes.SystemObject;
             MAX_VALUE.assignCallback = null;
-            MAX_VALUE.attributes |= JSObjectAttributes.DoNotDelete | JSObjectAttributes.ReadOnly;
+            MAX_VALUE.attributes |= JSObjectAttributes.DoNotDelete | JSObjectAttributes.ReadOnly | JSObjectAttributes.SystemObject;
             MIN_VALUE.assignCallback = null;
-            MIN_VALUE.attributes |= JSObjectAttributes.DoNotDelete | JSObjectAttributes.ReadOnly;
+            MIN_VALUE.attributes |= JSObjectAttributes.DoNotDelete | JSObjectAttributes.ReadOnly | JSObjectAttributes.SystemObject;
             NaN.assignCallback = null;
-            NaN.attributes |= JSObjectAttributes.DoNotDelete | JSObjectAttributes.ReadOnly;
+            NaN.attributes |= JSObjectAttributes.DoNotDelete | JSObjectAttributes.ReadOnly | JSObjectAttributes.SystemObject;
         }
 
         [Modules.DoNotEnumerate]
@@ -50,7 +50,6 @@ namespace NiL.JS.Core.BaseTypes
         {
             valueType = JSObjectType.Int;
             iValue = 0;
-            assignCallback = JSObject.ErrorAssignCallback;
         }
 
         [Modules.DoNotEnumerate]
@@ -58,7 +57,6 @@ namespace NiL.JS.Core.BaseTypes
         {
             valueType = JSObjectType.Int;
             iValue = value;
-            assignCallback = JSObject.ErrorAssignCallback;
         }
 
         [Modules.DoNotEnumerate]
@@ -66,7 +64,6 @@ namespace NiL.JS.Core.BaseTypes
         {
             valueType = JSObjectType.Double;
             dValue = value;
-            assignCallback = JSObject.ErrorAssignCallback;
         }
 
         [Modules.DoNotEnumerate]
@@ -88,7 +85,13 @@ namespace NiL.JS.Core.BaseTypes
         {
             valueType = JSObjectType.Double;
             dValue = Tools.JSObjectToDouble(obj.GetMember("0"));
-            assignCallback = JSObject.ErrorAssignCallback;
+        }
+
+        [Hidden]
+        public override void Assign(JSObject value)
+        {
+            if ((attributes & JSObjectAttributes.ReadOnly) == 0)
+                throw new InvalidOperationException("Try to assign to Number");
         }
 
         [AllowUnsafeCall(typeof(JSObject))]
@@ -333,7 +336,7 @@ namespace NiL.JS.Core.BaseTypes
                         }
                     default:
                         {
-                            r = Tools.JSObjectToInt(ar);
+                            r = Tools.JSObjectToInt32(ar);
                             break;
                         }
                 }
@@ -373,10 +376,10 @@ namespace NiL.JS.Core.BaseTypes
         [Modules.DoNotEnumerate]
         public override JSObject valueOf()
         {
-            if (!typeof(Number).IsAssignableFrom(GetType()))
-                throw new JSException(TypeProxy.Proxy(new TypeError("Try to call Number.valueOf on not number object.")));
-            if (valueType == JSObjectType.Object) // prototype instance
+            if (this.GetType() == typeof(Number) && valueType == JSObjectType.Object) // prototype instance
                 return 0;
+            if (valueType != JSObjectType.Int && valueType != JSObjectType.Double)
+                throw new JSException(TypeProxy.Proxy(new TypeError("Try to call Number.valueOf on not number object.")));            
             return base.valueOf();
         }
 

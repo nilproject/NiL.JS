@@ -27,6 +27,12 @@ namespace NiL.JS.Core
             Avatar = avatar;
         }
 
+        public JSException(Error avatar, Exception innerException)
+            : base("", innerException)
+        {
+            Avatar = TypeProxy.Proxy(avatar);
+        }
+
         public override string Message
         {
             get

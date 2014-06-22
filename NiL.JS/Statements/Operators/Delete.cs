@@ -25,7 +25,13 @@ namespace NiL.JS.Statements.Operators
 
             internal override JSObject Invoke(Context context)
             {
-                return proto.InvokeForAssing(context);
+                var source = proto.Source.Invoke(context);
+                var memberName = proto.FieldName.Invoke(context).ToString();
+                context.objectSource = source;
+                var res = context.objectSource.GetMember(memberName, false, true);
+                if ((res.attributes & JSObjectAttributes.SystemObject) != 0)
+                    return context.objectSource.GetMember(memberName, true, true);
+                return res;
             }
 
             public override string ToString()
@@ -45,42 +51,44 @@ namespace NiL.JS.Statements.Operators
             lock (this)
             {
                 var temp = first.Invoke(context);
-                tempResult.valueType = JSObjectType.Bool;
-                if (temp.valueType <= JSObjectType.NotExistInObject
-                    || (temp.attributes & JSObjectAttributes.SystemConstant) != 0)
-                    tempResult.iValue = 1;
+                tempContainer.valueType = JSObjectType.Bool;
+                if (temp.valueType < JSObjectType.Undefined)
+                    tempContainer.iValue = 1;
                 else if ((temp.attributes & JSObjectAttributes.Argument) != 0)
                 {
                     if (first is SafeMemberGetter)
                     {
-                        tempResult.iValue = 1;
+                        tempContainer.iValue = 1;
                         var args = context.objectSource;
                         foreach (var a in args.fields)
                         {
                             if (a.Value == temp)
                             {
                                 args.fields.Remove(a.Key);
-                                return tempResult;
+                                return tempContainer;
                             }
                         }
                     }
                     else
                     {
-                        tempResult.iValue = 0;
-                        return tempResult;
+                        tempContainer.iValue = 0;
+                        return tempContainer;
                     }
                 }
                 else if ((temp.attributes & JSObjectAttributes.DoNotDelete) == 0)
                 {
-                    tempResult.iValue = 1;
-                    temp.valueType = JSObjectType.NotExist;
-                    temp.oValue = null;
+                    tempContainer.iValue = 1;
+                    if ((temp.attributes & JSObjectAttributes.SystemObject) == 0)
+                    {
+                        temp.valueType = JSObjectType.NotExist;
+                        temp.oValue = null;
+                    }
                 }
                 else if (context.strict)
                     throw new JSException(new TypeError("Can not delete property \"" + first + "\"."));
                 else
-                    tempResult.iValue = 0;
-                return tempResult;
+                    tempContainer.iValue = 0;
+                return tempContainer;
             }
         }
 

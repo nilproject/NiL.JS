@@ -54,7 +54,7 @@ namespace NiL.JS.Statements.Operators
                 arguments.fields[i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture)] = a;
             }
 
-            // Аргументы должны быть вычислены даже если функции не существует.
+            // Аргументы должны быть вычислены даже если функция не существует.
             if (temp.valueType == JSObjectType.NotExist)
             {
                 if (context.thisBind == null)

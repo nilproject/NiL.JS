@@ -83,7 +83,7 @@ namespace NiL.JS.Core
 #if INLINE
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
-        public static int JSObjectToInt(JSObject arg)
+        public static int JSObjectToInt32(JSObject arg)
         {
             return JSObjectToInt32(arg, 0, false);
         }
@@ -97,7 +97,7 @@ namespace NiL.JS.Core
 #if INLINE
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
-        public static int JSObjectToInt(JSObject arg, bool alternateInfinity)
+        public static int JSObjectToInt32(JSObject arg, bool alternateInfinity)
         {
             return JSObjectToInt32(arg, 0, alternateInfinity);
         }
@@ -159,7 +159,7 @@ namespace NiL.JS.Core
                         if (r.oValue == null)
                             return nullOrUndef;
                         r = r.ToPrimitiveValue_Value_String();
-                        return JSObjectToInt(r);
+                        return JSObjectToInt32(r);
                     }
                 case JSObjectType.Undefined:
                 case JSObjectType.NotExistInObject:
@@ -242,7 +242,7 @@ namespace NiL.JS.Core
                         if (r.oValue == null)
                             return nullOrUndef;
                         r = r.ToPrimitiveValue_Value_String();
-                        return JSObjectToInt(r);
+                        return JSObjectToInt32(r);
                     }
                 case JSObjectType.Undefined:
                 case JSObjectType.NotExistInObject:
@@ -301,14 +301,14 @@ namespace NiL.JS.Core
                 return null;
             if (targetType.IsAssignableFrom(jsobj.GetType()))
                 return jsobj;
-            var res = targetType.IsValueType || jsobj.valueType >= JSObjectType.String ? jsobj.Value : null;
-            if (res == null)
-                return res;
-            if ((targetType.IsEnum && Enum.IsDefined(targetType, res)) || targetType.IsAssignableFrom(res.GetType()))
+            var res = targetType.IsValueType || jsobj.valueType >= JSObjectType.Object ? jsobj.Value : null;
+            if (res == null
+                || (targetType.IsEnum && Enum.IsDefined(targetType, res))
+                || targetType.IsAssignableFrom(res.GetType()))
                 return res;
             if (res is TypeProxy && targetType.IsAssignableFrom((res as TypeProxy).hostedType))
                 return (res as TypeProxy).prototypeInstance;
-            return null;
+            return res;
         }
 
 #if INLINE

@@ -32,7 +32,12 @@ namespace NiL.JS.Statements
         {
             var res = Tools.RaiseIfNotExist(descriptor.Get(context, false));
             if (res.valueType == JSObjectType.Property)
-                return (res.oValue as NiL.JS.Core.BaseTypes.Function[])[1].Invoke(context.objectSource, null);
+            {
+                var getter = (res.oValue as NiL.JS.Core.BaseTypes.Function[])[1];
+                if (getter == null)
+                    return JSObject.notExist;
+                return getter.Invoke(context.objectSource, null);
+            }
             return res;
         }
 

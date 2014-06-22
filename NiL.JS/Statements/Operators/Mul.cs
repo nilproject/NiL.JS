@@ -33,15 +33,15 @@ namespace NiL.JS.Statements.Operators
                     {
                         if (((a | s.iValue) & 0xffff0000) == 0)
                         {
-                            tempResult.iValue = a * s.iValue;
-                            tempResult.valueType = JSObjectType.Int;
+                            tempContainer.iValue = a * s.iValue;
+                            tempContainer.valueType = JSObjectType.Int;
                         }
                         else
                         {
-                            tempResult.dValue = a * (double)s.iValue;
-                            tempResult.valueType = JSObjectType.Double;
+                            tempContainer.dValue = a * (double)s.iValue;
+                            tempContainer.valueType = JSObjectType.Double;
                         }
-                        return tempResult;
+                        return tempContainer;
                     }
                     else
                         da = a;
@@ -51,9 +51,9 @@ namespace NiL.JS.Statements.Operators
                     da = Tools.JSObjectToDouble(f);
                     s = second.Invoke(context);
                 }
-                tempResult.dValue = da * Tools.JSObjectToDouble(s);
-                tempResult.valueType = JSObjectType.Double;
-                return tempResult;
+                tempContainer.dValue = da * Tools.JSObjectToDouble(s);
+                tempContainer.valueType = JSObjectType.Double;
+                return tempContainer;
 #else
                 tempResult.dValue = Tools.JSObjectToDouble(first.Invoke(context)) * Tools.JSObjectToDouble(second.Invoke(context));
                 tempResult.valueType = JSObjectType.Double;

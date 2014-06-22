@@ -20,7 +20,7 @@ namespace NiL.JS.Core.BaseTypes
     }
 
     [Serializable]
-    public class Function : EmbeddedType
+    public class Function : JSObject
     {
         private class _DelegateWraper
         {
@@ -741,15 +741,16 @@ namespace NiL.JS.Core.BaseTypes
         [DoNotEnumerate]
         public Function()
         {
-            attributes = JSObjectAttributes.ReadOnly | JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum;
+            attributes = JSObjectAttributes.ReadOnly | JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum | JSObjectAttributes.SystemObject;
             creator = creatorDummy;
             valueType = JSObjectType.Function;
+            this.oValue = this;
         }
 
         [DoNotEnumerate]
         public Function(JSObject[] args)
         {
-            attributes = JSObjectAttributes.ReadOnly | JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum;
+            attributes = JSObjectAttributes.ReadOnly | JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum | JSObjectAttributes.SystemObject;
             context = Context.CurrentContext.Root;
             if (context == Context.globalContext)
                 throw new InvalidOperationException("Special Functions constructor can call only in runtime.");
@@ -767,14 +768,24 @@ namespace NiL.JS.Core.BaseTypes
                 creator = fs.Statement as FunctionStatement;
             }
             else throw new JSException(TypeProxy.Proxy(new SyntaxError()));
+            valueType = JSObjectType.Function;
+            this.oValue = this;
         }
 
         internal Function(Context context, FunctionStatement creator)
         {
-            attributes = JSObjectAttributes.ReadOnly | JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum;
+            attributes = JSObjectAttributes.ReadOnly | JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum | JSObjectAttributes.SystemObject;
             this.context = context;
             this.creator = creator;
             valueType = JSObjectType.Function;
+            this.oValue = this;
+        }
+
+        [Hidden]
+        public override void Assign(JSObject value)
+        {
+            if ((attributes & JSObjectAttributes.ReadOnly) == 0)
+                throw new InvalidOperationException("Try to assign to Function");
         }
 
         [Hidden]
@@ -915,11 +926,11 @@ namespace NiL.JS.Core.BaseTypes
                     {
                         valueType = JSObjectType.Object,
                         __proto__ = JSObject.GlobalPrototype,
-                        attributes = JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum
+                        attributes = JSObjectAttributes.DoNotEnum | JSObjectAttributes.DoNotDelete
                     };
                     prototypeField.oValue = prototypeField;
                     var ctor = prototypeField.GetMember("constructor", true, true);
-                    ctor.attributes = JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum;
+                    ctor.attributes = JSObjectAttributes.DoNotEnum;
                     ctor.Assign(this);
                 }
                 return prototypeField;
@@ -975,14 +986,14 @@ namespace NiL.JS.Core.BaseTypes
             var callee = args.DefineMember("callee");
             args.fields.Clear();
             var prmsC = 0;
-            if (iargs != notExist)
+            if (iargs.valueType >= JSObjectType.Undefined)
             {
                 var prmsCR = iargs.GetMember("length");
-                prmsC = Tools.JSObjectToInt(prmsCR.valueType == JSObjectType.Property ? (prmsCR.oValue as Function[])[1].Invoke(iargs, null) : prmsCR);
+                prmsC = Tools.JSObjectToInt32(prmsCR.valueType == JSObjectType.Property ? (prmsCR.oValue as Function[])[1].Invoke(iargs, null) : prmsCR);
                 for (int i = 0; i < prmsC; i++)
                     args.fields[i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture)] = iargs.GetMember(i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture));
             }
-            if (callee != notExist)
+            if (callee.valueType >= JSObjectType.Undefined)
             {
                 callee.oValue = this;
                 args.fields["callee"] = callee;

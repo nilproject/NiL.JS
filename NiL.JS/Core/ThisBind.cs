@@ -22,7 +22,7 @@ namespace NiL.JS.Core
         public ThisBind(Context context)
             : base(false)
         {
-            attributes = JSObjectAttributes.SystemConstant;
+            attributes = JSObjectAttributes.SystemObject;
             this.context = context;
             fields = context.fields;
             valueType = JSObjectType.Object;

@@ -11,8 +11,8 @@ namespace NiL.JS.Core
     [Serializable]
     public sealed class TypeProxy : JSObject
     {
-        private static readonly Dictionary<Type, JSObject> constructors = new Dictionary<Type, JSObject>();
-        private static readonly Dictionary<Type, TypeProxy> prototypes = new Dictionary<Type, TypeProxy>();
+        private static readonly Dictionary<Type, JSObject> staticProxies = new Dictionary<Type, JSObject>();
+        private static readonly Dictionary<Type, TypeProxy> dynamicProxies = new Dictionary<Type, TypeProxy>();
 
         internal Type hostedType;
         [NonSerialized]
@@ -91,12 +91,12 @@ namespace NiL.JS.Core
         public static TypeProxy GetPrototype(Type type)
         {
             TypeProxy prot = null;
-            if (!prototypes.TryGetValue(type, out prot))
+            if (!dynamicProxies.TryGetValue(type, out prot))
             {
-                lock (prototypes)
+                lock (dynamicProxies)
                 {
                     new TypeProxy(type);
-                    prot = prototypes[type];
+                    prot = dynamicProxies[type];
                 }
             }
             return prot;
@@ -105,12 +105,12 @@ namespace NiL.JS.Core
         public static JSObject GetConstructor(Type type)
         {
             JSObject constructor = null;
-            if (!constructors.TryGetValue(type, out constructor))
+            if (!staticProxies.TryGetValue(type, out constructor))
             {
-                lock (prototypes)
+                lock (staticProxies)
                 {
                     new TypeProxy(type);
-                    constructor = constructors[type];
+                    constructor = staticProxies[type];
                 }
             }
             return constructor;
@@ -118,8 +118,8 @@ namespace NiL.JS.Core
 
         internal static void Clear()
         {
-            constructors.Clear();
-            prototypes.Clear();
+            staticProxies.Clear();
+            dynamicProxies.Clear();
         }
 
         private TypeProxy()
@@ -127,17 +127,18 @@ namespace NiL.JS.Core
         {
             valueType = JSObjectType.Object;
             oValue = this;
+            attributes |= JSObjectAttributes.SystemObject;
         }
 
         private TypeProxy(Type type)
             : base(true)
         {
-            if (prototypes.ContainsKey(type))
+            if (dynamicProxies.ContainsKey(type))
                 throw new InvalidOperationException("Type \"" + type + "\" already proxied.");
             else
             {
                 hostedType = type;
-                prototypes[type] = this;
+                dynamicProxies[type] = this;
                 if (type.IsValueType)
                     _prototypeInstance = Activator.CreateInstance(type);
                 else
@@ -168,24 +169,24 @@ namespace NiL.JS.Core
 
                 valueType = _prototypeInstance is JSObject ? (JSObjectType)System.Math.Max((int)(_prototypeInstance as JSObject).valueType, (int)JSObjectType.Object) : JSObjectType.Object;
                 oValue = this;
-                attributes |= JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum | JSObjectAttributes.ReadOnly;
+                attributes |= JSObjectAttributes.DoNotEnum | JSObjectAttributes.SystemObject;
                 if (hostedType.IsDefined(typeof(ImmutableAttribute), false))
                     attributes |= JSObjectAttributes.Immutable;
                 var staticProxy = new TypeProxy() { hostedType = type, bindFlags = bindFlags | BindingFlags.Static };
                 bindFlags |= BindingFlags.Instance;
                 if (hostedType.IsAbstract)
                 {
-                    constructors[type] = staticProxy;
+                    staticProxies[type] = staticProxy;
                 }
                 else
                 {
                     var prot = staticProxy.DefaultFieldGetter("prototype", true, true);
                     prot.Assign(this);
                     prot.attributes = JSObjectAttributes.DoNotEnum;
-                    var ctor = type == typeof(JSObject) ? new ObjectConstructor(staticProxy) : new TypeProxyConstructor(staticProxy);
-                    staticProxy.DefaultFieldGetter("__proto__", true, false).Assign(GetPrototype(typeof(TypeProxyConstructor)));
+                    var ctor = type == typeof(JSObject) ? new ObjectConstructor(staticProxy) : new ProxyConstructor(staticProxy);
+                    staticProxy.DefaultFieldGetter("__proto__", true, false).Assign(GetPrototype(typeof(ProxyConstructor)));
                     ctor.attributes = attributes;
-                    constructors[type] = ctor;
+                    staticProxies[type] = ctor;
                     fields["constructor"] = ctor;
                 }
                 var pa = type.GetCustomAttributes(typeof(PrototypeAttribute), false);
@@ -237,14 +238,19 @@ namespace NiL.JS.Core
             }
         }
 
+        public override void Assign(NiL.JS.Core.JSObject value)
+        {
+            throw new JSException("Can not assign to __proto__ of immutable or special objects.");
+        }
+
         internal protected override JSObject GetMember(string name, bool create, bool own)
         {
             JSObject r = null;
             if (fields.TryGetValue(name, out r))
             {
                 if (r.valueType < JSObjectType.Undefined)
-                    r.Assign(DefaultFieldGetter(name, create, own));
-                if (create && r.GetType() != typeof(JSObject))
+                    r.Assign(DefaultFieldGetter(name, false, own));
+                if (create && (r.attributes & JSObjectAttributes.SystemObject) != 0)
                     fields[name] = r = r.Clone() as JSObject;
                 return r;
             }
@@ -273,7 +279,7 @@ namespace NiL.JS.Core
                     cache[i] = new MethodProxy(m[i] as MethodBase);
                 r = new ExternalFunction((thisBind, args) =>
                 {
-                    int l = args.GetMember("length").iValue;
+                    int l = args == null ? 0 : args.GetMember("length").iValue;
                     for (int i = 0; i < m.Count; i++)
                     {
                         if (cache[i].Parameters.Length == l
@@ -313,14 +319,14 @@ namespace NiL.JS.Core
                         {
                             var method = (ConstructorInfo)m[0];
                             r = new MethodProxy(method);
-                            r.attributes = JSObjectAttributes.None;
+                            r.attributes = JSObjectAttributes.SystemObject;
                             break;
                         }
                     case MemberTypes.Method:
                         {
                             var method = (MethodInfo)m[0];
                             r = new MethodProxy(method);
-                            r.attributes = JSObjectAttributes.None;
+                            r.attributes = JSObjectAttributes.SystemObject;
                             break;
                         }
                     case MemberTypes.Field:
@@ -366,7 +372,7 @@ namespace NiL.JS.Core
                                     }
                                 };
                             }
-                            r.attributes = JSObjectAttributes.Immutable;
+                            r.attributes = JSObjectAttributes.Immutable | JSObjectAttributes.SystemObject;
                             if ((r.oValue as Function[])[0] == null)
                                 r.attributes |= JSObjectAttributes.ReadOnly;
                             break;

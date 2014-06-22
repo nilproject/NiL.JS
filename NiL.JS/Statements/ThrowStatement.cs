@@ -36,7 +36,12 @@ namespace NiL.JS.Statements
 
         internal override JSObject Invoke(Context context)
         {
+#if DEBUG // Экономим на переменных в релизе
+            var message = body.Invoke(context);
+            throw new JSException(message);
+#else
             throw new JSException(body.Invoke(context));
+#endif
         }
 
         protected override Statement[] getChildsImpl()

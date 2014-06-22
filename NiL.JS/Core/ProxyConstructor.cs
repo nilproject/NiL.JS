@@ -10,7 +10,7 @@ namespace NiL.JS.Core
 {
     [Serializable]
     [Prototype(typeof(Function))]
-    internal class TypeProxyConstructor : Function
+    internal class ProxyConstructor : Function
     {
         [Hidden]
         private static readonly object[] _objectA = new object[0];
@@ -40,7 +40,7 @@ namespace NiL.JS.Core
         }
 
         [Hidden]
-        public TypeProxyConstructor(TypeProxy typeProxy)
+        public ProxyConstructor(TypeProxy typeProxy)
         {
             proxy = typeProxy;
             var ctors = typeProxy.hostedType.GetConstructors();
@@ -59,17 +59,23 @@ namespace NiL.JS.Core
         [Hidden]
         internal protected override JSObject GetMember(string name, bool create, bool own)
         {
+            create &= (attributes & JSObjectAttributes.Immutable) == 0;
+            if (__proto__ == null)
+                __proto__ = TypeProxy.GetPrototype(typeof(ProxyConstructor));
             if (name == "__proto__" && __proto__ == null)
             {
-                __proto__ = TypeProxy.GetPrototype(typeof(TypeProxyConstructor));
-                if (create && __proto__.GetType() != typeof(JSObject))
+                if (create && (__proto__.attributes & JSObjectAttributes.SystemObject) != 0)
                     __proto__ = __proto__.Clone() as JSObject;
                 return __proto__;
             }
-            var res = proxy.GetMember(name, false, own);
-            if (res == JSObject.notExist)
-                return base.GetMember(name, create, own);
-            return res;
+            var res = DefaultFieldGetter(name, false, own);
+            if (res.valueType >= JSObjectType.Undefined)
+            {
+                if (create && (res.attributes & JSObjectAttributes.SystemObject) != 0)
+                    return DefaultFieldGetter(name, true, own);
+                return res;
+            }
+            return proxy.GetMember(name, create, own);
         }
 
         [Hidden]
@@ -93,12 +99,38 @@ namespace NiL.JS.Core
                 JSObject res = null;
                 if (bynew)
                 {
-                    _this.oValue = obj;
-                    if (obj is BaseTypes.Date)
-                        _this.valueType = JSObjectType.Date;
-                    else if (obj is JSObject)
-                        _this.valueType = (JSObjectType)System.Math.Max((int)JSObjectType.Object, (int)(obj as JSObject).valueType);
-                    res = _this;
+                    // Здесь нельяз возвращать контейнер с ValueType < Object, иначе из New выйдет служебный экземпляр NewMarker
+                    if (obj is JSObject)
+                    {
+                        res = obj as JSObject;
+                        if (res.valueType < JSObjectType.Object)
+                            res = new JSObject()
+                            {
+                                valueType = JSObjectType.Object,
+                                oValue = res,
+                                __proto__ = res.__proto__
+                            };
+                        // Для Number, Boolean и String
+                        else if (res.oValue is JSObject)
+                        {
+                            res.oValue = res;
+                            // На той стороне понять, по new или нет вызван конструктор не удастся,
+                            // поэтому по соглашению такие типы себя настраивают так, как будто они по new,
+                            // а в oValue пишут экземпляр аргумента на тот случай, если вызван конструктор типа как функция
+                            // с передачей в качестве аргумента существующего экземпляра
+                        }
+                    }
+                    else
+                    {
+                        res = new JSObject()
+                        {
+                            valueType = JSObjectType.Object,
+                            __proto__ = TypeProxy.GetPrototype(proxy.hostedType),
+                            oValue = obj
+                        };
+                        if (obj is BaseTypes.Date)
+                            res.valueType = JSObjectType.Date;
+                    }
                 }
                 else
                 {

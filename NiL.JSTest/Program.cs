@@ -14,6 +14,24 @@ namespace NiL.JSTest
     {
         private static void runFile(string filename)
         {
+            Console.WriteLine("Processing file: " + filename);
+            var f = new FileStream(filename, FileMode.Open, FileAccess.Read);
+            var sr = new StreamReader(f);
+            var sw = new System.Diagnostics.Stopwatch();
+            sw.Start();
+            var s = new Script(sr.ReadToEnd());
+            sr.Dispose();
+            f.Dispose();
+            sw.Stop();
+            Console.WriteLine("Compile time: " + sw.Elapsed);
+            Console.WriteLine("-------------------------------------");
+            s.Invoke();
+            Console.WriteLine("-------------------------------------");
+            Console.WriteLine("Complite.");
+        }
+
+        private static void runTestFile(string filename)
+        {
             string staCode = "";
             using (var staFile = new FileStream("sta.js", FileMode.Open, FileAccess.Read))
                 staCode = new StreamReader(staFile).ReadToEnd();
@@ -23,9 +41,12 @@ namespace NiL.JSTest
             var sw = new System.Diagnostics.Stopwatch();
             sw.Start();
             var s = new Script(staCode);
-            s.Invoke();
             sw.Stop();
             Console.WriteLine("Compile time: " + sw.Elapsed);
+            sw.Restart();
+            s.Invoke();
+            sw.Stop();
+            Console.WriteLine("Init time: " + sw.Elapsed);
             Console.WriteLine("-------------------------------------");
             s.Context.Eval(sr.ReadToEnd());
             Console.WriteLine("-------------------------------------");
@@ -60,6 +81,8 @@ namespace NiL.JSTest
             sw.Start();
             for (int i = 0; i < fls.Length; i++)
             {
+                //if (i < 1033)
+                //continue;
                 bool pass = true;
                 try
                 {
@@ -188,13 +211,15 @@ namespace NiL.JSTest
             var sw = new Stopwatch();
             var s = new Script(
 @"
-console.log(new Date(1970, -10, 1));
+console.log(true.toString());
 ");
             s.Context.AttachModule(typeof(TestClass));
             s.Context.AttachModule(typeof(TestEnum));
             s.Context.AttachModule(typeof(TestStruct));
             s.Context.AttachModule(typeof(System.Drawing.Point));
             sw.Start();
+            s.Invoke();
+            Context.RefreshGlobalContext();
             s.Invoke();
             sw.Stop();
             Console.WriteLine(sw.Elapsed);
@@ -203,29 +228,26 @@ console.log(new Date(1970, -10, 1));
         static void Main(string[] args)
         {
             typeof(System.Windows.Forms.Button).GetType();
-            NiL.JS.Core.Context.GlobalContext.DefineVariable("platform").Assign("NiL.JS");
-            NiL.JS.Core.Context.GlobalContext.DefineVariable("System").Assign(new NamespaceProvider("System"));
-            NiL.JS.Core.Context.GlobalContext.DefineVariable("load").Assign(new ExternalFunction((context, eargs) =>
-            {
-                var f = new FileStream("Benchmarks\\" + eargs.GetMember("0").ToString(), FileMode.Open, FileAccess.Read);
-                var sr = new StreamReader(f);
-                return Context.CurrentContext.Eval(sr.ReadToEnd());
-            }));
-            int mode = 1
+            int mode = 0
                 ;
             switch (mode)
             {
                 case 0:
                     {
-                        runFile(@"ftest.js");
+                        sputnicTests();
                         break;
                     }
                 case 1:
                     {
-                        sputnicTests();
+                        runTestFile(@"ftest.js");
                         break;
                     }
                 case 2:
+                    {
+                        runFile(@"ftest.js");
+                        break;
+                    }
+                case 3:
                     {
                         testEx();
                         break;

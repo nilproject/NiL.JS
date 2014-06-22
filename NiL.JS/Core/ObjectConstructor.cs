@@ -3,7 +3,7 @@
 namespace NiL.JS.Core
 {
     [Serializable]
-    internal class ObjectConstructor : TypeProxyConstructor
+    internal class ObjectConstructor : ProxyConstructor
     {
         public ObjectConstructor(TypeProxy proxy)
             : base(proxy)
@@ -27,9 +27,9 @@ namespace NiL.JS.Core
             res = CreateObject();
 
             res.valueType = JSObjectType.Object;
-            res.oValue = (oVal is JSObject && ((oVal as JSObject).attributes & JSObjectAttributes.SystemConstant) != 0) ? (oVal as JSObject).Clone() : oVal;
+            res.oValue = (oVal is JSObject && ((oVal as JSObject).attributes & JSObjectAttributes.SystemObject) != 0) ? (oVal as JSObject).Clone() : oVal;
             if (oVal is JSObject)
-                res.__proto__ = (oVal as JSObject).GetMember("__proto__", false, true).Clone() as JSObject;
+                res.__proto__ = (oVal as JSObject).GetMember("__proto__", false, true);
             return res;
         }
 

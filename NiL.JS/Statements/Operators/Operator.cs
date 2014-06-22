@@ -44,7 +44,7 @@ namespace NiL.JS.Statements.Operators
             }
         }
 
-        internal readonly JSObject tempResult;
+        internal readonly JSObject tempContainer;
 
         protected internal Statement first;
         protected internal Statement second;
@@ -61,10 +61,10 @@ namespace NiL.JS.Statements.Operators
             }
         }
 
-        protected Operator(Statement first, Statement second, bool createResultContainer)
+        protected Operator(Statement first, Statement second, bool createTempContainer)
         {
-            if (createResultContainer)
-                tempResult = new JSObject() { assignCallback = JSObject.ErrorAssignCallback };
+            if (createTempContainer)
+                tempContainer = new JSObject() { assignCallback = JSObject.ErrorAssignCallback };
             this.first = first;
             this.second = second;
         }

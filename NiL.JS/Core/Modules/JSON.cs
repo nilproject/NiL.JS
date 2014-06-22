@@ -29,7 +29,7 @@ namespace NiL.JS.Core.Modules
         [DoNotEnumerate]
         public static JSObject parse(JSObject args)
         {
-            var length = Tools.JSObjectToInt(args["length"]);
+            var length = Tools.JSObjectToInt32(args["length"]);
             var code = args["0"].ToString();
             Function reviewer = length > 1 ? args["1"].oValue as Function : null;
             return parse(code, reviewer);
@@ -176,7 +176,7 @@ namespace NiL.JS.Core.Modules
         [DoNotEnumerate]
         public static string stringify(JSObject obj)
         {
-            var length = Tools.JSObjectToInt(obj["length"]);
+            var length = Tools.JSObjectToInt32(obj["length"]);
             obj = obj["0"];
             Function replacer = length > 1 ? obj["1"].oValue as Function : null;
             string space = length > 1 ? obj["2"].ToString() : null;

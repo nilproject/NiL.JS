@@ -227,7 +227,7 @@ namespace NiL.JS.Core
             for (int i = len; i-- > 0; )
             {
                 var obj = source.GetMember(i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture));
-                if (obj != notExist)
+                if (obj.valueType >= JSObjectType.Undefined)
                 {
                     res[i] = marshal(obj, parameters[i].ParameterType);
                     if (paramsConverters != null && paramsConverters[i] != null)
@@ -250,8 +250,8 @@ namespace NiL.JS.Core
                 var tp = v as TypeProxy;
                 return (tp.bindFlags & BindingFlags.Static) != 0 ? tp.hostedType : tp.prototypeInstance;
             }
-            else if (v is TypeProxyConstructor)
-                return (v as TypeProxyConstructor).proxy.hostedType;
+            else if (v is ProxyConstructor)
+                return (v as ProxyConstructor).proxy.hostedType;
             else if (v is Function && targetType.IsSubclassOf(typeof(Delegate)))
                 return (v as Function).MakeDelegate(targetType);
             else if (v is ArrayBuffer && targetType.IsAssignableFrom(typeof(byte[])))
@@ -284,7 +284,7 @@ namespace NiL.JS.Core
             get
             {
                 if (_length == null)
-                    _length = new Number(0) { attributes = JSObjectAttributes.ReadOnly | JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum };
+                    _length = new Number(0) { attributes = JSObjectAttributes.ReadOnly | JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum | JSObjectAttributes.SystemObject };
                 var pc = info.GetCustomAttributes(typeof(Modules.ParametersCountAttribute), false);
                 if (pc.Length != 0)
                     _length.iValue = (pc[0] as Modules.ParametersCountAttribute).Count;
@@ -444,13 +444,19 @@ namespace NiL.JS.Core
                     res = converter.From(res);
                 return res;
             }
+            catch (AccessViolationException e)
+            {
+                throw e;
+            }
             catch (Exception e)
             {
                 while (e.InnerException != null)
                     e = e.InnerException;
                 if (e is JSException)
                     throw e;
-                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError(e.Message)), e);
+                if (e is AccessViolationException)
+                    System.Diagnostics.Debugger.Break();
+                throw new JSException(new TypeError(e.Message), e);
             }
         }
 

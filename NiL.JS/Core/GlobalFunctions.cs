@@ -7,18 +7,18 @@ namespace NiL.JS.Core
 {
     internal static class GlobalFunctions
     {
-        public static JSObject dummy(JSObject thisBind, JSObject x)
+        internal static JSObject dummy(JSObject thisBind, JSObject x)
         {
             throw new NotImplementedException();
         }
 
-        public static JSObject isFinite(JSObject thisBind, JSObject x)
+        internal static JSObject isFinite(JSObject thisBind, JSObject x)
         {
             var d = Tools.JSObjectToDouble(x.GetMember("0"));
             return !double.IsNaN(d) && !double.IsInfinity(d);
         }
 
-        public static JSObject isNaN(JSObject thisBind, JSObject x)
+        internal static JSObject isNaN(JSObject thisBind, JSObject x)
         {
             var r = x.GetMember("0");
             if (r.valueType == JSObjectType.Object && r.oValue is JSObject)
@@ -38,17 +38,17 @@ namespace NiL.JS.Core
             return true;
         }
 
-        public static JSObject unescape(JSObject thisBind, JSObject x)
+        internal static JSObject unescape(JSObject thisBind, JSObject x)
         {
             return System.Web.HttpUtility.HtmlDecode(x.GetMember("0").ToString());
         }
 
         [ParametersCount(2)]
-        public static JSObject parseInt(JSObject thisBind, JSObject x)
+        internal static JSObject parseInt(JSObject thisBind, JSObject x)
         {
             double result = double.NaN;
             var radixo = x["1"];
-            double dradix = radixo != JSObject.notExist ? Tools.JSObjectToDouble(radixo) : 0;
+            double dradix = radixo.valueType >= JSObjectType.Undefined ? Tools.JSObjectToDouble(radixo) : 0;
             int radix;
             if (double.IsNaN(dradix) || double.IsInfinity(dradix))
                 radix = 0;
@@ -71,7 +71,7 @@ namespace NiL.JS.Core
             return System.Math.Truncate(result);
         }
 
-        public static JSObject parseFloat(JSObject thisBind, JSObject x)
+        internal static JSObject parseFloat(JSObject thisBind, JSObject x)
         {
             double result = double.NaN;
             var source = x.GetMember("0");
@@ -86,20 +86,20 @@ namespace NiL.JS.Core
             return result;
         }
 
-        public static JSObject escape(JSObject thisBind, JSObject x)
+        internal static JSObject escape(JSObject thisBind, JSObject x)
         {
             return System.Web.HttpUtility.HtmlEncode(x.GetMember("0").ToString());
         }
 
-        private static uint __pinvokeCalled;
-        public static JSObject __pinvoke(JSObject thisBind, JSObject args)
+        internal static uint __pinvokeCalled;
+        internal static JSObject __pinvoke(JSObject thisBind, JSObject args)
         {
-            var argsCount = Tools.JSObjectToInt(args.GetMember("length"));
+            var argsCount = Tools.JSObjectToInt32(args.GetMember("length"));
             var threadsCount = 1;
             if (argsCount == 0)
                 return null;
             if (argsCount > 1)
-                threadsCount = Tools.JSObjectToInt(args.GetMember("1"));
+                threadsCount = Tools.JSObjectToInt32(args.GetMember("1"));
             var function = args.GetMember("0").oValue as Function;
             Thread[] threads = null;
             if (function != null && threadsCount > 0)
@@ -134,7 +134,7 @@ namespace NiL.JS.Core
                 {
                     if (threads == null)
                         return false;
-                    argsCount = Tools.JSObjectToInt(arg.GetMember("length"));
+                    argsCount = Tools.JSObjectToInt32(arg.GetMember("length"));
                     if (argsCount == 0)
                     {
                         for (int i = 0; i < threads.Length; i++)
@@ -145,7 +145,7 @@ namespace NiL.JS.Core
                     }
                     else
                     {
-                        var threadIndex = Tools.JSObjectToInt(args.GetMember("0"));
+                        var threadIndex = Tools.JSObjectToInt32(args.GetMember("0"));
                         if (threadIndex < threads.Length && threadIndex >= 0)
                             return threads[threadIndex].IsAlive;
                     }
@@ -165,6 +165,12 @@ namespace NiL.JS.Core
                     }
                 })
             });
+        }
+
+        internal static JSObject decodeURI(JSObject thisBind, JSObject args)
+        {
+            var str = args.GetMember("0").ToString();
+            return System.Web.HttpUtility.UrlDecode(str);
         }
     }
 }

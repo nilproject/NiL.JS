@@ -16,10 +16,10 @@ namespace NiL.JS.Statements.Operators
         {
             lock (this)
             {
-                var left = Tools.JSObjectToInt(first.Invoke(context));
-                tempResult.dValue = (double)((uint)left >> Tools.JSObjectToInt(second.Invoke(context)));
-                tempResult.valueType = JSObjectType.Double;
-                return tempResult;
+                var left = Tools.JSObjectToInt32(first.Invoke(context));
+                tempContainer.dValue = (double)((uint)left >> Tools.JSObjectToInt32(second.Invoke(context)));
+                tempContainer.valueType = JSObjectType.Double;
+                return tempContainer;
             }
         }
 

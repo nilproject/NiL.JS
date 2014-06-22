@@ -6,7 +6,7 @@ namespace NiL.JS.Core.BaseTypes
 {
     [Serializable]
     [Immutable]
-    public sealed class String : EmbeddedType
+    public sealed class String : JSObject
     {
         [Serializable]
         private sealed class StringAllowUnsafeCallAttribute : AllowUnsafeCallAttribute
@@ -34,7 +34,7 @@ namespace NiL.JS.Core.BaseTypes
             string res = "";
             for (int i = 0; i < code.Length; i++)
             {
-                chc = Tools.JSObjectToInt(code[i]);
+                chc = Tools.JSObjectToInt32(code[i]);
                 res += ((char)chc).ToString();
             }
             return res;
@@ -48,7 +48,7 @@ namespace NiL.JS.Core.BaseTypes
 
         [DoNotEnumerate]
         public String(JSObject args)
-            : this(Tools.JSObjectToInt(args.GetMember("length")) == 0 ? "" : args.GetMember("0").ToString())
+            : this(Tools.JSObjectToInt32(args.GetMember("length")) == 0 ? "" : args.GetMember("0").ToString())
         {
         }
 
@@ -57,8 +57,14 @@ namespace NiL.JS.Core.BaseTypes
         {
             oValue = s;
             valueType = JSObjectType.String;
-            assignCallback = JSObject.ErrorAssignCallback;
             attributes |= JSObjectAttributes.Immutable;
+        }
+
+        [Hidden]
+        public override void Assign(JSObject value)
+        {
+            if ((attributes & JSObjectAttributes.ReadOnly) == 0)
+                throw new InvalidOperationException("Try to assign to String");
         }
 
         [Hidden]
@@ -77,7 +83,7 @@ namespace NiL.JS.Core.BaseTypes
         [DoNotEnumerate]
         public String charAt(JSObject pos)
         {
-            int p = Tools.JSObjectToInt(pos.GetMember("0"));
+            int p = Tools.JSObjectToInt32(pos.GetMember("0"));
             if ((p < 0) || (p >= (oValue as string).Length))
                 return "";
             return (oValue as string)[p].ToString();
@@ -87,7 +93,7 @@ namespace NiL.JS.Core.BaseTypes
         [DoNotEnumerate]
         public Number charCodeAt(JSObject pos)
         {
-            int p = Tools.JSObjectToInt(pos.GetMember("0"));
+            int p = Tools.JSObjectToInt32(pos.GetMember("0"));
             if ((p < 0) || (p >= (oValue as string).Length))
                 return double.NaN;
             return (int)(oValue as string)[p];
@@ -560,18 +566,23 @@ namespace NiL.JS.Core.BaseTypes
             [Hidden]
             get
             {
-                if (_length == null)
-                    _length = new Number((oValue as string).Length) { attributes = JSObjectAttributes.ReadOnly | JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum };
+                if (this.GetType() == typeof(String))
+                {
+                    if (_length == null)
+                        _length = new Number((oValue as string).Length) { attributes = JSObjectAttributes.ReadOnly | JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum };
+                    else
+                        _length.iValue = (oValue as string).Length;
+                    return _length;
+                }
                 else
-                    _length.iValue = (oValue as string).Length;
-                return _length;
+                    return (oValue as string).Length;
             }
         }
 
         [Hidden]
         public override string ToString()
         {
-            if (this is String)
+            if (this.GetType() == typeof(String))
                 return oValue as string;
             else
                 throw new JSException(TypeProxy.Proxy(new TypeError("Try to call String.toString for not string object.")));

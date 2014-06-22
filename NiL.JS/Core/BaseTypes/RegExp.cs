@@ -5,9 +5,9 @@ using NiL.JS.Core.Modules;
 namespace NiL.JS.Core.BaseTypes
 {
     [Serializable]
-    public sealed class RegExp : EmbeddedType
+    public sealed class RegExp : CustomType
     {
-        private JSObject lIndex = 0;
+        private JSObject lIndex;
         internal Regex regEx;
 
         [DoNotEnumerate]
@@ -25,11 +25,18 @@ namespace NiL.JS.Core.BaseTypes
                 if (args.GetMember("length").iValue > 1 && args.GetMember("1").valueType > JSObjectType.Undefined)
                     throw new JSException(TypeProxy.Proxy(new TypeError("Cannot supply flags when constructing one RegExp from another")));
                 oValue = ptrn.oValue;
+                regEx = (oValue as RegExp).regEx;
+                _global = (oValue as RegExp).global;
                 return;
             }
-            _global = false;
             var pattern = ptrn.valueType > JSObjectType.Undefined ? ptrn.ToString().Replace("\\P", "P") : "";
             var flags = args.GetMember("length").iValue > 1 && args.GetMember("1").valueType > JSObjectType.Undefined ? args.GetMember("1").ToString() : "";
+            makeRegex(pattern, flags);
+        }
+
+        private void makeRegex(string pattern, string flags)
+        {
+            _global = false;
             try
             {
                 System.Text.RegularExpressions.RegexOptions options = System.Text.RegularExpressions.RegexOptions.ECMAScript;
@@ -92,47 +99,7 @@ namespace NiL.JS.Core.BaseTypes
         [DoNotEnumerate]
         public RegExp(string pattern, string flags)
         {
-            _global = false;
-            try
-            {
-                System.Text.RegularExpressions.RegexOptions options = System.Text.RegularExpressions.RegexOptions.ECMAScript;
-                for (int i = 0; i < flags.Length; i++)
-                {
-                    switch (flags[i])
-                    {
-                        case 'i':
-                            {
-                                if ((options & System.Text.RegularExpressions.RegexOptions.IgnoreCase) != 0)
-                                    throw new JSException(TypeProxy.Proxy(new SyntaxError("Try to double use RegExp flag \"" + flags[i] + '"')));
-                                options |= System.Text.RegularExpressions.RegexOptions.IgnoreCase;
-                                break;
-                            }
-                        case 'm':
-                            {
-                                if ((options & System.Text.RegularExpressions.RegexOptions.Multiline) != 0)
-                                    throw new JSException(TypeProxy.Proxy(new SyntaxError("Try to double use RegExp flag \"" + flags[i] + '"')));
-                                options |= System.Text.RegularExpressions.RegexOptions.Multiline;
-                                break;
-                            }
-                        case 'g':
-                            {
-                                if (_global)
-                                    throw new JSException(TypeProxy.Proxy(new SyntaxError("Try to double use RegExp flag \"" + flags[i] + '"')));
-                                _global = true;
-                                break;
-                            }
-                        default:
-                            {
-                                throw new JSException(TypeProxy.Proxy(new SyntaxError("Invalid RegExp flag \"" + flags[i] + '"')));
-                            }
-                    }
-                }
-                regEx = new System.Text.RegularExpressions.Regex(pattern, options);
-            }
-            catch (ArgumentException e)
-            {
-                throw new JSException(TypeProxy.Proxy(new SyntaxError(e.Message)));
-            }
+            makeRegex(pattern, flags);
         }
 
         [DoNotEnumerate]
@@ -175,11 +142,11 @@ namespace NiL.JS.Core.BaseTypes
         {
             get
             {
-                return lIndex;
+                return lIndex ?? (lIndex = 0);
             }
             set
             {
-                lIndex = value.GetMember("0");
+                lIndex = value.oValue is Arguments ? value.GetMember("0") : value;
             }
         }
 
@@ -196,13 +163,17 @@ namespace NiL.JS.Core.BaseTypes
             if (this.GetType() != typeof(RegExp))
                 throw new JSException(TypeProxy.Proxy(new TypeError("Try to call RegExp.exec on not RegExp object.")));
             string input = args.GetMember("0").ToString();
-            lIndex = Tools.JSObjectToNumber(lIndex);
+            lIndex = Tools.JSObjectToNumber(lastIndex);
+            if ((lIndex.attributes & JSObjectAttributes.SystemObject) != 0)
+                lIndex = lIndex.Clone() as JSObject;
             if (lIndex.valueType == JSObjectType.Double)
             {
                 lIndex.valueType = JSObjectType.Int;
                 lIndex.iValue = (int)lIndex.dValue;
             }
-            if ((lIndex.iValue >= input.Length || lIndex.iValue < 0) && (input.Length > 0))
+            if (lIndex.iValue < 0)
+                lIndex.iValue = 0;
+            if (lIndex.iValue >= input.Length && input.Length > 0)
             {
                 lIndex.iValue = 0;
                 return JSObject.Null;
@@ -217,7 +188,7 @@ namespace NiL.JS.Core.BaseTypes
             for (int i = 0; i < m.Groups.Count; i++)
                 res[i] = m.Groups[i].Success ? (JSObject)m.Groups[i].Value : null;
             if (_global)
-                lastIndex.iValue = m.Index + m.Length;
+                lIndex.iValue = m.Index + m.Length;
             res.GetMember("index", true, true).Assign(m.Index);
             res.GetMember("input", true, true).Assign(input);
             return res;

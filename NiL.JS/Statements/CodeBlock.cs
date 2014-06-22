@@ -200,7 +200,7 @@ namespace NiL.JS.Statements
 
         internal override JSObject Invoke(Context context)
         {
-            JSObject res = JSObject.undefined;
+            JSObject res = JSObject.notExist;
             for (int i = body.Length; i-- > 0; )
             {
                 if (body[i] is FunctionStatement) continue;
@@ -213,7 +213,7 @@ namespace NiL.JS.Statements
                 if (!context.IsExcecuting)
                     throw new ApplicationException("Context was stopped");
                 if (NiL.JS.Core.BaseTypes.Number.NaN.valueType != JSObjectType.Double || !double.IsNaN(NiL.JS.Core.BaseTypes.Number.NaN.dValue))
-                    throw new ApplicationException("undefined was rewrite");
+                    throw new ApplicationException("NaN was rewrite");
                 if (JSObject.undefined.valueType != JSObjectType.Undefined)
                     throw new ApplicationException("undefined was rewrite");
                 if (JSObject.notExist.valueType >= JSObjectType.Undefined)

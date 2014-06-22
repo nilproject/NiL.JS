@@ -10,7 +10,7 @@ namespace NiL.JS
     /// Предоставляет доступ к указанному при создании пространству имён.
     /// </summary>
     [Serializable]
-    public class NamespaceProvider : NiL.JS.Core.EmbeddedType
+    public class NamespaceProvider : NiL.JS.Core.CustomType
     {
         private static BinaryTree<Type> types = new BinaryTree<Type>();
 

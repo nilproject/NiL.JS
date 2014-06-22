@@ -5,7 +5,7 @@ using NiL.JS.Core.Modules;
 namespace NiL.JS.Core.BaseTypes
 {
     [Serializable]
-    public sealed class ArrayBuffer : EmbeddedType
+    public sealed class ArrayBuffer : CustomType
     {
         [Serializable]
         private sealed class Element : JSObject
@@ -23,7 +23,7 @@ namespace NiL.JS.Core.BaseTypes
 
             public override void Assign(JSObject value)
             {
-                data[index] = (byte)Tools.JSObjectToInt(value);
+                data[index] = (byte)Tools.JSObjectToInt32(value);
             }
         }
 
@@ -78,13 +78,13 @@ namespace NiL.JS.Core.BaseTypes
         {
             if (args == null)
                 throw new ArgumentNullException("args");
-            var l = Tools.JSObjectToInt(args.GetMember("length"));
+            var l = Tools.JSObjectToInt32(args.GetMember("length"));
             if (l == 0)
                 return this;
             if (l == 1)
-                return slice(Tools.JSObjectToInt(args.GetMember("0")), Data.Length - 1);
+                return slice(Tools.JSObjectToInt32(args.GetMember("0")), Data.Length - 1);
             else
-                return slice(Tools.JSObjectToInt(args.GetMember("0")), Tools.JSObjectToInt(args.GetMember("1")));
+                return slice(Tools.JSObjectToInt32(args.GetMember("0")), Tools.JSObjectToInt32(args.GetMember("1")));
         }
 
         [Hidden]

@@ -7,21 +7,14 @@ namespace NiL.JS.Statements.Operators
     public sealed class LogicalNot : Operator
     {
         public LogicalNot(Statement first)
-            : base(first, null, true)
+            : base(first, null, false)
         {
 
         }
 
         internal override JSObject Invoke(Context context)
         {
-            lock (this)
-            {
-                var val = first.Invoke(context);
-
-                tempResult.iValue = (bool)val ? 0 : 1;
-                tempResult.valueType = JSObjectType.Bool;
-                return tempResult;
-            }
+            return !(bool)first.Invoke(context);
         }
 
         public override string ToString()

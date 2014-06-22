@@ -278,21 +278,7 @@ namespace NiL.JS.Core.BaseTypes
 
         private int getHoursImpl()
         {
-            var t = time;
-            var y = (t / _400yearsMilliseconds) * 400;
-            t %= _400yearsMilliseconds;
-            y += System.Math.Min(3, t / _100yearsMilliseconds) * 100;
-            t -= System.Math.Min(3, t / _100yearsMilliseconds) * _100yearsMilliseconds;
-            y += (t / _4yearsMilliseconds) * 4;
-            t %= _4yearsMilliseconds;
-            y += System.Math.Min(3, t / _yearMilliseconds) + 1;
-            int isLeap = (y % 4 == 0 && y % 100 != 0) || y % 400 == 0 ? 1 : 0;
-            t -= System.Math.Min(3, t / _yearMilliseconds) * _yearMilliseconds;
-            var m = 0;
-            while (timeToMonthLengths[m, isLeap] <= t) m++;
-            if (m > 0)
-                t -= timeToMonthLengths[m - 1, isLeap];
-            t %= _dayMilliseconds;
+            var t = time % _dayMilliseconds;
             return (int)(t / _hourMilliseconds);
         }
 
@@ -311,20 +297,6 @@ namespace NiL.JS.Core.BaseTypes
         private int getMinutesImpl()
         {
             var t = time;
-            var y = (t / _400yearsMilliseconds) * 400;
-            t %= _400yearsMilliseconds;
-            y += System.Math.Min(3, t / _100yearsMilliseconds) * 100;
-            t -= System.Math.Min(3, t / _100yearsMilliseconds) * _100yearsMilliseconds;
-            y += (t / _4yearsMilliseconds) * 4;
-            t %= _4yearsMilliseconds;
-            y += System.Math.Min(3, t / _yearMilliseconds) + 1;
-            int isLeap = (y % 4 == 0 && y % 100 != 0) || y % 400 == 0 ? 1 : 0;
-            t -= System.Math.Min(3, t / _yearMilliseconds) * _yearMilliseconds;
-            var m = 0;
-            while (timeToMonthLengths[m, isLeap] <= t) m++;
-            if (m > 0)
-                t -= timeToMonthLengths[m - 1, isLeap];
-            t %= _dayMilliseconds;
             t %= _hourMilliseconds;
             return (int)(t / _minuteMillisecond);
         }
@@ -344,21 +316,6 @@ namespace NiL.JS.Core.BaseTypes
         private int getSecondsImpl()
         {
             var t = time;
-            var y = (t / _400yearsMilliseconds) * 400;
-            t %= _400yearsMilliseconds;
-            y += System.Math.Min(3, t / _100yearsMilliseconds) * 100;
-            t -= System.Math.Min(3, t / _100yearsMilliseconds) * _100yearsMilliseconds;
-            y += (t / _4yearsMilliseconds) * 4;
-            t %= _4yearsMilliseconds;
-            y += System.Math.Min(3, t / _yearMilliseconds) + 1;
-            int isLeap = (y % 4 == 0 && y % 100 != 0) || y % 400 == 0 ? 1 : 0;
-            t -= System.Math.Min(3, t / _yearMilliseconds) * _yearMilliseconds;
-            var m = 0;
-            while (timeToMonthLengths[m, isLeap] <= t) m++;
-            if (m > 0)
-                t -= timeToMonthLengths[m - 1, isLeap];
-            t %= _dayMilliseconds;
-            t %= _hourMilliseconds;
             t %= _minuteMillisecond;
             return (int)(t / 1000);
         }
@@ -378,21 +335,6 @@ namespace NiL.JS.Core.BaseTypes
         private int getMillisecondsImpl()
         {
             var t = time;
-            var y = (t / _400yearsMilliseconds) * 400;
-            t %= _400yearsMilliseconds;
-            y += System.Math.Min(3, t / _100yearsMilliseconds) * 100;
-            t -= System.Math.Min(3, t / _100yearsMilliseconds) * _100yearsMilliseconds;
-            y += (t / _4yearsMilliseconds) * 4;
-            t %= _4yearsMilliseconds;
-            y += System.Math.Min(3, t / _yearMilliseconds) + 1;
-            int isLeap = (y % 4 == 0 && y % 100 != 0) || y % 400 == 0 ? 1 : 0;
-            t -= System.Math.Min(3, t / _yearMilliseconds) * _yearMilliseconds;
-            var m = 0;
-            while (timeToMonthLengths[m, isLeap] <= t) m++;
-            if (m > 0)
-                t -= timeToMonthLengths[m - 1, isLeap];
-            t %= _dayMilliseconds;
-            t %= _hourMilliseconds;
             t %= _minuteMillisecond;
             return (int)(t % 1000);
         }
@@ -600,13 +542,13 @@ namespace NiL.JS.Core.BaseTypes
             try
             {
                 return dateToMilliseconds(
-                    Tools.JSObjectToInt(dateTime.GetMember("0")),
-                    Tools.JSObjectToInt(dateTime.GetMember("1")),
-                    Tools.JSObjectToInt(dateTime.GetMember("2")),
-                    Tools.JSObjectToInt(dateTime.GetMember("3")),
-                    Tools.JSObjectToInt(dateTime.GetMember("4")),
-                    Tools.JSObjectToInt(dateTime.GetMember("5")),
-                    Tools.JSObjectToInt(dateTime.GetMember("6"))) - _unixTimeBase;
+                    Tools.JSObjectToInt64(dateTime.GetMember("0"), 1),
+                    Tools.JSObjectToInt64(dateTime.GetMember("1")),
+                    Tools.JSObjectToInt64(dateTime.GetMember("2"), 1),
+                    Tools.JSObjectToInt64(dateTime.GetMember("3")),
+                    Tools.JSObjectToInt64(dateTime.GetMember("4")),
+                    Tools.JSObjectToInt64(dateTime.GetMember("5")),
+                    Tools.JSObjectToInt64(dateTime.GetMember("6"))) - _unixTimeBase;
             }
             catch
             {

@@ -5,12 +5,12 @@ namespace NiL.JS.Core.BaseTypes
 {
     [Serializable]
     [Immutable]
-    public class Boolean : EmbeddedType
+    public class Boolean : JSObject
     {
         [Hidden]
-        internal static readonly Boolean True = new Boolean(true) { attributes = JSObjectAttributes.SystemConstant };
+        internal static readonly Boolean True = new Boolean(true) { attributes = JSObjectAttributes.SystemObject };
         [Hidden]
-        internal static readonly Boolean False = new Boolean(false) { attributes = JSObjectAttributes.SystemConstant };
+        internal static readonly Boolean False = new Boolean(false) { attributes = JSObjectAttributes.SystemObject };
 
         [DoNotEnumerate]
         public Boolean()
@@ -62,6 +62,13 @@ namespace NiL.JS.Core.BaseTypes
             assignCallback = JSObject.ErrorAssignCallback;
         }
 
+        [Hidden]
+        public override void Assign(JSObject value)
+        {
+            if ((attributes & JSObjectAttributes.ReadOnly) == 0)
+                throw new InvalidOperationException("Try to assign to Boolean");
+        }
+
 #if INLINE
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
@@ -83,7 +90,7 @@ namespace NiL.JS.Core.BaseTypes
         [DoNotEnumerate]
         public override JSObject toLocaleString()
         {
-            return toString(null);
+            return valueType == JSObjectType.Bool ? iValue != 0 ? "true" : "false" : ((bool)(this as JSObject) ? "true" : "false");
         }
 
         [AllowUnsafeCall(typeof(JSObject))]
