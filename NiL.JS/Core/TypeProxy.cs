@@ -118,6 +118,10 @@ namespace NiL.JS.Core
 
         internal static void Clear()
         {
+            BaseTypes.Boolean.True.__proto__ = null;
+            BaseTypes.Boolean.False.__proto__ = null;
+            JSObject.nullString.__proto__ = null;
+            Number.NaN.__proto__ = null;
             staticProxies.Clear();
             dynamicProxies.Clear();
         }

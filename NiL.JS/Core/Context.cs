@@ -62,9 +62,6 @@ namespace NiL.JS.Core
                     globalContext.fields = new Dictionary<string, JSObject>();
                 JSObject.GlobalPrototype = null;
                 TypeProxy.Clear();
-                BaseTypes.Boolean.True.__proto__ = null;
-                BaseTypes.Boolean.False.__proto__ = null;
-                JSObject.nullString.__proto__ = null;
                 globalContext.fields.Add("Object", TypeProxy.GetConstructor(typeof(JSObject)).Clone() as JSObject);
                 globalContext.fields["Object"].attributes = JSObjectAttributes.DoNotDelete;
                 JSObject.GlobalPrototype = TypeProxy.GetPrototype(typeof(JSObject));

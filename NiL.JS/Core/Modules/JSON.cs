@@ -177,10 +177,10 @@ namespace NiL.JS.Core.Modules
         public static string stringify(JSObject obj)
         {
             var length = Tools.JSObjectToInt32(obj["length"]);
-            obj = obj["0"];
             Function replacer = length > 1 ? obj["1"].oValue as Function : null;
             string space = length > 1 ? obj["2"].ToString() : null;
-            return stringify(obj, replacer, space);
+            obj = obj["0"];
+            return stringify(obj.oValue as JSObject ?? obj, replacer, space);
         }
 
         [Hidden]
@@ -196,6 +196,9 @@ namespace NiL.JS.Core.Modules
             processed.Add(obj);
             try
             {
+                if (obj.valueType < JSObjectType.Undefined
+                    || obj.valueType == JSObjectType.Function)
+                    return null;
                 if (obj.valueType < JSObjectType.Object)
                 {
                     if (obj.valueType == JSObjectType.String)
@@ -208,31 +211,37 @@ namespace NiL.JS.Core.Modules
                             .Replace("\r\\\n", "\r\n") + '"';
                     return obj.ToString();
                 }
-                StringBuilder res = new StringBuilder("{");
-                var args = new BaseTypes.Array(2);
-                args.data[0] = "";
+                StringBuilder res = new StringBuilder(obj is Array ? "[" : "{");
+                var args = new JSObject(true) { oValue = Arguments.Instance, valueType = JSObjectType.Object };
+                args["0"] = "";
                 bool first = true;
-                foreach (var f in obj.fields)
+                foreach (var key in obj)
                 {
-                    if ((f.Value.valueType < JSObjectType.Undefined) && ((f.Value.attributes & JSObjectAttributes.DoNotEnum) == 0))
+                    var value = obj[key];
+                    value = value.oValue as JSObject ?? value;
+                    if (value.valueType < JSObjectType.Undefined)
                         continue;
-                    var value = f.Value;
                     if (replacer != null)
                     {
-                        args.data[0].oValue = f.Key;
-                        args.data[1] = f.Value;
+                        args["0"].oValue = key;
+                        args["1"] = value;
                         var t = replacer.Invoke(args);
                         if (t.valueType <= JSObjectType.Undefined || (t.valueType >= JSObjectType.Object && t.oValue == null))
                             continue;
                         value = t;
                     }
                     string strval = stringifyImpl(value, replacer, space, processed);
+                    if (strval == null)
+                        continue;
                     if (!first)
-                        res.Append(", ");
-                    res.Append('"').Append(f.Key).Append("\": ").Append(strval).Append(space);
+                        res.Append(",").Append(space);
+                    if (res[0] == '[')
+                        res.Append(strval);
+                    else
+                        res.Append('"').Append(key).Append("\": ").Append(strval);
                     first = false;
                 }
-                return res.Append("}").ToString();
+                return res.Append(obj is Array ? "]" : "}").ToString();
             }
             finally
             {

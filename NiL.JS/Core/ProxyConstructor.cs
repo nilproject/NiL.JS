@@ -59,7 +59,6 @@ namespace NiL.JS.Core
         [Hidden]
         internal protected override JSObject GetMember(string name, bool create, bool own)
         {
-            create &= (attributes & JSObjectAttributes.Immutable) == 0;
             if (__proto__ == null)
                 __proto__ = TypeProxy.GetPrototype(typeof(ProxyConstructor));
             if (name == "__proto__" && __proto__ == null)
@@ -71,7 +70,7 @@ namespace NiL.JS.Core
             var res = DefaultFieldGetter(name, false, own);
             if (res.valueType >= JSObjectType.Undefined)
             {
-                if (create && (res.attributes & JSObjectAttributes.SystemObject) != 0)
+                if (create)
                     return DefaultFieldGetter(name, true, own);
                 return res;
             }

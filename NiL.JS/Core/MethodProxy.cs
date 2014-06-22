@@ -445,18 +445,17 @@ namespace NiL.JS.Core
                     res = converter.From(res);
                 return res;
             }
-            catch (AccessViolationException e)
-            {
-                throw e;
-            }
             catch (Exception e)
             {
                 while (e.InnerException != null)
                     e = e.InnerException;
                 if (e is JSException)
                     throw e;
-                if (e is AccessViolationException)
+#if DEBUG
+                if (e is AccessViolationException
+                    || e is NullReferenceException)
                     System.Diagnostics.Debugger.Break();
+#endif
                 throw new JSException(new TypeError(e.Message), e);
             }
         }

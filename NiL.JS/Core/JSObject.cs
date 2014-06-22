@@ -349,7 +349,6 @@ namespace NiL.JS.Core
         [Hidden]
         internal protected virtual JSObject GetMember(string name, bool createMember, bool own)
         {
-            createMember &= (attributes & JSObjectAttributes.Immutable) == 0;
             switch (valueType)
             {
                 case JSObjectType.NotExist:
@@ -433,30 +432,32 @@ namespace NiL.JS.Core
             switch (name)
             {
                 case "__proto__":
-
-                    if (this == GlobalPrototype)
                     {
-                        if (forWrite)
+                        forWrite &= (attributes & JSObjectAttributes.Immutable) == 0;
+                        if (this == GlobalPrototype)
                         {
-                            if (__proto__ == null || (__proto__.attributes & JSObjectAttributes.SystemObject) != 0)
-                                return __proto__ = new JSObject();
+                            if (forWrite)
+                            {
+                                if (__proto__ == null || (__proto__.attributes & JSObjectAttributes.SystemObject) != 0)
+                                    return __proto__ = new JSObject();
+                                else
+                                    return __proto__ ?? Null;
+                            }
                             else
                                 return __proto__ ?? Null;
                         }
                         else
-                            return __proto__ ?? Null;
-                    }
-                    else
-                    {
-                        if (forWrite)
                         {
-                            if (__proto__ == null || (__proto__.attributes & JSObjectAttributes.SystemObject) != 0)
-                                return __proto__ = new JSObject();
+                            if (forWrite)
+                            {
+                                if (__proto__ == null || (__proto__.attributes & JSObjectAttributes.SystemObject) != 0)
+                                    return __proto__ = new JSObject();
+                                else
+                                    return __proto__ ?? GlobalPrototype ?? Null;
+                            }
                             else
                                 return __proto__ ?? GlobalPrototype ?? Null;
                         }
-                        else
-                            return __proto__ ?? GlobalPrototype ?? Null;
                     }
                 default:
                     {
@@ -477,7 +478,7 @@ namespace NiL.JS.Core
                         }
                         if (res == null)
                         {
-                            if (!forWrite)
+                            if (!forWrite || (attributes & JSObjectAttributes.Immutable) != 0)
                             {
                                 notExist.valueType = JSObjectType.NotExistInObject;
                                 return notExist;
