@@ -211,15 +211,13 @@ namespace NiL.JSTest
             var sw = new Stopwatch();
             var s = new Script(
 @"
-console.log(true.toString());
+console.log(function(){return arguments}() == function(){return arguments}());
 ");
             s.Context.AttachModule(typeof(TestClass));
             s.Context.AttachModule(typeof(TestEnum));
             s.Context.AttachModule(typeof(TestStruct));
             s.Context.AttachModule(typeof(System.Drawing.Point));
             sw.Start();
-            s.Invoke();
-            Context.RefreshGlobalContext();
             s.Invoke();
             sw.Stop();
             Console.WriteLine(sw.Elapsed);
@@ -228,7 +226,7 @@ console.log(true.toString());
         static void Main(string[] args)
         {
             typeof(System.Windows.Forms.Button).GetType();
-            int mode = 0
+            int mode = 3
                 ;
             switch (mode)
             {

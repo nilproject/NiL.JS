@@ -8,8 +8,6 @@ namespace NiL.JS.Core
     [Serializable]
     internal sealed class Arguments
     {
-        public static readonly Arguments Instance = new Arguments();
-
-        private Arguments() { }
+        public static Arguments Instance { get { return new Arguments(); } }
     }
 }
