@@ -1,10 +1,10 @@
-﻿using System;
+﻿using NiL.JS.Core.BaseTypes;
+using NiL.JS.Core.Modules;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Reflection;
-using NiL.JS.Core.BaseTypes;
-using NiL.JS.Core.Modules;
 
 namespace NiL.JS.Core
 {
@@ -261,6 +261,7 @@ namespace NiL.JS.Core
 
         private object getTargetObject(JSObject _this, Type targetType)
         {
+            _this = _this.oValue as JSObject ?? _this; // это может быть лишь ссылка на какой-то другой контейнер
             var res = Tools.convertJStoObj(_this, targetType);
             if (res != null)
                 return res;
