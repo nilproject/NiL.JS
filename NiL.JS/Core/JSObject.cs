@@ -607,6 +607,7 @@ namespace NiL.JS.Core
                 this.dValue = value.dValue;
                 this.__proto__ = value.__proto__;
                 this.fields = value.fields;
+                this.attributes = (this.attributes & ~JSObjectAttributes.Immutable) | (value.attributes & JSObjectAttributes.Immutable);
                 return;
             }
             this.fields = null;

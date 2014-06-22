@@ -1,6 +1,7 @@
 ﻿using NiL.JS;
 using NiL.JS.Core;
 using NiL.JS.Core.BaseTypes;
+using NiL.JS.Core.Modules;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -185,6 +186,7 @@ namespace NiL.JSTest
             }
         }
 
+        [Immutable]
         private class TestClass
         {
             [DoubleStringConverter]
@@ -211,7 +213,20 @@ namespace NiL.JSTest
             var sw = new Stopwatch();
             var s = new Script(
 @"
-console.log(function(){return arguments}() == function(){return arguments}());
+var tokenCodes  = { 
+            null: 0,
+            true: 1,
+            false: 2
+        };
+        var arr = [
+            'null',
+            'true',
+            'false'
+        ];  
+        for (var i = 0; i < arr.length; i++) {
+             console.log(tokenCodes[arr[i]]);
+             console.log(arr[i]);
+        }
 ");
             s.Context.AttachModule(typeof(TestClass));
             s.Context.AttachModule(typeof(TestEnum));
@@ -226,7 +241,7 @@ console.log(function(){return arguments}() == function(){return arguments}());
         static void Main(string[] args)
         {
             typeof(System.Windows.Forms.Button).GetType();
-            int mode = 3
+            int mode = 0
                 ;
             switch (mode)
             {

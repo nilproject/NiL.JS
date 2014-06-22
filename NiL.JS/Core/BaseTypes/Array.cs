@@ -51,6 +51,7 @@ namespace NiL.JS.Core.BaseTypes
 
             public Element(Array owner, int index)
             {
+                valueType = JSObjectType.NotExistInObject;
                 this.owner = owner;
                 this.index = index;
                 if (owner.data.Count <= index)
@@ -849,10 +850,30 @@ namespace NiL.JS.Core.BaseTypes
                         throw new JSException(TypeProxy.Proxy(new RangeError("Invalid array index")));
                     if (((index = (int)dindex) == dindex))
                     {
-                        var res = this[index];
-                        if (res.valueType == JSObjectType.NotExist)
-                            res.valueType = JSObjectType.NotExistInObject;
-                        return res;
+                        create &= (attributes & JSObjectAttributes.Immutable) == 0;
+                        if (data.Count <= index)
+                        {
+                            if (create)
+                                return new Element(this, index);
+                            else
+                            {
+                                notExist.valueType = JSObjectType.NotExistInObject;
+                                return notExist;
+                            }
+                        }
+                        else if (data[index] == null)
+                        {
+                            if (create)
+                                return data[index] = new Element(this, index);
+                            else
+                                return undefined;
+                        }
+                        else
+                        {
+                            if (data[index].valueType == JSObjectType.NotExist)
+                                data[index].valueType = JSObjectType.NotExistInObject;
+                            return data[index];
+                        }
                     }
                 }
             }

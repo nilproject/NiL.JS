@@ -70,7 +70,7 @@ namespace NiL.JS.Core
             var res = DefaultFieldGetter(name, false, own);
             if (res.valueType >= JSObjectType.Undefined)
             {
-                if (create)
+                if (create && (res.attributes & JSObjectAttributes.SystemObject) != 0)
                     return DefaultFieldGetter(name, true, own);
                 return res;
             }
@@ -125,7 +125,8 @@ namespace NiL.JS.Core
                         {
                             valueType = JSObjectType.Object,
                             __proto__ = TypeProxy.GetPrototype(proxy.hostedType),
-                            oValue = obj
+                            oValue = obj,
+                            attributes = proxy.hostedType.IsDefined(typeof(ImmutableAttribute)) ? JSObjectAttributes.Immutable : JSObjectAttributes.None
                         };
                         if (obj is BaseTypes.Date)
                             res.valueType = JSObjectType.Date;
@@ -145,7 +146,8 @@ namespace NiL.JS.Core
                         {
                             oValue = obj,
                             valueType = JSObjectType.Object,
-                            __proto__ = TypeProxy.GetPrototype(proxy.hostedType)
+                            __proto__ = TypeProxy.GetPrototype(proxy.hostedType),
+                            attributes = proxy.hostedType.IsDefined(typeof(ImmutableAttribute)) ? JSObjectAttributes.Immutable : JSObjectAttributes.None
                         };
                 }
                 return res;
