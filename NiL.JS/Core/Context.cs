@@ -375,7 +375,10 @@ namespace NiL.JS.Core
 #else
                 if (p.DebuggerCallback != null)
 #endif
+                {
                     p.DebuggerCallback(this, new DebuggerCallbackEventArgs() { Statement = nextStatement });
+                    break;
+                }
                 p = p.prototype;
             }
         }
