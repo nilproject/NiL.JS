@@ -85,7 +85,6 @@ namespace NiL.JS.Statements.Operators
                 case JSObjectType.Undefined:
                 case JSObjectType.NotExistInObject:
                     {
-                        var l = temp.dValue;
                         temp = second.Invoke(context);
                         return temp.valueType == JSObjectType.Undefined || temp.valueType == JSObjectType.NotExistInObject;
                     }

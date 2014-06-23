@@ -307,7 +307,7 @@ namespace NiL.JS.Core
                 || targetType.IsAssignableFrom(res.GetType()))
                 return res;
             if (res is TypeProxy && targetType.IsAssignableFrom((res as TypeProxy).hostedType))
-                return (res as TypeProxy).prototypeInstance;
+                return (res as TypeProxy).prototypeInstance.oValue;
             return null;
         }
 

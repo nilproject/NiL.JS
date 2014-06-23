@@ -888,6 +888,8 @@ namespace NiL.JS.Core.BaseTypes
                 internalContext.variables = body.variables;
                 internalContext.Activate();
                 body.Invoke(internalContext);
+                if (internalContext.abortInfo != null && internalContext.abortInfo.valueType == JSObjectType.NotExist)
+                    internalContext.abortInfo.valueType = JSObjectType.NotExistInObject;
                 return internalContext.abortInfo;
             }
             finally

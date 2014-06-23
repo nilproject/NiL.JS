@@ -68,6 +68,14 @@ namespace NiL.JS.Core.BaseTypes
                 throw new InvalidOperationException("Try to assign to Boolean");
         }
 
+        [Hidden]
+        internal protected override JSObject GetMember(string name, bool create, bool own)
+        {
+            if (__proto__ == null)
+                __proto__ = TypeProxy.GetPrototype(typeof(Boolean));
+            return DefaultFieldGetter(name, create, false); // обращение идёт к Объекту Boolean, а не к значению boolean, поэтому члены создавать можно
+        }
+
 #if INLINE
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif

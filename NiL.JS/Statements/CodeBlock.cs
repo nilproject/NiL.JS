@@ -211,21 +211,42 @@ namespace NiL.JS.Statements
                 res = body[i].Invoke(context) ?? res;
 #if DEBUG
                 if (!context.IsExcecuting)
-                    throw new ApplicationException("Context was stopped");
+                    if (System.Diagnostics.Debugger.IsAttached)
+                        System.Diagnostics.Debugger.Break();
+                    else
+                        throw new ApplicationException("Context was stopped");
                 if (NiL.JS.Core.BaseTypes.Number.NaN.valueType != JSObjectType.Double || !double.IsNaN(NiL.JS.Core.BaseTypes.Number.NaN.dValue))
-                    throw new ApplicationException("NaN was rewrite");
+                    if (System.Diagnostics.Debugger.IsAttached)
+                        System.Diagnostics.Debugger.Break();
+                    else
+                        throw new ApplicationException("NaN was rewrite");
                 if (JSObject.undefined.valueType != JSObjectType.Undefined)
-                    throw new ApplicationException("undefined was rewrite");
+                    if (System.Diagnostics.Debugger.IsAttached)
+                        System.Diagnostics.Debugger.Break();
+                    else
+                        throw new ApplicationException("undefined was rewrite");
                 if (JSObject.notExist.valueType >= JSObjectType.Undefined)
-                    throw new ApplicationException("notExist was rewrite");
+                    if (System.Diagnostics.Debugger.IsAttached)
+                        System.Diagnostics.Debugger.Break();
+                    else
+                        throw new ApplicationException("notExist was rewrite");
                 if (Core.BaseTypes.String.EmptyString.oValue as string != "")
-                    throw new ApplicationException("EmptyString was rewrite");
+                    if (System.Diagnostics.Debugger.IsAttached)
+                        System.Diagnostics.Debugger.Break();
+                    else
+                        throw new ApplicationException("EmptyString was rewrite");
                 if (Core.BaseTypes.Boolean.False.valueType != JSObjectType.Bool
                     || Core.BaseTypes.Boolean.False.iValue != 0)
-                    throw new ApplicationException("Boolean.False was rewrite");
+                    if (System.Diagnostics.Debugger.IsAttached)
+                        System.Diagnostics.Debugger.Break();
+                    else
+                        throw new ApplicationException("Boolean.False was rewrite");
                 if (Core.BaseTypes.Boolean.True.valueType != JSObjectType.Bool
                     || Core.BaseTypes.Boolean.True.iValue != 1)
-                    throw new ApplicationException("Boolean.True was rewrite");
+                    if (System.Diagnostics.Debugger.IsAttached)
+                        System.Diagnostics.Debugger.Break();
+                    else
+                        throw new ApplicationException("Boolean.True was rewrite");
 #endif
                 if (context.abort != AbortType.None)
                     return context.abort == AbortType.Return ? context.abortInfo : res;

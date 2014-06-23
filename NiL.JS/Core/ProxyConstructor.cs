@@ -54,28 +54,24 @@ namespace NiL.JS.Core
                 ctorsL.Add(new MethodProxy(new StructureDefaultConstructorInfo(proxy.hostedType)));
             ctorsL.Sort((x, y) => x.Parameters.Length - y.Parameters.Length);
             constructors = ctorsL.ToArray();
+            proxy.__proto__ = __proto__; // для того, чтобы не отвалились стандартные свойства функций
         }
 
         [Hidden]
         internal protected override JSObject GetMember(string name, bool create, bool own)
         {
             if (__proto__ == null)
+            {
                 __proto__ = TypeProxy.GetPrototype(typeof(ProxyConstructor));
+                proxy.__proto__ = __proto__;
+            }
             if (name == "__proto__" && __proto__ == null)
             {
                 if (create && (__proto__.attributes & JSObjectAttributes.SystemObject) != 0)
                     __proto__ = __proto__.Clone() as JSObject;
                 return __proto__;
             }
-            var res = DefaultFieldGetter(name, false, own); // Function ветка
-            if (res.valueType >= JSObjectType.Undefined)
-            {
-                if (create && (res.attributes & JSObjectAttributes.SystemObject) != 0)
-                    return DefaultFieldGetter(name, true, own);
-                return res;
-            }
-            return proxy.GetMember(name, create, own); // Static ветка
-            // Надо бы поменять
+            return proxy.GetMember(name, create, own);
         }
 
         [Hidden]
@@ -127,7 +123,7 @@ namespace NiL.JS.Core
                             valueType = JSObjectType.Object,
                             __proto__ = TypeProxy.GetPrototype(proxy.hostedType),
                             oValue = obj,
-                            attributes = proxy.hostedType.IsDefined(typeof(ImmutableAttribute)) ? JSObjectAttributes.Immutable : JSObjectAttributes.None
+                            attributes = proxy.hostedType.IsDefined(typeof(ImmutableAttribute), false) ? JSObjectAttributes.Immutable : JSObjectAttributes.None
                         };
                         if (obj is BaseTypes.Date)
                             res.valueType = JSObjectType.Date;
@@ -148,7 +144,7 @@ namespace NiL.JS.Core
                             oValue = obj,
                             valueType = JSObjectType.Object,
                             __proto__ = TypeProxy.GetPrototype(proxy.hostedType),
-                            attributes = proxy.hostedType.IsDefined(typeof(ImmutableAttribute)) ? JSObjectAttributes.Immutable : JSObjectAttributes.None
+                            attributes = proxy.hostedType.IsDefined(typeof(ImmutableAttribute), false) ? JSObjectAttributes.Immutable : JSObjectAttributes.None
                         };
                 }
                 return res;

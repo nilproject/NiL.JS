@@ -15,6 +15,7 @@ namespace NiL.JS.Core.BaseTypes
         {
             _global = false;
             regEx = new System.Text.RegularExpressions.Regex("");
+            attributes |= JSObjectAttributes.ReadOnly;
         }
 
         private void makeRegex(JSObject args)

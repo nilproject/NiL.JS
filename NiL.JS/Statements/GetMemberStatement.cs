@@ -44,6 +44,8 @@ namespace NiL.JS.Statements
                 else
                     res = f.Invoke(source, null);
             }
+            if (res.oValue is TypeProxy && (res.oValue as TypeProxy).prototypeInstance != null)
+                return (res.oValue as TypeProxy).prototypeInstance;
             return res;
         }
 
@@ -70,9 +72,9 @@ namespace NiL.JS.Statements
             var res = objStatement.ToString();
             int i = 0;
             if (memberNameStatement is ImmidateValueStatement
-                && (memberNameStatement as ImmidateValueStatement).value.oValue.ToString().Length > 0
-                && (Parser.ValidateName((memberNameStatement as ImmidateValueStatement).value.oValue.ToString(), ref i, true)))
-                res += "." + (memberNameStatement as ImmidateValueStatement).value.oValue;
+                && (memberNameStatement as ImmidateValueStatement).value.ToString().Length > 0
+                && (Parser.ValidateName((memberNameStatement as ImmidateValueStatement).value.ToString(), ref i, true)))
+                res += "." + (memberNameStatement as ImmidateValueStatement).value;
             else
                 res += "[" + memberNameStatement.ToString() + "]";
             return res;

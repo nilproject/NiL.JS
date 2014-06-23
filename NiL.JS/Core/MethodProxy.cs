@@ -248,7 +248,7 @@ namespace NiL.JS.Core
             else if (v is TypeProxy)
             {
                 var tp = v as TypeProxy;
-                return (tp.bindFlags & BindingFlags.Static) != 0 ? tp.hostedType : tp.prototypeInstance;
+                return (tp.bindFlags & BindingFlags.Static) != 0 ? tp.hostedType : tp.prototypeInstance.oValue;
             }
             else if (v is ProxyConstructor)
                 return (v as ProxyConstructor).proxy.hostedType;

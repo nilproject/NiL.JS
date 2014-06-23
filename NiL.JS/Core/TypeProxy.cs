@@ -17,8 +17,8 @@ namespace NiL.JS.Core
         internal Type hostedType;
         [NonSerialized]
         internal Dictionary<string, IList<MemberInfo>> members;
-        private object _prototypeInstance;
-        internal object prototypeInstance
+        private JSObject _prototypeInstance;
+        internal JSObject prototypeInstance
         {
             get
             {
@@ -28,7 +28,14 @@ namespace NiL.JS.Core
                     {
                         var ictor = hostedType.GetConstructor(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy, null, System.Type.EmptyTypes, null);
                         if (ictor != null)
-                            _prototypeInstance = ictor.Invoke(null);
+                            _prototypeInstance = typeof(JSObject).IsAssignableFrom(hostedType) ? ictor.Invoke(null) as JSObject : new JSObject()
+                                                                                                                                {
+                                                                                                                                    oValue = ictor.Invoke(null),
+                                                                                                                                    __proto__ = this,
+                                                                                                                                    valueType = JSObjectType.Object,
+                                                                                                                                    attributes = attributes | JSObjectAttributes.ProxyPrototype,
+                                                                                                                                    fields = fields
+                                                                                                                                };
                     }
                     catch (COMException)
                     {
@@ -126,6 +133,7 @@ namespace NiL.JS.Core
             Number.NEGATIVE_INFINITY.__proto__ = null;
             Number.MIN_VALUE.__proto__ = null;
             Number.MAX_VALUE.__proto__ = null;
+            BaseTypes.String.EmptyString.__proto__ = null;
             staticProxies.Clear();
             dynamicProxies.Clear();
         }
@@ -147,30 +155,24 @@ namespace NiL.JS.Core
             {
                 hostedType = type;
                 dynamicProxies[type] = this;
-                if (type.IsValueType)
-                    _prototypeInstance = Activator.CreateInstance(type);
+                if (hostedType == typeof(JSObject))
+                {
+                    _prototypeInstance = new JSObject()
+                    {
+                        valueType = JSObjectType.Object,
+                        oValue = this // Не убирать!
+                    };
+                }
                 else
                 {
-                    if (hostedType == typeof(JSObject))
+                    if (typeof(JSObject).IsAssignableFrom(hostedType))
                     {
-                        _prototypeInstance = new JSObject()
+                        if (prototypeInstance != null)
                         {
-                            valueType = JSObjectType.Object,
-                            oValue = this // Не убирать!
-                        };
-                    }
-                    else
-                    {
-                        if (typeof(JSObject).IsAssignableFrom(hostedType))
-                        {
-                            var ictor = type.GetConstructor(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy, null, System.Type.EmptyTypes, null);
-                            if (ictor != null)
-                            {
-                                _prototypeInstance = ictor.Invoke(null);
-                                (_prototypeInstance as JSObject).fields = this.fields;
-                                if ((_prototypeInstance as JSObject).valueType < JSObjectType.Object)
-                                    (_prototypeInstance as JSObject).valueType = JSObjectType.Object;
-                            }
+                            _prototypeInstance.fields = this.fields;
+                            if (_prototypeInstance.valueType < JSObjectType.Object)
+                                _prototypeInstance.valueType = JSObjectType.Object;
+                            _prototypeInstance.attributes |= JSObjectAttributes.ProxyPrototype;
                         }
                     }
                 }
@@ -234,8 +236,6 @@ namespace NiL.JS.Core
                             && ((mmbrs[i] as MethodBase).DeclaringType == typeof(object)))
                             continue;
                         membername = membername[0] == '.' ? membername : membername.Contains(".") ? membername.Substring(membername.LastIndexOf('.') + 1) : membername;
-                        if (membername == "ToString")
-                            membername = "toString";
                         if (prewName != membername && !tempmemb.TryGetValue(membername, out temp))
                         {
                             tempmemb[membername] = temp = new List<MemberInfo>() { mmbrs[i] };

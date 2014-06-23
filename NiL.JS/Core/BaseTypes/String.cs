@@ -610,7 +610,7 @@ namespace NiL.JS.Core.BaseTypes
             if (Tools.ParseNumber(name, index, out dindex, Tools.ParseNumberOptions.Default) && ((index = (int)dindex) == dindex))
                 return this[index];
             else
-                return DefaultFieldGetter(name, false, false);
+                return DefaultFieldGetter(name, create, false); // обращение идёт к Объекту String, а не к значению string, поэтому члены создавать можно
         }
 
         #region HTML Wraping

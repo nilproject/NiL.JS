@@ -50,6 +50,8 @@ namespace NiL.JS.Core
                     res.attributes = JSObjectAttributes.None;
                 if (!create && res.valueType < JSObjectType.Undefined)
                     return res;
+                if (res.oValue is TypeProxy && (res.oValue as TypeProxy).prototypeInstance != null)
+                    res = (res.oValue as TypeProxy).prototypeInstance;
                 return cacheRes = res;
             }
             return cacheRes;

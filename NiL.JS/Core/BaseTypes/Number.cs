@@ -93,6 +93,14 @@ namespace NiL.JS.Core.BaseTypes
                 throw new InvalidOperationException("Try to assign to Number");
         }
 
+        [Hidden]
+        internal protected override JSObject GetMember(string name, bool create, bool own)
+        {
+            if (__proto__ == null)
+                __proto__ = TypeProxy.GetPrototype(typeof(Number));
+            return DefaultFieldGetter(name, create, false); // обращение идёт к Объекту Number, а не к значению number, поэтому члены создавать можно
+        }
+
         [AllowUnsafeCall(typeof(JSObject))]
         [Modules.DoNotEnumerate]
         public JSObject toPrecision(JSObject digits)

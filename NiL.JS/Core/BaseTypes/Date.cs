@@ -207,6 +207,8 @@ namespace NiL.JS.Core.BaseTypes
         private int getMonthImpl()
         {
             var t = time;
+            while (t < 0)
+                t += _400yearsMilliseconds * 7;
             var y = (t / _400yearsMilliseconds) * 400;
             t %= _400yearsMilliseconds;
             y += System.Math.Min(3, t / _100yearsMilliseconds) * 100; // 4 быть не должно, ведь мы уже проверили делимость на 400
@@ -516,7 +518,7 @@ namespace NiL.JS.Core.BaseTypes
         {
             var offset = TimeZone.CurrentTimeZone.GetUtcOffset(DateTime.Now);
             var res =
-                daysOfWeekNames[(time % _weekMilliseconds) / _dayMilliseconds] + " "
+                daysOfWeekNames[(System.Math.Abs(time) % _weekMilliseconds) / _dayMilliseconds] + " "
                 + month[getMonthImpl()]
                 + " " + getDateImpl() + " "
                 + getYearImpl() + " "

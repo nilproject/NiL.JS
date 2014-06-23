@@ -85,6 +85,7 @@ namespace NiL.JS.Core.BaseTypes
         public Array()
         {
             data = new List<JSObject>();
+            attributes |= JSObjectAttributes.ReadOnly;
         }
 
         [DoNotEnumerate]
@@ -360,12 +361,9 @@ namespace NiL.JS.Core.BaseTypes
                 }
             }
             var left = new NiL.JS.Statements.ImmidateValueStatement(el);
-            var right = new NiL.JS.Statements.ImmidateValueStatement(null);
-            var opeq = new NiL.JS.Statements.Operators.StrictEqual(left, right);
             for (int i = 0; i < data.Count; i++)
             {
-                right.value = data[i];
-                if ((bool)opeq.Invoke(null))
+                if (Statements.Operators.StrictEqual.Check(data[i] ?? undefined, left, null))
                     return i;
             }
             return -1;
@@ -436,12 +434,9 @@ namespace NiL.JS.Core.BaseTypes
                 }
             }
             var left = new NiL.JS.Statements.ImmidateValueStatement(el);
-            var right = new NiL.JS.Statements.ImmidateValueStatement(null);
-            var opeq = new NiL.JS.Statements.Operators.StrictEqual(left, right);
             for (int i = data.Count; i-- > 0; )
             {
-                right.value = data[i];
-                if ((bool)opeq.Invoke(null))
+                if (Statements.Operators.StrictEqual.Check(data[i] ?? undefined, left, null))
                     return i;
             }
             return -1;
