@@ -22,8 +22,6 @@ namespace NiL.JS.Core.BaseTypes
             }
         }
 
-        internal static readonly String EmptyString = new String("");
-
         [DoNotEnumerate]
         public static JSObject fromCharCode(JSObject[] code)
         {
@@ -696,8 +694,6 @@ namespace NiL.JS.Core.BaseTypes
         [Hidden]
         public static implicit operator String(string val)
         {
-            if (string.IsNullOrEmpty(val))
-                return EmptyString;
             return new String(val);
         }
     }

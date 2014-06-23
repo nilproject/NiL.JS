@@ -1084,8 +1084,6 @@ namespace NiL.JS.Core
         [Hidden]
         public static implicit operator JSObject(string value)
         {
-            if (string.IsNullOrEmpty(value))
-                return BaseTypes.String.EmptyString;
             return new BaseTypes.String(value);
         }
 

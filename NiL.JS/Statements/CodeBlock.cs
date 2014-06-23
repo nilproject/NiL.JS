@@ -230,11 +230,6 @@ namespace NiL.JS.Statements
                         System.Diagnostics.Debugger.Break();
                     else
                         throw new ApplicationException("notExist was rewrite");
-                if (Core.BaseTypes.String.EmptyString.oValue as string != "")
-                    if (System.Diagnostics.Debugger.IsAttached)
-                        System.Diagnostics.Debugger.Break();
-                    else
-                        throw new ApplicationException("EmptyString was rewrite");
                 if (Core.BaseTypes.Boolean.False.valueType != JSObjectType.Bool
                     || Core.BaseTypes.Boolean.False.iValue != 0)
                     if (System.Diagnostics.Debugger.IsAttached)

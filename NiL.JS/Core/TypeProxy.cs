@@ -133,7 +133,6 @@ namespace NiL.JS.Core
             Number.NEGATIVE_INFINITY.__proto__ = null;
             Number.MIN_VALUE.__proto__ = null;
             Number.MAX_VALUE.__proto__ = null;
-            BaseTypes.String.EmptyString.__proto__ = null;
             staticProxies.Clear();
             dynamicProxies.Clear();
         }
