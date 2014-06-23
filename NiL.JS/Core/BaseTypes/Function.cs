@@ -657,7 +657,7 @@ namespace NiL.JS.Core.BaseTypes
                 TTEProxy,
                 TTEProxy
             },
-            attributes = JSObjectAttributes.DoNotDelete | JSObjectAttributes.Immutable | JSObjectAttributes.DoNotEnum | JSObjectAttributes.ReadOnly
+            attributes = JSObjectAttributes.DoNotDelete | JSObjectAttributes.Immutable | JSObjectAttributes.DoNotEnum | JSObjectAttributes.ReadOnly | JSObjectAttributes.NotConfigurable
         };
 
         private readonly FunctionStatement creator;

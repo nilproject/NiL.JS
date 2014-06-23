@@ -6,7 +6,6 @@ using NiL.JS.Core.Modules;
 namespace NiL.JS.Core.BaseTypes
 {
     [Serializable]
-    [Immutable]
     public sealed class Number : JSObject
     {
         [DoNotDelete]
@@ -34,15 +33,15 @@ namespace NiL.JS.Core.BaseTypes
         static Number()
         {
             POSITIVE_INFINITY.assignCallback = null;
-            POSITIVE_INFINITY.attributes |= JSObjectAttributes.DoNotDelete | JSObjectAttributes.ReadOnly | JSObjectAttributes.SystemObject;
+            POSITIVE_INFINITY.attributes |= JSObjectAttributes.DoNotDelete | JSObjectAttributes.ReadOnly | JSObjectAttributes.NotConfigurable | JSObjectAttributes.SystemObject;
             NEGATIVE_INFINITY.assignCallback = null;
-            NEGATIVE_INFINITY.attributes |= JSObjectAttributes.DoNotDelete | JSObjectAttributes.ReadOnly | JSObjectAttributes.SystemObject;
+            NEGATIVE_INFINITY.attributes |= JSObjectAttributes.DoNotDelete | JSObjectAttributes.ReadOnly | JSObjectAttributes.NotConfigurable | JSObjectAttributes.SystemObject;
             MAX_VALUE.assignCallback = null;
-            MAX_VALUE.attributes |= JSObjectAttributes.DoNotDelete | JSObjectAttributes.ReadOnly | JSObjectAttributes.SystemObject;
+            MAX_VALUE.attributes |= JSObjectAttributes.DoNotDelete | JSObjectAttributes.ReadOnly | JSObjectAttributes.NotConfigurable | JSObjectAttributes.SystemObject;
             MIN_VALUE.assignCallback = null;
-            MIN_VALUE.attributes |= JSObjectAttributes.DoNotDelete | JSObjectAttributes.ReadOnly | JSObjectAttributes.SystemObject;
+            MIN_VALUE.attributes |= JSObjectAttributes.DoNotDelete | JSObjectAttributes.ReadOnly | JSObjectAttributes.NotConfigurable | JSObjectAttributes.SystemObject;
             NaN.assignCallback = null;
-            NaN.attributes |= JSObjectAttributes.DoNotDelete | JSObjectAttributes.ReadOnly | JSObjectAttributes.SystemObject;
+            NaN.attributes |= JSObjectAttributes.DoNotDelete | JSObjectAttributes.ReadOnly | JSObjectAttributes.NotConfigurable | JSObjectAttributes.SystemObject;
         }
 
         [Modules.DoNotEnumerate]

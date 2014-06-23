@@ -3,7 +3,6 @@ using NiL.JS.Core.Modules;
 
 namespace NiL.JS.Core.BaseTypes
 {
-    [Immutable]
     [Prototype(typeof(Error))]
     [Serializable]
     public sealed class ReferenceError : Error

@@ -213,20 +213,7 @@ namespace NiL.JSTest
             var sw = new Stopwatch();
             var s = new Script(
 @"
-var tokenCodes  = { 
-            null: 0,
-            true: 1,
-            false: 2
-        };
-        var arr = [
-            'null',
-            'true',
-            'false'
-        ];  
-        for (var i = 0; i < arr.length; i++) {
-             console.log(tokenCodes[arr[i]]);
-             console.log(arr[i]);
-        }
+            Object.preventExtensions(null);
 ");
             s.Context.AttachModule(typeof(TestClass));
             s.Context.AttachModule(typeof(TestEnum));
@@ -263,6 +250,12 @@ var tokenCodes  = {
                 case 3:
                     {
                         testEx();
+                        break;
+                    }
+                case 4:
+                    {
+                        // Object
+                        sputnicTests(@"tests\sputnik\ch15\15.2\");
                         break;
                     }
             }

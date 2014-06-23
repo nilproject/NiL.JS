@@ -122,6 +122,10 @@ namespace NiL.JS.Core
             BaseTypes.Boolean.False.__proto__ = null;
             JSObject.nullString.__proto__ = null;
             Number.NaN.__proto__ = null;
+            Number.POSITIVE_INFINITY.__proto__ = null;
+            Number.NEGATIVE_INFINITY.__proto__ = null;
+            Number.MIN_VALUE.__proto__ = null;
+            Number.MAX_VALUE.__proto__ = null;
             staticProxies.Clear();
             dynamicProxies.Clear();
         }
@@ -186,8 +190,17 @@ namespace NiL.JS.Core
                 {
                     var prot = staticProxy.DefaultFieldGetter("prototype", true, true);
                     prot.Assign(this);
-                    prot.attributes = JSObjectAttributes.DoNotEnum;
-                    var ctor = type == typeof(JSObject) ? new ObjectConstructor(staticProxy) : new ProxyConstructor(staticProxy);
+                    ProxyConstructor ctor = null;
+                    if (type == typeof(JSObject))
+                    {
+                        ctor = new ObjectConstructor(staticProxy);
+                        prot.attributes = JSObjectAttributes.DoNotEnum | JSObjectAttributes.ReadOnly | JSObjectAttributes.DoNotDelete | JSObjectAttributes.NotConfigurable;
+                    }
+                    else
+                    {
+                        ctor = new ProxyConstructor(staticProxy);
+                        prot.attributes = JSObjectAttributes.DoNotEnum;
+                    }
                     staticProxy.DefaultFieldGetter("__proto__", true, false).Assign(GetPrototype(typeof(ProxyConstructor)));
                     ctor.attributes = attributes;
                     staticProxies[type] = ctor;

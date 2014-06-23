@@ -4,7 +4,6 @@ using NiL.JS.Core.Modules;
 namespace NiL.JS.Core.BaseTypes
 {
     [Serializable]
-    [Immutable]
     public class Boolean : JSObject
     {
         [Hidden]

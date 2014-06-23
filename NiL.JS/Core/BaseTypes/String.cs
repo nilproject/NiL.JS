@@ -5,7 +5,6 @@ using NiL.JS.Core.Modules;
 namespace NiL.JS.Core.BaseTypes
 {
     [Serializable]
-    [Immutable]
     public sealed class String : JSObject
     {
         [Serializable]
@@ -57,7 +56,6 @@ namespace NiL.JS.Core.BaseTypes
         {
             oValue = s;
             valueType = JSObjectType.String;
-            attributes |= JSObjectAttributes.Immutable;
         }
 
         [Hidden]
@@ -537,12 +535,10 @@ namespace NiL.JS.Core.BaseTypes
         [ParametersCount(0)]
         public override JSObject toString(JSObject args)
         {
-            if (typeof(String).IsAssignableFrom(this.GetType()))
-            {
-                if (valueType == JSObjectType.Object)
-                    return "";
+            if (typeof(String) == this.GetType() && valueType == JSObjectType.Object) // prototype instance
+                return "";
+            if (this.valueType == JSObjectType.String)
                 return this;
-            }
             else
                 throw new JSException(TypeProxy.Proxy(new TypeError("Try to call String.toString for not string object.")));
         }
@@ -551,7 +547,9 @@ namespace NiL.JS.Core.BaseTypes
         [DoNotEnumerate]
         public override JSObject valueOf()
         {
-            if (typeof(String).IsAssignableFrom(this.GetType()))
+            if (typeof(String) == this.GetType() && valueType == JSObjectType.Object) // prototype instance
+                return "";
+            if (this.valueType == JSObjectType.String)
                 return this;
             else
                 throw new JSException(TypeProxy.Proxy(new TypeError("Try to call String.valueOf for not string object.")));
@@ -612,7 +610,7 @@ namespace NiL.JS.Core.BaseTypes
             if (Tools.ParseNumber(name, index, out dindex, Tools.ParseNumberOptions.Default) && ((index = (int)dindex) == dindex))
                 return this[index];
             else
-                return DefaultFieldGetter(name, create, false);
+                return DefaultFieldGetter(name, false, false);
         }
 
         #region HTML Wraping

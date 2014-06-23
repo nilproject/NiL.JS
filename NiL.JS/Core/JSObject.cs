@@ -32,6 +32,7 @@ namespace NiL.JS.Core
         DoNotDelete = 1 << 1,
         ReadOnly = 1 << 2,
         Immutable = 1 << 3,
+        NotConfigurable = 1 << 4,
         Argument = 1 << 16,
         /// <summary>
         /// Объект является системным.
@@ -53,9 +54,9 @@ namespace NiL.JS.Core
         [Hidden]
         internal static readonly IEnumerator<string> EmptyEnumerator = ((IEnumerable<string>)(new string[0])).GetEnumerator();
         [Hidden]
-        internal static readonly JSObject undefined = new JSObject() { valueType = JSObjectType.Undefined, attributes = JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum | JSObjectAttributes.ReadOnly };
+        internal static readonly JSObject undefined = new JSObject() { valueType = JSObjectType.Undefined, attributes = JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum | JSObjectAttributes.ReadOnly | JSObjectAttributes.NotConfigurable | JSObjectAttributes.SystemObject };
         [Hidden]
-        internal static readonly JSObject notExist = new JSObject() { valueType = JSObjectType.NotExist, attributes = JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum | JSObjectAttributes.ReadOnly | JSObjectAttributes.SystemObject };
+        internal static readonly JSObject notExist = new JSObject() { valueType = JSObjectType.NotExist, attributes = JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum | JSObjectAttributes.ReadOnly | JSObjectAttributes.NotConfigurable | JSObjectAttributes.SystemObject };
         [Hidden]
         internal static readonly JSObject Null = new JSObject() { valueType = JSObjectType.Object, oValue = null, assignCallback = ErrorAssignCallback, attributes = JSObjectAttributes.DoNotEnum | JSObjectAttributes.SystemObject };
         [Hidden]
@@ -205,11 +206,11 @@ namespace NiL.JS.Core
                     JSObject obj = new JSObject();
                     res.fields[name] = obj;
                     obj.attributes |= JSObjectAttributes.DoNotEnum;
-                    obj.attributes |= JSObjectAttributes.Immutable | JSObjectAttributes.DoNotDelete;
+                    obj.attributes |= JSObjectAttributes.NotConfigurable | JSObjectAttributes.DoNotDelete;
                     if ((bool)enumerable)
                         obj.attributes &= ~JSObjectAttributes.DoNotEnum;
                     if ((bool)configurable)
-                        obj.attributes &= ~(JSObjectAttributes.Immutable | JSObjectAttributes.DoNotDelete);
+                        obj.attributes &= ~(JSObjectAttributes.NotConfigurable | JSObjectAttributes.DoNotDelete);
                     if (value.valueType > JSObjectType.Undefined)
                     {
                         obj.Assign(value);
@@ -273,42 +274,56 @@ namespace NiL.JS.Core
                 throw new JSException(TypeProxy.Proxy(new TypeError("Property can not have getter or setter and writable attribute.")));
             string name = args.GetMember("1").ToString();
             obj = obj.GetMember(name, true, true);
-            if (obj.valueType < JSObjectType.Undefined)
+            var newProp = obj.valueType < JSObjectType.Undefined;
+            var config = (obj.attributes & JSObjectAttributes.NotConfigurable) == 0 || newProp;
+            if (config)
             {
-                obj.attributes |= JSObjectAttributes.DoNotEnum;
-                obj.attributes |= JSObjectAttributes.Immutable | JSObjectAttributes.DoNotDelete;
-            }
-            if ((bool)enumerable)
-                obj.attributes &= ~JSObjectAttributes.DoNotEnum;
-            if ((bool)configurable)
-                obj.attributes &= ~(JSObjectAttributes.Immutable | JSObjectAttributes.DoNotDelete);
-            if (value.valueType > JSObjectType.Undefined)
-            {
-                obj.Assign(value);
-                if (!(bool)writable)
-                    obj.attributes |= JSObjectAttributes.ReadOnly;
-            }
-            else if (get.valueType != JSObjectType.NotExistInObject
-                  || set.valueType != JSObjectType.NotExistInObject)
-            {
-                if (get.valueType > JSObjectType.Undefined
-                    && get.valueType != JSObjectType.Function)
-                    throw new JSException(TypeProxy.Proxy(new TypeError("Getter mast be a function.")));
-                if (set.valueType > JSObjectType.Undefined
-                    && set.valueType != JSObjectType.Function)
-                    throw new JSException(TypeProxy.Proxy(new TypeError("Setter mast be a function.")));
-                obj.valueType = JSObjectType.Property;
-                obj.oValue = new Function[]
+                if (enumerable.valueType >= JSObjectType.Undefined || newProp)
                 {
-                    set.valueType > JSObjectType.Undefined ? set.oValue as Function : null,
-                    get.valueType > JSObjectType.Undefined ? get.oValue as Function : null
-                };
+                    if ((bool)enumerable)
+                        obj.attributes &= ~JSObjectAttributes.DoNotEnum;
+                    else
+                        obj.attributes |= JSObjectAttributes.DoNotEnum;
+                }
+                if (configurable.valueType >= JSObjectType.Undefined || newProp)
+                {
+                    if ((bool)configurable)
+                        obj.attributes &= ~(JSObjectAttributes.NotConfigurable | JSObjectAttributes.DoNotDelete);
+                    else
+                        obj.attributes |= JSObjectAttributes.NotConfigurable | JSObjectAttributes.DoNotDelete;
+                }
+                if (value.valueType > JSObjectType.Undefined)
+                {
+                    obj.Assign(value);
+                    if (!(bool)writable)
+                        obj.attributes |= JSObjectAttributes.ReadOnly;
+                }
+                else if (get.valueType != JSObjectType.NotExistInObject
+                      || set.valueType != JSObjectType.NotExistInObject)
+                {
+                    if (get.valueType > JSObjectType.Undefined
+                        && get.valueType != JSObjectType.Function)
+                        throw new JSException(TypeProxy.Proxy(new TypeError("Getter mast be a function.")));
+                    if (set.valueType > JSObjectType.Undefined
+                        && set.valueType != JSObjectType.Function)
+                        throw new JSException(TypeProxy.Proxy(new TypeError("Setter mast be a function.")));
+                    obj.valueType = JSObjectType.Property;
+                    obj.oValue = new Function[]
+                    {
+                        set.valueType > JSObjectType.Undefined ? set.oValue as Function : null,
+                        get.valueType > JSObjectType.Undefined ? get.oValue as Function : null
+                    };
+                }
+                else if (!(bool)writable) // На тот случай, когда в дескрипторе не указано ни значение, ни геттер/сеттер
+                {
+                    obj.attributes |= JSObjectAttributes.ReadOnly;
+                    obj.valueType = JSObjectType.Undefined;
+                    if (newProp)
+                        obj.valueType = JSObjectType.Undefined;
+                }
             }
-            else if (!(bool)writable) // На тот случай, когда в дескрипторе не указано ни значение, ни геттер/сеттер
-            {
-                obj.attributes |= JSObjectAttributes.ReadOnly;
-                obj.valueType = JSObjectType.Undefined;
-            }
+            else if (obj.valueType != JSObjectType.Property && value.valueType > JSObjectType.Undefined)
+                obj.Assign(value);
             return obj;
         }
 
@@ -359,6 +374,7 @@ namespace NiL.JS.Core
                 case JSObjectType.Int:
                 case JSObjectType.Double:
                     {
+                        createMember = false;
                         if (__proto__ == null)
                             __proto__ = TypeProxy.GetPrototype(typeof(BaseTypes.Number));
 #if DEBUG
@@ -369,6 +385,7 @@ namespace NiL.JS.Core
                     }
                 case JSObjectType.String:
                     {
+                        createMember = false;
                         int index = 0;
                         double dindex = 0.0;
                         if (Tools.ParseNumber(name, index, out dindex, Tools.ParseNumberOptions.Default))
@@ -387,6 +404,7 @@ namespace NiL.JS.Core
                     }
                 case JSObjectType.Bool:
                     {
+                        createMember = false;
                         if (__proto__ == null)
                             __proto__ = TypeProxy.GetPrototype(typeof(BaseTypes.Boolean));
 #if DEBUG
@@ -467,7 +485,7 @@ namespace NiL.JS.Core
                             (fields == null || !fields.TryGetValue(name, out res) || res.valueType < JSObjectType.Undefined)
                             && (proto != null)
                             && (proto != this)
-                            && (!own || (proto is TypeProxy && proto != GlobalPrototype.oValue));
+                            && (!own || (proto.oValue is TypeProxy && proto.oValue != GlobalPrototype.oValue));
                         if (fromProto)
                         {
                             res = proto.GetMember(name, false, own);
@@ -827,11 +845,24 @@ namespace NiL.JS.Core
             var obj = args["0"];
             if (obj.valueType < JSObjectType.Object)
                 throw new JSException(TypeProxy.Proxy(new TypeError("Prevent the expansion can only for objects")));
+            if (obj.oValue == null)
+                throw new JSException(TypeProxy.Proxy(new TypeError("Can not prevent extensions for null")));
             obj.attributes |= JSObjectAttributes.Immutable;
             var res = (obj.oValue as JSObject);
             if (res != null)
                 res.attributes |= JSObjectAttributes.Immutable;
             return res;
+        }
+
+        [DoNotEnumerate]
+        public static JSObject isExtensible(JSObject args)
+        {
+            var obj = args["0"];
+            if (obj.valueType < JSObjectType.Object)
+                return false;
+            if (obj.oValue == null)
+                return false;
+            return ((obj.oValue as JSObject ?? obj).attributes & JSObjectAttributes.Immutable) == 0;
         }
 
         [DoNotEnumerate]
@@ -886,7 +917,7 @@ namespace NiL.JS.Core
                 res["set"] = (obj.oValue as Function[])[0];
                 res["get"] = (obj.oValue as Function[])[1];
             }
-            res["configurable"] = ((obj.attributes & JSObjectAttributes.Immutable) == 0 && (obj.valueType >= JSObjectType.Object)) || (obj.attributes & JSObjectAttributes.DoNotDelete) == 0;
+            res["configurable"] = (obj.attributes & JSObjectAttributes.NotConfigurable) == 0 || (obj.attributes & JSObjectAttributes.DoNotDelete) == 0;
             res["enumerable"] = (obj.attributes & JSObjectAttributes.DoNotEnum) == 0;
             return res;
         }

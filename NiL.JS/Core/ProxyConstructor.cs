@@ -67,14 +67,15 @@ namespace NiL.JS.Core
                     __proto__ = __proto__.Clone() as JSObject;
                 return __proto__;
             }
-            var res = DefaultFieldGetter(name, false, own);
+            var res = DefaultFieldGetter(name, false, own); // Function ветка
             if (res.valueType >= JSObjectType.Undefined)
             {
                 if (create && (res.attributes & JSObjectAttributes.SystemObject) != 0)
                     return DefaultFieldGetter(name, true, own);
                 return res;
             }
-            return proxy.GetMember(name, create, own);
+            return proxy.GetMember(name, create, own); // Static ветка
+            // Надо бы поменять
         }
 
         [Hidden]

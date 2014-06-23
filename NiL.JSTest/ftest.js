@@ -1,6 +1,7 @@
-﻿
-var a = [1, 2, 3]
-a.x = 10;
-var d = delete a[1]
-if (d === true && a[1] === undefined)
-    console.log(true);
+﻿var strObj = new String("bbq");
+var preCheck = Object.isExtensible(strObj);
+Object.preventExtensions(strObj);
+
+strObj.exName = 2;
+console.log(preCheck)
+console.log(!strObj.hasOwnProperty("exName"))
