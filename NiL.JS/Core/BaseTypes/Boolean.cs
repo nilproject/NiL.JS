@@ -17,6 +17,7 @@ namespace NiL.JS.Core.BaseTypes
             valueType = JSObjectType.Bool;
             iValue = 0;
             assignCallback = JSObject.ErrorAssignCallback;
+            oValue = this;
         }
 
         [DoNotEnumerate]
@@ -27,6 +28,7 @@ namespace NiL.JS.Core.BaseTypes
             valueType = JSObjectType.Bool;
             iValue = (bool)obj.GetMember("0") ? 1 : 0;
             assignCallback = JSObject.ErrorAssignCallback;
+            oValue = this;
         }
 
         [DoNotEnumerate]
@@ -35,6 +37,7 @@ namespace NiL.JS.Core.BaseTypes
             valueType = JSObjectType.Bool;
             iValue = value ? 1 : 0;
             assignCallback = JSObject.ErrorAssignCallback;
+            oValue = this;
         }
 
         [DoNotEnumerate]
@@ -43,6 +46,7 @@ namespace NiL.JS.Core.BaseTypes
             valueType = JSObjectType.Bool;
             iValue = value != 0 && !double.IsNaN(value) ? 1 : 0;
             assignCallback = JSObject.ErrorAssignCallback;
+            oValue = this;
         }
 
         [DoNotEnumerate]
@@ -51,6 +55,7 @@ namespace NiL.JS.Core.BaseTypes
             valueType = JSObjectType.Bool;
             iValue = value != 0 ? 1 : 0;
             assignCallback = JSObject.ErrorAssignCallback;
+            oValue = this;
         }
 
         [DoNotEnumerate]
@@ -59,6 +64,7 @@ namespace NiL.JS.Core.BaseTypes
             valueType = JSObjectType.Bool;
             iValue = !string.IsNullOrEmpty(value) ? 1 : 0;
             assignCallback = JSObject.ErrorAssignCallback;
+            oValue = this;
         }
 
         [Hidden]

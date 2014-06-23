@@ -159,7 +159,8 @@ namespace NiL.JS.Core
                     _prototypeInstance = new JSObject()
                     {
                         valueType = JSObjectType.Object,
-                        oValue = this // Не убирать!
+                        oValue = this, // Не убирать!
+                        attributes = JSObjectAttributes.ProxyPrototype | JSObjectAttributes.ReadOnly
                     };
                 }
                 else
@@ -171,7 +172,7 @@ namespace NiL.JS.Core
                             _prototypeInstance.fields = this.fields;
                             if (_prototypeInstance.valueType < JSObjectType.Object)
                                 _prototypeInstance.valueType = JSObjectType.Object;
-                            _prototypeInstance.attributes |= JSObjectAttributes.ProxyPrototype;
+                            _prototypeInstance.attributes |= JSObjectAttributes.ProxyPrototype | JSObjectAttributes.ReadOnly;
                         }
                     }
                 }
@@ -447,6 +448,7 @@ namespace NiL.JS.Core
                     default: throw new NotImplementedException("Convertion from " + m[0].MemberType + " not implemented");
                 }
             }
+            r.attributes |= JSObjectAttributes.NotConfigurable;
             r.attributes |= JSObjectAttributes.DoNotEnum;
             lock (fields)
                 fields[name] = create && r.GetType() != typeof(JSObject) ? (r = r.Clone() as JSObject) : r;

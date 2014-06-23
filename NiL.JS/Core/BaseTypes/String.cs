@@ -70,7 +70,10 @@ namespace NiL.JS.Core.BaseTypes
             get
             {
                 if ((pos < 0) || (pos >= (oValue as string).Length))
-                    return JSObject.undefined;
+                {
+                    notExist.valueType = JSObjectType.NotExistInObject;
+                    return JSObject.notExist;
+                }
                 return new JSObject(false) { valueType = JSObjectType.String, oValue = (oValue as string)[pos].ToString(), attributes = JSObjectAttributes.ReadOnly };
             }
         }
@@ -601,6 +604,7 @@ namespace NiL.JS.Core.BaseTypes
         [Hidden]
         internal protected override JSObject GetMember(string name, bool create, bool own)
         {
+            create &= (attributes & JSObjectAttributes.Immutable) == 0;
             if (__proto__ == null)
                 __proto__ = TypeProxy.GetPrototype(typeof(String));
             int index = 0;

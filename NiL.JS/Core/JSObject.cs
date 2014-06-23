@@ -297,7 +297,7 @@ namespace NiL.JS.Core
                         throw new JSException(TypeProxy.Proxy(new TypeError("Property can not have getter or setter and writable attribute.")));
                     var obj = res.GetMember(member, true, true);
                     if ((obj.attributes & JSObjectAttributes.SystemObject) != 0)
-                        return false;
+                        throw new JSException(TypeProxy.Proxy(new TypeError("Can not define property \"" + member + "\". Object is immutable.")));
                     var newProp = obj.valueType < JSObjectType.Undefined;
                     var config = (obj.attributes & JSObjectAttributes.NotConfigurable) == 0 || newProp;
                     if (config)
@@ -318,6 +318,7 @@ namespace NiL.JS.Core
                         }
                         if (value.valueType > JSObjectType.Undefined)
                         {
+                            obj.valueType = JSObjectType.Undefined; // там могло быть Property, на которое мы ругаемся
                             obj.Assign(value);
                             if (!(bool)writable)
                                 obj.attributes |= JSObjectAttributes.ReadOnly;
@@ -377,7 +378,7 @@ namespace NiL.JS.Core
             string name = args.GetMember("1").ToString();
             obj = obj.GetMember(name, true, true);
             if ((obj.attributes & JSObjectAttributes.SystemObject) != 0)
-                return false;
+                throw new JSException(TypeProxy.Proxy(new TypeError("Can not define property \"" + name + "\". Object is immutable.")));
             var newProp = obj.valueType < JSObjectType.Undefined;
             var config = (obj.attributes & JSObjectAttributes.NotConfigurable) == 0 || newProp;
             if (config)
@@ -398,6 +399,7 @@ namespace NiL.JS.Core
                 }
                 if (value.valueType > JSObjectType.Undefined)
                 {
+                    obj.valueType = JSObjectType.Undefined; // там могло быть Property, на которое мы ругаемся
                     obj.Assign(value);
                     if (!(bool)writable)
                         obj.attributes |= JSObjectAttributes.ReadOnly;
@@ -429,6 +431,32 @@ namespace NiL.JS.Core
             else if (obj.valueType != JSObjectType.Property && value.valueType > JSObjectType.Undefined)
                 obj.Assign(value);
             return true;
+        }
+
+        [DoNotEnumerate]
+        public static JSObject freeze(JSObject args)
+        {
+            var obj = args["0"];
+            if (obj.valueType < JSObjectType.Object)
+                throw new JSException(new TypeError("Object.freeze called on non-object."));
+            if (obj.oValue == null)
+                throw new JSException(new TypeError("Object.freeze called on null."));
+            obj.attributes |= JSObjectAttributes.Immutable;
+            obj = obj.oValue as JSObject ?? obj;
+            obj.attributes |= JSObjectAttributes.Immutable;
+            if (obj is BaseTypes.Array)
+            {
+                var arr = obj as BaseTypes.Array;
+                for (var i = arr.data.Count; i-- > 0; )
+                    if (arr.data[i] != null)
+                        arr.data[i].attributes |= JSObjectAttributes.NotConfigurable | JSObjectAttributes.ReadOnly | JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum;
+            }
+            else
+                foreach (var f in obj.fields)
+                {
+                    f.Value.attributes |= JSObjectAttributes.NotConfigurable | JSObjectAttributes.ReadOnly | JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum;
+                }
+            return obj;
         }
 
         /// <summary>
@@ -717,6 +745,8 @@ namespace NiL.JS.Core
         {
             if (this.assignCallback != null)
                 this.assignCallback(this);
+            if (valueType == JSObjectType.Property)
+                throw new InvalidOperationException("Try to assign to property.");
             if ((attributes & (JSObjectAttributes.ReadOnly | JSObjectAttributes.SystemObject)) != 0)
                 return;
             if (value == this)
@@ -963,10 +993,72 @@ namespace NiL.JS.Core
         {
             var obj = args["0"];
             if (obj.valueType < JSObjectType.Object)
-                return false;
+                throw new JSException(new TypeError("Object.isExtensible called on non-object."));
             if (obj.oValue == null)
-                return false;
+                throw new JSException(new TypeError("Object.isExtensible called on null."));
             return ((obj.oValue as JSObject ?? obj).attributes & JSObjectAttributes.Immutable) == 0;
+        }
+
+        [DoNotEnumerate]
+        public static JSObject isSealed(JSObject args)
+        {
+            var obj = args["0"];
+            if (obj.valueType < JSObjectType.Object)
+                throw new JSException(new TypeError("Object.isSealed called on non-object."));
+            if (obj.oValue == null)
+                throw new JSException(new TypeError("Object.isSealed called on null."));
+            if (((obj = obj.oValue as JSObject ?? obj).attributes & JSObjectAttributes.Immutable) == 0)
+                return false;
+            if (obj is TypeProxy)
+                return true;
+            if (obj is BaseTypes.Array)
+            {
+                var arr = obj as BaseTypes.Array;
+                for (var i = arr.data.Count; i-- > 0; )
+                    if (arr.data[i] != null
+                        && arr.data[i].valueType >= JSObjectType.Object && arr.data[i].oValue != null
+                        && (arr.data[i].attributes & JSObjectAttributes.NotConfigurable) == 0)
+                        return false;
+            }
+            else
+                foreach (var f in obj.fields)
+                {
+                    if (f.Value.valueType >= JSObjectType.Object && f.Value.oValue != null && (f.Value.attributes & JSObjectAttributes.NotConfigurable) == 0)
+                        return false;
+                }
+            return true;
+        }
+
+        [DoNotEnumerate]
+        public static JSObject isFrozen(JSObject args)
+        {
+            var obj = args["0"];
+            if (obj.valueType < JSObjectType.Object)
+                throw new JSException(new TypeError("Object.isFrozen called on non-object."));
+            if (obj.oValue == null)
+                throw new JSException(new TypeError("Object.isFrozen called on null."));
+            if (((obj = obj.oValue as JSObject ?? obj).attributes & JSObjectAttributes.Immutable) == 0)
+                return false;
+            if (obj is TypeProxy)
+                return true;
+            if (obj is BaseTypes.Array)
+            {
+                var arr = obj as BaseTypes.Array;
+                for (var i = arr.data.Count; i-- > 0; )
+                    if (arr.data[i] != null
+                        &&
+                        ((arr.data[i].attributes & JSObjectAttributes.NotConfigurable) == 0
+                                || (arr.data[i].valueType != JSObjectType.Property && (arr.data[i].attributes & JSObjectAttributes.ReadOnly) == 0)))
+                        return false;
+            }
+            else
+                foreach (var f in obj.fields)
+                {
+                    if ((f.Value.attributes & JSObjectAttributes.NotConfigurable) == 0
+                            || (f.Value.valueType != JSObjectType.Property && (f.Value.attributes & JSObjectAttributes.ReadOnly) == 0))
+                        return false;
+                }
+            return true;
         }
 
         [DoNotEnumerate]

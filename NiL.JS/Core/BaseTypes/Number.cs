@@ -49,6 +49,7 @@ namespace NiL.JS.Core.BaseTypes
         {
             valueType = JSObjectType.Int;
             iValue = 0;
+            oValue = this;
         }
 
         [Modules.DoNotEnumerate]
@@ -56,6 +57,7 @@ namespace NiL.JS.Core.BaseTypes
         {
             valueType = JSObjectType.Int;
             iValue = value;
+            oValue = this;
         }
 
         [Modules.DoNotEnumerate]
@@ -63,6 +65,7 @@ namespace NiL.JS.Core.BaseTypes
         {
             valueType = JSObjectType.Double;
             dValue = value;
+            oValue = this;
         }
 
         [Modules.DoNotEnumerate]
@@ -77,6 +80,7 @@ namespace NiL.JS.Core.BaseTypes
             int i = 0;
             if (value.Length != 0 && Tools.ParseNumber(value, ref i, out d, 0, Tools.ParseNumberOptions.Default | (Context.CurrentContext.strict ? Tools.ParseNumberOptions.RaiseIfOctal : 0)) && i == value.Length)
                 dValue = d;
+            oValue = this;
         }
 
         [Modules.DoNotEnumerate]
@@ -84,6 +88,7 @@ namespace NiL.JS.Core.BaseTypes
         {
             valueType = JSObjectType.Double;
             dValue = Tools.JSObjectToDouble(obj.GetMember("0"));
+            oValue = this;
         }
 
         [Hidden]

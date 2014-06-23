@@ -195,7 +195,7 @@
     <Compile Include="Core\Modules\AllowUnsafeCallAttribute.cs" />
     <Compile Include="Core\StructureDefaultConstructorInfo.cs" />
     <Compile Include="Core\VariableDescriptor.cs" />
-    <Compile Include="Core\GenericType.cs" />
+    <Compile Include="Core\TypeProxing\GenericType.cs" />
     <Compile Include="Core\VariableReference.cs" />
     <Compile Include="Core\JSException.cs" />
     <Compile Include="Core\Modules\DoNotEnumerateAttribute.cs" />
@@ -216,10 +216,10 @@
     <Compile Include="Core\Modules\ImmutableAttribute.cs" />
     <Compile Include="Core\Modules\Math.cs" />
     <Compile Include="Core\Tools.cs" />
-    <Compile Include="Core\MethodProxy.cs" />
-    <Compile Include="Core\TypeProxy.cs" />
+    <Compile Include="Core\TypeProxing\MethodProxy.cs" />
+    <Compile Include="Core\TypeProxing\TypeProxy.cs" />
     <Compile Include="Core\Modules\ReadOnlyAttribute.cs" />
-    <Compile Include="Core\ProxyConstructor.cs" />
+    <Compile Include="Core\TypeProxing\ProxyConstructor.cs" />
     <Compile Include="Core\WithContext.cs" />
     <Compile Include="NamespaceProvider.cs" />
     <Compile Include="Statements\LabeledStatement.cs" />
@@ -288,6 +288,7 @@
     <Compile Include="Statements\WithStatement.cs" />
     <Compile Include="Statements\DebuggerOperator.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
