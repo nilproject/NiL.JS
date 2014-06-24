@@ -15,6 +15,7 @@ namespace NiL.JS.Statements
 
         internal GetVariableStatement(string name)
         {
+            FunctionDepth = -1;
             int i = 0;
             if ((name != "this") && !Parser.ValidateName(name, i, true, true, false))
                 throw new ArgumentException("Invalid variable name");

@@ -28,6 +28,7 @@ namespace NiL.JS.Statements
 
             public FunctionReference(FunctionStatement owner)
             {
+                FunctionDepth = -1;
                 this.owner = owner;
             }
 
@@ -60,6 +61,7 @@ namespace NiL.JS.Statements
 
             public ParameterReference(string name, int fdepth)
             {
+                FunctionDepth = fdepth;
                 this.name = name;
                 Descriptor = new VariableDescriptor(this, true, fdepth);
             }
@@ -213,7 +215,15 @@ namespace NiL.JS.Statements
                         throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Parameters name may not be \"arguments\" or \"eval\" in strict mode at " + Tools.PositionToTextcord(code, index))));
                 }
             }
-            if (inExp == 0) // Позволяет делать вызов сразу при объявлении функции 
+            FunctionStatement func = new FunctionStatement(name)
+            {
+                parameters = parameters.ToArray(),
+                body = body,
+                type = mode,
+                Position = index,
+                Length = i - index
+            };
+            if (inExp == 0 && mode == FunctionType.Function) // Позволяет делать вызов сразу при объявлении функции 
             // (в таком случае функция не добавляется в контекст).
             // Если убрать проверку, то в тех сулчаях,
             // когда определение и вызов стоят внутри выражения,
@@ -247,35 +257,24 @@ namespace NiL.JS.Statements
                     return new ParseResult()
                     {
                         IsParsed = true,
-                        Statement = new Operators.Call(new FunctionStatement(name)
-                        {
-                            parameters = parameters.ToArray(),
-                            body = body
-                        }, new ImmidateValueStatement(new JSObject() { valueType = JSObjectType.Object, oValue = args.ToArray() }))
+                        Statement = new Operators.Call(func, new ImmidateValueStatement(new JSObject() { valueType = JSObjectType.Object, oValue = args.ToArray() }))
                     };
                 }
                 else
                     i = tindex;
             }
             state.InExpression = inExp;
-            FunctionStatement res = new FunctionStatement(name)
-            {
-                parameters = parameters.ToArray(),
-                body = body,
-                type = mode,
-                Position = index,
-                Length = i - index
-            };
             if (name != null)
             {
-                res.Reference.Position = nameStartPos;
-                res.Reference.Length = name.Length;
+                func.Reference.FunctionDepth = state.functionsDepth;
+                func.Reference.Position = nameStartPos;
+                func.Reference.Length = name.Length;
             }
             index = i;
             return new ParseResult()
             {
                 IsParsed = true,
-                Statement = res
+                Statement = func
             };
         }
 
@@ -323,7 +322,7 @@ namespace NiL.JS.Statements
             {
                 nvars[parameters[i].Name] = parameters[i].Descriptor;
                 parameters[i].Descriptor.Owner = this;
-                parameters[i].Descriptor.definDepth = fdepth + 1;
+                parameters[i].Descriptor.definDepth = fdepth;
             }
             VariableDescriptor fdesc = null;
             if (type == FunctionType.Function && !string.IsNullOrEmpty(name))

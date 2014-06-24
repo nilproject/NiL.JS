@@ -60,7 +60,7 @@ namespace NiL.JS.Statements
                     throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \";\", \",\", \"=\" or \"}\" at + " + Tools.PositionToTextcord(code, i))));
                 if (i >= code.Length)
                 {
-                    initializator.Add(new GetVariableStatement(name) { Position = s, Length = name.Length });
+                    initializator.Add(new GetVariableStatement(name) { Position = s, Length = name.Length, FunctionDepth = state.functionsDepth });
                     break;
                 }
                 if (Tools.isLineTerminator(code[i]))
@@ -69,7 +69,7 @@ namespace NiL.JS.Statements
                     do i++; while (i < code.Length && char.IsWhiteSpace(code[i]));
                     if (i >= code.Length)
                     {
-                        initializator.Add(new GetVariableStatement(name) { Position = s, Length = name.Length });
+                        initializator.Add(new GetVariableStatement(name) { Position = s, Length = name.Length, FunctionDepth = state.functionsDepth });
                         break;
                     }
                     if (code[i] != '=')
@@ -81,14 +81,14 @@ namespace NiL.JS.Statements
                     if (i == code.Length)
                         throw new JSException(TypeProxy.Proxy(new SyntaxError("Unexpected end of line in variable defenition.")));
                     initializator.Add(
-                        new Assign(new GetVariableStatement(name) { Position = s, Length = name.Length }, OperatorStatement.Parse(state, ref i, false).Statement)
+                        new Assign(new GetVariableStatement(name) { Position = s, Length = name.Length, FunctionDepth = state.functionsDepth }, OperatorStatement.Parse(state, ref i, false).Statement)
                         {
                             Position = s,
                             Length = i - s
                         });
                 }
                 else
-                    initializator.Add(new GetVariableStatement(name) { Position = s, Length = name.Length });
+                    initializator.Add(new GetVariableStatement(name) { Position = s, Length = name.Length, FunctionDepth = state.functionsDepth });
                 if (i >= code.Length)
                     break;
                 s = i;

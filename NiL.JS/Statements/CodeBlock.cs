@@ -153,6 +153,7 @@ namespace NiL.JS.Statements
                         vars[f.Name] = new VariableDescriptor(f.Reference, true, state.functionsDepth);
                     else
                     {
+                        f.Reference.FunctionDepth = state.functionsDepth;
                         vd.references.Add(f.Reference);
                         f.Reference.Descriptor = vd;
                         vd.Inititalizator = f.Reference;

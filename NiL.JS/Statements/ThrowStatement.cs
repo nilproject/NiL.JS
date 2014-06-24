@@ -9,6 +9,16 @@ namespace NiL.JS.Statements
     {
         private Statement body;
 
+        public ThrowStatement(Exception e)
+        {
+            body = new ImmidateValueStatement(TypeProxy.Proxy(e));
+        }
+
+        private ThrowStatement(Statement statement)
+        {
+            body = statement;
+        }
+
         public Statement Body { get { return body; } }
 
         internal static ParseResult Parse(ParsingState state, ref int index)
@@ -25,9 +35,8 @@ namespace NiL.JS.Statements
             return new ParseResult()
             {
                 IsParsed = true,
-                Statement = new ThrowStatement()
+                Statement = new ThrowStatement(b)
                 {
-                    body = b,
                     Position = pos,
                     Length = index - pos
                 }

@@ -348,7 +348,7 @@ namespace NiL.JS.Statements
                 if (name == "undefined")
                     first = new ImmidateValueStatement(JSObject.undefined) { Position = index, Length = i - index };
                 else
-                    first = new GetVariableStatement(name) { Position = index, Length = i - index };
+                    first = new GetVariableStatement(name) { Position = index, Length = i - index, FunctionDepth = state.functionsDepth };
             }
             else if (Parser.ValidateValue(code, ref i))
             {
@@ -377,15 +377,14 @@ namespace NiL.JS.Statements
                         {
                             s = value.LastIndexOf('/') + 1;
                             string flags = value.Substring(s);
-                            first = new Operators.Call(new GetVariableStatement("RegExp") { Position = i }, new ImmidateValueStatement(new JSObject()
+                            try
                             {
-                                valueType = JSObjectType.Object,
-                                oValue = new Statement[2]
-								{
-									new ImmidateValueStatement(value.Substring(1, s - 2)) { Position = i , Length = s - 2 },
-									new ImmidateValueStatement(flags) { Position = s  }
-								}
-                            }));
+                                first = new ImmidateValueStatement(new RegExp(value.Substring(1, s - 2), flags));
+                            }
+                            catch(Exception e)
+                            {
+                                first = new ThrowStatement(e);
+                            }
                         }
                         else
                             throw new ArgumentException("Invalid process value (" + value + ")");

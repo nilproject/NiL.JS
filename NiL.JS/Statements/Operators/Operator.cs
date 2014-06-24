@@ -14,6 +14,7 @@ namespace NiL.JS.Statements.Operators
         {
             internal SafeVariableGetter(GetVariableStatement gvs)
             {
+                FunctionDepth = gvs.FunctionDepth;
                 Descriptor = gvs.Descriptor;
                 Descriptor.references.Remove(gvs);
                 Descriptor.references.Add(this);
