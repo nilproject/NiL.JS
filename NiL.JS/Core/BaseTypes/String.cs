@@ -74,7 +74,7 @@ namespace NiL.JS.Core.BaseTypes
                     notExist.valueType = JSObjectType.NotExistInObject;
                     return JSObject.notExist;
                 }
-                return new JSObject(false) { valueType = JSObjectType.String, oValue = (oValue as string)[pos].ToString(), attributes = JSObjectAttributes.ReadOnly };
+                return new JSObject(false) { valueType = JSObjectType.String, oValue = (oValue as string)[pos].ToString(), attributes = JSObjectAttributes.ReadOnly | JSObjectAttributes.NotConfigurable | JSObjectAttributes.DoNotEnum | JSObjectAttributes.DoNotDelete };
             }
         }
 

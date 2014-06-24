@@ -451,7 +451,7 @@ namespace NiL.JS.Core
                     if (arr.data[i] != null)
                         arr.data[i].attributes |= JSObjectAttributes.NotConfigurable | JSObjectAttributes.ReadOnly | JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum;
             }
-            else
+            else if (obj.fields != null)
                 foreach (var f in obj.fields)
                 {
                     f.Value.attributes |= JSObjectAttributes.NotConfigurable | JSObjectAttributes.ReadOnly | JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum;
@@ -1020,7 +1020,7 @@ namespace NiL.JS.Core
                         && (arr.data[i].attributes & JSObjectAttributes.NotConfigurable) == 0)
                         return false;
             }
-            else
+            else if (obj.fields != null)
                 foreach (var f in obj.fields)
                 {
                     if (f.Value.valueType >= JSObjectType.Object && f.Value.oValue != null && (f.Value.attributes & JSObjectAttributes.NotConfigurable) == 0)
@@ -1051,7 +1051,7 @@ namespace NiL.JS.Core
                                 || (arr.data[i].valueType != JSObjectType.Property && (arr.data[i].attributes & JSObjectAttributes.ReadOnly) == 0)))
                         return false;
             }
-            else
+            else if (obj.fields != null)
                 foreach (var f in obj.fields)
                 {
                     if ((f.Value.attributes & JSObjectAttributes.NotConfigurable) == 0
