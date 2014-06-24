@@ -1,13 +1,52 @@
-﻿function f1(func, step)
-{
-    a = 1;
-    if (step == 1)
-        return function () { return a; }
-    do {
-        var a = 2;
-    } while (false);
-    console.log(func());
-}
-var f = f1(null, 1);
-console.log(f());
-f1(f, 2);
+﻿// Copyright 2009 the Sputnik authors.  All rights reserved.
+/**
+ * Delete unary operator can't delete object to be referenced
+ *
+ * @path ch08/8.7/S8.7_A5_T2.js
+ * @description Delete referenced object, __ref = obj
+ * @noStrict
+ */
+
+//////////////////////////////////////////////////////////////////////////////
+//CHECK#1
+if (typeof (__ref) !== "undefined") {
+    $ERROR('#1: typeof(__ref) === "undefined". Actual: ' + (typeof (__ref)));
+};
+//
+//////////////////////////////////////////////////////////////////////////////
+
+var obj = new Object();
+__ref = obj;
+
+//////////////////////////////////////////////////////////////////////////////
+//CHECK#2
+if (typeof (__ref) === "undefined") {
+    $ERROR('#2: obj = new Object(); __ref = obj; typeof(__ref) !== "undefined"');
+};
+//
+//////////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////////
+//CHECK#3
+if (delete __ref !== true) {
+    $ERROR('#3: obj = new Object(); __ref = obj; delete __ref === true. Actual: ' + (delete __ref));
+};
+//
+//////////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////////
+//CHECK#4
+if (typeof (__ref) !== "undefined") {
+    $ERROR('#4: obj = new Object(); __ref = obj; delete __ref; typeof(__ref) === "undefined". Actual: ' + (typeof (__ref)));
+};
+//
+//////////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////////
+//CHECK#5
+if (typeof (obj) !== "object") {
+    $ERROR('#5: obj = new Object(); __ref = obj; delete __ref; typeof(obj) === "object". Actual: ' + (typeof (obj)));
+};
+//
+//////////////////////////////////////////////////////////////////////////////
+

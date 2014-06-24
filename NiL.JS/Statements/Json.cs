@@ -169,18 +169,31 @@ namespace NiL.JS.Statements
 
         internal override bool Optimize(ref Statement _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> vars, bool strict)
         {
-            for (int i = 0; i < values.Length; i++)
+            VariableDescriptor thisBind = null;
+            vars.TryGetValue("this", out thisBind);
+            try
             {
-                if ((values[i] is ImmidateValueStatement) && ((values[i] as ImmidateValueStatement).value.valueType == JSObjectType.Property))
+                vars["this"] = new VariableDescriptor("this", fdepth + 1);
+                for (int i = 0; i < values.Length; i++)
                 {
-                    var gs = (values[i] as ImmidateValueStatement).value.oValue as Statement[];
-                    Parser.Optimize(ref gs[0], 1, fdepth, vars, strict);
-                    Parser.Optimize(ref gs[1], 1, fdepth, vars, strict);
+                    if ((values[i] is ImmidateValueStatement) && ((values[i] as ImmidateValueStatement).value.valueType == JSObjectType.Property))
+                    {
+                        var gs = (values[i] as ImmidateValueStatement).value.oValue as Statement[];
+                        Parser.Optimize(ref gs[0], 1, fdepth, vars, strict);
+                        Parser.Optimize(ref gs[1], 1, fdepth, vars, strict);
+                    }
+                    else
+                        Parser.Optimize(ref values[i], 2, fdepth, vars, strict);
                 }
-                else
-                    Parser.Optimize(ref values[i], 2, fdepth, vars, strict);
+                return false;
             }
-            return false;
+            finally
+            {
+                if (thisBind == null)
+                    vars.Remove("this");
+                else
+                    vars["this"] = thisBind;
+            }
         }
 
         protected override Statement[] getChildsImpl()

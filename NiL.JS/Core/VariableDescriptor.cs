@@ -8,9 +8,10 @@ namespace NiL.JS.Core
     public sealed class VariableDescriptor
     {
         internal readonly HashSet<VariableReference> references;
-        internal int definDepth;
+        internal int defineDepth;
         private string name;
         private JSObject cacheRes;
+        private Context prewContext;
         private Statement owner;
 
         public bool Defined { get; internal set; }
@@ -28,39 +29,53 @@ namespace NiL.JS.Core
             }
         }
 
-        internal JSObject Get(Context context, bool create)
+        internal JSObject Get(Context context, bool create, int depth)
         {
             context.objectSource = null;
-            //if ((attributes & VariableDescriptorAttributes.NoCaching) != 0)
-            //    return context.GetVariable(name, create);
+            if (depth < 0 || defineDepth < 0)
+                return context.GetVariable(name, create);
+            if (cacheRes != null)
+            {
+                while (depth > defineDepth)
+                {
+                    if (context is WithContext)
+                    {
+                        cacheRes = null;
+                        break;
+                    }
+                    context = context.prototype;
+                    depth--;
+                }
+                if (context != prewContext)
+                    cacheRes = null;
+            }
             if (cacheRes == null)
             {
                 var res = context.GetVariable(name, create);
                 if (create && !Defined && res.valueType == JSObjectType.NotExist)
                     res.attributes = JSObjectAttributes.None;
-                if (!create && res.valueType < JSObjectType.Undefined)
-                    return res;
                 if (res.oValue is TypeProxy && (res.oValue as TypeProxy).prototypeInstance != null)
                     res = (res.oValue as TypeProxy).prototypeInstance;
+                if ((res.attributes & JSObjectAttributes.SystemObject) != 0)
+                    return res; // Могли сначала запросить переменную, а потом её создать и инициализировать. 
+                                // В таком случае закешированным остался бы notExist
+                prewContext = context;
                 return cacheRes = res;
             }
             return cacheRes;
         }
 
-        internal void ClearCache()
+        internal VariableDescriptor(string name, int defineDepth)
         {
-            cacheRes = null;
-        }
-
-        internal VariableDescriptor(string name, int definDepth)
-        {
+            this.defineDepth = defineDepth;
             this.name = name;
             references = new HashSet<VariableReference>();
             Defined = true;
         }
 
-        internal VariableDescriptor(VariableReference proto, bool defined, int definDepth)
+        internal VariableDescriptor(VariableReference proto, bool defined, int defineDepth)
         {
+            this.defineDepth = defineDepth;
             this.name = proto.Name;
             if (proto is FunctionStatement.FunctionReference)
                 Inititalizator = (proto as FunctionStatement.FunctionReference).Owner;

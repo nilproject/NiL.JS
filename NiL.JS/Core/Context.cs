@@ -422,13 +422,42 @@ namespace NiL.JS.Core
                 if (i < c.Length)
                     throw new System.ArgumentException("Invalid char");
                 var vars = new Dictionary<string, VariableDescriptor>();
-                Parser.Optimize(ref cb, leak ? -1 : -2, int.MinValue, vars, strict);
+                Parser.Optimize(ref cb, leak ? -1 : -2, 0, vars, strict);
                 Context context = null;
                 var body = cb as CodeBlock;
                 if (leak)
                     context = this;
                 else
                     context = new Context(this, this.caller) { strict = true, variables = body.variables };
+                if (leak)
+                {
+                    if (context.variables != null)
+                        for (i = context.variables.Length; i-- > 0; )
+                        {
+                            VariableDescriptor desc = null;
+                            if (vars.TryGetValue(context.variables[i].Name, out desc) && desc.Defined)
+                            {
+                                context.variables[i].defineDepth = -1; // Кеш будет игнорироваться.
+                                // чистить кэш тут не достаточно. 
+                                // Мы не знаем, где объявлена одноимённая переменная 
+                                // и в тех случаях, когда она пришла из функции выше
+                                // или даже глобального контекста, её кэш может быть 
+                                // не сброшен вовремя и значение будет браться из контекста
+                                // eval'а, а не того контекста, в котором её позовут.
+                                /*
+                                 * function a(){
+                                 *  var c = 1;
+                                 *  function b(){
+                                 *      eval("var c = 2");
+                                 *      // переменная объявлена в контексте b, значит и значение должно быть из
+                                 *      // контекста b, но если по выходу из b кэш этой переменной сброшен не будет, 
+                                 *      // то в a её значение будет, как бы, 2, но на самом деле 1.
+                                 *  }
+                                 * }
+                                 */
+                            }
+                        }
+                }
                 for (i = body.variables.Length; i-- > 0; )
                 {
                     if (body.variables[i].Defined)

@@ -153,7 +153,7 @@ namespace NiL.JS.Statements
                         vars[f.Name] = new VariableDescriptor(f.Reference, true, state.functionsDepth);
                     else
                     {
-                        f.Reference.FunctionDepth = state.functionsDepth;
+                        f.Reference.functionDepth = state.functionsDepth;
                         vd.references.Add(f.Reference);
                         f.Reference.Descriptor = vd;
                         vd.Inititalizator = f.Reference;
@@ -300,7 +300,7 @@ namespace NiL.JS.Statements
                         if (this.variables[i].Defined && this.variables[i].Owner == null) // все объявленные переменные без хозяина наши
                         {
                             this.variables[i].Owner = this;
-                            this.variables[i].definDepth = fdepth;
+                            this.variables[i].defineDepth = fdepth;
                         }
             }
             return false;

@@ -348,7 +348,7 @@ namespace NiL.JS.Statements
                 if (name == "undefined")
                     first = new ImmidateValueStatement(JSObject.undefined) { Position = index, Length = i - index };
                 else
-                    first = new GetVariableStatement(name) { Position = index, Length = i - index, FunctionDepth = state.functionsDepth };
+                    first = new GetVariableStatement(name) { Position = index, Length = i - index, functionDepth = state.functionsDepth };
             }
             else if (Parser.ValidateValue(code, ref i))
             {

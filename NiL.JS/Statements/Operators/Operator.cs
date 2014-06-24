@@ -14,7 +14,7 @@ namespace NiL.JS.Statements.Operators
         {
             internal SafeVariableGetter(GetVariableStatement gvs)
             {
-                FunctionDepth = gvs.FunctionDepth;
+                functionDepth = gvs.functionDepth;
                 Descriptor = gvs.Descriptor;
                 Descriptor.references.Remove(gvs);
                 Descriptor.references.Add(this);
@@ -31,12 +31,12 @@ namespace NiL.JS.Statements.Operators
 
             internal override JSObject Invoke(Context context)
             {
-                return Descriptor.Get(context, false);
+                return Descriptor.Get(context, false, functionDepth);
             }
 
             internal override JSObject InvokeForAssing(Context context)
             {
-                return Descriptor.Get(context, false);
+                return Descriptor.Get(context, false, functionDepth);
             }
 
             public override string ToString()
@@ -72,6 +72,10 @@ namespace NiL.JS.Statements.Operators
 
         internal override bool Optimize(ref Statement _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> vars, bool strict)
         {
+            while (first is None && (first as None).second == null)
+                first = (first as None).first;
+            while (second is None && (second as None).second == null)
+                second = (second as None).first;
             Parser.Optimize(ref first, depth + 1, fdepth, vars, strict);
             Parser.Optimize(ref second, depth + 1, fdepth, vars, strict);
             try

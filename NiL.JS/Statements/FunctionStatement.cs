@@ -28,7 +28,7 @@ namespace NiL.JS.Statements
 
             public FunctionReference(FunctionStatement owner)
             {
-                FunctionDepth = -1;
+                functionDepth = -1;
                 this.owner = owner;
             }
 
@@ -61,7 +61,7 @@ namespace NiL.JS.Statements
 
             public ParameterReference(string name, int fdepth)
             {
-                FunctionDepth = fdepth;
+                functionDepth = fdepth;
                 this.name = name;
                 Descriptor = new VariableDescriptor(this, true, fdepth);
             }
@@ -266,7 +266,7 @@ namespace NiL.JS.Statements
             state.InExpression = inExp;
             if (name != null)
             {
-                func.Reference.FunctionDepth = state.functionsDepth;
+                func.Reference.functionDepth = state.functionsDepth;
                 func.Reference.Position = nameStartPos;
                 func.Reference.Length = name.Length;
             }
@@ -322,7 +322,7 @@ namespace NiL.JS.Statements
             {
                 nvars[parameters[i].Name] = parameters[i].Descriptor;
                 parameters[i].Descriptor.Owner = this;
-                parameters[i].Descriptor.definDepth = fdepth;
+                parameters[i].Descriptor.defineDepth = fdepth + 1;
             }
             VariableDescriptor fdesc = null;
             if (type == FunctionType.Function && !string.IsNullOrEmpty(name))

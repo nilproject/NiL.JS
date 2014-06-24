@@ -28,18 +28,6 @@ namespace NiL.JS.Statements.Operators
             return temp;
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> vars, bool strict)
-        {
-            if (second == null)
-            {
-                _this = first;
-                return true;
-            }
-            Parser.Optimize(ref first, depth, fdepth, vars, strict);
-            Parser.Optimize(ref second, depth, fdepth, vars, strict);
-            return false;
-        }
-
         public override string ToString()
         {
             return "(" + first + (second != null ? ", " + second : "") + ")";

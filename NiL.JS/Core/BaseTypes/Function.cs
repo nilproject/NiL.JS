@@ -870,7 +870,6 @@ namespace NiL.JS.Core.BaseTypes
                 {
                     if (body.variables[i].Owner == body)
                     {
-                        body.variables[i].ClearCache();
                         JSObject f = null;
                         if (body.variables[i].Name != "arguments" // нельзя переменной перебить аргументы
                             || body.variables[i].Inititalizator != null) // а вот функцией можно
@@ -880,8 +879,6 @@ namespace NiL.JS.Core.BaseTypes
                                 f.Assign(body.variables[i].Inititalizator.Invoke(internalContext));
                         }
                     }
-                    else if (body.variables[i].Owner == creator)
-                        body.variables[i].ClearCache();
                 }
                 internalContext.strict |= body.strict;
                 internalContext.variables = body.variables;
@@ -893,16 +890,6 @@ namespace NiL.JS.Core.BaseTypes
             }
             finally
             {
-                if (oldargs != null)
-                {
-                    creator.recursive = true;
-                    for (var i = body.variables.Length; i-- > 0; )
-                    {
-                        if (body.variables[i].Owner == creator
-                            || body.variables[i].Owner == body)
-                            body.variables[i].ClearCache();
-                    }
-                }
                 internalContext.Deactivate();
                 _arguments = oldargs;
             }
