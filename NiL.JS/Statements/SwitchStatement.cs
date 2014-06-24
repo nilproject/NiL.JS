@@ -145,22 +145,22 @@ namespace NiL.JS.Statements
             return JSObject.undefined;
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        internal override bool Optimize(ref Statement _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
             if (depth < 1)
                 throw new InvalidOperationException();
-            Parser.Optimize(ref image, 2, variables, strict);
+            Parser.Optimize(ref image, 2, fdepth, variables, strict);
             for (int i = 0; i < body.Length; i++)
-                Parser.Optimize(ref body[i], 1, variables, strict);
+                Parser.Optimize(ref body[i], 1, fdepth, variables, strict);
             for (int i = 0; i < functions.Length; i++)
             {
                 Statement stat = functions[i];
-                Parser.Optimize(ref stat, 1, variables, strict);
-                variables[functions[i].Name] = new VariableDescriptor(functions[i].Reference, true);
+                Parser.Optimize(ref stat, 1, fdepth, variables, strict);
+                variables[functions[i].Name] = new VariableDescriptor(functions[i].Reference, true, fdepth);
             }
             functions = null;
             for (int i = 1; i < cases.Length; i++)
-                Parser.Optimize(ref cases[i].statement, 2, variables, strict);
+                Parser.Optimize(ref cases[i].statement, 2, fdepth, variables, strict);
             for (int i = 0; i < body.Length / 2; i++)
             {
                 var t = body[i];

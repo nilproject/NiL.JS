@@ -167,18 +167,18 @@ namespace NiL.JS.Statements
             return res;
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict)
+        internal override bool Optimize(ref Statement _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> vars, bool strict)
         {
             for (int i = 0; i < values.Length; i++)
             {
                 if ((values[i] is ImmidateValueStatement) && ((values[i] as ImmidateValueStatement).value.valueType == JSObjectType.Property))
                 {
                     var gs = (values[i] as ImmidateValueStatement).value.oValue as Statement[];
-                    Parser.Optimize(ref gs[0], 1, vars, strict);
-                    Parser.Optimize(ref gs[1], 1, vars, strict);
+                    Parser.Optimize(ref gs[0], 1, fdepth, vars, strict);
+                    Parser.Optimize(ref gs[1], 1, fdepth, vars, strict);
                 }
                 else
-                    Parser.Optimize(ref values[i], 2, vars, strict);
+                    Parser.Optimize(ref values[i], 2, fdepth, vars, strict);
             }
             return false;
         }

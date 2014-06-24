@@ -58,10 +58,10 @@ namespace NiL.JS.Statements
                 return null;
             }
 
-            public ParameterReference(string name)
+            public ParameterReference(string name, int fdepth)
             {
                 this.name = name;
-                Descriptor = new VariableDescriptor(this, true);
+                Descriptor = new VariableDescriptor(this, true, fdepth);
             }
 
             public override string ToString()
@@ -161,7 +161,7 @@ namespace NiL.JS.Statements
                 if (!Parser.ValidateName(code, ref i, state.strict.Peek()))
                     throw new JSException(TypeProxy.Proxy(new SyntaxError("Invalid description of function arguments at " + Tools.PositionToTextcord(code, nameStartPos))));
                 var pname = Tools.Unescape(code.Substring(n, i - n), state.strict.Peek());
-                parameters.Add(new ParameterReference(pname) { Position = n, Length = i - n });
+                parameters.Add(new ParameterReference(pname, state.functionsDepth + 1) { Position = n, Length = i - n });
                 while (char.IsWhiteSpace(code[i])) i++;
             }
             switch (mode)
@@ -186,7 +186,7 @@ namespace NiL.JS.Statements
                 throw new ArgumentException("code (" + i + ")");
             var labels = state.Labels;
             state.Labels = new List<string>();
-            state.AllowReturn++;
+            state.functionsDepth++;
             CodeBlock body = null;
             try
             {
@@ -197,7 +197,7 @@ namespace NiL.JS.Statements
             {
                 state.AllowStrict = false;
                 state.Labels = labels;
-                state.AllowReturn--;
+                state.functionsDepth--;
             }
             if (body.strict)
             {
@@ -315,7 +315,7 @@ namespace NiL.JS.Statements
             return new Function(context, this);
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        internal override bool Optimize(ref Statement _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
             var stat = body as Statement;
             var nvars = new Dictionary<string, VariableDescriptor>();
@@ -323,22 +323,20 @@ namespace NiL.JS.Statements
             {
                 nvars[parameters[i].Name] = parameters[i].Descriptor;
                 parameters[i].Descriptor.Owner = this;
+                parameters[i].Descriptor.definDepth = fdepth + 1;
             }
             VariableDescriptor fdesc = null;
-            int funcRefs = 0;
             if (type == FunctionType.Function && !string.IsNullOrEmpty(name))
             {
                 if (!variables.TryGetValue(name, out fdesc) // Если там не определена
                     || !fdesc.references.Contains(Reference)) // или определена, но не эта. Для примера: var f = function f1(){ return 1 }; function f1(){ return 2 };
-                    fdesc = new VariableDescriptor(Reference, true); // то создаём новый дескриптор
+                    fdesc = new VariableDescriptor(Reference, true, fdepth + 1); // то создаём новый дескриптор
                 nvars[name] = fdesc;
-                funcRefs = fdesc.references.Count;
             }
-            nvars["arguments"] = new VariableDescriptor("arguments", true) { Owner = this };
-            stat.Optimize(ref stat, 0, nvars, strict);
+            nvars["arguments"] = new VariableDescriptor("arguments", fdepth + 1) { Owner = this };
+            stat.Optimize(ref stat, 0, fdepth + 1, nvars, strict);
             if (fdesc != null)
             {
-                recursive = fdesc.references.Count != funcRefs;
                 fdesc.Owner = null; /* Тело функции, увидев здесь null, говорит, что оно хозяйко этого определения. 
                                      * При таком раскладе функция появится только когда она сама вызовется, что в корне не верно.
                                      */
@@ -349,6 +347,8 @@ namespace NiL.JS.Statements
                 for (var i = body.variables.Length; i-- > 0; )
                 {
                     if (!body.variables[i].Defined)
+                    // все необъявленные переменные нужно прокинуть вниз для того,
+                    // чтобы во всех местах их использования был один дескриптор и один кеш
                     {
                         VariableDescriptor desc = null;
                         if (variables.TryGetValue(body.variables[i].Name, out desc))

@@ -10,7 +10,6 @@ namespace NiL.JS.Statements
     {
         private Statement obj;
         private Statement body;
-        private VariableDescriptor[] variables;
 
         public Statement Body { get { return body; } }
         public Statement Scope { get { return obj; } }
@@ -57,7 +56,6 @@ namespace NiL.JS.Statements
 #endif
             try
             {
-                intcontext.variables = variables;
                 intcontext.Activate();
                 body.Invoke(intcontext);
                 context.abort = intcontext.abort;
@@ -81,19 +79,10 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        internal override bool Optimize(ref Statement _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
-            Parser.Optimize(ref obj, depth, variables, strict);
-            var nvars = new Dictionary<string, VariableDescriptor>();
-            Parser.Optimize(ref body, depth, nvars, strict);
-            foreach(var v in nvars.Values)
-            {
-                VariableDescriptor desc = null;
-                if (v.Defined && !variables.TryGetValue(v.Name, out desc))
-                    variables[v.Name] = new VariableDescriptor(v.Name, true);
-                v.attributes |= VariableDescriptorAttributes.NoCaching;
-            }
-            this.variables = nvars.Values.ToArray();
+            Parser.Optimize(ref obj, depth, fdepth, variables, strict);
+            Parser.Optimize(ref body, depth, fdepth, variables, strict);
             return false;
         }
 

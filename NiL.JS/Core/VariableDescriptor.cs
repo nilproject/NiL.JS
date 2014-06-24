@@ -5,20 +5,10 @@ using NiL.JS.Statements;
 namespace NiL.JS.Core
 {
     [Serializable]
-    [Flags]
-    internal enum VariableDescriptorAttributes
-    {
-        None = 0,
-        NoCaching = 1,
-        SMNotAssignable = 2,
-        SuppressRefRegistration = 4
-    }
-
-    [Serializable]
     public sealed class VariableDescriptor
     {
         internal readonly HashSet<VariableReference> references;
-        internal VariableDescriptorAttributes attributes;
+        internal int definDepth;
         private string name;
         private JSObject cacheRes;
         private Statement owner;
@@ -41,8 +31,8 @@ namespace NiL.JS.Core
         internal JSObject Get(Context context, bool create)
         {
             context.objectSource = null;
-            if ((attributes & VariableDescriptorAttributes.NoCaching) != 0)
-                return context.GetVariable(name, create);
+            //if ((attributes & VariableDescriptorAttributes.NoCaching) != 0)
+            //    return context.GetVariable(name, create);
             if (cacheRes == null)
             {
                 var res = context.GetVariable(name, create);
@@ -62,14 +52,14 @@ namespace NiL.JS.Core
             cacheRes = null;
         }
 
-        internal VariableDescriptor(string name, bool defined)
+        internal VariableDescriptor(string name, int definDepth)
         {
             this.name = name;
             references = new HashSet<VariableReference>();
-            Defined = defined;
+            Defined = true;
         }
 
-        internal VariableDescriptor(VariableReference proto, bool defined)
+        internal VariableDescriptor(VariableReference proto, bool defined, int definDepth)
         {
             this.name = proto.Name;
             if (proto is FunctionStatement.FunctionReference)

@@ -74,7 +74,7 @@ namespace NiL.JS.Statements
                     body = b,
                     catchBody = cb,
                     finallyBody = f,
-                    catchVariableDesc = new VariableDescriptor(exptn, true),
+                    catchVariableDesc = new VariableDescriptor(exptn, state.functionsDepth),
                     Position = pos,
                     Length = index - pos
                 }
@@ -151,22 +151,22 @@ namespace NiL.JS.Statements
             return null;
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        internal override bool Optimize(ref Statement _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
-            Parser.Optimize(ref body, 1, variables, strict);
+            Parser.Optimize(ref body, 1, fdepth, variables, strict);
             if (catchBody != null)
             {
                 catchVariableDesc.Owner = this;
                 VariableDescriptor ovd = null;
                 variables.TryGetValue(catchVariableDesc.Name, out ovd);
                 variables[catchVariableDesc.Name] = catchVariableDesc;
-                Parser.Optimize(ref catchBody, 1, variables, strict);
+                Parser.Optimize(ref catchBody, 1, fdepth, variables, strict);
                 if (ovd != null)
                     variables[catchVariableDesc.Name] = ovd;
                 else
                     variables.Remove(catchVariableDesc.Name);
             }
-            Parser.Optimize(ref finallyBody, 1, variables, strict);
+            Parser.Optimize(ref finallyBody, 1, fdepth, variables, strict);
             return false;
         }
 

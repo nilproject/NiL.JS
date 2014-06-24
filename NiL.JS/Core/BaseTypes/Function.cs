@@ -753,7 +753,7 @@ namespace NiL.JS.Core.BaseTypes
             attributes = JSObjectAttributes.ReadOnly | JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum | JSObjectAttributes.SystemObject;
             context = Context.CurrentContext.Root;
             if (context == Context.globalContext)
-                throw new InvalidOperationException("Special Functions constructor can call only in runtime.");
+                throw new InvalidOperationException("Special Functions constructor can be called only in runtime.");
             var index = 0;
             int len = args.Length - 1;
             var argn = "";
@@ -763,7 +763,7 @@ namespace NiL.JS.Core.BaseTypes
             var fs = NiL.JS.Statements.FunctionStatement.Parse(new ParsingState(code, code), ref index);
             if (fs.IsParsed)
             {
-                Parser.Optimize(ref fs.Statement, new Dictionary<string, VariableDescriptor>(), context.strict);
+                Parser.Optimize(ref fs.Statement, 0, 0, new Dictionary<string, VariableDescriptor>(), context.strict);
                 var func = fs.Statement.Invoke(context) as Function;
                 creator = fs.Statement as FunctionStatement;
             }
@@ -872,7 +872,6 @@ namespace NiL.JS.Core.BaseTypes
                     {
                         body.variables[i].ClearCache();
                         JSObject f = null;
-                        //if (!internalContext.fields.TryGetValue(body.variables[i].Name, out f))
                         if (body.variables[i].Name != "arguments" // нельзя переменной перебить аргументы
                             || body.variables[i].Inititalizator != null) // а вот функцией можно
                         {

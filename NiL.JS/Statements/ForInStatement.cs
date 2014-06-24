@@ -143,13 +143,13 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        internal override bool Optimize(ref Statement _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
-            Parser.Optimize(ref variable, 1, variables, strict);
+            Parser.Optimize(ref variable, 1, fdepth, variables, strict);
             if (variable is VariableDefineStatement)
                 variable = (variable as VariableDefineStatement).initializators[0];
-            Parser.Optimize(ref source, 1, variables, strict);
-            Parser.Optimize(ref body, System.Math.Max(1, depth), variables, strict);
+            Parser.Optimize(ref source, 1, fdepth, variables, strict);
+            Parser.Optimize(ref body, System.Math.Max(1, depth), fdepth, variables, strict);
             if (variable is Operators.None)
             {
                 if ((variable as Operators.None).SecondOperand != null)

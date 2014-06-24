@@ -92,9 +92,9 @@ namespace NiL.JS.Statements.Operators
             }
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> vars, bool strict)
+        internal override bool Optimize(ref Statement _this, int depth, int fdepth, System.Collections.Generic.Dictionary<string, VariableDescriptor> vars, bool strict)
         {
-            if (base.Optimize(ref _this, depth, vars, strict))
+            if (base.Optimize(ref _this, depth, fdepth, vars, strict))
                 return true;
             if (first is GetVariableStatement)
             {

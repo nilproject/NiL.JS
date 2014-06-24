@@ -89,7 +89,7 @@ namespace NiL.JS.Statements.Operators
             }
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict)
+        internal override bool Optimize(ref Statement _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> vars, bool strict)
         {
             newMarker.oValue = this;    // Достаточно один раз туда поставить какой-нибудь
             // экземпляр оператора New, так как дальше проверка идёт только по "is"
@@ -97,7 +97,7 @@ namespace NiL.JS.Statements.Operators
                 (CallInstance.SecondOperand as ImmidateValueStatement).value = new JSObject() { valueType = JSObjectType.Object, oValue = new Statement[0] };
             else
                 (CallInstance.SecondOperand as ImmidateValueStatement).value = second.Invoke(null);
-            return base.Optimize(ref _this, depth, vars, strict);
+            return base.Optimize(ref _this, depth, fdepth, vars, strict);
         }
 
         public override string ToString()

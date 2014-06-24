@@ -102,11 +102,11 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        internal override bool Optimize(ref Statement _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
             depth = System.Math.Max(1, depth);
-            Parser.Optimize(ref body, depth, variables, strict);
-            Parser.Optimize(ref condition, 2, variables, strict);
+            Parser.Optimize(ref body, depth, fdepth, variables, strict);
+            Parser.Optimize(ref condition, 2, fdepth, variables, strict);
             return false;
         }
 

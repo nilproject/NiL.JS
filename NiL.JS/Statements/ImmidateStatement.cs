@@ -35,13 +35,13 @@ namespace NiL.JS.Statements
             return null;
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        internal override bool Optimize(ref Statement _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
             var vss = value.oValue as Statement[];
             if (vss != null)
             {
                 for (int i = 0; i < vss.Length; i++)
-                    Parser.Optimize(ref vss[i], depth + 1, variables, strict);
+                    Parser.Optimize(ref vss[i], depth + 1, fdepth, variables, strict);
             }
             return false;
         }

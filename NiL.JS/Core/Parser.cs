@@ -515,16 +515,9 @@ namespace NiL.JS.Core
                 + code.Substring(index, Math.Min(20, code.Length - index)).Split(new[] { ' ', '\n', '\r' })[0])));
         }
 
-        internal static void Optimize(ref Statement s, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        internal static void Optimize(ref Statement s, int depth, int funcDepth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
-            while (s != null && s.Optimize(ref s, depth, variables, strict)) { }
-        }
-
-        internal static void Optimize(ref Statement s, Dictionary<string, VariableDescriptor> variables, bool strict)
-        {
-            while (s != null && s.Optimize(ref s, 0, variables, strict)) { }
-            foreach (var v in variables.Values)
-                v.attributes |= VariableDescriptorAttributes.SuppressRefRegistration;
+            while (s != null && s.Optimize(ref s, depth, funcDepth, variables, strict)) { }
         }
     }
 }

@@ -69,10 +69,10 @@ namespace NiL.JS.Statements.Operators
             this.second = second;
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict)
+        internal override bool Optimize(ref Statement _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> vars, bool strict)
         {
-            Parser.Optimize(ref first, depth + 1, vars, strict);
-            Parser.Optimize(ref second, depth + 1, vars, strict);
+            Parser.Optimize(ref first, depth + 1, fdepth, vars, strict);
+            Parser.Optimize(ref second, depth + 1, fdepth, vars, strict);
             try
             {
                 if (this.IsContextIndependent)

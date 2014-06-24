@@ -23,7 +23,7 @@ namespace NiL.JS.Statements
             int i = index;
             if (!Parser.Validate(code, "return", ref i) || !Parser.isIdentificatorTerminator(code[i]))
                 return new ParseResult();
-            if (state.AllowReturn == 0)
+            if (state.functionsDepth == 0)
                 throw new JSException(TypeProxy.Proxy(new SyntaxError("Invalid use of return statement.")));
             var body = Parser.Parse(state, ref i, 1, true);
             var pos = index;
@@ -57,9 +57,9 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        internal override bool Optimize(ref Statement _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
-            Parser.Optimize(ref body, 2, variables, strict);
+            Parser.Optimize(ref body, 2, fdepth, variables, strict);
             return false;
         }
 

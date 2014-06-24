@@ -92,9 +92,9 @@ namespace NiL.JS.Statements.Operators
             return res + ")";
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict)
+        internal override bool Optimize(ref Statement _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> vars, bool strict)
         {
-            base.Optimize(ref _this, depth, vars, strict);
+            base.Optimize(ref _this, depth, fdepth, vars, strict);
             arguments = second.Invoke(null).oValue as Statement[];
             return false;
         }

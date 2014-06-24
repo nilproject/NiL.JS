@@ -136,10 +136,10 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        internal override bool Optimize(ref Statement _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
             for (int i = 0; i < initializators.Length; i++)
-                Parser.Optimize(ref initializators[i], 1, variables, strict);
+                Parser.Optimize(ref initializators[i], 1, fdepth, variables, strict);
             for (var i = 0; i < names.Length; i++)
                 variables[names[i]].Defined = true;
             return false;
