@@ -7,26 +7,36 @@ namespace NiL.JS.Core.BaseTypes
     [Serializable]
     public sealed class RangeError : Error
     {
+        [DoNotEnumerate]
         public override JSObject message
         {
+            [Hidden]
             get
             {
                 return base.message;
             }
         }
-        public override JSObject name { get { return "RangeError"; } }
+        [DoNotEnumerate]
+        public override JSObject name
+        {
+            [Hidden]
+            get { return "RangeError"; }
+        }
 
+        [DoNotEnumerate]
         public RangeError()
         {
 
         }
 
+        [DoNotEnumerate]
         public RangeError(JSObject args)
             : base(args.GetMember("0").ToString())
         {
 
         }
 
+        [DoNotEnumerate]
         public RangeError(string message)
             : base(message)
         {

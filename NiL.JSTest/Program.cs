@@ -228,7 +228,7 @@ namespace NiL.JSTest
         static void Main(string[] args)
         {
             typeof(System.Windows.Forms.Button).GetType();
-            int mode = 0
+            int mode = 2
                 ;
             switch (mode)
             {
@@ -256,6 +256,12 @@ namespace NiL.JSTest
                     {
                         // Object
                         sputnicTests(@"tests\sputnik\ch15\15.2\");
+                        break;
+                    }
+                case 5:
+                    {
+                        // Array
+                        sputnicTests(@"tests\sputnik\ch15\15.4\");
                         break;
                     }
             }

@@ -74,7 +74,6 @@ namespace NiL.JS.Statements
 
         internal VariableReference[] parameters;
         internal CodeBlock body;
-        internal bool recursive;
         internal readonly string name;
         internal FunctionType type;
 
@@ -345,7 +344,7 @@ namespace NiL.JS.Statements
             {
                 for (var i = body.variables.Length; i-- > 0; )
                 {
-                    if (!body.variables[i].Defined)
+                    if (!body.variables[i].Defined && body.variables[i].Name != "this")
                     // все необъявленные переменные нужно прокинуть вниз для того,
                     // чтобы во всех местах их использования был один дескриптор и один кеш
                     {

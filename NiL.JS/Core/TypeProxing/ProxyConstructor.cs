@@ -9,7 +9,6 @@ using NiL.JS.Core.Modules;
 namespace NiL.JS.Core
 {
     [Serializable]
-    [Prototype(typeof(Function))]
     internal class ProxyConstructor : Function
     {
         [Hidden]
@@ -62,14 +61,8 @@ namespace NiL.JS.Core
         {
             if (__proto__ == null)
             {
-                __proto__ = TypeProxy.GetPrototype(typeof(ProxyConstructor));
+                __proto__ = TypeProxy.GetPrototype(typeof(Function));
                 proxy.__proto__ = __proto__;
-            }
-            if (name == "__proto__" && __proto__ == null)
-            {
-                if (create && (__proto__.attributes & JSObjectAttributes.SystemObject) != 0)
-                    __proto__ = __proto__.Clone() as JSObject;
-                return __proto__;
             }
             return proxy.GetMember(name, create, own);
         }
@@ -221,12 +214,6 @@ namespace NiL.JS.Core
         public override string ToString()
         {
             return "function " + proxy.hostedType.Name + "() { [native code] }";
-        }
-
-        [Hidden]
-        public override JSObject toString(JSObject args)
-        {
-            return base.toString(args);
         }
     }
 }

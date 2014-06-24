@@ -315,9 +315,10 @@ namespace NiL.JS.Core.BaseTypes
             return valueType == JSObjectType.Int ? iValue.ToString(System.Globalization.CultureInfo.CurrentCulture) : dValue.ToString(System.Globalization.CultureInfo.CurrentCulture);
         }
 
+        [CLSCompliant(false)]
         [AllowUnsafeCall(typeof(JSObject))]
         [Modules.DoNotEnumerate]
-        public override JSObject toString(JSObject radix)
+        public new JSObject toString(JSObject radix)
         {
             if (this.valueType != JSObjectType.Int && this.valueType != JSObjectType.Double)
                 throw new JSException(TypeProxy.Proxy(new TypeError("Try to call Number.toString on not Number object")));

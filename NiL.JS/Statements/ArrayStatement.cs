@@ -22,18 +22,22 @@ namespace NiL.JS.Statements
             int i = index;
             if (code[index] != '[')
                 throw new ArgumentException("Syntax error. Expected '['");
-            do i++; while (char.IsWhiteSpace(code[i]));
+            do
+                i++;
+            while (char.IsWhiteSpace(code[i]));
             var elms = new List<Statement>();
             while (code[i] != ']')
             {
                 if (code[i] == ',')
-                    elms.Add(new ImmidateValueStatement(JSObject.undefined));
+                    elms.Add(null);
                 else
                     elms.Add(OperatorStatement.Parse(state, ref i, false).Statement);
-                while (char.IsWhiteSpace(code[i])) i++;
+                while (char.IsWhiteSpace(code[i]))
+                    i++;
                 if (code[i] == ',')
                 {
-                    do i++;
+                    do
+                        i++;
                     while (char.IsWhiteSpace(code[i]));
                 }
                 else if (code[i] != ']')
@@ -58,7 +62,10 @@ namespace NiL.JS.Statements
         {
             var res = new NiL.JS.Core.BaseTypes.Array(elements.Length);
             for (int i = 0; i < elements.Length; i++)
-                res[i] = elements[i].Invoke(context).Clone() as JSObject;
+            {
+                if (elements[i] != null)
+                    res[i] = elements[i].Invoke(context).Clone() as JSObject;
+            }
             return res;
         }
 

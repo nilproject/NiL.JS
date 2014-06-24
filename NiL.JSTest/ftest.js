@@ -1,52 +1,45 @@
 ﻿// Copyright 2009 the Sputnik authors.  All rights reserved.
 /**
- * Delete unary operator can't delete object to be referenced
+ * A property name P (in the form of a string value) is an array index
+ * if and only if ToString(ToUint32(P)) is equal to P and ToUint32(P) is not equal to 2^32 - 1
  *
- * @path ch08/8.7/S8.7_A5_T2.js
- * @description Delete referenced object, __ref = obj
- * @noStrict
+ * @path ch15/15.4/S15.4_A1.1_T3.js
+ * @description Checking for number primitive
  */
 
-//////////////////////////////////////////////////////////////////////////////
 //CHECK#1
-if (typeof (__ref) !== "undefined") {
-    $ERROR('#1: typeof(__ref) === "undefined". Actual: ' + (typeof (__ref)));
-};
-//
-//////////////////////////////////////////////////////////////////////////////
+x = [];
+x[4294967296] = 1;
+if (x[0] !== undefined) {
+    $ERROR('#1: x = []; x[4294967296] = 1; x[0] === undefined. Actual: ' + (x[0]));
+}
 
-var obj = new Object();
-__ref = obj;
-
-//////////////////////////////////////////////////////////////////////////////
 //CHECK#2
-if (typeof (__ref) === "undefined") {
-    $ERROR('#2: obj = new Object(); __ref = obj; typeof(__ref) !== "undefined"');
-};
-//
-//////////////////////////////////////////////////////////////////////////////
+if (x["4294967296"] !== 1) {
+    $ERROR('#2: x = []; x[4294967296] = 1; x["4294967296"] === 1. Actual: ' + (x["4294967296"]));
+}
 
-//////////////////////////////////////////////////////////////////////////////
 //CHECK#3
-if (delete __ref !== true) {
-    $ERROR('#3: obj = new Object(); __ref = obj; delete __ref === true. Actual: ' + (delete __ref));
-};
-//
-//////////////////////////////////////////////////////////////////////////////
+y = [];
+y[4294967297] = 1;
+if (y[1] !== undefined) {
+    $ERROR('#3: y = []; y[4294967297] = 1; y[1] === undefined. Actual: ' + (y[1]));
+}
 
-//////////////////////////////////////////////////////////////////////////////
 //CHECK#4
-if (typeof (__ref) !== "undefined") {
-    $ERROR('#4: obj = new Object(); __ref = obj; delete __ref; typeof(__ref) === "undefined". Actual: ' + (typeof (__ref)));
-};
-//
-//////////////////////////////////////////////////////////////////////////////
+if (y["4294967297"] !== 1) {
+    $ERROR('#4: y = []; y[4294967297] = 1; y["4294967297"] === 1. Actual: ' + (y["4294967297"]));
+}
 
-//////////////////////////////////////////////////////////////////////////////
 //CHECK#5
-if (typeof (obj) !== "object") {
-    $ERROR('#5: obj = new Object(); __ref = obj; delete __ref; typeof(obj) === "object". Actual: ' + (typeof (obj)));
-};
-//
-//////////////////////////////////////////////////////////////////////////////
+z = [];
+z[1.1] = 1;
+if (z[1] !== undefined) {
+    $ERROR('#5: z = []; z[1.1] = 1; z[1] === undefined. Actual: ' + (z[1]));
+}
+
+//CHECK#6
+if (z["1.1"] !== 1) {
+    $ERROR('#6: z = []; z[1.1] = 1; z["1.1"] === 1. Actual: ' + (z["1.1"]));
+}
 

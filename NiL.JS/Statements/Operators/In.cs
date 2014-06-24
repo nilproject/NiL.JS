@@ -24,7 +24,7 @@ namespace NiL.JS.Statements.Operators
                 if (source.valueType < JSObjectType.Object)
                     throw new JSException(TypeProxy.Proxy(new TypeError("Right-hand value of instanceof is not object.")));
                 var t = source.GetMember(fn.ToString());
-                return t != JSObject.undefined && t.valueType >= JSObjectType.Undefined ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+                return t.valueType >= JSObjectType.Undefined ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
             }
             finally
             {

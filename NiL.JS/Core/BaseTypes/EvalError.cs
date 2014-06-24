@@ -8,24 +8,32 @@ namespace NiL.JS.Core.BaseTypes
     {
         public override JSObject message
         {
+            [Hidden]
             get
             {
                 return base.message;
             }
         }
-        public override JSObject name { get { return "EvalError"; } }
+        public override JSObject name
+        {
+            [Hidden]
+            get { return "EvalError"; }
+        }
 
+        [DoNotEnumerate]
         public EvalError()
         {
 
         }
 
+        [DoNotEnumerate]
         public EvalError(JSObject args)
             : base(args.GetMember("0").ToString())
         {
 
         }
 
+        [DoNotEnumerate]
         public EvalError(string message)
             : base(message)
         {

@@ -265,7 +265,7 @@ namespace NiL.JS.Core
             var proto = args["0"];
             if (proto.valueType < JSObjectType.Object)
                 throw new JSException(TypeProxy.Proxy(new TypeError("Property define may only for Objects.")));
-            var res = proto;
+            var res = proto.oValue as JSObject ?? proto;
             var members = args["1"];
             if (members.valueType > JSObjectType.Undefined)
             {
@@ -295,9 +295,18 @@ namespace NiL.JS.Core
                         && (get.valueType != JSObjectType.NotExistInObject
                         || set.valueType != JSObjectType.NotExistInObject))
                         throw new JSException(TypeProxy.Proxy(new TypeError("Property can not have getter or setter and writable attribute.")));
-                    var obj = res.GetMember(member, true, true);
-                    if ((obj.attributes & JSObjectAttributes.SystemObject) != 0)
-                        throw new JSException(TypeProxy.Proxy(new TypeError("Can not define property \"" + member + "\". Object is immutable.")));
+                    JSObject obj = null;
+                    if (res.fields == null)
+                        res.fields = new Dictionary<string, JSObject>();
+                    if (res is TypeProxy)
+                        obj = res.DefineMember(member);
+                    else 
+                        if (!res.fields.TryGetValue(member, out obj) || (obj.attributes & JSObjectAttributes.SystemObject) != 0)
+                    {
+                        if ((res.attributes & JSObjectAttributes.Immutable) != 0)
+                            throw new JSException(TypeProxy.Proxy(new TypeError("Can not define property \"" + member + "\". Object is immutable.")));
+                        res.fields[member] = obj = new JSObject() { valueType = JSObjectType.NotExist };
+                    }
                     var newProp = obj.valueType < JSObjectType.Undefined;
                     var config = (obj.attributes & JSObjectAttributes.NotConfigurable) == 0 || newProp;
                     if (config)
@@ -357,8 +366,9 @@ namespace NiL.JS.Core
         [DoNotEnumerate]
         public static JSObject defineProperty(JSObject args)
         {
-            var obj = args.GetMember("0");
-            if (obj.valueType <= JSObjectType.Undefined)
+            var source = args.GetMember("0");
+            source = source.oValue as JSObject ?? source;
+            if (source.valueType <= JSObjectType.Undefined)
                 return undefined;
             var desc = args["2"];
             var value = desc["value"];
@@ -376,9 +386,18 @@ namespace NiL.JS.Core
                 || set.valueType != JSObjectType.NotExistInObject))
                 throw new JSException(TypeProxy.Proxy(new TypeError("Property can not have getter or setter and writable attribute.")));
             string name = args.GetMember("1").ToString();
-            obj = obj.GetMember(name, true, true);
-            if ((obj.attributes & JSObjectAttributes.SystemObject) != 0)
-                throw new JSException(TypeProxy.Proxy(new TypeError("Can not define property \"" + name + "\". Object is immutable.")));
+            JSObject obj = null;
+            if (source.fields == null)
+                source.fields = new Dictionary<string, JSObject>();
+            if (source is TypeProxy)
+                obj = source.DefineMember(name);
+            else
+                if (!source.fields.TryGetValue(name, out obj) || (obj.attributes & JSObjectAttributes.SystemObject) != 0)
+                {
+                    if ((source.attributes & JSObjectAttributes.Immutable) != 0)
+                        throw new JSException(TypeProxy.Proxy(new TypeError("Can not define property \"" + name + "\". Object is immutable.")));
+                    source.fields[name] = obj = new JSObject() { valueType = JSObjectType.NotExist };
+                }
             var newProp = obj.valueType < JSObjectType.Undefined;
             var config = (obj.attributes & JSObjectAttributes.NotConfigurable) == 0 || newProp;
             if (config)
@@ -550,6 +569,8 @@ namespace NiL.JS.Core
                     {
                         if (oValue == this)
                             break;
+                        if ((attributes & JSObjectAttributes.ProxyPrototype) != 0)
+                            return __proto__.GetMember(name, createMember, own);
                         if (oValue != this && (oValue is JSObject))
                             return (oValue as JSObject).GetMember(name, createMember, own);
                         if (oValue == null)
@@ -562,6 +583,8 @@ namespace NiL.JS.Core
                         if (oValue == this)
                             System.Diagnostics.Debugger.Break();
 #endif
+                        if ((attributes & JSObjectAttributes.ProxyPrototype) != 0)
+                            return __proto__.GetMember(name, createMember, own);
                         if (oValue == null)
                             throw new JSException(TypeProxy.Proxy(new TypeError("Can't get property \"" + name + "\" of \"null\"")));
                         if (oValue == this)
@@ -755,11 +778,24 @@ namespace NiL.JS.Core
             {
                 this.valueType = (value.valueType & ~(JSObjectType.NotExistInObject | JSObjectType.NotExist)) | JSObjectType.Undefined;
                 this.iValue = value.iValue;
-                this.oValue = value.oValue;
+                if (valueType < JSObjectType.String)
+                {
+                    this.fields = null;
+                    this.oValue = null;
+                }
+                else
+                {
+                    this.oValue = value.oValue;
+                    if (valueType < JSObjectType.Object)
+                        this.fields = null;
+                    else
+                        this.fields = value.fields;
+                }
                 this.dValue = value.dValue;
                 this.__proto__ = value.__proto__;
-                this.fields = value.fields;
-                this.attributes = (this.attributes & ~JSObjectAttributes.Immutable) | (value.attributes & JSObjectAttributes.Immutable);
+                this.attributes = 
+                    (this.attributes & ~(JSObjectAttributes.Immutable | JSObjectAttributes.ProxyPrototype)) 
+                    | (value.attributes & (JSObjectAttributes.Immutable | JSObjectAttributes.ProxyPrototype));
                 return;
             }
             this.fields = null;
@@ -816,13 +852,13 @@ namespace NiL.JS.Core
             return GetEnumeratorImpl(true);
         }
 
-        protected internal virtual IEnumerator<string> GetEnumeratorImpl(bool doNotEnumProcess)
+        protected internal virtual IEnumerator<string> GetEnumeratorImpl(bool hideNonEnume)
         {
             if (fields != null)
             {
                 foreach (var f in fields)
                 {
-                    if (f.Value.valueType >= JSObjectType.Undefined && (!doNotEnumProcess || (f.Value.attributes & JSObjectAttributes.DoNotEnum) == 0))
+                    if (f.Value.valueType >= JSObjectType.Undefined && (!hideNonEnume || (f.Value.attributes & JSObjectAttributes.DoNotEnum) == 0))
                         yield return f.Key;
                 }
             }
@@ -831,7 +867,7 @@ namespace NiL.JS.Core
         [CLSCompliant(false)]
         [DoNotEnumerate]
         [Modules.ParametersCount(0)]
-        public virtual JSObject toString(JSObject args)
+        public JSObject toString(JSObject args)
         {
             switch (this.valueType)
             {
@@ -873,7 +909,8 @@ namespace NiL.JS.Core
                         else
                             return "[object Null]";
                     }
-                default: throw new NotImplementedException();
+                default:
+                    throw new NotImplementedException();
             }
         }
 
@@ -916,7 +953,8 @@ namespace NiL.JS.Core
                 {
                     if (a.oValue == this.oValue)
                         return true;
-                    if ((a.oValue is TypeProxy) && (a.oValue as TypeProxy).prototypeInstance == this)
+                    var pi = (a.oValue is TypeProxy) ? (a.oValue as TypeProxy).prototypeInstance : null;
+                    if (pi != null && (this == pi || this == pi.oValue))
                         return true;
                     a = a.GetMember("__proto__");
                 }
@@ -1093,26 +1131,23 @@ namespace NiL.JS.Core
             if (args.GetMember("0").valueType < JSObjectType.Object)
                 throw new JSException(TypeProxy.Proxy(new TypeError("Parameter isn't an Object.")));
             var res = args.GetMember("0")["__proto__"];
-            /*if (res.oValue is TypeProxy && (res.oValue as TypeProxy).prototypeInstance != null)
-                return (res.oValue as TypeProxy).prototypeInstance as JSObject ?? new JSObject()
-                {
-                    oValue = (res.oValue as TypeProxy).prototypeInstance,
-                    __proto__ = res,
-                    valueType = JSObjectType.Object,
-                    attributes = res.attributes | JSObjectAttributes.ProxyPrototype
-                };*/
             if (res.oValue is TypeProxy && (res.oValue as TypeProxy).prototypeInstance != null)
                 res = (res.oValue as TypeProxy).prototypeInstance;
             return res;
         }
 
+        [ParametersCount(2)]
         [DoNotEnumerate]
         public static JSObject getOwnPropertyDescriptor(JSObject args)
         {
             var obj = args.GetMember("0");
             if (obj.valueType <= JSObjectType.Undefined)
-                return undefined;
+                throw new JSException(TypeProxy.Proxy(new TypeError("Object.getOwnPropertyDescriptor called on undefined.")));
+            if (obj.valueType < JSObjectType.Object)
+                throw new JSException(TypeProxy.Proxy(new TypeError("Object.getOwnPropertyDescriptor called on non-object.")));
             obj = obj.GetMember(args.GetMember("1").ToString(), true);
+            if (obj.valueType < JSObjectType.Undefined)
+                return undefined;
             var res = CreateObject();
             if (obj.valueType != JSObjectType.Property)
             {
@@ -1138,6 +1173,17 @@ namespace NiL.JS.Core
             if (obj.oValue == null)
                 throw new JSException(TypeProxy.Proxy(new TypeError("Cannot get property names of null")));
             return new BaseTypes.Array((obj.oValue as JSObject ?? obj).GetEnumeratorImpl(false));
+        }
+
+        [DoNotEnumerate]
+        public static JSObject keys(JSObject args)
+        {
+            var obj = args.GetMember("0");
+            if (obj.valueType < JSObjectType.Object)
+                throw new JSException(new TypeError("Object.keys called on non-object value."));
+            if (obj.oValue == null)
+                throw new JSException(TypeProxy.Proxy(new TypeError("Cannot get property names of null")));
+            return new BaseTypes.Array((obj.oValue as JSObject ?? obj).GetEnumeratorImpl(true));
         }
 
         [Hidden]

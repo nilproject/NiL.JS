@@ -41,14 +41,6 @@ namespace NiL.JS.Core
         private ParameterInfo[] parameters;
 
         [Hidden]
-        public override bool IsRecursive
-        {
-            get
-            {
-                return false;
-            }
-        }
-        [Hidden]
         public override FunctionType Type
         {
             get
@@ -313,7 +305,7 @@ namespace NiL.JS.Core
                     case CallMode.FuncDynamicZero:
                         {
 #if !NET35
-                            if (target != null && info.IsVirtual && target.GetType() != info.ReflectedType) // your bunny wrote
+                            if (target != null && info.IsVirtual && target.GetType() != info.ReflectedType && !info.ReflectedType.IsAssignableFrom(target.GetType())) // your bunny wrote
                             {
                                 bool di = true;
                                 SetFieldValue(_targetInfo, delegateF0, target, typeof(object), _targetInfo.Attributes, typeof(Action), ref di);
@@ -327,7 +319,7 @@ namespace NiL.JS.Core
                     case CallMode.FuncDynamicOneArray:
                         {
 #if !NET35
-                            if (target != null && info.IsVirtual && target.GetType() != info.ReflectedType) // your bunny wrote
+                            if (target != null && info.IsVirtual && target.GetType() != info.ReflectedType && !info.ReflectedType.IsAssignableFrom(target.GetType())) // your bunny wrote
                             {
                                 bool di = true;
                                 SetFieldValue(_targetInfo, delegateF1, target, typeof(object), _targetInfo.Attributes, typeof(Action), ref di);
@@ -341,7 +333,7 @@ namespace NiL.JS.Core
                     case CallMode.FuncDynamicOneRaw:
                         {
 #if !NET35
-                            if (target != null && info.IsVirtual && target.GetType() != info.ReflectedType) // your bunny wrote
+                            if (target != null && info.IsVirtual && target.GetType() != info.ReflectedType && !info.ReflectedType.IsAssignableFrom(target.GetType())) // your bunny wrote
                             {
                                 bool di = true;
                                 SetFieldValue(_targetInfo, delegateF1, target, typeof(object), _targetInfo.Attributes, typeof(Action), ref di);
@@ -355,7 +347,7 @@ namespace NiL.JS.Core
                     case CallMode.FuncDynamicOne:
                         {
 #if !NET35
-                            if (target != null && info.IsVirtual && target.GetType() != info.ReflectedType) // your bunny wrote
+                            if (target != null && info.IsVirtual && target.GetType() != info.ReflectedType && !info.ReflectedType.IsAssignableFrom(target.GetType())) // your bunny wrote
                             {
                                 bool di = true;
                                 SetFieldValue(_targetInfo, delegateF1, target, typeof(object), _targetInfo.Attributes, typeof(Action), ref di);
@@ -394,7 +386,7 @@ namespace NiL.JS.Core
                                 res = (info as ConstructorInfo).Invoke(args);
                             else
                             {
-                                if (target != null && info.IsVirtual && target.GetType() != info.ReflectedType) // your bunny wrote
+                                if (target != null && info.IsVirtual && target.GetType() != info.ReflectedType && !info.ReflectedType.IsAssignableFrom(target.GetType())) // your bunny wrote
                                 {
                                     var minfo = info as MethodInfo;
                                     if (minfo.ReturnType != typeof(void) && minfo.ReturnType.IsValueType)

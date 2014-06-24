@@ -7,26 +7,36 @@ namespace NiL.JS.Core.BaseTypes
     [Serializable]
     public sealed class URIError : Error
     {
+        [DoNotEnumerate]
         public override JSObject message
         {
+            [Hidden]
             get
             {
                 return base.message;
             }
         }
-        public override JSObject name { get { return "URIError"; } }
+        [DoNotEnumerate]
+        public override JSObject name
+        {
+            [Hidden]
+            get { return "URIError"; }
+        }
 
+        [DoNotEnumerate]
         public URIError()
         {
 
         }
 
+        [DoNotEnumerate]
         public URIError(JSObject args)
             : base(args.GetMember("0").ToString())
         {
 
         }
 
+        [DoNotEnumerate]
         public URIError(string message)
             : base(message)
         {

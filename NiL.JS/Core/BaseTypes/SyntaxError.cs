@@ -7,26 +7,36 @@ namespace NiL.JS.Core.BaseTypes
     [Serializable]
     public sealed class SyntaxError : Error
     {
+        [DoNotEnumerate]
         public override JSObject message
         {
+            [Hidden]
             get
             {
                 return base.message;
             }
         }
-        public override JSObject name { get { return "SyntaxError"; } }
+        [DoNotEnumerate]
+        public override JSObject name
+        {
+            [Hidden]
+            get { return "SyntaxError"; }
+        }
 
+        [DoNotEnumerate]
         public SyntaxError()
         {
 
         }
 
+        [DoNotEnumerate]
         public SyntaxError(JSObject args)
             : base(args.GetMember("0").ToString())
         {
 
         }
 
+        [DoNotEnumerate]
         public SyntaxError(string message)
             : base(message)
         {

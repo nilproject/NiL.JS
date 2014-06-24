@@ -20,9 +20,10 @@ namespace NiL.JS.Core
             attributes |= JSObjectAttributes.SystemObject;
         }
 
+        [CLSCompliant(false)]
         [AllowUnsafeCall(typeof(JSObject))]
         [DoNotEnumerate]
-        public override JSObject toString(JSObject args)
+        public new JSObject toString(JSObject args)
         {
             return ToString();
         }
@@ -55,12 +56,13 @@ namespace NiL.JS.Core
         {
             if (fields != null)
                 foreach (var r in fields)
-                    if (r.Value.valueType >= JSObjectType.Undefined)
+                    if (r.Value.valueType >= JSObjectType.Undefined && (!pdef || (r.Value.attributes & JSObjectAttributes.DoNotEnum) == 0))
                         yield return r.Key;
             if (__proto__ == null)
                 __proto__ = TypeProxy.GetPrototype(this.GetType());
-            foreach (var r in __proto__)
-                yield return r;
+            var penum = __proto__.GetEnumeratorImpl(pdef);
+            while (penum.MoveNext())
+                yield return penum.Current;
         }
     }
 }

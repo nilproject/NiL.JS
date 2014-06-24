@@ -9,39 +9,6 @@ namespace NiL.JS.Core.BaseTypes
     [Serializable]
     public sealed class Array : CustomType
     {
-        private class Enumerator : IEnumerator<string>
-        {
-            private Array owner;
-            private int index;
-
-            public Enumerator(Array owner)
-            {
-                this.owner = owner;
-                index = -1;
-            }
-
-            public object Current { get { return index.ToString(System.Globalization.CultureInfo.InvariantCulture); } }
-            string IEnumerator<string>.Current { get { return index.ToString(System.Globalization.CultureInfo.InvariantCulture); } }
-
-            public bool MoveNext()
-            {
-                do
-                    index++;
-                while (index < owner.data.Count && (owner.data[index] == null || owner.data[index].valueType < JSObjectType.Undefined));
-                return index < owner.data.Count;
-            }
-
-            public void Reset()
-            {
-                index = -1;
-            }
-
-            public void Dispose()
-            {
-
-            }
-        }
-
         [Serializable]
         private class Element : JSObject
         {
@@ -455,7 +422,9 @@ namespace NiL.JS.Core.BaseTypes
         [DoNotEnumerate]
         public JSObject push(JSObject[] args)
         {
-            data.AddRange(args);
+            data.Capacity = System.Math.Max(data.Capacity, data.Count + args.Length);
+            for (var i = 0; i < args.Length; i++)
+                data.Add(args[i].Clone() as JSObject);
             return this;
         }
 
@@ -818,8 +787,9 @@ namespace NiL.JS.Core.BaseTypes
             return res;
         }
 
+        [CLSCompliant(false)]
         [DoNotEnumerate]
-        public override JSObject toString(JSObject args)
+        public new JSObject toString(JSObject args)
         {
             if (this.GetType() != typeof(Array) && !this.GetType().IsSubclassOf(typeof(Array)))
                 throw new JSException(TypeProxy.Proxy(new TypeError("Try to call Array.toString on not Array object.")));
@@ -828,7 +798,14 @@ namespace NiL.JS.Core.BaseTypes
 
         protected internal override IEnumerator<string> GetEnumeratorImpl(bool pdef)
         {
-            return new Enumerator(this);
+            for (var i = 0; i < data.Count; i++)
+            {
+                if (data[i] != null && data[i].valueType >= JSObjectType.Undefined)
+                    yield return i.ToString(CultureInfo.InvariantCulture);
+            }
+            var benum = base.GetEnumeratorImpl(pdef);
+            while (benum.MoveNext())
+                yield return benum.Current;
         }
 
         [Hidden]

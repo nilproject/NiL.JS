@@ -1,4 +1,7 @@
-﻿var x = 1;
+﻿if (!this.$ERROR)
+    this.$ERROR = console.log;
+
+var x = 1;
 function f0() {
     if (this.x != 1) {
         $ERROR("#0. this linking error.");
@@ -61,7 +64,7 @@ var t = function () {
 if (t != 1)
 $ERROR("#8");
 
-var o = { x: 1, getx: function () { return function () { return this.x }; } };
+var o = { x: 0, getx: function () { this.x = 1; return function () { return this.x }; } };
 var x = 2;
 if (o.getx().call(null) != 2)
 $ERROR("#9");

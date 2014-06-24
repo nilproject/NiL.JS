@@ -221,6 +221,12 @@ namespace NiL.JS.Core.BaseTypes
             return m.Success;
         }
 
+        [DoNotEnumerate]
+        public JSObject toString()
+        {
+            return ToString();
+        }
+
         [Hidden]
         public override string ToString()
         {

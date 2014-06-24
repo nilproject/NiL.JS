@@ -41,16 +41,6 @@ namespace NiL.JS.Core
         }
 
         [Hidden]
-        public override bool IsRecursive
-        {
-            [Hidden]
-            get
-            {
-                return proto.IsRecursive;
-            }
-        }
-
-        [Hidden]
         public override JSObject length
         {
             [Hidden]

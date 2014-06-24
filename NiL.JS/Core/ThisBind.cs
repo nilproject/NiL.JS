@@ -33,6 +33,12 @@ namespace NiL.JS.Core
 
         internal protected override JSObject GetMember(string name, bool create, bool own)
         {
+            if (name == "__proto__")
+            {
+                if (__proto__ == null)
+                    __proto__ = thisProto;
+                return __proto__;
+            }
             var res = context.GetVariable(name, create);
             if (res.valueType == JSObjectType.NotExist)
                 res.valueType = JSObjectType.NotExistInObject;

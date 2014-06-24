@@ -685,13 +685,6 @@ namespace NiL.JS.Core.BaseTypes
             get { return creator.type; }
         }
 
-        [Hidden]
-        public virtual bool IsRecursive
-        {
-            [Hidden]
-            get { return creator.recursive; }
-        }
-
         #region Runtime
         [Hidden]
         private JSObject _arguments;
@@ -946,12 +939,6 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [DoNotEnumerate]
-        public override JSObject toString(JSObject args)
-        {
-            return ToString();
-        }
-
-        [DoNotEnumerate]
         public JSObject call(JSObject args)
         {
             var newThis = args.GetMember("0");
@@ -1005,11 +992,6 @@ namespace NiL.JS.Core.BaseTypes
             if ((newThis != null && newThis.valueType > JSObjectType.Undefined) || strict)
                 return new BindedFunction(newThis, this);
             return this;
-        }
-
-        protected internal override IEnumerator<string> GetEnumeratorImpl(bool pdef)
-        {
-            return EmptyEnumerator;
         }
     }
 }

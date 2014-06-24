@@ -532,9 +532,10 @@ namespace NiL.JS.Core.BaseTypes
             return (oValue as string).Trim();
         }
 
+        [CLSCompliant(false)]
         [AllowUnsafeCall(typeof(JSObject))]
         [ParametersCount(0)]
-        public override JSObject toString(JSObject args)
+        public new JSObject toString(JSObject args)
         {
             if (typeof(String) == this.GetType() && valueType == JSObjectType.Object) // prototype instance
                 return "";

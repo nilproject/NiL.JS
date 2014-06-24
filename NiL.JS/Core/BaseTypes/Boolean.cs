@@ -106,9 +106,10 @@ namespace NiL.JS.Core.BaseTypes
             return valueType == JSObjectType.Bool ? iValue != 0 ? "true" : "false" : ((bool)(this as JSObject) ? "true" : "false");
         }
 
+        [CLSCompliant(false)]
         [AllowUnsafeCall(typeof(JSObject))]
         [DoNotEnumerate]
-        public override JSObject toString(JSObject args)
+        public new JSObject toString(JSObject args)
         {
             return valueType == JSObjectType.Bool ? iValue != 0 ? "true" : "false" : ((bool)(this as JSObject) ? "true" : "false");
         }

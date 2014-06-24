@@ -28,14 +28,18 @@ namespace NiL.JS.Core
                     {
                         var ictor = hostedType.GetConstructor(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy, null, System.Type.EmptyTypes, null);
                         if (ictor != null)
-                            _prototypeInstance = typeof(JSObject).IsAssignableFrom(hostedType) ? ictor.Invoke(null) as JSObject : new JSObject()
-                                                                                                                                {
-                                                                                                                                    oValue = ictor.Invoke(null),
-                                                                                                                                    __proto__ = this,
-                                                                                                                                    valueType = JSObjectType.Object,
-                                                                                                                                    attributes = attributes | JSObjectAttributes.ProxyPrototype,
-                                                                                                                                    fields = fields
-                                                                                                                                };
+                        {
+                            _prototypeInstance = new JSObject()
+                                                    {
+                                                        oValue = ictor.Invoke(null),
+                                                        __proto__ = this,
+                                                        valueType = JSObjectType.Object,
+                                                        attributes = attributes | JSObjectAttributes.ProxyPrototype,
+                                                        fields = fields
+                                                    };
+                            if (_prototypeInstance.oValue is JSObject)
+                                _prototypeInstance.valueType = (JSObjectType)System.Math.Max((int)_prototypeInstance.valueType, (int)(_prototypeInstance.oValue as JSObject).valueType);
+                        }
                     }
                     catch (COMException)
                     {
@@ -160,20 +164,15 @@ namespace NiL.JS.Core
                     {
                         valueType = JSObjectType.Object,
                         oValue = this, // Не убирать!
-                        attributes = JSObjectAttributes.ProxyPrototype | JSObjectAttributes.ReadOnly
+                        attributes = JSObjectAttributes.ProxyPrototype | JSObjectAttributes.ReadOnly,
+                        __proto__ = this
                     };
                 }
                 else
                 {
                     if (typeof(JSObject).IsAssignableFrom(hostedType))
                     {
-                        if (prototypeInstance != null)
-                        {
-                            _prototypeInstance.fields = this.fields;
-                            if (_prototypeInstance.valueType < JSObjectType.Object)
-                                _prototypeInstance.valueType = JSObjectType.Object;
-                            _prototypeInstance.attributes |= JSObjectAttributes.ProxyPrototype | JSObjectAttributes.ReadOnly;
-                        }
+                        _prototypeInstance = prototypeInstance;
                     }
                 }
 
@@ -203,7 +202,6 @@ namespace NiL.JS.Core
                         ctor = new ProxyConstructor(staticProxy);
                         prot.attributes = JSObjectAttributes.DoNotEnum;
                     }
-                    staticProxy.DefaultFieldGetter("__proto__", true, false).Assign(GetPrototype(typeof(ProxyConstructor)));
                     ctor.attributes = attributes;
                     staticProxies[type] = ctor;
                     fields["constructor"] = ctor;
@@ -236,19 +234,32 @@ namespace NiL.JS.Core
                             && ((mmbrs[i] as MethodBase).DeclaringType == typeof(object)))
                             continue;
                         membername = membername[0] == '.' ? membername : membername.Contains(".") ? membername.Substring(membername.LastIndexOf('.') + 1) : membername;
-                        if (prewName != membername && !tempmemb.TryGetValue(membername, out temp))
+                        if (prewName != membername)
                         {
-                            tempmemb[membername] = temp = new List<MemberInfo>() { mmbrs[i] };
+                            if (temp != null && temp.Count > 1)
+                            {
+                                var type = temp[0].DeclaringType;
+                                for (var j = 1; j < temp.Count; j++)
+                                {
+                                    if (type != temp[j].DeclaringType && type.IsAssignableFrom(temp[j].DeclaringType))
+                                    {
+                                        type = temp[j].DeclaringType;
+                                        j = 0;
+                                        continue;
+                                    }
+                                    if (!type.IsAssignableFrom(temp[j].DeclaringType))
+                                        temp.RemoveAt(j--);
+                                }
+                            }
+                            if (!tempmemb.TryGetValue(membername, out temp))
+                                tempmemb[membername] = temp = new List<MemberInfo>();
                             prewName = membername;
                         }
-                        else
-                        {
-                            if (temp.Count == 1)
-                                tempmemb.Add(membername + "$0", new[] { temp[0] });
-                            temp.Add(mmbrs[i]);
-                            if (temp.Count != 1)
-                                tempmemb.Add(membername + "$" + (temp.Count - 1), new[] { mmbrs[i] });
-                        }
+                        if (temp.Count == 1)
+                            tempmemb.Add(membername + "$0", new[] { temp[0] });
+                        temp.Add(mmbrs[i]);
+                        if (temp.Count != 1)
+                            tempmemb.Add(membername + "$" + (temp.Count - 1), new[] { mmbrs[i] });
                     }
                     members = tempmemb;
                 }
@@ -445,10 +456,11 @@ namespace NiL.JS.Core
                             r = GetConstructor(m[0] as Type);
                             break;
                         }
-                    default: throw new NotImplementedException("Convertion from " + m[0].MemberType + " not implemented");
+                    default:
+                        throw new NotImplementedException("Convertion from " + m[0].MemberType + " not implemented");
                 }
             }
-            r.attributes |= JSObjectAttributes.NotConfigurable;
+            //r.attributes |= JSObjectAttributes.NotConfigurable;
             r.attributes |= JSObjectAttributes.DoNotEnum;
             lock (fields)
                 fields[name] = create && r.GetType() != typeof(JSObject) ? (r = r.Clone() as JSObject) : r;

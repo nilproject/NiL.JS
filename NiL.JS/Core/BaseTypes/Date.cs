@@ -219,7 +219,8 @@ namespace NiL.JS.Core.BaseTypes
             int isLeap = (y % 4 == 0 && y % 100 != 0) || y % 400 == 0 ? 1 : 0;
             t -= System.Math.Min(3, t / _yearMilliseconds) * _yearMilliseconds;
             var m = 0;
-            while (timeToMonthLengths[m, isLeap] <= t) m++;
+            while (timeToMonthLengths[m, isLeap] <= t)
+                m++;
             return m - 1;
         }
 
@@ -248,7 +249,8 @@ namespace NiL.JS.Core.BaseTypes
             int isLeap = (y % 4 == 0 && y % 100 != 0) || y % 400 == 0 ? 1 : 0;
             t -= System.Math.Min(3, t / _yearMilliseconds) * _yearMilliseconds;
             var m = 0;
-            while (timeToMonthLengths[m, isLeap] <= t) m++;
+            while (timeToMonthLengths[m, isLeap] <= t)
+                m++;
             if (m > 0)
                 t -= timeToMonthLengths[m - 1, isLeap];
             return (int)(t / _dayMilliseconds + 1);
@@ -485,11 +487,52 @@ namespace NiL.JS.Core.BaseTypes
         [DoNotEnumerate]
         public JSObject toLocaleString()
         {
-            return ToString();
+            var offset = TimeZone.CurrentTimeZone.GetUtcOffset(DateTime.Now);
+            var y = getYearImpl();
+            while (y > 2800)
+                y -= 2800;
+            while (y < 0)
+                y += 2800;
+            var dt = new DateTime(0);
+            dt = dt.AddDays((System.Math.Abs(time) % _weekMilliseconds) / _dayMilliseconds);
+            dt = dt.AddMonths(getMonthImpl());
+            dt = dt.AddYears(y);
+            var res =
+                dt.ToString("dddd MMMM")
+                + " " + getDateImpl() + " "
+                + getYearImpl() + " "
+                + getHoursImpl().ToString("00:")
+                + getMinutesImpl().ToString("00:")
+                + getSecondsImpl().ToString("00")
+                + " GMT+" + (offset.Hours * 100 + offset.Minutes).ToString("0000 (") + TimeZone.CurrentTimeZone.DaylightName + ")";
+            return res;
+        }
+
+        [DoNotEnumerate]
+        public JSObject toLocaleTimeString()
+        {
+            var res =
+                getHoursImpl().ToString("00:")
+                + getMinutesImpl().ToString("00:")
+                + getSecondsImpl().ToString("00");
+            return res;
         }
 
         [DoNotEnumerate]
         public JSObject toISOString()
+        {
+            return this.getYearImpl() +
+                    '-' + (this.getMonthImpl() + 1) +
+                    '-' + this.getDateImpl() +
+                    'T' + this.getHoursImpl() +
+                    ':' + this.getMinutesImpl() +
+                    ':' + this.getSecondsImpl() +
+                    '.' + (this.getMillisecondsImpl() / 1000).ToString(".000").Substring(1) +
+                    'Z';
+        }
+
+        [DoNotEnumerate]
+        public JSObject toJSON()
         {
             return this.getYearImpl() +
                     '-' + (this.getMonthImpl() + 1) +
@@ -511,6 +554,50 @@ namespace NiL.JS.Core.BaseTypes
         public JSObject toGMTString()
         {
             return ToString();
+        }
+
+        [DoNotEnumerate]
+        public JSObject toTimeString()
+        {
+            var offset = TimeZone.CurrentTimeZone.GetUtcOffset(DateTime.Now);
+            var res =
+                getHoursImpl().ToString("00:")
+                + getMinutesImpl().ToString("00:")
+                + getSecondsImpl().ToString("00")
+                + " GMT+" + (offset.Hours * 100 + offset.Minutes).ToString("0000 (") + TimeZone.CurrentTimeZone.DaylightName + ")";
+            return res;
+        }
+
+        [DoNotEnumerate]
+        public JSObject toDateString()
+        {
+            var offset = TimeZone.CurrentTimeZone.GetUtcOffset(DateTime.Now);
+            var res =
+                daysOfWeekNames[(System.Math.Abs(time) % _weekMilliseconds) / _dayMilliseconds] + " "
+                + month[getMonthImpl()]
+                + " " + getDateImpl() + " "
+                + getYearImpl();
+            return res;
+        }
+
+        [DoNotEnumerate]
+        public JSObject toLocaleDateString()
+        {
+            var offset = TimeZone.CurrentTimeZone.GetUtcOffset(DateTime.Now);
+            var y = getYearImpl();
+            while (y > 2800)
+                y -= 2800;
+            while (y < 0)
+                y += 2800;
+            var dt = new DateTime(0);
+            dt = dt.AddDays((System.Math.Abs(time) % _weekMilliseconds) / _dayMilliseconds);
+            dt = dt.AddMonths(getMonthImpl());
+            dt = dt.AddYears(y);
+            var res =
+                dt.ToString("dddd MMMM")
+                + " " + getDateImpl() + " "
+                + getYearImpl();
+            return res;
         }
 
         [Hidden]

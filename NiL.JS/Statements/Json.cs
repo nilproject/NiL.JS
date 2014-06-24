@@ -37,7 +37,9 @@ namespace NiL.JS.Statements
             int pos = 0;
             while (code[i] != '}')
             {
-                do i++; while (char.IsWhiteSpace(code[i]));
+                do
+                    i++;
+                while (char.IsWhiteSpace(code[i]));
                 int s = i;
                 if (code[i] == '}')
                     break;
@@ -76,7 +78,7 @@ namespace NiL.JS.Statements
                     else
                     {
                         var vle = flds[getter.Name];
-                        if (!(vle is ImmidateValueStatement) 
+                        if (!(vle is ImmidateValueStatement)
                             || (vle as ImmidateValueStatement).value.valueType != JSObjectType.Property)
                             throw new JSException(TypeProxy.Proxy(new SyntaxError("Try to define getter for defined field at " + Tools.PositionToTextcord(code, pos))));
                         if (((vle as ImmidateValueStatement).value.oValue as Statement[])[1] != null)
@@ -94,7 +96,7 @@ namespace NiL.JS.Statements
                     {
                         string value = code.Substring(s, i - s);
                         if ((value[0] == '\'') || (value[0] == '"'))
-                            fieldName = value.Substring(1, value.Length - 2);
+                            fieldName = Tools.Unescape(value.Substring(1, value.Length - 2), state.strict.Peek());
                         else
                         {
                             int n = 0;
@@ -111,20 +113,24 @@ namespace NiL.JS.Statements
                     }
                     else
                         return new ParseResult();
-                    while (char.IsWhiteSpace(code[i])) i++;
+                    while (char.IsWhiteSpace(code[i]))
+                        i++;
                     if (code[i] != ':')
                         return new ParseResult();
-                    do i++; while (char.IsWhiteSpace(code[i]));
+                    do
+                        i++;
+                    while (char.IsWhiteSpace(code[i]));
                     var initializator = OperatorStatement.Parse(state, ref i, false).Statement;
                     Statement aei = null;
                     flds.TryGetValue(fieldName, out aei);
-                    if (aei != null 
+                    if (aei != null
                         && ((state.strict.Peek() && (!(aei is ImmidateValueStatement) || (aei as ImmidateValueStatement).value != JSObject.undefined))
                             || (aei is ImmidateValueStatement && ((aei as ImmidateValueStatement).value.valueType == JSObjectType.Property))))
                         throw new JSException(new SyntaxError("Try to redefine field \"" + fieldName + "\" at " + Tools.PositionToTextcord(code, pos)));
                     flds[fieldName] = initializator;
                 }
-                while (char.IsWhiteSpace(code[i])) i++;
+                while (char.IsWhiteSpace(code[i]))
+                    i++;
                 if ((code[i] != ',') && (code[i] != '}'))
                     return new ParseResult();
             }
@@ -169,31 +175,18 @@ namespace NiL.JS.Statements
 
         internal override bool Optimize(ref Statement _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> vars, bool strict)
         {
-            VariableDescriptor thisBind = null;
-            vars.TryGetValue("this", out thisBind);
-            try
+            for (int i = 0; i < values.Length; i++)
             {
-                vars["this"] = new VariableDescriptor("this", fdepth + 1);
-                for (int i = 0; i < values.Length; i++)
+                if ((values[i] is ImmidateValueStatement) && ((values[i] as ImmidateValueStatement).value.valueType == JSObjectType.Property))
                 {
-                    if ((values[i] is ImmidateValueStatement) && ((values[i] as ImmidateValueStatement).value.valueType == JSObjectType.Property))
-                    {
-                        var gs = (values[i] as ImmidateValueStatement).value.oValue as Statement[];
-                        Parser.Optimize(ref gs[0], 1, fdepth, vars, strict);
-                        Parser.Optimize(ref gs[1], 1, fdepth, vars, strict);
-                    }
-                    else
-                        Parser.Optimize(ref values[i], 2, fdepth, vars, strict);
+                    var gs = (values[i] as ImmidateValueStatement).value.oValue as Statement[];
+                    Parser.Optimize(ref gs[0], 1, fdepth, vars, strict);
+                    Parser.Optimize(ref gs[1], 1, fdepth, vars, strict);
                 }
-                return false;
-            }
-            finally
-            {
-                if (thisBind == null)
-                    vars.Remove("this");
                 else
-                    vars["this"] = thisBind;
+                    Parser.Optimize(ref values[i], 2, fdepth, vars, strict);
             }
+            return false;
         }
 
         protected override Statement[] getChildsImpl()
