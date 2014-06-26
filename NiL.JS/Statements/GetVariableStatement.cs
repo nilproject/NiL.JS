@@ -42,7 +42,7 @@ namespace NiL.JS.Statements
             return res;
         }
 
-        protected override Statement[] getChildsImpl()
+        protected override CodeNode[] getChildsImpl()
         {
             return null;
         }
@@ -52,7 +52,7 @@ namespace NiL.JS.Statements
             return variableName;
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        internal override bool Optimize(ref CodeNode _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
             VariableDescriptor desc = null;
             if (!variables.TryGetValue(variableName, out desc) || desc == null)

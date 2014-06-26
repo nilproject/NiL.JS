@@ -7,7 +7,7 @@ namespace NiL.JS.Core
     public delegate JSObject ExternalFunctionDelegate(JSObject thisBind, JSObject args);
     public sealed class DebuggerCallbackEventArgs : EventArgs
     {
-        public Statement Statement { get; internal set; }
+        public CodeNode Statement { get; internal set; }
     }
     public delegate void DebuggerCallback(Context sender, DebuggerCallbackEventArgs e);
 }

@@ -5,7 +5,7 @@ using NiL.JS.Core;
 namespace NiL.JS.Statements
 {
     [Serializable]
-    public sealed class ImmidateValueStatement : Statement
+    public sealed class ImmidateValueStatement : CodeNode
     {
         internal JSObject value;
 
@@ -28,16 +28,16 @@ namespace NiL.JS.Statements
             return base.InvokeForAssing(context);
         }
 
-        protected override Statement[] getChildsImpl()
+        protected override CodeNode[] getChildsImpl()
         {
-            if (value.Value is Statement[])
-                return value.Value as Statement[];
+            if (value.Value is CodeNode[])
+                return value.Value as CodeNode[];
             return null;
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        internal override bool Optimize(ref CodeNode _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
-            var vss = value.oValue as Statement[];
+            var vss = value.oValue as CodeNode[];
             if (vss != null)
             {
                 for (int i = 0; i < vss.Length; i++)
@@ -50,11 +50,11 @@ namespace NiL.JS.Statements
         {
             if (value.valueType == JSObjectType.String)
                 return "\"" + value.oValue + "\"";
-            if (value.oValue is Statement[])
+            if (value.oValue is CodeNode[])
             {
                 string res = "";
-                for (var i = (value.oValue as Statement[]).Length; i-- > 0; )
-                    res = (i != 0 ? ", " : "") + (value.oValue as Statement[])[i] + res;
+                for (var i = (value.oValue as CodeNode[]).Length; i-- > 0; )
+                    res = (i != 0 ? ", " : "") + (value.oValue as CodeNode[])[i] + res;
                 return res;
             }
             return value.ToString();

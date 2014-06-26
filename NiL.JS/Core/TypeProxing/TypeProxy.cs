@@ -433,7 +433,7 @@ namespace NiL.JS.Core
                             r.attributes = JSObjectAttributes.Immutable;
                             if ((r.oValue as Function[])[0] == null)
                                 r.attributes |= JSObjectAttributes.ReadOnly;
-                            if (pinfo.IsDefined(typeof(FieldAttribute)))
+                            if (pinfo.IsDefined(typeof(FieldAttribute), false))
                                 r.attributes |= JSObjectAttributes.Field;
                             break;
                         }

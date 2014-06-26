@@ -365,7 +365,7 @@ namespace NiL.JS.Core
             return res;
         }
 
-        internal void raiseDebugger(Statement nextStatement)
+        internal void raiseDebugger(CodeNode nextStatement)
         {
             var p = this;
             while (p != null)

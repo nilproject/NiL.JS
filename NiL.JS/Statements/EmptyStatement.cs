@@ -4,7 +4,7 @@ using NiL.JS.Core;
 namespace NiL.JS.Statements
 {
     [Serializable]
-    public sealed class EmptyStatement : Statement
+    public sealed class EmptyStatement : CodeNode
     {
         private static readonly EmptyStatement _instance = new EmptyStatement();
         public static EmptyStatement Instance { get { return _instance; } }
@@ -24,7 +24,7 @@ namespace NiL.JS.Statements
             return JSObject.undefined;
         }
 
-        protected override Statement[] getChildsImpl()
+        protected override CodeNode[] getChildsImpl()
         {
             return null;
         }

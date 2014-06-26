@@ -81,7 +81,7 @@ namespace NiL.JS.Core
             bool bynew = false;
             if (_this != null)
             {
-                bynew = _this.oValue is Statements.Operators.New;
+                bynew = _this.oValue is Expressions.New;
             }
             try
             {

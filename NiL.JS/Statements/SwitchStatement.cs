@@ -9,27 +9,27 @@ namespace NiL.JS.Statements
     public sealed class SwitchCase
     {
         internal int index;
-        internal Statement statement;
+        internal CodeNode statement;
 
         public int Index { get { return index; } }
-        public Statement Statement { get { return statement; } }
+        public CodeNode Statement { get { return statement; } }
     }
 
     [Serializable]
-    public sealed class SwitchStatement : Statement
+    public sealed class SwitchStatement : CodeNode
     {
         private FunctionStatement[] functions;
         private int length;
-        private readonly Statement[] body;
+        private readonly CodeNode[] body;
         private SwitchCase[] cases;
-        private Statement image;
+        private CodeNode image;
 
         public FunctionStatement[] Functions { get { return functions; } }
-        public Statement[] Body { get { return body; } }
+        public CodeNode[] Body { get { return body; } }
         public SwitchCase[] Cases { get { return cases; } }
-        public Statement Image { get { return image; } }
+        public CodeNode Image { get { return image; } }
 
-        internal SwitchStatement(Statement[] body)
+        internal SwitchStatement(CodeNode[] body)
         {
             this.body = body;
             length = body.Length - 1;
@@ -42,14 +42,14 @@ namespace NiL.JS.Statements
             if (!Parser.Validate(code, "switch (", ref i) && !Parser.Validate(code, "switch(", ref i))
                 return new ParseResult();
             while (char.IsWhiteSpace(code[i])) i++;
-            var image = OperatorStatement.Parse(state, ref i).Statement;
+            var image = ExpressionStatement.Parse(state, ref i).Statement;
             if (code[i] != ')')
                 throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \")\" at + " + Tools.PositionToTextcord(code, i))));
             do i++; while (char.IsWhiteSpace(code[i]));
             if (code[i] != '{')
                 throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \"{\" at + " + Tools.PositionToTextcord(code, i))));
             do i++; while (char.IsWhiteSpace(code[i]));
-            var body = new List<Statement>();
+            var body = new List<CodeNode>();
             var funcs = new List<FunctionStatement>();
             var cases = new List<SwitchCase>();
             cases.Add(null);
@@ -62,7 +62,7 @@ namespace NiL.JS.Statements
                     {
                         i += 4;
                         while (char.IsWhiteSpace(code[i])) i++;
-                        var sample = OperatorStatement.Parse(state, ref i).Statement;
+                        var sample = ExpressionStatement.Parse(state, ref i).Statement;
                         if (code[i] != ':')
                             throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \":\" at + " + Tools.PositionToTextcord(code, i))));
                         i++;
@@ -126,7 +126,7 @@ namespace NiL.JS.Statements
                 if (context.debugging)
                     context.raiseDebugger(cases[j].statement);
 #endif
-                if (Operators.StrictEqual.Check(imageVal, cases[j].statement, context))
+                if (Expressions.StrictEqual.Check(imageVal, cases[j].statement, context))
                 {
                     i = cases[j].index;
                     break;
@@ -145,7 +145,7 @@ namespace NiL.JS.Statements
             return JSObject.undefined;
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        internal override bool Optimize(ref CodeNode _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
             if (depth < 1)
                 throw new InvalidOperationException();
@@ -154,7 +154,7 @@ namespace NiL.JS.Statements
                 Parser.Optimize(ref body[i], 1, fdepth, variables, strict);
             for (int i = 0; i < functions.Length; i++)
             {
-                Statement stat = functions[i];
+                CodeNode stat = functions[i];
                 Parser.Optimize(ref stat, 1, fdepth, variables, strict);
                 variables[functions[i].Name] = new VariableDescriptor(functions[i].Reference, true, fdepth);
             }
@@ -172,9 +172,9 @@ namespace NiL.JS.Statements
             return false;
         }
 
-        protected override Statement[] getChildsImpl()
+        protected override CodeNode[] getChildsImpl()
         {
-            var res = new List<Statement>()
+            var res = new List<CodeNode>()
             {
                 image
             };
@@ -196,7 +196,7 @@ namespace NiL.JS.Statements
                 {
                     if (cases[j] != null && cases[j].index == i)
                     {
-                        res += "case " + (cases[j].statement as Operators.StrictEqual).SecondOperand + ":" + Environment.NewLine;
+                        res += "case " + (cases[j].statement as Expressions.StrictEqual).SecondOperand + ":" + Environment.NewLine;
                     }
                 }
                 string lc = body[i].ToString().Replace(replp, replt);

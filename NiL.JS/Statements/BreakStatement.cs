@@ -4,7 +4,7 @@ using NiL.JS.Core;
 namespace NiL.JS.Statements
 {
     [Serializable]
-    public sealed class BreakStatement : Statement
+    public sealed class BreakStatement : CodeNode
     {
         private JSObject label;
 
@@ -48,7 +48,7 @@ namespace NiL.JS.Statements
             return null;
         }
 
-        protected override Statement[] getChildsImpl()
+        protected override CodeNode[] getChildsImpl()
         {
             return null;
         }

@@ -3,7 +3,7 @@
 namespace NiL.JS.Core
 {
     [Serializable]
-    public abstract class VariableReference : Statement
+    public abstract class VariableReference : CodeNode
     {
         internal int functionDepth;
         public virtual int FunctionDepth { get { return functionDepth; } }
@@ -15,7 +15,7 @@ namespace NiL.JS.Core
             functionDepth = -1;
         }
 
-        protected override Statement[] getChildsImpl()
+        protected override CodeNode[] getChildsImpl()
         {
             return null;
         }

@@ -330,7 +330,7 @@ namespace NiL.JS.Core.BaseTypes
             var left = new NiL.JS.Statements.ImmidateValueStatement(el);
             for (int i = 0; i < data.Count; i++)
             {
-                if (Statements.Operators.StrictEqual.Check(data[i] ?? undefined, left, null))
+                if (Expressions.StrictEqual.Check(data[i] ?? undefined, left, null))
                     return i;
             }
             return -1;
@@ -403,7 +403,7 @@ namespace NiL.JS.Core.BaseTypes
             var left = new NiL.JS.Statements.ImmidateValueStatement(el);
             for (int i = data.Count; i-- > 0; )
             {
-                if (Statements.Operators.StrictEqual.Check(data[i] ?? undefined, left, null))
+                if (Expressions.StrictEqual.Check(data[i] ?? undefined, left, null))
                     return i;
             }
             return -1;

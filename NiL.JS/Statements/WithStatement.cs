@@ -6,13 +6,13 @@ using NiL.JS.Core;
 namespace NiL.JS.Statements
 {
     [Serializable]
-    internal sealed class WithStatement : Statement
+    internal sealed class WithStatement : CodeNode
     {
-        private Statement obj;
-        private Statement body;
+        private CodeNode obj;
+        private CodeNode body;
 
-        public Statement Body { get { return body; } }
-        public Statement Scope { get { return obj; } }
+        public CodeNode Body { get { return body; } }
+        public CodeNode Scope { get { return obj; } }
 
         internal static ParseResult Parse(ParsingState state, ref int index)
         {
@@ -68,9 +68,9 @@ namespace NiL.JS.Statements
             }
         }
 
-        protected override Statement[] getChildsImpl()
+        protected override CodeNode[] getChildsImpl()
         {
-            var res = new List<Statement>()
+            var res = new List<CodeNode>()
             {
                 body,
                 obj
@@ -79,7 +79,7 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        internal override bool Optimize(ref CodeNode _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
             Parser.Optimize(ref obj, depth, fdepth, variables, strict);
             Parser.Optimize(ref body, depth, fdepth, variables, strict);

@@ -6,14 +6,14 @@ using NiL.JS.Core.BaseTypes;
 namespace NiL.JS.Statements
 {
     [Serializable]
-    internal sealed class WhileStatement : Statement
+    internal sealed class WhileStatement : CodeNode
     {
-        private Statement condition;
-        private Statement body;
+        private CodeNode condition;
+        private CodeNode body;
         private List<string> labels;
 
-        public Statement Condition { get { return condition; } }
-        public Statement Body { get { return body; } }
+        public CodeNode Condition { get { return condition; } }
+        public CodeNode Body { get { return body; } }
         public string[] Labels { get { return labels.ToArray(); } }
 
         internal static ParseResult Parse(ParsingState state, ref int index)
@@ -91,9 +91,9 @@ namespace NiL.JS.Statements
             return res;
         }
 
-        protected override Statement[] getChildsImpl()
+        protected override CodeNode[] getChildsImpl()
         {
-            var res = new List<Statement>()
+            var res = new List<CodeNode>()
             {
                 body,
                 condition
@@ -102,7 +102,7 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        internal override bool Optimize(ref CodeNode _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
             depth = System.Math.Max(1, depth);
             Parser.Optimize(ref body, depth, fdepth, variables, strict);

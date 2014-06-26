@@ -5,19 +5,19 @@ using NiL.JS.Core;
 namespace NiL.JS.Statements
 {
     [Serializable]
-    public sealed class ForStatement : Statement
+    public sealed class ForStatement : CodeNode
     {
-        private Statement init;
-        private Statement condition;
-        private Statement post;
-        private Statement body;
+        private CodeNode init;
+        private CodeNode condition;
+        private CodeNode post;
+        private CodeNode body;
         private List<string> labels;
         private int implId;
 
-        public Statement Initializator { get { return init; } }
-        public Statement Condition { get { return condition; } }
-        public Statement Post { get { return post; } }
-        public Statement Body { get { return body; } }
+        public CodeNode Initializator { get { return init; } }
+        public CodeNode Condition { get { return condition; } }
+        public CodeNode Post { get { return post; } }
+        public CodeNode Body { get { return body; } }
         public string[] Labels { get { return labels.ToArray(); } }
 
         private ForStatement()
@@ -33,18 +33,18 @@ namespace NiL.JS.Statements
             if (!Parser.Validate(code, "for(", ref i) && (!Parser.Validate(code, "for (", ref i)))
                 return new ParseResult();
             while (char.IsWhiteSpace(code[i])) i++;
-            Statement init = null;
+            CodeNode init = null;
             int labelsCount = state.LabelCount;
             state.LabelCount = 0;
-            init = code[i] == ';' ? null as Statement : Parser.Parse(state, ref i, 3);
+            init = code[i] == ';' ? null as CodeNode : Parser.Parse(state, ref i, 3);
             if (code[i] != ';')
                 throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \";\" at + " + Tools.PositionToTextcord(code, i))));
             do i++; while (char.IsWhiteSpace(code[i]));
-            var condition = code[i] == ';' ? null as Statement : OperatorStatement.Parse(state, ref i).Statement;
+            var condition = code[i] == ';' ? null as CodeNode : ExpressionStatement.Parse(state, ref i).Statement;
             if (code[i] != ';')
                 throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \";\" at + " + Tools.PositionToTextcord(code, i))));
             do i++; while (char.IsWhiteSpace(code[i]));
-            var post = code[i] == ')' ? null as Statement : OperatorStatement.Parse(state, ref i).Statement;
+            var post = code[i] == ')' ? null as CodeNode : ExpressionStatement.Parse(state, ref i).Statement;
             while (char.IsWhiteSpace(code[i])) i++;
             if (code[i] != ')')
                 throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \";\" at + " + Tools.PositionToTextcord(code, i))));
@@ -293,9 +293,9 @@ namespace NiL.JS.Statements
             for (; ; ) ;
         }
 
-        protected override Statement[] getChildsImpl()
+        protected override CodeNode[] getChildsImpl()
         {
-            var res = new List<Statement>()
+            var res = new List<CodeNode>()
             {
                 init, 
                 condition,
@@ -306,7 +306,7 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        internal override bool Optimize(ref CodeNode _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
             Parser.Optimize(ref init, 1, fdepth, variables, strict);
             Parser.Optimize(ref condition, 2, fdepth, variables, strict);

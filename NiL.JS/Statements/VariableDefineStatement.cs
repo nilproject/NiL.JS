@@ -2,26 +2,26 @@
 using System.Collections.Generic;
 using NiL.JS.Core;
 using NiL.JS.Core.BaseTypes;
-using NiL.JS.Statements.Operators;
+using NiL.JS.Expressions;
 
 namespace NiL.JS.Statements
 {
     [Serializable]
-    public sealed class VariableDefineStatement : Statement
+    public sealed class VariableDefineStatement : CodeNode
     {
-        internal readonly Statement[] initializators;
+        internal readonly CodeNode[] initializators;
         internal readonly string[] names;
 
-        public Statement[] Initializators { get { return initializators; } }
+        public CodeNode[] Initializators { get { return initializators; } }
         public string[] Names { get { return names; } }
 
-        public VariableDefineStatement(string name, Statement init)
+        public VariableDefineStatement(string name, CodeNode init)
         {
             names = new[] { name };
             initializators = new[] { init };
         }
 
-        private VariableDefineStatement(string[] names, Statement[] initializators)
+        private VariableDefineStatement(string[] names, CodeNode[] initializators)
         {
             this.initializators = initializators;
             this.names = names;
@@ -36,7 +36,7 @@ namespace NiL.JS.Statements
                 return new ParseResult();
             bool isDef = false;
             while (char.IsWhiteSpace(code[i])) i++;
-            var initializator = new List<Statement>();
+            var initializator = new List<CodeNode>();
             var names = new List<string>();
             while ((code[i] != ';') && (code[i] != '}') && !Tools.isLineTerminator(code[i]))
             {
@@ -81,7 +81,7 @@ namespace NiL.JS.Statements
                     if (i == code.Length)
                         throw new JSException(TypeProxy.Proxy(new SyntaxError("Unexpected end of line in variable defenition.")));
                     initializator.Add(
-                        new Assign(new GetVariableStatement(name) { Position = s, Length = name.Length, functionDepth = state.functionsDepth }, OperatorStatement.Parse(state, ref i, false).Statement)
+                        new Assign(new GetVariableStatement(name) { Position = s, Length = name.Length, functionDepth = state.functionsDepth }, ExpressionStatement.Parse(state, ref i, false).Statement)
                         {
                             Position = s,
                             Length = i - s
@@ -128,15 +128,15 @@ namespace NiL.JS.Statements
             return JSObject.undefined;
         }
 
-        protected override Statement[] getChildsImpl()
+        protected override CodeNode[] getChildsImpl()
         {
-            var res = new List<Statement>();
+            var res = new List<CodeNode>();
             res.AddRange(initializators);
             res.RemoveAll(x => x == null);
             return res.ToArray();
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        internal override bool Optimize(ref CodeNode _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
             for (int i = 0; i < initializators.Length; i++)
                 Parser.Optimize(ref initializators[i], 1, fdepth, variables, strict);

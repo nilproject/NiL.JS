@@ -29,7 +29,7 @@ namespace NiL.JS.Core
             // 0
             new _Rule[] // Общий
             {                
-                new _Rule("[", OperatorStatement.Parse),
+                new _Rule("[", ExpressionStatement.Parse),
                 new _Rule("{", CodeBlock.Parse),
                 new _Rule("var ", VariableDefineStatement.Parse),
                 new _Rule("if", IfElseStatement.Parse),
@@ -41,50 +41,50 @@ namespace NiL.JS.Core
                 new _Rule("switch", SwitchStatement.Parse),
                 new _Rule("with", WithStatement.Parse),
                 new _Rule("do", DoWhileStatement.Parse),
-                new _Rule("(", OperatorStatement.Parse),
-                new _Rule("+", OperatorStatement.Parse),
-                new _Rule("-", OperatorStatement.Parse),
-                new _Rule("!", OperatorStatement.Parse),
-                new _Rule("~", OperatorStatement.Parse),
-                new _Rule("true", OperatorStatement.Parse),
-                new _Rule("false", OperatorStatement.Parse),
-                new _Rule("null", OperatorStatement.Parse),
-                new _Rule("this", OperatorStatement.Parse),
-                new _Rule("typeof", OperatorStatement.Parse),
+                new _Rule("(", ExpressionStatement.Parse),
+                new _Rule("+", ExpressionStatement.Parse),
+                new _Rule("-", ExpressionStatement.Parse),
+                new _Rule("!", ExpressionStatement.Parse),
+                new _Rule("~", ExpressionStatement.Parse),
+                new _Rule("true", ExpressionStatement.Parse),
+                new _Rule("false", ExpressionStatement.Parse),
+                new _Rule("null", ExpressionStatement.Parse),
+                new _Rule("this", ExpressionStatement.Parse),
+                new _Rule("typeof", ExpressionStatement.Parse),
                 new _Rule("try", TryCatchStatement.Parse),
-                new _Rule("new", OperatorStatement.Parse),
-                new _Rule("delete", OperatorStatement.Parse),
-                new _Rule("void", OperatorStatement.Parse),
+                new _Rule("new", ExpressionStatement.Parse),
+                new _Rule("delete", ExpressionStatement.Parse),
+                new _Rule("void", ExpressionStatement.Parse),
                 new _Rule("break", BreakStatement.Parse),
                 new _Rule("continue", ContinueStatement.Parse),
                 new _Rule("throw", ThrowStatement.Parse),
                 new _Rule(ValidateName, LabeledStatement.Parse),
-                new _Rule(ValidateName, OperatorStatement.Parse),
-                new _Rule(ValidateValue, OperatorStatement.Parse),
+                new _Rule(ValidateName, ExpressionStatement.Parse),
+                new _Rule(ValidateValue, ExpressionStatement.Parse),
                 new _Rule("debugger", DebuggerOperator.Parse)
             },
             // 1
             new _Rule[] // Для операторов
             {
-                new _Rule("[", OperatorStatement.Parse),
-                new _Rule("{", OperatorStatement.Parse),
-                new _Rule("function", OperatorStatement.Parse),
-                new _Rule("(", OperatorStatement.Parse),
-                new _Rule("+", OperatorStatement.Parse),
-                new _Rule("-", OperatorStatement.Parse),
-                new _Rule("!", OperatorStatement.Parse),
-                new _Rule("~", OperatorStatement.Parse),
-                new _Rule("(", OperatorStatement.Parse),
-                new _Rule("true", OperatorStatement.Parse),
-                new _Rule("false", OperatorStatement.Parse),
-                new _Rule("null", OperatorStatement.Parse),
-                new _Rule("this", OperatorStatement.Parse),
-                new _Rule("typeof", OperatorStatement.Parse),
-                new _Rule("new", OperatorStatement.Parse),
-                new _Rule("delete", OperatorStatement.Parse),
-                new _Rule("void", OperatorStatement.Parse),
-                new _Rule(ValidateName, OperatorStatement.Parse),
-                new _Rule(ValidateValue, OperatorStatement.Parse),
+                new _Rule("[", ExpressionStatement.Parse),
+                new _Rule("{", ExpressionStatement.Parse),
+                new _Rule("function", ExpressionStatement.Parse),
+                new _Rule("(", ExpressionStatement.Parse),
+                new _Rule("+", ExpressionStatement.Parse),
+                new _Rule("-", ExpressionStatement.Parse),
+                new _Rule("!", ExpressionStatement.Parse),
+                new _Rule("~", ExpressionStatement.Parse),
+                new _Rule("(", ExpressionStatement.Parse),
+                new _Rule("true", ExpressionStatement.Parse),
+                new _Rule("false", ExpressionStatement.Parse),
+                new _Rule("null", ExpressionStatement.Parse),
+                new _Rule("this", ExpressionStatement.Parse),
+                new _Rule("typeof", ExpressionStatement.Parse),
+                new _Rule("new", ExpressionStatement.Parse),
+                new _Rule("delete", ExpressionStatement.Parse),
+                new _Rule("void", ExpressionStatement.Parse),
+                new _Rule(ValidateName, ExpressionStatement.Parse),
+                new _Rule(ValidateValue, ExpressionStatement.Parse),
             },
             // 2
             new _Rule[] // Для операторов №2
@@ -97,30 +97,30 @@ namespace NiL.JS.Core
             new _Rule[] // Для for
             {
                 new _Rule("var ", VariableDefineStatement.Parse),
-                new _Rule("(", OperatorStatement.Parse),
-                new _Rule("+", OperatorStatement.Parse),
-                new _Rule("-", OperatorStatement.Parse),
-                new _Rule("!", OperatorStatement.Parse),
-                new _Rule("~", OperatorStatement.Parse),
-                new _Rule("function", OperatorStatement.Parse),
-                new _Rule("(", OperatorStatement.Parse),
-                new _Rule("true", OperatorStatement.Parse),
-                new _Rule("false", OperatorStatement.Parse),
-                new _Rule("null", OperatorStatement.Parse),
-                new _Rule("this", OperatorStatement.Parse),
-                new _Rule("typeof", OperatorStatement.Parse),
-                new _Rule("new", OperatorStatement.Parse),
-                new _Rule("delete", OperatorStatement.Parse),
-                new _Rule("void", OperatorStatement.Parse),
-                new _Rule(ValidateName, OperatorStatement.Parse),
-                new _Rule(ValidateValue, OperatorStatement.Parse),
+                new _Rule("(", ExpressionStatement.Parse),
+                new _Rule("+", ExpressionStatement.Parse),
+                new _Rule("-", ExpressionStatement.Parse),
+                new _Rule("!", ExpressionStatement.Parse),
+                new _Rule("~", ExpressionStatement.Parse),
+                new _Rule("function", ExpressionStatement.Parse),
+                new _Rule("(", ExpressionStatement.Parse),
+                new _Rule("true", ExpressionStatement.Parse),
+                new _Rule("false", ExpressionStatement.Parse),
+                new _Rule("null", ExpressionStatement.Parse),
+                new _Rule("this", ExpressionStatement.Parse),
+                new _Rule("typeof", ExpressionStatement.Parse),
+                new _Rule("new", ExpressionStatement.Parse),
+                new _Rule("delete", ExpressionStatement.Parse),
+                new _Rule("void", ExpressionStatement.Parse),
+                new _Rule(ValidateName, ExpressionStatement.Parse),
+                new _Rule(ValidateValue, ExpressionStatement.Parse),
             },
             // 4
             new _Rule[] // Общий без JSON
             {
                 new _Rule("//", SinglelineComment.Parse),
                 new _Rule("/*", MultilineComment.Parse),
-                new _Rule("[", OperatorStatement.Parse),
+                new _Rule("[", ExpressionStatement.Parse),
                 new _Rule("{", CodeBlock.Parse),
                 new _Rule("var ", VariableDefineStatement.Parse),
                 new _Rule("if", IfElseStatement.Parse),
@@ -132,26 +132,26 @@ namespace NiL.JS.Core
                 new _Rule("switch", SwitchStatement.Parse),
                 new _Rule("with", WithStatement.Parse),
                 new _Rule("do", DoWhileStatement.Parse),
-                new _Rule("(", OperatorStatement.Parse),
-                new _Rule("+", OperatorStatement.Parse),
-                new _Rule("-", OperatorStatement.Parse),
-                new _Rule("!", OperatorStatement.Parse),
-                new _Rule("~", OperatorStatement.Parse),
-                new _Rule("true", OperatorStatement.Parse),
-                new _Rule("false", OperatorStatement.Parse),
-                new _Rule("null", OperatorStatement.Parse),
-                new _Rule("this", OperatorStatement.Parse),
-                new _Rule("typeof", OperatorStatement.Parse),
+                new _Rule("(", ExpressionStatement.Parse),
+                new _Rule("+", ExpressionStatement.Parse),
+                new _Rule("-", ExpressionStatement.Parse),
+                new _Rule("!", ExpressionStatement.Parse),
+                new _Rule("~", ExpressionStatement.Parse),
+                new _Rule("true", ExpressionStatement.Parse),
+                new _Rule("false", ExpressionStatement.Parse),
+                new _Rule("null", ExpressionStatement.Parse),
+                new _Rule("this", ExpressionStatement.Parse),
+                new _Rule("typeof", ExpressionStatement.Parse),
                 new _Rule("try", TryCatchStatement.Parse),
-                new _Rule("new", OperatorStatement.Parse),
-                new _Rule("delete", OperatorStatement.Parse),
-                new _Rule("void", OperatorStatement.Parse),
+                new _Rule("new", ExpressionStatement.Parse),
+                new _Rule("delete", ExpressionStatement.Parse),
+                new _Rule("void", ExpressionStatement.Parse),
                 new _Rule("break", BreakStatement.Parse),
                 new _Rule("continue", ContinueStatement.Parse),
                 new _Rule("throw", ThrowStatement.Parse),
                 new _Rule(ValidateName, LabeledStatement.Parse),
-                new _Rule(ValidateName, OperatorStatement.Parse),
-                new _Rule(ValidateValue, OperatorStatement.Parse),
+                new _Rule(ValidateName, ExpressionStatement.Parse),
+                new _Rule(ValidateValue, ExpressionStatement.Parse),
                 new _Rule("debugger", DebuggerOperator.Parse)
             }
         };
@@ -482,12 +482,12 @@ namespace NiL.JS.Core
                 || (c == '"');
         }
 
-        internal static Statement Parse(ParsingState state, ref int index, int ruleset)
+        internal static CodeNode Parse(ParsingState state, ref int index, int ruleset)
         {
             return Parse(state, ref index, ruleset, false);
         }
 
-        internal static Statement Parse(ParsingState state, ref int index, int ruleset, bool lineAutoComplite)
+        internal static CodeNode Parse(ParsingState state, ref int index, int ruleset, bool lineAutoComplite)
         {
             string code = state.Code;
             while ((index < code.Length) && (char.IsWhiteSpace(code[index])) && (!lineAutoComplite || !Tools.isLineTerminator(code[index]))) index++;
@@ -515,7 +515,7 @@ namespace NiL.JS.Core
                 + code.Substring(index, Math.Min(20, code.Length - index)).Split(new[] { ' ', '\n', '\r' })[0])));
         }
 
-        internal static void Optimize(ref Statement s, int depth, int funcDepth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        internal static void Optimize(ref CodeNode s, int depth, int funcDepth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
             while (s != null && s.Optimize(ref s, depth, funcDepth, variables, strict)) { }
         }

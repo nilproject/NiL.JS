@@ -6,7 +6,7 @@ using NiL.JS.Core.BaseTypes;
 namespace NiL.JS.Statements
 {
     [Serializable]
-    public sealed class FunctionStatement : Statement
+    public sealed class FunctionStatement : CodeNode
     {
         [Serializable]
         internal sealed class FunctionReference : VariableReference
@@ -86,7 +86,7 @@ namespace NiL.JS.Statements
         {
             Reference = new FunctionReference(this);
             parameters = new VariableReference[0];
-            body = new CodeBlock(new Statement[0], false);
+            body = new CodeBlock(new CodeNode[0], false);
             body.variables = new VariableDescriptor[0];
             this.name = name;
         }
@@ -237,7 +237,7 @@ namespace NiL.JS.Statements
                 while (i < code.Length && char.IsWhiteSpace(code[i]) && !Tools.isLineTerminator(code[i])) i++;
                 if (i < code.Length && code[i] == '(')
                 {
-                    List<Statement> args = new List<Statement>();
+                    List<CodeNode> args = new List<CodeNode>();
                     i++;
                     for (; ; )
                     {
@@ -246,7 +246,7 @@ namespace NiL.JS.Statements
                             break;
                         else if (code[i] == ',')
                             do i++; while (char.IsWhiteSpace(code[i]));
-                        args.Add(OperatorStatement.Parse(state, ref i, false).Statement);
+                        args.Add(ExpressionStatement.Parse(state, ref i, false).Statement);
                     }
                     i++;
                     index = i;
@@ -256,7 +256,7 @@ namespace NiL.JS.Statements
                     return new ParseResult()
                     {
                         IsParsed = true,
-                        Statement = new Operators.Call(func, new ImmidateValueStatement(new JSObject() { valueType = JSObjectType.Object, oValue = args.ToArray() }))
+                        Statement = new Expressions.Call(func, new ImmidateValueStatement(new JSObject() { valueType = JSObjectType.Object, oValue = args.ToArray() }))
                     };
                 }
                 else
@@ -282,9 +282,9 @@ namespace NiL.JS.Statements
             return MakeFunction(context);
         }
 
-        protected override Statement[] getChildsImpl()
+        protected override CodeNode[] getChildsImpl()
         {
-            var res = new Statement[1 + parameters.Length + (Reference != null ? 1 : 0)];
+            var res = new CodeNode[1 + parameters.Length + (Reference != null ? 1 : 0)];
             for (var i = 0; i < parameters.Length; i++)
                 res[i] = parameters[i];
             res[parameters.Length] = body;
@@ -313,9 +313,9 @@ namespace NiL.JS.Statements
             return new Function(context, this);
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        internal override bool Optimize(ref CodeNode _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
-            var stat = body as Statement;
+            var stat = body as CodeNode;
             var nvars = new Dictionary<string, VariableDescriptor>();
             for (var i = 0; i < parameters.Length; i++)
             {

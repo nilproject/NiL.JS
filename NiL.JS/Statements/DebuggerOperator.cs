@@ -4,7 +4,7 @@ using NiL.JS.Core;
 namespace NiL.JS.Statements
 {
     [Serializable]
-    public sealed class DebuggerOperator : Statement
+    public sealed class DebuggerOperator : CodeNode
     {
         internal static ParseResult Parse(ParsingState state, ref int index)
         {
@@ -43,7 +43,7 @@ namespace NiL.JS.Statements
             return "";
         }
 
-        protected override Statement[] getChildsImpl()
+        protected override CodeNode[] getChildsImpl()
         {
             return null;
         }

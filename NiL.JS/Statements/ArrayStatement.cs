@@ -5,11 +5,11 @@ using NiL.JS.Core;
 namespace NiL.JS.Statements
 {
     [Serializable]
-    public sealed class ArrayStatement : Statement
+    public sealed class ArrayStatement : CodeNode
     {
-        private Statement[] elements;
+        private CodeNode[] elements;
 
-        public ICollection<Statement> Elements { get { return elements; } }
+        public ICollection<CodeNode> Elements { get { return elements; } }
 
         private ArrayStatement()
         {
@@ -25,13 +25,13 @@ namespace NiL.JS.Statements
             do
                 i++;
             while (char.IsWhiteSpace(code[i]));
-            var elms = new List<Statement>();
+            var elms = new List<CodeNode>();
             while (code[i] != ']')
             {
                 if (code[i] == ',')
                     elms.Add(null);
                 else
-                    elms.Add(OperatorStatement.Parse(state, ref i, false).Statement);
+                    elms.Add(ExpressionStatement.Parse(state, ref i, false).Statement);
                 while (char.IsWhiteSpace(code[i]))
                     i++;
                 if (code[i] == ',')
@@ -69,12 +69,12 @@ namespace NiL.JS.Statements
             return res;
         }
 
-        protected override Statement[] getChildsImpl()
+        protected override CodeNode[] getChildsImpl()
         {
             return elements;
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> vars, bool strict)
+        internal override bool Optimize(ref CodeNode _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> vars, bool strict)
         {
             for (int i = 0; i < elements.Length; i++)
                 Parser.Optimize(ref elements[i], 2, fdepth, vars, strict);

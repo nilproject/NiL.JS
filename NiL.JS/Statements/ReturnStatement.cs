@@ -6,11 +6,11 @@ using NiL.JS.Core.BaseTypes;
 namespace NiL.JS.Statements
 {
     [Serializable]
-    public sealed class ReturnStatement : Statement
+    public sealed class ReturnStatement : CodeNode
     {
-        private Statement body;
+        private CodeNode body;
 
-        public Statement Body { get { return body; } }
+        public CodeNode Body { get { return body; } }
 
         internal ReturnStatement()
         {
@@ -47,9 +47,9 @@ namespace NiL.JS.Statements
             return null;
         }
 
-        protected override Statement[] getChildsImpl()
+        protected override CodeNode[] getChildsImpl()
         {
-            var res = new List<Statement>()
+            var res = new List<CodeNode>()
             {
                 body
             };
@@ -57,7 +57,7 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        internal override bool Optimize(ref CodeNode _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
             Parser.Optimize(ref body, 2, fdepth, variables, strict);
             return false;

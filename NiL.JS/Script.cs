@@ -14,7 +14,7 @@ namespace NiL.JS
     {
         private static readonly Function pseudoCaller = new Function(Context.globalContext, FunctionStatement.Parse("function superCaller(){ (hello, world) }"));
 
-        private Statement root;
+        private CodeNode root;
         public CodeBlock Root { get { return root as CodeBlock; } }
         /// <summary>
         /// Исходный код скрипта, переданный при создании объекта.

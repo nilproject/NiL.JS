@@ -5,12 +5,12 @@ using NiL.JS.Core;
 namespace NiL.JS.Statements
 {
     [Serializable]
-    public sealed class LabeledStatement : Statement
+    public sealed class LabeledStatement : CodeNode
     {
-        private Statement statement;
+        private CodeNode statement;
         private string label;
 
-        public Statement Statement { get { return statement; } }
+        public CodeNode Statement { get { return statement; } }
         public string Label { get { return label; } }
 
         internal static ParseResult Parse(ParsingState state, ref int index)
@@ -57,12 +57,12 @@ namespace NiL.JS.Statements
             return JSObject.undefined;
         }
 
-        protected override Statement[] getChildsImpl()
+        protected override CodeNode[] getChildsImpl()
         {
             return null;
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        internal override bool Optimize(ref CodeNode _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
             Parser.Optimize(ref statement, depth, fdepth, variables, strict);
             return false;

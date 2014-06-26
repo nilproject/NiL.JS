@@ -6,16 +6,16 @@ using NiL.JS.Core.BaseTypes;
 namespace NiL.JS.Statements
 {
     [Serializable]
-    public sealed class TryCatchStatement : Statement
+    public sealed class TryCatchStatement : CodeNode
     {
-        private Statement body;
-        private Statement catchBody;
-        private Statement finallyBody;
+        private CodeNode body;
+        private CodeNode catchBody;
+        private CodeNode finallyBody;
         private VariableDescriptor catchVariableDesc;
 
-        public Statement Body { get { return body; } }
-        public Statement CatchBody { get { return catchBody; } }
-        public Statement FinalBody { get { return finallyBody; } }
+        public CodeNode Body { get { return body; } }
+        public CodeNode CatchBody { get { return catchBody; } }
+        public CodeNode FinalBody { get { return finallyBody; } }
         public string ExceptionVariableName { get { return catchVariableDesc.Name; } }
 
         internal static ParseResult Parse(ParsingState state, ref int index)
@@ -31,7 +31,7 @@ namespace NiL.JS.Statements
                 throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid try statement definition at " + Tools.PositionToTextcord(code, i))));
             var b = CodeBlock.Parse(state, ref i).Statement;
             while (char.IsWhiteSpace(code[i])) i++;
-            Statement cb = null;
+            CodeNode cb = null;
             string exptn = null;
             if (Parser.Validate(code, "catch (", ref i) || Parser.Validate(code, "catch(", ref i))
             {
@@ -53,7 +53,7 @@ namespace NiL.JS.Statements
                 cb = CodeBlock.Parse(state, ref i).Statement;
                 while (i < code.Length && char.IsWhiteSpace(code[i])) i++;
             }
-            Statement f = null;
+            CodeNode f = null;
             if (Parser.Validate(code, "finally", i) && Parser.isIdentificatorTerminator(code[i + 7]))
             {
                 i += 7;
@@ -150,7 +150,7 @@ namespace NiL.JS.Statements
             return null;
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        internal override bool Optimize(ref CodeNode _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
             Parser.Optimize(ref body, 1, fdepth, variables, strict);
             if (catchBody != null)
@@ -169,9 +169,9 @@ namespace NiL.JS.Statements
             return false;
         }
 
-        protected override Statement[] getChildsImpl()
+        protected override CodeNode[] getChildsImpl()
         {
-            var res = new List<Statement>()
+            var res = new List<CodeNode>()
             {
                 body,
                 catchBody,

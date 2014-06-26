@@ -3,22 +3,22 @@ using System.Collections.Generic;
 using System.Linq;
 using NiL.JS.Core;
 using NiL.JS.Core.BaseTypes;
-using NiL.JS.Statements.Operators;
+using NiL.JS.Expressions;
 
 namespace NiL.JS.Statements
 {
     [Serializable]
-    public sealed class CodeBlock : Statement
+    public sealed class CodeBlock : CodeNode
     {
         private static readonly VariableDescriptor[] emptyVariables = new VariableDescriptor[0];
 
         private string code;
         internal VariableDescriptor[] variables;
-        internal readonly Statement[] body;
+        internal readonly CodeNode[] body;
         internal readonly bool strict;
 
         public VariableDescriptor[] Variables { get { return variables; } }
-        public Statement[] Body { get { return body; } }
+        public CodeNode[] Body { get { return body; } }
         public bool Strict { get { return strict; } }
         public string Code
         {
@@ -53,7 +53,7 @@ namespace NiL.JS.Statements
             }
         }
 
-        public CodeBlock(Statement[] body, bool strict)
+        public CodeBlock(CodeNode[] body, bool strict)
         {
             if (body == null)
                 throw new ArgumentNullException("body");
@@ -75,7 +75,7 @@ namespace NiL.JS.Statements
                 i++;
             }
             while (i < code.Length && char.IsWhiteSpace(code[i])) i++;
-            var body = new List<Statement>();
+            var body = new List<CodeNode>();
             state.LabelCount = 0;
             bool strictSwitch = false;
             bool allowStrict = state.AllowStrict;
@@ -248,9 +248,9 @@ namespace NiL.JS.Statements
             return res;
         }
 
-        protected override Statement[] getChildsImpl()
+        protected override CodeNode[] getChildsImpl()
         {
-            var res = new List<Statement>();
+            var res = new List<CodeNode>();
             res.AddRange(body);
             res.RemoveAll(x => x == null || x is FunctionStatement);
             if (variables != null)
@@ -258,7 +258,7 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        internal override bool Optimize(ref CodeNode _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
             if (this.variables != null)
             {

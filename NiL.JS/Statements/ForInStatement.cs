@@ -5,16 +5,16 @@ using NiL.JS.Core;
 namespace NiL.JS.Statements
 {
     [Serializable]
-    public sealed class ForInStatement : Statement
+    public sealed class ForInStatement : CodeNode
     {
-        private Statement variable;
-        private Statement source;
-        private Statement body;
+        private CodeNode variable;
+        private CodeNode source;
+        private CodeNode body;
         private List<string> labels;
 
-        public Statement Variable { get { return variable; } }
-        public Statement Source { get { return source; } }
-        public Statement Body { get { return body; } }
+        public CodeNode Variable { get { return variable; } }
+        public CodeNode Source { get { return source; } }
+        public CodeNode Body { get { return body; } }
         public string[] Labels { get { return labels.ToArray(); } }
 
         private ForInStatement()
@@ -54,7 +54,7 @@ namespace NiL.JS.Statements
             {
                 if (code[i] == ';')
                     return new ParseResult();
-                res.variable = OperatorStatement.Parse(state, ref i, true, true).Statement;
+                res.variable = ExpressionStatement.Parse(state, ref i, true, true).Statement;
             }
             while (char.IsWhiteSpace(code[i])) i++;
             if (!Parser.Validate(code, "in", ref i))
@@ -131,9 +131,9 @@ namespace NiL.JS.Statements
             return res;
         }
 
-        protected override Statement[] getChildsImpl()
+        protected override CodeNode[] getChildsImpl()
         {
-            var res = new List<Statement>()
+            var res = new List<CodeNode>()
             {
                 body,
                 variable,
@@ -143,18 +143,18 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        internal override bool Optimize(ref CodeNode _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
             Parser.Optimize(ref variable, 1, fdepth, variables, strict);
             if (variable is VariableDefineStatement)
                 variable = (variable as VariableDefineStatement).initializators[0];
             Parser.Optimize(ref source, 1, fdepth, variables, strict);
             Parser.Optimize(ref body, System.Math.Max(1, depth), fdepth, variables, strict);
-            if (variable is Operators.None)
+            if (variable is Expressions.None)
             {
-                if ((variable as Operators.None).SecondOperand != null)
+                if ((variable as Expressions.None).SecondOperand != null)
                     throw new InvalidOperationException("Invalid left-hand side in for-in");
-                variable = (variable as Operators.None).FirstOperand;
+                variable = (variable as Expressions.None).FirstOperand;
             }
             return false;
         }

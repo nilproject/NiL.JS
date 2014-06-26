@@ -5,15 +5,15 @@ using NiL.JS.Core;
 namespace NiL.JS.Statements
 {
     [Serializable]
-    public sealed class IfElseStatement : Statement
+    public sealed class IfElseStatement : CodeNode
     {
-        private Statement condition;
-        private Statement body;
-        private Statement elseBody;
+        private CodeNode condition;
+        private CodeNode body;
+        private CodeNode elseBody;
 
-        public Statement Body { get { return body; } }
-        public Statement ElseBody { get { return elseBody; } }
-        public Statement Condition { get { return condition; } }
+        public CodeNode Body { get { return body; } }
+        public CodeNode ElseBody { get { return elseBody; } }
+        public CodeNode Condition { get { return condition; } }
 
         private IfElseStatement()
         {
@@ -27,15 +27,15 @@ namespace NiL.JS.Statements
             if (!Parser.Validate(code, "if (", ref i) && !Parser.Validate(code, "if(", ref i))
                 return new ParseResult();
             while (char.IsWhiteSpace(code[i])) i++;
-            Statement condition = OperatorStatement.Parse(state, ref i).Statement;
+            CodeNode condition = ExpressionStatement.Parse(state, ref i).Statement;
             while (char.IsWhiteSpace(code[i])) i++;
             if (code[i] != ')')
                 throw new ArgumentException("code (" + i + ")");
             do i++; while (char.IsWhiteSpace(code[i]));
-            Statement body = Parser.Parse(state, ref i, 0);
+            CodeNode body = Parser.Parse(state, ref i, 0);
             if (body is FunctionStatement && state.strict.Peek())
                 throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
-            Statement elseBody = null;
+            CodeNode elseBody = null;
             while (i < code.Length && char.IsWhiteSpace(code[i])) i++;
             if (i < code.Length && !(body is CodeBlock) && (code[i] == ';'))
                 do i++; while (i < code.Length && char.IsWhiteSpace(code[i]));
@@ -87,9 +87,9 @@ namespace NiL.JS.Statements
             return null;
         }
 
-        protected override Statement[] getChildsImpl()
+        protected override CodeNode[] getChildsImpl()
         {
-            var res = new List<Statement>()
+            var res = new List<CodeNode>()
             {
                 body,
                 condition,
@@ -99,7 +99,7 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        internal override bool Optimize(ref CodeNode _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
             Parser.Optimize(ref body, depth, fdepth, variables, strict);
             Parser.Optimize(ref condition, 2, fdepth, variables, strict);

@@ -12,11 +12,11 @@ namespace NiL.JS.Core
         private string name;
         private JSObject cacheRes;
         private Context prewContext;
-        private Statement owner;
+        private CodeNode owner;
 
         public bool Defined { get; internal set; }
-        public Statement Owner { get { return owner; } internal set { owner = value; } }
-        public Statement Inititalizator { get; internal set; }
+        public CodeNode Owner { get { return owner; } internal set { owner = value; } }
+        public CodeNode Inititalizator { get; internal set; }
         public string Name { get { return name; } }
         public int ReferenceCount { get { return references.Count; } }
 

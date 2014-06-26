@@ -6,15 +6,15 @@ using NiL.JS.Core.BaseTypes;
 namespace NiL.JS.Statements
 {
     [Serializable]
-    public sealed class GetMemberStatement : Statement
+    public sealed class GetMemberStatement : CodeNode
     {
-        private Statement objStatement;
-        private Statement memberNameStatement;
+        private CodeNode objStatement;
+        private CodeNode memberNameStatement;
 
-        public Statement Source { get { return objStatement; } }
-        public Statement FieldName { get { return memberNameStatement; } }
+        public CodeNode Source { get { return objStatement; } }
+        public CodeNode FieldName { get { return memberNameStatement; } }
 
-        internal GetMemberStatement(Statement obj, Statement fieldName)
+        internal GetMemberStatement(CodeNode obj, CodeNode fieldName)
         {
             objStatement = obj;
             memberNameStatement = fieldName;
@@ -49,9 +49,9 @@ namespace NiL.JS.Statements
             return res;
         }
 
-        protected override Statement[] getChildsImpl()
+        protected override CodeNode[] getChildsImpl()
         {
-            var res = new List<Statement>()
+            var res = new List<CodeNode>()
             {
                 objStatement,
                 memberNameStatement
@@ -60,7 +60,7 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        internal override bool Optimize(ref CodeNode _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
             Parser.Optimize(ref objStatement, depth + 1, fdepth, variables, strict);
             Parser.Optimize(ref memberNameStatement, depth + 1, fdepth, variables, strict);

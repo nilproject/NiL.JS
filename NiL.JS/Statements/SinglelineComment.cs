@@ -5,7 +5,7 @@ namespace NiL.JS.Statements
     /// <summary>
     /// TODO
     /// </summary>
-    internal sealed class SinglelineComment : Statement
+    internal sealed class SinglelineComment : CodeNode
     {
         internal static ParseResult Parse(ParsingState state, ref int index)
         {
@@ -57,7 +57,7 @@ namespace NiL.JS.Statements
             return null;
         }
 
-        protected override Statement[] getChildsImpl()
+        protected override CodeNode[] getChildsImpl()
         {
             return null;
         }

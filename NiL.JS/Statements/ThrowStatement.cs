@@ -5,21 +5,21 @@ using NiL.JS.Core;
 namespace NiL.JS.Statements
 {
     [Serializable]
-    internal sealed class ThrowStatement : Statement
+    internal sealed class ThrowStatement : CodeNode
     {
-        private Statement body;
+        private CodeNode body;
 
         public ThrowStatement(Exception e)
         {
             body = new ImmidateValueStatement(TypeProxy.Proxy(e));
         }
 
-        private ThrowStatement(Statement statement)
+        private ThrowStatement(CodeNode statement)
         {
             body = statement;
         }
 
-        public Statement Body { get { return body; } }
+        public CodeNode Body { get { return body; } }
 
         internal static ParseResult Parse(ParsingState state, ref int index)
         {
@@ -53,9 +53,9 @@ namespace NiL.JS.Statements
 #endif
         }
 
-        protected override Statement[] getChildsImpl()
+        protected override CodeNode[] getChildsImpl()
         {
-            var res = new List<Statement>()
+            var res = new List<CodeNode>()
             {
                 body
             };
@@ -63,7 +63,7 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Optimize(ref Statement _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        internal override bool Optimize(ref CodeNode _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
             Parser.Optimize(ref body, 2, fdepth, variables, strict);
             return false;
