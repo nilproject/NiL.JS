@@ -9,7 +9,7 @@ using System.Reflection;
 namespace NiL.JS.Core
 {
     [Serializable]
-    public class MethodProxy : Function
+    public sealed class MethodProxy : Function
     {
 #if !NET35
         private delegate void SetValueDelegate(FieldInfo field, Object obj, Object value, Type fieldType, FieldAttributes fieldAttr, Type declaringType, ref bool domainInitialized);
@@ -268,7 +268,7 @@ namespace NiL.JS.Core
             }
             return null;
         }
-
+        
         [Modules.DoNotEnumerate]
         [Modules.DoNotDelete]
         public override JSObject length
@@ -456,14 +456,6 @@ namespace NiL.JS.Core
         public override JSObject Invoke(JSObject thisBind, JSObject args)
         {
             return TypeProxy.Proxy(InvokeImpl(thisBind, null, args));
-        }
-
-        [Hidden]
-        internal protected override JSObject GetMember(string name, bool create, bool own)
-        {
-            if (__proto__ == null)
-                __proto__ = TypeProxy.GetPrototype(this.GetType());
-            return DefaultFieldGetter(name, create, own);
         }
 
         public override string ToString()

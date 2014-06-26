@@ -41,6 +41,7 @@ namespace NiL.JS.Core
         [Hidden]
         public ProxyConstructor(TypeProxy typeProxy)
         {
+            fields = typeProxy.fields;
             proxy = typeProxy;
             var ctors = typeProxy.hostedType.GetConstructors();
             List<MethodProxy> ctorsL = new List<MethodProxy>(ctors.Length + (typeProxy.hostedType.IsValueType ? 1 : 0));
@@ -53,13 +54,13 @@ namespace NiL.JS.Core
                 ctorsL.Add(new MethodProxy(new StructureDefaultConstructorInfo(proxy.hostedType)));
             ctorsL.Sort((x, y) => x.Parameters.Length - y.Parameters.Length);
             constructors = ctorsL.ToArray();
-            proxy.__proto__ = __proto__; // для того, чтобы не отвалились стандартные свойства функций
+            proxy.__proto__ = __proto__; // для того, чтобы не отвалились стандартные свойства функции
         }
 
         [Hidden]
         internal protected override JSObject GetMember(string name, bool create, bool own)
         {
-            if (__proto__ == null)
+          if (__proto__ == null)
             {
                 __proto__ = TypeProxy.GetPrototype(typeof(Function));
                 proxy.__proto__ = __proto__;

@@ -38,7 +38,15 @@ namespace NiL.JS.Core
         /// Объект является системным.
         /// </summary>
         SystemObject = 1 << 17,
-        ProxyPrototype = 1 << 18
+        ProxyPrototype = 1 << 18,
+        /// <summary>
+        /// Указывает на то, что свойство должно интерпретироваться как поле со значением.
+        /// </summary>
+        Field = 1 << 19,
+        /// <summary>
+        /// Аттрибуты, переносимые при присваивании значения.
+        /// </summary>
+        PrivateAttributes = Immutable | ProxyPrototype | Field
     }
 
     public delegate void AssignCallback(JSObject sender);
@@ -794,8 +802,8 @@ namespace NiL.JS.Core
                 this.dValue = value.dValue;
                 this.__proto__ = value.__proto__;
                 this.attributes = 
-                    (this.attributes & ~(JSObjectAttributes.Immutable | JSObjectAttributes.ProxyPrototype)) 
-                    | (value.attributes & (JSObjectAttributes.Immutable | JSObjectAttributes.ProxyPrototype));
+                    (this.attributes & ~JSObjectAttributes.PrivateAttributes)
+                    | (value.attributes & JSObjectAttributes.PrivateAttributes);
                 return;
             }
             this.fields = null;

@@ -1,14 +1,26 @@
 ﻿using System;
+using NiL.JS.Core.BaseTypes;
 
 namespace NiL.JS.Core
 {
     [Serializable]
-    internal class ObjectConstructor : ProxyConstructor
+    internal class ObjectConstructor : Function
     {
-        public ObjectConstructor(TypeProxy proxy)
-            : base(proxy)
-        {
+        private TypeProxy proxy;
 
+        public override JSObject length
+        {
+            get
+            {
+                if (_length == null)
+                    _length = 1;
+                return _length;
+            }
+        }
+
+        public ObjectConstructor(TypeProxy proxy)
+        {
+            this.proxy = proxy;
         }
 
         public override NiL.JS.Core.JSObject Invoke(JSObject thisBind, NiL.JS.Core.JSObject args)
@@ -31,6 +43,16 @@ namespace NiL.JS.Core
             if (oVal is JSObject)
                 res.__proto__ = (oVal as JSObject).GetMember("__proto__", false, true);
             return res;
+        }
+
+        internal protected override JSObject GetMember(string name, bool create, bool own)
+        {
+            if (__proto__ == null)
+            {
+                __proto__ = TypeProxy.GetPrototype(typeof(Function));
+                proxy.__proto__ = __proto__;
+            }
+            return proxy.GetMember(name, create, own);
         }
 
         public override string ToString()

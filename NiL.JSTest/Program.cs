@@ -228,7 +228,7 @@ namespace NiL.JSTest
         static void Main(string[] args)
         {
             typeof(System.Windows.Forms.Button).GetType();
-            int mode = 2
+            int mode = 4
                 ;
             switch (mode)
             {

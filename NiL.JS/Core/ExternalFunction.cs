@@ -42,12 +42,7 @@ namespace NiL.JS.Core
             if (del == null)
                 throw new ArgumentNullException();
             this.del = del;
-            var pc = del.Method.GetCustomAttributes(typeof(ParametersCountAttribute), false);
-            if (pc != null && pc.Length != 0)
-                _length = (pc[0] as ParametersCountAttribute).Count;
-            else
-                _length = 0;
-        }
+       }
 
         [Hidden]
         public override JSObject Invoke(JSObject thisBind, JSObject args)

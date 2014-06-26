@@ -38,7 +38,10 @@ namespace NiL.JS.Core
                                                         fields = fields
                                                     };
                             if (_prototypeInstance.oValue is JSObject)
+                            {
                                 _prototypeInstance.valueType = (JSObjectType)System.Math.Max((int)_prototypeInstance.valueType, (int)(_prototypeInstance.oValue as JSObject).valueType);
+                                (_prototypeInstance.oValue as JSObject).fields = fields;
+                            }
                         }
                     }
                     catch (COMException)
@@ -189,20 +192,14 @@ namespace NiL.JS.Core
                 }
                 else
                 {
-                    var prot = staticProxy.DefaultFieldGetter("prototype", true, true);
-                    prot.Assign(this);
-                    ProxyConstructor ctor = null;
+                    var prot = staticProxy.fields["prototype"] = this;
+                    Function ctor = null;
                     if (type == typeof(JSObject))
-                    {
                         ctor = new ObjectConstructor(staticProxy);
-                        prot.attributes = JSObjectAttributes.DoNotEnum | JSObjectAttributes.ReadOnly | JSObjectAttributes.DoNotDelete | JSObjectAttributes.NotConfigurable;
-                    }
                     else
-                    {
                         ctor = new ProxyConstructor(staticProxy);
-                        prot.attributes = JSObjectAttributes.DoNotEnum;
-                    }
                     ctor.attributes = attributes;
+                    attributes |= JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum | JSObjectAttributes.NotConfigurable | JSObjectAttributes.ReadOnly;
                     staticProxies[type] = ctor;
                     fields["constructor"] = ctor;
                 }
@@ -400,7 +397,7 @@ namespace NiL.JS.Core
                                     }
                                 };
                             }
-                            r.attributes = JSObjectAttributes.Immutable | JSObjectAttributes.SystemObject;
+                            r.attributes = JSObjectAttributes.Immutable | JSObjectAttributes.Field;
                             if ((r.oValue as Function[])[0] == null)
                                 r.attributes |= JSObjectAttributes.ReadOnly;
                             break;
@@ -436,6 +433,8 @@ namespace NiL.JS.Core
                             r.attributes = JSObjectAttributes.Immutable;
                             if ((r.oValue as Function[])[0] == null)
                                 r.attributes |= JSObjectAttributes.ReadOnly;
+                            if (pinfo.IsDefined(typeof(FieldAttribute)))
+                                r.attributes |= JSObjectAttributes.Field;
                             break;
                         }
                     case MemberTypes.Event:
