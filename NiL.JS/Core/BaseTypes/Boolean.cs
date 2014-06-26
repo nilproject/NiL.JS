@@ -7,9 +7,9 @@ namespace NiL.JS.Core.BaseTypes
     public class Boolean : JSObject
     {
         [Hidden]
-        internal static readonly Boolean True = new Boolean(true) { attributes = JSObjectAttributes.SystemObject };
+        internal static readonly Boolean True = new Boolean(true) { attributes = JSObjectAttributesInternal.SystemObject };
         [Hidden]
-        internal static readonly Boolean False = new Boolean(false) { attributes = JSObjectAttributes.SystemObject };
+        internal static readonly Boolean False = new Boolean(false) { attributes = JSObjectAttributesInternal.SystemObject };
 
         [DoNotEnumerate]
         public Boolean()
@@ -70,7 +70,7 @@ namespace NiL.JS.Core.BaseTypes
         [Hidden]
         public override void Assign(JSObject value)
         {
-            if ((attributes & JSObjectAttributes.ReadOnly) == 0)
+            if ((attributes & JSObjectAttributesInternal.ReadOnly) == 0)
                 throw new InvalidOperationException("Try to assign to Boolean");
         }
 

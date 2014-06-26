@@ -33,15 +33,15 @@ namespace NiL.JS.Core.BaseTypes
         static Number()
         {
             POSITIVE_INFINITY.assignCallback = null;
-            POSITIVE_INFINITY.attributes |= JSObjectAttributes.DoNotDelete | JSObjectAttributes.ReadOnly | JSObjectAttributes.NotConfigurable | JSObjectAttributes.SystemObject;
+            POSITIVE_INFINITY.attributes |= JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.SystemObject;
             NEGATIVE_INFINITY.assignCallback = null;
-            NEGATIVE_INFINITY.attributes |= JSObjectAttributes.DoNotDelete | JSObjectAttributes.ReadOnly | JSObjectAttributes.NotConfigurable | JSObjectAttributes.SystemObject;
+            NEGATIVE_INFINITY.attributes |= JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.SystemObject;
             MAX_VALUE.assignCallback = null;
-            MAX_VALUE.attributes |= JSObjectAttributes.DoNotDelete | JSObjectAttributes.ReadOnly | JSObjectAttributes.NotConfigurable | JSObjectAttributes.SystemObject;
+            MAX_VALUE.attributes |= JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.SystemObject;
             MIN_VALUE.assignCallback = null;
-            MIN_VALUE.attributes |= JSObjectAttributes.DoNotDelete | JSObjectAttributes.ReadOnly | JSObjectAttributes.NotConfigurable | JSObjectAttributes.SystemObject;
+            MIN_VALUE.attributes |= JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.SystemObject;
             NaN.assignCallback = null;
-            NaN.attributes |= JSObjectAttributes.DoNotDelete | JSObjectAttributes.ReadOnly | JSObjectAttributes.NotConfigurable | JSObjectAttributes.SystemObject;
+            NaN.attributes |= JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.SystemObject;
         }
 
         [Modules.DoNotEnumerate]
@@ -94,7 +94,7 @@ namespace NiL.JS.Core.BaseTypes
         [Hidden]
         public override void Assign(JSObject value)
         {
-            if ((attributes & JSObjectAttributes.ReadOnly) == 0)
+            if ((attributes & JSObjectAttributesInternal.ReadOnly) == 0)
                 throw new InvalidOperationException("Try to assign to Number");
         }
 

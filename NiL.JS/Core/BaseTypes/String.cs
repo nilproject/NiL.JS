@@ -59,7 +59,7 @@ namespace NiL.JS.Core.BaseTypes
         [Hidden]
         public override void Assign(JSObject value)
         {
-            if ((attributes & JSObjectAttributes.ReadOnly) == 0)
+            if ((attributes & JSObjectAttributesInternal.ReadOnly) == 0)
                 throw new InvalidOperationException("Try to assign to String");
         }
 
@@ -74,7 +74,7 @@ namespace NiL.JS.Core.BaseTypes
                     notExist.valueType = JSObjectType.NotExistInObject;
                     return JSObject.notExist;
                 }
-                return new JSObject(false) { valueType = JSObjectType.String, oValue = (oValue as string)[pos].ToString(), attributes = JSObjectAttributes.ReadOnly | JSObjectAttributes.NotConfigurable | JSObjectAttributes.DoNotEnum | JSObjectAttributes.DoNotDelete };
+                return new JSObject(false) { valueType = JSObjectType.String, oValue = (oValue as string)[pos].ToString(), attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.DoNotDelete };
             }
         }
 
@@ -248,7 +248,7 @@ namespace NiL.JS.Core.BaseTypes
                     var margs = CreateObject();
                     JSObject len = 1;
                     len.assignCallback = null;
-                    len.attributes = JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum | JSObjectAttributes.ReadOnly;
+                    len.attributes = JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.ReadOnly;
                     margs.fields["length"] = len;
                     margs.fields["0"] = match;
                     match.oValue = (args[0].oValue as RegExp).regEx.Replace(oValue.ToString(), new System.Text.RegularExpressions.MatchEvaluator(
@@ -294,7 +294,7 @@ namespace NiL.JS.Core.BaseTypes
                     margs.oValue = Arguments.Instance;
                     JSObject alen = 3;
                     alen.assignCallback = null;
-                    alen.attributes = JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum | JSObjectAttributes.ReadOnly;
+                    alen.attributes = JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.ReadOnly;
                     margs.fields["length"] = alen;
                     margs.fields["0"] = pattern;
                     margs.fields["2"] = this;
@@ -559,6 +559,9 @@ namespace NiL.JS.Core.BaseTypes
 
         private Number _length = null;
 
+        [Field]
+        [ReadOnly]
+        [DoNotDelete]
         [DoNotEnumerate]
         public JSObject length
         {
@@ -569,7 +572,7 @@ namespace NiL.JS.Core.BaseTypes
                 if (this.GetType() == typeof(String))
                 {
                     if (_length == null)
-                        _length = new Number((oValue as string).Length) { attributes = JSObjectAttributes.ReadOnly | JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum };
+                        _length = new Number((oValue as string).Length) { attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum };
                     else
                         _length.iValue = (oValue as string).Length;
                     return _length;
@@ -605,7 +608,7 @@ namespace NiL.JS.Core.BaseTypes
         [Hidden]
         internal protected override JSObject GetMember(string name, bool create, bool own)
         {
-            create &= (attributes & JSObjectAttributes.Immutable) == 0;
+            create &= (attributes & JSObjectAttributesInternal.Immutable) == 0;
             if (__proto__ == null)
                 __proto__ = TypeProxy.GetPrototype(typeof(String));
             int index = 0;

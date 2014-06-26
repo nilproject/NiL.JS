@@ -39,7 +39,7 @@ namespace NiL.JS.Core
             res = CreateObject();
 
             res.valueType = JSObjectType.Object;
-            res.oValue = (oVal is JSObject && ((oVal as JSObject).attributes & JSObjectAttributes.SystemObject) != 0) ? (oVal as JSObject).Clone() : oVal;
+            res.oValue = (oVal is JSObject && ((oVal as JSObject).attributes & JSObjectAttributesInternal.SystemObject) != 0) ? (oVal as JSObject).Clone() : oVal;
             if (oVal is JSObject)
                 res.__proto__ = (oVal as JSObject).GetMember("__proto__", false, true);
             return res;

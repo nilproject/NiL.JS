@@ -63,7 +63,7 @@ namespace NiL.JS.Core
                 JSObject.GlobalPrototype = null;
                 TypeProxy.Clear();
                 globalContext.fields.Add("Object", TypeProxy.GetConstructor(typeof(JSObject)).Clone() as JSObject);
-                globalContext.fields["Object"].attributes = JSObjectAttributes.DoNotDelete;
+                globalContext.fields["Object"].attributes = JSObjectAttributesInternal.DoNotDelete;
                 JSObject.GlobalPrototype = TypeProxy.GetPrototype(typeof(JSObject));
                 Core.ThisBind.refreshThisBindProto();
                 globalContext.AttachModule(typeof(BaseTypes.Date));
@@ -110,7 +110,7 @@ namespace NiL.JS.Core
                 #endregion
 
                 foreach (var v in globalContext.fields.Values)
-                    v.attributes |= JSObjectAttributes.DoNotEnum;
+                    v.attributes |= JSObjectAttributesInternal.DoNotEnum;
             }
             finally
             {
@@ -314,7 +314,7 @@ namespace NiL.JS.Core
             else if (!fields.TryGetValue(name, out res))
             {
                 fields[name] = res = new JSObject();
-                res.attributes = JSObjectAttributes.DoNotDelete;
+                res.attributes = JSObjectAttributesInternal.DoNotDelete;
             }
             else
             {
@@ -395,7 +395,7 @@ namespace NiL.JS.Core
             if (fields == null)
                 fields = new Dictionary<string, JSObject>();
             fields.Add(moduleType.Name, TypeProxy.GetConstructor(moduleType).Clone() as JSObject);
-            fields[moduleType.Name].attributes = JSObjectAttributes.DoNotEnum;
+            fields[moduleType.Name].attributes = JSObjectAttributesInternal.DoNotEnum;
         }
 
         /// <summary>

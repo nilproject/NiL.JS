@@ -13,7 +13,7 @@ namespace NiL.JS.Core
         {
             thisProto = CreateObject();
             thisProto.oValue = thisProto;
-            thisProto.attributes |= JSObjectAttributes.ReadOnly | JSObjectAttributes.Immutable | JSObjectAttributes.DoNotEnum | JSObjectAttributes.DoNotDelete;
+            thisProto.attributes |= JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.Immutable | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.DoNotDelete;
             return thisProto;
         }
 
@@ -22,7 +22,7 @@ namespace NiL.JS.Core
         public ThisBind(Context context)
             : base(false)
         {
-            attributes = JSObjectAttributes.SystemObject;
+            attributes = JSObjectAttributesInternal.SystemObject;
             this.context = context;
             fields = context.fields;
             valueType = JSObjectType.Object;

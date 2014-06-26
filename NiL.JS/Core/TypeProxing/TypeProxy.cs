@@ -34,7 +34,7 @@ namespace NiL.JS.Core
                                                         oValue = ictor.Invoke(null),
                                                         __proto__ = this,
                                                         valueType = JSObjectType.Object,
-                                                        attributes = attributes | JSObjectAttributes.ProxyPrototype,
+                                                        attributes = attributes | JSObjectAttributesInternal.ProxyPrototype,
                                                         fields = fields
                                                     };
                             if (_prototypeInstance.oValue is JSObject)
@@ -97,7 +97,7 @@ namespace NiL.JS.Core
             {
                 var type = value.GetType();
                 var res = new JSObject() { oValue = value, valueType = JSObjectType.Object, __proto__ = GetPrototype(type) };
-                res.attributes |= res.__proto__.attributes & JSObjectAttributes.Immutable;
+                res.attributes |= res.__proto__.attributes & JSObjectAttributesInternal.Immutable;
                 return res;
             }
         }
@@ -149,7 +149,7 @@ namespace NiL.JS.Core
         {
             valueType = JSObjectType.Object;
             oValue = this;
-            attributes |= JSObjectAttributes.SystemObject;
+            attributes |= JSObjectAttributesInternal.SystemObject;
         }
 
         private TypeProxy(Type type)
@@ -167,7 +167,7 @@ namespace NiL.JS.Core
                     {
                         valueType = JSObjectType.Object,
                         oValue = this, // Не убирать!
-                        attributes = JSObjectAttributes.ProxyPrototype | JSObjectAttributes.ReadOnly,
+                        attributes = JSObjectAttributesInternal.ProxyPrototype | JSObjectAttributesInternal.ReadOnly,
                         __proto__ = this
                     };
                 }
@@ -181,9 +181,9 @@ namespace NiL.JS.Core
 
                 valueType = _prototypeInstance is JSObject ? (JSObjectType)System.Math.Max((int)(_prototypeInstance as JSObject).valueType, (int)JSObjectType.Object) : JSObjectType.Object;
                 oValue = this;
-                attributes |= JSObjectAttributes.DoNotEnum | JSObjectAttributes.SystemObject;
+                attributes |= JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.SystemObject;
                 if (hostedType.IsDefined(typeof(ImmutableAttribute), false))
-                    attributes |= JSObjectAttributes.Immutable;
+                    attributes |= JSObjectAttributesInternal.Immutable;
                 var staticProxy = new TypeProxy() { hostedType = type, bindFlags = bindFlags | BindingFlags.Static };
                 bindFlags |= BindingFlags.Instance;
                 if (hostedType.IsAbstract)
@@ -199,7 +199,7 @@ namespace NiL.JS.Core
                     else
                         ctor = new ProxyConstructor(staticProxy);
                     ctor.attributes = attributes;
-                    attributes |= JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum | JSObjectAttributes.NotConfigurable | JSObjectAttributes.ReadOnly;
+                    attributes |= JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.ReadOnly;
                     staticProxies[type] = ctor;
                     fields["constructor"] = ctor;
                 }
@@ -275,7 +275,7 @@ namespace NiL.JS.Core
             {
                 if (r.valueType < JSObjectType.Undefined)
                     r.Assign(DefaultFieldGetter(name, false, own));
-                if (create && (r.attributes & JSObjectAttributes.SystemObject) != 0)
+                if (create && (r.attributes & JSObjectAttributesInternal.SystemObject) != 0)
                     fields[name] = r = r.Clone() as JSObject;
                 return r;
             }
@@ -344,14 +344,14 @@ namespace NiL.JS.Core
                         {
                             var method = (ConstructorInfo)m[0];
                             r = new MethodProxy(method);
-                            r.attributes = JSObjectAttributes.SystemObject;
+                            r.attributes = JSObjectAttributesInternal.SystemObject;
                             break;
                         }
                     case MemberTypes.Method:
                         {
                             var method = (MethodInfo)m[0];
                             r = new MethodProxy(method);
-                            r.attributes = JSObjectAttributes.SystemObject;
+                            r.attributes = JSObjectAttributesInternal.SystemObject;
                             break;
                         }
                     case MemberTypes.Field:
@@ -397,9 +397,9 @@ namespace NiL.JS.Core
                                     }
                                 };
                             }
-                            r.attributes = JSObjectAttributes.Immutable | JSObjectAttributes.Field;
+                            r.attributes = JSObjectAttributesInternal.Immutable | JSObjectAttributesInternal.Field;
                             if ((r.oValue as Function[])[0] == null)
-                                r.attributes |= JSObjectAttributes.ReadOnly;
+                                r.attributes |= JSObjectAttributesInternal.ReadOnly;
                             break;
                         }
                     case MemberTypes.Property:
@@ -430,11 +430,11 @@ namespace NiL.JS.Core
                                         }
                                 };
                             }
-                            r.attributes = JSObjectAttributes.Immutable;
+                            r.attributes = JSObjectAttributesInternal.Immutable;
                             if ((r.oValue as Function[])[0] == null)
-                                r.attributes |= JSObjectAttributes.ReadOnly;
+                                r.attributes |= JSObjectAttributesInternal.ReadOnly;
                             if (pinfo.IsDefined(typeof(FieldAttribute), false))
-                                r.attributes |= JSObjectAttributes.Field;
+                                r.attributes |= JSObjectAttributesInternal.Field;
                             break;
                         }
                     case MemberTypes.Event:
@@ -459,19 +459,18 @@ namespace NiL.JS.Core
                         throw new NotImplementedException("Convertion from " + m[0].MemberType + " not implemented");
                 }
             }
-            //r.attributes |= JSObjectAttributes.NotConfigurable;
-            r.attributes |= JSObjectAttributes.DoNotEnum;
+            r.attributes |= JSObjectAttributesInternal.DoNotEnum;
             lock (fields)
                 fields[name] = create && r.GetType() != typeof(JSObject) ? (r = r.Clone() as JSObject) : r;
             if (m[0].IsDefined(typeof(ReadOnlyAttribute), false))
-                r.attributes |= JSObjectAttributes.ReadOnly;
+                r.attributes |= JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.NotConfigurable;
             if (m[0].IsDefined(typeof(DoNotDeleteAttribute), false))
-                r.attributes |= JSObjectAttributes.DoNotDelete;
+                r.attributes |= JSObjectAttributesInternal.DoNotDelete;
             for (var i = m.Count; i-- > 0; )
             {
                 if (!m[i].IsDefined(typeof(DoNotEnumerateAttribute), false))
                 {
-                    r.attributes &= ~JSObjectAttributes.DoNotEnum;
+                    r.attributes &= ~JSObjectAttributesInternal.DoNotEnum;
                     break;
                 }
             }
@@ -485,7 +484,7 @@ namespace NiL.JS.Core
             var name = args.GetMember("0").ToString();
             JSObject temp;
             if (fields != null && fields.TryGetValue(name, out temp))
-                return temp.valueType >= JSObjectType.Undefined && (temp.attributes & JSObjectAttributes.DoNotEnum) == 0;
+                return temp.valueType >= JSObjectType.Undefined && (temp.attributes & JSObjectAttributesInternal.DoNotEnum) == 0;
             IList<MemberInfo> m = null;
             if (members.TryGetValue(name, out m))
             {

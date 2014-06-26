@@ -37,14 +37,14 @@ namespace NiL.JS.Expressions
                 {
                     valueType = JSObjectType.Object,
                     oValue = NiL.JS.Core.Arguments.Instance,
-                    attributes = JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum
+                    attributes = JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum
                 };
             if (this.arguments == null)
                 this.arguments = second.Invoke(null).oValue as CodeNode[];
             JSObject field = new JSObject();
             field.valueType = JSObjectType.Int;
             field.iValue = this.arguments.Length;
-            field.attributes = JSObjectAttributes.DoNotEnum;
+            field.attributes = JSObjectAttributesInternal.DoNotEnum;
             arguments.fields = new Dictionary<string, JSObject>(this.arguments.Length + 3);
             arguments.fields["length"] = field;
             for (int i = 0; i < field.iValue; i++)
@@ -53,6 +53,7 @@ namespace NiL.JS.Expressions
                 var a = this.arguments[i].Invoke(context);
                 arguments.fields[i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture)] = a;
             }
+            context.objectSource = null;
 
             // Аргументы должны быть вычислены даже если функция не существует.
             if (temp.valueType == JSObjectType.NotExist)

@@ -61,7 +61,7 @@ namespace NiL.JS.Core
             get
             {
                 if (_length == null)
-                    _length = new Number(0) { attributes = JSObjectAttributes.ReadOnly | JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum };
+                    _length = new Number(0) { attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum };
                 var paramCountAttrbt = del.Method.GetCustomAttributes(typeof(ParametersCountAttribute), false);
                 _length.iValue = paramCountAttrbt != null && paramCountAttrbt.Length > 0 ? ((ParametersCountAttribute)paramCountAttrbt[0]).Count : 1;
                 return _length;

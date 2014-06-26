@@ -53,10 +53,10 @@ namespace NiL.JS.Core
             {
                 var res = context.GetVariable(name, create);
                 if (create && !Defined && res.valueType == JSObjectType.NotExist)
-                    res.attributes = JSObjectAttributes.None;
+                    res.attributes = JSObjectAttributesInternal.None;
                 if (res.oValue is TypeProxy && (res.oValue as TypeProxy).prototypeInstance != null)
                     res = (res.oValue as TypeProxy).prototypeInstance;
-                if ((res.attributes & JSObjectAttributes.SystemObject) != 0)
+                if ((res.attributes & JSObjectAttributesInternal.SystemObject) != 0)
                     return res; // Могли сначала запросить переменную, а потом её создать и инициализировать. 
                                 // В таком случае закешированным остался бы notExist
                 prewContext = context;

@@ -17,7 +17,7 @@ namespace NiL.JS.Core
             valueType = JSObjectType.Object;
             oValue = this;
             __proto__ = TypeProxy.GetPrototype(this.GetType());
-            attributes |= JSObjectAttributes.SystemObject;
+            attributes |= JSObjectAttributesInternal.SystemObject;
         }
 
         [CLSCompliant(false)]
@@ -47,7 +47,7 @@ namespace NiL.JS.Core
         [Hidden]
         public override void Assign(JSObject value)
         {
-            if ((attributes & JSObjectAttributes.ReadOnly) == 0)
+            if ((attributes & JSObjectAttributesInternal.ReadOnly) == 0)
                 throw new InvalidOperationException("Try to assign to " + this.GetType().Name);
         }
 
@@ -56,7 +56,7 @@ namespace NiL.JS.Core
         {
             if (fields != null)
                 foreach (var r in fields)
-                    if (r.Value.valueType >= JSObjectType.Undefined && (!pdef || (r.Value.attributes & JSObjectAttributes.DoNotEnum) == 0))
+                    if (r.Value.valueType >= JSObjectType.Undefined && (!pdef || (r.Value.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
                         yield return r.Key;
             if (__proto__ == null)
                 __proto__ = TypeProxy.GetPrototype(this.GetType());

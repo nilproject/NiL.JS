@@ -52,7 +52,7 @@ namespace NiL.JS.Core.BaseTypes
         public Array()
         {
             data = new List<JSObject>();
-            attributes |= JSObjectAttributes.ReadOnly;
+            attributes |= JSObjectAttributesInternal.ReadOnly;
         }
 
         [DoNotEnumerate]
@@ -822,7 +822,7 @@ namespace NiL.JS.Core.BaseTypes
                         throw new JSException(TypeProxy.Proxy(new RangeError("Invalid array index")));
                     if (((index = (int)dindex) == dindex))
                     {
-                        create &= (attributes & JSObjectAttributes.Immutable) == 0;
+                        create &= (attributes & JSObjectAttributesInternal.Immutable) == 0;
                         if (data.Count <= index)
                         {
                             if (create)

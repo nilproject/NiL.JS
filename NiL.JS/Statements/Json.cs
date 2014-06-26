@@ -166,7 +166,7 @@ namespace NiL.JS.Statements
                 else
                 {
                     val = val.Clone() as JSObject;
-                    val.attributes = JSObjectAttributes.None;
+                    val.attributes = JSObjectAttributesInternal.None;
                     res.fields[this.fields[i]] = val;
                 }
             }

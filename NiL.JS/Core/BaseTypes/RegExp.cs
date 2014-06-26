@@ -15,7 +15,7 @@ namespace NiL.JS.Core.BaseTypes
         {
             _global = false;
             regEx = new System.Text.RegularExpressions.Regex("");
-            attributes |= JSObjectAttributes.ReadOnly;
+            attributes |= JSObjectAttributesInternal.ReadOnly;
         }
 
         private void makeRegex(JSObject args)
@@ -165,7 +165,7 @@ namespace NiL.JS.Core.BaseTypes
                 throw new JSException(TypeProxy.Proxy(new TypeError("Try to call RegExp.exec on not RegExp object.")));
             string input = args.GetMember("0").ToString();
             lIndex = Tools.JSObjectToNumber(lastIndex);
-            if ((lIndex.attributes & JSObjectAttributes.SystemObject) != 0)
+            if ((lIndex.attributes & JSObjectAttributesInternal.SystemObject) != 0)
                 lIndex = lIndex.Clone() as JSObject;
             if (lIndex.valueType == JSObjectType.Double)
             {

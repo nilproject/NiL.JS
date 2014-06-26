@@ -113,16 +113,16 @@ namespace NiL.JS.Core
                         {
                             oValue = Arguments.Instance,
                             valueType = JSObjectType.Object,
-                            attributes = JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum
+                            attributes = JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum
                         };
-                        targs.fields["length"] = new Number(1) { assignCallback = null, attributes = JSObjectAttributes.DoNotEnum };
-                        targs.fields["0"] = new Number((int)o) { assignCallback = null, attributes = JSObjectAttributes.Argument };
+                        targs.fields["length"] = new Number(1) { assignCallback = null, attributes = JSObjectAttributesInternal.DoNotEnum };
+                        targs.fields["0"] = new Number((int)o) { assignCallback = null, attributes = JSObjectAttributesInternal.Argument };
                         (targs.fields["callee"] = new JSObject()
                         {
                             valueType = JSObjectType.Function,
                             oValue = function,
-                            attributes = JSObjectAttributes.DoNotEnum
-                        }).attributes |= JSObjectAttributes.DoNotDelete | JSObjectAttributes.ReadOnly;
+                            attributes = JSObjectAttributesInternal.DoNotEnum
+                        }).attributes |= JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.ReadOnly;
                         function.Invoke(null, targs);
                     }) { Name = "NiL.JS __pinvoke thread (" + __pinvokeCalled + ":" + i + ")" }).Start(i);
                 }

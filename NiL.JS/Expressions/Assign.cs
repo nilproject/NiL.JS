@@ -25,7 +25,7 @@ namespace NiL.JS.Expressions
             {
                 iValue = 1,
                 valueType = JSObjectType.Int,
-                attributes = JSObjectAttributes.DoNotEnum | JSObjectAttributes.DoNotDelete | JSObjectAttributes.ReadOnly
+                attributes = JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.ReadOnly
             };
             setterArgs.fields["0"] = setterArg;
         }
@@ -36,7 +36,7 @@ namespace NiL.JS.Expressions
             {
                 JSObject field = null;
                 field = first.InvokeForAssing(context);
-                if ((field.attributes & JSObjectAttributes.ReadOnly) != 0 && context.strict)
+                if ((field.attributes & JSObjectAttributesInternal.ReadOnly) != 0 && context.strict)
                     throw new JSException(TypeProxy.Proxy(new TypeError("Can not assign to readonly property \"" + first + "\"")));
                 if (field.valueType == JSObjectType.Property)
                 {

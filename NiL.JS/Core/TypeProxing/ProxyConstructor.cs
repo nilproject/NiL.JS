@@ -117,7 +117,7 @@ namespace NiL.JS.Core
                             valueType = JSObjectType.Object,
                             __proto__ = TypeProxy.GetPrototype(proxy.hostedType),
                             oValue = obj,
-                            attributes = proxy.hostedType.IsDefined(typeof(ImmutableAttribute), false) ? JSObjectAttributes.Immutable : JSObjectAttributes.None
+                            attributes = proxy.hostedType.IsDefined(typeof(ImmutableAttribute), false) ? JSObjectAttributesInternal.Immutable : JSObjectAttributesInternal.None
                         };
                         if (obj is BaseTypes.Date)
                             res.valueType = JSObjectType.Date;
@@ -138,7 +138,7 @@ namespace NiL.JS.Core
                             oValue = obj,
                             valueType = JSObjectType.Object,
                             __proto__ = TypeProxy.GetPrototype(proxy.hostedType),
-                            attributes = proxy.hostedType.IsDefined(typeof(ImmutableAttribute), false) ? JSObjectAttributes.Immutable : JSObjectAttributes.None
+                            attributes = proxy.hostedType.IsDefined(typeof(ImmutableAttribute), false) ? JSObjectAttributesInternal.Immutable : JSObjectAttributesInternal.None
                         };
                 }
                 return res;
@@ -157,7 +157,7 @@ namespace NiL.JS.Core
             get
             {
                 if (_length == null)
-                    _length = new Number(0) { attributes = JSObjectAttributes.ReadOnly | JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum };
+                    _length = new Number(0) { attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum };
                 if (proxy.hostedType == typeof(Function))
                     _length.iValue = 1;
                 else

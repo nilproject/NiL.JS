@@ -644,7 +644,7 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         private static readonly FunctionStatement creatorDummy = new FunctionStatement("anonymous");
-        private static readonly Function TTEProxy = new MethodProxy(typeof(Function).GetMethod("ThrowTypeError", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic)) { attributes = JSObjectAttributes.DoNotDelete | JSObjectAttributes.Immutable | JSObjectAttributes.DoNotEnum | JSObjectAttributes.ReadOnly };
+        private static readonly Function TTEProxy = new MethodProxy(typeof(Function).GetMethod("ThrowTypeError", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic)) { attributes = JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.Immutable | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.ReadOnly };
         private static void ThrowTypeError()
         {
             throw new JSException(new TypeError("Properties caller and arguments not allowed in strict mode."));
@@ -657,7 +657,7 @@ namespace NiL.JS.Core.BaseTypes
                 TTEProxy,
                 TTEProxy
             },
-            attributes = JSObjectAttributes.DoNotDelete | JSObjectAttributes.Immutable | JSObjectAttributes.DoNotEnum | JSObjectAttributes.ReadOnly | JSObjectAttributes.NotConfigurable
+            attributes = JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.Immutable | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.NotConfigurable
         };
 
         private readonly FunctionStatement creator;
@@ -704,6 +704,8 @@ namespace NiL.JS.Core.BaseTypes
         internal Number _length = null;
         [DoNotDelete]
         [DoNotEnumerate]
+        [ReadOnly]
+        [Field]
         public virtual JSObject length
         {
             [Hidden]
@@ -711,7 +713,7 @@ namespace NiL.JS.Core.BaseTypes
             {
                 if (_length == null)
                 {
-                    _length = new Number(0) { attributes = JSObjectAttributes.ReadOnly | JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum };
+                    _length = new Number(0) { attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum };
                     _length.iValue = creator.parameters.Length;
                 }
                 return _length;
@@ -733,7 +735,7 @@ namespace NiL.JS.Core.BaseTypes
         [DoNotEnumerate]
         public Function()
         {
-            attributes = JSObjectAttributes.ReadOnly | JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum | JSObjectAttributes.SystemObject;
+            attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.SystemObject;
             creator = creatorDummy;
             valueType = JSObjectType.Function;
             this.oValue = this;
@@ -742,7 +744,7 @@ namespace NiL.JS.Core.BaseTypes
         [DoNotEnumerate]
         public Function(JSObject[] args)
         {
-            attributes = JSObjectAttributes.ReadOnly | JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum | JSObjectAttributes.SystemObject;
+            attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.SystemObject;
             context = Context.CurrentContext.Root;
             if (context == Context.globalContext)
                 throw new InvalidOperationException("Special Functions constructor can be called only in runtime.");
@@ -766,7 +768,7 @@ namespace NiL.JS.Core.BaseTypes
 
         internal Function(Context context, FunctionStatement creator)
         {
-            attributes = JSObjectAttributes.ReadOnly | JSObjectAttributes.DoNotDelete | JSObjectAttributes.DoNotEnum | JSObjectAttributes.SystemObject;
+            attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.SystemObject;
             this.context = context;
             this.creator = creator;
             valueType = JSObjectType.Function;
@@ -776,7 +778,7 @@ namespace NiL.JS.Core.BaseTypes
         [Hidden]
         public override void Assign(JSObject value)
         {
-            if ((attributes & JSObjectAttributes.ReadOnly) == 0)
+            if ((attributes & JSObjectAttributesInternal.ReadOnly) == 0)
                 throw new InvalidOperationException("Try to assign to Function");
         }
 
@@ -788,9 +790,7 @@ namespace NiL.JS.Core.BaseTypes
             var body = creator.body;
             try
             {
-                if (creator.type == FunctionType.AnonymousFunction)
-                    internalContext.thisBind = thisBind ?? (body.strict ? undefined : Context.CurrentContext.Root.GetVariable("this"));
-                else if (!body.strict)
+                if (!body.strict) // Поправляем this
                 {
                     if (thisBind != null)
                     {
@@ -800,17 +800,18 @@ namespace NiL.JS.Core.BaseTypes
                             {
                                 valueType = JSObjectType.Object,
                                 oValue = thisBind,
-                                attributes = JSObjectAttributes.DoNotEnum | JSObjectAttributes.DoNotDelete | JSObjectAttributes.Immutable,
+                                attributes = JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.Immutable,
                                 __proto__ = thisBind.__proto__ ?? (thisBind.valueType <= JSObjectType.Undefined ? thisBind.__proto__ : thisBind.GetMember("__proto__"))
                             };
                         }
                         else if (thisBind.valueType <= JSObjectType.Undefined || thisBind.oValue == null)
                             thisBind = internalContext.Root.thisBind;
-                        internalContext.thisBind = thisBind;
                     }
+                    else
+                        thisBind = internalContext.Root.thisBind;
                 }
-                else
-                    internalContext.thisBind = thisBind;
+
+                internalContext.thisBind = thisBind;
                 if (args == null)
                 {
                     args = new JSObject(true) { valueType = JSObjectType.Object };
@@ -820,14 +821,14 @@ namespace NiL.JS.Core.BaseTypes
                 _arguments = args;
                 if (body.strict)
                 {
-                    args.attributes |= JSObjectAttributes.ReadOnly;
+                    args.attributes |= JSObjectAttributesInternal.ReadOnly;
                     args.fields["callee"] = propertiesDummySM;
                     args.fields["caller"] = propertiesDummySM;
                 }
                 else
                 {
                     var callee = this.Clone() as JSObject;
-                    callee.attributes = JSObjectAttributes.DoNotEnum;
+                    callee.attributes = JSObjectAttributesInternal.DoNotEnum;
                     args.fields["callee"] = callee;
                 }
                 internalContext.fields["arguments"] = args;
@@ -843,19 +844,19 @@ namespace NiL.JS.Core.BaseTypes
                     var n = i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture);
                     var t = args.GetMember(n);
                     args.fields[n] = t = t.Clone() as JSObject;
-                    t.attributes |= JSObjectAttributes.Argument;
+                    t.attributes |= JSObjectAttributesInternal.Argument;
                     if (body.strict)
                         t = t.Clone() as JSObject;
                     internalContext.fields[creator.parameters[i].Name] = t;
                 }
                 for (; i < creator.parameters.Length; i++)
-                    internalContext.fields[creator.parameters[i].Name] = new JSObject() { attributes = JSObjectAttributes.Argument };
+                    internalContext.fields[creator.parameters[i].Name] = new JSObject() { attributes = JSObjectAttributesInternal.Argument };
                 for (; i < argsLength.iValue; i++)
                 {
                     var n = i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture);
                     var t = args[n];
                     args.fields[n] = t = t.Clone() as JSObject;
-                    t.attributes |= JSObjectAttributes.Argument;
+                    t.attributes |= JSObjectAttributesInternal.Argument;
                 }
 
                 for (i = body.variables.Length; i-- > 0; )
@@ -866,7 +867,7 @@ namespace NiL.JS.Core.BaseTypes
                         if (body.variables[i].Name != "arguments" // нельзя переменной перебить аргументы
                             || body.variables[i].Inititalizator != null) // а вот функцией можно
                         {
-                            internalContext.fields[body.variables[i].Name] = f = new JSObject() { attributes = JSObjectAttributes.DoNotDelete };
+                            internalContext.fields[body.variables[i].Name] = f = new JSObject() { attributes = JSObjectAttributesInternal.DoNotDelete };
                             if (body.variables[i].Inititalizator != null)
                                 f.Assign(body.variables[i].Inititalizator.Invoke(internalContext));
                         }
@@ -906,11 +907,11 @@ namespace NiL.JS.Core.BaseTypes
                     {
                         valueType = JSObjectType.Object,
                         __proto__ = JSObject.GlobalPrototype,
-                        attributes = JSObjectAttributes.DoNotEnum | JSObjectAttributes.DoNotDelete
+                        attributes = JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.DoNotDelete
                     };
                     prototypeField.oValue = prototypeField;
                     var ctor = prototypeField.GetMember("constructor", true, true);
-                    ctor.attributes = JSObjectAttributes.DoNotEnum;
+                    ctor.attributes = JSObjectAttributesInternal.DoNotEnum;
                     ctor.Assign(this);
                 }
                 return prototypeField;

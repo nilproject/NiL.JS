@@ -30,7 +30,7 @@ namespace NiL.JS.Expressions
                 var memberName = proto.FieldName.Invoke(context).ToString();
                 context.objectSource = source;
                 var res = context.objectSource.GetMember(memberName, false, true);
-                if ((res.attributes & JSObjectAttributes.SystemObject) != 0)
+                if ((res.attributes & JSObjectAttributesInternal.SystemObject) != 0)
                     return context.objectSource.GetMember(memberName, true, true);
                 return res;
             }
@@ -55,7 +55,7 @@ namespace NiL.JS.Expressions
                 tempContainer.valueType = JSObjectType.Bool;
                 if (temp.valueType < JSObjectType.Undefined)
                     tempContainer.iValue = 1;
-                else if ((temp.attributes & JSObjectAttributes.Argument) != 0)
+                else if ((temp.attributes & JSObjectAttributesInternal.Argument) != 0)
                 {
                     if (first is SafeMemberGetter)
                     {
@@ -76,10 +76,10 @@ namespace NiL.JS.Expressions
                         return tempContainer;
                     }
                 }
-                else if ((temp.attributes & JSObjectAttributes.DoNotDelete) == 0)
+                else if ((temp.attributes & JSObjectAttributesInternal.DoNotDelete) == 0)
                 {
                     tempContainer.iValue = 1;
-                    if ((temp.attributes & JSObjectAttributes.SystemObject) == 0)
+                    if ((temp.attributes & JSObjectAttributesInternal.SystemObject) == 0)
                     {
                         temp.valueType = JSObjectType.NotExist;
                         temp.oValue = null;
