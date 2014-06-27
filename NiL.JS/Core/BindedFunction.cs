@@ -21,12 +21,12 @@ namespace NiL.JS.Core
         }
 
         [Hidden]
-        public override string Name
+        public override string name
         {
             [Hidden]
             get
             {
-                return proto.Name;
+                return proto.name;
             }
         }
 

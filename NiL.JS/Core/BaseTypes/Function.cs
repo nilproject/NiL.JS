@@ -644,6 +644,7 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         private static readonly FunctionStatement creatorDummy = new FunctionStatement("anonymous");
+        internal static readonly Function emptyFunction = new Function();
         private static readonly Function TTEProxy = new MethodProxy(typeof(Function).GetMethod("ThrowTypeError", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic)) { attributes = JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.Immutable | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.ReadOnly };
         private static void ThrowTypeError()
         {
@@ -665,15 +666,15 @@ namespace NiL.JS.Core.BaseTypes
         [CLSCompliant(false)]
         internal protected readonly Context context;
         [Hidden]
-        internal protected JSObject prototypeField;
-        [Hidden]
         public Context Context
         {
             [Hidden]
             get { return context; }
         }
-        [Hidden]
-        public virtual string Name
+        [Field]
+        [DoNotDelete]
+        [DoNotEnumerate]
+        public virtual string name
         {
             [Hidden]
             get { return creator.name; }
@@ -686,6 +687,17 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         #region Runtime
+        [Hidden]
+        [CLSCompliant(false)]
+        internal protected JSObject _prototype;
+        [Field]
+        [DoNotDelete]
+        [DoNotEnumerate]
+        public JSObject prototype
+        {
+            get { return _prototype; }
+            set { _prototype.Assign(value["0"]); }
+        }
         private JSObject _arguments;
         /// <summary>
         /// Объект, содержащий параметры вызова функции либо null если в данный момент функция не выполняется.
@@ -761,7 +773,8 @@ namespace NiL.JS.Core.BaseTypes
                 var func = fs.Statement.Invoke(context) as Function;
                 creator = fs.Statement as FunctionStatement;
             }
-            else throw new JSException(TypeProxy.Proxy(new SyntaxError()));
+            else
+                throw new JSException(TypeProxy.Proxy(new SyntaxError()));
             valueType = JSObjectType.Function;
             this.oValue = this;
         }
@@ -788,6 +801,11 @@ namespace NiL.JS.Core.BaseTypes
             var oldargs = _arguments;
             Context internalContext = new Context(context ?? Context.CurrentContext, this);
             var body = creator.body;
+            if (body == null || body.Body.Length == 0)
+            {
+                notExist.valueType = JSObjectType.NotExistInObject;
+                return notExist;
+            }
             try
             {
                 if (!body.strict) // Поправляем this
@@ -901,20 +919,20 @@ namespace NiL.JS.Core.BaseTypes
                 return propertiesDummySM;
             if (name == "prototype")
             {
-                if (prototypeField == null)
+                if (_prototype == null)
                 {
-                    prototypeField = new JSObject(true)
+                    _prototype = new JSObject(true)
                     {
                         valueType = JSObjectType.Object,
                         __proto__ = JSObject.GlobalPrototype,
                         attributes = JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.DoNotDelete
                     };
-                    prototypeField.oValue = prototypeField;
-                    var ctor = prototypeField.GetMember("constructor", true, true);
+                    _prototype.oValue = _prototype;
+                    var ctor = _prototype.GetMember("constructor", true, true);
                     ctor.attributes = JSObjectAttributesInternal.DoNotEnum;
                     ctor.Assign(this);
                 }
-                return prototypeField;
+                return _prototype;
             }
             if (__proto__ == null)
                 __proto__ = TypeProxy.GetPrototype(this.GetType());
@@ -924,7 +942,7 @@ namespace NiL.JS.Core.BaseTypes
         [Hidden]
         public override string ToString()
         {
-            var res = ((FunctionType)(creator != null ? (int)creator.type & 3 : 0)).ToString().ToLowerInvariant() + " " + Name + "(";
+            var res = ((FunctionType)(creator != null ? (int)creator.type & 3 : 0)).ToString().ToLowerInvariant() + " " + name + "(";
             if (creator != null && creator.parameters != null)
                 for (int i = 0; i < creator.parameters.Length; )
                     res += creator.parameters[i].Name + (++i < creator.parameters.Length ? "," : "");

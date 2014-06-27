@@ -103,6 +103,9 @@ namespace NiL.JS.Core.BaseTypes
             makeRegex(pattern, flags);
         }
 
+        [Field]
+        [ReadOnly]
+        [DoNotDelete]
         [DoNotEnumerate]
         public Boolean ignoreCase
         {
@@ -112,6 +115,9 @@ namespace NiL.JS.Core.BaseTypes
             }
         }
 
+        [Field]
+        [ReadOnly]
+        [DoNotDelete]
         [DoNotEnumerate]
         public Boolean multiline
         {
@@ -122,6 +128,9 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         internal bool _global;
+        [Field]
+        [ReadOnly]
+        [DoNotDelete]
         [DoNotEnumerate]
         public Boolean global
         {

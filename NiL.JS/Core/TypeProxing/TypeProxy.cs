@@ -226,10 +226,12 @@ namespace NiL.JS.Core
                         mmbrs[i].ToString();
                         if (mmbrs[i].IsDefined(typeof(HiddenAttribute), false))
                             continue;
-                        var membername = mmbrs[i].Name;
                         if (mmbrs[i].MemberType == MemberTypes.Method
                             && ((mmbrs[i] as MethodBase).DeclaringType == typeof(object)))
                             continue;
+                        if (mmbrs[i].MemberType == MemberTypes.Constructor)
+                            continue;
+                        var membername = mmbrs[i].Name;
                         membername = membername[0] == '.' ? membername : membername.Contains(".") ? membername.Substring(membername.LastIndexOf('.') + 1) : membername;
                         if (prewName != membername)
                         {
@@ -341,12 +343,7 @@ namespace NiL.JS.Core
                 switch (m[0].MemberType)
                 {
                     case MemberTypes.Constructor:
-                        {
-                            var method = (ConstructorInfo)m[0];
-                            r = new MethodProxy(method);
-                            r.attributes = JSObjectAttributesInternal.SystemObject;
-                            break;
-                        }
+                        throw new InvalidOperationException("Constructor can not be called directly");
                     case MemberTypes.Method:
                         {
                             var method = (MethodInfo)m[0];
@@ -500,8 +497,15 @@ namespace NiL.JS.Core
         {
             if (members == null)
                 fillMembers();
+            foreach (var f in fields)
+            {
+                if (f.Value.valueType >= JSObjectType.Undefined && (!pdef || (f.Value.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+                    yield return f.Key;
+            }
             foreach (var m in members)
             {
+                if (fields.ContainsKey(m.Key))
+                    continue;
                 for (var i = m.Value.Count; i-- > 0; )
                 {
                     if (!pdef || !m.Value[i].IsDefined(typeof(DoNotEnumerateAttribute), false))

@@ -231,6 +231,33 @@ namespace NiL.JS.Core.BaseTypes
 
         [StringAllowUnsafeCallAttribute(typeof(JSObject))]
         [DoNotEnumerate]
+        public JSObject search(JSObject args)
+        {
+            if (valueType <= JSObjectType.Undefined || (valueType >= JSObjectType.Object && oValue == null))
+                throw new JSException(TypeProxy.Proxy(new TypeError("String.prototype.match called on null or undefined")));
+            var a0 = args.GetMember("0");
+            if (a0.valueType == JSObjectType.Object && a0.oValue is RegExp)
+            {
+                var regex = a0.oValue as RegExp;
+                if (!regex._global)
+                {
+                    args.GetMember("0", true, true).Assign(this);
+                    return regex.exec(args)["index"];
+                }
+                else
+                {
+                    return regex.regEx.Match(oValue as string ?? this.ToString()).Index;
+                }
+            }
+            else
+            {
+                var match = new System.Text.RegularExpressions.Regex((a0.valueType > JSObjectType.Undefined ? (object)a0 : "").ToString(), System.Text.RegularExpressions.RegexOptions.ECMAScript).Match(oValue as string ?? this.ToString());
+                return match.Index;
+            }
+        }
+
+        [StringAllowUnsafeCallAttribute(typeof(JSObject))]
+        [DoNotEnumerate]
         public JSObject replace(JSObject[] args)
         {
             if (args.Length == 0)
@@ -535,6 +562,7 @@ namespace NiL.JS.Core.BaseTypes
         [CLSCompliant(false)]
         [AllowUnsafeCall(typeof(JSObject))]
         [ParametersCount(0)]
+        [DoNotEnumerate]
         public new JSObject toString(JSObject args)
         {
             if (typeof(String) == this.GetType() && valueType == JSObjectType.Object) // prototype instance
@@ -613,7 +641,10 @@ namespace NiL.JS.Core.BaseTypes
                 __proto__ = TypeProxy.GetPrototype(typeof(String));
             int index = 0;
             double dindex = 0.0;
-            if (Tools.ParseNumber(name, index, out dindex, Tools.ParseNumberOptions.Default) && ((index = (int)dindex) == dindex))
+            if (Tools.ParseNumber(name, index, out dindex, Tools.ParseNumberOptions.Default)
+                && ((index = (int)dindex) == dindex)
+                && index >= 0
+                && index <= (oValue as string).Length)
                 return this[index];
             else
                 return DefaultFieldGetter(name, create, false); // обращение идёт к Объекту String, а не к значению string, поэтому члены создавать можно
@@ -698,6 +729,19 @@ namespace NiL.JS.Core.BaseTypes
             return "<sup>" + oValue + "</sup>";
         }
         #endregion
+
+        protected internal override System.Collections.Generic.IEnumerator<string> GetEnumeratorImpl(bool hideNonEnum)
+        {
+            if (!hideNonEnum)
+            {
+                var len = (oValue as string).Length;
+                for (var i = 0; i < len; i++)
+                    yield return i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture);
+                yield return "length";
+            }
+            for (var e = base.GetEnumeratorImpl(hideNonEnum); e.MoveNext(); )
+                yield return e.Current;
+        }
 
         [Hidden]
         public static implicit operator String(string val)

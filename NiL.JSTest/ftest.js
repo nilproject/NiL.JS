@@ -1,6 +1,10 @@
-﻿function a()
-{
-    return /a/;
-}
-
-console.log(a() == a());
+﻿console.log((function () {
+    try {
+        Object.create({}, {
+            prop: false
+        });
+        return false;
+    } catch (e) {
+        return (e instanceof TypeError);
+    }
+})());

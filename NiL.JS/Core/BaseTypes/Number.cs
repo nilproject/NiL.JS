@@ -396,11 +396,6 @@ namespace NiL.JS.Core.BaseTypes
             return base.valueOf();
         }
 
-        protected internal override IEnumerator<string> GetEnumeratorImpl(bool pdef)
-        {
-            return EmptyEnumerator;
-        }
-
         [Hidden]
         public override string ToString()
         {

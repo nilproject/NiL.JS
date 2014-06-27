@@ -190,18 +190,21 @@ namespace NiL.JS.Core
         }
 
         [DoNotEnumerate]
+        [ParametersCount(2)]
         public static JSObject create(JSObject args)
         {
             var proto = args["0"];
             if (proto.valueType < JSObjectType.Object)
                 throw new JSException(TypeProxy.Proxy(new TypeError("Prototype may be only Object or null.")));
-            var res = CreateObject();
-            res.__proto__ = proto;
+            proto = proto.oValue as JSObject ?? proto;
             var members = args["1"];
-            if (members.valueType > JSObjectType.Undefined)
-            {
-                if (members.valueType < JSObjectType.Object)
-                    throw new JSException(TypeProxy.Proxy(new TypeError("Properties descriptor may be only Object.")));
+            members.fields = (members.oValue as JSObject ?? members).fields;
+            if (members.valueType >= JSObjectType.Object && members.oValue == null)
+                throw new JSException(TypeProxy.Proxy(new TypeError("Properties descriptor may be only Object.")));
+            var res = CreateObject();
+            if (proto.valueType >= JSObjectType.Object && proto.oValue != null)
+                res.__proto__ = proto;
+            if (members.valueType >= JSObjectType.Object)
                 foreach (var member in members)
                 {
                     var desc = members[member];
@@ -209,15 +212,29 @@ namespace NiL.JS.Core
                     {
                         var getter = (desc.oValue as Function[])[1];
                         if (getter == null || getter.oValue == null)
-                            continue;
+                            throw new JSException(TypeProxy.Proxy(new TypeError("Invalid property descriptor for property " + member + " .")));
                         desc = (getter.oValue as Function).Invoke(members, null);
                     }
+                    if (desc.valueType < JSObjectType.Object || desc.oValue == null)
+                        throw new JSException(TypeProxy.Proxy(new TypeError("Invalid property descriptor for property " + member + " .")));
                     var value = desc["value"];
+                    if (value.valueType == JSObjectType.Property)
+                        value = ((value.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(desc, null);
                     var configurable = desc["configurable"];
+                    if (configurable.valueType == JSObjectType.Property)
+                        configurable = ((configurable.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(desc, null);
                     var enumerable = desc["enumerable"];
+                    if (enumerable.valueType == JSObjectType.Property)
+                        enumerable = ((enumerable.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(desc, null);
                     var writable = desc["writable"];
+                    if (writable.valueType == JSObjectType.Property)
+                        writable = ((writable.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(desc, null);
                     var get = desc["get"];
+                    if (get.valueType == JSObjectType.Property)
+                        get = ((get.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(desc, null);
                     var set = desc["set"];
+                    if (set.valueType == JSObjectType.Property)
+                        set = ((set.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(desc, null);
                     if (value.valueType != JSObjectType.NotExistInObject
                         && (get.valueType != JSObjectType.NotExistInObject
                         || set.valueType != JSObjectType.NotExistInObject))
@@ -259,7 +276,6 @@ namespace NiL.JS.Core
                     else if (!(bool)writable) // На тот случай, когда в дескрипторе не указано ни значение, ни геттер/сеттер
                         obj.attributes |= JSObjectAttributesInternal.ReadOnly;
                 }
-            }
             return res;
         }
 
@@ -293,15 +309,27 @@ namespace NiL.JS.Core
                     {
                         var getter = (desc.oValue as Function[])[1];
                         if (getter == null || getter.oValue == null)
-                            continue;
+                            throw new JSException(TypeProxy.Proxy(new TypeError("Invalid property descriptor for property " + member + " .")));
                         desc = (getter.oValue as Function).Invoke(members, null);
                     }
                     var value = desc["value"];
+                    if (value.valueType == JSObjectType.Property)
+                        value = ((value.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(desc, null);
                     var configurable = desc["configurable"];
+                    if (configurable.valueType == JSObjectType.Property)
+                        configurable = ((configurable.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(desc, null);
                     var enumerable = desc["enumerable"];
+                    if (enumerable.valueType == JSObjectType.Property)
+                        enumerable = ((enumerable.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(desc, null);
                     var writable = desc["writable"];
+                    if (writable.valueType == JSObjectType.Property)
+                        writable = ((writable.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(desc, null);
                     var get = desc["get"];
+                    if (get.valueType == JSObjectType.Property)
+                        get = ((get.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(desc, null);
                     var set = desc["set"];
+                    if (set.valueType == JSObjectType.Property)
+                        set = ((set.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(desc, null);
                     if (value.valueType != JSObjectType.NotExistInObject
                         && (get.valueType != JSObjectType.NotExistInObject
                         || set.valueType != JSObjectType.NotExistInObject))
@@ -326,6 +354,9 @@ namespace NiL.JS.Core
                     var config = (obj.attributes & JSObjectAttributesInternal.NotConfigurable) == 0 || newProp;
                     if (config)
                     {
+                        if (newProp)
+                            obj.valueType = JSObjectType.Undefined;
+
                         if (enumerable.valueType >= JSObjectType.Undefined || newProp)
                         {
                             if ((bool)enumerable)
@@ -333,6 +364,7 @@ namespace NiL.JS.Core
                             else
                                 obj.attributes |= JSObjectAttributesInternal.DoNotEnum;
                         }
+
                         if (configurable.valueType >= JSObjectType.Undefined || newProp)
                         {
                             if ((bool)configurable)
@@ -340,6 +372,7 @@ namespace NiL.JS.Core
                             else
                                 obj.attributes |= JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.DoNotDelete;
                         }
+
                         if (value.valueType > JSObjectType.Undefined)
                         {
                             obj.valueType = JSObjectType.Undefined; // там могло быть Property, на которое мы ругаемся
@@ -358,17 +391,15 @@ namespace NiL.JS.Core
                                 throw new JSException(TypeProxy.Proxy(new TypeError("Setter mast be a function.")));
                             obj.valueType = JSObjectType.Property;
                             obj.oValue = new Function[]
-                    {
-                        set.valueType > JSObjectType.Undefined ? set.oValue as Function : null,
-                        get.valueType > JSObjectType.Undefined ? get.oValue as Function : null
-                    };
+                            {
+                                set.valueType > JSObjectType.Undefined ? set.oValue as Function : null,
+                                get.valueType > JSObjectType.Undefined ? get.oValue as Function : null
+                            };
                         }
                         else if (!(bool)writable) // На тот случай, когда в дескрипторе не указано ни значение, ни геттер/сеттер
                         {
                             obj.attributes |= JSObjectAttributesInternal.ReadOnly;
                             obj.valueType = JSObjectType.Undefined;
-                            if (newProp)
-                                obj.valueType = JSObjectType.Undefined;
                         }
                     }
                     else if (obj.valueType != JSObjectType.Property && value.valueType > JSObjectType.Undefined)
@@ -378,6 +409,7 @@ namespace NiL.JS.Core
             return res;
         }
 
+        [ParametersCount(3)]
         [DoNotEnumerate]
         public static JSObject defineProperty(JSObject args)
         {
@@ -417,6 +449,8 @@ namespace NiL.JS.Core
             var config = (obj.attributes & JSObjectAttributesInternal.NotConfigurable) == 0 || newProp;
             if (config)
             {
+                if (newProp)
+                    obj.valueType = JSObjectType.Undefined;
                 if (enumerable.valueType >= JSObjectType.Undefined || newProp)
                 {
                     if ((bool)enumerable)
@@ -424,6 +458,7 @@ namespace NiL.JS.Core
                     else
                         obj.attributes |= JSObjectAttributesInternal.DoNotEnum;
                 }
+
                 if (configurable.valueType >= JSObjectType.Undefined || newProp)
                 {
                     if ((bool)configurable)
@@ -431,6 +466,7 @@ namespace NiL.JS.Core
                     else
                         obj.attributes |= JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.DoNotDelete;
                 }
+
                 if (value.valueType > JSObjectType.Undefined)
                 {
                     obj.valueType = JSObjectType.Undefined; // там могло быть Property, на которое мы ругаемся
@@ -455,12 +491,7 @@ namespace NiL.JS.Core
                     };
                 }
                 else if (!(bool)writable) // На тот случай, когда в дескрипторе не указано ни значение, ни геттер/сеттер
-                {
                     obj.attributes |= JSObjectAttributesInternal.ReadOnly;
-                    obj.valueType = JSObjectType.Undefined;
-                    if (newProp)
-                        obj.valueType = JSObjectType.Undefined;
-                }
             }
             else if (obj.valueType != JSObjectType.Property && value.valueType > JSObjectType.Undefined)
                 obj.Assign(value);
@@ -867,13 +898,13 @@ namespace NiL.JS.Core
             return GetEnumeratorImpl(true);
         }
 
-        protected internal virtual IEnumerator<string> GetEnumeratorImpl(bool hideNonEnume)
+        protected internal virtual IEnumerator<string> GetEnumeratorImpl(bool hideNonEnum)
         {
             if (fields != null)
             {
                 foreach (var f in fields)
                 {
-                    if (f.Value.valueType >= JSObjectType.Undefined && (!hideNonEnume || (f.Value.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+                    if (f.Value.valueType >= JSObjectType.Undefined && (!hideNonEnum || (f.Value.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
                         yield return f.Key;
                 }
             }

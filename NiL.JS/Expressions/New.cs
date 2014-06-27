@@ -36,7 +36,7 @@ namespace NiL.JS.Expressions
                 if (ctor.oValue is EvalFunction
                     || ctor.oValue is ExternalFunction
                     || ctor.oValue is MethodProxy)
-                    throw new JSException(new TypeError("Function \"" + (ctor.oValue as Function).Name + "\" is not a constructor."));
+                    throw new JSException(new TypeError("Function \"" + (ctor.oValue as Function).name + "\" is not a constructor."));
 
                 JSObject _this = null;
                 if (!(ctor.oValue is ProxyConstructor))

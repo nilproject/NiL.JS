@@ -49,7 +49,7 @@ namespace NiL.JS.Core
             }
         }
         [Hidden]
-        public override string Name
+        public override string name
         {
             get
             {
@@ -75,7 +75,7 @@ namespace NiL.JS.Core
 
         public MethodProxy(MethodBase methodinfo, object hardTarget)
         {
-            prototypeField = undefined;
+            _prototype = undefined;
             this.hardTarget = hardTarget;
             info = methodinfo;
             parameters = info.GetParameters();
@@ -296,7 +296,7 @@ namespace NiL.JS.Core
             {
                 target = info.IsStatic ? null : hardTarget ?? getTargetObject(thisBind ?? JSObject.Null, info.DeclaringType);
                 if (target == null && !info.IsStatic)
-                    throw new JSException(new TypeError("Can not call function \"" + this.Name + "\" for object of another type."));
+                    throw new JSException(new TypeError("Can not call function \"" + this.name + "\" for object of another type."));
             }
             try
             {

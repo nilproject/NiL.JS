@@ -19,7 +19,7 @@ namespace NiL.JS.Core
         private MethodProxy[] constructors;
 
         [Hidden]
-        public override string Name
+        public override string name
         {
             [Hidden]
             get
@@ -81,7 +81,7 @@ namespace NiL.JS.Core
             bool bynew = false;
             if (_this != null)
             {
-                bynew = _this.oValue == typeof(Expressions.New);
+                bynew = _this.oValue == typeof(Expressions.New) as object;
             }
             try
             {

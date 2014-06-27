@@ -12,7 +12,7 @@ namespace NiL.JS.Core
     public sealed class ExternalFunction : Function
     {
         [Hidden]
-        public override string Name
+        public override string name
         {
             [Hidden]
             get
@@ -38,7 +38,7 @@ namespace NiL.JS.Core
 
         public ExternalFunction(ExternalFunctionDelegate del)
         {
-            prototypeField = undefined;
+            _prototype = undefined;
             if (del == null)
                 throw new ArgumentNullException();
             this.del = del;

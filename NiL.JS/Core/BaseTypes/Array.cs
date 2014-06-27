@@ -238,6 +238,33 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [DoNotEnumerate]
+        public JSObject some(JSObject[] args)
+        {
+            if (args.Length < 1)
+                return undefined;
+            var f = args[0] == null ? null : args[0].oValue as Function;
+            if (f == null)
+                throw new JSException(TypeProxy.Proxy(new TypeError("Callback argument is not a function.")));
+            var tb = args.Length > 1 ? args[1] : null;
+            var ao = new JSObject() { oValue = Arguments.Instance, valueType = JSObjectType.Object };
+            ao["length"] = 3;
+            ao["1"] = 0;
+            ao["2"] = this;
+            bool res = false;
+            bool isArray = this.GetType() == typeof(Array);
+            var len = isArray ? data.Count : Tools.JSObjectToInt32(this["length"]);
+            for (var i = 0; i < len && !res; i++)
+            {
+                if (isArray && (data[i] == null || data[i].valueType < JSObjectType.Undefined))
+                    continue;
+                ao["0"] = isArray ? data[i] : this[i.ToString(CultureInfo.InvariantCulture)];
+                ao["1"].iValue = i;
+                res &= (bool)f.Invoke(tb, ao);
+            }
+            return res;
+        }
+
+        [DoNotEnumerate]
         public JSObject filter(JSObject[] args)
         {
             if (args.Length < 1)
@@ -261,6 +288,33 @@ namespace NiL.JS.Core.BaseTypes
                 ao["1"].iValue = i;
                 if ((bool)f.Invoke(tb, ao))
                     res.data.Add(data[i].Clone() as JSObject);
+            }
+            return res;
+        }
+
+        [DoNotEnumerate]
+        public JSObject map(JSObject[] args)
+        {
+            if (args.Length < 1)
+                return undefined;
+            var f = args[0] == null ? null : args[0].oValue as Function;
+            if (f == null)
+                throw new JSException(TypeProxy.Proxy(new TypeError("Callback argument is not a function.")));
+            var tb = args.Length > 1 ? args[1] : null;
+            var ao = new JSObject() { oValue = Arguments.Instance, valueType = JSObjectType.Object };
+            ao["length"] = 3;
+            ao["1"] = 0;
+            ao["2"] = this;
+            var res = new Array();
+            bool isArray = this.GetType() == typeof(Array);
+            var len = isArray ? data.Count : Tools.JSObjectToInt32(this["length"]);
+            for (var i = 0; i < len; i++)
+            {
+                if (isArray && (data[i] == null || data[i].valueType < JSObjectType.Undefined))
+                    continue;
+                ao["0"] = isArray ? data[i] : this[i.ToString(CultureInfo.InvariantCulture)];
+                ao["1"].iValue = i;
+                res.data.Add(f.Invoke(tb, ao).Clone() as JSObject);
             }
             return res;
         }
@@ -464,6 +518,44 @@ namespace NiL.JS.Core.BaseTypes
             {
                 args["1"] = data[index];
                 args["2"] = index;
+                accum.Assign(func.Invoke(args));
+                index++;
+            }
+            return accum;
+        }
+
+        [DoNotEnumerate]
+        public JSObject reduceRight(JSObject args)
+        {
+            var funco = args.GetMember("0");
+            if (funco.valueType != JSObjectType.Function)
+                throw new JSException(TypeProxy.Proxy(new TypeError("First argument on reduce mast be a function.")));
+            var func = funco.oValue as Function;
+            var accum = args.GetMember("1", false, false);
+            var index = 0;
+            if (accum.valueType < JSObjectType.Undefined)
+            {
+                if (data.Count == 0)
+                    throw new JSException(TypeProxy.Proxy(new TypeError("Array is empty.")));
+                index++;
+                accum.assignCallback = null;
+                accum.attributes = 0;
+                accum.Assign(data[0]);
+            }
+            else
+                args.fields.Remove("1");
+            if (index >= data.Count)
+                return accum;
+            args["length"] = 4;
+            args.fields["0"] = accum;
+            args["3"] = this;
+            while (index < data.Count)
+            {
+                args["1"] = data[data.Count - index - 1];
+                var indexA = args.DefineMember("2");
+                indexA.valueType = JSObjectType.Int;
+                indexA.attributes |= JSObjectAttributesInternal.Argument;
+                indexA.iValue = data.Count - index - 1;
                 accum.Assign(func.Invoke(args));
                 index++;
             }
@@ -796,16 +888,23 @@ namespace NiL.JS.Core.BaseTypes
             return this.ToString();
         }
 
-        protected internal override IEnumerator<string> GetEnumeratorImpl(bool pdef)
+        protected internal override IEnumerator<string> GetEnumeratorImpl(bool hideNonEnum)
         {
             for (var i = 0; i < data.Count; i++)
             {
                 if (data[i] != null && data[i].valueType >= JSObjectType.Undefined)
                     yield return i.ToString(CultureInfo.InvariantCulture);
             }
-            var benum = base.GetEnumeratorImpl(pdef);
-            while (benum.MoveNext())
-                yield return benum.Current;
+            if (!hideNonEnum)
+                yield return "length";
+            if (fields != null)
+            {
+                foreach (var f in fields)
+                {
+                    if (f.Value.valueType >= JSObjectType.Undefined && (!hideNonEnum || (f.Value.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+                        yield return f.Key;
+                }
+            }
         }
 
         [Hidden]

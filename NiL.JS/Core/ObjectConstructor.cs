@@ -55,6 +55,21 @@ namespace NiL.JS.Core
             return proxy.GetMember(name, create, own);
         }
 
+        protected internal override System.Collections.Generic.IEnumerator<string> GetEnumeratorImpl(bool hideNonEnum)
+        {
+            var pe = proxy.GetEnumeratorImpl(hideNonEnum);
+            while (pe.MoveNext())
+                yield return pe.Current;
+            if (__proto__ == null)
+            {
+                __proto__ = TypeProxy.GetPrototype(typeof(Function));
+                proxy.__proto__ = __proto__;
+            }
+            pe = __proto__.GetEnumeratorImpl(hideNonEnum);
+            while (pe.MoveNext())
+                yield return pe.Current;
+        }
+
         public override string ToString()
         {
             return "function Object() { [native code] }";
