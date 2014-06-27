@@ -20,15 +20,10 @@ namespace NiL.JS.Expressions
             }
         }
 
-        public Ternary(CodeNode first, CodeNode second)
-            : base(first, second, false)
+        public Ternary(CodeNode first, CodeNode[] threads)
+            : base(first, null, false)
         {
-            if (!(second is ImmidateValueStatement)
-                || !((second as ImmidateValueStatement).value.oValue is CodeNode[]))
-                throw new ArgumentException("Second");
-            threads = ((second as ImmidateValueStatement).value.oValue as CodeNode[]);
-            if (threads.Length != 2)
-                throw new ArgumentException("Second has invalid length");
+            this.threads = threads;
         }
 
         internal override JSObject Invoke(Context context)
@@ -40,6 +35,8 @@ namespace NiL.JS.Expressions
 
         internal override bool Optimize(ref CodeNode _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> vars, bool strict)
         {
+            threads[0].Optimize(ref threads[0], depth, fdepth, vars, strict);
+            threads[1].Optimize(ref threads[1], depth, fdepth, vars, strict);
             base.Optimize(ref _this, depth, fdepth, vars, strict);
             return false;
         }

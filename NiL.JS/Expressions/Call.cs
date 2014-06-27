@@ -20,10 +20,10 @@ namespace NiL.JS.Expressions
         private CodeNode[] arguments;
         public CodeNode[] Arguments { get { return arguments; } }
 
-        internal Call(CodeNode first, CodeNode second)
-            : base(first, second, false)
+        internal Call(CodeNode first, CodeNode[] arguments)
+            : base(first, null, false)
         {
-
+            this.arguments = arguments;
         }
 
         internal override JSObject Invoke(Context context)
@@ -39,8 +39,6 @@ namespace NiL.JS.Expressions
                     oValue = NiL.JS.Core.Arguments.Instance,
                     attributes = JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum
                 };
-            if (this.arguments == null)
-                this.arguments = second.Invoke(null).oValue as CodeNode[];
             JSObject field = new JSObject();
             field.valueType = JSObjectType.Int;
             field.iValue = this.arguments.Length;
@@ -80,24 +78,23 @@ namespace NiL.JS.Expressions
             }
         }
 
+        internal override bool Optimize(ref CodeNode _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> vars, bool strict)
+        {
+            for (var i = 0; i < arguments.Length; i++)
+                Parser.Optimize(ref arguments[i], depth + 1, fdepth, vars, strict);
+            return base.Optimize(ref _this, depth, fdepth, vars, strict);
+        }
+
         public override string ToString()
         {
             string res = first + "(";
-            var args = second.Invoke(null).oValue as CodeNode[];
-            for (int i = 0; i < args.Length; i++)
+            for (int i = 0; i < arguments.Length; i++)
             {
-                res += args[i];
-                if (i + 1 < args.Length)
+                res += arguments[i];
+                if (i + 1 < arguments.Length)
                     res += ", ";
             }
             return res + ")";
-        }
-
-        internal override bool Optimize(ref CodeNode _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> vars, bool strict)
-        {
-            base.Optimize(ref _this, depth, fdepth, vars, strict);
-            arguments = second.Invoke(null).oValue as CodeNode[];
-            return false;
         }
     }
 }

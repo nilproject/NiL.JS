@@ -129,6 +129,9 @@ namespace NiL.JS.Core.BaseTypes
             get { return _global; }
         }
 
+        [Field]
+        [ReadOnly]
+        [DoNotDelete]
         [DoNotEnumerate]
         public String source
         {
@@ -221,6 +224,7 @@ namespace NiL.JS.Core.BaseTypes
             return m.Success;
         }
 
+        [CLSCompliant(false)]
         [DoNotEnumerate]
         public JSObject toString()
         {

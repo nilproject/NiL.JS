@@ -99,7 +99,29 @@ namespace NiL.JSTest
                     if (refresh || s == null)
                     {
                         Context.RefreshGlobalContext();
-                        s = new Script(staCode); // инициализация
+                        s = new Script(staCode);
+//                        s = new Script(
+//@"function runTestCase(f){ if (!f()) throw false; }
+//function fnGlobalObject(){ return this; }
+//function $PRINT(message){  }
+//function $ERROR(message){ throw message; }
+//function fnExists(/*arguments*/) {
+//    for (var i = 0; i < arguments.length; i++) {
+//        if (typeof (arguments[i]) !== ""function"") return false;
+//    }
+//    return true;
+//}
+//function Test262Error(message) {
+//    if (message) this.message = message;
+//}
+//
+//Test262Error.prototype.toString = function () {
+//    return ""Test262 Error: "" + this.message;
+//};
+//
+//function testFailed(message) {
+//    throw new Test262Error(message);
+//}"); // инициализация
                         s.Invoke();
                         econtext = s.Context;
                     }
@@ -213,7 +235,8 @@ namespace NiL.JSTest
             var sw = new Stopwatch();
             var s = new Script(
 @"
-            Object.preventExtensions(null);
+var x = 1;
+console.log({ x : 2, f:function(){ return function(){ return this.x; } } }.f()());
 ");
             s.Context.AttachModule(typeof(TestClass));
             s.Context.AttachModule(typeof(TestEnum));
@@ -228,7 +251,7 @@ namespace NiL.JSTest
         static void Main(string[] args)
         {
             typeof(System.Windows.Forms.Button).GetType();
-            int mode = 4
+            int mode = 0
                 ;
             switch (mode)
             {

@@ -48,8 +48,8 @@ namespace NiL.JS.Expressions
 
         internal readonly JSObject tempContainer;
 
-        protected internal CodeNode first;
-        protected internal CodeNode second;
+        protected CodeNode first;
+        protected CodeNode second;
 
         public CodeNode FirstOperand { get { return first; } }
         public CodeNode SecondOperand { get { return second; } }

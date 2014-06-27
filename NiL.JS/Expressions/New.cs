@@ -9,14 +9,16 @@ namespace NiL.JS.Expressions
     [Serializable]
     public sealed class New : Expression
     {
-        private sealed class ThisSetStat : CodeNode
+        private static readonly JSObject newMarker = new JSObject() { valueType = JSObjectType.Object, oValue = typeof(New) };
+
+        private sealed class ThisSetter : CodeNode
         {
-            public JSObject _this;
-            public JSObject value;
+            private CodeNode source;
+            public JSObject lastThisBind;
 
-            public ThisSetStat()
+            public ThisSetter(CodeNode source)
             {
-
+                this.source = source;
             }
 
             protected override CodeNode[] getChildsImpl()
@@ -26,35 +28,7 @@ namespace NiL.JS.Expressions
 
             internal override JSObject Invoke(Context context)
             {
-                context.objectSource = _this;
-                return value;
-            }
-        }
-
-        private static readonly JSObject newMarker = new JSObject() { valueType = JSObjectType.Object };
-        private readonly Call CallInstance = new Call(new ThisSetStat(), new ImmidateValueStatement(null));
-
-        public override bool IsContextIndependent
-        {
-            get
-            {
-                return false;
-            }
-        }
-
-        public New(CodeNode first, CodeNode second)
-            : base(first, second, false)
-        {
-
-        }
-
-        internal override JSObject Invoke(Context context)
-        {
-            lock (this)
-            {
-                JSObject ctor = first.Invoke(context);
-                if (ctor.valueType <= JSObjectType.NotExistInObject)
-                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable not defined.")));
+                JSObject ctor = source.Invoke(context);
                 if (ctor.valueType != JSObjectType.Function && !(ctor.valueType == JSObjectType.Object && ctor.oValue is Function))
                     throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError(ctor + " is not callable")));
                 if (ctor.oValue is MethodProxy)
@@ -77,41 +51,59 @@ namespace NiL.JS.Expressions
                 }
                 else
                     _this = newMarker;
+                context.objectSource = _this;
+                lastThisBind = _this;
+                return ctor;
+            }
 
-                (CallInstance.FirstOperand as ThisSetStat).value = ctor;
-                (CallInstance.FirstOperand as ThisSetStat)._this = _this;
-                var res = CallInstance.Invoke(context);
-                if (res.valueType >= JSObjectType.Object && res.oValue != null)
-                    return res;
-#if DEBUG
-                System.Diagnostics.Debug.Assert(_this != newMarker, "_this == newMarker");
-#endif
-                return _this;
+            public override string ToString()
+            {
+                return source.ToString();
+            }
+
+            internal override bool Optimize(ref CodeNode _this, int depth, int functionDepth, Dictionary<string, VariableDescriptor> variables, bool strict)
+            {
+                return source.Optimize(ref source, depth, functionDepth, variables, strict);
             }
         }
 
-        internal override bool Optimize(ref CodeNode _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> vars, bool strict)
+        public override bool IsContextIndependent
         {
-            newMarker.oValue = this;    // Достаточно один раз туда поставить какой-нибудь
-            // экземпляр оператора New, так как дальше проверка идёт только по "is"
-            if (second == null)
-                (CallInstance.SecondOperand as ImmidateValueStatement).value = new JSObject() { valueType = JSObjectType.Object, oValue = new CodeNode[0] };
+            get
+            {
+                return false;
+            }
+        }
+
+        private ThisSetter thisSetter;
+
+        public New(CodeNode first, CodeNode[] arguments)
+            : base(null, null, false)
+        {
+            if (first is Call)
+                this.first = new Call(thisSetter = new ThisSetter((first as Call).FirstOperand), (first as Call).Arguments);
             else
-                (CallInstance.SecondOperand as ImmidateValueStatement).value = second.Invoke(null);
-            return base.Optimize(ref _this, depth, fdepth, vars, strict);
+                this.first = new Call(thisSetter = new ThisSetter(first), arguments);
+        }
+
+        internal override NiL.JS.Core.JSObject Invoke(NiL.JS.Core.Context context)
+        {
+            try
+            {
+                var temp = first.Invoke(context);
+                if (temp.valueType >= JSObjectType.Object && temp.oValue != null)
+                    return temp;
+                return thisSetter.lastThisBind;
+            }
+            finally
+            {
+                thisSetter.lastThisBind = null;
+            }
         }
 
         public override string ToString()
         {
-            string res = "new " + first + "(";
-            var args = (CallInstance.SecondOperand as ImmidateValueStatement).value.oValue as CodeNode[];
-            for (int i = 0; i < args.Length; i++)
-            {
-                res += args[i];
-                if (i + 1 < args.Length)
-                    res += ", ";
-            }
-            return res + ")";
+            return "new " + base.ToString();
         }
     }
 }

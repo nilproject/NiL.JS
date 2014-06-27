@@ -108,8 +108,9 @@ namespace NiL.JS.Statements
                         }
                     case OperationType.Call:
                         {
-                            fastImpl = new Expressions.Call(first, second);
-                            break;
+                            throw new InvalidOperationException("Call instance mast be created immediatly.");
+                            //fastImpl = new Expressions.Call(first, second);
+                            //break;
                         }
                     case OperationType.Decriment:
                         {
@@ -229,7 +230,7 @@ namespace NiL.JS.Statements
                         }
                     case OperationType.Ternary:
                         {
-                            fastImpl = new Expressions.Ternary(first, second);
+                            fastImpl = new Expressions.Ternary(first, second.Invoke(null).oValue as CodeNode[]);
                             break;
                         }
                     case OperationType.TypeOf:
@@ -239,8 +240,9 @@ namespace NiL.JS.Statements
                         }
                     case OperationType.New:
                         {
-                            fastImpl = new Expressions.New(first, second);
-                            break;
+                            throw new InvalidOperationException("New instance mast be created immediatly.");
+                            //fastImpl = new Expressions.New(first, second);
+                            //break;
                         }
                     case OperationType.Delete:
                         {
@@ -380,9 +382,9 @@ namespace NiL.JS.Statements
                             string flags = value.Substring(s);
                             try
                             {
-                                first = new ImmidateValueStatement(new RegExp(value.Substring(1, s - 2), flags));
+                                first = new RegExpStatement(value.Substring(1, s - 2), flags); // объекты должны быть каждый раз разные
                             }
-                            catch(Exception e)
+                            catch (Exception e)
                             {
                                 first = new ThrowStatement(e);
                             }
@@ -408,7 +410,9 @@ namespace NiL.JS.Statements
                             i++;
                             if (code[i] == '+')
                             {
-                                do i++; while (i < code.Length && char.IsWhiteSpace(code[i]));
+                                do
+                                    i++;
+                                while (i < code.Length && char.IsWhiteSpace(code[i]));
                                 if (i >= code.Length)
                                     throw new JSException(new SyntaxError("Unexpected end of source."));
                                 first = Parse(state, ref i, true, true, false, true).Statement;
@@ -424,7 +428,8 @@ namespace NiL.JS.Statements
                             }
                             else
                             {
-                                while (char.IsWhiteSpace(code[i])) i++;
+                                while (char.IsWhiteSpace(code[i]))
+                                    i++;
                                 var f = Parse(state, ref i, true, true, false, true).Statement;
                                 first = new Expressions.Mul(new ImmidateValueStatement(1), f) { Position = index, Length = i - index };
                             }
@@ -435,7 +440,9 @@ namespace NiL.JS.Statements
                             i++;
                             if (code[i] == '-')
                             {
-                                do i++; while (i < code.Length && char.IsWhiteSpace(code[i]));
+                                do
+                                    i++;
+                                while (i < code.Length && char.IsWhiteSpace(code[i]));
                                 if (i >= code.Length)
                                     throw new JSException(new SyntaxError("Unexpected end of source."));
                                 first = Parse(state, ref i, true, true, false, true).Statement;
@@ -451,7 +458,8 @@ namespace NiL.JS.Statements
                             }
                             else
                             {
-                                while (char.IsWhiteSpace(code[i])) i++;
+                                while (char.IsWhiteSpace(code[i]))
+                                    i++;
                                 var f = Parse(state, ref i, true, true, false, true).Statement;
                                 first = new Expressions.Mul(new ImmidateValueStatement(-1), f) { Position = index, Length = i - index };
                             }
@@ -459,7 +467,9 @@ namespace NiL.JS.Statements
                         }
                     case '!':
                         {
-                            do i++; while (char.IsWhiteSpace(code[i]));
+                            do
+                                i++;
+                            while (char.IsWhiteSpace(code[i]));
                             first = new Expressions.LogicalNot(Parse(state, ref i, true, true, false, true).Statement) { Position = index, Length = i - index };
                             if (first == null)
                             {
@@ -470,7 +480,9 @@ namespace NiL.JS.Statements
                         }
                     case '~':
                         {
-                            do i++; while (char.IsWhiteSpace(code[i]));
+                            do
+                                i++;
+                            while (char.IsWhiteSpace(code[i]));
                             first = Parse(state, ref i, true, true, false, true).Statement;
                             if (first == null)
                             {
@@ -483,7 +495,9 @@ namespace NiL.JS.Statements
                     case 't':
                         {
                             i += 5;
-                            do i++; while (char.IsWhiteSpace(code[i]));
+                            do
+                                i++;
+                            while (char.IsWhiteSpace(code[i]));
                             first = Parse(state, ref i, false, true, false, true).Statement;
                             if (first == null)
                             {
@@ -496,7 +510,9 @@ namespace NiL.JS.Statements
                     case 'v':
                         {
                             i += 3;
-                            do i++; while (char.IsWhiteSpace(code[i]));
+                            do
+                                i++;
+                            while (char.IsWhiteSpace(code[i]));
                             first = new Expressions.None(Parse(state, ref i, false, true, false, true).Statement, new ImmidateValueStatement(JSObject.undefined)) { Position = index, Length = i - index };
                             if (first == null)
                             {
@@ -508,23 +524,24 @@ namespace NiL.JS.Statements
                     case 'n':
                         {
                             i += 2;
-                            do i++; while (char.IsWhiteSpace(code[i]));
+                            do
+                                i++;
+                            while (char.IsWhiteSpace(code[i]));
                             first = Parse(state, ref i, false, true, true, true).Statement;
                             if (first == null)
                             {
                                 var cord = Tools.PositionToTextcord(code, i);
                                 throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid prefix operation. " + cord)));
                             }
-                            if (first is ExpressionStatement && ((first as ExpressionStatement)._type == OperationType.None || (first as ExpressionStatement)._type == OperationType.Call))
-                                (first as ExpressionStatement)._type = OperationType.New;
-                            else
-                                first = new Expressions.New(first, second) { Position = index, Length = i - index };
+                            first = new Expressions.New(first, new CodeNode[0]) { Position = index, Length = i - index };
                             break;
                         }
                     case 'd':
                         {
                             i += 5;
-                            do i++; while (char.IsWhiteSpace(code[i]));
+                            do
+                                i++;
+                            while (char.IsWhiteSpace(code[i]));
                             first = Parse(state, ref i, false, true, false, true).Statement;
                             if (first == null)
                             {
@@ -540,9 +557,12 @@ namespace NiL.JS.Statements
             }
             else if (code[i] == '(')
             {
-                do i++; while (char.IsWhiteSpace(code[i]));
+                do
+                    i++;
+                while (char.IsWhiteSpace(code[i]));
                 first = ExpressionStatement.Parse(state, ref i, true).Statement;
-                while (char.IsWhiteSpace(code[i])) i++;
+                while (char.IsWhiteSpace(code[i]))
+                    i++;
                 if (code[i] != ')')
                     throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \")\"")));
                 i++;
@@ -561,11 +581,13 @@ namespace NiL.JS.Statements
             do
             {
                 repeat = false;
-                while (i < code.Length && char.IsWhiteSpace(code[i]) && !Tools.isLineTerminator(code[i])) i++;
+                while (i < code.Length && char.IsWhiteSpace(code[i]) && !Tools.isLineTerminator(code[i]))
+                    i++;
                 if (code.Length <= i)
                     break;
                 rollbackPos = i;
-                while (i < code.Length && char.IsWhiteSpace(code[i])) i++;
+                while (i < code.Length && char.IsWhiteSpace(code[i]))
+                    i++;
                 if (code.Length <= i)
                 {
                     i = rollbackPos;
@@ -609,7 +631,8 @@ namespace NiL.JS.Statements
                                     type = OperationType.NotEqual;
                                 }
                             }
-                            else throw new ArgumentException("Invalid operator '!'");
+                            else
+                                throw new ArgumentException("Invalid operator '!'");
                             break;
                         }
                     case ',':
@@ -636,18 +659,22 @@ namespace NiL.JS.Statements
                                 break;
                             }
                             type = OperationType.Ternary;
-                            do i++; while (char.IsWhiteSpace(code[i]));
+                            do
+                                i++;
+                            while (char.IsWhiteSpace(code[i]));
                             position = i;
-                            var sec = new CodeNode[]
+                            var threads = new CodeNode[]
                                 {
                                     Parser.Parse(state, ref i, 1),
                                     null
                                 };
                             if (code[i] != ':')
                                 throw new ArgumentException("Invalid char in ternary operator");
-                            do i++; while (char.IsWhiteSpace(code[i]));
-                            second = new ImmidateValueStatement(new JSObject() { valueType = JSObjectType.Object, oValue = sec }) { Position = position };
-                            sec[1] = Parser.Parse(state, ref i, 1);
+                            do
+                                i++;
+                            while (char.IsWhiteSpace(code[i]));
+                            second = new ImmidateValueStatement(new JSObject() { valueType = JSObjectType.Object, oValue = threads }) { Position = position };
+                            threads[1] = Parser.Parse(state, ref i, 1);
                             second.Length = i - second.Position;
                             binary = false;
                             repeat = false;
@@ -961,7 +988,8 @@ namespace NiL.JS.Statements
                         {
                             binary = true;
                             i++;
-                            while (char.IsWhiteSpace(code[i])) i++;
+                            while (char.IsWhiteSpace(code[i]))
+                                i++;
                             s = i;
                             if (!Parser.ValidateName(code, ref i, false, true, state.strict.Peek()))
                                 throw new ArgumentException("code (" + i + ")");
@@ -986,11 +1014,14 @@ namespace NiL.JS.Statements
                             int startPos = i;
                             for (; ; )
                             {
-                                while (char.IsWhiteSpace(code[i])) i++;
+                                while (char.IsWhiteSpace(code[i]))
+                                    i++;
                                 if (code[i] == ']')
                                     break;
                                 else if (code[i] == ',')
-                                    do i++; while (char.IsWhiteSpace(code[i]));
+                                    do
+                                        i++;
+                                    while (char.IsWhiteSpace(code[i]));
                                 args.Add(Parser.Parse(state, ref i, 1));
                                 if (args[args.Count - 1] == null)
                                     throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \"]\" at " + Tools.PositionToTextcord(code, startPos))));
@@ -1010,22 +1041,22 @@ namespace NiL.JS.Statements
                             int startPos = i;
                             for (; ; )
                             {
-                                while (char.IsWhiteSpace(code[i])) i++;
+                                while (char.IsWhiteSpace(code[i]))
+                                    i++;
                                 if (code[i] == ')')
                                     break;
                                 else if (code[i] == ',')
-                                    do i++; while (char.IsWhiteSpace(code[i]));
+                                    do
+                                        i++;
+                                    while (char.IsWhiteSpace(code[i]));
                                 if (i + 1 == code.Length)
                                     throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Unexpected end of line")));
                                 args.Add(ExpressionStatement.Parse(state, ref i, false).Statement);
                                 if (args[args.Count - 1] == null)
                                     throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \")\" at " + Tools.PositionToTextcord(code, startPos))));
                             }
-                            first = new ExpressionStatement()
+                            first = new Call(first, args.ToArray())
                             {
-                                first = first,
-                                second = new ImmidateValueStatement(new JSObject() { valueType = JSObjectType.Object, oValue = args.ToArray() }) { Position = startPos, Length = i - startPos },
-                                _type = OperationType.Call,
                                 Position = first.Position,
                                 Length = i - first.Position + 1
                             };
@@ -1083,7 +1114,9 @@ namespace NiL.JS.Statements
                 throw new InvalidOperationException("invalid left-hand side in assignment");
             if (binary && !forUnary)
             {
-                do i++; while (code.Length > i && char.IsWhiteSpace(code[i]));
+                do
+                    i++;
+                while (code.Length > i && char.IsWhiteSpace(code[i]));
                 if (code.Length > i)
                     second = ExpressionStatement.Parse(state, ref i, processComma, false, false, false).Statement;
             }

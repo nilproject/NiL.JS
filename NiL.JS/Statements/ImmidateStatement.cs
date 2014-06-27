@@ -40,8 +40,9 @@ namespace NiL.JS.Statements
             var vss = value.oValue as CodeNode[];
             if (vss != null)
             {
-                for (int i = 0; i < vss.Length; i++)
-                    Parser.Optimize(ref vss[i], depth + 1, fdepth, variables, strict);
+                throw new InvalidOperationException("It behaviour is deprecated");
+                //for (int i = 0; i < vss.Length; i++)
+                //    Parser.Optimize(ref vss[i], depth + 1, fdepth, variables, strict);
             }
             return false;
         }

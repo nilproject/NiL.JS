@@ -91,6 +91,6 @@ function f12() {
 if (f12(new f11()) != 1)
     $ERROR('#11');
 
-var t = { f:function(){ return function(){ return this; } } };
-if (t != t.f()())
+var t = { x : 2, f:function(){ return function(){ return this.x; } } };
+if (t.f()() != 1)
     $ERROR("#12");

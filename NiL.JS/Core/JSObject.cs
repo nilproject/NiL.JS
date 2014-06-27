@@ -1073,13 +1073,28 @@ namespace NiL.JS.Core
                         && (arr.data[i].attributes & JSObjectAttributesInternal.NotConfigurable) == 0)
                         return false;
             }
-            else if (obj.fields != null)
+            if (obj.fields != null)
                 foreach (var f in obj.fields)
                 {
                     if (f.Value.valueType >= JSObjectType.Object && f.Value.oValue != null && (f.Value.attributes & JSObjectAttributesInternal.NotConfigurable) == 0)
                         return false;
                 }
             return true;
+        }
+
+        [DoNotEnumerate]
+        public static JSObject seal(JSObject args)
+        {
+            var obj = args["0"];
+            if (obj.valueType < JSObjectType.Object)
+                throw new JSException(new TypeError("Object.seal called on non-object."));
+            if (obj.oValue == null)
+                throw new JSException(new TypeError("Object.seal called on null."));
+            obj.attributes |= JSObjectAttributesInternal.Immutable;
+            (obj.oValue as JSObject ?? obj).attributes |= JSObjectAttributesInternal.Immutable;
+            foreach (var f in obj.fields)
+                f.Value.attributes |= JSObjectAttributesInternal.NotConfigurable;
+            return obj;
         }
 
         [DoNotEnumerate]

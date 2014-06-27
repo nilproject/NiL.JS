@@ -256,7 +256,7 @@ namespace NiL.JS.Statements
                     return new ParseResult()
                     {
                         IsParsed = true,
-                        Statement = new Expressions.Call(func, new ImmidateValueStatement(new JSObject() { valueType = JSObjectType.Object, oValue = args.ToArray() }))
+                        Statement = new Expressions.Call(func, args.ToArray())
                     };
                 }
                 else
