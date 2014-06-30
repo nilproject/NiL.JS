@@ -36,8 +36,6 @@ namespace NiL.JS.Expressions
             {
                 JSObject field = null;
                 field = first.InvokeForAssing(context);
-                if ((field.attributes & JSObjectAttributesInternal.ReadOnly) != 0 && context.strict)
-                    throw new JSException(TypeProxy.Proxy(new TypeError("Can not assign to readonly property \"" + first + "\"")));
                 if (field.valueType == JSObjectType.Property)
                 {
                     var fieldSource = context.objectSource;
@@ -49,6 +47,8 @@ namespace NiL.JS.Expressions
                         throw new JSException(TypeProxy.Proxy(new TypeError("Can not assign to readonly property \"" + first + "\"")));
                     return setterArg;
                 }
+                else if ((field.attributes & JSObjectAttributesInternal.ReadOnly) != 0 && context.strict)
+                    throw new JSException(TypeProxy.Proxy(new TypeError("Can not assign to readonly property \"" + first + "\"")));
                 var t = second.Invoke(context);
                 field.Assign(t);
                 return t;

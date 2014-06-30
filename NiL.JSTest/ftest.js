@@ -1,10 +1,8 @@
-﻿console.log((function () {
-    try {
-        Object.create({}, {
-            prop: false
-        });
-        return false;
-    } catch (e) {
-        return (e instanceof TypeError);
-    }
-})());
+﻿var str = 'ABC';
+var strObj = new String('ABC');
+
+////////////////////////////////////////////////////////////
+// CHECK#1
+if (str.constructor !== strObj.constructor) {
+    $ERROR('#1: \'ABC\'.constructor === new String(\'ABC\').constructor');
+}

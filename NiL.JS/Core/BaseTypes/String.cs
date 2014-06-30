@@ -74,7 +74,15 @@ namespace NiL.JS.Core.BaseTypes
                     notExist.valueType = JSObjectType.NotExistInObject;
                     return JSObject.notExist;
                 }
-                return new JSObject(false) { valueType = JSObjectType.String, oValue = (oValue as string)[pos].ToString(), attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.DoNotDelete };
+                var cc = Context.CurrentContext;
+                if (cc == null)
+                    return new JSObject(false) { valueType = JSObjectType.String, oValue = (oValue as string)[pos].ToString(), attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.DoNotDelete };
+                else
+                {
+                    var res = cc.wrap((oValue as string)[pos].ToString());
+                    res.attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.DoNotDelete;
+                    return res;
+                }
             }
         }
 
@@ -591,6 +599,7 @@ namespace NiL.JS.Core.BaseTypes
         [ReadOnly]
         [DoNotDelete]
         [DoNotEnumerate]
+        [NotConfigurable]
         public JSObject length
         {
             [StringAllowUnsafeCallAttribute(typeof(JSObject))]
@@ -634,20 +643,23 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [Hidden]
-        internal protected override JSObject GetMember(string name, bool create, bool own)
+        internal protected override JSObject GetMember(JSObject name, bool create, bool own)
         {
             create &= (attributes & JSObjectAttributesInternal.Immutable) == 0;
             if (__proto__ == null)
                 __proto__ = TypeProxy.GetPrototype(typeof(String));
             int index = 0;
-            double dindex = 0.0;
-            if (Tools.ParseNumber(name, index, out dindex, Tools.ParseNumberOptions.Default)
+            double dindex = Tools.JSObjectToDouble(name);
+            if (!double.IsInfinity(dindex)
+                && !double.IsNaN(dindex)
                 && ((index = (int)dindex) == dindex)
-                && index >= 0
-                && index <= (oValue as string).Length)
+                && ((index = (int)dindex) == dindex)
+                && index < (oValue as string).Length
+                && index >= 0)
+            {
                 return this[index];
-            else
-                return DefaultFieldGetter(name, create, false); // обращение идёт к Объекту String, а не к значению string, поэтому члены создавать можно
+            }
+            return DefaultFieldGetter(name, create, false); // обращение идёт к Объекту String, а не к значению string, поэтому члены создавать можно
         }
 
         #region HTML Wraping

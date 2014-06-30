@@ -120,6 +120,15 @@ namespace NiL.JS.Core
 
         private int threadId;
         private Context oldContext;
+        /// <summary>
+        /// Временное хранилище для передачи значений.
+        /// <remarks>
+        /// Поскольку в каждом потоке может быть только один головной контекст, 
+        /// а каждый контекст может быть запущен только в одном потоке,
+        /// отсутствует вероятность конфликта при использовании данного поля.
+        /// </remarks>
+        /// </summary>
+        internal readonly JSObject tempContainer = new JSObject();
         internal readonly Context prototype;
         internal Dictionary<string, JSObject> fields;
         internal AbortType abort;
@@ -501,5 +510,153 @@ namespace NiL.JS.Core
         {
             return this == globalContext ? "Global context" : "Context";
         }
+
+        #region Temporal Wrapping
+
+#if INLINE
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+#endif
+        public JSObject wrap(bool value)
+        {
+            tempContainer.valueType = JSObjectType.Bool;
+            tempContainer.iValue = value ? 1 : 0;
+            return tempContainer;
+        }
+
+#if INLINE
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+#endif
+        public JSObject wrap(sbyte value)
+        {
+            tempContainer.valueType = JSObjectType.Int;
+            tempContainer.iValue = value;
+            return tempContainer;
+        }
+
+#if INLINE
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+#endif
+        public JSObject wrap(byte value)
+        {
+            tempContainer.valueType = JSObjectType.Int;
+            tempContainer.iValue = value;
+            return tempContainer;
+        }
+
+#if INLINE
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+#endif
+        public JSObject wrap(short value)
+        {
+            tempContainer.valueType = JSObjectType.Int;
+            tempContainer.iValue = value;
+            return tempContainer;
+        }
+
+        public JSObject wrap(ushort value)
+        {
+            tempContainer.valueType = JSObjectType.Int;
+            tempContainer.iValue = value;
+            return tempContainer;
+        }
+
+#if INLINE
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+#endif
+        public JSObject wrap(int value)
+        {
+            tempContainer.valueType = JSObjectType.Int;
+            tempContainer.iValue = value;
+            return tempContainer;
+        }
+
+#if INLINE
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+#endif
+        public JSObject wrap(uint value)
+        {
+            if (value <= int.MaxValue)
+            {
+                tempContainer.valueType = JSObjectType.Int;
+                tempContainer.iValue = (int)value;
+                return tempContainer;
+            }
+            else
+            {
+                tempContainer.valueType = JSObjectType.Double;
+                tempContainer.dValue = value;
+                return tempContainer;
+            }
+        }
+
+#if INLINE
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+#endif
+        public JSObject wrap(long value)
+        {
+            if (value <= int.MaxValue)
+            {
+                tempContainer.valueType = JSObjectType.Int;
+                tempContainer.iValue = (int)value;
+                return tempContainer;
+            }
+            else
+            {
+                tempContainer.valueType = JSObjectType.Double;
+                tempContainer.dValue = value;
+                return tempContainer;
+            }
+        }
+
+#if INLINE
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+#endif
+        public JSObject wrap(ulong value)
+        {
+            if (value <= int.MaxValue)
+            {
+                tempContainer.valueType = JSObjectType.Int;
+                tempContainer.iValue = (int)value;
+                return tempContainer;
+            }
+            else
+            {
+                tempContainer.valueType = JSObjectType.Double;
+                tempContainer.dValue = value;
+                return tempContainer;
+            }
+        }
+
+#if INLINE
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+#endif
+        public JSObject wrap(float value)
+        {
+            tempContainer.valueType = JSObjectType.Double;
+            tempContainer.dValue = value;
+            return tempContainer;
+        }
+
+#if INLINE
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+#endif
+        public JSObject wrap(double value)
+        {
+            tempContainer.valueType = JSObjectType.Double;
+            tempContainer.dValue = value;
+            return tempContainer;
+        }
+
+#if INLINE
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+#endif
+        public JSObject wrap(string value)
+        {
+            tempContainer.valueType = JSObjectType.String;
+            tempContainer.oValue = value;
+            return tempContainer;
+        }
+
+        #endregion
     }
 }

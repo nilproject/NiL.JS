@@ -8,25 +8,30 @@ namespace NiL.JS.Core.BaseTypes
     [Serializable]
     public sealed class Number : JSObject
     {
+        [ReadOnly]
         [DoNotDelete]
         [DoNotEnumerate]
-        [ReadOnly]
+        [NotConfigurable]
         public readonly static JSObject NaN = double.NaN;
+        [ReadOnly]
         [DoNotDelete]
         [DoNotEnumerate]
-        [ReadOnly]
+        [NotConfigurable]
         public readonly static JSObject POSITIVE_INFINITY = double.PositiveInfinity;
+        [ReadOnly]
         [DoNotDelete]
         [DoNotEnumerate]
-        [ReadOnly]
+        [NotConfigurable]
         public readonly static JSObject NEGATIVE_INFINITY = double.NegativeInfinity;
+        [ReadOnly]
         [DoNotDelete]
         [DoNotEnumerate]
-        [ReadOnly]
+        [NotConfigurable]
         public readonly static JSObject MAX_VALUE = double.MaxValue;
+        [ReadOnly]
         [DoNotDelete]
         [DoNotEnumerate]
-        [ReadOnly]
+        [NotConfigurable]
         public readonly static JSObject MIN_VALUE = double.Epsilon;
 
         [Modules.DoNotEnumerate]
@@ -99,11 +104,11 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [Hidden]
-        internal protected override JSObject GetMember(string name, bool create, bool own)
+        internal protected override JSObject GetMember(JSObject name, bool create, bool own)
         {
             if (__proto__ == null)
                 __proto__ = TypeProxy.GetPrototype(typeof(Number));
-            return DefaultFieldGetter(name, create, false); // обращение идёт к Объекту Number, а не к значению number, поэтому члены создавать можно
+            return DefaultFieldGetter(name.ToString(), create, false); // обращение идёт к Объекту Number, а не к значению number, поэтому члены создавать можно
         }
 
         [AllowUnsafeCall(typeof(JSObject))]

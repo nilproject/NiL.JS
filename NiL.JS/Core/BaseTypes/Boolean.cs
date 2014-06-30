@@ -75,11 +75,11 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [Hidden]
-        internal protected override JSObject GetMember(string name, bool create, bool own)
+        internal protected override JSObject GetMember(JSObject name, bool create, bool own)
         {
             if (__proto__ == null)
                 __proto__ = TypeProxy.GetPrototype(typeof(Boolean));
-            return DefaultFieldGetter(name, create, false); // обращение идёт к Объекту Boolean, а не к значению boolean, поэтому члены создавать можно
+            return DefaultFieldGetter(name.ToString(), create, false); // обращение идёт к Объекту Boolean, а не к значению boolean, поэтому члены создавать можно
         }
 
 #if INLINE

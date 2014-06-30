@@ -107,6 +107,7 @@ namespace NiL.JS.Core.BaseTypes
         [ReadOnly]
         [DoNotDelete]
         [DoNotEnumerate]
+        [NotConfigurable]
         public Boolean ignoreCase
         {
             get
@@ -119,6 +120,7 @@ namespace NiL.JS.Core.BaseTypes
         [ReadOnly]
         [DoNotDelete]
         [DoNotEnumerate]
+        [NotConfigurable]
         public Boolean multiline
         {
             get
@@ -132,6 +134,7 @@ namespace NiL.JS.Core.BaseTypes
         [ReadOnly]
         [DoNotDelete]
         [DoNotEnumerate]
+        [NotConfigurable]
         public Boolean global
         {
             [Hidden]
@@ -142,6 +145,7 @@ namespace NiL.JS.Core.BaseTypes
         [ReadOnly]
         [DoNotDelete]
         [DoNotEnumerate]
+        [NotConfigurable]
         public String source
         {
             get
@@ -150,6 +154,7 @@ namespace NiL.JS.Core.BaseTypes
             }
         }
 
+        [Field]
         [DoNotEnumerate]
         public JSObject lastIndex
         {
@@ -199,7 +204,7 @@ namespace NiL.JS.Core.BaseTypes
             }
             var res = new Array(m.Groups.Count);
             for (int i = 0; i < m.Groups.Count; i++)
-                res[i] = m.Groups[i].Success ? (JSObject)m.Groups[i].Value : null;
+                res.data[i] = m.Groups[i].Success ? (JSObject)m.Groups[i].Value : null;
             if (_global)
                 lIndex.iValue = m.Index + m.Length;
             res.GetMember("index", true, true).Assign(m.Index);

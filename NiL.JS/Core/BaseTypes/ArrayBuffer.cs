@@ -103,12 +103,11 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [Hidden]
-        internal protected override JSObject GetMember(string name, bool create, bool own)
+        internal protected override JSObject GetMember(JSObject name, bool create, bool own)
         {
             int index = 0;
-            double dindex = 0.0;
-            if (name != "NaN" && name != "Infinity" && name != "-Infinity" &&
-                Tools.ParseNumber(name, index, out dindex, Tools.ParseNumberOptions.Default))
+            double dindex = Tools.JSObjectToDouble(name);
+            if (!double.IsInfinity(dindex) && !double.IsNaN(dindex) && ((index = (int)dindex) == dindex))
             {
                 if (dindex > 0x7fffffff || dindex < 0)
                     throw new JSException(TypeProxy.Proxy(new RangeError("Invalid array index")));

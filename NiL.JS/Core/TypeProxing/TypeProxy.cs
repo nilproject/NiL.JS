@@ -270,8 +270,9 @@ namespace NiL.JS.Core
             throw new JSException("Can not assign to __proto__ of immutable or special objects.");
         }
 
-        internal protected override JSObject GetMember(string name, bool create, bool own)
+        internal protected override JSObject GetMember(JSObject nameObj, bool create, bool own)
         {
+            string name = nameObj.ToString();
             JSObject r = null;
             if (fields.TryGetValue(name, out r))
             {
@@ -287,14 +288,8 @@ namespace NiL.JS.Core
             members.TryGetValue(name, out m);
             if (m == null || m.Count == 0)
             {
-                switch (name)
-                {
-                    default:
-                        {
-                            r = DefaultFieldGetter(name, create, own);
-                            return r;
-                        }
-                }
+                r = DefaultFieldGetter(name, create, own);
+                return r;
             }
             if (m.Count > 1)
             {
@@ -460,7 +455,9 @@ namespace NiL.JS.Core
             lock (fields)
                 fields[name] = create && r.GetType() != typeof(JSObject) ? (r = r.Clone() as JSObject) : r;
             if (m[0].IsDefined(typeof(ReadOnlyAttribute), false))
-                r.attributes |= JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.NotConfigurable;
+                r.attributes |= JSObjectAttributesInternal.ReadOnly;
+            if (m[0].IsDefined(typeof(NotConfigurable), false))
+                r.attributes |= JSObjectAttributesInternal.NotConfigurable;
             if (m[0].IsDefined(typeof(DoNotDeleteAttribute), false))
                 r.attributes |= JSObjectAttributesInternal.DoNotDelete;
             for (var i = m.Count; i-- > 0; )
@@ -481,7 +478,7 @@ namespace NiL.JS.Core
             var name = args.GetMember("0").ToString();
             JSObject temp;
             if (fields != null && fields.TryGetValue(name, out temp))
-                return temp.valueType >= JSObjectType.Undefined && (temp.attributes & JSObjectAttributesInternal.DoNotEnum) == 0;
+                return temp.isExist && (temp.attributes & JSObjectAttributesInternal.DoNotEnum) == 0;
             IList<MemberInfo> m = null;
             if (members.TryGetValue(name, out m))
             {
@@ -499,7 +496,7 @@ namespace NiL.JS.Core
                 fillMembers();
             foreach (var f in fields)
             {
-                if (f.Value.valueType >= JSObjectType.Undefined && (!pdef || (f.Value.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+                if (f.Value.isExist && (!pdef || (f.Value.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
                     yield return f.Key;
             }
             foreach (var m in members)

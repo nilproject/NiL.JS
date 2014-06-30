@@ -31,15 +31,16 @@ namespace NiL.JS.Core
             assignCallback = (sender) => { throw new JSException(TypeProxy.Proxy(new ReferenceError("Invalid left-hand side in assignment"))); };
         }
 
-        internal protected override JSObject GetMember(string name, bool create, bool own)
+        internal protected override JSObject GetMember(JSObject name, bool create, bool own)
         {
-            if (name == "__proto__")
+            var nameStr = name.ToString();
+            if (nameStr == "__proto__")
             {
                 if (__proto__ == null)
                     __proto__ = thisProto;
                 return __proto__;
             }
-            var res = context.GetVariable(name, create);
+            var res = context.GetVariable(nameStr, create);
             if (res.valueType == JSObjectType.NotExist)
                 res.valueType = JSObjectType.NotExistInObject;
             return res;
@@ -48,10 +49,10 @@ namespace NiL.JS.Core
         protected internal override IEnumerator<string> GetEnumeratorImpl(bool pdef)
         {
             foreach (var i in Context.globalContext.fields)
-                if (i.Value.valueType >= JSObjectType.Undefined)
+                if (i.Value.isExist && (!pdef || (i.Value.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
                     yield return i.Key;
             foreach (var i in context.fields)
-                if (i.Value.valueType >= JSObjectType.Undefined)
+                if (i.Value.isExist && (!pdef || (i.Value.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
                     yield return i.Key;
         }
 

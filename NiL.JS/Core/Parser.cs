@@ -224,7 +224,7 @@ namespace NiL.JS.Core
             }
             if (index == j)
                 return false;
-            string name = code.Substring(index, j - index);
+            string name = allowEscape || reserveControl ? code.Substring(index, j - index) : null;
             if (allowEscape)
             {
                 int i = 0;

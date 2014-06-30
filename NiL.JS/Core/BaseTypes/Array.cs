@@ -9,7 +9,7 @@ namespace NiL.JS.Core.BaseTypes
     [Serializable]
     public sealed class Array : CustomType
     {
-        [Serializable]
+        /*[Serializable]
         private class Element : JSObject
         {
             private Array owner;
@@ -43,7 +43,7 @@ namespace NiL.JS.Core.BaseTypes
                 }
                 base.Assign(value);
             }
-        }
+        }*/
 
         [Hidden]
         internal List<JSObject> data;
@@ -130,30 +130,9 @@ namespace NiL.JS.Core.BaseTypes
             data.Add(obj);
         }
 
-        [Hidden]
-        public JSObject this[int index]
-        {
-            [Hidden]
-            get
-            {
-                if (data.Count <= index)
-                    return new Element(this, index);
-                else if (data[index] == null)
-                    data[index] = new Element(this, index);
-                return data[index];
-            }
-            [Hidden]
-            internal set
-            {
-                if (data.Capacity < index)
-                    data.Capacity = index + 1;
-                while (data.Count <= index)
-                    data.Add(null);
-                data[index] = value;
-            }
-        }
-
+        [Field]
         [DoNotDelete]
+        [NotConfigurable]
         [DoNotEnumerateAttribute]
         public JSObject length
         {
@@ -165,17 +144,36 @@ namespace NiL.JS.Core.BaseTypes
             [Hidden]
             set
             {
-                var nlen = Tools.JSObjectToInt32(value);
-                if (data.Count > nlen)
-                    data.RemoveRange(nlen, data.Count - nlen);
-                else
+                var nlenD = Tools.JSObjectToDouble(value["0"]);
+                var nlen = (int)nlenD;
+                if (double.IsNaN(nlenD) || double.IsInfinity(nlenD) || nlen != nlenD)
+                    throw new JSException(new RangeError("Invalid array length"));
+                setLength(nlen);
+            }
+        }
+
+        internal bool setLength(int nlen)
+        {
+            if (nlen < 0)
+                throw new JSException(new RangeError("Invalid array length"));
+            if (data.Count > nlen)
+            {
+                while (data.Count > nlen)
                 {
-                    if (data.Capacity < nlen)
-                        data.Capacity = nlen;
-                    while (data.Count < nlen)
-                        data.Add(null);
+                    var element = data[data.Count - 1];
+                    if (element != null && element.isExist && (element.attributes & JSObjectAttributesInternal.DoNotDelete) != 0)
+                        return false;
+                    data.RemoveAt(data.Count - 1);
                 }
             }
+            else
+            {
+                if (data.Capacity < nlen)
+                    data.Capacity = nlen;
+                while (data.Count < nlen)
+                    data.Add(null);
+            }
+            return true;
         }
 
         [DoNotEnumerateAttribute]
@@ -892,7 +890,7 @@ namespace NiL.JS.Core.BaseTypes
         {
             for (var i = 0; i < data.Count; i++)
             {
-                if (data[i] != null && data[i].valueType >= JSObjectType.Undefined)
+                if (data[i] != null && data[i].isExist && !data[i].attributes.HasFlag(JSObjectAttributesInternal.DoNotEnum))
                     yield return i.ToString(CultureInfo.InvariantCulture);
             }
             if (!hideNonEnum)
@@ -901,19 +899,18 @@ namespace NiL.JS.Core.BaseTypes
             {
                 foreach (var f in fields)
                 {
-                    if (f.Value.valueType >= JSObjectType.Undefined && (!hideNonEnum || (f.Value.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+                    if (f.Value.isExist && (!hideNonEnum || (f.Value.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
                         yield return f.Key;
                 }
             }
         }
 
         [Hidden]
-        internal protected override JSObject GetMember(string name, bool create, bool own)
+        internal protected override JSObject GetMember(JSObject name, bool create, bool own)
         {
             int index = 0;
-            double dindex = 0.0;
-            if (name != "NaN" && name != "Infinity" && name != "-Infinity" &&
-                Tools.ParseNumber(name, index, out dindex, Tools.ParseNumberOptions.Default))
+            double dindex = Tools.JSObjectToDouble(name);
+            if (!double.IsNaN(dindex) && !double.IsInfinity(dindex))
             {
                 if (dindex >= 0)
                 {
@@ -925,19 +922,26 @@ namespace NiL.JS.Core.BaseTypes
                         if (data.Count <= index)
                         {
                             if (create)
-                                return new Element(this, index);
-                            else
                             {
-                                notExist.valueType = JSObjectType.NotExistInObject;
-                                return notExist;
+                                if ((this["length"].oValue as Function[])[0] == null)
+                                {
+                                    if (own)
+                                        throw new JSException(new TypeError("Cannot add element in fixed size array"));
+                                    notExist.valueType = JSObjectType.NotExistInObject;
+                                    return notExist;
+                                }
+                                setLength(index + 1);
+                                return data[index] = new JSObject() { valueType = JSObjectType.NotExistInObject };
                             }
+                            else
+                                return base.GetMember(name, create, own);
                         }
                         else if (data[index] == null)
                         {
                             if (create)
-                                return data[index] = new Element(this, index);
+                                return (data[index] ?? (data[index] = new JSObject() { valueType = JSObjectType.NotExistInObject }));
                             else
-                                return undefined;
+                                return base.GetMember(name, create, own);
                         }
                         else
                         {

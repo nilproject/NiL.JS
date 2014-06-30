@@ -35,7 +35,7 @@ namespace NiL.JS.Statements
             var source = objStatement.Invoke(context);
             var n = memberNameStatement.Invoke(context);
             context.objectSource = source;
-            var res = source.GetMember(n.ToString(), forAssign, false);
+            var res = source.GetMember(n, forAssign, false);
             if (!forAssign && res.valueType == JSObjectType.Property)
             {
                 var f = (res.oValue as Function[])[1];

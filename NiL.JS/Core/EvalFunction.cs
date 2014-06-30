@@ -82,9 +82,9 @@ namespace NiL.JS.Core
             }
         }
 
-        protected internal override JSObject GetMember(string name, bool create, bool own)
+        protected internal override JSObject GetMember(JSObject name, bool create, bool own)
         {
-            if (name == "prototype")
+            if (name.ToString() == "prototype")
                 return undefined;
             return base.GetMember(name, create, own);
         }

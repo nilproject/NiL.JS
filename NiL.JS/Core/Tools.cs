@@ -52,7 +52,7 @@ namespace NiL.JS.Core
                         double x = double.NaN;
                         int ix = 0;
                         string s = (arg.oValue as string).Trim();
-                        if (Tools.ParseNumber(s, ref ix, out x) && ix < s.Length)
+                        if (Tools.ParseNumber(s, ref ix, out x, 0, ParseNumberOptions.AllowFloat | ParseNumberOptions.AllowAutoRadix) && ix < s.Length)
                             return double.NaN;
                         return x;
                     }
@@ -385,7 +385,8 @@ namespace NiL.JS.Core
                 return true;
             }
             int i = index;
-            while (i < code.Length && char.IsWhiteSpace(code[i]) && !Tools.isLineTerminator(code[i])) i++;
+            while (i < code.Length && char.IsWhiteSpace(code[i]) && !Tools.isLineTerminator(code[i]))
+                i++;
             if (i == code.Length)
             {
                 value = 0.0;
@@ -732,8 +733,10 @@ namespace NiL.JS.Core
                         case '/':
                             {
                                 index += 2;
-                                while (index < code.Length && !Tools.isLineTerminator(code[index])) index++;
-                                while (index < code.Length && char.IsWhiteSpace(code[index])) index++;
+                                while (index < code.Length && !Tools.isLineTerminator(code[index]))
+                                    index++;
+                                while (index < code.Length && char.IsWhiteSpace(code[index]))
+                                    index++;
                                 work = true;
                                 break;
                             }
@@ -752,7 +755,8 @@ namespace NiL.JS.Core
                 }
             } while (work);
             if (skipSpaces)
-                while ((index < code.Length) && (char.IsWhiteSpace(code[index]))) index++;
+                while ((index < code.Length) && (char.IsWhiteSpace(code[index])))
+                    index++;
         }
 
         internal static string RemoveComments(string code)
@@ -763,7 +767,8 @@ namespace NiL.JS.Core
                 while (i < code.Length && char.IsWhiteSpace(code[i]))
                     if (res != null)
                         res.Append(code[i++]);
-                    else i++;
+                    else
+                        i++;
                 var s = i;
                 skipComment(code, ref i, false);
                 if (s != i && res == null)
@@ -787,7 +792,8 @@ namespace NiL.JS.Core
                 }
                 else if (res != null)
                     res.Append(code[i++]);
-                else i++;
+                else
+                    i++;
             }
             return (res as object ?? code).ToString();
         }

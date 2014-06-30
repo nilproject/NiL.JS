@@ -85,7 +85,7 @@ namespace NiL.JS.Statements
         internal override JSObject Invoke(Context context)
         {
             JSObject res = JSObject.undefined;
-            var s = Tools.RaiseIfNotExist(source.Invoke(context));
+            var s = source.Invoke(context);
             var v = variable.InvokeForAssing(context);
             int index = 0;
             while (s != null)

@@ -695,7 +695,9 @@ namespace NiL.JS.Core.BaseTypes
         [DoNotEnumerate]
         public JSObject prototype
         {
+            [Hidden]
             get { return _prototype; }
+            [Hidden]
             set { _prototype.Assign(value["0"]); }
         }
         private JSObject _arguments;
@@ -714,10 +716,11 @@ namespace NiL.JS.Core.BaseTypes
 
         [Hidden]
         internal Number _length = null;
+        [Field]
+        [ReadOnly]
         [DoNotDelete]
         [DoNotEnumerate]
-        [ReadOnly]
-        [Field]
+        [NotConfigurable]
         public virtual JSObject length
         {
             [Hidden]
@@ -833,7 +836,7 @@ namespace NiL.JS.Core.BaseTypes
                 if (args == null)
                 {
                     args = new JSObject(true) { valueType = JSObjectType.Object };
-                    args.oValue = args;
+                    args.oValue = Arguments.Instance;
                     args.DefineMember("length").Assign(0);
                 }
                 _arguments = args;
@@ -913,8 +916,9 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [Hidden]
-        internal protected override JSObject GetMember(string name, bool create, bool own)
+        internal protected override JSObject GetMember(JSObject nameObj, bool create, bool own)
         {
+            string name = nameObj.ToString();
             if (creator.body.strict && (name == "caller" || name == "arguments"))
                 return propertiesDummySM;
             if (name == "prototype")
@@ -979,14 +983,14 @@ namespace NiL.JS.Core.BaseTypes
             var callee = args.DefineMember("callee");
             args.fields.Clear();
             var prmsC = 0;
-            if (iargs.valueType >= JSObjectType.Undefined)
+            if (iargs.isExist)
             {
                 var prmsCR = iargs.GetMember("length");
                 prmsC = Tools.JSObjectToInt32(prmsCR.valueType == JSObjectType.Property ? (prmsCR.oValue as Function[])[1].Invoke(iargs, null) : prmsCR);
                 for (int i = 0; i < prmsC; i++)
                     args.fields[i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture)] = iargs.GetMember(i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture));
             }
-            if (callee.valueType >= JSObjectType.Undefined)
+            if (callee.isExist)
             {
                 callee.oValue = this;
                 args.fields["callee"] = callee;

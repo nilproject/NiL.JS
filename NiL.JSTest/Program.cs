@@ -13,10 +13,26 @@ namespace NiL.JSTest
 {
     class Program
     {
+        private static void testEx()
+        {
+            var sw = new Stopwatch();
+            var s = new Script(
+@"
+var a = [1,2,3,4]
+for (var i in a)
+    console.log(a[i]);
+");
+            s.Context.AttachModule(typeof(System.Drawing.Point));
+            sw.Start();
+            s.Invoke();
+            sw.Stop();
+            Console.WriteLine(sw.Elapsed);
+        }
+
         static void Main(string[] args)
         {
             typeof(System.Windows.Forms.Button).GetType();
-            int mode = 4
+            int mode = 0
                 ;
             switch (mode)
             {
@@ -202,28 +218,14 @@ namespace NiL.JSTest
                     Console.Title = "passed: " + passed + ". failed: " + failed;
                     lastUpdate = Environment.TickCount;
                 }
-                //if (failed == 3) break;
+                if (failed == 1)
+                    break;
             }
             sw.Stop();
             _("passed: " + passed + ". (" + (passed * 100 / fls.Length) + "%)");
             _("failed: " + failed);
             _("time: " + sw.Elapsed);
             _("Sputnik testing complite");
-        }
-
-        private static void testEx()
-        {
-            var sw = new Stopwatch();
-            var s = new Script(
-@"
-var x = 1;
-console.log({ x : 2, f:function(){ return function(){ return this.x; } } }.f()());
-");
-            s.Context.AttachModule(typeof(System.Drawing.Point));
-            sw.Start();
-            s.Invoke();
-            sw.Stop();
-            Console.WriteLine(sw.Elapsed);
         }
     }
 }

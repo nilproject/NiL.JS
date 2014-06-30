@@ -174,7 +174,7 @@ namespace NiL.JS.Core
             var arg = new object[array.data.Count];
             for (var j = 0; j < arg.Length; j++)
             {
-                var temp = array[j].Value;
+                var temp = (array.data[j] ?? undefined).Value;
                 arg[j] = temp is NiL.JS.Core.BaseTypes.Array ? convertArray(temp as NiL.JS.Core.BaseTypes.Array) : temp;
             }
             return arg;
@@ -219,7 +219,7 @@ namespace NiL.JS.Core
             for (int i = len; i-- > 0; )
             {
                 var obj = source.GetMember(i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture));
-                if (obj.valueType >= JSObjectType.Undefined)
+                if (obj.isExist)
                 {
                     res[i] = marshal(obj, parameters[i].ParameterType);
                     if (paramsConverters != null && paramsConverters[i] != null)

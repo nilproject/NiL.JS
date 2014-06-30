@@ -69,7 +69,7 @@ namespace NiL.JS.Core
         }
 
         [Hidden]
-        protected internal override JSObject GetMember(string name, bool create, bool own)
+        protected internal override JSObject GetMember(JSObject name, bool create, bool own)
         {
             return proto.GetMember(name, create, own);
         }

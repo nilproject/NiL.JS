@@ -45,7 +45,7 @@ namespace NiL.JS.Core
             return res;
         }
 
-        internal protected override JSObject GetMember(string name, bool create, bool own)
+        internal protected override JSObject GetMember(JSObject name, bool create, bool own)
         {
             if (__proto__ == null)
             {

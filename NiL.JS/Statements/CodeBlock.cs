@@ -224,7 +224,7 @@ namespace NiL.JS.Statements
                         System.Diagnostics.Debugger.Break();
                     else
                         throw new ApplicationException("undefined was rewrite");
-                if (JSObject.notExist.valueType >= JSObjectType.Undefined)
+                if (JSObject.notExist.isExist)
                     if (System.Diagnostics.Debugger.IsAttached)
                         System.Diagnostics.Debugger.Break();
                     else
