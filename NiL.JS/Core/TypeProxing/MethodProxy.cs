@@ -172,7 +172,7 @@ namespace NiL.JS.Core
         private static object[] convertArray(NiL.JS.Core.BaseTypes.Array array)
         {
             var arg = new object[array.data.Count];
-            for (var j = 0; j < arg.Length; j++)
+            for (var j = 0U; j < arg.Length; j++)
             {
                 var temp = (array.data[j] ?? undefined).Value;
                 arg[j] = temp is NiL.JS.Core.BaseTypes.Array ? convertArray(temp as NiL.JS.Core.BaseTypes.Array) : temp;

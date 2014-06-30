@@ -2,77 +2,68 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Text;
 using NiL.JS.Core.Modules;
 
 namespace NiL.JS.Core.BaseTypes
 {
     [Serializable]
-    public sealed class Array : CustomType
+    public sealed class Array : JSObject
     {
-        /*[Serializable]
-        private class Element : JSObject
-        {
-            private Array owner;
-            [NonSerialized]
-            private int index;
-
-            public Element(Array owner, int index)
-            {
-                valueType = JSObjectType.NotExistInObject;
-                this.owner = owner;
-                this.index = index;
-                if (owner.data.Count <= index)
-                {
-                    var pv = (owner.__proto__ ?? owner.GetMember("__proto__")).GetMember(index.ToString(CultureInfo.InvariantCulture));
-                    if (pv != undefined)
-                        base.Assign(pv);
-                    else
-                        this.valueType = JSObjectType.NotExistInObject;
-                }
-                else
-                    base.Assign(owner.data[index] ?? undefined);
-            }
-
-            public override void Assign(JSObject value)
-            {
-                if (owner.data.Count < index + 1)
-                {
-                    while (owner.data.Count < index)
-                        owner.Add(null);
-                    owner.data.Add(this);
-                }
-                base.Assign(value);
-            }
-        }*/
-
         [Hidden]
-        internal List<JSObject> data;
+        internal BinaryTree<long, JSObject> data;
+        [Hidden]
+        private long _length;
+
+        private Array(BinaryTree<long, JSObject> data, long length)
+        {
+            valueType = JSObjectType.Object;
+            oValue = this;
+            this.data = data;
+            _length = length;
+        }
 
         [DoNotEnumerate]
         public Array()
         {
-            data = new List<JSObject>();
+            oValue = this;
+            valueType = JSObjectType.Object;
+            data = new BinaryTree<long, JSObject>();
             attributes |= JSObjectAttributesInternal.ReadOnly;
         }
 
         [DoNotEnumerate]
         public Array(int length)
         {
+            oValue = this;
+            valueType = JSObjectType.Object;
             if (length < 0)
                 throw new JSException(TypeProxy.Proxy(new RangeError("Invalid array length.")));
-            data = new List<JSObject>(length);
-            for (int i = 0; i < length; i++)
-                data.Add(null);
+            data = new BinaryTree<long, JSObject>();
+            this._length = (long)length;
+        }
+
+        [CLSCompliant(false)]
+        [DoNotEnumerate]
+        public Array(long length)
+        {
+            oValue = this;
+            valueType = JSObjectType.Object;
+            if (length < 0)
+                throw new JSException(TypeProxy.Proxy(new RangeError("Invalid array length.")));
+            data = new BinaryTree<long, JSObject>();
+            this._length = length;
         }
 
         [DoNotEnumerate]
         public Array(double d)
         {
+            oValue = this;
+            valueType = JSObjectType.Object;
             if (((long)d != d) || (d < 0) || (d > 0x7fffffff))
                 throw new JSException(TypeProxy.Proxy(new RangeError("Invalid array length.")));
-            data = new List<JSObject>((int)d);
-            for (int i = 0; i < data.Capacity; i++)
-                data.Add(null);
+            data = new BinaryTree<long, JSObject>();
+            this._length = (long)d;
         }
 
         [DoNotEnumerate]
@@ -85,49 +76,58 @@ namespace NiL.JS.Core.BaseTypes
         [Hidden]
         public Array(ICollection collection)
         {
+            oValue = this;
+            valueType = JSObjectType.Object;
             if (collection == null)
                 throw new ArgumentNullException("collection");
-            data = new List<JSObject>(collection.Count);
-            foreach (var o in collection)
-            {
-                var t = TypeProxy.Proxy(o).Clone() as JSObject;
-                t.assignCallback = null;
-                data.Add(t);
-            }
+            data = new BinaryTree<long, JSObject>();
+            this._length = (long)collection.Count;
+            var index = 0U;
+            foreach (var e in collection)
+                data[index++] = e is JSObject ? (e as JSObject).Clone() as JSObject : TypeProxy.Proxy(e);
         }
 
         [Hidden]
         public Array(IEnumerable enumerable)
         {
+            oValue = this;
+            valueType = JSObjectType.Object;
             if (enumerable == null)
                 throw new ArgumentNullException("enumerable");
-            data = new List<JSObject>();
-            foreach (var o in enumerable)
-            {
-                var t = TypeProxy.Proxy(o).Clone() as JSObject;
-                t.assignCallback = null;
-                data.Add(t);
-            }
+            data = new BinaryTree<long, JSObject>();
+            var index = 0U;
+            foreach (var e in enumerable)
+                data[index++] = e is JSObject ? (e as JSObject).Clone() as JSObject : TypeProxy.Proxy(e);
+            _length = (long)index;
         }
 
         [Hidden]
         internal Array(IEnumerator enumerator)
         {
+            oValue = this;
+            valueType = JSObjectType.Object;
             if (enumerator == null)
                 throw new ArgumentNullException("enumerator");
-            data = new List<JSObject>();
+            data = new BinaryTree<long, JSObject>();
+            var index = 0U;
             while (enumerator.MoveNext())
             {
-                var t = TypeProxy.Proxy(enumerator.Current).Clone() as JSObject;
-                t.assignCallback = null;
-                data.Add(t);
+                var e = enumerator.Current;
+                data[index++] = TypeProxy.Proxy(e).Clone() as JSObject;
             }
+            _length = (long)index;
+        }
+
+        public override void Assign(JSObject value)
+        {
+            if ((attributes & JSObjectAttributesInternal.ReadOnly) == 0)
+                throw new InvalidOperationException("Try to assign to array");
         }
 
         [Hidden]
         public void Add(JSObject obj)
         {
-            data.Add(obj);
+            data.Add(_length++, obj["0"]);
         }
 
         [Field]
@@ -139,40 +139,39 @@ namespace NiL.JS.Core.BaseTypes
             [Hidden]
             get
             {
-                return data.Count;
+                return _length > 0xFFFFFFFF ? 0 : _length;
             }
             [Hidden]
             set
             {
                 var nlenD = Tools.JSObjectToDouble(value["0"]);
-                var nlen = (int)nlenD;
+                var nlen = (long)nlenD;
                 if (double.IsNaN(nlenD) || double.IsInfinity(nlenD) || nlen != nlenD)
                     throw new JSException(new RangeError("Invalid array length"));
                 setLength(nlen);
             }
         }
 
-        internal bool setLength(int nlen)
+        internal bool setLength(long nlen)
         {
             if (nlen < 0)
                 throw new JSException(new RangeError("Invalid array length"));
-            if (data.Count > nlen)
+            if (_length > nlen)
             {
-                while (data.Count > nlen)
+                var res = true;
+                foreach (var element in data.NotLess(nlen))
+                    if (element.Value.valueType >= JSObjectType.Undefined && element.Value.attributes.HasFlag(JSObjectAttributesInternal.DoNotDelete))
+                    {
+                        nlen = element.Key;
+                        res = false;
+                    }
+                if (!res)
                 {
-                    var element = data[data.Count - 1];
-                    if (element != null && element.isExist && (element.attributes & JSObjectAttributesInternal.DoNotDelete) != 0)
-                        return false;
-                    data.RemoveAt(data.Count - 1);
+                    setLength(nlen + 1);
+                    return false;
                 }
             }
-            else
-            {
-                if (data.Capacity < nlen)
-                    data.Capacity = nlen;
-                while (data.Count < nlen)
-                    data.Add(null);
-            }
+            _length = nlen;
             return true;
         }
 
@@ -181,31 +180,24 @@ namespace NiL.JS.Core.BaseTypes
         {
             if (args == null)
                 throw new ArgumentNullException("args");
-            var res = new List<JSObject>(data.Count + args.Length);
-            for (int i = 0; i < data.Count; i++)
-            {
-                res.Add(new JSObject(false));
-                res[i].Assign(data[i]);
-            }
-            for (int i = 0; i < args.Length; i++)
+            var res = new BinaryTree<long, JSObject>();
+            long resLen = _length;
+            foreach (var element in data)
+                res[element.Key] = element.Value.Clone() as JSObject;
+            for (long i = 0; i < args.Length; i++)
             {
                 var arg = args[i];
                 if (arg.valueType == JSObjectType.Object && arg.oValue is Array)
                 {
                     Array arr = arg.oValue as Array;
-                    for (int j = 0; j < arr.data.Count; j++)
-                    {
-                        res.Add(new JSObject(false));
-                        res[res.Count - 1].Assign(arr.data[j]);
-                    }
+                    foreach (var element in arr.data)
+                        res[element.Key + resLen] = element.Value.Clone() as JSObject;
+                    resLen += arr._length;
                 }
                 else
-                {
-                    res.Add(new JSObject(false));
-                    res[res.Count - 1].Assign(arg);
-                }
+                    res[resLen++] = args[i].Clone() as JSObject;
             }
-            return new Array(res);
+            return new Array(res, resLen);
         }
 
         [DoNotEnumerate]
@@ -219,18 +211,35 @@ namespace NiL.JS.Core.BaseTypes
             var tb = args.Length > 1 ? args[1] : null;
             var ao = new JSObject() { oValue = Arguments.Instance, valueType = JSObjectType.Object };
             ao["length"] = 3;
-            ao["1"] = 0;
+            ao["0"] = undefined;
+            ao["1"] = undefined;
             ao["2"] = this;
             bool res = true;
             bool isArray = this.GetType() == typeof(Array);
-            var len = isArray ? data.Count : Tools.JSObjectToInt32(this["length"]);
-            for (var i = 0; i < len && res; i++)
+            var context = Context.CurrentContext;
+            if (isArray)
             {
-                if (isArray && (data[i] == null || data[i].valueType < JSObjectType.Undefined))
-                    continue;
-                ao["0"] = isArray ? data[i] : this[i.ToString(CultureInfo.InvariantCulture)];
-                ao["1"].iValue = i;
-                res &= (bool)f.Invoke(tb, ao);
+                foreach (var element in data)
+                {
+                    ao["0"].Assign(element.Value);
+                    ao["1"].Assign(context.wrap(element.Key));
+                    res &= (bool)f.Invoke(tb, ao);
+                    if (!res)
+                        break;
+                }
+            }
+            else
+            {
+                var len = (long)Tools.JSObjectToDouble(this["length"]);
+                for (var i = 0U; i < len && res; i++)
+                {
+                    var v = this[i.ToString(CultureInfo.InvariantCulture)];
+                    if (v.valueType < JSObjectType.Undefined)
+                        continue;
+                    ao["0"] = v;
+                    ao["1"].Assign(context.wrap(i));
+                    res &= (bool)f.Invoke(tb, ao);
+                }
             }
             return res;
         }
@@ -246,18 +255,35 @@ namespace NiL.JS.Core.BaseTypes
             var tb = args.Length > 1 ? args[1] : null;
             var ao = new JSObject() { oValue = Arguments.Instance, valueType = JSObjectType.Object };
             ao["length"] = 3;
-            ao["1"] = 0;
+            ao["0"] = undefined;
+            ao["1"] = undefined;
             ao["2"] = this;
             bool res = false;
             bool isArray = this.GetType() == typeof(Array);
-            var len = isArray ? data.Count : Tools.JSObjectToInt32(this["length"]);
-            for (var i = 0; i < len && !res; i++)
+            var context = Context.CurrentContext;
+            if (isArray)
             {
-                if (isArray && (data[i] == null || data[i].valueType < JSObjectType.Undefined))
-                    continue;
-                ao["0"] = isArray ? data[i] : this[i.ToString(CultureInfo.InvariantCulture)];
-                ao["1"].iValue = i;
-                res &= (bool)f.Invoke(tb, ao);
+                foreach (var element in data)
+                {
+                    ao["0"].Assign(element.Value);
+                    ao["1"].Assign(context.wrap(element.Key));
+                    res |= (bool)f.Invoke(tb, ao);
+                    if (res)
+                        break;
+                }
+            }
+            else
+            {
+                var len = (long)Tools.JSObjectToDouble(this["length"]);
+                for (var i = 0U; i < len && !res; i++)
+                {
+                    var v = this[i.ToString(CultureInfo.InvariantCulture)];
+                    if (v.valueType < JSObjectType.Undefined)
+                        continue;
+                    ao["0"] = v;
+                    ao["1"].Assign(context.wrap(i));
+                    res |= (bool)f.Invoke(tb, ao);
+                }
             }
             return res;
         }
@@ -273,19 +299,35 @@ namespace NiL.JS.Core.BaseTypes
             var tb = args.Length > 1 ? args[1] : null;
             var ao = new JSObject() { oValue = Arguments.Instance, valueType = JSObjectType.Object };
             ao["length"] = 3;
-            ao["1"] = 0;
+            ao["0"] = undefined;
+            ao["1"] = undefined;
             ao["2"] = this;
             var res = new Array();
             bool isArray = this.GetType() == typeof(Array);
-            var len = isArray ? data.Count : Tools.JSObjectToInt32(this["length"]);
-            for (var i = 0; i < len; i++)
+            var context = Context.CurrentContext;
+            if (isArray)
             {
-                if (isArray && (data[i] == null || data[i].valueType < JSObjectType.Undefined))
-                    continue;
-                ao["0"] = isArray ? data[i] : this[i.ToString(CultureInfo.InvariantCulture)];
-                ao["1"].iValue = i;
-                if ((bool)f.Invoke(tb, ao))
-                    res.data.Add(data[i].Clone() as JSObject);
+                foreach (var element in data)
+                {
+                    ao["0"].Assign(element.Value);
+                    ao["1"].Assign(context.wrap(element.Key));
+                    if ((bool)f.Invoke(tb, ao))
+                        res.Add(element.Value.Clone() as JSObject);
+                }
+            }
+            else
+            {
+                var len = (long)Tools.JSObjectToDouble(this["length"]);
+                for (var i = 0U; i < len; i++)
+                {
+                    var v = this[i.ToString(CultureInfo.InvariantCulture)];
+                    if (v.valueType < JSObjectType.Undefined)
+                        continue;
+                    ao["0"] = v;
+                    ao["1"].Assign(context.wrap(i));
+                    if ((bool)f.Invoke(tb, ao))
+                        res.Add(v.Clone() as JSObject);
+                }
             }
             return res;
         }
@@ -301,18 +343,33 @@ namespace NiL.JS.Core.BaseTypes
             var tb = args.Length > 1 ? args[1] : null;
             var ao = new JSObject() { oValue = Arguments.Instance, valueType = JSObjectType.Object };
             ao["length"] = 3;
-            ao["1"] = 0;
+            ao["0"] = undefined;
+            ao["1"] = undefined;
             ao["2"] = this;
             var res = new Array();
             bool isArray = this.GetType() == typeof(Array);
-            var len = isArray ? data.Count : Tools.JSObjectToInt32(this["length"]);
-            for (var i = 0; i < len; i++)
+            var context = Context.CurrentContext;
+            if (isArray)
             {
-                if (isArray && (data[i] == null || data[i].valueType < JSObjectType.Undefined))
-                    continue;
-                ao["0"] = isArray ? data[i] : this[i.ToString(CultureInfo.InvariantCulture)];
-                ao["1"].iValue = i;
-                res.data.Add(f.Invoke(tb, ao).Clone() as JSObject);
+                foreach (var element in data)
+                {
+                    ao["0"].Assign(element.Value);
+                    ao["1"].Assign(context.wrap(element.Key));
+                    res.Add(f.Invoke(tb, ao).Clone() as JSObject);
+                }
+            }
+            else
+            {
+                var len = (long)Tools.JSObjectToDouble(this["length"]);
+                for (var i = 0U; i < len; i++)
+                {
+                    var v = this[i.ToString(CultureInfo.InvariantCulture)];
+                    if (v.valueType < JSObjectType.Undefined)
+                        continue;
+                    ao["0"] = v;
+                    ao["1"].Assign(context.wrap(i));
+                    res.Add(f.Invoke(tb, ao).Clone() as JSObject);
+                }
             }
             return res;
         }
@@ -331,14 +388,28 @@ namespace NiL.JS.Core.BaseTypes
             ao["1"] = 0;
             ao["2"] = this;
             bool isArray = this.GetType() == typeof(Array);
-            var len = isArray ? data.Count : Tools.JSObjectToInt32(this["length"]);
-            for (var i = 0; i < len; i++)
+            var context = Context.CurrentContext;
+            if (isArray)
             {
-                if (isArray && (data[i] == null || data[i].valueType < JSObjectType.Undefined))
-                    continue;
-                ao["0"] = isArray ? data[i] : this[i.ToString(CultureInfo.InvariantCulture)];
-                ao["1"].iValue = i;
-                f.Invoke(tb, ao);
+                foreach (var element in data)
+                {
+                    ao["0"].Assign(element.Value);
+                    ao["1"].Assign(context.wrap(element.Key));
+                    f.Invoke(tb, ao);
+                }
+            }
+            else
+            {
+                var len = (long)Tools.JSObjectToDouble(this["length"]);
+                for (var i = 0U; i < len; i++)
+                {
+                    var v = this[i.ToString(CultureInfo.InvariantCulture)];
+                    if (v.valueType < JSObjectType.Undefined)
+                        continue;
+                    ao["0"] = v;
+                    ao["1"].Assign(context.wrap(i));
+                    f.Invoke(tb, ao);
+                }
             }
             return undefined;
         }
@@ -380,10 +451,10 @@ namespace NiL.JS.Core.BaseTypes
                 }
             }
             var left = new NiL.JS.Statements.ImmidateValueStatement(el);
-            for (int i = 0; i < data.Count; i++)
+            foreach (var element in data)
             {
-                if (Expressions.StrictEqual.Check(data[i] ?? undefined, left, null))
-                    return i;
+                if (element.Value.isExist && Expressions.StrictEqual.Check(element.Value, left, null))
+                    return Context.CurrentContext.wrap(element.Key);
             }
             return -1;
         }
@@ -393,7 +464,7 @@ namespace NiL.JS.Core.BaseTypes
         {
             if (args == null)
                 throw new ArgumentNullException("args");
-            return args.GetMember("0", false, true).Value is Array;
+            return args.GetMember("0").Value is Array;
         }
 
         [DoNotEnumerate]
@@ -405,14 +476,13 @@ namespace NiL.JS.Core.BaseTypes
                 return ToString();
             var el = separator[0].ToString();
             System.Text.StringBuilder sb = new System.Text.StringBuilder();
-            var i = 0;
-            var max = data.Count - 1;
-            for (; i < max; i++)
+            for (var i = 0U; i < _length - 1; i++)
             {
-                sb.Append(data[i] ?? "");
-                sb.Append(el);
+                JSObject t;
+                if (data.TryGetValue(i, out t) && t.isExist)
+                    sb.Append(t);
+                sb.Append(',');
             }
-            sb.Append(data[i] ?? "");
             return sb.ToString();
         }
 
@@ -453,10 +523,10 @@ namespace NiL.JS.Core.BaseTypes
                 }
             }
             var left = new NiL.JS.Statements.ImmidateValueStatement(el);
-            for (int i = data.Count; i-- > 0; )
+            foreach (var element in data.Reversed)
             {
-                if (Expressions.StrictEqual.Check(data[i] ?? undefined, left, null))
-                    return i;
+                if (element.Value.isExist && Expressions.StrictEqual.Check(element.Value, left, null))
+                    return Context.CurrentContext.wrap(element.Key);
             }
             return -1;
         }
@@ -464,26 +534,29 @@ namespace NiL.JS.Core.BaseTypes
         [DoNotEnumerate]
         public JSObject pop()
         {
-            if (data.Count == 0)
+            if (_length == 0)
                 return JSObject.undefined;
-            var res = data[data.Count - 1] ?? JSObject.undefined;
-            data.RemoveAt(data.Count - 1);
+            var res = JSObject.undefined;
+            if (data.TryGetValue(--_length, out res))
+                data.Remove(_length);
             return res;
         }
 
         [DoNotEnumerate]
         public JSObject push(JSObject[] args)
         {
-            data.Capacity = System.Math.Max(data.Capacity, data.Count + args.Length);
             for (var i = 0; i < args.Length; i++)
-                data.Add(args[i].Clone() as JSObject);
+                data.Add(_length++, args[i].Clone() as JSObject);
             return this;
         }
 
         [DoNotEnumerate]
         public JSObject reverse()
         {
-            data.Reverse();
+            var newData = new BinaryTree<long, JSObject>();
+            foreach (var element in data)
+                newData[_length - element.Key - 1U] = element.Value;
+            data = newData;
             return this;
         }
 
@@ -498,7 +571,7 @@ namespace NiL.JS.Core.BaseTypes
             var index = 0;
             if (accum.valueType < JSObjectType.Undefined)
             {
-                if (data.Count == 0)
+                if (_length == 0)
                     throw new JSException(TypeProxy.Proxy(new TypeError("Array is empty.")));
                 index++;
                 accum.assignCallback = null;
@@ -510,14 +583,16 @@ namespace NiL.JS.Core.BaseTypes
             if (index >= data.Count)
                 return accum;
             args["length"] = 4;
-            args.fields["0"] = accum;
-            args["3"] = this;
-            while (index < data.Count)
+            args["0"] = accum;
+            args["1"] = undefined;
+            var context = Context.CurrentContext;
+            foreach (var element in data)
             {
-                args["1"] = data[index];
-                args["2"] = index;
+                args["0"] = accum;
+                args["1"] = element.Value;
+                args["2"] = context.wrap(element.Key);
+                args["3"] = this;
                 accum.Assign(func.Invoke(args));
-                index++;
             }
             return accum;
         }
@@ -529,11 +604,11 @@ namespace NiL.JS.Core.BaseTypes
             if (funco.valueType != JSObjectType.Function)
                 throw new JSException(TypeProxy.Proxy(new TypeError("First argument on reduce mast be a function.")));
             var func = funco.oValue as Function;
-            var accum = args.GetMember("1", false, false);
+            var accum = args.GetMember("1");
             var index = 0;
             if (accum.valueType < JSObjectType.Undefined)
             {
-                if (data.Count == 0)
+                if (_length == 0)
                     throw new JSException(TypeProxy.Proxy(new TypeError("Array is empty.")));
                 index++;
                 accum.assignCallback = null;
@@ -545,17 +620,16 @@ namespace NiL.JS.Core.BaseTypes
             if (index >= data.Count)
                 return accum;
             args["length"] = 4;
-            args.fields["0"] = accum;
-            args["3"] = this;
-            while (index < data.Count)
+            args["0"] = accum;
+            args["1"] = undefined;
+            var context = Context.CurrentContext;
+            foreach (var element in data.Reversed)
             {
-                args["1"] = data[data.Count - index - 1];
-                var indexA = args.DefineMember("2");
-                indexA.valueType = JSObjectType.Int;
-                indexA.attributes |= JSObjectAttributesInternal.Argument;
-                indexA.iValue = data.Count - index - 1;
+                args["0"] = accum;
+                args["1"] = element.Value;
+                args["2"] = context.wrap(element.Key);
+                args["3"] = this;
                 accum.Assign(func.Invoke(args));
-                index++;
             }
             return accum;
         }
@@ -563,10 +637,13 @@ namespace NiL.JS.Core.BaseTypes
         [DoNotEnumerate]
         public JSObject shift()
         {
-            if (data.Count == 0)
+            if (_length == 0)
                 return JSObject.undefined;
-            var res = data[0] ?? JSObject.undefined;
-            data.RemoveAt(0);
+            var res = JSObject.undefined;
+            data.TryGetValue(0, out res);
+            _length--;
+            foreach (var o in data.Nodes)
+                o.key--;
             return res;
         }
 
@@ -580,34 +657,33 @@ namespace NiL.JS.Core.BaseTypes
                 return this;
             if ((object)this is Array) // Да, Array sealed, но тут и не такое возможно.
             {
-                int pos0 = Tools.JSObjectToInt32(args[0], int.MaxValue, true);
-                int pos1 = 0;
+                long pos0 = (long)Tools.JSObjectToDouble(args[0]);
+                long pos1 = 0;
                 if (args.Length > 1)
                 {
                     if (args[1].valueType <= JSObjectType.Undefined)
-                        pos1 = data.Count;
+                        pos1 = 0;
                     else
-                        pos1 = System.Math.Min(Tools.JSObjectToInt32(args[1], true), data.Count);
+                        pos1 = System.Math.Min((long)Tools.JSObjectToDouble(args[1]), _length);
                 }
                 else
-                    pos1 = data.Count;
+                    pos1 = _length;
                 if (pos0 < 0)
-                    pos0 = data.Count + pos0;
+                    pos0 = _length + pos0;
                 if (pos0 < 0)
                     pos0 = 0;
                 if (pos1 < 0)
-                    pos1 = data.Count + pos1;
+                    pos1 = _length + pos1;
                 if (pos1 < 0)
                     pos1 = 0;
-                pos0 = System.Math.Min(pos0, data.Count);
+                pos0 = System.Math.Min(pos0, _length);
                 if (pos0 >= 0 && pos1 >= 0 && pos1 > pos0)
                 {
                     var res = new Array();
-                    for (int i = pos0; i < pos1; i++)
+                    foreach (var node in data.Nodes)
                     {
-                        var t = new JSObject();
-                        t.Assign(data[i]);
-                        res.data.Add(t);
+                        if (pos0 <= node.key && pos1 >= node.key)
+                            res.Add(node.value.Clone() as JSObject);
                     }
                     return res;
                 }
@@ -615,55 +691,7 @@ namespace NiL.JS.Core.BaseTypes
             }
             else // кто-то отправил объект с полем length
             {
-                var leno = this.GetMember("length");
-                if (leno.valueType < JSObjectType.Undefined)
-                    throw new JSException(TypeProxy.Proxy(new TypeError("Array.property.slice call for incompatible object.")));
-                int len = Tools.JSObjectToInt32(leno);
-                if (len >= 0)
-                {
-                    var t = new Array(len);
-                    for (int i = 0; i < t.data.Count; i++)
-                    {
-                        var val = this.GetMember(i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture));
-                        if (val.valueType > JSObjectType.Undefined)
-                            t.data[i] = val.Clone() as JSObject;
-                    }
-                    return t.slice(args);
-                }
-                else
-                {
-                    long pos0 = (long)Tools.JSObjectToDouble(args[0]);
-                    long pos1 = 0;
-                    if (args.Length > 1)
-                    {
-                        if (args[1].valueType <= JSObjectType.Undefined)
-                            pos1 = data.Count;
-                        else
-                            pos1 = (long)Tools.JSObjectToDouble(args[1]);
-                    }
-                    else
-                        pos1 = data.Count;
-                    if (pos0 < 0)
-                        pos0 = data.Count + pos0;
-                    if (pos0 < 0)
-                        pos0 = 0;
-                    if (pos1 < 0)
-                        pos1 = data.Count + pos1;
-                    if (pos1 < 0)
-                        pos1 = 0;
-                    var t = new Array(0);
-                    if (this.fields != null)
-                    {
-                        foreach (var p in this.fields)
-                        {
-                            int i = 0;
-                            double d = 0;
-                            if (Tools.ParseNumber(p.Key, ref i, out d) && i == p.Key.Length && (long)d == d && d >= pos0 && d < pos1)
-                                t.GetMember((d - pos0).ToString(CultureInfo.InvariantCulture), true, true).Assign(p.Value);
-                        }
-                    }
-                    return t;
-                }
+                throw new NotImplementedException();
             }
         }
 
@@ -677,107 +705,45 @@ namespace NiL.JS.Core.BaseTypes
                 return this;
             if ((object)this is Array) // Да, Array sealed, но тут и не такое возможно.
             {
-                int pos0 = Tools.JSObjectToInt32(args[0], int.MaxValue, true);
-                int pos1 = 0;
-                if (args.Length > 1)
-                {
-                    if (args[1].valueType <= JSObjectType.Undefined)
-                        pos1 = 0;
-                    else
-                        pos1 = System.Math.Min(Tools.JSObjectToInt32(args[1], true), data.Count);
-                }
-                else
-                    pos1 = data.Count;
-                if (pos0 < 0)
-                    pos0 = data.Count + pos0;
-                if (pos0 < 0)
-                    pos0 = 0;
-                if (pos1 < 0)
-                    pos1 = 0;
-                pos0 = System.Math.Min(pos0, data.Count);
-                pos1 += pos0;
-                pos1 = System.Math.Min(pos1, this.data.Count);
-                var res = new Array();
-                for (int i = pos0; i < pos1; i++)
-                {
-                    res.data.Add(data[i]);
-                }
-                this.data.RemoveRange(pos0, pos1 - pos0);
-                if (args.Length > 2)
-                {
-                    this.data.InsertRange(pos0, args);
-                    this.data.RemoveRange(pos0, 2);
-                }
-                return res;
-            }
-            else // кто-то отправил объект с полем length
-            {
-                var lobj = this.GetMember("length");
-                long len = (long)Tools.JSObjectToDouble(lobj);
-                len &= 0xffffffff;
                 long pos0 = (long)Tools.JSObjectToDouble(args[0]);
                 long pos1 = 0;
                 if (args.Length > 1)
                 {
                     if (args[1].valueType <= JSObjectType.Undefined)
-                        pos1 = data.Count;
+                        pos1 = 0;
                     else
-                        pos1 = (long)Tools.JSObjectToDouble(args[1]);
+                        pos1 = System.Math.Min((long)Tools.JSObjectToDouble(args[1]), _length);
                 }
                 else
-                    pos1 = len;
+                    pos1 = _length;
                 if (pos0 < 0)
-                    pos0 = len + pos0;
+                    pos0 = _length + pos0;
                 if (pos0 < 0)
                     pos0 = 0;
                 if (pos1 < 0)
                     pos1 = 0;
-                pos0 = System.Math.Min(pos0, len);
+                pos0 = System.Math.Min(pos0, _length);
                 pos1 += pos0;
-                pos1 = System.Math.Min(pos1, len);
-                var t = new Array(pos1 - pos0);
-                List<string> keysForDelete = new List<string>(t.data.Count);
-                List<KeyValuePair<string, JSObject>> ritems = new List<KeyValuePair<string, JSObject>>();
-                var addCount = System.Math.Max(0, args.Length - 2);
-                if (this.fields != null)
+                pos1 = System.Math.Min(pos1, _length);
+                var res = new Array();
+                List<long> keysToRemove = new List<long>();
+                foreach (var node in data.Nodes)
                 {
-                    foreach (var p in this.fields)
+                    if (pos0 <= node.key && pos1 >= node.key)
                     {
-                        int i = 0;
-                        double d = 0;
-                        if (Tools.ParseNumber(p.Key, ref i, out d) && i == p.Key.Length && (long)d == d && d >= pos0)
-                        {
-                            if (d < pos1)
-                            {
-                                t.data[(int)(d - pos0)] = p.Value;
-                                keysForDelete.Add(p.Key);
-                            }
-                            else if (d < len)
-                            {
-                                ritems.Add(new KeyValuePair<string, JSObject>((d - pos1 + pos0 + addCount).ToString(CultureInfo.InvariantCulture), p.Value));
-                                keysForDelete.Add(p.Key);
-                            }
-                        }
-                    }
-                    for (int i = 0; i < keysForDelete.Count; i++)
-                        this.fields.Remove(keysForDelete[i]);
-                    for (int i = 0; i < ritems.Count; i++)
-                        this.fields[ritems[i].Key] = ritems[i].Value;
-                    for (int i = 0; i < addCount; i++)
-                        this.fields[(pos0 + i).ToString(CultureInfo.InvariantCulture)] = args[i + 2];
-                    pos0 += addCount + ritems.Count;
-                    if (pos0 < 0x7fffffff)
-                    {
-                        lobj.iValue = (int)(pos0);
-                        lobj.valueType = JSObjectType.Int;
-                    }
-                    else
-                    {
-                        lobj.dValue = pos0;
-                        lobj.valueType = JSObjectType.Double;
+                        res.Add(node.value.Clone() as JSObject);
+                        keysToRemove.Add(node.key);
                     }
                 }
-                return t;
+                for (var i = keysToRemove.Count; i-- > 0; )
+                    data.Remove(keysToRemove[i]);
+                _length -= pos1 - pos0;
+
+                return res;
+            }
+            else // кто-то отправил объект с полем length
+            {
+                throw new NotImplementedException();
             }
         }
 
@@ -810,20 +776,6 @@ namespace NiL.JS.Core.BaseTypes
         [DoNotEnumerate]
         public JSObject sort(JSObject args)
         {
-            if (!(((object)this) is Array)) // Да, Array sealed, но тут и не такое возможно.
-            {
-                int l = System.Math.Max(0, Tools.JSObjectToInt32(this.GetMember("length")));
-                var t = new Array(l);
-                for (int i = 0; i < l; i++)
-                {
-                    var val = this.GetMember(i.ToString(CultureInfo.InvariantCulture));
-                    t.data[i] = val;
-                }
-                t.sort(args);
-                for (int i = 0; i < l; i++)
-                    this.fields[i.ToString(CultureInfo.InvariantCulture)] = t.data[i];
-                return this;
-            }
             if (args == null)
                 throw new ArgumentNullException("args");
             var length = args.GetMember("length");
@@ -840,41 +792,78 @@ namespace NiL.JS.Core.BaseTypes
                 args.fields["0"] = first;
                 args.fields["1"] = second;
 
-                /*int undefBlockStart = data.Count;
-                for (int i = 0; i < undefBlockStart; i++)
+                var tt = new BinaryTree<JSObject, List<JSObject>>(new JSComparer(args, first, second, comparer));
+                foreach (var node in data.Nodes)
                 {
-                    if (data[i] == null || data[i].valueType <= JSObjectType.Undefined)
+                    if (node.value.isExist)
                     {
-                        undefBlockStart--;
-                        var t = data[i];
-                        data[i] = data[undefBlockStart];
-                        data[undefBlockStart] = t;
+                        List<JSObject> els = null;
+                        if (!tt.TryGetValue(node.value, out els))
+                            tt[node.value] = els = new List<JSObject>();
+                        els.Add(node.value);
                     }
-                }*/
-
-                data.Sort(new JSComparer(args, first, second, comparer));
+                }
+                data.Clear();
+                var index = 0u;
+                foreach (var node in tt.Nodes)
+                {
+                    for (var i = node.value.Count; i-- > 0; )
+                        data.Add(index++, node.value[i]);
+                }
             }
             else
-                data.Sort((l, r) => string.CompareOrdinal((l ?? "undefined").ToString(), (r ?? "undefined").ToString()));
+            {
+                var tt = new BinaryTree<string, List<JSObject>>();
+                foreach (var node in data.Nodes)
+                {
+                    if (node.value.isExist)
+                    {
+                        List<JSObject> els = null;
+                        var key = node.value.ToString();
+                        if (!tt.TryGetValue(key, out els))
+                            tt[key] = els = new List<JSObject>();
+                        els.Add(node.value);
+                    }
+                }
+                data.Clear();
+                var index = 0u;
+                foreach (var node in tt.Nodes)
+                {
+                    for (var i = node.value.Count; i-- > 0; )
+                        data.Add(index++, node.value[i]);
+                }
+            }
             return this;
         }
 
         [DoNotEnumerate]
         public JSObject unshift(JSObject[] args)
         {
-            data.InsertRange(0, args);
+            if (args == null)
+                throw new ArgumentNullException();
+            foreach (var node in data.Nodes)
+                node.key += (long)args.Length;
+            _length += (long)args.Length;
+            for (var i = 0u; i < args.Length; i++)
+                data[i] = args[i].Clone() as JSObject;
             return length;
         }
 
         [Hidden]
         public override string ToString()
         {
-            if (data.Count == 0)
+            if (_length == 0)
                 return "";
-            var res = (data[0] ?? "").ToString();
-            for (int i = 1; i < data.Count; i++)
-                res += "," + (data[i] ?? "").ToString();
-            return res;
+            var res = new StringBuilder();
+            for (var i = 0u; i < _length; i++)
+            {
+                JSObject t = null;
+                if (i > 0)
+                    res.Append(',');
+                if (data.TryGetValue(i, out t) && t.isExist)
+                    res.Append(t);
+            }
+            return res.ToString();
         }
 
         [CLSCompliant(false)]
@@ -888,10 +877,12 @@ namespace NiL.JS.Core.BaseTypes
 
         protected internal override IEnumerator<string> GetEnumeratorImpl(bool hideNonEnum)
         {
-            for (var i = 0; i < data.Count; i++)
+            if (__proto__ == null)
+                __proto__ = TypeProxy.GetPrototype(this.GetType());
+            foreach (var node in data.Nodes)
             {
-                if (data[i] != null && data[i].isExist && !data[i].attributes.HasFlag(JSObjectAttributesInternal.DoNotEnum))
-                    yield return i.ToString(CultureInfo.InvariantCulture);
+                if (node.value.isExist && (!hideNonEnum || (node.value.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+                    yield return node.key.ToString();
             }
             if (!hideNonEnum)
                 yield return "length";
@@ -908,18 +899,16 @@ namespace NiL.JS.Core.BaseTypes
         [Hidden]
         internal protected override JSObject GetMember(JSObject name, bool create, bool own)
         {
-            int index = 0;
+            long index = 0;
             double dindex = Tools.JSObjectToDouble(name);
             if (!double.IsNaN(dindex) && !double.IsInfinity(dindex))
             {
                 if (dindex >= 0)
                 {
-                    if (dindex > 0x7fffffff)
-                        throw new JSException(TypeProxy.Proxy(new RangeError("Invalid array index")));
-                    if (((index = (int)dindex) == dindex))
+                    if (((index = (long)dindex) == dindex))
                     {
                         create &= (attributes & JSObjectAttributesInternal.Immutable) == 0;
-                        if (data.Count <= index)
+                        if (_length <= index)
                         {
                             if (create)
                             {
@@ -936,10 +925,10 @@ namespace NiL.JS.Core.BaseTypes
                             else
                                 return base.GetMember(name, create, own);
                         }
-                        else if (data[index] == null)
+                        else if (!data.ContainsKey(index))
                         {
                             if (create)
-                                return (data[index] ?? (data[index] = new JSObject() { valueType = JSObjectType.NotExistInObject }));
+                                return data[index] = new JSObject() { valueType = JSObjectType.NotExistInObject };
                             else
                                 return base.GetMember(name, create, own);
                         }
@@ -952,7 +941,11 @@ namespace NiL.JS.Core.BaseTypes
                     }
                 }
             }
-            return base.GetMember(name, create, own);
+            if (__proto__ == null)
+                __proto__ = TypeProxy.GetPrototype(this.GetType());
+            if (attributes.HasFlag(JSObjectAttributesInternal.ProxyPrototype))
+                return __proto__.GetMember(name, create, own);
+            return DefaultFieldGetter(name, create, own);
         }
     }
 }

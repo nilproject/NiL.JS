@@ -9,7 +9,7 @@ namespace NiL.JS
     /// Предоставляет реализацию бинарного дерева поиска со строковым аргументом.
     /// </summary>
     [Serializable]
-    internal class BinaryTree<TKey, TValue> : IDictionary<TKey, TValue> where TKey : IComparable
+    internal class BinaryTree<TKey, TValue> : IDictionary<TKey, TValue>
     {
         private sealed class _Values : ICollection<TValue>
         {
@@ -133,7 +133,7 @@ namespace NiL.JS
         }
 
         [Serializable]
-        protected sealed class Node
+        internal sealed class Node
         {
             public TKey key;
             public TValue value = default(TValue);
@@ -228,6 +228,7 @@ namespace NiL.JS
             }
         }
 
+        private IComparer<TKey> comparer;
         [NonSerialized]
         private long state = 0;
         [NonSerialized]
@@ -246,9 +247,19 @@ namespace NiL.JS
 
         public BinaryTree()
         {
+            if (!typeof(IComparable).IsAssignableFrom(typeof(TKey)))
+                throw new ArgumentException("Compaper not defined.");
             root = null;
             Count = 0;
             state = DateTime.UtcNow.Ticks;
+        }
+
+        public BinaryTree(IComparer<TKey> comparer)
+        {
+            root = null;
+            Count = 0;
+            state = DateTime.UtcNow.Ticks;
+            this.comparer = comparer;
         }
 
         public TValue this[TKey key]
@@ -280,7 +291,7 @@ namespace NiL.JS
                         stack.Clear();
                         do
                         {
-                            var cmp = key.CompareTo(c.key);
+                            var cmp = comparer != null ? comparer.Compare(key, c.key) : (key as IComparable).CompareTo(c.key);
                             if (cmp == 0)
                             {
                                 c.value = value;
@@ -355,7 +366,7 @@ namespace NiL.JS
                     stack.Clear();
                     do
                     {
-                        var cmp = key.CompareTo(c.key);
+                        var cmp = comparer != null ? comparer.Compare(key, c.key) : (key as IComparable).CompareTo(c.key);
                         if (cmp == 0)
                             throw new ArgumentException("Element exists");
                         else if (cmp > 0)
@@ -412,7 +423,7 @@ namespace NiL.JS
                     var c = root;
                     do
                     {
-                        var cmp = key.CompareTo(c.key);
+                        var cmp = comparer != null ? comparer.Compare(key, c.key) : (key as IComparable).CompareTo(c.key);
                         if (cmp == 0)
                         {
                             value = c.value;
@@ -465,7 +476,7 @@ namespace NiL.JS
                 stack.Clear();
                 do
                 {
-                    var cmp = key.CompareTo(c.key);
+                    var cmp = comparer != null ? comparer.Compare(key, c.key) : (key as IComparable).CompareTo(c.key);
                     if (cmp == 0)
                     {
                         if (c.greater == null)
@@ -567,7 +578,7 @@ namespace NiL.JS
                 stack.Clear();
                 do
                 {
-                    var cmp = key.CompareTo(c.key);
+                    var cmp = comparer != null ? comparer.Compare(key, c.key) : (key as IComparable).CompareTo(c.key);
                     if (cmp == 0)
                     {
                         if (!keyValuePair.Value.Equals(c.value))
@@ -669,7 +680,7 @@ namespace NiL.JS
                 array[index++] = kvp;
         }
 
-        protected IEnumerator<KeyValuePair<TKey, TValue>> enumerateReversed(Node node)
+        protected IEnumerator<Node> enumerateReversed(Node node)
         {
             if (node != null)
             {
@@ -693,7 +704,7 @@ namespace NiL.JS
                         if (step[sindex] < 2)
                         {
                             step[sindex] = 2;
-                            yield return new KeyValuePair<TKey, TValue>(stack[sindex].key, stack[sindex].value);
+                            yield return stack[sindex];
                             if (sstate != state)
                                 throw new InvalidOperationException("Коллекция была изменена после создания перечислителя.");
                         }
@@ -711,7 +722,7 @@ namespace NiL.JS
             }
         }
 
-        protected IEnumerator<KeyValuePair<TKey, TValue>> enumerate(Node node)
+        protected IEnumerator<Node> enumerate(Node node)
         {
             if (node != null)
             {
@@ -735,7 +746,7 @@ namespace NiL.JS
                         if (step[sindex] < 2)
                         {
                             step[sindex] = 2;
-                            yield return new KeyValuePair<TKey, TValue>(stack[sindex].key, stack[sindex].value);
+                            yield return stack[sindex];
                             if (sstate != state)
                                 throw new InvalidOperationException("Коллекция была изменена после создания перечислителя.");
                         }
@@ -753,9 +764,76 @@ namespace NiL.JS
             }
         }
 
+        internal IEnumerable<Node> Nodes
+        {
+            get
+            {
+                for (var e = enumerate(root); e.MoveNext(); )
+                    yield return e.Current;
+            }
+        }
+
+        public IEnumerable<KeyValuePair<TKey, TValue>> Reversed
+        {
+            get
+            {
+                for (var e = enumerateReversed(root); e.MoveNext(); )
+                    yield return new KeyValuePair<TKey, TValue>(e.Current.key, e.Current.value);
+            }
+        }
+
+        public IEnumerable<KeyValuePair<TKey, TValue>> NotLess(TKey keyValue)
+        {
+            return NotLess(keyValue, false, 0, int.MaxValue);
+        }
+
+        public IEnumerable<KeyValuePair<TKey, TValue>> NotLess(TKey keyValue, bool reversed)
+        {
+            return NotLess(keyValue, reversed, 0, int.MaxValue);
+        }
+
+        public IEnumerable<KeyValuePair<TKey, TValue>> NotLess(TKey keyValue, bool reversed, long offset)
+        {
+            return NotLess(keyValue, reversed, offset, int.MaxValue);
+        }
+
+        public IEnumerable<KeyValuePair<TKey, TValue>> NotLess(TKey keyValue, bool reversed, long offset, long count)
+        {
+            var c = Root;
+            if (c != null)
+                do
+                {
+                    var cmp = comparer != null ? comparer.Compare(keyValue, c.key) : (keyValue as IComparable).CompareTo(c.key);
+                    if (cmp <= 0)
+                    {
+                        var enmrtr = reversed ? enumerateReversed(c) : enumerate(c);
+                        while (count-- > 0 && enmrtr.MoveNext())
+                        {
+                            if (offset-- > 0)
+                            {
+                                count++;
+                                continue;
+                            }
+                            var crnt = enmrtr.Current;
+                            if ((keyValue as IComparable).CompareTo(crnt.key) <= 0)
+                                yield return new KeyValuePair<TKey, TValue>(crnt.key, crnt.value);
+                        }
+                        break;
+                    }
+                    else if (cmp > 0)
+                    {
+                        c = c.greater;
+                    }
+                    if (c == null)
+                        break;
+                }
+                while (true);
+        }
+
         public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
         {
-            return enumerate(root);
+            for (var e = enumerate(root); e.MoveNext(); )
+                yield return new KeyValuePair<TKey, TValue>(e.Current.key, e.Current.value);
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -800,9 +878,9 @@ namespace NiL.JS
                                 continue;
                             }
                             var crnt = enmrtr.Current;
-                            if (crnt.Key.StartsWith(prefix))
+                            if (crnt.key.StartsWith(prefix))
                             {
-                                yield return crnt;
+                                yield return new KeyValuePair<string, TValue>(crnt.key, crnt.value);
                             }
                         }
                         break;

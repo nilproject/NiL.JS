@@ -18,9 +18,14 @@ namespace NiL.JSTest
             var sw = new Stopwatch();
             var s = new Script(
 @"
-var a = [1,2,3,4]
-for (var i in a)
-    console.log(a[i]);
+
+var a = [];
+Object.defineProperty(a, 4294967295, {
+            value: 100
+        });
+console.log(a.length);
+console.log(a[4294967295]);
+
 ");
             s.Context.AttachModule(typeof(System.Drawing.Point));
             sw.Start();
@@ -218,8 +223,8 @@ for (var i in a)
                     Console.Title = "passed: " + passed + ". failed: " + failed;
                     lastUpdate = Environment.TickCount;
                 }
-                if (failed == 1)
-                    break;
+                //if (failed == 1)
+                //    break;
             }
             sw.Stop();
             _("passed: " + passed + ". (" + (passed * 100 / fls.Length) + "%)");

@@ -61,7 +61,7 @@ namespace NiL.JS.Statements
         internal override JSObject Invoke(Context context)
         {
             var res = new NiL.JS.Core.BaseTypes.Array(elements.Length);
-            for (int i = 0; i < elements.Length; i++)
+            for (uint i = 0; i < elements.Length; i++)
             {
                 if (elements[i] != null)
                     res.data[i] = elements[i].Invoke(context).Clone() as JSObject;

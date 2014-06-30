@@ -41,6 +41,7 @@ namespace NiL.JS.Core
                             {
                                 _prototypeInstance.valueType = (JSObjectType)System.Math.Max((int)_prototypeInstance.valueType, (int)(_prototypeInstance.oValue as JSObject).valueType);
                                 (_prototypeInstance.oValue as JSObject).fields = fields;
+                                (_prototypeInstance.oValue as JSObject).attributes |= JSObjectAttributesInternal.ProxyPrototype;
                             }
                         }
                     }
@@ -288,7 +289,7 @@ namespace NiL.JS.Core
             members.TryGetValue(name, out m);
             if (m == null || m.Count == 0)
             {
-                r = DefaultFieldGetter(name, create, own);
+                r = DefaultFieldGetter(nameObj, create, own);
                 return r;
             }
             if (m.Count > 1)

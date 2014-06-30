@@ -1,8 +1,12 @@
-﻿var str = 'ABC';
-var strObj = new String('ABC');
+﻿console.log((function () {
+    var arrObj = [];
 
-////////////////////////////////////////////////////////////
-// CHECK#1
-if (str.constructor !== strObj.constructor) {
-    $ERROR('#1: \'ABC\'.constructor === new String(\'ABC\').constructor');
-}
+    Object.defineProperty(arrObj, "0", { value: -0 });
+
+    try {
+        Object.defineProperty(arrObj, "0", { value: +0 });
+        return false;
+    } catch (e) {
+        return e instanceof TypeError && dataPropertyAttributesAreCorrect(arrObj, "0", -0, false, false, false);
+    }
+})());

@@ -932,7 +932,7 @@ namespace NiL.JS.Core.BaseTypes
                         attributes = JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.DoNotDelete
                     };
                     _prototype.oValue = _prototype;
-                    var ctor = _prototype.GetMember("constructor", true, true);
+                    var ctor = _prototype.DefineMember("constructor");
                     ctor.attributes = JSObjectAttributesInternal.DoNotEnum;
                     ctor.Assign(this);
                 }

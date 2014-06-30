@@ -39,8 +39,6 @@ namespace NiL.JS.Core
 
         internal protected override JSObject GetMember(JSObject name, bool fast, bool own)
         {
-            if (__proto__ == null)
-                __proto__ = TypeProxy.GetPrototype(this.GetType());
             return DefaultFieldGetter(name.ToString(), fast, own);
         }
 

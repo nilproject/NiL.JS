@@ -204,11 +204,11 @@ namespace NiL.JS.Core.BaseTypes
             }
             var res = new Array(m.Groups.Count);
             for (int i = 0; i < m.Groups.Count; i++)
-                res.data[i] = m.Groups[i].Success ? (JSObject)m.Groups[i].Value : null;
+                res.data[(uint)i] = m.Groups[i].Success ? (JSObject)m.Groups[i].Value : null;
             if (_global)
                 lIndex.iValue = m.Index + m.Length;
-            res.GetMember("index", true, true).Assign(m.Index);
-            res.GetMember("input", true, true).Assign(input);
+            res.DefineMember("index").Assign(m.Index);
+            res.DefineMember("input").Assign(input);
             return res;
         }
 

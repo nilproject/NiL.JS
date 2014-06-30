@@ -74,15 +74,7 @@ namespace NiL.JS.Core.BaseTypes
                     notExist.valueType = JSObjectType.NotExistInObject;
                     return JSObject.notExist;
                 }
-                var cc = Context.CurrentContext;
-                if (cc == null)
-                    return new JSObject(false) { valueType = JSObjectType.String, oValue = (oValue as string)[pos].ToString(), attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.DoNotDelete };
-                else
-                {
-                    var res = cc.wrap((oValue as string)[pos].ToString());
-                    res.attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.DoNotDelete;
-                    return res;
-                }
+                return new JSObject(false) { valueType = JSObjectType.String, oValue = (oValue as string)[pos].ToString(), attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.DoNotDelete };
             }
         }
 
@@ -221,7 +213,7 @@ namespace NiL.JS.Core.BaseTypes
                     var groups = regex.regEx.Match(oValue as string ?? this.ToString()).Groups;
                     var res = new Array(groups.Count);
                     for (int i = 0; i < groups.Count; i++)
-                        res.data[i] = groups[i].Value;
+                        res.data[(uint)i] = groups[i].Value;
                     return res;
                 }
             }
@@ -230,7 +222,7 @@ namespace NiL.JS.Core.BaseTypes
                 var match = new System.Text.RegularExpressions.Regex((a0.valueType > JSObjectType.Undefined ? (object)a0 : "").ToString(), System.Text.RegularExpressions.RegexOptions.ECMAScript).Match(oValue as string ?? this.ToString());
                 var res = new Array(match.Groups.Count);
                 for (int i = 0; i < match.Groups.Count; i++)
-                    res.data[i] = match.Groups[i].Value;
+                    res.data[(uint)i] = match.Groups[i].Value;
                 res.GetMember("index", true, true).Assign(match.Index);
                 res.GetMember("input", true, true).Assign(this);
                 return res;

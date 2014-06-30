@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using NiL.JS.Core.BaseTypes;
 using NiL.JS.Core.Modules;
+using NiL.JS.Expressions;
+using NiL.JS.Statements;
 
 namespace NiL.JS.Core
 {
@@ -440,37 +442,81 @@ namespace NiL.JS.Core
             {
                 if (memberName == "length")
                 {
-                    if ((obj.oValue as Function[])[0] != null)
+                    if (value.isExist)
                     {
-                        if (value.isExist)
+                        if ((obj.oValue as Function[])[0] != null)
                         {
                             var nlenD = Tools.JSObjectToDouble(value);
-                            var nlen = (int)nlenD;
+                            var nlen = (uint)nlenD;
                             if (double.IsNaN(nlenD) || double.IsInfinity(nlenD) || nlen != nlenD)
                                 throw new JSException(new RangeError("Invalid array length"));
                             if (!(target as BaseTypes.Array).setLength(nlen))
                                 throw new JSException(new TypeError("Unable to reduce length because not configurable elements"));
                         }
-                        if (writable.isExist && !(bool)writable)
-                        {
-                            (obj.oValue as Function[])[0] = null;
-                            obj.attributes |= JSObjectAttributesInternal.ReadOnly;
-                        }
+                        else if (!StrictEqual.Check((obj.oValue as Function[])[1].Invoke(target, null), new ImmidateValueStatement(value), null))
+                            throw new JSException(new TypeError("Cannot redefine property length."));
+                        value = notExist; // длина всегда неконфигурируема, поэтому код ниже пойдёт в обход,
+                        // а там нужные проверки, которые, для экономии кода, сюда переносить не стал
                     }
-                    else
-                        throw new JSException(new TypeError("Cannot redefine property length."));
-                    value = notExist; // длина всегда неконфигурируема, поэтому код ниже пойдёт в обход,
-                    // а там нужные проверки, которые, для экономии кода, сюда переносить не стал
+                    if (writable.isExist && !(bool)writable)
+                    {
+                        (obj.oValue as Function[])[0] = null;
+                        obj.attributes |= JSObjectAttributesInternal.ReadOnly;
+                    }
                 }
             }
 
             var newProp = obj.valueType < JSObjectType.Undefined;
             var config = (obj.attributes & JSObjectAttributesInternal.NotConfigurable) == 0 || newProp;
+
+            if (!config)
+            {
+                if ((obj.valueType != JSObjectType.Property || (obj.attributes.HasFlag(JSObjectAttributesInternal.Field))) && (set.isExist || get.isExist))
+                    throw new JSException(new TypeError("Cannot redefine not configurable property from immediate value to accessor property"));
+                if (obj.valueType == JSObjectType.Property && !obj.attributes.HasFlag(JSObjectAttributesInternal.Field) && value.isExist)
+                    throw new JSException(new TypeError("Cannot redefine not configurable property from accessor property to immediate value"));
+                if (obj.valueType == JSObjectType.Property && !obj.attributes.HasFlag(JSObjectAttributesInternal.Field) && set.isExist && (set.valueType == JSObjectType.Function || (obj.oValue as Function[])[0] != null))
+                    throw new JSException(new TypeError("Cannot redefine setter of not configurable property."));
+                if (obj.valueType == JSObjectType.Property && !obj.attributes.HasFlag(JSObjectAttributesInternal.Field) && get.isExist && (get.valueType == JSObjectType.Function || (obj.oValue as Function[])[1] != null))
+                    throw new JSException(new TypeError("Cannot redefine getter of not configurable property."));
+            }
+
+            if (value.isExist)
+            {
+                if (!config
+                    && (obj.attributes & JSObjectAttributesInternal.ReadOnly) != 0
+                    && !((StrictEqual.Check(obj, new ImmidateValueStatement(value), null) && ((obj.valueType == JSObjectType.Undefined && value.valueType == JSObjectType.Undefined) || !obj.isNumber || !value.isNumber || (1.0 / Tools.JSObjectToDouble(obj) == 1.0 / Tools.JSObjectToDouble(value))))
+                        || (obj.valueType == JSObjectType.Double && value.valueType == JSObjectType.Double && double.IsNaN(obj.dValue) && double.IsNaN(value.dValue))))
+                    throw new JSException(new TypeError("Cannot change value of not configurable not writable peoperty."));
+                obj.valueType = JSObjectType.Undefined; // там могло быть Property, на которое мы ругаемся
+                var atr = obj.attributes;
+                obj.attributes = 0;
+                obj.Assign(value);
+                obj.attributes = atr;
+            }
+            else if (get.valueType != JSObjectType.NotExistInObject
+                  || set.valueType != JSObjectType.NotExistInObject)
+            {
+                Function setter = null, getter = null;
+                if (obj.valueType == JSObjectType.Property)
+                {
+                    setter = (obj.oValue as Function[])[0];
+                    getter = (obj.oValue as Function[])[1];
+                }
+                obj.valueType = JSObjectType.Property;
+                obj.oValue = new Function[]
+                {
+                    set.isExist ? set.oValue as Function : setter,
+                    get.isExist ? get.oValue as Function : getter
+                };
+            }
+            else if (newProp)
+                obj.valueType = JSObjectType.Undefined;
+
             if (config)
             {
                 if (newProp)
                 {
-                    obj.valueType = JSObjectType.Undefined;
                     obj.attributes |=
                         JSObjectAttributesInternal.DoNotEnum
                         | JSObjectAttributesInternal.DoNotDelete
@@ -491,34 +537,7 @@ namespace NiL.JS.Core
                     obj.attributes &= ~JSObjectAttributesInternal.DoNotEnum;
                 if ((bool)configurable)
                     obj.attributes &= ~(JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.DoNotDelete);
-
-                if (value.isExist)
-                {
-                    obj.valueType = JSObjectType.Undefined; // там могло быть Property, на которое мы ругаемся
-                    var atr = obj.attributes;
-                    obj.attributes = 0;
-                    obj.Assign(value);
-                    obj.attributes = atr;
-                    if ((bool)writable)
-                        obj.attributes &= ~JSObjectAttributesInternal.ReadOnly;
-                }
-                else if (get.valueType != JSObjectType.NotExistInObject
-                      || set.valueType != JSObjectType.NotExistInObject)
-                {
-                    Function setter = null, getter = null;
-                    if (obj.valueType == JSObjectType.Property)
-                    {
-                        setter = (obj.oValue as Function[])[0];
-                        getter = (obj.oValue as Function[])[1];
-                    }
-                    obj.valueType = JSObjectType.Property;
-                    obj.oValue = new Function[]
-                    {
-                        set.isExist ? set.oValue as Function : setter,
-                        get.isExist ? get.oValue as Function : getter
-                    };
-                }
-                else if ((bool)writable) // На тот случай, когда в дескрипторе не указано ни значение, ни геттер/сеттер
+                if ((bool)writable)
                     obj.attributes &= ~JSObjectAttributesInternal.ReadOnly;
             }
             else
@@ -526,17 +545,11 @@ namespace NiL.JS.Core
                 if (configurable.isExist && (bool)configurable)
                     throw new JSException(new TypeError("Cannot set configurate attribute to true."));
 
-                if ((obj.attributes & JSObjectAttributesInternal.DoNotEnum) != 0 == (bool)enumerable)
+                if (enumerable.isExist && (obj.attributes & JSObjectAttributesInternal.DoNotEnum) != 0 == (bool)enumerable)
                     throw new JSException(TypeProxy.Proxy(new TypeError("Cannot change enumerable attribute for non configurable property.")));
 
-                if ((obj.valueType != JSObjectType.Property || (obj.attributes.HasFlag(JSObjectAttributesInternal.Field)))
-                    && (set.isExist || get.isExist))
-                    throw new JSException(new TypeError("Cannot redefine not configurable property from immediate value to accessor property"));
-                if (obj.valueType == JSObjectType.Property && !obj.attributes.HasFlag(JSObjectAttributesInternal.Field) && value.isExist)
-                    throw new JSException(new TypeError("Cannot redefine not configurable property from accessor property to immediate valuue"));
-
-                if (value.isExist)
-                    obj.Assign(value);
+                if (writable.isExist && (obj.attributes & JSObjectAttributesInternal.ReadOnly) != 0 == (bool)writable)
+                    throw new JSException(TypeProxy.Proxy(new TypeError("Cannot change writable attribute for non configurable property.")));
             }
             return true;
         }
@@ -555,9 +568,8 @@ namespace NiL.JS.Core
             if (obj is BaseTypes.Array)
             {
                 var arr = obj as BaseTypes.Array;
-                for (var i = arr.data.Count; i-- > 0; )
-                    if (arr.data[i] != null)
-                        arr.data[i].attributes |= JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum;
+                foreach (var element in arr.data)
+                    element.Value.attributes |= JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum;
             }
             else if (obj.fields != null)
                 foreach (var f in obj.fields)
@@ -602,6 +614,13 @@ namespace NiL.JS.Core
         {
             var cc = Context.CurrentContext;
             return GetMember(cc != null ? cc.wrap(name) : (JSObject)name, true, true);
+        }
+
+        [Hidden]
+        internal protected JSObject GetMember(string name, bool createMember, bool own)
+        {
+            var cc = Context.CurrentContext;
+            return GetMember(cc != null ? cc.wrap(name) : (JSObject)name, createMember, own);
         }
 
         [Hidden]
@@ -665,7 +684,7 @@ namespace NiL.JS.Core
                     {
                         if (oValue == this)
                             break;
-                        if ((attributes & JSObjectAttributesInternal.ProxyPrototype) != 0)
+                        if ((attributes & JSObjectAttributesInternal.ProxyPrototype) != 0 && !(oValue is BaseTypes.Array))
                             return __proto__.GetMember(name, createMember, own);
                         if (oValue != this && (oValue is JSObject))
                             return (oValue as JSObject).GetMember(name, createMember, own);
@@ -1162,11 +1181,17 @@ namespace NiL.JS.Core
             if (obj is BaseTypes.Array)
             {
                 var arr = obj as BaseTypes.Array;
-                for (var i = arr.data.Count; i-- > 0; )
+                foreach (var node in arr.data.Nodes)
+                {
+                    if (node.value.valueType >= JSObjectType.Object && node.value.oValue != null
+                        && (node.value.attributes & JSObjectAttributesInternal.NotConfigurable) == 0)
+                        return false;
+                }
+                /*for (var i = arr.data.Count; i-- > 0; )
                     if (arr.data[i] != null
                         && arr.data[i].valueType >= JSObjectType.Object && arr.data[i].oValue != null
                         && (arr.data[i].attributes & JSObjectAttributesInternal.NotConfigurable) == 0)
-                        return false;
+                        return false;*/
             }
             if (obj.fields != null)
                 foreach (var f in obj.fields)
@@ -1207,12 +1232,12 @@ namespace NiL.JS.Core
             if (obj is BaseTypes.Array)
             {
                 var arr = obj as BaseTypes.Array;
-                for (var i = arr.data.Count; i-- > 0; )
-                    if (arr.data[i] != null
-                        &&
-                        ((arr.data[i].attributes & JSObjectAttributesInternal.NotConfigurable) == 0
-                                || (arr.data[i].valueType != JSObjectType.Property && (arr.data[i].attributes & JSObjectAttributesInternal.ReadOnly) == 0)))
+                foreach (var node in arr.data.Nodes)
+                {
+                    if (((node.value.attributes & JSObjectAttributesInternal.NotConfigurable) == 0
+                        || (node.value.valueType != JSObjectType.Property && (node.value.attributes & JSObjectAttributesInternal.ReadOnly) == 0)))
                         return false;
+                }
             }
             else if (obj.fields != null)
                 foreach (var f in obj.fields)
@@ -1401,6 +1426,16 @@ namespace NiL.JS.Core
             [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
             get { return valueType > JSObjectType.Undefined; }
+        }
+
+        [Hidden]
+        public bool isNumber
+        {
+            [Hidden]
+#if INLINE
+            [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+#endif
+            get { return valueType == JSObjectType.Int || valueType == JSObjectType.Double; }
         }
     }
 }
