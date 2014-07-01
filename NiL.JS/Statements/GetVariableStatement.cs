@@ -25,9 +25,7 @@ namespace NiL.JS.Statements
         internal override JSObject InvokeForAssing(Context context)
         {
             if (context.strict)
-            {
                 return Tools.RaiseIfNotExist(descriptor.Get(context, false, functionDepth), descriptor.Name);
-            }
             return descriptor.Get(context, true, functionDepth);
         }
 
