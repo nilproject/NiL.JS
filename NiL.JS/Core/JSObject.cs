@@ -435,6 +435,11 @@ namespace NiL.JS.Core
                 throw new JSException(TypeProxy.Proxy(new TypeError("Setter mast be a function.")));
             JSObject obj = null;
             obj = target.DefineMember(memberName);
+            if ((obj.attributes & JSObjectAttributesInternal.Argument) != 0 && (set.isExist || get.isExist))
+            {
+                target.fields[memberName] = obj = obj.Clone() as JSObject;
+                obj.attributes &= ~JSObjectAttributesInternal.Argument;
+            }
             if ((obj.attributes & JSObjectAttributesInternal.SystemObject) != 0)
                 throw new JSException(TypeProxy.Proxy(new TypeError("Can not define property \"" + memberName + "\". Object is immutable.")));
 
@@ -471,13 +476,28 @@ namespace NiL.JS.Core
 
             if (!config)
             {
+                if (enumerable.isExist && (obj.attributes & JSObjectAttributesInternal.DoNotEnum) != 0 == (bool)enumerable)
+                    throw new JSException(TypeProxy.Proxy(new TypeError("Cannot change enumerable attribute for non configurable property.")));
+
+                if (writable.isExist && (obj.attributes & JSObjectAttributesInternal.ReadOnly) != 0 == (bool)writable)
+                    throw new JSException(TypeProxy.Proxy(new TypeError("Cannot change writable attribute for non configurable property.")));
+
+                if (configurable.isExist && (bool)configurable)
+                    throw new JSException(new TypeError("Cannot set configurate attribute to true."));
+
                 if ((obj.valueType != JSObjectType.Property || (obj.attributes.HasFlag(JSObjectAttributesInternal.Field))) && (set.isExist || get.isExist))
                     throw new JSException(new TypeError("Cannot redefine not configurable property from immediate value to accessor property"));
                 if (obj.valueType == JSObjectType.Property && !obj.attributes.HasFlag(JSObjectAttributesInternal.Field) && value.isExist)
                     throw new JSException(new TypeError("Cannot redefine not configurable property from accessor property to immediate value"));
-                if (obj.valueType == JSObjectType.Property && !obj.attributes.HasFlag(JSObjectAttributesInternal.Field) && set.isExist && (set.valueType == JSObjectType.Function || (obj.oValue as Function[])[0] != null))
+                if (obj.valueType == JSObjectType.Property && !obj.attributes.HasFlag(JSObjectAttributesInternal.Field) 
+                    && set.isExist
+                    && (((obj.oValue as Function[])[0] != null && (obj.oValue as Function[])[0].oValue != set.oValue)
+                        || ((obj.oValue as Function[])[0] == null && set.isDefinded)))
                     throw new JSException(new TypeError("Cannot redefine setter of not configurable property."));
-                if (obj.valueType == JSObjectType.Property && !obj.attributes.HasFlag(JSObjectAttributesInternal.Field) && get.isExist && (get.valueType == JSObjectType.Function || (obj.oValue as Function[])[1] != null))
+                if (obj.valueType == JSObjectType.Property && !obj.attributes.HasFlag(JSObjectAttributesInternal.Field)
+                    && get.isExist
+                    && (((obj.oValue as Function[])[1] != null && (obj.oValue as Function[])[1].oValue != get.oValue)
+                        || ((obj.oValue as Function[])[1] == null && get.isDefinded)))
                     throw new JSException(new TypeError("Cannot redefine getter of not configurable property."));
             }
 
@@ -539,17 +559,6 @@ namespace NiL.JS.Core
                     obj.attributes &= ~(JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.DoNotDelete);
                 if ((bool)writable)
                     obj.attributes &= ~JSObjectAttributesInternal.ReadOnly;
-            }
-            else
-            {
-                if (configurable.isExist && (bool)configurable)
-                    throw new JSException(new TypeError("Cannot set configurate attribute to true."));
-
-                if (enumerable.isExist && (obj.attributes & JSObjectAttributesInternal.DoNotEnum) != 0 == (bool)enumerable)
-                    throw new JSException(TypeProxy.Proxy(new TypeError("Cannot change enumerable attribute for non configurable property.")));
-
-                if (writable.isExist && (obj.attributes & JSObjectAttributesInternal.ReadOnly) != 0 == (bool)writable)
-                    throw new JSException(TypeProxy.Proxy(new TypeError("Cannot change writable attribute for non configurable property.")));
             }
             return true;
         }

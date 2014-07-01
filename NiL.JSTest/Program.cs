@@ -37,7 +37,7 @@ console.log(a[4294967295]);
         static void Main(string[] args)
         {
             typeof(System.Windows.Forms.Button).GetType();
-            int mode = 0
+            int mode = 1
                 ;
             switch (mode)
             {

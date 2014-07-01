@@ -1,12 +1,13 @@
 ﻿console.log((function () {
-    var arrObj = [];
-
-    Object.defineProperty(arrObj, "0", { value: -0 });
-
-    try {
-        Object.defineProperty(arrObj, "0", { value: +0 });
-        return false;
-    } catch (e) {
-        return e instanceof TypeError && dataPropertyAttributesAreCorrect(arrObj, "0", -0, false, false, false);
-    }
+    return (function (a, b, c) {
+        Object.defineProperty(arguments, "0", {
+            value: 20,
+            writable: false,
+            enumerable: false,
+            configurable: false
+        });
+        var verifyFormal = a === 20;
+        //return Object.getOwnPropertyDescriptor(arguments, "0");
+        return dataPropertyAttributesAreCorrect(arguments, "0", 20, false, false, false) && verifyFormal;
+    }(0, 1, 2));
 })());
