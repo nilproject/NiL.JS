@@ -801,10 +801,10 @@ namespace NiL.JS.Core
 #if INLINE
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
-        internal static JSObject RaiseIfNotExist(JSObject obj)
+        internal static JSObject RaiseIfNotExist(JSObject obj, object name)
         {
             if (obj != null && obj.valueType == JSObjectType.NotExist)
-                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable \"" + obj.lastRequestedName + "\" is not defined.")));
+                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable \"" + name + "\" is not defined.")));
             return obj;
         }
 

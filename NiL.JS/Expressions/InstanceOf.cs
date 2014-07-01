@@ -17,8 +17,8 @@ namespace NiL.JS.Expressions
             lock (this)
             {
                 var a = tempContainer;
-                a.Assign(Tools.RaiseIfNotExist(first.Invoke(context)));
-                var c = Tools.RaiseIfNotExist(second.Invoke(context));
+                a.Assign(first.Invoke(context));
+                var c = second.Invoke(context);
                 if (c.valueType != JSObjectType.Function)
                     throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError("Right-hand value of instanceof is not function.")));
                 c = c.GetMember("prototype");

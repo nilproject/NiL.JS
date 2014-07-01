@@ -37,7 +37,7 @@ namespace NiL.JS.Expressions
         {
             lock (this)
             {
-                var val = Tools.RaiseIfNotExist((first ?? second).InvokeForAssing(context));
+                var val = Tools.RaiseIfNotExist((first ?? second).InvokeForAssing(context), first ?? second);
                 if (context.strict && (val.attributes & JSObjectAttributesInternal.ReadOnly) != 0)
                     throw new JSException(new TypeError("Can not incriment readonly \"" + (first ?? second) + "\""));
                 switch (val.valueType)

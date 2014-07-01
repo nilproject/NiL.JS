@@ -64,7 +64,10 @@ namespace NiL.JS.Expressions
             if (temp.valueType != JSObjectType.Function && !(temp.valueType == JSObjectType.Object && temp.oValue is Function))
                 throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError(first + " is not callable")));
             func = temp.oValue as Function;
-            func.lastRequestedName = temp.lastRequestedName;
+            if (temp.attributes.HasFlag(JSObjectAttributesInternal.Eval))
+                func.attributes |= JSObjectAttributesInternal.Eval;
+            else
+                func.attributes &= ~JSObjectAttributesInternal.Eval;
 
             var oldCaller = func._caller;
             func._caller = context.caller;

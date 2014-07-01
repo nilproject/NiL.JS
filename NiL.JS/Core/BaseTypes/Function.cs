@@ -700,7 +700,7 @@ namespace NiL.JS.Core.BaseTypes
             [Hidden]
             set { _prototype.Assign(value["0"]); }
         }
-        private JSObject _arguments;
+        internal JSObject _arguments;
         /// <summary>
         /// Объект, содержащий параметры вызова функции либо null если в данный момент функция не выполняется.
         /// </summary>
@@ -868,6 +868,7 @@ namespace NiL.JS.Core.BaseTypes
                     t.attributes |= JSObjectAttributesInternal.Argument;
                     if (body.strict)
                         t = t.Clone() as JSObject;
+                    t.attributes |= JSObjectAttributesInternal.DoNotDelete;
                     internalContext.fields[creator.parameters[i].Name] = t;
                 }
                 for (; i < creator.parameters.Length; i++)

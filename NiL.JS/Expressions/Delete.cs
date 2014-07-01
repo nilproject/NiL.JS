@@ -55,25 +55,20 @@ namespace NiL.JS.Expressions
                 tempContainer.valueType = JSObjectType.Bool;
                 if (temp.valueType < JSObjectType.Undefined)
                     tempContainer.iValue = 1;
-                else if ((temp.attributes & JSObjectAttributesInternal.Argument) != 0)
+                else if ((temp.attributes & JSObjectAttributesInternal.Argument) != 0
+                    && first is SafeMemberGetter
+                    && context.caller.oValue is Function
+                    && (context.caller.oValue as Function)._arguments == context.objectSource)
                 {
-                    if (first is SafeMemberGetter)
+                    tempContainer.iValue = 1;
+                    var args = context.objectSource;
+                    foreach (var a in args.fields)
                     {
-                        tempContainer.iValue = 1;
-                        var args = context.objectSource;
-                        foreach (var a in args.fields)
+                        if (a.Value == temp)
                         {
-                            if (a.Value == temp)
-                            {
-                                args.fields.Remove(a.Key);
-                                return tempContainer;
-                            }
+                            args.fields.Remove(a.Key);
+                            return tempContainer;
                         }
-                    }
-                    else
-                    {
-                        tempContainer.iValue = 0;
-                        return tempContainer;
                     }
                 }
                 else if ((temp.attributes & JSObjectAttributesInternal.DoNotDelete) == 0)

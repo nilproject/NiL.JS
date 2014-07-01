@@ -39,7 +39,7 @@ namespace NiL.JS.Expressions
                 if (field.valueType == JSObjectType.Property)
                 {
                     var fieldSource = context.objectSource;
-                    setterArg.Assign(Tools.RaiseIfNotExist(second.Invoke(context)));
+                    setterArg.Assign(second.Invoke(context));
                     var setter = (field.oValue as NiL.JS.Core.BaseTypes.Function[])[0];
                     if (setter != null)
                         setter.Invoke(fieldSource, setterArgs);

@@ -46,6 +46,10 @@ namespace NiL.JS.Core
         /// </summary>
         Field = 1 << 19,
         /// <summary>
+        /// Функция eval()
+        /// </summary>
+        Eval = 1 << 20,
+        /// <summary>
         /// Аттрибуты, переносимые при присваивании значения.
         /// </summary>
         PrivateAttributes = Immutable | ProxyPrototype | Field
@@ -97,8 +101,6 @@ namespace NiL.JS.Core
         [Hidden]
         internal IDictionary<string, JSObject> fields;
 
-        [Hidden]
-        internal string lastRequestedName;
         [Hidden]
         internal JSObjectType valueType;
         [Hidden]
@@ -783,7 +785,6 @@ namespace NiL.JS.Core
                             }
                             res = new JSObject()
                             {
-                                lastRequestedName = name,
                                 valueType = JSObjectType.NotExistInObject
                             };
                             if (fields == null)
@@ -796,15 +797,12 @@ namespace NiL.JS.Core
                                 && (res.valueType != JSObjectType.Property || own))
                             {
                                 var t = res.Clone() as JSObject;
-                                t.lastRequestedName = name;
                                 if (fields == null)
                                     fields = new Dictionary<string, JSObject>();
                                 fields[name] = t;
                                 res = t;
                             }
                         }
-                        else
-                            res.lastRequestedName = name;
                         if (res.valueType == JSObjectType.NotExist)
                             res.valueType = JSObjectType.NotExistInObject;
                         return res;
