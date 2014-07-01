@@ -15,12 +15,12 @@ namespace NiL.JS.Expressions
 
         internal override JSObject Invoke(Context context)
         {
-            var fn = Tools.RaiseIfNotExist(first.Invoke(context));
+            var fn = first.Invoke(context);
             var oassc = fn.assignCallback;
             fn.assignCallback = (sender) => { fn = fn.Clone() as JSObject; };
             try
             {
-                var source = Tools.RaiseIfNotExist(second.Invoke(context));
+                var source = second.Invoke(context);
                 if (source.valueType < JSObjectType.Object)
                     throw new JSException(TypeProxy.Proxy(new TypeError("Right-hand value of instanceof is not object.")));
                 var t = source.GetMember(fn.ToString());

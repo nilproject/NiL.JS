@@ -87,6 +87,7 @@ namespace NiL.JS.Core
 
                 #region Base Function
                 globalContext.DefineVariable("eval").Assign(new EvalFunction());
+                globalContext.fields["eval"].attributes |= JSObjectAttributesInternal.Eval;
                 globalContext.DefineVariable("isNaN").Assign(new ExternalFunction(GlobalFunctions.isNaN));
                 globalContext.DefineVariable("unescape").Assign(new ExternalFunction(GlobalFunctions.unescape));
                 globalContext.DefineVariable("escape").Assign(new ExternalFunction(GlobalFunctions.escape));
@@ -330,7 +331,6 @@ namespace NiL.JS.Core
                 if (res.valueType < JSObjectType.Undefined)
                     res.valueType = JSObjectType.Undefined;
             }
-            res.lastRequestedName = name;
             return res;
         }
 
@@ -370,7 +370,6 @@ namespace NiL.JS.Core
             }
             if (res.valueType == JSObjectType.NotExistInObject)
                 res.valueType = JSObjectType.NotExist;
-            res.lastRequestedName = name;
             return res;
         }
 
@@ -526,6 +525,7 @@ namespace NiL.JS.Core
 #if INLINE
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
+        [CLSCompliant(false)]
         public JSObject wrap(sbyte value)
         {
             tempContainer.valueType = JSObjectType.Int;
@@ -553,6 +553,10 @@ namespace NiL.JS.Core
             return tempContainer;
         }
 
+#if INLINE
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+#endif
+        [CLSCompliant(false)]
         public JSObject wrap(ushort value)
         {
             tempContainer.valueType = JSObjectType.Int;
@@ -573,6 +577,7 @@ namespace NiL.JS.Core
 #if INLINE
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
+        [CLSCompliant(false)]
         public JSObject wrap(uint value)
         {
             if (value <= int.MaxValue)
@@ -611,6 +616,7 @@ namespace NiL.JS.Core
 #if INLINE
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
+        [CLSCompliant(false)]
         public JSObject wrap(ulong value)
         {
             if (value <= int.MaxValue)
