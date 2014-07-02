@@ -707,7 +707,17 @@ namespace NiL.JS.Core
                         if ((attributes & JSObjectAttributesInternal.ProxyPrototype) != 0 && !(oValue is BaseTypes.Array))
                             return __proto__.GetMember(name, createMember, own);
                         if (oValue != this && (oValue is JSObject))
-                            return (oValue as JSObject).GetMember(name, createMember, own);
+                        {
+                            try
+                            {
+                                return (oValue as JSObject).GetMember(name, createMember, own);
+                            }
+                            finally
+                            {
+                                if (fields == null)
+                                    fields = (oValue as JSObject).fields;
+                            }
+                        }
                         if (oValue == null)
                             throw new JSException(TypeProxy.Proxy(new TypeError("Can't get property \"" + name + "\" of \"null\"")));
                         break;
@@ -1227,8 +1237,9 @@ namespace NiL.JS.Core
                 throw new JSException(new TypeError("Object.seal called on null."));
             obj.attributes |= JSObjectAttributesInternal.Immutable;
             (obj.oValue as JSObject ?? obj).attributes |= JSObjectAttributesInternal.Immutable;
-            foreach (var f in obj.fields)
-                f.Value.attributes |= JSObjectAttributesInternal.NotConfigurable;
+            if (obj.fields != null)
+                foreach (var f in obj.fields)
+                    f.Value.attributes |= JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.DoNotDelete;
             return obj;
         }
 
@@ -1240,7 +1251,9 @@ namespace NiL.JS.Core
                 throw new JSException(new TypeError("Object.isFrozen called on non-object."));
             if (obj.oValue == null)
                 throw new JSException(new TypeError("Object.isFrozen called on null."));
-            if (((obj = obj.oValue as JSObject ?? obj).attributes & JSObjectAttributesInternal.Immutable) == 0)
+            if (obj.oValue is JSObject && (obj.oValue as JSObject).valueType >= JSObjectType.Object)
+                obj = obj.oValue as JSObject;
+            if ((obj.attributes & JSObjectAttributesInternal.Immutable) == 0)
                 return false;
             if (obj is TypeProxy)
                 return true;

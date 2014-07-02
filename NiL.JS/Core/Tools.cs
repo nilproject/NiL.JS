@@ -335,40 +335,40 @@ namespace NiL.JS.Core
             return d.ToString("0.##########", System.Globalization.CultureInfo.InvariantCulture);
         }
 
-        internal static bool ParseNumber(string code, out double value, int radix)
+        public static bool ParseNumber(string code, out double value, int radix)
         {
             int index = 0;
             return ParseNumber(code, ref index, out value, radix, ParseNumberOptions.Default);
         }
 
-        internal static bool ParseNumber(string code, out double value, ParseNumberOptions options)
+        public static bool ParseNumber(string code, out double value, ParseNumberOptions options)
         {
             int index = 0;
             return ParseNumber(code, ref index, out value, 0, options);
         }
 
-        internal static bool ParseNumber(string code, out double value, int radix, ParseNumberOptions options)
+        public static bool ParseNumber(string code, out double value, int radix, ParseNumberOptions options)
         {
             int index = 0;
             return ParseNumber(code, ref index, out value, radix, options);
         }
 
-        internal static bool ParseNumber(string code, ref int index, out double value)
+        public static bool ParseNumber(string code, ref int index, out double value)
         {
             return ParseNumber(code, ref index, out value, 0, ParseNumberOptions.Default);
         }
 
-        internal static bool ParseNumber(string code, int index, out double value, ParseNumberOptions options)
+        public static bool ParseNumber(string code, int index, out double value, ParseNumberOptions options)
         {
             return ParseNumber(code, ref index, out value, 0, options);
         }
 
-        private static bool isDigit(char c)
+        public static bool isDigit(char c)
         {
             return c >= '0' && c <= '9';
         }
 
-        internal static bool ParseNumber(string code, ref int index, out double value, int radix, ParseNumberOptions options)
+        public static bool ParseNumber(string code, ref int index, out double value, int radix, ParseNumberOptions options)
         {
             bool raiseOctal = (options & ParseNumberOptions.RaiseIfOctal) != 0;
             bool processOctal = (options & ParseNumberOptions.ProcessOctal) != 0;

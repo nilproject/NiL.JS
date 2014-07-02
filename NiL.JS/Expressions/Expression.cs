@@ -73,10 +73,10 @@ namespace NiL.JS.Expressions
 
         internal override bool Optimize(ref CodeNode _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> vars, bool strict)
         {
-            while (first is None && (first as None).second == null)
-                first = (first as None).first;
-            while (second is None && (second as None).second == null)
-                second = (second as None).first;
+            //while (first is None && (first as None).second == null)
+            //    first = (first as None).first;
+            //while (second is None && (second as None).second == null)
+            //    second = (second as None).first;
             Parser.Optimize(ref first, depth + 1, fdepth, vars, strict);
             Parser.Optimize(ref second, depth + 1, fdepth, vars, strict);
             try

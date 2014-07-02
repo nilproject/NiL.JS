@@ -63,7 +63,7 @@ namespace NiL.JS.Core
         public static JSObject Proxy(object value)
         {
             if (value == null)
-                return JSObject.Null;
+                return JSObject.undefined;
             else if (value is JSObject)
                 return value as JSObject;
             else if (value is sbyte)

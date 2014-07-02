@@ -37,8 +37,17 @@ namespace NiL.JS.Expressions
         {
             lock (this)
             {
+                Function setter = null;
                 var val = Tools.RaiseIfNotExist((first ?? second).InvokeForAssing(context), first ?? second);
-                if (context.strict && (val.attributes & JSObjectAttributesInternal.ReadOnly) != 0)
+                if (val.valueType == JSObjectType.Property)
+                {
+                    setter = (val.oValue as Function[])[0];
+                    if (context.strict && setter == null)
+                        throw new JSException(new TypeError("Can not increment property \"" + (first ?? second) + "\" without setter."));
+                    val = (val.oValue as Function[])[1].Invoke(context.objectSource, null).Clone() as JSObject;
+                    val.attributes = 0;
+                }
+                else if (context.strict && (val.attributes & JSObjectAttributesInternal.ReadOnly) != 0)
                     throw new JSException(new TypeError("Can not incriment readonly \"" + (first ?? second) + "\""));
                 switch (val.valueType)
                 {
@@ -82,16 +91,16 @@ namespace NiL.JS.Expressions
                             break;
                         }
                 }
-                JSObject o = null;
+                JSObject prev = null;
                 if ((second != null)
                     && (val.valueType != JSObjectType.Undefined)
                     && (val.valueType != JSObjectType.NotExistInObject))
                 {
-                    o = tempContainer;
-                    o.Assign(val);
+                    prev = tempContainer;
+                    prev.Assign(val);
                 }
                 else
-                    o = val;
+                    prev = val;
                 switch (val.valueType)
                 {
                     case JSObjectType.Int:
@@ -120,7 +129,14 @@ namespace NiL.JS.Expressions
                     default:
                         throw new NotImplementedException();
                 }
-                return o;
+                if (setter != null)
+                {
+                    var args = new JSObject(true) { oValue = Arguments.Instance, valueType = JSObjectType.Object };
+                    args["length"] = context.wrap(1);
+                    args.fields["0"] = val;
+                    setter.Invoke(context.objectSource, args);
+                }
+                return prev;
             }
         }
 

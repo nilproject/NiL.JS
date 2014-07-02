@@ -74,7 +74,8 @@ namespace NiL.JS.Statements
                     throw new ArgumentException("code (" + i + ")");
                 i++;
             }
-            while (i < code.Length && char.IsWhiteSpace(code[i])) i++;
+            while (i < code.Length && char.IsWhiteSpace(code[i]))
+                i++;
             var body = new List<CodeNode>();
             state.LabelCount = 0;
             bool strictSwitch = false;
@@ -90,7 +91,8 @@ namespace NiL.JS.Statements
                         break;
                     if (Parser.ValidateValue(code, ref i))
                     {
-                        while (i < code.Length && char.IsWhiteSpace(code[i])) i++;
+                        while (i < code.Length && char.IsWhiteSpace(code[i]))
+                            i++;
                         if (i < code.Length && (Parser.isOperator(code[i])
                             || Parser.Validate(code, "instanceof", i)
                             || Parser.Validate(code, "in", i)))
@@ -122,9 +124,12 @@ namespace NiL.JS.Statements
                     {
                         if (directives == null)
                             break;
-                        do i++; while (i < code.Length && char.IsWhiteSpace(code[i]));
+                        do
+                            i++;
+                        while (i < code.Length && char.IsWhiteSpace(code[i]));
                     }
-                    else break;
+                    else
+                        break;
                 } while (true);
             }
             for (var j = body.Count; j-- > 0; )
@@ -202,7 +207,8 @@ namespace NiL.JS.Statements
             JSObject res = JSObject.notExist;
             for (int i = body.Length; i-- > 0; )
             {
-                if (body[i] is FunctionStatement) continue;
+                if (body[i] is FunctionStatement)
+                    continue;
 #if DEV
                 if (context.debugging)
                     context.raiseDebugger(body[i]);
@@ -280,7 +286,12 @@ namespace NiL.JS.Statements
             }
 
             for (int i = body.Length; i-- > 0; )
+            {
+                //bool needRemove = body[i] is FunctionStatement;
                 Parser.Optimize(ref body[i], depth < 0 ? 2 : Math.Max(1, depth), fdepth, variables, this.strict);
+                //if (needRemove)
+                //    body[i] = null;
+            }
 
             if (depth > 0)
             {

@@ -73,7 +73,7 @@ namespace NiL.JS.Core.BaseTypes
         {
             if (__proto__ == null)
                 __proto__ = TypeProxy.GetPrototype(typeof(Boolean));
-            return DefaultFieldGetter(name.ToString(), create, own); // обращение идёт к Объекту Boolean, а не к значению boolean, поэтому члены создавать можно
+            return DefaultFieldGetter(name, create, own); // обращение идёт к Объекту Boolean, а не к значению boolean, поэтому члены создавать можно
         }
 
 #if INLINE

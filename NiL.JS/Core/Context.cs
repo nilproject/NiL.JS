@@ -265,7 +265,12 @@ namespace NiL.JS.Core
                         if (runnedContexts[i] == this)
                             return false;
                         else if (oldContext != null)
+                        {
+#if DEBUG
+                            System.Diagnostics.Debugger.Break();
+#endif
                             throw new ApplicationException("Try to reactivate context");
+                        }
                         this.oldContext = runnedContexts[i];
                         runnedContexts[i] = this;
                         this.threadId = threadId;
@@ -284,7 +289,12 @@ namespace NiL.JS.Core
         internal Context Deactivate()
         {
             if (this != CurrentContext)
+            {
+#if DEBUG
+                System.Diagnostics.Debugger.Break();
+#endif
                 throw new InvalidOperationException("Context not runned");
+            }
 #if DEBUG
             var i = 0;
             lock (runnedContexts)

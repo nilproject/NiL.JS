@@ -152,7 +152,7 @@ namespace NiL.JS.Core.BaseTypes
         {
             if (args.Length == 0)
                 return -1;
-            string fstr = args[0].Value.ToString();
+            string fstr = args[0].ToString();
             int pos = 0;
             if (args.Length > 1)
             {
@@ -181,7 +181,7 @@ namespace NiL.JS.Core.BaseTypes
                         }
                 }
             }
-            return (oValue as string).LastIndexOf(fstr, pos, StringComparison.CurrentCulture);
+            return (oValue as string).LastIndexOf(fstr, (oValue as string).Length, StringComparison.CurrentCulture);
         }
 
         [StringAllowUnsafeCallAttribute(typeof(JSObject))]

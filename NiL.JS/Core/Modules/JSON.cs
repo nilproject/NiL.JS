@@ -186,16 +186,29 @@ namespace NiL.JS.Core.Modules
         [Hidden]
         public static string stringify(JSObject obj, Function replacer, string space)
         {
-            return stringifyImpl(obj, replacer, space, new List<JSObject>());
+            return stringifyImpl("", obj, replacer, space, new List<JSObject>(), new JSObject(true) { oValue = Arguments.Instance, valueType = JSObjectType.Object });
         }
 
-        private static string stringifyImpl(JSObject obj, Function replacer, string space, List<JSObject> processed)
+        private static string stringifyImpl(string key, JSObject obj, Function replacer, string space, List<JSObject> processed, JSObject args)
         {
             if (processed.IndexOf(obj) != -1)
                 throw new JSException(new TypeError("Can not convert circular structure to JSON."));
             processed.Add(obj);
             try
             {
+                {
+                    args["0"] = "";
+                    if (replacer != null)
+                    {
+                        args["0"].oValue = key;
+                        args["1"] = obj;
+                        args["length"] = 2;
+                        var t = replacer.Invoke(args);
+                        if (t.valueType <= JSObjectType.Undefined || (t.valueType >= JSObjectType.Object && t.oValue == null))
+                            return null;
+                        obj = t;
+                    }
+                }
                 if (obj.valueType < JSObjectType.Undefined
                     || obj.valueType == JSObjectType.Function)
                     return null;
@@ -212,25 +225,14 @@ namespace NiL.JS.Core.Modules
                     return obj.ToString();
                 }
                 StringBuilder res = new StringBuilder(obj is Array ? "[" : "{");
-                var args = new JSObject(true) { oValue = Arguments.Instance, valueType = JSObjectType.Object };
-                args["0"] = "";
                 bool first = true;
-                foreach (var key in obj)
+                foreach (var member in obj)
                 {
-                    var value = obj[key];
+                    var value = obj[member];
                     value = value.oValue as JSObject ?? value;
                     if (value.valueType < JSObjectType.Undefined)
                         continue;
-                    if (replacer != null)
-                    {
-                        args["0"].oValue = key;
-                        args["1"] = value;
-                        var t = replacer.Invoke(args);
-                        if (t.valueType <= JSObjectType.Undefined || (t.valueType >= JSObjectType.Object && t.oValue == null))
-                            continue;
-                        value = t;
-                    }
-                    string strval = stringifyImpl(value, replacer, space, processed);
+                    string strval = stringifyImpl(member, value, replacer, space, processed, args);
                     if (strval == null)
                         continue;
                     if (!first)
@@ -238,7 +240,7 @@ namespace NiL.JS.Core.Modules
                     if (res[0] == '[')
                         res.Append(strval);
                     else
-                        res.Append('"').Append(key).Append("\": ").Append(strval);
+                        res.Append('"').Append(member).Append("\": ").Append(strval);
                     first = false;
                 }
                 return res.Append(obj is Array ? "]" : "}").ToString();

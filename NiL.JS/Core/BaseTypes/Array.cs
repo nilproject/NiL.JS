@@ -60,7 +60,7 @@ namespace NiL.JS.Core.BaseTypes
         {
             oValue = this;
             valueType = JSObjectType.Object;
-            if (((long)d != d) || (d < 0) || (d > 0x7fffffff))
+            if (((long)d != d) || (d < 0) || (d > 0xffffffff))
                 throw new JSException(TypeProxy.Proxy(new RangeError("Invalid array length.")));
             data = new BinaryTree<long, JSObject>();
             this._length = (long)d;
@@ -128,7 +128,7 @@ namespace NiL.JS.Core.BaseTypes
         [Hidden]
         public void Add(JSObject obj)
         {
-            data.Add(_length++, obj["0"]);
+            data.Add(_length++, obj);
         }
 
         [Field]
@@ -222,7 +222,10 @@ namespace NiL.JS.Core.BaseTypes
             {
                 foreach (var element in data)
                 {
-                    ao["0"].Assign(element.Value);
+                    if (element.Value.valueType == JSObjectType.Property)
+                        ao["0"].Assign((element.Value.oValue as Function[])[1] != null ? (element.Value.oValue as Function[])[1].Invoke(this, null) : undefined);
+                    else
+                        ao["0"].Assign(element.Value);
                     ao["1"].Assign(context.wrap(element.Key));
                     res &= (bool)f.Invoke(tb, ao);
                     if (!res)
@@ -266,7 +269,10 @@ namespace NiL.JS.Core.BaseTypes
             {
                 foreach (var element in data)
                 {
-                    ao["0"].Assign(element.Value);
+                    if (element.Value.valueType == JSObjectType.Property)
+                        ao["0"].Assign((element.Value.oValue as Function[])[1] != null ? (element.Value.oValue as Function[])[1].Invoke(this, null) : undefined);
+                    else
+                        ao["0"].Assign(element.Value);
                     ao["1"].Assign(context.wrap(element.Key));
                     res |= (bool)f.Invoke(tb, ao);
                     if (res)
@@ -354,8 +360,12 @@ namespace NiL.JS.Core.BaseTypes
             {
                 foreach (var element in data)
                 {
-                    ao["0"].Assign(element.Value);
+                    if (element.Value.valueType == JSObjectType.Property)
+                        ao["0"].Assign((element.Value.oValue as Function[])[1] != null ? (element.Value.oValue as Function[])[1].Invoke(this, null) : undefined);
+                    else
+                        ao["0"].Assign(element.Value);
                     ao["1"].Assign(context.wrap(element.Key));
+                    res._length = element.Key;
                     res.Add(f.Invoke(tb, ao).Clone() as JSObject);
                 }
             }
@@ -568,7 +578,7 @@ namespace NiL.JS.Core.BaseTypes
             if (funco.valueType != JSObjectType.Function)
                 throw new JSException(TypeProxy.Proxy(new TypeError("First argument on reduce mast be a function.")));
             var func = funco.oValue as Function;
-            var accum = args.GetMember("1", false, false);
+            var accum = args.DefineMember("1");
             var index = 0;
             if (accum.valueType < JSObjectType.Undefined)
             {
@@ -925,9 +935,10 @@ namespace NiL.JS.Core.BaseTypes
                         }
                         else
                         {
-                            if (data[index].valueType == JSObjectType.NotExist)
-                                data[index].valueType = JSObjectType.NotExistInObject;
-                            return data[index];
+                            var t = data[index] ?? notExist;
+                            if (t != null && t.valueType == JSObjectType.NotExist)
+                                t.valueType = JSObjectType.NotExistInObject;
+                            return t;
                         }
                     }
                 }

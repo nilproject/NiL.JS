@@ -1,3 +1,6 @@
 ﻿console.log((function () {
-    return JSON.stringify({ prop: 1 }, function (k, v) { return undefined }) === undefined;
+    if (function () { return "gnullunazzgnull" }().lastIndexOf(null) !== 11) {
+        return false;
+    }
+    return true;
 })());

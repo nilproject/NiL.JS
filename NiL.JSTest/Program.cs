@@ -19,12 +19,7 @@ namespace NiL.JSTest
             var s = new Script(
 @"
 
-var a = [];
-Object.defineProperty(a, 4294967295, {
-            value: 100
-        });
-console.log(a.length);
-console.log(a[4294967295]);
+console.log(++({ get a(){ return 1 }, set a(v){ console.log(v) } }).a);
 
 ");
             s.Context.AttachModule(typeof(System.Drawing.Point));
@@ -202,6 +197,7 @@ console.log(a[4294967295]);
                 }
                 catch (Exception)
                 {
+                    System.Diagnostics.Debugger.Break();
                     pass = false;
                 }
                 if (pass)

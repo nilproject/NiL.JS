@@ -139,7 +139,7 @@ namespace NiL.JS.Statements
         internal override bool Optimize(ref CodeNode _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
             for (int i = 0; i < initializators.Length; i++)
-                Parser.Optimize(ref initializators[i], 1, fdepth, variables, strict);
+                Parser.Optimize(ref initializators[i], 2, fdepth, variables, strict);
             for (var i = 0; i < names.Length; i++)
                 variables[names[i]].Defined = true;
             return false;

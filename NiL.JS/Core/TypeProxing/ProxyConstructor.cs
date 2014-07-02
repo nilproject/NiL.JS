@@ -98,7 +98,7 @@ namespace NiL.JS.Core
                             {
                                 valueType = JSObjectType.Object,
                                 oValue = res,
-                                __proto__ = res.__proto__
+                                __proto__ = res.__proto__ ?? TypeProxy.GetPrototype(proxy.hostedType)
                             };
                         // Для Number, Boolean и String
                         else if (res.oValue is JSObject)
