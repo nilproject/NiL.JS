@@ -18,9 +18,7 @@ namespace NiL.JSTest
             var sw = new Stopwatch();
             var s = new Script(
 @"
-
-console.log(++({ get a(){ return 1 }, set a(v){ console.log(v) } }).a);
-
+for(var i=0;i<8;i++) console.log(i&2 ? new Array((i&1)+1).join(' ')+'\\' : new Array(2-(i&1)).join(' ')+'/')
 ");
             s.Context.AttachModule(typeof(System.Drawing.Point));
             sw.Start();
@@ -32,7 +30,7 @@ console.log(++({ get a(){ return 1 }, set a(v){ console.log(v) } }).a);
         static void Main(string[] args)
         {
             typeof(System.Windows.Forms.Button).GetType();
-            int mode = 0
+            int mode = 3
                 ;
             switch (mode)
             {

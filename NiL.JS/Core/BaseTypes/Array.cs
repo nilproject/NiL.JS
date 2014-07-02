@@ -492,7 +492,7 @@ namespace NiL.JS.Core.BaseTypes
                 JSObject t;
                 if (data.TryGetValue(i, out t) && t.isExist)
                     sb.Append(t);
-                sb.Append(',');
+                sb.Append(el);
             }
             return sb.ToString();
         }
