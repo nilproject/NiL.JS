@@ -126,7 +126,11 @@ namespace NiL.JS.Statements
                     }
                     index++;
                 }
-                s = s.__proto__;
+                if (!s.isDefinded || (s.valueType >= JSObjectType.Object && s.oValue == null))
+                    break;
+                s = s.__proto__ ?? s["__proto__"];
+                if (!s.isDefinded || (s.valueType >= JSObjectType.Object && s.oValue == null))
+                    break;
             }
             return res;
         }

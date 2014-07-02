@@ -16,7 +16,6 @@ namespace NiL.JS.Core.BaseTypes
         {
             valueType = JSObjectType.Bool;
             iValue = 0;
-            assignCallback = JSObject.ErrorAssignCallback;
             oValue = this;
         }
 
@@ -27,7 +26,6 @@ namespace NiL.JS.Core.BaseTypes
                 throw new ArgumentNullException("obj");
             valueType = JSObjectType.Bool;
             iValue = (bool)obj.GetMember("0") ? 1 : 0;
-            assignCallback = JSObject.ErrorAssignCallback;
             oValue = this;
         }
 
@@ -36,7 +34,6 @@ namespace NiL.JS.Core.BaseTypes
         {
             valueType = JSObjectType.Bool;
             iValue = value ? 1 : 0;
-            assignCallback = JSObject.ErrorAssignCallback;
             oValue = this;
         }
 
@@ -45,7 +42,6 @@ namespace NiL.JS.Core.BaseTypes
         {
             valueType = JSObjectType.Bool;
             iValue = value != 0 && !double.IsNaN(value) ? 1 : 0;
-            assignCallback = JSObject.ErrorAssignCallback;
             oValue = this;
         }
 
@@ -54,7 +50,6 @@ namespace NiL.JS.Core.BaseTypes
         {
             valueType = JSObjectType.Bool;
             iValue = value != 0 ? 1 : 0;
-            assignCallback = JSObject.ErrorAssignCallback;
             oValue = this;
         }
 
@@ -63,7 +58,6 @@ namespace NiL.JS.Core.BaseTypes
         {
             valueType = JSObjectType.Bool;
             iValue = !string.IsNullOrEmpty(value) ? 1 : 0;
-            assignCallback = JSObject.ErrorAssignCallback;
             oValue = this;
         }
 
@@ -79,7 +73,7 @@ namespace NiL.JS.Core.BaseTypes
         {
             if (__proto__ == null)
                 __proto__ = TypeProxy.GetPrototype(typeof(Boolean));
-            return DefaultFieldGetter(name.ToString(), create, false); // обращение идёт к Объекту Boolean, а не к значению boolean, поэтому члены создавать можно
+            return DefaultFieldGetter(name.ToString(), create, own); // обращение идёт к Объекту Boolean, а не к значению boolean, поэтому члены создавать можно
         }
 
 #if INLINE

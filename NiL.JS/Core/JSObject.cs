@@ -481,7 +481,7 @@ namespace NiL.JS.Core
                 if (enumerable.isExist && (obj.attributes & JSObjectAttributesInternal.DoNotEnum) != 0 == (bool)enumerable)
                     throw new JSException(TypeProxy.Proxy(new TypeError("Cannot change enumerable attribute for non configurable property.")));
 
-                if (writable.isExist && (obj.attributes & JSObjectAttributesInternal.ReadOnly) != 0 == (bool)writable)
+                if (writable.isExist && (obj.attributes & JSObjectAttributesInternal.ReadOnly) != 0 && (bool)writable)
                     throw new JSException(TypeProxy.Proxy(new TypeError("Cannot change writable attribute for non configurable property.")));
 
                 if (configurable.isExist && (bool)configurable)
@@ -491,7 +491,7 @@ namespace NiL.JS.Core
                     throw new JSException(new TypeError("Cannot redefine not configurable property from immediate value to accessor property"));
                 if (obj.valueType == JSObjectType.Property && !obj.attributes.HasFlag(JSObjectAttributesInternal.Field) && value.isExist)
                     throw new JSException(new TypeError("Cannot redefine not configurable property from accessor property to immediate value"));
-                if (obj.valueType == JSObjectType.Property && !obj.attributes.HasFlag(JSObjectAttributesInternal.Field) 
+                if (obj.valueType == JSObjectType.Property && !obj.attributes.HasFlag(JSObjectAttributesInternal.Field)
                     && set.isExist
                     && (((obj.oValue as Function[])[0] != null && (obj.oValue as Function[])[0].oValue != set.oValue)
                         || ((obj.oValue as Function[])[0] == null && set.isDefinded)))
@@ -510,11 +510,14 @@ namespace NiL.JS.Core
                     && !((StrictEqual.Check(obj, new ImmidateValueStatement(value), null) && ((obj.valueType == JSObjectType.Undefined && value.valueType == JSObjectType.Undefined) || !obj.isNumber || !value.isNumber || (1.0 / Tools.JSObjectToDouble(obj) == 1.0 / Tools.JSObjectToDouble(value))))
                         || (obj.valueType == JSObjectType.Double && value.valueType == JSObjectType.Double && double.IsNaN(obj.dValue) && double.IsNaN(value.dValue))))
                     throw new JSException(new TypeError("Cannot change value of not configurable not writable peoperty."));
-                obj.valueType = JSObjectType.Undefined; // там могло быть Property, на которое мы ругаемся
-                var atr = obj.attributes;
-                obj.attributes = 0;
-                obj.Assign(value);
-                obj.attributes = atr;
+                //if ((obj.attributes & JSObjectAttributesInternal.ReadOnly) == 0 || obj.valueType == JSObjectType.Property)
+                {
+                    obj.valueType = JSObjectType.Undefined; // там могло быть Property, на которое мы ругаемся
+                    var atrbts = obj.attributes;
+                    obj.attributes = 0;
+                    obj.Assign(value);
+                    obj.attributes = atrbts;
+                }
             }
             else if (get.valueType != JSObjectType.NotExistInObject
                   || set.valueType != JSObjectType.NotExistInObject)
@@ -534,27 +537,33 @@ namespace NiL.JS.Core
             }
             else if (newProp)
                 obj.valueType = JSObjectType.Undefined;
+            if (newProp)
+            {
+                obj.attributes |=
+                    JSObjectAttributesInternal.DoNotEnum
+                    | JSObjectAttributesInternal.DoNotDelete
+                    | JSObjectAttributesInternal.NotConfigurable
+                    | JSObjectAttributesInternal.ReadOnly;
+            }
+            else
+            {
+                var atrbts = obj.attributes;
+                if (configurable.isExist)
+                    obj.attributes |= JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.DoNotDelete;
+                if (enumerable.isExist)
+                    obj.attributes |= JSObjectAttributesInternal.DoNotEnum;
+                if (writable.isExist)
+                    obj.attributes |= JSObjectAttributesInternal.ReadOnly;
+
+                if (obj.attributes != atrbts && (obj.attributes & JSObjectAttributesInternal.Argument) != 0)
+                {
+                    target.fields[memberName] = obj = obj.Clone() as JSObject;
+                    obj.attributes &= ~JSObjectAttributesInternal.Argument;
+                }
+            }
 
             if (config)
             {
-                if (newProp)
-                {
-                    obj.attributes |=
-                        JSObjectAttributesInternal.DoNotEnum
-                        | JSObjectAttributesInternal.DoNotDelete
-                        | JSObjectAttributesInternal.NotConfigurable
-                        | JSObjectAttributesInternal.ReadOnly;
-                }
-                else
-                {
-                    if (configurable.isExist)
-                        obj.attributes |= JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.DoNotDelete;
-                    if (enumerable.isExist)
-                        obj.attributes |= JSObjectAttributesInternal.DoNotEnum;
-                    if (writable.isExist)
-                        obj.attributes |= JSObjectAttributesInternal.ReadOnly;
-                }
-
                 if ((bool)enumerable)
                     obj.attributes &= ~JSObjectAttributesInternal.DoNotEnum;
                 if ((bool)configurable)
@@ -771,7 +780,10 @@ namespace NiL.JS.Core
                         if (fromProto)
                         {
                             res = proto.GetMember(nameObj, false, own);
-                            if (own && (attributes & JSObjectAttributesInternal.ProxyPrototype) == 0 && res.valueType != JSObjectType.Property)
+                            if (own
+                                && (res.valueType != JSObjectType.Property
+                                    || (res.attributes & JSObjectAttributesInternal.Field) == 0)
+                                && (attributes & JSObjectAttributesInternal.ProxyPrototype) == 0)
                                 res = null;
                             else if (res.valueType < JSObjectType.Undefined)
                                 res = null;
@@ -884,9 +896,6 @@ namespace NiL.JS.Core
             return this;
         }
 
-#if INLINE
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-#endif
         [Hidden]
         public virtual void Assign(JSObject value)
         {
@@ -1143,8 +1152,7 @@ namespace NiL.JS.Core
                     throw new NotImplementedException("Object.hasOwnProperty. Invalid Value Type");
             }
             var res = GetMember(n, true);
-            res = (res.isExist);
-            return res;
+            return res.isExist;
         }
 
         [DoNotEnumerate]

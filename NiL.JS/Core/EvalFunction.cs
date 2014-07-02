@@ -26,6 +26,7 @@ namespace NiL.JS.Core
             }
         }
 
+        [Field]
         [DoNotDelete]
         [DoNotEnumerate]
         public override JSObject length

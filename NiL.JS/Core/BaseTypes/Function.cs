@@ -868,7 +868,6 @@ namespace NiL.JS.Core.BaseTypes
                     t.attributes |= JSObjectAttributesInternal.Argument;
                     if (body.strict)
                         t = t.Clone() as JSObject;
-                    t.attributes |= JSObjectAttributesInternal.DoNotDelete;
                     internalContext.fields[creator.parameters[i].Name] = t;
                 }
                 for (; i < creator.parameters.Length; i++)
@@ -999,8 +998,6 @@ namespace NiL.JS.Core.BaseTypes
 #if DEBUG
             Debug.Assert(lengthO.assignCallback == null);
 #endif
-            if (lengthO.assignCallback != null)
-                lengthO.assignCallback = null;
             args.fields["length"] = lengthO;
             lengthO.valueType = JSObjectType.Int;
             lengthO.iValue = prmsC;

@@ -651,7 +651,7 @@ namespace NiL.JS.Core.BaseTypes
             {
                 return this[index];
             }
-            return DefaultFieldGetter(name, create, false); // обращение идёт к Объекту String, а не к значению string, поэтому члены создавать можно
+            return DefaultFieldGetter(name, create, own); // обращение идёт к Объекту String, а не к значению string, поэтому члены создавать можно
         }
 
         #region HTML Wraping

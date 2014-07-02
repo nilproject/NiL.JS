@@ -108,7 +108,7 @@ namespace NiL.JS.Core.BaseTypes
         {
             if (__proto__ == null)
                 __proto__ = TypeProxy.GetPrototype(typeof(Number));
-            return DefaultFieldGetter(name.ToString(), create, false); // обращение идёт к Объекту Number, а не к значению number, поэтому члены создавать можно
+            return DefaultFieldGetter(name.ToString(), create, own); // обращение идёт к Объекту Number, а не к значению number, поэтому члены создавать можно
         }
 
         [AllowUnsafeCall(typeof(JSObject))]

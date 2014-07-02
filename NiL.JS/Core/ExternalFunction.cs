@@ -53,8 +53,9 @@ namespace NiL.JS.Core
             return res;
         }
 
-        [DoNotEnumerate]
+        [Field]
         [DoNotDelete]
+        [DoNotEnumerate]
         public override JSObject length
         {
             [Hidden]

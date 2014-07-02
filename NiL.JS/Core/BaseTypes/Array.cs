@@ -118,6 +118,7 @@ namespace NiL.JS.Core.BaseTypes
             _length = (long)index;
         }
 
+        [Hidden]
         public override void Assign(JSObject value)
         {
             if ((attributes & JSObjectAttributesInternal.ReadOnly) == 0)
@@ -547,7 +548,7 @@ namespace NiL.JS.Core.BaseTypes
         {
             for (var i = 0; i < args.Length; i++)
                 data.Add(_length++, args[i].Clone() as JSObject);
-            return this;
+            return this.length;
         }
 
         [DoNotEnumerate]
@@ -574,17 +575,12 @@ namespace NiL.JS.Core.BaseTypes
                 if (_length == 0)
                     throw new JSException(TypeProxy.Proxy(new TypeError("Array is empty.")));
                 index++;
-                accum.assignCallback = null;
                 accum.attributes = 0;
                 accum.Assign(data[0]);
             }
-            else
-                args.fields.Remove("1");
             if (index >= data.Count)
                 return accum;
             args["length"] = 4;
-            args["0"] = accum;
-            args["1"] = undefined;
             var context = Context.CurrentContext;
             foreach (var element in data)
             {
@@ -604,24 +600,19 @@ namespace NiL.JS.Core.BaseTypes
             if (funco.valueType != JSObjectType.Function)
                 throw new JSException(TypeProxy.Proxy(new TypeError("First argument on reduce mast be a function.")));
             var func = funco.oValue as Function;
-            var accum = args.GetMember("1");
+            var accum = args.DefineMember("1");
             var index = 0;
             if (accum.valueType < JSObjectType.Undefined)
             {
                 if (_length == 0)
                     throw new JSException(TypeProxy.Proxy(new TypeError("Array is empty.")));
                 index++;
-                accum.assignCallback = null;
                 accum.attributes = 0;
                 accum.Assign(data[0]);
             }
-            else
-                args.fields.Remove("1");
             if (index >= data.Count)
                 return accum;
             args["length"] = 4;
-            args["0"] = accum;
-            args["1"] = undefined;
             var context = Context.CurrentContext;
             foreach (var element in data.Reversed)
             {
