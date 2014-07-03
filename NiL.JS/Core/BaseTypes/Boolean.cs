@@ -93,11 +93,20 @@ namespace NiL.JS.Core.BaseTypes
             return value != null && value.iValue != 0;
         }
 
-        [AllowUnsafeCall(typeof(JSObject))]
         [DoNotEnumerate]
+        [AllowUnsafeCall(typeof(JSObject))]
         public override JSObject toLocaleString()
         {
-            return valueType == JSObjectType.Bool ? iValue != 0 ? "true" : "false" : ((bool)(this as JSObject) ? "true" : "false");
+            var self = this.oValue as JSObject ?? this;
+            return self.valueType == JSObjectType.Bool ? self.iValue != 0 ? "true" : "false" : ((bool)(this as JSObject) ? "true" : "false");
+        }
+
+        [DoNotEnumerate]
+        [AllowUnsafeCall(typeof(JSObject))]
+        public override JSObject valueOf()
+        {
+            var self = this.oValue as JSObject ?? this;
+            return self;
         }
 
         [CLSCompliant(false)]

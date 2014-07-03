@@ -10,8 +10,8 @@ namespace NiL.JS.Core.BaseTypes
         [Serializable]
         private sealed class StringAllowUnsafeCallAttribute : AllowUnsafeCallAttribute
         {
-            public StringAllowUnsafeCallAttribute(Type type)
-                : base(type)
+            public StringAllowUnsafeCallAttribute()
+                : base(typeof(JSObject))
             { }
 
             protected internal override object Convert(object arg)
@@ -78,7 +78,7 @@ namespace NiL.JS.Core.BaseTypes
             }
         }
 
-        [StringAllowUnsafeCallAttribute(typeof(JSObject))]
+        [StringAllowUnsafeCallAttribute()]
         [DoNotEnumerate]
         public String charAt(JSObject pos)
         {
@@ -88,7 +88,7 @@ namespace NiL.JS.Core.BaseTypes
             return (oValue as string)[p].ToString();
         }
 
-        [StringAllowUnsafeCallAttribute(typeof(JSObject))]
+        [StringAllowUnsafeCallAttribute()]
         [DoNotEnumerate]
         public Number charCodeAt(JSObject pos)
         {
@@ -98,7 +98,7 @@ namespace NiL.JS.Core.BaseTypes
             return (int)(oValue as string)[p];
         }
 
-        [StringAllowUnsafeCallAttribute(typeof(JSObject))]
+        [StringAllowUnsafeCallAttribute()]
         [DoNotEnumerate]
         public JSObject concat(JSObject[] args)
         {
@@ -108,7 +108,7 @@ namespace NiL.JS.Core.BaseTypes
             return res;
         }
 
-        [StringAllowUnsafeCallAttribute(typeof(JSObject))]
+        [StringAllowUnsafeCallAttribute()]
         [DoNotEnumerate]
         public JSObject indexOf(JSObject[] args)
         {
@@ -146,7 +146,7 @@ namespace NiL.JS.Core.BaseTypes
             return (oValue as string).IndexOf(fstr, pos, StringComparison.CurrentCulture);
         }
 
-        [StringAllowUnsafeCallAttribute(typeof(JSObject))]
+        [StringAllowUnsafeCallAttribute()]
         [DoNotEnumerate]
         public JSObject lastIndexOf(JSObject[] args)
         {
@@ -184,7 +184,7 @@ namespace NiL.JS.Core.BaseTypes
             return (oValue as string).LastIndexOf(fstr, (oValue as string).Length, StringComparison.CurrentCulture);
         }
 
-        [StringAllowUnsafeCallAttribute(typeof(JSObject))]
+        [StringAllowUnsafeCallAttribute()]
         [DoNotEnumerate]
         public JSObject localeCompare(JSObject[] args)
         {
@@ -193,12 +193,12 @@ namespace NiL.JS.Core.BaseTypes
             return string.CompareOrdinal(str0, str1);
         }
 
-        [StringAllowUnsafeCallAttribute(typeof(JSObject))]
+        [StringAllowUnsafeCallAttribute()]
         [DoNotEnumerate]
         public JSObject match(JSObject args)
         {
             if (valueType <= JSObjectType.Undefined || (valueType >= JSObjectType.Object && oValue == null))
-                throw new JSException(TypeProxy.Proxy(new TypeError("String.prototype.match called on null or undefined")));
+                throw new JSException(new TypeError("String.prototype.match called on null or undefined"));
             var a0 = args.GetMember("0");
             if (a0.valueType == JSObjectType.Object && a0.oValue is RegExp)
             {
@@ -229,12 +229,12 @@ namespace NiL.JS.Core.BaseTypes
             }
         }
 
-        [StringAllowUnsafeCallAttribute(typeof(JSObject))]
+        [StringAllowUnsafeCallAttribute()]
         [DoNotEnumerate]
         public JSObject search(JSObject args)
         {
             if (valueType <= JSObjectType.Undefined || (valueType >= JSObjectType.Object && oValue == null))
-                throw new JSException(TypeProxy.Proxy(new TypeError("String.prototype.match called on null or undefined")));
+                throw new JSException(new TypeError("String.prototype.match called on null or undefined"));
             var a0 = args.GetMember("0");
             if (a0.valueType == JSObjectType.Object && a0.oValue is RegExp)
             {
@@ -256,7 +256,7 @@ namespace NiL.JS.Core.BaseTypes
             }
         }
 
-        [StringAllowUnsafeCallAttribute(typeof(JSObject))]
+        [StringAllowUnsafeCallAttribute()]
         [DoNotEnumerate]
         public JSObject replace(JSObject[] args)
         {
@@ -345,7 +345,7 @@ namespace NiL.JS.Core.BaseTypes
             }
         }
 
-        [StringAllowUnsafeCallAttribute(typeof(JSObject))]
+        [StringAllowUnsafeCallAttribute()]
         [DoNotEnumerate]
         public JSObject slice(JSObject[] args)
         {
@@ -409,7 +409,7 @@ namespace NiL.JS.Core.BaseTypes
             return (oValue as string).Substring(pos0, pos1 - pos0);
         }
 
-        [StringAllowUnsafeCallAttribute(typeof(JSObject))]
+        [StringAllowUnsafeCallAttribute()]
         [DoNotEnumerate]
         public JSObject split(JSObject[] args)
         {
@@ -452,14 +452,14 @@ namespace NiL.JS.Core.BaseTypes
             return new Array(res);
         }
 
-        [StringAllowUnsafeCallAttribute(typeof(JSObject))]
+        [StringAllowUnsafeCallAttribute()]
         [DoNotEnumerate]
         public JSObject substring(JSObject[] args)
         {
             return slice(args);
         }
 
-        [StringAllowUnsafeCallAttribute(typeof(JSObject))]
+        [StringAllowUnsafeCallAttribute()]
         [DoNotEnumerate]
         public JSObject substr(JSObject[] args)
         {
@@ -524,35 +524,35 @@ namespace NiL.JS.Core.BaseTypes
             return (oValue as string).Substring(pos0, len);
         }
 
-        [StringAllowUnsafeCallAttribute(typeof(JSObject))]
+        [StringAllowUnsafeCallAttribute()]
         [DoNotEnumerate]
         public JSObject toLocaleLowerCase()
         {
             return (oValue as string).ToLower(System.Threading.Thread.CurrentThread.CurrentUICulture);
         }
 
-        [StringAllowUnsafeCallAttribute(typeof(JSObject))]
+        [StringAllowUnsafeCallAttribute()]
         [DoNotEnumerate]
         public JSObject toLocaleUpperCase()
         {
             return (oValue as string).ToUpper(System.Threading.Thread.CurrentThread.CurrentUICulture);
         }
 
-        [StringAllowUnsafeCallAttribute(typeof(JSObject))]
+        [StringAllowUnsafeCallAttribute()]
         [DoNotEnumerate]
         public JSObject toLowerCase()
         {
             return (oValue as string).ToLowerInvariant();
         }
 
-        [StringAllowUnsafeCallAttribute(typeof(JSObject))]
+        [StringAllowUnsafeCallAttribute()]
         [DoNotEnumerate]
         public JSObject toUpperCase()
         {
             return (oValue as string).ToUpperInvariant();
         }
 
-        [StringAllowUnsafeCallAttribute(typeof(JSObject))]
+        [StringAllowUnsafeCallAttribute()]
         [DoNotEnumerate]
         public JSObject trim()
         {
@@ -570,11 +570,11 @@ namespace NiL.JS.Core.BaseTypes
             if (this.valueType == JSObjectType.String)
                 return this;
             else
-                throw new JSException(TypeProxy.Proxy(new TypeError("Try to call String.toString for not string object.")));
+                throw new JSException(new TypeError("Try to call String.toString for not string object."));
         }
 
-        [AllowUnsafeCall(typeof(JSObject))]
         [DoNotEnumerate]
+        [StringAllowUnsafeCall]
         public override JSObject valueOf()
         {
             if (typeof(String) == this.GetType() && valueType == JSObjectType.Object) // prototype instance
@@ -582,7 +582,7 @@ namespace NiL.JS.Core.BaseTypes
             if (this.valueType == JSObjectType.String)
                 return this;
             else
-                throw new JSException(TypeProxy.Proxy(new TypeError("Try to call String.valueOf for not string object.")));
+                throw new JSException(new TypeError("Try to call String.valueOf for not string object."));
         }
 
         private Number _length = null;
@@ -594,7 +594,7 @@ namespace NiL.JS.Core.BaseTypes
         [NotConfigurable]
         public JSObject length
         {
-            [StringAllowUnsafeCallAttribute(typeof(JSObject))]
+            [StringAllowUnsafeCallAttribute()]
             [Hidden]
             get
             {
@@ -617,7 +617,7 @@ namespace NiL.JS.Core.BaseTypes
             if (this.GetType() == typeof(String))
                 return oValue as string;
             else
-                throw new JSException(TypeProxy.Proxy(new TypeError("Try to call String.toString for not string object.")));
+                throw new JSException(new TypeError("Try to call String.toString for not string object."));
         }
 
         [Hidden]

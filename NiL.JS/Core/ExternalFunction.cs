@@ -38,6 +38,10 @@ namespace NiL.JS.Core
 
         public ExternalFunction(ExternalFunctionDelegate del)
         {
+            if (_length == null)
+                _length = new Number(0) { attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum };
+            var paramCountAttrbt = del.Method.GetCustomAttributes(typeof(ParametersCountAttribute), false);
+            _length.iValue = paramCountAttrbt != null && paramCountAttrbt.Length > 0 ? ((ParametersCountAttribute)paramCountAttrbt[0]).Count : 1;
             _prototype = undefined;
             if (del == null)
                 throw new ArgumentNullException();
@@ -51,22 +55,6 @@ namespace NiL.JS.Core
             if (res == null)
                 return JSObject.Null;
             return res;
-        }
-
-        [Field]
-        [DoNotDelete]
-        [DoNotEnumerate]
-        public override JSObject length
-        {
-            [Hidden]
-            get
-            {
-                if (_length == null)
-                    _length = new Number(0) { attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum };
-                var paramCountAttrbt = del.Method.GetCustomAttributes(typeof(ParametersCountAttribute), false);
-                _length.iValue = paramCountAttrbt != null && paramCountAttrbt.Length > 0 ? ((ParametersCountAttribute)paramCountAttrbt[0]).Count : 1;
-                return _length;
-            }
         }
     }
 }

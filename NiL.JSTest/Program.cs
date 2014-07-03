@@ -18,115 +18,13 @@ namespace NiL.JSTest
             var sw = new Stopwatch();
             var s = new Script(
 @"
-for(var i=0;i<8;i++) console.log(i&2 ? new Array((i&1)+1).join(' ')+'\\' : new Array(2-(i&1)).join(' ')+'/')
+console.log(Date.now());
 ");
             s.Context.AttachModule(typeof(System.Drawing.Point));
             sw.Start();
             s.Invoke();
             sw.Stop();
             Console.WriteLine(sw.Elapsed);
-        }
-
-        static void Main(string[] args)
-        {
-            typeof(System.Windows.Forms.Button).GetType();
-            int mode = 3
-                ;
-            switch (mode)
-            {
-                case 0:
-                    {
-                        sputnicTests();
-                        break;
-                    }
-                case 1:
-                    {
-                        runTestFile(@"ftest.js");
-                        break;
-                    }
-                case 2:
-                    {
-                        runFile(@"ftest.js");
-                        break;
-                    }
-                case 3:
-                    {
-                        testEx();
-                        break;
-                    }
-                case 4:
-                    {
-                        // Object
-                        sputnicTests(@"tests\sputnik\ch15\15.2\");
-                        break;
-                    }
-                case 5:
-                    {
-                        // Array
-                        sputnicTests(@"tests\sputnik\ch15\15.4\");
-                        break;
-                    }
-            }
-
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
-            Console.WriteLine("GC.GetTotalMemory: " + GC.GetTotalMemory(true));
-            Console.WriteLine("GC.CollectionCount: " + GC.CollectionCount(0));
-            Console.WriteLine("GC.CollectionCount: " + GC.CollectionCount(1));
-            Console.WriteLine("GC.CollectionCount: " + GC.CollectionCount(2));
-            Console.WriteLine("GC.MaxGeneration: " + GC.MaxGeneration);
-            if (System.Windows.Forms.Application.OpenForms.Count != 0)
-            {
-                while (System.Windows.Forms.Application.OpenForms.Count != 0)
-                {
-                    System.Threading.Thread.Sleep(1);
-                    System.Windows.Forms.Application.DoEvents();
-                }
-            }
-            else Console.ReadKey();
-        }
-
-        private static void runFile(string filename)
-        {
-            Console.WriteLine("Processing file: " + filename);
-            var f = new FileStream(filename, FileMode.Open, FileAccess.Read);
-            var sr = new StreamReader(f);
-            var sw = new System.Diagnostics.Stopwatch();
-            sw.Start();
-            var s = new Script(sr.ReadToEnd());
-            sr.Dispose();
-            f.Dispose();
-            sw.Stop();
-            Console.WriteLine("Compile time: " + sw.Elapsed);
-            Console.WriteLine("-------------------------------------");
-            s.Invoke();
-            Console.WriteLine("-------------------------------------");
-            Console.WriteLine("Complite.");
-        }
-
-        private static void runTestFile(string filename)
-        {
-            string staCode = "";
-            using (var staFile = new FileStream("sta.js", FileMode.Open, FileAccess.Read))
-                staCode = new StreamReader(staFile).ReadToEnd();
-            Console.WriteLine("Processing file: " + filename);
-            var f = new FileStream(filename, FileMode.Open, FileAccess.Read);
-            var sr = new StreamReader(f);
-            var sw = new System.Diagnostics.Stopwatch();
-            sw.Start();
-            var s = new Script(staCode);
-            sw.Stop();
-            Console.WriteLine("Compile time: " + sw.Elapsed);
-            sw.Restart();
-            s.Invoke();
-            sw.Stop();
-            Console.WriteLine("Init time: " + sw.Elapsed);
-            Console.WriteLine("-------------------------------------");
-            s.Context.Eval(sr.ReadToEnd());
-            Console.WriteLine("-------------------------------------");
-            Console.WriteLine("Complite.");
-            sr.Dispose();
-            f.Dispose();
         }
 
         private static void sputnicTests(string folderPath = "tests\\")
@@ -225,6 +123,130 @@ for(var i=0;i<8;i++) console.log(i&2 ? new Array((i&1)+1).join(' ')+'\\' : new A
             _("failed: " + failed);
             _("time: " + sw.Elapsed);
             _("Sputnik testing complite");
+        }
+
+        static void Main(string[] args)
+        {
+            typeof(System.Windows.Forms.Button).GetType();
+            int mode = 0
+                ;
+            switch (mode)
+            {
+                case 0:
+                    {
+                        sputnicTests();
+                        break;
+                    }
+                case 1:
+                    {
+                        runTestFile(@"ftest.js");
+                        break;
+                    }
+                case 2:
+                    {
+                        runFile(@"ftest.js");
+                        break;
+                    }
+                case 3:
+                    {
+                        testEx();
+                        break;
+                    }
+                case 4:
+                    {
+                        // Object
+                        sputnicTests(@"tests\sputnik\ch15\15.2\");
+                        break;
+                    }
+                case 5:
+                    {
+                        // Array
+                        sputnicTests(@"tests\sputnik\ch15\15.4\");
+                        break;
+                    }
+                case 6:
+                    {
+                        // Array
+                        sputnicTests(@"tests\sputnik\ch15\15.9\");
+                        break;
+                    }
+                case 100:
+                    {
+                        Context.GlobalContext.DefineVariable("load").Assign(new ExternalFunction((_th, e) =>
+                        {
+                            using (var f = new FileStream("Benchmarks\\" + e["0"], FileMode.Open, FileAccess.Read))
+                            {
+                                using (var sr = new StreamReader(f))
+                                    Context.CurrentContext.Eval(sr.ReadToEnd());
+                            }
+                            return null;
+                        }));
+
+                        runFile(@"Benchmarks\run.js");
+                        break;
+                    }
+            }
+
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            Console.WriteLine("GC.GetTotalMemory: " + GC.GetTotalMemory(true));
+            Console.WriteLine("GC.CollectionCount: " + GC.CollectionCount(0));
+            Console.WriteLine("GC.CollectionCount: " + GC.CollectionCount(1));
+            Console.WriteLine("GC.CollectionCount: " + GC.CollectionCount(2));
+            Console.WriteLine("GC.MaxGeneration: " + GC.MaxGeneration);
+            if (System.Windows.Forms.Application.OpenForms.Count != 0)
+            {
+                while (System.Windows.Forms.Application.OpenForms.Count != 0)
+                {
+                    System.Threading.Thread.Sleep(1);
+                    System.Windows.Forms.Application.DoEvents();
+                }
+            }
+            else
+                Console.ReadKey();
+        }
+
+        private static void runFile(string filename)
+        {
+            Console.WriteLine("Processing file: " + filename);
+            var f = new FileStream(filename, FileMode.Open, FileAccess.Read);
+            var sr = new StreamReader(f);
+            var sw = new System.Diagnostics.Stopwatch();
+            sw.Start();
+            var s = new Script(sr.ReadToEnd());
+            sr.Dispose();
+            f.Dispose();
+            sw.Stop();
+            Console.WriteLine("Compile time: " + sw.Elapsed);
+            Console.WriteLine("-------------------------------------");
+            s.Invoke();
+            Console.WriteLine("-------------------------------------");
+            Console.WriteLine("Complite.");
+        }
+
+        private static void runTestFile(string filename)
+        {
+            string staCode = "";
+            using (var staFile = new FileStream("sta.js", FileMode.Open, FileAccess.Read))
+                staCode = new StreamReader(staFile).ReadToEnd();
+            Console.WriteLine("Processing file: " + filename);
+            var f = new FileStream(filename, FileMode.Open, FileAccess.Read);
+            var sr = new StreamReader(f);
+            var sw = new System.Diagnostics.Stopwatch();
+            sw.Start();
+            var s = new Script(staCode);
+            sw.Stop();
+            Console.WriteLine("Compile time: " + sw.Elapsed);
+            sw.Restart();
+            s.Invoke();
+            sw.Stop();
+            Console.WriteLine("Init time: " + sw.Elapsed);
+            Console.WriteLine("-------------------------------------");
+            s.Context.Eval(sr.ReadToEnd());
+            Console.WriteLine("-------------------------------------");
+            Console.WriteLine("Complite.");
+            sr.Dispose();
+            f.Dispose();
         }
     }
 }

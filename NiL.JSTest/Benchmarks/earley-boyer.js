@@ -3620,7 +3620,7 @@ var sc_const_4_nboyer;
                     else
                         if ((((term2 = ((lst.car).cdr.car)), (unify_subst_nboyer = null), (one_way_unify1_nboyer(sc_term_12, term2))) !== false))
                             return (rewrite_nboyer((apply_subst_nboyer(unify_subst_nboyer, ((lst.car).cdr.cdr.car)))));
-                        else 
+                        else
                                 (lst = (lst.cdr));
                 }
             }
@@ -3719,7 +3719,7 @@ var sc_const_4_nboyer;
             else
                 if (((is_term_equal_nboyer(x, (lst.car))) !== false))
                     return true;
-                else 
+                else
                     (lst = (lst.cdr));
         }
     };
@@ -3748,7 +3748,7 @@ var sc_const_4_nboyer;
                         (symbol_record = (BgL_sc_symbolzd2ze3symbolzd2record_1ze3_nboyer(sc_sym_17)));
                         (symbol_record[(1)] = value);
                     }
-                    else 
+                    else
                         (sc_error("ADD-LEMMA did not like term:  ", term));
                     (lst = (lst.cdr));
                 }
@@ -3776,7 +3776,7 @@ var sc_const_4_nboyer;
             (sc_term_22 = term);
             if (!(sc_term_22 instanceof sc_Pair))
                 (optrOpnd = sc_term_22);
-            else 
+            else
                 (optrOpnd = (new sc_Pair((BgL_sc_symbolzd2ze3symbolzd2record_1ze3_nboyer((sc_term_22.car))), (translate_args_nboyer((sc_term_22.cdr))))));
             (sc_term_21 = (apply_subst_nboyer(((const_nboyer === null) ? null : (new sc_Pair((new sc_Pair((const_nboyer.car.car), (translate_term_nboyer((const_nboyer.car.cdr))))), (translate_alist_nboyer((const_nboyer.cdr)))))), optrOpnd)));
             (answer = (tautologyp_nboyer((rewrite_nboyer(sc_term_21)), null, null)));
@@ -3833,7 +3833,7 @@ var const_earley;
                         if ((i >= (0)))
                             if ((sc_isEqual((sc_nts_10[i]), nt)))
                                 return i;
-                            else 
+                            else
                                 (--i);
                         else
                             return false;
@@ -4017,7 +4017,7 @@ var const_earley;
                                 if ((i >= (0)))
                                     if ((sc_isEqual((sc_nts_49[i]), nt)))
                                         return i;
-                                    else 
+                                    else
                                         (--i);
                                 else
                                     return false;
@@ -4070,7 +4070,7 @@ var const_earley;
                                         (conf_set_adjoin(state, conf_set, sc_conf_59, i));
                                         (l1 = (l1.cdr));
                                     }
-                                    else 
+                                    else
                                         (l1 = (l1.cdr));
                                 }
                             }
@@ -4093,7 +4093,7 @@ var const_earley;
                                     (conf_set_adjoin(state, conf_set, sc_conf_66, i));
                                     (i = (other_set[(i + (5))]));
                                 }
-                                else 
+                                else
                                     (i = (other_set[(i + (5))]));
                             }
                             return undefined;
@@ -4142,7 +4142,7 @@ var const_earley;
                                                         (conf_set_adjoin(sc_state_82, starter_set, starter, BgL_sc_statezd2num_68zd2));
                                                         (sc_l_74 = (sc_l_74.cdr));
                                                     }
-                                                    else 
+                                                    else
                                                                 (sc_l_74 = (sc_l_74.cdr));
                                                 }
                                             }
@@ -4156,7 +4156,7 @@ var const_earley;
                                                         (conf_set_union(sc_state_82, next_set, next, BgL_sc_confzd2set_79zd2));
                                                         (l = (l.cdr));
                                                     }
-                                                    else 
+                                                    else
                                                                 (l = (l.cdr));
                                                 }
                                             }
@@ -4218,7 +4218,7 @@ var const_earley;
                                         (sc_conf_89 = (l.car));
                                         if ((((state = (sc_states_88[j])), (conf_set = (state[(sc_conf_89 + (1))])), ((conf_set !== false) ? (conf_set[(i + (5))]) : false)) !== false))
                                             return true;
-                                        else 
+                                        else
                                                     (l = (l.cdr));
                                     }
                                     else
@@ -4279,7 +4279,7 @@ var const_earley;
                                                         };
                                                         return (loop3(ender_trees, l2));
                                                     }
-                                                    else 
+                                                    else
                                                                 (k = (ender_set[(k + (5))]));
                                                 else
                                                     return (sc_loop1_98((l1.cdr), l2));
@@ -4287,7 +4287,7 @@ var const_earley;
                                         };
                                         return (loop2((ender_set[(2)]), l2));
                                     }
-                                    else 
+                                    else
                                             (l1 = (l1.cdr));
                                 }
                                 else
@@ -4316,7 +4316,7 @@ var const_earley;
                                             (l = (l.cdr));
                                             (trees = (sc_append((deriv_trees(sc_conf_107, i, j, sc_enders_102, sc_steps_103, sc_names_104, sc_toks_105, sc_states_106, BgL_sc_nbzd2nts_108zd2)), trees)));
                                         }
-                                        else 
+                                        else
                                                 (l = (l.cdr));
                                     }
                                 }
@@ -4356,12 +4356,12 @@ var const_earley;
                                                 (k = (ender_set[(k + (5))]));
                                                 (n += (nb_prev_trees * nb_ender_trees));
                                             }
-                                            else 
+                                            else
                                                         (k = (ender_set[(k + (5))]));
                                         }
                                         return (sc_loop1_116((l.cdr), n));
                                     }
-                                    else 
+                                    else
                                             (l = (l.cdr));
                                 }
                                 else
@@ -4390,7 +4390,7 @@ var const_earley;
                                             (l = (l.cdr));
                                             (nb_trees = ((nb_deriv_trees(sc_conf_124, i, j, sc_enders_120, sc_steps_121, sc_toks_122, sc_states_123, BgL_sc_nbzd2nts_125zd2)) + nb_trees));
                                         }
-                                        else 
+                                        else
                                                 (l = (l.cdr));
                                     }
                                 }
@@ -4422,7 +4422,7 @@ var const_earley;
                                         (l1 = (l1.cdr));
                                         (l2 = (new sc_Pair(sc_i_29, l2)));
                                     }
-                                    else 
+                                    else
                                         (l1 = (l1.cdr));
                                 }
                             }
@@ -4523,7 +4523,7 @@ var const_earley;
                                                                     }
                                                                     return (sc_loop1_127((l.cdr)));
                                                                 }
-                                                                else 
+                                                                else
                                                                                 (l = (l.cdr));
                                                             }
                                                             else

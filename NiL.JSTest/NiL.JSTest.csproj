@@ -126,7 +126,6 @@
     <Content Include="Benchmarks\crypto.js" />
     <Content Include="Benchmarks\deltablue.js" />
     <Content Include="Benchmarks\earley-boyer.js" />
-    <Content Include="Benchmarks\navier-stokes.js" />
     <Content Include="Benchmarks\raytrace.js" />
     <Content Include="Benchmarks\README.txt" />
     <Content Include="Benchmarks\regexp.js" />

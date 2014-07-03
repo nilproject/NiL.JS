@@ -688,36 +688,33 @@ namespace NiL.JS
                 Node[] stack = new Node[node.height];
                 int[] step = new int[node.height];
                 int sindex = -1;
-                if (node != null)
+                stack[++sindex] = node;
+                while (sindex >= 0)
                 {
-                    stack[++sindex] = node;
-                    while (sindex >= 0)
+                    if (step[sindex] == 0 && stack[sindex].greater != null)
                     {
-                        if (step[sindex] == 0 && stack[sindex].greater != null)
-                        {
-                            stack[sindex + 1] = stack[sindex].greater;
-                            step[sindex] = 1;
-                            sindex++;
-                            step[sindex] = 0;
-                            continue;
-                        }
-                        if (step[sindex] < 2)
-                        {
-                            step[sindex] = 2;
-                            yield return stack[sindex];
-                            if (sstate != state)
-                                throw new InvalidOperationException("Коллекция была изменена после создания перечислителя.");
-                        }
-                        if (step[sindex] < 3 && stack[sindex].less != null)
-                        {
-                            stack[sindex + 1] = stack[sindex].less;
-                            step[sindex] = 3;
-                            sindex++;
-                            step[sindex] = 0;
-                            continue;
-                        }
-                        sindex--;
+                        stack[sindex + 1] = stack[sindex].greater;
+                        step[sindex] = 1;
+                        sindex++;
+                        step[sindex] = 0;
+                        continue;
                     }
+                    if (step[sindex] < 2)
+                    {
+                        step[sindex] = 2;
+                        yield return stack[sindex];
+                        if (sstate != state)
+                            throw new InvalidOperationException("Коллекция была изменена после создания перечислителя.");
+                    }
+                    if (step[sindex] < 3 && stack[sindex].less != null)
+                    {
+                        stack[sindex + 1] = stack[sindex].less;
+                        step[sindex] = 3;
+                        sindex++;
+                        step[sindex] = 0;
+                        continue;
+                    }
+                    sindex--;
                 }
             }
         }
@@ -730,36 +727,33 @@ namespace NiL.JS
                 Node[] stack = new Node[node.height];
                 int[] step = new int[node.height];
                 int sindex = -1;
-                if (node != null)
+                stack[++sindex] = node;
+                while (sindex >= 0)
                 {
-                    stack[++sindex] = node;
-                    while (sindex >= 0)
+                    if (step[sindex] == 0 && stack[sindex].less != null)
                     {
-                        if (step[sindex] == 0 && stack[sindex].less != null)
-                        {
-                            stack[sindex + 1] = stack[sindex].less;
-                            step[sindex] = 1;
-                            sindex++;
-                            step[sindex] = 0;
-                            continue;
-                        }
-                        if (step[sindex] < 2)
-                        {
-                            step[sindex] = 2;
-                            yield return stack[sindex];
-                            if (sstate != state)
-                                throw new InvalidOperationException("Коллекция была изменена после создания перечислителя.");
-                        }
-                        if (step[sindex] < 3 && stack[sindex].greater != null)
-                        {
-                            stack[sindex + 1] = stack[sindex].greater;
-                            step[sindex] = 3;
-                            sindex++;
-                            step[sindex] = 0;
-                            continue;
-                        }
-                        sindex--;
+                        stack[sindex + 1] = stack[sindex].less;
+                        step[sindex] = 1;
+                        sindex++;
+                        step[sindex] = 0;
+                        continue;
                     }
+                    if (step[sindex] < 2)
+                    {
+                        step[sindex] = 2;
+                        yield return stack[sindex];
+                        if (sstate != state)
+                            throw new InvalidOperationException("Коллекция была изменена после создания перечислителя.");
+                    }
+                    if (step[sindex] < 3 && stack[sindex].greater != null)
+                    {
+                        stack[sindex + 1] = stack[sindex].greater;
+                        step[sindex] = 3;
+                        sindex++;
+                        step[sindex] = 0;
+                        continue;
+                    }
+                    sindex--;
                 }
             }
         }

@@ -278,7 +278,16 @@ namespace NiL.JS.Core
             if (fields.TryGetValue(name, out r))
             {
                 if (r.valueType < JSObjectType.Undefined)
-                    r.Assign(DefaultFieldGetter(name, false, own));
+                {
+                    if (r.valueType == JSObjectType.NotExist)
+                        r.valueType = JSObjectType.NotExistInObject;
+                    if (!create)
+                    {
+                        var t = DefaultFieldGetter(nameObj, false, own);
+                        if (t.isExist)
+                            r.Assign(t);
+                    }
+                }
                 if (create && (r.attributes & JSObjectAttributesInternal.SystemObject) != 0)
                     fields[name] = r = r.Clone() as JSObject;
                 return r;

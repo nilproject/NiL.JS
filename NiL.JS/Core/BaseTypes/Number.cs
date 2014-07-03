@@ -397,8 +397,8 @@ namespace NiL.JS.Core.BaseTypes
             if (this.GetType() == typeof(Number) && valueType == JSObjectType.Object) // prototype instance
                 return 0;
             if (valueType != JSObjectType.Int && valueType != JSObjectType.Double)
-                throw new JSException(TypeProxy.Proxy(new TypeError("Try to call Number.valueOf on not number object.")));            
-            return base.valueOf();
+                throw new JSException(TypeProxy.Proxy(new TypeError("Try to call Number.valueOf on not number object.")));
+            return this;
         }
 
         [Hidden]

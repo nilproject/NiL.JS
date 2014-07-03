@@ -16,6 +16,9 @@ namespace NiL.JS.Core
 
         public BindedFunction(JSObject thisBind, Function proto)
         {
+            if (_length == null)
+                _length = 0;
+            _length.iValue = proto.length.iValue;
             this.proto = proto;
             this.thisBind = thisBind;
         }
@@ -37,16 +40,6 @@ namespace NiL.JS.Core
             get
             {
                 return proto.Type;
-            }
-        }
-
-        [Hidden]
-        public override JSObject length
-        {
-            [Hidden]
-            get
-            {
-                return proto.length;
             }
         }
 

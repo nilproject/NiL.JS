@@ -44,11 +44,11 @@ namespace NiL.JS.Expressions
                     if (setter != null)
                         setter.Invoke(fieldSource, setterArgs);
                     else if (context.strict)
-                        throw new JSException(TypeProxy.Proxy(new TypeError("Can not assign to readonly property \"" + first + "\"")));
+                        throw new JSException(new TypeError("Can not assign to readonly property \"" + first + "\""));
                     return setterArg;
                 }
                 else if ((field.attributes & JSObjectAttributesInternal.ReadOnly) != 0 && context.strict)
-                    throw new JSException(TypeProxy.Proxy(new TypeError("Can not assign to readonly property \"" + first + "\"")));
+                    throw new JSException(new TypeError("Can not assign to readonly property \"" + first + "\""));
                 var t = second.Invoke(context);
                 field.Assign(t);
                 return t;

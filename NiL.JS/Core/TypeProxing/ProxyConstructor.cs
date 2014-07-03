@@ -55,6 +55,13 @@ namespace NiL.JS.Core
             ctorsL.Sort((x, y) => x.Parameters.Length - y.Parameters.Length);
             constructors = ctorsL.ToArray();
             proxy.__proto__ = __proto__; // для того, чтобы не отвалились стандартные свойства функции
+
+            if (_length == null)
+                _length = new Number(0) { attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum };
+            if (proxy.hostedType == typeof(Function))
+                _length.iValue = 1;
+            else
+                _length.iValue = proxy.hostedType.GetConstructors().Last().GetParameters().Length;
         }
 
         [Hidden]
@@ -146,23 +153,6 @@ namespace NiL.JS.Core
             catch (TargetInvocationException e)
             {
                 throw e.InnerException;
-            }
-        }
-
-        [DoNotEnumerate]
-        [DoNotDelete]
-        public override JSObject length
-        {
-            [Hidden]
-            get
-            {
-                if (_length == null)
-                    _length = new Number(0) { attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum };
-                if (proxy.hostedType == typeof(Function))
-                    _length.iValue = 1;
-                else
-                    _length.iValue = proxy.hostedType.GetConstructors().Last().GetParameters().Length;
-                return _length;
             }
         }
 

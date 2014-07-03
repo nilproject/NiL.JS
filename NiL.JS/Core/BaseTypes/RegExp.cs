@@ -24,7 +24,7 @@ namespace NiL.JS.Core.BaseTypes
             if (ptrn.valueType == JSObjectType.Object && ptrn.oValue is RegExp)
             {
                 if (args.GetMember("length").iValue > 1 && args.GetMember("1").valueType > JSObjectType.Undefined)
-                    throw new JSException(TypeProxy.Proxy(new TypeError("Cannot supply flags when constructing one RegExp from another")));
+                    throw new JSException(new TypeError("Cannot supply flags when constructing one RegExp from another"));
                 oValue = ptrn.oValue;
                 regEx = (oValue as RegExp).regEx;
                 _global = (oValue as RegExp).global;
@@ -179,7 +179,7 @@ namespace NiL.JS.Core.BaseTypes
         public JSObject exec(JSObject args)
         {
             if (this.GetType() != typeof(RegExp))
-                throw new JSException(TypeProxy.Proxy(new TypeError("Try to call RegExp.exec on not RegExp object.")));
+                throw new JSException(new TypeError("Try to call RegExp.exec on not RegExp object."));
             string input = args.GetMember("0").ToString();
             lIndex = Tools.JSObjectToNumber(lastIndex);
             if ((lIndex.attributes & JSObjectAttributesInternal.SystemObject) != 0)

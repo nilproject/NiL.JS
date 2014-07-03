@@ -721,7 +721,7 @@ namespace NiL.JS.Core.BaseTypes
         [DoNotDelete]
         [DoNotEnumerate]
         [NotConfigurable]
-        public virtual JSObject length
+        public JSObject length
         {
             [Hidden]
             get
@@ -940,7 +940,7 @@ namespace NiL.JS.Core.BaseTypes
             }
             if (__proto__ == null)
                 __proto__ = TypeProxy.GetPrototype(this.GetType());
-            return DefaultFieldGetter(name, create, own);
+            return DefaultFieldGetter(nameObj, create, own);
         }
 
         [Hidden]

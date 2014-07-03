@@ -8,18 +8,9 @@ namespace NiL.JS.Core
     {
         private TypeProxy proxy;
 
-        public override JSObject length
-        {
-            get
-            {
-                if (_length == null)
-                    _length = 1;
-                return _length;
-            }
-        }
-
         public ObjectConstructor(TypeProxy proxy)
         {
+            _length = 1;
             this.proxy = proxy;
         }
 

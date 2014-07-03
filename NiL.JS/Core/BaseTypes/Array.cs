@@ -172,6 +172,8 @@ namespace NiL.JS.Core.BaseTypes
                     return false;
                 }
             }
+            foreach (var i in data.NotLess(nlen))
+                data.Remove(i.Key);
             _length = nlen;
             return true;
         }
@@ -208,7 +210,7 @@ namespace NiL.JS.Core.BaseTypes
                 return undefined;
             var f = args[0] == null ? null : args[0].oValue as Function;
             if (f == null)
-                throw new JSException(TypeProxy.Proxy(new TypeError("Callback argument is not a function.")));
+                throw new JSException(new TypeError("Callback argument is not a function."));
             var tb = args.Length > 1 ? args[1] : null;
             var ao = new JSObject() { oValue = Arguments.Instance, valueType = JSObjectType.Object };
             ao["length"] = 3;
@@ -255,7 +257,7 @@ namespace NiL.JS.Core.BaseTypes
                 return undefined;
             var f = args[0] == null ? null : args[0].oValue as Function;
             if (f == null)
-                throw new JSException(TypeProxy.Proxy(new TypeError("Callback argument is not a function.")));
+                throw new JSException(new TypeError("Callback argument is not a function."));
             var tb = args.Length > 1 ? args[1] : null;
             var ao = new JSObject() { oValue = Arguments.Instance, valueType = JSObjectType.Object };
             ao["length"] = 3;
@@ -302,7 +304,7 @@ namespace NiL.JS.Core.BaseTypes
                 return undefined;
             var f = args[0] == null ? null : args[0].oValue as Function;
             if (f == null)
-                throw new JSException(TypeProxy.Proxy(new TypeError("Callback argument is not a function.")));
+                throw new JSException(new TypeError("Callback argument is not a function."));
             var tb = args.Length > 1 ? args[1] : null;
             var ao = new JSObject() { oValue = Arguments.Instance, valueType = JSObjectType.Object };
             ao["length"] = 3;
@@ -346,7 +348,7 @@ namespace NiL.JS.Core.BaseTypes
                 return undefined;
             var f = args[0] == null ? null : args[0].oValue as Function;
             if (f == null)
-                throw new JSException(TypeProxy.Proxy(new TypeError("Callback argument is not a function.")));
+                throw new JSException(new TypeError("Callback argument is not a function."));
             var tb = args.Length > 1 ? args[1] : null;
             var ao = new JSObject() { oValue = Arguments.Instance, valueType = JSObjectType.Object };
             ao["length"] = 3;
@@ -392,7 +394,7 @@ namespace NiL.JS.Core.BaseTypes
                 return undefined;
             var f = args[0] == null ? null : args[0].oValue as Function;
             if (f == null)
-                throw new JSException(TypeProxy.Proxy(new TypeError("Callback argument is not a function.")));
+                throw new JSException(new TypeError("Callback argument is not a function."));
             var tb = args.Length > 1 ? args[1] : null;
             var ao = new JSObject() { oValue = Arguments.Instance, valueType = JSObjectType.Object };
             ao["length"] = 3;
@@ -576,14 +578,14 @@ namespace NiL.JS.Core.BaseTypes
         {
             var funco = args.GetMember("0");
             if (funco.valueType != JSObjectType.Function)
-                throw new JSException(TypeProxy.Proxy(new TypeError("First argument on reduce mast be a function.")));
+                throw new JSException(new TypeError("First argument on reduce mast be a function."));
             var func = funco.oValue as Function;
             var accum = args.DefineMember("1");
             var index = 0;
             if (accum.valueType < JSObjectType.Undefined)
             {
                 if (_length == 0)
-                    throw new JSException(TypeProxy.Proxy(new TypeError("Array is empty.")));
+                    throw new JSException(new TypeError("Array is empty."));
                 index++;
                 accum.attributes = 0;
                 accum.Assign(data[0]);
@@ -608,14 +610,14 @@ namespace NiL.JS.Core.BaseTypes
         {
             var funco = args.GetMember("0");
             if (funco.valueType != JSObjectType.Function)
-                throw new JSException(TypeProxy.Proxy(new TypeError("First argument on reduce mast be a function.")));
+                throw new JSException(new TypeError("First argument on reduce mast be a function."));
             var func = funco.oValue as Function;
             var accum = args.DefineMember("1");
             var index = 0;
             if (accum.valueType < JSObjectType.Undefined)
             {
                 if (_length == 0)
-                    throw new JSException(TypeProxy.Proxy(new TypeError("Array is empty.")));
+                    throw new JSException(new TypeError("Array is empty."));
                 index++;
                 accum.attributes = 0;
                 accum.Assign(data[0]);
@@ -872,7 +874,7 @@ namespace NiL.JS.Core.BaseTypes
         public new JSObject toString(JSObject args)
         {
             if (this.GetType() != typeof(Array) && !this.GetType().IsSubclassOf(typeof(Array)))
-                throw new JSException(TypeProxy.Proxy(new TypeError("Try to call Array.toString on not Array object.")));
+                throw new JSException(new TypeError("Try to call Array.toString on not Array object."));
             return this.ToString();
         }
 
@@ -926,19 +928,28 @@ namespace NiL.JS.Core.BaseTypes
                             else
                                 return base.GetMember(name, create, own);
                         }
-                        else if (!data.ContainsKey(index))
-                        {
-                            if (create)
-                                return data[index] = new JSObject() { valueType = JSObjectType.NotExistInObject };
-                            else
-                                return base.GetMember(name, create, own);
-                        }
                         else
                         {
-                            var t = data[index] ?? notExist;
-                            if (t != null && t.valueType == JSObjectType.NotExist)
-                                t.valueType = JSObjectType.NotExistInObject;
-                            return t;
+                            JSObject element = null;
+                            bool exists = data.TryGetValue(index, out element);
+                            if (!exists)
+                            {
+                                if (create)
+                                {
+                                    element = new JSObject() { valueType = JSObjectType.NotExistInObject };
+                                    data[index] = element;
+                                    return element;
+                                }
+                                else
+                                    return base.GetMember(name, create, own);
+                            }
+                            else
+                            {
+                                var t = element ?? notExist;
+                                if (t != null && t.valueType == JSObjectType.NotExist)
+                                    t.valueType = JSObjectType.NotExistInObject;
+                                return t;
+                            }
                         }
                     }
                 }

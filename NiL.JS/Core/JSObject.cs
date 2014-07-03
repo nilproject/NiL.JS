@@ -207,12 +207,12 @@ namespace NiL.JS.Core
         {
             var proto = args["0"];
             if (proto.valueType < JSObjectType.Object)
-                throw new JSException(TypeProxy.Proxy(new TypeError("Prototype may be only Object or null.")));
+                throw new JSException(new TypeError("Prototype may be only Object or null."));
             proto = proto.oValue as JSObject ?? proto;
             var members = args["1"];
             members.fields = (members.oValue as JSObject ?? members).fields;
             if (members.valueType >= JSObjectType.Object && members.oValue == null)
-                throw new JSException(TypeProxy.Proxy(new TypeError("Properties descriptor may be only Object.")));
+                throw new JSException(new TypeError("Properties descriptor may be only Object."));
             var res = CreateObject();
             if (proto.valueType >= JSObjectType.Object && proto.oValue != null)
                 res.__proto__ = proto;
@@ -224,11 +224,11 @@ namespace NiL.JS.Core
                     {
                         var getter = (desc.oValue as Function[])[1];
                         if (getter == null || getter.oValue == null)
-                            throw new JSException(TypeProxy.Proxy(new TypeError("Invalid property descriptor for property " + member + " .")));
+                            throw new JSException(new TypeError("Invalid property descriptor for property " + member + " ."));
                         desc = (getter.oValue as Function).Invoke(members, null);
                     }
                     if (desc.valueType < JSObjectType.Object || desc.oValue == null)
-                        throw new JSException(TypeProxy.Proxy(new TypeError("Invalid property descriptor for property " + member + " .")));
+                        throw new JSException(new TypeError("Invalid property descriptor for property " + member + " ."));
                     var value = desc["value"];
                     if (value.valueType == JSObjectType.Property)
                     {
@@ -272,15 +272,15 @@ namespace NiL.JS.Core
                             set = undefined;
                     }
                     if (value.isExist && (get.isExist || set.isExist))
-                        throw new JSException(TypeProxy.Proxy(new TypeError("Property can not have getter or setter and default value.")));
+                        throw new JSException(new TypeError("Property can not have getter or setter and default value."));
                     if (writable.isExist && (get.isExist || set.isExist))
-                        throw new JSException(TypeProxy.Proxy(new TypeError("Property can not have getter or setter and writable attribute.")));
+                        throw new JSException(new TypeError("Property can not have getter or setter and writable attribute."));
                     if (get.isDefinded
                         && get.valueType != JSObjectType.Function)
-                        throw new JSException(TypeProxy.Proxy(new TypeError("Getter mast be a function.")));
+                        throw new JSException(new TypeError("Getter mast be a function."));
                     if (set.isDefinded
                         && set.valueType != JSObjectType.Function)
-                        throw new JSException(TypeProxy.Proxy(new TypeError("Setter mast be a function.")));
+                        throw new JSException(new TypeError("Setter mast be a function."));
                     JSObject obj = new JSObject();
                     res.fields[member] = obj;
                     obj.attributes |=
@@ -334,18 +334,27 @@ namespace NiL.JS.Core
             return t;
         }
 
+        [ParametersCount(2)]
         [DoNotEnumerate]
         public static JSObject defineProperties(JSObject args)
         {
             var target = args["0"];
             if (target.valueType < JSObjectType.Object)
-                throw new JSException(TypeProxy.Proxy(new TypeError("Property define may only for Objects.")));
+                throw new JSException(new TypeError("Property define may only for Objects."));
+            if (target.oValue == null)
+                throw new JSException(new TypeError("Can not define properties of null."));
             target = target.oValue as JSObject ?? target;
             var members = args["1"];
+            if (!members.isDefinded)
+                throw new JSException(new TypeError("Properties descriptor can not be undefined."));
+            if (members.valueType < JSObjectType.Object)
+                return target;
+            if (members.oValue == null)
+                throw new JSException(new TypeError("Properties descriptor can not be null."));
             if (members.valueType > JSObjectType.Undefined)
             {
                 if (members.valueType < JSObjectType.Object)
-                    throw new JSException(TypeProxy.Proxy(new TypeError("Properties descriptor may be only Object.")));
+                    throw new JSException(new TypeError("Properties descriptor may be only Object."));
                 foreach (var memberName in members)
                 {
                     var desc = members[memberName];
@@ -353,11 +362,11 @@ namespace NiL.JS.Core
                     {
                         var getter = (desc.oValue as Function[])[1];
                         if (getter == null || getter.oValue == null)
-                            throw new JSException(TypeProxy.Proxy(new TypeError("Invalid property descriptor for property " + memberName + " .")));
+                            throw new JSException(new TypeError("Invalid property descriptor for property " + memberName + " ."));
                         desc = (getter.oValue as Function).Invoke(members, null);
                     }
                     if (desc.valueType < JSObjectType.Object || desc.oValue == null)
-                        throw new JSException(TypeProxy.Proxy(new TypeError("Invalid property descriptor for property " + memberName + " .")));
+                        throw new JSException(new TypeError("Invalid property descriptor for property " + memberName + " ."));
                     definePropertyImpl(target, desc, memberName);
                 }
             }
@@ -370,13 +379,13 @@ namespace NiL.JS.Core
         {
             var target = args.GetMember("0");
             if (target.valueType < JSObjectType.Object || target.oValue == null)
-                throw new JSException(TypeProxy.Proxy(new TypeError("Object.defineProperty cannot apply to non-object.")));
+                throw new JSException(new TypeError("Object.defineProperty cannot apply to non-object."));
             target = target.oValue as JSObject ?? target;
             if (target.valueType <= JSObjectType.Undefined)
                 return undefined;
             var desc = args["2"];
             if (desc.valueType < JSObjectType.Object || desc.oValue == null)
-                throw new JSException(TypeProxy.Proxy(new TypeError("Invalid property descriptor.")));
+                throw new JSException(new TypeError("Invalid property descriptor."));
             string memberName = args.GetMember("1").ToString();
             return definePropertyImpl(target, desc, memberName);
         }
@@ -426,15 +435,15 @@ namespace NiL.JS.Core
                     set = undefined;
             }
             if (value.isExist && (get.isExist || set.isExist))
-                throw new JSException(TypeProxy.Proxy(new TypeError("Property can not have getter or setter and default value.")));
+                throw new JSException(new TypeError("Property can not have getter or setter and default value."));
             if (writable.isExist && (get.isExist || set.isExist))
-                throw new JSException(TypeProxy.Proxy(new TypeError("Property can not have getter or setter and writable attribute.")));
+                throw new JSException(new TypeError("Property can not have getter or setter and writable attribute."));
             if (get.isDefinded
                 && get.valueType != JSObjectType.Function)
-                throw new JSException(TypeProxy.Proxy(new TypeError("Getter mast be a function.")));
+                throw new JSException(new TypeError("Getter mast be a function."));
             if (set.isDefinded
                 && set.valueType != JSObjectType.Function)
-                throw new JSException(TypeProxy.Proxy(new TypeError("Setter mast be a function.")));
+                throw new JSException(new TypeError("Setter mast be a function."));
             JSObject obj = null;
             obj = target.DefineMember(memberName);
             if ((obj.attributes & JSObjectAttributesInternal.Argument) != 0 && (set.isExist || get.isExist))
@@ -443,32 +452,38 @@ namespace NiL.JS.Core
                 obj.attributes &= ~JSObjectAttributesInternal.Argument;
             }
             if ((obj.attributes & JSObjectAttributesInternal.SystemObject) != 0)
-                throw new JSException(TypeProxy.Proxy(new TypeError("Can not define property \"" + memberName + "\". Object is immutable.")));
+                throw new JSException(new TypeError("Can not define property \"" + memberName + "\". Object is immutable."));
 
             if (target is BaseTypes.Array)
             {
                 if (memberName == "length")
                 {
-                    if (value.isExist)
+                    try
                     {
-                        if ((obj.oValue as Function[])[0] != null)
+                        if (value.isExist)
                         {
-                            var nlenD = Tools.JSObjectToDouble(value);
-                            var nlen = (uint)nlenD;
-                            if (double.IsNaN(nlenD) || double.IsInfinity(nlenD) || nlen != nlenD)
-                                throw new JSException(new RangeError("Invalid array length"));
-                            if (!(target as BaseTypes.Array).setLength(nlen))
-                                throw new JSException(new TypeError("Unable to reduce length because not configurable elements"));
+                            if ((obj.oValue as Function[])[0] != null)
+                            {
+                                var nlenD = Tools.JSObjectToDouble(value);
+                                var nlen = (uint)nlenD;
+                                if (double.IsNaN(nlenD) || double.IsInfinity(nlenD) || nlen != nlenD)
+                                    throw new JSException(new RangeError("Invalid array length"));
+                                if (!(target as BaseTypes.Array).setLength(nlen))
+                                    throw new JSException(new TypeError("Unable to reduce length because not configurable elements"));
+                            }
+                            else if (!StrictEqual.Check((obj.oValue as Function[])[1].Invoke(target, null), new ImmidateValueStatement(value), null))
+                                throw new JSException(new TypeError("Cannot redefine property length."));
+                            value = notExist; // длина всегда неконфигурируема, поэтому код ниже пойдёт в обход,
+                            // а там нужные проверки, которые, для экономии кода, сюда переносить не стал
                         }
-                        else if (!StrictEqual.Check((obj.oValue as Function[])[1].Invoke(target, null), new ImmidateValueStatement(value), null))
-                            throw new JSException(new TypeError("Cannot redefine property length."));
-                        value = notExist; // длина всегда неконфигурируема, поэтому код ниже пойдёт в обход,
-                        // а там нужные проверки, которые, для экономии кода, сюда переносить не стал
                     }
-                    if (writable.isExist && !(bool)writable)
+                    finally
                     {
-                        (obj.oValue as Function[])[0] = null;
-                        obj.attributes |= JSObjectAttributesInternal.ReadOnly;
+                        if (writable.isExist && !(bool)writable)
+                        {
+                            (obj.oValue as Function[])[0] = null;
+                            obj.attributes |= JSObjectAttributesInternal.ReadOnly;
+                        }
                     }
                 }
             }
@@ -478,11 +493,13 @@ namespace NiL.JS.Core
 
             if (!config)
             {
+                // enumerable нельзя переключать
                 if (enumerable.isExist && (obj.attributes & JSObjectAttributesInternal.DoNotEnum) != 0 == (bool)enumerable)
-                    throw new JSException(TypeProxy.Proxy(new TypeError("Cannot change enumerable attribute for non configurable property.")));
+                    throw new JSException(new TypeError("Cannot change enumerable attribute for non configurable property."));
 
+                // writable нельзя повышать
                 if (writable.isExist && (obj.attributes & JSObjectAttributesInternal.ReadOnly) != 0 && (bool)writable)
-                    throw new JSException(TypeProxy.Proxy(new TypeError("Cannot change writable attribute for non configurable property.")));
+                    throw new JSException(new TypeError("Cannot change writable attribute for non configurable property."));
 
                 if (configurable.isExist && (bool)configurable)
                     throw new JSException(new TypeError("Cannot set configurate attribute to true."));
@@ -548,11 +565,11 @@ namespace NiL.JS.Core
             else
             {
                 var atrbts = obj.attributes;
-                if (configurable.isExist)
+                if (configurable.isExist && (config || !(bool)configurable))
                     obj.attributes |= JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.DoNotDelete;
-                if (enumerable.isExist)
+                if (enumerable.isExist && (config || !(bool)enumerable))
                     obj.attributes |= JSObjectAttributesInternal.DoNotEnum;
-                if (writable.isExist)
+                if (writable.isExist && (config || !(bool)writable))
                     obj.attributes |= JSObjectAttributesInternal.ReadOnly;
 
                 if (obj.attributes != atrbts && (obj.attributes & JSObjectAttributesInternal.Argument) != 0)
@@ -589,12 +606,12 @@ namespace NiL.JS.Core
             {
                 var arr = obj as BaseTypes.Array;
                 foreach (var element in arr.data)
-                    element.Value.attributes |= JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum;
+                    element.Value.attributes |= JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete;
             }
-            else if (obj.fields != null)
+            if (obj.fields != null)
                 foreach (var f in obj.fields)
                 {
-                    f.Value.attributes |= JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum;
+                    f.Value.attributes |= JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete;
                 }
             return obj;
         }
@@ -652,7 +669,7 @@ namespace NiL.JS.Core
                     throw new JSException(TypeProxy.Proxy(new ReferenceError("Variable not defined.")));
                 case JSObjectType.Undefined:
                 case JSObjectType.NotExistInObject:
-                    throw new JSException(TypeProxy.Proxy(new TypeError("Can't get property \"" + name + "\" of \"undefined\".")));
+                    throw new JSException(new TypeError("Can't get property \"" + name + "\" of \"undefined\"."));
                 case JSObjectType.Int:
                 case JSObjectType.Double:
                     {
@@ -719,7 +736,7 @@ namespace NiL.JS.Core
                             }
                         }
                         if (oValue == null)
-                            throw new JSException(TypeProxy.Proxy(new TypeError("Can't get property \"" + name + "\" of \"null\"")));
+                            throw new JSException(new TypeError("Can't get property \"" + name + "\" of \"null\""));
                         break;
                     }
                 case JSObjectType.Function:
@@ -731,10 +748,18 @@ namespace NiL.JS.Core
                         if ((attributes & JSObjectAttributesInternal.ProxyPrototype) != 0)
                             return __proto__.GetMember(name, createMember, own);
                         if (oValue == null)
-                            throw new JSException(TypeProxy.Proxy(new TypeError("Can't get property \"" + name + "\" of \"null\"")));
+                            throw new JSException(new TypeError("Can't get property \"" + name + "\" of \"null\""));
                         if (oValue == this)
                             break;
-                        return (oValue as JSObject).GetMember(name, createMember, own);
+                        try
+                        {
+                            return (oValue as JSObject).GetMember(name, createMember, own);
+                        }
+                        finally
+                        {
+                            if (fields == null)
+                                fields = (oValue as JSObject).fields;
+                        }
                     }
                 case JSObjectType.Property:
                     throw new InvalidOperationException("Try to get member of property");
@@ -864,7 +889,7 @@ namespace NiL.JS.Core
                     if (res.valueType < JSObjectType.Object)
                         return res;
                 }
-                throw new JSException(TypeProxy.Proxy(new TypeError("Can't convert object to primitive value.")));
+                throw new JSException(new TypeError("Can't convert object to primitive value."));
             }
             return this;
         }
@@ -901,7 +926,7 @@ namespace NiL.JS.Core
                     if (res.valueType < JSObjectType.Object)
                         return res;
                 }
-                throw new JSException(TypeProxy.Proxy(new TypeError("Can't convert object to primitive value.")));
+                throw new JSException(new TypeError("Can't convert object to primitive value."));
             }
             return this;
         }
@@ -1024,7 +1049,8 @@ namespace NiL.JS.Core
         [Modules.ParametersCount(0)]
         public JSObject toString(JSObject args)
         {
-            switch (this.valueType)
+            var self = this.oValue as JSObject ?? this;
+            switch (self.valueType)
             {
                 case JSObjectType.Int:
                 case JSObjectType.Double:
@@ -1050,17 +1076,17 @@ namespace NiL.JS.Core
                 case JSObjectType.Date:
                 case JSObjectType.Object:
                     {
-                        if (this.oValue is ThisBind)
-                            return this.oValue.ToString();
-                        if (this.oValue is TypeProxy)
+                        if (self.oValue is ThisBind)
+                            return self.oValue.ToString();
+                        if (self.oValue is TypeProxy)
                         {
-                            var ht = (this.oValue as TypeProxy).hostedType;
+                            var ht = (self.oValue as TypeProxy).hostedType;
                             if (ht == typeof(RegExp))
                                 return "[object Object]";
                             return "[object " + (ht == typeof(JSObject) ? typeof(System.Object) : ht).Name + "]";
                         }
-                        if (this.oValue != null)
-                            return "[object " + (this.oValue.GetType() == typeof(JSObject) ? typeof(System.Object) : this.oValue.GetType()).Name + "]";
+                        if (self.oValue != null)
+                            return "[object " + (self.oValue.GetType() == typeof(JSObject) ? typeof(System.Object) : self.oValue.GetType()).Name + "]";
                         else
                             return "[object Null]";
                     }
@@ -1072,33 +1098,31 @@ namespace NiL.JS.Core
         [DoNotEnumerate]
         public virtual JSObject toLocaleString()
         {
-            if (valueType >= JSObjectType.Object && oValue == null)
-                throw new JSException(TypeProxy.Proxy(new TypeError("toLocaleString calling on null.")));
-            if (valueType <= JSObjectType.Undefined)
-                throw new JSException(TypeProxy.Proxy(new TypeError("toLocaleString calling on undefined value.")));
-            return toString(null);
+            var self = this.oValue as JSObject ?? this;
+            if (self.valueType >= JSObjectType.Object && self.oValue == null)
+                throw new JSException(new TypeError("toLocaleString calling on null."));
+            if (self.valueType <= JSObjectType.Undefined)
+                throw new JSException(new TypeError("toLocaleString calling on undefined value."));
+            return self.toString(null);
         }
 
         [DoNotEnumerate]
         public virtual JSObject valueOf()
         {
             if (valueType >= JSObjectType.Object && oValue == null)
-                throw new JSException(TypeProxy.Proxy(new TypeError("valueOf calling on null.")));
+                throw new JSException(new TypeError("valueOf calling on null."));
             if (valueType <= JSObjectType.Undefined)
-                throw new JSException(TypeProxy.Proxy(new TypeError("valueOf calling on undefined value.")));
-            if (valueType >= JSObjectType.Object && oValue is JSObject && oValue != this)
-                return (oValue as JSObject).valueOf();
-            else
-                return this;
+                throw new JSException(new TypeError("valueOf calling on undefined value."));
+            return valueType < JSObjectType.Object ? new JSObject() { valueType = JSObjectType.Object, oValue = this } : this;
         }
 
         [DoNotEnumerate]
         public virtual JSObject isPrototypeOf(JSObject args)
         {
             if (valueType >= JSObjectType.Object && oValue == null)
-                throw new JSException(TypeProxy.Proxy(new TypeError("isPrototypeOf calling on null.")));
+                throw new JSException(new TypeError("isPrototypeOf calling on null."));
             if (valueType <= JSObjectType.Undefined)
-                throw new JSException(TypeProxy.Proxy(new TypeError("isPrototypeOf calling on undefined value.")));
+                throw new JSException(new TypeError("isPrototypeOf calling on undefined value."));
             if (args.GetMember("length").iValue == 0)
                 return false;
             var a = args.GetMember("0");
@@ -1170,9 +1194,9 @@ namespace NiL.JS.Core
         {
             var obj = args["0"];
             if (obj.valueType < JSObjectType.Object)
-                throw new JSException(TypeProxy.Proxy(new TypeError("Prevent the expansion can only for objects")));
+                throw new JSException(new TypeError("Prevent the expansion can only for objects"));
             if (obj.oValue == null)
-                throw new JSException(TypeProxy.Proxy(new TypeError("Can not prevent extensions for null")));
+                throw new JSException(new TypeError("Can not prevent extensions for null"));
             obj.attributes |= JSObjectAttributesInternal.Immutable;
             var res = (obj.oValue as JSObject);
             if (res != null)
@@ -1281,12 +1305,12 @@ namespace NiL.JS.Core
         public virtual JSObject propertyIsEnumerable(JSObject args)
         {
             if (valueType >= JSObjectType.Object && oValue == null)
-                throw new JSException(TypeProxy.Proxy(new TypeError("propertyIsEnumerable calling on null.")));
+                throw new JSException(new TypeError("propertyIsEnumerable calling on null."));
             if (valueType <= JSObjectType.Undefined)
-                throw new JSException(TypeProxy.Proxy(new TypeError("propertyIsEnumerable calling on undefined value.")));
+                throw new JSException(new TypeError("propertyIsEnumerable calling on undefined value."));
             JSObject name = args.GetMember("0");
             string n = name.ToString();
-            var res = GetMember(n);
+            var res = GetMember(n, true);
             res = (res.isExist) && ((res.attributes & JSObjectAttributesInternal.DoNotEnum) == 0);
             return res;
         }
@@ -1307,7 +1331,7 @@ namespace NiL.JS.Core
         public static JSObject getPrototypeOf(JSObject args)
         {
             if (args.GetMember("0").valueType < JSObjectType.Object)
-                throw new JSException(TypeProxy.Proxy(new TypeError("Parameter isn't an Object.")));
+                throw new JSException(new TypeError("Parameter isn't an Object."));
             var res = args.GetMember("0")["__proto__"];
             if (res.oValue is TypeProxy && (res.oValue as TypeProxy).prototypeInstance != null)
                 res = (res.oValue as TypeProxy).prototypeInstance;
@@ -1320,9 +1344,9 @@ namespace NiL.JS.Core
         {
             var source = args.GetMember("0");
             if (source.valueType <= JSObjectType.Undefined)
-                throw new JSException(TypeProxy.Proxy(new TypeError("Object.getOwnPropertyDescriptor called on undefined.")));
+                throw new JSException(new TypeError("Object.getOwnPropertyDescriptor called on undefined."));
             if (source.valueType < JSObjectType.Object)
-                throw new JSException(TypeProxy.Proxy(new TypeError("Object.getOwnPropertyDescriptor called on non-object.")));
+                throw new JSException(new TypeError("Object.getOwnPropertyDescriptor called on non-object."));
             var obj = source.GetMember(args.GetMember("1").ToString(), true);
             if (obj.valueType < JSObjectType.Undefined)
                 return undefined;
@@ -1352,7 +1376,7 @@ namespace NiL.JS.Core
             if (obj.valueType < JSObjectType.Object)
                 throw new JSException(new TypeError("Object.getOwnPropertyNames called on non-object value."));
             if (obj.oValue == null)
-                throw new JSException(TypeProxy.Proxy(new TypeError("Cannot get property names of null")));
+                throw new JSException(new TypeError("Cannot get property names of null"));
             return new BaseTypes.Array((obj.oValue as JSObject ?? obj).GetEnumeratorImpl(false));
         }
 
@@ -1363,7 +1387,7 @@ namespace NiL.JS.Core
             if (obj.valueType < JSObjectType.Object)
                 throw new JSException(new TypeError("Object.keys called on non-object value."));
             if (obj.oValue == null)
-                throw new JSException(TypeProxy.Proxy(new TypeError("Cannot get property names of null")));
+                throw new JSException(new TypeError("Cannot get property names of null"));
             return new BaseTypes.Array((obj.oValue as JSObject ?? obj).GetEnumeratorImpl(true));
         }
 

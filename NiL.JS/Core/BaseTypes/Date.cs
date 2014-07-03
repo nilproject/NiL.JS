@@ -157,6 +157,12 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [DoNotEnumerate]
+        public static JSObject now()
+        {
+            return DateTime.Now.Ticks / 10000 - _unixTimeBase - TimeZone.CurrentTimeZone.GetUtcOffset(DateTime.Now).Ticks / 10000;
+        }
+
+        [DoNotEnumerate]
         public JSObject getTimezoneOffset()
         {
             if (error)

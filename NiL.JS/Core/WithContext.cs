@@ -16,9 +16,9 @@ namespace NiL.JS.Core
             if (obj.valueType == JSObjectType.NotExist)
                 throw new JSException(TypeProxy.Proxy(new ReferenceError("Variable not defined.")));
             if (obj.valueType <= JSObjectType.Undefined)
-                throw new JSException(TypeProxy.Proxy(new TypeError("Can't access to property value of \"undefined\".")));
+                throw new JSException(new TypeError("Can't access to property value of \"undefined\"."));
             if (obj.valueType >= JSObjectType.Object && obj.oValue == null)
-                throw new JSException(TypeProxy.Proxy(new TypeError("Can't access to property value of \"null\".")));
+                throw new JSException(new TypeError("Can't access to property value of \"null\"."));
             @object = obj.Clone() as JSObject;
         }
 

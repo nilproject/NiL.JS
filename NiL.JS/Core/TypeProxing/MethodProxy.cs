@@ -43,6 +43,7 @@ namespace NiL.JS.Core
         [Hidden]
         public override FunctionType Type
         {
+            [Hidden]
             get
             {
                 return FunctionType.Function;
@@ -51,15 +52,24 @@ namespace NiL.JS.Core
         [Hidden]
         public override string name
         {
+            [Hidden]
             get
             {
                 return info.Name;
             }
         }
         [Hidden]
-        public MethodBase Method { get { return info; } }
+        public MethodBase Method
+        {
+            [Hidden]
+            get { return info; }
+        }
         [Hidden]
-        public ParameterInfo[] Parameters { get { return parameters; } }
+        public ParameterInfo[] Parameters
+        {
+            [Hidden]
+            get { return parameters; }
+        }
 
         public MethodProxy(MethodBase methodinfo, Modules.ConvertValueAttribute converter, Modules.ConvertValueAttribute[] paramsConverters)
             : this(methodinfo, null)
@@ -167,6 +177,13 @@ namespace NiL.JS.Core
             }
             else
                 throw new ArgumentException("methodinfo");
+            if (_length == null)
+                _length = new Number(0) { attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.SystemObject };
+            var pc = info.GetCustomAttributes(typeof(Modules.ParametersCountAttribute), false);
+            if (pc.Length != 0)
+                _length.iValue = (pc[0] as Modules.ParametersCountAttribute).Count;
+            else
+                _length.iValue = parameters.Length;
         }
 
         private static object[] convertArray(NiL.JS.Core.BaseTypes.Array array)
@@ -268,24 +285,6 @@ namespace NiL.JS.Core
             }
             return null;
         }
-        
-        [Modules.DoNotEnumerate]
-        [Modules.DoNotDelete]
-        public override JSObject length
-        {
-            [Hidden]
-            get
-            {
-                if (_length == null)
-                    _length = new Number(0) { attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.SystemObject };
-                var pc = info.GetCustomAttributes(typeof(Modules.ParametersCountAttribute), false);
-                if (pc.Length != 0)
-                    _length.iValue = (pc[0] as Modules.ParametersCountAttribute).Count;
-                else
-                    _length.iValue = parameters.Length;
-                return _length;
-            }
-        }
 
         [Hidden]
         internal object InvokeImpl(JSObject thisBind, object[] args, JSObject argsSource)
@@ -305,7 +304,7 @@ namespace NiL.JS.Core
                     case CallMode.FuncDynamicZero:
                         {
 #if !NET35
-                            if (target != null && info.IsVirtual && target.GetType() != info.ReflectedType && !info.ReflectedType.IsAssignableFrom(target.GetType())) // your bunny wrote
+                            if (target != null && info.IsVirtual && target.GetType() != info.ReflectedType) // your bunny wrote
                             {
                                 bool di = true;
                                 SetFieldValue(_targetInfo, delegateF0, target, typeof(object), _targetInfo.Attributes, typeof(Action), ref di);
@@ -319,7 +318,7 @@ namespace NiL.JS.Core
                     case CallMode.FuncDynamicOneArray:
                         {
 #if !NET35
-                            if (target != null && info.IsVirtual && target.GetType() != info.ReflectedType && !info.ReflectedType.IsAssignableFrom(target.GetType())) // your bunny wrote
+                            if (target != null && info.IsVirtual && target.GetType() != info.ReflectedType) // your bunny wrote
                             {
                                 bool di = true;
                                 SetFieldValue(_targetInfo, delegateF1, target, typeof(object), _targetInfo.Attributes, typeof(Action), ref di);
@@ -333,7 +332,7 @@ namespace NiL.JS.Core
                     case CallMode.FuncDynamicOneRaw:
                         {
 #if !NET35
-                            if (target != null && info.IsVirtual && target.GetType() != info.ReflectedType && !info.ReflectedType.IsAssignableFrom(target.GetType())) // your bunny wrote
+                            if (target != null && info.IsVirtual && target.GetType() != info.ReflectedType) // your bunny wrote
                             {
                                 bool di = true;
                                 SetFieldValue(_targetInfo, delegateF1, target, typeof(object), _targetInfo.Attributes, typeof(Action), ref di);
@@ -347,7 +346,7 @@ namespace NiL.JS.Core
                     case CallMode.FuncDynamicOne:
                         {
 #if !NET35
-                            if (target != null && info.IsVirtual && target.GetType() != info.ReflectedType && !info.ReflectedType.IsAssignableFrom(target.GetType())) // your bunny wrote
+                            if (target != null && info.IsVirtual && target.GetType() != info.ReflectedType) // your bunny wrote
                             {
                                 bool di = true;
                                 SetFieldValue(_targetInfo, delegateF1, target, typeof(object), _targetInfo.Attributes, typeof(Action), ref di);
@@ -386,7 +385,7 @@ namespace NiL.JS.Core
                                 res = (info as ConstructorInfo).Invoke(args);
                             else
                             {
-                                if (target != null && info.IsVirtual && target.GetType() != info.ReflectedType && !info.ReflectedType.IsAssignableFrom(target.GetType())) // your bunny wrote
+                                if (target != null && info.IsVirtual && target.GetType() != info.ReflectedType) // your bunny wrote
                                 {
                                     var minfo = info as MethodInfo;
                                     if (minfo.ReturnType != typeof(void) && minfo.ReturnType.IsValueType)
@@ -400,23 +399,57 @@ namespace NiL.JS.Core
                                     Delegate del = null;
                                     switch (parameters.Length)
                                     {
-                                        case 0: del = (Activator.CreateInstance(typeof(Func<object>), target, minfo.MethodHandle.GetFunctionPointer()) as Delegate); break;
-                                        case 1: del = (Activator.CreateInstance(typeof(Func<object, object>), target, minfo.MethodHandle.GetFunctionPointer()) as Delegate); break;
-                                        case 2: del = (Activator.CreateInstance(typeof(Func<object, object, object>), target, minfo.MethodHandle.GetFunctionPointer()) as Delegate); break;
-                                        case 3: del = (Activator.CreateInstance(typeof(Func<object, object, object, object>), target, minfo.MethodHandle.GetFunctionPointer()) as Delegate); break;
-                                        case 4: del = (Activator.CreateInstance(typeof(Func<object, object, object, object, object>), target, minfo.MethodHandle.GetFunctionPointer()) as Delegate); break;
-                                        case 5: del = (Activator.CreateInstance(typeof(Func<object, object, object, object, object, object>), target, minfo.MethodHandle.GetFunctionPointer()) as Delegate); break;
-                                        case 6: del = (Activator.CreateInstance(typeof(Func<object, object, object, object, object, object, object>), target, minfo.MethodHandle.GetFunctionPointer()) as Delegate); break;
-                                        case 7: del = (Activator.CreateInstance(typeof(Func<object, object, object, object, object, object, object, object>), target, minfo.MethodHandle.GetFunctionPointer()) as Delegate); break;
-                                        case 8: del = (Activator.CreateInstance(typeof(Func<object, object, object, object, object, object, object, object, object>), target, minfo.MethodHandle.GetFunctionPointer()) as Delegate); break;
-                                        case 9: del = (Activator.CreateInstance(typeof(Func<object, object, object, object, object, object, object, object, object, object>), target, minfo.MethodHandle.GetFunctionPointer()) as Delegate); break;
-                                        case 10: del = (Activator.CreateInstance(typeof(Func<object, object, object, object, object, object, object, object, object, object, object>), target, minfo.MethodHandle.GetFunctionPointer()) as Delegate); break;
-                                        case 11: del = (Activator.CreateInstance(typeof(Func<object, object, object, object, object, object, object, object, object, object, object, object>), target, minfo.MethodHandle.GetFunctionPointer()) as Delegate); break;
-                                        case 12: del = (Activator.CreateInstance(typeof(Func<object, object, object, object, object, object, object, object, object, object, object, object, object>), target, minfo.MethodHandle.GetFunctionPointer()) as Delegate); break;
-                                        case 13: del = (Activator.CreateInstance(typeof(Func<object, object, object, object, object, object, object, object, object, object, object, object, object, object>), target, minfo.MethodHandle.GetFunctionPointer()) as Delegate); break;
-                                        case 14: del = (Activator.CreateInstance(typeof(Func<object, object, object, object, object, object, object, object, object, object, object, object, object, object, object>), target, minfo.MethodHandle.GetFunctionPointer()) as Delegate); break;
-                                        case 15: del = (Activator.CreateInstance(typeof(Func<object, object, object, object, object, object, object, object, object, object, object, object, object, object, object, object>), target, minfo.MethodHandle.GetFunctionPointer()) as Delegate); break;
-                                        case 16: del = (Activator.CreateInstance(typeof(Func<object, object, object, object, object, object, object, object, object, object, object, object, object, object, object, object, object>), target, minfo.MethodHandle.GetFunctionPointer()) as Delegate); break;
+                                        case 0:
+                                            del = (Activator.CreateInstance(typeof(Func<object>), target, minfo.MethodHandle.GetFunctionPointer()) as Delegate);
+                                            break;
+                                        case 1:
+                                            del = (Activator.CreateInstance(typeof(Func<object, object>), target, minfo.MethodHandle.GetFunctionPointer()) as Delegate);
+                                            break;
+                                        case 2:
+                                            del = (Activator.CreateInstance(typeof(Func<object, object, object>), target, minfo.MethodHandle.GetFunctionPointer()) as Delegate);
+                                            break;
+                                        case 3:
+                                            del = (Activator.CreateInstance(typeof(Func<object, object, object, object>), target, minfo.MethodHandle.GetFunctionPointer()) as Delegate);
+                                            break;
+                                        case 4:
+                                            del = (Activator.CreateInstance(typeof(Func<object, object, object, object, object>), target, minfo.MethodHandle.GetFunctionPointer()) as Delegate);
+                                            break;
+                                        case 5:
+                                            del = (Activator.CreateInstance(typeof(Func<object, object, object, object, object, object>), target, minfo.MethodHandle.GetFunctionPointer()) as Delegate);
+                                            break;
+                                        case 6:
+                                            del = (Activator.CreateInstance(typeof(Func<object, object, object, object, object, object, object>), target, minfo.MethodHandle.GetFunctionPointer()) as Delegate);
+                                            break;
+                                        case 7:
+                                            del = (Activator.CreateInstance(typeof(Func<object, object, object, object, object, object, object, object>), target, minfo.MethodHandle.GetFunctionPointer()) as Delegate);
+                                            break;
+                                        case 8:
+                                            del = (Activator.CreateInstance(typeof(Func<object, object, object, object, object, object, object, object, object>), target, minfo.MethodHandle.GetFunctionPointer()) as Delegate);
+                                            break;
+                                        case 9:
+                                            del = (Activator.CreateInstance(typeof(Func<object, object, object, object, object, object, object, object, object, object>), target, minfo.MethodHandle.GetFunctionPointer()) as Delegate);
+                                            break;
+                                        case 10:
+                                            del = (Activator.CreateInstance(typeof(Func<object, object, object, object, object, object, object, object, object, object, object>), target, minfo.MethodHandle.GetFunctionPointer()) as Delegate);
+                                            break;
+                                        case 11:
+                                            del = (Activator.CreateInstance(typeof(Func<object, object, object, object, object, object, object, object, object, object, object, object>), target, minfo.MethodHandle.GetFunctionPointer()) as Delegate);
+                                            break;
+                                        case 12:
+                                            del = (Activator.CreateInstance(typeof(Func<object, object, object, object, object, object, object, object, object, object, object, object, object>), target, minfo.MethodHandle.GetFunctionPointer()) as Delegate);
+                                            break;
+                                        case 13:
+                                            del = (Activator.CreateInstance(typeof(Func<object, object, object, object, object, object, object, object, object, object, object, object, object, object>), target, minfo.MethodHandle.GetFunctionPointer()) as Delegate);
+                                            break;
+                                        case 14:
+                                            del = (Activator.CreateInstance(typeof(Func<object, object, object, object, object, object, object, object, object, object, object, object, object, object, object>), target, minfo.MethodHandle.GetFunctionPointer()) as Delegate);
+                                            break;
+                                        case 15:
+                                            del = (Activator.CreateInstance(typeof(Func<object, object, object, object, object, object, object, object, object, object, object, object, object, object, object, object>), target, minfo.MethodHandle.GetFunctionPointer()) as Delegate);
+                                            break;
+                                        case 16:
+                                            del = (Activator.CreateInstance(typeof(Func<object, object, object, object, object, object, object, object, object, object, object, object, object, object, object, object, object>), target, minfo.MethodHandle.GetFunctionPointer()) as Delegate);
+                                            break;
                                     }
                                     res = del.DynamicInvoke(cargs);
                                 }

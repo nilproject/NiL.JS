@@ -26,22 +26,10 @@ namespace NiL.JS.Core
             }
         }
 
-        [Field]
-        [DoNotDelete]
-        [DoNotEnumerate]
-        public override JSObject length
-        {
-            [Hidden]
-            get
-            {
-                return 1;
-            }
-        }
-
         [Hidden]
         public EvalFunction()
         {
-
+            _length = 1;
         }
 
         [Hidden]
