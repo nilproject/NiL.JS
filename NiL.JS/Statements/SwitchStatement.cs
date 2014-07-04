@@ -196,7 +196,7 @@ namespace NiL.JS.Statements
                 {
                     if (cases[j] != null && cases[j].index == i)
                     {
-                        res += "case " + (cases[j].statement as Expressions.StrictEqual).SecondOperand + ":" + Environment.NewLine;
+                        res += "case " + cases[j].statement + ":" + Environment.NewLine;
                     }
                 }
                 string lc = body[i].ToString().Replace(replp, replt);

@@ -45,10 +45,14 @@ namespace NiL.JS.Expressions
             field.attributes = JSObjectAttributesInternal.DoNotEnum;
             arguments.fields = new Dictionary<string, JSObject>(this.arguments.Length + 3);
             arguments.fields["length"] = field;
-            for (int i = 0; i < field.iValue; i++)
+            for (int i = 0; i < field.iValue; i++)//for (int i = field.iValue; i-- > 0; )
             {
                 context.objectSource = null;
                 var a = this.arguments[i].Invoke(context);
+#if DEBUG
+                if (a == null)
+                    System.Diagnostics.Debugger.Break();
+#endif
                 arguments.fields[i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture)] = a;
             }
             context.objectSource = null;

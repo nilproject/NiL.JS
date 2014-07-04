@@ -65,7 +65,12 @@ namespace NiL.JS.Core.BaseTypes
         public override void Assign(JSObject value)
         {
             if ((attributes & JSObjectAttributesInternal.ReadOnly) == 0)
+            {
+#if DEBUG
+                System.Diagnostics.Debugger.Break();
+#endif
                 throw new InvalidOperationException("Try to assign to Boolean");
+            }
         }
 
         [Hidden]

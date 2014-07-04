@@ -16,7 +16,7 @@ namespace NiL.JS.Statements
         public CodeNode Body { get { return body; } }
         public CodeNode CatchBody { get { return catchBody; } }
         public CodeNode FinalBody { get { return finallyBody; } }
-        public string ExceptionVariableName { get { return catchVariableDesc.Name; } }
+        public string ExceptionVariableName { get { return catchVariableDesc.name; } }
 
         internal static ParseResult Parse(ParsingState state, ref int index)
         {
@@ -97,7 +97,7 @@ namespace NiL.JS.Statements
                         context.raiseDebugger(catchBody);
 #endif
                     var catchContext = new Context(context, context.caller) { strict = context.strict, variables = context.variables };
-                    var cvar = catchContext.DefineVariable(catchVariableDesc.Name);
+                    var cvar = catchContext.DefineVariable(catchVariableDesc.name);
 #if DEBUG
                     if (!(e is JSException))
                         System.Diagnostics.Debugger.Break();
@@ -157,13 +157,13 @@ namespace NiL.JS.Statements
             {
                 catchVariableDesc.Owner = this;
                 VariableDescriptor ovd = null;
-                variables.TryGetValue(catchVariableDesc.Name, out ovd);
-                variables[catchVariableDesc.Name] = catchVariableDesc;
+                variables.TryGetValue(catchVariableDesc.name, out ovd);
+                variables[catchVariableDesc.name] = catchVariableDesc;
                 Parser.Optimize(ref catchBody, 1, fdepth, variables, strict);
                 if (ovd != null)
-                    variables[catchVariableDesc.Name] = ovd;
+                    variables[catchVariableDesc.name] = ovd;
                 else
-                    variables.Remove(catchVariableDesc.Name);
+                    variables.Remove(catchVariableDesc.name);
             }
             Parser.Optimize(ref finallyBody, 1, fdepth, variables, strict);
             return false;

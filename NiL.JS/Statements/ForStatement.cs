@@ -104,7 +104,7 @@ namespace NiL.JS.Statements
 
         private JSObject impl0(Context context)
         {
-            JSObject res = JSObject.undefined;
+            JSObject res = JSObject.notExist;
             for (; ; )
             {
 #if DEV
@@ -118,7 +118,7 @@ namespace NiL.JS.Statements
                     if (context.abort < AbortType.Return && ((context.abortInfo == null) || (labels.IndexOf(context.abortInfo.oValue as string) != -1)))
                     {
                         context.abort = AbortType.None;
-                        context.abortInfo = null;
+                        context.abortInfo = JSObject.notExist;
                     }
                     if (_break)
                         return res;
@@ -317,7 +317,7 @@ namespace NiL.JS.Statements
 
         public override string ToString()
         {
-            var istring = init.ToString();
+            var istring = (init as object ?? "").ToString();
             return "for (" + istring + "; " + condition + "; " + post + ")" + (body is CodeBlock ? "" : Environment.NewLine + "  ") + body;
         }
     }

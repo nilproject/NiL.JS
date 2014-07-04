@@ -34,7 +34,7 @@ namespace NiL.JS.Statements
                 IsParsed = true,
                 Statement = new BreakStatement()
                 {
-                    label = label,
+                    label = label ?? JSObject.undefined,
                     Position = pos,
                     Length = index - pos
                 }

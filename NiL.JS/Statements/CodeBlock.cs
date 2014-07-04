@@ -101,7 +101,7 @@ namespace NiL.JS.Statements
                             break;
                         }
                         var t = s;
-                        if (Parser.ValidateString(code, ref t))
+                        if (Parser.ValidateString(code, ref t, true))
                         {
                             var str = code.Substring(s + 1, t - s - 2);
                             if (!strictSwitch && str == "use strict")
@@ -271,8 +271,8 @@ namespace NiL.JS.Statements
                 for (var i = this.variables.Length; i-- > 0; )
                 {
                     VariableDescriptor desc = null;
-                    if (depth == 0 || !variables.TryGetValue(this.variables[i].Name, out desc) || desc == null)
-                        variables[this.variables[i].Name] = this.variables[i];
+                    if (depth == 0 || !variables.TryGetValue(this.variables[i].name, out desc) || desc == null)
+                        variables[this.variables[i].name] = this.variables[i];
                     else
                     {
                         foreach (var r in this.variables[i].References)
@@ -289,6 +289,10 @@ namespace NiL.JS.Statements
             {
                 //bool needRemove = body[i] is FunctionStatement;
                 Parser.Optimize(ref body[i], depth < 0 ? 2 : Math.Max(1, depth), fdepth, variables, this.strict);
+#if DEBUG
+                if (body[i] != null)
+                    body[i].ToString();
+#endif
                 //if (needRemove)
                 //    body[i] = null;
             }

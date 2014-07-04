@@ -344,12 +344,12 @@ namespace NiL.JS.Statements
             {
                 for (var i = body.variables.Length; i-- > 0; )
                 {
-                    if (!body.variables[i].Defined && body.variables[i].Name != "this")
+                    if (!body.variables[i].Defined && body.variables[i].name != "this")
                     // все необъявленные переменные нужно прокинуть вниз для того,
                     // чтобы во всех местах их использования был один дескриптор и один кеш
                     {
                         VariableDescriptor desc = null;
-                        if (variables.TryGetValue(body.variables[i].Name, out desc))
+                        if (variables.TryGetValue(body.variables[i].name, out desc))
                         {
                             foreach (var r in body.variables[i].References)
                             {
@@ -358,7 +358,7 @@ namespace NiL.JS.Statements
                             }
                             body.variables[i] = desc;
                         }
-                        else variables.Add(body.variables[i].Name, body.variables[i]);
+                        else variables.Add(body.variables[i].name, body.variables[i]);
                     }
                 }
             }

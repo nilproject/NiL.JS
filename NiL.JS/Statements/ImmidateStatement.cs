@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using NiL.JS.Core;
 
 namespace NiL.JS.Statements

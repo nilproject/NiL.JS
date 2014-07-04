@@ -735,8 +735,8 @@ namespace NiL.JS.Core
                                 index += 2;
                                 while (index < code.Length && !Tools.isLineTerminator(code[index]))
                                     index++;
-                                while (index < code.Length && char.IsWhiteSpace(code[index]))
-                                    index++;
+                                //while (index < code.Length && char.IsWhiteSpace(code[index]))
+                                //    index++;
                                 work = true;
                                 break;
                             }
@@ -783,8 +783,8 @@ namespace NiL.JS.Core
                     continue;
                 if (Parser.ValidateName(code, ref i, false)
                     || Parser.ValidateNumber(code, ref i)
-                    || Parser.ValidateRegex(code, ref i, false)
-                    || Parser.ValidateString(code, ref i))
+                    //|| Parser.ValidateRegex(code, ref i, false)
+                    || Parser.ValidateString(code, ref i, false))
                 {
                     if (res != null)
                         for (; s < i; s++)
@@ -803,7 +803,7 @@ namespace NiL.JS.Core
 #endif
         internal static JSObject RaiseIfNotExist(JSObject obj, object name)
         {
-            if (obj != null && obj.valueType == JSObjectType.NotExist)
+            if (obj.valueType == JSObjectType.NotExist)
                 throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable \"" + name + "\" is not defined.")));
             return obj;
         }

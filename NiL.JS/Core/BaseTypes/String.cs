@@ -60,7 +60,12 @@ namespace NiL.JS.Core.BaseTypes
         public override void Assign(JSObject value)
         {
             if ((attributes & JSObjectAttributesInternal.ReadOnly) == 0)
+            {
+#if DEBUG
+                System.Diagnostics.Debugger.Break();
+#endif
                 throw new InvalidOperationException("Try to assign to String");
+            }
         }
 
         [Hidden]
@@ -406,6 +411,10 @@ namespace NiL.JS.Core.BaseTypes
             }
             else
                 pos1 = (oValue as string).Length;
+            while (pos0 < 0)
+                pos0 += (oValue as string).Length;
+            while (pos1 < 0)
+                pos1 += (oValue as string).Length;
             return (oValue as string).Substring(pos0, pos1 - pos0);
         }
 
@@ -565,7 +574,7 @@ namespace NiL.JS.Core.BaseTypes
         [DoNotEnumerate]
         public new JSObject toString(JSObject args)
         {
-            if (typeof(String) == this.GetType() && valueType == JSObjectType.Object) // prototype instance
+            if ((this as object) is String && valueType == JSObjectType.Object) // prototype instance
                 return "";
             if (this.valueType == JSObjectType.String)
                 return this;
@@ -614,7 +623,7 @@ namespace NiL.JS.Core.BaseTypes
         [Hidden]
         public override string ToString()
         {
-            if (this.GetType() == typeof(String))
+            if ((this as object) is String)//(this.GetType() == typeof(String))
                 return oValue as string;
             else
                 throw new JSException(new TypeError("Try to call String.toString for not string object."));

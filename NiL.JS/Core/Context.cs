@@ -129,9 +129,9 @@ namespace NiL.JS.Core
         /// отсутствует вероятность конфликта при использовании данного поля.
         /// </remarks>
         /// </summary>
-        internal readonly JSObject tempContainer = new JSObject();
+        internal readonly JSObject tempContainer;
         internal readonly Context prototype;
-        internal Dictionary<string, JSObject> fields;
+        internal IDictionary<string, JSObject> fields;
         internal AbortType abort;
         internal JSObject objectSource;
         internal JSObject abortInfo;
@@ -217,7 +217,7 @@ namespace NiL.JS.Core
             RefreshGlobalContext();
         }
 
-        private Context() { }
+        private Context() { tempContainer = new JSObject(); }
 
         public Context(Context prototype)
             : this(prototype, true, new Function())
@@ -231,6 +231,7 @@ namespace NiL.JS.Core
 
         protected Context(Context prototype, bool createFields, Function caller)
         {
+            tempContainer = prototype.tempContainer;
             this.caller = caller;
             if (createFields)
                 this.fields = new Dictionary<string, JSObject>();
@@ -453,7 +454,7 @@ namespace NiL.JS.Core
                         for (i = context.variables.Length; i-- > 0; )
                         {
                             VariableDescriptor desc = null;
-                            if (vars.TryGetValue(context.variables[i].Name, out desc) && desc.Defined)
+                            if (vars.TryGetValue(context.variables[i].name, out desc) && desc.Defined)
                             {
                                 context.variables[i].defineDepth = -1; // Кеш будет игнорироваться.
                                 // чистить кэш тут не достаточно. 
@@ -480,7 +481,7 @@ namespace NiL.JS.Core
                 {
                     if (body.variables[i].Defined)
                     {
-                        var f = context.DefineVariable(body.variables[i].Name);
+                        var f = context.DefineVariable(body.variables[i].name);
                         if (body.variables[i].Inititalizator != null)
                             f.Assign(body.variables[i].Inititalizator.Invoke(context));
                     }

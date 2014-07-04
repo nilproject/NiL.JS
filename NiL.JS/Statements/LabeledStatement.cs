@@ -52,9 +52,9 @@ namespace NiL.JS.Statements
             if ((context.abort == AbortType.Break) && (context.abortInfo != null) && (context.abortInfo.oValue as string == label))
             {
                 context.abort = AbortType.None;
-                context.abortInfo = null;
+                context.abortInfo = JSObject.notExist;
             }
-            return JSObject.undefined;
+            return JSObject.notExist;
         }
 
         protected override CodeNode[] getChildsImpl()

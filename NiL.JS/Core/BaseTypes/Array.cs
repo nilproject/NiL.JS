@@ -113,7 +113,7 @@ namespace NiL.JS.Core.BaseTypes
             while (enumerator.MoveNext())
             {
                 var e = enumerator.Current;
-                data[index++] = TypeProxy.Proxy(e).Clone() as JSObject;
+                data[index++] = e is JSObject ? (e as JSObject).Clone() as JSObject : TypeProxy.Proxy(e);
             }
             _length = (long)index;
         }
@@ -489,13 +489,15 @@ namespace NiL.JS.Core.BaseTypes
                 return ToString();
             var el = separator[0].ToString();
             System.Text.StringBuilder sb = new System.Text.StringBuilder();
+            JSObject t;
             for (var i = 0U; i < _length - 1; i++)
             {
-                JSObject t;
                 if (data.TryGetValue(i, out t) && t.isExist)
                     sb.Append(t);
                 sb.Append(el);
             }
+            if (data.TryGetValue(_length - 1, out t) && t.isExist)
+                sb.Append(t);
             return sb.ToString();
         }
 
@@ -592,7 +594,12 @@ namespace NiL.JS.Core.BaseTypes
             }
             if (index >= data.Count)
                 return accum;
+            if (accum.GetType() != typeof(JSObject))
+                accum = accum.Clone() as JSObject;
             args["length"] = 4;
+            args.fields["1"] = new JSObject();
+            args.fields["2"] = new JSObject();
+            args.fields["3"] = new JSObject();
             var context = Context.CurrentContext;
             foreach (var element in data)
             {
@@ -624,7 +631,12 @@ namespace NiL.JS.Core.BaseTypes
             }
             if (index >= data.Count)
                 return accum;
+            if (accum.GetType() != typeof(JSObject))
+                accum = accum.Clone() as JSObject;
             args["length"] = 4;
+            args.fields["1"] = new JSObject();
+            args.fields["2"] = new JSObject();
+            args.fields["3"] = new JSObject();
             var context = Context.CurrentContext;
             foreach (var element in data.Reversed)
             {

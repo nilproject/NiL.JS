@@ -32,11 +32,11 @@ namespace NiL.JS.Expressions
 
         internal override JSObject Invoke(Context context)
         {
-            lock (this)
+            JSObject field = null;
+            field = first.InvokeForAssing(context);
+            if (field.valueType == JSObjectType.Property)
             {
-                JSObject field = null;
-                field = first.InvokeForAssing(context);
-                if (field.valueType == JSObjectType.Property)
+                lock (this)
                 {
                     var fieldSource = context.objectSource;
                     setterArg.Assign(second.Invoke(context));
@@ -47,12 +47,12 @@ namespace NiL.JS.Expressions
                         throw new JSException(new TypeError("Can not assign to readonly property \"" + first + "\""));
                     return setterArg;
                 }
-                else if ((field.attributes & JSObjectAttributesInternal.ReadOnly) != 0 && context.strict)
-                    throw new JSException(new TypeError("Can not assign to readonly property \"" + first + "\""));
-                var t = second.Invoke(context);
-                field.Assign(t);
-                return t;
             }
+            else if ((field.attributes & JSObjectAttributesInternal.ReadOnly) != 0 && context.strict)
+                throw new JSException(new TypeError("Can not assign to readonly property \"" + first + "\""));
+            var t = second.Invoke(context);
+            field.Assign(t);
+            return t;
         }
 
         public override string ToString()

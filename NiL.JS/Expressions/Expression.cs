@@ -25,7 +25,7 @@ namespace NiL.JS.Expressions
 
             public override string Name
             {
-                get { return Descriptor.Name; }
+                get { return Descriptor.name; }
             }
 
             public override VariableDescriptor Descriptor { get; internal set; }
@@ -42,7 +42,7 @@ namespace NiL.JS.Expressions
 
             public override string ToString()
             {
-                return Descriptor.Name;
+                return Descriptor.name;
             }
         }
 

@@ -9,7 +9,7 @@ namespace NiL.JS
     /// Предоставляет реализацию бинарного дерева поиска со строковым аргументом.
     /// </summary>
     [Serializable]
-    internal class BinaryTree<TKey, TValue> : IDictionary<TKey, TValue>
+    internal class BinaryTree<TKey, TValue> : IDictionary<TKey, TValue> where TKey : IComparable<TKey>
     {
         private sealed class _Values : ICollection<TValue>
         {
@@ -291,7 +291,7 @@ namespace NiL.JS
                         stack.Clear();
                         do
                         {
-                            var cmp = comparer != null ? comparer.Compare(key, c.key) : (key as IComparable).CompareTo(c.key);
+                            var cmp = comparer != null ? comparer.Compare(key, c.key) : key.CompareTo(c.key);
                             if (cmp == 0)
                             {
                                 c.value = value;
@@ -366,7 +366,7 @@ namespace NiL.JS
                     stack.Clear();
                     do
                     {
-                        var cmp = comparer != null ? comparer.Compare(key, c.key) : (key as IComparable).CompareTo(c.key);
+                        var cmp = comparer != null ? comparer.Compare(key, c.key) : key.CompareTo(c.key);
                         if (cmp == 0)
                             throw new ArgumentException("Element exists");
                         else if (cmp > 0)
@@ -423,7 +423,7 @@ namespace NiL.JS
                     var c = root;
                     do
                     {
-                        var cmp = comparer != null ? comparer.Compare(key, c.key) : (key as IComparable).CompareTo(c.key);
+                        var cmp = comparer != null ? comparer.Compare(key, c.key) : key.CompareTo(c.key);
                         if (cmp == 0)
                         {
                             value = c.value;
@@ -476,7 +476,7 @@ namespace NiL.JS
                 stack.Clear();
                 do
                 {
-                    var cmp = comparer != null ? comparer.Compare(key, c.key) : (key as IComparable).CompareTo(c.key);
+                    var cmp = comparer != null ? comparer.Compare(key, c.key) : key.CompareTo(c.key);
                     if (cmp == 0)
                     {
                         if (c.greater == null)
@@ -578,7 +578,7 @@ namespace NiL.JS
                 stack.Clear();
                 do
                 {
-                    var cmp = comparer != null ? comparer.Compare(key, c.key) : (key as IComparable).CompareTo(c.key);
+                    var cmp = comparer != null ? comparer.Compare(key, c.key) : key.CompareTo(c.key);
                     if (cmp == 0)
                     {
                         if (!keyValuePair.Value.Equals(c.value))

@@ -795,7 +795,12 @@ namespace NiL.JS.Core.BaseTypes
         public override void Assign(JSObject value)
         {
             if ((attributes & JSObjectAttributesInternal.ReadOnly) == 0)
+            {
+#if DEBUG
+                System.Diagnostics.Debugger.Break();
+#endif
                 throw new InvalidOperationException("Try to assign to Function");
+            }
         }
 
         [Hidden]
@@ -853,7 +858,7 @@ namespace NiL.JS.Core.BaseTypes
                     args.fields["callee"] = callee;
                 }
                 internalContext.fields["arguments"] = args;
-                if (creator.type == FunctionType.Function && !string.IsNullOrEmpty(creator.name))
+                if (creator.type == FunctionType.Function && creator.name != "" && creator.name != null)
                     internalContext.fields[creator.name] = this;
                 int i = 0;
                 JSObject argsLength = args.fields["length"];
@@ -885,10 +890,10 @@ namespace NiL.JS.Core.BaseTypes
                     if (body.variables[i].Owner == body)
                     {
                         JSObject f = null;
-                        if (body.variables[i].Name != "arguments" // нельзя переменной перебить аргументы
+                        if (body.variables[i].name != "arguments" // нельзя переменной перебить аргументы
                             || body.variables[i].Inititalizator != null) // а вот функцией можно
                         {
-                            internalContext.fields[body.variables[i].Name] = f = new JSObject() { attributes = JSObjectAttributesInternal.DoNotDelete };
+                            internalContext.fields[body.variables[i].name] = f = new JSObject() { attributes = JSObjectAttributesInternal.DoNotDelete };
                             if (body.variables[i].Inititalizator != null)
                                 f.Assign(body.variables[i].Inititalizator.Invoke(internalContext));
                         }
@@ -900,6 +905,10 @@ namespace NiL.JS.Core.BaseTypes
                 body.Invoke(internalContext);
                 if (internalContext.abortInfo != null && internalContext.abortInfo.valueType == JSObjectType.NotExist)
                     internalContext.abortInfo.valueType = JSObjectType.NotExistInObject;
+#if DEBUG
+                if (internalContext.abortInfo == null)
+                    System.Diagnostics.Debugger.Break();
+#endif
                 return internalContext.abortInfo;
             }
             finally

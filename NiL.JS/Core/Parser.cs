@@ -394,10 +394,10 @@ namespace NiL.JS.Core
             return false;
         }
 
-        internal static bool ValidateString(string code, ref int index)
+        internal static bool ValidateString(string code, ref int index, bool @throw)
         {
             int j = index;
-            if ((code[j] == '\'') || (code[j] == '"'))
+            if (j + 1 < code.Length && ((code[j] == '\'') || (code[j] == '"')))
             {
                 char fchar = code[j];
                 j++;
@@ -412,8 +412,14 @@ namespace NiL.JS.Core
                             j++;
                     }
                     else if (Tools.isLineTerminator(code[j]) || (j + 1 >= code.Length))
+                    {
+                        if (!@throw)
+                            return false;
                         throw new JSException(TypeProxy.Proxy(new BaseTypes.SyntaxError("Unterminated string constant")));
+                    }
                     j++;
+                    if (j >= code.Length)
+                        return false;
                 }
                 index = ++j;
                 return true;
@@ -432,7 +438,7 @@ namespace NiL.JS.Core
             if (code[j] == '/')
                 return ValidateRegex(code, ref index, true);
             if ((code[j] == '\'') || (code[j] == '"'))
-                return ValidateString(code, ref index);
+                return ValidateString(code, ref index, false);
             if ((code.Length - j >= 4) && (code[j] == 'n' || code[j] == 't' || code[j] == 'f'))
             {
                 string codeSs4 = code.Substring(j, 4);
@@ -490,7 +496,8 @@ namespace NiL.JS.Core
         internal static CodeNode Parse(ParsingState state, ref int index, int ruleset, bool lineAutoComplite)
         {
             string code = state.Code;
-            while ((index < code.Length) && (char.IsWhiteSpace(code[index])) && (!lineAutoComplite || !Tools.isLineTerminator(code[index]))) index++;
+            while ((index < code.Length) && (char.IsWhiteSpace(code[index])) && (!lineAutoComplite || !Tools.isLineTerminator(code[index])))
+                index++;
             if (index >= code.Length || code[index] == '}')
                 return null;
             int sindex = index;
@@ -518,6 +525,10 @@ namespace NiL.JS.Core
         internal static void Optimize(ref CodeNode s, int depth, int funcDepth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
             while (s != null && s.Optimize(ref s, depth, funcDepth, variables, strict)) { }
+#if DEBUG
+            if (s != null)
+                s.ToString();
+#endif
         }
     }
 }

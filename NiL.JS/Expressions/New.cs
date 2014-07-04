@@ -88,8 +88,10 @@ namespace NiL.JS.Expressions
 
         internal override NiL.JS.Core.JSObject Invoke(NiL.JS.Core.Context context)
         {
+            var prevTB = thisSetter.lastThisBind;
             try
             {
+                thisSetter.lastThisBind = null;
                 var temp = first.Invoke(context);
                 if (temp.valueType >= JSObjectType.Object && temp.oValue != null)
                     return temp;
@@ -97,13 +99,13 @@ namespace NiL.JS.Expressions
             }
             finally
             {
-                thisSetter.lastThisBind = null;
+                thisSetter.lastThisBind = prevTB;
             }
         }
 
         public override string ToString()
         {
-            return "new " + base.ToString();
+            return "new " + first.ToString();
         }
     }
 }

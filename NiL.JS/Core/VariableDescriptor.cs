@@ -9,7 +9,7 @@ namespace NiL.JS.Core
     {
         internal readonly HashSet<VariableReference> references;
         internal int defineDepth;
-        private string name;
+        internal string name;
         private JSObject cacheRes;
         private Context prewContext;
         private CodeNode owner;
@@ -32,7 +32,7 @@ namespace NiL.JS.Core
         internal JSObject Get(Context context, bool create, int depth)
         {
             context.objectSource = null;
-            if (depth < 0 || defineDepth < 0)
+            if (defineDepth < 0 || depth < 0)
                 return context.GetVariable(name, create);
             if (cacheRes != null)
             {

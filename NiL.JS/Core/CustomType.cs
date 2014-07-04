@@ -39,14 +39,19 @@ namespace NiL.JS.Core
 
         internal protected override JSObject GetMember(JSObject name, bool fast, bool own)
         {
-            return DefaultFieldGetter(name.ToString(), fast, own);
+            return DefaultFieldGetter(name, fast, own);
         }
 
         [Hidden]
         public override void Assign(JSObject value)
         {
             if ((attributes & JSObjectAttributesInternal.ReadOnly) == 0)
+            {
+#if DEBUG
+                System.Diagnostics.Debugger.Break();
+#endif
                 throw new InvalidOperationException("Try to assign to " + this.GetType().Name);
+            }
         }
 
         [Hidden]

@@ -74,7 +74,7 @@ namespace NiL.JS.Core
     /// Базовый объект для всех объектов, участвующих в выполнении скрипта.
     /// Для создания пользовательских объектов, в качестве базового типа, рекомендуется использовать тип NiL.JS.Core.EmbeddedType
     /// </summary>
-    public class JSObject : IEnumerable<string>, IEnumerable, ICloneable
+    public class JSObject : IEnumerable<string>, IEnumerable, ICloneable, IComparable<JSObject>
     {
         [Hidden]
         internal static readonly AssignCallback ErrorAssignCallback = (sender) => { throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Invalid left-hand side"))); };
@@ -663,13 +663,10 @@ namespace NiL.JS.Core
         [Hidden]
         internal protected virtual JSObject GetMember(JSObject name, bool createMember, bool own)
         {
+            if (valueType <= JSObjectType.Undefined)
+                    throw new JSException(new TypeError("Can't get property \"" + name + "\" of \"undefined\"."));
             switch (valueType)
             {
-                case JSObjectType.NotExist:
-                    throw new JSException(TypeProxy.Proxy(new ReferenceError("Variable not defined.")));
-                case JSObjectType.Undefined:
-                case JSObjectType.NotExistInObject:
-                    throw new JSException(new TypeError("Can't get property \"" + name + "\" of \"undefined\"."));
                 case JSObjectType.Int:
                 case JSObjectType.Double:
                     {
@@ -1404,30 +1401,31 @@ namespace NiL.JS.Core
         public static implicit operator JSObject(bool value)
         {
             return (BaseTypes.Boolean)value;
+            //return new JSObject() { valueType = JSObjectType.Bool, iValue = value ? 1 : 0 };
         }
 
         [Hidden]
         public static implicit operator JSObject(int value)
         {
-            return (BaseTypes.Number)value;
+            return new JSObject() { valueType = JSObjectType.Int, iValue = value };
         }
 
         [Hidden]
         public static implicit operator JSObject(long value)
         {
-            return (BaseTypes.Number)(double)value;
+            return new JSObject() { valueType = JSObjectType.Double, dValue = value };
         }
 
         [Hidden]
         public static implicit operator JSObject(double value)
         {
-            return (BaseTypes.Number)value;
+            return new JSObject() { valueType = JSObjectType.Double, dValue = value };
         }
 
         [Hidden]
         public static implicit operator JSObject(string value)
         {
-            return new BaseTypes.String(value);
+            return new JSObject() { valueType = JSObjectType.String, oValue = value };
         }
 
 #if INLINE
@@ -1489,5 +1487,14 @@ namespace NiL.JS.Core
 #endif
             get { return valueType == JSObjectType.Int || valueType == JSObjectType.Double; }
         }
+
+        #region Члены IComparable<JSObject>
+
+        int IComparable<JSObject>.CompareTo(JSObject other)
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
     }
 }

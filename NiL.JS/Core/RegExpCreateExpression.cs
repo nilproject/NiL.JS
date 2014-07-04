@@ -24,5 +24,10 @@ namespace NiL.JS.Core
         {
             return new RegExp(pattern, flags);
         }
+
+        public override string ToString()
+        {
+            return "/" + pattern + "/" + flags;
+        }
     }
 }

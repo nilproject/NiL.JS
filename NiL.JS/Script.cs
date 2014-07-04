@@ -48,7 +48,7 @@ namespace NiL.JS
             {
                 if (body.variables[i].Owner == body)
                 {
-                    var f = Context.DefineVariable(body.variables[i].Name);
+                    var f = Context.DefineVariable(body.variables[i].name);
                     if (body.variables[i].Inititalizator != null)
                         f.Assign(body.variables[i].Inititalizator.Invoke(Context));
                 }

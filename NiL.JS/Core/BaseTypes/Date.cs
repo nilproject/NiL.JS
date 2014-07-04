@@ -172,7 +172,7 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [DoNotEnumerate]
-        public Number getYear()
+        public JSObject getYear()
         {
             var t = getFullYear();
             t.iValue -= 1900;
@@ -180,7 +180,7 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [DoNotEnumerate]
-        public Number getFullYear()
+        public JSObject getFullYear()
         {
             return getYearImpl();
         }
@@ -199,13 +199,13 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [DoNotEnumerate]
-        public Number getUTCFullYear()
+        public JSObject getUTCFullYear()
         {
             return getFullYear();
         }
 
         [DoNotEnumerate]
-        public Number getMonth()
+        public JSObject getMonth()
         {
             return getMonthImpl();
         }
@@ -231,13 +231,13 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [DoNotEnumerate]
-        public Number getUTCMonth()
+        public JSObject getUTCMonth()
         {
             return getMonth();
         }
 
         [DoNotEnumerate]
-        public Number getDate()
+        public JSObject getDate()
         {
             return getDateImpl();
         }
@@ -263,25 +263,25 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [DoNotEnumerate]
-        public Number getUTCDate()
+        public JSObject getUTCDate()
         {
             return getDate();
         }
 
         [DoNotEnumerate]
-        public Number getDay()
+        public JSObject getDay()
         {
             return (int)(time % _weekMilliseconds);
         }
 
         [DoNotEnumerate]
-        public Number getUTCDay()
+        public JSObject getUTCDay()
         {
             return (int)(time % _weekMilliseconds);
         }
 
         [DoNotEnumerate]
-        public Number getHours()
+        public JSObject getHours()
         {
             return getHoursImpl();
         }
@@ -293,13 +293,13 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [DoNotEnumerate]
-        public Number getUTCHours()
+        public JSObject getUTCHours()
         {
             return getHours();
         }
 
         [DoNotEnumerate]
-        public Number getMinutes()
+        public JSObject getMinutes()
         {
             return getMinutesImpl();
         }
@@ -312,13 +312,13 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [DoNotEnumerate]
-        public Number getUTCMinutes()
+        public JSObject getUTCMinutes()
         {
             return getMinutes();
         }
 
         [DoNotEnumerate]
-        public Number getSeconds()
+        public JSObject getSeconds()
         {
             return getSecondsImpl();
         }
@@ -331,13 +331,13 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [DoNotEnumerate]
-        public Number getUTCSeconds()
+        public JSObject getUTCSeconds()
         {
             return getSeconds();
         }
 
         [DoNotEnumerate]
-        public Number getMilliseconds()
+        public JSObject getMilliseconds()
         {
             return getMillisecondsImpl();
         }
@@ -350,91 +350,92 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [DoNotEnumerate]
-        public Number getUTCMilliseconds()
+        public JSObject getUTCMilliseconds()
         {
             return getMilliseconds();
         }
 
         [DoNotEnumerate]
-        public Number setTime(int time)
+        public JSObject setTime(JSObject time)
         {
-            this.time = time;
+            this.time = Tools.JSObjectToInt64(time);
             return time;
         }
 
         [DoNotEnumerate]
-        public Number setMilliseconds(int milliseconds)
+        public JSObject setMilliseconds(JSObject milliseconds)
         {
-            this.time = this.time - getMillisecondsImpl() + milliseconds;
+            this.time = this.time - getMillisecondsImpl() + Tools.JSObjectToInt64(milliseconds);
             return milliseconds;
         }
 
         [DoNotEnumerate]
-        public Number setUTCMilliseconds(int milliseconds)
+        public JSObject setUTCMilliseconds(JSObject milliseconds)
         {
-            this.time = this.time - getMillisecondsImpl() + milliseconds;
+            this.time = this.time - getMillisecondsImpl() + Tools.JSObjectToInt64(milliseconds);
             return milliseconds;
         }
 
         [DoNotEnumerate]
-        public Number setSeconds(int seconds)
+        public JSObject setSeconds(JSObject seconds)
         {
-            this.time = this.time + (-getSecondsImpl() + seconds) * 1000;
+            this.time = this.time + (-getSecondsImpl() + Tools.JSObjectToInt64(seconds)) * 1000;
             return seconds;
         }
 
         [DoNotEnumerate]
-        public Number setUTCSeconds(int seconds)
+        public JSObject setUTCSeconds(JSObject seconds)
         {
-            this.time = this.time + (-getSecondsImpl() + seconds) * 1000;
+            this.time = this.time + (-getSecondsImpl() + Tools.JSObjectToInt64(seconds)) * 1000;
             return seconds;
         }
 
         [DoNotEnumerate]
-        public Number setMinutes(int minutes)
+        public JSObject setMinutes(JSObject minutes)
         {
-            this.time = this.time + (-getMinutesImpl() + minutes) * _minuteMillisecond;
+            this.time = this.time + (-getMinutesImpl() + Tools.JSObjectToInt64(minutes)) * _minuteMillisecond;
             return minutes;
         }
 
         [DoNotEnumerate]
-        public Number setUTCMinutes(int minutes)
+        public JSObject setUTCMinutes(JSObject minutes)
         {
-            this.time = this.time + (-getMinutesImpl() + minutes) * _minuteMillisecond;
+            this.time = this.time + (-getMinutesImpl() + Tools.JSObjectToInt64(minutes)) * _minuteMillisecond;
             return minutes;
         }
 
         [DoNotEnumerate]
-        public Number setHours(int hours)
+        public JSObject setHours(JSObject hours)
         {
-            this.time = this.time + (-getHoursImpl() + hours) * _hourMilliseconds;
+            this.time = this.time + (-getHoursImpl() + Tools.JSObjectToInt64(hours)) * _hourMilliseconds;
             return hours;
         }
 
         [DoNotEnumerate]
-        public Number setUTCHours(int hours)
+        public JSObject setUTCHours(JSObject hours)
         {
-            this.time = this.time + (-getHoursImpl() + hours) * _hourMilliseconds;
+            this.time = this.time + (-getHoursImpl() + Tools.JSObjectToInt64(hours)) * _hourMilliseconds;
             return hours;
         }
 
         [DoNotEnumerate]
-        public Number setDate(int days)
+        public JSObject setDate(JSObject days)
         {
-            this.time = this.time + (-getDateImpl() + days) * _dayMilliseconds;
+            this.time = this.time + (-getDateImpl() + Tools.JSObjectToInt64(days)) * _dayMilliseconds;
             return days;
         }
 
         [DoNotEnumerate]
-        public Number setUTCDate(int days)
+        public JSObject setUTCDate(JSObject days)
         {
-            this.time = this.time + (-getDateImpl() + days) * _dayMilliseconds;
+            this.time = this.time + (-getDateImpl() + Tools.JSObjectToInt64(days)) * _dayMilliseconds;
             return days;
         }
 
         [DoNotEnumerate]
-        public Number setMonth(int month)
+        public JSObject setMonth(JSObject monthO)
         {
+            var month = Tools.JSObjectToInt64(monthO);
             if (month < 0 || month > 12)
             {
                 this.time = this.time - timeToMonthLengths[getMonthImpl(), isLeap(getYearImpl()) ? 1 : 0];
@@ -444,42 +445,42 @@ namespace NiL.JS.Core.BaseTypes
             else
             {
                 this.time = this.time - timeToMonthLengths[getMonthImpl(), isLeap(getYearImpl()) ? 1 : 0] + timeToMonthLengths[month, isLeap(getYearImpl()) ? 1 : 0];
-                return month;
+                return monthO;
             }
         }
 
         [DoNotEnumerate]
-        public Number setUTCMonth(int month)
+        public JSObject setUTCMonth(JSObject month)
         {
-            this.time = this.time - timeToMonthLengths[getMonthImpl(), isLeap(getYearImpl()) ? 1 : 0] + timeToMonthLengths[month, isLeap(getYearImpl()) ? 1 : 0];
+            this.time = this.time - timeToMonthLengths[getMonthImpl(), isLeap(getYearImpl()) ? 1 : 0] + timeToMonthLengths[Tools.JSObjectToInt64(month), isLeap(getYearImpl()) ? 1 : 0];
             return month;
         }
 
         [DoNotEnumerate]
-        public Number setYear(int year)
+        public JSObject setYear(JSObject year)
         {
-            time = dateToMilliseconds(year + 1900, getMonthImpl(), getDateImpl(), getHoursImpl(), getMinutesImpl(), getSecondsImpl(), getMillisecondsImpl());
+            time = dateToMilliseconds(Tools.JSObjectToInt64(year) + 1900, getMonthImpl(), getDateImpl(), getHoursImpl(), getMinutesImpl(), getSecondsImpl(), getMillisecondsImpl());
             return year;
         }
 
         [DoNotEnumerate]
-        public Number setUTCYear(int year)
+        public JSObject setUTCYear(JSObject year)
         {
-            time = dateToMilliseconds(year + 1900, getMonthImpl(), getDateImpl(), getHoursImpl(), getMinutesImpl(), getSecondsImpl(), getMillisecondsImpl());
+            time = dateToMilliseconds(Tools.JSObjectToInt64(year) + 1900, getMonthImpl(), getDateImpl(), getHoursImpl(), getMinutesImpl(), getSecondsImpl(), getMillisecondsImpl());
             return year;
         }
 
         [DoNotEnumerate]
-        public Number setFullYear(int year)
+        public JSObject setFullYear(JSObject year)
         {
-            time = dateToMilliseconds(year, getMonthImpl(), getDateImpl(), getHoursImpl(), getMinutesImpl(), getSecondsImpl(), getMillisecondsImpl());
+            time = dateToMilliseconds(Tools.JSObjectToInt64(year), getMonthImpl(), getDateImpl(), getHoursImpl(), getMinutesImpl(), getSecondsImpl(), getMillisecondsImpl());
             return year;
         }
 
         [DoNotEnumerate]
-        public Number setUTCFullYear(int year)
+        public JSObject setUTCFullYear(JSObject year)
         {
-            time = dateToMilliseconds(year, getMonthImpl(), getDateImpl(), getHoursImpl(), getMinutesImpl(), getSecondsImpl(), getMillisecondsImpl());
+            time = dateToMilliseconds(Tools.JSObjectToInt64(year), getMonthImpl(), getDateImpl(), getHoursImpl(), getMinutesImpl(), getSecondsImpl(), getMillisecondsImpl());
             return year;
         }
 
@@ -623,7 +624,7 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [DoNotEnumerate]
-        public static Number parse(string dateTime)
+        public static JSObject parse(string dateTime)
         {
             System.DateTime res;
             if (System.DateTime.TryParse(dateTime, CultureInfo.CurrentCulture, DateTimeStyles.None, out res))
@@ -632,7 +633,7 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [DoNotEnumerate]
-        public static Number UTC(JSObject dateTime)
+        public static JSObject UTC(JSObject dateTime)
         {
             try
             {

@@ -13,20 +13,6 @@ namespace NiL.JSTest
 {
     class Program
     {
-        private static void testEx()
-        {
-            var sw = new Stopwatch();
-            var s = new Script(
-@"
-console.log(Date.now());
-");
-            s.Context.AttachModule(typeof(System.Drawing.Point));
-            sw.Start();
-            s.Invoke();
-            sw.Stop();
-            Console.WriteLine(sw.Elapsed);
-        }
-
         private static void sputnicTests(string folderPath = "tests\\")
         {
             bool showAll = false;
@@ -124,11 +110,26 @@ console.log(Date.now());
             _("time: " + sw.Elapsed);
             _("Sputnik testing complite");
         }
+        
+        private static void testEx()
+        {
+            var sw = new Stopwatch();
+            var s = new Script(
+@"
+var a = '12345';
+console.log(String.prototype.toString.call(a));
+");
+            s.Context.AttachModule(typeof(System.Drawing.Point));
+            sw.Start();
+            s.Invoke();
+            sw.Stop();
+            Console.WriteLine(sw.Elapsed);
+        }
 
         static void Main(string[] args)
         {
             typeof(System.Windows.Forms.Button).GetType();
-            int mode = 0
+            int mode = 101
                 ;
             switch (mode)
             {
@@ -174,7 +175,7 @@ console.log(Date.now());
                     {
                         Context.GlobalContext.DefineVariable("load").Assign(new ExternalFunction((_th, e) =>
                         {
-                            using (var f = new FileStream("Benchmarks\\" + e["0"], FileMode.Open, FileAccess.Read))
+                            using (var f = new FileStream("v8\\" + e["0"], FileMode.Open, FileAccess.Read))
                             {
                                 using (var sr = new StreamReader(f))
                                     Context.CurrentContext.Eval(sr.ReadToEnd());
@@ -182,7 +183,12 @@ console.log(Date.now());
                             return null;
                         }));
 
-                        runFile(@"Benchmarks\run.js");
+                        runFile(@"v8\run.js");
+                        break;
+                    }
+                case 101:
+                    {
+                        sunspider();
                         break;
                     }
             }
@@ -247,6 +253,45 @@ console.log(Date.now());
             Console.WriteLine("Complite.");
             sr.Dispose();
             f.Dispose();
+        }
+
+        private static void sunspider()
+        {
+            var folderPath = "sunspider-0.9.1";
+
+            Action<string> _ = Console.WriteLine;
+            var sw = new Stopwatch();
+            _("Directory: \"" + Directory.GetParent(folderPath) + "\"");
+            _("Scaning directory...");
+            var fls = Directory.EnumerateFiles(folderPath, "*.js", SearchOption.AllDirectories).ToArray();
+            _("Founded " + fls.Length + " js-files");
+
+            long _total = 0;
+            var round = 0;
+            for (; round < 5; round++)
+            {
+                TimeSpan total = new TimeSpan();
+
+                for (var i = 0; i < fls.Length; i++)
+                {
+                    _("Process " + fls[i]);
+                    var f = new FileStream(fls[i], FileMode.Open, FileAccess.Read);
+                    var sr = new StreamReader(f);
+                    var script = new Script(sr.ReadToEnd());
+                    sr.Dispose();
+                    f.Dispose();
+
+                    sw.Restart();
+                    script.Invoke();
+                    sw.Stop();
+                    total += sw.Elapsed;
+                    _(sw.Elapsed.ToString());
+                }
+                _("Total: " + total);
+                _total += total.Ticks;
+                GC.GetTotalMemory(true);
+            }
+            _("Average: " + new TimeSpan(_total / round));
         }
     }
 }
