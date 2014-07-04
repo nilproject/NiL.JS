@@ -109,20 +109,9 @@ namespace NiL.JS.Core
                 {
                     (threads[i] = new Thread((o) =>
                     {
-                        var targs = new JSObject(true)
-                        {
-                            oValue = ArgumentsDummy.Instance,
-                            valueType = JSObjectType.Object,
-                            attributes = JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum
-                        };
-                        targs.fields["length"] = new Number(1) { assignCallback = null, attributes = JSObjectAttributesInternal.DoNotEnum };
-                        targs.fields["0"] = new Number((int)o) { assignCallback = null, attributes = JSObjectAttributesInternal.Argument };
-                        (targs.fields["callee"] = new JSObject()
-                        {
-                            valueType = JSObjectType.Function,
-                            oValue = function,
-                            attributes = JSObjectAttributesInternal.DoNotEnum
-                        }).attributes |= JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.ReadOnly;
+                        var targs = new Arguments();
+                        targs.length = 1;
+                        targs[0] = (int)o;
                         function.Invoke(null, targs);
                     }) { Name = "NiL.JS __pinvoke thread (" + __pinvokeCalled + ":" + i + ")" }).Start(i);
                 }
@@ -130,11 +119,11 @@ namespace NiL.JS.Core
             }
             return TypeProxy.Proxy(new
             {
-                isAlive = new Func<JSObject, bool>((arg) =>
+                isAlive = new Func<Arguments, bool>((arg) =>
                 {
                     if (threads == null)
                         return false;
-                    argsCount = Tools.JSObjectToInt32(arg.GetMember("length"));
+                    argsCount = Tools.JSObjectToInt32(arg.length);
                     if (argsCount == 0)
                     {
                         for (int i = 0; i < threads.Length; i++)

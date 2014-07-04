@@ -33,579 +33,513 @@ namespace NiL.JS.Core.BaseTypes
 
             public RT Invoke<RT>()
             {
-                var eargs = new JSObject();
-                eargs.oValue = ArgumentsDummy.Instance;
-                eargs.valueType = JSObjectType.Object;
-                eargs.DefineMember("length").Assign(0);
+                var eargs = new Arguments();
+                eargs.length = 0;
                 return (RT)function.Invoke(eargs).Value;
             }
 
             public RT Invoke<RT, T1>(T1 a1)
             {
-                var eargs = new JSObject();
-                eargs.oValue = ArgumentsDummy.Instance;
-                eargs.valueType = JSObjectType.Object;
-                eargs.DefineMember("length").Assign(2);
-                eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
+                var eargs = new Arguments();
+                eargs.length = 2;
+                eargs[0] = TypeProxy.Proxy(a1);
                 return (RT)function.Invoke(eargs).Value;
             }
 
             public RT Invoke<RT, T1, T2>(T1 a1, T2 a2)
             {
-                var eargs = new JSObject();
-                eargs.oValue = ArgumentsDummy.Instance;
-                eargs.valueType = JSObjectType.Object;
-                eargs.DefineMember("length").Assign(2);
-                eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
-                eargs.DefineMember("1").Assign(TypeProxy.Proxy(a2));
+                var eargs = new Arguments();
+                eargs.length = 2;
+                eargs[0] = TypeProxy.Proxy(a1);
+                eargs[1] = TypeProxy.Proxy(a2);
                 return (RT)function.Invoke(eargs).Value;
             }
 
             public RT Invoke<RT, T1, T2, T3>(T1 a1, T2 a2, T3 a3)
             {
-                var eargs = new JSObject();
-                eargs.oValue = ArgumentsDummy.Instance;
-                eargs.valueType = JSObjectType.Object;
-                eargs.DefineMember("length").Assign(3);
-                eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
-                eargs.DefineMember("1").Assign(TypeProxy.Proxy(a2));
-                eargs.DefineMember("2").Assign(TypeProxy.Proxy(a3));
+                var eargs = new Arguments();
+                eargs.length = 3;
+                eargs[0] = TypeProxy.Proxy(a1);
+                eargs[1] = TypeProxy.Proxy(a2);
+                eargs[2] = TypeProxy.Proxy(a3);
                 return (RT)function.Invoke(eargs).Value;
             }
 
             public RT Invoke<RT, T1, T2, T3, T4>(T1 a1, T2 a2, T3 a3, T4 a4)
             {
-                var eargs = new JSObject();
-                eargs.oValue = ArgumentsDummy.Instance;
-                eargs.valueType = JSObjectType.Object;
-                eargs.DefineMember("length").Assign(4);
-                eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
-                eargs.DefineMember("1").Assign(TypeProxy.Proxy(a2));
-                eargs.DefineMember("2").Assign(TypeProxy.Proxy(a3));
-                eargs.DefineMember("3").Assign(TypeProxy.Proxy(a4));
+                var eargs = new Arguments();
+                eargs.length = 4;
+                eargs[0] = TypeProxy.Proxy(a1);
+                eargs[1] = TypeProxy.Proxy(a2);
+                eargs[2] = TypeProxy.Proxy(a3);
+                eargs[3] = TypeProxy.Proxy(a4);
                 return (RT)function.Invoke(eargs).Value;
             }
 
             public RT Invoke<RT, T1, T2, T3, T4, T5>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5)
             {
-                var eargs = new JSObject();
-                eargs.oValue = ArgumentsDummy.Instance;
-                eargs.valueType = JSObjectType.Object;
-                eargs.DefineMember("length").Assign(5);
-                eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
-                eargs.DefineMember("1").Assign(TypeProxy.Proxy(a2));
-                eargs.DefineMember("2").Assign(TypeProxy.Proxy(a3));
-                eargs.DefineMember("3").Assign(TypeProxy.Proxy(a4));
-                eargs.DefineMember("4").Assign(TypeProxy.Proxy(a5));
+                var eargs = new Arguments();
+                eargs.length = 5;
+                eargs[0] = TypeProxy.Proxy(a1);
+                eargs[1] = TypeProxy.Proxy(a2);
+                eargs[2] = TypeProxy.Proxy(a3);
+                eargs[3] = TypeProxy.Proxy(a4);
+                eargs[4] = TypeProxy.Proxy(a5);
                 return (RT)function.Invoke(eargs).Value;
             }
 
             public RT Invoke<RT, T1, T2, T3, T4, T5, T6>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6)
             {
-                var eargs = new JSObject();
-                eargs.oValue = ArgumentsDummy.Instance;
-                eargs.valueType = JSObjectType.Object;
-                eargs.DefineMember("length").Assign(6);
-                eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
-                eargs.DefineMember("1").Assign(TypeProxy.Proxy(a2));
-                eargs.DefineMember("2").Assign(TypeProxy.Proxy(a3));
-                eargs.DefineMember("3").Assign(TypeProxy.Proxy(a4));
-                eargs.DefineMember("4").Assign(TypeProxy.Proxy(a5));
-                eargs.DefineMember("5").Assign(TypeProxy.Proxy(a6));
+                var eargs = new Arguments();
+                eargs.length = 6;
+                eargs[0] = TypeProxy.Proxy(a1);
+                eargs[1] = TypeProxy.Proxy(a2);
+                eargs[2] = TypeProxy.Proxy(a3);
+                eargs[3] = TypeProxy.Proxy(a4);
+                eargs[4] = TypeProxy.Proxy(a5);
+                eargs[5] = TypeProxy.Proxy(a6);
                 return (RT)function.Invoke(eargs).Value;
             }
 
             public RT Invoke<RT, T1, T2, T3, T4, T5, T6, T7>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7)
             {
-                var eargs = new JSObject();
-                eargs.oValue = ArgumentsDummy.Instance;
-                eargs.valueType = JSObjectType.Object;
-                eargs.DefineMember("length").Assign(7);
-                eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
-                eargs.DefineMember("1").Assign(TypeProxy.Proxy(a2));
-                eargs.DefineMember("2").Assign(TypeProxy.Proxy(a3));
-                eargs.DefineMember("3").Assign(TypeProxy.Proxy(a4));
-                eargs.DefineMember("4").Assign(TypeProxy.Proxy(a5));
-                eargs.DefineMember("5").Assign(TypeProxy.Proxy(a6));
-                eargs.DefineMember("6").Assign(TypeProxy.Proxy(a7));
+                var eargs = new Arguments();
+                eargs.length = 7;
+                eargs[0] = TypeProxy.Proxy(a1);
+                eargs[1] = TypeProxy.Proxy(a2);
+                eargs[2] = TypeProxy.Proxy(a3);
+                eargs[3] = TypeProxy.Proxy(a4);
+                eargs[4] = TypeProxy.Proxy(a5);
+                eargs[5] = TypeProxy.Proxy(a6);
+                eargs[6] = TypeProxy.Proxy(a7);
                 return (RT)function.Invoke(eargs).Value;
             }
 
             public RT Invoke<RT, T1, T2, T3, T4, T5, T6, T7, T8>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8)
             {
-                var eargs = new JSObject();
-                eargs.oValue = ArgumentsDummy.Instance;
-                eargs.valueType = JSObjectType.Object;
-                eargs.DefineMember("length").Assign(8);
-                eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
-                eargs.DefineMember("1").Assign(TypeProxy.Proxy(a2));
-                eargs.DefineMember("2").Assign(TypeProxy.Proxy(a3));
-                eargs.DefineMember("3").Assign(TypeProxy.Proxy(a4));
-                eargs.DefineMember("4").Assign(TypeProxy.Proxy(a5));
-                eargs.DefineMember("5").Assign(TypeProxy.Proxy(a6));
-                eargs.DefineMember("6").Assign(TypeProxy.Proxy(a7));
-                eargs.DefineMember("7").Assign(TypeProxy.Proxy(a8));
+                var eargs = new Arguments();
+                eargs.length = 8;
+                eargs[0] = TypeProxy.Proxy(a1);
+                eargs[1] = TypeProxy.Proxy(a2);
+                eargs[2] = TypeProxy.Proxy(a3);
+                eargs[3] = TypeProxy.Proxy(a4);
+                eargs[4] = TypeProxy.Proxy(a5);
+                eargs[5] = TypeProxy.Proxy(a6);
+                eargs[6] = TypeProxy.Proxy(a7);
+                eargs[7] = TypeProxy.Proxy(a8);
                 return (RT)function.Invoke(eargs).Value;
             }
 
             public RT Invoke<RT, T1, T2, T3, T4, T5, T6, T7, T8, T9>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9)
             {
-                var eargs = new JSObject();
-                eargs.oValue = ArgumentsDummy.Instance;
-                eargs.valueType = JSObjectType.Object;
-                eargs.DefineMember("length").Assign(9);
-                eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
-                eargs.DefineMember("1").Assign(TypeProxy.Proxy(a2));
-                eargs.DefineMember("2").Assign(TypeProxy.Proxy(a3));
-                eargs.DefineMember("3").Assign(TypeProxy.Proxy(a4));
-                eargs.DefineMember("4").Assign(TypeProxy.Proxy(a5));
-                eargs.DefineMember("5").Assign(TypeProxy.Proxy(a6));
-                eargs.DefineMember("6").Assign(TypeProxy.Proxy(a7));
-                eargs.DefineMember("7").Assign(TypeProxy.Proxy(a8));
-                eargs.DefineMember("8").Assign(TypeProxy.Proxy(a9));
+                var eargs = new Arguments();
+                eargs.length = 9;
+                eargs[0] = TypeProxy.Proxy(a1);
+                eargs[1] = TypeProxy.Proxy(a2);
+                eargs[2] = TypeProxy.Proxy(a3);
+                eargs[3] = TypeProxy.Proxy(a4);
+                eargs[4] = TypeProxy.Proxy(a5);
+                eargs[5] = TypeProxy.Proxy(a6);
+                eargs[6] = TypeProxy.Proxy(a7);
+                eargs[7] = TypeProxy.Proxy(a8);
+                eargs[8] = TypeProxy.Proxy(a9);
                 return (RT)function.Invoke(eargs).Value;
             }
 
             public RT Invoke<RT, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10)
             {
-                var eargs = new JSObject();
-                eargs.oValue = ArgumentsDummy.Instance;
-                eargs.valueType = JSObjectType.Object;
-                eargs.DefineMember("length").Assign(10);
-                eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
-                eargs.DefineMember("1").Assign(TypeProxy.Proxy(a2));
-                eargs.DefineMember("2").Assign(TypeProxy.Proxy(a3));
-                eargs.DefineMember("3").Assign(TypeProxy.Proxy(a4));
-                eargs.DefineMember("4").Assign(TypeProxy.Proxy(a5));
-                eargs.DefineMember("5").Assign(TypeProxy.Proxy(a6));
-                eargs.DefineMember("6").Assign(TypeProxy.Proxy(a7));
-                eargs.DefineMember("7").Assign(TypeProxy.Proxy(a8));
-                eargs.DefineMember("8").Assign(TypeProxy.Proxy(a9));
-                eargs.DefineMember("9").Assign(TypeProxy.Proxy(a10));
+                var eargs = new Arguments();
+                eargs.length = 10;
+                eargs[0] = TypeProxy.Proxy(a1);
+                eargs[1] = TypeProxy.Proxy(a2);
+                eargs[2] = TypeProxy.Proxy(a3);
+                eargs[3] = TypeProxy.Proxy(a4);
+                eargs[4] = TypeProxy.Proxy(a5);
+                eargs[5] = TypeProxy.Proxy(a6);
+                eargs[6] = TypeProxy.Proxy(a7);
+                eargs[7] = TypeProxy.Proxy(a8);
+                eargs[8] = TypeProxy.Proxy(a9);
+                eargs[9] = TypeProxy.Proxy(a10);
                 return (RT)function.Invoke(eargs).Value;
             }
 
             public RT Invoke<RT, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10, T11 a11)
             {
-                var eargs = new JSObject();
-                eargs.oValue = ArgumentsDummy.Instance;
-                eargs.valueType = JSObjectType.Object;
-                eargs.DefineMember("length").Assign(11);
-                eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
-                eargs.DefineMember("1").Assign(TypeProxy.Proxy(a2));
-                eargs.DefineMember("2").Assign(TypeProxy.Proxy(a3));
-                eargs.DefineMember("3").Assign(TypeProxy.Proxy(a4));
-                eargs.DefineMember("4").Assign(TypeProxy.Proxy(a5));
-                eargs.DefineMember("5").Assign(TypeProxy.Proxy(a6));
-                eargs.DefineMember("6").Assign(TypeProxy.Proxy(a7));
-                eargs.DefineMember("7").Assign(TypeProxy.Proxy(a8));
-                eargs.DefineMember("8").Assign(TypeProxy.Proxy(a9));
-                eargs.DefineMember("9").Assign(TypeProxy.Proxy(a10));
-                eargs.DefineMember("10").Assign(TypeProxy.Proxy(a11));
+                var eargs = new Arguments();
+                eargs.length = 11;
+                eargs[0] = TypeProxy.Proxy(a1);
+                eargs[1] = TypeProxy.Proxy(a2);
+                eargs[2] = TypeProxy.Proxy(a3);
+                eargs[3] = TypeProxy.Proxy(a4);
+                eargs[4] = TypeProxy.Proxy(a5);
+                eargs[5] = TypeProxy.Proxy(a6);
+                eargs[6] = TypeProxy.Proxy(a7);
+                eargs[7] = TypeProxy.Proxy(a8);
+                eargs[8] = TypeProxy.Proxy(a9);
+                eargs[9] = TypeProxy.Proxy(a10);
+                eargs[10] = TypeProxy.Proxy(a11);
                 return (RT)function.Invoke(eargs).Value;
             }
 
             public RT Invoke<RT, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10, T11 a11, T12 a12)
             {
-                var eargs = new JSObject();
-                eargs.oValue = ArgumentsDummy.Instance;
-                eargs.valueType = JSObjectType.Object;
-                eargs.DefineMember("length").Assign(12);
-                eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
-                eargs.DefineMember("1").Assign(TypeProxy.Proxy(a2));
-                eargs.DefineMember("2").Assign(TypeProxy.Proxy(a3));
-                eargs.DefineMember("3").Assign(TypeProxy.Proxy(a4));
-                eargs.DefineMember("4").Assign(TypeProxy.Proxy(a5));
-                eargs.DefineMember("5").Assign(TypeProxy.Proxy(a6));
-                eargs.DefineMember("6").Assign(TypeProxy.Proxy(a7));
-                eargs.DefineMember("7").Assign(TypeProxy.Proxy(a8));
-                eargs.DefineMember("8").Assign(TypeProxy.Proxy(a9));
-                eargs.DefineMember("9").Assign(TypeProxy.Proxy(a10));
-                eargs.DefineMember("10").Assign(TypeProxy.Proxy(a11));
-                eargs.DefineMember("11").Assign(TypeProxy.Proxy(a12));
+                var eargs = new Arguments();
+                eargs.length = 12;
+                eargs[0] = TypeProxy.Proxy(a1);
+                eargs[1] = TypeProxy.Proxy(a2);
+                eargs[2] = TypeProxy.Proxy(a3);
+                eargs[3] = TypeProxy.Proxy(a4);
+                eargs[4] = TypeProxy.Proxy(a5);
+                eargs[5] = TypeProxy.Proxy(a6);
+                eargs[6] = TypeProxy.Proxy(a7);
+                eargs[7] = TypeProxy.Proxy(a8);
+                eargs[8] = TypeProxy.Proxy(a9);
+                eargs[9] = TypeProxy.Proxy(a10);
+                eargs[10] = TypeProxy.Proxy(a11);
+                eargs[11] = TypeProxy.Proxy(a12);
                 return (RT)function.Invoke(eargs).Value;
             }
 
             public RT Invoke<RT, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10, T11 a11, T12 a12, T13 a13)
             {
-                var eargs = new JSObject();
-                eargs.oValue = ArgumentsDummy.Instance;
-                eargs.valueType = JSObjectType.Object;
-                eargs.DefineMember("length").Assign(13);
-                eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
-                eargs.DefineMember("1").Assign(TypeProxy.Proxy(a2));
-                eargs.DefineMember("2").Assign(TypeProxy.Proxy(a3));
-                eargs.DefineMember("3").Assign(TypeProxy.Proxy(a4));
-                eargs.DefineMember("4").Assign(TypeProxy.Proxy(a5));
-                eargs.DefineMember("5").Assign(TypeProxy.Proxy(a6));
-                eargs.DefineMember("6").Assign(TypeProxy.Proxy(a7));
-                eargs.DefineMember("7").Assign(TypeProxy.Proxy(a8));
-                eargs.DefineMember("8").Assign(TypeProxy.Proxy(a9));
-                eargs.DefineMember("9").Assign(TypeProxy.Proxy(a10));
-                eargs.DefineMember("10").Assign(TypeProxy.Proxy(a11));
-                eargs.DefineMember("11").Assign(TypeProxy.Proxy(a12));
-                eargs.DefineMember("12").Assign(TypeProxy.Proxy(a13));
+                var eargs = new Arguments();
+                eargs.length = 13;
+                eargs[0] = TypeProxy.Proxy(a1);
+                eargs[1] = TypeProxy.Proxy(a2);
+                eargs[2] = TypeProxy.Proxy(a3);
+                eargs[3] = TypeProxy.Proxy(a4);
+                eargs[4] = TypeProxy.Proxy(a5);
+                eargs[5] = TypeProxy.Proxy(a6);
+                eargs[6] = TypeProxy.Proxy(a7);
+                eargs[7] = TypeProxy.Proxy(a8);
+                eargs[8] = TypeProxy.Proxy(a9);
+                eargs[9] = TypeProxy.Proxy(a10);
+                eargs[10] = TypeProxy.Proxy(a11);
+                eargs[11] = TypeProxy.Proxy(a12);
+                eargs[12] = TypeProxy.Proxy(a13);
                 return (RT)function.Invoke(eargs).Value;
             }
 
             public RT Invoke<RT, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10, T11 a11, T12 a12, T13 a13, T14 a14)
             {
-                var eargs = new JSObject();
-                eargs.oValue = ArgumentsDummy.Instance;
-                eargs.valueType = JSObjectType.Object;
-                eargs.DefineMember("length").Assign(14);
-                eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
-                eargs.DefineMember("1").Assign(TypeProxy.Proxy(a2));
-                eargs.DefineMember("2").Assign(TypeProxy.Proxy(a3));
-                eargs.DefineMember("3").Assign(TypeProxy.Proxy(a4));
-                eargs.DefineMember("4").Assign(TypeProxy.Proxy(a5));
-                eargs.DefineMember("5").Assign(TypeProxy.Proxy(a6));
-                eargs.DefineMember("6").Assign(TypeProxy.Proxy(a7));
-                eargs.DefineMember("7").Assign(TypeProxy.Proxy(a8));
-                eargs.DefineMember("8").Assign(TypeProxy.Proxy(a9));
-                eargs.DefineMember("9").Assign(TypeProxy.Proxy(a10));
-                eargs.DefineMember("10").Assign(TypeProxy.Proxy(a11));
-                eargs.DefineMember("11").Assign(TypeProxy.Proxy(a12));
-                eargs.DefineMember("12").Assign(TypeProxy.Proxy(a13));
-                eargs.DefineMember("13").Assign(TypeProxy.Proxy(a14));
+                var eargs = new Arguments();
+                eargs.length = 14;
+                eargs[0] = TypeProxy.Proxy(a1);
+                eargs[1] = TypeProxy.Proxy(a2);
+                eargs[2] = TypeProxy.Proxy(a3);
+                eargs[3] = TypeProxy.Proxy(a4);
+                eargs[4] = TypeProxy.Proxy(a5);
+                eargs[5] = TypeProxy.Proxy(a6);
+                eargs[6] = TypeProxy.Proxy(a7);
+                eargs[7] = TypeProxy.Proxy(a8);
+                eargs[8] = TypeProxy.Proxy(a9);
+                eargs[9] = TypeProxy.Proxy(a10);
+                eargs[10] = TypeProxy.Proxy(a11);
+                eargs[11] = TypeProxy.Proxy(a12);
+                eargs[12] = TypeProxy.Proxy(a13);
+                eargs[13] = TypeProxy.Proxy(a14);
                 return (RT)function.Invoke(eargs).Value;
             }
 
             public RT Invoke<RT, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10, T11 a11, T12 a12, T13 a13, T14 a14, T15 a15)
             {
-                var eargs = new JSObject();
-                eargs.oValue = ArgumentsDummy.Instance;
-                eargs.valueType = JSObjectType.Object;
-                eargs.DefineMember("length").Assign(15);
-                eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
-                eargs.DefineMember("1").Assign(TypeProxy.Proxy(a2));
-                eargs.DefineMember("2").Assign(TypeProxy.Proxy(a3));
-                eargs.DefineMember("3").Assign(TypeProxy.Proxy(a4));
-                eargs.DefineMember("4").Assign(TypeProxy.Proxy(a5));
-                eargs.DefineMember("5").Assign(TypeProxy.Proxy(a6));
-                eargs.DefineMember("6").Assign(TypeProxy.Proxy(a7));
-                eargs.DefineMember("7").Assign(TypeProxy.Proxy(a8));
-                eargs.DefineMember("8").Assign(TypeProxy.Proxy(a9));
-                eargs.DefineMember("9").Assign(TypeProxy.Proxy(a10));
-                eargs.DefineMember("10").Assign(TypeProxy.Proxy(a11));
-                eargs.DefineMember("11").Assign(TypeProxy.Proxy(a12));
-                eargs.DefineMember("12").Assign(TypeProxy.Proxy(a13));
-                eargs.DefineMember("13").Assign(TypeProxy.Proxy(a14));
-                eargs.DefineMember("14").Assign(TypeProxy.Proxy(a15));
+                var eargs = new Arguments();
+                eargs.length = 15;
+                eargs[0] = TypeProxy.Proxy(a1);
+                eargs[1] = TypeProxy.Proxy(a2);
+                eargs[2] = TypeProxy.Proxy(a3);
+                eargs[3] = TypeProxy.Proxy(a4);
+                eargs[4] = TypeProxy.Proxy(a5);
+                eargs[5] = TypeProxy.Proxy(a6);
+                eargs[6] = TypeProxy.Proxy(a7);
+                eargs[7] = TypeProxy.Proxy(a8);
+                eargs[8] = TypeProxy.Proxy(a9);
+                eargs[9] = TypeProxy.Proxy(a10);
+                eargs[10] = TypeProxy.Proxy(a11);
+                eargs[11] = TypeProxy.Proxy(a12);
+                eargs[12] = TypeProxy.Proxy(a13);
+                eargs[13] = TypeProxy.Proxy(a14);
+                eargs[14] = TypeProxy.Proxy(a15);
                 return (RT)function.Invoke(eargs).Value;
             }
 
             public RT Invoke<RT, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10, T11 a11, T12 a12, T13 a13, T14 a14, T15 a15, T16 a16)
             {
-                var eargs = new JSObject();
-                eargs.oValue = ArgumentsDummy.Instance;
-                eargs.valueType = JSObjectType.Object;
-                eargs.DefineMember("length").Assign(16);
-                eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
-                eargs.DefineMember("1").Assign(TypeProxy.Proxy(a2));
-                eargs.DefineMember("2").Assign(TypeProxy.Proxy(a3));
-                eargs.DefineMember("3").Assign(TypeProxy.Proxy(a4));
-                eargs.DefineMember("4").Assign(TypeProxy.Proxy(a5));
-                eargs.DefineMember("5").Assign(TypeProxy.Proxy(a6));
-                eargs.DefineMember("6").Assign(TypeProxy.Proxy(a7));
-                eargs.DefineMember("7").Assign(TypeProxy.Proxy(a8));
-                eargs.DefineMember("8").Assign(TypeProxy.Proxy(a9));
-                eargs.DefineMember("9").Assign(TypeProxy.Proxy(a10));
-                eargs.DefineMember("10").Assign(TypeProxy.Proxy(a11));
-                eargs.DefineMember("11").Assign(TypeProxy.Proxy(a12));
-                eargs.DefineMember("12").Assign(TypeProxy.Proxy(a13));
-                eargs.DefineMember("13").Assign(TypeProxy.Proxy(a14));
-                eargs.DefineMember("14").Assign(TypeProxy.Proxy(a15));
-                eargs.DefineMember("15").Assign(TypeProxy.Proxy(a16));
+                var eargs = new Arguments();
+                eargs.length = 16;
+                eargs[0] = TypeProxy.Proxy(a1);
+                eargs[1] = TypeProxy.Proxy(a2);
+                eargs[2] = TypeProxy.Proxy(a3);
+                eargs[3] = TypeProxy.Proxy(a4);
+                eargs[4] = TypeProxy.Proxy(a5);
+                eargs[5] = TypeProxy.Proxy(a6);
+                eargs[6] = TypeProxy.Proxy(a7);
+                eargs[7] = TypeProxy.Proxy(a8);
+                eargs[8] = TypeProxy.Proxy(a9);
+                eargs[9] = TypeProxy.Proxy(a10);
+                eargs[10] = TypeProxy.Proxy(a11);
+                eargs[11] = TypeProxy.Proxy(a12);
+                eargs[12] = TypeProxy.Proxy(a13);
+                eargs[13] = TypeProxy.Proxy(a14);
+                eargs[14] = TypeProxy.Proxy(a15);
+                eargs[15] = TypeProxy.Proxy(a16);
                 return (RT)function.Invoke(eargs).Value;
             }
 
             public void Invoke()
             {
-                var eargs = new JSObject();
-                eargs.oValue = ArgumentsDummy.Instance;
-                eargs.valueType = JSObjectType.Object;
-                eargs.DefineMember("length").Assign(0);
+                var eargs = new Arguments();
+                eargs.length = 0;
                 function.Invoke(eargs);
             }
 
             public void Invoke<T1>(T1 a1)
             {
-                var eargs = new JSObject();
-                eargs.oValue = ArgumentsDummy.Instance;
-                eargs.valueType = JSObjectType.Object;
-                eargs.DefineMember("length").Assign(2);
-                eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
+                var eargs = new Arguments();
+
+
+                eargs.length = 2;
+                eargs[0] = TypeProxy.Proxy(a1);
                 function.Invoke(eargs);
             }
 
             public void Invoke<T1, T2>(T1 a1, T2 a2)
             {
-                var eargs = new JSObject();
-                eargs.oValue = ArgumentsDummy.Instance;
-                eargs.valueType = JSObjectType.Object;
-                eargs.DefineMember("length").Assign(2);
-                eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
-                eargs.DefineMember("1").Assign(TypeProxy.Proxy(a2));
+                var eargs = new Arguments();
+                eargs.length = 2;
+                eargs[0] = TypeProxy.Proxy(a1);
+                eargs[1] = TypeProxy.Proxy(a2);
                 function.Invoke(eargs);
             }
 
             public void Invoke<T1, T2, T3>(T1 a1, T2 a2, T3 a3)
             {
-                var eargs = new JSObject();
-                eargs.oValue = ArgumentsDummy.Instance;
-                eargs.valueType = JSObjectType.Object;
-                eargs.DefineMember("length").Assign(3);
-                eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
-                eargs.DefineMember("1").Assign(TypeProxy.Proxy(a2));
-                eargs.DefineMember("2").Assign(TypeProxy.Proxy(a3));
+                var eargs = new Arguments();
+                eargs.length = 3;
+                eargs[0] = TypeProxy.Proxy(a1);
+                eargs[1] = TypeProxy.Proxy(a2);
+                eargs[2] = TypeProxy.Proxy(a3);
                 function.Invoke(eargs);
             }
 
             public void Invoke<T1, T2, T3, T4>(T1 a1, T2 a2, T3 a3, T4 a4)
             {
-                var eargs = new JSObject();
-                eargs.oValue = ArgumentsDummy.Instance;
-                eargs.valueType = JSObjectType.Object;
-                eargs.DefineMember("length").Assign(4);
-                eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
-                eargs.DefineMember("1").Assign(TypeProxy.Proxy(a2));
-                eargs.DefineMember("2").Assign(TypeProxy.Proxy(a3));
-                eargs.DefineMember("3").Assign(TypeProxy.Proxy(a4));
+                var eargs = new Arguments();
+                eargs.length = 4;
+                eargs[0] = TypeProxy.Proxy(a1);
+                eargs[1] = TypeProxy.Proxy(a2);
+                eargs[2] = TypeProxy.Proxy(a3);
+                eargs[3] = TypeProxy.Proxy(a4);
                 function.Invoke(eargs);
             }
 
             public void Invoke<T1, T2, T3, T4, T5>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5)
             {
-                var eargs = new JSObject();
-                eargs.oValue = ArgumentsDummy.Instance;
-                eargs.valueType = JSObjectType.Object;
-                eargs.DefineMember("length").Assign(5);
-                eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
-                eargs.DefineMember("1").Assign(TypeProxy.Proxy(a2));
-                eargs.DefineMember("2").Assign(TypeProxy.Proxy(a3));
-                eargs.DefineMember("3").Assign(TypeProxy.Proxy(a4));
-                eargs.DefineMember("4").Assign(TypeProxy.Proxy(a5));
+                var eargs = new Arguments();
+                eargs.length = 5;
+                eargs[0] = TypeProxy.Proxy(a1);
+                eargs[1] = TypeProxy.Proxy(a2);
+                eargs[2] = TypeProxy.Proxy(a3);
+                eargs[3] = TypeProxy.Proxy(a4);
+                eargs[4] = TypeProxy.Proxy(a5);
                 function.Invoke(eargs);
             }
 
             public void Invoke<T1, T2, T3, T4, T5, T6>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6)
             {
-                var eargs = new JSObject();
-                eargs.oValue = ArgumentsDummy.Instance;
-                eargs.valueType = JSObjectType.Object;
-                eargs.DefineMember("length").Assign(6);
-                eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
-                eargs.DefineMember("1").Assign(TypeProxy.Proxy(a2));
-                eargs.DefineMember("2").Assign(TypeProxy.Proxy(a3));
-                eargs.DefineMember("3").Assign(TypeProxy.Proxy(a4));
-                eargs.DefineMember("4").Assign(TypeProxy.Proxy(a5));
-                eargs.DefineMember("5").Assign(TypeProxy.Proxy(a6));
+                var eargs = new Arguments();
+                eargs.length = 6;
+                eargs[0] = TypeProxy.Proxy(a1);
+                eargs[1] = TypeProxy.Proxy(a2);
+                eargs[2] = TypeProxy.Proxy(a3);
+                eargs[3] = TypeProxy.Proxy(a4);
+                eargs[4] = TypeProxy.Proxy(a5);
+                eargs[5] = TypeProxy.Proxy(a6);
                 function.Invoke(eargs);
             }
 
             public void Invoke<T1, T2, T3, T4, T5, T6, T7>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7)
             {
-                var eargs = new JSObject();
-                eargs.oValue = ArgumentsDummy.Instance;
-                eargs.valueType = JSObjectType.Object;
-                eargs.DefineMember("length").Assign(7);
-                eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
-                eargs.DefineMember("1").Assign(TypeProxy.Proxy(a2));
-                eargs.DefineMember("2").Assign(TypeProxy.Proxy(a3));
-                eargs.DefineMember("3").Assign(TypeProxy.Proxy(a4));
-                eargs.DefineMember("4").Assign(TypeProxy.Proxy(a5));
-                eargs.DefineMember("5").Assign(TypeProxy.Proxy(a6));
-                eargs.DefineMember("6").Assign(TypeProxy.Proxy(a7));
+                var eargs = new Arguments();
+                eargs.length = 7;
+                eargs[0] = TypeProxy.Proxy(a1);
+                eargs[1] = TypeProxy.Proxy(a2);
+                eargs[2] = TypeProxy.Proxy(a3);
+                eargs[3] = TypeProxy.Proxy(a4);
+                eargs[4] = TypeProxy.Proxy(a5);
+                eargs[5] = TypeProxy.Proxy(a6);
+                eargs[6] = TypeProxy.Proxy(a7);
                 function.Invoke(eargs);
             }
 
             public void Invoke<T1, T2, T3, T4, T5, T6, T7, T8>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8)
             {
-                var eargs = new JSObject();
-                eargs.oValue = ArgumentsDummy.Instance;
-                eargs.valueType = JSObjectType.Object;
-                eargs.DefineMember("length").Assign(8);
-                eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
-                eargs.DefineMember("1").Assign(TypeProxy.Proxy(a2));
-                eargs.DefineMember("2").Assign(TypeProxy.Proxy(a3));
-                eargs.DefineMember("3").Assign(TypeProxy.Proxy(a4));
-                eargs.DefineMember("4").Assign(TypeProxy.Proxy(a5));
-                eargs.DefineMember("5").Assign(TypeProxy.Proxy(a6));
-                eargs.DefineMember("6").Assign(TypeProxy.Proxy(a7));
-                eargs.DefineMember("7").Assign(TypeProxy.Proxy(a8));
+                var eargs = new Arguments();
+                eargs.length = 8;
+                eargs[0] = TypeProxy.Proxy(a1);
+                eargs[1] = TypeProxy.Proxy(a2);
+                eargs[2] = TypeProxy.Proxy(a3);
+                eargs[3] = TypeProxy.Proxy(a4);
+                eargs[4] = TypeProxy.Proxy(a5);
+                eargs[5] = TypeProxy.Proxy(a6);
+                eargs[6] = TypeProxy.Proxy(a7);
+                eargs[7] = TypeProxy.Proxy(a8);
                 function.Invoke(eargs);
             }
 
             public void Invoke<T1, T2, T3, T4, T5, T6, T7, T8, T9>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9)
             {
-                var eargs = new JSObject();
-                eargs.oValue = ArgumentsDummy.Instance;
-                eargs.valueType = JSObjectType.Object;
-                eargs.DefineMember("length").Assign(9);
-                eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
-                eargs.DefineMember("1").Assign(TypeProxy.Proxy(a2));
-                eargs.DefineMember("2").Assign(TypeProxy.Proxy(a3));
-                eargs.DefineMember("3").Assign(TypeProxy.Proxy(a4));
-                eargs.DefineMember("4").Assign(TypeProxy.Proxy(a5));
-                eargs.DefineMember("5").Assign(TypeProxy.Proxy(a6));
-                eargs.DefineMember("6").Assign(TypeProxy.Proxy(a7));
-                eargs.DefineMember("7").Assign(TypeProxy.Proxy(a8));
-                eargs.DefineMember("8").Assign(TypeProxy.Proxy(a9));
+                var eargs = new Arguments();
+                eargs.length = 9;
+                eargs[0] = TypeProxy.Proxy(a1);
+                eargs[1] = TypeProxy.Proxy(a2);
+                eargs[2] = TypeProxy.Proxy(a3);
+                eargs[3] = TypeProxy.Proxy(a4);
+                eargs[4] = TypeProxy.Proxy(a5);
+                eargs[5] = TypeProxy.Proxy(a6);
+                eargs[6] = TypeProxy.Proxy(a7);
+                eargs[7] = TypeProxy.Proxy(a8);
+                eargs[8] = TypeProxy.Proxy(a9);
                 function.Invoke(eargs);
             }
 
             public void Invoke<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10)
             {
-                var eargs = new JSObject();
-                eargs.oValue = ArgumentsDummy.Instance;
-                eargs.valueType = JSObjectType.Object;
-                eargs.DefineMember("length").Assign(10);
-                eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
-                eargs.DefineMember("1").Assign(TypeProxy.Proxy(a2));
-                eargs.DefineMember("2").Assign(TypeProxy.Proxy(a3));
-                eargs.DefineMember("3").Assign(TypeProxy.Proxy(a4));
-                eargs.DefineMember("4").Assign(TypeProxy.Proxy(a5));
-                eargs.DefineMember("5").Assign(TypeProxy.Proxy(a6));
-                eargs.DefineMember("6").Assign(TypeProxy.Proxy(a7));
-                eargs.DefineMember("7").Assign(TypeProxy.Proxy(a8));
-                eargs.DefineMember("8").Assign(TypeProxy.Proxy(a9));
-                eargs.DefineMember("9").Assign(TypeProxy.Proxy(a10));
+                var eargs = new Arguments();
+                eargs.length = 10;
+                eargs[0] = TypeProxy.Proxy(a1);
+                eargs[1] = TypeProxy.Proxy(a2);
+                eargs[2] = TypeProxy.Proxy(a3);
+                eargs[3] = TypeProxy.Proxy(a4);
+                eargs[4] = TypeProxy.Proxy(a5);
+                eargs[5] = TypeProxy.Proxy(a6);
+                eargs[6] = TypeProxy.Proxy(a7);
+                eargs[7] = TypeProxy.Proxy(a8);
+                eargs[8] = TypeProxy.Proxy(a9);
+                eargs[9] = TypeProxy.Proxy(a10);
                 function.Invoke(eargs);
             }
 
             public void Invoke<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10, T11 a11)
             {
-                var eargs = new JSObject();
-                eargs.oValue = ArgumentsDummy.Instance;
-                eargs.valueType = JSObjectType.Object;
-                eargs.DefineMember("length").Assign(11);
-                eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
-                eargs.DefineMember("1").Assign(TypeProxy.Proxy(a2));
-                eargs.DefineMember("2").Assign(TypeProxy.Proxy(a3));
-                eargs.DefineMember("3").Assign(TypeProxy.Proxy(a4));
-                eargs.DefineMember("4").Assign(TypeProxy.Proxy(a5));
-                eargs.DefineMember("5").Assign(TypeProxy.Proxy(a6));
-                eargs.DefineMember("6").Assign(TypeProxy.Proxy(a7));
-                eargs.DefineMember("7").Assign(TypeProxy.Proxy(a8));
-                eargs.DefineMember("8").Assign(TypeProxy.Proxy(a9));
-                eargs.DefineMember("9").Assign(TypeProxy.Proxy(a10));
-                eargs.DefineMember("10").Assign(TypeProxy.Proxy(a11));
+                var eargs = new Arguments();
+                eargs.length = 11;
+                eargs[0] = TypeProxy.Proxy(a1);
+                eargs[1] = TypeProxy.Proxy(a2);
+                eargs[2] = TypeProxy.Proxy(a3);
+                eargs[3] = TypeProxy.Proxy(a4);
+                eargs[4] = TypeProxy.Proxy(a5);
+                eargs[5] = TypeProxy.Proxy(a6);
+                eargs[6] = TypeProxy.Proxy(a7);
+                eargs[7] = TypeProxy.Proxy(a8);
+                eargs[8] = TypeProxy.Proxy(a9);
+                eargs[9] = TypeProxy.Proxy(a10);
+                eargs[10] = TypeProxy.Proxy(a11);
                 function.Invoke(eargs);
             }
 
             public void Invoke<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10, T11 a11, T12 a12)
             {
-                var eargs = new JSObject();
-                eargs.oValue = ArgumentsDummy.Instance;
-                eargs.valueType = JSObjectType.Object;
-                eargs.DefineMember("length").Assign(12);
-                eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
-                eargs.DefineMember("1").Assign(TypeProxy.Proxy(a2));
-                eargs.DefineMember("2").Assign(TypeProxy.Proxy(a3));
-                eargs.DefineMember("3").Assign(TypeProxy.Proxy(a4));
-                eargs.DefineMember("4").Assign(TypeProxy.Proxy(a5));
-                eargs.DefineMember("5").Assign(TypeProxy.Proxy(a6));
-                eargs.DefineMember("6").Assign(TypeProxy.Proxy(a7));
-                eargs.DefineMember("7").Assign(TypeProxy.Proxy(a8));
-                eargs.DefineMember("8").Assign(TypeProxy.Proxy(a9));
-                eargs.DefineMember("9").Assign(TypeProxy.Proxy(a10));
-                eargs.DefineMember("10").Assign(TypeProxy.Proxy(a11));
-                eargs.DefineMember("11").Assign(TypeProxy.Proxy(a12));
+                var eargs = new Arguments();
+                eargs.length = 12;
+                eargs[0] = TypeProxy.Proxy(a1);
+                eargs[1] = TypeProxy.Proxy(a2);
+                eargs[2] = TypeProxy.Proxy(a3);
+                eargs[3] = TypeProxy.Proxy(a4);
+                eargs[4] = TypeProxy.Proxy(a5);
+                eargs[5] = TypeProxy.Proxy(a6);
+                eargs[6] = TypeProxy.Proxy(a7);
+                eargs[7] = TypeProxy.Proxy(a8);
+                eargs[8] = TypeProxy.Proxy(a9);
+                eargs[9] = TypeProxy.Proxy(a10);
+                eargs[10] = TypeProxy.Proxy(a11);
+                eargs[11] = TypeProxy.Proxy(a12);
                 function.Invoke(eargs);
             }
 
             public void Invoke<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10, T11 a11, T12 a12, T13 a13)
             {
-                var eargs = new JSObject();
-                eargs.oValue = ArgumentsDummy.Instance;
-                eargs.valueType = JSObjectType.Object;
-                eargs.DefineMember("length").Assign(13);
-                eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
-                eargs.DefineMember("1").Assign(TypeProxy.Proxy(a2));
-                eargs.DefineMember("2").Assign(TypeProxy.Proxy(a3));
-                eargs.DefineMember("3").Assign(TypeProxy.Proxy(a4));
-                eargs.DefineMember("4").Assign(TypeProxy.Proxy(a5));
-                eargs.DefineMember("5").Assign(TypeProxy.Proxy(a6));
-                eargs.DefineMember("6").Assign(TypeProxy.Proxy(a7));
-                eargs.DefineMember("7").Assign(TypeProxy.Proxy(a8));
-                eargs.DefineMember("8").Assign(TypeProxy.Proxy(a9));
-                eargs.DefineMember("9").Assign(TypeProxy.Proxy(a10));
-                eargs.DefineMember("10").Assign(TypeProxy.Proxy(a11));
-                eargs.DefineMember("11").Assign(TypeProxy.Proxy(a12));
-                eargs.DefineMember("12").Assign(TypeProxy.Proxy(a13));
+                var eargs = new Arguments();
+                eargs.length = 13;
+                eargs[0] = TypeProxy.Proxy(a1);
+                eargs[1] = TypeProxy.Proxy(a2);
+                eargs[2] = TypeProxy.Proxy(a3);
+                eargs[3] = TypeProxy.Proxy(a4);
+                eargs[4] = TypeProxy.Proxy(a5);
+                eargs[5] = TypeProxy.Proxy(a6);
+                eargs[6] = TypeProxy.Proxy(a7);
+                eargs[7] = TypeProxy.Proxy(a8);
+                eargs[8] = TypeProxy.Proxy(a9);
+                eargs[9] = TypeProxy.Proxy(a10);
+                eargs[10] = TypeProxy.Proxy(a11);
+                eargs[11] = TypeProxy.Proxy(a12);
+                eargs[12] = TypeProxy.Proxy(a13);
                 function.Invoke(eargs);
             }
 
             public void Invoke<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10, T11 a11, T12 a12, T13 a13, T14 a14)
             {
-                var eargs = new JSObject();
-                eargs.oValue = ArgumentsDummy.Instance;
-                eargs.valueType = JSObjectType.Object;
-                eargs.DefineMember("length").Assign(14);
-                eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
-                eargs.DefineMember("1").Assign(TypeProxy.Proxy(a2));
-                eargs.DefineMember("2").Assign(TypeProxy.Proxy(a3));
-                eargs.DefineMember("3").Assign(TypeProxy.Proxy(a4));
-                eargs.DefineMember("4").Assign(TypeProxy.Proxy(a5));
-                eargs.DefineMember("5").Assign(TypeProxy.Proxy(a6));
-                eargs.DefineMember("6").Assign(TypeProxy.Proxy(a7));
-                eargs.DefineMember("7").Assign(TypeProxy.Proxy(a8));
-                eargs.DefineMember("8").Assign(TypeProxy.Proxy(a9));
-                eargs.DefineMember("9").Assign(TypeProxy.Proxy(a10));
-                eargs.DefineMember("10").Assign(TypeProxy.Proxy(a11));
-                eargs.DefineMember("11").Assign(TypeProxy.Proxy(a12));
-                eargs.DefineMember("12").Assign(TypeProxy.Proxy(a13));
-                eargs.DefineMember("13").Assign(TypeProxy.Proxy(a14));
+                var eargs = new Arguments();
+                eargs.length = 14;
+                eargs[0] = TypeProxy.Proxy(a1);
+                eargs[1] = TypeProxy.Proxy(a2);
+                eargs[2] = TypeProxy.Proxy(a3);
+                eargs[3] = TypeProxy.Proxy(a4);
+                eargs[4] = TypeProxy.Proxy(a5);
+                eargs[5] = TypeProxy.Proxy(a6);
+                eargs[6] = TypeProxy.Proxy(a7);
+                eargs[7] = TypeProxy.Proxy(a8);
+                eargs[8] = TypeProxy.Proxy(a9);
+                eargs[9] = TypeProxy.Proxy(a10);
+                eargs[10] = TypeProxy.Proxy(a11);
+                eargs[11] = TypeProxy.Proxy(a12);
+                eargs[12] = TypeProxy.Proxy(a13);
+                eargs[13] = TypeProxy.Proxy(a14);
                 function.Invoke(eargs);
             }
 
             public void Invoke<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10, T11 a11, T12 a12, T13 a13, T14 a14, T15 a15)
             {
-                var eargs = new JSObject();
-                eargs.oValue = ArgumentsDummy.Instance;
-                eargs.valueType = JSObjectType.Object;
-                eargs.DefineMember("length").Assign(15);
-                eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
-                eargs.DefineMember("1").Assign(TypeProxy.Proxy(a2));
-                eargs.DefineMember("2").Assign(TypeProxy.Proxy(a3));
-                eargs.DefineMember("3").Assign(TypeProxy.Proxy(a4));
-                eargs.DefineMember("4").Assign(TypeProxy.Proxy(a5));
-                eargs.DefineMember("5").Assign(TypeProxy.Proxy(a6));
-                eargs.DefineMember("6").Assign(TypeProxy.Proxy(a7));
-                eargs.DefineMember("7").Assign(TypeProxy.Proxy(a8));
-                eargs.DefineMember("8").Assign(TypeProxy.Proxy(a9));
-                eargs.DefineMember("9").Assign(TypeProxy.Proxy(a10));
-                eargs.DefineMember("10").Assign(TypeProxy.Proxy(a11));
-                eargs.DefineMember("11").Assign(TypeProxy.Proxy(a12));
-                eargs.DefineMember("12").Assign(TypeProxy.Proxy(a13));
-                eargs.DefineMember("13").Assign(TypeProxy.Proxy(a14));
-                eargs.DefineMember("14").Assign(TypeProxy.Proxy(a15));
+                var eargs = new Arguments();
+                eargs.length = 15;
+                eargs[0] = TypeProxy.Proxy(a1);
+                eargs[1] = TypeProxy.Proxy(a2);
+                eargs[2] = TypeProxy.Proxy(a3);
+                eargs[3] = TypeProxy.Proxy(a4);
+                eargs[4] = TypeProxy.Proxy(a5);
+                eargs[5] = TypeProxy.Proxy(a6);
+                eargs[6] = TypeProxy.Proxy(a7);
+                eargs[7] = TypeProxy.Proxy(a8);
+                eargs[8] = TypeProxy.Proxy(a9);
+                eargs[9] = TypeProxy.Proxy(a10);
+                eargs[10] = TypeProxy.Proxy(a11);
+                eargs[11] = TypeProxy.Proxy(a12);
+                eargs[12] = TypeProxy.Proxy(a13);
+                eargs[13] = TypeProxy.Proxy(a14);
+                eargs[14] = TypeProxy.Proxy(a15);
                 function.Invoke(eargs);
             }
 
             public void Invoke<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10, T11 a11, T12 a12, T13 a13, T14 a14, T15 a15, T16 a16)
             {
-                var eargs = new JSObject();
-                eargs.oValue = ArgumentsDummy.Instance;
-                eargs.valueType = JSObjectType.Object;
-                eargs.DefineMember("length").Assign(16);
-                eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
-                eargs.DefineMember("1").Assign(TypeProxy.Proxy(a2));
-                eargs.DefineMember("2").Assign(TypeProxy.Proxy(a3));
-                eargs.DefineMember("3").Assign(TypeProxy.Proxy(a4));
-                eargs.DefineMember("4").Assign(TypeProxy.Proxy(a5));
-                eargs.DefineMember("5").Assign(TypeProxy.Proxy(a6));
-                eargs.DefineMember("6").Assign(TypeProxy.Proxy(a7));
-                eargs.DefineMember("7").Assign(TypeProxy.Proxy(a8));
-                eargs.DefineMember("8").Assign(TypeProxy.Proxy(a9));
-                eargs.DefineMember("9").Assign(TypeProxy.Proxy(a10));
-                eargs.DefineMember("10").Assign(TypeProxy.Proxy(a11));
-                eargs.DefineMember("11").Assign(TypeProxy.Proxy(a12));
-                eargs.DefineMember("12").Assign(TypeProxy.Proxy(a13));
-                eargs.DefineMember("13").Assign(TypeProxy.Proxy(a14));
-                eargs.DefineMember("14").Assign(TypeProxy.Proxy(a15));
-                eargs.DefineMember("15").Assign(TypeProxy.Proxy(a16));
+                var eargs = new Arguments();
+                eargs.length = 16;
+                eargs[0] = TypeProxy.Proxy(a1);
+                eargs[1] = TypeProxy.Proxy(a2);
+                eargs[2] = TypeProxy.Proxy(a3);
+                eargs[3] = TypeProxy.Proxy(a4);
+                eargs[4] = TypeProxy.Proxy(a5);
+                eargs[5] = TypeProxy.Proxy(a6);
+                eargs[6] = TypeProxy.Proxy(a7);
+                eargs[7] = TypeProxy.Proxy(a8);
+                eargs[8] = TypeProxy.Proxy(a9);
+                eargs[9] = TypeProxy.Proxy(a10);
+                eargs[10] = TypeProxy.Proxy(a11);
+                eargs[11] = TypeProxy.Proxy(a12);
+                eargs[12] = TypeProxy.Proxy(a13);
+                eargs[13] = TypeProxy.Proxy(a14);
+                eargs[14] = TypeProxy.Proxy(a15);
+                eargs[15] = TypeProxy.Proxy(a16);
                 function.Invoke(eargs);
             }
 
@@ -700,7 +634,7 @@ namespace NiL.JS.Core.BaseTypes
             [Hidden]
             set { _prototype.Assign(value["0"]); }
         }
-        internal JSObject _arguments;
+        internal Arguments _arguments;
         /// <summary>
         /// Объект, содержащий параметры вызова функции либо null если в данный момент функция не выполняется.
         /// </summary>
@@ -804,7 +738,7 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [Hidden]
-        public virtual JSObject Invoke(JSObject thisBind, JSObject args)
+        public virtual JSObject Invoke(JSObject thisBind, Arguments args)
         {
             var oldargs = _arguments;
             Context internalContext = new Context(context ?? Context.CurrentContext, this);
@@ -837,80 +771,39 @@ namespace NiL.JS.Core.BaseTypes
                         thisBind = internalContext.Root.thisBind;
                 }
 
-                var aasa = args as Arguments;
                 if (args == null)
-                    args = aasa = new Arguments();
+                    args = new Arguments();
                 _arguments = args;
                 int i = 0;
-                if (aasa != null)
+                var ca = internalContext.DefineVariable("arguments");
+                ca.Assign(args);
+                if (body.strict)
                 {
-                    var ca = internalContext.DefineVariable("arguments");
-                    ca.Assign(aasa);
-                    if (body.strict)
-                    {
-                        ca.attributes |= aasa.attributes | JSObjectAttributesInternal.ReadOnly;
-                        aasa.callee = propertiesDummySM;
-                        aasa.caller = propertiesDummySM;
-                    }
-                    else
-                    {
-                        var callee = this.Clone() as JSObject;
-                        callee.attributes = JSObjectAttributesInternal.DoNotEnum;
-                        aasa.callee = callee;
-                    }
-                    int min = System.Math.Min(aasa.length, creator.parameters.Length);
-                    for (; i < min; i++)
-                    {
-                        JSObject t = aasa[i];
-                        aasa[i] = t = t.Clone() as JSObject;
-                        t.attributes |= JSObjectAttributesInternal.Argument;
-                        if (body.strict)
-                            t = t.Clone() as JSObject;
-                        internalContext.fields[creator.parameters[i].Name] = t;
-                    }
-                    for (; i < aasa.length; i++)
-                    {
-                        var t = aasa[i];
-                        aasa[i] = t = t.Clone() as JSObject;
-                        t.attributes |= JSObjectAttributesInternal.Argument;
-                    }
+                    ca.attributes |= args.attributes | JSObjectAttributesInternal.ReadOnly;
+                    args.callee = propertiesDummySM;
+                    args.caller = propertiesDummySM;
                 }
                 else
                 {
-                    internalContext.fields["arguments"] = args;
+                    var callee = this.Clone() as JSObject;
+                    callee.attributes = JSObjectAttributesInternal.DoNotEnum;
+                    args.callee = callee;
+                }
+                int min = System.Math.Min(args.length, creator.parameters.Length);
+                for (; i < min; i++)
+                {
+                    JSObject t = args[i];
+                    args[i] = t = t.Clone() as JSObject;
+                    t.attributes |= JSObjectAttributesInternal.Argument;
                     if (body.strict)
-                    {
-                        args.attributes |= JSObjectAttributesInternal.ReadOnly;
-                        args.fields["callee"] = propertiesDummySM;
-                        args.fields["caller"] = propertiesDummySM;
-                    }
-                    else
-                    {
-                        var callee = this.Clone() as JSObject;
-                        callee.attributes = JSObjectAttributesInternal.DoNotEnum;
-                        args.fields["callee"] = callee;
-                    }
-                    JSObject argsLength = args["length"];
-                    if (argsLength.valueType == JSObjectType.Property)
-                        argsLength = (argsLength.oValue as Function[])[1].Invoke(args, null);
-                    int min = System.Math.Min(argsLength.iValue, creator.parameters.Length);
-                    for (; i < min; i++)
-                    {
-                        var n = i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture);
-                        var t = args.GetMember(n);
-                        args.fields[n] = t = t.Clone() as JSObject;
-                        t.attributes |= JSObjectAttributesInternal.Argument;
-                        if (body.strict)
-                            t = t.Clone() as JSObject;
-                        internalContext.fields[creator.parameters[i].Name] = t;
-                    }
-                    for (; i < argsLength.iValue; i++)
-                    {
-                        var n = i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture);
-                        var t = args[n];
-                        args.fields[n] = t = t.Clone() as JSObject;
-                        t.attributes |= JSObjectAttributesInternal.Argument;
-                    }
+                        t = t.Clone() as JSObject;
+                    internalContext.fields[creator.parameters[i].Name] = t;
+                }
+                for (; i < args.length; i++)
+                {
+                    var t = args[i];
+                    args[i] = t = t.Clone() as JSObject;
+                    t.attributes |= JSObjectAttributesInternal.Argument;
                 }
                 for (; i < creator.parameters.Length; i++)
                     internalContext.fields[creator.parameters[i].Name] = new JSObject() { attributes = JSObjectAttributesInternal.Argument };
@@ -957,7 +850,7 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [Hidden]
-        public JSObject Invoke(JSObject args)
+        public JSObject Invoke(Arguments args)
         {
             return Invoke(undefined, args);
         }
@@ -1008,53 +901,25 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [DoNotEnumerate]
-        public JSObject call(JSObject args)
+        public JSObject call(Arguments args)
         {
-            var aasa = args as Arguments;
-            if (aasa != null)
+            var newThis = args[0];
+            var prmlen = --args.length;
+            if (prmlen >= 0)
             {
-                var newThis = aasa[0];
-                var prmlen = --aasa.length;
-                if (prmlen >= 0)
-                {
-                    for (var i = 0; i <= prmlen; i++)
-                        aasa[i] = aasa[i + 1];
-                    aasa[prmlen] = null;
-                }
-                else
-                    aasa[0] = null;
-                return Invoke(newThis, args);
+                for (var i = 0; i <= prmlen; i++)
+                    args[i] = args[i + 1];
+                args[prmlen] = null;
             }
             else
-            {
-                var newThis = args.GetMember("0");
-                var prmlen = --args.GetMember("length").iValue;
-                if (prmlen >= 0)
-                {
-                    for (int i = 0; i < prmlen; i++)
-                        args.fields[i < 16 ? Tools.NumString[i] : i.ToString()] = args.GetMember(i < 15 ? Tools.NumString[i + 1] : (i + 1).ToString(CultureInfo.InvariantCulture));
-                    args.fields.Remove(prmlen < 16 ? Tools.NumString[prmlen] : prmlen.ToString(CultureInfo.InvariantCulture));
-                }
-                else
-                    args.fields.Remove("0");
-                return Invoke(newThis, args);
-            }
+                args[0] = null;
+            return Invoke(newThis, args);
         }
 
         [DoNotEnumerate]
-        public JSObject apply(JSObject args)
+        public JSObject apply(Arguments args)
         {
-            var aasa = args as Arguments;
-            if (aasa != null)
-            {
-                return Invoke(aasa[0], aasa[1]);
-            }
-            else
-            {
-                var newThis = args.GetMember("0");
-                var iargs = args.GetMember("1");
-                return Invoke(newThis, iargs);
-            }
+            return Invoke(args[0], args[1] as Arguments);
         }
 
         [DoNotEnumerate]

@@ -33,9 +33,9 @@ namespace NiL.JS.Core
         }
 
         [Hidden]
-        public override NiL.JS.Core.JSObject Invoke(NiL.JS.Core.JSObject thisBind, NiL.JS.Core.JSObject args)
+        public override NiL.JS.Core.JSObject Invoke(NiL.JS.Core.JSObject thisBind, Arguments args)
         {
-            var arg = args["0"];
+            var arg = args[0];
             if (arg.valueType != JSObjectType.String)
                 return arg;
             if (this.attributes.HasFlag(JSObjectAttributesInternal.Eval))

@@ -49,7 +49,7 @@ namespace NiL.JS.Core
        }
 
         [Hidden]
-        public override JSObject Invoke(JSObject thisBind, JSObject args)
+        public override JSObject Invoke(JSObject thisBind, Arguments args)
         {
             var res = del(thisBind, args);
             if (res == null)

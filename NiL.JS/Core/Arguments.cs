@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace NiL.JS.Core
 {
     [Serializable]
-    internal sealed class Arguments : JSObject
+    public sealed class Arguments : JSObject
     {
         private JSObject a0;
         private JSObject a1;

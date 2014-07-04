@@ -212,7 +212,7 @@ namespace NiL.JS.Core.BaseTypes
             if (f == null)
                 throw new JSException(new TypeError("Callback argument is not a function."));
             var tb = args.Length > 1 ? args[1] : null;
-            var ao = new JSObject() { oValue = ArgumentsDummy.Instance, valueType = JSObjectType.Object };
+            var ao = new Arguments();
             ao["length"] = 3;
             ao["0"] = undefined;
             ao["1"] = undefined;
@@ -259,7 +259,7 @@ namespace NiL.JS.Core.BaseTypes
             if (f == null)
                 throw new JSException(new TypeError("Callback argument is not a function."));
             var tb = args.Length > 1 ? args[1] : null;
-            var ao = new JSObject() { oValue = ArgumentsDummy.Instance, valueType = JSObjectType.Object };
+            var ao = new Arguments();
             ao["length"] = 3;
             ao["0"] = undefined;
             ao["1"] = undefined;
@@ -306,7 +306,7 @@ namespace NiL.JS.Core.BaseTypes
             if (f == null)
                 throw new JSException(new TypeError("Callback argument is not a function."));
             var tb = args.Length > 1 ? args[1] : null;
-            var ao = new JSObject() { oValue = ArgumentsDummy.Instance, valueType = JSObjectType.Object };
+            var ao = new Arguments();
             ao["length"] = 3;
             ao["0"] = undefined;
             ao["1"] = undefined;
@@ -350,7 +350,7 @@ namespace NiL.JS.Core.BaseTypes
             if (f == null)
                 throw new JSException(new TypeError("Callback argument is not a function."));
             var tb = args.Length > 1 ? args[1] : null;
-            var ao = new JSObject() { oValue = ArgumentsDummy.Instance, valueType = JSObjectType.Object };
+            var ao = new Arguments();
             ao["length"] = 3;
             ao["0"] = undefined;
             ao["1"] = undefined;
@@ -396,7 +396,7 @@ namespace NiL.JS.Core.BaseTypes
             if (f == null)
                 throw new JSException(new TypeError("Callback argument is not a function."));
             var tb = args.Length > 1 ? args[1] : null;
-            var ao = new JSObject() { oValue = ArgumentsDummy.Instance, valueType = JSObjectType.Object };
+            var ao = new Arguments();
             ao["length"] = 3;
             ao["1"] = 0;
             ao["2"] = this;
@@ -576,7 +576,7 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [DoNotEnumerate]
-        public JSObject reduce(JSObject args)
+        public JSObject reduce(Arguments args)
         {
             var funco = args.GetMember("0");
             if (funco.valueType != JSObjectType.Function)
@@ -596,10 +596,10 @@ namespace NiL.JS.Core.BaseTypes
                 return accum;
             if (accum.GetType() != typeof(JSObject))
                 accum = accum.Clone() as JSObject;
-            args["length"] = 4;
-            args.fields["1"] = new JSObject();
-            args.fields["2"] = new JSObject();
-            args.fields["3"] = new JSObject();
+            args.length = 4;
+            args[1] = new JSObject();
+            args[2] = new JSObject();
+            args[3] = new JSObject();
             var context = Context.CurrentContext;
             foreach (var element in data)
             {
@@ -613,7 +613,7 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [DoNotEnumerate]
-        public JSObject reduceRight(JSObject args)
+        public JSObject reduceRight(Arguments args)
         {
             var funco = args.GetMember("0");
             if (funco.valueType != JSObjectType.Function)
@@ -764,12 +764,12 @@ namespace NiL.JS.Core.BaseTypes
 
         private sealed class JSComparer : IComparer<JSObject>
         {
-            JSObject args;
+            Arguments args;
             JSObject first;
             JSObject second;
             Function comparer;
 
-            public JSComparer(JSObject args, JSObject first, JSObject second, Function comparer)
+            public JSComparer(Arguments args, JSObject first, JSObject second, Function comparer)
             {
                 this.args = args;
                 this.first = first;
@@ -781,31 +781,27 @@ namespace NiL.JS.Core.BaseTypes
             {
                 first.Assign(x);
                 second.Assign(y);
-                args.fields["0"] = first;
-                args.fields["1"] = second;
+                args[0] = first;
+                args[1] = second;
                 var res = Tools.JSObjectToInt32(comparer.Invoke(JSObject.undefined, args));
                 return res;
             }
         }
 
         [DoNotEnumerate]
-        public JSObject sort(JSObject args)
+        public JSObject sort(Arguments args)
         {
             if (args == null)
                 throw new ArgumentNullException("args");
-            var length = args.GetMember("length");
-            var comparer = args.GetMember("0").oValue as Function;
+            var comparer = args[0].oValue as Function;
             var len = Tools.JSObjectToInt32(length);
             if (comparer != null)
             {
                 var second = new JSObject();
                 var first = new JSObject();
-                args.fields.Clear();
-                length.iValue = 2;
-                length.valueType = JSObjectType.Int;
-                args.fields["length"] = length;
-                args.fields["0"] = first;
-                args.fields["1"] = second;
+                args.length = 2;
+                args[0] = first;
+                args[1] = second;
 
                 var tt = new BinaryTree<JSObject, List<JSObject>>(new JSComparer(args, first, second, comparer));
                 foreach (var node in data.Nodes)

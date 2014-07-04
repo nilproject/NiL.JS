@@ -128,9 +128,9 @@ namespace NiL.JS.Expressions
                 }
                 if (setter != null)
                 {
-                    var args = new JSObject(true) { oValue = ArgumentsDummy.Instance, valueType = JSObjectType.Object };
-                    args["length"] = context.wrap(1);
-                    args.fields["0"] = val;
+                    var args = new Arguments();
+                    args.length = 1;
+                    args["0"] = val;
                     setter.Invoke(context.objectSource, args);
                 }
                 return o;

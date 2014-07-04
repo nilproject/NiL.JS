@@ -7,8 +7,7 @@ namespace NiL.JS.Expressions
     [Serializable]
     public sealed class Assign : Expression
     {
-        private JSObject setterArgs = new JSObject(true) { valueType = JSObjectType.Object, oValue = ArgumentsDummy.Instance };
-        private JSObject setterArg = new JSObject();
+        private Arguments setterArgs = new Arguments() { length = 1 };
 
         public override bool IsContextIndependent
         {
@@ -21,13 +20,6 @@ namespace NiL.JS.Expressions
         public Assign(CodeNode first, CodeNode second)
             : base(first, second, false)
         {
-            setterArgs.fields["length"] = new JSObject()
-            {
-                iValue = 1,
-                valueType = JSObjectType.Int,
-                attributes = JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.ReadOnly
-            };
-            setterArgs.fields["0"] = setterArg;
         }
 
         internal override JSObject Invoke(Context context)
@@ -39,13 +31,13 @@ namespace NiL.JS.Expressions
                 lock (this)
                 {
                     var fieldSource = context.objectSource;
-                    setterArg.Assign(second.Invoke(context));
+                    setterArgs[0] = second.Invoke(context);
                     var setter = (field.oValue as NiL.JS.Core.BaseTypes.Function[])[0];
                     if (setter != null)
                         setter.Invoke(fieldSource, setterArgs);
                     else if (context.strict)
                         throw new JSException(new TypeError("Can not assign to readonly property \"" + first + "\""));
-                    return setterArg;
+                    return setterArgs[0];
                 }
             }
             else if ((field.attributes & JSObjectAttributesInternal.ReadOnly) != 0 && context.strict)

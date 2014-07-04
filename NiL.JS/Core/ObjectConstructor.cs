@@ -14,11 +14,11 @@ namespace NiL.JS.Core
             this.proxy = proxy;
         }
 
-        public override NiL.JS.Core.JSObject Invoke(JSObject thisBind, NiL.JS.Core.JSObject args)
+        public override NiL.JS.Core.JSObject Invoke(JSObject thisBind, Arguments args)
         {
             object oVal = null;
-            if (args != null && args.GetMember("length").iValue > 0)
-                oVal = args.GetMember("0");
+            if (args != null && args.length > 0)
+                oVal = args[0];
             JSObject res = null;
             if ((oVal == null) ||
                 (oVal is JSObject && (((oVal as JSObject).valueType >= JSObjectType.Object && (oVal as JSObject).oValue == null)

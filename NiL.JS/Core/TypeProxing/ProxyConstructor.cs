@@ -76,7 +76,7 @@ namespace NiL.JS.Core
         }
 
         [Hidden]
-        public override JSObject Invoke(JSObject thisOverride, JSObject argsObj)
+        public override JSObject Invoke(JSObject thisOverride, Arguments argsObj)
         {
             if (proxy.hostedType.ContainsGenericParameters)
                 throw new JSException(TypeProxy.Proxy(new BaseTypes.TypeError(proxy.hostedType.Name + " can't be created because it's generic type.")));

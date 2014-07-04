@@ -274,30 +274,27 @@ namespace NiL.JS.Core.BaseTypes
                     var f = args[1].oValue as Function;
                     var match = new String();
                     match.assignCallback = null;
-                    var margs = CreateObject();
-                    JSObject len = 1;
-                    len.assignCallback = null;
-                    len.attributes = JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.ReadOnly;
-                    margs.fields["length"] = len;
-                    margs.fields["0"] = match;
+                    var margs = new Arguments();
+                    margs.length = 1;
+                    margs[0] = match;
                     match.oValue = (args[0].oValue as RegExp).regEx.Replace(oValue.ToString(), new System.Text.RegularExpressions.MatchEvaluator(
                         (m) =>
                         {
                             this.oValue = temp;
                             this.valueType = JSObjectType.String;
-                            len.iValue = 1 + m.Groups.Count + 1 + 1;
+                            margs.length = 1 + m.Groups.Count + 1 + 1;
                             match.oValue = m.Value;
                             JSObject t = m.Index;
                             for (int i = 0; i < m.Groups.Count; i++)
                             {
                                 t = m.Groups[i].Value;
                                 t.assignCallback = null;
-                                margs.fields[(i + 1).ToString(CultureInfo.InvariantCulture)] = t;
+                                margs[i + 1] = t;
                             }
                             t = m.Index;
                             t.assignCallback = null;
-                            margs.fields[(len.iValue - 2).ToString()] = t;
-                            margs.fields[(len.iValue - 1).ToString()] = this;
+                            margs[margs.length - 2] = t;
+                            margs[margs.length - 1] = this;
                             return f.Invoke(margs).ToString();
                         }), (args[0].oValue as RegExp)._global ? int.MaxValue : 1);
                     this.oValue = temp;
@@ -319,18 +316,14 @@ namespace NiL.JS.Core.BaseTypes
                     assignCallback = null;
                     string othis = this.oValue as string;
                     var f = args[1].oValue as Function;
-                    var margs = CreateObject();
-                    margs.oValue = ArgumentsDummy.Instance;
-                    JSObject alen = 3;
-                    alen.assignCallback = null;
-                    alen.attributes = JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.ReadOnly;
-                    margs.fields["length"] = alen;
-                    margs.fields["0"] = pattern;
-                    margs.fields["2"] = this;
+                    var margs = new Arguments();
+                    margs.length = 3;
+                    margs["0"] = pattern;
+                    margs["2"] = this;
                     int index = oValue.ToString().IndexOf(pattern);
                     if (index == -1)
                         return this;
-                    margs.fields["1"] = index;
+                    margs["1"] = index;
                     var res = othis.Substring(0, index) + f.Invoke(margs).ToString() + othis.Substring(index + pattern.Length);
                     oValue = othis;
                     valueType = JSObjectType.String;

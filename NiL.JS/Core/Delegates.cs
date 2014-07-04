@@ -4,7 +4,7 @@ namespace NiL.JS.Core
 {
     internal delegate ParseResult ParseDelegate(ParsingState state, ref int position);
     internal delegate bool ValidateDelegate(string code, int position);
-    public delegate JSObject ExternalFunctionDelegate(JSObject thisBind, JSObject args);
+    public delegate JSObject ExternalFunctionDelegate(JSObject thisBind, Arguments args);
     public sealed class DebuggerCallbackEventArgs : EventArgs
     {
         public CodeNode Statement { get; internal set; }

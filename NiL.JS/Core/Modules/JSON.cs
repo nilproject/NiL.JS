@@ -45,7 +45,7 @@ namespace NiL.JS.Core.Modules
         public static JSObject parse(string code, Function reviewer)
         {
             Stack<StackFrame> stack = new Stack<StackFrame>();
-            BaseTypes.Array revargs = reviewer != null ? new BaseTypes.Array(2) : null;
+            Arguments revargs = reviewer != null ? new Arguments() { length = 2 } : null;
             stack.Push(new StackFrame() { obj = JSObject.CreateObject() });
             stack.Push(new StackFrame() { obj = JSObject.CreateObject() });
             int pos = 0;
@@ -68,8 +68,8 @@ namespace NiL.JS.Core.Modules
                         var v = stack.Pop();
                         if (reviewer != null)
                         {
-                            revargs.data[0] = v.fieldName;
-                            revargs.data[1] = val;
+                            revargs[0] = v.fieldName;
+                            revargs[1] = val;
                             val = reviewer.Invoke(revargs);
                             if (val.valueType <= JSObjectType.Undefined)
                                 val = null;
@@ -87,7 +87,8 @@ namespace NiL.JS.Core.Modules
                         {
                             stack.Peek().fieldName = value;
                             stack.Peek().state = ParseState.Value;
-                            while (char.IsWhiteSpace(code[pos])) pos++;
+                            while (char.IsWhiteSpace(code[pos]))
+                                pos++;
                             if (code[pos] != ':')
                                 throw new JSException(TypeProxy.Proxy(new SyntaxError("Unexpected token.")));
                             pos++;
@@ -100,8 +101,8 @@ namespace NiL.JS.Core.Modules
                             JSObject val = value;
                             if (reviewer != null)
                             {
-                                revargs.data[0] = v.fieldName;
-                                revargs.data[1] = val;
+                                revargs[0] = v.fieldName;
+                                revargs[1] = val;
                                 val = reviewer.Invoke(revargs);
                                 if (val.valueType <= JSObjectType.Undefined)
                                     val = null;
@@ -129,8 +130,10 @@ namespace NiL.JS.Core.Modules
                     waitComma = false;
                     pos++;
                 }
-                else throw new JSException(TypeProxy.Proxy(new SyntaxError("Unexpected token.")));
-                while (code.Length > pos && char.IsWhiteSpace(code[pos])) pos++;
+                else
+                    throw new JSException(TypeProxy.Proxy(new SyntaxError("Unexpected token.")));
+                while (code.Length > pos && char.IsWhiteSpace(code[pos]))
+                    pos++;
                 while (waitControlChar)
                 {
                     if (stack.Peek().state == ParseState.Object || stack.Peek().state == ParseState.Array)
@@ -141,20 +144,24 @@ namespace NiL.JS.Core.Modules
                             var t = stack.Pop();
                             if (reviewer != null)
                             {
-                                revargs.data[0] = t.fieldName;
-                                revargs.data[1] = t.obj;
+                                revargs[0] = t.fieldName;
+                                revargs[1] = t.obj;
                                 t.obj = reviewer.Invoke(revargs);
                                 if (t.obj.valueType <= JSObjectType.Undefined)
                                     t.obj = null;
                             }
                             if (t.obj != null)
                                 stack.Peek().obj.GetMember(t.fieldName, true, true).Assign(t.obj);
-                            do pos++; while (code.Length > pos && char.IsWhiteSpace(code[pos]));
+                            do
+                                pos++;
+                            while (code.Length > pos && char.IsWhiteSpace(code[pos]));
                             continue;
                         }
                         else if (code[pos] == ',')
                         {
-                            do pos++; while (code.Length > pos && char.IsWhiteSpace(code[pos]));
+                            do
+                                pos++;
+                            while (code.Length > pos && char.IsWhiteSpace(code[pos]));
                             waitComma = false;
                             waitControlChar = false;
                         }
@@ -163,7 +170,8 @@ namespace NiL.JS.Core.Modules
                         else
                             break;
                     }
-                    else break;
+                    else
+                        break;
                 }
                 if (stack.Peek().state == ParseState.Array)
                     stack.Push(new StackFrame() { fieldName = (stack.Peek().valuesCount++).ToString(CultureInfo.InvariantCulture), state = ParseState.Value });
@@ -174,22 +182,22 @@ namespace NiL.JS.Core.Modules
         }
 
         [DoNotEnumerate]
-        public static string stringify(JSObject obj)
+        public static string stringify(Arguments args)
         {
-            var length = Tools.JSObjectToInt32(obj["length"]);
-            Function replacer = length > 1 ? obj["1"].oValue as Function : null;
-            string space = length > 1 ? obj["2"].ToString() : null;
-            obj = obj["0"];
-            return stringify(obj.oValue as JSObject ?? obj, replacer, space);
+            var length = Tools.JSObjectToInt32(args.length);
+            Function replacer = length > 1 ? args[1].oValue as Function : null;
+            string space = length > 1 ? args[2].ToString() : null;
+            var target = args[0];
+            return stringify(args.oValue as JSObject ?? args, replacer, space);
         }
 
         [Hidden]
         public static string stringify(JSObject obj, Function replacer, string space)
         {
-            return stringifyImpl("", obj, replacer, space, new List<JSObject>(), new JSObject(true) { oValue = ArgumentsDummy.Instance, valueType = JSObjectType.Object });
+            return stringifyImpl("", obj, replacer, space, new List<JSObject>(), new Arguments());
         }
 
-        private static string stringifyImpl(string key, JSObject obj, Function replacer, string space, List<JSObject> processed, JSObject args)
+        private static string stringifyImpl(string key, JSObject obj, Function replacer, string space, List<JSObject> processed, Arguments args)
         {
             if (processed.IndexOf(obj) != -1)
                 throw new JSException(new TypeError("Can not convert circular structure to JSON."));
