@@ -30,8 +30,8 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [DoNotEnumerate]
-        public RangeError(JSObject args)
-            : base(args.GetMember("0").ToString())
+        public RangeError(Arguments args)
+            : base(args[0].ToString())
         {
 
         }

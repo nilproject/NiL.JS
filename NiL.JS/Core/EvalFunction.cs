@@ -55,7 +55,7 @@ namespace NiL.JS.Core
                     root.Activate();
                     try
                     {
-                        return root.Eval(args["0"].ToString());
+                        return root.Eval(args[0].ToString());
                     }
                     finally
                     {
@@ -63,7 +63,7 @@ namespace NiL.JS.Core
                     }
                 }
                 else
-                    return ccontext.Eval(args["0"].ToString());
+                    return ccontext.Eval(args[0].ToString());
             }
             finally
             {

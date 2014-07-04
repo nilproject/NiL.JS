@@ -18,12 +18,12 @@ namespace NiL.JS.Core.BaseTypes
             attributes |= JSObjectAttributesInternal.ReadOnly;
         }
 
-        private void makeRegex(JSObject args)
+        private void makeRegex(Arguments args)
         {
-            var ptrn = args.GetMember("0");
+            var ptrn = args[0];
             if (ptrn.valueType == JSObjectType.Object && ptrn.oValue is RegExp)
             {
-                if (args.GetMember("length").iValue > 1 && args.GetMember("1").valueType > JSObjectType.Undefined)
+                if (args.GetMember("length").iValue > 1 && args[1].valueType > JSObjectType.Undefined)
                     throw new JSException(new TypeError("Cannot supply flags when constructing one RegExp from another"));
                 oValue = ptrn.oValue;
                 regEx = (oValue as RegExp).regEx;
@@ -31,7 +31,7 @@ namespace NiL.JS.Core.BaseTypes
                 return;
             }
             var pattern = ptrn.valueType > JSObjectType.Undefined ? ptrn.ToString().Replace("\\P", "P") : "";
-            var flags = args.GetMember("length").iValue > 1 && args.GetMember("1").valueType > JSObjectType.Undefined ? args.GetMember("1").ToString() : "";
+            var flags = args.GetMember("length").iValue > 1 && args[1].valueType > JSObjectType.Undefined ? args[1].ToString() : "";
             makeRegex(pattern, flags);
         }
 
@@ -92,7 +92,7 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [DoNotEnumerate]
-        public RegExp(JSObject args)
+        public RegExp(Arguments args)
         {
             makeRegex(args);
         }
@@ -164,23 +164,23 @@ namespace NiL.JS.Core.BaseTypes
             }
             set
             {
-                lIndex = value.oValue is ArgumentsDummy ? value.GetMember("0") : value;
+                lIndex = value.oValue is ArgumentsDummy ? value : value;
             }
         }
 
         [DoNotEnumerate]
-        public JSObject compile(JSObject args)
+        public JSObject compile(Arguments args)
         {
             makeRegex(args);
             return this;
         }
 
         [DoNotEnumerate]
-        public JSObject exec(JSObject args)
+        public JSObject exec(Arguments args)
         {
             if (this.GetType() != typeof(RegExp))
                 throw new JSException(new TypeError("Try to call RegExp.exec on not RegExp object."));
-            string input = args.GetMember("0").ToString();
+            string input = args[0].ToString();
             lIndex = Tools.JSObjectToNumber(lastIndex);
             if ((lIndex.attributes & JSObjectAttributesInternal.SystemObject) != 0)
                 lIndex = lIndex.Clone() as JSObject;
@@ -213,9 +213,9 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [DoNotEnumerate]
-        public bool test(JSObject args)
+        public bool test(Arguments args)
         {
-            string input = args.GetMember("0").ToString();
+            string input = args[0].ToString();
             lIndex = Tools.JSObjectToNumber(lIndex);
             if (lIndex.valueType == JSObjectType.Double)
             {

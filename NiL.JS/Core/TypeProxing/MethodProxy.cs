@@ -134,7 +134,7 @@ namespace NiL.JS.Core
                                         this.delegateF1 = Activator.CreateInstance(typeof(Func<object, object>), null, info.MethodHandle.GetFunctionPointer()) as Func<object, object>;
                                         mode = CallMode.FuncStaticOneArray;
                                     }
-                                    else if (parameters[0].ParameterType == typeof(JSObject))
+                                    else if (parameters[0].ParameterType == typeof(Arguments))
                                     {
                                         this.delegateF1 = Activator.CreateInstance(typeof(Func<object, object>), null, info.MethodHandle.GetFunctionPointer()) as Func<object, object>;
                                         mode = CallMode.FuncStaticOneRaw;
@@ -153,7 +153,7 @@ namespace NiL.JS.Core
                                         this.delegateF1 = Activator.CreateInstance(typeof(Func<object, object>), this, info.MethodHandle.GetFunctionPointer()) as Func<object, object>;
                                         mode = CallMode.FuncDynamicOneArray;
                                     }
-                                    else if (parameters[0].ParameterType == typeof(JSObject))
+                                    else if (parameters[0].ParameterType == typeof(Arguments))
                                     {
                                         this.delegateF2 = Activator.CreateInstance(typeof(Func<object, object, object>), null, info.MethodHandle.GetFunctionPointer()) as Func<object, object, object>;
                                         this.delegateF1 = Activator.CreateInstance(typeof(Func<object, object>), this, info.MethodHandle.GetFunctionPointer()) as Func<object, object>;
@@ -197,29 +197,24 @@ namespace NiL.JS.Core
             return arg;
         }
 
-        internal static T[] argumentsToArray<T>(JSObject source)
+        internal static T[] argumentsToArray<T>(Arguments source) where T : class
         {
-            var len = source.GetMember("length").iValue;
+            var len = source.length;
             var res = new T[len];
             for (int i = 0; i < len; i++)
-                res[i] = (T)(source.GetMember(i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture)) as object);
+                res[i] = source[i] as T;
             return res;
         }
 
-        internal object[] ConvertArgs(JSObject source)
+        internal object[] ConvertArgs(Arguments source)
         {
             if (parameters.Length == 0)
                 return null;
-            int len = 0;
-            if (source != null)
-            {
-                var length = source.GetMember("length");
-                len = length.valueType == JSObjectType.Property ? (length.oValue as Function[])[1].Invoke(source, null).iValue : length.iValue;
-            }
+            int len = source.length;
             if (parameters.Length == 1)
             {
                 var ptype = parameters[0].ParameterType;
-                if (ptype == typeof(JSObject))
+                if (ptype == typeof(Arguments))
                     return new object[] { source };
                 if (ptype == typeof(IEnumerable<JSObject>)
                     || ptype == typeof(IEnumerable<object>)
@@ -235,7 +230,7 @@ namespace NiL.JS.Core
             object[] res = new object[targetCount];
             for (int i = len; i-- > 0; )
             {
-                var obj = source.GetMember(i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture));
+                var obj = source[i];
                 if (obj.isExist)
                 {
                     res[i] = marshal(obj, parameters[i].ParameterType);
@@ -287,7 +282,7 @@ namespace NiL.JS.Core
         }
 
         [Hidden]
-        internal object InvokeImpl(JSObject thisBind, object[] args, JSObject argsSource)
+        internal object InvokeImpl(JSObject thisBind, object[] args, Arguments argsSource)
         {
             object res = null;
             object target = null;
@@ -350,11 +345,11 @@ namespace NiL.JS.Core
                             {
                                 bool di = true;
                                 SetFieldValue(_targetInfo, delegateF1, target, typeof(object), _targetInfo.Attributes, typeof(Action), ref di);
-                                res = delegateF1(args == null ? marshal(argsSource["0"], parameters[0].ParameterType) : args[0]);
+                                res = delegateF1(args == null ? marshal(argsSource[0], parameters[0].ParameterType) : args[0]);
                             }
                             else
 #endif
-                                res = delegateF2(target, args == null ? marshal(argsSource["0"], parameters[0].ParameterType) : args[0]);
+                                res = delegateF2(target, args == null ? marshal(argsSource[0], parameters[0].ParameterType) : args[0]);
                             break;
                         }
                     case CallMode.FuncStaticZero:
@@ -374,7 +369,7 @@ namespace NiL.JS.Core
                         }
                     case CallMode.FuncStaticOne:
                         {
-                            res = delegateF1(args == null ? marshal(argsSource["0"], parameters[0].ParameterType) : args[0]);
+                            res = delegateF1(args == null ? marshal(argsSource[0], parameters[0].ParameterType) : args[0]);
                             break;
                         }
                     default:

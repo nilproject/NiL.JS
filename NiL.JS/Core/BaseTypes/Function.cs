@@ -632,7 +632,7 @@ namespace NiL.JS.Core.BaseTypes
             [Hidden]
             get { return _prototype; }
             [Hidden]
-            set { _prototype.Assign(value["0"]); }
+            set { _prototype.Assign(value); }
         }
         internal Arguments _arguments;
         /// <summary>

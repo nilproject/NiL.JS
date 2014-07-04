@@ -27,11 +27,11 @@ namespace NiL.JS.Core.Modules
         }
 
         [DoNotEnumerate]
-        public static JSObject parse(JSObject args)
+        public static JSObject parse(Arguments args)
         {
-            var length = Tools.JSObjectToInt32(args["length"]);
-            var code = args["0"].ToString();
-            Function reviewer = length > 1 ? args["1"].oValue as Function : null;
+            var length = Tools.JSObjectToInt32(args.length);
+            var code = args[0].ToString();
+            Function reviewer = length > 1 ? args[1].oValue as Function : null;
             return parse(code, reviewer);
         }
 
@@ -205,12 +205,12 @@ namespace NiL.JS.Core.Modules
             try
             {
                 {
-                    args["0"] = "";
+                    args[0] = "";
                     if (replacer != null)
                     {
-                        args["0"].oValue = key;
-                        args["1"] = obj;
-                        args["length"] = 2;
+                        args[0].oValue = key;
+                        args[1] = obj;
+                        args.length = 2;
                         var t = replacer.Invoke(args);
                         if (t.valueType <= JSObjectType.Undefined || (t.valueType >= JSObjectType.Object && t.oValue == null))
                             return null;

@@ -67,7 +67,7 @@ namespace NiL.JS.Core
         [Hidden]
         internal protected override JSObject GetMember(JSObject name, bool create, bool own)
         {
-          if (__proto__ == null)
+            if (__proto__ == null)
             {
                 __proto__ = TypeProxy.GetPrototype(typeof(Function));
                 proxy.__proto__ = __proto__;
@@ -157,14 +157,14 @@ namespace NiL.JS.Core
         }
 
         [Hidden]
-        private MethodProxy findConstructor(JSObject argObj, ref object[] args)
+        private MethodProxy findConstructor(Arguments argObj, ref object[] args)
         {
             args = null;
-            var len = argObj == null ? 0 : argObj.GetMember("length").iValue;
+            var len = argObj == null ? 0 : argObj.length;
             for (int i = 0; i < constructors.Length; i++)
             {
                 if (constructors[i].Parameters.Length == len
-                    || (constructors[i].Parameters.Length == 1 && (constructors[i].Parameters[0].ParameterType == typeof(JSObject)
+                    || (constructors[i].Parameters.Length == 1 && (constructors[i].Parameters[0].ParameterType == typeof(Arguments)
                                                                    || constructors[i].Parameters[0].ParameterType == typeof(JSObject[])
                                                                    || constructors[i].Parameters[0].ParameterType == typeof(object[]))))
                 {

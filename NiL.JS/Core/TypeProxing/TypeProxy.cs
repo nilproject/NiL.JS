@@ -368,7 +368,7 @@ namespace NiL.JS.Core
                                         m[0].IsDefined(typeof(Modules.ReadOnlyAttribute), false) ? 
                                             new ExternalFunction((thisBind, a)=>
                                             {
-                                                field.SetValue(field.IsStatic ? null : thisBind.Value, cva.To(a.GetMember("0").Value)); 
+                                                field.SetValue(field.IsStatic ? null : thisBind.Value, cva.To(a[0].Value)); 
                                                 return null; 
                                             }) : null,
                                         new ExternalFunction((thisBind, a)=>
@@ -387,7 +387,7 @@ namespace NiL.JS.Core
                                     {
                                         !m[0].IsDefined(typeof(Modules.ReadOnlyAttribute), false) ? new ExternalFunction((thisBind, a)=>
                                         {
-                                            field.SetValue(field.IsStatic ? null : thisBind.Value, a.GetMember("0").Value); 
+                                            field.SetValue(field.IsStatic ? null : thisBind.Value, a[0].Value); 
                                             return null; 
                                         }) : null,
                                         new ExternalFunction((thisBind, a)=>
@@ -479,11 +479,11 @@ namespace NiL.JS.Core
             return r;
         }
 
-        public override JSObject propertyIsEnumerable(JSObject args)
+        public override JSObject propertyIsEnumerable(Arguments args)
         {
             if (args == null)
                 throw new ArgumentNullException("args");
-            var name = args.GetMember("0").ToString();
+            var name = args[0].ToString();
             JSObject temp;
             if (fields != null && fields.TryGetValue(name, out temp))
                 return temp.isExist && (temp.attributes & JSObjectAttributesInternal.DoNotEnum) == 0;

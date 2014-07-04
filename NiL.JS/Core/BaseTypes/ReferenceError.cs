@@ -27,8 +27,8 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [DoNotEnumerate]
-        public ReferenceError(JSObject args)
-            : base(args.GetMember("0").ToString())
+        public ReferenceError(Arguments args)
+            : base(args[0].ToString())
         {
 
         }

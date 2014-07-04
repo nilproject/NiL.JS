@@ -89,10 +89,10 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [Modules.DoNotEnumerate]
-        public Number(JSObject obj)
+        public Number(Arguments obj)
         {
             valueType = JSObjectType.Double;
-            dValue = Tools.JSObjectToDouble(obj.GetMember("0"));
+            dValue = Tools.JSObjectToDouble(obj[0]);
             oValue = this;
         }
 
@@ -118,7 +118,7 @@ namespace NiL.JS.Core.BaseTypes
 
         [AllowUnsafeCall(typeof(JSObject))]
         [Modules.DoNotEnumerate]
-        public JSObject toPrecision(JSObject digits)
+        public JSObject toPrecision(Arguments digits)
         {
             double res = 0;
             switch (valueType)
@@ -159,12 +159,12 @@ namespace NiL.JS.Core.BaseTypes
                     }
                 case JSObjectType.Object:
                     {
-                        digits = digits.GetMember("0").ToPrimitiveValue_Value_String();
-                        if (digits.valueType == JSObjectType.String)
+                        var d = digits[0].ToPrimitiveValue_Value_String();
+                        if (d.valueType == JSObjectType.String)
                             goto case JSObjectType.String;
-                        if (digits.valueType == JSObjectType.Int)
+                        if (d.valueType == JSObjectType.Int)
                             goto case JSObjectType.Int;
-                        if (digits.valueType == JSObjectType.Double)
+                        if (d.valueType == JSObjectType.Double)
                             goto case JSObjectType.Double;
                         break;
                     }
@@ -182,7 +182,7 @@ namespace NiL.JS.Core.BaseTypes
 
         [AllowUnsafeCall(typeof(JSObject))]
         [Modules.DoNotEnumerate]
-        public JSObject toExponential(JSObject digits)
+        public JSObject toExponential(Arguments digits)
         {
             double res = 0;
             switch (valueType)
@@ -223,12 +223,12 @@ namespace NiL.JS.Core.BaseTypes
                     }
                 case JSObjectType.Object:
                     {
-                        digits = digits.GetMember("0").ToPrimitiveValue_Value_String();
-                        if (digits.valueType == JSObjectType.String)
+                        var d = digits[0].ToPrimitiveValue_Value_String();
+                        if (d.valueType == JSObjectType.String)
                             goto case JSObjectType.String;
-                        if (digits.valueType == JSObjectType.Int)
+                        if (d.valueType == JSObjectType.Int)
                             goto case JSObjectType.Int;
-                        if (digits.valueType == JSObjectType.Double)
+                        if (d.valueType == JSObjectType.Double)
                             goto case JSObjectType.Double;
                         break;
                     }
@@ -242,7 +242,7 @@ namespace NiL.JS.Core.BaseTypes
 
         [AllowUnsafeCall(typeof(JSObject))]
         [Modules.DoNotEnumerate]
-        public JSObject toFixed(JSObject digits)
+        public JSObject toFixed(Arguments digits)
         {
             double res = 0;
             switch (valueType)
@@ -295,12 +295,12 @@ namespace NiL.JS.Core.BaseTypes
                     }
                 case JSObjectType.Object:
                     {
-                        digits = digits.GetMember("0").ToPrimitiveValue_Value_String();
-                        if (digits.valueType == JSObjectType.String)
+                        var d = digits[0].ToPrimitiveValue_Value_String();
+                        if (d.valueType == JSObjectType.String)
                             goto case JSObjectType.String;
-                        if (digits.valueType == JSObjectType.Int)
+                        if (d.valueType == JSObjectType.Int)
                             goto case JSObjectType.Int;
-                        if (digits.valueType == JSObjectType.Double)
+                        if (d.valueType == JSObjectType.Double)
                             goto case JSObjectType.Double;
                         break;
                     }
@@ -328,14 +328,14 @@ namespace NiL.JS.Core.BaseTypes
         [CLSCompliant(false)]
         [AllowUnsafeCall(typeof(JSObject))]
         [Modules.DoNotEnumerate]
-        public new JSObject toString(JSObject radix)
+        public new JSObject toString(Arguments radix)
         {
             if (this.valueType != JSObjectType.Int && this.valueType != JSObjectType.Double)
                 throw new JSException(TypeProxy.Proxy(new TypeError("Try to call Number.toString on not Number object")));
             int r = 10;
             if (radix != null && radix.GetMember("length").iValue > 0)
             {
-                var ar = radix.GetMember("0");
+                var ar = radix[0];
                 if (ar.valueType == JSObjectType.Object && ar.oValue == null)
                     throw new JSException(TypeProxy.Proxy(new Error("Radix can't be null.")));
                 switch (ar.valueType)

@@ -30,8 +30,8 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [DoNotEnumerate]
-        public SyntaxError(JSObject args)
-            : base(args.GetMember("0").ToString())
+        public SyntaxError(Arguments args)
+            : base(args[0].ToString())
         {
 
         }

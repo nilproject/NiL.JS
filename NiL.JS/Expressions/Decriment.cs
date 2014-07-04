@@ -130,7 +130,7 @@ namespace NiL.JS.Expressions
                 {
                     var args = new Arguments();
                     args.length = 1;
-                    args["0"] = val;
+                    args[0] = val;
                     setter.Invoke(context.objectSource, args);
                 }
                 return o;

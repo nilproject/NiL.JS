@@ -20,12 +20,12 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [DoNotEnumerate]
-        public Boolean(JSObject obj)
+        public Boolean(Arguments obj)
         {
             if (obj == null)
                 throw new ArgumentNullException("obj");
             valueType = JSObjectType.Bool;
-            iValue = (bool)obj.GetMember("0") ? 1 : 0;
+            iValue = (bool)obj[0] ? 1 : 0;
             oValue = this;
         }
 

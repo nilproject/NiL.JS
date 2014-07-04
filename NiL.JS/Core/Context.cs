@@ -93,7 +93,7 @@ namespace NiL.JS.Core
                 globalContext.DefineVariable("escape").Assign(new ExternalFunction(GlobalFunctions.escape));
                 globalContext.DefineVariable("encodeURI").Assign(new ExternalFunction((thisBind, x) =>
                 {
-                    return System.Web.HttpServerUtility.UrlTokenEncode(System.Text.UTF8Encoding.Default.GetBytes(x.GetMember("0").ToString()));
+                    return System.Web.HttpServerUtility.UrlTokenEncode(System.Text.UTF8Encoding.Default.GetBytes(x[0].ToString()));
                 }));
                 globalContext.DefineVariable("encodeURIComponent").Assign(globalContext.GetVariable("encodeURI"));
                 globalContext.DefineVariable("decodeURI").Assign(new ExternalFunction(GlobalFunctions.decodeURI));

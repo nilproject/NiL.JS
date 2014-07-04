@@ -74,7 +74,7 @@ namespace NiL.JS.Core.BaseTypes
             return slice(begin, Data.Length - 1);
         }
 
-        public ArrayBuffer slice(JSObject args)
+        public ArrayBuffer slice(Arguments args)
         {
             if (args == null)
                 throw new ArgumentNullException("args");
@@ -82,9 +82,9 @@ namespace NiL.JS.Core.BaseTypes
             if (l == 0)
                 return this;
             if (l == 1)
-                return slice(Tools.JSObjectToInt32(args.GetMember("0")), Data.Length - 1);
+                return slice(Tools.JSObjectToInt32(args[0]), Data.Length - 1);
             else
-                return slice(Tools.JSObjectToInt32(args.GetMember("0")), Tools.JSObjectToInt32(args.GetMember("1")));
+                return slice(Tools.JSObjectToInt32(args[0]), Tools.JSObjectToInt32(args[1]));
         }
 
         [Hidden]

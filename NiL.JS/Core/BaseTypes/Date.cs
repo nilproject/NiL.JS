@@ -95,13 +95,13 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [DoNotEnumerate]
-        public Date(JSObject args)
+        public Date(Arguments args)
         {
             try
             {
                 if (args.GetMember("length").iValue == 1)
                 {
-                    var arg = args.GetMember("0");
+                    var arg = args[0];
                     switch (arg.valueType)
                     {
                         case JSObjectType.Int:
@@ -126,13 +126,13 @@ namespace NiL.JS.Core.BaseTypes
                 }
                 else
                 {
-                    long y = Tools.JSObjectToInt64(args.GetMember("0"), 1);
-                    long m = Tools.JSObjectToInt64(args.GetMember("1"));
-                    long d = Tools.JSObjectToInt64(args.GetMember("2"), 1);
-                    long h = Tools.JSObjectToInt64(args.GetMember("3"));
-                    long n = Tools.JSObjectToInt64(args.GetMember("4"));
-                    long s = Tools.JSObjectToInt64(args.GetMember("5"));
-                    long ms = Tools.JSObjectToInt64(args.GetMember("6"));
+                    long y = Tools.JSObjectToInt64(args[0], 1);
+                    long m = Tools.JSObjectToInt64(args[1]);
+                    long d = Tools.JSObjectToInt64(args[2], 1);
+                    long h = Tools.JSObjectToInt64(args[3]);
+                    long n = Tools.JSObjectToInt64(args[4]);
+                    long s = Tools.JSObjectToInt64(args[5]);
+                    long ms = Tools.JSObjectToInt64(args[6]);
                     time = dateToMilliseconds(y, m, d, h, n, s, ms);
                 }
             }
@@ -633,18 +633,18 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [DoNotEnumerate]
-        public static JSObject UTC(JSObject dateTime)
+        public static JSObject UTC(Arguments dateTime)
         {
             try
             {
                 return dateToMilliseconds(
-                    Tools.JSObjectToInt64(dateTime.GetMember("0"), 1),
-                    Tools.JSObjectToInt64(dateTime.GetMember("1")),
-                    Tools.JSObjectToInt64(dateTime.GetMember("2"), 1),
-                    Tools.JSObjectToInt64(dateTime.GetMember("3")),
-                    Tools.JSObjectToInt64(dateTime.GetMember("4")),
-                    Tools.JSObjectToInt64(dateTime.GetMember("5")),
-                    Tools.JSObjectToInt64(dateTime.GetMember("6"))) - _unixTimeBase;
+                    Tools.JSObjectToInt64(dateTime[0], 1),
+                    Tools.JSObjectToInt64(dateTime[1]),
+                    Tools.JSObjectToInt64(dateTime[2], 1),
+                    Tools.JSObjectToInt64(dateTime[3]),
+                    Tools.JSObjectToInt64(dateTime[4]),
+                    Tools.JSObjectToInt64(dateTime[5]),
+                    Tools.JSObjectToInt64(dateTime[6])) - _unixTimeBase;
             }
             catch
             {

@@ -207,13 +207,13 @@ namespace NiL.JS.Core
 
         [DoNotEnumerate]
         [ParametersCount(2)]
-        public static JSObject create(JSObject args)
+        public static JSObject create(Arguments args)
         {
-            var proto = args["0"];
+            var proto = args[0];
             if (proto.valueType < JSObjectType.Object)
                 throw new JSException(new TypeError("Prototype may be only Object or null."));
             proto = proto.oValue as JSObject ?? proto;
-            var members = args["1"];
+            var members = args[1];
             members.fields = (members.oValue as JSObject ?? members).fields;
             if (members.valueType >= JSObjectType.Object && members.oValue == null)
                 throw new JSException(new TypeError("Properties descriptor may be only Object."));
@@ -337,15 +337,15 @@ namespace NiL.JS.Core
 
         [ParametersCount(2)]
         [DoNotEnumerate]
-        public static JSObject defineProperties(JSObject args)
+        public static JSObject defineProperties(Arguments args)
         {
-            var target = args["0"];
+            var target = args[0];
             if (target.valueType < JSObjectType.Object)
                 throw new JSException(new TypeError("Property define may only for Objects."));
             if (target.oValue == null)
                 throw new JSException(new TypeError("Can not define properties of null."));
             target = target.oValue as JSObject ?? target;
-            var members = args["1"];
+            var members = args[1];
             if (!members.isDefinded)
                 throw new JSException(new TypeError("Properties descriptor can not be undefined."));
             if (members.valueType < JSObjectType.Object)
@@ -376,18 +376,18 @@ namespace NiL.JS.Core
 
         [DoNotEnumerate]
         [ParametersCount(3)]
-        public static JSObject defineProperty(JSObject args)
+        public static JSObject defineProperty(Arguments args)
         {
-            var target = args.GetMember("0");
+            var target = args[0];
             if (target.valueType < JSObjectType.Object || target.oValue == null)
                 throw new JSException(new TypeError("Object.defineProperty cannot apply to non-object."));
             target = target.oValue as JSObject ?? target;
             if (target.valueType <= JSObjectType.Undefined)
                 return undefined;
-            var desc = args["2"];
+            var desc = args[2];
             if (desc.valueType < JSObjectType.Object || desc.oValue == null)
                 throw new JSException(new TypeError("Invalid property descriptor."));
-            string memberName = args.GetMember("1").ToString();
+            string memberName = args[1].ToString();
             return definePropertyImpl(target, desc, memberName);
         }
 
@@ -590,9 +590,9 @@ namespace NiL.JS.Core
         }
 
         [DoNotEnumerate]
-        public static JSObject freeze(JSObject args)
+        public static JSObject freeze(Arguments args)
         {
-            var obj = args["0"];
+            var obj = args[0];
             if (obj.valueType < JSObjectType.Object)
                 throw new JSException(new TypeError("Object.freeze called on non-object."));
             if (obj.oValue == null)
@@ -1039,7 +1039,7 @@ namespace NiL.JS.Core
         [CLSCompliant(false)]
         [DoNotEnumerate]
         [Modules.ParametersCount(0)]
-        public JSObject toString(JSObject args)
+        public JSObject toString(Arguments args)
         {
             var self = this.oValue as JSObject ?? this;
             switch (self.valueType)
@@ -1109,7 +1109,7 @@ namespace NiL.JS.Core
         }
 
         [DoNotEnumerate]
-        public virtual JSObject isPrototypeOf(JSObject args)
+        public virtual JSObject isPrototypeOf(Arguments args)
         {
             if (valueType >= JSObjectType.Object && oValue == null)
                 throw new JSException(new TypeError("isPrototypeOf calling on null."));
@@ -1117,7 +1117,7 @@ namespace NiL.JS.Core
                 throw new JSException(new TypeError("isPrototypeOf calling on undefined value."));
             if (args.GetMember("length").iValue == 0)
                 return false;
-            var a = args.GetMember("0");
+            var a = args[0];
             if (this.valueType >= JSObjectType.Object && this.oValue != null)
             {
                 while (a.valueType >= JSObjectType.Object && a.oValue != null)
@@ -1134,9 +1134,9 @@ namespace NiL.JS.Core
         }
 
         [DoNotEnumerate]
-        public virtual JSObject hasOwnProperty(JSObject args)
+        public virtual JSObject hasOwnProperty(Arguments args)
         {
-            JSObject name = args.GetMember("0");
+            JSObject name = args[0];
             string n = "";
             switch (name.valueType)
             {
@@ -1163,13 +1163,13 @@ namespace NiL.JS.Core
                     }
                 case JSObjectType.Object:
                     {
-                        args = name.ToPrimitiveValue_Value_String();
-                        if (args.valueType == JSObjectType.String)
-                            n = name.oValue as string;
-                        if (args.valueType == JSObjectType.Int)
-                            n = name.iValue.ToString(System.Globalization.CultureInfo.InvariantCulture);
-                        if (args.valueType == JSObjectType.Double)
-                            n = Tools.DoubleToString(name.dValue);
+                        var pn = name.ToPrimitiveValue_Value_String();
+                        if (pn.valueType == JSObjectType.String)
+                            n = pn.oValue as string;
+                        if (pn.valueType == JSObjectType.Int)
+                            n = pn.iValue.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                        if (pn.valueType == JSObjectType.Double)
+                            n = Tools.DoubleToString(pn.dValue);
                         break;
                     }
                 case JSObjectType.NotExist:
@@ -1182,9 +1182,9 @@ namespace NiL.JS.Core
         }
 
         [DoNotEnumerate]
-        public static JSObject preventExtensions(JSObject args)
+        public static JSObject preventExtensions(Arguments args)
         {
-            var obj = args["0"];
+            var obj = args[0];
             if (obj.valueType < JSObjectType.Object)
                 throw new JSException(new TypeError("Prevent the expansion can only for objects"));
             if (obj.oValue == null)
@@ -1197,9 +1197,9 @@ namespace NiL.JS.Core
         }
 
         [DoNotEnumerate]
-        public static JSObject isExtensible(JSObject args)
+        public static JSObject isExtensible(Arguments args)
         {
-            var obj = args["0"];
+            var obj = args[0];
             if (obj.valueType < JSObjectType.Object)
                 throw new JSException(new TypeError("Object.isExtensible called on non-object."));
             if (obj.oValue == null)
@@ -1208,9 +1208,9 @@ namespace NiL.JS.Core
         }
 
         [DoNotEnumerate]
-        public static JSObject isSealed(JSObject args)
+        public static JSObject isSealed(Arguments args)
         {
-            var obj = args["0"];
+            var obj = args[0];
             if (obj.valueType < JSObjectType.Object)
                 throw new JSException(new TypeError("Object.isSealed called on non-object."));
             if (obj.oValue == null)
@@ -1244,9 +1244,9 @@ namespace NiL.JS.Core
         }
 
         [DoNotEnumerate]
-        public static JSObject seal(JSObject args)
+        public static JSObject seal(Arguments args)
         {
-            var obj = args["0"];
+            var obj = args[0];
             if (obj.valueType < JSObjectType.Object)
                 throw new JSException(new TypeError("Object.seal called on non-object."));
             if (obj.oValue == null)
@@ -1260,9 +1260,9 @@ namespace NiL.JS.Core
         }
 
         [DoNotEnumerate]
-        public static JSObject isFrozen(JSObject args)
+        public static JSObject isFrozen(Arguments args)
         {
-            var obj = args["0"];
+            var obj = args[0];
             if (obj.valueType < JSObjectType.Object)
                 throw new JSException(new TypeError("Object.isFrozen called on non-object."));
             if (obj.oValue == null)
@@ -1294,13 +1294,13 @@ namespace NiL.JS.Core
         }
 
         [DoNotEnumerate]
-        public virtual JSObject propertyIsEnumerable(JSObject args)
+        public virtual JSObject propertyIsEnumerable(Arguments args)
         {
             if (valueType >= JSObjectType.Object && oValue == null)
                 throw new JSException(new TypeError("propertyIsEnumerable calling on null."));
             if (valueType <= JSObjectType.Undefined)
                 throw new JSException(new TypeError("propertyIsEnumerable calling on undefined value."));
-            JSObject name = args.GetMember("0");
+            JSObject name = args[0];
             string n = name.ToString();
             var res = GetMember(n, true);
             res = (res.isExist) && ((res.attributes & JSObjectAttributesInternal.DoNotEnum) == 0);
@@ -1320,11 +1320,11 @@ namespace NiL.JS.Core
         }
 
         [DoNotEnumerate]
-        public static JSObject getPrototypeOf(JSObject args)
+        public static JSObject getPrototypeOf(Arguments args)
         {
-            if (args.GetMember("0").valueType < JSObjectType.Object)
+            if (args[0].valueType < JSObjectType.Object)
                 throw new JSException(new TypeError("Parameter isn't an Object."));
-            var res = args.GetMember("0")["__proto__"];
+            var res = args[0]["__proto__"];
             if (res.oValue is TypeProxy && (res.oValue as TypeProxy).prototypeInstance != null)
                 res = (res.oValue as TypeProxy).prototypeInstance;
             return res;
@@ -1332,14 +1332,14 @@ namespace NiL.JS.Core
 
         [ParametersCount(2)]
         [DoNotEnumerate]
-        public static JSObject getOwnPropertyDescriptor(JSObject args)
+        public static JSObject getOwnPropertyDescriptor(Arguments args)
         {
-            var source = args.GetMember("0");
+            var source = args[0];
             if (source.valueType <= JSObjectType.Undefined)
                 throw new JSException(new TypeError("Object.getOwnPropertyDescriptor called on undefined."));
             if (source.valueType < JSObjectType.Object)
                 throw new JSException(new TypeError("Object.getOwnPropertyDescriptor called on non-object."));
-            var obj = source.GetMember(args.GetMember("1").ToString(), true);
+            var obj = source.GetMember(args[1].ToString(), true);
             if (obj.valueType < JSObjectType.Undefined)
                 return undefined;
             var res = CreateObject();
@@ -1362,9 +1362,9 @@ namespace NiL.JS.Core
         }
 
         [DoNotEnumerate]
-        public static JSObject getOwnPropertyNames(JSObject args)
+        public static JSObject getOwnPropertyNames(Arguments args)
         {
-            var obj = args.GetMember("0");
+            var obj = args[0];
             if (obj.valueType < JSObjectType.Object)
                 throw new JSException(new TypeError("Object.getOwnPropertyNames called on non-object value."));
             if (obj.oValue == null)
@@ -1373,9 +1373,9 @@ namespace NiL.JS.Core
         }
 
         [DoNotEnumerate]
-        public static JSObject keys(JSObject args)
+        public static JSObject keys(Arguments args)
         {
-            var obj = args.GetMember("0");
+            var obj = args[0];
             if (obj.valueType < JSObjectType.Object)
                 throw new JSException(new TypeError("Object.keys called on non-object value."));
             if (obj.oValue == null)

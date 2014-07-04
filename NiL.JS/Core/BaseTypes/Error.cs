@@ -25,9 +25,9 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [DoNotEnumerate]
-        public Error(JSObject args)
+        public Error(Arguments args)
         {
-            message = args.GetMember("0").ToString();
+            message = args[0].ToString();
         }
 
         [DoNotEnumerate]

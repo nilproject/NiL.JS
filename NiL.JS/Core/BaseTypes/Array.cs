@@ -67,7 +67,7 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [DoNotEnumerate]
-        public Array(JSObject args)
+        public Array(Arguments args)
             : this(MethodProxy.argumentsToArray<object>(args))
         {
 
@@ -145,7 +145,7 @@ namespace NiL.JS.Core.BaseTypes
             [Hidden]
             set
             {
-                var nlenD = Tools.JSObjectToDouble(value["0"]);
+                var nlenD = Tools.JSObjectToDouble(value);
                 var nlen = (long)nlenD;
                 if (double.IsNaN(nlenD) || double.IsInfinity(nlenD) || nlen != nlenD)
                     throw new JSException(new RangeError("Invalid array length"));
@@ -213,10 +213,10 @@ namespace NiL.JS.Core.BaseTypes
                 throw new JSException(new TypeError("Callback argument is not a function."));
             var tb = args.Length > 1 ? args[1] : null;
             var ao = new Arguments();
-            ao["length"] = 3;
-            ao["0"] = undefined;
-            ao["1"] = undefined;
-            ao["2"] = this;
+            ao.length = 3;
+            ao[0] = undefined;
+            ao[1] = undefined;
+            ao[2] = this;
             bool res = true;
             bool isArray = this.GetType() == typeof(Array);
             var context = Context.CurrentContext;
@@ -225,10 +225,10 @@ namespace NiL.JS.Core.BaseTypes
                 foreach (var element in data)
                 {
                     if (element.Value.valueType == JSObjectType.Property)
-                        ao["0"].Assign((element.Value.oValue as Function[])[1] != null ? (element.Value.oValue as Function[])[1].Invoke(this, null) : undefined);
+                        ao[0].Assign((element.Value.oValue as Function[])[1] != null ? (element.Value.oValue as Function[])[1].Invoke(this, null) : undefined);
                     else
-                        ao["0"].Assign(element.Value);
-                    ao["1"].Assign(context.wrap(element.Key));
+                        ao[0].Assign(element.Value);
+                    ao[1].Assign(context.wrap(element.Key));
                     res &= (bool)f.Invoke(tb, ao);
                     if (!res)
                         break;
@@ -236,14 +236,14 @@ namespace NiL.JS.Core.BaseTypes
             }
             else
             {
-                var len = (long)Tools.JSObjectToDouble(this["length"]);
+                var len = (long)Tools.JSObjectToDouble(this.length);
                 for (var i = 0U; i < len && res; i++)
                 {
                     var v = this[i.ToString(CultureInfo.InvariantCulture)];
                     if (v.valueType < JSObjectType.Undefined)
                         continue;
-                    ao["0"] = v;
-                    ao["1"].Assign(context.wrap(i));
+                    ao[0] = v;
+                    ao[1].Assign(context.wrap(i));
                     res &= (bool)f.Invoke(tb, ao);
                 }
             }
@@ -260,10 +260,10 @@ namespace NiL.JS.Core.BaseTypes
                 throw new JSException(new TypeError("Callback argument is not a function."));
             var tb = args.Length > 1 ? args[1] : null;
             var ao = new Arguments();
-            ao["length"] = 3;
-            ao["0"] = undefined;
-            ao["1"] = undefined;
-            ao["2"] = this;
+            ao.length = 3;
+            ao[0] = undefined;
+            ao[1] = undefined;
+            ao[2] = this;
             bool res = false;
             bool isArray = this.GetType() == typeof(Array);
             var context = Context.CurrentContext;
@@ -272,10 +272,10 @@ namespace NiL.JS.Core.BaseTypes
                 foreach (var element in data)
                 {
                     if (element.Value.valueType == JSObjectType.Property)
-                        ao["0"].Assign((element.Value.oValue as Function[])[1] != null ? (element.Value.oValue as Function[])[1].Invoke(this, null) : undefined);
+                        ao[0].Assign((element.Value.oValue as Function[])[1] != null ? (element.Value.oValue as Function[])[1].Invoke(this, null) : undefined);
                     else
-                        ao["0"].Assign(element.Value);
-                    ao["1"].Assign(context.wrap(element.Key));
+                        ao[0].Assign(element.Value);
+                    ao[1].Assign(context.wrap(element.Key));
                     res |= (bool)f.Invoke(tb, ao);
                     if (res)
                         break;
@@ -283,14 +283,14 @@ namespace NiL.JS.Core.BaseTypes
             }
             else
             {
-                var len = (long)Tools.JSObjectToDouble(this["length"]);
+                var len = (long)Tools.JSObjectToDouble(this.length);
                 for (var i = 0U; i < len && !res; i++)
                 {
                     var v = this[i.ToString(CultureInfo.InvariantCulture)];
                     if (v.valueType < JSObjectType.Undefined)
                         continue;
-                    ao["0"] = v;
-                    ao["1"].Assign(context.wrap(i));
+                    ao[0] = v;
+                    ao[1].Assign(context.wrap(i));
                     res |= (bool)f.Invoke(tb, ao);
                 }
             }
@@ -307,10 +307,10 @@ namespace NiL.JS.Core.BaseTypes
                 throw new JSException(new TypeError("Callback argument is not a function."));
             var tb = args.Length > 1 ? args[1] : null;
             var ao = new Arguments();
-            ao["length"] = 3;
-            ao["0"] = undefined;
-            ao["1"] = undefined;
-            ao["2"] = this;
+            ao.length = 3;
+            ao[0] = undefined;
+            ao[1] = undefined;
+            ao[2] = this;
             var res = new Array();
             bool isArray = this.GetType() == typeof(Array);
             var context = Context.CurrentContext;
@@ -318,22 +318,22 @@ namespace NiL.JS.Core.BaseTypes
             {
                 foreach (var element in data)
                 {
-                    ao["0"].Assign(element.Value);
-                    ao["1"].Assign(context.wrap(element.Key));
+                    ao[0].Assign(element.Value);
+                    ao[1].Assign(context.wrap(element.Key));
                     if ((bool)f.Invoke(tb, ao))
                         res.Add(element.Value.Clone() as JSObject);
                 }
             }
             else
             {
-                var len = (long)Tools.JSObjectToDouble(this["length"]);
+                var len = (long)Tools.JSObjectToDouble(this.length);
                 for (var i = 0U; i < len; i++)
                 {
                     var v = this[i.ToString(CultureInfo.InvariantCulture)];
                     if (v.valueType < JSObjectType.Undefined)
                         continue;
-                    ao["0"] = v;
-                    ao["1"].Assign(context.wrap(i));
+                    ao[0] = v;
+                    ao[1].Assign(context.wrap(i));
                     if ((bool)f.Invoke(tb, ao))
                         res.Add(v.Clone() as JSObject);
                 }
@@ -351,10 +351,10 @@ namespace NiL.JS.Core.BaseTypes
                 throw new JSException(new TypeError("Callback argument is not a function."));
             var tb = args.Length > 1 ? args[1] : null;
             var ao = new Arguments();
-            ao["length"] = 3;
-            ao["0"] = undefined;
-            ao["1"] = undefined;
-            ao["2"] = this;
+            ao.length = 3;
+            ao[0] = undefined;
+            ao[1] = undefined;
+            ao[2] = this;
             var res = new Array();
             bool isArray = this.GetType() == typeof(Array);
             var context = Context.CurrentContext;
@@ -363,24 +363,24 @@ namespace NiL.JS.Core.BaseTypes
                 foreach (var element in data)
                 {
                     if (element.Value.valueType == JSObjectType.Property)
-                        ao["0"].Assign((element.Value.oValue as Function[])[1] != null ? (element.Value.oValue as Function[])[1].Invoke(this, null) : undefined);
+                        ao[0].Assign((element.Value.oValue as Function[])[1] != null ? (element.Value.oValue as Function[])[1].Invoke(this, null) : undefined);
                     else
-                        ao["0"].Assign(element.Value);
-                    ao["1"].Assign(context.wrap(element.Key));
+                        ao[0].Assign(element.Value);
+                    ao[1].Assign(context.wrap(element.Key));
                     res._length = element.Key;
                     res.Add(f.Invoke(tb, ao).Clone() as JSObject);
                 }
             }
             else
             {
-                var len = (long)Tools.JSObjectToDouble(this["length"]);
+                var len = (long)Tools.JSObjectToDouble(this.length);
                 for (var i = 0U; i < len; i++)
                 {
                     var v = this[i.ToString(CultureInfo.InvariantCulture)];
                     if (v.valueType < JSObjectType.Undefined)
                         continue;
-                    ao["0"] = v;
-                    ao["1"].Assign(context.wrap(i));
+                    ao[0] = v;
+                    ao[1].Assign(context.wrap(i));
                     res.Add(f.Invoke(tb, ao).Clone() as JSObject);
                 }
             }
@@ -397,30 +397,30 @@ namespace NiL.JS.Core.BaseTypes
                 throw new JSException(new TypeError("Callback argument is not a function."));
             var tb = args.Length > 1 ? args[1] : null;
             var ao = new Arguments();
-            ao["length"] = 3;
-            ao["1"] = 0;
-            ao["2"] = this;
+            ao.length = 3;
+            ao[1] = 0;
+            ao[2] = this;
             bool isArray = this.GetType() == typeof(Array);
             var context = Context.CurrentContext;
             if (isArray)
             {
                 foreach (var element in data)
                 {
-                    ao["0"].Assign(element.Value);
-                    ao["1"].Assign(context.wrap(element.Key));
+                    ao[0].Assign(element.Value);
+                    ao[1].Assign(context.wrap(element.Key));
                     f.Invoke(tb, ao);
                 }
             }
             else
             {
-                var len = (long)Tools.JSObjectToDouble(this["length"]);
+                var len = (long)Tools.JSObjectToDouble(this.length);
                 for (var i = 0U; i < len; i++)
                 {
                     var v = this[i.ToString(CultureInfo.InvariantCulture)];
                     if (v.valueType < JSObjectType.Undefined)
                         continue;
-                    ao["0"] = v;
-                    ao["1"].Assign(context.wrap(i));
+                    ao[0] = v;
+                    ao[1].Assign(context.wrap(i));
                     f.Invoke(tb, ao);
                 }
             }
@@ -473,11 +473,11 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [DoNotEnumerateAttribute]
-        public static JSObject isArray(JSObject args)
+        public static JSObject isArray(Arguments args)
         {
             if (args == null)
                 throw new ArgumentNullException("args");
-            return args.GetMember("0").Value is Array;
+            return args[0].Value is Array;
         }
 
         [DoNotEnumerate]
@@ -578,7 +578,7 @@ namespace NiL.JS.Core.BaseTypes
         [DoNotEnumerate]
         public JSObject reduce(Arguments args)
         {
-            var funco = args.GetMember("0");
+            var funco = args[0];
             if (funco.valueType != JSObjectType.Function)
                 throw new JSException(new TypeError("First argument on reduce mast be a function."));
             var func = funco.oValue as Function;
@@ -603,10 +603,10 @@ namespace NiL.JS.Core.BaseTypes
             var context = Context.CurrentContext;
             foreach (var element in data)
             {
-                args["0"] = accum;
-                args["1"] = element.Value;
-                args["2"] = context.wrap(element.Key);
-                args["3"] = this;
+                args[0] = accum;
+                args[1] = element.Value;
+                args[2] = context.wrap(element.Key);
+                args[3] = this;
                 accum.Assign(func.Invoke(args));
             }
             return accum;
@@ -615,7 +615,7 @@ namespace NiL.JS.Core.BaseTypes
         [DoNotEnumerate]
         public JSObject reduceRight(Arguments args)
         {
-            var funco = args.GetMember("0");
+            var funco = args[0];
             if (funco.valueType != JSObjectType.Function)
                 throw new JSException(new TypeError("First argument on reduce mast be a function."));
             var func = funco.oValue as Function;
@@ -633,17 +633,17 @@ namespace NiL.JS.Core.BaseTypes
                 return accum;
             if (accum.GetType() != typeof(JSObject))
                 accum = accum.Clone() as JSObject;
-            args["length"] = 4;
-            args.fields["1"] = new JSObject();
-            args.fields["2"] = new JSObject();
-            args.fields["3"] = new JSObject();
+            args.length = 4;
+            args[1] = new JSObject();
+            args[2] = new JSObject();
+            args[3] = new JSObject();
             var context = Context.CurrentContext;
             foreach (var element in data.Reversed)
             {
-                args["0"] = accum;
-                args["1"] = element.Value;
-                args["2"] = context.wrap(element.Key);
-                args["3"] = this;
+                args[0] = accum;
+                args[1] = element.Value;
+                args[2] = context.wrap(element.Key);
+                args[3] = this;
                 accum.Assign(func.Invoke(args));
             }
             return accum;
@@ -923,7 +923,7 @@ namespace NiL.JS.Core.BaseTypes
                         {
                             if (create)
                             {
-                                if ((this["length"].oValue as Function[])[0] == null)
+                                if ((this.length.oValue as Function[])[0] == null)
                                 {
                                     if (own)
                                         throw new JSException(new TypeError("Cannot add element in fixed size array"));

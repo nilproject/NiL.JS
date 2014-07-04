@@ -44,8 +44,8 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [DoNotEnumerate]
-        public String(JSObject args)
-            : this(Tools.JSObjectToInt32(args.GetMember("length")) == 0 ? "" : args.GetMember("0").ToString())
+        public String(Arguments args)
+            : this(Tools.JSObjectToInt32(args.GetMember("length")) == 0 ? "" : args[0].ToString())
         {
         }
 
@@ -82,9 +82,9 @@ namespace NiL.JS.Core.BaseTypes
 
         [StringAllowUnsafeCallAttribute()]
         [DoNotEnumerate]
-        public String charAt(JSObject pos)
+        public String charAt(Arguments pos)
         {
-            int p = Tools.JSObjectToInt32(pos.GetMember("0"));
+            int p = Tools.JSObjectToInt32(pos[0]);
             if ((p < 0) || (p >= (oValue as string).Length))
                 return "";
             return (oValue as string)[p].ToString();
@@ -92,9 +92,9 @@ namespace NiL.JS.Core.BaseTypes
 
         [StringAllowUnsafeCallAttribute()]
         [DoNotEnumerate]
-        public Number charCodeAt(JSObject pos)
+        public Number charCodeAt(Arguments pos)
         {
-            int p = Tools.JSObjectToInt32(pos.GetMember("0"));
+            int p = Tools.JSObjectToInt32(pos[0]);
             if ((p < 0) || (p >= (oValue as string).Length))
                 return double.NaN;
             return (int)(oValue as string)[p];
@@ -197,11 +197,11 @@ namespace NiL.JS.Core.BaseTypes
 
         [StringAllowUnsafeCallAttribute()]
         [DoNotEnumerate]
-        public JSObject match(JSObject args)
+        public JSObject match(Arguments args)
         {
             if (valueType <= JSObjectType.Undefined || (valueType >= JSObjectType.Object && oValue == null))
                 throw new JSException(new TypeError("String.prototype.match called on null or undefined"));
-            var a0 = args.GetMember("0");
+            var a0 = args[0];
             if (a0.valueType == JSObjectType.Object && a0.oValue is RegExp)
             {
                 var regex = a0.oValue as RegExp;
@@ -233,11 +233,11 @@ namespace NiL.JS.Core.BaseTypes
 
         [StringAllowUnsafeCallAttribute()]
         [DoNotEnumerate]
-        public JSObject search(JSObject args)
+        public JSObject search(Arguments args)
         {
             if (valueType <= JSObjectType.Undefined || (valueType >= JSObjectType.Object && oValue == null))
                 throw new JSException(new TypeError("String.prototype.match called on null or undefined"));
-            var a0 = args.GetMember("0");
+            var a0 = args[0];
             if (a0.valueType == JSObjectType.Object && a0.oValue is RegExp)
             {
                 var regex = a0.oValue as RegExp;
@@ -318,12 +318,12 @@ namespace NiL.JS.Core.BaseTypes
                     var f = args[1].oValue as Function;
                     var margs = new Arguments();
                     margs.length = 3;
-                    margs["0"] = pattern;
-                    margs["2"] = this;
+                    margs[0] = pattern;
+                    margs[2] = this;
                     int index = oValue.ToString().IndexOf(pattern);
                     if (index == -1)
                         return this;
-                    margs["1"] = index;
+                    margs[1] = index;
                     var res = othis.Substring(0, index) + f.Invoke(margs).ToString() + othis.Substring(index + pattern.Length);
                     oValue = othis;
                     valueType = JSObjectType.String;

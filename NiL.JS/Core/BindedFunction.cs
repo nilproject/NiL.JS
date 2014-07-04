@@ -56,7 +56,7 @@ namespace NiL.JS.Core
         }
 
         [DoNotEnumerate]
-        public override JSObject hasOwnProperty(JSObject args)
+        public override JSObject hasOwnProperty(Arguments args)
         {
             return proto.hasOwnProperty(args);
         }
