@@ -94,7 +94,7 @@ namespace NiL.JS.Expressions
                     tempContainer.iValue = 1;
                     if ((temp.attributes & JSObjectAttributesInternal.SystemObject) == 0)
                     {
-                        temp.valueType = JSObjectType.NotExist;
+                        temp.valueType = JSObjectType.NotExists;
                         temp.oValue = null;
                     }
                 }

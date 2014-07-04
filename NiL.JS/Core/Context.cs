@@ -62,7 +62,7 @@ namespace NiL.JS.Core
                     globalContext.fields = new Dictionary<string, JSObject>();
                 JSObject.GlobalPrototype = null;
                 TypeProxy.Clear();
-                globalContext.fields.Add("Object", TypeProxy.GetConstructor(typeof(JSObject)).Clone() as JSObject);
+                globalContext.fields.Add("Object", TypeProxy.GetConstructor(typeof(JSObject)).CloneImpl());
                 globalContext.fields["Object"].attributes = JSObjectAttributesInternal.DoNotDelete;
                 JSObject.GlobalPrototype = TypeProxy.GetPrototype(typeof(JSObject));
                 Core.ThisBind.refreshThisBindProto();
@@ -217,7 +217,7 @@ namespace NiL.JS.Core
             RefreshGlobalContext();
         }
 
-        private Context() { tempContainer = new JSObject(); }
+        private Context() { tempContainer = new JSObject() { attributes = JSObjectAttributesInternal.Temporary }; }
 
         public Context(Context prototype)
             : this(prototype, true, new Function())
@@ -374,7 +374,7 @@ namespace NiL.JS.Core
                 else
                 {
                     if (create)
-                        fields[name] = res = new JSObject() { valueType = JSObjectType.NotExist };
+                        fields[name] = res = new JSObject() { valueType = JSObjectType.NotExists };
                     else
                         res = JSObject.GlobalPrototype.GetMember(name);
                 }
@@ -411,7 +411,7 @@ namespace NiL.JS.Core
         {
             if (fields == null)
                 fields = new Dictionary<string, JSObject>();
-            fields.Add(moduleType.Name, TypeProxy.GetConstructor(moduleType).Clone() as JSObject);
+            fields.Add(moduleType.Name, TypeProxy.GetConstructor(moduleType).CloneImpl());
             fields[moduleType.Name].attributes = JSObjectAttributesInternal.DoNotEnum;
         }
 

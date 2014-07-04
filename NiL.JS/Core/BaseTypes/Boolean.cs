@@ -117,7 +117,7 @@ namespace NiL.JS.Core.BaseTypes
         [CLSCompliant(false)]
         [AllowUnsafeCall(typeof(JSObject))]
         [DoNotEnumerate]
-        public new JSObject toString(JSObject args)
+        public new JSObject toString(Arguments args)
         {
             return valueType == JSObjectType.Bool ? iValue != 0 ? "true" : "false" : ((bool)(this as JSObject) ? "true" : "false");
         }

@@ -525,10 +525,6 @@ namespace NiL.JS.Core
         internal static void Optimize(ref CodeNode s, int depth, int funcDepth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
             while (s != null && s.Optimize(ref s, depth, funcDepth, variables, strict)) { }
-#if DEBUG
-            if (s != null)
-                s.ToString();
-#endif
         }
     }
 }

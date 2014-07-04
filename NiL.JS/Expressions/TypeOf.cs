@@ -35,8 +35,8 @@ namespace NiL.JS.Expressions
                     {
                         return numberString;
                     }
-                case JSObjectType.NotExist:
-                case JSObjectType.NotExistInObject:
+                case JSObjectType.NotExists:
+                case JSObjectType.NotExistsInObject:
                 case JSObjectType.Undefined:
                     {
                         return undefinedString;

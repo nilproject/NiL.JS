@@ -206,7 +206,7 @@ namespace NiL.JS.Core
                 }
                 var pa = type.GetCustomAttributes(typeof(PrototypeAttribute), false);
                 if (pa.Length != 0)
-                    __proto__ = GetPrototype((pa[0] as PrototypeAttribute).PrototypeType).Clone() as JSObject;
+                    __proto__ = GetPrototype((pa[0] as PrototypeAttribute).PrototypeType).CloneImpl();
             }
         }
 
@@ -287,7 +287,7 @@ namespace NiL.JS.Core
                     }
                 }
                 if (create && (r.attributes & JSObjectAttributesInternal.SystemObject) != 0)
-                    fields[name] = r = r.Clone() as JSObject;
+                    fields[name] = r = r.CloneImpl();
                 return r;
             }
             IList<MemberInfo> m = null;
@@ -309,12 +309,12 @@ namespace NiL.JS.Core
                     cache[i] = new MethodProxy(m[i] as MethodBase);
                 r = new ExternalFunction((thisBind, args) =>
                 {
-                    int l = args == null ? 0 : args.GetMember("length").iValue;
+                    int l = args == null ? 0 : args.length;
                     for (int i = 0; i < m.Count; i++)
                     {
                         if (cache[i].Parameters.Length == l
                         || (cache[i].Parameters.Length == 1
-                            && (cache[i].Parameters[0].ParameterType == typeof(JSObject)
+                            && (cache[i].Parameters[0].ParameterType == typeof(Arguments)
                                 || cache[i].Parameters[0].ParameterType == typeof(JSObject[])
                                 || cache[i].Parameters[0].ParameterType == typeof(object[]))))
                         {
@@ -333,8 +333,6 @@ namespace NiL.JS.Core
                                 if (cargs == null)
                                     continue;
                             }
-                            if (cargs != null && cargs.Length == 1 && cargs[0] is JSObject && (cargs[0] as JSObject).oValue == ArgumentsDummy.Instance)
-                                (cargs[0] as JSObject).fields["callee"] = cache[i];
                             return TypeProxy.Proxy(cache[i].InvokeImpl(thisBind, cargs, args));
                         }
                     }
@@ -377,29 +375,41 @@ namespace NiL.JS.Core
                                         })
                                     }
                                 };
+                                r.attributes = JSObjectAttributesInternal.Immutable | JSObjectAttributesInternal.Field;
+                                if ((r.oValue as Function[])[0] == null)
+                                    r.attributes |= JSObjectAttributesInternal.ReadOnly;
                             }
                             else
                             {
-                                r = new JSObject()
+                                if ((field.Attributes & (FieldAttributes.Literal | FieldAttributes.InitOnly)) != 0
+                                    && (field.Attributes & FieldAttributes.Static) != 0)
                                 {
-                                    valueType = JSObjectType.Property,
-                                    oValue = new Function[] 
+                                    r = Proxy(field.GetValue(null));
+                                    r.attributes |= JSObjectAttributesInternal.ReadOnly;
+                                }
+                                else
+                                {
+                                    r = new JSObject()
                                     {
-                                        !m[0].IsDefined(typeof(Modules.ReadOnlyAttribute), false) ? new ExternalFunction((thisBind, a)=>
+                                        valueType = JSObjectType.Property,
+                                        oValue = new Function[] 
                                         {
-                                            field.SetValue(field.IsStatic ? null : thisBind.Value, a[0].Value); 
-                                            return null; 
-                                        }) : null,
-                                        new ExternalFunction((thisBind, a)=>
-                                        { 
-                                            return Proxy(field.GetValue(field.IsStatic ? null : thisBind.Value));
-                                        })
-                                    }
-                                };
+                                            !m[0].IsDefined(typeof(Modules.ReadOnlyAttribute), false) ? new ExternalFunction((thisBind, a)=>
+                                            {
+                                                field.SetValue(field.IsStatic ? null : thisBind.Value, a[0].Value); 
+                                                return null; 
+                                            }) : null,
+                                            new ExternalFunction((thisBind, a)=>
+                                            { 
+                                                return Proxy(field.GetValue(field.IsStatic ? null : thisBind.Value));
+                                            })
+                                        }
+                                    };
+                                    r.attributes = JSObjectAttributesInternal.Immutable | JSObjectAttributesInternal.Field;
+                                    if ((r.oValue as Function[])[0] == null)
+                                        r.attributes |= JSObjectAttributesInternal.ReadOnly;
+                                }
                             }
-                            r.attributes = JSObjectAttributesInternal.Immutable | JSObjectAttributesInternal.Field;
-                            if ((r.oValue as Function[])[0] == null)
-                                r.attributes |= JSObjectAttributesInternal.ReadOnly;
                             break;
                         }
                     case MemberTypes.Property:
@@ -461,7 +471,7 @@ namespace NiL.JS.Core
             }
             r.attributes |= JSObjectAttributesInternal.DoNotEnum;
             lock (fields)
-                fields[name] = create && r.GetType() != typeof(JSObject) ? (r = r.Clone() as JSObject) : r;
+                fields[name] = create && r.GetType() != typeof(JSObject) ? (r = r.CloneImpl()) : r;
             if (m[0].IsDefined(typeof(ReadOnlyAttribute), false))
                 r.attributes |= JSObjectAttributesInternal.ReadOnly;
             if (m[0].IsDefined(typeof(NotConfigurable), false))

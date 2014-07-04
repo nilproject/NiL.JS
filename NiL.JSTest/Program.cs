@@ -129,7 +129,7 @@ console.log(String.prototype.toString.call(a));
         static void Main(string[] args)
         {
             typeof(System.Windows.Forms.Button).GetType();
-            int mode = 0
+            int mode = 101
                 ;
             switch (mode)
             {

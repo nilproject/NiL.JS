@@ -52,7 +52,7 @@ namespace NiL.JS.Core
             if (cacheRes == null)
             {
                 var res = context.GetVariable(name, create);
-                if (create && !Defined && res.valueType == JSObjectType.NotExist)
+                if (create && !Defined && res.valueType == JSObjectType.NotExists)
                     res.attributes = JSObjectAttributesInternal.None;
                 if (res.oValue is TypeProxy && (res.oValue as TypeProxy).prototypeInstance != null)
                     res = (res.oValue as TypeProxy).prototypeInstance;

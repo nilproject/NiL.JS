@@ -84,7 +84,7 @@ namespace NiL.JS.Core.BaseTypes
             this._length = (long)collection.Count;
             var index = 0U;
             foreach (var e in collection)
-                data[index++] = e is JSObject ? (e as JSObject).Clone() as JSObject : TypeProxy.Proxy(e);
+                data[index++] = e is JSObject ? (e as JSObject).CloneImpl() : TypeProxy.Proxy(e);
         }
 
         [Hidden]
@@ -97,7 +97,7 @@ namespace NiL.JS.Core.BaseTypes
             data = new BinaryTree<long, JSObject>();
             var index = 0U;
             foreach (var e in enumerable)
-                data[index++] = e is JSObject ? (e as JSObject).Clone() as JSObject : TypeProxy.Proxy(e);
+                data[index++] = e is JSObject ? (e as JSObject).CloneImpl() : TypeProxy.Proxy(e);
             _length = (long)index;
         }
 
@@ -113,7 +113,7 @@ namespace NiL.JS.Core.BaseTypes
             while (enumerator.MoveNext())
             {
                 var e = enumerator.Current;
-                data[index++] = e is JSObject ? (e as JSObject).Clone() as JSObject : TypeProxy.Proxy(e);
+                data[index++] = e is JSObject ? (e as JSObject).CloneImpl() : TypeProxy.Proxy(e);
             }
             _length = (long)index;
         }
@@ -186,7 +186,7 @@ namespace NiL.JS.Core.BaseTypes
             var res = new BinaryTree<long, JSObject>();
             long resLen = _length;
             foreach (var element in data)
-                res[element.Key] = element.Value.Clone() as JSObject;
+                res[element.Key] = element.Value.CloneImpl();
             for (long i = 0; i < args.Length; i++)
             {
                 var arg = args[i];
@@ -194,11 +194,11 @@ namespace NiL.JS.Core.BaseTypes
                 {
                     Array arr = arg.oValue as Array;
                     foreach (var element in arr.data)
-                        res[element.Key + resLen] = element.Value.Clone() as JSObject;
+                        res[element.Key + resLen] = element.Value.CloneImpl();
                     resLen += arr._length;
                 }
                 else
-                    res[resLen++] = args[i].Clone() as JSObject;
+                    res[resLen++] = args[i].CloneImpl();
             }
             return new Array(res, resLen);
         }
@@ -321,7 +321,7 @@ namespace NiL.JS.Core.BaseTypes
                     ao[0].Assign(element.Value);
                     ao[1].Assign(context.wrap(element.Key));
                     if ((bool)f.Invoke(tb, ao))
-                        res.Add(element.Value.Clone() as JSObject);
+                        res.Add(element.Value.CloneImpl());
                 }
             }
             else
@@ -335,7 +335,7 @@ namespace NiL.JS.Core.BaseTypes
                     ao[0] = v;
                     ao[1].Assign(context.wrap(i));
                     if ((bool)f.Invoke(tb, ao))
-                        res.Add(v.Clone() as JSObject);
+                        res.Add(v.CloneImpl());
                 }
             }
             return res;
@@ -368,7 +368,7 @@ namespace NiL.JS.Core.BaseTypes
                         ao[0].Assign(element.Value);
                     ao[1].Assign(context.wrap(element.Key));
                     res._length = element.Key;
-                    res.Add(f.Invoke(tb, ao).Clone() as JSObject);
+                    res.Add(f.Invoke(tb, ao).CloneImpl());
                 }
             }
             else
@@ -381,7 +381,7 @@ namespace NiL.JS.Core.BaseTypes
                         continue;
                     ao[0] = v;
                     ao[1].Assign(context.wrap(i));
-                    res.Add(f.Invoke(tb, ao).Clone() as JSObject);
+                    res.Add(f.Invoke(tb, ao).CloneImpl());
                 }
             }
             return res;
@@ -561,7 +561,7 @@ namespace NiL.JS.Core.BaseTypes
         public JSObject push(JSObject[] args)
         {
             for (var i = 0; i < args.Length; i++)
-                data.Add(_length++, args[i].Clone() as JSObject);
+                data.Add(_length++, args[i].CloneImpl());
             return this.length;
         }
 
@@ -582,7 +582,9 @@ namespace NiL.JS.Core.BaseTypes
             if (funco.valueType != JSObjectType.Function)
                 throw new JSException(new TypeError("First argument on reduce mast be a function."));
             var func = funco.oValue as Function;
-            var accum = args.DefineMember("1");
+            var accum = args[1];
+            if ((accum.attributes & JSObjectAttributesInternal.SystemObject) != 0)
+                accum = accum.CloneImpl();
             var index = 0;
             if (accum.valueType < JSObjectType.Undefined)
             {
@@ -595,17 +597,18 @@ namespace NiL.JS.Core.BaseTypes
             if (index >= data.Count)
                 return accum;
             if (accum.GetType() != typeof(JSObject))
-                accum = accum.Clone() as JSObject;
+                accum = accum.CloneImpl();
             args.length = 4;
-            args[1] = new JSObject();
             args[2] = new JSObject();
-            args[3] = new JSObject();
             var context = Context.CurrentContext;
             foreach (var element in data)
             {
                 args[0] = accum;
-                args[1] = element.Value;
-                args[2] = context.wrap(element.Key);
+                if (element.Value.valueType == JSObjectType.Property)
+                    args[1] = (element.Value.oValue as Function[])[1] == null ? undefined : (element.Value.oValue as Function[])[1].Invoke(this, null);
+                else
+                    args[1] = element.Value;
+                args[2].Assign(element.Key);
                 args[3] = this;
                 accum.Assign(func.Invoke(args));
             }
@@ -619,7 +622,9 @@ namespace NiL.JS.Core.BaseTypes
             if (funco.valueType != JSObjectType.Function)
                 throw new JSException(new TypeError("First argument on reduce mast be a function."));
             var func = funco.oValue as Function;
-            var accum = args.DefineMember("1");
+            var accum = args[1];
+            if ((accum.attributes & JSObjectAttributesInternal.SystemObject) != 0)
+                accum = accum.CloneImpl();
             var index = 0;
             if (accum.valueType < JSObjectType.Undefined)
             {
@@ -632,17 +637,18 @@ namespace NiL.JS.Core.BaseTypes
             if (index >= data.Count)
                 return accum;
             if (accum.GetType() != typeof(JSObject))
-                accum = accum.Clone() as JSObject;
+                accum = accum.CloneImpl();
             args.length = 4;
-            args[1] = new JSObject();
             args[2] = new JSObject();
-            args[3] = new JSObject();
             var context = Context.CurrentContext;
             foreach (var element in data.Reversed)
             {
                 args[0] = accum;
-                args[1] = element.Value;
-                args[2] = context.wrap(element.Key);
+                if (element.Value.valueType == JSObjectType.Property)
+                    args[1] = (element.Value.oValue as Function[])[1] == null ? undefined : (element.Value.oValue as Function[])[1].Invoke(this, null);
+                else
+                    args[1] = element.Value;
+                args[2].Assign(element.Key);
                 args[3] = this;
                 accum.Assign(func.Invoke(args));
             }
@@ -698,7 +704,7 @@ namespace NiL.JS.Core.BaseTypes
                     foreach (var node in data.Nodes)
                     {
                         if (pos0 <= node.key && pos1 >= node.key)
-                            res.Add(node.value.Clone() as JSObject);
+                            res.Add(node.value.CloneImpl());
                     }
                     return res;
                 }
@@ -746,7 +752,7 @@ namespace NiL.JS.Core.BaseTypes
                 {
                     if (pos0 <= node.key && pos1 >= node.key)
                     {
-                        res.Add(node.value.Clone() as JSObject);
+                        res.Add(node.value.CloneImpl());
                         keysToRemove.Add(node.key);
                     }
                 }
@@ -856,7 +862,7 @@ namespace NiL.JS.Core.BaseTypes
                 node.key += (long)args.Length;
             _length += (long)args.Length;
             for (var i = 0u; i < args.Length; i++)
-                data[i] = args[i].Clone() as JSObject;
+                data[i] = args[i].CloneImpl();
             return length;
         }
 
@@ -879,7 +885,7 @@ namespace NiL.JS.Core.BaseTypes
 
         [CLSCompliant(false)]
         [DoNotEnumerate]
-        public new JSObject toString(JSObject args)
+        public new JSObject toString(Arguments args)
         {
             if (this.GetType() != typeof(Array) && !this.GetType().IsSubclassOf(typeof(Array)))
                 throw new JSException(new TypeError("Try to call Array.toString on not Array object."));
@@ -923,14 +929,14 @@ namespace NiL.JS.Core.BaseTypes
                         {
                             if (create)
                             {
-                                if ((this.length.oValue as Function[])[0] == null)
+                                if ((this["length"].oValue as Function[])[0] == null)
                                 {
                                     if (own)
                                         throw new JSException(new TypeError("Cannot add element in fixed size array"));
                                     return notExists;
                                 }
                                 setLength(index + 1);
-                                return data[index] = new JSObject() { valueType = JSObjectType.NotExistInObject };
+                                return data[index] = new JSObject() { valueType = JSObjectType.NotExistsInObject };
                             }
                             else
                                 return base.GetMember(name, create, own);
@@ -943,7 +949,7 @@ namespace NiL.JS.Core.BaseTypes
                             {
                                 if (create)
                                 {
-                                    element = new JSObject() { valueType = JSObjectType.NotExistInObject };
+                                    element = new JSObject() { valueType = JSObjectType.NotExistsInObject };
                                     data[index] = element;
                                     return element;
                                 }

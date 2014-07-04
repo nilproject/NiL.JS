@@ -83,7 +83,7 @@ namespace NiL.JS.Expressions
                             return l.Equals(temp.oValue);
                     }
                 case JSObjectType.Undefined:
-                case JSObjectType.NotExistInObject:
+                case JSObjectType.NotExistsInObject:
                     {
                         temp = second.Invoke(context);
                         return !temp.isDefinded;
@@ -91,7 +91,7 @@ namespace NiL.JS.Expressions
                 case JSObjectType.Property:
                     return false;
             }
-            if (lvt == JSObjectType.NotExist)
+            if (lvt == JSObjectType.NotExists)
                 throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable not defined.")));
             throw new NotImplementedException();
         }

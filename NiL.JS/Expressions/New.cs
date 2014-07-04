@@ -46,7 +46,7 @@ namespace NiL.JS.Expressions
                     if (_this.__proto__.valueType < JSObjectType.Object)
                         _this.__proto__ = null;
                     else
-                        _this.__proto__ = _this.__proto__.Clone() as JSObject;
+                        _this.__proto__ = _this.__proto__.CloneImpl();
                     _this.oValue = _this;
                 }
                 else

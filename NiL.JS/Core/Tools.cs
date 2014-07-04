@@ -66,9 +66,9 @@ namespace NiL.JS.Core
                         return JSObjectToDouble(arg);
                     }
                 case JSObjectType.Undefined:
-                case JSObjectType.NotExistInObject:
+                case JSObjectType.NotExistsInObject:
                     return double.NaN;
-                case JSObjectType.NotExist:
+                case JSObjectType.NotExists:
                     throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable not defined.")));
                 default:
                     throw new NotImplementedException();
@@ -162,9 +162,9 @@ namespace NiL.JS.Core
                         return JSObjectToInt32(r);
                     }
                 case JSObjectType.Undefined:
-                case JSObjectType.NotExistInObject:
+                case JSObjectType.NotExistsInObject:
                     return nullOrUndef;
-                case JSObjectType.NotExist:
+                case JSObjectType.NotExists:
                     throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable not defined.")));
                 default:
                     throw new NotImplementedException();
@@ -245,9 +245,9 @@ namespace NiL.JS.Core
                         return JSObjectToInt32(r);
                     }
                 case JSObjectType.Undefined:
-                case JSObjectType.NotExistInObject:
+                case JSObjectType.NotExistsInObject:
                     return nullOrUndef;
-                case JSObjectType.NotExist:
+                case JSObjectType.NotExists:
                     throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable not defined.")));
                 default:
                     throw new NotImplementedException();
@@ -286,9 +286,9 @@ namespace NiL.JS.Core
                         return JSObjectToNumber(arg);
                     }
                 case JSObjectType.Undefined:
-                case JSObjectType.NotExistInObject:
+                case JSObjectType.NotExistsInObject:
                     return 0;
-                case JSObjectType.NotExist:
+                case JSObjectType.NotExists:
                     throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable not defined.")));
                 default:
                     throw new NotImplementedException();
@@ -803,7 +803,7 @@ namespace NiL.JS.Core
 #endif
         internal static JSObject RaiseIfNotExist(JSObject obj, object name)
         {
-            if (obj.valueType == JSObjectType.NotExist)
+            if (obj.valueType == JSObjectType.NotExists)
                 throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable \"" + name + "\" is not defined.")));
             return obj;
         }

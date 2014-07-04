@@ -206,7 +206,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Core\ArgumentsDummy.cs" />
     <Compile Include="Core\Arguments.cs" />
     <Compile Include="Core\Backward.cs" />
     <Compile Include="Core\BaseTypes\Array.cs" />

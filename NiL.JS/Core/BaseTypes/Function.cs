@@ -545,38 +545,6 @@ namespace NiL.JS.Core.BaseTypes
 
         }
 
-        [Hidden]
-        public object MakeDelegate(Type delegateType)
-        {
-            var del = delegateType.GetMethod("Invoke");
-            var prms = del.GetParameters();
-            if (prms.Length <= 16)
-            {
-                var invokes = typeof(_DelegateWraper).GetMember("Invoke");
-                if (del.ReturnType != typeof(void))
-                {
-                    Type[] argtypes = new Type[prms.Length + 1];
-                    for (int i = 0; i < prms.Length; i++)
-                        argtypes[i + 1] = prms[i].ParameterType;
-                    argtypes[0] = del.ReturnType;
-                    var instance = new _DelegateWraper(this);
-                    var method = ((System.Reflection.MethodInfo)invokes[prms.Length]).MakeGenericMethod(argtypes);
-                    return Delegate.CreateDelegate(delegateType, instance, method);
-                }
-                else
-                {
-                    Type[] argtypes = new Type[prms.Length];
-                    for (int i = 0; i < prms.Length; i++)
-                        argtypes[i] = prms[i].ParameterType;
-                    var instance = new _DelegateWraper(this);
-                    var method = ((System.Reflection.MethodInfo)invokes[17 + prms.Length]).MakeGenericMethod(argtypes);
-                    return Delegate.CreateDelegate(delegateType, instance, method);
-                }
-            }
-            else
-                throw new ArgumentException("Parameters count must be no more 16.");
-        }
-
         private static readonly FunctionStatement creatorDummy = new FunctionStatement("anonymous");
         internal static readonly Function emptyFunction = new Function();
         private static readonly Function TTEProxy = new MethodProxy(typeof(Function).GetMethod("ThrowTypeError", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic)) { attributes = JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.Immutable | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.ReadOnly };
@@ -621,6 +589,7 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         #region Runtime
+        private string[] parameterNames;
         [Hidden]
         [CLSCompliant(false)]
         internal protected JSObject _prototype;
@@ -688,6 +657,7 @@ namespace NiL.JS.Core.BaseTypes
             creator = creatorDummy;
             valueType = JSObjectType.Function;
             this.oValue = this;
+            parameterNames = new string[0];
         }
 
         [DoNotEnumerate]
@@ -714,6 +684,9 @@ namespace NiL.JS.Core.BaseTypes
                 throw new JSException(TypeProxy.Proxy(new SyntaxError()));
             valueType = JSObjectType.Function;
             this.oValue = this;
+            parameterNames = new string[creator.parameters.Length];
+            for (var i = 0; i < parameterNames.Length; i++)
+                parameterNames[i] = creator.parameters[i].Name;
         }
 
         internal Function(Context context, FunctionStatement creator)
@@ -723,6 +696,9 @@ namespace NiL.JS.Core.BaseTypes
             this.creator = creator;
             valueType = JSObjectType.Function;
             this.oValue = this;
+            parameterNames = new string[creator.parameters.Length];
+            for (var i = 0; i < parameterNames.Length; i++)
+                parameterNames[i] = creator.parameters[i].Name;
         }
 
         [Hidden]
@@ -745,31 +721,30 @@ namespace NiL.JS.Core.BaseTypes
             var body = creator.body;
             if (body == null || body.Body.Length == 0)
             {
-                notExists.valueType = JSObjectType.NotExistInObject;
+                notExists.valueType = JSObjectType.NotExistsInObject;
                 return notExists;
             }
             try
             {
+                if (thisBind == null)
+                    thisBind = notExists;
                 if (!body.strict) // Поправляем this
                 {
-                    if (thisBind != null)
+                    if (thisBind.valueType > JSObjectType.Undefined && thisBind.valueType < JSObjectType.Object)
                     {
-                        if (thisBind.valueType > JSObjectType.Undefined && thisBind.valueType < JSObjectType.Object)
+                        thisBind = new JSObject(false)
                         {
-                            thisBind = new JSObject(false)
-                            {
-                                valueType = JSObjectType.Object,
-                                oValue = thisBind,
-                                attributes = JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.Immutable,
-                                __proto__ = thisBind.__proto__ ?? (thisBind.valueType <= JSObjectType.Undefined ? thisBind.__proto__ : thisBind.GetMember("__proto__"))
-                            };
-                        }
-                        else if (thisBind.valueType <= JSObjectType.Undefined || thisBind.oValue == null)
-                            thisBind = internalContext.Root.thisBind;
+                            valueType = JSObjectType.Object,
+                            oValue = thisBind,
+                            attributes = JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.Immutable,
+                            __proto__ = thisBind.__proto__ ?? (thisBind.valueType <= JSObjectType.Undefined ? thisBind.__proto__ : thisBind.GetMember("__proto__"))
+                        };
                     }
-                    else
+                    else if (thisBind.valueType <= JSObjectType.Undefined || thisBind.oValue == null)
                         thisBind = internalContext.Root.thisBind;
                 }
+                if (thisBind.valueType == JSObjectType.NotExists)
+                    thisBind.valueType = JSObjectType.Undefined;
 
                 if (args == null)
                     args = new Arguments();
@@ -785,28 +760,28 @@ namespace NiL.JS.Core.BaseTypes
                 }
                 else
                 {
-                    var callee = this.Clone() as JSObject;
+                    var callee = this.CloneImpl();
                     callee.attributes = JSObjectAttributesInternal.DoNotEnum;
                     args.callee = callee;
                 }
-                int min = System.Math.Min(args.length, creator.parameters.Length);
+                int min = System.Math.Min(args.length, parameterNames.Length);
                 for (; i < min; i++)
                 {
                     JSObject t = args[i];
-                    args[i] = t = t.Clone() as JSObject;
+                    args[i] = t = t.CloneImpl();
                     t.attributes |= JSObjectAttributesInternal.Argument;
                     if (body.strict)
-                        t = t.Clone() as JSObject;
-                    internalContext.fields[creator.parameters[i].Name] = t;
+                        t = t.CloneImpl();
+                    internalContext.fields[parameterNames[i]] = t;
                 }
                 for (; i < args.length; i++)
                 {
                     var t = args[i];
-                    args[i] = t = t.Clone() as JSObject;
+                    args[i] = t = t.CloneImpl();
                     t.attributes |= JSObjectAttributesInternal.Argument;
                 }
-                for (; i < creator.parameters.Length; i++)
-                    internalContext.fields[creator.parameters[i].Name] = new JSObject() { attributes = JSObjectAttributesInternal.Argument };
+                for (; i < parameterNames.Length; i++)
+                    internalContext.fields[parameterNames[i]] = new JSObject() { attributes = JSObjectAttributesInternal.Argument };
 
                 for (i = body.variables.Length; i-- > 0; )
                 {
@@ -829,8 +804,8 @@ namespace NiL.JS.Core.BaseTypes
                 internalContext.variables = body.variables;
                 internalContext.Activate();
                 body.Invoke(internalContext);
-                if (internalContext.abortInfo != null && internalContext.abortInfo.valueType == JSObjectType.NotExist)
-                    internalContext.abortInfo.valueType = JSObjectType.NotExistInObject;
+                if (internalContext.abortInfo != null && internalContext.abortInfo.valueType == JSObjectType.NotExists)
+                    internalContext.abortInfo.valueType = JSObjectType.NotExistsInObject;
 #if DEBUG
                 if (internalContext.abortInfo == null)
                     System.Diagnostics.Debugger.Break();
@@ -839,7 +814,7 @@ namespace NiL.JS.Core.BaseTypes
                     internalContext.abortInfo = notExists;
 #endif
                 if ((internalContext.abortInfo.attributes & JSObjectAttributesInternal.Temporary) != 0)
-                    return internalContext.abortInfo.Clone() as JSObject;
+                    return internalContext.abortInfo.CloneImpl();
                 return internalContext.abortInfo;
             }
             finally
@@ -919,7 +894,17 @@ namespace NiL.JS.Core.BaseTypes
         [DoNotEnumerate]
         public JSObject apply(Arguments args)
         {
-            return Invoke(args[0], args[1] as Arguments);
+            var nargs = new Arguments() { length = System.Math.Max(0, args.length - 1) };
+            var argsSource = args[1];
+            if (argsSource.isDefinded)
+            {
+                var len = argsSource["length"];
+                if (len.valueType == JSObjectType.Property)
+                    len = (len.oValue as Function[])[1].Invoke(argsSource, null);
+                for (var i = Tools.JSObjectToInt32(len); i-- > 0; )
+                    nargs[i] = argsSource[i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture)];
+            }
+            return Invoke(args[0], nargs);
         }
 
         [DoNotEnumerate]
@@ -930,6 +915,38 @@ namespace NiL.JS.Core.BaseTypes
             if ((newThis != null && newThis.valueType > JSObjectType.Undefined) || strict)
                 return new BindedFunction(newThis, this);
             return this;
+        }
+
+        [Hidden]
+        public object MakeDelegate(Type delegateType)
+        {
+            var del = delegateType.GetMethod("Invoke");
+            var prms = del.GetParameters();
+            if (prms.Length <= 16)
+            {
+                var invokes = typeof(_DelegateWraper).GetMember("Invoke");
+                if (del.ReturnType != typeof(void))
+                {
+                    Type[] argtypes = new Type[prms.Length + 1];
+                    for (int i = 0; i < prms.Length; i++)
+                        argtypes[i + 1] = prms[i].ParameterType;
+                    argtypes[0] = del.ReturnType;
+                    var instance = new _DelegateWraper(this);
+                    var method = ((System.Reflection.MethodInfo)invokes[prms.Length]).MakeGenericMethod(argtypes);
+                    return Delegate.CreateDelegate(delegateType, instance, method);
+                }
+                else
+                {
+                    Type[] argtypes = new Type[prms.Length];
+                    for (int i = 0; i < prms.Length; i++)
+                        argtypes[i] = prms[i].ParameterType;
+                    var instance = new _DelegateWraper(this);
+                    var method = ((System.Reflection.MethodInfo)invokes[17 + prms.Length]).MakeGenericMethod(argtypes);
+                    return Delegate.CreateDelegate(delegateType, instance, method);
+                }
+            }
+            else
+                throw new ArgumentException("Parameters count must be no more 16.");
         }
     }
 }

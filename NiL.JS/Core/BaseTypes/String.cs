@@ -207,7 +207,7 @@ namespace NiL.JS.Core.BaseTypes
                 var regex = a0.oValue as RegExp;
                 if (!regex._global)
                 {
-                    args.GetMember("0", true, true).Assign(this);
+                    args[0] = this;
                     return regex.exec(args);
                 }
                 else
@@ -243,7 +243,7 @@ namespace NiL.JS.Core.BaseTypes
                 var regex = a0.oValue as RegExp;
                 if (!regex._global)
                 {
-                    args.GetMember("0", true, true).Assign(this);
+                    args[0] = this;
                     return regex.exec(args)["index"];
                 }
                 else
@@ -562,7 +562,7 @@ namespace NiL.JS.Core.BaseTypes
         [AllowUnsafeCall(typeof(JSObject))]
         [ParametersCount(0)]
         [DoNotEnumerate]
-        public new JSObject toString(JSObject args)
+        public new JSObject toString(Arguments args)
         {
             if ((this as object) is String && valueType == JSObjectType.Object) // prototype instance
                 return "";

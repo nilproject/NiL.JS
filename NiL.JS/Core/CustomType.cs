@@ -23,7 +23,7 @@ namespace NiL.JS.Core
         [CLSCompliant(false)]
         [AllowUnsafeCall(typeof(JSObject))]
         [DoNotEnumerate]
-        public new JSObject toString(JSObject args)
+        public new JSObject toString(Arguments args)
         {
             return ToString();
         }

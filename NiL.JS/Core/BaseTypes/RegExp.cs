@@ -164,7 +164,7 @@ namespace NiL.JS.Core.BaseTypes
             }
             set
             {
-                lIndex = value.oValue is ArgumentsDummy ? value : value;
+                lIndex = (value ?? undefined).CloneImpl();
             }
         }
 
@@ -183,7 +183,7 @@ namespace NiL.JS.Core.BaseTypes
             string input = args[0].ToString();
             lIndex = Tools.JSObjectToNumber(lastIndex);
             if ((lIndex.attributes & JSObjectAttributesInternal.SystemObject) != 0)
-                lIndex = lIndex.Clone() as JSObject;
+                lIndex = lIndex.CloneImpl();
             if (lIndex.valueType == JSObjectType.Double)
             {
                 lIndex.valueType = JSObjectType.Int;

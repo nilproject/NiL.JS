@@ -7,42 +7,34 @@ namespace NiL.JS.Core.Modules
         [Hidden]
         internal readonly static Random randomInstance = new Random((int)DateTime.Now.Ticks);
 
-        [ReadOnly]
         [DoNotDelete]
         [DoNotEnumerate]
         [NotConfigurable]
         public const double E = System.Math.E;
-        [ReadOnly]
         [DoNotDelete]
         [DoNotEnumerate]
         [NotConfigurable]
         public const double PI = System.Math.PI;
-        [ReadOnly]
         [DoNotDelete]
         [DoNotEnumerate]
         [NotConfigurable]
         public static readonly double LN2 = System.Math.Log(2);
-        [ReadOnly]
         [DoNotDelete]
         [DoNotEnumerate]
         [NotConfigurable]
         public static readonly double LN10 = System.Math.Log(10);
-        [ReadOnly]
         [DoNotDelete]
         [DoNotEnumerate]
         [NotConfigurable]
         public static readonly double LOG2E = 1.0 / LN2;
-        [ReadOnly]
         [DoNotDelete]
         [DoNotEnumerate]
         [NotConfigurable]
         public static readonly double LOG10E = 1.0 / LN10;
-        [ReadOnly]
         [DoNotDelete]
         [DoNotEnumerate]
         [NotConfigurable]
         public static readonly double SQRT1_2 = System.Math.Sqrt(0.5);
-        [ReadOnly]
         [DoNotDelete]
         [DoNotEnumerate]
         [NotConfigurable]

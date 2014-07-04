@@ -44,7 +44,7 @@ namespace NiL.JS.Expressions
                     setter = (val.oValue as Function[])[0];
                     if (context.strict && setter == null)
                         throw new JSException(new TypeError("Can not increment property \"" + (first ?? second) + "\" without setter."));
-                    val = (val.oValue as Function[])[1].Invoke(context.objectSource, null).Clone() as JSObject;
+                    val = (val.oValue as Function[])[1].Invoke(context.objectSource, null).CloneImpl();
                     val.attributes = 0;
                 }
                 else if (context.strict && (val.attributes & JSObjectAttributesInternal.ReadOnly) != 0)
@@ -118,7 +118,7 @@ namespace NiL.JS.Expressions
                             break;
                         }
                     case JSObjectType.Undefined:
-                    case JSObjectType.NotExistInObject:
+                    case JSObjectType.NotExistsInObject:
                         {
                             val.valueType = JSObjectType.Double;
                             val.dValue = double.NaN;

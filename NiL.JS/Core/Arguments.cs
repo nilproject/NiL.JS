@@ -58,37 +58,37 @@ namespace NiL.JS.Core
                 switch (index)
                 {
                     case 0:
-                        return a0;
+                        return a0 ?? notExists;
                     case 1:
-                        return a1;
+                        return a1 ?? notExists;
                     case 2:
-                        return a2;
+                        return a2 ?? notExists;
                     case 3:
-                        return a3;
+                        return a3 ?? notExists;
                     case 4:
-                        return a4;
+                        return a4 ?? notExists;
                     case 5:
-                        return a5;
+                        return a5 ?? notExists;
                     case 6:
-                        return a6;
+                        return a6 ?? notExists;
                     case 7:
-                        return a7;
+                        return a7 ?? notExists;
                     case 8:
-                        return a8;
+                        return a8 ?? notExists;
                     case 9:
-                        return a9;
+                        return a9 ?? notExists;
                     case 10:
-                        return a10;
+                        return a10 ?? notExists;
                     case 11:
-                        return a11;
+                        return a11 ?? notExists;
                     case 12:
-                        return a12;
+                        return a12 ?? notExists;
                     case 13:
-                        return a13;
+                        return a13 ?? notExists;
                     case 14:
-                        return a14;
+                        return a14 ?? notExists;
                     case 15:
-                        return a15;
+                        return a15 ?? notExists;
                 }
                 return base[index.ToString()];
             }
@@ -145,7 +145,9 @@ namespace NiL.JS.Core
                         a15 = value;
                         break;
                     default:
-                        base[index.ToString()] = value;
+                        if (fields == null)
+                            fields = new Dictionary<string, JSObject>();
+                        fields[index.ToString()] = value;
                         break;
                 }
 
@@ -160,42 +162,54 @@ namespace NiL.JS.Core
             attributes = JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum;
         }
 
+        public override void Assign(NiL.JS.Core.JSObject value)
+        {
+            if ((attributes & JSObjectAttributesInternal.ReadOnly) != 0)
+            {
+#if DEBUG
+                System.Diagnostics.Debugger.Break();
+#endif
+                throw new InvalidOperationException("Try to assign to Arguments");
+            }
+        }
+
         protected internal override JSObject GetMember(JSObject name, bool createMember, bool own)
         {
+            createMember &= (attributes & JSObjectAttributesInternal.Immutable) == 0;
             switch (name.ToString())
             {
                 case "0":
-                    return (a0 ?? (!createMember ? notExists : (a0 = new JSObject())));
+                    return (a0 ?? (!createMember ? notExists : (a0 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
                 case "1":
-                    return (a1 ?? (!createMember ? notExists : (a1 = new JSObject())));
+                    return (a1 ?? (!createMember ? notExists : (a1 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
                 case "2":
-                    return (a2 ?? (!createMember ? notExists : (a2 = new JSObject())));
+                    return (a2 ?? (!createMember ? notExists : (a2 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
                 case "3":
-                    return (a3 ?? (!createMember ? notExists : (a3 = new JSObject())));
+                    return (a3 ?? (!createMember ? notExists : (a3 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
                 case "4":
-                    return (a4 ?? (!createMember ? notExists : (a4 = new JSObject())));
+                    return (a4 ?? (!createMember ? notExists : (a4 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
                 case "5":
-                    return (a5 ?? (!createMember ? notExists : (a5 = new JSObject())));
+                    return (a5 ?? (!createMember ? notExists : (a5 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
                 case "6":
-                    return (a6 ?? (!createMember ? notExists : (a6 = new JSObject())));
+                    return (a6 ?? (!createMember ? notExists : (a6 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
                 case "7":
-                    return (a7 ?? (!createMember ? notExists : (a7 = new JSObject())));
+                    return (a7 ?? (!createMember ? notExists : (a7 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
                 case "8":
-                    return (a8 ?? (!createMember ? notExists : (a8 = new JSObject())));
+                    return (a8 ?? (!createMember ? notExists : (a8 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
                 case "9":
-                    return (a9 ?? (!createMember ? notExists : (a9 = new JSObject())));
+                    return (a9 ?? (!createMember ? notExists : (a9 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
                 case "10":
-                    return (a10 ?? (!createMember ? notExists : (a10 = new JSObject())));
+                    return (a10 ?? (!createMember ? notExists : (a10 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
                 case "11":
-                    return (a11 ?? (!createMember ? notExists : (a11 = new JSObject())));
+                    return (a11 ?? (!createMember ? notExists : (a11 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
                 case "12":
-                    return (a12 ?? (!createMember ? notExists : (a12 = new JSObject())));
+                    return (a12 ?? (!createMember ? notExists : (a12 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
                 case "13":
-                    return (a13 ?? (!createMember ? notExists : (a13 = new JSObject())));
+                    return (a13 ?? (!createMember ? notExists : (a13 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
                 case "14":
-                    return (a14 ?? (!createMember ? notExists : (a14 = new JSObject())));
+                    return (a14 ?? (!createMember ? notExists : (a14 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
                 case "15":
-                    return (a15 ?? (!createMember ? notExists : (a15 = new JSObject())));
+                    return (a15 ?? (!createMember ? notExists : (a15 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
                 case "length":
                     {
                         if (_length == null)
@@ -203,9 +217,9 @@ namespace NiL.JS.Core
                         return _length;
                     }
                 case "callee":
-                    return (callee ?? (!createMember ? notExists : (callee = new JSObject())));
+                    return (callee ?? (!createMember ? notExists : (callee = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
                 case "caller":
-                    return (caller ?? (!createMember ? notExists : (caller = new JSObject())));
+                    return (caller ?? (!createMember ? notExists : (caller = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
             }
             return base.GetMember(name, createMember, own);
         }

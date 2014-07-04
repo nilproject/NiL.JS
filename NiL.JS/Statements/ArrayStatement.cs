@@ -65,7 +65,7 @@ namespace NiL.JS.Statements
             {
                 if (elements[i] != null)
                 {
-                    var e = elements[i].Invoke(context).Clone() as JSObject;
+                    var e = elements[i].Invoke(context).CloneImpl();
                     e.attributes = 0;
                     res.data[i] = e;
                 }

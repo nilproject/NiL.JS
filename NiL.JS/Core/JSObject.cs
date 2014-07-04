@@ -12,8 +12,8 @@ namespace NiL.JS.Core
     [Serializable]
     public enum JSObjectType : int
     {
-        NotExist = 0,
-        NotExistInObject = 1,
+        NotExists = 0,
+        NotExistsInObject = 1,
         Undefined = 2,
         Bool = 6,
         Int = 10,
@@ -87,7 +87,7 @@ namespace NiL.JS.Core
         [Hidden]
         internal static readonly JSObject undefined = new JSObject() { valueType = JSObjectType.Undefined, attributes = JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.SystemObject };
         [Hidden]
-        internal static readonly JSObject notExists = new JSObject() { valueType = JSObjectType.NotExist, attributes = JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.SystemObject };
+        internal static readonly JSObject notExists = new JSObject() { valueType = JSObjectType.NotExists, attributes = JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.SystemObject };
         [Hidden]
         internal static readonly JSObject Null = new JSObject() { valueType = JSObjectType.Object, oValue = null, assignCallback = ErrorAssignCallback, attributes = JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.SystemObject };
         [Hidden]
@@ -157,7 +157,7 @@ namespace NiL.JS.Core
                     case JSObjectType.Date:
                         return oValue;
                     case JSObjectType.Undefined:
-                    case JSObjectType.NotExistInObject:
+                    case JSObjectType.NotExistsInObject:
                     default:
                         return null;
                 }
@@ -214,13 +214,14 @@ namespace NiL.JS.Core
                 throw new JSException(new TypeError("Prototype may be only Object or null."));
             proto = proto.oValue as JSObject ?? proto;
             var members = args[1];
-            members.fields = (members.oValue as JSObject ?? members).fields;
             if (members.valueType >= JSObjectType.Object && members.oValue == null)
                 throw new JSException(new TypeError("Properties descriptor may be only Object."));
             var res = CreateObject();
             if (proto.valueType >= JSObjectType.Object && proto.oValue != null)
                 res.__proto__ = proto;
             if (members.valueType >= JSObjectType.Object)
+            {
+                members = (members.oValue as JSObject ?? members);
                 foreach (var member in members)
                 {
                     var desc = members[member];
@@ -321,6 +322,7 @@ namespace NiL.JS.Core
                     else if ((bool)writable) // На тот случай, когда в дескрипторе не указано ни значение, ни геттер/сеттер
                         obj.attributes &= ~JSObjectAttributesInternal.ReadOnly;
                 }
+            }
             return res;
         }
 
@@ -447,7 +449,11 @@ namespace NiL.JS.Core
             obj = target.DefineMember(memberName);
             if ((obj.attributes & JSObjectAttributesInternal.Argument) != 0 && (set.isExist || get.isExist))
             {
-                target.fields[memberName] = obj = obj.Clone() as JSObject;
+                var ti = 0;
+                if (target is Arguments && int.TryParse(memberName, NumberStyles.Integer, CultureInfo.InvariantCulture, out ti) && ti >= 0 && ti < 16)
+                    (target as Arguments)[ti] = obj = obj.CloneImpl();
+                else
+                    target.fields[memberName] = obj = obj.CloneImpl();
                 obj.attributes &= ~JSObjectAttributesInternal.Argument;
             }
             if ((obj.attributes & JSObjectAttributesInternal.SystemObject) != 0)
@@ -572,7 +578,11 @@ namespace NiL.JS.Core
 
                 if (obj.attributes != atrbts && (obj.attributes & JSObjectAttributesInternal.Argument) != 0)
                 {
-                    target.fields[memberName] = obj = obj.Clone() as JSObject;
+                    var ti = 0;
+                    if (target is Arguments && int.TryParse(memberName, NumberStyles.Integer, CultureInfo.InvariantCulture, out ti) && ti >= 0 && ti < 16)
+                        (target as Arguments)[ti] = obj = obj.CloneImpl();
+                    else
+                        target.fields[memberName] = obj = obj.CloneImpl();
                     obj.attributes &= ~JSObjectAttributesInternal.Argument;
                 }
             }
@@ -606,11 +616,15 @@ namespace NiL.JS.Core
                 foreach (var element in arr.data)
                     element.Value.attributes |= JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete;
             }
+            else if (obj is Arguments)
+            {
+                var arg = obj as Arguments;
+                for (var i = 0; i < 16; i++)
+                    arg[i].attributes |= JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete;
+            }
             if (obj.fields != null)
                 foreach (var f in obj.fields)
-                {
                     f.Value.attributes |= JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete;
-                }
             return obj;
         }
 
@@ -824,7 +838,7 @@ namespace NiL.JS.Core
                                 return notExists;
                             res = new JSObject()
                             {
-                                valueType = JSObjectType.NotExistInObject
+                                valueType = JSObjectType.NotExistsInObject
                             };
                             if (fields == null)
                                 fields = new Dictionary<string, JSObject>();
@@ -835,15 +849,15 @@ namespace NiL.JS.Core
                             if ((res.attributes & JSObjectAttributesInternal.ReadOnly) == 0
                                 && (res.valueType != JSObjectType.Property || own))
                             {
-                                var t = res.Clone() as JSObject;
+                                var t = res.CloneImpl();
                                 if (fields == null)
                                     fields = new Dictionary<string, JSObject>();
                                 fields[name] = t;
                                 res = t;
                             }
                         }
-                        if (res.valueType == JSObjectType.NotExist)
-                            res.valueType = JSObjectType.NotExistInObject;
+                        if (res.valueType == JSObjectType.NotExists)
+                            res.valueType = JSObjectType.NotExistsInObject;
                         return res;
                     }
             }
@@ -936,7 +950,7 @@ namespace NiL.JS.Core
                 return;
             if (value != null)
             {
-                this.valueType = (value.valueType & ~(JSObjectType.NotExistInObject | JSObjectType.NotExist)) | JSObjectType.Undefined;
+                this.valueType = (value.valueType & ~(JSObjectType.NotExistsInObject | JSObjectType.NotExists)) | JSObjectType.Undefined;
                 this.iValue = value.iValue;
                 if (valueType < JSObjectType.String)
                 {
@@ -967,6 +981,11 @@ namespace NiL.JS.Core
 
         [Hidden]
         public virtual object Clone()
+        {
+            return CloneImpl();
+        }
+
+        internal JSObject CloneImpl()
         {
             var res = new JSObject();
             res.Assign(this);
@@ -1141,7 +1160,7 @@ namespace NiL.JS.Core
             switch (name.valueType)
             {
                 case JSObjectType.Undefined:
-                case JSObjectType.NotExistInObject:
+                case JSObjectType.NotExistsInObject:
                     {
                         n = "undefined";
                         break;
@@ -1172,7 +1191,7 @@ namespace NiL.JS.Core
                             n = Tools.DoubleToString(pn.dValue);
                         break;
                     }
-                case JSObjectType.NotExist:
+                case JSObjectType.NotExists:
                     throw new InvalidOperationException("Variable not defined.");
                 default:
                     throw new NotImplementedException("Object.hasOwnProperty. Invalid Value Type");
@@ -1253,6 +1272,18 @@ namespace NiL.JS.Core
                 throw new JSException(new TypeError("Object.seal called on null."));
             obj.attributes |= JSObjectAttributesInternal.Immutable;
             (obj.oValue as JSObject ?? obj).attributes |= JSObjectAttributesInternal.Immutable;
+            if (obj is BaseTypes.Array)
+            {
+                var arr = obj as BaseTypes.Array;
+                foreach (var element in arr.data)
+                    element.Value.attributes |= JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.DoNotDelete;
+            }
+            else if (obj is Arguments)
+            {
+                var arg = obj as Arguments;
+                for (var i = 0; i < 16; i++)
+                    arg[i].attributes |= JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.DoNotDelete;
+            }
             if (obj.fields != null)
                 foreach (var f in obj.fields)
                     f.Value.attributes |= JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.DoNotDelete;
@@ -1283,7 +1314,17 @@ namespace NiL.JS.Core
                         return false;
                 }
             }
-            else if (obj.fields != null)
+            else if (obj is Arguments)
+            {
+                var arg = obj as Arguments;
+                for (var i = 0; i < 16; i++)
+                {
+                    if ((arg[i].attributes & JSObjectAttributesInternal.NotConfigurable) == 0
+                            || (arg[i].valueType != JSObjectType.Property && (arg[i].attributes & JSObjectAttributesInternal.ReadOnly) == 0))
+                        return false;
+                }
+            }
+            if (obj.fields != null)
                 foreach (var f in obj.fields)
                 {
                     if ((f.Value.attributes & JSObjectAttributesInternal.NotConfigurable) == 0
@@ -1443,8 +1484,8 @@ namespace NiL.JS.Core
                     return obj.oValue != null;
                 case JSObjectType.String:
                     return !string.IsNullOrEmpty(obj.oValue as string);
-                case JSObjectType.NotExist:
-                case JSObjectType.NotExistInObject:
+                case JSObjectType.NotExists:
+                case JSObjectType.NotExistsInObject:
                 case JSObjectType.Undefined:
                     return false;
                 default:

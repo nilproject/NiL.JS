@@ -17,7 +17,7 @@ namespace NiL.JS.Expressions
         {
             var fn = first.Invoke(context);
             var oassc = fn.assignCallback;
-            fn.assignCallback = (sender) => { fn = fn.Clone() as JSObject; };
+            fn.assignCallback = (sender) => { fn = fn.CloneImpl(); };
             try
             {
                 var source = second.Invoke(context);

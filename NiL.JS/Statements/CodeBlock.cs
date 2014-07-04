@@ -289,10 +289,6 @@ namespace NiL.JS.Statements
             {
                 //bool needRemove = body[i] is FunctionStatement;
                 Parser.Optimize(ref body[i], depth < 0 ? 2 : Math.Max(1, depth), fdepth, variables, this.strict);
-#if DEBUG
-                if (body[i] != null)
-                    body[i].ToString();
-#endif
                 //if (needRemove)
                 //    body[i] = null;
             }

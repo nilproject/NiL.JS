@@ -168,7 +168,7 @@ namespace NiL.JS.Core.BaseTypes
                             goto case JSObjectType.Double;
                         break;
                     }
-                case JSObjectType.NotExist:
+                case JSObjectType.NotExists:
                     throw new InvalidOperationException("Variable not defined.");
                 default:
                     return Tools.DoubleToString(res);
@@ -232,7 +232,7 @@ namespace NiL.JS.Core.BaseTypes
                             goto case JSObjectType.Double;
                         break;
                     }
-                case JSObjectType.NotExist:
+                case JSObjectType.NotExists:
                     throw new InvalidOperationException("Variable not defined.");
                 default:
                     return res.ToString("e", System.Globalization.CultureInfo.InvariantCulture);
@@ -267,48 +267,7 @@ namespace NiL.JS.Core.BaseTypes
                 default:
                     throw new InvalidOperationException();
             }
-            int dgts = 0;
-            switch ((digits ?? JSObject.undefined).valueType)
-            {
-                case JSObjectType.Int:
-                    {
-                        dgts = digits.iValue;
-                        break;
-                    }
-                case JSObjectType.Double:
-                    {
-                        if (double.IsNaN(digits.dValue))
-                            dgts = 0;
-                        else if (double.IsInfinity(digits.dValue))
-                            throw new JSException(TypeProxy.Proxy(new RangeError("toFixed() digits argument must be between 0 and 20")));
-                        else
-                            dgts = (int)digits.dValue;
-                        break;
-                    }
-                case JSObjectType.String:
-                    {
-                        double d = 0;
-                        int i = 0;
-                        if (Tools.ParseNumber(digits.oValue.ToString(), i, out d, Tools.ParseNumberOptions.Default))
-                            dgts = (int)d;
-                        break;
-                    }
-                case JSObjectType.Object:
-                    {
-                        var d = digits[0].ToPrimitiveValue_Value_String();
-                        if (d.valueType == JSObjectType.String)
-                            goto case JSObjectType.String;
-                        if (d.valueType == JSObjectType.Int)
-                            goto case JSObjectType.Int;
-                        if (d.valueType == JSObjectType.Double)
-                            goto case JSObjectType.Double;
-                        break;
-                    }
-                case JSObjectType.NotExist:
-                    throw new InvalidOperationException("Variable not defined.");
-                default:
-                    return ((int)res).ToString(CultureInfo.InvariantCulture);
-            }
+            int dgts = Tools.JSObjectToInt32(digits[0]);
             if (System.Math.Abs(dValue) >= 1e+21)
                 return dValue.ToString("0.####e+0", System.Globalization.CultureInfo.InvariantCulture);
             if (dgts < 0 || dgts > 20)
@@ -351,7 +310,7 @@ namespace NiL.JS.Core.BaseTypes
                             r = (int)ar.dValue;
                             break;
                         }
-                    case JSObjectType.NotExistInObject:
+                    case JSObjectType.NotExistsInObject:
                     case JSObjectType.Undefined:
                         {
                             r = 10;

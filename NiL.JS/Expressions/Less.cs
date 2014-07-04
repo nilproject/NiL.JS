@@ -66,11 +66,11 @@ namespace NiL.JS.Expressions
                                     throw new NotImplementedException();
                                 }
                             case JSObjectType.Undefined:
-                            case JSObjectType.NotExistInObject:
+                            case JSObjectType.NotExistsInObject:
                                 {
                                     return this is MoreOrEqual ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
                                 }
-                            case JSObjectType.NotExist:
+                            case JSObjectType.NotExists:
                                 throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable not defined.")));
                             default:
                                 throw new NotImplementedException();
@@ -107,7 +107,7 @@ namespace NiL.JS.Expressions
                                             return this is MoreOrEqual ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
                                     }
                                 case JSObjectType.Undefined:
-                                case JSObjectType.NotExistInObject:
+                                case JSObjectType.NotExistsInObject:
                                     {
                                         return this is MoreOrEqual ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
                                     }
@@ -130,7 +130,7 @@ namespace NiL.JS.Expressions
                                         }
                                         throw new NotImplementedException();
                                     }
-                                case JSObjectType.NotExist:
+                                case JSObjectType.NotExists:
                                     throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable not defined.")));
                                 default:
                                     throw new NotImplementedException();
@@ -203,17 +203,17 @@ namespace NiL.JS.Expressions
                                                 else
                                                     return this is MoreOrEqual ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
                                             }
-                                        case JSObjectType.NotExist:
+                                        case JSObjectType.NotExists:
                                             throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable not defined.")));
                                         default: throw new NotImplementedException();
                                     }
                                 }
                             case JSObjectType.Undefined:
-                            case JSObjectType.NotExistInObject:
+                            case JSObjectType.NotExistsInObject:
                                 {
                                     return this is MoreOrEqual ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
                                 }
-                            case JSObjectType.NotExist:
+                            case JSObjectType.NotExists:
                                 throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable not defined.")));
                             default: throw new NotImplementedException();
                         }
@@ -239,12 +239,12 @@ namespace NiL.JS.Expressions
                         throw new NotImplementedException();
                     }
                 case JSObjectType.Undefined:
-                case JSObjectType.NotExistInObject:
+                case JSObjectType.NotExistsInObject:
                     {
                         second.Invoke(context);
                         return this is MoreOrEqual ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
                     }
-                case JSObjectType.NotExist:
+                case JSObjectType.NotExists:
                     throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable not defined.")));
                 default: throw new NotImplementedException();
             }

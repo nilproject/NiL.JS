@@ -37,8 +37,6 @@ namespace NiL.JS.Expressions
             {
                 length = this.arguments.Length
             };
-            if (arguments.length > 16)
-                arguments.fields = new Dictionary<string, JSObject>();
             for (int i = 0; i < arguments.length; i++)//for (int i = field.iValue; i-- > 0; )
             {
                 context.objectSource = null;
@@ -47,15 +45,12 @@ namespace NiL.JS.Expressions
                 if (a == null)
                     System.Diagnostics.Debugger.Break();
 #endif
-                if (i < 16)
-                    arguments[i] = a;
-                else
-                    arguments.fields[i.ToString(CultureInfo.InvariantCulture)] = a;
+                arguments[i] = a;
             }
             context.objectSource = null;
 
             // Аргументы должны быть вычислены даже если функция не существует.
-            if (temp.valueType == JSObjectType.NotExist)
+            if (temp.valueType == JSObjectType.NotExists)
             {
                 if (context.thisBind == null)
                     throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable not defined.")));
