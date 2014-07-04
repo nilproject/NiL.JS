@@ -104,7 +104,7 @@ namespace NiL.JS.Statements
 
         private JSObject impl0(Context context)
         {
-            JSObject res = JSObject.notExist;
+            JSObject res = JSObject.notExists;
             for (; ; )
             {
 #if DEV
@@ -118,7 +118,7 @@ namespace NiL.JS.Statements
                     if (context.abort < AbortType.Return && ((context.abortInfo == null) || (labels.IndexOf(context.abortInfo.oValue as string) != -1)))
                     {
                         context.abort = AbortType.None;
-                        context.abortInfo = JSObject.notExist;
+                        context.abortInfo = JSObject.notExists;
                     }
                     if (_break)
                         return res;
@@ -142,7 +142,7 @@ namespace NiL.JS.Statements
                     if (context.abort < AbortType.Return && ((context.abortInfo == null) || (labels.IndexOf(context.abortInfo.oValue as string) != -1)))
                     {
                         context.abort = AbortType.None;
-                        context.abortInfo = null;
+                        context.abortInfo = JSObject.notExists;
                     }
                     if (_break)
                         return res;
@@ -175,7 +175,7 @@ namespace NiL.JS.Statements
                     if (context.abort < AbortType.Return && ((context.abortInfo == null) || (labels.IndexOf(context.abortInfo.oValue as string) != -1)))
                     {
                         context.abort = AbortType.None;
-                        context.abortInfo = null;
+                        context.abortInfo = JSObject.notExists;
                     }
                     if (_break)
                         return res;
@@ -208,7 +208,7 @@ namespace NiL.JS.Statements
                     if (context.abort < AbortType.Return && ((context.abortInfo == null) || (labels.IndexOf(context.abortInfo.oValue as string) != -1)))
                     {
                         context.abort = AbortType.None;
-                        context.abortInfo = null;
+                        context.abortInfo = JSObject.notExists;
                     }
                     if (_break)
                         return res;

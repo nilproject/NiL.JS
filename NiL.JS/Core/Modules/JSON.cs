@@ -186,7 +186,7 @@ namespace NiL.JS.Core.Modules
         [Hidden]
         public static string stringify(JSObject obj, Function replacer, string space)
         {
-            return stringifyImpl("", obj, replacer, space, new List<JSObject>(), new JSObject(true) { oValue = Arguments.Instance, valueType = JSObjectType.Object });
+            return stringifyImpl("", obj, replacer, space, new List<JSObject>(), new JSObject(true) { oValue = ArgumentsDummy.Instance, valueType = JSObjectType.Object });
         }
 
         private static string stringifyImpl(string key, JSObject obj, Function replacer, string space, List<JSObject> processed, JSObject args)

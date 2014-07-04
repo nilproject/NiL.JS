@@ -86,7 +86,7 @@ namespace NiL.JS.Expressions
                 case JSObjectType.NotExistInObject:
                     {
                         temp = second.Invoke(context);
-                        return temp.valueType == JSObjectType.Undefined || temp.valueType == JSObjectType.NotExistInObject;
+                        return !temp.isDefinded;
                     }
                 case JSObjectType.Property:
                     return false;

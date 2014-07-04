@@ -135,7 +135,7 @@ else
 if (a != a)
     console.log('if(a!=a) fail');
 else
-    console.log('if(a==a) pass');
+    console.log('if(a!=a) pass');
 if (a === a)
     console.log('if(a===a) pass');
 else
@@ -144,3 +144,8 @@ if (a !== a)
     console.log('if(a!==a) fail');
 else
     console.log('if(a!==a) pass');
+
+function func(x) {
+    return x + 1;
+}
+(function (x, y) { if (x == y) console.log("a(1) == a(2)"); })(func(1), func(2));

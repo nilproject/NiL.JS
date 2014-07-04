@@ -33,19 +33,13 @@ namespace NiL.JS.Expressions
             var temp = first.Invoke(context);
             newThisBind = context.objectSource;
 
-            JSObject arguments = new JSObject(false)
-                {
-                    valueType = JSObjectType.Object,
-                    oValue = NiL.JS.Core.Arguments.Instance,
-                    attributes = JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum
-                };
-            JSObject field = new JSObject();
-            field.valueType = JSObjectType.Int;
-            field.iValue = this.arguments.Length;
-            field.attributes = JSObjectAttributesInternal.DoNotEnum;
-            arguments.fields = new Dictionary<string, JSObject>(this.arguments.Length + 3);
-            arguments.fields["length"] = field;
-            for (int i = 0; i < field.iValue; i++)//for (int i = field.iValue; i-- > 0; )
+            Arguments arguments = new Arguments()
+            {
+                length = this.arguments.Length
+            };
+            if (arguments.length > 16)
+                arguments.fields = new Dictionary<string, JSObject>();
+            for (int i = 0; i < arguments.length; i++)//for (int i = field.iValue; i-- > 0; )
             {
                 context.objectSource = null;
                 var a = this.arguments[i].Invoke(context);
@@ -53,7 +47,10 @@ namespace NiL.JS.Expressions
                 if (a == null)
                     System.Diagnostics.Debugger.Break();
 #endif
-                arguments.fields[i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture)] = a;
+                if (i < 16)
+                    arguments[i] = a;
+                else
+                    arguments.fields[i.ToString(CultureInfo.InvariantCulture)] = a;
             }
             context.objectSource = null;
 

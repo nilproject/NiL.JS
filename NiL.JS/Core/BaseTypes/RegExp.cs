@@ -164,7 +164,7 @@ namespace NiL.JS.Core.BaseTypes
             }
             set
             {
-                lIndex = value.oValue is Arguments ? value.GetMember("0") : value;
+                lIndex = value.oValue is ArgumentsDummy ? value.GetMember("0") : value;
             }
         }
 

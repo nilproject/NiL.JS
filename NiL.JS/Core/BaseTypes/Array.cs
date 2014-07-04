@@ -212,7 +212,7 @@ namespace NiL.JS.Core.BaseTypes
             if (f == null)
                 throw new JSException(new TypeError("Callback argument is not a function."));
             var tb = args.Length > 1 ? args[1] : null;
-            var ao = new JSObject() { oValue = Arguments.Instance, valueType = JSObjectType.Object };
+            var ao = new JSObject() { oValue = ArgumentsDummy.Instance, valueType = JSObjectType.Object };
             ao["length"] = 3;
             ao["0"] = undefined;
             ao["1"] = undefined;
@@ -259,7 +259,7 @@ namespace NiL.JS.Core.BaseTypes
             if (f == null)
                 throw new JSException(new TypeError("Callback argument is not a function."));
             var tb = args.Length > 1 ? args[1] : null;
-            var ao = new JSObject() { oValue = Arguments.Instance, valueType = JSObjectType.Object };
+            var ao = new JSObject() { oValue = ArgumentsDummy.Instance, valueType = JSObjectType.Object };
             ao["length"] = 3;
             ao["0"] = undefined;
             ao["1"] = undefined;
@@ -306,7 +306,7 @@ namespace NiL.JS.Core.BaseTypes
             if (f == null)
                 throw new JSException(new TypeError("Callback argument is not a function."));
             var tb = args.Length > 1 ? args[1] : null;
-            var ao = new JSObject() { oValue = Arguments.Instance, valueType = JSObjectType.Object };
+            var ao = new JSObject() { oValue = ArgumentsDummy.Instance, valueType = JSObjectType.Object };
             ao["length"] = 3;
             ao["0"] = undefined;
             ao["1"] = undefined;
@@ -350,7 +350,7 @@ namespace NiL.JS.Core.BaseTypes
             if (f == null)
                 throw new JSException(new TypeError("Callback argument is not a function."));
             var tb = args.Length > 1 ? args[1] : null;
-            var ao = new JSObject() { oValue = Arguments.Instance, valueType = JSObjectType.Object };
+            var ao = new JSObject() { oValue = ArgumentsDummy.Instance, valueType = JSObjectType.Object };
             ao["length"] = 3;
             ao["0"] = undefined;
             ao["1"] = undefined;
@@ -396,7 +396,7 @@ namespace NiL.JS.Core.BaseTypes
             if (f == null)
                 throw new JSException(new TypeError("Callback argument is not a function."));
             var tb = args.Length > 1 ? args[1] : null;
-            var ao = new JSObject() { oValue = Arguments.Instance, valueType = JSObjectType.Object };
+            var ao = new JSObject() { oValue = ArgumentsDummy.Instance, valueType = JSObjectType.Object };
             ao["length"] = 3;
             ao["1"] = 0;
             ao["2"] = this;
@@ -931,8 +931,7 @@ namespace NiL.JS.Core.BaseTypes
                                 {
                                     if (own)
                                         throw new JSException(new TypeError("Cannot add element in fixed size array"));
-                                    notExist.valueType = JSObjectType.NotExistInObject;
-                                    return notExist;
+                                    return notExists;
                                 }
                                 setLength(index + 1);
                                 return data[index] = new JSObject() { valueType = JSObjectType.NotExistInObject };
@@ -957,9 +956,7 @@ namespace NiL.JS.Core.BaseTypes
                             }
                             else
                             {
-                                var t = element ?? notExist;
-                                if (t != null && t.valueType == JSObjectType.NotExist)
-                                    t.valueType = JSObjectType.NotExistInObject;
+                                var t = element ?? notExists;
                                 return t;
                             }
                         }

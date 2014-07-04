@@ -34,7 +34,7 @@ namespace NiL.JS.Core.BaseTypes
             public RT Invoke<RT>()
             {
                 var eargs = new JSObject();
-                eargs.oValue = Arguments.Instance;
+                eargs.oValue = ArgumentsDummy.Instance;
                 eargs.valueType = JSObjectType.Object;
                 eargs.DefineMember("length").Assign(0);
                 return (RT)function.Invoke(eargs).Value;
@@ -43,7 +43,7 @@ namespace NiL.JS.Core.BaseTypes
             public RT Invoke<RT, T1>(T1 a1)
             {
                 var eargs = new JSObject();
-                eargs.oValue = Arguments.Instance;
+                eargs.oValue = ArgumentsDummy.Instance;
                 eargs.valueType = JSObjectType.Object;
                 eargs.DefineMember("length").Assign(2);
                 eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
@@ -53,7 +53,7 @@ namespace NiL.JS.Core.BaseTypes
             public RT Invoke<RT, T1, T2>(T1 a1, T2 a2)
             {
                 var eargs = new JSObject();
-                eargs.oValue = Arguments.Instance;
+                eargs.oValue = ArgumentsDummy.Instance;
                 eargs.valueType = JSObjectType.Object;
                 eargs.DefineMember("length").Assign(2);
                 eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
@@ -64,7 +64,7 @@ namespace NiL.JS.Core.BaseTypes
             public RT Invoke<RT, T1, T2, T3>(T1 a1, T2 a2, T3 a3)
             {
                 var eargs = new JSObject();
-                eargs.oValue = Arguments.Instance;
+                eargs.oValue = ArgumentsDummy.Instance;
                 eargs.valueType = JSObjectType.Object;
                 eargs.DefineMember("length").Assign(3);
                 eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
@@ -76,7 +76,7 @@ namespace NiL.JS.Core.BaseTypes
             public RT Invoke<RT, T1, T2, T3, T4>(T1 a1, T2 a2, T3 a3, T4 a4)
             {
                 var eargs = new JSObject();
-                eargs.oValue = Arguments.Instance;
+                eargs.oValue = ArgumentsDummy.Instance;
                 eargs.valueType = JSObjectType.Object;
                 eargs.DefineMember("length").Assign(4);
                 eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
@@ -89,7 +89,7 @@ namespace NiL.JS.Core.BaseTypes
             public RT Invoke<RT, T1, T2, T3, T4, T5>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5)
             {
                 var eargs = new JSObject();
-                eargs.oValue = Arguments.Instance;
+                eargs.oValue = ArgumentsDummy.Instance;
                 eargs.valueType = JSObjectType.Object;
                 eargs.DefineMember("length").Assign(5);
                 eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
@@ -103,7 +103,7 @@ namespace NiL.JS.Core.BaseTypes
             public RT Invoke<RT, T1, T2, T3, T4, T5, T6>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6)
             {
                 var eargs = new JSObject();
-                eargs.oValue = Arguments.Instance;
+                eargs.oValue = ArgumentsDummy.Instance;
                 eargs.valueType = JSObjectType.Object;
                 eargs.DefineMember("length").Assign(6);
                 eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
@@ -118,7 +118,7 @@ namespace NiL.JS.Core.BaseTypes
             public RT Invoke<RT, T1, T2, T3, T4, T5, T6, T7>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7)
             {
                 var eargs = new JSObject();
-                eargs.oValue = Arguments.Instance;
+                eargs.oValue = ArgumentsDummy.Instance;
                 eargs.valueType = JSObjectType.Object;
                 eargs.DefineMember("length").Assign(7);
                 eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
@@ -134,7 +134,7 @@ namespace NiL.JS.Core.BaseTypes
             public RT Invoke<RT, T1, T2, T3, T4, T5, T6, T7, T8>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8)
             {
                 var eargs = new JSObject();
-                eargs.oValue = Arguments.Instance;
+                eargs.oValue = ArgumentsDummy.Instance;
                 eargs.valueType = JSObjectType.Object;
                 eargs.DefineMember("length").Assign(8);
                 eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
@@ -151,7 +151,7 @@ namespace NiL.JS.Core.BaseTypes
             public RT Invoke<RT, T1, T2, T3, T4, T5, T6, T7, T8, T9>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9)
             {
                 var eargs = new JSObject();
-                eargs.oValue = Arguments.Instance;
+                eargs.oValue = ArgumentsDummy.Instance;
                 eargs.valueType = JSObjectType.Object;
                 eargs.DefineMember("length").Assign(9);
                 eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
@@ -169,7 +169,7 @@ namespace NiL.JS.Core.BaseTypes
             public RT Invoke<RT, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10)
             {
                 var eargs = new JSObject();
-                eargs.oValue = Arguments.Instance;
+                eargs.oValue = ArgumentsDummy.Instance;
                 eargs.valueType = JSObjectType.Object;
                 eargs.DefineMember("length").Assign(10);
                 eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
@@ -188,7 +188,7 @@ namespace NiL.JS.Core.BaseTypes
             public RT Invoke<RT, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10, T11 a11)
             {
                 var eargs = new JSObject();
-                eargs.oValue = Arguments.Instance;
+                eargs.oValue = ArgumentsDummy.Instance;
                 eargs.valueType = JSObjectType.Object;
                 eargs.DefineMember("length").Assign(11);
                 eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
@@ -208,7 +208,7 @@ namespace NiL.JS.Core.BaseTypes
             public RT Invoke<RT, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10, T11 a11, T12 a12)
             {
                 var eargs = new JSObject();
-                eargs.oValue = Arguments.Instance;
+                eargs.oValue = ArgumentsDummy.Instance;
                 eargs.valueType = JSObjectType.Object;
                 eargs.DefineMember("length").Assign(12);
                 eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
@@ -229,7 +229,7 @@ namespace NiL.JS.Core.BaseTypes
             public RT Invoke<RT, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10, T11 a11, T12 a12, T13 a13)
             {
                 var eargs = new JSObject();
-                eargs.oValue = Arguments.Instance;
+                eargs.oValue = ArgumentsDummy.Instance;
                 eargs.valueType = JSObjectType.Object;
                 eargs.DefineMember("length").Assign(13);
                 eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
@@ -251,7 +251,7 @@ namespace NiL.JS.Core.BaseTypes
             public RT Invoke<RT, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10, T11 a11, T12 a12, T13 a13, T14 a14)
             {
                 var eargs = new JSObject();
-                eargs.oValue = Arguments.Instance;
+                eargs.oValue = ArgumentsDummy.Instance;
                 eargs.valueType = JSObjectType.Object;
                 eargs.DefineMember("length").Assign(14);
                 eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
@@ -274,7 +274,7 @@ namespace NiL.JS.Core.BaseTypes
             public RT Invoke<RT, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10, T11 a11, T12 a12, T13 a13, T14 a14, T15 a15)
             {
                 var eargs = new JSObject();
-                eargs.oValue = Arguments.Instance;
+                eargs.oValue = ArgumentsDummy.Instance;
                 eargs.valueType = JSObjectType.Object;
                 eargs.DefineMember("length").Assign(15);
                 eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
@@ -298,7 +298,7 @@ namespace NiL.JS.Core.BaseTypes
             public RT Invoke<RT, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10, T11 a11, T12 a12, T13 a13, T14 a14, T15 a15, T16 a16)
             {
                 var eargs = new JSObject();
-                eargs.oValue = Arguments.Instance;
+                eargs.oValue = ArgumentsDummy.Instance;
                 eargs.valueType = JSObjectType.Object;
                 eargs.DefineMember("length").Assign(16);
                 eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
@@ -323,7 +323,7 @@ namespace NiL.JS.Core.BaseTypes
             public void Invoke()
             {
                 var eargs = new JSObject();
-                eargs.oValue = Arguments.Instance;
+                eargs.oValue = ArgumentsDummy.Instance;
                 eargs.valueType = JSObjectType.Object;
                 eargs.DefineMember("length").Assign(0);
                 function.Invoke(eargs);
@@ -332,7 +332,7 @@ namespace NiL.JS.Core.BaseTypes
             public void Invoke<T1>(T1 a1)
             {
                 var eargs = new JSObject();
-                eargs.oValue = Arguments.Instance;
+                eargs.oValue = ArgumentsDummy.Instance;
                 eargs.valueType = JSObjectType.Object;
                 eargs.DefineMember("length").Assign(2);
                 eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
@@ -342,7 +342,7 @@ namespace NiL.JS.Core.BaseTypes
             public void Invoke<T1, T2>(T1 a1, T2 a2)
             {
                 var eargs = new JSObject();
-                eargs.oValue = Arguments.Instance;
+                eargs.oValue = ArgumentsDummy.Instance;
                 eargs.valueType = JSObjectType.Object;
                 eargs.DefineMember("length").Assign(2);
                 eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
@@ -353,7 +353,7 @@ namespace NiL.JS.Core.BaseTypes
             public void Invoke<T1, T2, T3>(T1 a1, T2 a2, T3 a3)
             {
                 var eargs = new JSObject();
-                eargs.oValue = Arguments.Instance;
+                eargs.oValue = ArgumentsDummy.Instance;
                 eargs.valueType = JSObjectType.Object;
                 eargs.DefineMember("length").Assign(3);
                 eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
@@ -365,7 +365,7 @@ namespace NiL.JS.Core.BaseTypes
             public void Invoke<T1, T2, T3, T4>(T1 a1, T2 a2, T3 a3, T4 a4)
             {
                 var eargs = new JSObject();
-                eargs.oValue = Arguments.Instance;
+                eargs.oValue = ArgumentsDummy.Instance;
                 eargs.valueType = JSObjectType.Object;
                 eargs.DefineMember("length").Assign(4);
                 eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
@@ -378,7 +378,7 @@ namespace NiL.JS.Core.BaseTypes
             public void Invoke<T1, T2, T3, T4, T5>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5)
             {
                 var eargs = new JSObject();
-                eargs.oValue = Arguments.Instance;
+                eargs.oValue = ArgumentsDummy.Instance;
                 eargs.valueType = JSObjectType.Object;
                 eargs.DefineMember("length").Assign(5);
                 eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
@@ -392,7 +392,7 @@ namespace NiL.JS.Core.BaseTypes
             public void Invoke<T1, T2, T3, T4, T5, T6>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6)
             {
                 var eargs = new JSObject();
-                eargs.oValue = Arguments.Instance;
+                eargs.oValue = ArgumentsDummy.Instance;
                 eargs.valueType = JSObjectType.Object;
                 eargs.DefineMember("length").Assign(6);
                 eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
@@ -407,7 +407,7 @@ namespace NiL.JS.Core.BaseTypes
             public void Invoke<T1, T2, T3, T4, T5, T6, T7>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7)
             {
                 var eargs = new JSObject();
-                eargs.oValue = Arguments.Instance;
+                eargs.oValue = ArgumentsDummy.Instance;
                 eargs.valueType = JSObjectType.Object;
                 eargs.DefineMember("length").Assign(7);
                 eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
@@ -423,7 +423,7 @@ namespace NiL.JS.Core.BaseTypes
             public void Invoke<T1, T2, T3, T4, T5, T6, T7, T8>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8)
             {
                 var eargs = new JSObject();
-                eargs.oValue = Arguments.Instance;
+                eargs.oValue = ArgumentsDummy.Instance;
                 eargs.valueType = JSObjectType.Object;
                 eargs.DefineMember("length").Assign(8);
                 eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
@@ -440,7 +440,7 @@ namespace NiL.JS.Core.BaseTypes
             public void Invoke<T1, T2, T3, T4, T5, T6, T7, T8, T9>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9)
             {
                 var eargs = new JSObject();
-                eargs.oValue = Arguments.Instance;
+                eargs.oValue = ArgumentsDummy.Instance;
                 eargs.valueType = JSObjectType.Object;
                 eargs.DefineMember("length").Assign(9);
                 eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
@@ -458,7 +458,7 @@ namespace NiL.JS.Core.BaseTypes
             public void Invoke<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10)
             {
                 var eargs = new JSObject();
-                eargs.oValue = Arguments.Instance;
+                eargs.oValue = ArgumentsDummy.Instance;
                 eargs.valueType = JSObjectType.Object;
                 eargs.DefineMember("length").Assign(10);
                 eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
@@ -477,7 +477,7 @@ namespace NiL.JS.Core.BaseTypes
             public void Invoke<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10, T11 a11)
             {
                 var eargs = new JSObject();
-                eargs.oValue = Arguments.Instance;
+                eargs.oValue = ArgumentsDummy.Instance;
                 eargs.valueType = JSObjectType.Object;
                 eargs.DefineMember("length").Assign(11);
                 eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
@@ -497,7 +497,7 @@ namespace NiL.JS.Core.BaseTypes
             public void Invoke<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10, T11 a11, T12 a12)
             {
                 var eargs = new JSObject();
-                eargs.oValue = Arguments.Instance;
+                eargs.oValue = ArgumentsDummy.Instance;
                 eargs.valueType = JSObjectType.Object;
                 eargs.DefineMember("length").Assign(12);
                 eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
@@ -518,7 +518,7 @@ namespace NiL.JS.Core.BaseTypes
             public void Invoke<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10, T11 a11, T12 a12, T13 a13)
             {
                 var eargs = new JSObject();
-                eargs.oValue = Arguments.Instance;
+                eargs.oValue = ArgumentsDummy.Instance;
                 eargs.valueType = JSObjectType.Object;
                 eargs.DefineMember("length").Assign(13);
                 eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
@@ -540,7 +540,7 @@ namespace NiL.JS.Core.BaseTypes
             public void Invoke<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10, T11 a11, T12 a12, T13 a13, T14 a14)
             {
                 var eargs = new JSObject();
-                eargs.oValue = Arguments.Instance;
+                eargs.oValue = ArgumentsDummy.Instance;
                 eargs.valueType = JSObjectType.Object;
                 eargs.DefineMember("length").Assign(14);
                 eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
@@ -563,7 +563,7 @@ namespace NiL.JS.Core.BaseTypes
             public void Invoke<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10, T11 a11, T12 a12, T13 a13, T14 a14, T15 a15)
             {
                 var eargs = new JSObject();
-                eargs.oValue = Arguments.Instance;
+                eargs.oValue = ArgumentsDummy.Instance;
                 eargs.valueType = JSObjectType.Object;
                 eargs.DefineMember("length").Assign(15);
                 eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
@@ -587,7 +587,7 @@ namespace NiL.JS.Core.BaseTypes
             public void Invoke<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10, T11 a11, T12 a12, T13 a13, T14 a14, T15 a15, T16 a16)
             {
                 var eargs = new JSObject();
-                eargs.oValue = Arguments.Instance;
+                eargs.oValue = ArgumentsDummy.Instance;
                 eargs.valueType = JSObjectType.Object;
                 eargs.DefineMember("length").Assign(16);
                 eargs.DefineMember("0").Assign(TypeProxy.Proxy(a1));
@@ -811,8 +811,8 @@ namespace NiL.JS.Core.BaseTypes
             var body = creator.body;
             if (body == null || body.Body.Length == 0)
             {
-                notExist.valueType = JSObjectType.NotExistInObject;
-                return notExist;
+                notExists.valueType = JSObjectType.NotExistInObject;
+                return notExists;
             }
             try
             {
@@ -837,53 +837,83 @@ namespace NiL.JS.Core.BaseTypes
                         thisBind = internalContext.Root.thisBind;
                 }
 
-                internalContext.thisBind = thisBind;
+                var aasa = args as Arguments;
                 if (args == null)
-                {
-                    args = new JSObject(true) { valueType = JSObjectType.Object };
-                    args.oValue = Arguments.Instance;
-                    args.DefineMember("length").Assign(0);
-                }
+                    args = aasa = new Arguments();
                 _arguments = args;
-                if (body.strict)
+                int i = 0;
+                if (aasa != null)
                 {
-                    args.attributes |= JSObjectAttributesInternal.ReadOnly;
-                    args.fields["callee"] = propertiesDummySM;
-                    args.fields["caller"] = propertiesDummySM;
+                    var ca = internalContext.DefineVariable("arguments");
+                    ca.Assign(aasa);
+                    if (body.strict)
+                    {
+                        ca.attributes |= aasa.attributes | JSObjectAttributesInternal.ReadOnly;
+                        aasa.callee = propertiesDummySM;
+                        aasa.caller = propertiesDummySM;
+                    }
+                    else
+                    {
+                        var callee = this.Clone() as JSObject;
+                        callee.attributes = JSObjectAttributesInternal.DoNotEnum;
+                        aasa.callee = callee;
+                    }
+                    int min = System.Math.Min(aasa.length, creator.parameters.Length);
+                    for (; i < min; i++)
+                    {
+                        JSObject t = aasa[i];
+                        aasa[i] = t = t.Clone() as JSObject;
+                        t.attributes |= JSObjectAttributesInternal.Argument;
+                        if (body.strict)
+                            t = t.Clone() as JSObject;
+                        internalContext.fields[creator.parameters[i].Name] = t;
+                    }
+                    for (; i < aasa.length; i++)
+                    {
+                        var t = aasa[i];
+                        aasa[i] = t = t.Clone() as JSObject;
+                        t.attributes |= JSObjectAttributesInternal.Argument;
+                    }
                 }
                 else
                 {
-                    var callee = this.Clone() as JSObject;
-                    callee.attributes = JSObjectAttributesInternal.DoNotEnum;
-                    args.fields["callee"] = callee;
-                }
-                internalContext.fields["arguments"] = args;
-                if (creator.type == FunctionType.Function && creator.name != "" && creator.name != null)
-                    internalContext.fields[creator.name] = this;
-                int i = 0;
-                JSObject argsLength = args.fields["length"];
-                if (argsLength.valueType == JSObjectType.Property)
-                    argsLength = (argsLength.oValue as Function[])[1].Invoke(args, null);
-                int min = System.Math.Min(argsLength.iValue, creator.parameters.Length);
-                for (; i < min; i++)
-                {
-                    var n = i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture);
-                    var t = args.GetMember(n);
-                    args.fields[n] = t = t.Clone() as JSObject;
-                    t.attributes |= JSObjectAttributesInternal.Argument;
+                    internalContext.fields["arguments"] = args;
                     if (body.strict)
-                        t = t.Clone() as JSObject;
-                    internalContext.fields[creator.parameters[i].Name] = t;
+                    {
+                        args.attributes |= JSObjectAttributesInternal.ReadOnly;
+                        args.fields["callee"] = propertiesDummySM;
+                        args.fields["caller"] = propertiesDummySM;
+                    }
+                    else
+                    {
+                        var callee = this.Clone() as JSObject;
+                        callee.attributes = JSObjectAttributesInternal.DoNotEnum;
+                        args.fields["callee"] = callee;
+                    }
+                    JSObject argsLength = args["length"];
+                    if (argsLength.valueType == JSObjectType.Property)
+                        argsLength = (argsLength.oValue as Function[])[1].Invoke(args, null);
+                    int min = System.Math.Min(argsLength.iValue, creator.parameters.Length);
+                    for (; i < min; i++)
+                    {
+                        var n = i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture);
+                        var t = args.GetMember(n);
+                        args.fields[n] = t = t.Clone() as JSObject;
+                        t.attributes |= JSObjectAttributesInternal.Argument;
+                        if (body.strict)
+                            t = t.Clone() as JSObject;
+                        internalContext.fields[creator.parameters[i].Name] = t;
+                    }
+                    for (; i < argsLength.iValue; i++)
+                    {
+                        var n = i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture);
+                        var t = args[n];
+                        args.fields[n] = t = t.Clone() as JSObject;
+                        t.attributes |= JSObjectAttributesInternal.Argument;
+                    }
                 }
                 for (; i < creator.parameters.Length; i++)
                     internalContext.fields[creator.parameters[i].Name] = new JSObject() { attributes = JSObjectAttributesInternal.Argument };
-                for (; i < argsLength.iValue; i++)
-                {
-                    var n = i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture);
-                    var t = args[n];
-                    args.fields[n] = t = t.Clone() as JSObject;
-                    t.attributes |= JSObjectAttributesInternal.Argument;
-                }
 
                 for (i = body.variables.Length; i-- > 0; )
                 {
@@ -899,6 +929,9 @@ namespace NiL.JS.Core.BaseTypes
                         }
                     }
                 }
+                internalContext.thisBind = thisBind;
+                if (creator.type == FunctionType.Function && creator.name != "" && creator.name != null)
+                    internalContext.fields[creator.name] = this;
                 internalContext.strict |= body.strict;
                 internalContext.variables = body.variables;
                 internalContext.Activate();
@@ -908,7 +941,12 @@ namespace NiL.JS.Core.BaseTypes
 #if DEBUG
                 if (internalContext.abortInfo == null)
                     System.Diagnostics.Debugger.Break();
+#else
+                if (internalContext.abortInfo == null)
+                    internalContext.abortInfo = notExists;
 #endif
+                if ((internalContext.abortInfo.attributes & JSObjectAttributesInternal.Temporary) != 0)
+                    return internalContext.abortInfo.Clone() as JSObject;
                 return internalContext.abortInfo;
             }
             finally
@@ -972,45 +1010,51 @@ namespace NiL.JS.Core.BaseTypes
         [DoNotEnumerate]
         public JSObject call(JSObject args)
         {
-            var newThis = args.GetMember("0");
-            var prmlen = --args.GetMember("length").iValue;
-            if (prmlen >= 0)
+            var aasa = args as Arguments;
+            if (aasa != null)
             {
-                for (int i = 0; i < prmlen; i++)
-                    args.fields[i < 16 ? Tools.NumString[i] : i.ToString()] = args.GetMember(i < 15 ? Tools.NumString[i + 1] : (i + 1).ToString(CultureInfo.InvariantCulture));
-                args.fields.Remove(prmlen < 16 ? Tools.NumString[prmlen] : prmlen.ToString(CultureInfo.InvariantCulture));
+                var newThis = aasa[0];
+                var prmlen = --aasa.length;
+                if (prmlen >= 0)
+                {
+                    for (var i = 0; i <= prmlen; i++)
+                        aasa[i] = aasa[i + 1];
+                    aasa[prmlen] = null;
+                }
+                else
+                    aasa[0] = null;
+                return Invoke(newThis, args);
             }
-            return Invoke(newThis, args);
+            else
+            {
+                var newThis = args.GetMember("0");
+                var prmlen = --args.GetMember("length").iValue;
+                if (prmlen >= 0)
+                {
+                    for (int i = 0; i < prmlen; i++)
+                        args.fields[i < 16 ? Tools.NumString[i] : i.ToString()] = args.GetMember(i < 15 ? Tools.NumString[i + 1] : (i + 1).ToString(CultureInfo.InvariantCulture));
+                    args.fields.Remove(prmlen < 16 ? Tools.NumString[prmlen] : prmlen.ToString(CultureInfo.InvariantCulture));
+                }
+                else
+                    args.fields.Remove("0");
+                return Invoke(newThis, args);
+            }
         }
 
         [DoNotEnumerate]
         public JSObject apply(JSObject args)
         {
-            var newThis = args.GetMember("0");
-            var iargs = args.GetMember("1");
-            var lengthO = args.GetMember("length");
-            var callee = args.DefineMember("callee");
-            args.fields.Clear();
-            var prmsC = 0;
-            if (iargs.isExist)
+            var aasa = args as Arguments;
+            if (aasa != null)
             {
-                var prmsCR = iargs.GetMember("length");
-                prmsC = Tools.JSObjectToInt32(prmsCR.valueType == JSObjectType.Property ? (prmsCR.oValue as Function[])[1].Invoke(iargs, null) : prmsCR);
-                for (int i = 0; i < prmsC; i++)
-                    args.fields[i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture)] = iargs.GetMember(i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture));
+                return Invoke(aasa[0], aasa[1]);
             }
-            if (callee.isExist)
+            else
             {
-                callee.oValue = this;
-                args.fields["callee"] = callee;
+                var newThis = args.GetMember("0");
+                var iargs = args.GetMember("1");
+                return Invoke(newThis, iargs);
             }
-#if DEBUG
-            Debug.Assert(lengthO.assignCallback == null);
-#endif
-            args.fields["length"] = lengthO;
-            lengthO.valueType = JSObjectType.Int;
-            lengthO.iValue = prmsC;
-            return Invoke(newThis, args);
         }
 
         [DoNotEnumerate]

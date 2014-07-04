@@ -91,7 +91,7 @@ namespace NiL.JS.Expressions
                         }
                 }
                 JSObject o = null;
-                if ((second != null) && (val.valueType != JSObjectType.Undefined) && (val.valueType != JSObjectType.NotExistInObject))
+                if (second != null && val.isDefinded)
                 {
                     o = tempContainer;
                     o.Assign(val);
@@ -128,7 +128,7 @@ namespace NiL.JS.Expressions
                 }
                 if (setter != null)
                 {
-                    var args = new JSObject(true) { oValue = Arguments.Instance, valueType = JSObjectType.Object };
+                    var args = new JSObject(true) { oValue = ArgumentsDummy.Instance, valueType = JSObjectType.Object };
                     args["length"] = context.wrap(1);
                     args.fields["0"] = val;
                     setter.Invoke(context.objectSource, args);

@@ -284,12 +284,10 @@ namespace NiL.JS.Expressions
                                 }
                             default:
                                 {
-                                    return temp.valueType == JSObjectType.Undefined || temp.valueType == JSObjectType.NotExistInObject ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+                                    return !temp.isDefinded ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
                                 }
                         }
                     }
-                case JSObjectType.NotExist:
-                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable not defined.")));
                 default: throw new NotImplementedException();
             }
             return false;

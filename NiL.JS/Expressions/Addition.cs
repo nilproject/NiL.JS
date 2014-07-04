@@ -55,7 +55,7 @@ namespace NiL.JS.Expressions
                                 tempContainer.valueType = JSObjectType.String;
                                 return tempContainer;
                             }
-                            else if (temp.valueType == JSObjectType.Undefined || temp.valueType == JSObjectType.NotExistInObject)
+                            else if (temp.valueType <= JSObjectType.Undefined)
                             {
                                 tempContainer.dValue = double.NaN;
                                 tempContainer.valueType = JSObjectType.Double;
@@ -238,7 +238,7 @@ namespace NiL.JS.Expressions
                                     tempContainer.valueType = JSObjectType.String;
                                     return tempContainer;
                                 }
-                                else if (temp.valueType == JSObjectType.Undefined || temp.valueType == JSObjectType.NotExistInObject)
+                                else if (temp.valueType <= JSObjectType.Undefined)
                                 {
                                     tempContainer.dValue = double.NaN;
                                     tempContainer.valueType = JSObjectType.Double;
@@ -261,8 +261,6 @@ namespace NiL.JS.Expressions
                                 throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable not defined.")));
                             break;
                         }
-                    case JSObjectType.NotExist:
-                        throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable not defined.")));
                 }
                 throw new NotImplementedException();
             }

@@ -7,7 +7,7 @@ namespace NiL.JS.Expressions
     [Serializable]
     public sealed class Assign : Expression
     {
-        private JSObject setterArgs = new JSObject(true) { valueType = JSObjectType.Object, oValue = Arguments.Instance };
+        private JSObject setterArgs = new JSObject(true) { valueType = JSObjectType.Object, oValue = ArgumentsDummy.Instance };
         private JSObject setterArg = new JSObject();
 
         public override bool IsContextIndependent

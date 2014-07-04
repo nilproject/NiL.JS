@@ -111,7 +111,7 @@ namespace NiL.JS.Core
                     {
                         var targs = new JSObject(true)
                         {
-                            oValue = Arguments.Instance,
+                            oValue = ArgumentsDummy.Instance,
                             valueType = JSObjectType.Object,
                             attributes = JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum
                         };

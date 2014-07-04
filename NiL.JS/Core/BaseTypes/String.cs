@@ -75,10 +75,7 @@ namespace NiL.JS.Core.BaseTypes
             get
             {
                 if ((pos < 0) || (pos >= (oValue as string).Length))
-                {
-                    notExist.valueType = JSObjectType.NotExistInObject;
-                    return JSObject.notExist;
-                }
+                    return JSObject.notExists;
                 return new JSObject(false) { valueType = JSObjectType.String, oValue = (oValue as string)[pos].ToString(), attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.DoNotDelete };
             }
         }
@@ -323,7 +320,7 @@ namespace NiL.JS.Core.BaseTypes
                     string othis = this.oValue as string;
                     var f = args[1].oValue as Function;
                     var margs = CreateObject();
-                    margs.oValue = Arguments.Instance;
+                    margs.oValue = ArgumentsDummy.Instance;
                     JSObject alen = 3;
                     alen.assignCallback = null;
                     alen.attributes = JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.ReadOnly;

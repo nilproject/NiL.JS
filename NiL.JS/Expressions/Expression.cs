@@ -66,7 +66,7 @@ namespace NiL.JS.Expressions
         protected Expression(CodeNode first, CodeNode second, bool createTempContainer)
         {
             if (createTempContainer)
-                tempContainer = new JSObject() { assignCallback = JSObject.ErrorAssignCallback };
+                tempContainer = new JSObject() { assignCallback = JSObject.ErrorAssignCallback, attributes = JSObjectAttributesInternal.Temporary };
             this.first = first;
             this.second = second;
         }

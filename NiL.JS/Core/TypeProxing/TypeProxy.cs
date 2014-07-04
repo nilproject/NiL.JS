@@ -279,8 +279,6 @@ namespace NiL.JS.Core
             {
                 if (r.valueType < JSObjectType.Undefined)
                 {
-                    if (r.valueType == JSObjectType.NotExist)
-                        r.valueType = JSObjectType.NotExistInObject;
                     if (!create)
                     {
                         var t = DefaultFieldGetter(nameObj, false, own);
@@ -335,7 +333,7 @@ namespace NiL.JS.Core
                                 if (cargs == null)
                                     continue;
                             }
-                            if (cargs != null && cargs.Length == 1 && cargs[0] is JSObject && (cargs[0] as JSObject).oValue == Arguments.Instance)
+                            if (cargs != null && cargs.Length == 1 && cargs[0] is JSObject && (cargs[0] as JSObject).oValue == ArgumentsDummy.Instance)
                                 (cargs[0] as JSObject).fields["callee"] = cache[i];
                             return TypeProxy.Proxy(cache[i].InvokeImpl(thisBind, cargs, args));
                         }

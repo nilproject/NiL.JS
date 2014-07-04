@@ -41,8 +41,6 @@ namespace NiL.JS.Core
                 return __proto__;
             }
             var res = context.GetVariable(nameStr, create);
-            if (res.valueType == JSObjectType.NotExist)
-                res.valueType = JSObjectType.NotExistInObject;
             return res;
         }
 

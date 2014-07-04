@@ -36,11 +36,13 @@ namespace NiL.JS.Statements
             var n = memberNameStatement.Invoke(context);
             context.objectSource = source;
             var res = source.GetMember(n, forAssign, false);
+            if (res.valueType == JSObjectType.NotExist)
+                res.valueType = JSObjectType.NotExistInObject;
             if (!forAssign && res.valueType == JSObjectType.Property)
             {
                 var f = (res.oValue as Function[])[1];
                 if (f == null)
-                    res = JSObject.notExist;
+                    res = JSObject.notExists;
                 else
                     res = f.Invoke(source, null);
             }

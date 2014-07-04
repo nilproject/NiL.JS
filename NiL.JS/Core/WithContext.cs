@@ -31,7 +31,7 @@ namespace NiL.JS.Core
         {
             thisBind = prototype.thisBind;
             var res = @object.GetMember(name);
-            if (res.valueType == JSObjectType.NotExistInObject)
+            if (res.valueType < JSObjectType.Undefined)
                 return prototype.GetVariable(name, create);
             else
             {

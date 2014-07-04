@@ -61,13 +61,26 @@ namespace NiL.JS.Expressions
                     {
                         tempContainer.iValue = 1;
                         var args = context.objectSource;
-                        foreach (var a in args.fields)
+                        if (args.fields != null)
                         {
-                            if (a.Value == temp)
+                            foreach (var a in args.fields)
                             {
-                                args.fields.Remove(a.Key);
-                                return tempContainer;
+                                if (a.Value == temp)
+                                {
+                                    args.fields.Remove(a.Key);
+                                    return tempContainer;
+                                }
                             }
+                        }
+                        var oaa = args.oValue as Arguments;
+                        if (oaa != null)
+                        {
+                            for (var i = 0; i < oaa.length; i++)
+                                if (oaa[i] == temp)
+                                {
+                                    oaa[i] = null;
+                                    return tempContainer;
+                                }
                         }
                     }
                     else

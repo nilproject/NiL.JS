@@ -237,7 +237,7 @@ namespace NiL.JS.Core
                 this.fields = new Dictionary<string, JSObject>();
             this.prototype = prototype;
             this.thisBind = prototype.thisBind;
-            this.abortInfo = JSObject.notExist;
+            this.abortInfo = JSObject.notExists;
 #if DEV
             this.debugging = prototype.debugging;
 #endif
@@ -379,8 +379,6 @@ namespace NiL.JS.Core
                         res = JSObject.GlobalPrototype.GetMember(name);
                 }
             }
-            if (res.valueType == JSObjectType.NotExistInObject)
-                res.valueType = JSObjectType.NotExist;
             return res;
         }
 

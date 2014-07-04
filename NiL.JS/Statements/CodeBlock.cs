@@ -204,7 +204,7 @@ namespace NiL.JS.Statements
 
         internal override JSObject Invoke(Context context)
         {
-            JSObject res = JSObject.notExist;
+            JSObject res = JSObject.notExists;
             for (int i = body.Length; i-- > 0; )
             {
                 if (body[i] is FunctionStatement)
@@ -230,7 +230,7 @@ namespace NiL.JS.Statements
                         System.Diagnostics.Debugger.Break();
                     else
                         throw new ApplicationException("undefined was rewrite");
-                if (JSObject.notExist.isExist)
+                if (JSObject.notExists.isExist)
                     if (System.Diagnostics.Debugger.IsAttached)
                         System.Diagnostics.Debugger.Break();
                     else

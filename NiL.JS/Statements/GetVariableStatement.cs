@@ -25,18 +25,26 @@ namespace NiL.JS.Statements
         internal override JSObject InvokeForAssing(Context context)
         {
             if (context.strict)
-                return Tools.RaiseIfNotExist(descriptor.Get(context, false, functionDepth), variableName);
+            {
+                var res = descriptor.Get(context, false, functionDepth);
+                if (res.valueType == JSObjectType.NotExistInObject)
+                    res.valueType = JSObjectType.NotExist;
+                return Tools.RaiseIfNotExist(res, variableName);
+            }
             return descriptor.Get(context, true, functionDepth);
         }
 
         internal override JSObject Invoke(Context context)
         {
-            var res = Tools.RaiseIfNotExist(descriptor.Get(context, false, functionDepth), variableName);
+            var res = descriptor.Get(context, false, functionDepth);
+            if (res.valueType == JSObjectType.NotExistInObject)
+                res.valueType = JSObjectType.NotExist;
+            res = Tools.RaiseIfNotExist(res, variableName);
             if (res.valueType == JSObjectType.Property)
             {
                 var getter = (res.oValue as NiL.JS.Core.BaseTypes.Function[])[1];
                 if (getter == null)
-                    return JSObject.notExist;
+                    return JSObject.notExists;
                 return getter.Invoke(context.objectSource, null);
             }
             return res;
