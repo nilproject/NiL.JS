@@ -13,7 +13,7 @@ namespace NiL.JSTest
 {
     class Program
     {
-        private static void sputnicTests(string folderPath = "tests\\")
+        private static void sputnikTests(string folderPath = "tests\\")
         {
             bool showAll = false;
             bool refresh = true;
@@ -128,14 +128,22 @@ console.log(String.prototype.toString.call(a));
 
         static void Main(string[] args)
         {
-            typeof(System.Windows.Forms.Button).GetType();
-            int mode = 101
+            // В текущем процессе часовой пояс будет -8:00:00. 
+            // Создатели sputnik'a не удосужились в своих тестах учитывать временную зону 
+            // и от всех требуют пребывания в указаном часовом поясе.
+            var currentTimeZone = TimeZone.CurrentTimeZone;
+            var offset = currentTimeZone.GetType().GetField("m_ticksOffset", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+            offset.SetValue(currentTimeZone, new TimeSpan(-8, 0, 0).Ticks);
+
+            typeof(System.Windows.Forms.Button).GetType(); // Заставляет подгрузить сборку System.Windows.Forms. Это исключительно для баловства
+
+            int mode = 0
                 ;
             switch (mode)
             {
                 case 0:
                     {
-                        sputnicTests();
+                        sputnikTests();
                         break;
                     }
                 case 1:
@@ -156,19 +164,19 @@ console.log(String.prototype.toString.call(a));
                 case 4:
                     {
                         // Object
-                        sputnicTests(@"tests\sputnik\ch15\15.2\");
+                        sputnikTests(@"tests\sputnik\ch15\15.2\");
                         break;
                     }
                 case 5:
                     {
                         // Array
-                        sputnicTests(@"tests\sputnik\ch15\15.4\");
+                        sputnikTests(@"tests\sputnik\ch15\15.4\");
                         break;
                     }
                 case 6:
                     {
-                        // Array
-                        sputnicTests(@"tests\sputnik\ch15\15.9\");
+                        // Date
+                        sputnikTests(@"tests\sputnik\ch15\15.9\");
                         break;
                     }
                 case 100:

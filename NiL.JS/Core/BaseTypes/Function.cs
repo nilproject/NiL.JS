@@ -727,7 +727,7 @@ namespace NiL.JS.Core.BaseTypes
             try
             {
                 if (thisBind == null)
-                    thisBind = notExists;
+                    thisBind = undefined;
                 if (!body.strict) // Поправляем this
                 {
                     if (thisBind.valueType > JSObjectType.Undefined && thisBind.valueType < JSObjectType.Object)
@@ -743,8 +743,8 @@ namespace NiL.JS.Core.BaseTypes
                     else if (thisBind.valueType <= JSObjectType.Undefined || thisBind.oValue == null)
                         thisBind = internalContext.Root.thisBind;
                 }
-                if (thisBind.valueType == JSObjectType.NotExists)
-                    thisBind.valueType = JSObjectType.Undefined;
+                else if (thisBind.valueType < JSObjectType.Undefined)
+                    thisBind = undefined;
 
                 if (args == null)
                     args = new Arguments();

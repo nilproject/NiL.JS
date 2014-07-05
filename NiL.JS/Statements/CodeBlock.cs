@@ -207,7 +207,9 @@ namespace NiL.JS.Statements
             JSObject res = JSObject.notExists;
             for (int i = body.Length; i-- > 0; )
             {
-                if (body[i] is FunctionStatement)
+                //if (body[i] is FunctionStatement)
+                //    continue;
+                if (body[i] == null)
                     continue;
 #if DEV
                 if (context.debugging)
@@ -287,10 +289,10 @@ namespace NiL.JS.Statements
 
             for (int i = body.Length; i-- > 0; )
             {
-                //bool needRemove = body[i] is FunctionStatement;
+                bool needRemove = (body[i] is FunctionStatement);// && depth >= 0;
                 Parser.Optimize(ref body[i], depth < 0 ? 2 : Math.Max(1, depth), fdepth, variables, this.strict);
-                //if (needRemove)
-                //    body[i] = null;
+                if (needRemove)
+                    body[i] = null;
             }
 
             if (depth > 0)

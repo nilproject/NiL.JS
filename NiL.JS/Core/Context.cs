@@ -317,6 +317,35 @@ namespace NiL.JS.Core
                 }
             }
             oldContext = null;
+#if DEBUG
+            if (NiL.JS.Core.BaseTypes.Number.NaN.valueType != JSObjectType.Double || !double.IsNaN(NiL.JS.Core.BaseTypes.Number.NaN.dValue))
+                if (System.Diagnostics.Debugger.IsAttached)
+                    System.Diagnostics.Debugger.Break();
+                else
+                    throw new ApplicationException("NaN was rewrite");
+            if (JSObject.undefined.valueType != JSObjectType.Undefined)
+                if (System.Diagnostics.Debugger.IsAttached)
+                    System.Diagnostics.Debugger.Break();
+                else
+                    throw new ApplicationException("undefined was rewrite");
+            if (JSObject.notExists.isExist)
+                if (System.Diagnostics.Debugger.IsAttached)
+                    System.Diagnostics.Debugger.Break();
+                else
+                    throw new ApplicationException("notExist was rewrite");
+            if (Core.BaseTypes.Boolean.False.valueType != JSObjectType.Bool
+                || Core.BaseTypes.Boolean.False.iValue != 0)
+                if (System.Diagnostics.Debugger.IsAttached)
+                    System.Diagnostics.Debugger.Break();
+                else
+                    throw new ApplicationException("Boolean.False was rewrite");
+            if (Core.BaseTypes.Boolean.True.valueType != JSObjectType.Bool
+                || Core.BaseTypes.Boolean.True.iValue != 1)
+                if (System.Diagnostics.Debugger.IsAttached)
+                    System.Diagnostics.Debugger.Break();
+                else
+                    throw new ApplicationException("Boolean.True was rewrite");
+#endif
             return runnedContexts[i];
         }
 

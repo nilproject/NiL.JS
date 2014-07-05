@@ -244,11 +244,10 @@ namespace NiL.JS.Core
                         r = r.ToPrimitiveValue_Value_String();
                         return JSObjectToInt32(r);
                     }
+                case JSObjectType.NotExists:
                 case JSObjectType.Undefined:
                 case JSObjectType.NotExistsInObject:
                     return nullOrUndef;
-                case JSObjectType.NotExists:
-                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable not defined.")));
                 default:
                     throw new NotImplementedException();
             }

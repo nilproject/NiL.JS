@@ -41,6 +41,9 @@ namespace NiL.JS.Core
         [Hidden]
         public ProxyConstructor(TypeProxy typeProxy)
         {
+            if (_length == null)
+                _length = new Number(0) { attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum };
+            
             fields = typeProxy.fields;
             proxy = typeProxy;
             var ctors = typeProxy.hostedType.GetConstructors();
@@ -48,20 +51,16 @@ namespace NiL.JS.Core
             for (int i = 0; i < ctors.Length; i++)
             {
                 if (ctors[i].GetCustomAttributes(typeof(HiddenAttribute), false).Length == 0)
+                {
                     ctorsL.Add(new MethodProxy(ctors[i]));
+                    length.iValue = System.Math.Max(ctorsL[ctorsL.Count - 1]._length.iValue, _length.iValue);
+                }
             }
             if (typeProxy.hostedType.IsValueType)
                 ctorsL.Add(new MethodProxy(new StructureDefaultConstructorInfo(proxy.hostedType)));
             ctorsL.Sort((x, y) => x.Parameters.Length - y.Parameters.Length);
             constructors = ctorsL.ToArray();
             proxy.__proto__ = __proto__; // для того, чтобы не отвалились стандартные свойства функции
-
-            if (_length == null)
-                _length = new Number(0) { attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum };
-            if (proxy.hostedType == typeof(Function))
-                _length.iValue = 1;
-            else
-                _length.iValue = proxy.hostedType.GetConstructors().Last().GetParameters().Length;
         }
 
         [Hidden]
@@ -81,17 +80,17 @@ namespace NiL.JS.Core
             if (proxy.hostedType.ContainsGenericParameters)
                 throw new JSException(TypeProxy.Proxy(new BaseTypes.TypeError(proxy.hostedType.Name + " can't be created because it's generic type.")));
             var _this = thisOverride;
-            object[] args = null;
-            MethodProxy constructor = findConstructor(argsObj, ref args);
-            if (constructor == null)
-                throw new JSException(TypeProxy.Proxy(new BaseTypes.TypeError(proxy.hostedType.Name + " can't be created.")));
             bool bynew = false;
             if (_this != null)
-            {
                 bynew = _this.oValue == typeof(Expressions.New) as object;
-            }
             try
             {
+                if (!bynew && proxy.hostedType == typeof(Date))
+                    return new Date().toString();
+                object[] args = null;
+                MethodProxy constructor = findConstructor(argsObj, ref args);
+                if (constructor == null)
+                    throw new JSException(TypeProxy.Proxy(new BaseTypes.TypeError(proxy.hostedType.Name + " can't be created.")));
                 var obj = constructor.InvokeImpl(null, args, argsObj);
                 JSObject res = null;
                 if (bynew)
