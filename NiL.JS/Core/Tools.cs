@@ -572,7 +572,7 @@ namespace NiL.JS.Core
                 int starti = i;
                 while (i < code.Length)
                 {
-                    var sign = ((code[i] % 'a' % 'A' + 10) % ('0' + 10));
+                    var sign = anum(code[i]);
                     if (sign >= radix || (NumChars[sign] != code[i] && (NumChars[sign] - ('a' - 'A')) != code[i]))
                     {
                         break;
@@ -851,6 +851,23 @@ namespace NiL.JS.Core
                 column++;
             }
             return new TextCord(line, column);
+        }
+
+#if INLINE
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+#endif
+        internal static bool isHex(char p)
+        {
+            var c = anum(p);
+            return c >= 0 && c < 16;
+        }
+
+#if INLINE
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+#endif
+        internal static int anum(char p)
+        {
+            return ((p % 'a' % 'A' + 10) % ('0' + 10));
         }
     }
 }

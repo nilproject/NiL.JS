@@ -137,7 +137,7 @@ console.log(String.prototype.toString.call(a));
 
             typeof(System.Windows.Forms.Button).GetType(); // Заставляет подгрузить сборку System.Windows.Forms. Это исключительно для баловства
 
-            int mode = 0
+            int mode = 2
                 ;
             switch (mode)
             {
@@ -161,19 +161,25 @@ console.log(String.prototype.toString.call(a));
                         testEx();
                         break;
                     }
-                case 4:
+                case 151:
+                    {
+                        // Global
+                        sputnikTests(@"tests\sputnik\ch15\15.1\");
+                        break;
+                    }
+                case 152:
                     {
                         // Object
                         sputnikTests(@"tests\sputnik\ch15\15.2\");
                         break;
                     }
-                case 5:
+                case 154:
                     {
                         // Array
                         sputnikTests(@"tests\sputnik\ch15\15.4\");
                         break;
                     }
-                case 6:
+                case 159:
                     {
                         // Date
                         sputnikTests(@"tests\sputnik\ch15\15.9\");

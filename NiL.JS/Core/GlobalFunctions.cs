@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using System.Threading;
 using NiL.JS.Core.BaseTypes;
 using NiL.JS.Core.Modules;
@@ -60,7 +61,7 @@ namespace NiL.JS.Core
             if (source.valueType == JSObjectType.Int)
                 return source;
             if (source.valueType == JSObjectType.Double)
-                return double.IsInfinity(source.dValue) || double.IsNaN(source.dValue) ? 
+                return double.IsInfinity(source.dValue) || double.IsNaN(source.dValue) ?
                     Number.NaN : source.dValue == 0.0 ? (Number)0 : // +0 и -0 должны стать равными
                     (Number)System.Math.Truncate(source.dValue);
             var arg = source.ToString().Trim();
@@ -159,7 +160,48 @@ namespace NiL.JS.Core
         internal static JSObject decodeURI(JSObject thisBind, Arguments args)
         {
             var str = args[0].ToString();
-            return System.Web.HttpUtility.UrlDecode(str);
+
+            const string reserver = ";/?:@&=+$,#";
+
+            if (string.IsNullOrEmpty(str))
+                return str;
+            StringBuilder res = new StringBuilder(str.Length);
+            for (var i = 0; i < str.Length; i++)
+            {
+                switch (str[i])
+                {
+                    case '%':
+                        {
+                            if (i + 2 >= str.Length)
+                                throw new JSException(new URIError("Substring after \"%\" not represent valid code."));
+                            if (!Tools.isHex(str[i + 1])
+                                || !Tools.isHex(str[i + 2]))
+                                throw new JSException(new URIError("Substring after \"%\" not represent valid code."));
+                            var cc = Tools.anum(str[i + 1]) * 16 + Tools.anum(str[i + 2]);
+                            var b = (char)cc;
+                            i += 2;
+                            if ((b & 0x80) != 0)
+                            {
+                                if (reserver.IndexOf(b) == -1)
+                                    res.Append(b);
+                                else
+                                    res.Append('%').Append(str[i - 1]).Append(str[i]);
+                            }
+                            else
+                            {
+
+                            }
+                            break;
+                        }
+                    default:
+                        {
+                            res.Append(str[i]);
+                            break;
+                        }
+                }
+            }
+
+            return res.ToString();
         }
     }
 }
