@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
+using System.Web;
 using NiL.JS.Core.BaseTypes;
 using NiL.JS.Statements;
 
@@ -91,13 +92,10 @@ namespace NiL.JS.Core
                 globalContext.DefineVariable("isNaN").Assign(new ExternalFunction(GlobalFunctions.isNaN));
                 globalContext.DefineVariable("unescape").Assign(new ExternalFunction(GlobalFunctions.unescape));
                 globalContext.DefineVariable("escape").Assign(new ExternalFunction(GlobalFunctions.escape));
-                globalContext.DefineVariable("encodeURI").Assign(new ExternalFunction((thisBind, x) =>
-                {
-                    return System.Web.HttpServerUtility.UrlTokenEncode(System.Text.UTF8Encoding.Default.GetBytes(x[0].ToString()));
-                }));
-                globalContext.DefineVariable("encodeURIComponent").Assign(globalContext.GetVariable("encodeURI"));
+                globalContext.DefineVariable("encodeURI").Assign(new ExternalFunction(GlobalFunctions.encodeURI));
+                globalContext.DefineVariable("encodeURIComponent").Assign(new ExternalFunction(GlobalFunctions.encodeURIComponent));
                 globalContext.DefineVariable("decodeURI").Assign(new ExternalFunction(GlobalFunctions.decodeURI));
-                globalContext.DefineVariable("decodeURIComponent").Assign(globalContext.GetVariable("decodeURI"));
+                globalContext.DefineVariable("decodeURIComponent").Assign(new ExternalFunction(GlobalFunctions.decodeURIComponent));
                 globalContext.DefineVariable("isFinite").Assign(new ExternalFunction(GlobalFunctions.isFinite));
                 globalContext.DefineVariable("parseFloat").Assign(new ExternalFunction(GlobalFunctions.parseFloat));
                 globalContext.DefineVariable("parseInt").Assign(new ExternalFunction(GlobalFunctions.parseInt));

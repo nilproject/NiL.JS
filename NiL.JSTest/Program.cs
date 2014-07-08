@@ -27,7 +27,7 @@ namespace NiL.JSTest
             bool negative = false;
             string staCode = "";
             Script s = null;
-            _("Sputnik testing begin...");
+            _("Sputnik testing begгn...");
             _("Load sta.js...");
             using (var staFile = new FileStream("sta.js", FileMode.Open, FileAccess.Read))
                 staCode = new StreamReader(staFile).ReadToEnd();
@@ -35,7 +35,7 @@ namespace NiL.JSTest
 
             _("Scaning directory...");
             var fls = Directory.EnumerateFiles(folderPath, "*.js", SearchOption.AllDirectories).ToArray();
-            _("Founded " + fls.Length + " js-files");
+            _("Found " + fls.Length + " js-files");
             sw.Start();
             for (int i = 0; i < fls.Length; i++)
             {
@@ -137,7 +137,7 @@ console.log(String.prototype.toString.call(a));
 
             typeof(System.Windows.Forms.Button).GetType(); // Заставляет подгрузить сборку System.Windows.Forms. Это исключительно для баловства
 
-            int mode = 2
+            int mode = 0
                 ;
             switch (mode)
             {

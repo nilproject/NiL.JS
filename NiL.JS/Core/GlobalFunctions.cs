@@ -157,6 +157,77 @@ namespace NiL.JS.Core
             });
         }
 
+        internal static JSObject decodeURIComponent(JSObject thisBind, Arguments args)
+        {
+            var str = args[0].ToString();
+
+            if (string.IsNullOrEmpty(str))
+                return str;
+            StringBuilder res = new StringBuilder(str.Length);
+            for (var k = 0; k < str.Length; k++)
+            {
+                switch (str[k])
+                {
+                    case '%':
+                        {
+                            if (k + 2 >= str.Length)
+                                throw new JSException(new URIError("Substring after \"%\" not represent valid code."));
+                            if (!Tools.isHex(str[k + 1])
+                                || !Tools.isHex(str[k + 2]))
+                                throw new JSException(new URIError("Substring after \"%\" not represent valid code."));
+                            var cc = Tools.anum(str[k + 1]) * 16 + Tools.anum(str[k + 2]);
+                            k += 2;
+                            if ((cc & 0x80) == 0)
+                                res.Append((char)cc);
+                            else
+                            {
+                                var start = k - 2;
+                                var n = 1;
+                                while (((cc << n) & 0x80) != 0)
+                                    n++;
+                                if (n == 1 || n > 4)
+                                    throw new JSException(new URIError("URI malformed"));
+                                if (k + (3 * (n - 1)) >= str.Length)
+                                    throw new JSException(new URIError("URI malformed"));
+                                var octet = (cc & (((1 << (n * 7 - 1)) - 1) >> (8 * (n - 1)))) << ((n - 1) * 6);
+                                for (var j = 1; j < n; j++)
+                                {
+                                    k++;
+                                    if (str[k] != '%')
+                                        throw new JSException(new URIError(""));
+                                    if (!Tools.isHex(str[k + 1])
+                                        || !Tools.isHex(str[k + 2]))
+                                        throw new JSException(new URIError("Substring after \"%\" not represent valid code."));
+                                    cc = Tools.anum(str[k + 1]) * 16 + Tools.anum(str[k + 2]);
+                                    if ((cc & 0xC0) != 0x80)
+                                        throw new JSException(new URIError("URI malformed"));
+                                    octet |= (cc & 63) << ((n - j - 1) * 6);
+                                    k += 2;
+                                }
+                                if (octet < 0x10000)
+                                {
+                                    var c = (char)octet;
+                                    res.Append(c);
+                                }
+                                else
+                                {
+                                    res.Append((char)(((octet - 0x10000) >> 10 & 0x3ff) + 0xd800));
+                                    res.Append((char)(((octet - 0x10000) & 0x3ff) + 0xdc00));
+                                }
+                            }
+                            break;
+                        }
+                    default:
+                        {
+                            res.Append(str[k]);
+                            break;
+                        }
+                }
+            }
+
+            return res.ToString();
+        }
+
         internal static JSObject decodeURI(JSObject thisBind, Arguments args)
         {
             var str = args[0].ToString();
@@ -166,41 +237,206 @@ namespace NiL.JS.Core
             if (string.IsNullOrEmpty(str))
                 return str;
             StringBuilder res = new StringBuilder(str.Length);
-            for (var i = 0; i < str.Length; i++)
+            for (var k = 0; k < str.Length; k++)
             {
-                switch (str[i])
+                switch (str[k])
                 {
                     case '%':
                         {
-                            if (i + 2 >= str.Length)
+                            if (k + 2 >= str.Length)
                                 throw new JSException(new URIError("Substring after \"%\" not represent valid code."));
-                            if (!Tools.isHex(str[i + 1])
-                                || !Tools.isHex(str[i + 2]))
+                            if (!Tools.isHex(str[k + 1])
+                                || !Tools.isHex(str[k + 2]))
                                 throw new JSException(new URIError("Substring after \"%\" not represent valid code."));
-                            var cc = Tools.anum(str[i + 1]) * 16 + Tools.anum(str[i + 2]);
-                            var b = (char)cc;
-                            i += 2;
-                            if ((b & 0x80) != 0)
+                            var cc = Tools.anum(str[k + 1]) * 16 + Tools.anum(str[k + 2]);
+                            k += 2;
+                            if ((cc & 0x80) == 0)
                             {
-                                if (reserver.IndexOf(b) == -1)
-                                    res.Append(b);
+                                if (reserver.IndexOf((char)cc) == -1)
+                                    res.Append((char)cc);
                                 else
-                                    res.Append('%').Append(str[i - 1]).Append(str[i]);
+                                    res.Append('%').Append(str[k - 1]).Append(str[k]);
                             }
                             else
                             {
-
+                                var start = k - 2;
+                                var n = 1;
+                                while (((cc << n) & 0x80) != 0)
+                                    n++;
+                                if (n == 1 || n > 4)
+                                    throw new JSException(new URIError("URI malformed"));
+                                if (k + (3 * (n - 1)) >= str.Length)
+                                    throw new JSException(new URIError("URI malformed"));
+                                var octet = (cc & (((1 << (n * 7 - 1)) - 1) >> (8 * (n - 1)))) << ((n - 1) * 6);
+                                for (var j = 1; j < n; j++)
+                                {
+                                    k++;
+                                    if (str[k] != '%')
+                                        throw new JSException(new URIError(""));
+                                    if (!Tools.isHex(str[k + 1])
+                                        || !Tools.isHex(str[k + 2]))
+                                        throw new JSException(new URIError("Substring after \"%\" not represent valid code."));
+                                    cc = Tools.anum(str[k + 1]) * 16 + Tools.anum(str[k + 2]);
+                                    if ((cc & 0xC0) != 0x80)
+                                        throw new JSException(new URIError("URI malformed"));
+                                    octet |= (cc & 63) << ((n - j - 1) * 6);
+                                    k += 2;
+                                }
+                                if (octet < 0x10000)
+                                {
+                                    var c = (char)octet;
+                                    if (reserver.IndexOf(c) != -1)
+                                    {
+                                        for (; start < k; start++)
+                                            res.Append(str[start]);
+                                    }
+                                    else
+                                    {
+                                        res.Append(c);
+                                    }
+                                }
+                                else
+                                {
+                                    res.Append((char)(((octet - 0x10000) >> 10 & 0x3ff) + 0xd800));
+                                    res.Append((char)(((octet - 0x10000) & 0x3ff) + 0xdc00));
+                                }
                             }
                             break;
                         }
                     default:
                         {
-                            res.Append(str[i]);
+                            res.Append(str[k]);
                             break;
                         }
                 }
             }
 
+            return res.ToString();
+        }
+
+        private static bool doNotEscape(char c)
+        {
+            if ((c >= '0' && c <= '9')
+                || (c >= 'A' && c <= 'Z')
+                || (c >= 'a' && c <= 'z'))
+                return true;
+            switch (c)
+            {
+                case '-':
+                case '_':
+                case '.':
+                case '!':
+                case '~':
+                case '*':
+                case '\'':
+                case '(':
+                case ')':
+                    return true;
+            }
+            return false;
+        }
+
+        internal static JSObject encodeURIComponent(JSObject thisBind, Arguments args)
+        {
+            var s = args[0].ToString();
+
+            var res = new StringBuilder(s.Length);
+            for (var i = 0; i < s.Length; i++)
+            {
+                if (doNotEscape(s[i]))
+                    res.Append(s[i]);
+                else
+                {
+                    int v = 0;
+                    if (s[i] >= 0xdc00 && s[i] <= 0xdfff)
+                        throw new JSException(new URIError());
+                    if (s[i] < 0xd800 || s[i] > 0xdbff)
+                        v = s[i];
+                    else
+                    {
+                        i++;
+                        if (i == s.Length)
+                            throw new JSException(new URIError());
+                        if (s[i] < 0xdc00 || s[i] > 0xdfff)
+                            throw new JSException(new URIError());
+                        v = (s[i - 1] - 0xd800) * 0x400 + (s[i] - 0xdc00) + 0x10000;
+                    }
+                    var n = 1;
+                    if (v > 0x7f)
+                    {
+                        while ((v >> (n * 6 - (n - 1))) != 0)
+                            n++;
+                        if (n > 4)
+                            throw new JSException(new URIError());
+                        var b = (v >> ((n - 1) * 6)) | ~((1 << (8 - n)) - 1);
+                        res.Append('%')
+                            .Append(Tools.NumChars[(b >> 4) & 0xf])
+                            .Append(Tools.NumChars[b & 0xf]);
+                        while (--n > 0)
+                        {
+                            b = ((v >> ((n - 1) * 6)) & 0x3f) | ~((1 << 7) - 1);
+                            res.Append('%')
+                                .Append(Tools.NumChars[(b >> 4) & 0xf])
+                                .Append(Tools.NumChars[b & 0xf]);
+                        }
+                    }
+                    else
+                        res.Append('%').Append(Tools.NumChars[(s[i] >> 4) & 0x0f]).Append(Tools.NumChars[s[i] & 0x0F]);
+                }
+            }
+            return res.ToString();
+        }
+
+        internal static JSObject encodeURI(JSObject thisBind, Arguments args)
+        {
+            var s = args[0].ToString();
+
+            const string unescaped = ";/?:@&=+$,#";
+
+            var res = new StringBuilder(s.Length);
+            for (var i = 0; i < s.Length; i++)
+            {
+                if (doNotEscape(s[i]) || unescaped.IndexOf(s[i]) != -1)
+                    res.Append(s[i]);
+                else
+                {
+                    int v = 0;
+                    if (s[i] >= 0xdc00 && s[i] <= 0xdfff)
+                        throw new JSException(new URIError());
+                    if (s[i] < 0xd800 || s[i] > 0xdbff)
+                        v = s[i];
+                    else
+                    {
+                        i++;
+                        if (i == s.Length)
+                            throw new JSException(new URIError());
+                        if (s[i] < 0xdc00 || s[i] > 0xdfff)
+                            throw new JSException(new URIError());
+                        v = (s[i - 1] - 0xd800) * 0x400 + (s[i] - 0xdc00) + 0x10000;
+                    }
+                    var n = 1;
+                    if (v > 0x7f)
+                    {
+                        while ((v >> (n * 6 - (n - 1))) != 0)
+                            n++;
+                        if (n > 4)
+                            throw new JSException(new URIError());
+                        var b = (v >> ((n - 1) * 6)) | ~((1 << (8 - n)) - 1);
+                        res.Append('%')
+                            .Append(Tools.NumChars[(b >> 4) & 0xf])
+                            .Append(Tools.NumChars[b & 0xf]);
+                        while (--n > 0)
+                        {
+                            b = ((v >> ((n - 1) * 6)) & 0x3f) | ~((1 << 7) - 1);
+                            res.Append('%')
+                                .Append(Tools.NumChars[(b >> 4) & 0xf])
+                                .Append(Tools.NumChars[b & 0xf]);
+                        }
+                    }
+                    else
+                        res.Append('%').Append(Tools.NumChars[(s[i] >> 4) & 0x0f]).Append(Tools.NumChars[s[i] & 0x0F]);
+                }
+            }
             return res.ToString();
         }
     }
