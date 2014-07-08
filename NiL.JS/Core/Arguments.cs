@@ -30,6 +30,11 @@ namespace NiL.JS.Core
         private JSObject _length;
         internal int length;
 
+        public int Length
+        {
+            get { return _length != null ? Tools.JSObjectToInt32(_length) : length; }
+        }
+
         public override JSObject this[string name]
         {
             get

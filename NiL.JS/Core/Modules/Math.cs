@@ -116,7 +116,7 @@ namespace NiL.JS.Core.Modules
 
         [DoNotEnumerate]
         [DoNotDelete]
-        public static JSObject log(JSObject[] args)
+        public static JSObject log(Arguments args)
         {
             return System.Math.Log(Tools.JSObjectToDouble(args.Length > 0 ? args[0] : null));
         }
@@ -156,7 +156,7 @@ namespace NiL.JS.Core.Modules
         [DoNotEnumerate]
         [DoNotDelete]
         [ParametersCount(2)]
-        public static JSObject pow(JSObject[] args)
+        public static JSObject pow(Arguments args)
         {
             JSObject result = 0;
             if (args.Length < 2)
@@ -170,9 +170,7 @@ namespace NiL.JS.Core.Modules
                 else if (double.IsNaN(@base) && degree == 0.0)
                     result.dValue = 1;
                 else
-                {
                     result.dValue = System.Math.Pow(@base, degree);
-                }
             }
             result.valueType = JSObjectType.Double;
             return result;

@@ -444,7 +444,7 @@ namespace NiL.JS.Core
             }
             if (allowFloat && radix == 0)
             {
-                long temp = 0;
+                ulong temp = 0;
                 int scount = 0;
                 int deg = 0;
                 while (i < code.Length)
@@ -455,7 +455,7 @@ namespace NiL.JS.Core
                     {
                         if (scount <= 18)
                         {
-                            temp = temp * 10 + (code[i++] - '0');
+                            temp = temp * 10 + (ulong)(code[i++] - '0');
                             scount++;
                         }
                         else
@@ -479,7 +479,7 @@ namespace NiL.JS.Core
                         {
                             if (scount <= 18)
                             {
-                                temp = temp * 10 + (code[i++] - '0');
+                                temp = temp * 10 + (ulong)(code[i++] - '0');
                                 scount++;
                                 deg--;
                             }
@@ -503,7 +503,7 @@ namespace NiL.JS.Core
                             break;
                         else
                         {
-                            if (scount <= 18)
+                            if (scount <= 6)
                                 td = td * 10 + (code[i++] - '0');
                             else
                                 i++;
@@ -517,7 +517,7 @@ namespace NiL.JS.Core
                     {
                         if (deg < -18)
                         {
-                            value = (double)((decimal)temp * 0.000000000000000001M);
+                            value = temp * 1e-18;
                             deg += 18;
                         }
                         else
@@ -780,10 +780,10 @@ namespace NiL.JS.Core
                     res.Append(' ');
                 if (i >= code.Length)
                     continue;
-                if (Parser.ValidateName(code, ref i, false)
-                    || Parser.ValidateNumber(code, ref i)
-                    //|| Parser.ValidateRegex(code, ref i, false)
-                    || Parser.ValidateString(code, ref i, false))
+                if (//Parser.ValidateName(code, ref i, false) ||
+                    //Parser.ValidateNumber(code, ref i) ||
+                    //Parser.ValidateRegex(code, ref i, false) ||
+                    Parser.ValidateString(code, ref i, false))
                 {
                     if (res != null)
                         for (; s < i; s++)

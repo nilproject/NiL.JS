@@ -179,6 +179,12 @@ console.log(String.prototype.toString.call(a));
                         sputnikTests(@"tests\sputnik\ch15\15.4\");
                         break;
                     }
+                case 158:
+                    {
+                        // Math
+                        sputnikTests(@"tests\sputnik\ch15\15.8\");
+                        break;
+                    }
                 case 159:
                     {
                         // Date
