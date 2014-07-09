@@ -782,7 +782,7 @@ namespace NiL.JS.Core
                     continue;
                 if (//Parser.ValidateName(code, ref i, false) ||
                     //Parser.ValidateNumber(code, ref i) ||
-                    //Parser.ValidateRegex(code, ref i, false) ||
+                    Parser.ValidateRegex(code, ref i, false) ||
                     Parser.ValidateString(code, ref i, false))
                 {
                     if (res != null)

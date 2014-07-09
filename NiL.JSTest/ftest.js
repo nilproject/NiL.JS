@@ -204,10 +204,13 @@
 
 
     var val;
+    var count = 0;
     for (i = 0; i < vnum; i++) {
         val = Math.pow(x1[i], x2[i]);
-        if (!isEqual(val, y[i])) {
-            $ERROR("\nx1 = " + x1[i] + "\nx2 = " + x2[i] + "\nlibc.pow(x1,x2) = " + y[i] + "\nMath.pow(x1,x2) = " + Math.pow(x1[i], x2[i]) + "\nMath.abs(libc.pow(x1,x2) - Math.pow(x1,x2)) > " + prec + "\n\n");
+        if (val != y[i]) {
+            count++;
+            console.log("\nx1 = " + x1[i] + "\nx2 = " + x2[i] + "\nlibc.pow(x1,x2) = " + y[i] + "\nMath.pow(x1,x2) = " + Math.pow(x1[i], x2[i]));
         }
     }
+    console.log(count);
 }());
