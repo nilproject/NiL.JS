@@ -116,8 +116,14 @@ namespace NiL.JSTest
             var sw = new Stopwatch();
             var s = new Script(
 @"
-var a = '12345';
-console.log(String.prototype.toString.call(a));
+
+
+
+function normalise(v) {
+    var len = lengthVector(v); /**/
+    return [v[0] / len, v[1] / len, v[2] / len];
+}
+
 ");
             s.Context.AttachModule(typeof(System.Drawing.Point));
             sw.Start();

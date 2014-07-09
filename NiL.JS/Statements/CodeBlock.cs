@@ -65,16 +65,16 @@ namespace NiL.JS.Statements
 
         internal static ParseResult Parse(ParsingState state, ref int index)
         {
-            string code = state.Code;
+            //string code = state.Code;
             int i = index;
             bool sroot = i == 0 && state.AllowStrict;
             if (!sroot)
             {
-                if (code[i] != '{')
+                if (state.Code[i] != '{')
                     throw new ArgumentException("code (" + i + ")");
                 i++;
             }
-            while (i < code.Length && char.IsWhiteSpace(code[i]))
+            while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]))
                 i++;
             var body = new List<CodeNode>();
             state.LabelCount = 0;
@@ -87,23 +87,23 @@ namespace NiL.JS.Statements
                 do
                 {
                     var s = i;
-                    if (i >= code.Length)
+                    if (i >= state.Code.Length)
                         break;
-                    if (Parser.ValidateValue(code, ref i))
+                    if (Parser.ValidateValue(state.Code, ref i))
                     {
-                        while (i < code.Length && char.IsWhiteSpace(code[i]))
+                        while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]))
                             i++;
-                        if (i < code.Length && (Parser.isOperator(code[i])
-                            || Parser.Validate(code, "instanceof", i)
-                            || Parser.Validate(code, "in", i)))
+                        if (i < state.Code.Length && (Parser.isOperator(state.Code[i])
+                            || Parser.Validate(state.Code, "instanceof", i)
+                            || Parser.Validate(state.Code, "in", i)))
                         {
                             i = s;
                             break;
                         }
                         var t = s;
-                        if (Parser.ValidateString(code, ref t, true))
+                        if (Parser.ValidateString(state.Code, ref t, true))
                         {
-                            var str = code.Substring(s + 1, t - s - 2);
+                            var str = state.Code.Substring(s + 1, t - s - 2);
                             if (!strictSwitch && str == "use strict")
                             {
                                 state.strict.Push(true);
@@ -120,13 +120,13 @@ namespace NiL.JS.Statements
                             break;
                         }
                     }
-                    else if (code[i] == ';')
+                    else if (state.Code[i] == ';')
                     {
                         if (directives == null)
                             break;
                         do
                             i++;
-                        while (i < code.Length && char.IsWhiteSpace(code[i]));
+                        while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]));
                     }
                     else
                         break;
@@ -135,13 +135,13 @@ namespace NiL.JS.Statements
             for (var j = body.Count; j-- > 0; )
                 (body[j] as ImmidateValueStatement).value.oValue = Tools.Unescape((body[j] as ImmidateValueStatement).value.oValue.ToString(), state.strict.Peek());
             Dictionary<string, VariableDescriptor> vars = null;
-            while ((sroot && i < code.Length) || (!sroot && code[i] != '}'))
+            while ((sroot && i < state.Code.Length) || (!sroot && state.Code[i] != '}'))
             {
                 var t = Parser.Parse(state, ref i, 0);
                 if (t == null || t is EmptyStatement)
                 {
-                    if (sroot && i < code.Length && code[i] == '}')
-                        throw new JSException(new SyntaxError("Unexpected symbol \"}\" at " + Tools.PositionToTextcord(code, i)));
+                    if (sroot && i < state.Code.Length && state.Code[i] == '}')
+                        throw new JSException(new SyntaxError("Unexpected symbol \"}\" at " + Tools.PositionToTextcord(state.Code, i)));
                     continue;
                 }
                 if (t is FunctionStatement)

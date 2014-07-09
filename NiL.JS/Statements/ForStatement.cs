@@ -27,28 +27,28 @@ namespace NiL.JS.Statements
 
         internal static ParseResult Parse(ParsingState state, ref int index)
         {
-            string code = state.Code;
+            //string code = state.Code;
             int i = index;
-            while (char.IsWhiteSpace(code[i])) i++;
-            if (!Parser.Validate(code, "for(", ref i) && (!Parser.Validate(code, "for (", ref i)))
+            while (char.IsWhiteSpace(state.Code[i])) i++;
+            if (!Parser.Validate(state.Code, "for(", ref i) && (!Parser.Validate(state.Code, "for (", ref i)))
                 return new ParseResult();
-            while (char.IsWhiteSpace(code[i])) i++;
+            while (char.IsWhiteSpace(state.Code[i])) i++;
             CodeNode init = null;
             int labelsCount = state.LabelCount;
             state.LabelCount = 0;
-            init = code[i] == ';' ? null as CodeNode : Parser.Parse(state, ref i, 3);
-            if (code[i] != ';')
-                throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \";\" at + " + Tools.PositionToTextcord(code, i))));
-            do i++; while (char.IsWhiteSpace(code[i]));
-            var condition = code[i] == ';' ? null as CodeNode : ExpressionStatement.Parse(state, ref i).Statement;
-            if (code[i] != ';')
-                throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \";\" at + " + Tools.PositionToTextcord(code, i))));
-            do i++; while (char.IsWhiteSpace(code[i]));
-            var post = code[i] == ')' ? null as CodeNode : ExpressionStatement.Parse(state, ref i).Statement;
-            while (char.IsWhiteSpace(code[i])) i++;
-            if (code[i] != ')')
-                throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \";\" at + " + Tools.PositionToTextcord(code, i))));
-            do i++; while (char.IsWhiteSpace(code[i]));
+            init = state.Code[i] == ';' ? null as CodeNode : Parser.Parse(state, ref i, 3);
+            if (state.Code[i] != ';')
+                throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \";\" at + " + Tools.PositionToTextcord(state.Code, i))));
+            do i++; while (char.IsWhiteSpace(state.Code[i]));
+            var condition = state.Code[i] == ';' ? null as CodeNode : ExpressionStatement.Parse(state, ref i).Statement;
+            if (state.Code[i] != ';')
+                throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \";\" at + " + Tools.PositionToTextcord(state.Code, i))));
+            do i++; while (char.IsWhiteSpace(state.Code[i]));
+            var post = state.Code[i] == ')' ? null as CodeNode : ExpressionStatement.Parse(state, ref i).Statement;
+            while (char.IsWhiteSpace(state.Code[i])) i++;
+            if (state.Code[i] != ')')
+                throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \";\" at + " + Tools.PositionToTextcord(state.Code, i))));
+            do i++; while (char.IsWhiteSpace(state.Code[i]));
             state.AllowBreak++;
             state.AllowContinue++;
             var body = Parser.Parse(state, ref i, 0);

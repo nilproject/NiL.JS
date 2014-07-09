@@ -23,14 +23,14 @@ namespace NiL.JS.Statements
 
         internal static ParseResult Parse(ParsingState state, ref int index)
         {
-            string code = state.Code;
+            //string code = state.Code;
             int i = index;
-            while (char.IsWhiteSpace(code[i])) i++;
-            if (!Parser.Validate(code, "do", ref i) || !Parser.isIdentificatorTerminator(code[i]))
+            while (char.IsWhiteSpace(state.Code[i])) i++;
+            if (!Parser.Validate(state.Code, "do", ref i) || !Parser.isIdentificatorTerminator(state.Code[i]))
                 return new ParseResult();
             int labelsCount = state.LabelCount;
             state.LabelCount = 0;
-            while (char.IsWhiteSpace(code[i])) i++;
+            while (char.IsWhiteSpace(state.Code[i])) i++;
             state.AllowBreak++;
             state.AllowContinue++;
             var body = Parser.Parse(state, ref i, 4);
@@ -38,21 +38,21 @@ namespace NiL.JS.Statements
                 throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
             state.AllowBreak--;
             state.AllowContinue--;
-            if (!(body is CodeBlock) && code[i] == ';')
+            if (!(body is CodeBlock) && state.Code[i] == ';')
                 i++;
-            while (i < code.Length && char.IsWhiteSpace(code[i])) i++;
-            if (i >= code.Length)
+            while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i])) i++;
+            if (i >= state.Code.Length)
                 throw new JSException(new SyntaxError("Unexpected end of source."));
-            if (!Parser.Validate(code, "while", ref i))
-                throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \"while\" at + " + Tools.PositionToTextcord(code, i))));
-            while (char.IsWhiteSpace(code[i])) i++;
-            if (code[i] != '(')
-                throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \"(\" at + " + Tools.PositionToTextcord(code, i))));
-            do i++; while (char.IsWhiteSpace(code[i]));
+            if (!Parser.Validate(state.Code, "while", ref i))
+                throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \"while\" at + " + Tools.PositionToTextcord(state.Code, i))));
+            while (char.IsWhiteSpace(state.Code[i])) i++;
+            if (state.Code[i] != '(')
+                throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \"(\" at + " + Tools.PositionToTextcord(state.Code, i))));
+            do i++; while (char.IsWhiteSpace(state.Code[i]));
             var condition = Parser.Parse(state, ref i, 1);
-            while (char.IsWhiteSpace(code[i])) i++;
-            if (code[i] != ')')
-                throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \")\" at + " + Tools.PositionToTextcord(code, i))));
+            while (char.IsWhiteSpace(state.Code[i])) i++;
+            if (state.Code[i] != ')')
+                throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \")\" at + " + Tools.PositionToTextcord(state.Code, i))));
             i++;
             var pos = index;
             index = i;

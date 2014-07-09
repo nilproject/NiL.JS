@@ -11,7 +11,7 @@ namespace NiL.JS.Core
         public List<string> Labels;
         public readonly Stack<bool> strict;
         public int LabelCount;
-        public readonly string Code;
+        public string Code;
         public readonly string SourceCode;
         public bool AllowStrict;
 

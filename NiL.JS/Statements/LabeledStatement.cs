@@ -16,13 +16,13 @@ namespace NiL.JS.Statements
         internal static ParseResult Parse(ParsingState state, ref int index)
         {
             int i = index;
-            string code = state.Code;
-            if (!Parser.ValidateName(code, ref i, state.strict.Peek()))
+            //string code = state.Code;
+            if (!Parser.ValidateName(state.Code, ref i, state.strict.Peek()))
                 return new ParseResult();
             int l = i;
-            if (i >= code.Length || (!Parser.Validate(code, " :", ref i) && code[i++] != ':'))
+            if (i >= state.Code.Length || (!Parser.Validate(state.Code, " :", ref i) && state.Code[i++] != ':'))
                 return new ParseResult();
-            var label = code.Substring(index, l - index);
+            var label = state.Code.Substring(index, l - index);
             state.Labels.Add(label);
             int oldlc = state.LabelCount;
             state.LabelCount++;

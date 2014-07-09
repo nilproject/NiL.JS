@@ -19,9 +19,9 @@ namespace NiL.JS.Statements
 
         internal static ParseResult Parse(ParsingState state, ref int index)
         {
-            string code = state.Code;
+            //string code = state.Code;
             int i = index;
-            if (!Parser.Validate(code, "return", ref i) || !Parser.isIdentificatorTerminator(code[i]))
+            if (!Parser.Validate(state.Code, "return", ref i) || !Parser.isIdentificatorTerminator(state.Code[i]))
                 return new ParseResult();
             if (state.functionsDepth == 0)
                 throw new JSException(TypeProxy.Proxy(new SyntaxError("Invalid use of return statement.")));

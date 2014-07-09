@@ -29,22 +29,22 @@ namespace NiL.JS.Statements
 
         internal static ParseResult Parse(ParsingState state, ref int index)
         {
-            string code = state.Code;
-            if (code[index] != '{')
+            //string code = state.Code;
+            if (state.Code[index] != '{')
                 throw new ArgumentException("Invalid JSON definition");
             var flds = new Dictionary<string, CodeNode>();
             int i = index;
             int pos = 0;
-            while (code[i] != '}')
+            while (state.Code[i] != '}')
             {
                 do
                     i++;
-                while (char.IsWhiteSpace(code[i]));
+                while (char.IsWhiteSpace(state.Code[i]));
                 int s = i;
-                if (code[i] == '}')
+                if (state.Code[i] == '}')
                     break;
                 pos = i;
-                if (Parser.Validate(code, "set ", ref i) && !Parser.isIdentificatorTerminator(code[i]))
+                if (Parser.Validate(state.Code, "set ", ref i) && !Parser.isIdentificatorTerminator(state.Code[i]))
                 {
                     i = pos;
                     var setter = FunctionStatement.Parse(state, ref i, FunctionType.Set).Statement as FunctionStatement;
@@ -59,13 +59,13 @@ namespace NiL.JS.Statements
                         var vle = flds[setter.Name];
                         if (!(vle is ImmidateValueStatement)
                             || (vle as ImmidateValueStatement).value.valueType != JSObjectType.Property)
-                            throw new JSException(TypeProxy.Proxy(new SyntaxError("Try to define setter for defined field at " + Tools.PositionToTextcord(code, pos))));
+                            throw new JSException(TypeProxy.Proxy(new SyntaxError("Try to define setter for defined field at " + Tools.PositionToTextcord(state.Code, pos))));
                         if (((vle as ImmidateValueStatement).value.oValue as CodeNode[])[0] != null)
-                            throw new JSException(TypeProxy.Proxy(new SyntaxError("Try to redefine setter " + setter.Name + " at " + Tools.PositionToTextcord(code, pos))));
+                            throw new JSException(TypeProxy.Proxy(new SyntaxError("Try to redefine setter " + setter.Name + " at " + Tools.PositionToTextcord(state.Code, pos))));
                         ((vle as ImmidateValueStatement).value.oValue as CodeNode[])[0] = setter;
                     }
                 }
-                else if ((i = pos) >= 0 && Parser.Validate(code, "get ", ref i) && !Parser.isIdentificatorTerminator(code[i]))
+                else if ((i = pos) >= 0 && Parser.Validate(state.Code, "get ", ref i) && !Parser.isIdentificatorTerminator(state.Code[i]))
                 {
                     i = pos;
                     var getter = FunctionStatement.Parse(state, ref i, FunctionType.Get).Statement as FunctionStatement;
@@ -80,9 +80,9 @@ namespace NiL.JS.Statements
                         var vle = flds[getter.Name];
                         if (!(vle is ImmidateValueStatement)
                             || (vle as ImmidateValueStatement).value.valueType != JSObjectType.Property)
-                            throw new JSException(TypeProxy.Proxy(new SyntaxError("Try to define getter for defined field at " + Tools.PositionToTextcord(code, pos))));
+                            throw new JSException(TypeProxy.Proxy(new SyntaxError("Try to define getter for defined field at " + Tools.PositionToTextcord(state.Code, pos))));
                         if (((vle as ImmidateValueStatement).value.oValue as CodeNode[])[1] != null)
-                            throw new JSException(TypeProxy.Proxy(new SyntaxError("Try to redefine getter " + getter.Name + " at " + Tools.PositionToTextcord(code, pos))));
+                            throw new JSException(TypeProxy.Proxy(new SyntaxError("Try to redefine getter " + getter.Name + " at " + Tools.PositionToTextcord(state.Code, pos))));
                         ((vle as ImmidateValueStatement).value.oValue as CodeNode[])[1] = getter;
                     }
                 }
@@ -90,11 +90,11 @@ namespace NiL.JS.Statements
                 {
                     i = pos;
                     var fieldName = "";
-                    if (Parser.ValidateName(code, ref i, false, true, state.strict.Peek()))
-                        fieldName = Tools.Unescape(code.Substring(s, i - s), state.strict.Peek());
-                    else if (Parser.ValidateValue(code, ref i))
+                    if (Parser.ValidateName(state.Code, ref i, false, true, state.strict.Peek()))
+                        fieldName = Tools.Unescape(state.Code.Substring(s, i - s), state.strict.Peek());
+                    else if (Parser.ValidateValue(state.Code, ref i))
                     {
-                        string value = code.Substring(s, i - s);
+                        string value = state.Code.Substring(s, i - s);
                         if ((value[0] == '\'') || (value[0] == '"'))
                             fieldName = Tools.Unescape(value.Substring(1, value.Length - 2), state.strict.Peek());
                         else
@@ -106,32 +106,32 @@ namespace NiL.JS.Statements
                             else if (double.TryParse(value, out d))
                                 fieldName = Tools.DoubleToString(d);
                             else if (flds.Count != 0)
-                                throw new JSException(TypeProxy.Proxy(new SyntaxError("Invalid field name at " + Tools.PositionToTextcord(code, pos))));
+                                throw new JSException(TypeProxy.Proxy(new SyntaxError("Invalid field name at " + Tools.PositionToTextcord(state.Code, pos))));
                             else
                                 return new ParseResult();
                         }
                     }
                     else
                         return new ParseResult();
-                    while (char.IsWhiteSpace(code[i]))
+                    while (char.IsWhiteSpace(state.Code[i]))
                         i++;
-                    if (code[i] != ':')
+                    if (state.Code[i] != ':')
                         return new ParseResult();
                     do
                         i++;
-                    while (char.IsWhiteSpace(code[i]));
+                    while (char.IsWhiteSpace(state.Code[i]));
                     var initializator = ExpressionStatement.Parse(state, ref i, false).Statement;
                     CodeNode aei = null;
                     flds.TryGetValue(fieldName, out aei);
                     if (aei != null
                         && ((state.strict.Peek() && (!(aei is ImmidateValueStatement) || (aei as ImmidateValueStatement).value != JSObject.undefined))
                             || (aei is ImmidateValueStatement && ((aei as ImmidateValueStatement).value.valueType == JSObjectType.Property))))
-                        throw new JSException(new SyntaxError("Try to redefine field \"" + fieldName + "\" at " + Tools.PositionToTextcord(code, pos)));
+                        throw new JSException(new SyntaxError("Try to redefine field \"" + fieldName + "\" at " + Tools.PositionToTextcord(state.Code, pos)));
                     flds[fieldName] = initializator;
                 }
-                while (char.IsWhiteSpace(code[i]))
+                while (char.IsWhiteSpace(state.Code[i]))
                     i++;
-                if ((code[i] != ',') && (code[i] != '}'))
+                if ((state.Code[i] != ',') && (state.Code[i] != '}'))
                     return new ParseResult();
             }
             i++;

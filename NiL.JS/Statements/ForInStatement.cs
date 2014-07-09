@@ -24,46 +24,46 @@ namespace NiL.JS.Statements
 
         internal static ParseResult Parse(ParsingState state, ref int index)
         {
-            string code = state.Code;
+            //string code = state.Code;
             int i = index;
-            while (char.IsWhiteSpace(code[i])) i++;
-            if (!Parser.Validate(code, "for(", ref i) && (!Parser.Validate(code, "for (", ref i)))
+            while (char.IsWhiteSpace(state.Code[i])) i++;
+            if (!Parser.Validate(state.Code, "for(", ref i) && (!Parser.Validate(state.Code, "for (", ref i)))
                 return new ParseResult();
-            while (char.IsWhiteSpace(code[i])) i++;
+            while (char.IsWhiteSpace(state.Code[i])) i++;
             var res = new ForInStatement()
             {
                 labels = state.Labels.GetRange(state.Labels.Count - state.LabelCount, state.LabelCount)
             };
             var vStart = i;
-            if (Parser.Validate(code, "var", ref i))
+            if (Parser.Validate(state.Code, "var", ref i))
             {
-                while (char.IsWhiteSpace(code[i])) i++;
+                while (char.IsWhiteSpace(state.Code[i])) i++;
                 int start = i;
                 string varName;
-                if (!Parser.ValidateName(code, ref i, state.strict.Peek()))
+                if (!Parser.ValidateName(state.Code, ref i, state.strict.Peek()))
                     throw new ArgumentException();
-                varName = Tools.Unescape(code.Substring(start, i - start), state.strict.Peek());
+                varName = Tools.Unescape(state.Code.Substring(start, i - start), state.strict.Peek());
                 if (state.strict.Peek())
                 {
                     if (varName == "arguments" || varName == "eval")
-                        throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Parameters name may not be \"arguments\" or \"eval\" in strict mode at " + Tools.PositionToTextcord(code, start))));
+                        throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Parameters name may not be \"arguments\" or \"eval\" in strict mode at " + Tools.PositionToTextcord(state.Code, start))));
                 }
                 res.variable = new VariableDefineStatement(varName, new GetVariableStatement(varName) { Position = start, Length = i - start, functionDepth = state.functionsDepth }) { Position = vStart, Length = i - vStart };
             }
             else
             {
-                if (code[i] == ';')
+                if (state.Code[i] == ';')
                     return new ParseResult();
                 res.variable = ExpressionStatement.Parse(state, ref i, true, true).Statement;
             }
-            while (char.IsWhiteSpace(code[i])) i++;
-            if (!Parser.Validate(code, "in", ref i))
+            while (char.IsWhiteSpace(state.Code[i])) i++;
+            if (!Parser.Validate(state.Code, "in", ref i))
                 return new ParseResult();
-            while (char.IsWhiteSpace(code[i])) i++;
+            while (char.IsWhiteSpace(state.Code[i])) i++;
             res.source = Parser.Parse(state, ref i, 1);
-            while (char.IsWhiteSpace(code[i])) i++;
-            if (code[i] != ')')
-                throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \")\" at + " + Tools.PositionToTextcord(code, i))));
+            while (char.IsWhiteSpace(state.Code[i])) i++;
+            if (state.Code[i] != ')')
+                throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \")\" at + " + Tools.PositionToTextcord(state.Code, i))));
             i++;
             state.AllowBreak++;
             state.AllowContinue++;

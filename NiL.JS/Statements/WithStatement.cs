@@ -16,17 +16,17 @@ namespace NiL.JS.Statements
 
         internal static ParseResult Parse(ParsingState state, ref int index)
         {
-            string code = state.Code;
+            //string code = state.Code;
             int i = index;
-            if (!Parser.Validate(code, "with (", ref i) && !Parser.Validate(code, "with(", ref i))
+            if (!Parser.Validate(state.Code, "with (", ref i) && !Parser.Validate(state.Code, "with(", ref i))
                 return new ParseResult();
             if (state.strict.Peek())
                 throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.SyntaxError("WithStatement is not allowed in strict mode.")));
             var obj = Parser.Parse(state, ref i, 1);
-            while (char.IsWhiteSpace(code[i])) i++;
-            if (code[i] != ')')
+            while (char.IsWhiteSpace(state.Code[i])) i++;
+            if (state.Code[i] != ')')
                 throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.SyntaxError("Invalid syntax WithStatement.")));
-            do i++; while (char.IsWhiteSpace(code[i]));
+            do i++; while (char.IsWhiteSpace(state.Code[i]));
             var body = Parser.Parse(state, ref i, 0);
             var pos = index;
             index = i;

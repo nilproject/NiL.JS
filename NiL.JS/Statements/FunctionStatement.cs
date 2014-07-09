@@ -94,7 +94,7 @@ namespace NiL.JS.Statements
         internal static FunctionStatement Parse(string code)
         {
             int index = 0;
-            return Parse(new ParsingState(Tools.RemoveComments(code), code), ref index).Statement as FunctionStatement;
+            return Parse(new ParsingState(Tools.RemoveComments(code,0), code), ref index).Statement as FunctionStatement;
         }
 
         internal static ParseResult Parse(ParsingState state, ref int index)

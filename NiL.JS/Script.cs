@@ -35,7 +35,7 @@ namespace NiL.JS
                 throw new ArgumentNullException();
             Code = code;
             int i = 0;
-            root = CodeBlock.Parse(new ParsingState(Tools.RemoveComments(code), Code), ref i).Statement;
+            root = CodeBlock.Parse(new ParsingState(Tools.RemoveComments(code, 0), Code), ref i).Statement;
             if (i < code.Length)
                 throw new System.ArgumentException("Invalid char");
             Parser.Optimize(ref root, 0, 0, new System.Collections.Generic.Dictionary<string, VariableDescriptor>(), false);

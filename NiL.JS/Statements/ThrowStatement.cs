@@ -23,13 +23,13 @@ namespace NiL.JS.Statements
 
         internal static ParseResult Parse(ParsingState state, ref int index)
         {
-            string code = state.Code;
+            //string code = state.Code;
             int i = index;
-            if (!Parser.Validate(code, "throw", ref i) || (!char.IsWhiteSpace(code[i]) && (code[i] != '(')))
+            if (!Parser.Validate(state.Code, "throw", ref i) || (!char.IsWhiteSpace(state.Code[i]) && (state.Code[i] != '(')))
                 return new ParseResult();
             var b = Parser.Parse(state, ref i, 1, true);
             if (b is EmptyStatement)
-                throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Can't throw result of EmptyStatement " + Tools.PositionToTextcord(code, i - 1))));
+                throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Can't throw result of EmptyStatement " + Tools.PositionToTextcord(state.Code, i - 1))));
             var pos = index;
             index = i;
             return new ParseResult()

@@ -337,7 +337,7 @@ namespace NiL.JS.Statements
 
         private static ParseResult Parse(ParsingState state, ref int index, bool processComma, bool forUnary, bool forNew, bool root)
         {
-            string code = state.Code;
+            //string code = state.Code;
             int i = index;
             int position;
             OperationType type = OperationType.None;
@@ -345,17 +345,17 @@ namespace NiL.JS.Statements
             CodeNode second = null;
             int s = i;
             state.InExpression++;
-            if (Parser.ValidateName(code, ref i, state.strict.Peek()) || Parser.Validate(code, "this", ref i))
+            if (Parser.ValidateName(state.Code, ref i, state.strict.Peek()) || Parser.Validate(state.Code, "this", ref i))
             {
-                var name = Tools.Unescape(code.Substring(s, i - s), state.strict.Peek());
+                var name = Tools.Unescape(state.Code.Substring(s, i - s), state.strict.Peek());
                 if (name == "undefined")
                     first = new ImmidateValueStatement(JSObject.undefined) { Position = index, Length = i - index };
                 else
                     first = new GetVariableStatement(name) { Position = index, Length = i - index, functionDepth = state.functionsDepth };
             }
-            else if (Parser.ValidateValue(code, ref i))
+            else if (Parser.ValidateValue(state.Code, ref i))
             {
-                string value = code.Substring(s, i - s);
+                string value = state.Code.Substring(s, i - s);
                 if ((value[0] == '\'') || (value[0] == '"'))
                     first = new ImmidateValueStatement(Tools.Unescape(value.Substring(1, value.Length - 2), state.strict.Peek())) { Position = index, Length = i - s };
                 else
@@ -369,15 +369,16 @@ namespace NiL.JS.Statements
                     {
                         int n = 0;
                         double d = 0;
-                        if (Tools.ParseNumber(code, ref s, out d, 0, Tools.ParseNumberOptions.Default | (state.strict.Peek() ? Tools.ParseNumberOptions.RaiseIfOctal : Tools.ParseNumberOptions.None)))
+                        if (Tools.ParseNumber(state.Code, ref s, out d, 0, Tools.ParseNumberOptions.Default | (state.strict.Peek() ? Tools.ParseNumberOptions.RaiseIfOctal : Tools.ParseNumberOptions.None)))
                         {
                             if ((n = (int)d) == d && !double.IsNegativeInfinity(1.0 / d))
                                 first = new ImmidateValueStatement(n) { Position = index, Length = i - index };
                             else
                                 first = new ImmidateValueStatement(d) { Position = index, Length = i - index };
                         }
-                        else if (Parser.ValidateRegex(code, ref s, true))
+                        else if (Parser.ValidateRegex(state.Code, ref s, true))
                         {
+                            state.Code = state.Code = Tools.RemoveComments(state.SourceCode, i);
                             s = value.LastIndexOf('/') + 1;
                             string flags = value.Substring(s);
                             try
@@ -394,31 +395,31 @@ namespace NiL.JS.Statements
                     }
                 }
             }
-            else if ((code[i] == '!')
-                || (code[i] == '~')
-                || (code[i] == '+')
-                || (code[i] == '-')
-                || (code[i] == 'n' && code.Substring(i, 3) == "new")
-                || (code[i] == 'd' && code.Substring(i, 6) == "delete")
-                || (code[i] == 't' && code.Substring(i, 6) == "typeof")
-                || (code[i] == 'v' && code.Substring(i, 4) == "void"))
+            else if ((state.Code[i] == '!')
+                || (state.Code[i] == '~')
+                || (state.Code[i] == '+')
+                || (state.Code[i] == '-')
+                || (state.Code[i] == 'n' && state.Code.Substring(i, 3) == "new")
+                || (state.Code[i] == 'd' && state.Code.Substring(i, 6) == "delete")
+                || (state.Code[i] == 't' && state.Code.Substring(i, 6) == "typeof")
+                || (state.Code[i] == 'v' && state.Code.Substring(i, 4) == "void"))
             {
-                switch (code[i])
+                switch (state.Code[i])
                 {
                     case '+':
                         {
                             i++;
-                            if (code[i] == '+')
+                            if (state.Code[i] == '+')
                             {
                                 do
                                     i++;
-                                while (i < code.Length && char.IsWhiteSpace(code[i]));
-                                if (i >= code.Length)
+                                while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]));
+                                if (i >= state.Code.Length)
                                     throw new JSException(new SyntaxError("Unexpected end of source."));
                                 first = Parse(state, ref i, true, true, false, true).Statement;
                                 if (((first as GetMemberStatement) as object ?? (first as GetVariableStatement)) == null)
                                 {
-                                    var cord = Tools.PositionToTextcord(code, i);
+                                    var cord = Tools.PositionToTextcord(state.Code, i);
                                     throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid prefix operation. " + cord)));
                                 }
                                 if (state.strict.Peek()
@@ -428,7 +429,7 @@ namespace NiL.JS.Statements
                             }
                             else
                             {
-                                while (char.IsWhiteSpace(code[i]))
+                                while (char.IsWhiteSpace(state.Code[i]))
                                     i++;
                                 var f = Parse(state, ref i, true, true, false, true).Statement;
                                 first = new Expressions.Mul(new ImmidateValueStatement(1), f) { Position = index, Length = i - index };
@@ -438,17 +439,17 @@ namespace NiL.JS.Statements
                     case '-':
                         {
                             i++;
-                            if (code[i] == '-')
+                            if (state.Code[i] == '-')
                             {
                                 do
                                     i++;
-                                while (i < code.Length && char.IsWhiteSpace(code[i]));
-                                if (i >= code.Length)
+                                while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]));
+                                if (i >= state.Code.Length)
                                     throw new JSException(new SyntaxError("Unexpected end of source."));
                                 first = Parse(state, ref i, true, true, false, true).Statement;
                                 if (((first as GetMemberStatement) as object ?? (first as GetVariableStatement)) == null)
                                 {
-                                    var cord = Tools.PositionToTextcord(code, i);
+                                    var cord = Tools.PositionToTextcord(state.Code, i);
                                     throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid prefix operation. " + cord)));
                                 }
                                 if (state.strict.Peek()
@@ -458,7 +459,7 @@ namespace NiL.JS.Statements
                             }
                             else
                             {
-                                while (char.IsWhiteSpace(code[i]))
+                                while (char.IsWhiteSpace(state.Code[i]))
                                     i++;
                                 var f = Parse(state, ref i, true, true, false, true).Statement;
                                 first = new Expressions.Mul(new ImmidateValueStatement(-1), f) { Position = index, Length = i - index };
@@ -469,11 +470,11 @@ namespace NiL.JS.Statements
                         {
                             do
                                 i++;
-                            while (char.IsWhiteSpace(code[i]));
+                            while (char.IsWhiteSpace(state.Code[i]));
                             first = new Expressions.LogicalNot(Parse(state, ref i, true, true, false, true).Statement) { Position = index, Length = i - index };
                             if (first == null)
                             {
-                                var cord = Tools.PositionToTextcord(code, i);
+                                var cord = Tools.PositionToTextcord(state.Code, i);
                                 throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid prefix operation. " + cord)));
                             }
                             break;
@@ -482,11 +483,11 @@ namespace NiL.JS.Statements
                         {
                             do
                                 i++;
-                            while (char.IsWhiteSpace(code[i]));
+                            while (char.IsWhiteSpace(state.Code[i]));
                             first = Parse(state, ref i, true, true, false, true).Statement;
                             if (first == null)
                             {
-                                var cord = Tools.PositionToTextcord(code, i);
+                                var cord = Tools.PositionToTextcord(state.Code, i);
                                 throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid prefix operation. " + cord)));
                             }
                             first = new Expressions.Not(first) { Position = index, Length = i - index };
@@ -497,11 +498,11 @@ namespace NiL.JS.Statements
                             i += 5;
                             do
                                 i++;
-                            while (char.IsWhiteSpace(code[i]));
+                            while (char.IsWhiteSpace(state.Code[i]));
                             first = Parse(state, ref i, false, true, false, true).Statement;
                             if (first == null)
                             {
-                                var cord = Tools.PositionToTextcord(code, i);
+                                var cord = Tools.PositionToTextcord(state.Code, i);
                                 throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid prefix operation. " + cord)));
                             }
                             first = new Expressions.TypeOf(first) { Position = index, Length = i - index };
@@ -512,11 +513,11 @@ namespace NiL.JS.Statements
                             i += 3;
                             do
                                 i++;
-                            while (char.IsWhiteSpace(code[i]));
+                            while (char.IsWhiteSpace(state.Code[i]));
                             first = new Expressions.None(Parse(state, ref i, false, true, false, true).Statement, new ImmidateValueStatement(JSObject.undefined)) { Position = index, Length = i - index };
                             if (first == null)
                             {
-                                var cord = Tools.PositionToTextcord(code, i);
+                                var cord = Tools.PositionToTextcord(state.Code, i);
                                 throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid prefix operation. " + cord)));
                             }
                             break;
@@ -526,11 +527,11 @@ namespace NiL.JS.Statements
                             i += 2;
                             do
                                 i++;
-                            while (char.IsWhiteSpace(code[i]));
+                            while (char.IsWhiteSpace(state.Code[i]));
                             first = Parse(state, ref i, false, true, true, true).Statement;
                             if (first == null)
                             {
-                                var cord = Tools.PositionToTextcord(code, i);
+                                var cord = Tools.PositionToTextcord(state.Code, i);
                                 throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid prefix operation. " + cord)));
                             }
                             first = new Expressions.New(first, new CodeNode[0]) { Position = index, Length = i - index };
@@ -541,29 +542,29 @@ namespace NiL.JS.Statements
                             i += 5;
                             do
                                 i++;
-                            while (char.IsWhiteSpace(code[i]));
+                            while (char.IsWhiteSpace(state.Code[i]));
                             first = Parse(state, ref i, false, true, false, true).Statement;
                             if (first == null)
                             {
-                                var cord = Tools.PositionToTextcord(code, i);
+                                var cord = Tools.PositionToTextcord(state.Code, i);
                                 throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid prefix operation. " + cord)));
                             }
                             first = new Expressions.Delete(first) { Position = index, Length = i - index };
                             break;
                         }
                     default:
-                        throw new NotImplementedException("Unary operator " + code[i]);
+                        throw new NotImplementedException("Unary operator " + state.Code[i]);
                 }
             }
-            else if (code[i] == '(')
+            else if (state.Code[i] == '(')
             {
                 do
                     i++;
-                while (char.IsWhiteSpace(code[i]));
+                while (char.IsWhiteSpace(state.Code[i]));
                 first = ExpressionStatement.Parse(state, ref i, true).Statement;
-                while (char.IsWhiteSpace(code[i]))
+                while (char.IsWhiteSpace(state.Code[i]))
                     i++;
-                if (code[i] != ')')
+                if (state.Code[i] != ')')
                     throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \")\"")));
                 i++;
                 if (state.InExpression == 1 && first is FunctionStatement)
@@ -572,7 +573,7 @@ namespace NiL.JS.Statements
             else
                 first = Parser.Parse(state, ref i, 2);
             if (first is EmptyStatement)
-                throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid operator argument at " + Tools.PositionToTextcord(code, i))));
+                throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid operator argument at " + Tools.PositionToTextcord(state.Code, i))));
             bool canAsign = true && !forUnary; // на случай f() = x
             bool assign = false; // на случай операторов 'x='
             bool binary = false;
@@ -581,19 +582,19 @@ namespace NiL.JS.Statements
             do
             {
                 repeat = false;
-                while (i < code.Length && char.IsWhiteSpace(code[i]) && !Tools.isLineTerminator(code[i]))
+                while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]) && !Tools.isLineTerminator(state.Code[i]))
                     i++;
-                if (code.Length <= i)
+                if (state.Code.Length <= i)
                     break;
                 rollbackPos = i;
-                while (i < code.Length && char.IsWhiteSpace(code[i]))
+                while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]))
                     i++;
-                if (code.Length <= i)
+                if (state.Code.Length <= i)
                 {
                     i = rollbackPos;
                     break;
                 }
-                switch (code[i])
+                switch (state.Code[i])
                 {
                     case '\v':
                     case '\n':
@@ -616,10 +617,10 @@ namespace NiL.JS.Statements
                                 i = rollbackPos;
                                 break;
                             }
-                            if (code[i + 1] == '=')
+                            if (state.Code[i + 1] == '=')
                             {
                                 i++;
-                                if (code[i + 1] == '=')
+                                if (state.Code[i + 1] == '=')
                                 {
                                     i++;
                                     binary = true;
@@ -661,18 +662,18 @@ namespace NiL.JS.Statements
                             type = OperationType.Ternary;
                             do
                                 i++;
-                            while (char.IsWhiteSpace(code[i]));
+                            while (char.IsWhiteSpace(state.Code[i]));
                             position = i;
                             var threads = new CodeNode[]
                                 {
                                     Parser.Parse(state, ref i, 1),
                                     null
                                 };
-                            if (code[i] != ':')
+                            if (state.Code[i] != ':')
                                 throw new ArgumentException("Invalid char in ternary operator");
                             do
                                 i++;
-                            while (char.IsWhiteSpace(code[i]));
+                            while (char.IsWhiteSpace(state.Code[i]));
                             second = new ImmidateValueStatement(new JSObject() { valueType = JSObjectType.Object, oValue = threads }) { Position = position };
                             threads[1] = Parser.Parse(state, ref i, 1);
                             second.Length = i - second.Position;
@@ -689,10 +690,10 @@ namespace NiL.JS.Statements
                                 i = rollbackPos;
                                 break;
                             }
-                            if (code[i + 1] == '=')
+                            if (state.Code[i + 1] == '=')
                             {
                                 i++;
-                                if (code[i + 1] == '=')
+                                if (state.Code[i + 1] == '=')
                                 {
                                     i++;
                                     type = OperationType.StrictEqual;
@@ -714,7 +715,7 @@ namespace NiL.JS.Statements
                                 i = rollbackPos;
                                 break;
                             }
-                            if (code[i + 1] == '+')
+                            if (state.Code[i + 1] == '+')
                             {
                                 if (rollbackPos != i)
                                     goto default;
@@ -733,7 +734,7 @@ namespace NiL.JS.Statements
                             {
                                 binary = true;
                                 type = OperationType.Addition;
-                                if (code[i + 1] == '=')
+                                if (state.Code[i + 1] == '=')
                                 {
                                     assign = true;
                                     i++;
@@ -750,7 +751,7 @@ namespace NiL.JS.Statements
                                 i = rollbackPos;
                                 break;
                             }
-                            if (code[i + 1] == '-')
+                            if (state.Code[i + 1] == '-')
                             {
                                 if (rollbackPos != i)
                                     goto default;
@@ -769,7 +770,7 @@ namespace NiL.JS.Statements
                             {
                                 binary = true;
                                 type = OperationType.Substract;
-                                if (code[i + 1] == '=')
+                                if (state.Code[i + 1] == '=')
                                 {
                                     assign = true;
                                     i++;
@@ -788,7 +789,7 @@ namespace NiL.JS.Statements
                             }
                             binary = true;
                             type = OperationType.Multiply;
-                            if (code[i + 1] == '=')
+                            if (state.Code[i + 1] == '=')
                             {
                                 assign = true;
                                 i++;
@@ -804,7 +805,7 @@ namespace NiL.JS.Statements
                                 i = rollbackPos;
                                 break;
                             }
-                            if (code[i + 1] == '&')
+                            if (state.Code[i + 1] == '&')
                             {
                                 i++;
                                 binary = true;
@@ -817,7 +818,7 @@ namespace NiL.JS.Statements
                                 binary = true;
                                 assign = false;
                                 type = OperationType.And;
-                                if (code[i + 1] == '=')
+                                if (state.Code[i + 1] == '=')
                                 {
                                     assign = true;
                                     i++;
@@ -834,7 +835,7 @@ namespace NiL.JS.Statements
                                 i = rollbackPos;
                                 break;
                             }
-                            if (code[i + 1] == '|')
+                            if (state.Code[i + 1] == '|')
                             {
                                 i++;
                                 binary = true;
@@ -847,7 +848,7 @@ namespace NiL.JS.Statements
                                 binary = true;
                                 assign = false;
                                 type = OperationType.Or;
-                                if (code[i + 1] == '=')
+                                if (state.Code[i + 1] == '=')
                                 {
                                     assign = true;
                                     i++;
@@ -866,7 +867,7 @@ namespace NiL.JS.Statements
                             }
                             binary = true;
                             type = OperationType.Xor;
-                            if (code[i + 1] == '=')
+                            if (state.Code[i + 1] == '=')
                             {
                                 assign = true;
                                 i++;
@@ -882,9 +883,10 @@ namespace NiL.JS.Statements
                                 i = rollbackPos;
                                 break;
                             }
+                            state.Code = Tools.RemoveComments(state.SourceCode, i + 1);
                             binary = true;
                             type = OperationType.Division;
-                            if (code[i + 1] == '=')
+                            if (state.Code[i + 1] == '=')
                             {
                                 assign = true;
                                 i++;
@@ -901,7 +903,7 @@ namespace NiL.JS.Statements
                             }
                             binary = true;
                             type = OperationType.Module;
-                            if (code[i + 1] == '=')
+                            if (state.Code[i + 1] == '=')
                             {
                                 assign = true;
                                 i++;
@@ -918,10 +920,10 @@ namespace NiL.JS.Statements
                                 break;
                             }
                             binary = true;
-                            if (code[i + 1] == '<')
+                            if (state.Code[i + 1] == '<')
                             {
                                 i++;
-                                if (code[i + 1] == '<')
+                                if (state.Code[i + 1] == '<')
                                 {
                                     type = OperationType.UnsignedShiftLeft;
                                     i++;
@@ -932,13 +934,13 @@ namespace NiL.JS.Statements
                             else
                             {
                                 type = OperationType.Less;
-                                if (code[i + 1] == '=')
+                                if (state.Code[i + 1] == '=')
                                 {
                                     type = OperationType.LessOrEqual;
                                     i++;
                                 }
                             }
-                            if (code[i + 1] == '=')
+                            if (state.Code[i + 1] == '=')
                             {
                                 assign = true;
                                 i++;
@@ -955,10 +957,10 @@ namespace NiL.JS.Statements
                                 break;
                             }
                             binary = true;
-                            if (code[i + 1] == '>')
+                            if (state.Code[i + 1] == '>')
                             {
                                 i++;
-                                if (code[i + 1] == '>')
+                                if (state.Code[i + 1] == '>')
                                 {
                                     type = OperationType.UnsignedShiftRight;
                                     i++;
@@ -971,13 +973,13 @@ namespace NiL.JS.Statements
                             else
                             {
                                 type = OperationType.More;
-                                if (code[i + 1] == '=')
+                                if (state.Code[i + 1] == '=')
                                 {
                                     type = OperationType.MoreOrEqual;
                                     i++;
                                 }
                             }
-                            if (code[i + 1] == '=')
+                            if (state.Code[i + 1] == '=')
                             {
                                 assign = true;
                                 i++;
@@ -988,12 +990,12 @@ namespace NiL.JS.Statements
                         {
                             binary = true;
                             i++;
-                            while (char.IsWhiteSpace(code[i]))
+                            while (char.IsWhiteSpace(state.Code[i]))
                                 i++;
                             s = i;
-                            if (!Parser.ValidateName(code, ref i, false, true, state.strict.Peek()))
+                            if (!Parser.ValidateName(state.Code, ref i, false, true, state.strict.Peek()))
                                 throw new ArgumentException("code (" + i + ")");
-                            string name = code.Substring(s, i - s);
+                            string name = state.Code.Substring(s, i - s);
                             first = new GetMemberStatement(first, new ImmidateValueStatement(name)
                                                                      {
                                                                          Position = s,
@@ -1014,17 +1016,17 @@ namespace NiL.JS.Statements
                             int startPos = i;
                             for (; ; )
                             {
-                                while (char.IsWhiteSpace(code[i]))
+                                while (char.IsWhiteSpace(state.Code[i]))
                                     i++;
-                                if (code[i] == ']')
+                                if (state.Code[i] == ']')
                                     break;
-                                else if (code[i] == ',')
+                                else if (state.Code[i] == ',')
                                     do
                                         i++;
-                                    while (char.IsWhiteSpace(code[i]));
+                                    while (char.IsWhiteSpace(state.Code[i]));
                                 args.Add(Parser.Parse(state, ref i, 1));
                                 if (args[args.Count - 1] == null)
-                                    throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \"]\" at " + Tools.PositionToTextcord(code, startPos))));
+                                    throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \"]\" at " + Tools.PositionToTextcord(state.Code, startPos))));
                                 if ((args[args.Count - 1] is ExpressionStatement) && (args[args.Count - 1] as ExpressionStatement)._type == OperationType.None)
                                     args[args.Count - 1] = (args[args.Count - 1] as ExpressionStatement).first;
                             }
@@ -1041,19 +1043,19 @@ namespace NiL.JS.Statements
                             int startPos = i;
                             for (; ; )
                             {
-                                while (char.IsWhiteSpace(code[i]))
+                                while (char.IsWhiteSpace(state.Code[i]))
                                     i++;
-                                if (code[i] == ')')
+                                if (state.Code[i] == ')')
                                     break;
-                                else if (code[i] == ',')
+                                else if (state.Code[i] == ',')
                                     do
                                         i++;
-                                    while (char.IsWhiteSpace(code[i]));
-                                if (i + 1 == code.Length)
+                                    while (char.IsWhiteSpace(state.Code[i]));
+                                if (i + 1 == state.Code.Length)
                                     throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Unexpected end of line")));
                                 args.Add(ExpressionStatement.Parse(state, ref i, false).Statement);
                                 if (args[args.Count - 1] == null)
-                                    throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \")\" at " + Tools.PositionToTextcord(code, startPos))));
+                                    throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \")\" at " + Tools.PositionToTextcord(state.Code, startPos))));
                             }
                             first = new Call(first, args.ToArray())
                             {
@@ -1075,13 +1077,13 @@ namespace NiL.JS.Statements
                                 i = rollbackPos;
                                 break;
                             }
-                            if (Parser.Validate(code, "instanceof", ref i))
+                            if (Parser.Validate(state.Code, "instanceof", ref i))
                             {
                                 type = OperationType.InstanceOf;
                                 binary = true;
                                 break;
                             }
-                            else if (Parser.Validate(code, "in", ref i))
+                            else if (Parser.Validate(state.Code, "in", ref i))
                             {
                                 type = OperationType.In;
                                 binary = true;
@@ -1091,14 +1093,14 @@ namespace NiL.JS.Statements
                         }
                     default:
                         {
-                            if (Tools.isLineTerminator(code[i]))
+                            if (Tools.isLineTerminator(state.Code[i]))
                                 goto case '\n';
                             if (i != rollbackPos)
                             {
                                 i = rollbackPos;
                                 goto case '\n';
                             }
-                            throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid operator '" + code[i] + "' at " + Tools.PositionToTextcord(code, i))));
+                            throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid operator '" + state.Code[i] + "' at " + Tools.PositionToTextcord(state.Code, i))));
                         }
                 }
             } while (repeat);
@@ -1116,8 +1118,8 @@ namespace NiL.JS.Statements
             {
                 do
                     i++;
-                while (code.Length > i && char.IsWhiteSpace(code[i]));
-                if (code.Length > i)
+                while (state.Code.Length > i && char.IsWhiteSpace(state.Code[i]));
+                if (state.Code.Length > i)
                     second = ExpressionStatement.Parse(state, ref i, processComma, false, false, false).Statement;
             }
             CodeNode res = null;

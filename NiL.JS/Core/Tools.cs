@@ -734,8 +734,6 @@ namespace NiL.JS.Core
                                 index += 2;
                                 while (index < code.Length && !Tools.isLineTerminator(code[index]))
                                     index++;
-                                //while (index < code.Length && char.IsWhiteSpace(code[index]))
-                                //    index++;
                                 work = true;
                                 break;
                             }
@@ -758,16 +756,18 @@ namespace NiL.JS.Core
                     index++;
         }
 
-        internal static string RemoveComments(string code)
+        internal static string RemoveComments(string code, int startPosition)
         {
             StringBuilder res = null;// new StringBuilder(code.Length);
-            for (int i = 0; i < code.Length; )
+            for (int i = startPosition; i < code.Length; )
             {
                 while (i < code.Length && char.IsWhiteSpace(code[i]))
+                {
                     if (res != null)
                         res.Append(code[i++]);
                     else
                         i++;
+                }
                 var s = i;
                 skipComment(code, ref i, false);
                 if (s != i && res == null)
@@ -780,9 +780,20 @@ namespace NiL.JS.Core
                     res.Append(' ');
                 if (i >= code.Length)
                     continue;
+
+                if (Parser.ValidateRegex(code, ref i, false)) // оно путает деление с комментарием в конце строки и regexp.
+                    // Посему делаем так: если встретили что-то похожее на regexp - останавливаемся. 
+                    // Остальные комментарии удалим когда, в процессе разбора, поймём, что же это на самом деле
+                {
+                    if (res != null)
+                        for (; s <= i; s++)
+                            res.Append(code[s]);
+                    break;
+                }
+
                 if (//Parser.ValidateName(code, ref i, false) ||
                     //Parser.ValidateNumber(code, ref i) ||
-                    Parser.ValidateRegex(code, ref i, false) ||
+                    //Parser.ValidateRegex(code, ref i, false) ||
                     Parser.ValidateString(code, ref i, false))
                 {
                     if (res != null)

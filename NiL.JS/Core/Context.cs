@@ -457,7 +457,7 @@ namespace NiL.JS.Core
             try
             {
                 int i = 0;
-                string c = Tools.RemoveComments(code);
+                string c = Tools.RemoveComments(code, 0);
                 var ps = new ParsingState(c, code);
                 ps.strict.Clear();
                 ps.strict.Push(strict);

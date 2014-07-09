@@ -29,56 +29,56 @@ namespace NiL.JS.Statements
 
         internal static ParseResult Parse(ParsingState state, ref int index)
         {
-            string code = state.Code;
+            //string code = state.Code;
             int i = index;
-            while (char.IsWhiteSpace(code[i])) i++;
-            if (!Parser.Validate(code, "var ", ref i))
+            while (char.IsWhiteSpace(state.Code[i])) i++;
+            if (!Parser.Validate(state.Code, "var ", ref i))
                 return new ParseResult();
             bool isDef = false;
-            while (char.IsWhiteSpace(code[i])) i++;
+            while (char.IsWhiteSpace(state.Code[i])) i++;
             var initializator = new List<CodeNode>();
             var names = new List<string>();
-            while ((code[i] != ';') && (code[i] != '}') && !Tools.isLineTerminator(code[i]))
+            while ((state.Code[i] != ';') && (state.Code[i] != '}') && !Tools.isLineTerminator(state.Code[i]))
             {
                 int s = i;
-                if (!Parser.ValidateName(code, ref i, state.strict.Peek()))
+                if (!Parser.ValidateName(state.Code, ref i, state.strict.Peek()))
                 {
-                    if (Parser.ValidateName(code, ref i, false, true, state.strict.Peek()))
-                        throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError('\"' + Tools.Unescape(code.Substring(s, i - s), state.strict.Peek()) + "\" is a reserved word at " + Tools.PositionToTextcord(code, s))));
-                    throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid variable definition at " + Tools.PositionToTextcord(code, s))));
+                    if (Parser.ValidateName(state.Code, ref i, false, true, state.strict.Peek()))
+                        throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError('\"' + Tools.Unescape(state.Code.Substring(s, i - s), state.strict.Peek()) + "\" is a reserved word at " + Tools.PositionToTextcord(state.Code, s))));
+                    throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid variable definition at " + Tools.PositionToTextcord(state.Code, s))));
                 }
-                string name = Tools.Unescape(code.Substring(s, i - s), state.strict.Peek());
+                string name = Tools.Unescape(state.Code.Substring(s, i - s), state.strict.Peek());
                 if (state.strict.Peek())
                 {
                     if (name == "arguments" || name == "eval")
-                        throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Varible name may not be \"arguments\" or \"eval\" in strict mode at " + Tools.PositionToTextcord(code, s))));
+                        throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Varible name may not be \"arguments\" or \"eval\" in strict mode at " + Tools.PositionToTextcord(state.Code, s))));
                 }
                 names.Add(name);
                 isDef = true;
-                while (i < code.Length && char.IsWhiteSpace(code[i]) && !Tools.isLineTerminator(code[i])) i++;
-                if (i < code.Length && (code[i] != ',') && (code[i] != ';') && (code[i] != '=') && (code[i] != '}') && (!Tools.isLineTerminator(code[i])))
-                    throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \";\", \",\", \"=\" or \"}\" at + " + Tools.PositionToTextcord(code, i))));
-                if (i >= code.Length)
+                while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]) && !Tools.isLineTerminator(state.Code[i])) i++;
+                if (i < state.Code.Length && (state.Code[i] != ',') && (state.Code[i] != ';') && (state.Code[i] != '=') && (state.Code[i] != '}') && (!Tools.isLineTerminator(state.Code[i])))
+                    throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \";\", \",\", \"=\" or \"}\" at + " + Tools.PositionToTextcord(state.Code, i))));
+                if (i >= state.Code.Length)
                 {
                     initializator.Add(new GetVariableStatement(name) { Position = s, Length = name.Length, functionDepth = state.functionsDepth });
                     break;
                 }
-                if (Tools.isLineTerminator(code[i]))
+                if (Tools.isLineTerminator(state.Code[i]))
                 {
                     s = i;
-                    do i++; while (i < code.Length && char.IsWhiteSpace(code[i]));
-                    if (i >= code.Length)
+                    do i++; while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]));
+                    if (i >= state.Code.Length)
                     {
                         initializator.Add(new GetVariableStatement(name) { Position = s, Length = name.Length, functionDepth = state.functionsDepth });
                         break;
                     }
-                    if (code[i] != '=')
+                    if (state.Code[i] != '=')
                         i = s;
                 }
-                if (code[i] == '=')
+                if (state.Code[i] == '=')
                 {
-                    do i++; while (i < code.Length && char.IsWhiteSpace(code[i]));
-                    if (i == code.Length)
+                    do i++; while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]));
+                    if (i == state.Code.Length)
                         throw new JSException(TypeProxy.Proxy(new SyntaxError("Unexpected end of line in variable defenition.")));
                     initializator.Add(
                         new Assign(new GetVariableStatement(name) { Position = s, Length = name.Length, functionDepth = state.functionsDepth }, ExpressionStatement.Parse(state, ref i, false).Statement)
@@ -89,21 +89,21 @@ namespace NiL.JS.Statements
                 }
                 else
                     initializator.Add(new GetVariableStatement(name) { Position = s, Length = name.Length, functionDepth = state.functionsDepth });
-                if (i >= code.Length)
+                if (i >= state.Code.Length)
                     break;
                 s = i;
-                if ((code[i] != ',') && (code[i] != ';') && (code[i] != '=') && (code[i] != '}') && (!Tools.isLineTerminator(code[i])))
+                if ((state.Code[i] != ',') && (state.Code[i] != ';') && (state.Code[i] != '=') && (state.Code[i] != '}') && (!Tools.isLineTerminator(state.Code[i])))
                     throw new ArgumentException("code (" + i + ")");
-                while (s < code.Length && char.IsWhiteSpace(code[s])) s++;
-                if (s >= code.Length)
+                while (s < state.Code.Length && char.IsWhiteSpace(state.Code[s])) s++;
+                if (s >= state.Code.Length)
                     break;
-                if (code[s] == ',')
+                if (state.Code[s] == ',')
                 {
                     i = s;
-                    do i++; while (char.IsWhiteSpace(code[i]));
+                    do i++; while (char.IsWhiteSpace(state.Code[i]));
                 }
                 else
-                    while (char.IsWhiteSpace(code[i]) && !Tools.isLineTerminator(code[i])) i++;
+                    while (char.IsWhiteSpace(state.Code[i]) && !Tools.isLineTerminator(state.Code[i])) i++;
             }
             if (!isDef)
                 throw new ArgumentException("code (" + i + ")");

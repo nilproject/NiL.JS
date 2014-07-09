@@ -8,9 +8,9 @@ namespace NiL.JS.Statements
     {
         internal static ParseResult Parse(ParsingState state, ref int index)
         {
-            string code = state.Code;
+            //string code = state.Code;
             int i = index;
-            if (!Parser.Validate(code, "debugger", ref i) || !Parser.isIdentificatorTerminator(code[i]))
+            if (!Parser.Validate(state.Code, "debugger", ref i) || !Parser.isIdentificatorTerminator(state.Code[i]))
                 return new ParseResult();
             int pos = index;
             index = i;

@@ -495,31 +495,31 @@ namespace NiL.JS.Core
 
         internal static CodeNode Parse(ParsingState state, ref int index, int ruleset, bool lineAutoComplite)
         {
-            string code = state.Code;
-            while ((index < code.Length) && (char.IsWhiteSpace(code[index])) && (!lineAutoComplite || !Tools.isLineTerminator(code[index])))
+            //string code = state.Code;
+            while ((index < state.Code.Length) && (char.IsWhiteSpace(state.Code[index])) && (!lineAutoComplite || !Tools.isLineTerminator(state.Code[index])))
                 index++;
-            if (index >= code.Length || code[index] == '}')
+            if (index >= state.Code.Length || state.Code[index] == '}')
                 return null;
             int sindex = index;
-            if (code[index] == ';' || (lineAutoComplite && Tools.isLineTerminator(code[index])))
+            if (state.Code[index] == ';' || (lineAutoComplite && Tools.isLineTerminator(state.Code[index])))
             {
                 index++;
                 return EmptyStatement.Instance;
             }
-            if (index >= code.Length)
+            if (index >= state.Code.Length)
                 return null;
             for (int i = 0; i < rules[ruleset].Length; i++)
             {
-                if (rules[ruleset][i].Validate(code, index))
+                if (rules[ruleset][i].Validate(state.Code, index))
                 {
                     var pr = rules[ruleset][i].Parse(state, ref index);
                     if (pr.IsParsed)
                         return pr.Statement;
                 }
             }
-            var cord = Tools.PositionToTextcord(code, sindex);
+            var cord = Tools.PositionToTextcord(state.Code, sindex);
             throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.SyntaxError("Unexpected token at " + cord + " : "
-                + code.Substring(index, Math.Min(20, code.Length - index)).Split(new[] { ' ', '\n', '\r' })[0])));
+                + state.Code.Substring(index, Math.Min(20, state.Code.Length - index)).Split(new[] { ' ', '\n', '\r' })[0])));
         }
 
         internal static void Optimize(ref CodeNode s, int depth, int funcDepth, Dictionary<string, VariableDescriptor> variables, bool strict)

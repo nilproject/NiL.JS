@@ -18,29 +18,29 @@ namespace NiL.JS.Statements
 
         internal static ParseResult Parse(ParsingState state, ref int index)
         {
-            string code = state.Code;
+            //string code = state.Code;
             int i = index;
-            if (code[index] != '[')
+            if (state.Code[index] != '[')
                 throw new ArgumentException("Syntax error. Expected '['");
             do
                 i++;
-            while (char.IsWhiteSpace(code[i]));
+            while (char.IsWhiteSpace(state.Code[i]));
             var elms = new List<CodeNode>();
-            while (code[i] != ']')
+            while (state.Code[i] != ']')
             {
-                if (code[i] == ',')
+                if (state.Code[i] == ',')
                     elms.Add(null);
                 else
                     elms.Add(ExpressionStatement.Parse(state, ref i, false).Statement);
-                while (char.IsWhiteSpace(code[i]))
+                while (char.IsWhiteSpace(state.Code[i]))
                     i++;
-                if (code[i] == ',')
+                if (state.Code[i] == ',')
                 {
                     do
                         i++;
-                    while (char.IsWhiteSpace(code[i]));
+                    while (char.IsWhiteSpace(state.Code[i]));
                 }
-                else if (code[i] != ']')
+                else if (state.Code[i] != ']')
                     throw new ArgumentException("Syntax error. Expected ']'");
             }
             i++;

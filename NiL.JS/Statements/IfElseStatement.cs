@@ -22,26 +22,26 @@ namespace NiL.JS.Statements
 
         internal static ParseResult Parse(ParsingState state, ref int index)
         {
-            string code = state.Code;
+            //string code = state.Code;
             int i = index;
-            if (!Parser.Validate(code, "if (", ref i) && !Parser.Validate(code, "if(", ref i))
+            if (!Parser.Validate(state.Code, "if (", ref i) && !Parser.Validate(state.Code, "if(", ref i))
                 return new ParseResult();
-            while (char.IsWhiteSpace(code[i])) i++;
+            while (char.IsWhiteSpace(state.Code[i])) i++;
             CodeNode condition = ExpressionStatement.Parse(state, ref i).Statement;
-            while (char.IsWhiteSpace(code[i])) i++;
-            if (code[i] != ')')
+            while (char.IsWhiteSpace(state.Code[i])) i++;
+            if (state.Code[i] != ')')
                 throw new ArgumentException("code (" + i + ")");
-            do i++; while (char.IsWhiteSpace(code[i]));
+            do i++; while (char.IsWhiteSpace(state.Code[i]));
             CodeNode body = Parser.Parse(state, ref i, 0);
             if (body is FunctionStatement && state.strict.Peek())
                 throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
             CodeNode elseBody = null;
-            while (i < code.Length && char.IsWhiteSpace(code[i])) i++;
-            if (i < code.Length && !(body is CodeBlock) && (code[i] == ';'))
-                do i++; while (i < code.Length && char.IsWhiteSpace(code[i]));
-            if (Parser.Validate(code, "else", ref i))
+            while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i])) i++;
+            if (i < state.Code.Length && !(body is CodeBlock) && (state.Code[i] == ';'))
+                do i++; while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]));
+            if (Parser.Validate(state.Code, "else", ref i))
             {
-                while (char.IsWhiteSpace(code[i])) i++;
+                while (char.IsWhiteSpace(state.Code[i])) i++;
                 elseBody = Parser.Parse(state, ref i, 0);
                 if (elseBody is FunctionStatement && state.strict.Peek())
                     throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));

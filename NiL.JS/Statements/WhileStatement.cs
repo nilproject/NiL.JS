@@ -18,21 +18,21 @@ namespace NiL.JS.Statements
 
         internal static ParseResult Parse(ParsingState state, ref int index)
         {
-            string code = state.Code;
+            //string code = state.Code;
             int i = index;
-            if (!Parser.Validate(code, "while (", ref i) && !Parser.Validate(code, "while(", ref i))
+            if (!Parser.Validate(state.Code, "while (", ref i) && !Parser.Validate(state.Code, "while(", ref i))
                 return new ParseResult();
             int labelsCount = state.LabelCount;
             state.LabelCount = 0;
-            while (char.IsWhiteSpace(code[i])) i++;
+            while (char.IsWhiteSpace(state.Code[i])) i++;
             var condition = Parser.Parse(state, ref i, 1);
-            while (i < code.Length && char.IsWhiteSpace(code[i])) i++;
-            if (i >= code.Length)
+            while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i])) i++;
+            if (i >= state.Code.Length)
                 throw new JSException(new SyntaxError("Unexpected end of line."));
-            if (code[i] != ')')
+            if (state.Code[i] != ')')
                 throw new ArgumentException("code (" + i + ")");
-            do i++; while (i < code.Length && char.IsWhiteSpace(code[i]));
-            if (i >= code.Length)
+            do i++; while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]));
+            if (i >= state.Code.Length)
                 throw new JSException(new SyntaxError("Unexpected end of line."));
             state.AllowBreak++;
             state.AllowContinue++;
