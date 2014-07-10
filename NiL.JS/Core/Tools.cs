@@ -34,45 +34,51 @@ namespace NiL.JS.Core
 #endif
         public static double JSObjectToDouble(JSObject arg)
         {
-            if (arg == null)
-                return double.NaN;
-            switch (arg.valueType)
+            do
             {
-                case JSObjectType.Bool:
-                case JSObjectType.Int:
-                    {
-                        return arg.iValue;
-                    }
-                case JSObjectType.Double:
-                    {
-                        return arg.dValue;
-                    }
-                case JSObjectType.String:
-                    {
-                        double x = double.NaN;
-                        int ix = 0;
-                        string s = (arg.oValue as string).Trim();
-                        if (Tools.ParseNumber(s, ref ix, out x, 0, ParseNumberOptions.AllowFloat | ParseNumberOptions.AllowAutoRadix) && ix < s.Length)
-                            return double.NaN;
-                        return x;
-                    }
-                case JSObjectType.Date:
-                case JSObjectType.Function:
-                case JSObjectType.Object:
-                    {
-                        if (arg.oValue == null)
-                            return 0;
-                        arg = arg.ToPrimitiveValue_Value_String();
-                        return JSObjectToDouble(arg);
-                    }
-                case JSObjectType.Undefined:
-                case JSObjectType.NotExistsInObject:
+                if (arg == null)
                     return double.NaN;
-                case JSObjectType.NotExists:
-                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable not defined.")));
-                default:
-                    throw new NotImplementedException();
-            }
+                switch (arg.valueType)
+                {
+                    case JSObjectType.Bool:
+                    case JSObjectType.Int:
+                        {
+                            return arg.iValue;
+                        }
+                    case JSObjectType.Double:
+                        {
+                            return arg.dValue;
+                        }
+                    case JSObjectType.String:
+                        {
+                            double x = double.NaN;
+                            int ix = 0;
+                            string s = (arg.oValue as string);
+                            if (s.Length > 0 && (char.IsWhiteSpace(s[0]) || char.IsWhiteSpace(s[s.Length - 1])))
+                                s = s.Trim();
+                            if (Tools.ParseNumber(s, ref ix, out x, 0, ParseNumberOptions.AllowFloat | ParseNumberOptions.AllowAutoRadix) && ix < s.Length)
+                                return double.NaN;
+                            return x;
+                        }
+                    case JSObjectType.Date:
+                    case JSObjectType.Function:
+                    case JSObjectType.Object:
+                        {
+                            if (arg.oValue == null)
+                                return 0;
+                            arg = arg.ToPrimitiveValue_Value_String();
+                            break;
+                            //return JSObjectToDouble(arg);
+                        }
+                    case JSObjectType.Undefined:
+                    case JSObjectType.NotExistsInObject:
+                        return double.NaN;
+                    case JSObjectType.NotExists:
+                        throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable not defined.")));
+                    default:
+                        throw new NotImplementedException();
+                }
+            } while (true);
         }
 
         /// <summary>
@@ -782,8 +788,8 @@ namespace NiL.JS.Core
                     continue;
 
                 if (Parser.ValidateRegex(code, ref i, false)) // оно путает деление с комментарием в конце строки и regexp.
-                    // Посему делаем так: если встретили что-то похожее на regexp - останавливаемся. 
-                    // Остальные комментарии удалим когда, в процессе разбора, поймём, что же это на самом деле
+                // Посему делаем так: если встретили что-то похожее на regexp - останавливаемся. 
+                // Остальные комментарии удалим когда, в процессе разбора, поймём, что же это на самом деле
                 {
                     if (res != null)
                         for (; s <= i; s++)

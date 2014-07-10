@@ -44,7 +44,7 @@ namespace NiL.JS.Core
             return System.Web.HttpUtility.HtmlDecode(x[0].ToString());
         }
 
-        [ParametersCount(2)]
+        [ParamCount(2)]
         internal static JSObject parseInt(JSObject thisBind, Arguments args)
         {
             double result = double.NaN;

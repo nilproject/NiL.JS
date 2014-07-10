@@ -40,8 +40,12 @@ namespace NiL.JS.Expressions
                     return setterArgs[0];
                 }
             }
-            else if ((field.attributes & JSObjectAttributesInternal.ReadOnly) != 0 && context.strict)
-                throw new JSException(new TypeError("Can not assign to readonly property \"" + first + "\""));
+            else
+            {
+                if ((field.attributes & JSObjectAttributesInternal.ReadOnly) != 0 && context.strict)
+                    throw new JSException(new TypeError("Can not assign to readonly property \"" + first + "\""));
+                //return second.Invoke(context);
+            }
             var t = second.Invoke(context);
             field.Assign(t);
             return t;

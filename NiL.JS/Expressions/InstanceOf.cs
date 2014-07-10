@@ -1,5 +1,6 @@
 ﻿using System;
 using NiL.JS.Core;
+using NiL.JS.Core.BaseTypes;
 
 namespace NiL.JS.Expressions
 {
@@ -22,6 +23,8 @@ namespace NiL.JS.Expressions
                 if (c.valueType != JSObjectType.Function)
                     throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError("Right-hand value of instanceof is not function.")));
                 c = c.GetMember("prototype");
+                if (c.valueType < JSObjectType.Object)
+                    throw new JSException(new TypeError("Property \"prototype\" of function not represent object."));
                 if (c.oValue != null)
                 {
                     while (a.valueType >= JSObjectType.Object && a.oValue != null)

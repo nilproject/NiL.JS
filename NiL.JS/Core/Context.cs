@@ -127,7 +127,7 @@ namespace NiL.JS.Core
         /// отсутствует вероятность конфликта при использовании данного поля.
         /// </remarks>
         /// </summary>
-        internal readonly JSObject tempContainer;
+        internal JSObject tempContainer;
         internal readonly Context prototype;
         internal IDictionary<string, JSObject> fields;
         internal AbortType abort;
@@ -229,7 +229,7 @@ namespace NiL.JS.Core
 
         protected Context(Context prototype, bool createFields, Function caller)
         {
-            tempContainer = prototype.tempContainer;
+            //tempContainer = prototype.tempContainer;
             this.caller = caller;
             if (createFields)
                 this.fields = new Dictionary<string, JSObject>();
@@ -553,6 +553,8 @@ namespace NiL.JS.Core
 #endif
         public JSObject wrap(bool value)
         {
+            if (tempContainer == null)
+                tempContainer = new JSObject();
             tempContainer.valueType = JSObjectType.Bool;
             tempContainer.iValue = value ? 1 : 0;
             return tempContainer;
@@ -564,6 +566,8 @@ namespace NiL.JS.Core
         [CLSCompliant(false)]
         public JSObject wrap(sbyte value)
         {
+            if (tempContainer == null)
+                tempContainer = new JSObject();
             tempContainer.valueType = JSObjectType.Int;
             tempContainer.iValue = value;
             return tempContainer;
@@ -574,6 +578,8 @@ namespace NiL.JS.Core
 #endif
         public JSObject wrap(byte value)
         {
+            if (tempContainer == null)
+                tempContainer = new JSObject();
             tempContainer.valueType = JSObjectType.Int;
             tempContainer.iValue = value;
             return tempContainer;
@@ -584,6 +590,8 @@ namespace NiL.JS.Core
 #endif
         public JSObject wrap(short value)
         {
+            if (tempContainer == null)
+                tempContainer = new JSObject();
             tempContainer.valueType = JSObjectType.Int;
             tempContainer.iValue = value;
             return tempContainer;
@@ -595,6 +603,8 @@ namespace NiL.JS.Core
         [CLSCompliant(false)]
         public JSObject wrap(ushort value)
         {
+            if (tempContainer == null)
+                tempContainer = new JSObject();
             tempContainer.valueType = JSObjectType.Int;
             tempContainer.iValue = value;
             return tempContainer;
@@ -616,6 +626,8 @@ namespace NiL.JS.Core
         [CLSCompliant(false)]
         public JSObject wrap(uint value)
         {
+            if (tempContainer == null)
+                tempContainer = new JSObject();
             if (value <= int.MaxValue)
             {
                 tempContainer.valueType = JSObjectType.Int;
@@ -635,6 +647,8 @@ namespace NiL.JS.Core
 #endif
         public JSObject wrap(long value)
         {
+            if (tempContainer == null)
+                tempContainer = new JSObject();
             if (value <= int.MaxValue)
             {
                 tempContainer.valueType = JSObjectType.Int;
@@ -655,6 +669,8 @@ namespace NiL.JS.Core
         [CLSCompliant(false)]
         public JSObject wrap(ulong value)
         {
+            if (tempContainer == null)
+                tempContainer = new JSObject();
             if (value <= int.MaxValue)
             {
                 tempContainer.valueType = JSObjectType.Int;
@@ -674,6 +690,8 @@ namespace NiL.JS.Core
 #endif
         public JSObject wrap(float value)
         {
+            if (tempContainer == null)
+                tempContainer = new JSObject();
             tempContainer.valueType = JSObjectType.Double;
             tempContainer.dValue = value;
             return tempContainer;
@@ -684,6 +702,8 @@ namespace NiL.JS.Core
 #endif
         public JSObject wrap(double value)
         {
+            if (tempContainer == null)
+                tempContainer = new JSObject();
             tempContainer.valueType = JSObjectType.Double;
             tempContainer.dValue = value;
             return tempContainer;
@@ -694,6 +714,8 @@ namespace NiL.JS.Core
 #endif
         public JSObject wrap(string value)
         {
+            if (tempContainer == null)
+                tempContainer = new JSObject();
             tempContainer.valueType = JSObjectType.String;
             tempContainer.oValue = value;
             return tempContainer;

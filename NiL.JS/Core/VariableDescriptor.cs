@@ -32,13 +32,13 @@ namespace NiL.JS.Core
         internal JSObject Get(Context context, bool create, int depth)
         {
             context.objectSource = null;
-            if (defineDepth < 0 || depth < 0)
+            if (((defineDepth | depth) & 0x80000000) != 0)
                 return context.GetVariable(name, create);
             if (cacheRes != null)
             {
                 while (depth > defineDepth)
                 {
-                    if (context is WithContext)
+                    if (context.GetType() == typeof(WithContext))
                     {
                         cacheRes = null;
                         break;
@@ -52,15 +52,19 @@ namespace NiL.JS.Core
             if (cacheRes == null)
             {
                 var res = context.GetVariable(name, create);
-                if (create && !Defined && res.valueType == JSObjectType.NotExists)
+                if (res.valueType == JSObjectType.NotExists && create && !Defined)
                     res.attributes = JSObjectAttributesInternal.None;
-                if (res.oValue is TypeProxy && (res.oValue as TypeProxy).prototypeInstance != null)
-                    res = (res.oValue as TypeProxy).prototypeInstance;
+                else
+                {
+                    TypeProxy tp = res.valueType != JSObjectType.Object ? null : res.oValue as TypeProxy;
+                    if (tp != null)
+                        res = tp.prototypeInstance ?? res;
+                }
                 if ((res.attributes & JSObjectAttributesInternal.SystemObject) != 0)
-                    return res; // Могли сначала запросить переменную, а потом её создать и инициализировать. 
-                                // В таком случае закешированным остался бы notExist
+                    return res;
                 prewContext = context;
-                return cacheRes = res;
+                cacheRes = res;
+                return res;
             }
             return cacheRes;
         }

@@ -560,7 +560,7 @@ namespace NiL.JS.Core.BaseTypes
 
         [CLSCompliant(false)]
         [AllowUnsafeCall(typeof(JSObject))]
-        [ParametersCount(0)]
+        [ParamCount(0)]
         [DoNotEnumerate]
         public new JSObject toString(Arguments args)
         {

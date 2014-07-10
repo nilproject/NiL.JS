@@ -669,7 +669,7 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [DoNotEnumerate]
-        [ParametersCount(2)]
+        [ParamCount(2)]
         public JSObject slice(JSObject[] args)
         {
             if (args == null)
@@ -717,7 +717,7 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [DoNotEnumerate]
-        [ParametersCount(2)]
+        [ParamCount(2)]
         public JSObject splice(JSObject[] args)
         {
             if (args == null)

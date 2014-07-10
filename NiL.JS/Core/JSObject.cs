@@ -206,7 +206,7 @@ namespace NiL.JS.Core
         }
 
         [DoNotEnumerate]
-        [ParametersCount(2)]
+        [ParamCount(2)]
         public static JSObject create(Arguments args)
         {
             var proto = args[0];
@@ -337,7 +337,7 @@ namespace NiL.JS.Core
             return t;
         }
 
-        [ParametersCount(2)]
+        [ParamCount(2)]
         [DoNotEnumerate]
         public static JSObject defineProperties(Arguments args)
         {
@@ -377,7 +377,7 @@ namespace NiL.JS.Core
         }
 
         [DoNotEnumerate]
-        [ParametersCount(3)]
+        [ParamCount(3)]
         public static JSObject defineProperty(Arguments args)
         {
             var target = args[0];
@@ -734,14 +734,18 @@ namespace NiL.JS.Core
                             return __proto__.GetMember(name, createMember, own);
                         if (oValue != this && (oValue is JSObject))
                         {
+                            var inObj = oValue as JSObject;
                             try
                             {
-                                return (oValue as JSObject).GetMember(name, createMember, own);
+                                var res = inObj.GetMember(name, createMember, own);
+                                if (inObj.valueType < JSObjectType.Object && res.valueType < JSObjectType.Undefined)
+                                    break;
+                                return res;
                             }
                             finally
                             {
                                 if (fields == null)
-                                    fields = (oValue as JSObject).fields;
+                                    fields = inObj.fields;
                             }
                         }
                         if (oValue == null)
@@ -942,8 +946,10 @@ namespace NiL.JS.Core
         {
             if (this.assignCallback != null)
                 this.assignCallback(this);
+#if DEBUG
             if (valueType == JSObjectType.Property)
                 throw new InvalidOperationException("Try to assign to property.");
+#endif
             if ((attributes & (JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.SystemObject)) != 0)
                 return;
             if (value == this)
@@ -1057,8 +1063,8 @@ namespace NiL.JS.Core
 
         [CLSCompliant(false)]
         [DoNotEnumerate]
-        [Modules.ParametersCount(0)]
-        public JSObject toString(Arguments args)
+        [ParamCount(0)]
+        public virtual JSObject toString(Arguments args)
         {
             var self = this.oValue as JSObject ?? this;
             switch (self.valueType)
@@ -1371,7 +1377,7 @@ namespace NiL.JS.Core
             return res;
         }
 
-        [ParametersCount(2)]
+        [ParamCount(2)]
         [DoNotEnumerate]
         public static JSObject getOwnPropertyDescriptor(Arguments args)
         {

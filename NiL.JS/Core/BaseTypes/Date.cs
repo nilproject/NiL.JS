@@ -201,7 +201,7 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [DoNotEnumerate]
-        [ParametersCount(7)]
+        [ParamCount(7)]
         public Date(Arguments args)
         {
             if (args.length == 1)
@@ -961,7 +961,7 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [DoNotEnumerate]
-        [ParametersCount(7)]
+        [ParamCount(7)]
         public static JSObject UTC(Arguments dateTime)
         {
             try

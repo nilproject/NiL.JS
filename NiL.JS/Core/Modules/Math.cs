@@ -70,7 +70,7 @@ namespace NiL.JS.Core.Modules
 
         [DoNotEnumerate]
         [DoNotDelete]
-        [ParametersCount(2)]
+        [ParamCount(2)]
         public static JSObject atan2(JSObject[] args)
         {
             if (args.Length < 2)
@@ -123,7 +123,7 @@ namespace NiL.JS.Core.Modules
 
         [DoNotEnumerate]
         [DoNotDelete]
-        [ParametersCount(2)]
+        [ParamCount(2)]
         public static JSObject max(JSObject[] args)
         {
             double res = double.NegativeInfinity;
@@ -139,7 +139,7 @@ namespace NiL.JS.Core.Modules
 
         [DoNotEnumerate]
         [DoNotDelete]
-        [ParametersCount(2)]
+        [ParamCount(2)]
         public static JSObject min(JSObject[] args)
         {
             double res = double.PositiveInfinity;
@@ -155,7 +155,7 @@ namespace NiL.JS.Core.Modules
 
         [DoNotEnumerate]
         [DoNotDelete]
-        [ParametersCount(2)]
+        [ParamCount(2)]
         public static JSObject pow(Arguments args)
         {
             JSObject result = 0;
@@ -215,7 +215,7 @@ namespace NiL.JS.Core.Modules
 
         [DoNotEnumerate]
         [DoNotDelete]
-        [ParametersCount(2)]
+        [ParamCount(2)]
         public static JSObject IEEERemainder(JSObject[] args)
         {
             if (args.Length < 2)

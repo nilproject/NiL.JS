@@ -149,3 +149,6 @@ function func(x) {
     return x + 1;
 }
 (function (x, y) { if (x == y) console.log("a(1) == a(2)"); })(func(1), func(2));
+
+if ((new (function () { return function () { this.str = 'hello' } }())).str != "hello")
+    console.log("new (f()) failed.");

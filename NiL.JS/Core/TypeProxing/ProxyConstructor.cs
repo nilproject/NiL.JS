@@ -43,7 +43,7 @@ namespace NiL.JS.Core
         {
             if (_length == null)
                 _length = new Number(0) { attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum };
-            
+
             fields = typeProxy.fields;
             proxy = typeProxy;
             var ctors = typeProxy.hostedType.GetConstructors();
@@ -96,16 +96,16 @@ namespace NiL.JS.Core
                 if (bynew)
                 {
                     // Здесь нельяз возвращать контейнер с ValueType < Object, иначе из New выйдет служебный экземпляр NewMarker
-                    if (obj is JSObject)
+                    res = obj as JSObject;
+                    if (res != null)
                     {
-                        res = obj as JSObject;
                         if (res.valueType < JSObjectType.Object)
-                            res = new JSObject()
-                            {
-                                valueType = JSObjectType.Object,
-                                oValue = res,
-                                __proto__ = res.__proto__ ?? TypeProxy.GetPrototype(proxy.hostedType)
-                            };
+                        {
+                            _this.oValue = obj;
+                            _this.valueType = JSObjectType.Object;
+                            _this.__proto__ = res.__proto__ ?? TypeProxy.GetPrototype(proxy.hostedType);
+                            res = _this;
+                        }
                         // Для Number, Boolean и String
                         else if (res.oValue is JSObject)
                         {
@@ -118,13 +118,11 @@ namespace NiL.JS.Core
                     }
                     else
                     {
-                        res = new JSObject()
-                        {
-                            valueType = JSObjectType.Object,
-                            __proto__ = TypeProxy.GetPrototype(proxy.hostedType),
-                            oValue = obj,
-                            attributes = proxy.hostedType.IsDefined(typeof(ImmutableAttribute), false) ? JSObjectAttributesInternal.Immutable : JSObjectAttributesInternal.None
-                        };
+                        res = _this;
+                        res.valueType = JSObjectType.Object;
+                        res.__proto__ = TypeProxy.GetPrototype(proxy.hostedType);
+                        res.oValue = obj;
+                        res.attributes = proxy.hostedType.IsDefined(typeof(ImmutableAttribute), false) ? JSObjectAttributesInternal.Immutable : JSObjectAttributesInternal.None;
                         if (obj is BaseTypes.Date)
                             res.valueType = JSObjectType.Date;
                     }

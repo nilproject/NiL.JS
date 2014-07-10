@@ -399,10 +399,15 @@ namespace NiL.JS.Statements
                 || (state.Code[i] == '~')
                 || (state.Code[i] == '+')
                 || (state.Code[i] == '-')
-                || (state.Code[i] == 'n' && state.Code.Substring(i, 3) == "new")
-                || (state.Code[i] == 'd' && state.Code.Substring(i, 6) == "delete")
-                || (state.Code[i] == 't' && state.Code.Substring(i, 6) == "typeof")
-                || (state.Code[i] == 'v' && state.Code.Substring(i, 4) == "void"))
+                || Parser.Validate(state.Code, "new", i)
+                || Parser.Validate(state.Code, "delete", i)
+                || Parser.Validate(state.Code, "typeof", i)
+                || Parser.Validate(state.Code, "void", i)
+                //|| (state.Code[i] == 'n' && state.Code.Substring(i, 3) == "new")
+                //|| (state.Code[i] == 'd' && state.Code.Substring(i, 6) == "delete")
+                //|| (state.Code[i] == 't' && state.Code.Substring(i, 6) == "typeof")
+                //|| (state.Code[i] == 'v' && state.Code.Substring(i, 4) == "void")
+                )
             {
                 switch (state.Code[i])
                 {
@@ -567,7 +572,8 @@ namespace NiL.JS.Statements
                 if (state.Code[i] != ')')
                     throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \")\"")));
                 i++;
-                if (state.InExpression == 1 && first is FunctionStatement)
+                if ((state.InExpression > 0 && first is FunctionStatement)
+                    || (forNew && first is Call))
                     first = new Expressions.None(first, null) { Position = index, Length = i - index };
             }
             else

@@ -27,9 +27,9 @@ namespace NiL.JS.Statements
             if (context.strict)
             {
                 var res = descriptor.Get(context, false, functionDepth);
-                if (res.valueType == JSObjectType.NotExistsInObject)
-                    res.valueType = JSObjectType.NotExists;
-                return Tools.RaiseIfNotExist(res, variableName);
+                if (res.valueType < JSObjectType.Undefined)
+                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable \"" + variableName + "\" is not defined.")));
+                return res;
             }
             return descriptor.Get(context, true, functionDepth);
         }
@@ -37,9 +37,8 @@ namespace NiL.JS.Statements
         internal override JSObject Invoke(Context context)
         {
             var res = descriptor.Get(context, false, functionDepth);
-            if (res.valueType == JSObjectType.NotExistsInObject)
-                res.valueType = JSObjectType.NotExists;
-            res = Tools.RaiseIfNotExist(res, variableName);
+            if (res.valueType < JSObjectType.Undefined)
+                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable \"" + variableName + "\" is not defined.")));
             if (res.valueType == JSObjectType.Property)
             {
                 var getter = (res.oValue as NiL.JS.Core.BaseTypes.Function[])[1];

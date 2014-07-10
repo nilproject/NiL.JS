@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using NiL.JS.Core.Modules;
+using NiL.JS.Expressions;
 using NiL.JS.Statements;
 
 namespace NiL.JS.Core.BaseTypes
@@ -552,7 +553,7 @@ namespace NiL.JS.Core.BaseTypes
         {
             throw new JSException(new TypeError("Properties caller and arguments not allowed in strict mode."));
         }
-        private static readonly JSObject propertiesDummySM = new JSObject()
+        internal static readonly JSObject propertiesDummySM = new JSObject()
         {
             valueType = JSObjectType.Property,
             oValue = new Function[2] 
@@ -587,6 +588,15 @@ namespace NiL.JS.Core.BaseTypes
             [Hidden]
             get { return creator.type; }
         }
+        [Hidden]
+        public virtual bool Strict
+        {
+            [Hidden]
+            get
+            {
+                return creator.body.strict;
+            }
+        }
 
         #region Runtime
         private string[] parameterNames;
@@ -599,22 +609,38 @@ namespace NiL.JS.Core.BaseTypes
         public JSObject prototype
         {
             [Hidden]
-            get { return _prototype; }
-            [Hidden]
-            set { _prototype.Assign(value); }
+            get
+            {
+                if (_prototype == null)
+                {
+                    _prototype = new JSObject(true)
+                    {
+                        valueType = JSObjectType.Object,
+                        __proto__ = JSObject.GlobalPrototype,
+                        attributes = JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.DoNotDelete
+                    };
+                    _prototype.oValue = _prototype;
+                    var ctor = _prototype.DefineMember("constructor");
+                    ctor.attributes = JSObjectAttributesInternal.DoNotEnum;
+                    ctor.Assign(this);
+                    _prototype = _prototype.Clone() as JSObject;
+                } 
+                return _prototype;
+            }
         }
         internal Arguments _arguments;
         /// <summary>
         /// Объект, содержащий параметры вызова функции либо null если в данный момент функция не выполняется.
         /// </summary>
+        [Field]
         [DoNotDelete]
         [DoNotEnumerate]
         public JSObject arguments
         {
             [Hidden]
-            get { if (creator.body.strict) throw new JSException(new TypeError("Property arguments not allowed in strict mode.")); return _arguments; }
+            get { if (creator.body.strict || _arguments == propertiesDummySM) throw new JSException(new TypeError("Property arguments not allowed in strict mode.")); return _arguments; }
             [Hidden]
-            set { if (creator.body.strict) throw new JSException(new TypeError("Property arguments not allowed in strict mode.")); }
+            set { if (creator.body.strict || _arguments == propertiesDummySM) throw new JSException(new TypeError("Property arguments not allowed in strict mode.")); }
         }
 
         [Hidden]
@@ -639,14 +665,15 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         internal JSObject _caller;
+        [Field]
         [DoNotDelete]
         [DoNotEnumerate]
         public JSObject caller
         {
             [Hidden]
-            get { if (creator.body.strict) throw new JSException(new TypeError("Property caller not allowed in strict mode.")); return _caller; }
+            get { if (creator.body.strict || _caller == propertiesDummySM) throw new JSException(new TypeError("Property caller not allowed in strict mode.")); return _caller; }
             [Hidden]
-            set { if (creator.body.strict) throw new JSException(new TypeError("Property caller not allowed in strict mode.")); }
+            set { if (creator.body.strict || _caller == propertiesDummySM) throw new JSException(new TypeError("Property caller not allowed in strict mode.")); }
         }
         #endregion
 
@@ -721,6 +748,15 @@ namespace NiL.JS.Core.BaseTypes
             var body = creator.body;
             if (body == null || body.Body.Length == 0)
             {
+                if (thisBind != null && thisBind.oValue == typeof(New) as object)
+                {
+                    thisBind.__proto__ = prototype;
+                    if (thisBind.__proto__.valueType < JSObjectType.Object)
+                        thisBind.__proto__ = null;
+                    else
+                        thisBind.__proto__ = thisBind.__proto__.CloneImpl();
+                    thisBind.oValue = thisBind;
+                }
                 notExists.valueType = JSObjectType.NotExistsInObject;
                 return notExists;
             }
@@ -728,23 +764,35 @@ namespace NiL.JS.Core.BaseTypes
             {
                 if (thisBind == null)
                     thisBind = undefined;
-                if (!body.strict) // Поправляем this
+                if (thisBind.oValue == typeof(New) as object)
                 {
-                    if (thisBind.valueType > JSObjectType.Undefined && thisBind.valueType < JSObjectType.Object)
-                    {
-                        thisBind = new JSObject(false)
-                        {
-                            valueType = JSObjectType.Object,
-                            oValue = thisBind,
-                            attributes = JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.Immutable,
-                            __proto__ = thisBind.__proto__ ?? (thisBind.valueType <= JSObjectType.Undefined ? thisBind.__proto__ : thisBind.GetMember("__proto__"))
-                        };
-                    }
-                    else if (thisBind.valueType <= JSObjectType.Undefined || thisBind.oValue == null)
-                        thisBind = internalContext.Root.thisBind;
+                    thisBind.__proto__ = prototype;
+                    if (thisBind.__proto__.valueType < JSObjectType.Object)
+                        thisBind.__proto__ = null;
+                    else
+                        thisBind.__proto__ = thisBind.__proto__.CloneImpl();
+                    thisBind.oValue = thisBind;
                 }
-                else if (thisBind.valueType < JSObjectType.Undefined)
-                    thisBind = undefined;
+                else
+                {
+                    if (!body.strict) // Поправляем this
+                    {
+                        if (thisBind.valueType > JSObjectType.Undefined && thisBind.valueType < JSObjectType.Object)
+                        {
+                            thisBind = new JSObject(false)
+                            {
+                                valueType = JSObjectType.Object,
+                                oValue = thisBind,
+                                attributes = JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.DoNotDelete,
+                                __proto__ = thisBind.__proto__ ?? (thisBind.valueType <= JSObjectType.Undefined ? thisBind.__proto__ : thisBind.GetMember("__proto__"))
+                            };
+                        }
+                        else if (thisBind.valueType <= JSObjectType.Undefined || thisBind.oValue == null)
+                            thisBind = internalContext.Root.thisBind;
+                    }
+                    else if (thisBind.valueType < JSObjectType.Undefined)
+                        thisBind = undefined;
+                }
 
                 if (args == null)
                     args = new Arguments();
@@ -837,25 +885,18 @@ namespace NiL.JS.Core.BaseTypes
             if (creator.body.strict && (name == "caller" || name == "arguments"))
                 return propertiesDummySM;
             if (name == "prototype")
-            {
-                if (_prototype == null)
-                {
-                    _prototype = new JSObject(true)
-                    {
-                        valueType = JSObjectType.Object,
-                        __proto__ = JSObject.GlobalPrototype,
-                        attributes = JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.DoNotDelete
-                    };
-                    _prototype.oValue = _prototype;
-                    var ctor = _prototype.DefineMember("constructor");
-                    ctor.attributes = JSObjectAttributesInternal.DoNotEnum;
-                    ctor.Assign(this);
-                }
-                return _prototype;
-            }
+                return prototype;
             if (__proto__ == null)
                 __proto__ = TypeProxy.GetPrototype(this.GetType());
             return DefaultFieldGetter(nameObj, create, own);
+        }
+
+        [CLSCompliant(false)]
+        [DoNotEnumerate]
+        [ParamCount(0)]
+        public override JSObject toString(Arguments args)
+        {
+            return ToString();
         }
 
         [Hidden]
@@ -869,7 +910,7 @@ namespace NiL.JS.Core.BaseTypes
             return res;
         }
 
-        [DoNotEnumerate]
+        [Hidden]
         public override JSObject valueOf()
         {
             return base.valueOf();
@@ -891,29 +932,33 @@ namespace NiL.JS.Core.BaseTypes
             return Invoke(newThis, args);
         }
 
+        [ParamCount(2)]
         [DoNotEnumerate]
         public JSObject apply(Arguments args)
         {
-            var nargs = new Arguments() { length = System.Math.Max(0, args.length - 1) };
+            var nargs = new Arguments();
             var argsSource = args[1];
             if (argsSource.isDefinded)
             {
+                if (argsSource.valueType < JSObjectType.Object)
+                    throw new JSException(new TypeError("Argument list has wrong type."));
                 var len = argsSource["length"];
                 if (len.valueType == JSObjectType.Property)
                     len = (len.oValue as Function[])[1].Invoke(argsSource, null);
-                for (var i = Tools.JSObjectToInt32(len); i-- > 0; )
+                nargs.length = Tools.JSObjectToInt32(len);
+                for (var i = nargs.length; i-- > 0; )
                     nargs[i] = argsSource[i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture)];
             }
             return Invoke(args[0], nargs);
         }
 
         [DoNotEnumerate]
-        public JSObject bind(JSObject[] args)
+        public JSObject bind(Arguments args)
         {
             var newThis = args.Length > 0 ? args[0] : null;
-            var strict = (creator != null && creator.body != null && creator.body.strict) || Context.CurrentContext.strict;
+            var strict = (creator.body != null && creator.body.strict) || Context.CurrentContext.strict;
             if ((newThis != null && newThis.valueType > JSObjectType.Undefined) || strict)
-                return new BindedFunction(newThis, this);
+                return new BindedFunction(this, args);
             return this;
         }
 

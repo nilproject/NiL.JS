@@ -179,9 +179,9 @@ namespace NiL.JS.Core
                 throw new ArgumentException("methodinfo");
             if (_length == null)
                 _length = new Number(0) { attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.SystemObject };
-            var pc = info.GetCustomAttributes(typeof(Modules.ParametersCountAttribute), false);
+            var pc = info.GetCustomAttributes(typeof(Modules.ParamCountAttribute), false);
             if (pc.Length != 0)
-                _length.iValue = (pc[0] as Modules.ParametersCountAttribute).Count;
+                _length.iValue = (pc[0] as Modules.ParamCountAttribute).Count;
             else
                 _length.iValue = parameters.Length;
         }
@@ -298,56 +298,64 @@ namespace NiL.JS.Core
                 {
                     case CallMode.FuncDynamicZero:
                         {
-#if !NET35
                             if (target != null && info.IsVirtual && target.GetType() != info.ReflectedType) // your bunny wrote
+#if !NET35
                             {
                                 bool di = true;
                                 SetFieldValue(_targetInfo, delegateF0, target, typeof(object), _targetInfo.Attributes, typeof(Action), ref di);
                                 res = delegateF0();
                             }
                             else
+#else
+                                goto default;
 #endif
                                 res = delegateF1(target);
                             break;
                         }
                     case CallMode.FuncDynamicOneArray:
                         {
-#if !NET35
                             if (target != null && info.IsVirtual && target.GetType() != info.ReflectedType) // your bunny wrote
+#if !NET35
                             {
                                 bool di = true;
                                 SetFieldValue(_targetInfo, delegateF1, target, typeof(object), _targetInfo.Attributes, typeof(Action), ref di);
                                 res = delegateF1(args != null ? args[0] : argumentsToArray<object>(argsSource));
                             }
                             else
+#else
+                                goto default;
 #endif
                                 res = delegateF2(target, args ?? argumentsToArray<object>(argsSource));
                             break;
                         }
                     case CallMode.FuncDynamicOneRaw:
                         {
-#if !NET35
                             if (target != null && info.IsVirtual && target.GetType() != info.ReflectedType) // your bunny wrote
+#if !NET35
                             {
                                 bool di = true;
                                 SetFieldValue(_targetInfo, delegateF1, target, typeof(object), _targetInfo.Attributes, typeof(Action), ref di);
                                 res = delegateF1(argsSource);
                             }
                             else
+#else
+                                goto default;
 #endif
                                 res = delegateF2(target, argsSource);
                             break;
                         }
                     case CallMode.FuncDynamicOne:
                         {
-#if !NET35
                             if (target != null && info.IsVirtual && target.GetType() != info.ReflectedType) // your bunny wrote
+#if !NET35
                             {
                                 bool di = true;
                                 SetFieldValue(_targetInfo, delegateF1, target, typeof(object), _targetInfo.Attributes, typeof(Action), ref di);
                                 res = delegateF1(args == null ? marshal(argsSource[0], parameters[0].ParameterType) : args[0]);
                             }
                             else
+#else
+                                goto default;
 #endif
                                 res = delegateF2(target, args == null ? marshal(argsSource[0], parameters[0].ParameterType) : args[0]);
                             break;

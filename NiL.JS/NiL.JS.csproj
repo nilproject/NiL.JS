@@ -170,7 +170,7 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Not optimized Release|x64' ">
     <OutputPath>bin\x64\Not optimized release\</OutputPath>
-    <DefineConstants>x64</DefineConstants>
+    <DefineConstants>TRACE;x64;INLINE</DefineConstants>
     <Optimize>false</Optimize>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>x64</PlatformTarget>

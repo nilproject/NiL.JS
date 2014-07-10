@@ -82,16 +82,14 @@ namespace NiL.JS.Expressions
                                 case JSObjectType.Int:
                                 case JSObjectType.Bool:
                                     {
-                                        dr += temp.iValue;
                                         tempContainer.valueType = JSObjectType.Double;
-                                        tempContainer.dValue = dr;
+                                        tempContainer.dValue = dr + temp.iValue;
                                         return tempContainer;
                                     }
                                 case JSObjectType.Double:
                                     {
-                                        dr += temp.dValue;
                                         tempContainer.valueType = JSObjectType.Double;
-                                        tempContainer.dValue = dr;
+                                        tempContainer.dValue = dr + temp.dValue;
                                         return tempContainer;
                                     }
                                 case JSObjectType.String:
@@ -114,8 +112,9 @@ namespace NiL.JS.Expressions
                                         tempContainer.valueType = JSObjectType.Double;
                                         return tempContainer;
                                     }
+                                default:
+                                    throw new NotImplementedException();
                             }
-                            break;
                         }
                     case JSObjectType.String:
                         {

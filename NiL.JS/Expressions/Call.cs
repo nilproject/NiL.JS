@@ -66,7 +66,7 @@ namespace NiL.JS.Expressions
                 func.attributes &= ~JSObjectAttributesInternal.Eval;
 
             var oldCaller = func._caller;
-            func._caller = context.caller;
+            func._caller = context.caller.Strict ? Function.propertiesDummySM : context.caller;
             try
             {
                 return func.Invoke(newThisBind, arguments);

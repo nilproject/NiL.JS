@@ -38,7 +38,9 @@ namespace NiL.JS.Statements
             var res = source.GetMember(n, forAssign, false);
             if (res.valueType == JSObjectType.NotExists)
                 res.valueType = JSObjectType.NotExistsInObject;
-            if (!forAssign && res.valueType == JSObjectType.Property)
+            if (forAssign)
+                return res;
+            if (res.valueType == JSObjectType.Property)
             {
                 var f = (res.oValue as Function[])[1];
                 if (f == null)

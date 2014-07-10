@@ -116,14 +116,8 @@ namespace NiL.JSTest
             var sw = new Stopwatch();
             var s = new Script(
 @"
-
-
-
-function normalise(v) {
-    var len = lengthVector(v); /**/
-    return [v[0] / len, v[1] / len, v[2] / len];
-}
-
+for (var p in Number)
+    console.log(p);
 ");
             s.Context.AttachModule(typeof(System.Drawing.Point));
             sw.Start();
@@ -143,7 +137,7 @@ function normalise(v) {
 
             typeof(System.Windows.Forms.Button).GetType(); // Заставляет подгрузить сборку System.Windows.Forms. Это исключительно для баловства
 
-            int mode = 0
+            int mode = 100
                 ;
             switch (mode)
             {
@@ -177,6 +171,12 @@ function normalise(v) {
                     {
                         // Object
                         sputnikTests(@"tests\sputnik\ch15\15.2\");
+                        break;
+                    }
+                case 153:
+                    {
+                        // Function
+                        sputnikTests(@"tests\sputnik\ch15\15.3\");
                         break;
                     }
                 case 154:

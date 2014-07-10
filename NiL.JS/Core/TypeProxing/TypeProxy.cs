@@ -268,7 +268,8 @@ namespace NiL.JS.Core
 
         public override void Assign(NiL.JS.Core.JSObject value)
         {
-            throw new JSException("Can not assign to __proto__ of immutable or special objects.");
+            if ((attributes & JSObjectAttributesInternal.ReadOnly) == 0)
+                throw new JSException("Can not assign to __proto__ of immutable or special objects.");
         }
 
         internal protected override JSObject GetMember(JSObject nameObj, bool create, bool own)
@@ -286,7 +287,9 @@ namespace NiL.JS.Core
                             r.Assign(t);
                     }
                 }
-                if (create && (r.attributes & JSObjectAttributesInternal.SystemObject) != 0)
+                if (create
+                    && (r.attributes & JSObjectAttributesInternal.SystemObject) != 0
+                    && (r.attributes & JSObjectAttributesInternal.ReadOnly) == 0)
                     fields[name] = r = r.CloneImpl();
                 return r;
             }

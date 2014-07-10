@@ -9,8 +9,6 @@ namespace NiL.JS.Expressions
     [Serializable]
     public sealed class New : Expression
     {
-        private static readonly JSObject newMarker = new JSObject() { valueType = JSObjectType.Object, oValue = typeof(New) };
-
         private sealed class ThisSetter : CodeNode
         {
             private CodeNode source;
@@ -38,19 +36,7 @@ namespace NiL.JS.Expressions
                     || ctor.oValue is MethodProxy)
                     throw new JSException(new TypeError("Function \"" + (ctor.oValue as Function).name + "\" is not a constructor."));
 
-                JSObject _this = null;
-                if (!(ctor.oValue is ProxyConstructor))
-                {
-                    _this = new JSObject(true) { valueType = JSObjectType.Object };
-                    _this.__proto__ = ctor.GetMember("prototype");
-                    if (_this.__proto__.valueType < JSObjectType.Object)
-                        _this.__proto__ = null;
-                    else
-                        _this.__proto__ = _this.__proto__.CloneImpl();
-                    _this.oValue = _this;
-                }
-                else
-                    _this = newMarker;
+                JSObject _this = new JSObject() { valueType = JSObjectType.Object, oValue = typeof(New) };
                 context.objectSource = _this;
                 lastThisBind = _this;
                 return ctor;
