@@ -37,9 +37,8 @@ namespace NiL.JS.Expressions
             {
                 length = this.arguments.Length
             };
-            for (int i = 0; i < arguments.length; i++)//for (int i = field.iValue; i-- > 0; )
+            for (int i = 0; i < arguments.length; i++)
             {
-                context.objectSource = null;
                 var a = this.arguments[i].Invoke(context);
 #if DEBUG
                 if (a == null)
@@ -50,23 +49,13 @@ namespace NiL.JS.Expressions
             context.objectSource = null;
 
             // Аргументы должны быть вычислены даже если функция не существует.
-            if (temp.valueType == JSObjectType.NotExists)
-            {
-                if (context.thisBind == null)
-                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable not defined.")));
-                else
-                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError(FirstOperand + " not exist.")));
-            }
             if (temp.valueType != JSObjectType.Function && !(temp.valueType == JSObjectType.Object && temp.oValue is Function))
                 throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError(first + " is not callable")));
             func = temp.oValue as Function;
-            if ((temp.attributes & JSObjectAttributesInternal.Eval) != 0)
-                func.attributes |= JSObjectAttributesInternal.Eval;
-            else
-                func.attributes &= ~JSObjectAttributesInternal.Eval;
+            func.attributes = (func.attributes & ~JSObjectAttributesInternal.Eval) | (temp.attributes & JSObjectAttributesInternal.Eval);
 
             var oldCaller = func._caller;
-            func._caller = context.caller.Strict ? Function.propertiesDummySM : context.caller;
+            func._caller = context.caller.creator.body.strict ? Function.propertiesDummySM : context.caller;
             try
             {
                 return func.Invoke(newThisBind, arguments);

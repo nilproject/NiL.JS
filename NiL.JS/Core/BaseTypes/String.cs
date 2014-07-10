@@ -260,7 +260,7 @@ namespace NiL.JS.Core.BaseTypes
 
         [StringAllowUnsafeCallAttribute()]
         [DoNotEnumerate]
-        public JSObject replace(JSObject[] args)
+        public JSObject replace(Arguments args)
         {
             if (args.Length == 0)
                 return this;

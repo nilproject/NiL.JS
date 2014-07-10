@@ -110,14 +110,15 @@ namespace NiL.JSTest
             _("time: " + sw.Elapsed);
             _("Sputnik testing complite");
         }
-        
+
         private static void testEx()
         {
             var sw = new Stopwatch();
             var s = new Script(
 @"
-for (var p in Number)
-    console.log(p);
+var a = {};
+a[1] = 'Hello';
+console.log(a[1.000000000000001]);
 ");
             s.Context.AttachModule(typeof(System.Drawing.Point));
             sw.Start();
@@ -137,7 +138,7 @@ for (var p in Number)
 
             typeof(System.Windows.Forms.Button).GetType(); // Заставляет подгрузить сборку System.Windows.Forms. Это исключительно для баловства
 
-            int mode = 100
+            int mode = 151
                 ;
             switch (mode)
             {
@@ -217,6 +218,12 @@ for (var p in Number)
                         sunspider();
                         break;
                     }
+                case 102:
+                    {
+                        for (var i = 0; i < 10; i++)
+                            runFile(@"sunspider-0.9.1\string-tagcloud.js");
+                        break;
+                    }
             }
 
             GC.Collect();
@@ -251,9 +258,12 @@ for (var p in Number)
             sw.Stop();
             Console.WriteLine("Compile time: " + sw.Elapsed);
             Console.WriteLine("-------------------------------------");
+            sw.Restart();
             s.Invoke();
+            sw.Stop();
             Console.WriteLine("-------------------------------------");
             Console.WriteLine("Complite.");
+            Console.WriteLine("Time: " + sw.Elapsed);
         }
 
         private static void runTestFile(string filename)

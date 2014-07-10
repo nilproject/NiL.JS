@@ -17,14 +17,14 @@ namespace NiL.JS.Core
         private JSObject a5;
         private JSObject a6;
         private JSObject a7;
-        private JSObject a8;
-        private JSObject a9;
-        private JSObject a10;
-        private JSObject a11;
-        private JSObject a12;
-        private JSObject a13;
-        private JSObject a14;
-        private JSObject a15;
+        //private JSObject a8;
+        //private JSObject a9;
+        //private JSObject a10;
+        //private JSObject a11;
+        //private JSObject a12;
+        //private JSObject a13;
+        //private JSObject a14;
+        //private JSObject a15;
         internal JSObject callee;
         internal JSObject caller;
         private JSObject _length;
@@ -78,22 +78,22 @@ namespace NiL.JS.Core
                         return a6 ?? notExists;
                     case 7:
                         return a7 ?? notExists;
-                    case 8:
-                        return a8 ?? notExists;
-                    case 9:
-                        return a9 ?? notExists;
-                    case 10:
-                        return a10 ?? notExists;
-                    case 11:
-                        return a11 ?? notExists;
-                    case 12:
-                        return a12 ?? notExists;
-                    case 13:
-                        return a13 ?? notExists;
-                    case 14:
-                        return a14 ?? notExists;
-                    case 15:
-                        return a15 ?? notExists;
+                    //case 8:
+                    //    return a8 ?? notExists;
+                    //case 9:
+                    //    return a9 ?? notExists;
+                    //case 10:
+                    //    return a10 ?? notExists;
+                    //case 11:
+                    //    return a11 ?? notExists;
+                    //case 12:
+                    //    return a12 ?? notExists;
+                    //case 13:
+                    //    return a13 ?? notExists;
+                    //case 14:
+                    //    return a14 ?? notExists;
+                    //case 15:
+                    //    return a15 ?? notExists;
                 }
                 return base[index.ToString()];
             }
@@ -125,30 +125,30 @@ namespace NiL.JS.Core
                     case 7:
                         a7 = value;
                         break;
-                    case 8:
-                        a8 = value;
-                        break;
-                    case 9:
-                        a9 = value;
-                        break;
-                    case 10:
-                        a10 = value;
-                        break;
-                    case 11:
-                        a11 = value;
-                        break;
-                    case 12:
-                        a12 = value;
-                        break;
-                    case 13:
-                        a13 = value;
-                        break;
-                    case 14:
-                        a14 = value;
-                        break;
-                    case 15:
-                        a15 = value;
-                        break;
+                    //case 8:
+                    //    a8 = value;
+                    //    break;
+                    //case 9:
+                    //    a9 = value;
+                    //    break;
+                    //case 10:
+                    //    a10 = value;
+                    //    break;
+                    //case 11:
+                    //    a11 = value;
+                    //    break;
+                    //case 12:
+                    //    a12 = value;
+                    //    break;
+                    //case 13:
+                    //    a13 = value;
+                    //    break;
+                    //case 14:
+                    //    a14 = value;
+                    //    break;
+                    //case 15:
+                    //    a15 = value;
+                    //    break;
                     default:
                         if (fields == null)
                             fields = new Dictionary<string, JSObject>();
@@ -199,22 +199,22 @@ namespace NiL.JS.Core
                     return (a6 ?? (!createMember ? notExists : (a6 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
                 case "7":
                     return (a7 ?? (!createMember ? notExists : (a7 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
-                case "8":
-                    return (a8 ?? (!createMember ? notExists : (a8 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
-                case "9":
-                    return (a9 ?? (!createMember ? notExists : (a9 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
-                case "10":
-                    return (a10 ?? (!createMember ? notExists : (a10 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
-                case "11":
-                    return (a11 ?? (!createMember ? notExists : (a11 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
-                case "12":
-                    return (a12 ?? (!createMember ? notExists : (a12 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
-                case "13":
-                    return (a13 ?? (!createMember ? notExists : (a13 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
-                case "14":
-                    return (a14 ?? (!createMember ? notExists : (a14 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
-                case "15":
-                    return (a15 ?? (!createMember ? notExists : (a15 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
+                //case "8":
+                //    return (a8 ?? (!createMember ? notExists : (a8 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
+                //case "9":
+                //    return (a9 ?? (!createMember ? notExists : (a9 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
+                //case "10":
+                //    return (a10 ?? (!createMember ? notExists : (a10 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
+                //case "11":
+                //    return (a11 ?? (!createMember ? notExists : (a11 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
+                //case "12":
+                //    return (a12 ?? (!createMember ? notExists : (a12 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
+                //case "13":
+                //    return (a13 ?? (!createMember ? notExists : (a13 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
+                //case "14":
+                //    return (a14 ?? (!createMember ? notExists : (a14 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
+                //case "15":
+                //    return (a15 ?? (!createMember ? notExists : (a15 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
                 case "length":
                     {
                         if (_length == null)
@@ -247,22 +247,22 @@ namespace NiL.JS.Core
                 yield return "6";
             if (a7 != null && a7.isExist && (!hideNonEnum || (a7.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
                 yield return "7";
-            if (a8 != null && a8.isExist && (!hideNonEnum || (a8.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
-                yield return "8";
-            if (a9 != null && a9.isExist && (!hideNonEnum || (a9.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
-                yield return "9";
-            if (a10 != null && a10.isExist && (!hideNonEnum || (a10.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
-                yield return "10";
-            if (a11 != null && a11.isExist && (!hideNonEnum || (a11.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
-                yield return "11";
-            if (a12 != null && a12.isExist && (!hideNonEnum || (a12.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
-                yield return "12";
-            if (a13 != null && a13.isExist && (!hideNonEnum || (a13.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
-                yield return "13";
-            if (a14 != null && a14.isExist && (!hideNonEnum || (a14.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
-                yield return "14";
-            if (a15 != null && a15.isExist && (!hideNonEnum || (a15.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
-                yield return "15";
+            //if (a8 != null && a8.isExist && (!hideNonEnum || (a8.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+            //    yield return "8";
+            //if (a9 != null && a9.isExist && (!hideNonEnum || (a9.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+            //    yield return "9";
+            //if (a10 != null && a10.isExist && (!hideNonEnum || (a10.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+            //    yield return "10";
+            //if (a11 != null && a11.isExist && (!hideNonEnum || (a11.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+            //    yield return "11";
+            //if (a12 != null && a12.isExist && (!hideNonEnum || (a12.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+            //    yield return "12";
+            //if (a13 != null && a13.isExist && (!hideNonEnum || (a13.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+            //    yield return "13";
+            //if (a14 != null && a14.isExist && (!hideNonEnum || (a14.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+            //    yield return "14";
+            //if (a15 != null && a15.isExist && (!hideNonEnum || (a15.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+            //    yield return "15";
             if (callee != null && callee.isExist && (!hideNonEnum || (callee.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
                 yield return "callee";
             if (caller != null && callee.isExist && (!hideNonEnum || (caller.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))

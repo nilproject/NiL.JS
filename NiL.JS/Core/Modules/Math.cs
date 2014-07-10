@@ -101,7 +101,7 @@ namespace NiL.JS.Core.Modules
 
         [DoNotEnumerate]
         [DoNotDelete]
-        public static JSObject floor(JSObject[] args)
+        public static JSObject floor(Arguments args)
         {
             var a = Tools.JSObjectToDouble(args.Length > 0 ? args[0] : null);
             if (a < 0 && a > -1e-15)

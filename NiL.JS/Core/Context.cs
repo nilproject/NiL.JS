@@ -24,7 +24,8 @@ namespace NiL.JS.Core
     [Serializable]
     public class Context : IEnumerable<string>
     {
-        private static readonly Context[] runnedContexts = new Context[65535];
+        private const int MaxConcurentContexts = 65535;
+        private static readonly Context[] runnedContexts = new Context[MaxConcurentContexts];
 
         public static Context CurrentContext
         {
@@ -34,10 +35,13 @@ namespace NiL.JS.Core
 #if DEBUG
                 for (var i = 0; i < runnedContexts.Length; i++)
 #else
-                for (var i = runnedContexts.Length; i-- > 0; )
+                for (var i = MaxConcurentContexts; i-- > 0; )
 #endif
-                    if (runnedContexts[i] != null && runnedContexts[i].threadId == threadId)
-                        return runnedContexts[i];
+                {
+                    var c = runnedContexts[i];
+                    if (c != null && c.threadId == threadId)
+                        return c;
+                }
                 return null;
             }
         }
@@ -251,26 +255,27 @@ namespace NiL.JS.Core
         internal bool Activate()
         {
             int threadId = Thread.CurrentThread.ManagedThreadId;
-            lock (runnedContexts)
+            //lock (runnedContexts)
             {
 #if DEBUG
-                for (var i = 0; i < runnedContexts.Length; i++)
+                for (var i = 0; i < MaxConcurentContexts; i++)
 #else
-                for (var i = runnedContexts.Length; i-- > 0; )
+                for (var i = MaxConcurentContexts; i-- > 0; )
 #endif
                 {
-                    if (runnedContexts[i] == null || runnedContexts[i].threadId == threadId)
+                    var c = runnedContexts[i];
+                    if (c == null || c.threadId == threadId)
                     {
-                        if (runnedContexts[i] == this)
+                        if (c == this)
                             return false;
-                        else if (oldContext != null)
+                        if (oldContext != null)
                         {
 #if DEBUG
                             System.Diagnostics.Debugger.Break();
 #endif
                             throw new ApplicationException("Try to reactivate context");
                         }
-                        this.oldContext = runnedContexts[i];
+                        this.oldContext = c;
                         runnedContexts[i] = this;
                         this.threadId = threadId;
                         return true;
@@ -287,64 +292,34 @@ namespace NiL.JS.Core
         /// <returns>Текущий активный контекст</returns>
         internal Context Deactivate()
         {
-            if (this != CurrentContext)
-            {
-#if DEBUG
-                System.Diagnostics.Debugger.Break();
-#endif
-                throw new InvalidOperationException("Context not runned");
-            }
+            Context c = null;
 #if DEBUG
             var i = 0;
-            lock (runnedContexts)
+            //lock (runnedContexts)
             {
                 for (; i < runnedContexts.Length; i++)
                 {
 #else
-            var i = runnedContexts.Length;
-            lock (runnedContexts)
+            var i = MaxConcurentContexts;
+            //lock (runnedContexts) // Лочить не нужно. Не может в одном потоке одновременно выполняться два действия.
             {
                 for (; i-- > 0; )
                 {
 #endif
-                    if (runnedContexts[i] != null && runnedContexts[i].threadId == threadId)
+                    c = runnedContexts[i];
+                    if (c != null && c.threadId == threadId)
                     {
-                        runnedContexts[i] = oldContext;
+                        if (c != this)
+                            throw new InvalidOperationException("Context not runned");
+                        runnedContexts[i] = c = oldContext;
                         break;
                     }
                 }
             }
+            if (i == -1)
+                throw new InvalidOperationException("Context not runned");
             oldContext = null;
-#if DEBUG
-            if (NiL.JS.Core.BaseTypes.Number.NaN.valueType != JSObjectType.Double || !double.IsNaN(NiL.JS.Core.BaseTypes.Number.NaN.dValue))
-                if (System.Diagnostics.Debugger.IsAttached)
-                    System.Diagnostics.Debugger.Break();
-                else
-                    throw new ApplicationException("NaN was rewrite");
-            if (JSObject.undefined.valueType != JSObjectType.Undefined)
-                if (System.Diagnostics.Debugger.IsAttached)
-                    System.Diagnostics.Debugger.Break();
-                else
-                    throw new ApplicationException("undefined was rewrite");
-            if (JSObject.notExists.isExist)
-                if (System.Diagnostics.Debugger.IsAttached)
-                    System.Diagnostics.Debugger.Break();
-                else
-                    throw new ApplicationException("notExist was rewrite");
-            if (Core.BaseTypes.Boolean.False.valueType != JSObjectType.Bool
-                || Core.BaseTypes.Boolean.False.iValue != 0)
-                if (System.Diagnostics.Debugger.IsAttached)
-                    System.Diagnostics.Debugger.Break();
-                else
-                    throw new ApplicationException("Boolean.False was rewrite");
-            if (Core.BaseTypes.Boolean.True.valueType != JSObjectType.Bool
-                || Core.BaseTypes.Boolean.True.iValue != 1)
-                if (System.Diagnostics.Debugger.IsAttached)
-                    System.Diagnostics.Debugger.Break();
-                else
-                    throw new ApplicationException("Boolean.True was rewrite");
-#endif
-            return runnedContexts[i];
+            return c;
         }
 
         /// <summary>
@@ -355,11 +330,12 @@ namespace NiL.JS.Core
         public virtual JSObject DefineVariable(string name)
         {
             if (name == "this")
-                return GetVariable(name);
+                return thisBind;
             JSObject res = null;
-            if (fields == null)
-                (fields = new Dictionary<string, JSObject>())[name] = res = new JSObject();
-            else if (!fields.TryGetValue(name, out res))
+            //if (fields == null)
+            //    (fields = new Dictionary<string, JSObject>())[name] = res = new JSObject();
+            //else
+            if (!fields.TryGetValue(name, out res))
             {
                 fields[name] = res = new JSObject();
                 res.attributes = JSObjectAttributesInternal.DoNotDelete;
@@ -388,10 +364,10 @@ namespace NiL.JS.Core
             if (!IsExcecuting)
                 System.Diagnostics.Debug.Fail("Try to get varible from stoped context.");
 #endif
-            JSObject res = null;
             if (name == "this")
                 return ThisBind;
-            bool fromProto = (fields == null || !fields.TryGetValue(name, out res)) && (prototype != null);
+            JSObject res = null;
+            bool fromProto = !fields.TryGetValue(name, out res) && (prototype != null);
             if (fromProto)
                 res = prototype.GetVariable(name, create);
             if (res == null) // значит вышли из глобального контекста

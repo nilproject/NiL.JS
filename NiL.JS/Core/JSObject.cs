@@ -637,7 +637,23 @@ namespace NiL.JS.Core
         public JSObject GetMember(string name)
         {
             var cc = Context.CurrentContext;
+            if (cc.tempContainer == null)
             return GetMember(cc != null ? cc.wrap(name) : (JSObject)name, false, false);
+            var oi = cc.tempContainer.iValue;
+            var od = cc.tempContainer.dValue;
+            object oo = cc.tempContainer.oValue;
+            var ovt = cc.tempContainer.valueType;
+            try
+            {
+                return GetMember(cc != null ? cc.wrap(name) : (JSObject)name, false, false);
+            }
+            finally
+            {
+                cc.tempContainer.iValue = oi;
+                cc.tempContainer.oValue = oo;
+                cc.tempContainer.dValue = od;
+                cc.tempContainer.valueType = ovt;
+            }
         }
 
         /// <summary>
@@ -650,7 +666,23 @@ namespace NiL.JS.Core
         public JSObject GetMember(string name, bool own)
         {
             var cc = Context.CurrentContext;
-            return GetMember(cc != null ? cc.wrap(name) : (JSObject)name, false, own);
+            if (cc.tempContainer == null)
+                return GetMember(cc != null ? cc.wrap(name) : (JSObject)name, false, own);
+            var oi = cc.tempContainer.iValue;
+            var od = cc.tempContainer.dValue;
+            object oo = cc.tempContainer.oValue;
+            var ovt = cc.tempContainer.valueType;
+            try
+            {
+                return GetMember(cc != null ? cc.wrap(name) : (JSObject)name, false, own);
+            }
+            finally
+            {
+                cc.tempContainer.iValue = oi;
+                cc.tempContainer.oValue = oo;
+                cc.tempContainer.dValue = od;
+                cc.tempContainer.valueType = ovt;
+            }
         }
 
         /// <summary>
@@ -662,14 +694,46 @@ namespace NiL.JS.Core
         public JSObject DefineMember(string name)
         {
             var cc = Context.CurrentContext;
-            return GetMember(cc != null ? cc.wrap(name) : (JSObject)name, true, true);
+            if (cc.tempContainer == null)
+                return GetMember(cc != null ? cc.wrap(name) : (JSObject)name, true, true);
+            var oi = cc.tempContainer.iValue;
+            var od = cc.tempContainer.dValue;
+            object oo = cc.tempContainer.oValue;
+            var ovt = cc.tempContainer.valueType;
+            try
+            {
+                return GetMember(cc != null ? cc.wrap(name) : (JSObject)name, true, true);
+            }
+            finally
+            {
+                cc.tempContainer.iValue = oi;
+                cc.tempContainer.oValue = oo;
+                cc.tempContainer.dValue = od;
+                cc.tempContainer.valueType = ovt;
+            }
         }
 
         [Hidden]
         internal protected JSObject GetMember(string name, bool createMember, bool own)
         {
             var cc = Context.CurrentContext;
-            return GetMember(cc != null ? cc.wrap(name) : (JSObject)name, createMember, own);
+            if (cc.tempContainer == null)
+                return GetMember(cc != null ? cc.wrap(name) : (JSObject)name, createMember, own);
+            var oi = cc.tempContainer.iValue;
+            var od = cc.tempContainer.dValue;
+            object oo = cc.tempContainer.oValue;
+            var ovt = cc.tempContainer.valueType;
+            try
+            {
+                return GetMember(cc != null ? cc.wrap(name) : (JSObject)name, createMember, own);
+            }
+            finally
+            {
+                cc.tempContainer.iValue = oi;
+                cc.tempContainer.oValue = oo;
+                cc.tempContainer.dValue = od;
+                cc.tempContainer.valueType = ovt;
+            }
         }
 
         [Hidden]
@@ -1253,11 +1317,6 @@ namespace NiL.JS.Core
                         && (node.value.attributes & JSObjectAttributesInternal.NotConfigurable) == 0)
                         return false;
                 }
-                /*for (var i = arr.data.Count; i-- > 0; )
-                    if (arr.data[i] != null
-                        && arr.data[i].valueType >= JSObjectType.Object && arr.data[i].oValue != null
-                        && (arr.data[i].attributes & JSObjectAttributesInternal.NotConfigurable) == 0)
-                        return false;*/
             }
             if (obj.fields != null)
                 foreach (var f in obj.fields)
@@ -1276,6 +1335,7 @@ namespace NiL.JS.Core
                 throw new JSException(new TypeError("Object.seal called on non-object."));
             if (obj.oValue == null)
                 throw new JSException(new TypeError("Object.seal called on null."));
+            obj = obj.oValue as JSObject ?? obj;
             obj.attributes |= JSObjectAttributesInternal.Immutable;
             (obj.oValue as JSObject ?? obj).attributes |= JSObjectAttributesInternal.Immutable;
             if (obj is BaseTypes.Array)

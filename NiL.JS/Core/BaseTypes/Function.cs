@@ -564,7 +564,7 @@ namespace NiL.JS.Core.BaseTypes
             attributes = JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.Immutable | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.NotConfigurable
         };
 
-        private readonly FunctionStatement creator;
+        internal readonly FunctionStatement creator;
         [Hidden]
         [CLSCompliant(false)]
         internal protected readonly Context context;
@@ -744,7 +744,6 @@ namespace NiL.JS.Core.BaseTypes
         public virtual JSObject Invoke(JSObject thisBind, Arguments args)
         {
             var oldargs = _arguments;
-            Context internalContext = new Context(context ?? Context.CurrentContext, this);
             var body = creator.body;
             if (body == null || body.Body.Length == 0)
             {
@@ -760,6 +759,7 @@ namespace NiL.JS.Core.BaseTypes
                 notExists.valueType = JSObjectType.NotExistsInObject;
                 return notExists;
             }
+            Context internalContext = new Context(context ?? Context.CurrentContext, this);
             try
             {
                 if (thisBind == null)

@@ -316,28 +316,44 @@ namespace NiL.JS.Core
             return null;
         }
 
-#if INLINE
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-#endif
+        private static readonly double[] cachedDoubleStringsKeys = new double[5];
+        private static readonly string[] cachedDoubleStringsValues = new string[5];
+        private static int cachedDoubleStringsIter = 0;
+
         internal static string DoubleToString(double d)
         {
-            if (0.0 == d || double.IsInfinity(d) || double.IsNaN(d))
-                return d.ToString(System.Globalization.CultureInfo.InvariantCulture);
-            if (Math.Abs(d) < 1.0)
+            if (d == 0.0)
+                return "0";
+            if (double.IsPositiveInfinity(d))
+                return "Infinity";
+            if (double.IsNegativeInfinity(d))
+                return "-Infinity";
+            if (double.IsNaN(d))
+                return "NaN";
+            for (var i = 0; i < 5; i++)
             {
-                if (d == (d % 0.000001))
-                    return d.ToString("0.####e-0", System.Globalization.CultureInfo.InvariantCulture);
-                if (d == (d % 0.001))
-                {
-                    var t = Math.Sign(d);
-                    d = Math.Abs(d);
-                    if (t < 0)
-                        return d.ToString("-0.##########", System.Globalization.CultureInfo.InvariantCulture);
-                }
+                if (cachedDoubleStringsKeys[i] == d)
+                    return cachedDoubleStringsValues[i];
             }
-            else if (Math.Abs(d) >= 1e+21)
-                return d.ToString("0.####e+0", System.Globalization.CultureInfo.InvariantCulture);
-            return d.ToString("0.##########", System.Globalization.CultureInfo.InvariantCulture);
+            var abs = Math.Abs(d);
+            string res = null;
+            try
+            {
+                if (abs < 1.0)
+                {
+                    if (d == (d % 0.000001))
+                        return res = d.ToString("0.####e-0", System.Globalization.CultureInfo.InvariantCulture);
+                }
+                else if (abs >= 1e+21)
+                    return res = d.ToString("0.####e+0", System.Globalization.CultureInfo.InvariantCulture);
+                return res = d.ToString("0.###############", System.Globalization.CultureInfo.InvariantCulture);
+            }
+            finally
+            {
+                cachedDoubleStringsKeys[cachedDoubleStringsIter] = d;
+                cachedDoubleStringsValues[cachedDoubleStringsIter++] = res;
+                cachedDoubleStringsIter %= 5;
+            }
         }
 
         public static bool ParseNumber(string code, out double value, int radix)

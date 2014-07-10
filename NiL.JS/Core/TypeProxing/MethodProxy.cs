@@ -39,6 +39,7 @@ namespace NiL.JS.Core
         private Modules.ConvertValueAttribute converter;
         private Modules.ConvertValueAttribute[] paramsConverters;
         private ParameterInfo[] parameters;
+        private bool constructorMode;
 
         [Hidden]
         public override FunctionType Type
@@ -173,7 +174,7 @@ namespace NiL.JS.Core
             }
             else if (info is ConstructorInfo)
             {
-                // TODO.
+                constructorMode = true;
             }
             else
                 throw new ArgumentException("methodinfo");
@@ -189,7 +190,7 @@ namespace NiL.JS.Core
         private static object[] convertArray(NiL.JS.Core.BaseTypes.Array array)
         {
             var arg = new object[array.data.Count];
-            for (var j = 0U; j < arg.Length; j++)
+            for (var j = arg.Length; j-- > 0; )
             {
                 var temp = (array.data[j] ?? undefined).Value;
                 arg[j] = temp is NiL.JS.Core.BaseTypes.Array ? convertArray(temp as NiL.JS.Core.BaseTypes.Array) : temp;
@@ -286,10 +287,10 @@ namespace NiL.JS.Core
         {
             object res = null;
             object target = null;
-            if (!(info is ConstructorInfo))
+            if (!constructorMode && !info.IsStatic)
             {
-                target = info.IsStatic ? null : hardTarget ?? getTargetObject(thisBind ?? JSObject.Null, info.DeclaringType);
-                if (target == null && !info.IsStatic)
+                target = hardTarget ?? getTargetObject(thisBind ?? JSObject.Null, info.DeclaringType);
+                if (target == null)
                     throw new JSException(new TypeError("Can not call function \"" + this.name + "\" for object of another type."));
             }
             try
@@ -384,7 +385,7 @@ namespace NiL.JS.Core
                         {
                             if (args == null)
                                 args = ConvertArgs(argsSource);
-                            if (info is ConstructorInfo)
+                            if (constructorMode)
                                 res = (info as ConstructorInfo).Invoke(args);
                             else
                             {

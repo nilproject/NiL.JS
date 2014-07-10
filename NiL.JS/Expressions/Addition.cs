@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using NiL.JS.Core;
 
 namespace NiL.JS.Expressions
@@ -28,48 +29,43 @@ namespace NiL.JS.Expressions
                             temp = second.Invoke(context);
                             if (temp.valueType >= JSObjectType.Object)
                                 temp = temp.ToPrimitiveValue_Value_String();
-                            if (temp.valueType == JSObjectType.Int || temp.valueType == JSObjectType.Bool)
+                            switch(temp.valueType)
                             {
-                                if (((ir | temp.iValue) & (int)0x40000000) == 0)
-                                {
-                                    tempContainer.valueType = JSObjectType.Int;
-                                    tempContainer.iValue = ir + temp.iValue;
-                                    return tempContainer;
-                                }
-                                else
-                                {
-                                    tempContainer.valueType = JSObjectType.Double;
-                                    tempContainer.dValue = (double)ir + temp.iValue;
-                                    return tempContainer;
-                                }
+                                case JSObjectType.Int:
+                                case JSObjectType.Bool:
+                                    {
+                                        tempContainer.valueType = JSObjectType.Double;
+                                        tempContainer.dValue = (long)ir + temp.iValue;
+                                        return tempContainer;
+                                    }
+                                case JSObjectType.Double:
+                                    {
+                                        tempContainer.valueType = JSObjectType.Double;
+                                        tempContainer.dValue = ir + temp.dValue;
+                                        return tempContainer;
+                                    }
+                                case JSObjectType.String:
+                                    {
+                                        tempContainer.oValue = (type == JSObjectType.Bool ? (ir != 0 ? "true" : "false") : ir.ToString(CultureInfo.InvariantCulture)) + (string)temp.oValue;
+                                        tempContainer.valueType = JSObjectType.String;
+                                        return tempContainer;
+                                    }
+                                case JSObjectType.NotExists:
+                                case JSObjectType.NotExistsInObject:
+                                case JSObjectType.Undefined:
+                                    {
+                                        tempContainer.dValue = double.NaN;
+                                        tempContainer.valueType = JSObjectType.Double;
+                                        return tempContainer;
+                                    }
+                                case JSObjectType.Object: // x+null
+                                    {
+                                        tempContainer.dValue = ir;
+                                        tempContainer.valueType = JSObjectType.Double;
+                                        return tempContainer;
+                                    }
                             }
-                            else if (temp.valueType == JSObjectType.Double)
-                            {
-                                tempContainer.valueType = JSObjectType.Double;
-                                tempContainer.dValue = ir + temp.dValue;
-                                return tempContainer;
-                            }
-                            else if (temp.valueType == JSObjectType.String)
-                            {
-                                tempContainer.oValue = (type == JSObjectType.Bool ? (ir != 0 ? "true" : "false") : ir.ToString(CultureInfo.InvariantCulture)) + (string)temp.oValue;
-                                tempContainer.valueType = JSObjectType.String;
-                                return tempContainer;
-                            }
-                            else if (temp.valueType <= JSObjectType.Undefined)
-                            {
-                                tempContainer.dValue = double.NaN;
-                                tempContainer.valueType = JSObjectType.Double;
-                                return tempContainer;
-                            }
-                            else if (temp.valueType == JSObjectType.Object) // x+null
-                            {
-                                tempContainer.dValue = ir;
-                                tempContainer.valueType = JSObjectType.Double;
-                                return tempContainer;
-                            }
-                            else if (temp.valueType == JSObjectType.NotExists)
-                                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable not defined.")));
-                            break;
+                            throw new NotImplementedException();
                         }
                     case JSObjectType.Double:
                         {
