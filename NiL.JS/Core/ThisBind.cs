@@ -31,6 +31,11 @@ namespace NiL.JS.Core
             assignCallback = (sender) => { throw new JSException(TypeProxy.Proxy(new ReferenceError("Invalid left-hand side in assignment"))); };
         }
 
+        public override void Assign(NiL.JS.Core.JSObject value)
+        {
+            throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Invalid left-hand side")));
+        }
+
         internal protected override JSObject GetMember(JSObject name, bool create, bool own)
         {
             var nameStr = name.ToString();

@@ -237,7 +237,7 @@ namespace NiL.JS.Core.BaseTypes
             else
             {
                 var len = (long)Tools.JSObjectToDouble(this.length);
-                for (var i = 0U; i < len && res; i++)
+                for (var i = 0L; i < len && res; i++)
                 {
                     var v = this[i.ToString(CultureInfo.InvariantCulture)];
                     if (v.valueType < JSObjectType.Undefined)
@@ -284,7 +284,7 @@ namespace NiL.JS.Core.BaseTypes
             else
             {
                 var len = (long)Tools.JSObjectToDouble(this.length);
-                for (var i = 0U; i < len && !res; i++)
+                for (var i = 0L; i < len && !res; i++)
                 {
                     var v = this[i.ToString(CultureInfo.InvariantCulture)];
                     if (v.valueType < JSObjectType.Undefined)
@@ -327,7 +327,7 @@ namespace NiL.JS.Core.BaseTypes
             else
             {
                 var len = (long)Tools.JSObjectToDouble(this.length);
-                for (var i = 0U; i < len; i++)
+                for (var i = 0L; i < len; i++)
                 {
                     var v = this[i.ToString(CultureInfo.InvariantCulture)];
                     if (v.valueType < JSObjectType.Undefined)
@@ -374,7 +374,7 @@ namespace NiL.JS.Core.BaseTypes
             else
             {
                 var len = (long)Tools.JSObjectToDouble(this.length);
-                for (var i = 0U; i < len; i++)
+                for (var i = 0L; i < len; i++)
                 {
                     var v = this[i.ToString(CultureInfo.InvariantCulture)];
                     if (v.valueType < JSObjectType.Undefined)
@@ -414,7 +414,7 @@ namespace NiL.JS.Core.BaseTypes
             else
             {
                 var len = (long)Tools.JSObjectToDouble(this.length);
-                for (var i = 0U; i < len; i++)
+                for (var i = 0L; i < len; i++)
                 {
                     var v = this[i.ToString(CultureInfo.InvariantCulture)];
                     if (v.valueType < JSObjectType.Undefined)

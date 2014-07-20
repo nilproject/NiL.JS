@@ -854,13 +854,8 @@ namespace NiL.JS.Core.BaseTypes
                 body.Invoke(internalContext);
                 if (internalContext.abortInfo != null && internalContext.abortInfo.valueType == JSObjectType.NotExists)
                     internalContext.abortInfo.valueType = JSObjectType.NotExistsInObject;
-#if DEBUG
-                if (internalContext.abortInfo == null)
-                    System.Diagnostics.Debugger.Break();
-#else
                 if (internalContext.abortInfo == null)
                     internalContext.abortInfo = notExists;
-#endif
                 if ((internalContext.abortInfo.attributes & JSObjectAttributesInternal.Temporary) != 0)
                     return internalContext.abortInfo.CloneImpl();
                 return internalContext.abortInfo;

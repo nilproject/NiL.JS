@@ -210,7 +210,7 @@ namespace NiL.JS.Statements
                 //if (body[i] is FunctionStatement)
                 //    continue;
                 if (body[i] == null)
-                    continue;
+                    return res;
 #if DEV
                 if (context.debugging)
                     context.raiseDebugger(body[i]);
@@ -293,6 +293,17 @@ namespace NiL.JS.Statements
                 Parser.Optimize(ref body[i], depth < 0 ? 2 : Math.Max(1, depth), fdepth, variables, this.strict);
                 if (needRemove)
                     body[i] = null;
+            }
+
+            for (int f = body.Length, t = body.Length - 1; f-- > 0; )
+            {
+                if (body[f] != null && body[t] == null)
+                {
+                    body[t] = body[f];
+                    body[f] = null;
+                }
+                if (body[t] != null)
+                    t--;
             }
 
             if (depth > 0)

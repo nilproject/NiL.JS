@@ -16,37 +16,42 @@ namespace NiL.JS.Expressions
 
         internal override JSObject Invoke(Context context)
         {
+            //var tempContainer = context.tempContainer;
             lock (this)
             {
                 JSObject temp = first.Invoke(context);
+                string tstr;
+                int tint;
+                double tdouble;
+                JSObjectType ttype;
                 switch (temp.valueType)
                 {
                     case JSObjectType.Bool:
                     case JSObjectType.Int:
                         {
-                            var type = temp.valueType;
-                            int ir = temp.iValue;
+                            ttype = temp.valueType;
+                            tint = temp.iValue;
                             temp = second.Invoke(context);
                             if (temp.valueType >= JSObjectType.Object)
                                 temp = temp.ToPrimitiveValue_Value_String();
-                            switch(temp.valueType)
+                            switch (temp.valueType)
                             {
                                 case JSObjectType.Int:
                                 case JSObjectType.Bool:
                                     {
                                         tempContainer.valueType = JSObjectType.Double;
-                                        tempContainer.dValue = (long)ir + temp.iValue;
+                                        tempContainer.dValue = (long)tint + temp.iValue;
                                         return tempContainer;
                                     }
                                 case JSObjectType.Double:
                                     {
                                         tempContainer.valueType = JSObjectType.Double;
-                                        tempContainer.dValue = ir + temp.dValue;
+                                        tempContainer.dValue = tint + temp.dValue;
                                         return tempContainer;
                                     }
                                 case JSObjectType.String:
                                     {
-                                        tempContainer.oValue = (type == JSObjectType.Bool ? (ir != 0 ? "true" : "false") : ir.ToString(CultureInfo.InvariantCulture)) + (string)temp.oValue;
+                                        tempContainer.oValue = (ttype == JSObjectType.Bool ? (tint != 0 ? "true" : "false") : tint.ToString(CultureInfo.InvariantCulture)) + (string)temp.oValue;
                                         tempContainer.valueType = JSObjectType.String;
                                         return tempContainer;
                                     }
@@ -60,7 +65,7 @@ namespace NiL.JS.Expressions
                                     }
                                 case JSObjectType.Object: // x+null
                                     {
-                                        tempContainer.dValue = ir;
+                                        tempContainer.dValue = tint;
                                         tempContainer.valueType = JSObjectType.Double;
                                         return tempContainer;
                                     }
@@ -69,7 +74,7 @@ namespace NiL.JS.Expressions
                         }
                     case JSObjectType.Double:
                         {
-                            double dr = temp.dValue;
+                            tdouble = temp.dValue;
                             temp = second.Invoke(context);
                             if (temp.valueType >= JSObjectType.Object)
                                 temp = temp.ToPrimitiveValue_Value_String();
@@ -79,24 +84,24 @@ namespace NiL.JS.Expressions
                                 case JSObjectType.Bool:
                                     {
                                         tempContainer.valueType = JSObjectType.Double;
-                                        tempContainer.dValue = dr + temp.iValue;
+                                        tempContainer.dValue = tdouble + temp.iValue;
                                         return tempContainer;
                                     }
                                 case JSObjectType.Double:
                                     {
                                         tempContainer.valueType = JSObjectType.Double;
-                                        tempContainer.dValue = dr + temp.dValue;
+                                        tempContainer.dValue = tdouble + temp.dValue;
                                         return tempContainer;
                                     }
                                 case JSObjectType.String:
                                     {
-                                        tempContainer.oValue = Tools.DoubleToString(dr) + (string)temp.oValue;
+                                        tempContainer.oValue = Tools.DoubleToString(tdouble) + (string)temp.oValue;
                                         tempContainer.valueType = JSObjectType.String;
                                         return tempContainer;
                                     }
                                 case JSObjectType.Object: // null
                                     {
-                                        tempContainer.dValue = dr;
+                                        tempContainer.dValue = tdouble;
                                         tempContainer.valueType = JSObjectType.Double;
                                         return tempContainer;
                                     }
@@ -114,7 +119,7 @@ namespace NiL.JS.Expressions
                         }
                     case JSObjectType.String:
                         {
-                            var val = temp.oValue as string;
+                            tstr = temp.oValue as string;
                             temp = second.Invoke(context);
                             if (temp.valueType == JSObjectType.Date)
                                 temp = temp.ToPrimitiveValue_String_Value();
@@ -124,41 +129,41 @@ namespace NiL.JS.Expressions
                             {
                                 case JSObjectType.Int:
                                     {
-                                        val += temp.iValue;
+                                        tstr += temp.iValue;
                                         break;
                                     }
                                 case JSObjectType.Double:
                                     {
-                                        val += Tools.DoubleToString(temp.dValue);
+                                        tstr += Tools.DoubleToString(temp.dValue);
                                         break;
                                     }
                                 case JSObjectType.Bool:
                                     {
-                                        val += temp.iValue != 0 ? "true" : "false";
+                                        tstr += temp.iValue != 0 ? "true" : "false";
                                         break;
                                     }
                                 case JSObjectType.String:
                                     {
-                                        val += temp.oValue;
+                                        tstr += temp.oValue;
                                         break;
                                     }
                                 case JSObjectType.Undefined:
                                 case JSObjectType.NotExistsInObject:
                                     {
-                                        val += "undefined";
+                                        tstr += "undefined";
                                         break;
                                     }
                                 case JSObjectType.Object:
                                 case JSObjectType.Function:
                                 case JSObjectType.Date:
                                     {
-                                        val += "null";
+                                        tstr += "null";
                                         break;
                                     }
                                 case JSObjectType.NotExists:
                                     throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable not defined.")));
                             }
-                            tempContainer.oValue = val;
+                            tempContainer.oValue = tstr;
                             tempContainer.valueType = JSObjectType.String;
                             return tempContainer;
                         }
@@ -170,7 +175,6 @@ namespace NiL.JS.Expressions
                     case JSObjectType.NotExistsInObject:
                     case JSObjectType.Undefined:
                         {
-                            var val = "undefined";
                             temp = second.Invoke(context);
                             if (temp.valueType >= JSObjectType.Object)
                                 temp = temp.ToPrimitiveValue_Value_String();
@@ -179,7 +183,7 @@ namespace NiL.JS.Expressions
                                 case JSObjectType.String:
                                     {
                                         tempContainer.valueType = JSObjectType.String;
-                                        tempContainer.oValue = val as string + temp.oValue as string;
+                                        tempContainer.oValue = "undefined" + temp.oValue as string;
                                         return tempContainer;
                                     }
                                 case JSObjectType.Double:

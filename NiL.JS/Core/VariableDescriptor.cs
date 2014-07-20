@@ -91,7 +91,8 @@ namespace NiL.JS.Core
 
         public override string ToString()
         {
-            return "Name: \"" + name + "\". Reference count: " + references.Count;
+            return name;
+            //return "Name: \"" + name + "\". Reference count: " + references.Count;
         }
     }
 }

@@ -294,7 +294,7 @@ namespace NiL.JS.Core
                 case JSObjectType.NotExistsInObject:
                     return 0;
                 case JSObjectType.NotExists:
-                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable not defined.")));
+                    throw new JSException(new ReferenceError("Variable not defined."));
                 default:
                     throw new NotImplementedException();
             }
@@ -311,8 +311,9 @@ namespace NiL.JS.Core
                 || (targetType.IsEnum && Enum.IsDefined(targetType, res))
                 || targetType.IsAssignableFrom(res.GetType()))
                 return res;
-            if (res is TypeProxy && targetType.IsAssignableFrom((res as TypeProxy).hostedType))
-                return (res as TypeProxy).prototypeInstance.oValue;
+            var tpres = res as TypeProxy;
+            if (tpres != null && targetType.IsAssignableFrom(tpres.hostedType))
+                return tpres.prototypeInstance.oValue;
             return null;
         }
 

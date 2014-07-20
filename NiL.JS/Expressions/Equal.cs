@@ -15,47 +15,51 @@ namespace NiL.JS.Expressions
         internal override JSObject Invoke(Context context)
         {
             var temp = first.Invoke(context);
+            JSObject tjso;
             var lvt = temp.valueType;
+            int tint;
+            double tdouble;
+            string tstr;
+            var index = 0;
             switch (lvt)
             {
                 case JSObjectType.Bool:
                 case JSObjectType.Int:
                     {
-                        int left = temp.iValue;
-                        temp = second.Invoke(context);
-                        switch (temp.valueType)
+                        tint = temp.iValue;
+                        tjso = second.Invoke(context);
+                        switch (tjso.valueType)
                         {
                             case JSObjectType.Bool:
                             case JSObjectType.Int:
                                 {
-                                    return left == temp.iValue ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+                                    return tint == tjso.iValue ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
                                 }
                             case JSObjectType.Double:
                                 {
-                                    return left == temp.dValue ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+                                    return tint == tjso.dValue ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
                                 }
                             case JSObjectType.String:
                                 {
-                                    var index = 0;
-                                    double td = 0;
-                                    if (Tools.ParseNumber(temp.oValue as string, ref index, out td) && (index == (temp.oValue as string).Length))
-                                        return left == td ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+                                    tstr = tjso.oValue as string;
+                                    if (Tools.ParseNumber(tstr, ref index, out tdouble) && (index == tstr.Length))
+                                        return tint == tdouble ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
                                     else
                                         return false;
                                 }
                             case JSObjectType.Date:
                             case JSObjectType.Object:
                                 {
-                                    temp = temp.ToPrimitiveValue_Value_String();
-                                    if (temp.valueType == JSObjectType.Int)
+                                    tjso = tjso.ToPrimitiveValue_Value_String();
+                                    if (tjso.valueType == JSObjectType.Int)
                                         goto case JSObjectType.Int;
-                                    if (temp.valueType == JSObjectType.Bool)
+                                    if (tjso.valueType == JSObjectType.Bool)
                                         goto case JSObjectType.Int;
-                                    if (temp.valueType == JSObjectType.Double)
+                                    if (tjso.valueType == JSObjectType.Double)
                                         goto case JSObjectType.Double;
-                                    if (temp.valueType == JSObjectType.String)
+                                    if (tjso.valueType == JSObjectType.String)
                                         goto case JSObjectType.String;
-                                    if (temp.valueType >= JSObjectType.Object) // null
+                                    if (tjso.valueType >= JSObjectType.Object) // null
                                     {
                                         return false;
                                     }
@@ -74,25 +78,24 @@ namespace NiL.JS.Expressions
                     }
                 case JSObjectType.Double:
                     {
-                        double left = temp.dValue;
-                        temp = second.Invoke(context);
-                        switch (temp.valueType)
+                        tdouble = temp.dValue;
+                        tjso = second.Invoke(context);
+                        switch (tjso.valueType)
                         {
                             case JSObjectType.Bool:
                             case JSObjectType.Int:
                                 {
-                                    return left == temp.iValue ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+                                    return tdouble == tjso.iValue ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
                                 }
                             case JSObjectType.Double:
                                 {
-                                    return left == temp.dValue ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+                                    return tdouble == tjso.dValue ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
                                 }
                             case JSObjectType.String:
                                 {
-                                    var index = 0;
-                                    double td = 0;
-                                    if (Tools.ParseNumber(temp.oValue as string, ref index, out td) && (index == (temp.oValue as string).Length))
-                                        return left == td ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+                                    tstr = tjso.oValue as string;
+                                    if (Tools.ParseNumber(tstr, ref index, out tjso.dValue) && (index == tstr.Length))
+                                        return tdouble == tjso.dValue ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
                                     else
                                         return false;
                                 }
@@ -104,18 +107,18 @@ namespace NiL.JS.Expressions
                             case JSObjectType.Date:
                             case JSObjectType.Object:
                                 {
-                                    temp = temp.ToPrimitiveValue_Value_String();
-                                    if (temp.valueType == JSObjectType.Int)
+                                    tjso = tjso.ToPrimitiveValue_Value_String();
+                                    if (tjso.valueType == JSObjectType.Int)
                                         goto case JSObjectType.Int;
-                                    if (temp.valueType == JSObjectType.Bool)
+                                    if (tjso.valueType == JSObjectType.Bool)
                                         goto case JSObjectType.Int;
-                                    if (temp.valueType == JSObjectType.Double)
+                                    if (tjso.valueType == JSObjectType.Double)
                                         goto case JSObjectType.Double;
-                                    if (temp.valueType == JSObjectType.String)
+                                    if (tjso.valueType == JSObjectType.String)
                                         goto case JSObjectType.String;
-                                    if (temp.valueType >= JSObjectType.Object) // null
+                                    if (tjso.valueType >= JSObjectType.Object) // null
                                     {
-                                        temp.iValue = 0;
+                                        tjso.iValue = 0;
                                         goto case JSObjectType.Int;
                                     }
                                     throw new NotImplementedException();
@@ -128,32 +131,28 @@ namespace NiL.JS.Expressions
                     }
                 case JSObjectType.String:
                     {
-                        string left = temp.oValue as string;
+                        tstr = temp.oValue as string;
                         temp = second.Invoke(context);
                         switch (temp.valueType)
                         {
                             case JSObjectType.Bool:
                             case JSObjectType.Int:
                                 {
-                                    double d = 0;
-                                    int i = 0;
-                                    if (Tools.ParseNumber(left, ref i, out d) && (i == left.Length))
-                                        return d == temp.iValue ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+                                    if (Tools.ParseNumber(tstr, ref index, out tdouble) && (index == tstr.Length))
+                                        return tdouble == temp.iValue ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
                                     else
                                         return false;
                                 }
                             case JSObjectType.Double:
                                 {
-                                    double d = 0;
-                                    int i = 0;
-                                    if (Tools.ParseNumber(left, ref i, out d) && (i == left.Length))
-                                        return d == temp.dValue ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+                                    if (Tools.ParseNumber(tstr, ref index, out tdouble) && (index == tstr.Length))
+                                        return tdouble == temp.dValue ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
                                     else
                                         return false;
                                 }
                             case JSObjectType.String:
                                 {
-                                    return string.CompareOrdinal(left, temp.oValue as string) == 0 ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+                                    return string.CompareOrdinal(tstr, temp.oValue as string) == 0 ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
                                 }
                             case JSObjectType.Function:
                             case JSObjectType.Object:
@@ -164,32 +163,26 @@ namespace NiL.JS.Expressions
                                         case JSObjectType.Int:
                                         case JSObjectType.Bool:
                                             {
-                                                double t = 0.0;
-                                                int i = 0;
-                                                if (Tools.ParseNumber(left, ref i, out t) && (i == left.Length))
-                                                    return t == temp.iValue ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+                                                if (Tools.ParseNumber(tstr, ref index, out tdouble) && (index == tstr.Length))
+                                                    return tdouble == temp.iValue ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
                                                 else goto
                                                     case JSObjectType.String;
                                             }
                                         case JSObjectType.Double:
                                             {
-                                                double t = 0.0;
-                                                int i = 0;
-                                                if (Tools.ParseNumber(left, ref i, out t) && (i == left.Length))
-                                                    return t == temp.dValue ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+                                                if (Tools.ParseNumber(tstr, ref index, out tdouble) && (index == tstr.Length))
+                                                    return tdouble == temp.dValue ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
                                                 else
                                                     goto case JSObjectType.String;
                                             }
                                         case JSObjectType.String:
                                             {
-                                                return string.CompareOrdinal(left, temp.Value.ToString()) == 0 ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+                                                return string.CompareOrdinal(tstr, temp.Value.ToString()) == 0 ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
                                             }
                                         case JSObjectType.Object:
                                             {
                                                 return false;
                                             }
-                                        case JSObjectType.NotExists:
-                                            throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable not defined.")));
                                         default: throw new NotImplementedException();
                                     }
                                 }
@@ -198,8 +191,6 @@ namespace NiL.JS.Expressions
                                 {
                                     return false;
                                 }
-                            case JSObjectType.NotExists:
-                                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable not defined.")));
                             default: throw new NotImplementedException();
                         }
                     }
@@ -207,33 +198,31 @@ namespace NiL.JS.Expressions
                 case JSObjectType.Date:
                 case JSObjectType.Object:
                     {
-                        var stemp = second.Invoke(context);
-                        var secondNValue = 0.0;
-                        switch (stemp.valueType)
+                        tjso = second.Invoke(context);
+                        switch (tjso.valueType)
                         {
                             case JSObjectType.Double:
                             case JSObjectType.Bool:
                             case JSObjectType.Int:
                                 {
-                                    secondNValue = stemp.valueType == JSObjectType.Double ? stemp.dValue : stemp.iValue;
+                                    tdouble = tjso.valueType == JSObjectType.Double ? tjso.dValue : tjso.iValue;
                                     temp = temp.ToPrimitiveValue_Value_String();
                                     switch (temp.valueType)
                                     {
                                         case JSObjectType.Bool:
                                         case JSObjectType.Int:
                                             {
-                                                return temp.iValue == secondNValue ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+                                                return temp.iValue == tdouble ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
                                             }
                                         case JSObjectType.Double:
                                             {
-                                                return temp.dValue == secondNValue ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+                                                return temp.dValue == tdouble ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
                                             }
                                         case JSObjectType.String:
                                             {
-                                                double d = 0;
-                                                int i = 0;
-                                                if (Tools.ParseNumber(temp.oValue as string, ref i, out d) && (i == (temp.oValue as string).Length))
-                                                    return d == secondNValue ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+                                                tstr = temp.oValue as string;
+                                                if (Tools.ParseNumber(tstr, ref index, out temp.dValue) && (index == tstr.Length))
+                                                    return tdouble == temp.dValue ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
                                                 else
                                                     return false;
                                             }
@@ -242,7 +231,7 @@ namespace NiL.JS.Expressions
                                 }
                             case JSObjectType.String:
                                 {
-                                    var str = stemp.oValue as string;
+                                    tstr = tjso.oValue as string;
                                     temp = temp.ToPrimitiveValue_Value_String();
                                     switch (temp.valueType)
                                     {
@@ -250,24 +239,22 @@ namespace NiL.JS.Expressions
                                         case JSObjectType.Bool:
                                         case JSObjectType.Int:
                                             {
-                                                secondNValue = temp.valueType == JSObjectType.Double ? temp.dValue : temp.iValue;
-                                                double d = 0;
-                                                int i = 0;
-                                                if (Tools.ParseNumber(str, ref i, out d) && (i == str.Length))
-                                                    return d == secondNValue ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+                                                temp.dValue = temp.valueType == JSObjectType.Double ? temp.dValue : temp.iValue;
+                                                if (Tools.ParseNumber(tstr, ref index, out tdouble) && (index == tstr.Length))
+                                                    return tdouble == temp.dValue ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
                                                 else
                                                     return false;
                                             }
                                         case JSObjectType.String:
                                             {
-                                                return temp.oValue as string == str ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+                                                return temp.oValue as string == tstr ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
                                             }
                                     }
                                     break;
                                 }
                             default:
                                 {
-                                    return temp.Value == stemp.Value ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+                                    return temp.Value == tjso.Value ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
                                 }
                         }
                         break;

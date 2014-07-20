@@ -116,9 +116,19 @@ namespace NiL.JSTest
             var sw = new Stopwatch();
             var s = new Script(
 @"
-var a = {};
-a[1] = 'Hello';
-console.log(a[1.000000000000001]);
+function fib(x)
+{
+    if (x < 2)
+        return 1;
+    return fib(x - 1) + fib(x - 2);
+}
+console.log(fib(10));
+var a = 1;
+var b = 2;
+var c = 3;
+a += function(){ return Math.floor(a * 2 + b * 3 + c * 5) }();
+a += function(){ return Math.floor(a * 2 + b * 3 + c * 5) }();
+console.log(a);
 ");
             s.Context.AttachModule(typeof(System.Drawing.Point));
             sw.Start();
@@ -138,7 +148,7 @@ console.log(a[1.000000000000001]);
 
             typeof(System.Windows.Forms.Button).GetType(); // Заставляет подгрузить сборку System.Windows.Forms. Это исключительно для баловства
 
-            int mode = 151
+            int mode = 101
                 ;
             switch (mode)
             {

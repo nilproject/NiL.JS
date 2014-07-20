@@ -87,26 +87,26 @@ namespace NiL.JS.Core.Modules
 
         [DoNotEnumerate]
         [DoNotDelete]
-        public static JSObject cos(JSObject[] args)
+        public static JSObject cos(Arguments args)
         {
-            return System.Math.Cos(Tools.JSObjectToDouble(args.Length > 0 ? args[0] : null));
+            return System.Math.Cos(Tools.JSObjectToDouble(args.length > 0 ? args[0] : null));
         }
 
         [DoNotEnumerate]
         [DoNotDelete]
-        public static JSObject exp(JSObject[] args)
+        public static JSObject exp(Arguments args)
         {
-            return System.Math.Exp(Tools.JSObjectToDouble(args.Length > 0 ? args[0] : null));
+            return System.Math.Exp(Tools.JSObjectToDouble(args.length > 0 ? args[0] : null));
         }
 
         [DoNotEnumerate]
         [DoNotDelete]
         public static JSObject floor(Arguments args)
         {
-            var a = Tools.JSObjectToDouble(args.Length > 0 ? args[0] : null);
+            var a = Tools.JSObjectToDouble(args.length > 0 ? args[0] : null);
             if (a < 0 && a > -1e-15)
                 a = 0;
-            if (a > 0 && a < -1e-15)
+            if (a > 0 && a < 1e-15)
                 a = 0;
             JSObject result = 0;
             result.dValue = System.Math.Floor(a);

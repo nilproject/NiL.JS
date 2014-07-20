@@ -16,7 +16,8 @@ namespace NiL.JS.Core.BaseTypes
 
             protected internal override object Convert(object arg)
             {
-                if (arg is JSObject && (arg as JSObject).valueType == JSObjectType.String)
+                var jsoa = arg as JSObject;
+                if (jsoa != null && jsoa.valueType == JSObjectType.String)
                     return arg;
                 return new String(arg.ToString());
             }
@@ -262,11 +263,11 @@ namespace NiL.JS.Core.BaseTypes
         [DoNotEnumerate]
         public JSObject replace(Arguments args)
         {
-            if (args.Length == 0)
+            if (args.length == 0)
                 return this;
-            if (args[0].valueType == JSObjectType.Object && args[0].oValue is RegExp)
+            if (args[0].valueType == JSObjectType.Object && args[0].oValue.GetType() == typeof(RegExp))
             {
-                if (args.Length > 1 && args[1].oValue is Function)
+                if (args.length > 1 && args[1].oValue is Function)
                 {
                     var oac = assignCallback;
                     assignCallback = null;

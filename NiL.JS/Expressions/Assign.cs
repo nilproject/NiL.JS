@@ -25,8 +25,7 @@ namespace NiL.JS.Expressions
         internal override JSObject Invoke(Context context)
         {
             JSObject temp;
-            JSObject field = null;
-            field = first.InvokeForAssing(context);
+            JSObject field = first.InvokeForAssing(context);
             if (field.valueType == JSObjectType.Property)
             {
                 lock (this)
@@ -46,7 +45,6 @@ namespace NiL.JS.Expressions
             {
                 if ((field.attributes & JSObjectAttributesInternal.ReadOnly) != 0 && context.strict)
                     throw new JSException(new TypeError("Can not assign to readonly property \"" + first + "\""));
-                //return second.Invoke(context);
             }
             temp = second.Invoke(context);
             field.Assign(temp);

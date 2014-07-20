@@ -278,18 +278,15 @@ namespace NiL.JS.Statements
 #endif
                 init.Invoke(context);
             }
-            if (implId == 3)
-                return impl3(context);
-            else if (implId == 0)
-                return impl0(context);
-            else if (implId == 1)
-                return impl1(context);
-            else if (implId == 2)
-                return impl2(context);
-            else if (implId == 4)
-                return impl4(context);
-            else if (implId == 5)
-                return impl5(context);
+            switch (implId)
+            {
+                case 0: return impl0(context);
+                case 1: return impl1(context);
+                case 2: return impl2(context);
+                case 3: return impl3(context);
+                case 4: return impl4(context);
+                case 5: return impl5(context);
+            }
             for (; ; ) ;
         }
 

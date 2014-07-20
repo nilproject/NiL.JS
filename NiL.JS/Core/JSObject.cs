@@ -637,8 +637,8 @@ namespace NiL.JS.Core
         public JSObject GetMember(string name)
         {
             var cc = Context.CurrentContext;
-            if (cc.tempContainer == null)
-            return GetMember(cc != null ? cc.wrap(name) : (JSObject)name, false, false);
+            if (cc == null)
+                return GetMember((JSObject)name, false, false);
             var oi = cc.tempContainer.iValue;
             var od = cc.tempContainer.dValue;
             object oo = cc.tempContainer.oValue;
@@ -666,8 +666,8 @@ namespace NiL.JS.Core
         public JSObject GetMember(string name, bool own)
         {
             var cc = Context.CurrentContext;
-            if (cc.tempContainer == null)
-                return GetMember(cc != null ? cc.wrap(name) : (JSObject)name, false, own);
+            if (cc == null)
+                return GetMember((JSObject)name, false, own);
             var oi = cc.tempContainer.iValue;
             var od = cc.tempContainer.dValue;
             object oo = cc.tempContainer.oValue;
@@ -694,8 +694,8 @@ namespace NiL.JS.Core
         public JSObject DefineMember(string name)
         {
             var cc = Context.CurrentContext;
-            if (cc.tempContainer == null)
-                return GetMember(cc != null ? cc.wrap(name) : (JSObject)name, true, true);
+            if (cc == null)
+                return GetMember((JSObject)name, true, true);
             var oi = cc.tempContainer.iValue;
             var od = cc.tempContainer.dValue;
             object oo = cc.tempContainer.oValue;
@@ -717,8 +717,8 @@ namespace NiL.JS.Core
         internal protected JSObject GetMember(string name, bool createMember, bool own)
         {
             var cc = Context.CurrentContext;
-            if (cc.tempContainer == null)
-                return GetMember(cc != null ? cc.wrap(name) : (JSObject)name, createMember, own);
+            if (cc == null)
+                return GetMember((JSObject)name, createMember, own);
             var oi = cc.tempContainer.iValue;
             var od = cc.tempContainer.dValue;
             object oo = cc.tempContainer.oValue;
@@ -1008,8 +1008,8 @@ namespace NiL.JS.Core
         [Hidden]
         public virtual void Assign(JSObject value)
         {
-            if (this.assignCallback != null)
-                this.assignCallback(this);
+            if (assignCallback != null)
+                assignCallback(this);
 #if DEBUG
             if (valueType == JSObjectType.Property)
                 throw new InvalidOperationException("Try to assign to property.");
@@ -1536,8 +1536,7 @@ namespace NiL.JS.Core
         [Hidden]
         public static explicit operator bool(JSObject obj)
         {
-            var vt = obj.valueType;
-            switch (vt)
+            switch (obj.valueType)
             {
                 case JSObjectType.Int:
                 case JSObjectType.Bool:

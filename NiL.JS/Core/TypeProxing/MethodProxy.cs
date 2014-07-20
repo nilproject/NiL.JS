@@ -272,10 +272,11 @@ namespace NiL.JS.Core
                 return res;
             for (var i = alternedTypes.Length; i-- > 0; )
             {
-                res = Tools.convertJStoObj(_this, alternedTypes[i].baseType);
+                var at = alternedTypes[i];
+                res = Tools.convertJStoObj(_this, at.baseType);
                 if (res != null)
                 {
-                    res = alternedTypes[i].Convert(res);
+                    res = at.Convert(res);
                     return res;
                 }
             }
