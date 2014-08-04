@@ -6,6 +6,22 @@ namespace NiL.JS.Core
     [Serializable]
     public sealed class Arguments : JSObject
     {
+        private sealed class _LengthContainer : JSObject
+        {
+            private Arguments owner;
+
+            public _LengthContainer(Arguments owner)
+            {
+                this.owner = owner;
+            }
+
+            public override void Assign(JSObject value)
+            {
+                base.Assign(value);
+                owner.length = Tools.JSObjectToInt32(value);
+            }
+        }
+
         private JSObject a0;
         private JSObject a1;
         private JSObject a2;
@@ -24,12 +40,12 @@ namespace NiL.JS.Core
         //private JSObject a15;
         internal JSObject callee;
         internal JSObject caller;
-        private JSObject _length;
+        private _LengthContainer _length;
         internal int length;
 
         public int Length
         {
-            get { return _length != null ? Tools.JSObjectToInt32(_length) : length; }
+            get { return length; }
         }
 
         public override JSObject this[string name]
@@ -215,7 +231,7 @@ namespace NiL.JS.Core
                 case "length":
                     {
                         if (_length == null)
-                            _length = new JSObject() { valueType = JSObjectType.Int, iValue = length, attributes = JSObjectAttributesInternal.DoNotEnum };
+                            _length = new _LengthContainer(this) { valueType = JSObjectType.Int, iValue = length, attributes = JSObjectAttributesInternal.DoNotEnum };
                         return _length;
                     }
                 case "callee":
