@@ -38,7 +38,7 @@ namespace NiL.JS.Core
             var arg = args[0];
             if (arg.valueType != JSObjectType.String)
                 return arg;
-            if (this.attributes.HasFlag(JSObjectAttributesInternal.Eval))
+            if ((this.attributes & JSObjectAttributesInternal.Eval) != 0)
                 return Context.CurrentContext.Eval(arg.ToString());
             Stack<Context> stack = new Stack<Context>();
             try

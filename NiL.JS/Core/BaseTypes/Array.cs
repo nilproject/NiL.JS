@@ -161,7 +161,7 @@ namespace NiL.JS.Core.BaseTypes
             {
                 var res = true;
                 foreach (var element in data.NotLess(nlen))
-                    if (element.Value.valueType >= JSObjectType.Undefined && element.Value.attributes.HasFlag(JSObjectAttributesInternal.DoNotDelete))
+                    if (element.Value.valueType >= JSObjectType.Undefined && (element.Value.attributes & JSObjectAttributesInternal.DoNotDelete) != 0)
                     {
                         nlen = element.Key;
                         res = false;
@@ -967,7 +967,7 @@ namespace NiL.JS.Core.BaseTypes
             }
             if (__proto__ == null)
                 __proto__ = TypeProxy.GetPrototype(this.GetType());
-            if (attributes.HasFlag(JSObjectAttributesInternal.ProxyPrototype))
+            if ((attributes & JSObjectAttributesInternal.ProxyPrototype) != 0)
                 return __proto__.GetMember(name, create, own);
             return DefaultFieldGetter(name, create, own);
         }

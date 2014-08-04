@@ -509,16 +509,16 @@ namespace NiL.JS.Core
                 if (configurable.isExist && (bool)configurable)
                     throw new JSException(new TypeError("Cannot set configurate attribute to true."));
 
-                if ((obj.valueType != JSObjectType.Property || (obj.attributes.HasFlag(JSObjectAttributesInternal.Field))) && (set.isExist || get.isExist))
+                if ((obj.valueType != JSObjectType.Property || ((obj.attributes & JSObjectAttributesInternal.Field) != 0)) && (set.isExist || get.isExist))
                     throw new JSException(new TypeError("Cannot redefine not configurable property from immediate value to accessor property"));
-                if (obj.valueType == JSObjectType.Property && !obj.attributes.HasFlag(JSObjectAttributesInternal.Field) && value.isExist)
+                if (obj.valueType == JSObjectType.Property && (obj.attributes & JSObjectAttributesInternal.Field) == 0 && value.isExist)
                     throw new JSException(new TypeError("Cannot redefine not configurable property from accessor property to immediate value"));
-                if (obj.valueType == JSObjectType.Property && !obj.attributes.HasFlag(JSObjectAttributesInternal.Field)
+                if (obj.valueType == JSObjectType.Property && (obj.attributes & JSObjectAttributesInternal.Field) == 0
                     && set.isExist
                     && (((obj.oValue as Function[])[0] != null && (obj.oValue as Function[])[0].oValue != set.oValue)
                         || ((obj.oValue as Function[])[0] == null && set.isDefinded)))
                     throw new JSException(new TypeError("Cannot redefine setter of not configurable property."));
-                if (obj.valueType == JSObjectType.Property && !obj.attributes.HasFlag(JSObjectAttributesInternal.Field)
+                if (obj.valueType == JSObjectType.Property && (obj.attributes & JSObjectAttributesInternal.Field) == 0
                     && get.isExist
                     && (((obj.oValue as Function[])[1] != null && (obj.oValue as Function[])[1].oValue != get.oValue)
                         || ((obj.oValue as Function[])[1] == null && get.isDefinded)))
