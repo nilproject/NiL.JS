@@ -12,7 +12,7 @@
         <li><span style="font-weight:bold">One</span> assembly.</li>
         <li><span style="font-weight:bold">Automatically</span> wrapping .NET objects.</li>
         <li>Runs on <span style="font-weight:bold">all</span> platforms supported .NET.</li>
-        <li><span style="font-weight:bold">High performance.</span></li>
+        <li><span style="font-weight:bold">Translator as a service.</span></li>
     </ul>
     <a href="https://www.nuget.org/packages/NiL.JS">Available in NuGet</a>
 </body>
