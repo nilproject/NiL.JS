@@ -1207,17 +1207,29 @@ namespace NiL.JS.Core
             if (args.GetMember("length").iValue == 0)
                 return false;
             var a = args[0];
-            if (this.valueType >= JSObjectType.Object && this.oValue != null)
+            a = a.GetMember("__proto__");
+            if (this.valueType >= JSObjectType.Object)
             {
-                while (a.valueType >= JSObjectType.Object && a.oValue != null)
+                if (this.oValue != null)
                 {
-                    if (a.oValue == this.oValue)
-                        return true;
-                    var pi = (a.oValue is TypeProxy) ? (a.oValue as TypeProxy).prototypeInstance : null;
-                    if (pi != null && (this == pi || this == pi.oValue))
-                        return true;
-                    a = a.GetMember("__proto__");
+                    while (a.valueType >= JSObjectType.Object && a.oValue != null)
+                    {
+                        if (a.oValue == this.oValue)
+                            return true;
+                        var pi = (a.oValue is TypeProxy) ? (a.oValue as TypeProxy).prototypeInstance : null;
+                        if (pi != null && (this == pi || this == pi.oValue))
+                            return true;
+                        a = a.GetMember("__proto__");
+                    }
                 }
+            }
+            else
+            {
+                if (a.oValue == this.oValue)
+                    return true;
+                var pi = (a.oValue is TypeProxy) ? (a.oValue as TypeProxy).prototypeInstance : null;
+                if (pi != null && (this == pi || this == pi.oValue))
+                    return true;
             }
             return false;
         }

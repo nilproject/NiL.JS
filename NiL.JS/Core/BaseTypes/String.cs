@@ -19,7 +19,7 @@ namespace NiL.JS.Core.BaseTypes
                 var jsoa = arg as JSObject;
                 if (jsoa != null && jsoa.valueType == JSObjectType.String)
                     return arg;
-                return new String(arg.ToString());
+                return arg;// new String(arg.ToString());
             }
         }
 
@@ -46,7 +46,7 @@ namespace NiL.JS.Core.BaseTypes
 
         [DoNotEnumerate]
         public String(Arguments args)
-            : this(Tools.JSObjectToInt32(args.GetMember("length")) == 0 ? "" : args[0].ToString())
+            : this(args.Length == 0 ? "" : args[0].ToPrimitiveValue_String_Value().ToString())
         {
         }
 

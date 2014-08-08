@@ -27,7 +27,7 @@ namespace NiL.JSTest
             bool negative = false;
             string staCode = "";
             Script s = null;
-            _("Sputnik testing begгn...");
+            _("Sputnik testing begun...");
             _("Load sta.js...");
             using (var staFile = new FileStream("sta.js", FileMode.Open, FileAccess.Read))
                 staCode = new StreamReader(staFile).ReadToEnd();
@@ -148,10 +148,20 @@ console.log(a);
 
             typeof(System.Windows.Forms.Button).GetType(); // Заставляет подгрузить сборку System.Windows.Forms. Это исключительно для баловства
 
-            int mode = 101
+            int mode = 0
                 ;
             switch (mode)
             {
+                case -1:
+                    {
+                        sputnikTests(@"tests\sputnik\ch15\15.1\");
+                        sputnikTests(@"tests\sputnik\ch15\15.2\");
+                        sputnikTests(@"tests\sputnik\ch15\15.3\");
+                        sputnikTests(@"tests\sputnik\ch15\15.6\");
+                        sputnikTests(@"tests\sputnik\ch15\15.7\");
+                        sputnikTests(@"tests\sputnik\ch15\15.9\");
+                        break;
+                    }
                 case 0:
                     {
                         sputnikTests();
@@ -194,6 +204,24 @@ console.log(a);
                     {
                         // Array
                         sputnikTests(@"tests\sputnik\ch15\15.4\");
+                        break;
+                    }
+                case 155:
+                    {
+                        // String
+                        sputnikTests(@"tests\sputnik\ch15\15.5\");
+                        break;
+                    }
+                case 156:
+                    {
+                        // Boolean
+                        sputnikTests(@"tests\sputnik\ch15\15.6\");
+                        break;
+                    }
+                case 157:
+                    {
+                        // Number
+                        sputnikTests(@"tests\sputnik\ch15\15.7\");
                         break;
                     }
                 case 158:
@@ -251,7 +279,7 @@ console.log(a);
                     System.Windows.Forms.Application.DoEvents();
                 }
             }
-            else
+            else if (Debugger.IsAttached)
                 Console.ReadKey();
         }
 

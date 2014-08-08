@@ -39,6 +39,7 @@ namespace NiL.JS.Expressions
             };
             for (int i = 0; i < arguments.length; i++)
             {
+                context.objectSource = null;
                 var a = this.arguments[i].Invoke(context);
 #if DEBUG
                 if (a == null)

@@ -267,11 +267,11 @@ namespace NiL.JS.Core.BaseTypes
                 default:
                     throw new InvalidOperationException();
             }
-            int dgts = Tools.JSObjectToInt32(digits[0]);
-            if (System.Math.Abs(dValue) >= 1e+21)
-                return dValue.ToString("0.####e+0", System.Globalization.CultureInfo.InvariantCulture);
+            int dgts = Tools.JSObjectToInt32(digits[0], true);
             if (dgts < 0 || dgts > 20)
                 throw new JSException(TypeProxy.Proxy(new RangeError("toFixed() digits argument must be between 0 and 20")));
+            if (System.Math.Abs(dValue) >= 1e+21)
+                return dValue.ToString("0.####e+0", System.Globalization.CultureInfo.InvariantCulture);
             if (dgts > 0)
                 dgts++;
             return System.Math.Round(res, dgts).ToString("0.00000000000000000000".Substring(0, dgts + 1), System.Globalization.CultureInfo.InvariantCulture);

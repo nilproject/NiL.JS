@@ -266,6 +266,8 @@ namespace NiL.JS.Core
 
         private object getTargetObject(JSObject _this, Type targetType)
         {
+            if (_this == null)
+                return null;
             _this = _this.oValue as JSObject ?? _this; // это может быть лишь ссылка на какой-то другой контейнер
             var res = Tools.convertJStoObj(_this, targetType);
             if (res != null)
@@ -290,7 +292,7 @@ namespace NiL.JS.Core
             object target = null;
             if (!constructorMode && !info.IsStatic)
             {
-                target = hardTarget ?? getTargetObject(thisBind ?? JSObject.Null, info.DeclaringType);
+                target = hardTarget ?? getTargetObject(thisBind, info.DeclaringType);
                 if (target == null)
                     throw new JSException(new TypeError("Can not call function \"" + this.name + "\" for object of another type."));
             }
