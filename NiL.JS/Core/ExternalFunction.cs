@@ -40,8 +40,8 @@ namespace NiL.JS.Core
         {
             if (_length == null)
                 _length = new Number(0) { attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum };
-            var paramCountAttrbt = del.Method.GetCustomAttributes(typeof(ParamCountAttribute), false);
-            _length.iValue = paramCountAttrbt != null && paramCountAttrbt.Length > 0 ? ((ParamCountAttribute)paramCountAttrbt[0]).Count : 1;
+            var paramCountAttrbt = del.Method.GetCustomAttributes(typeof(ParametersCountAttribute), false);
+            _length.iValue = paramCountAttrbt != null && paramCountAttrbt.Length > 0 ? ((ParametersCountAttribute)paramCountAttrbt[0]).Count : 1;
             _prototype = undefined;
             if (del == null)
                 throw new ArgumentNullException();

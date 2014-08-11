@@ -7,11 +7,11 @@ namespace NiL.JS.Core.Modules
     /// </summary>
     [Serializable]
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Constructor, AllowMultiple = false, Inherited = false)]
-    public sealed class ParamCountAttribute : Attribute
+    public sealed class ParametersCountAttribute : Attribute
     {
         public int Count { get; private set; }
 
-        public ParamCountAttribute(int count)
+        public ParametersCountAttribute(int count)
         {
             Count = count;
         }

@@ -13,7 +13,7 @@ namespace NiL.JS.Core.BaseTypes
         [Hidden]
         internal BinaryTree<long, JSObject> data;
         [Hidden]
-        private long _length;
+        internal long _length;
 
         private Array(BinaryTree<long, JSObject> data, long length)
         {
@@ -669,7 +669,7 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [DoNotEnumerate]
-        [ParamCount(2)]
+        [ParametersCount(2)]
         public JSObject slice(JSObject[] args)
         {
             if (args == null)
@@ -717,7 +717,7 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [DoNotEnumerate]
-        [ParamCount(2)]
+        [ParametersCount(2)]
         public JSObject splice(JSObject[] args)
         {
             if (args == null)

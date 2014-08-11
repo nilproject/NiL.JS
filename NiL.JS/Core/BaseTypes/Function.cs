@@ -888,7 +888,7 @@ namespace NiL.JS.Core.BaseTypes
 
         [CLSCompliant(false)]
         [DoNotEnumerate]
-        [ParamCount(0)]
+        [ParametersCount(0)]
         public override JSObject toString(Arguments args)
         {
             return ToString();
@@ -927,7 +927,7 @@ namespace NiL.JS.Core.BaseTypes
             return Invoke(newThis, args);
         }
 
-        [ParamCount(2)]
+        [ParametersCount(2)]
         [DoNotEnumerate]
         public JSObject apply(Arguments args)
         {

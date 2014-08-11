@@ -206,7 +206,7 @@ namespace NiL.JS.Core
         }
 
         [DoNotEnumerate]
-        [ParamCount(2)]
+        [ParametersCount(2)]
         public static JSObject create(Arguments args)
         {
             var proto = args[0];
@@ -337,7 +337,7 @@ namespace NiL.JS.Core
             return t;
         }
 
-        [ParamCount(2)]
+        [ParametersCount(2)]
         [DoNotEnumerate]
         public static JSObject defineProperties(Arguments args)
         {
@@ -377,7 +377,7 @@ namespace NiL.JS.Core
         }
 
         [DoNotEnumerate]
-        [ParamCount(3)]
+        [ParametersCount(3)]
         public static JSObject defineProperty(Arguments args)
         {
             var target = args[0];
@@ -1127,7 +1127,7 @@ namespace NiL.JS.Core
 
         [CLSCompliant(false)]
         [DoNotEnumerate]
-        [ParamCount(0)]
+        [ParametersCount(0)]
         public virtual JSObject toString(Arguments args)
         {
             var self = this.oValue as JSObject ?? this;
@@ -1449,7 +1449,7 @@ namespace NiL.JS.Core
             return res;
         }
 
-        [ParamCount(2)]
+        [ParametersCount(2)]
         [DoNotEnumerate]
         public static JSObject getOwnPropertyDescriptor(Arguments args)
         {

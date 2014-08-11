@@ -180,9 +180,9 @@ namespace NiL.JS.Core
                 throw new ArgumentException("methodinfo");
             if (_length == null)
                 _length = new Number(0) { attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.SystemObject };
-            var pc = info.GetCustomAttributes(typeof(Modules.ParamCountAttribute), false);
+            var pc = info.GetCustomAttributes(typeof(Modules.ParametersCountAttribute), false);
             if (pc.Length != 0)
-                _length.iValue = (pc[0] as Modules.ParamCountAttribute).Count;
+                _length.iValue = (pc[0] as Modules.ParametersCountAttribute).Count;
             else
                 _length.iValue = parameters.Length;
         }
