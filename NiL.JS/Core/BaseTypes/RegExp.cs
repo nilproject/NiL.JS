@@ -194,13 +194,13 @@ namespace NiL.JS.Core.BaseTypes
             if (lIndex.iValue >= input.Length && input.Length > 0)
             {
                 lIndex.iValue = 0;
-                return JSObject.Null;
+                return Null;
             }
             var m = regEx.Match(input, lIndex.iValue);
             if (!m.Success)
             {
                 lIndex.iValue = 0;
-                return JSObject.Null;
+                return Null;
             }
             var res = new Array(m.Groups.Count);
             for (int i = 0; i < m.Groups.Count; i++)

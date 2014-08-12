@@ -31,14 +31,15 @@ namespace NiL.JS.Core
 
         internal JSObject Get(Context context, bool create, int depth)
         {
+            JSObject res = null;
             context.objectSource = null;
-            if (((defineDepth | depth) & 0x80000000) != 0)
+            if (((defineDepth | depth) & -1) != 0)
                 return context.GetVariable(name, create);
             if (cacheRes != null)
             {
                 while (depth > defineDepth)
                 {
-                    if (context.GetType() == typeof(WithContext))
+                    if (context is WithContext)
                     {
                         cacheRes = null;
                         break;
@@ -51,8 +52,8 @@ namespace NiL.JS.Core
             }
             if (cacheRes == null)
             {
-                var res = context.GetVariable(name, create);
-                if (res.valueType == JSObjectType.NotExists && create && !Defined)
+                res = context.GetVariable(name, create);
+                if (create && !Defined && res.valueType == JSObjectType.NotExists)
                     res.attributes = JSObjectAttributesInternal.None;
                 else
                 {

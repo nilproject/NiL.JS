@@ -382,6 +382,8 @@ namespace NiL.JS.Core
                         res = JSObject.GlobalPrototype.GetMember(name);
                 }
             }
+            else if (fromProto)
+                objectSource = prototype.objectSource;
             return res;
         }
 

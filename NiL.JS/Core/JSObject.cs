@@ -1066,6 +1066,8 @@ namespace NiL.JS.Core
         [Hidden]
         public override string ToString()
         {
+            if (valueType == JSObjectType.String)
+                return oValue as string;
             if (valueType <= JSObjectType.Undefined)
                 return "undefined";
             if (valueType == JSObjectType.Property)

@@ -32,12 +32,13 @@ namespace NiL.JS.Core
             thisBind = prototype.thisBind;
             var res = @object.GetMember(name);
             if (res.valueType < JSObjectType.Undefined)
-                return prototype.GetVariable(name, create);
-            else
             {
-                objectSource = @object;
-                return res;
+                res = prototype.GetVariable(name, create);
+                objectSource = prototype.objectSource;
             }
+            else
+                objectSource = @object;
+            return res;
         }
     }
 }

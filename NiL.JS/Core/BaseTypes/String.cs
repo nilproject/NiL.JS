@@ -224,8 +224,8 @@ namespace NiL.JS.Core.BaseTypes
             }
         }
 
-        [AllowUnsafeCall(typeof(JSObject))]
         [DoNotEnumerate]
+        [AllowUnsafeCall(typeof(JSObject))]
         public JSObject search(Arguments args)
         {
             if (valueType <= JSObjectType.Undefined || (valueType >= JSObjectType.Object && oValue == null))
@@ -241,7 +241,10 @@ namespace NiL.JS.Core.BaseTypes
                 if (!regex._global)
                 {
                     args[0] = this;
-                    return regex.exec(args)["index"];
+                    var res = regex.exec(args);
+                    if ((res ?? Null) != Null)
+                        return res["index"];
+                    return -1;
                 }
                 else
                 {
@@ -254,9 +257,9 @@ namespace NiL.JS.Core.BaseTypes
             }
         }
 
+        [DoNotEnumerate]
         [ParametersCount(2)]
         [AllowUnsafeCall(typeof(JSObject))]
-        [DoNotEnumerate]
         public JSObject replace(Arguments args)
         {
             if (args.length == 0)
@@ -343,12 +346,14 @@ namespace NiL.JS.Core.BaseTypes
             }
         }
 
-        [AllowUnsafeCall(typeof(JSObject))]
         [DoNotEnumerate]
-        public JSObject slice(JSObject[] args)
+        [ParametersCount(2)]
+        [AllowUnsafeCall(typeof(JSObject))]
+        public JSObject slice(Arguments args)
         {
+            string selfString = this.ToPrimitiveValue_Value_String().ToString();
             if (args.Length == 0)
-                return this;
+                return selfString;
             int pos0 = 0;
             switch (args[0].valueType)
             {
@@ -360,7 +365,12 @@ namespace NiL.JS.Core.BaseTypes
                     }
                 case JSObjectType.Double:
                     {
-                        pos0 = (int)args[0].dValue;
+                        if (double.IsNaN(args[0].dValue))
+                            pos0 = 0;
+                        else if (double.IsPositiveInfinity(args[0].dValue))
+                            pos0 = selfString.Length;
+                        else
+                            pos0 = (int)args[0].dValue;
                         break;
                     }
                 case JSObjectType.Object:
@@ -368,9 +378,10 @@ namespace NiL.JS.Core.BaseTypes
                 case JSObjectType.Function:
                 case JSObjectType.String:
                     {
-                        double d;
-                        Tools.ParseNumber(args[0].ToString(), pos0, out d, Tools.ParseNumberOptions.Default);
-                        pos0 = (int)d;
+                        //double d;
+                        //Tools.ParseNumber(args[0].ToPrimitiveValue_Value_String().ToString(), pos0, out d, Tools.ParseNumberOptions.Default);
+                        //pos0 = (int)d;
+                        pos0 = Tools.JSObjectToInt32(args[0], 0, true);
                         break;
                     }
             }
@@ -387,7 +398,12 @@ namespace NiL.JS.Core.BaseTypes
                         }
                     case JSObjectType.Double:
                         {
-                            pos1 = (int)args[1].dValue;
+                            if (double.IsNaN(args[1].dValue))
+                                pos1 = 0;
+                            else if (double.IsPositiveInfinity(args[1].dValue))
+                                pos1 = selfString.Length;
+                            else
+                                pos1 = (int)args[1].dValue;
                             break;
                         }
                     case JSObjectType.Object:
@@ -395,20 +411,28 @@ namespace NiL.JS.Core.BaseTypes
                     case JSObjectType.Function:
                     case JSObjectType.String:
                         {
-                            double d;
-                            Tools.ParseNumber(args[1].ToString(), pos1, out d, Tools.ParseNumberOptions.Default);
-                            pos1 = (int)d;
+                            //double d;
+                            //Tools.ParseNumber(args[1].ToPrimitiveValue_Value_String().ToString(), pos1, out d, Tools.ParseNumberOptions.Default);
+                            //pos1 = (int)d;
+                            pos1 = Tools.JSObjectToInt32(args[1], 0, true);
+                            break;
+                        }
+                    case JSObjectType.NotExists:
+                    case JSObjectType.NotExistsInObject:
+                    case JSObjectType.Undefined:
+                        {
+                            pos1 = selfString.Length;
                             break;
                         }
                 }
             }
             else
-                pos1 = (oValue as string).Length;
+                pos1 = selfString.Length;
             while (pos0 < 0)
-                pos0 += (oValue as string).Length;
+                pos0 += selfString.Length;
             while (pos1 < 0)
-                pos1 += (oValue as string).Length;
-            return (oValue as string).Substring(pos0, pos1 - pos0);
+                pos1 += selfString.Length;
+            return selfString.Substring(pos0, pos1 - pos0);
         }
 
         [AllowUnsafeCall(typeof(JSObject))]
@@ -456,7 +480,7 @@ namespace NiL.JS.Core.BaseTypes
 
         [AllowUnsafeCall(typeof(JSObject))]
         [DoNotEnumerate]
-        public JSObject substring(JSObject[] args)
+        public JSObject substring(Arguments args)
         {
             return slice(args);
         }
