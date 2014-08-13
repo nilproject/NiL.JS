@@ -6,20 +6,6 @@ namespace NiL.JS.Core.BaseTypes
     [Serializable]
     public sealed class EvalError : Error
     {
-        public override JSObject message
-        {
-            [Hidden]
-            get
-            {
-                return base.message;
-            }
-        }
-        public override JSObject name
-        {
-            [Hidden]
-            get { return "EvalError"; }
-        }
-
         [DoNotEnumerate]
         public EvalError()
         {

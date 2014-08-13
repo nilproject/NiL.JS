@@ -35,22 +35,7 @@ namespace NiL.JS.Core
             context.objectSource = null;
             if (((defineDepth | depth) & -1) != 0)
                 return context.GetVariable(name, create);
-            if (cacheRes != null)
-            {
-                while (depth > defineDepth)
-                {
-                    if (context is WithContext)
-                    {
-                        cacheRes = null;
-                        break;
-                    }
-                    context = context.prototype;
-                    depth--;
-                }
-                if (context != prewContext)
-                    cacheRes = null;
-            }
-            if (cacheRes == null)
+            if (cacheRes == null || isInvalid(ref context, depth))
             {
                 res = context.GetVariable(name, create);
                 if (create && !Defined && res.valueType == JSObjectType.NotExists)
@@ -68,6 +53,22 @@ namespace NiL.JS.Core
                 return res;
             }
             return cacheRes;
+        }
+
+        private bool isInvalid(ref Context context, int depth)
+        {
+            var oldContext = context;
+            while (depth > defineDepth)
+            {
+                if (context is WithContext)
+                    return true;
+                context = context.prototype;
+                depth--;
+            }
+            if (context != prewContext)
+                return true;
+            context = oldContext;
+            return false;
         }
 
         internal VariableDescriptor(string name, int defineDepth)

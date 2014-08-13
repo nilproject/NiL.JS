@@ -8,22 +8,6 @@ namespace NiL.JS.Core.BaseTypes
     public sealed class URIError : Error
     {
         [DoNotEnumerate]
-        public override JSObject message
-        {
-            [Hidden]
-            get
-            {
-                return base.message;
-            }
-        }
-        [DoNotEnumerate]
-        public override JSObject name
-        {
-            [Hidden]
-            get { return "URIError"; }
-        }
-
-        [DoNotEnumerate]
         public URIError()
         {
 

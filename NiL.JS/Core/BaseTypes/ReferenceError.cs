@@ -8,25 +8,6 @@ namespace NiL.JS.Core.BaseTypes
     public sealed class ReferenceError : Error
     {
         [DoNotEnumerate]
-        public override JSObject message
-        {
-            [Hidden]
-            get
-            {
-                return base.message;
-            }
-        }
-        [DoNotEnumerate]
-        public override JSObject name
-        {
-            [Hidden]
-            get
-            {
-                return "ReferenceError";
-            }
-        }
-
-        [DoNotEnumerate]
         public ReferenceError(Arguments args)
             : base(args[0].ToString())
         {

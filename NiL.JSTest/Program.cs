@@ -148,7 +148,7 @@ console.log(a);
 
             typeof(System.Windows.Forms.Button).GetType(); // Заставляет подгрузить сборку System.Windows.Forms. Это исключительно для баловства
 
-            int mode = 0
+            int mode = 1512
                 ;
             switch (mode)
             {
@@ -160,6 +160,7 @@ console.log(a);
                         sputnikTests(@"tests\sputnik\ch15\15.6\");
                         sputnikTests(@"tests\sputnik\ch15\15.7\");
                         sputnikTests(@"tests\sputnik\ch15\15.9\");
+                        sputnikTests(@"tests\sputnik\ch15\15.11\");
                         break;
                     }
                 case 0:
@@ -234,6 +235,18 @@ console.log(a);
                     {
                         // Date
                         sputnikTests(@"tests\sputnik\ch15\15.9\");
+                        break;
+                    }
+                case 1511:
+                    {
+                        // Error
+                        sputnikTests(@"tests\sputnik\ch15\15.11\");
+                        break;
+                    }
+                case 1512:
+                    {
+                        // JSON
+                        sputnikTests(@"tests\sputnik\ch15\15.12\");
                         break;
                     }
                 case 100:

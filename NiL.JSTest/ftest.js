@@ -1,3 +1,4 @@
 ﻿console.log(function () {
-    return new Object(true).toString();
+    var errObj = new Error();
+    return errObj.toString();
 } ());

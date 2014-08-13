@@ -8,22 +8,6 @@ namespace NiL.JS.Core.BaseTypes
     public sealed class RangeError : Error
     {
         [DoNotEnumerate]
-        public override JSObject message
-        {
-            [Hidden]
-            get
-            {
-                return base.message;
-            }
-        }
-        [DoNotEnumerate]
-        public override JSObject name
-        {
-            [Hidden]
-            get { return "RangeError"; }
-        }
-
-        [DoNotEnumerate]
         public RangeError()
         {
 
