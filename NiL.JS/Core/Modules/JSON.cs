@@ -29,6 +29,7 @@ namespace NiL.JS.Core.Modules
         }
 
         [DoNotEnumerate]
+        [ParametersCount(2)]
         public static JSObject parse(Arguments args)
         {
             var length = Tools.JSObjectToInt32(args.length);
@@ -95,11 +96,14 @@ namespace NiL.JS.Core.Modules
                 else if (code[start] == '"')
                 {
                     Parser.ValidateString(code, ref pos, true);
-                    string value = Tools.Unescape(code.Substring(start + 1, pos - start - 2), false);
+                    string value = code.Substring(start + 1, pos - start - 2);
+                    for (var i = value.Length; i-- > 0; )
+                    {
+                        if ((value[i] >= 0 && value[i] <= 0x1f))
+                            throw new JSException(new SyntaxError("Invalid string char '\\u000" + (int)value[i] + "'"));
+                    }
                     if (stack.Peek().state == ParseState.Name)
                     {
-                        if (value[0] != '"')
-                            throw new JSException(TypeProxy.Proxy(new SyntaxError("Unexpected string token.")));
                         stack.Peek().fieldName = value;
                         stack.Peek().state = ParseState.Value;
                         while (isSpace(code[pos]))
@@ -110,6 +114,7 @@ namespace NiL.JS.Core.Modules
                     }
                     else
                     {
+                        value = Tools.Unescape(value, false);
                         if (stack.Peek().state != ParseState.Value)
                             throw new JSException(TypeProxy.Proxy(new SyntaxError("Unexpected token.")));
                         var v = stack.Peek();
@@ -241,6 +246,7 @@ namespace NiL.JS.Core.Modules
         }
 
         [DoNotEnumerate]
+        [ParametersCount(3)]
         public static string stringify(Arguments args)
         {
             var length = Tools.JSObjectToInt32(args.length);

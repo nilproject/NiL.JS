@@ -1,4 +1,3 @@
 ﻿console.log(function () {
-    var errObj = new Error();
-    return errObj.toString();
-} ());
+    return JSON.stringify(undefined) === undefined;
+}());
