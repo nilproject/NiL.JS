@@ -43,6 +43,32 @@ namespace NiL.JS.Core.Modules
             return parse(code, null);
         }
 
+        private static bool isSpace(char c)
+        {
+            return c != '\u000b'
+                && c != '\u000c'
+                && c != '\u00a0'
+                && c != '\u1680'
+                && c != '\u180e'
+                && c != '\u2000'
+                && c != '\u2001'
+                && c != '\u2002'
+                && c != '\u2003'
+                && c != '\u2004'
+                && c != '\u2005'
+                && c != '\u2006'
+                && c != '\u2007'
+                && c != '\u2008'
+                && c != '\u2009'
+                && c != '\u200a'
+                && c != '\u2028'
+                && c != '\u2029'
+                && c != '\u202f'
+                && c != '\u205f'
+                && c != '\u3000'
+                && char.IsWhiteSpace(c);
+        }
+
         [Hidden]
         public static JSObject parse(string code, Function reviewer)
         {
@@ -50,54 +76,70 @@ namespace NiL.JS.Core.Modules
             Arguments revargs = reviewer != null ? new Arguments() { length = 2 } : null;
             stack.Push(new StackFrame() { container = null, value = null, state = ParseState.Value });
             int pos = 0;
-            while (code.Length > pos && char.IsWhiteSpace(code, pos))
+            while (code.Length > pos && isSpace(code[pos]))
                 pos++;
             while (pos < code.Length)
             {
                 int start = pos;
-                if (Parser.ValidateValue(code, ref pos))
+                if (char.IsDigit(code[start]) || (code[start] == '-' && char.IsDigit(code[start + 1])))
                 {
-                    if (char.IsDigit(code[start]) || (code[start] == '-' && char.IsDigit(code[start + 1])))
+                    if (stack.Peek().state != ParseState.Value)
+                        throw new JSException(TypeProxy.Proxy(new SyntaxError("Unexpected token.")));
+                    double value;
+                    if (!Tools.ParseNumber(code, ref pos, out value))
+                        throw new JSException(TypeProxy.Proxy(new SyntaxError("Invalid number definition.")));
+                    var v = stack.Peek();
+                    v.state = ParseState.End;
+                    v.value = value;
+                }
+                else if (code[start] == '"')
+                {
+                    Parser.ValidateString(code, ref pos, true);
+                    string value = Tools.Unescape(code.Substring(start + 1, pos - start - 2), false);
+                    if (stack.Peek().state == ParseState.Name)
+                    {
+                        if (value[0] != '"')
+                            throw new JSException(TypeProxy.Proxy(new SyntaxError("Unexpected string token.")));
+                        stack.Peek().fieldName = value;
+                        stack.Peek().state = ParseState.Value;
+                        while (isSpace(code[pos]))
+                            pos++;
+                        if (code[pos] != ':')
+                            throw new JSException(TypeProxy.Proxy(new SyntaxError("Unexpected token.")));
+                        pos++;
+                    }
+                    else
                     {
                         if (stack.Peek().state != ParseState.Value)
                             throw new JSException(TypeProxy.Proxy(new SyntaxError("Unexpected token.")));
-                        double value;
-                        if (!Tools.ParseNumber(code, ref start, out value))
-                            throw new JSException(TypeProxy.Proxy(new SyntaxError("Invalid number definition.")));
                         var v = stack.Peek();
                         v.state = ParseState.End;
                         v.value = value;
                     }
-                    else
-                    {
-                        string value = code.Substring(start, pos - start);
-                        if (stack.Peek().state == ParseState.Name)
-                        {
-                            if (value[0] != '"')
-                                throw new JSException(TypeProxy.Proxy(new SyntaxError("Unexpected string token.")));
-                            value = Tools.Unescape(value.Substring(1, value.Length - 2), false);
-                            stack.Peek().fieldName = value;
-                            stack.Peek().state = ParseState.Value;
-                            while (char.IsWhiteSpace(code[pos]))
-                                pos++;
-                            if (code[pos] != ':')
-                                throw new JSException(TypeProxy.Proxy(new SyntaxError("Unexpected token.")));
-                            pos++;
-                        }
-                        else
-                        {
-                            if (stack.Peek().state != ParseState.Value)
-                                throw new JSException(TypeProxy.Proxy(new SyntaxError("Unexpected token.")));
-                            var v = stack.Peek();
-                            v.state = ParseState.End;
-                            if (value == "null")
-                                v.value = JSObject.Null;
-                            else if (value == "true" || value == "false")
-                                v.value = bool.Parse(value);
-                            else
-                                v.value = value;
-                        }
-                    }
+                }
+                else if (Parser.Validate(code, "null", ref pos))
+                {
+                    if (stack.Peek().state != ParseState.Value)
+                        throw new JSException(TypeProxy.Proxy(new SyntaxError("Unexpected token.")));
+                    var v = stack.Peek();
+                    v.state = ParseState.End;
+                    v.value = JSObject.Null;
+                }
+                else if (Parser.Validate(code, "true", ref pos))
+                {
+                    if (stack.Peek().state != ParseState.Value)
+                        throw new JSException(TypeProxy.Proxy(new SyntaxError("Unexpected token.")));
+                    var v = stack.Peek();
+                    v.state = ParseState.End;
+                    v.value = true;
+                }
+                else if (Parser.Validate(code, "false", ref pos))
+                {
+                    if (stack.Peek().state != ParseState.Value)
+                        throw new JSException(TypeProxy.Proxy(new SyntaxError("Unexpected token.")));
+                    var v = stack.Peek();
+                    v.state = ParseState.End;
+                    v.value = true;
                 }
                 else if (code[pos] == '{')
                 {
@@ -143,7 +185,7 @@ namespace NiL.JS.Core.Modules
                     else
                         stack.Push(t);
                 }
-                while (code.Length > pos && char.IsWhiteSpace(code[pos]))
+                while (code.Length > pos && isSpace(code[pos]))
                     pos++;
                 if (code.Length <= pos)
                 {
@@ -190,7 +232,7 @@ namespace NiL.JS.Core.Modules
                             continue;
                         }
                 }
-                while (code.Length > pos && char.IsWhiteSpace(code[pos]))
+                while (code.Length > pos && isSpace(code[pos]))
                     pos++;
                 if (code.Length <= pos && stack.Peek().state != ParseState.End)
                     throw new JSException(new SyntaxError("Unexpected end of string."));
