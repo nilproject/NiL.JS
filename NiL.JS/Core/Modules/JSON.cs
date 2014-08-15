@@ -247,13 +247,33 @@ namespace NiL.JS.Core.Modules
 
         [DoNotEnumerate]
         [ParametersCount(3)]
-        public static string stringify(Arguments args)
+        public static JSObject stringify(Arguments args)
         {
             var length = Tools.JSObjectToInt32(args.length);
             Function replacer = length > 1 ? args[1].oValue as Function : null;
-            string space = length > 1 ? args[2].ToString() : null;
+            string space = "";
+            if (args.length > 2)
+            {
+                var sa = args[2];
+                sa = sa.oValue as JSObject ?? sa;
+                if (sa.valueType == JSObjectType.Int
+                    || sa.valueType == JSObjectType.Double
+                    || sa.valueType == JSObjectType.String)
+                {
+                    if (sa.valueType == JSObjectType.Int)
+                        space = "          ".Substring(10 - System.Math.Max(0, System.Math.Min(10, sa.iValue)));
+                    else if (sa.valueType == JSObjectType.Double)
+                        space = "          ".Substring(10 - System.Math.Max(0, System.Math.Min(10, (int)sa.dValue)));
+                    else
+                    {
+                        space = sa.ToString();
+                        if (space.Length > 10)
+                            space = space.Substring(0, 10);
+                    }
+                }
+            }
             var target = args[0];
-            return stringify(args.oValue as JSObject ?? args, replacer, space);
+            return stringify(target.oValue as JSObject ?? target, replacer, space) ?? JSObject.undefined;
         }
 
         [Hidden]
@@ -270,9 +290,9 @@ namespace NiL.JS.Core.Modules
             try
             {
                 {
-                    args[0] = "";
                     if (replacer != null)
                     {
+                        args[0] = "";
                         args[0].oValue = key;
                         args[1] = obj;
                         args.length = 2;
@@ -282,9 +302,10 @@ namespace NiL.JS.Core.Modules
                         obj = t;
                     }
                 }
-                if (obj.valueType < JSObjectType.Undefined
+                if (obj.valueType <= JSObjectType.Undefined
                     || obj.valueType == JSObjectType.Function)
                     return null;
+                obj = obj.oValue as JSObject ?? obj;
                 if (obj.valueType < JSObjectType.Object)
                 {
                     if (obj.valueType == JSObjectType.String)
@@ -297,6 +318,12 @@ namespace NiL.JS.Core.Modules
                             .Replace("\r\\\n", "\r\n") + '"';
                     return obj.ToString();
                 }
+                if (obj.oValue == null)
+                    return "null";
+                var toJSONmemb = obj["toJSON"];
+                toJSONmemb = toJSONmemb.oValue as JSObject ?? toJSONmemb;
+                if (toJSONmemb.valueType == JSObjectType.Function)
+                    return stringifyImpl("", (toJSONmemb.oValue as Function).Invoke(obj, null), null, space, processed, null);
                 StringBuilder res = new StringBuilder(obj is Array ? "[" : "{");
                 bool first = true;
                 foreach (var member in obj)
@@ -311,9 +338,136 @@ namespace NiL.JS.Core.Modules
                     if (!first)
                         res.Append(",").Append(space);
                     if (res[0] == '[')
-                        res.Append(strval);
+                    {
+                        for (var i = 0; i < strval.Length; i++)
+                        {
+                            if (strval[i] >= 0 && strval[i] <= 0x1f)
+                            {
+                                switch (strval[i])
+                                {
+                                    case (char)8:
+                                        {
+                                            res.Append("\\b");
+                                            break;
+                                        }
+                                    case (char)9:
+                                        {
+                                            res.Append("\\t");
+                                            break;
+                                        }
+                                    case (char)10:
+                                        {
+                                            res.Append("\\n");
+                                            break;
+                                        }
+                                    case (char)12:
+                                        {
+                                            res.Append("\\f");
+                                            break;
+                                        }
+                                    case (char)13:
+                                        {
+                                            res.Append("\\r");
+                                            break;
+                                        }
+                                    default:
+                                        {
+                                            res.Append("\\u").Append(((int)strval[i]).ToString("x4"));
+                                            break;
+                                        }
+                                }
+                            }
+                            else
+                                res.Append(strval[i]);
+                        }
+                    }
                     else
-                        res.Append('"').Append(member).Append("\": ").Append(strval);
+                    {
+                        res.Append('"');//.Append(member).Append("\":").Append(strval);
+                        for (var i = 0; i < member.Length; i++)
+                        {
+                            if (member[i] >= 0 && member[i] <= 0x1f)
+                            {
+                                switch (member[i])
+                                {
+                                    case (char)8:
+                                        {
+                                            res.Append("\\b");
+                                            break;
+                                        }
+                                    case (char)9:
+                                        {
+                                            res.Append("\\t");
+                                            break;
+                                        }
+                                    case (char)10:
+                                        {
+                                            res.Append("\\n");
+                                            break;
+                                        }
+                                    case (char)12:
+                                        {
+                                            res.Append("\\f");
+                                            break;
+                                        }
+                                    case (char)13:
+                                        {
+                                            res.Append("\\r");
+                                            break;
+                                        }
+                                    default:
+                                        {
+                                            res.Append("\\u").Append(((int)member[i]).ToString("x4"));
+                                            break;
+                                        }
+                                }
+                            }
+                            else
+                                res.Append(member[i]);
+                        }
+                        res.Append("\":");
+                        for (var i = 0; i < strval.Length; i++)
+                        {
+                            if (strval[i] >= 0 && strval[i] <= 0x1f)
+                            {
+                                switch (strval[i])
+                                {
+                                    case (char)8:
+                                        {
+                                            res.Append("\\b");
+                                            break;
+                                        }
+                                    case (char)9:
+                                        {
+                                            res.Append("\\t");
+                                            break;
+                                        }
+                                    case (char)10:
+                                        {
+                                            res.Append("\\n");
+                                            break;
+                                        }
+                                    case (char)12:
+                                        {
+                                            res.Append("\\f");
+                                            break;
+                                        }
+                                    case (char)13:
+                                        {
+                                            res.Append("\\r");
+                                            break;
+                                        }
+                                    default:
+                                        {
+                                            res.Append("\\u").Append(((int)strval[i]).ToString("x4"));
+                                            break;
+                                        }
+                                }
+                            }
+                            else
+                                res.Append(strval[i]);
+                        }
+                    }
                     first = false;
                 }
                 return res.Append(obj is Array ? "]" : "}").ToString();
