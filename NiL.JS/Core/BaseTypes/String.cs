@@ -432,7 +432,8 @@ namespace NiL.JS.Core.BaseTypes
                 pos0 += selfString.Length;
             while (pos1 < 0)
                 pos1 += selfString.Length;
-            return selfString.Substring(pos0, pos1 - pos0);
+            pos0 = System.Math.Min(pos0, selfString.Length);
+            return selfString.Substring(pos0, System.Math.Max(0, pos1 - pos0));
         }
 
         [AllowUnsafeCall(typeof(JSObject))]
