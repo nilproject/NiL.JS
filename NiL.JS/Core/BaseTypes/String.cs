@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using NiL.JS.Core.Modules;
 
@@ -365,7 +366,7 @@ namespace NiL.JS.Core.BaseTypes
                     }
                 case JSObjectType.Double:
                     {
-                        if (double.IsNaN(args[0].dValue))
+                        if (double.IsNaN(args[0].dValue) || double.IsNegativeInfinity(args[0].dValue))
                             pos0 = 0;
                         else if (double.IsPositiveInfinity(args[0].dValue))
                             pos0 = selfString.Length;
@@ -398,7 +399,7 @@ namespace NiL.JS.Core.BaseTypes
                         }
                     case JSObjectType.Double:
                         {
-                            if (double.IsNaN(args[1].dValue))
+                            if (double.IsNaN(args[1].dValue) || double.IsNegativeInfinity(args[0].dValue))
                                 pos1 = 0;
                             else if (double.IsPositiveInfinity(args[1].dValue))
                                 pos1 = selfString.Length;
@@ -433,30 +434,33 @@ namespace NiL.JS.Core.BaseTypes
             while (pos1 < 0)
                 pos1 += selfString.Length;
             pos0 = System.Math.Min(pos0, selfString.Length);
-            return selfString.Substring(pos0, System.Math.Max(0, pos1 - pos0));
+            return selfString.Substring(pos0, System.Math.Min(selfString.Length, System.Math.Max(0, pos1 - pos0)));
         }
 
-        [AllowUnsafeCall(typeof(JSObject))]
         [DoNotEnumerate]
-        public JSObject split(JSObject[] args)
+        [ParametersCount(2)]
+        [AllowUnsafeCall(typeof(JSObject))]
+        public JSObject split(Arguments args)
         {
             if (args.Length == 0)
                 return new Array(new object[] { this });
-            string fstr = args[0].ToString();
             int limit = int.MaxValue;
             if (args.Length > 1)
             {
-                switch (args[1].valueType)
+                var limO = args[1];
+                if (limO.valueType >= JSObjectType.Object)
+                    limO = limO.ToPrimitiveValue_Value_String();
+                switch (limO.valueType)
                 {
                     case JSObjectType.Int:
                     case JSObjectType.Bool:
                         {
-                            limit = args[1].iValue;
+                            limit = limO.iValue;
                             break;
                         }
                     case JSObjectType.Double:
                         {
-                            limit = (int)args[1].dValue;
+                            limit = (int)limO.dValue;
                             break;
                         }
                     case JSObjectType.Object:
@@ -465,18 +469,77 @@ namespace NiL.JS.Core.BaseTypes
                     case JSObjectType.String:
                         {
                             double d;
-                            Tools.ParseNumber(args[1].ToString(), limit, out d, Tools.ParseNumberOptions.Default);
+                            Tools.ParseNumber(limO.ToString(), 0, out d, Tools.ParseNumberOptions.Default);
                             limit = (int)d;
                             break;
                         }
                 }
             }
-            string[] res = null;
-            if (string.IsNullOrEmpty(fstr))
-                return new Array(System.Text.UTF8Encoding.UTF8.GetChars(System.Text.UTF8Encoding.UTF8.GetBytes(oValue as string)));
+            if (args[0].valueType == JSObjectType.Object && args[0].oValue is RegExp)
+            {
+                string selfString = this.ToPrimitiveValue_Value_String().ToString();
+                var match = (args[0].oValue as RegExp).regEx.Match(selfString);
+                Array res = new Array();
+                int index = 0;
+                while (res._length < limit)
+                {
+                    if (!match.Success)
+                    {
+                        res.data.Add(res._length, selfString.Substring(index, selfString.Length - index));
+                        res._length++;
+                        break;
+                    }
+                    int nindex = match.Index;
+                    if (nindex == -1)
+                    {
+                        res.data.Add(res._length, selfString.Substring(index, selfString.Length - index));
+                        res._length++;
+                        break;
+                    }
+                    else
+                    {
+                        var item = selfString.Substring(index, nindex - index);
+                        res.data.Add(res._length, item);
+                        res._length++;
+                        index = nindex + match.Length;
+                    }
+                    match = match.NextMatch();
+                }
+                return res;
+            }
             else
-                res = (oValue as string).Split(new string[] { fstr }, limit, StringSplitOptions.None);
-            return new Array(res);
+            {
+                string fstr = args[0].ToString();
+                string selfString = this.ToPrimitiveValue_Value_String().ToString();
+                Array res = new Array();
+                if (string.IsNullOrEmpty(fstr))
+                {
+                    for (var i = 0; i < System.Math.Min(selfString.Length, limit); i++)
+                        res.data.Add(res._length++, selfString[i]);
+                }
+                else
+                {
+                    int index = 0;
+                    while (index < selfString.Length && res._length < limit)
+                    {
+                        int nindex = selfString.IndexOf(fstr, index);
+                        if (nindex == -1)
+                        {
+                            res.data.Add(res._length, selfString.Substring(index, selfString.Length - index));
+                            res._length++;
+                            break;
+                        }
+                        else
+                        {
+                            var item = selfString.Substring(index, nindex - index);
+                            res.data.Add(res._length, item);
+                            res._length++;
+                            index = nindex + item.Length + 1;
+                        }
+                    }
+                }
+                return res;
+            }
         }
 
         [AllowUnsafeCall(typeof(JSObject))]

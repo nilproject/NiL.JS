@@ -558,7 +558,7 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [DoNotEnumerate]
-        public JSObject push(JSObject[] args)
+        public JSObject push(Arguments args)
         {
             for (var i = 0; i < args.Length; i++)
                 data.Add(_length++, args[i].CloneImpl());

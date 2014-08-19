@@ -320,6 +320,23 @@ namespace NiL.JS.Core
         private static readonly double[] cachedDoubleStringsKeys = new double[5];
         private static readonly string[] cachedDoubleStringsValues = new string[5];
         private static int cachedDoubleStringsIter = 0;
+        private static string[] divFormats = {
+                                                 ".#",
+                                                 ".##",
+                                                 ".###",
+                                                 ".####",
+                                                 ".#####",
+                                                 ".######",
+                                                 ".#######",
+                                                 ".########",
+                                                 ".#########",
+                                                 ".##########",
+                                                 ".###########",
+                                                 ".############",
+                                                 ".#############",
+                                                 ".##############",
+                                                 ".###############"
+                                             };
 
         internal static string DoubleToString(double d)
         {
@@ -347,7 +364,11 @@ namespace NiL.JS.Core
                 }
                 else if (abs >= 1e+21)
                     return res = d.ToString("0.####e+0", System.Globalization.CultureInfo.InvariantCulture);
-                return res = d.ToString("0.###############", System.Globalization.CultureInfo.InvariantCulture);
+                res = d.ToString("F0", System.Globalization.CultureInfo.InvariantCulture);
+                abs %= 1.0;
+                if (abs != 0 && res.Length < 14)
+                    res += abs.ToString(divFormats[(14 - res.Length)], System.Globalization.CultureInfo.InvariantCulture);
+                return res;
             }
             finally
             {
@@ -409,7 +430,7 @@ namespace NiL.JS.Core
             int i = index;
             while (i < code.Length && char.IsWhiteSpace(code[i]) && !Tools.isLineTerminator(code[i]))
                 i++;
-            if (i == code.Length)
+            if (i >= code.Length)
             {
                 value = 0.0;
                 return true;
