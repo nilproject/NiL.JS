@@ -148,10 +148,19 @@ console.log(a);
 
             typeof(System.Windows.Forms.Button).GetType(); // Заставляет подгрузить сборку System.Windows.Forms. Это исключительно для баловства
 
-            int mode = -1//155
+            int mode = -2//155
                 ;
             switch (mode)
             {
+                case -2:
+                    {
+                        var bf = new BinaryFormatter();
+                        var ms = new MemoryStream();
+                        bf.Serialize(ms, new BinaryTree<int>() { { "one", 1 }, { "two", 2 }, { "three", 3 } });
+                        ms.Position = 0;
+                        var bt = bf.Deserialize(ms);
+                        break;
+                    }
                 case -1:
                     {
                         sputnikTests(@"tests\sputnik\ch15\15.1\");

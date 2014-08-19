@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Runtime.Serialization;
 
 namespace NiL.JS
 {
@@ -9,7 +10,7 @@ namespace NiL.JS
     /// Предоставляет реализацию бинарного дерева поиска со строковым аргументом.
     /// </summary>
     [Serializable]
-    internal class BinaryTree<TKey, TValue> : IDictionary<TKey, TValue> where TKey : IComparable<TKey>
+    public class BinaryTree<TKey, TValue> : IDictionary<TKey, TValue> where TKey : IComparable<TKey>
     {
         private sealed class _Values : ICollection<TValue>
         {
@@ -243,7 +244,7 @@ namespace NiL.JS
         private ICollection<TValue> values;
         public ICollection<TValue> Values { get { return values ?? (values = new _Values(this)); } }
         private Node root;
-        protected Node Root { get { return root; } }
+        internal Node Root { get { return root; } }
 
         public BinaryTree()
         {
@@ -350,6 +351,11 @@ namespace NiL.JS
 
         public void Add(TKey key, TValue value)
         {
+            Insert(key, value, true);
+        }
+
+        public bool Insert(TKey key, TValue value, bool throwIfExists)
+        {
             lock (this)
             {
                 if (key == null)
@@ -359,6 +365,7 @@ namespace NiL.JS
                     root = new Node() { value = value, key = key };
                     Count++;
                     state = state ^ state << 1;
+                    return true;
                 }
                 else
                 {
@@ -368,7 +375,12 @@ namespace NiL.JS
                     {
                         var cmp = comparer != null ? comparer.Compare(key, c.key) : key.CompareTo(c.key);
                         if (cmp == 0)
-                            throw new ArgumentException("Element exists");
+                        {
+                            if (throwIfExists)
+                                throw new ArgumentException("Element exists");
+                            else
+                                return false;
+                        }
                         else if (cmp > 0)
                         {
                             if (c.greater == null)
@@ -380,7 +392,7 @@ namespace NiL.JS
                                 root.Balance(ref root);
                                 Count++;
                                 state = state ^ state << 1;
-                                return;
+                                return true;
                             }
                             stack.Push(c);
                             c = c.greater;
@@ -396,7 +408,7 @@ namespace NiL.JS
                                 root.Balance(ref root);
                                 Count++;
                                 state = state ^ state << 1;
-                                return;
+                                return true;
                             }
                             stack.Push(c);
                             c = c.less;
@@ -680,7 +692,19 @@ namespace NiL.JS
                 array[index++] = kvp;
         }
 
-        protected IEnumerator<Node> enumerateReversed(Node node)
+        [OnDeserialized()]
+        internal void OnDeserializedMethod(StreamingContext context)
+        {
+            stack = new Stack<Node>();
+            Node[] nodes = new Node[Count];
+            for (var e = enumerate(root); e.MoveNext(); )
+                nodes[--Count] = e.Current;
+            root = null;
+            for (var i = 0; i < nodes.Length; i++)
+                Insert(nodes[i].key, nodes[i].value, false);
+        }
+
+        internal IEnumerator<Node> enumerateReversed(Node node)
         {
             if (node != null)
             {
@@ -719,7 +743,7 @@ namespace NiL.JS
             }
         }
 
-        protected IEnumerator<Node> enumerate(Node node)
+        internal IEnumerator<Node> enumerate(Node node)
         {
             if (node != null)
             {
@@ -837,7 +861,7 @@ namespace NiL.JS
     }
 
     [Serializable]
-    internal sealed class BinaryTree<TValue> : BinaryTree<string, TValue>
+    public sealed class BinaryTree<TValue> : BinaryTree<string, TValue>
     {
         public IEnumerable<KeyValuePair<string, TValue>> StartedWith(string prefix)
         {
