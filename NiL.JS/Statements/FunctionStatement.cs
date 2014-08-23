@@ -320,7 +320,7 @@ namespace NiL.JS.Statements
             for (var i = 0; i < parameters.Length; i++)
             {
                 nvars[parameters[i].Name] = parameters[i].Descriptor;
-                parameters[i].Descriptor.Owner = this;
+                parameters[i].Descriptor.owner = this;
                 parameters[i].Descriptor.defineDepth = fdepth + 1;
             }
             VariableDescriptor fdesc = null;
@@ -331,11 +331,11 @@ namespace NiL.JS.Statements
                     fdesc = new VariableDescriptor(Reference, true, fdepth + 1); // то создаём новый дескриптор
                 nvars[name] = fdesc;
             }
-            nvars["arguments"] = new VariableDescriptor("arguments", fdepth + 1) { Owner = this };
+            nvars["arguments"] = new VariableDescriptor("arguments", fdepth + 1) { owner = this };
             stat.Optimize(ref stat, 0, fdepth + 1, nvars, strict);
             if (fdesc != null)
             {
-                fdesc.Owner = null; /* Тело функции, увидев здесь null, говорит, что оно хозяйко этого определения. 
+                fdesc.owner = null; /* Тело функции, увидев здесь null, говорит, что оно хозяйко этого определения. 
                                      * При таком раскладе функция появится только когда она сама вызовется, что в корне не верно.
                                      */
             }

@@ -262,6 +262,7 @@
     <Compile Include="Core\Modules\ReadOnlyAttribute.cs" />
     <Compile Include="Core\TypeProxing\ProxyConstructor.cs" />
     <Compile Include="Core\WithContext.cs" />
+    <Compile Include="Expressions\Neg.cs" />
     <Compile Include="NamespaceProvider.cs" />
     <Compile Include="Statements\LabeledStatement.cs" />
     <Compile Include="Statements\MultilineComment.cs" />

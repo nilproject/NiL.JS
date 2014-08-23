@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using System.Text;
 using NiL.JS.Core;
 
 namespace NiL.JS.Expressions
@@ -8,10 +9,12 @@ namespace NiL.JS.Expressions
     [Serializable]
     public sealed class Addition : Expression
     {
+        //private StringBuilder stringBuilder;
+
         public Addition(CodeNode first, CodeNode second)
             : base(first, second, true)
         {
-
+            //stringBuilder = new StringBuilder();
         }
 
         internal override JSObject Invoke(Context context)
@@ -145,6 +148,8 @@ namespace NiL.JS.Expressions
                                 case JSObjectType.String:
                                     {
                                         tstr += temp.oValue;
+                                        //tstr = string.Concat(tstr, temp.oValue);
+                                        //tstr = stringBuilder.Append(tstr).Append(temp.oValue).ToString(); stringBuilder.Length = 0;
                                         break;
                                     }
                                 case JSObjectType.Undefined:

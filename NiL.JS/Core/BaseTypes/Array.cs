@@ -959,6 +959,8 @@ namespace NiL.JS.Core.BaseTypes
                             else
                             {
                                 var t = element ?? notExists;
+                                if ((t.attributes & (JSObjectAttributesInternal.SystemObject | JSObjectAttributesInternal.ReadOnly)) == JSObjectAttributesInternal.SystemObject)
+                                    data[index] = t = t.CloneImpl();
                                 return t;
                             }
                         }

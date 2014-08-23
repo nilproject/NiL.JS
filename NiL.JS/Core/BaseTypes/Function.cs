@@ -624,7 +624,7 @@ namespace NiL.JS.Core.BaseTypes
                     ctor.attributes = JSObjectAttributesInternal.DoNotEnum;
                     ctor.Assign(this);
                     _prototype = _prototype.Clone() as JSObject;
-                } 
+                }
                 return _prototype;
             }
         }
@@ -798,34 +798,40 @@ namespace NiL.JS.Core.BaseTypes
                     args = new Arguments();
                 _arguments = args;
                 int i = 0;
-                var ca = internalContext.DefineVariable("arguments");
-                ca.Assign(args);
+                internalContext.fields["arguments"] = args;
                 if (body.strict)
                 {
-                    ca.attributes |= args.attributes | JSObjectAttributesInternal.ReadOnly;
+                    args.attributes |= JSObjectAttributesInternal.ReadOnly;
                     args.callee = propertiesDummySM;
                     args.caller = propertiesDummySM;
                 }
                 else
                 {
-                    var callee = this.CloneImpl();
-                    callee.attributes = JSObjectAttributesInternal.DoNotEnum;
-                    args.callee = callee;
+                    args.callee = this;
+                    args.caller = notExists;
                 }
                 int min = System.Math.Min(args.length, parameterNames.Length);
                 for (; i < min; i++)
                 {
                     JSObject t = args[i];
-                    args[i] = t = t.CloneImpl();
+                    if ((t.attributes & JSObjectAttributesInternal.Cloned) != 0)
+                        t.attributes &= ~JSObjectAttributesInternal.Cloned;
+                    else
+                        args[i] = t = t.CloneImpl();
                     t.attributes |= JSObjectAttributesInternal.Argument;
                     if (body.strict)
                         t = t.CloneImpl();
                     internalContext.fields[parameterNames[i]] = t;
+                    creator.parameters[i].Descriptor.prewContext = internalContext;
+                    creator.parameters[i].Descriptor.cacheRes = t;
                 }
                 for (; i < args.length; i++)
                 {
-                    var t = args[i];
-                    args[i] = t = t.CloneImpl();
+                    JSObject t = args[i];
+                    if ((t.attributes & JSObjectAttributesInternal.Cloned) != 0)
+                        t.attributes &= ~JSObjectAttributesInternal.Cloned;
+                    else
+                        args[i] = t = t.CloneImpl();
                     t.attributes |= JSObjectAttributesInternal.Argument;
                 }
                 for (; i < parameterNames.Length; i++)
@@ -833,11 +839,12 @@ namespace NiL.JS.Core.BaseTypes
 
                 for (i = body.variables.Length; i-- > 0; )
                 {
-                    if (body.variables[i].Owner == body)
+                    if (body.variables[i].owner == body)
                     {
                         JSObject f = null;
-                        if (body.variables[i].name != "arguments" // нельзя переменной перебить аргументы
-                            || body.variables[i].Inititalizator != null) // а вот функцией можно
+                        if (body.variables[i].Inititalizator != null || string.CompareOrdinal(body.variables[i].name, "arguments") != 0)
+                        // нельзя переменной перебить аргументы
+                        // а вот функцией можно
                         {
                             internalContext.fields[body.variables[i].name] = f = new JSObject() { attributes = JSObjectAttributesInternal.DoNotDelete };
                             if (body.variables[i].Inititalizator != null)
@@ -852,13 +859,17 @@ namespace NiL.JS.Core.BaseTypes
                 internalContext.variables = body.variables;
                 internalContext.Activate();
                 body.Invoke(internalContext);
-                if (internalContext.abortInfo != null && internalContext.abortInfo.valueType == JSObjectType.NotExists)
-                    internalContext.abortInfo.valueType = JSObjectType.NotExistsInObject;
-                if (internalContext.abortInfo == null)
-                    internalContext.abortInfo = notExists;
-                if ((internalContext.abortInfo.attributes & JSObjectAttributesInternal.Temporary) != 0)
-                    return internalContext.abortInfo.CloneImpl();
-                return internalContext.abortInfo;
+                var ai = internalContext.abortInfo;
+                if (ai == null)
+                {
+                    notExists.valueType = JSObjectType.NotExistsInObject;
+                    return notExists;
+                }
+                if (ai.valueType == JSObjectType.NotExists)
+                    ai.valueType = JSObjectType.NotExistsInObject;
+                //if ((ai.attributes & JSObjectAttributesInternal.Temporary) != 0)
+                //    return ai.CloneImpl();
+                return ai;
             }
             finally
             {

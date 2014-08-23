@@ -205,17 +205,19 @@ namespace NiL.JS.Statements
         internal override JSObject Invoke(Context context)
         {
             JSObject res = JSObject.notExists;
+            CodeNode node = null;
             for (int i = body.Length; i-- > 0; )
             {
+                node = body[i];
                 //if (body[i] is FunctionStatement)
                 //    continue;
-                if (body[i] == null)
+                if (node == null)
                     return res;
 #if DEV
                 if (context.debugging)
                     context.raiseDebugger(body[i]);
 #endif
-                res = body[i].Invoke(context) ?? res;
+                res = node.Invoke(context) ?? res;
 #if DEBUG
                 if (!context.IsExcecuting)
                     if (System.Diagnostics.Debugger.IsAttached)
@@ -323,7 +325,7 @@ namespace NiL.JS.Statements
                     for (var i = this.variables.Length; i-- > 0; )
                         if (this.variables[i].Defined && this.variables[i].Owner == null) // все объявленные переменные без хозяина наши
                         {
-                            this.variables[i].Owner = this;
+                            this.variables[i].owner = this;
                             this.variables[i].defineDepth = fdepth;
                         }
             }

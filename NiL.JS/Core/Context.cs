@@ -384,6 +384,11 @@ namespace NiL.JS.Core
             }
             else if (fromProto)
                 objectSource = prototype.objectSource;
+            else
+            {
+                if ((res.attributes & (JSObjectAttributesInternal.SystemObject | JSObjectAttributesInternal.ReadOnly)) == JSObjectAttributesInternal.SystemObject)
+                    fields[name] = res = res.CloneImpl();
+            }
             return res;
         }
 
@@ -473,7 +478,7 @@ namespace NiL.JS.Core
                                  *      eval("var c = 2");
                                  *      // переменная объявлена в контексте b, значит и значение должно быть из
                                  *      // контекста b, но если по выходу из b кэш этой переменной сброшен не будет, 
-                                 *      // то в a её значение будет, как бы, 2, но на самом деле 1.
+                                 *      // то в a её значение будет 2
                                  *  }
                                  * }
                                  */

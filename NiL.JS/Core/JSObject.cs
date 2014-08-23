@@ -54,9 +54,13 @@ namespace NiL.JS.Core
         /// </summary>
         Temporary = 1 << 21,
         /// <summary>
+        /// Объект был скопирован перед передачей как параметр в вызов функции.
+        /// </summary>
+        Cloned = 1 << 22,
+        /// <summary>
         /// Аттрибуты, переносимые при присваивании значения.
         /// </summary>
-        PrivateAttributes = Immutable | ProxyPrototype | Field
+        PrivateAttributes = Immutable | ProxyPrototype | Field,
     }
 
     [Serializable]
@@ -1021,9 +1025,10 @@ namespace NiL.JS.Core
             if (value != null)
             {
                 this.valueType = (value.valueType & ~(JSObjectType.NotExistsInObject | JSObjectType.NotExists)) | JSObjectType.Undefined;
-                this.iValue = value.iValue;
                 if (valueType < JSObjectType.String)
                 {
+                    this.iValue = value.iValue;
+                    this.dValue = value.dValue;
                     this.fields = null;
                     this.oValue = null;
                 }
@@ -1035,7 +1040,6 @@ namespace NiL.JS.Core
                     else
                         this.fields = value.fields;
                 }
-                this.dValue = value.dValue;
                 this.__proto__ = value.__proto__;
                 this.attributes =
                     (this.attributes & ~JSObjectAttributesInternal.PrivateAttributes)
@@ -1460,7 +1464,7 @@ namespace NiL.JS.Core
                 throw new JSException(new TypeError("Object.getOwnPropertyDescriptor called on undefined."));
             if (source.valueType < JSObjectType.Object)
                 throw new JSException(new TypeError("Object.getOwnPropertyDescriptor called on non-object."));
-            var obj = source.GetMember(args[1].ToString(), true);
+            var obj = source.GetMember(args[1], false, true);
             if (obj.valueType < JSObjectType.Undefined)
                 return undefined;
             var res = CreateObject();

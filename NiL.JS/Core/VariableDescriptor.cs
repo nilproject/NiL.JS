@@ -8,14 +8,17 @@ namespace NiL.JS.Core
     public sealed class VariableDescriptor
     {
         internal readonly HashSet<VariableReference> references;
+        internal readonly string name;
+        internal CodeNode owner;
         internal int defineDepth;
-        internal string name;
-        private JSObject cacheRes;
-        private Context prewContext;
-        private CodeNode owner;
+        internal JSObject cacheRes;
+        internal Context prewContext;
 
         public bool Defined { get; internal set; }
-        public CodeNode Owner { get { return owner; } internal set { owner = value; } }
+        public CodeNode Owner
+        {
+            get { return owner; }
+        }
         public CodeNode Inititalizator { get; internal set; }
         public string Name { get { return name; } }
         public int ReferenceCount { get { return references.Count; } }
@@ -31,18 +34,31 @@ namespace NiL.JS.Core
 
         internal JSObject Get(Context context, bool create, int depth)
         {
-            JSObject res = null;
             context.objectSource = null;
-            if (((defineDepth | depth) & -1) != 0)
+            if (((defineDepth | depth) & 0x80000000) != 0)
                 return context.GetVariable(name, create);
-            if (cacheRes == null || isInvalid(ref context, depth))
+            TypeProxy tp = null;
+            JSObject res = null;
+            while (depth > defineDepth)
+            {
+                if (context is WithContext)
+                {
+                    cacheRes = null;
+                    break;
+                }
+                context = context.prototype;
+                depth--;
+            }
+            if (context != prewContext)
+                cacheRes = null;
+            if (cacheRes == null)// || isInvalid(ref context, depth))
             {
                 res = context.GetVariable(name, create);
                 if (create && !Defined && res.valueType == JSObjectType.NotExists)
                     res.attributes = JSObjectAttributesInternal.None;
                 else
                 {
-                    TypeProxy tp = res.valueType != JSObjectType.Object ? null : res.oValue as TypeProxy;
+                    tp = res.valueType != JSObjectType.Object ? null : res.oValue as TypeProxy;
                     if (tp != null)
                         res = tp.prototypeInstance ?? res;
                 }
@@ -53,22 +69,6 @@ namespace NiL.JS.Core
                 return res;
             }
             return cacheRes;
-        }
-
-        private bool isInvalid(ref Context context, int depth)
-        {
-            var oldContext = context;
-            while (depth > defineDepth)
-            {
-                if (context is WithContext)
-                    return true;
-                context = context.prototype;
-                depth--;
-            }
-            if (context != prewContext)
-                return true;
-            context = oldContext;
-            return false;
         }
 
         internal VariableDescriptor(string name, int defineDepth)

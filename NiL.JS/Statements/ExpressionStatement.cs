@@ -467,7 +467,7 @@ namespace NiL.JS.Statements
                                 while (char.IsWhiteSpace(state.Code[i]))
                                     i++;
                                 var f = Parse(state, ref i, true, true, false, true).Statement;
-                                first = new Expressions.Mul(new ImmidateValueStatement(-1), f) { Position = index, Length = i - index };
+                                first = new Expressions.Neg(f) { Position = index, Length = i - index };
                             }
                             break;
                         }

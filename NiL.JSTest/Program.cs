@@ -111,26 +111,62 @@ namespace NiL.JSTest
             _("Sputnik testing complite");
         }
 
-        private static void testEx()
+        private static void benchmark()
         {
+            Script s = null;
             var sw = new Stopwatch();
-            var s = new Script(
-@"
+            int @case = 2;
+            switch (@case)
+            {
+                case 0:
+                    {
+                        s = new Script(
+            @"
 function fib(x)
 {
     if (x < 2)
         return 1;
     return fib(x - 1) + fib(x - 2);
-}
-console.log(fib(10));
-var a = 1;
-var b = 2;
-var c = 3;
-a += function(){ return Math.floor(a * 2 + b * 3 + c * 5) }();
-a += function(){ return Math.floor(a * 2 + b * 3 + c * 5) }();
-console.log(a);
+}// 420 // 485 // 525 // 600
+for (var i = 0; i < 650; i++) fib(20);
 ");
-            s.Context.AttachModule(typeof(System.Drawing.Point));
+                        break;
+                    }
+                case 1:
+                    {
+                        s = new Script(
+            @"
+for (var i = 0; i < 19300000; i++) Math.pow(2, 20);
+");
+                        break;
+                    }
+                case 2:
+                    {
+                        s = new Script(
+            @"
+function mul(x, y)
+{
+    return x * y;
+}
+for (var i = 0; i < 10000000; i++) mul(2, 20);
+");
+                        break;
+                    }
+            }
+            sw.Start();
+            s.Invoke();
+            sw.Stop();
+            Console.WriteLine(sw.Elapsed);
+        }
+
+        private static void testEx()
+        {
+            var sw = new Stopwatch();
+            var s = new Script(
+@"
+var a = 1;
+console.log(-a);
+");
             sw.Start();
             s.Invoke();
             sw.Stop();
@@ -148,7 +184,7 @@ console.log(a);
 
             typeof(System.Windows.Forms.Button).GetType(); // Заставляет подгрузить сборку System.Windows.Forms. Это исключительно для баловства
 
-            int mode = -2//155
+            int mode = -1//155
                 ;
             switch (mode)
             {
@@ -180,7 +216,7 @@ console.log(a);
                     }
                 case 1:
                     {
-                        runTestFile(@"tests\sputnik\ch15\15.2\15.2.3\15.2.3.3\15.2.3.3-2-22.js");
+                        runTestFile(@"ftest.js");
                         break;
                     }
                 case 2:
@@ -191,6 +227,11 @@ console.log(a);
                 case 3:
                     {
                         testEx();
+                        break;
+                    }
+                case 4:
+                    {
+                        benchmark();
                         break;
                     }
                 case 151:

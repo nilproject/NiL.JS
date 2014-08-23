@@ -155,7 +155,7 @@ namespace NiL.JS.Statements
             Parser.Optimize(ref body, 1, fdepth, variables, strict);
             if (catchBody != null)
             {
-                catchVariableDesc.Owner = this;
+                catchVariableDesc.owner = this;
                 VariableDescriptor ovd = null;
                 variables.TryGetValue(catchVariableDesc.name, out ovd);
                 variables[catchVariableDesc.name] = catchVariableDesc;

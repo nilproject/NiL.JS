@@ -40,6 +40,7 @@ namespace NiL.JS.Core.BaseTypes
         {
             oValue = s;
             valueType = JSObjectType.String;
+            attributes |= JSObjectAttributesInternal.SystemObject;
         }
 
         [Hidden]
@@ -520,7 +521,7 @@ namespace NiL.JS.Core.BaseTypes
                 else
                 {
                     int index = 0;
-                    while (index < selfString.Length && res._length < limit)
+                    while (res._length < limit)
                     {
                         int nindex = selfString.IndexOf(fstr, index);
                         if (nindex == -1)
@@ -534,7 +535,7 @@ namespace NiL.JS.Core.BaseTypes
                             var item = selfString.Substring(index, nindex - index);
                             res.data.Add(res._length, item);
                             res._length++;
-                            index = nindex + item.Length + 1;
+                            index = nindex + fstr.Length;
                         }
                     }
                 }

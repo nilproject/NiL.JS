@@ -30,7 +30,7 @@ namespace NiL.JS.Expressions
                     int a = f.iValue;
                     s = second.Invoke(context);
                     if (s.valueType == JSObjectType.Int
-                    || s.valueType == JSObjectType.Bool)
+                        || s.valueType == JSObjectType.Bool)
                     {
                         if (((a | s.iValue) & 0xffff0000) == 0)
                         {
@@ -39,7 +39,7 @@ namespace NiL.JS.Expressions
                         }
                         else
                         {
-                            tempContainer.dValue = a * (double)s.iValue;
+                            tempContainer.dValue = a * (long)s.iValue;
                             tempContainer.valueType = JSObjectType.Double;
                         }
                         return tempContainer;

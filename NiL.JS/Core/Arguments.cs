@@ -177,7 +177,7 @@ namespace NiL.JS.Core
         {
             valueType = JSObjectType.Object;
             oValue = this;
-            attributes = JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum;
+            attributes = JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.SystemObject;
         }
 
         public override void Assign(NiL.JS.Core.JSObject value)
@@ -235,9 +235,23 @@ namespace NiL.JS.Core
                         return _length;
                     }
                 case "callee":
-                    return (callee ?? (!createMember ? notExists : (callee = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
+                    {
+                        if ((callee.attributes & JSObjectAttributesInternal.SystemObject) != 0)
+                        {
+                            callee = callee.CloneImpl();
+                            callee.attributes = JSObjectAttributesInternal.DoNotEnum;
+                        }
+                        return (callee ?? (!createMember ? notExists : (callee = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
+                    }
                 case "caller":
-                    return (caller ?? (!createMember ? notExists : (caller = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
+                    {
+                        if ((caller.attributes & JSObjectAttributesInternal.SystemObject) != 0)
+                        {
+                            caller = caller.CloneImpl();
+                            callee.attributes = JSObjectAttributesInternal.DoNotEnum;
+                        }
+                        return (caller ?? (!createMember ? notExists : (caller = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
+                    }
             }
             return base.GetMember(name, createMember, own);
         }

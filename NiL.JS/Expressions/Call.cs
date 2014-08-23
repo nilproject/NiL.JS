@@ -41,6 +41,11 @@ namespace NiL.JS.Expressions
             {
                 context.objectSource = null;
                 var a = this.arguments[i].Invoke(context);
+                if ((a.attributes & JSObjectAttributesInternal.Temporary) != 0)
+                {
+                    a = a.CloneImpl();
+                    a.attributes |= JSObjectAttributesInternal.Cloned;
+                }
 #if DEBUG
                 if (a == null)
                     System.Diagnostics.Debugger.Break();
