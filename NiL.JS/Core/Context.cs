@@ -361,8 +361,8 @@ namespace NiL.JS.Core
         internal protected virtual JSObject GetVariable(string name, bool create)
         {
 #if DEBUG
-            if (!IsExcecuting)
-                System.Diagnostics.Debug.Fail("Try to get varible from stoped context.");
+            //if (!IsExcecuting)
+            //    System.Diagnostics.Debug.Fail("Try to get varible from stoped context.");
 #endif
             if (name == "this")
                 return ThisBind;

@@ -443,7 +443,7 @@ namespace NiL.JS.Core.BaseTypes
         [AllowUnsafeCall(typeof(JSObject))]
         public JSObject split(Arguments args)
         {
-            if (args.Length == 0)
+            if (args.Length == 0 || !args[0].isDefinded)
                 return new Array(new object[] { this });
             int limit = int.MaxValue;
             if (args.Length > 1)
@@ -480,6 +480,11 @@ namespace NiL.JS.Core.BaseTypes
             {
                 string selfString = this.ToPrimitiveValue_Value_String().ToString();
                 var match = (args[0].oValue as RegExp).regEx.Match(selfString);
+                if ((args[0].oValue as RegExp).regEx.ToString().Length == 0)
+                {
+                    match = match.NextMatch();
+                    limit = selfString.Length;
+                }
                 Array res = new Array();
                 int index = 0;
                 while (res._length < limit)

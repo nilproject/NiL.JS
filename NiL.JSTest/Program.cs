@@ -184,8 +184,8 @@ console.log(-a);
 
             typeof(System.Windows.Forms.Button).GetType(); // Заставляет подгрузить сборку System.Windows.Forms. Это исключительно для баловства
 
-            int mode = -1//155
-                ;
+            int mode = 0// 155
+                 ;
             switch (mode)
             {
                 case -2:
