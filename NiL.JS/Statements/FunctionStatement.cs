@@ -160,10 +160,10 @@ namespace NiL.JS.Statements
                     throw new JSException(new SyntaxError("Unexpected char at " + Tools.PositionToTextcord(code, i)));
             }
             else if (mode != FunctionType.Function)
-                throw new ArgumentException("Getters and Setters must have name");
+                throw new JSException(new SyntaxError("Getters and Setters must have name"));
             do i++; while (char.IsWhiteSpace(code[i]));
             if (code[i] == ',')
-                throw new ArgumentException("code (" + i + ")");
+                throw new JSException(new SyntaxError("Unexpected char at " + Tools.PositionToTextcord(code, i)));
             while (code[i] != ')')
             {
                 if (code[i] == ',')
@@ -180,13 +180,13 @@ namespace NiL.JS.Statements
                 case FunctionType.Get:
                     {
                         if (parameters.Count != 0)
-                            throw new ArgumentException("getter have many arguments");
+                            throw new JSException(new SyntaxError("getter have many arguments"));
                         break;
                     }
                 case FunctionType.Set:
                     {
                         if (parameters.Count != 1)
-                            throw new ArgumentException("setter have invalid arguments");
+                            throw new JSException(new SyntaxError("setter have invalid arguments"));
                         break;
                     }
             }
@@ -194,7 +194,7 @@ namespace NiL.JS.Statements
                 i++;
             while (char.IsWhiteSpace(code[i]));
             if (code[i] != '{')
-                throw new ArgumentException("code (" + i + ")");
+                throw new JSException(new SyntaxError("Unexpected char at " + Tools.PositionToTextcord(code, i)));
             var labels = state.Labels;
             state.Labels = new List<string>();
             state.functionsDepth++;
@@ -232,7 +232,8 @@ namespace NiL.JS.Statements
                 Position = index,
                 Length = i - index
             };
-            if (inExp == 0 && mode == FunctionType.Function) // Позволяет делать вызов сразу при объявлении функции 
+            if (inExp == 0 && mode == FunctionType.Function) 
+            // Позволяет делать вызов сразу при объявлении функции 
             // (в таком случае функция не добавляется в контекст).
             // Если убрать проверку, то в тех сулчаях,
             // когда определение и вызов стоят внутри выражения,
