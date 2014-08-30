@@ -11769,7 +11769,7 @@
     <Content Include="tests\this linking test.js" />
     <Content Include="WinFormsSample.js" />
     <Content Include="ftest.js" />
-    <Content Include="tests\tests.js" />
+    <Content Include="tests\flow control tests.js" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.0">

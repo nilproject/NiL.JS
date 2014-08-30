@@ -3,6 +3,8 @@ using NiL.JS.Statements;
 using NiL.JS.Core.BaseTypes;
 using System;
 using System.Threading;
+using System.Linq.Expressions;
+using NiL.JS.Core.JIT;
 
 namespace NiL.JS
 {
@@ -12,7 +14,10 @@ namespace NiL.JS
     [Serializable]
     public sealed class Script
     {
-        private static readonly Function pseudoCaller = new Function(Context.globalContext, FunctionStatement.Parse("function superCaller(){ (hello, world) }"));
+        private static readonly Function pseudoCaller = new Function(Context.globalContext, FunctionStatement.Parse("function superCaller(){ }"));
+
+        private Func<Context, JSObject> compiledScript;
+        public bool IsCompiled { get { return compiledScript != null; } }
 
         private CodeNode root;
         public CodeBlock Root { get { return root as CodeBlock; } }
@@ -53,6 +58,8 @@ namespace NiL.JS
                         f.Assign(body.variables[i].Inititalizator.Invoke(Context));
                 }
             }
+            if (Context.UseJit)
+                compiledScript = JITHelpers.compile(body, false);
         }
 
         /// <summary>
@@ -65,7 +72,21 @@ namespace NiL.JS
             try
             {
                 Context.Activate();
-                root.Invoke(Context);
+
+                if (IsCompiled)
+                {
+#if DEBUG
+                    System.Diagnostics.Debugger.Log(0, "NiL.JS JIT", "Run compiled script");
+#endif
+                    compiledScript(Context);
+                }
+                else
+                {
+#if DEBUG
+                    System.Diagnostics.Debugger.Log(0, "NiL.JS JIT", "Run non compiled script");
+#endif
+                    root.Invoke(Context);
+                }
             }
             finally
             {

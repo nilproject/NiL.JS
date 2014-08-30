@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using NiL.JS.Core;
 using NiL.JS.Core.BaseTypes;
+using NiL.JS.Core.JIT;
 
 namespace NiL.JS.Statements
 {
@@ -68,6 +70,39 @@ namespace NiL.JS.Statements
                     Length = index - pos
                 }
             };
+        }
+
+        internal override System.Linq.Expressions.Expression BuildTree(NiL.JS.Core.JIT.TreeBuildingState state)
+        {
+            var continueTarget = Expression.Label("continue" + (DateTime.Now.Ticks % 1000));
+            var breakTarget = Expression.Label("break" + (DateTime.Now.Ticks % 1000));
+            for (var i = 0; i < labels.Count; i++)
+                state.NamedContinueLabels[labels[i]] = continueTarget;
+            state.BreakLabels.Push(breakTarget);
+            state.ContinueLabels.Push(continueTarget);
+            try
+            {
+                return System.Linq.Expressions.Expression.Loop(
+                    System.Linq.Expressions.Expression.Block(
+                        body.BuildTree(state),
+                        System.Linq.Expressions.Expression.Label(continueTarget),
+                        System.Linq.Expressions.Expression.IfThen(System.Linq.Expressions.Expression.Not(System.Linq.Expressions.Expression.Call(null, JITHelpers.JSObjectToBooleanMethod, condition.BuildTree(state))),
+                                                                  System.Linq.Expressions.Expression.Goto(breakTarget))
+                    ),
+                    breakTarget
+                );
+            }
+            finally
+            {
+                if (state.BreakLabels.Peek() != breakTarget)
+                    throw new InvalidOperationException();
+                state.BreakLabels.Pop();
+                if (state.ContinueLabels.Peek() != continueTarget)
+                    throw new InvalidOperationException();
+                state.ContinueLabels.Pop();
+                for (var i = 0; i < labels.Count; i++)
+                    state.NamedContinueLabels.Remove(labels[i]);
+            }
         }
 
         internal override JSObject Invoke(Context context)

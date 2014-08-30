@@ -186,6 +186,16 @@ namespace NiL.JS.Core
         /// </summary>
         public event DebuggerCallback DebuggerCallback;
 
+        public bool UseJit
+        {
+            get
+            {
+                if (prototype != null && prototype != this)
+                    return prototype.UseJit;
+                else return false;
+            }
+        }
+
         /// <summary>
         /// Указывает, присутствует ли контекст в каскаде выполняющихся контекстов непосредственно
         /// или в качестве одного из прототипов
@@ -364,7 +374,7 @@ namespace NiL.JS.Core
             //if (!IsExcecuting)
             //    System.Diagnostics.Debug.Fail("Try to get varible from stoped context.");
 #endif
-            if (name == "this")
+            if (string.CompareOrdinal(name, "this") == 0)
                 return ThisBind;
             JSObject res = null;
             bool fromProto = !fields.TryGetValue(name, out res) && (prototype != null);
@@ -397,11 +407,7 @@ namespace NiL.JS.Core
             var p = this;
             while (p != null)
             {
-#if DEV
-                if (p.debugging && p.DebuggerCallback != null)
-#else
                 if (p.DebuggerCallback != null)
-#endif
                 {
                     p.DebuggerCallback(this, new DebuggerCallbackEventArgs() { Statement = nextStatement });
                     break;

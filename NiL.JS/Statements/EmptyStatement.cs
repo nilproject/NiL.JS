@@ -1,5 +1,6 @@
 ﻿using System;
 using NiL.JS.Core;
+using NiL.JS.Core.JIT;
 
 namespace NiL.JS.Statements
 {
@@ -17,6 +18,11 @@ namespace NiL.JS.Statements
         {
             Position = position;
             Length = 0;
+        }
+
+        internal override System.Linq.Expressions.Expression BuildTree(NiL.JS.Core.JIT.TreeBuildingState state)
+        {
+            return JITHelpers.UndefinedConstant;
         }
 
         internal override JSObject Invoke(Context context)

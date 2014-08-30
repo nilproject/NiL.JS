@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.Threading;
+using NiL.JS.Core.JIT;
 using NiL.JS.Core.Modules;
 using NiL.JS.Expressions;
 using NiL.JS.Statements;
@@ -599,6 +601,9 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         #region Runtime
+        private bool containsEval;
+        private bool containsArguments;
+        private bool isRecursive;
         private string[] parameterNames;
         [Hidden]
         [CLSCompliant(false)]
@@ -675,6 +680,18 @@ namespace NiL.JS.Core.BaseTypes
             [Hidden]
             set { if (creator.body.strict || _caller == propertiesDummySM) throw new JSException(new TypeError("Property caller not allowed in strict mode.")); }
         }
+
+        private Func<Context, JSObject> compiledScript;
+
+        private void checkUsings()
+        {
+            for (var i = 0; i < creator.body.variables.Length; i++)
+            {
+                containsArguments |= creator.body.variables[i].name == "arguments";
+                containsEval |= creator.body.variables[i].name == "eval";
+                isRecursive |= creator.body.variables[i].name == creator.name;
+            }
+        }
         #endregion
 
         [DoNotEnumerate]
@@ -685,6 +702,7 @@ namespace NiL.JS.Core.BaseTypes
             valueType = JSObjectType.Function;
             this.oValue = this;
             parameterNames = new string[0];
+            checkUsings();
         }
 
         [DoNotEnumerate]
@@ -714,6 +732,9 @@ namespace NiL.JS.Core.BaseTypes
             parameterNames = new string[creator.parameters.Length];
             for (var i = 0; i < parameterNames.Length; i++)
                 parameterNames[i] = creator.parameters[i].Name;
+            if (context != null && context.UseJit)
+                compiledScript = JITHelpers.compile(creator.body, true);
+            checkUsings();
         }
 
         internal Function(Context context, FunctionStatement creator)
@@ -726,6 +747,9 @@ namespace NiL.JS.Core.BaseTypes
             parameterNames = new string[creator.parameters.Length];
             for (var i = 0; i < parameterNames.Length; i++)
                 parameterNames[i] = creator.parameters[i].Name;
+            if (context != null && context.UseJit)
+                compiledScript = JITHelpers.compile(creator.body, true);
+            checkUsings();
         }
 
         [Hidden]
@@ -798,7 +822,8 @@ namespace NiL.JS.Core.BaseTypes
                     args = new Arguments();
                 _arguments = args;
                 int i = 0;
-                internalContext.fields["arguments"] = args;
+                if (containsEval || containsArguments)
+                    internalContext.fields["arguments"] = args;
                 if (body.strict)
                 {
                     args.attributes |= JSObjectAttributesInternal.ReadOnly;
@@ -853,13 +878,23 @@ namespace NiL.JS.Core.BaseTypes
                     }
                 }
                 internalContext.thisBind = thisBind;
-                if (creator.type == FunctionType.Function && creator.name != "" && creator.name != null)
+                if (creator.type == FunctionType.Function
+                    && creator.name != ""
+                    && creator.name != null
+                    && (isRecursive || containsEval)
+                    )
                     internalContext.fields[creator.name] = this;
                 internalContext.strict |= body.strict;
                 internalContext.variables = body.variables;
                 internalContext.Activate();
-                body.Invoke(internalContext);
-                var ai = internalContext.abortInfo;
+                JSObject ai;
+                if (compiledScript != null)
+                    ai = compiledScript(internalContext);
+                else
+                {
+                    body.Invoke(internalContext);
+                    ai = internalContext.abortInfo;
+                }
                 if (ai == null)
                 {
                     notExists.valueType = JSObjectType.NotExistsInObject;

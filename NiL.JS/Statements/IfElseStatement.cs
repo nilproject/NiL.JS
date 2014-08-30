@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using NiL.JS.Core;
+using NiL.JS.Core.JIT;
 
 namespace NiL.JS.Statements
 {
@@ -14,6 +15,14 @@ namespace NiL.JS.Statements
         public CodeNode Body { get { return body; } }
         public CodeNode ElseBody { get { return elseBody; } }
         public CodeNode Condition { get { return condition; } }
+
+        internal override System.Linq.Expressions.Expression BuildTree(NiL.JS.Core.JIT.TreeBuildingState state)
+        {
+            return elseBody != null ?
+                System.Linq.Expressions.Expression.IfThenElse(System.Linq.Expressions.Expression.Call(JITHelpers.JSObjectToBooleanMethod, condition.BuildTree(state)), body.BuildTree(state), elseBody.BuildTree(state))
+                :
+                System.Linq.Expressions.Expression.IfThen(System.Linq.Expressions.Expression.Call(JITHelpers.JSObjectToBooleanMethod, condition.BuildTree(state)), body.BuildTree(state));
+        }
 
         private IfElseStatement()
         {

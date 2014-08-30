@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using NiL.JS.Core;
+using NiL.JS.Core.JIT;
 using NiL.JS.Statements;
 
 namespace NiL.JS.Expressions
@@ -58,15 +59,24 @@ namespace NiL.JS.Expressions
         {
             get
             {
-                return (first == null || first is ImmidateValueStatement || (first is Expression && (first as Expression).IsContextIndependent)) 
+                return (first == null || first is ImmidateValueStatement || (first is Expression && (first as Expression).IsContextIndependent))
                     && (second == null || second is ImmidateValueStatement || (second is Expression && (second as Expression).IsContextIndependent));
             }
+        }
+
+        internal override System.Linq.Expressions.Expression BuildTree(NiL.JS.Core.JIT.TreeBuildingState state)
+        {
+            return System.Linq.Expressions.Expression.Call(
+                       System.Linq.Expressions.Expression.Constant(this),
+                       this.GetType().GetMethod("Invoke", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic, null, new[] { typeof(Context) }, null),
+                       JITHelpers.ContextParameter
+                       );
         }
 
         protected Expression(CodeNode first, CodeNode second, bool createTempContainer)
         {
             if (createTempContainer)
-                tempContainer = new JSObject() { assignCallback = JSObject.ErrorAssignCallback, attributes = JSObjectAttributesInternal.Temporary };
+                tempContainer = new JSObject() { attributes = JSObjectAttributesInternal.Temporary };
             this.first = first;
             this.second = second;
         }

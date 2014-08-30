@@ -2,12 +2,18 @@
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using NiL.JS.Core;
+using NiL.JS.Core.JIT;
 
 namespace NiL.JS.Statements
 {
     [Serializable]
     public sealed class ImmidateValueStatement : CodeNode
     {
+        internal override System.Linq.Expressions.Expression BuildTree(NiL.JS.Core.JIT.TreeBuildingState state)
+        {
+            return JITHelpers.wrap(value);
+        }
+
         internal JSObject value;
 
         public JSObject Value { get { return value; } }

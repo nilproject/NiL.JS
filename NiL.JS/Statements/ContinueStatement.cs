@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq.Expressions;
 using NiL.JS.Core;
 
 namespace NiL.JS.Statements
@@ -39,6 +40,13 @@ namespace NiL.JS.Statements
                     Length = index - pos
                 }
             };
+        }
+
+        internal override System.Linq.Expressions.Expression BuildTree(Core.JIT.TreeBuildingState state)
+        {
+            if (label != null)
+                return Expression.Continue(state.NamedContinueLabels[label.ToString()]);
+            return Expression.Continue(state.ContinueLabels.Peek());
         }
 
         internal override JSObject Invoke(Context context)

@@ -145,10 +145,48 @@ if (a !== a)
 else
     console.log('if(a!==a) pass');
 
-function func(x) {
-    return x + 1;
-}
-(function (x, y) { if (x == y) console.log("a(1) == a(2)"); })(func(1), func(2));
+for (var i = 0; i < 2; i++) if (i) break;
+console.log([, "pass", "fail"][i]);
 
-if ((new (function () { return function () { this.str = 'hello' } }())).str != "hello")
-    console.log("new (f()) failed.");
+_for: for (var i = 0; i < 2; i++) if (i) break _for;
+console.log([, "pass", "fail"][i]);
+
+for (var i = 1; i > 0; i--) if (i) {
+    if (i)
+        continue;
+    break;
+}
+console.log(["pass", "fail"][i]);
+
+_for: for (var i = 1; i > 0; i--) if (i) {
+    if (i)
+        continue _for;
+    break;
+}
+console.log(["pass", "fail"][i]);
+
+var i = 1;
+do {
+    if (i)
+        continue;
+    break;
+} while (i--);
+console.log(["pass", "fail"][i]);
+
+var i = 1;
+_do: do {
+    if (i)
+        continue _do;
+    break;
+} while (i--);
+console.log(["pass", "fail"][i]);
+
+_for: for (var j = 0; ; j++) {
+    for (var i in [, 1, 2]) {
+        if (!j)
+            continue _for;
+        break;
+    }
+    break;
+}
+console.log(["fail", "pass"][j]);

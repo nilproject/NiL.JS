@@ -2,12 +2,18 @@
 using System.Collections.Generic;
 using NiL.JS.Core;
 using NiL.JS.Core.BaseTypes;
+using NiL.JS.Core.JIT;
 
 namespace NiL.JS.Statements
 {
     [Serializable]
     public sealed class ReturnStatement : CodeNode
     {
+        internal override System.Linq.Expressions.Expression BuildTree(NiL.JS.Core.JIT.TreeBuildingState state)
+        {
+            return System.Linq.Expressions.Expression.Return(JITHelpers.ReturnTarget, body != null ? body.BuildTree(state) : JITHelpers.UndefinedConstant);
+        }
+
         private CodeNode body;
 
         public CodeNode Body { get { return body; } }

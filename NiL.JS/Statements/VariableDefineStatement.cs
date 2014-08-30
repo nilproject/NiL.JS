@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using NiL.JS.Core;
 using NiL.JS.Core.BaseTypes;
+using NiL.JS.Core.JIT;
 using NiL.JS.Expressions;
 
 namespace NiL.JS.Statements
@@ -119,6 +121,13 @@ namespace NiL.JS.Statements
                     Length = index - pos
                 }
             };
+        }
+
+        internal override System.Linq.Expressions.Expression BuildTree(NiL.JS.Core.JIT.TreeBuildingState state)
+        {
+            if (initializators.Length == 1)
+                return initializators[0].BuildTree(state);
+            return System.Linq.Expressions.Expression.Block(System.Linq.Expressions.Expression.Block(from x in initializators select x.BuildTree(state)), JITHelpers.UndefinedConstant).Reduce();
         }
 
         internal override JSObject Invoke(Context context)

@@ -1,12 +1,117 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using NiL.JS.Core;
+using NiL.JS.Core.JIT;
 
 namespace NiL.JS.Statements
 {
     [Serializable]
     public sealed class ForStatement : CodeNode
     {
+        internal override System.Linq.Expressions.Expression BuildTree(NiL.JS.Core.JIT.TreeBuildingState state)
+        {
+            var continueLabel = Expression.Label("continue" + (DateTime.Now.Ticks % 1000));
+            var breakLabel = Expression.Label("break" + (DateTime.Now.Ticks % 1000));
+            for (var i = 0; i < labels.Count; i++)
+                state.NamedContinueLabels[labels[i]] = continueLabel;
+            state.ContinueLabels.Push(continueLabel);
+            state.BreakLabels.Push(breakLabel);
+            Expression res = null;
+            try
+            {
+                switch (implId)
+                {
+                    case 0:
+                        {
+                            if (init == null)
+                                res = Expression.Loop(body.BuildTree(state));
+                            else
+                                res = Expression.Block(init.BuildTree(state), Expression.Loop(body.BuildTree(state), breakLabel, continueLabel));
+                            break;
+                        }
+                    case 1:
+                        {
+                            if (init == null)
+                                res = Expression.Loop(Expression.Block(body.BuildTree(state), post.BuildTree(state)).Reduce());
+                            else
+                                res = Expression.Block(init.BuildTree(state), Expression.Loop(Expression.Block(body.BuildTree(state), Expression.Label(continueLabel), post.BuildTree(state)).Reduce(), breakLabel));
+                            break;
+                        }
+                    case 2:
+                        {
+                            res = Expression.Block(
+                                init != null ? init.BuildTree(state) : Expression.Empty(),
+                                Expression.Loop(
+                                    Expression.IfThenElse(Expression.Call(JITHelpers.JSObjectToBooleanMethod, condition.BuildTree(state)),
+                                        body.BuildTree(state)
+                                ,// else
+                                        Expression.Break(breakLabel)).Reduce()
+                                , breakLabel, continueLabel)
+                            ).Reduce();
+                            break;
+                        }
+                    case 3:
+                        {
+                            res = Expression.Block(
+                                init != null ? init.BuildTree(state) : Expression.Empty(),
+                                Expression.Loop(
+                                    Expression.IfThenElse(Expression.Call(JITHelpers.JSObjectToBooleanMethod, condition.BuildTree(state)),
+                                        Expression.Block(body.BuildTree(state), Expression.Label(continueLabel), post.BuildTree(state))
+                                ,// else
+                                        Expression.Break(breakLabel)).Reduce()
+                                , breakLabel)
+                            ).Reduce();
+                            break;
+                        }
+                    case 4:
+                        {
+                            res = Expression.Block(
+                                init != null ? init.BuildTree(state) : Expression.Empty(),
+                                Expression.Loop(
+                                    Expression.IfThenElse(Expression.Call(JITHelpers.JSObjectToBooleanMethod, condition.BuildTree(state)),
+                                        Expression.Block(Expression.Label(continueLabel), post.BuildTree(state))
+                                ,// else
+                                        Expression.Break(breakLabel)).Reduce()
+                                , breakLabel)
+                            ).Reduce();
+                            break;
+                        }
+                    case 5:
+                        {
+                            res = Expression.Block(
+                                init != null ? init.BuildTree(state) : Expression.Empty(),
+                                Expression.Loop(
+                                    Expression.IfThen(Expression.Not(Expression.Call(JITHelpers.JSObjectToBooleanMethod, condition.BuildTree(state))),
+                                        Expression.Break(breakLabel)).Reduce()
+                                , breakLabel, continueLabel)
+                            ).Reduce();
+                            break;
+                        }
+                    default:
+                        {
+                            if (init == null)
+                                res = Expression.Loop(JITHelpers.UndefinedConstant);
+                            else
+                                res = Expression.Block(init.BuildTree(state), Expression.Loop(JITHelpers.UndefinedConstant));
+                            break;
+                        }
+                }
+                return res;
+            }
+            finally
+            {
+                if (state.BreakLabels.Peek() != breakLabel)
+                    throw new InvalidOperationException();
+                state.BreakLabels.Pop();
+                if (state.ContinueLabels.Peek() != continueLabel)
+                    throw new InvalidOperationException();
+                state.ContinueLabels.Pop();
+                for (var i = 0; i < labels.Count; i++)
+                    state.NamedContinueLabels.Remove(labels[i]);
+            }
+        }
+
         private CodeNode init;
         private CodeNode condition;
         private CodeNode post;

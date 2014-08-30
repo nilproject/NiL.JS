@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using NiL.JS.Core;
 using NiL.JS.Core.BaseTypes;
+using NiL.JS.Core.JIT;
 
 namespace NiL.JS.Statements
 {
@@ -14,6 +15,15 @@ namespace NiL.JS.Statements
 
         public CodeNode Source { get { return objStatement; } }
         public CodeNode FieldName { get { return memberNameStatement; } }
+
+        internal override System.Linq.Expressions.Expression BuildTree(NiL.JS.Core.JIT.TreeBuildingState state)
+        {
+            return System.Linq.Expressions.Expression.Call(
+                       System.Linq.Expressions.Expression.Constant(this),
+                       this.GetType().GetMethod("Invoke", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic, null, new[] { typeof(Context) }, null),
+                       JITHelpers.ContextParameter
+                       );
+        }
 
         internal GetMemberStatement(CodeNode obj, CodeNode fieldName)
         {

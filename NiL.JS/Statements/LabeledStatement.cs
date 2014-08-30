@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using NiL.JS.Core;
 
 namespace NiL.JS.Statements
@@ -44,6 +45,13 @@ namespace NiL.JS.Statements
                     Length = index - pos
                 }
             };
+        }
+
+        internal override System.Linq.Expressions.Expression BuildTree(Core.JIT.TreeBuildingState state)
+        {
+            var labelTarget = Expression.Label(label);
+            state.NamedBreakLabels[label] = labelTarget;
+            return Expression.Block(statement.BuildTree(state), Expression.Label(labelTarget));
         }
 
         internal override JSObject Invoke(Context context)

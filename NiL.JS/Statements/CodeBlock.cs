@@ -53,6 +53,29 @@ namespace NiL.JS.Statements
             }
         }
 
+        internal override System.Linq.Expressions.Expression BuildTree(NiL.JS.Core.JIT.TreeBuildingState state)
+        {
+            for (int i = 0; i < body.Length >> 1; i++)
+            {
+                var t = body[i];
+                body[i] = body[body.Length - i - 1];
+                body[body.Length - i - 1] = t;
+            }
+            try
+            {
+                return System.Linq.Expressions.Expression.Block(from x in body where x != null select x.BuildTree(state));
+            }
+            finally
+            {
+                for (int i = 0; i < body.Length >> 1; i++)
+                {
+                    var t = body[i];
+                    body[i] = body[body.Length - i - 1];
+                    body[body.Length - i - 1] = t;
+                }
+            }
+        }
+
         public CodeBlock(CodeNode[] body, bool strict)
         {
             if (body == null)
@@ -65,7 +88,6 @@ namespace NiL.JS.Statements
 
         internal static ParseResult Parse(ParsingState state, ref int index)
         {
-            //string code = state.Code;
             int i = index;
             bool sroot = i == 0 && state.AllowStrict;
             if (!sroot)
@@ -261,8 +283,13 @@ namespace NiL.JS.Statements
         protected override CodeNode[] getChildsImpl()
         {
             var res = new List<CodeNode>();
-            res.AddRange(body);
-            res.RemoveAll(x => x == null || x is FunctionStatement);
+            for (int i = body.Length; i-- > 0; )
+            {
+                var node = body[i];
+                if (node == null)
+                    break;
+                res.Add(node);
+            }
             if (variables != null)
                 res.AddRange(from v in variables where v.Inititalizator != null && (!(v.Inititalizator is FunctionStatement) || (v.Inititalizator as FunctionStatement).body != this) select v.Inititalizator);
             return res.ToArray();

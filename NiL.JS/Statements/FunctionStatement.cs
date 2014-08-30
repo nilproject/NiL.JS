@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using NiL.JS.Core;
 using NiL.JS.Core.BaseTypes;
+using NiL.JS.Core.JIT;
 
 namespace NiL.JS.Statements
 {
@@ -34,7 +35,7 @@ namespace NiL.JS.Statements
 
             public override string ToString()
             {
-                return owner.name + ": " + owner;
+                return owner.ToString();
             }
         }
 
@@ -82,6 +83,15 @@ namespace NiL.JS.Statements
         public VariableReference[] Parameters { get { return parameters; } }
         public VariableReference Reference { get; private set; }
 
+        internal override System.Linq.Expressions.Expression BuildTree(NiL.JS.Core.JIT.TreeBuildingState state)
+        {
+            return System.Linq.Expressions.Expression.Call(
+                       System.Linq.Expressions.Expression.Constant(this),
+                       this.GetType().GetMethod("Invoke", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic, null, new[] { typeof(Context) }, null),
+                       JITHelpers.ContextParameter
+                       );
+        }
+
         internal FunctionStatement(string name)
         {
             Reference = new FunctionReference(this);
@@ -94,7 +104,7 @@ namespace NiL.JS.Statements
         internal static FunctionStatement Parse(string code)
         {
             int index = 0;
-            return Parse(new ParsingState(Tools.RemoveComments(code,0), code), ref index).Statement as FunctionStatement;
+            return Parse(new ParsingState(Tools.RemoveComments(code, 0), code), ref index).Statement as FunctionStatement;
         }
 
         internal static ParseResult Parse(ParsingState state, ref int index)
@@ -321,30 +331,37 @@ namespace NiL.JS.Statements
             {
                 nvars[parameters[i].Name] = parameters[i].Descriptor;
                 parameters[i].Descriptor.owner = this;
-                parameters[i].Descriptor.defineDepth = fdepth + 1;
+                parameters[i].Descriptor.defineDepth = fdepth + 1; // для того, чтобы поиск не шел по вызывающим контекстам, а начинал с активного
             }
-            VariableDescriptor fdesc = null;
+            stat.Optimize(ref stat, 0, fdepth + 1, nvars, strict);
             if (type == FunctionType.Function && !string.IsNullOrEmpty(name))
             {
-                if (!variables.TryGetValue(name, out fdesc) // Если там не определена
-                    || !fdesc.references.Contains(Reference)) // или определена, но не эта. Для примера: var f = function f1(){ return 1 }; function f1(){ return 2 };
-                    fdesc = new VariableDescriptor(Reference, true, fdepth + 1); // то создаём новый дескриптор
-                nvars[name] = fdesc;
-            }
-            nvars["arguments"] = new VariableDescriptor("arguments", fdepth + 1) { owner = this };
-            stat.Optimize(ref stat, 0, fdepth + 1, nvars, strict);
-            if (fdesc != null)
-            {
-                fdesc.owner = null; /* Тело функции, увидев здесь null, говорит, что оно хозяйко этого определения. 
-                                     * При таком раскладе функция появится только когда она сама вызовется, что в корне не верно.
-                                     */
+                VariableDescriptor fdesc = null;
+                if (Reference.Descriptor == null)
+                    Reference.Descriptor = new VariableDescriptor(Reference, true, fdepth + 1) { owner = this };
+                if (nvars.TryGetValue(name, out fdesc))
+                {
+                    foreach (var r in fdesc.references)
+                        r.Descriptor = Reference.Descriptor;
+                    Reference.Descriptor.references.UnionWith(fdesc.references);
+                    for (var i = body.variables.Length; i-- > 0; )
+                    {
+                        if (body.variables[i] == fdesc)
+                        {
+                            body.variables[i] = Reference.Descriptor;
+                            break;
+                        }
+                    }
+                }
             }
             body = stat as CodeBlock;
             if (body.variables != null)
             {
                 for (var i = body.variables.Length; i-- > 0; )
                 {
-                    if (!body.variables[i].Defined && body.variables[i].name != "this")
+                    if (!body.variables[i].Defined
+                        && body.variables[i].name != "this"
+                        && body.variables[i].name != "arguments")
                     // все необъявленные переменные нужно прокинуть вниз для того,
                     // чтобы во всех местах их использования был один дескриптор и один кеш
                     {

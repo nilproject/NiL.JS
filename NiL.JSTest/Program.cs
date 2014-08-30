@@ -115,7 +115,7 @@ namespace NiL.JSTest
         {
             Script s = null;
             var sw = new Stopwatch();
-            int @case = 2;
+            int @case = 0;
             switch (@case)
             {
                 case 0:
@@ -164,8 +164,22 @@ for (var i = 0; i < 10000000; i++) mul(2, 20);
             var sw = new Stopwatch();
             var s = new Script(
 @"
-var a = 1;
-console.log(-a);
+if ({v:true}.v)
+    console.log('pass');
+
+function fib(x)
+{
+    if (x < 2)
+        return 1;
+    return fib(x - 1) + fib(x - 2);
+}
+console.log(fib(4))
+var i = 1000;
+do
+{
+    fib(20);
+}
+while(i--);
 ");
             sw.Start();
             s.Invoke();
@@ -184,7 +198,9 @@ console.log(-a);
 
             typeof(System.Windows.Forms.Button).GetType(); // Заставляет подгрузить сборку System.Windows.Forms. Это исключительно для баловства
 
-            int mode = 0// 155
+            Context.GlobalContext.DebuggerCallback += (sender, e) => { System.Diagnostics.Debugger.Break(); };
+
+            int mode = 4// 155
                  ;
             switch (mode)
             {

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using NiL.JS.Core;
+using NiL.JS.Core.JIT;
 
 namespace NiL.JS.Statements
 {
@@ -10,6 +11,15 @@ namespace NiL.JS.Statements
         private CodeNode[] elements;
 
         public ICollection<CodeNode> Elements { get { return elements; } }
+
+        internal override System.Linq.Expressions.Expression BuildTree(NiL.JS.Core.JIT.TreeBuildingState state)
+        {
+            return System.Linq.Expressions.Expression.Call(
+                       System.Linq.Expressions.Expression.Constant(this),
+                       this.GetType().GetMethod("Invoke", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic, null, new[] { typeof(Context) }, null),
+                       JITHelpers.ContextParameter
+                       );
+        }
 
         private ArrayStatement()
         {
