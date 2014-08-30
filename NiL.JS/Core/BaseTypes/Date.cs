@@ -198,6 +198,7 @@ namespace NiL.JS.Core.BaseTypes
         public Date()
         {
             time = DateTime.Now.Ticks / 10000;
+            timeZoneOffset = TimeZone.CurrentTimeZone.GetUtcOffset(new DateTime((((long)DateTime.Now.Ticks) % _400yearsMilliseconds + _unixTimeBase) * 10000)).Ticks / 10000;
         }
 
         [DoNotEnumerate]
@@ -528,6 +529,8 @@ namespace NiL.JS.Core.BaseTypes
         private int getDateImpl()
         {
             var t = time;
+            if (t < 0)
+                t = t + (1 - time / (_400yearsMilliseconds * 7)) * (_400yearsMilliseconds * 7);
             var y = (t / _400yearsMilliseconds) * 400;
             t %= _400yearsMilliseconds;
             y += System.Math.Min(3, t / _100yearsMilliseconds) * 100;
@@ -571,7 +574,7 @@ namespace NiL.JS.Core.BaseTypes
 
         private int getHoursImpl()
         {
-            var t = time % _dayMilliseconds;
+            var t = System.Math.Abs(time) % _dayMilliseconds;
             return (int)(t / _hourMilliseconds);
         }
 
@@ -589,8 +592,7 @@ namespace NiL.JS.Core.BaseTypes
 
         private int getMinutesImpl()
         {
-            var t = time;
-            t %= _hourMilliseconds;
+            var t = System.Math.Abs(time) % _hourMilliseconds;
             return (int)(t / _minuteMillisecond);
         }
 
@@ -608,7 +610,7 @@ namespace NiL.JS.Core.BaseTypes
 
         private int getSecondsImpl()
         {
-            var t = time;
+            var t = System.Math.Abs(time);
             t %= _minuteMillisecond;
             return (int)(t / 1000);
         }
@@ -627,7 +629,7 @@ namespace NiL.JS.Core.BaseTypes
 
         private int getMillisecondsImpl()
         {
-            var t = time;
+            var t = System.Math.Abs(time);
             t %= _minuteMillisecond;
             return (int)(t % 1000);
         }
@@ -835,7 +837,7 @@ namespace NiL.JS.Core.BaseTypes
                 + getHoursImpl().ToString("00:")
                 + getMinutesImpl().ToString("00:")
                 + getSecondsImpl().ToString("00")
-                + " GMT" + (offset.Ticks > 0 ? "+" : "") + (offset.Hours * 100 + offset.Minutes).ToString("0000 (") + TimeZone.CurrentTimeZone.DaylightName + ")";
+                + " GMT" + (offset.Ticks > 0 ? "+" : "") + (offset.Hours * 100 + offset.Minutes).ToString("0000") + " (" + TimeZone.CurrentTimeZone.DaylightName + ")";
             return res;
         }
 
@@ -852,7 +854,7 @@ namespace NiL.JS.Core.BaseTypes
         [DoNotEnumerate]
         public JSObject toISOString()
         {
-            if (time > 8702135596800000 || time < -8577864399600000)
+            if (time > 8702135596800000 || time < -8577864435600000)
                 throw new JSException(new RangeError("Invalid time value"));
             try
             {
@@ -865,7 +867,7 @@ namespace NiL.JS.Core.BaseTypes
                         "T" + this.getHoursImpl().ToString("00") +
                         ":" + this.getMinutesImpl().ToString("00") +
                         ":" + this.getSecondsImpl().ToString("00") +
-                        "." + (this.getMillisecondsImpl() / 1000.0).ToString(".000").Substring(1) +
+                        "." + (this.getMillisecondsImpl() / 1000.0).ToString(".000", System.Globalization.CultureInfo.InvariantCulture).Substring(1) +
                         "Z";
             }
             finally
@@ -900,7 +902,7 @@ namespace NiL.JS.Core.BaseTypes
                 getHoursImpl().ToString("00:")
                 + getMinutesImpl().ToString("00:")
                 + getSecondsImpl().ToString("00")
-                + " GMT" + (offset.Ticks > 0 ? "+" : "") + (offset.Hours * 100 + offset.Minutes).ToString("0000 (") + TimeZone.CurrentTimeZone.DaylightName + ")";
+                + " GMT" + (offset.Ticks > 0 ? "+" : "") + (offset.Hours * 100 + offset.Minutes).ToString("0000") + " (" + TimeZone.CurrentTimeZone.DaylightName + ")";
             return res;
         }
 
@@ -947,7 +949,7 @@ namespace NiL.JS.Core.BaseTypes
                 + getHoursImpl().ToString("00:")
                 + getMinutesImpl().ToString("00:")
                 + getSecondsImpl().ToString("00")
-                + " GMT" + (offset.Ticks > 0 ? "+" : "") + (offset.Hours * 100 + offset.Minutes).ToString("0000 (") + TimeZone.CurrentTimeZone.DaylightName + ")";
+                + " GMT" + (offset.Ticks > 0 ? "+" : "") + (offset.Hours * 100 + offset.Minutes).ToString("0000") + " (" + TimeZone.CurrentTimeZone.DaylightName + ")";
             return res;
         }
 
