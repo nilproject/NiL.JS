@@ -62,7 +62,7 @@ namespace NiL.JS.Statements
                     throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \";\", \",\", \"=\" or \"}\" at + " + Tools.PositionToTextcord(state.Code, i))));
                 if (i >= state.Code.Length)
                 {
-                    initializator.Add(new GetVariableStatement(name) { Position = s, Length = name.Length, functionDepth = state.functionsDepth });
+                    initializator.Add(new GetVariableStatement(name, state.functionsDepth) { Position = s, Length = name.Length, functionDepth = state.functionsDepth });
                     break;
                 }
                 if (Tools.isLineTerminator(state.Code[i]))
@@ -71,7 +71,7 @@ namespace NiL.JS.Statements
                     do i++; while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]));
                     if (i >= state.Code.Length)
                     {
-                        initializator.Add(new GetVariableStatement(name) { Position = s, Length = name.Length, functionDepth = state.functionsDepth });
+                        initializator.Add(new GetVariableStatement(name, state.functionsDepth) { Position = s, Length = name.Length, functionDepth = state.functionsDepth });
                         break;
                     }
                     if (state.Code[i] != '=')
@@ -83,14 +83,14 @@ namespace NiL.JS.Statements
                     if (i == state.Code.Length)
                         throw new JSException(TypeProxy.Proxy(new SyntaxError("Unexpected end of line in variable defenition.")));
                     initializator.Add(
-                        new Assign(new GetVariableStatement(name) { Position = s, Length = name.Length, functionDepth = state.functionsDepth }, ExpressionStatement.Parse(state, ref i, false).Statement)
+                        new Assign(new GetVariableStatement(name, state.functionsDepth) { Position = s, Length = name.Length, functionDepth = state.functionsDepth }, ExpressionStatement.Parse(state, ref i, false).Statement)
                         {
                             Position = s,
                             Length = i - s
                         });
                 }
                 else
-                    initializator.Add(new GetVariableStatement(name) { Position = s, Length = name.Length, functionDepth = state.functionsDepth });
+                    initializator.Add(new GetVariableStatement(name, state.functionsDepth) { Position = s, Length = name.Length, functionDepth = state.functionsDepth });
                 if (i >= state.Code.Length)
                     break;
                 s = i;
@@ -130,10 +130,10 @@ namespace NiL.JS.Statements
             return System.Linq.Expressions.Expression.Block(System.Linq.Expressions.Expression.Block(from x in initializators select x.BuildTree(state)), JITHelpers.UndefinedConstant).Reduce();
         }
 
-        internal override JSObject Invoke(Context context)
+        internal override JSObject Evaluate(Context context)
         {
             for (int i = 0; i < initializators.Length; i++)
-                initializators[i].Invoke(context);
+                initializators[i].Evaluate(context);
             return JSObject.undefined;
         }
 
@@ -145,10 +145,10 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Optimize(ref CodeNode _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        internal override bool Optimize(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
             for (int i = 0; i < initializators.Length; i++)
-                Parser.Optimize(ref initializators[i], 2, fdepth, variables, strict);
+                Parser.Optimize(ref initializators[i], 2, variables, strict);
             for (var i = 0; i < names.Length; i++)
                 variables[names[i]].Defined = true;
             return false;

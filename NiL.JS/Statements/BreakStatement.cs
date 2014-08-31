@@ -49,7 +49,7 @@ namespace NiL.JS.Statements
             return Expression.Break(state.BreakLabels.Peek());
         }
 
-        internal override JSObject Invoke(Context context)
+        internal override JSObject Evaluate(Context context)
         {
             context.abort = AbortType.Break;
             context.abortInfo = label;

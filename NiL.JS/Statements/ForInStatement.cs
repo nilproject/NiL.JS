@@ -48,7 +48,7 @@ namespace NiL.JS.Statements
                     if (varName == "arguments" || varName == "eval")
                         throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Parameters name may not be \"arguments\" or \"eval\" in strict mode at " + Tools.PositionToTextcord(state.Code, start))));
                 }
-                res.variable = new VariableDefineStatement(varName, new GetVariableStatement(varName) { Position = start, Length = i - start, functionDepth = state.functionsDepth }) { Position = vStart, Length = i - vStart };
+                res.variable = new VariableDefineStatement(varName, new GetVariableStatement(varName, state.functionsDepth) { Position = start, Length = i - start, functionDepth = state.functionsDepth }) { Position = vStart, Length = i - vStart };
             }
             else
             {
@@ -82,11 +82,11 @@ namespace NiL.JS.Statements
             };
         }
 
-        internal override JSObject Invoke(Context context)
+        internal override JSObject Evaluate(Context context)
         {
             JSObject res = JSObject.undefined;
-            var s = source.Invoke(context);
-            var v = variable.InvokeForAssing(context);
+            var s = source.Evaluate(context);
+            var v = variable.EvaluateForAssing(context);
             int index = 0;
             while (s != null)
             {
@@ -112,7 +112,7 @@ namespace NiL.JS.Statements
                     if (context.debugging && !(body is CodeBlock))
                         context.raiseDebugger(body);
 #endif
-                    res = body.Invoke(context) ?? res;
+                    res = body.Evaluate(context) ?? res;
                     if (context.abort != AbortType.None)
                     {
                         bool _break = (context.abort > AbortType.Continue) || ((context.abortInfo != null) && (labels.IndexOf(context.abortInfo.oValue as string) == -1));
@@ -147,13 +147,13 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Optimize(ref CodeNode _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        internal override bool Optimize(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
-            Parser.Optimize(ref variable, 1, fdepth, variables, strict);
+            Parser.Optimize(ref variable, 1, variables, strict);
             if (variable is VariableDefineStatement)
                 variable = (variable as VariableDefineStatement).initializators[0];
-            Parser.Optimize(ref source, 1, fdepth, variables, strict);
-            Parser.Optimize(ref body, System.Math.Max(1, depth), fdepth, variables, strict);
+            Parser.Optimize(ref source, 1, variables, strict);
+            Parser.Optimize(ref body, System.Math.Max(1, depth), variables, strict);
             if (variable is Expressions.None)
             {
                 if ((variable as Expressions.None).SecondOperand != null)

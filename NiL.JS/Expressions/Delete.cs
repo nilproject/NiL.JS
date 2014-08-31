@@ -24,10 +24,10 @@ namespace NiL.JS.Expressions
                 return new[] { proto };
             }
 
-            internal override JSObject Invoke(Context context)
+            internal override JSObject Evaluate(Context context)
             {
-                var source = proto.Source.Invoke(context);
-                var memberName = proto.FieldName.Invoke(context).ToString();
+                var source = proto.Source.Evaluate(context);
+                var memberName = proto.FieldName.Evaluate(context).ToString();
                 context.objectSource = source;
                 var res = context.objectSource.GetMember(memberName, false, true);
                 if ((res.attributes & JSObjectAttributesInternal.SystemObject) != 0)
@@ -47,11 +47,11 @@ namespace NiL.JS.Expressions
 
         }
 
-        internal override JSObject Invoke(Context context)
+        internal override JSObject Evaluate(Context context)
         {
             lock (this)
             {
-                var temp = first.Invoke(context);
+                var temp = first.Evaluate(context);
                 tempContainer.valueType = JSObjectType.Bool;
                 if (temp.valueType < JSObjectType.Undefined)
                     tempContainer.iValue = 1;
@@ -106,9 +106,9 @@ namespace NiL.JS.Expressions
             }
         }
 
-        internal override bool Optimize(ref CodeNode _this, int depth, int fdepth, System.Collections.Generic.Dictionary<string, VariableDescriptor> vars, bool strict)
+        internal override bool Optimize(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> vars, bool strict)
         {
-            if (base.Optimize(ref _this, depth, fdepth, vars, strict))
+            if (base.Optimize(ref _this, depth, vars, strict))
                 return true;
             if (first is GetVariableStatement)
             {
@@ -118,6 +118,9 @@ namespace NiL.JS.Expressions
             }
             if (first is GetMemberStatement)
                 first = new SafeMemberGetter(first as GetMemberStatement);
+            if (first is VariableReference)
+                ((first as VariableReference).Descriptor.assignations ??
+                    ((first as VariableReference).Descriptor.assignations = new System.Collections.Generic.List<CodeNode>())).Add(this);
             return false;
         }
 

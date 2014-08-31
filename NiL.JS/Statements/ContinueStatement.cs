@@ -49,7 +49,7 @@ namespace NiL.JS.Statements
             return Expression.Continue(state.ContinueLabels.Peek());
         }
 
-        internal override JSObject Invoke(Context context)
+        internal override JSObject Evaluate(Context context)
         {
             context.abort = AbortType.Continue;
             context.abortInfo = label;

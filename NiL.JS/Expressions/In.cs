@@ -13,14 +13,14 @@ namespace NiL.JS.Expressions
 
         }
 
-        internal override JSObject Invoke(Context context)
+        internal override JSObject Evaluate(Context context)
         {
-            var fn = first.Invoke(context);
+            var fn = first.Evaluate(context);
             var oassc = fn.assignCallback;
             fn.assignCallback = (sender) => { fn = fn.CloneImpl(); };
             try
             {
-                var source = second.Invoke(context);
+                var source = second.Evaluate(context);
                 if (source.valueType < JSObjectType.Object)
                     throw new JSException(new TypeError("Right-hand value of instanceof is not object."));
                 var t = source.GetMember(fn.ToString());

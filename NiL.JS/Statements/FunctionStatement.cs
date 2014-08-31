@@ -22,9 +22,9 @@ namespace NiL.JS.Statements
                 get { return owner.name; }
             }
 
-            internal override JSObject Invoke(Context context)
+            internal override JSObject Evaluate(Context context)
             {
-                return owner.Invoke(context);
+                return owner.Evaluate(context);
             }
 
             public FunctionReference(FunctionStatement owner)
@@ -55,7 +55,7 @@ namespace NiL.JS.Statements
                 internal set;
             }
 
-            internal override JSObject Invoke(Context context)
+            internal override JSObject Evaluate(Context context)
             {
                 return null;
             }
@@ -73,6 +73,7 @@ namespace NiL.JS.Statements
             }
         }
 
+        internal bool containsWith;
         internal VariableReference[] parameters;
         internal CodeBlock body;
         internal readonly string name;
@@ -195,9 +196,13 @@ namespace NiL.JS.Statements
             while (char.IsWhiteSpace(code[i]));
             if (code[i] != '{')
                 throw new JSException(new SyntaxError("Unexpected char at " + Tools.PositionToTextcord(code, i)));
+            bool needSwitchCWith = state.containsWith.Peek();
+            if (needSwitchCWith)
+                state.containsWith.Push(false);
             var labels = state.Labels;
             state.Labels = new List<string>();
             state.functionsDepth++;
+            state.AllowReturn++;
             CodeBlock body = null;
             try
             {
@@ -209,6 +214,7 @@ namespace NiL.JS.Statements
                 state.AllowStrict = false;
                 state.Labels = labels;
                 state.functionsDepth--;
+                state.AllowReturn--;
             }
             if (body.strict)
             {
@@ -230,9 +236,10 @@ namespace NiL.JS.Statements
                 body = body,
                 type = mode,
                 Position = index,
-                Length = i - index
+                Length = i - index,
+                containsWith = state.containsWith.Peek() || (needSwitchCWith && state.containsWith.Pop())
             };
-            if (inExp == 0 && mode == FunctionType.Function) 
+            if (inExp == 0 && mode == FunctionType.Function)
             // Позволяет делать вызов сразу при объявлении функции 
             // (в таком случае функция не добавляется в контекст).
             // Если убрать проверку, то в тех сулчаях,
@@ -288,7 +295,7 @@ namespace NiL.JS.Statements
             };
         }
 
-        internal override JSObject Invoke(Context context)
+        internal override JSObject Evaluate(Context context)
         {
             return MakeFunction(context);
         }
@@ -324,7 +331,7 @@ namespace NiL.JS.Statements
             return new Function(context, this);
         }
 
-        internal override bool Optimize(ref CodeNode _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        internal override bool Optimize(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
             var stat = body as CodeNode;
             var nvars = new Dictionary<string, VariableDescriptor>();
@@ -332,14 +339,13 @@ namespace NiL.JS.Statements
             {
                 nvars[parameters[i].Name] = parameters[i].Descriptor;
                 parameters[i].Descriptor.owner = this;
-                parameters[i].Descriptor.defineDepth = fdepth + 1; // для того, чтобы поиск не шел по вызывающим контекстам, а начинал с активного
             }
-            stat.Optimize(ref stat, 0, fdepth + 1, nvars, strict);
+            stat.Optimize(ref stat, 0, nvars, strict);
             if (type == FunctionType.Function && !string.IsNullOrEmpty(name))
             {
                 VariableDescriptor fdesc = null;
                 if (Reference.Descriptor == null)
-                    Reference.Descriptor = new VariableDescriptor(Reference, true, fdepth + 1) { owner = this };
+                    Reference.Descriptor = new VariableDescriptor(Reference, true, Reference.functionDepth + 1) { owner = this };
                 if (nvars.TryGetValue(name, out fdesc))
                 {
                     foreach (var r in fdesc.references)

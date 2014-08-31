@@ -43,13 +43,13 @@ namespace NiL.JS.Statements
             };
         }
 
-        internal override JSObject Invoke(Context context)
+        internal override JSObject Evaluate(Context context)
         {
 #if DEBUG // Экономим на переменных в релизе
-            var message = body.Invoke(context);
+            var message = body.Evaluate(context);
             throw new JSException(message);
 #else
-            throw new JSException(body.Invoke(context));
+            throw new JSException(body.Evaluate(context));
 #endif
         }
 
@@ -63,9 +63,9 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Optimize(ref CodeNode _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        internal override bool Optimize(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
-            Parser.Optimize(ref body, 2, fdepth, variables, strict);
+            Parser.Optimize(ref body, 2, variables, strict);
             return false;
         }
 

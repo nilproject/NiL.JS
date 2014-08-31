@@ -26,18 +26,18 @@ namespace NiL.JS.Expressions
             this.threads = threads;
         }
 
-        internal override JSObject Invoke(Context context)
+        internal override JSObject Evaluate(Context context)
         {
-            if ((bool)first.Invoke(context))
-                return threads[0].Invoke(context);
-            return threads[1].Invoke(context);
+            if ((bool)first.Evaluate(context))
+                return threads[0].Evaluate(context);
+            return threads[1].Evaluate(context);
         }
 
-        internal override bool Optimize(ref CodeNode _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> vars, bool strict)
+        internal override bool Optimize(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict)
         {
-            Parser.Optimize(ref threads[0], depth, fdepth, vars, strict);
-            Parser.Optimize(ref threads[1], depth, fdepth, vars, strict);
-            base.Optimize(ref _this, depth, fdepth, vars, strict);
+            Parser.Optimize(ref threads[0], depth, vars, strict);
+            Parser.Optimize(ref threads[1], depth, vars, strict);
+            base.Optimize(ref _this, depth, vars, strict);
             return false;
         }
 

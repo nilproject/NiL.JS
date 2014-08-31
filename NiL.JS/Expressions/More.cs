@@ -12,9 +12,9 @@ namespace NiL.JS.Expressions
 
         }
 
-        internal override JSObject Invoke(Context context)
+        internal override JSObject Evaluate(Context context)
         {
-            var temp = first.Invoke(context);
+            var temp = first.Evaluate(context);
             string tstr;
             int tint;
             int index;
@@ -27,7 +27,7 @@ namespace NiL.JS.Expressions
                 case JSObjectType.Int:
                     {
                         tint = temp.iValue;
-                        temp = second.Invoke(context);
+                        temp = second.Evaluate(context);
                         switch (temp.valueType)
                         {
                             case JSObjectType.Bool:
@@ -83,7 +83,7 @@ namespace NiL.JS.Expressions
                 case JSObjectType.Double:
                     {
                         tdouble = temp.dValue;
-                        temp = second.Invoke(context);
+                        temp = second.Evaluate(context);
                         if (double.IsNaN(tdouble))
                             return this is LessOrEqual ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False; // Костыль. Для его устранения нужно делать полноценную реализацию оператора MoreOrEqual.
                         else
@@ -142,7 +142,7 @@ namespace NiL.JS.Expressions
                 case JSObjectType.String:
                     {
                         tstr = temp.oValue as string;
-                        temp = second.Invoke(context);
+                        temp = second.Evaluate(context);
                         switch (temp.valueType)
                         {
                             case JSObjectType.Bool:
@@ -239,7 +239,7 @@ namespace NiL.JS.Expressions
                 case JSObjectType.Undefined:
                 case JSObjectType.NotExistsInObject:
                     {
-                        second.Invoke(context);
+                        second.Evaluate(context);
                         return this is LessOrEqual ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
                     }
                 case JSObjectType.NotExists:

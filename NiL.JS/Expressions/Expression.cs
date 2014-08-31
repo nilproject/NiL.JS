@@ -31,12 +31,12 @@ namespace NiL.JS.Expressions
 
             public override VariableDescriptor Descriptor { get; internal set; }
 
-            internal override JSObject Invoke(Context context)
+            internal override JSObject Evaluate(Context context)
             {
                 return Descriptor.Get(context, false, functionDepth);
             }
 
-            internal override JSObject InvokeForAssing(Context context)
+            internal override JSObject EvaluateForAssing(Context context)
             {
                 return Descriptor.Get(context, false, functionDepth);
             }
@@ -68,7 +68,7 @@ namespace NiL.JS.Expressions
         {
             return System.Linq.Expressions.Expression.Call(
                        System.Linq.Expressions.Expression.Constant(this),
-                       this.GetType().GetMethod("Invoke", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic, null, new[] { typeof(Context) }, null),
+                       JITHelpers.methodof(Evaluate),
                        JITHelpers.ContextParameter
                        );
         }
@@ -81,19 +81,19 @@ namespace NiL.JS.Expressions
             this.second = second;
         }
 
-        internal override bool Optimize(ref CodeNode _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> vars, bool strict)
+        internal override bool Optimize(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict)
         {
             //while (first is None && (first as None).second == null)
             //    first = (first as None).first;
             //while (second is None && (second as None).second == null)
             //    second = (second as None).first;
-            Parser.Optimize(ref first, depth + 1, fdepth, vars, strict);
-            Parser.Optimize(ref second, depth + 1, fdepth, vars, strict);
+            Parser.Optimize(ref first, depth + 1, vars, strict);
+            Parser.Optimize(ref second, depth + 1, vars, strict);
             try
             {
                 if (this.IsContextIndependent)
                 {
-                    var res = this.Invoke(null);
+                    var res = this.Evaluate(null);
                     if (res.valueType == JSObjectType.Double
                         && !double.IsNegativeInfinity(1.0 / res.dValue)
                         && res.dValue == (double)(int)res.dValue)

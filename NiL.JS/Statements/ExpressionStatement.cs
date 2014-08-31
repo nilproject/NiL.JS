@@ -230,7 +230,7 @@ namespace NiL.JS.Statements
                         }
                     case OperationType.Ternary:
                         {
-                            fastImpl = new Expressions.Ternary(first, second.Invoke(null).oValue as CodeNode[]);
+                            fastImpl = new Expressions.Ternary(first, second.Evaluate(null).oValue as CodeNode[]);
                             break;
                         }
                     case OperationType.TypeOf:
@@ -351,7 +351,7 @@ namespace NiL.JS.Statements
                 if (name == "undefined")
                     first = new ImmidateValueStatement(JSObject.undefined) { Position = index, Length = i - index };
                 else
-                    first = new GetVariableStatement(name) { Position = index, Length = i - index, functionDepth = state.functionsDepth };
+                    first = new GetVariableStatement(name, state.functionsDepth) { Position = index, Length = i - index, functionDepth = state.functionsDepth };
             }
             else if (Parser.ValidateValue(state.Code, ref i))
             {
@@ -1156,7 +1156,7 @@ namespace NiL.JS.Statements
             };
         }
 
-        internal override JSObject Invoke(Context context)
+        internal override JSObject Evaluate(Context context)
         {
             throw new InvalidOperationException();
         }
@@ -1166,7 +1166,7 @@ namespace NiL.JS.Statements
             throw new InvalidOperationException();
         }
 
-        internal override bool Optimize(ref CodeNode _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> vars, bool strict)
+        internal override bool Optimize(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict)
         {
             Type = Type;
             _this = fastImpl;

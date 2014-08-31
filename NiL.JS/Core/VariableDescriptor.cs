@@ -12,7 +12,8 @@ namespace NiL.JS.Core
         internal CodeNode owner;
         internal int defineDepth;
         internal JSObject cacheRes;
-        internal Context prewContext;
+        internal Context cacheContext;
+        internal List<CodeNode> assignations;
 
         public bool Defined { get; internal set; }
         public CodeNode Owner
@@ -49,7 +50,7 @@ namespace NiL.JS.Core
                 context = context.prototype;
                 depth--;
             }
-            if (context != prewContext)
+            if (context != cacheContext)
                 cacheRes = null;
             if (cacheRes == null)// || isInvalid(ref context, depth))
             {
@@ -64,7 +65,7 @@ namespace NiL.JS.Core
                 }
                 if ((res.attributes & JSObjectAttributesInternal.SystemObject) != 0)
                     return res;
-                prewContext = context;
+                cacheContext = context;
                 cacheRes = res;
                 return res;
             }

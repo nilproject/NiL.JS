@@ -13,16 +13,16 @@ namespace NiL.JS.Statements
 
         public override string Name { get { return variableName; } }
 
-        internal GetVariableStatement(string name)
+        internal GetVariableStatement(string name, int functionDepth)
         {
-            functionDepth = -1;
+            this.functionDepth = functionDepth;
             int i = 0;
             if ((name != "this") && !Parser.ValidateName(name, i, true, true, false))
                 throw new ArgumentException("Invalid variable name");
             this.variableName = name;
         }
 
-        internal override JSObject InvokeForAssing(Context context)
+        internal override JSObject EvaluateForAssing(Context context)
         {
             if (context.strict)
             {
@@ -34,7 +34,7 @@ namespace NiL.JS.Statements
             return descriptor.Get(context, true, functionDepth);
         }
 
-        internal override JSObject Invoke(Context context)
+        internal override JSObject Evaluate(Context context)
         {
             var res = descriptor.Get(context, false, functionDepth);
             if (res.valueType < JSObjectType.Undefined)
@@ -59,12 +59,12 @@ namespace NiL.JS.Statements
             return variableName;
         }
 
-        internal override bool Optimize(ref CodeNode _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        internal override bool Optimize(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
             VariableDescriptor desc = null;
             if (!variables.TryGetValue(variableName, out desc) || desc == null)
             {
-                this.descriptor = new VariableDescriptor(this, false, fdepth);
+                this.descriptor = new VariableDescriptor(this, false, functionDepth);
                 variables[variableName] = this.descriptor;
             }
             else

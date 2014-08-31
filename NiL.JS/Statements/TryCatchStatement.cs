@@ -50,7 +50,15 @@ namespace NiL.JS.Statements
                 while (char.IsWhiteSpace(state.Code[i])) i++;
                 if (state.Code[i] != '{')
                     throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid catch block statement definition at " + Tools.PositionToTextcord(state.Code, i))));
-                cb = CodeBlock.Parse(state, ref i).Statement;
+                state.functionsDepth++;
+                try
+                {
+                    cb = CodeBlock.Parse(state, ref i).Statement;
+                }
+                finally
+                {
+                    state.functionsDepth--;
+                }
                 while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i])) i++;
             }
             CodeNode f = null;
@@ -74,19 +82,19 @@ namespace NiL.JS.Statements
                     body = b,
                     catchBody = cb,
                     finallyBody = f,
-                    catchVariableDesc = new VariableDescriptor(exptn, state.functionsDepth),
+                    catchVariableDesc = new VariableDescriptor(exptn, state.functionsDepth + 1),
                     Position = pos,
                     Length = index - pos
                 }
             };
         }
 
-        internal override JSObject Invoke(Context context)
+        internal override JSObject Evaluate(Context context)
         {
             Exception except = null;
             try
             {
-                body.Invoke(context);
+                body.Evaluate(context);
             }
             catch (Exception e)
             {
@@ -106,7 +114,7 @@ namespace NiL.JS.Statements
                     try
                     {
                         catchContext.Activate();
-                        catchBody.Invoke(catchContext);
+                        catchBody.Evaluate(catchContext);
                     }
                     finally
                     {
@@ -131,7 +139,7 @@ namespace NiL.JS.Statements
                     context.abortInfo = JSObject.undefined;
                     try
                     {
-                        finallyBody.Invoke(context);
+                        finallyBody.Evaluate(context);
                     }
                     finally
                     {
@@ -150,22 +158,22 @@ namespace NiL.JS.Statements
             return null;
         }
 
-        internal override bool Optimize(ref CodeNode _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        internal override bool Optimize(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
-            Parser.Optimize(ref body, 1, fdepth, variables, strict);
+            Parser.Optimize(ref body, 1, variables, strict);
             if (catchBody != null)
             {
                 catchVariableDesc.owner = this;
-                VariableDescriptor ovd = null;
-                variables.TryGetValue(catchVariableDesc.name, out ovd);
+                VariableDescriptor oldVarDesc = null;
+                variables.TryGetValue(catchVariableDesc.name, out oldVarDesc);
                 variables[catchVariableDesc.name] = catchVariableDesc;
-                Parser.Optimize(ref catchBody, 1, fdepth, variables, strict);
-                if (ovd != null)
-                    variables[catchVariableDesc.name] = ovd;
+                Parser.Optimize(ref catchBody, 1 + 1, variables, strict);
+                if (oldVarDesc != null)
+                    variables[catchVariableDesc.name] = oldVarDesc;
                 else
                     variables.Remove(catchVariableDesc.name);
             }
-            Parser.Optimize(ref finallyBody, 1, fdepth, variables, strict);
+            Parser.Optimize(ref finallyBody, 1, variables, strict);
             return false;
         }
 

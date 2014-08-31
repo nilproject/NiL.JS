@@ -224,7 +224,7 @@ namespace NiL.JS.Statements
             };
         }
 
-        internal override JSObject Invoke(Context context)
+        internal override JSObject Evaluate(Context context)
         {
             JSObject res = JSObject.notExists;
             CodeNode node = null;
@@ -239,7 +239,7 @@ namespace NiL.JS.Statements
                 if (context.debugging)
                     context.raiseDebugger(body[i]);
 #endif
-                res = node.Invoke(context) ?? res;
+                res = node.Evaluate(context) ?? res;
 #if DEBUG
                 if (!context.IsExcecuting)
                     if (System.Diagnostics.Debugger.IsAttached)
@@ -295,7 +295,7 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Optimize(ref CodeNode _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        internal override bool Optimize(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
             if (this.variables != null)
             {
@@ -319,7 +319,7 @@ namespace NiL.JS.Statements
             for (int i = body.Length; i-- > 0; )
             {
                 bool needRemove = (body[i] is FunctionStatement);// && depth >= 0;
-                Parser.Optimize(ref body[i], depth < 0 ? 2 : Math.Max(1, depth), fdepth, variables, this.strict);
+                Parser.Optimize(ref body[i], depth < 0 ? 2 : Math.Max(1, depth), variables, this.strict);
                 if (needRemove)
                     body[i] = null;
             }
@@ -351,10 +351,7 @@ namespace NiL.JS.Statements
                 if (this.variables != null)
                     for (var i = this.variables.Length; i-- > 0; )
                         if (this.variables[i].Defined && this.variables[i].Owner == null) // все объявленные переменные без хозяина наши
-                        {
                             this.variables[i].owner = this;
-                            this.variables[i].defineDepth = fdepth;
-                        }
             }
             return false;
         }

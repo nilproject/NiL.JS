@@ -12,9 +12,9 @@ namespace NiL.JS.Expressions
 
         }
 
-        internal override JSObject Invoke(Context context)
+        internal override JSObject Evaluate(Context context)
         {
-            return !(bool)first.Invoke(context);
+            return !(bool)first.Evaluate(context);
         }
 
         public override string ToString()

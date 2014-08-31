@@ -42,7 +42,7 @@ namespace NiL.JS.Statements
             Text = text;
         }
 
-        internal override JSObject Invoke(Context context)
+        internal override JSObject Evaluate(Context context)
         {
             return null;
         }

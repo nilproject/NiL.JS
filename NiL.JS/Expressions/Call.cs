@@ -26,11 +26,11 @@ namespace NiL.JS.Expressions
             this.arguments = arguments;
         }
 
-        internal override JSObject Invoke(Context context)
+        internal override JSObject Evaluate(Context context)
         {
             JSObject newThisBind = null;
             Function func = null;
-            var temp = first.Invoke(context);
+            var temp = first.Evaluate(context);
             newThisBind = context.objectSource;
 
             Arguments arguments = new Arguments()
@@ -40,7 +40,7 @@ namespace NiL.JS.Expressions
             for (int i = 0; i < arguments.length; i++)
             {
                 context.objectSource = null;
-                var a = this.arguments[i].Invoke(context);
+                var a = this.arguments[i].Evaluate(context);
                 if ((a.attributes & JSObjectAttributesInternal.Temporary) != 0)
                 {
                     a = a.CloneImpl();
@@ -72,11 +72,11 @@ namespace NiL.JS.Expressions
             }
         }
 
-        internal override bool Optimize(ref CodeNode _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> vars, bool strict)
+        internal override bool Optimize(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict)
         {
             for (var i = 0; i < arguments.Length; i++)
-                Parser.Optimize(ref arguments[i], depth + 1, fdepth, vars, strict);
-            return base.Optimize(ref _this, depth, fdepth, vars, strict);
+                Parser.Optimize(ref arguments[i], depth + 1, vars, strict);
+            return base.Optimize(ref _this, depth, vars, strict);
         }
 
         public override string ToString()

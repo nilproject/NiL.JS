@@ -22,9 +22,9 @@ namespace NiL.JS.Expressions
                 throw new InvalidOperationException("Second operand not allowed for typeof operator/");
         }
 
-        internal override JSObject Invoke(Context context)
+        internal override JSObject Evaluate(Context context)
         {
-            var val = first.Invoke(context);
+            var val = first.Evaluate(context);
             if (val.valueType == JSObjectType.Property)
                 return (val.oValue as NiL.JS.Core.BaseTypes.Function[])[1].Invoke(context.objectSource, null);
             var vt = val.valueType;
@@ -63,9 +63,9 @@ namespace NiL.JS.Expressions
             }
         }
 
-        internal override bool Optimize(ref CodeNode _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> vars, bool strict)
+        internal override bool Optimize(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict)
         {
-            base.Optimize(ref _this, depth, fdepth, vars, strict);
+            base.Optimize(ref _this, depth, vars, strict);
             if (first is GetVariableStatement)
                 first = new SafeVariableGetter(first as GetVariableStatement);
             return false;

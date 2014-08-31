@@ -25,7 +25,7 @@ namespace NiL.JS.Statements
             return JITHelpers.UndefinedConstant;
         }
 
-        internal override JSObject Invoke(Context context)
+        internal override JSObject Evaluate(Context context)
         {
             return JSObject.undefined;
         }

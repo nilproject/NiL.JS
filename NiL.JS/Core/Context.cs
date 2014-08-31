@@ -455,7 +455,7 @@ namespace NiL.JS.Core
                 if (i < c.Length)
                     throw new System.ArgumentException("Invalid char");
                 var vars = new Dictionary<string, VariableDescriptor>();
-                Parser.Optimize(ref cb, leak ? -1 : -2, 0, vars, strict);
+                Parser.Optimize(ref cb, leak ? -1 : -2, vars, strict);
                 Context context = null;
                 var body = cb as CodeBlock;
                 if (leak)
@@ -497,14 +497,14 @@ namespace NiL.JS.Core
                     {
                         var f = context.DefineVariable(body.variables[i].name);
                         if (body.variables[i].Inititalizator != null)
-                            f.Assign(body.variables[i].Inititalizator.Invoke(context));
+                            f.Assign(body.variables[i].Inititalizator.Evaluate(context));
                     }
                 }
 
                 var run = context.Activate();
                 try
                 {
-                    return cb.Invoke(context);
+                    return cb.Evaluate(context);
                 }
                 finally
                 {

@@ -14,15 +14,15 @@ namespace NiL.JS.Expressions
 
         }
 
-        internal override JSObject Invoke(Context context)
+        internal override JSObject Evaluate(Context context)
         {
             JSObject temp = null;
-            temp = first.Invoke(context);
+            temp = first.Evaluate(context);
             if (second != null)
             {
                 if (context != null)
                     context.objectSource = null;
-                temp = second.Invoke(context);
+                temp = second.Evaluate(context);
             }
 #if DEBUG
             else if (!(first is FunctionStatement))
@@ -33,15 +33,15 @@ namespace NiL.JS.Expressions
             return temp;
         }
 
-        internal override bool Optimize(ref CodeNode _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> vars, bool strict)
+        internal override bool Optimize(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict)
         {
             if (second == null && (depth > 2 || first is Expression || first is ExpressionStatement))
             {
                 _this = first;
                 return true;
             }
-            Parser.Optimize(ref first, depth + 1, fdepth, vars, strict);
-            Parser.Optimize(ref second, depth + 1, fdepth, vars, strict);
+            Parser.Optimize(ref first, depth + 1, vars, strict);
+            Parser.Optimize(ref second, depth + 1, vars, strict);
             return false;
         }
 

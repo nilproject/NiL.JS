@@ -23,7 +23,7 @@ namespace NiL.JS.Core
         {
             var wraper = System.Linq.Expressions.Expression.Call(
                 System.Linq.Expressions.Expression.Constant(this),
-                this.GetType().GetMethod("Invoke", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic, null, new[] { typeof(Context) }, null),
+                this.GetType().GetMethod("Evaluate", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic, null, new[] { typeof(Context) }, null),
                 JITHelpers.ContextParameter
                 );
             if (state.AllowReturn)
@@ -49,7 +49,7 @@ namespace NiL.JS.Core
 
         protected abstract CodeNode[] getChildsImpl();
 
-        internal virtual NiL.JS.Core.JSObject InvokeForAssing(NiL.JS.Core.Context context)
+        internal virtual NiL.JS.Core.JSObject EvaluateForAssing(NiL.JS.Core.Context context)
         {
             return raiseInvalidAssignment();
         }
@@ -59,7 +59,7 @@ namespace NiL.JS.Core
             throw new JSException(new ReferenceError("Invalid left-hand side in assignment."));
         }
 
-        internal abstract JSObject Invoke(Context context);
+        internal abstract JSObject Evaluate(Context context);
 
         /// <summary>
         /// Заставляет объект перестроить своё содержимое для ускорения работы
@@ -68,7 +68,7 @@ namespace NiL.JS.Core
         /// <param name="depth">Глубина погружения в выражении</param>
         /// <param name="functionDepth">Глубина погружения в функции. Увеличивается при входе в функцию и уменьшается при выходе из нее</param>
         /// <returns>true если были внесены изменения</returns>
-        internal virtual bool Optimize(ref CodeNode _this, int depth, int functionDepth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        internal virtual bool Optimize(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
             return false;
         }

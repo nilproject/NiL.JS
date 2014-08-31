@@ -54,9 +54,9 @@ namespace NiL.JS.Statements
             return Expression.Block(statement.BuildTree(state), Expression.Label(labelTarget));
         }
 
-        internal override JSObject Invoke(Context context)
+        internal override JSObject Evaluate(Context context)
         {
-            statement.Invoke(context);
+            statement.Evaluate(context);
             if ((context.abort == AbortType.Break) && (context.abortInfo != null) && (context.abortInfo.oValue as string == label))
             {
                 context.abort = AbortType.None;
@@ -70,9 +70,9 @@ namespace NiL.JS.Statements
             return null;
         }
 
-        internal override bool Optimize(ref CodeNode _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        internal override bool Optimize(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
-            Parser.Optimize(ref statement, depth, fdepth, variables, strict);
+            Parser.Optimize(ref statement, depth, variables, strict);
             return false;
         }
 

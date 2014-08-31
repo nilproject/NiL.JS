@@ -43,7 +43,7 @@ namespace NiL.JS
             root = CodeBlock.Parse(new ParsingState(Tools.RemoveComments(code, 0), Code), ref i).Statement;
             if (i < code.Length)
                 throw new System.ArgumentException("Invalid char");
-            Parser.Optimize(ref root, 0, 0, new System.Collections.Generic.Dictionary<string, VariableDescriptor>(), false);
+            Parser.Optimize(ref root, 0, new System.Collections.Generic.Dictionary<string, VariableDescriptor>(), false);
             var body = root as CodeBlock;
             Context = new Context(NiL.JS.Core.Context.globalContext, pseudoCaller);
             Context.thisBind = new ThisBind(Context);
@@ -55,7 +55,7 @@ namespace NiL.JS
                 {
                     var f = Context.DefineVariable(body.variables[i].name);
                     if (body.variables[i].Inititalizator != null)
-                        f.Assign(body.variables[i].Inititalizator.Invoke(Context));
+                        f.Assign(body.variables[i].Inititalizator.Evaluate(Context));
                 }
             }
             if (Context.UseJit)
@@ -85,7 +85,7 @@ namespace NiL.JS
 #if DEBUG
                     System.Diagnostics.Debugger.Log(0, "NiL.JS JIT", "Run non compiled script");
 #endif
-                    root.Invoke(Context);
+                    root.Evaluate(Context);
                 }
             }
             finally

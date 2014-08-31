@@ -31,10 +31,10 @@ namespace NiL.JS.Statements
             memberNameStatement = fieldName;
         }
 
-        internal override JSObject InvokeForAssing(Context context)
+        internal override JSObject EvaluateForAssing(Context context)
         {
-            var source = objStatement.Invoke(context);
-            var n = cachedMemberName ?? memberNameStatement.Invoke(context);
+            var source = objStatement.Evaluate(context);
+            var n = cachedMemberName ?? memberNameStatement.Evaluate(context);
             context.objectSource = source;
             var res = source.GetMember(n, true, false);
             if (res.valueType == JSObjectType.NotExists)
@@ -42,10 +42,10 @@ namespace NiL.JS.Statements
             return res;
         }
 
-        internal override JSObject Invoke(Context context)
+        internal override JSObject Evaluate(Context context)
         {
-            var source = objStatement.Invoke(context);
-            var n = cachedMemberName ?? memberNameStatement.Invoke(context);
+            var source = objStatement.Evaluate(context);
+            var n = cachedMemberName ?? memberNameStatement.Evaluate(context);
             context.objectSource = source;
             var res = source.GetMember(n, false, false);
             if (res.valueType == JSObjectType.NotExists)
@@ -74,12 +74,12 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Optimize(ref CodeNode _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        internal override bool Optimize(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
-            Parser.Optimize(ref objStatement, depth + 1, fdepth, variables, strict);
-            Parser.Optimize(ref memberNameStatement, depth + 1, fdepth, variables, strict);
+            Parser.Optimize(ref objStatement, depth + 1, variables, strict);
+            Parser.Optimize(ref memberNameStatement, depth + 1, variables, strict);
             if (memberNameStatement is ImmidateValueStatement)
-                cachedMemberName = memberNameStatement.Invoke(null);
+                cachedMemberName = memberNameStatement.Evaluate(null);
             return false;
         }
 

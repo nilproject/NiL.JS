@@ -158,19 +158,19 @@ namespace NiL.JS.Statements
             };
         }
 
-        internal override JSObject Invoke(Context context)
+        internal override JSObject Evaluate(Context context)
         {
             var res = new JSObject(true);
             res.valueType = JSObjectType.Object;
             res.oValue = res;
             for (int i = 0; i < fields.Length; i++)
             {
-                var val = values[i].Invoke(context);
+                var val = values[i].Evaluate(context);
                 if (val.valueType == JSObjectType.Property)
                 {
                     var gs = val.oValue as CodeNode[];
                     var prop = res.GetMember(fields[i], true, true);
-                    prop.oValue = new Function[] { gs[0] != null ? gs[0].Invoke(context) as Function : null, gs[1] != null ? gs[1].Invoke(context) as Function : null };
+                    prop.oValue = new Function[] { gs[0] != null ? gs[0].Evaluate(context) as Function : null, gs[1] != null ? gs[1].Evaluate(context) as Function : null };
                     prop.valueType = JSObjectType.Property;
                 }
                 else
@@ -183,18 +183,18 @@ namespace NiL.JS.Statements
             return res;
         }
 
-        internal override bool Optimize(ref CodeNode _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> vars, bool strict)
+        internal override bool Optimize(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict)
         {
             for (int i = 0; i < values.Length; i++)
             {
                 if ((values[i] is ImmidateValueStatement) && ((values[i] as ImmidateValueStatement).value.valueType == JSObjectType.Property))
                 {
                     var gs = (values[i] as ImmidateValueStatement).value.oValue as CodeNode[];
-                    Parser.Optimize(ref gs[0], 1, fdepth, vars, strict);
-                    Parser.Optimize(ref gs[1], 1, fdepth, vars, strict);
+                    Parser.Optimize(ref gs[0], 1, vars, strict);
+                    Parser.Optimize(ref gs[1], 1, vars, strict);
                 }
                 else
-                    Parser.Optimize(ref values[i], 2, fdepth, vars, strict);
+                    Parser.Optimize(ref values[i], 2, vars, strict);
             }
             return false;
         }

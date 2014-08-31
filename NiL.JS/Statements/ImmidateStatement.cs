@@ -23,16 +23,16 @@ namespace NiL.JS.Statements
             this.value = value;
         }
 
-        internal override JSObject Invoke(Context context)
+        internal override JSObject Evaluate(Context context)
         {
             return value;
         }
 
-        internal override NiL.JS.Core.JSObject InvokeForAssing(NiL.JS.Core.Context context)
+        internal override NiL.JS.Core.JSObject EvaluateForAssing(NiL.JS.Core.Context context)
         {
             if (value == JSObject.undefined)
                 return value;
-            return base.InvokeForAssing(context);
+            return base.EvaluateForAssing(context);
         }
 
         protected override CodeNode[] getChildsImpl()
@@ -42,14 +42,14 @@ namespace NiL.JS.Statements
             return null;
         }
 
-        internal override bool Optimize(ref CodeNode _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        internal override bool Optimize(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
             var vss = value.oValue as CodeNode[];
             if (vss != null)
             {
                 throw new InvalidOperationException("It behaviour is deprecated");
                 //for (int i = 0; i < vss.Length; i++)
-                //    Parser.Optimize(ref vss[i], depth + 1, fdepth, variables, strict);
+                //    Parser.Optimize(ref vss[i], depth + 1, variables, strict);
             }
             return false;
         }

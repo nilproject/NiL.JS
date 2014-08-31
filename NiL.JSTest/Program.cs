@@ -127,8 +127,8 @@ function fib(x)
     if (x < 2)
         return 1;
     return fib(x - 1) + fib(x - 2);
-}// 420 // 485 // 525 // 600
-for (var i = 0; i < 650; i++) fib(20);
+}// 420 // 485 // 525 // 600 // 650
+for (var i = 0; i < 700; i++) fib(20);
 ");
                         break;
                     }
@@ -200,7 +200,7 @@ while(i--);
 
             Context.GlobalContext.DebuggerCallback += (sender, e) => { System.Diagnostics.Debugger.Break(); };
 
-            int mode = 4// 155
+            int mode = 0// 155
                  ;
             switch (mode)
             {

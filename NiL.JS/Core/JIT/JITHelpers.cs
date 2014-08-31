@@ -54,5 +54,10 @@ namespace NiL.JS.Core.JIT
         {
             return method.Method;
         }
+
+        internal static MethodInfo methodof(Func<Context, JSObject> method)
+        {
+            return method.Method;
+        }
     }
 }

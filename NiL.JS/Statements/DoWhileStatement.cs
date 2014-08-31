@@ -105,7 +105,7 @@ namespace NiL.JS.Statements
             }
         }
 
-        internal override JSObject Invoke(Context context)
+        internal override JSObject Evaluate(Context context)
         {
             JSObject res = null;
             do
@@ -114,7 +114,7 @@ namespace NiL.JS.Statements
                 if (context.debugging && !(body is CodeBlock))
                     context.raiseDebugger(body);
 #endif
-                res = body.Invoke(context);
+                res = body.Evaluate(context);
                 if (context.abort != AbortType.None)
                 {
                     bool _break = (context.abort > AbortType.Continue) || ((context.abortInfo != null) && (labels.IndexOf(context.abortInfo.oValue as string) == -1));
@@ -131,7 +131,7 @@ namespace NiL.JS.Statements
                     context.raiseDebugger(condition);
 #endif
             }
-            while ((bool)condition.Invoke(context));
+            while ((bool)condition.Evaluate(context));
             return res;
         }
 
@@ -146,11 +146,11 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Optimize(ref CodeNode _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        internal override bool Optimize(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
             depth = System.Math.Max(1, depth);
-            Parser.Optimize(ref body, depth, fdepth, variables, strict);
-            Parser.Optimize(ref condition, 2, fdepth, variables, strict);
+            Parser.Optimize(ref body, depth, variables, strict);
+            Parser.Optimize(ref condition, 2, variables, strict);
             return false;
         }
 

@@ -13,13 +13,13 @@ namespace NiL.JS.Expressions
             tempContainer.assignCallback = null;
         }
 
-        internal override JSObject Invoke(Context context)
+        internal override JSObject Evaluate(Context context)
         {
             lock (this)
             {
                 var a = tempContainer;
-                a.Assign(first.Invoke(context));
-                var c = second.Invoke(context);
+                a.Assign(first.Evaluate(context));
+                var c = second.Evaluate(context);
                 if (c.valueType != JSObjectType.Function)
                     throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError("Right-hand value of instanceof is not function.")));
                 c = c.GetMember("prototype");

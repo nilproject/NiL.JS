@@ -29,7 +29,7 @@ namespace NiL.JS.Statements
             int i = index;
             if (!Parser.Validate(state.Code, "return", ref i) || !Parser.isIdentificatorTerminator(state.Code[i]))
                 return new ParseResult();
-            if (state.functionsDepth == 0)
+            if (state.AllowReturn == 0)
                 throw new JSException(TypeProxy.Proxy(new SyntaxError("Invalid use of return statement.")));
             var body = Parser.Parse(state, ref i, 1, true);
             var pos = index;
@@ -46,9 +46,9 @@ namespace NiL.JS.Statements
             };
         }
 
-        internal override JSObject Invoke(Context context)
+        internal override JSObject Evaluate(Context context)
         {
-            context.abortInfo = body != null ? body.Invoke(context) : JSObject.undefined;
+            context.abortInfo = body != null ? body.Evaluate(context) : JSObject.undefined;
             context.abort = AbortType.Return;
             return null;
         }
@@ -63,9 +63,9 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Optimize(ref CodeNode _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        internal override bool Optimize(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
-            Parser.Optimize(ref body, 2, fdepth, variables, strict);
+            Parser.Optimize(ref body, 2, variables, strict);
             return false;
         }
 

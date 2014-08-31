@@ -24,9 +24,9 @@ namespace NiL.JS.Expressions
                 throw new InvalidOperationException();
             }
 
-            internal override JSObject Invoke(Context context)
+            internal override JSObject Evaluate(Context context)
             {
-                JSObject ctor = source.Invoke(context);
+                JSObject ctor = source.Evaluate(context);
                 if (ctor.valueType != JSObjectType.Function && !(ctor.valueType == JSObjectType.Object && ctor.oValue is Function))
                     throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError(ctor + " is not callable")));
                 if (ctor.oValue is MethodProxy)
@@ -47,9 +47,9 @@ namespace NiL.JS.Expressions
                 return source.ToString();
             }
 
-            internal override bool Optimize(ref CodeNode _this, int depth, int functionDepth, Dictionary<string, VariableDescriptor> variables, bool strict)
+            internal override bool Optimize(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
             {
-                return source.Optimize(ref source, depth, functionDepth, variables, strict);
+                return source.Optimize(ref source, depth, variables, strict);
             }
         }
 
@@ -72,13 +72,13 @@ namespace NiL.JS.Expressions
                 this.first = new Call(thisSetter = new ThisSetter(first), arguments);
         }
 
-        internal override NiL.JS.Core.JSObject Invoke(NiL.JS.Core.Context context)
+        internal override NiL.JS.Core.JSObject Evaluate(NiL.JS.Core.Context context)
         {
             var prevTB = thisSetter.lastThisBind;
             try
             {
                 thisSetter.lastThisBind = null;
-                var temp = first.Invoke(context);
+                var temp = first.Evaluate(context);
                 if (temp.valueType >= JSObjectType.Object && temp.oValue != null)
                     return temp;
                 return thisSetter.lastThisBind;

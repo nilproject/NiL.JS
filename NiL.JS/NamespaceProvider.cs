@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 using NiL.JS.Core;
+using NiL.JS.Core.TypeProxing;
 
 namespace NiL.JS
 {
@@ -10,7 +9,7 @@ namespace NiL.JS
     /// Предоставляет доступ к указанному при создании пространству имён.
     /// </summary>
     [Serializable]
-    public class NamespaceProvider : NiL.JS.Core.CustomType
+    public class NamespaceProvider : CustomType
     {
         private static BinaryTree<Type> types = new BinaryTree<Type>();
 

@@ -17,12 +17,12 @@ namespace NiL.JS.Expressions
             //stringBuilder = new StringBuilder();
         }
 
-        internal override JSObject Invoke(Context context)
+        internal override JSObject Evaluate(Context context)
         {
             //var tempContainer = context.tempContainer;
             lock (this)
             {
-                JSObject temp = first.Invoke(context);
+                JSObject temp = first.Evaluate(context);
                 string tstr;
                 int tint;
                 double tdouble;
@@ -34,7 +34,7 @@ namespace NiL.JS.Expressions
                         {
                             ttype = temp.valueType;
                             tint = temp.iValue;
-                            temp = second.Invoke(context);
+                            temp = second.Evaluate(context);
                             if (temp.valueType >= JSObjectType.Object)
                                 temp = temp.ToPrimitiveValue_Value_String();
                             switch (temp.valueType)
@@ -78,7 +78,7 @@ namespace NiL.JS.Expressions
                     case JSObjectType.Double:
                         {
                             tdouble = temp.dValue;
-                            temp = second.Invoke(context);
+                            temp = second.Evaluate(context);
                             if (temp.valueType >= JSObjectType.Object)
                                 temp = temp.ToPrimitiveValue_Value_String();
                             switch (temp.valueType)
@@ -123,7 +123,7 @@ namespace NiL.JS.Expressions
                     case JSObjectType.String:
                         {
                             tstr = temp.oValue as string;
-                            temp = second.Invoke(context);
+                            temp = second.Evaluate(context);
                             if (temp.valueType == JSObjectType.Date)
                                 temp = temp.ToPrimitiveValue_String_Value();
                             else if (temp.valueType >= JSObjectType.Object)
@@ -180,7 +180,7 @@ namespace NiL.JS.Expressions
                     case JSObjectType.NotExistsInObject:
                     case JSObjectType.Undefined:
                         {
-                            temp = second.Invoke(context);
+                            temp = second.Evaluate(context);
                             if (temp.valueType >= JSObjectType.Object)
                                 temp = temp.ToPrimitiveValue_Value_String();
                             switch (temp.valueType)
@@ -220,7 +220,7 @@ namespace NiL.JS.Expressions
                                 goto case JSObjectType.Int;
                             else if (temp.valueType == JSObjectType.Object)
                             {
-                                temp = second.Invoke(context);
+                                temp = second.Evaluate(context);
                                 if (temp.valueType >= JSObjectType.Object)
                                     temp = temp.ToPrimitiveValue_Value_String();
                                 if (temp.valueType == JSObjectType.Int || temp.valueType == JSObjectType.Bool)

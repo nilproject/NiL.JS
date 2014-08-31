@@ -20,7 +20,7 @@ namespace NiL.JS.Core
             return null;
         }
 
-        internal override JSObject Invoke(Context context)
+        internal override JSObject Evaluate(Context context)
         {
             return new RegExp(pattern, flags);
         }

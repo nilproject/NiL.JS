@@ -68,14 +68,14 @@ namespace NiL.JS.Statements
             };
         }
 
-        internal override JSObject Invoke(Context context)
+        internal override JSObject Evaluate(Context context)
         {
             var res = new NiL.JS.Core.BaseTypes.Array(elements.Length);
             for (uint i = 0; i < elements.Length; i++)
             {
                 if (elements[i] != null)
                 {
-                    var e = elements[i].Invoke(context).CloneImpl();
+                    var e = elements[i].Evaluate(context).CloneImpl();
                     e.attributes = 0;
                     res.data[i] = e;
                 }
@@ -88,10 +88,10 @@ namespace NiL.JS.Statements
             return elements;
         }
 
-        internal override bool Optimize(ref CodeNode _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> vars, bool strict)
+        internal override bool Optimize(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict)
         {
             for (int i = 0; i < elements.Length; i++)
-                Parser.Optimize(ref elements[i], 2, fdepth, vars, strict);
+                Parser.Optimize(ref elements[i], 2, vars, strict);
             return false;
         }
 

@@ -213,7 +213,7 @@
     <Compile Include="Core\BaseTypes\Boolean.cs" />
     <Compile Include="Core\BinaryTree.cs" />
     <Compile Include="Core\BindedFunction.cs" />
-    <Compile Include="Core\CustomType.cs" />
+    <Compile Include="Core\TypeProxing\CustomType.cs" />
     <Compile Include="Core\BaseTypes\Date.cs" />
     <Compile Include="Core\BaseTypes\RegExp.cs" />
     <Compile Include="Core\BaseTypes\URIError.cs" />

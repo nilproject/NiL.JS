@@ -1,9 +1,16 @@
-﻿_for: for (var j = 0; ; j++) {
-    for (var i in [, 1, 2]) {
-        if (!j)
-            continue _for;
-        break;
+﻿console.log((function (a) {
+    function f(o) {
+
+        function innerf(o, x) {
+            with (o) {
+                return x;
+            }
+        }
+
+        return innerf(o, 42);
     }
-    break;
-}
-console.log(["fail", "pass"][j]);
+
+    if (f({}) === 42) {
+        return true;
+    }
+})());

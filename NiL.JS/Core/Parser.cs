@@ -522,9 +522,9 @@ namespace NiL.JS.Core
                 + state.Code.Substring(index, Math.Min(20, state.Code.Length - index)).Split(new[] { ' ', '\n', '\r' })[0])));
         }
 
-        internal static void Optimize(ref CodeNode s, int depth, int funcDepth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        internal static void Optimize(ref CodeNode s, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
-            while (s != null && s.Optimize(ref s, depth, funcDepth, variables, strict)) { }
+            while (s != null && s.Optimize(ref s, depth, variables, strict)) { }
         }
     }
 }

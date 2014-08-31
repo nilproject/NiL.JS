@@ -25,7 +25,7 @@ namespace NiL.JS.Statements
             };
         }
 
-        internal override JSObject Invoke(Context context)
+        internal override JSObject Evaluate(Context context)
         {
 #if DEV
             if (!context.debugging)

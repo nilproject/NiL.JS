@@ -23,7 +23,7 @@ namespace NiL.JS.Expressions
                 case JSObjectType.Bool:
                     {
                         var l = temp.iValue;
-                        temp = second.Invoke(context);
+                        temp = second.Evaluate(context);
                         if (temp.valueType == JSObjectType.Double)
                             return l == temp.dValue;
                         else if (lvt != temp.valueType)
@@ -34,7 +34,7 @@ namespace NiL.JS.Expressions
                 case JSObjectType.Double:
                     {
                         var l = temp.dValue;
-                        temp = second.Invoke(context);
+                        temp = second.Evaluate(context);
                         if (temp.valueType == JSObjectType.Int)
                             return l == temp.iValue;
                         else if (lvt != temp.valueType)
@@ -45,7 +45,7 @@ namespace NiL.JS.Expressions
                 case JSObjectType.Function:
                     {
                         var l = temp.oValue;
-                        temp = second.Invoke(context);
+                        temp = second.Evaluate(context);
                         if (lvt != temp.valueType)
                             return false;
                         else
@@ -54,7 +54,7 @@ namespace NiL.JS.Expressions
                 case JSObjectType.Object:
                     {
                         var l = temp.oValue;
-                        temp = second.Invoke(context);
+                        temp = second.Evaluate(context);
                         if (temp.valueType != JSObjectType.Object)
                             return false;
                         else if (l == null || temp.oValue == null)
@@ -65,7 +65,7 @@ namespace NiL.JS.Expressions
                 case JSObjectType.Date:
                     {
                         var l = temp.oValue;
-                        temp = second.Invoke(context);
+                        temp = second.Evaluate(context);
                         if (temp.valueType != JSObjectType.Date)
                             return false;
                         else if (l == null || temp.oValue == null)
@@ -76,7 +76,7 @@ namespace NiL.JS.Expressions
                 case JSObjectType.String:
                     {
                         var l = temp.oValue;
-                        temp = second.Invoke(context);
+                        temp = second.Evaluate(context);
                         if (lvt != temp.valueType)
                             return false;
                         else
@@ -85,7 +85,7 @@ namespace NiL.JS.Expressions
                 case JSObjectType.Undefined:
                 case JSObjectType.NotExistsInObject:
                     {
-                        temp = second.Invoke(context);
+                        temp = second.Evaluate(context);
                         return !temp.isDefinded;
                     }
                 case JSObjectType.Property:
@@ -96,9 +96,9 @@ namespace NiL.JS.Expressions
             throw new NotImplementedException();
         }
 
-        internal override JSObject Invoke(Context context)
+        internal override JSObject Evaluate(Context context)
         {
-            return Check(first.Invoke(context), second, context);
+            return Check(first.Evaluate(context), second, context);
         }
 
         public override string ToString()

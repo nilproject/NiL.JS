@@ -15,19 +15,19 @@ namespace NiL.JS.Expressions
 
         }
 
-        internal override JSObject Invoke(Context context)
+        internal override JSObject Evaluate(Context context)
         {
             lock (this)
             {
 #if TYPE_SAFE
                 double da = 0.0;
-                JSObject f = first.Invoke(context);
+                JSObject f = first.Evaluate(context);
                 JSObject s = null;
                 if (f.valueType == JSObjectType.Int
                     || f.valueType == JSObjectType.Bool)
                 {
                     int a = f.iValue;
-                    s = second.Invoke(context);
+                    s = second.Evaluate(context);
                     if (s.valueType == JSObjectType.Int
                     || s.valueType == JSObjectType.Bool)
                     {
@@ -41,7 +41,7 @@ namespace NiL.JS.Expressions
                 else
                 {
                     da = Tools.JSObjectToDouble(f);
-                    s = second.Invoke(context);
+                    s = second.Evaluate(context);
                 }
                 tempContainer.dValue = da - Tools.JSObjectToDouble(s);
                 tempContainer.valueType = JSObjectType.Double;

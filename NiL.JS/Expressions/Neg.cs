@@ -12,11 +12,11 @@ namespace NiL.JS.Expressions
 
         }
 
-        internal override JSObject Invoke(Context context)
+        internal override JSObject Evaluate(Context context)
         {
             lock (this)
             {
-                tempContainer.dValue = -Tools.JSObjectToDouble(first.Invoke(context));
+                tempContainer.dValue = -Tools.JSObjectToDouble(first.Evaluate(context));
                 tempContainer.valueType = JSObjectType.Double;
                 return tempContainer;
             }

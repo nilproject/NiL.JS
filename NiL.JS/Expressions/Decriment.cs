@@ -32,12 +32,12 @@ namespace NiL.JS.Expressions
                 tempContainer.assignCallback = null;
         }
 
-        internal override JSObject Invoke(Context context)
+        internal override JSObject Evaluate(Context context)
         {
             lock (this)
             {
                 Function setter = null;
-                var val = Tools.RaiseIfNotExist((first ?? second).InvokeForAssing(context), first ?? second);
+                var val = Tools.RaiseIfNotExist((first ?? second).EvaluateForAssing(context), first ?? second);
                 if (val.valueType == JSObjectType.Property)
                 {
                     setter = (val.oValue as Function[])[0];
@@ -135,6 +135,20 @@ namespace NiL.JS.Expressions
                 }
                 return o;
             }
+        }
+
+        internal override bool Optimize(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> vars, bool strict)
+        {
+            base.Optimize(ref _this, depth, vars, strict);
+            if (depth <= 1 && second != null)
+            {
+                first = second;
+                second = null;
+            }
+            if (first is VariableReference)
+                ((first as VariableReference).Descriptor.assignations ??
+                    ((first as VariableReference).Descriptor.assignations = new System.Collections.Generic.List<CodeNode>())).Add(this);
+            return false;
         }
 
         public override string ToString()

@@ -216,7 +216,7 @@ namespace NiL.JS.Statements
                 if (context.debugging && !(body is CodeBlock))
                     context.raiseDebugger(body);
 #endif
-                res = body.Invoke(context) ?? res;
+                res = body.Evaluate(context) ?? res;
                 if (context.abort != AbortType.None)
                 {
                     bool _break = (context.abort > AbortType.Continue) || ((context.abortInfo != null) && (labels.IndexOf(context.abortInfo.oValue as string) == -1));
@@ -240,7 +240,7 @@ namespace NiL.JS.Statements
                 if (context.debugging && !(body is CodeBlock))
                     context.raiseDebugger(body);
 #endif
-                res = body.Invoke(context) ?? res;
+                res = body.Evaluate(context) ?? res;
                 if (context.abort != AbortType.None)
                 {
                     bool _break = (context.abort > AbortType.Continue) || ((context.abortInfo != null) && (labels.IndexOf(context.abortInfo.oValue as string) == -1));
@@ -256,7 +256,7 @@ namespace NiL.JS.Statements
                 if (context.debugging)
                     context.raiseDebugger(post);
 #endif
-                post.Invoke(context);
+                post.Evaluate(context);
             }
         }
 
@@ -267,13 +267,13 @@ namespace NiL.JS.Statements
             if (context.debugging)
                 context.raiseDebugger(condition);
 #endif
-            while ((bool)condition.Invoke(context))
+            while ((bool)condition.Evaluate(context))
             {
 #if DEV
                 if (context.debugging && !(body is CodeBlock))
                     context.raiseDebugger(body);
 #endif
-                res = body.Invoke(context) ?? res;
+                res = body.Evaluate(context) ?? res;
                 if (context.abort != AbortType.None)
                 {
                     bool _break = (context.abort > AbortType.Continue) || ((context.abortInfo != null) && (labels.IndexOf(context.abortInfo.oValue as string) == -1));
@@ -300,13 +300,13 @@ namespace NiL.JS.Statements
             if (context.debugging)
                 context.raiseDebugger(condition);
 #endif
-            while ((bool)condition.Invoke(context))
+            while ((bool)condition.Evaluate(context))
             {
 #if DEV
                 if (context.debugging && !(body is CodeBlock))
                     context.raiseDebugger(body);
 #endif
-                res = body.Invoke(context) ?? res;
+                res = body.Evaluate(context) ?? res;
                 if (context.abort != AbortType.None)
                 {
                     bool _break = (context.abort > AbortType.Continue) || ((context.abortInfo != null) && (labels.IndexOf(context.abortInfo.oValue as string) == -1));
@@ -322,13 +322,13 @@ namespace NiL.JS.Statements
                 if (context.debugging)
                 {
                     context.raiseDebugger(post);
-                    post.Invoke(context);
+                    post.Evaluate(context);
                     context.raiseDebugger(condition);
                 }
                 else
-                    post.Invoke(context);
+                    post.Evaluate(context);
 #else
-                post.Invoke(context);
+                post.Evaluate(context);
 #endif
             }
             return res;
@@ -340,19 +340,19 @@ namespace NiL.JS.Statements
             if (context.debugging)
                 context.raiseDebugger(condition);
 #endif
-            while ((bool)condition.Invoke(context))
+            while ((bool)condition.Evaluate(context))
             {
 #if DEV
                 if (context.debugging)
                 {
                     context.raiseDebugger(post);
-                    post.Invoke(context);
+                    post.Evaluate(context);
                     context.raiseDebugger(condition);
                 }
                 else
-                    post.Invoke(context);
+                    post.Evaluate(context);
 #else
-                post.Invoke(context);
+                post.Evaluate(context);
 #endif
             }
             return JSObject.undefined;
@@ -364,7 +364,7 @@ namespace NiL.JS.Statements
             if (context.debugging)
                 context.raiseDebugger(condition);
 #endif
-            while ((bool)condition.Invoke(context))
+            while ((bool)condition.Evaluate(context))
 #if DEV
                 if (context.debugging)
                     context.raiseDebugger(condition);
@@ -373,7 +373,7 @@ namespace NiL.JS.Statements
             return JSObject.undefined;
         }
 
-        internal override JSObject Invoke(Context context)
+        internal override JSObject Evaluate(Context context)
         {
             if (init != null)
             {
@@ -381,7 +381,7 @@ namespace NiL.JS.Statements
                 if (context.debugging)
                     context.raiseDebugger(init);
 #endif
-                init.Invoke(context);
+                init.Evaluate(context);
             }
             switch (implId)
             {
@@ -408,12 +408,12 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Optimize(ref CodeNode _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        internal override bool Optimize(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
-            Parser.Optimize(ref init, 1, fdepth, variables, strict);
-            Parser.Optimize(ref condition, 2, fdepth, variables, strict);
-            Parser.Optimize(ref post, 1, fdepth, variables, strict);
-            Parser.Optimize(ref body, System.Math.Max(1, depth), fdepth, variables, strict);
+            Parser.Optimize(ref init, 1, variables, strict);
+            Parser.Optimize(ref condition, 2, variables, strict);
+            Parser.Optimize(ref post, 1, variables, strict);
+            Parser.Optimize(ref body, System.Math.Max(1, depth), variables, strict);
             return false;
         }
 

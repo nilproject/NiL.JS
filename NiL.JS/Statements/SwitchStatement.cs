@@ -114,12 +114,12 @@ namespace NiL.JS.Statements
             };
         }
 
-        internal override JSObject Invoke(Context context)
+        internal override JSObject Evaluate(Context context)
         {
             if (functions != null)
                 throw new InvalidOperationException();
             int i = cases[0] != null ? cases[0].index : length + 1;
-            var imageVal = image.Invoke(context);
+            var imageVal = image.Evaluate(context);
             for (int j = 1; j < cases.Length; j++)
             {
 #if DEV
@@ -134,7 +134,7 @@ namespace NiL.JS.Statements
             }
             while (i-- > 0)
             {
-                body[i].Invoke(context);
+                body[i].Evaluate(context);
                 if (context.abort != AbortType.None)
                 {
                     if (context.abort == AbortType.Break)
@@ -145,22 +145,22 @@ namespace NiL.JS.Statements
             return JSObject.undefined;
         }
 
-        internal override bool Optimize(ref CodeNode _this, int depth, int fdepth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        internal override bool Optimize(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
             if (depth < 1)
                 throw new InvalidOperationException();
-            Parser.Optimize(ref image, 2, fdepth, variables, strict);
+            Parser.Optimize(ref image, 2, variables, strict);
             for (int i = 0; i < body.Length; i++)
-                Parser.Optimize(ref body[i], 1, fdepth, variables, strict);
+                Parser.Optimize(ref body[i], 1, variables, strict);
             for (int i = 0; i < functions.Length; i++)
             {
                 CodeNode stat = functions[i];
-                Parser.Optimize(ref stat, 1, fdepth, variables, strict);
-                variables[functions[i].Name] = new VariableDescriptor(functions[i].Reference, true, fdepth);
+                Parser.Optimize(ref stat, 1, variables, strict);
+                variables[functions[i].Name] = new VariableDescriptor(functions[i].Reference, true, functions[i].Reference.functionDepth);
             }
             functions = null;
             for (int i = 1; i < cases.Length; i++)
-                Parser.Optimize(ref cases[i].statement, 2, fdepth, variables, strict);
+                Parser.Optimize(ref cases[i].statement, 2, variables, strict);
             for (int i = 0; i < body.Length / 2; i++)
             {
                 var t = body[i];

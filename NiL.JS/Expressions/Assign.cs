@@ -1,6 +1,7 @@
 ﻿using System;
 using NiL.JS.Core;
 using NiL.JS.Core.BaseTypes;
+using NiL.JS.Statements;
 
 namespace NiL.JS.Expressions
 {
@@ -22,16 +23,16 @@ namespace NiL.JS.Expressions
         {
         }
 
-        internal override JSObject Invoke(Context context)
+        internal override JSObject Evaluate(Context context)
         {
             JSObject temp;
-            JSObject field = first.InvokeForAssing(context);
+            JSObject field = first.EvaluateForAssing(context);
             if (field.valueType == JSObjectType.Property)
             {
                 lock (this)
                 {
                     var fieldSource = context.objectSource;
-                    temp = second.Invoke(context);
+                    temp = second.Evaluate(context);
                     setterArgs[0] = temp;
                     var setter = (field.oValue as NiL.JS.Core.BaseTypes.Function[])[0];
                     if (setter != null)
@@ -46,9 +47,22 @@ namespace NiL.JS.Expressions
                 if ((field.attributes & JSObjectAttributesInternal.ReadOnly) != 0 && context.strict)
                     throw new JSException(new TypeError("Can not assign to readonly property \"" + first + "\""));
             }
-            temp = second.Invoke(context);
+            temp = second.Evaluate(context);
             field.Assign(temp);
             return temp;
+        }
+
+        internal override bool Optimize(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> vars, bool strict)
+        {
+            var r = base.Optimize(ref _this, depth, vars, strict);
+            if (first is VariableReference)
+                ((first as VariableReference).Descriptor.assignations ??
+                    ((first as VariableReference).Descriptor.assignations = new System.Collections.Generic.List<CodeNode>())).Add(this);
+#if DEBUG
+            if (r)
+                System.Diagnostics.Debugger.Break();
+#endif
+            return r;
         }
 
         public override string ToString()

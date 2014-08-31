@@ -12,9 +12,9 @@ namespace NiL.JS.Expressions
 
         }
 
-        internal override JSObject Invoke(Context context)
+        internal override JSObject Evaluate(Context context)
         {
-            var temp = first.Invoke(context);
+            var temp = first.Evaluate(context);
             JSObject tjso;
             var lvt = temp.valueType;
             int tint;
@@ -27,7 +27,7 @@ namespace NiL.JS.Expressions
                 case JSObjectType.Int:
                     {
                         tint = temp.iValue;
-                        tjso = second.Invoke(context);
+                        tjso = second.Evaluate(context);
                         switch (tjso.valueType)
                         {
                             case JSObjectType.Bool:
@@ -79,7 +79,7 @@ namespace NiL.JS.Expressions
                 case JSObjectType.Double:
                     {
                         tdouble = temp.dValue;
-                        tjso = second.Invoke(context);
+                        tjso = second.Evaluate(context);
                         switch (tjso.valueType)
                         {
                             case JSObjectType.Bool:
@@ -132,7 +132,7 @@ namespace NiL.JS.Expressions
                 case JSObjectType.String:
                     {
                         tstr = temp.oValue as string;
-                        temp = second.Invoke(context);
+                        temp = second.Evaluate(context);
                         switch (temp.valueType)
                         {
                             case JSObjectType.Bool:
@@ -198,7 +198,7 @@ namespace NiL.JS.Expressions
                 case JSObjectType.Date:
                 case JSObjectType.Object:
                     {
-                        tjso = second.Invoke(context);
+                        tjso = second.Evaluate(context);
                         switch (tjso.valueType)
                         {
                             case JSObjectType.Double:
@@ -262,7 +262,7 @@ namespace NiL.JS.Expressions
                 case JSObjectType.Undefined:
                 case JSObjectType.NotExistsInObject:
                     {
-                        temp = second.Invoke(context);
+                        temp = second.Evaluate(context);
                         switch (temp.valueType)
                         {
                             case JSObjectType.Object:
