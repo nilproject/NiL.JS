@@ -725,8 +725,10 @@ namespace NiL.JS.Core.BaseTypes
                 throw new JSException(TypeProxy.Proxy(new SyntaxError()));
             valueType = JSObjectType.Function;
             this.oValue = this;
+#if !NET35
             if (context != null && context.UseJit)
                 compiledScript = JITHelpers.compile(creator.body, true);
+#endif
             checkUsings();
         }
 
@@ -737,8 +739,10 @@ namespace NiL.JS.Core.BaseTypes
             this.creator = creator;
             valueType = JSObjectType.Function;
             this.oValue = this;
+#if !NET35
             if (context != null && context.UseJit)
                 compiledScript = JITHelpers.compile(creator.body, true);
+#endif
             checkUsings();
         }
 
@@ -812,9 +816,11 @@ namespace NiL.JS.Core.BaseTypes
                 internalContext.variables = body.variables;
                 internalContext.Activate();
                 JSObject ai;
+#if !NET35
                 if (compiledScript != null)
                     ai = compiledScript(internalContext);
                 else
+#endif
                 {
                     body.Evaluate(internalContext);
                     ai = internalContext.abortInfo;

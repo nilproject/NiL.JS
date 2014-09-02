@@ -16,8 +16,12 @@ namespace NiL.JS
     {
         private static readonly Function pseudoCaller = new Function(Context.globalContext, FunctionStatement.Parse("function superCaller(){ }"));
 
+#if !NET35
+
         private Func<Context, JSObject> compiledScript;
         public bool IsCompiled { get { return compiledScript != null; } }
+
+#endif
 
         private CodeNode root;
         public CodeBlock Root { get { return root as CodeBlock; } }
@@ -58,8 +62,10 @@ namespace NiL.JS
                         f.Assign(body.variables[i].Inititalizator.Evaluate(Context));
                 }
             }
+#if !NET35
             if (Context.UseJit)
                 compiledScript = JITHelpers.compile(body, false);
+#endif
         }
 
         /// <summary>
@@ -73,6 +79,7 @@ namespace NiL.JS
             {
                 Context.Activate();
 
+#if !NET35
                 if (IsCompiled)
                 {
 #if DEBUG
@@ -81,8 +88,9 @@ namespace NiL.JS
                     compiledScript(Context);
                 }
                 else
+#endif
                 {
-#if DEBUG
+#if DEBUG & !NET35
                     System.Diagnostics.Debugger.Log(0, "NiL.JS JIT", "Run non compiled script");
 #endif
                     root.Evaluate(Context);
