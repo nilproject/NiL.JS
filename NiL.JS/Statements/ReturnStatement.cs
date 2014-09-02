@@ -9,10 +9,14 @@ namespace NiL.JS.Statements
     [Serializable]
     public sealed class ReturnStatement : CodeNode
     {
+#if !NET35
+
         internal override System.Linq.Expressions.Expression BuildTree(NiL.JS.Core.JIT.TreeBuildingState state)
         {
             return System.Linq.Expressions.Expression.Return(JITHelpers.ReturnTarget, body != null ? body.BuildTree(state) : JITHelpers.UndefinedConstant);
         }
+
+#endif
 
         private CodeNode body;
 

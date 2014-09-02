@@ -9,6 +9,8 @@ namespace NiL.JS.Statements
     [Serializable]
     public sealed class ForStatement : CodeNode
     {
+#if !NET35
+
         internal override System.Linq.Expressions.Expression BuildTree(NiL.JS.Core.JIT.TreeBuildingState state)
         {
             var continueLabel = Expression.Label("continue" + (DateTime.Now.Ticks % 1000));
@@ -111,7 +113,7 @@ namespace NiL.JS.Statements
                     state.NamedContinueLabels.Remove(labels[i]);
             }
         }
-
+#endif
         private CodeNode init;
         private CodeNode condition;
         private CodeNode post;
@@ -369,7 +371,7 @@ namespace NiL.JS.Statements
                 if (context.debugging)
                     context.raiseDebugger(condition);
 #endif
-            ;
+                ;
             return JSObject.undefined;
         }
 

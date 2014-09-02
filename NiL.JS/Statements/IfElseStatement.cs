@@ -16,6 +16,8 @@ namespace NiL.JS.Statements
         public CodeNode ElseBody { get { return elseBody; } }
         public CodeNode Condition { get { return condition; } }
 
+#if !NET35
+
         internal override System.Linq.Expressions.Expression BuildTree(NiL.JS.Core.JIT.TreeBuildingState state)
         {
             return elseBody != null ?
@@ -23,6 +25,8 @@ namespace NiL.JS.Statements
                 :
                 System.Linq.Expressions.Expression.IfThen(System.Linq.Expressions.Expression.Call(JITHelpers.JSObjectToBooleanMethod, condition.BuildTree(state)), body.BuildTree(state));
         }
+
+#endif
 
         private IfElseStatement()
         {

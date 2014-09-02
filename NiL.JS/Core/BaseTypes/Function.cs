@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
-using System.Threading;
 using NiL.JS.Core.JIT;
 using NiL.JS.Core.Modules;
 using NiL.JS.Expressions;
@@ -704,7 +702,7 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [DoNotEnumerate]
-        public Function(JSObject[] args)
+        public Function(Arguments args)
         {
             attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.SystemObject;
             context = (Context.CurrentContext ?? Context.GlobalContext).Root;
@@ -775,42 +773,13 @@ namespace NiL.JS.Core.BaseTypes
                 return notExists;
             }
             var oldargs = _arguments;
-            if (oldargs != null) // рекурсивный вызов
+            bool intricate = creator.containsWith || containsArguments || containsEval;
+            if (oldargs != null && !intricate) // рекурсивный вызов
                 storeParameters();
             Context internalContext = new Context(context ?? Context.CurrentContext, this);
             try
             {
-                if (thisBind == null)
-                    thisBind = body.strict ? undefined : internalContext.Root.thisBind;
-                else if (thisBind.oValue == typeof(New) as object)
-                {
-                    thisBind.__proto__ = prototype;
-                    if (thisBind.__proto__.valueType < JSObjectType.Object)
-                        thisBind.__proto__ = null;
-                    else
-                        thisBind.__proto__ = thisBind.__proto__.CloneImpl();
-                    thisBind.oValue = thisBind;
-                }
-                else
-                {
-                    if (!body.strict) // Поправляем this
-                    {
-                        if (thisBind.valueType > JSObjectType.Undefined && thisBind.valueType < JSObjectType.Object)
-                        {
-                            thisBind = new JSObject(false)
-                            {
-                                valueType = JSObjectType.Object,
-                                oValue = thisBind,
-                                attributes = JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.DoNotDelete,
-                                __proto__ = thisBind.__proto__ ?? (thisBind.valueType <= JSObjectType.Undefined ? thisBind.__proto__ : thisBind.GetMember("__proto__"))
-                            };
-                        }
-                        else if (thisBind.valueType <= JSObjectType.Undefined || thisBind.oValue == null)
-                            thisBind = internalContext.Root.thisBind;
-                    }
-                    else if (thisBind.valueType < JSObjectType.Undefined)
-                        thisBind = undefined;
-                }
+                thisBind = correctThisBind(thisBind, body, internalContext);
 
                 if (args == null)
                     args = new Arguments();
@@ -826,61 +795,12 @@ namespace NiL.JS.Core.BaseTypes
                     args.callee = this;
                     args.caller = notExists;
                 }
-                int min = System.Math.Min(args.length, creator.parameters.Length);
                 if (containsEval || containsArguments)
                     internalContext.fields["arguments"] = args;
-                bool intricate = creator.containsWith || containsArguments || containsEval;
-                int i = 0;
-                for (; i < min; i++)
-                {
-                    JSObject t = args[i];
-                    if ((t.attributes & JSObjectAttributesInternal.Cloned) != 0)
-                    {
-                        t.attributes &= ~JSObjectAttributesInternal.Cloned;
-                        t.attributes |= JSObjectAttributesInternal.Argument;
-                    }
-                    else
-                    {
-                        if (intricate || creator.parameters[i].Descriptor.assignations != null)
-                        {
-                            args[i] = t = t.CloneImpl();
-                            t.attributes |= JSObjectAttributesInternal.Argument;
-                        }
-                    }
-                    if (body.strict && (intricate || creator.parameters[i].Descriptor.assignations != null))
-                        t = t.CloneImpl();
-                    if (intricate)
-                        internalContext.fields[creator.parameters[i].Name] = t;
-                    creator.parameters[i].Descriptor.cacheContext = internalContext;
-                    creator.parameters[i].Descriptor.cacheRes = t;
-                }
-                for (; i < args.length; i++)
-                {
-                    JSObject t = args[i];
-                    if ((t.attributes & JSObjectAttributesInternal.Cloned) != 0)
-                        t.attributes &= ~JSObjectAttributesInternal.Cloned;
-                    else
-                        args[i] = t = t.CloneImpl();
-                    t.attributes |= JSObjectAttributesInternal.Argument;
-                }
-                for (; i < creator.parameters.Length; i++)
-                    internalContext.fields[creator.parameters[i].Name] = new JSObject() { attributes = JSObjectAttributesInternal.Argument };
 
-                for (i = body.variables.Length; i-- > 0; )
-                {
-                    if (body.variables[i].owner == body)
-                    {
-                        JSObject f = null;
-                        if (body.variables[i].Inititalizator != null || string.CompareOrdinal(body.variables[i].name, "arguments") != 0)
-                        // нельзя переменной перебить аргументы
-                        // а вот функцией можно
-                        {
-                            internalContext.fields[body.variables[i].name] = f = new JSObject() { attributes = JSObjectAttributesInternal.DoNotDelete };
-                            if (body.variables[i].Inititalizator != null)
-                                f.Assign(body.variables[i].Inititalizator.Evaluate(internalContext));
-                        }
-                    }
-                }
+                initParameters(args, body, intricate, internalContext);
+                initVariables(body, internalContext);
+
                 internalContext.thisBind = thisBind;
                 if (creator.type == FunctionType.Function
                     && creator.name != ""
@@ -913,6 +833,101 @@ namespace NiL.JS.Core.BaseTypes
                 internalContext.Deactivate();
                 _arguments = oldargs;
             }
+        }
+
+        private void initParameters(Arguments args, CodeBlock body, bool intricate, Context internalContext)
+        {
+            int min = System.Math.Min(args.length, creator.parameters.Length);
+            int i = 0;
+            for (; i < min; i++)
+            {
+                JSObject t = args[i];
+                if ((t.attributes & JSObjectAttributesInternal.Cloned) != 0)
+                {
+                    t.attributes &= ~JSObjectAttributesInternal.Cloned;
+                    t.attributes |= JSObjectAttributesInternal.Argument;
+                }
+                else
+                {
+                    if (intricate || creator.parameters[i].Descriptor.assignations != null)
+                    {
+                        args[i] = t = t.CloneImpl();
+                        t.attributes |= JSObjectAttributesInternal.Argument;
+                    }
+                }
+                if (body.strict && (intricate || creator.parameters[i].Descriptor.assignations != null))
+                    t = t.CloneImpl();
+                if (intricate)
+                    internalContext.fields[creator.parameters[i].Name] = t;
+                creator.parameters[i].Descriptor.cacheContext = internalContext;
+                creator.parameters[i].Descriptor.cacheRes = t;
+            }
+            for (; i < args.length; i++)
+            {
+                JSObject t = args[i];
+                if ((t.attributes & JSObjectAttributesInternal.Cloned) != 0)
+                    t.attributes &= ~JSObjectAttributesInternal.Cloned;
+                else
+                    args[i] = t = t.CloneImpl();
+                t.attributes |= JSObjectAttributesInternal.Argument;
+            }
+            for (; i < creator.parameters.Length; i++)
+                internalContext.fields[creator.parameters[i].Name] = new JSObject() { attributes = JSObjectAttributesInternal.Argument };
+        }
+
+        private static void initVariables(CodeBlock body, Context internalContext)
+        {
+            for (var i = body.variables.Length; i-- > 0; )
+            {
+                if (body.variables[i].owner == body)
+                {
+                    JSObject f = null;
+                    if (body.variables[i].Inititalizator != null || string.CompareOrdinal(body.variables[i].name, "arguments") != 0)
+                    // нельзя переменной перебить аргументы
+                    // а вот функцией можно
+                    {
+                        internalContext.fields[body.variables[i].name] = f = new JSObject() { attributes = JSObjectAttributesInternal.DoNotDelete };
+                        if (body.variables[i].Inititalizator != null)
+                            f.Assign(body.variables[i].Inititalizator.Evaluate(internalContext));
+                    }
+                }
+            }
+        }
+
+        private JSObject correctThisBind(JSObject thisBind, CodeBlock body, Context internalContext)
+        {
+            if (thisBind == null)
+                thisBind = body.strict ? undefined : internalContext.Root.thisBind;
+            else if (thisBind.oValue == typeof(New) as object)
+            {
+                thisBind.__proto__ = prototype;
+                if (thisBind.__proto__.valueType < JSObjectType.Object)
+                    thisBind.__proto__ = null;
+                else
+                    thisBind.__proto__ = thisBind.__proto__.CloneImpl();
+                thisBind.oValue = thisBind;
+            }
+            else
+            {
+                if (!body.strict) // Поправляем this
+                {
+                    if (thisBind.valueType > JSObjectType.Undefined && thisBind.valueType < JSObjectType.Object)
+                    {
+                        thisBind = new JSObject(false)
+                        {
+                            valueType = JSObjectType.Object,
+                            oValue = thisBind,
+                            attributes = JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.DoNotDelete,
+                            __proto__ = thisBind.__proto__ ?? (thisBind.valueType <= JSObjectType.Undefined ? thisBind.__proto__ : thisBind.GetMember("__proto__"))
+                        };
+                    }
+                    else if (thisBind.valueType <= JSObjectType.Undefined || thisBind.oValue == null)
+                        thisBind = internalContext.Root.thisBind;
+                }
+                else if (thisBind.valueType < JSObjectType.Undefined)
+                    thisBind = undefined;
+            }
+            return thisBind;
         }
 
         private void storeParameters()

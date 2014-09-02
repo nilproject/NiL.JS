@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using NiL.JS.Core.BaseTypes;
 using System.Linq.Expressions;
+using NiL.JS.Core.BaseTypes;
 using NiL.JS.Core.JIT;
 
 namespace NiL.JS.Core
@@ -10,6 +10,8 @@ namespace NiL.JS.Core
     public abstract class CodeNode
     {
         private static readonly CodeNode[] emptyArray = new CodeNode[0];
+
+#if !NET35
 
         internal virtual Expression BuildTree(TreeBuildingState state)
         {
@@ -40,6 +42,8 @@ namespace NiL.JS.Core
                        );
         }
 
+#endif
+
         public virtual int Position { get; internal set; }
         public virtual int Length { get; internal set; }
         public virtual int EndPosition { get { return Position + Length; } }
@@ -49,7 +53,7 @@ namespace NiL.JS.Core
 
         protected abstract CodeNode[] getChildsImpl();
 
-        internal virtual NiL.JS.Core.JSObject EvaluateForAssing(NiL.JS.Core.Context context)
+        internal virtual JSObject EvaluateForAssing(NiL.JS.Core.Context context)
         {
             return raiseInvalidAssignment();
         }

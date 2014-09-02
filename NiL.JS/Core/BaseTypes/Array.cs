@@ -179,7 +179,7 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [DoNotEnumerateAttribute]
-        public JSObject concat(JSObject[] args)
+        public JSObject concat(Arguments args)
         {
             if (args == null)
                 throw new ArgumentNullException("args");
@@ -187,7 +187,7 @@ namespace NiL.JS.Core.BaseTypes
             long resLen = _length;
             foreach (var element in data)
                 res[element.Key] = element.Value.CloneImpl();
-            for (long i = 0; i < args.Length; i++)
+            for (int i = 0; i < args.Length; i++)
             {
                 var arg = args[i];
                 if (arg.valueType == JSObjectType.Object && arg.oValue is Array)
@@ -204,7 +204,7 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [DoNotEnumerate]
-        public JSObject every(JSObject[] args)
+        public JSObject every(Arguments args)
         {
             if (args.Length < 1)
                 return undefined;
@@ -251,7 +251,7 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [DoNotEnumerate]
-        public JSObject some(JSObject[] args)
+        public JSObject some(Arguments args)
         {
             if (args.Length < 1)
                 return undefined;
@@ -298,7 +298,7 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [DoNotEnumerate]
-        public JSObject filter(JSObject[] args)
+        public JSObject filter(Arguments args)
         {
             if (args.Length < 1)
                 return undefined;
@@ -342,7 +342,7 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [DoNotEnumerate]
-        public JSObject map(JSObject[] args)
+        public JSObject map(Arguments args)
         {
             if (args.Length < 1)
                 return undefined;
@@ -388,7 +388,7 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [DoNotEnumerate]
-        public JSObject forEach(JSObject[] args)
+        public JSObject forEach(Arguments args)
         {
             if (args.Length < 1)
                 return undefined;
@@ -428,7 +428,7 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [DoNotEnumerateAttribute]
-        public JSObject indexOf(JSObject[] args)
+        public JSObject indexOf(Arguments args)
         {
             if (args == null)
                 throw new ArgumentNullException("args");
@@ -481,7 +481,7 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [DoNotEnumerate]
-        public JSObject join(JSObject[] separator)
+        public JSObject join(Arguments separator)
         {
             if (separator == null)
                 throw new ArgumentNullException("separator");
@@ -502,7 +502,7 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [DoNotEnumerate]
-        public JSObject lastIndexOf(JSObject[] args)
+        public JSObject lastIndexOf(Arguments args)
         {
             if (args == null)
                 throw new ArgumentNullException("args");
@@ -670,7 +670,7 @@ namespace NiL.JS.Core.BaseTypes
 
         [DoNotEnumerate]
         [ParametersCount(2)]
-        public JSObject slice(JSObject[] args)
+        public JSObject slice(Arguments args)
         {
             if (args == null)
                 throw new ArgumentNullException("args");
@@ -718,7 +718,7 @@ namespace NiL.JS.Core.BaseTypes
 
         [DoNotEnumerate]
         [ParametersCount(2)]
-        public JSObject splice(JSObject[] args)
+        public JSObject splice(Arguments args)
         {
             if (args == null)
                 throw new ArgumentNullException("args");
@@ -854,14 +854,14 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [DoNotEnumerate]
-        public JSObject unshift(JSObject[] args)
+        public JSObject unshift(Arguments args)
         {
             if (args == null)
                 throw new ArgumentNullException();
             foreach (var node in data.Nodes)
                 node.key += (long)args.Length;
             _length += (long)args.Length;
-            for (var i = 0u; i < args.Length; i++)
+            for (var i = 0; i < args.Length; i++)
                 data[i] = args[i].CloneImpl();
             return length;
         }

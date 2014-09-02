@@ -53,6 +53,8 @@ namespace NiL.JS.Statements
             }
         }
 
+#if !NET35
+
         internal override System.Linq.Expressions.Expression BuildTree(NiL.JS.Core.JIT.TreeBuildingState state)
         {
             for (int i = 0; i < body.Length >> 1; i++)
@@ -75,6 +77,8 @@ namespace NiL.JS.Statements
                 }
             }
         }
+
+#endif
 
         public CodeBlock(CodeNode[] body, bool strict)
         {

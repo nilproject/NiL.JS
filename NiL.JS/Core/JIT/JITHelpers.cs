@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿#if !NET35
+
+using System;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NiL.JS.Core.JIT
 {
@@ -61,3 +59,5 @@ namespace NiL.JS.Core.JIT
         }
     }
 }
+
+#endif

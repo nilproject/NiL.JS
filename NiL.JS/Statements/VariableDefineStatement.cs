@@ -123,12 +123,16 @@ namespace NiL.JS.Statements
             };
         }
 
+#if !NET35
+
         internal override System.Linq.Expressions.Expression BuildTree(NiL.JS.Core.JIT.TreeBuildingState state)
         {
             if (initializators.Length == 1)
                 return initializators[0].BuildTree(state);
             return System.Linq.Expressions.Expression.Block(System.Linq.Expressions.Expression.Block(from x in initializators select x.BuildTree(state)), JITHelpers.UndefinedConstant).Reduce();
         }
+
+#endif
 
         internal override JSObject Evaluate(Context context)
         {

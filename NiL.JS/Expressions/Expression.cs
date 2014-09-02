@@ -64,6 +64,8 @@ namespace NiL.JS.Expressions
             }
         }
 
+#if !NET35
+
         internal override System.Linq.Expressions.Expression BuildTree(NiL.JS.Core.JIT.TreeBuildingState state)
         {
             return System.Linq.Expressions.Expression.Call(
@@ -72,6 +74,8 @@ namespace NiL.JS.Expressions
                        JITHelpers.ContextParameter
                        );
         }
+
+#endif
 
         protected Expression(CodeNode first, CodeNode second, bool createTempContainer)
         {

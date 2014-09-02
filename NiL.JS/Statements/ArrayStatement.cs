@@ -12,6 +12,8 @@ namespace NiL.JS.Statements
 
         public ICollection<CodeNode> Elements { get { return elements; } }
 
+#if !NET35
+
         internal override System.Linq.Expressions.Expression BuildTree(NiL.JS.Core.JIT.TreeBuildingState state)
         {
             return System.Linq.Expressions.Expression.Call(
@@ -20,6 +22,8 @@ namespace NiL.JS.Statements
                        JITHelpers.ContextParameter
                        );
         }
+
+#endif
 
         private ArrayStatement()
         {

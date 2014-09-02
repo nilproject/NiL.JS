@@ -72,6 +72,8 @@ namespace NiL.JS.Statements
             };
         }
 
+#if !NET35
+
         internal override System.Linq.Expressions.Expression BuildTree(NiL.JS.Core.JIT.TreeBuildingState state)
         {
             var continueTarget = Expression.Label("continue" + (DateTime.Now.Ticks % 1000));
@@ -104,6 +106,8 @@ namespace NiL.JS.Statements
                     state.NamedContinueLabels.Remove(labels[i]);
             }
         }
+
+#endif
 
         internal override JSObject Evaluate(Context context)
         {

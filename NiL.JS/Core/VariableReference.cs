@@ -11,6 +11,8 @@ namespace NiL.JS.Core
         public abstract string Name { get; }
         public abstract VariableDescriptor Descriptor { get; internal set; }
 
+#if !NET35
+
         internal override System.Linq.Expressions.Expression BuildTree(NiL.JS.Core.JIT.TreeBuildingState state)
         {
             return System.Linq.Expressions.Expression.Call(
@@ -19,6 +21,8 @@ namespace NiL.JS.Core
                        JITHelpers.ContextParameter
                        );
         }
+
+#endif
 
         protected VariableReference()
         {

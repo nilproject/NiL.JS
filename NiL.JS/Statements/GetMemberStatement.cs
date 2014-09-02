@@ -16,6 +16,8 @@ namespace NiL.JS.Statements
         public CodeNode Source { get { return objStatement; } }
         public CodeNode FieldName { get { return memberNameStatement; } }
 
+#if !NET35
+
         internal override System.Linq.Expressions.Expression BuildTree(NiL.JS.Core.JIT.TreeBuildingState state)
         {
             return System.Linq.Expressions.Expression.Call(
@@ -24,6 +26,8 @@ namespace NiL.JS.Statements
                        JITHelpers.ContextParameter
                        );
         }
+
+#endif
 
         internal GetMemberStatement(CodeNode obj, CodeNode fieldName)
         {

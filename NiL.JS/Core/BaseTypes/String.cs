@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
 using NiL.JS.Core.Modules;
 
@@ -9,7 +8,7 @@ namespace NiL.JS.Core.BaseTypes
     public sealed class String : JSObject
     {
         [DoNotEnumerate]
-        public static JSObject fromCharCode(JSObject[] code)
+        public static JSObject fromCharCode(Arguments code)
         {
             int chc = 0;
             if (code == null || code.Length == 0)
@@ -89,7 +88,7 @@ namespace NiL.JS.Core.BaseTypes
 
         [AllowUnsafeCall(typeof(JSObject))]
         [DoNotEnumerate]
-        public JSObject concat(JSObject[] args)
+        public JSObject concat(Arguments args)
         {
             string res = oValue.ToString();
             for (var i = 0; i < args.Length; i++)
@@ -99,7 +98,7 @@ namespace NiL.JS.Core.BaseTypes
 
         [AllowUnsafeCall(typeof(JSObject))]
         [DoNotEnumerate]
-        public JSObject indexOf(JSObject[] args)
+        public JSObject indexOf(Arguments args)
         {
             if (args.Length == 0)
                 return -1;
@@ -137,7 +136,7 @@ namespace NiL.JS.Core.BaseTypes
 
         [AllowUnsafeCall(typeof(JSObject))]
         [DoNotEnumerate]
-        public JSObject lastIndexOf(JSObject[] args)
+        public JSObject lastIndexOf(Arguments args)
         {
             if (args.Length == 0)
                 return -1;
@@ -175,7 +174,7 @@ namespace NiL.JS.Core.BaseTypes
 
         [AllowUnsafeCall(typeof(JSObject))]
         [DoNotEnumerate]
-        public JSObject localeCompare(JSObject[] args)
+        public JSObject localeCompare(Arguments args)
         {
             string str0 = oValue.ToString();
             string str1 = args.Length > 0 ? args[0].ToString() : "";
@@ -557,7 +556,7 @@ namespace NiL.JS.Core.BaseTypes
 
         [AllowUnsafeCall(typeof(JSObject))]
         [DoNotEnumerate]
-        public JSObject substr(JSObject[] args)
+        public JSObject substr(Arguments args)
         {
             if (args.Length == 0)
                 return this;

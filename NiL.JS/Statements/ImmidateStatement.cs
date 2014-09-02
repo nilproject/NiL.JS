@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using NiL.JS.Core;
 using NiL.JS.Core.JIT;
 
@@ -9,10 +8,14 @@ namespace NiL.JS.Statements
     [Serializable]
     public sealed class ImmidateValueStatement : CodeNode
     {
+#if !NET35
+
         internal override System.Linq.Expressions.Expression BuildTree(NiL.JS.Core.JIT.TreeBuildingState state)
         {
             return JITHelpers.wrap(value);
         }
+
+#endif
 
         internal JSObject value;
 

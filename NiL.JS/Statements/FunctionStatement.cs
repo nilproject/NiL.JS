@@ -84,6 +84,8 @@ namespace NiL.JS.Statements
         public VariableReference[] Parameters { get { return parameters; } }
         public VariableReference Reference { get; private set; }
 
+#if !NET35
+
         internal override System.Linq.Expressions.Expression BuildTree(NiL.JS.Core.JIT.TreeBuildingState state)
         {
             return System.Linq.Expressions.Expression.Call(
@@ -92,6 +94,8 @@ namespace NiL.JS.Statements
                        JITHelpers.ContextParameter
                        );
         }
+
+#endif
 
         internal FunctionStatement(string name)
         {

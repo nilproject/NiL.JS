@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
-using System.Web;
 using NiL.JS.Core.BaseTypes;
 using NiL.JS.Statements;
 
@@ -186,6 +185,8 @@ namespace NiL.JS.Core
         /// </summary>
         public event DebuggerCallback DebuggerCallback;
 
+#if !NET35
+
         public bool UseJit
         {
             get
@@ -195,6 +196,8 @@ namespace NiL.JS.Core
                 else return false;
             }
         }
+
+#endif
 
         /// <summary>
         /// Указывает, присутствует ли контекст в каскаде выполняющихся контекстов непосредственно
@@ -389,14 +392,18 @@ namespace NiL.JS.Core
                     if (create)
                         fields[name] = res = new JSObject() { valueType = JSObjectType.NotExists };
                     else
+                    {
                         res = JSObject.GlobalPrototype.GetMember(name);
+                        if (res.valueType == JSObjectType.NotExistsInObject)
+                            res.valueType = JSObjectType.NotExists;
+                    }
                 }
             }
             else if (fromProto)
                 objectSource = prototype.objectSource;
             else
             {
-                if ((res.attributes & (JSObjectAttributesInternal.SystemObject | JSObjectAttributesInternal.ReadOnly)) == JSObjectAttributesInternal.SystemObject)
+                if (create && (res.attributes & (JSObjectAttributesInternal.SystemObject | JSObjectAttributesInternal.ReadOnly)) == JSObjectAttributesInternal.SystemObject)
                     fields[name] = res = res.CloneImpl();
             }
             return res;

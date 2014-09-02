@@ -1,16 +1,25 @@
-﻿console.log((function (a) {
-    function f(o) {
+﻿var obj = { valueOf: function () { return 1 }, toString: function () { return -2 } };
+var alphabetR = { 0: undefined, 1: 2, 2: 1, 3: "X", 4: -1, 5: "a", 6: true, 7: obj, 8: NaN, 9: Infinity };
+alphabetR.sort = Array.prototype.sort;
+alphabetR.length = 10;
+var alphabet = [-1, obj, 1, 2, Infinity, NaN, "X", "a", true, undefined];
 
-        function innerf(o, x) {
-            with (o) {
-                return x;
-            }
-        }
+alphabetR.sort();
 
-        return innerf(o, 42);
+//CHECK#0
+alphabetR.getClass = Object.prototype.toString;
+if (alphabetR.getClass() !== "[object " + "Object" + "]") {
+    $ERROR('#0: alphabetR.sort() is Object object, not Array object');
+}
+
+//CHECK#1
+var result = true;
+for (var i = 0; i < 10; i++) {
+    if (!(isNaN(alphabetR[i]) && isNaN(alphabet[i]))) {
+        if (alphabetR[i] !== alphabet[i]) result = false;
     }
+}
 
-    if (f({}) === 42) {
-        return true;
-    }
-})());
+if (result !== true) {
+    $ERROR('#1: Check ToString operator');
+}

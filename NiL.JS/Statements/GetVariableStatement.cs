@@ -37,7 +37,7 @@ namespace NiL.JS.Statements
         internal override JSObject Evaluate(Context context)
         {
             var res = descriptor.Get(context, false, functionDepth);
-            if (res.valueType < JSObjectType.Undefined)
+            if (res.valueType == JSObjectType.NotExists)
                 throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable \"" + variableName + "\" is not defined.")));
             if (res.valueType == JSObjectType.Property)
             {

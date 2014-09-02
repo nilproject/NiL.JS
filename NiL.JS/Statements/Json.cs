@@ -16,6 +16,8 @@ namespace NiL.JS.Statements
         public CodeNode[] Body { get { return values; } }
         public string[] Fields { get { return fields; } }
 
+#if !NET35
+
         internal override System.Linq.Expressions.Expression BuildTree(NiL.JS.Core.JIT.TreeBuildingState state)
         {
             return System.Linq.Expressions.Expression.Call(
@@ -24,6 +26,8 @@ namespace NiL.JS.Statements
                        JITHelpers.ContextParameter
                        );
         }
+
+#endif
 
         private Json(Dictionary<string, CodeNode> fields)
         {

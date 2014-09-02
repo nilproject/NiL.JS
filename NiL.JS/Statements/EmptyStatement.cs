@@ -20,10 +20,14 @@ namespace NiL.JS.Statements
             Length = 0;
         }
 
+#if !NET35
+
         internal override System.Linq.Expressions.Expression BuildTree(NiL.JS.Core.JIT.TreeBuildingState state)
         {
             return JITHelpers.UndefinedConstant;
         }
+
+#endif
 
         internal override JSObject Evaluate(Context context)
         {

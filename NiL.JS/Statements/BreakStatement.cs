@@ -42,12 +42,16 @@ namespace NiL.JS.Statements
             };
         }
 
+#if !NET35
+
         internal override System.Linq.Expressions.Expression BuildTree(Core.JIT.TreeBuildingState state)
         {
             if (label != null)
                 return Expression.Break(state.NamedBreakLabels[label.ToString()]);
             return Expression.Break(state.BreakLabels.Peek());
         }
+
+#endif
 
         internal override JSObject Evaluate(Context context)
         {

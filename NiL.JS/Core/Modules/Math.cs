@@ -42,28 +42,28 @@ namespace NiL.JS.Core.Modules
 
         [DoNotEnumerate]
         [DoNotDelete]
-        public static JSObject abs(JSObject[] args)
+        public static JSObject abs(Arguments args)
         {
             return System.Math.Abs(Tools.JSObjectToDouble(args.Length > 0 ? args[0] : null));
         }
 
         [DoNotEnumerate]
         [DoNotDelete]
-        public static JSObject acos(JSObject[] args)
+        public static JSObject acos(Arguments args)
         {
             return System.Math.Acos(Tools.JSObjectToDouble(args.Length > 0 ? args[0] : null));
         }
 
         [DoNotEnumerate]
         [DoNotDelete]
-        public static JSObject asin(JSObject[] args)
+        public static JSObject asin(Arguments args)
         {
             return System.Math.Asin(Tools.JSObjectToDouble(args.Length > 0 ? args[0] : null));
         }
 
         [DoNotEnumerate]
         [DoNotDelete]
-        public static JSObject atan(JSObject[] args)
+        public static JSObject atan(Arguments args)
         {
             return System.Math.Atan(Tools.JSObjectToDouble(args.Length > 0 ? args[0] : null));
         }
@@ -71,7 +71,7 @@ namespace NiL.JS.Core.Modules
         [DoNotEnumerate]
         [DoNotDelete]
         [ParametersCount(2)]
-        public static JSObject atan2(JSObject[] args)
+        public static JSObject atan2(Arguments args)
         {
             if (args.Length < 2)
                 return double.NaN;
@@ -80,7 +80,7 @@ namespace NiL.JS.Core.Modules
 
         [DoNotEnumerate]
         [DoNotDelete]
-        public static JSObject ceil(JSObject[] args)
+        public static JSObject ceil(Arguments args)
         {
             return System.Math.Ceiling(Tools.JSObjectToDouble(args.Length > 0 ? args[0] : null));
         }
@@ -124,7 +124,7 @@ namespace NiL.JS.Core.Modules
         [DoNotEnumerate]
         [DoNotDelete]
         [ParametersCount(2)]
-        public static JSObject max(JSObject[] args)
+        public static JSObject max(Arguments args)
         {
             double res = double.NegativeInfinity;
             for (int i = 0; i < args.Length; i++)
@@ -140,7 +140,7 @@ namespace NiL.JS.Core.Modules
         [DoNotEnumerate]
         [DoNotDelete]
         [ParametersCount(2)]
-        public static JSObject min(JSObject[] args)
+        public static JSObject min(Arguments args)
         {
             double res = double.PositiveInfinity;
             for (int i = 0; i < args.Length; i++)
@@ -185,28 +185,28 @@ namespace NiL.JS.Core.Modules
 
         [DoNotEnumerate]
         [DoNotDelete]
-        public static JSObject round(JSObject[] args)
+        public static JSObject round(Arguments args)
         {
             return System.Math.Round(Tools.JSObjectToDouble(args.Length > 0 ? args[0] : null) + 0.001);
         }
 
         [DoNotEnumerate]
         [DoNotDelete]
-        public static JSObject sin(JSObject[] args)
+        public static JSObject sin(Arguments args)
         {
             return System.Math.Sin(Tools.JSObjectToDouble(args.Length > 0 ? args[0] : null));
         }
 
         [DoNotEnumerate]
         [DoNotDelete]
-        public static JSObject sqrt(JSObject[] args)
+        public static JSObject sqrt(Arguments args)
         {
             return System.Math.Sqrt(Tools.JSObjectToDouble(args.Length > 0 ? args[0] : null));
         }
 
         [DoNotEnumerate]
         [DoNotDelete]
-        public static JSObject tan(JSObject[] args)
+        public static JSObject tan(Arguments args)
         {
             return System.Math.Tan(Tools.JSObjectToDouble(args.Length > 0 ? args[0] : null));
         }
@@ -216,7 +216,7 @@ namespace NiL.JS.Core.Modules
         [DoNotEnumerate]
         [DoNotDelete]
         [ParametersCount(2)]
-        public static JSObject IEEERemainder(JSObject[] args)
+        public static JSObject IEEERemainder(Arguments args)
         {
             if (args.Length < 2)
                 return double.NaN;
@@ -225,7 +225,7 @@ namespace NiL.JS.Core.Modules
 
         [DoNotEnumerate]
         [DoNotDelete]
-        public static JSObject sign(JSObject[] args)
+        public static JSObject sign(Arguments args)
         {
             if (args.Length < 1)
                 return double.NaN;
@@ -234,7 +234,7 @@ namespace NiL.JS.Core.Modules
 
         [DoNotEnumerate]
         [DoNotDelete]
-        public static JSObject sinh(JSObject[] args)
+        public static JSObject sinh(Arguments args)
         {
             if (args.Length < 1)
                 return double.NaN;
@@ -243,7 +243,7 @@ namespace NiL.JS.Core.Modules
 
         [DoNotEnumerate]
         [DoNotDelete]
-        public static JSObject tanh(JSObject[] args)
+        public static JSObject tanh(Arguments args)
         {
             if (args.Length < 1)
                 return double.NaN;
@@ -252,7 +252,7 @@ namespace NiL.JS.Core.Modules
 
         [DoNotEnumerate]
         [DoNotDelete]
-        public static JSObject trunc(JSObject[] args)
+        public static JSObject trunc(Arguments args)
         {
             if (args.Length < 1)
                 return double.NaN;

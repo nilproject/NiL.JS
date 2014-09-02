@@ -8,7 +8,7 @@ namespace NiL.JSTest.Modules
         {
         }
 
-        public void log(JSObject[] args)
+        public void log(Arguments args)
         {
             global::System.Console.WriteLine(args[0]);
         }

@@ -304,16 +304,19 @@ namespace NiL.JS.Core
         {
             if (jsobj == null)
                 return null;
-            if (targetType.IsAssignableFrom(jsobj.GetType()))
+            if (typeof(JSObject).IsAssignableFrom(targetType)
+                && targetType.IsAssignableFrom(jsobj.GetType()))
                 return jsobj;
-            var res = targetType.IsValueType || jsobj.valueType >= JSObjectType.Object ? jsobj.Value : null;
-            if (res == null
-                || (targetType.IsEnum && Enum.IsDefined(targetType, res))
-                || targetType.IsAssignableFrom(res.GetType()))
-                return res;
-            var tpres = res as TypeProxy;
+            var value = jsobj.Value;
+            if (value == null)
+                return value;
+            if (targetType.IsAssignableFrom(value.GetType()))
+                return value;
+            var tpres = value as TypeProxy;
             if (tpres != null && targetType.IsAssignableFrom(tpres.hostedType))
                 return tpres.prototypeInstance.oValue;
+            if (targetType.IsEnum && Enum.IsDefined(targetType, value))
+                return value;
             return null;
         }
 

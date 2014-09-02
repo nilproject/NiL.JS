@@ -1,10 +1,7 @@
-﻿using NiL.JS.Core.BaseTypes;
-using NiL.JS.Core.Modules;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Globalization;
+﻿using System;
 using System.Reflection;
+using NiL.JS.Core.BaseTypes;
+using NiL.JS.Core.Modules;
 
 namespace NiL.JS.Core
 {
@@ -130,12 +127,13 @@ namespace NiL.JS.Core
                             {
                                 if (methodinfo.IsStatic)
                                 {
-                                    if (parameters[0].ParameterType == typeof(JSObject[]))
-                                    {
-                                        this.delegateF1 = Activator.CreateInstance(typeof(Func<object, object>), null, info.MethodHandle.GetFunctionPointer()) as Func<object, object>;
-                                        mode = CallMode.FuncStaticOneArray;
-                                    }
-                                    else if (parameters[0].ParameterType == typeof(Arguments))
+                                    //if (parameters[0].ParameterType == typeof(JSObject[]))
+                                    //{
+                                    //    this.delegateF1 = Activator.CreateInstance(typeof(Func<object, object>), null, info.MethodHandle.GetFunctionPointer()) as Func<object, object>;
+                                    //    mode = CallMode.FuncStaticOneArray;
+                                    //}
+                                    //else 
+                                    if (parameters[0].ParameterType == typeof(Arguments))
                                     {
                                         this.delegateF1 = Activator.CreateInstance(typeof(Func<object, object>), null, info.MethodHandle.GetFunctionPointer()) as Func<object, object>;
                                         mode = CallMode.FuncStaticOneRaw;
@@ -148,13 +146,14 @@ namespace NiL.JS.Core
                                 }
                                 else
                                 {
-                                    if (parameters[0].ParameterType == typeof(JSObject[]))
-                                    {
-                                        this.delegateF2 = Activator.CreateInstance(typeof(Func<object, object, object>), null, info.MethodHandle.GetFunctionPointer()) as Func<object, object, object>;
-                                        this.delegateF1 = Activator.CreateInstance(typeof(Func<object, object>), this, info.MethodHandle.GetFunctionPointer()) as Func<object, object>;
-                                        mode = CallMode.FuncDynamicOneArray;
-                                    }
-                                    else if (parameters[0].ParameterType == typeof(Arguments))
+                                    //if (parameters[0].ParameterType == typeof(JSObject[]))
+                                    //{
+                                    //    this.delegateF2 = Activator.CreateInstance(typeof(Func<object, object, object>), null, info.MethodHandle.GetFunctionPointer()) as Func<object, object, object>;
+                                    //    this.delegateF1 = Activator.CreateInstance(typeof(Func<object, object>), this, info.MethodHandle.GetFunctionPointer()) as Func<object, object>;
+                                    //    mode = CallMode.FuncDynamicOneArray;
+                                    //}
+                                    //else 
+                                    if (parameters[0].ParameterType == typeof(Arguments))
                                     {
                                         this.delegateF2 = Activator.CreateInstance(typeof(Func<object, object, object>), null, info.MethodHandle.GetFunctionPointer()) as Func<object, object, object>;
                                         this.delegateF1 = Activator.CreateInstance(typeof(Func<object, object>), this, info.MethodHandle.GetFunctionPointer()) as Func<object, object>;
@@ -217,15 +216,15 @@ namespace NiL.JS.Core
                 var ptype = parameters[0].ParameterType;
                 if (ptype == typeof(Arguments))
                     return new object[] { source };
-                if (ptype == typeof(IEnumerable<JSObject>)
-                    || ptype == typeof(IEnumerable<object>)
-                    || ptype == typeof(ICollection)
-                    || ptype == typeof(IEnumerable)
-                    || ptype == typeof(List<JSObject>)
-                    || ptype == typeof(JSObject[])
-                    || ptype == typeof(List<object>)
-                    || ptype == typeof(object[]))
-                    return new[] { argumentsToArray<JSObject>(source) };
+                //if (ptype == typeof(IEnumerable<JSObject>)
+                //    || ptype == typeof(IEnumerable<object>)
+                //    || ptype == typeof(ICollection)
+                //    || ptype == typeof(IEnumerable)
+                //    || ptype == typeof(List<JSObject>)
+                //    || ptype == typeof(JSObject[])
+                //    || ptype == typeof(List<object>)
+                //    || ptype == typeof(object[]))
+                //    return new[] { argumentsToArray<JSObject>(source) };
             }
             int targetCount = parameters.Length;
             object[] res = new object[targetCount];

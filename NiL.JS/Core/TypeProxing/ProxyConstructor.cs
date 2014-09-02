@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using NiL.JS.Core.BaseTypes;
 using NiL.JS.Core.Modules;
@@ -162,7 +160,7 @@ namespace NiL.JS.Core
             {
                 if (constructors[i].Parameters.Length == len
                     || (constructors[i].Parameters.Length == 1 && (constructors[i].Parameters[0].ParameterType == typeof(Arguments)
-                                                                   || constructors[i].Parameters[0].ParameterType == typeof(JSObject[])
+                                                                   //|| constructors[i].Parameters[0].ParameterType == typeof(JSObject[])
                                                                    || constructors[i].Parameters[0].ParameterType == typeof(object[]))))
                 {
                     if (len == 0)
