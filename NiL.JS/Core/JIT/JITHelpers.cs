@@ -1,11 +1,11 @@
-﻿#if !NET35
-
-using System;
+﻿using System;
 using System.Linq.Expressions;
 using System.Reflection;
 
 namespace NiL.JS.Core.JIT
 {
+#if !NET35
+
     internal static class JITHelpers
     {
         public static readonly ParameterExpression ContextParameter = Expression.Parameter(typeof(Context), "context");
@@ -58,6 +58,6 @@ namespace NiL.JS.Core.JIT
             return method.Method;
         }
     }
-}
 
 #endif
+}

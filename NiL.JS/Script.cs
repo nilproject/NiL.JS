@@ -90,7 +90,7 @@ namespace NiL.JS
                 else
 #endif
                 {
-#if DEBUG & !NET35
+#if DEBUG && !NET35
                     System.Diagnostics.Debugger.Log(0, "NiL.JS JIT", "Run non compiled script");
 #endif
                     root.Evaluate(Context);
