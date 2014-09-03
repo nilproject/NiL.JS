@@ -67,7 +67,7 @@ namespace NiL.JS.Core
 
             public override object[] GetCustomAttributes(Type attributeType, bool inherit)
             {
-                return new object[0];
+                return Activator.CreateInstance(attributeType.MakeArrayType(), new object[]{ 0 }) as object[];
             }
 
             public override bool IsDefined(Type attributeType, bool inherit)
