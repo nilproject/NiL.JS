@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using NiL.JS.Core;
 using NiL.JS.Core.TypeProxing;
@@ -99,7 +99,7 @@ namespace NiL.JS
                 }
                 if (selection.Current.Key == reqname)
                     return NiL.JS.Core.TypeProxy.GetConstructor(selection.Current.Value);
-                res = TypeProxy.Proxy(new NamespaceProvider(reqname));
+                res = TypeProxy.Proxy(new NamespaceProvider(reqname, unions != null));
                 childs.Add(name, res);
                 return res;
             }
