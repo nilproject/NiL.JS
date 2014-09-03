@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
@@ -248,7 +248,8 @@ namespace NiL.JS
 
         public BinaryTree()
         {
-            if (!typeof(IComparable).IsAssignableFrom(typeof(TKey)))
+            if (!typeof(IComparable).IsAssignableFrom(typeof(TKey))
+               && !typeof(IComparable<TKey>).IsAssignableFrom(typeof(TKey)))
                 throw new ArgumentException("Compaper not defined.");
             root = null;
             Count = 0;
