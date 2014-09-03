@@ -200,7 +200,7 @@ while(i--);
 
             Context.GlobalContext.DebuggerCallback += (sender, e) => { System.Diagnostics.Debugger.Break(); };
 
-            int mode = 0//154// 155
+            int mode = 0//155
                  ;
             switch (mode)
             {
@@ -302,6 +302,12 @@ while(i--);
                     {
                         // Date
                         sputnikTests(@"tests\sputnik\ch15\15.9\");
+                        break;
+                    }
+                case 1510:
+                    {
+                        // RegExp
+                        sputnikTests(@"tests\sputnik\ch15\15.10\");
                         break;
                     }
                 case 1511:

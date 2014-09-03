@@ -156,7 +156,9 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [Field]
+        [DoNotDelete]
         [DoNotEnumerate]
+        [NotConfigurable]
         public JSObject lastIndex
         {
             get

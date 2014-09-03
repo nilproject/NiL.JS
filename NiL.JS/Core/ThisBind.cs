@@ -28,7 +28,6 @@ namespace NiL.JS.Core
             valueType = JSObjectType.Object;
             oValue = this;
             __proto__ = thisProto ?? refreshThisBindProto();
-            assignCallback = (sender) => { throw new JSException(TypeProxy.Proxy(new ReferenceError("Invalid left-hand side in assignment"))); };
         }
 
         public override void Assign(NiL.JS.Core.JSObject value)

@@ -616,42 +616,42 @@ namespace NiL.JS.Core.BaseTypes
                         }
                 }
             }
-            return (oValue as string).Substring(pos0, len);
+            return (this as JSObject).ToString().Substring(pos0, len);
         }
 
         [AllowUnsafeCall(typeof(JSObject))]
         [DoNotEnumerate]
         public JSObject toLocaleLowerCase()
         {
-            return (oValue as string).ToLower(System.Threading.Thread.CurrentThread.CurrentUICulture);
+            return (this as JSObject).ToString().ToLower(System.Threading.Thread.CurrentThread.CurrentUICulture);
         }
 
         [AllowUnsafeCall(typeof(JSObject))]
         [DoNotEnumerate]
         public JSObject toLocaleUpperCase()
         {
-            return (oValue as string).ToUpper(System.Threading.Thread.CurrentThread.CurrentUICulture);
+            return (this as JSObject).ToString().ToUpper(System.Threading.Thread.CurrentThread.CurrentUICulture);
         }
 
         [AllowUnsafeCall(typeof(JSObject))]
         [DoNotEnumerate]
         public JSObject toLowerCase()
         {
-            return (oValue as string).ToLowerInvariant();
+            return (this as JSObject).ToString().ToLowerInvariant();
         }
 
         [AllowUnsafeCall(typeof(JSObject))]
         [DoNotEnumerate]
         public JSObject toUpperCase()
         {
-            return (oValue as string).ToUpperInvariant();
+            return (this as JSObject).ToString().ToUpperInvariant();
         }
 
         [AllowUnsafeCall(typeof(JSObject))]
         [DoNotEnumerate]
         public JSObject trim()
         {
-            return (oValue as string).Trim();
+            return (this as JSObject).ToString().Trim();
         }
 
         [CLSCompliant(false)]
@@ -709,7 +709,7 @@ namespace NiL.JS.Core.BaseTypes
         [Hidden]
         public override string ToString()
         {
-            if ((this as object) is String)//(this.GetType() == typeof(String))
+            if ((this as object) is String)
                 return oValue as string;
             else
                 throw new JSException(new TypeError("Try to call String.toString for not string object."));

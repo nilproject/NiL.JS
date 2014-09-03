@@ -35,10 +35,11 @@ namespace NiL.JS.Expressions
 
         internal override JSObject Evaluate(Context context)
         {
+            Function setter = null;
+            JSObject prev = null;
             lock (this)
             {
-                Function setter = null;
-                var val = Tools.RaiseIfNotExist((first ?? second).EvaluateForAssing(context), first ?? second);
+                var val = (first ?? second).EvaluateForAssing(context);
                 if (val.valueType == JSObjectType.Property)
                 {
                     setter = (val.oValue as Function[])[0];
@@ -51,22 +52,9 @@ namespace NiL.JS.Expressions
                     throw new JSException(new TypeError("Can not incriment readonly \"" + (first ?? second) + "\""));
                 switch (val.valueType)
                 {
-                    case JSObjectType.Object:
-                    case JSObjectType.Date:
-                    case JSObjectType.Function:
-                        {
-                            val.Assign(val.ToPrimitiveValue_Value_String());
-                            break;
-                        }
-                    default:
-                        {
-                            if (val.assignCallback != null)
-                                val.assignCallback(val);
-                            break;
-                        }
-                }
-                switch (val.valueType)
-                {
+                    case JSObjectType.Int:
+                    case JSObjectType.Double:
+                        break;
                     case JSObjectType.Bool:
                         {
                             val.valueType = JSObjectType.Int;
@@ -82,16 +70,47 @@ namespace NiL.JS.Expressions
                             val.dValue = resd;
                             break;
                         }
+                    case JSObjectType.Object:
                     case JSObjectType.Date:
                     case JSObjectType.Function:
-                    case JSObjectType.Object: // null
                         {
-                            val.iValue = 0;
-                            val.valueType = JSObjectType.Int;
+                            val.Assign(val.ToPrimitiveValue_Value_String());
+                            switch (val.valueType)
+                            {
+                                case JSObjectType.Bool:
+                                    {
+                                        val.valueType = JSObjectType.Int;
+                                        break;
+                                    }
+                                case JSObjectType.String:
+                                    {
+                                        double resd;
+                                        int i = 0;
+                                        if (!Tools.ParseNumber(val.oValue as string, i, out resd, Tools.ParseNumberOptions.Default))
+                                            resd = double.NaN;
+                                        val.valueType = JSObjectType.Double;
+                                        val.dValue = resd;
+                                        break;
+                                    }
+                                case JSObjectType.Date:
+                                case JSObjectType.Function:
+                                case JSObjectType.Object: // null
+                                    {
+                                        val.iValue = 0;
+                                        val.valueType = JSObjectType.Int;
+                                        break;
+                                    }
+                            }
+                            break;
+                        }
+                    default:
+                        {
+                            Tools.RaiseIfNotExist(val, first ?? second);
+                            if (val.assignCallback != null)
+                                val.assignCallback(val);
                             break;
                         }
                 }
-                JSObject prev = null;
                 if (second != null && val.isDefinded)
                 {
                     prev = tempContainer;
