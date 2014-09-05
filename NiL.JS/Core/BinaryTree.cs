@@ -10,7 +10,7 @@ namespace NiL.JS
     /// Предоставляет реализацию бинарного дерева поиска со строковым аргументом.
     /// </summary>
     [Serializable]
-    public class BinaryTree<TKey, TValue> : IDictionary<TKey, TValue> where TKey : IComparable<TKey>
+    public class BinaryTree<TKey, TValue> : IDictionary<TKey, TValue>, ISerializable where TKey : IComparable<TKey>
     {
         private sealed class _Values : ICollection<TValue>
         {
@@ -262,6 +262,25 @@ namespace NiL.JS
             Count = 0;
             state = DateTime.UtcNow.Ticks;
             this.comparer = comparer;
+        }
+
+        protected BinaryTree(SerializationInfo info, StreamingContext context)
+        {
+            root = info.GetValue("root", typeof(Node)) as Node;
+            Count = info.GetInt32("count");
+            stack = new Stack<Node>();
+            Node[] nodes = new Node[Count];
+            for (var e = enumerate(root); e.MoveNext(); )
+                nodes[--Count] = e.Current;
+            root = null;
+            for (var i = 0; i < nodes.Length; i++)
+                Insert(nodes[i].key, nodes[i].value, false);
+        }
+
+        void ISerializable.GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            info.AddValue("root", root);
+            info.AddValue("count", Count);
         }
 
         public TValue this[TKey key]
@@ -693,18 +712,6 @@ namespace NiL.JS
                 array[index++] = kvp;
         }
 
-        [OnDeserialized()]
-        internal void OnDeserializedMethod(StreamingContext context)
-        {
-            stack = new Stack<Node>();
-            Node[] nodes = new Node[Count];
-            for (var e = enumerate(root); e.MoveNext(); )
-                nodes[--Count] = e.Current;
-            root = null;
-            for (var i = 0; i < nodes.Length; i++)
-                Insert(nodes[i].key, nodes[i].value, false);
-        }
-
         internal IEnumerator<Node> enumerateReversed(Node node)
         {
             if (node != null)
@@ -864,6 +871,17 @@ namespace NiL.JS
     [Serializable]
     public sealed class BinaryTree<TValue> : BinaryTree<string, TValue>
     {
+        public BinaryTree()
+        {
+
+        }
+
+        private BinaryTree(SerializationInfo info, StreamingContext context)
+            : base(info, context)
+        {
+
+        }
+
         public IEnumerable<KeyValuePair<string, TValue>> StartedWith(string prefix)
         {
             return StartedWith(prefix, false, 0, int.MaxValue);
