@@ -267,6 +267,7 @@ namespace NiL.JS
         protected BinaryTree(SerializationInfo info, StreamingContext context)
         {
             root = info.GetValue("root", typeof(Node)) as Node;
+            comparer = info.GetValue("comparer", typeof(IComparer<TKey>)) as IComparer<TKey>;
             Count = info.GetInt32("count");
             stack = new Stack<Node>();
             Node[] nodes = new Node[Count];
@@ -281,6 +282,7 @@ namespace NiL.JS
         {
             info.AddValue("root", root);
             info.AddValue("count", Count);
+            info.AddValue("comparer", comparer);
         }
 
         public TValue this[TKey key]
