@@ -480,7 +480,7 @@ namespace NiL.JS.Core
                                 if (!(target as BaseTypes.Array).setLength(nlen))
                                     throw new JSException(new TypeError("Unable to reduce length because not configurable elements"));
                             }
-                            else if (!StrictEqual.Check((obj.oValue as Function[])[1].Invoke(target, null), new ImmidateValueStatement(value), null))
+                            else if (!StrictEqual.Check((obj.oValue as Function[])[1].Invoke(target, null), value, null))
                                 throw new JSException(new TypeError("Cannot redefine property length."));
                             value = notExists; // длина всегда неконфигурируема, поэтому код ниже пойдёт в обход,
                             // а там нужные проверки, которые, для экономии кода, сюда переносить не стал
@@ -533,7 +533,7 @@ namespace NiL.JS.Core
             {
                 if (!config
                     && (obj.attributes & JSObjectAttributesInternal.ReadOnly) != 0
-                    && !((StrictEqual.Check(obj, new ImmidateValueStatement(value), null) && ((obj.valueType == JSObjectType.Undefined && value.valueType == JSObjectType.Undefined) || !obj.isNumber || !value.isNumber || (1.0 / Tools.JSObjectToDouble(obj) == 1.0 / Tools.JSObjectToDouble(value))))
+                    && !((StrictEqual.Check(obj, value, null) && ((obj.valueType == JSObjectType.Undefined && value.valueType == JSObjectType.Undefined) || !obj.isNumber || !value.isNumber || (1.0 / Tools.JSObjectToDouble(obj) == 1.0 / Tools.JSObjectToDouble(value))))
                         || (obj.valueType == JSObjectType.Double && value.valueType == JSObjectType.Double && double.IsNaN(obj.dValue) && double.IsNaN(value.dValue))))
                     throw new JSException(new TypeError("Cannot change value of not configurable not writable peoperty."));
                 //if ((obj.attributes & JSObjectAttributesInternal.ReadOnly) == 0 || obj.valueType == JSObjectType.Property)

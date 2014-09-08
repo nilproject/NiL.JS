@@ -17,19 +17,19 @@ namespace NiL.JS.Core.BaseTypes
         private const long _4yearsMilliseconds = (365 * 4 + 1) * _dayMilliseconds;
         private const long _yearMilliseconds = 365 * _dayMilliseconds;
 
-        private static readonly long[,] monthLengths = { 
-                                               { 31 * _dayMilliseconds, 31 * _dayMilliseconds}, 
-                                               { 28 * _dayMilliseconds, 29 * _dayMilliseconds}, 
-                                               { 31 * _dayMilliseconds, 31 * _dayMilliseconds}, 
-                                               { 30 * _dayMilliseconds, 30 * _dayMilliseconds}, 
-                                               { 31 * _dayMilliseconds, 31 * _dayMilliseconds},
-                                               { 30 * _dayMilliseconds, 30 * _dayMilliseconds}, 
-                                               { 31 * _dayMilliseconds, 31 * _dayMilliseconds}, 
-                                               { 31 * _dayMilliseconds, 31 * _dayMilliseconds},
-                                               { 30 * _dayMilliseconds, 30 * _dayMilliseconds},
-                                               { 31 * _dayMilliseconds, 31 * _dayMilliseconds},
-                                               { 30 * _dayMilliseconds, 30 * _dayMilliseconds},
-                                               { 31 * _dayMilliseconds, 31 * _dayMilliseconds} };
+        //private static readonly long[,] monthLengths = { 
+        //                                       { 31 * _dayMilliseconds, 31 * _dayMilliseconds}, 
+        //                                       { 28 * _dayMilliseconds, 29 * _dayMilliseconds}, 
+        //                                       { 31 * _dayMilliseconds, 31 * _dayMilliseconds}, 
+        //                                       { 30 * _dayMilliseconds, 30 * _dayMilliseconds}, 
+        //                                       { 31 * _dayMilliseconds, 31 * _dayMilliseconds},
+        //                                       { 30 * _dayMilliseconds, 30 * _dayMilliseconds}, 
+        //                                       { 31 * _dayMilliseconds, 31 * _dayMilliseconds}, 
+        //                                       { 31 * _dayMilliseconds, 31 * _dayMilliseconds},
+        //                                       { 30 * _dayMilliseconds, 30 * _dayMilliseconds},
+        //                                       { 31 * _dayMilliseconds, 31 * _dayMilliseconds},
+        //                                       { 30 * _dayMilliseconds, 30 * _dayMilliseconds},
+        //                                       { 31 * _dayMilliseconds, 31 * _dayMilliseconds} };
 
         private static readonly long[,] timeToMonthLengths = { 
                                                 { 0 * _dayMilliseconds, 0 * _dayMilliseconds },

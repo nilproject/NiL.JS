@@ -463,10 +463,9 @@ namespace NiL.JS.Core.BaseTypes
                         }
                 }
             }
-            var left = new NiL.JS.Statements.ImmidateValueStatement(el);
             foreach (var element in data)
             {
-                if (element.Value.isExist && Expressions.StrictEqual.Check(element.Value, left, null))
+                if (element.Value.isExist && Expressions.StrictEqual.Check(element.Value, el, null))
                     return Context.CurrentContext.wrap(element.Key);
             }
             return -1;
@@ -537,10 +536,9 @@ namespace NiL.JS.Core.BaseTypes
                         }
                 }
             }
-            var left = new NiL.JS.Statements.ImmidateValueStatement(el);
             foreach (var element in data.Reversed)
             {
-                if (element.Value.isExist && Expressions.StrictEqual.Check(element.Value, left, null))
+                if (element.Value.isExist && Expressions.StrictEqual.Check(element.Value, el, null))
                     return Context.CurrentContext.wrap(element.Key);
             }
             return -1;

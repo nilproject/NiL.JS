@@ -7,98 +7,69 @@ namespace NiL.JS.Expressions
     public class StrictEqual : Expression
     {
         public StrictEqual(CodeNode first, CodeNode second)
-            : base(first, second, false)
+            : base(first, second, true)
         {
 
         }
 
-        internal static bool Check(JSObject first, CodeNode second, Context context)
+        internal static bool Check(JSObject first, JSObject second, Context context)
         {
-            var temp = first;
-            var lvt = temp.valueType;
-
-            switch (lvt)
+            switch (first.valueType)
             {
-                case JSObjectType.Int:
+                case JSObjectType.NotExistsInObject:
+                case JSObjectType.Undefined:
+                    {
+                        return second.valueType <= JSObjectType.Undefined;
+                    }
                 case JSObjectType.Bool:
                     {
-                        var l = temp.iValue;
-                        temp = second.Evaluate(context);
-                        if (temp.valueType == JSObjectType.Double)
-                            return l == temp.dValue;
-                        else if (lvt != temp.valueType)
+                        if (first.valueType != second.valueType)
+                            return false;
+                        return first.iValue == second.iValue;
+                    }
+                case JSObjectType.Int:
+                    {
+                        if (second.valueType == JSObjectType.Double)
+                            return first.iValue == second.dValue;
+                        else if (second.valueType != JSObjectType.Int)
                             return false;
                         else
-                            return l == temp.iValue;
+                            return first.iValue == second.iValue;
                     }
                 case JSObjectType.Double:
                     {
-                        var l = temp.dValue;
-                        temp = second.Evaluate(context);
-                        if (temp.valueType == JSObjectType.Int)
-                            return l == temp.iValue;
-                        else if (lvt != temp.valueType)
+                        if (second.valueType == JSObjectType.Int)
+                            return first.dValue == second.iValue;
+                        else if (second.valueType != JSObjectType.Double)
                             return false;
                         else
-                            return l == temp.dValue;
-                    }
-                case JSObjectType.Function:
-                    {
-                        var l = temp.oValue;
-                        temp = second.Evaluate(context);
-                        if (lvt != temp.valueType)
-                            return false;
-                        else
-                            return l == temp.oValue;
-                    }
-                case JSObjectType.Object:
-                    {
-                        var l = temp.oValue;
-                        temp = second.Evaluate(context);
-                        if (temp.valueType != JSObjectType.Object)
-                            return false;
-                        else if (l == null || temp.oValue == null)
-                            return l == temp.oValue;
-                        else
-                            return l.Equals(temp.oValue);
-                    }
-                case JSObjectType.Date:
-                    {
-                        var l = temp.oValue;
-                        temp = second.Evaluate(context);
-                        if (temp.valueType != JSObjectType.Date)
-                            return false;
-                        else if (l == null || temp.oValue == null)
-                            return l == temp.oValue;
-                        else
-                            return l.Equals(temp.oValue);
+                            return first.dValue == second.dValue;
                     }
                 case JSObjectType.String:
+                case JSObjectType.Date:
+                case JSObjectType.Function:
+                case JSObjectType.Object:
                     {
-                        var l = temp.oValue;
-                        temp = second.Evaluate(context);
-                        if (lvt != temp.valueType)
+                        if (first.valueType != second.valueType)
                             return false;
+                        else if (first.oValue == null || second.oValue == null)
+                            return first.oValue == second.oValue;
                         else
-                            return l.Equals(temp.oValue);
-                    }
-                case JSObjectType.Undefined:
-                case JSObjectType.NotExistsInObject:
-                    {
-                        temp = second.Evaluate(context);
-                        return !temp.isDefinded;
+                            return first.oValue.Equals(second.oValue);
                     }
                 case JSObjectType.Property:
                     return false;
             }
-            if (lvt == JSObjectType.NotExists)
-                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable not defined.")));
             throw new NotImplementedException();
         }
 
         internal override JSObject Evaluate(Context context)
         {
-            return Check(first.Evaluate(context), second, context);
+            lock (this)
+            {
+                tempContainer.Assign(first.Evaluate(context));
+                return Check(tempContainer, second.Evaluate(context), context);
+            }
         }
 
         public override string ToString()

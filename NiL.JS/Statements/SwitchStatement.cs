@@ -126,7 +126,7 @@ namespace NiL.JS.Statements
                 if (context.debugging)
                     context.raiseDebugger(cases[j].statement);
 #endif
-                if (Expressions.StrictEqual.Check(imageVal, cases[j].statement, context))
+                if (Expressions.StrictEqual.Check(imageVal, cases[j].statement.Evaluate(context), context))
                 {
                     i = cases[j].index;
                     break;

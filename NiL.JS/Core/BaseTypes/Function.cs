@@ -807,8 +807,7 @@ namespace NiL.JS.Core.BaseTypes
 
                 internalContext.thisBind = thisBind;
                 if (creator.type == FunctionType.Function
-                    && creator.name != ""
-                    && creator.name != null
+                    && !string.IsNullOrEmpty(creator.name)
                     && (isRecursive || containsEval)
                     )
                     internalContext.fields[creator.name] = this;
