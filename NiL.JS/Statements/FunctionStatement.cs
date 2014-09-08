@@ -15,7 +15,6 @@ namespace NiL.JS.Statements
             private FunctionStatement owner;
 
             public FunctionStatement Owner { get { return owner; } }
-            public override VariableDescriptor Descriptor { get; internal set; }
 
             public override string Name
             {
@@ -49,12 +48,6 @@ namespace NiL.JS.Statements
                 get { return name; }
             }
 
-            public override VariableDescriptor Descriptor
-            {
-                get;
-                internal set;
-            }
-
             internal override JSObject Evaluate(Context context)
             {
                 return null;
@@ -64,7 +57,7 @@ namespace NiL.JS.Statements
             {
                 functionDepth = fdepth;
                 this.name = name;
-                Descriptor = new VariableDescriptor(this, true, fdepth);
+                descriptor = new VariableDescriptor(this, true, fdepth);
             }
 
             public override string ToString()
@@ -74,14 +67,14 @@ namespace NiL.JS.Statements
         }
 
         internal bool containsWith;
-        internal VariableReference[] parameters;
+        internal VariableReference[] arguments;
         internal CodeBlock body;
         internal readonly string name;
         internal FunctionType type;
 
         public CodeBlock Body { get { return body; } }
         public string Name { get { return name; } }
-        public VariableReference[] Parameters { get { return parameters; } }
+        public VariableReference[] Parameters { get { return arguments; } }
         public VariableReference Reference { get; private set; }
 
 #if !NET35
@@ -100,7 +93,7 @@ namespace NiL.JS.Statements
         internal FunctionStatement(string name)
         {
             Reference = new FunctionReference(this);
-            parameters = new VariableReference[0];
+            arguments = new VariableReference[0];
             body = new CodeBlock(new CodeNode[0], false);
             body.variables = new VariableDescriptor[0];
             this.name = name;
@@ -236,7 +229,7 @@ namespace NiL.JS.Statements
             }
             FunctionStatement func = new FunctionStatement(name)
             {
-                parameters = parameters.ToArray(),
+                arguments = parameters.ToArray(),
                 body = body,
                 type = mode,
                 Position = index,
@@ -306,10 +299,10 @@ namespace NiL.JS.Statements
 
         protected override CodeNode[] getChildsImpl()
         {
-            var res = new CodeNode[1 + parameters.Length + (Reference != null ? 1 : 0)];
-            for (var i = 0; i < parameters.Length; i++)
-                res[i] = parameters[i];
-            res[parameters.Length] = body;
+            var res = new CodeNode[1 + arguments.Length + (Reference != null ? 1 : 0)];
+            for (var i = 0; i < arguments.Length; i++)
+                res[i] = arguments[i];
+            res[arguments.Length] = body;
             if (Reference != null)
                 res[res.Length - 1] = Reference;
             return res;
@@ -339,21 +332,21 @@ namespace NiL.JS.Statements
         {
             var stat = body as CodeNode;
             var nvars = new Dictionary<string, VariableDescriptor>();
-            for (var i = 0; i < parameters.Length; i++)
+            for (var i = 0; i < arguments.Length; i++)
             {
-                nvars[parameters[i].Name] = parameters[i].Descriptor;
-                parameters[i].Descriptor.owner = this;
+                nvars[arguments[i].Name] = arguments[i].Descriptor;
+                arguments[i].Descriptor.owner = this;
             }
             stat.Optimize(ref stat, 0, nvars, strict);
             if (type == FunctionType.Function && !string.IsNullOrEmpty(name))
             {
                 VariableDescriptor fdesc = null;
                 if (Reference.Descriptor == null)
-                    Reference.Descriptor = new VariableDescriptor(Reference, true, Reference.functionDepth + 1) { owner = this };
+                    Reference.descriptor = new VariableDescriptor(Reference, true, Reference.functionDepth + 1) { owner = this };
                 if (nvars.TryGetValue(name, out fdesc))
                 {
                     foreach (var r in fdesc.references)
-                        r.Descriptor = Reference.Descriptor;
+                        r.descriptor = Reference.Descriptor;
                     Reference.Descriptor.references.UnionWith(fdesc.references);
                     for (var i = body.variables.Length; i-- > 0; )
                     {
@@ -382,7 +375,7 @@ namespace NiL.JS.Statements
                             foreach (var r in body.variables[i].References)
                             {
                                 desc.references.Add(r);
-                                r.Descriptor = desc;
+                                r.descriptor = desc;
                             }
                             body.variables[i] = desc;
                         }
@@ -396,9 +389,9 @@ namespace NiL.JS.Statements
         public override string ToString()
         {
             var res = ((FunctionType)((int)type & 3)).ToString().ToLowerInvariant() + " " + name + "(";
-            if (parameters != null)
-                for (int i = 0; i < parameters.Length; )
-                    res += parameters[i] + (++i < parameters.Length ? "," : "");
+            if (arguments != null)
+                for (int i = 0; i < arguments.Length; )
+                    res += arguments[i] + (++i < arguments.Length ? "," : "");
             res += ")" + ((object)body ?? "{ [native code] }").ToString();
             return res;
         }

@@ -9,7 +9,8 @@ namespace NiL.JS.Core
         internal int functionDepth;
         public virtual int FunctionDepth { get { return functionDepth; } }
         public abstract string Name { get; }
-        public abstract VariableDescriptor Descriptor { get; internal set; }
+        internal VariableDescriptor descriptor;
+        public VariableDescriptor Descriptor { get { return descriptor; } }
 
 #if !NET35
 

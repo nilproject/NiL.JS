@@ -88,7 +88,7 @@ namespace NiL.JS.Core
                 Inititalizator = (proto as FunctionStatement.FunctionReference).Owner;
             references = new HashSet<VariableReference>();
             references.Add(proto);
-            proto.Descriptor = this;
+            proto.descriptor = this;
             Defined = defined;
         }
 

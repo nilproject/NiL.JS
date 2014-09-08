@@ -8,8 +8,6 @@ namespace NiL.JS.Statements
     public sealed class GetVariableStatement : VariableReference
     {
         private string variableName;
-        private VariableDescriptor descriptor;
-        public override VariableDescriptor Descriptor { get { return descriptor; } internal set { descriptor = value; } }
 
         public override string Name { get { return variableName; } }
 
@@ -26,17 +24,17 @@ namespace NiL.JS.Statements
         {
             if (context.strict)
             {
-                var res = descriptor.Get(context, false, functionDepth);
+                var res = Descriptor.Get(context, false, functionDepth);
                 if (res.valueType < JSObjectType.Undefined)
                     throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable \"" + variableName + "\" is not defined.")));
                 return res;
             }
-            return descriptor.Get(context, true, functionDepth);
+            return Descriptor.Get(context, true, functionDepth);
         }
 
         internal override JSObject Evaluate(Context context)
         {
-            var res = descriptor.Get(context, false, functionDepth);
+            var res = Descriptor.Get(context, false, functionDepth);
             if (res.valueType == JSObjectType.NotExists)
                 throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable \"" + variableName + "\" is not defined.")));
             if (res.valueType == JSObjectType.Property)
@@ -64,13 +62,13 @@ namespace NiL.JS.Statements
             VariableDescriptor desc = null;
             if (!variables.TryGetValue(variableName, out desc) || desc == null)
             {
-                this.descriptor = new VariableDescriptor(this, false, functionDepth);
-                variables[variableName] = this.descriptor;
+                descriptor = new VariableDescriptor(this, false, functionDepth);
+                variables[variableName] = this.Descriptor;
             }
             else
             {
                 desc.references.Add(this);
-                this.descriptor = desc;
+                descriptor = desc;
             }
             return false;
         }

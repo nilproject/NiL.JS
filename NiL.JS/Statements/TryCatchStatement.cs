@@ -104,7 +104,7 @@ namespace NiL.JS.Statements
                     if (context.debugging)
                         context.raiseDebugger(catchBody);
 #endif
-                    var catchContext = new Context(context, context.caller) { strict = context.strict, variables = context.variables };
+                    var catchContext = new Context(context, true, context.caller) { strict = context.strict, variables = context.variables };
                     var cvar = catchContext.DefineVariable(catchVariableDesc.name);
 #if DEBUG
                     if (!(e is JSException))

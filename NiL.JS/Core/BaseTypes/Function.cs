@@ -660,7 +660,7 @@ namespace NiL.JS.Core.BaseTypes
                 if (_length == null)
                 {
                     _length = new Number(0) { attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum };
-                    _length.iValue = creator.parameters.Length;
+                    _length.iValue = creator.arguments.Length;
                 }
                 return _length;
             }
@@ -762,7 +762,7 @@ namespace NiL.JS.Core.BaseTypes
         public virtual JSObject Invoke(JSObject thisBind, Arguments args)
         {
             var body = creator.body;
-            if (body == null || body.Body.Length == 0)
+            if (body == null || body.body.Length == 0)
             {
                 if (thisBind != null && thisBind.oValue == typeof(New) as object)
                 {
@@ -780,7 +780,7 @@ namespace NiL.JS.Core.BaseTypes
             bool intricate = creator.containsWith || containsArguments || containsEval;
             if (oldargs != null && !intricate) // рекурсивный вызов
                 storeParameters();
-            Context internalContext = new Context(context ?? Context.CurrentContext, this);
+            Context internalContext = new Context(context ?? Context.CurrentContext, intricate, this);
             try
             {
                 thisBind = correctThisBind(thisBind, body, internalContext);
@@ -806,9 +806,14 @@ namespace NiL.JS.Core.BaseTypes
                 initVariables(body, internalContext);
 
                 internalContext.thisBind = thisBind;
+                if (this.creator.Reference.descriptor != null)
+                {
+                    this.creator.Reference.descriptor.cacheContext = internalContext;
+                    this.creator.Reference.descriptor.cacheRes = this;
+                }
                 if (creator.type == FunctionType.Function
                     && !string.IsNullOrEmpty(creator.name)
-                    && (isRecursive || containsEval)
+                    && (containsEval || creator.containsWith)
                     )
                     internalContext.fields[creator.name] = this;
                 internalContext.strict |= body.strict;
@@ -835,14 +840,19 @@ namespace NiL.JS.Core.BaseTypes
             }
             finally
             {
-                internalContext.Deactivate();
+                try
+                {
+                    internalContext.Deactivate();
+                }
+                catch
+                { }
                 _arguments = oldargs;
             }
         }
 
         private void initParameters(Arguments args, CodeBlock body, bool intricate, Context internalContext)
         {
-            int min = System.Math.Min(args.length, creator.parameters.Length);
+            int min = System.Math.Min(args.length, creator.arguments.Length);
             int i = 0;
             for (; i < min; i++)
             {
@@ -854,18 +864,18 @@ namespace NiL.JS.Core.BaseTypes
                 }
                 else
                 {
-                    if (intricate || creator.parameters[i].Descriptor.assignations != null)
+                    if (intricate || creator.arguments[i].descriptor.assignations != null)
                     {
                         args[i] = t = t.CloneImpl();
                         t.attributes |= JSObjectAttributesInternal.Argument;
                     }
                 }
-                if (body.strict && (intricate || creator.parameters[i].Descriptor.assignations != null))
+                if (body.strict && (intricate || creator.arguments[i].descriptor.assignations != null))
                     t = t.CloneImpl();
                 if (intricate)
-                    internalContext.fields[creator.parameters[i].Name] = t;
-                creator.parameters[i].Descriptor.cacheContext = internalContext;
-                creator.parameters[i].Descriptor.cacheRes = t;
+                    (internalContext.fields ?? (internalContext.fields = new Dictionary<string, JSObject>()))[creator.arguments[i].Name] = t;
+                creator.arguments[i].descriptor.cacheContext = internalContext;
+                creator.arguments[i].descriptor.cacheRes = t;
             }
             for (; i < args.length; i++)
             {
@@ -876,8 +886,8 @@ namespace NiL.JS.Core.BaseTypes
                     args[i] = t = t.CloneImpl();
                 t.attributes |= JSObjectAttributesInternal.Argument;
             }
-            for (; i < creator.parameters.Length; i++)
-                internalContext.fields[creator.parameters[i].Name] = new JSObject() { attributes = JSObjectAttributesInternal.Argument };
+            for (; i < creator.arguments.Length; i++)
+                (internalContext.fields ?? (internalContext.fields = new Dictionary<string, JSObject>()))[creator.arguments[i].Name] = new JSObject() { attributes = JSObjectAttributesInternal.Argument };
         }
 
         private static void initVariables(CodeBlock body, Context internalContext)
@@ -891,7 +901,7 @@ namespace NiL.JS.Core.BaseTypes
                     // нельзя переменной перебить аргументы
                     // а вот функцией можно
                     {
-                        internalContext.fields[body.variables[i].name] = f = new JSObject() { attributes = JSObjectAttributesInternal.DoNotDelete };
+                        (internalContext.fields ?? (internalContext.fields = new Dictionary<string, JSObject>()))[body.variables[i].name] = f = new JSObject() { attributes = JSObjectAttributesInternal.DoNotDelete };
                         if (body.variables[i].Inititalizator != null)
                             f.Assign(body.variables[i].Inititalizator.Evaluate(internalContext));
                     }
@@ -937,11 +947,11 @@ namespace NiL.JS.Core.BaseTypes
 
         private void storeParameters()
         {
-            if (creator.parameters.Length != 0)
+            if (creator.arguments.Length != 0)
             {
-                var context = creator.parameters[0].Descriptor.cacheContext;
-                for (var i = creator.parameters.Length; i-- > 0; )
-                    context.fields[creator.parameters[i].Name] = creator.parameters[i].Descriptor.cacheRes;
+                var context = creator.arguments[0].descriptor.cacheContext;
+                for (var i = creator.arguments.Length; i-- > 0; )
+                    (context.fields ?? (context.fields = new Dictionary<string, JSObject>()))[creator.arguments[i].Name] = creator.arguments[i].descriptor.cacheRes;
             }
         }
 
@@ -976,9 +986,9 @@ namespace NiL.JS.Core.BaseTypes
         public override string ToString()
         {
             var res = ((FunctionType)(creator != null ? (int)creator.type & 3 : 0)).ToString().ToLowerInvariant() + " " + name + "(";
-            if (creator != null && creator.parameters != null)
-                for (int i = 0; i < creator.parameters.Length; )
-                    res += creator.parameters[i].Name + (++i < creator.parameters.Length ? "," : "");
+            if (creator != null && creator.arguments != null)
+                for (int i = 0; i < creator.arguments.Length; )
+                    res += creator.arguments[i].Name + (++i < creator.arguments.Length ? "," : "");
             res += ")" + (creator != creatorDummy ? creator.body as object : "{ [native code] }").ToString();
             return res;
         }

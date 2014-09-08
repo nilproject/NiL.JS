@@ -17,7 +17,7 @@ namespace NiL.JS.Expressions
             internal SafeVariableGetter(GetVariableStatement gvs)
             {
                 functionDepth = gvs.functionDepth;
-                Descriptor = gvs.Descriptor;
+                descriptor = gvs.Descriptor;
                 Descriptor.references.Remove(gvs);
                 Descriptor.references.Add(this);
                 Position = gvs.Position;
@@ -26,10 +26,8 @@ namespace NiL.JS.Expressions
 
             public override string Name
             {
-                get { return Descriptor.name; }
+                get { return descriptor.name; }
             }
-
-            public override VariableDescriptor Descriptor { get; internal set; }
 
             internal override JSObject Evaluate(Context context)
             {

@@ -49,7 +49,7 @@ namespace NiL.JS
                 throw new System.ArgumentException("Invalid char");
             Parser.Optimize(ref root, 0, new System.Collections.Generic.Dictionary<string, VariableDescriptor>(), false);
             var body = root as CodeBlock;
-            Context = new Context(NiL.JS.Core.Context.globalContext, pseudoCaller);
+            Context = new Context(NiL.JS.Core.Context.globalContext, true, pseudoCaller);
             Context.thisBind = new ThisBind(Context);
             Context.variables = (root as CodeBlock).variables;
             Context.strict = (root as CodeBlock).strict;

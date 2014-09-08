@@ -186,7 +186,7 @@ namespace NiL.JS.Statements
                     {
                         f.Reference.functionDepth = state.functionsDepth;
                         vd.references.Add(f.Reference);
-                        f.Reference.Descriptor = vd;
+                        f.Reference.descriptor = vd;
                         vd.Inititalizator = f.Reference;
                     }
                 }
@@ -204,7 +204,7 @@ namespace NiL.JS.Statements
                         else
                         {
                             desc.references.Add(gvs);
-                            gvs.Descriptor = desc;
+                            gvs.descriptor = desc;
                         }
                     }
                 }
@@ -313,7 +313,7 @@ namespace NiL.JS.Statements
                         foreach (var r in this.variables[i].References)
                         {
                             desc.references.Add(r);
-                            r.Descriptor = desc;
+                            r.descriptor = desc;
                         }
                         this.variables[i] = desc;
                     }

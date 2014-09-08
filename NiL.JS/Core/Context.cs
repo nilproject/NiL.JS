@@ -239,12 +239,7 @@ namespace NiL.JS.Core
         {
         }
 
-        internal Context(Context prototype, Function caller)
-            : this(prototype, true, caller)
-        {
-        }
-
-        protected Context(Context prototype, bool createFields, Function caller)
+        internal Context(Context prototype, bool createFields, Function caller)
         {
             tempContainer = tempContainer = prototype.tempContainer;
             this.caller = caller;
@@ -380,7 +375,7 @@ namespace NiL.JS.Core
             if (string.CompareOrdinal(name, "this") == 0)
                 return ThisBind;
             JSObject res = null;
-            bool fromProto = !fields.TryGetValue(name, out res) && (prototype != null);
+            bool fromProto = fields == null || (!fields.TryGetValue(name, out res) && (prototype != null));
             if (fromProto)
                 res = prototype.GetVariable(name, create);
             if (res == null) // значит вышли из глобального контекста
@@ -468,7 +463,7 @@ namespace NiL.JS.Core
                 if (leak)
                     context = this;
                 else
-                    context = new Context(this, this.caller) { strict = true, variables = body.variables };
+                    context = new Context(this, true, this.caller) { strict = true, variables = body.variables };
                 if (leak)
                 {
                     if (context.variables != null)
