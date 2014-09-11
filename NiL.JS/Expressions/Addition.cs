@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 using NiL.JS.Core;
 
@@ -9,17 +10,14 @@ namespace NiL.JS.Expressions
     [Serializable]
     public sealed class Addition : Expression
     {
-        //private StringBuilder stringBuilder;
-
         public Addition(CodeNode first, CodeNode second)
             : base(first, second, true)
         {
-            //stringBuilder = new StringBuilder();
+
         }
 
         internal override JSObject Evaluate(Context context)
         {
-            //var tempContainer = context.tempContainer;
             lock (this)
             {
                 JSObject temp = first.Evaluate(context);
@@ -42,8 +40,17 @@ namespace NiL.JS.Expressions
                                 case JSObjectType.Int:
                                 case JSObjectType.Bool:
                                     {
-                                        tempContainer.valueType = JSObjectType.Double;
-                                        tempContainer.dValue = (long)tint + temp.iValue;
+                                        if (((tint | temp.iValue) & 0x7c000000) == 0
+                                            && (tint & temp.iValue & 0x80000000) == 0)
+                                        {
+                                            tempContainer.valueType = JSObjectType.Int;
+                                            tempContainer.iValue = tint + temp.iValue;
+                                        }
+                                        else
+                                        {
+                                            tempContainer.valueType = JSObjectType.Double;
+                                            tempContainer.dValue = (long)tint + temp.iValue;
+                                        }
                                         return tempContainer;
                                     }
                                 case JSObjectType.Double:
@@ -148,8 +155,6 @@ namespace NiL.JS.Expressions
                                 case JSObjectType.String:
                                     {
                                         tstr += temp.oValue;
-                                        //tstr = string.Concat(tstr, temp.oValue);
-                                        //tstr = stringBuilder.Append(tstr).Append(temp.oValue).ToString(); stringBuilder.Length = 0;
                                         break;
                                     }
                                 case JSObjectType.Undefined:

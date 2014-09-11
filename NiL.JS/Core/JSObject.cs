@@ -1034,23 +1034,22 @@ namespace NiL.JS.Core
                 }
                 else
                 {
-                    this.oValue = value.oValue;
                     if (valueType < JSObjectType.Object)
-                        this.fields = null;
+                        fields = null;
                     else
-                        this.fields = value.fields;
+                        fields = value.fields;
+                    oValue = value.oValue;
                 }
-                this.__proto__ = value.__proto__;
+                __proto__ = value.__proto__;
                 this.attributes =
                     (this.attributes & ~JSObjectAttributesInternal.PrivateAttributes)
                     | (value.attributes & JSObjectAttributesInternal.PrivateAttributes);
                 return;
             }
+            this.__proto__ = null;
             this.fields = null;
-            this.__proto__ = null;
-            this.valueType = JSObjectType.Undefined;
             this.oValue = null;
-            this.__proto__ = null;
+            this.valueType = JSObjectType.Undefined;
         }
 
         [Hidden]

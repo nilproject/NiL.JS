@@ -7,72 +7,61 @@ namespace NiL.JS.Expressions
     public class More : Expression
     {
         public More(CodeNode first, CodeNode second)
-            : base(first, second, false)
+            : base(first, second, true)
         {
 
         }
 
-        internal override JSObject Evaluate(Context context)
+        internal static bool Check(JSObject first, JSObject second, bool lessOrEqual)
         {
-            var temp = first.Evaluate(context);
-            string tstr;
-            int tint;
-            int index;
-            double tdouble;
-            double td;
-            var lvt = temp.valueType;
-            switch (lvt)
+            switch (first.valueType)
             {
                 case JSObjectType.Bool:
                 case JSObjectType.Int:
                     {
-                        tint = temp.iValue;
-                        temp = second.Evaluate(context);
-                        switch (temp.valueType)
+                        switch (second.valueType)
                         {
                             case JSObjectType.Bool:
                             case JSObjectType.Int:
                                 {
-                                    return tint > temp.iValue ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+                                    return first.iValue > second.iValue;
                                 }
                             case JSObjectType.Double:
                                 {
-                                    if (double.IsNaN(temp.dValue))
-                                        return this is LessOrEqual ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False; // Костыль. Для его устранения нужно делать полноценную реализацию оператора MoreOrEqual.
+                                    if (double.IsNaN(second.dValue))
+                                        return lessOrEqual; // Костыль. Для его устранения нужно делать полноценную реализацию оператора MoreOrEqual.
                                     else
-                                        return tint > temp.dValue ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+                                        return first.iValue > second.dValue;
                                 }
                             case JSObjectType.String:
                                 {
-                                    index = 0;
-                                    if (Tools.ParseNumber(temp.oValue as string, ref index, out tdouble) && (index == (temp.oValue as string).Length))
-                                        return tint > tdouble ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+                                    var index = 0;
+                                    double td = 0;
+                                    if (Tools.ParseNumber(second.oValue as string, ref index, out td) && (index == (second.oValue as string).Length))
+                                        return first.iValue > td;
                                     else
-                                        return this is LessOrEqual ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+                                        return lessOrEqual;
                                 }
                             case JSObjectType.Date:
                             case JSObjectType.Object:
                                 {
-                                    temp = temp.ToPrimitiveValue_Value_String();
-                                    if (temp.valueType == JSObjectType.Int)
+                                    second = second.ToPrimitiveValue_Value_String();
+                                    if (second.valueType == JSObjectType.Int)
                                         goto case JSObjectType.Int;
-                                    if (temp.valueType == JSObjectType.Bool)
+                                    if (second.valueType == JSObjectType.Bool)
                                         goto case JSObjectType.Int;
-                                    if (temp.valueType == JSObjectType.Double)
+                                    if (second.valueType == JSObjectType.Double)
                                         goto case JSObjectType.Double;
-                                    if (temp.valueType == JSObjectType.String)
+                                    if (second.valueType == JSObjectType.String)
                                         goto case JSObjectType.String;
-                                    if (temp.valueType >= JSObjectType.Object) // null
-                                    {
-                                        temp.iValue = 0;
-                                        goto case JSObjectType.Int;
-                                    }
+                                    if (second.valueType >= JSObjectType.Object) // null
+                                        return first.iValue > 0;
                                     throw new NotImplementedException();
                                 }
                             case JSObjectType.Undefined:
                             case JSObjectType.NotExistsInObject:
                                 {
-                                    return this is LessOrEqual ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+                                    return lessOrEqual;
                                 }
                             case JSObjectType.NotExists:
                                 throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable not defined.")));
@@ -82,55 +71,51 @@ namespace NiL.JS.Expressions
                     }
                 case JSObjectType.Double:
                     {
-                        tdouble = temp.dValue;
-                        temp = second.Evaluate(context);
-                        if (double.IsNaN(tdouble))
-                            return this is LessOrEqual ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False; // Костыль. Для его устранения нужно делать полноценную реализацию оператора MoreOrEqual.
+                        if (double.IsNaN(first.dValue))
+                            return lessOrEqual; // Костыль. Для его устранения нужно делать полноценную реализацию оператора MoreOrEqual.
                         else
-                            switch (temp.valueType)
+                            switch (second.valueType)
                             {
                                 case JSObjectType.Bool:
                                 case JSObjectType.Int:
                                     {
-                                        return tdouble > temp.iValue ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+                                        return first.dValue > second.iValue;
                                     }
                                 case JSObjectType.Double:
                                     {
-                                        if (double.IsNaN(tdouble) || double.IsNaN(temp.dValue))
-                                            return this is LessOrEqual ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False; // Костыль. Для его устранения нужно делать полноценную реализацию оператора MoreOrEqual.
+                                        if (double.IsNaN(first.dValue) || double.IsNaN(second.dValue))
+                                            return lessOrEqual; // Костыль. Для его устранения нужно делать полноценную реализацию оператора MoreOrEqual.
                                         else
-                                            return tdouble > temp.dValue ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+                                            return first.dValue > second.dValue;
                                     }
                                 case JSObjectType.String:
                                     {
-                                        index = 0;
-                                        if (Tools.ParseNumber(temp.oValue as string, ref index, out td) && (index == (temp.oValue as string).Length))
-                                            return tdouble > td ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+                                        var index = 0;
+                                        double td = 0;
+                                        if (Tools.ParseNumber(second.oValue as string, ref index, out td) && (index == (second.oValue as string).Length))
+                                            return first.dValue > td;
                                         else
-                                            return this is LessOrEqual ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+                                            return lessOrEqual;
                                     }
                                 case JSObjectType.Undefined:
                                 case JSObjectType.NotExistsInObject:
                                     {
-                                        return this is LessOrEqual ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+                                        return lessOrEqual;
                                     }
                                 case JSObjectType.Date:
                                 case JSObjectType.Object:
                                     {
-                                        temp = temp.ToPrimitiveValue_Value_String();
-                                        if (temp.valueType == JSObjectType.Int)
+                                        second = second.ToPrimitiveValue_Value_String();
+                                        if (second.valueType == JSObjectType.Int)
                                             goto case JSObjectType.Int;
-                                        if (temp.valueType == JSObjectType.Bool)
+                                        if (second.valueType == JSObjectType.Bool)
                                             goto case JSObjectType.Int;
-                                        if (temp.valueType == JSObjectType.Double)
+                                        if (second.valueType == JSObjectType.Double)
                                             goto case JSObjectType.Double;
-                                        if (temp.valueType == JSObjectType.String)
+                                        if (second.valueType == JSObjectType.String)
                                             goto case JSObjectType.String;
-                                        if (temp.valueType >= JSObjectType.Object) // null
-                                        {
-                                            temp.iValue = 0;
-                                            goto case JSObjectType.Int;
-                                        }
+                                        if (second.valueType >= JSObjectType.Object) // null
+                                            return first.dValue > 0;
                                         throw new NotImplementedException();
                                     }
                                 case JSObjectType.NotExists:
@@ -141,65 +126,69 @@ namespace NiL.JS.Expressions
                     }
                 case JSObjectType.String:
                     {
-                        tstr = temp.oValue as string;
-                        temp = second.Evaluate(context);
-                        switch (temp.valueType)
+                        string left = first.oValue as string;
+                        switch (second.valueType)
                         {
                             case JSObjectType.Bool:
                             case JSObjectType.Int:
                                 {
-                                    index = 0;
-                                    if (Tools.ParseNumber(tstr, ref index, out td) && (index == tstr.Length))
-                                        return td > temp.iValue ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+                                    double d = 0;
+                                    int i = 0;
+                                    if (Tools.ParseNumber(left, ref i, out d) && (i == left.Length))
+                                        return d > second.iValue;
                                     else
-                                        return this is LessOrEqual ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+                                        return lessOrEqual;
                                 }
                             case JSObjectType.Double:
                                 {
-                                    index = 0;
-                                    if (Tools.ParseNumber(tstr, ref index, out td) && (index == tstr.Length))
-                                        return td > temp.dValue ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+                                    double d = 0;
+                                    int i = 0;
+                                    if (Tools.ParseNumber(left, ref i, out d) && (i == left.Length))
+                                        return d > second.dValue;
                                     else
-                                        return this is LessOrEqual ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+                                        return lessOrEqual;
                                 }
                             case JSObjectType.String:
                                 {
-                                    return string.CompareOrdinal(tstr, temp.oValue as string) > 0 ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+                                    return string.CompareOrdinal(left, second.oValue as string) > 0;
                                 }
                             case JSObjectType.Function:
                             case JSObjectType.Object:
                                 {
-                                    temp = temp.ToPrimitiveValue_Value_String();
-                                    switch (temp.valueType)
+                                    second = second.ToPrimitiveValue_Value_String();
+                                    switch (second.valueType)
                                     {
                                         case JSObjectType.Int:
                                         case JSObjectType.Bool:
                                             {
-                                                index = 0;
-                                                if (Tools.ParseNumber(tstr, ref index, out td) && (index == tstr.Length))
-                                                    return td > temp.iValue ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
-                                                else goto
-                                                    case JSObjectType.String;
+                                                double t = 0.0;
+                                                int i = 0;
+                                                if (Tools.ParseNumber(left, ref i, out t) && (i == left.Length))
+                                                    return t > second.iValue;
+                                                else
+                                                    goto case JSObjectType.String;
                                             }
                                         case JSObjectType.Double:
                                             {
-                                                index = 0;
-                                                if (Tools.ParseNumber(tstr, ref index, out td) && (index == tstr.Length))
-                                                    return td > temp.dValue ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+                                                double t = 0.0;
+                                                int i = 0;
+                                                if (Tools.ParseNumber(left, ref i, out t) && (i == left.Length))
+                                                    return t > second.dValue;
                                                 else
                                                     goto case JSObjectType.String;
                                             }
                                         case JSObjectType.String:
                                             {
-                                                return string.CompareOrdinal(tstr, temp.Value.ToString()) > 0 ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+                                                return string.CompareOrdinal(left, second.Value.ToString()) > 0;
                                             }
                                         case JSObjectType.Object:
                                             {
-                                                index = 0;
-                                                if (Tools.ParseNumber(tstr, ref index, out td) && (index == tstr.Length))
-                                                    return td > 0 ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+                                                double t = 0.0;
+                                                int i = 0;
+                                                if (Tools.ParseNumber(left, ref i, out t) && (i == left.Length))
+                                                    return t > 0;
                                                 else
-                                                    return this is LessOrEqual ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+                                                    return lessOrEqual;
                                             }
                                         case JSObjectType.NotExists:
                                             throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable not defined.")));
@@ -209,7 +198,7 @@ namespace NiL.JS.Expressions
                             case JSObjectType.Undefined:
                             case JSObjectType.NotExistsInObject:
                                 {
-                                    return this is LessOrEqual ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+                                    return lessOrEqual;
                                 }
                             case JSObjectType.NotExists:
                                 throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable not defined.")));
@@ -220,18 +209,18 @@ namespace NiL.JS.Expressions
                 case JSObjectType.Date:
                 case JSObjectType.Object:
                     {
-                        temp = temp.ToPrimitiveValue_Value_String();
-                        if (temp.valueType == JSObjectType.Int)
+                        first = first.ToPrimitiveValue_Value_String();
+                        if (first.valueType == JSObjectType.Int)
                             goto case JSObjectType.Int;
-                        if (temp.valueType == JSObjectType.Bool)
+                        if (first.valueType == JSObjectType.Bool)
                             goto case JSObjectType.Int;
-                        if (temp.valueType == JSObjectType.Double)
+                        if (first.valueType == JSObjectType.Double)
                             goto case JSObjectType.Double;
-                        if (temp.valueType == JSObjectType.String)
+                        if (first.valueType == JSObjectType.String)
                             goto case JSObjectType.String;
-                        if (temp.valueType >= JSObjectType.Object) // null
+                        if (first.valueType >= JSObjectType.Object) // null
                         {
-                            temp.iValue = 0;
+                            first.iValue = 0; // такое делать можно, поскольку тип не меняется
                             goto case JSObjectType.Int;
                         }
                         throw new NotImplementedException();
@@ -239,12 +228,27 @@ namespace NiL.JS.Expressions
                 case JSObjectType.Undefined:
                 case JSObjectType.NotExistsInObject:
                     {
-                        second.Evaluate(context);
-                        return this is LessOrEqual ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+                        return lessOrEqual;
                     }
                 case JSObjectType.NotExists:
                     throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable not defined.")));
                 default: throw new NotImplementedException();
+            }
+        }
+
+        internal override JSObject Evaluate(Context context)
+        {
+            lock (this)
+            {
+                var f = first.Evaluate(context);
+                tempContainer.valueType = f.valueType;
+                tempContainer.iValue = f.iValue;
+                tempContainer.dValue = f.dValue;
+                tempContainer.oValue = f.oValue;
+                var s = second.Evaluate(context);
+                if (tempContainer.valueType == s.valueType && tempContainer.valueType == JSObjectType.Int)
+                    return tempContainer.iValue > s.iValue;
+                return Check(tempContainer, s, this is LessOrEqual);
             }
         }
 

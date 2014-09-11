@@ -801,16 +801,16 @@ namespace NiL.JS.Core.BaseTypes
                 }
                 if (containsEval || containsArguments)
                     internalContext.fields["arguments"] = args;
+                if ((containsEval || isRecursive) && this.creator.Reference.descriptor != null)
+                {
+                    this.creator.Reference.descriptor.cacheContext = internalContext;
+                    this.creator.Reference.descriptor.cacheRes = this;
+                }
 
                 initParameters(args, body, intricate, internalContext);
                 initVariables(body, internalContext);
 
                 internalContext.thisBind = thisBind;
-                if (this.creator.Reference.descriptor != null)
-                {
-                    this.creator.Reference.descriptor.cacheContext = internalContext;
-                    this.creator.Reference.descriptor.cacheRes = this;
-                }
                 if (creator.type == FunctionType.Function
                     && !string.IsNullOrEmpty(creator.name)
                     && (containsEval || creator.containsWith)

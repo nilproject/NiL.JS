@@ -343,7 +343,7 @@ namespace NiL.JS.Statements
                 VariableDescriptor fdesc = null;
                 if (Reference.Descriptor == null)
                     Reference.descriptor = new VariableDescriptor(Reference, true, Reference.functionDepth + 1) { owner = this };
-                if (nvars.TryGetValue(name, out fdesc))
+                if (nvars.TryGetValue(name, out fdesc) && !fdesc.Defined)
                 {
                     foreach (var r in fdesc.references)
                         r.descriptor = Reference.Descriptor;

@@ -115,7 +115,7 @@ namespace NiL.JSTest
         {
             Script s = null;
             var sw = new Stopwatch();
-            int @case = 0;
+            int @case = 2;
             switch (@case)
             {
                 case 0:
@@ -136,7 +136,7 @@ for (var i = 0; i < 650; i++) fib(20);
                     {
                         s = new Script(
             @"
-for (var i = 0; i < 19300000; i++) Math.pow(2, 20);
+for (var i = 0; i < 24000000; i++) Math.abs(i);
 ");
                         break;
                     }
@@ -144,15 +144,20 @@ for (var i = 0; i < 19300000; i++) Math.pow(2, 20);
                     {
                         s = new Script(
             @"
-function mul(x, y)
+function abs(x)
 {
-    return x * y;
+    return x < 0 ? -x : x;
 }
-for (var i = 0; i < 10000000; i++) mul(2, 20);
+for (var i = 0; i < 24000000; i++) abs(i * (1 - 2 * (i & 1)));
 ");
                         break;
                     }
             }
+            s.Invoke();
+            GC.Collect(0);
+            GC.Collect(1);
+            GC.Collect(2);
+            GC.GetTotalMemory(true);
             sw.Start();
             s.Invoke();
             sw.Stop();
@@ -164,22 +169,7 @@ for (var i = 0; i < 10000000; i++) mul(2, 20);
             var sw = new Stopwatch();
             var s = new Script(
 @"
-if ({v:true}.v)
-    console.log('pass');
-
-function fib(x)
-{
-    if (x < 2)
-        return 1;
-    return fib(x - 1) + fib(x - 2);
-}
-console.log(fib(4))
-var i = 1000;
-do
-{
-    fib(20);
-}
-while(i--);
+console.log((function f(f){ return f; })(1))
 ");
             sw.Start();
             s.Invoke();
@@ -198,9 +188,9 @@ while(i--);
 
             typeof(System.Windows.Forms.Button).GetType(); // Заставляет подгрузить сборку System.Windows.Forms. Это исключительно для баловства
 
-            Context.GlobalContext.DebuggerCallback += (sender, e) => { System.Diagnostics.Debugger.Break(); };
+            Context.GlobalContext.DebuggerCallback += (sender, e) => System.Diagnostics.Debugger.Break();
 
-            int mode = 0//155
+            int mode = 4//155
                  ;
             switch (mode)
             {

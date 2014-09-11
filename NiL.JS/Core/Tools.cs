@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using System.Text;
 using NiL.JS.Core.BaseTypes;
 
@@ -356,6 +357,7 @@ namespace NiL.JS.Core
                 if (cachedDoubleStringsKeys[i] == d)
                     return cachedDoubleStringsValues[i];
             }
+            //return dtoString(d);
             var abs = Math.Abs(d);
             string res = null;
             try
@@ -379,6 +381,147 @@ namespace NiL.JS.Core
                 cachedDoubleStringsKeys[cachedDoubleStringsIter] = d;
                 cachedDoubleStringsValues[cachedDoubleStringsIter++] = res;
                 cachedDoubleStringsIter %= 5;
+            }
+        }
+
+        private static string dtoString(double a)
+        {
+            var b = (ulong)BitConverter.DoubleToInt64Bits(a);
+            ulong m0 = (b & ((1UL << 52) - 1)) | (1UL << 52);
+            ulong m1 = m0 & uint.MaxValue;
+            m0 &= ~(ulong)uint.MaxValue;
+            m1 <<= 21;
+            int e = 0;
+            var s = (ulong)(b >> 63) | 1;
+            e |= (int)(b >> 52);
+            e = 52 - e + 1023;
+
+            const int estep = 3;
+            const int dstep = 10;
+            const int estepCor0 = 3;
+            const int estepCor1 = 107;// 321;
+            int count = 0;
+            int ec = 0;
+            if (e < 0)
+            {
+                while (e <= -(estep + (count % estepCor0 == 0 && count % estepCor1 != 0 ? 1 : 0)))
+                {
+                    e += estep + (count % estepCor0 == 0 && count % estepCor1 != 0 ? 1 : 0);
+                    m0 <<= estep + (count % estepCor0 == 0 && count % estepCor1 != 0 ? 1 : 0);
+                    m0 /= dstep;
+                    m1 <<= estep + (count % estepCor0 == 0 && count % estepCor1 != 0 ? 1 : 0);
+                    m1 /= dstep;
+                    count++;
+                    if (count % estepCor1 == 0)
+                        ec++;
+                }
+                m0 <<= -e;
+                m1 <<= -e;
+            }
+            else
+            {
+                while (e >= estep + (count % estepCor0 == 0 && count % estepCor1 != 0 ? 1 : 0))
+                {
+                    e -= estep + (count % estepCor0 == 0 && count % estepCor1 != 0 ? 1 : 0);
+                    m0 *= dstep;
+                    m0 >>= estep + (count % estepCor0 == 0 && count % estepCor1 != 0 ? 1 : 0);
+                    m1 *= dstep;
+                    m1 >>= estep + (count % estepCor0 == 0 && count % estepCor1 != 0 ? 1 : 0);
+                    if (count % estepCor1 == 0)
+                        ec--;
+                    count--;
+                }
+                count += ec / 3;
+                m0 >>= e;
+                m1 >>= e;
+            }
+            m0 += m1 >> 21;
+
+            if (m0 == 0)
+                return s > 0 ? "0" : "-0";
+            if (count >= 0)
+            {
+                while (m0 >= (ulong)1e17)
+                {
+                    var mod = m0 % 10;
+                    m0 /= 10;
+                    if (mod >= 5)
+                        m0++;
+                    count++;
+                }
+                var ts = m0.ToString();
+                var res = new StringBuilder();
+                if (ts.Length + count < 22)
+                {
+                    res.Append(ts);
+                    for (var i = 0; i < count; i++)
+                        res.Append("0");
+                    return res.ToString();
+                }
+                for (var i = 0; i < Math.Min(17, ts.Length); i++)
+                {
+                    if (i == 1)
+                        res.Append('.');
+                    res.Append(ts[i]);
+                }
+                while (res[res.Length - 1] == '0')
+                    res.Length--;
+                if (!char.IsDigit(res[res.Length - 1]))
+                    res.Length--;
+                res.Append("e+").Append(ts.Length - 1 + count);
+                return res.ToString();
+            }
+            else
+            {
+                while (m0 >= (ulong)1e17)
+                {
+                    var mod = m0 % 10;
+                    m0 /= 10;
+                    if (mod >= 5)
+                        m0++;
+                    count++;
+                }
+                var ts = m0.ToString();
+                var res = new StringBuilder();
+                if (count + ts.Length <= 0)
+                {
+                    if (count + ts.Length <= -7)
+                    {
+                        for (var i = 0; i < ts.Length; i++)
+                        {
+                            if (i == 1)
+                                res.Append('.');
+                            res.Append(ts[i]);
+                        }
+                        res.Append("e").Append(count + ts.Length);
+                    }
+                    else
+                    {
+                        res.Append("0.");
+                        for (var i = -count - ts.Length; i-- > 0; )
+                            res.Append('0');
+                        res.Append(ts);
+                    }
+                }
+                else
+                {
+                    for (var i = 0; i < ts.Length; i++)
+                    {
+                        if (count + ts.Length == i)
+                            res.Append('.');
+                        res.Append(ts[i]);
+                    }
+                    for (var i = res.Length; i-- > 0; )
+                    {
+                        if (res[i] == '0')
+                            res.Length--;
+                        else
+                            break;
+                    }
+                    if (res[res.Length - 1] == '.')
+                        res.Length--;
+                }
+                return res.ToString();
             }
         }
 

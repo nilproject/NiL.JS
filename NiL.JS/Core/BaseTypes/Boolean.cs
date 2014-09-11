@@ -87,9 +87,16 @@ namespace NiL.JS.Core.BaseTypes
         [Hidden]
         public static implicit operator Boolean(bool value)
         {
-            var res = value ? BaseTypes.Boolean.True : BaseTypes.Boolean.False;
-            res.iValue = value ? 1 : 0;
-            return res;
+#if DEBUG
+            if (Boolean.True.iValue != 1)
+                System.Diagnostics.Debugger.Break();
+            if (Boolean.False.iValue != 0)
+                System.Diagnostics.Debugger.Break();
+#endif
+            return value ? BaseTypes.Boolean.True : BaseTypes.Boolean.False;
+            //var res = value ? BaseTypes.Boolean.True : BaseTypes.Boolean.False;
+            //res.iValue = value ? 1 : 0;
+            //return res;
         }
 
         [Hidden]
