@@ -17,6 +17,7 @@ namespace NiL.JS.Core.BaseTypes
             valueType = JSObjectType.Bool;
             iValue = 0;
             oValue = this;
+            attributes |= JSObjectAttributesInternal.SystemObject;
         }
 
         [DoNotEnumerate]
@@ -27,6 +28,7 @@ namespace NiL.JS.Core.BaseTypes
             valueType = JSObjectType.Bool;
             iValue = (bool)obj[0] ? 1 : 0;
             oValue = this;
+            attributes |= JSObjectAttributesInternal.SystemObject;
         }
 
         [DoNotEnumerate]
@@ -35,6 +37,7 @@ namespace NiL.JS.Core.BaseTypes
             valueType = JSObjectType.Bool;
             iValue = value ? 1 : 0;
             oValue = this;
+            attributes |= JSObjectAttributesInternal.SystemObject;
         }
 
         [DoNotEnumerate]
@@ -43,6 +46,7 @@ namespace NiL.JS.Core.BaseTypes
             valueType = JSObjectType.Bool;
             iValue = value != 0 && !double.IsNaN(value) ? 1 : 0;
             oValue = this;
+            attributes |= JSObjectAttributesInternal.SystemObject;
         }
 
         [DoNotEnumerate]
@@ -51,6 +55,7 @@ namespace NiL.JS.Core.BaseTypes
             valueType = JSObjectType.Bool;
             iValue = value != 0 ? 1 : 0;
             oValue = this;
+            attributes |= JSObjectAttributesInternal.SystemObject;
         }
 
         [DoNotEnumerate]
@@ -59,6 +64,7 @@ namespace NiL.JS.Core.BaseTypes
             valueType = JSObjectType.Bool;
             iValue = !string.IsNullOrEmpty(value) ? 1 : 0;
             oValue = this;
+            attributes |= JSObjectAttributesInternal.SystemObject;
         }
 
         [Hidden]

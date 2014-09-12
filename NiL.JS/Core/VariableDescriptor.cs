@@ -44,7 +44,7 @@ namespace NiL.JS.Core
             {
                 if (context is WithContext)
                 {
-                    cacheRes = null;
+                    cacheContext = null;
                     break;
                 }
                 context = context.prototype;
@@ -52,7 +52,7 @@ namespace NiL.JS.Core
             }
             if (context != cacheContext)
                 cacheRes = null;
-            if (cacheRes == null)// || isInvalid(ref context, depth))
+            if (cacheRes == null)
             {
                 res = context.GetVariable(name, create);
                 if (create && !Defined && res.valueType == JSObjectType.NotExists)

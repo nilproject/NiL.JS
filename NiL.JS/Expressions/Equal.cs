@@ -60,9 +60,7 @@ namespace NiL.JS.Expressions
                                     if (tjso.valueType == JSObjectType.String)
                                         goto case JSObjectType.String;
                                     if (tjso.valueType >= JSObjectType.Object) // null
-                                    {
                                         return false;
-                                    }
                                     throw new NotImplementedException();
                                 }
                             case JSObjectType.Undefined:

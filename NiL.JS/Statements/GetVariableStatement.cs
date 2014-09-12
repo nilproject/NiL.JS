@@ -29,12 +29,12 @@ namespace NiL.JS.Statements
                     throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable \"" + variableName + "\" is not defined.")));
                 return res;
             }
-            return Descriptor.Get(context, true, functionDepth);
+            return descriptor.Get(context, true, functionDepth);
         }
 
         internal override JSObject Evaluate(Context context)
         {
-            var res = Descriptor.Get(context, false, functionDepth);
+            var res = descriptor.Get(context, false, functionDepth);
             if (res.valueType == JSObjectType.NotExists)
                 throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable \"" + variableName + "\" is not defined.")));
             if (res.valueType == JSObjectType.Property)

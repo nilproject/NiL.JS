@@ -55,7 +55,9 @@ namespace NiL.JS.Expressions
             context.objectSource = null;
 
             // Аргументы должны быть вычислены даже если функция не существует.
-            if (temp.valueType != JSObjectType.Function && !(temp.valueType == JSObjectType.Object && temp.oValue is Function))
+            if (temp.valueType != JSObjectType.Function
+                //&& !(temp.valueType == JSObjectType.Object && temp.oValue is Function)
+                )
                 throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError(first + " is not callable")));
             func = temp.oValue as Function;
             func.attributes = (func.attributes & ~JSObjectAttributesInternal.Eval) | (temp.attributes & JSObjectAttributesInternal.Eval);

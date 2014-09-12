@@ -23,16 +23,28 @@ namespace NiL.JS.Expressions
                 double da = 0.0;
                 JSObject f = first.Evaluate(context);
                 JSObject s = null;
+                long l = 0;
+                int a;
                 if (f.valueType == JSObjectType.Int
                     || f.valueType == JSObjectType.Bool)
                 {
-                    int a = f.iValue;
+                    a = f.iValue;
                     s = second.Evaluate(context);
                     if (s.valueType == JSObjectType.Int
                     || s.valueType == JSObjectType.Bool)
                     {
-                        tempContainer.iValue = a - s.iValue;
-                        tempContainer.valueType = JSObjectType.Int;
+                        l = (long)a - s.iValue;
+                        if (l > 2147483647L
+                            || l < -2147483648L)
+                        {
+                            tempContainer.dValue = l;
+                            tempContainer.valueType = JSObjectType.Double;
+                        }
+                        else
+                        {
+                            tempContainer.iValue = (int)l;
+                            tempContainer.valueType = JSObjectType.Int;
+                        }
                         return tempContainer;
                     }
                     else

@@ -148,7 +148,7 @@ function abs(x)
 {
     return x < 0 ? -x : x;
 }
-for (var i = 0; i < 24000000; i++) abs(i * (1 - 2 * (i & 1)));
+for (var i = 0; i < 55000000; i++) abs(i * (1 - 2 * (i & 1)));
 ");
                         break;
                     }
@@ -190,8 +190,8 @@ console.log((function f(f){ return f; })(1))
 
             Context.GlobalContext.DebuggerCallback += (sender, e) => System.Diagnostics.Debugger.Break();
 
-            int mode = 4//155
-                 ;
+            int mode = 0//155
+                   ;
             switch (mode)
             {
                 case -2:

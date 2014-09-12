@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using NiL.JS.Core.BaseTypes;
 using NiL.JS.Core.Modules;
 using NiL.JS.Expressions;
@@ -37,7 +38,7 @@ namespace NiL.JS.Core
         NotConfigurable = 1 << 4,
         Argument = 1 << 16,
         /// <summary>
-        /// Объект является системным.
+        /// Объект является типизированной обёрткой или встроенной константой.
         /// </summary>
         SystemObject = 1 << 17,
         ProxyPrototype = 1 << 18,
@@ -1466,6 +1467,8 @@ namespace NiL.JS.Core
             var obj = source.GetMember(args[1], false, true);
             if (obj.valueType < JSObjectType.Undefined)
                 return undefined;
+            if ((obj.attributes & JSObjectAttributesInternal.SystemObject) != 0)
+                obj = source.GetMember(args[1], true, true); // объект может переставить аттрибуты при копировании.
             var res = CreateObject();
             if (obj.valueType != JSObjectType.Property || (obj.attributes & JSObjectAttributesInternal.Field) != 0)
             {
@@ -1520,31 +1523,30 @@ namespace NiL.JS.Core
         public static implicit operator JSObject(bool value)
         {
             return (BaseTypes.Boolean)value;
-            //return new JSObject() { valueType = JSObjectType.Bool, iValue = value ? 1 : 0 };
         }
 
         [Hidden]
         public static implicit operator JSObject(int value)
         {
-            return new JSObject() { valueType = JSObjectType.Int, iValue = value };
+            return new Number(value);
         }
 
         [Hidden]
         public static implicit operator JSObject(long value)
         {
-            return new JSObject() { valueType = JSObjectType.Double, dValue = value };
+            return new Number(value);
         }
 
         [Hidden]
         public static implicit operator JSObject(double value)
         {
-            return new JSObject() { valueType = JSObjectType.Double, dValue = value };
+            return new Number(value);
         }
 
         [Hidden]
         public static implicit operator JSObject(string value)
         {
-            return new JSObject() { valueType = JSObjectType.String, oValue = value };
+            return new BaseTypes.String(value);
         }
 
 #if INLINE
@@ -1580,7 +1582,7 @@ namespace NiL.JS.Core
         {
             [Hidden]
 #if INLINE
-            [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+            [MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
             get { return valueType >= JSObjectType.Undefined; }
         }
@@ -1590,7 +1592,7 @@ namespace NiL.JS.Core
         {
             [Hidden]
 #if INLINE
-            [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+            [MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
             get { return valueType > JSObjectType.Undefined; }
         }
@@ -1600,7 +1602,7 @@ namespace NiL.JS.Core
         {
             [Hidden]
 #if INLINE
-            [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+            [MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
             get { return valueType == JSObjectType.Int || valueType == JSObjectType.Double; }
         }

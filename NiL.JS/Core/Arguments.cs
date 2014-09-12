@@ -236,7 +236,7 @@ namespace NiL.JS.Core
                     }
                 case "callee":
                     {
-                        if ((callee.attributes & JSObjectAttributesInternal.SystemObject) != 0)
+                        if (createMember && (callee.attributes & JSObjectAttributesInternal.SystemObject) != 0)
                         {
                             callee = callee.CloneImpl();
                             callee.attributes = JSObjectAttributesInternal.DoNotEnum;
@@ -245,7 +245,7 @@ namespace NiL.JS.Core
                     }
                 case "caller":
                     {
-                        if ((caller.attributes & JSObjectAttributesInternal.SystemObject) != 0)
+                        if (createMember && (caller.attributes & JSObjectAttributesInternal.SystemObject) != 0)
                         {
                             caller = caller.CloneImpl();
                             callee.attributes = JSObjectAttributesInternal.DoNotEnum;

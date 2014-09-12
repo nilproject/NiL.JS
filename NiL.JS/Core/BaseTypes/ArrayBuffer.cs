@@ -47,6 +47,7 @@ namespace NiL.JS.Core.BaseTypes
         public ArrayBuffer(int length)
         {
             Data = new byte[length];
+            attributes |= JSObjectAttributesInternal.SystemObject;
         }
 
         public int byteLength

@@ -21,6 +21,7 @@ namespace NiL.JS.Core.BaseTypes
             oValue = this;
             this.data = data;
             _length = length;
+            attributes |= JSObjectAttributesInternal.SystemObject;
         }
 
         [DoNotEnumerate]
@@ -29,7 +30,7 @@ namespace NiL.JS.Core.BaseTypes
             oValue = this;
             valueType = JSObjectType.Object;
             data = new BinaryTree<long, JSObject>();
-            attributes |= JSObjectAttributesInternal.ReadOnly;
+            attributes |= JSObjectAttributesInternal.SystemObject;
         }
 
         [DoNotEnumerate]
@@ -41,6 +42,7 @@ namespace NiL.JS.Core.BaseTypes
                 throw new JSException(TypeProxy.Proxy(new RangeError("Invalid array length.")));
             data = new BinaryTree<long, JSObject>();
             this._length = (long)length;
+            attributes |= JSObjectAttributesInternal.SystemObject;
         }
 
         [CLSCompliant(false)]
@@ -53,6 +55,7 @@ namespace NiL.JS.Core.BaseTypes
                 throw new JSException(TypeProxy.Proxy(new RangeError("Invalid array length.")));
             data = new BinaryTree<long, JSObject>();
             this._length = length;
+            attributes |= JSObjectAttributesInternal.SystemObject;
         }
 
         [DoNotEnumerate]
@@ -64,6 +67,7 @@ namespace NiL.JS.Core.BaseTypes
                 throw new JSException(TypeProxy.Proxy(new RangeError("Invalid array length.")));
             data = new BinaryTree<long, JSObject>();
             this._length = (long)d;
+            attributes |= JSObjectAttributesInternal.SystemObject;
         }
 
         [DoNotEnumerate]
@@ -85,6 +89,7 @@ namespace NiL.JS.Core.BaseTypes
             var index = 0U;
             foreach (var e in collection)
                 data[index++] = e is JSObject ? (e as JSObject).CloneImpl() : TypeProxy.Proxy(e);
+            attributes |= JSObjectAttributesInternal.SystemObject;
         }
 
         [Hidden]
@@ -99,6 +104,7 @@ namespace NiL.JS.Core.BaseTypes
             foreach (var e in enumerable)
                 data[index++] = e is JSObject ? (e as JSObject).CloneImpl() : TypeProxy.Proxy(e);
             _length = (long)index;
+            attributes |= JSObjectAttributesInternal.SystemObject;
         }
 
         [Hidden]
@@ -116,6 +122,7 @@ namespace NiL.JS.Core.BaseTypes
                 data[index++] = e is JSObject ? (e as JSObject).CloneImpl() : TypeProxy.Proxy(e);
             }
             _length = (long)index;
+            attributes |= JSObjectAttributesInternal.SystemObject;
         }
 
         [Hidden]
@@ -952,12 +959,15 @@ namespace NiL.JS.Core.BaseTypes
                                     return element;
                                 }
                                 else
-                                    return base.GetMember(name, create, own);
+                                {
+                                    notExists.valueType = JSObjectType.NotExistsInObject;
+                                    return notExists;
+                                }
                             }
                             else
                             {
                                 var t = element ?? notExists;
-                                if ((t.attributes & (JSObjectAttributesInternal.SystemObject | JSObjectAttributesInternal.ReadOnly)) == JSObjectAttributesInternal.SystemObject)
+                                if (create && (t.attributes & (JSObjectAttributesInternal.SystemObject | JSObjectAttributesInternal.ReadOnly)) == JSObjectAttributesInternal.SystemObject)
                                     data[index] = t = t.CloneImpl();
                                 return t;
                             }

@@ -24,6 +24,7 @@ namespace NiL.JS.Expressions
                 double da = 0.0;
                 JSObject f = first.Evaluate(context);
                 JSObject s = null;
+                long l = 0;
                 if (f.valueType == JSObjectType.Int
                     || f.valueType == JSObjectType.Bool)
                 {
@@ -32,15 +33,17 @@ namespace NiL.JS.Expressions
                     if (s.valueType == JSObjectType.Int
                         || s.valueType == JSObjectType.Bool)
                     {
-                        if (((a | s.iValue) & 0xffff0000) == 0)
+                        l = (long)a * s.iValue;
+                        if (l > 2147483647L
+                            || l < -2147483648L)
                         {
-                            tempContainer.iValue = a * s.iValue;
-                            tempContainer.valueType = JSObjectType.Int;
+                            tempContainer.dValue = l;
+                            tempContainer.valueType = JSObjectType.Double;
                         }
                         else
                         {
-                            tempContainer.dValue = a * (long)s.iValue;
-                            tempContainer.valueType = JSObjectType.Double;
+                            tempContainer.iValue = (int)l;
+                            tempContainer.valueType = JSObjectType.Int;
                         }
                         return tempContainer;
                     }

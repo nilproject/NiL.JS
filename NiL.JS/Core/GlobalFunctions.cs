@@ -13,6 +13,27 @@ namespace NiL.JS.Core
             throw new NotImplementedException();
         }
 
+        internal static JSObject __swap(JSObject thisBind, Arguments args)
+        {
+            if ((args[0].attributes & (JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.SystemObject)) == 0
+                && (args[1].attributes & (JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.SystemObject)) == 0)
+            {
+                var iv = args[0].iValue;
+                var dv = args[0].dValue;
+                var ov = args[0].oValue;
+                var vt = args[0].valueType;
+                args[0].iValue = args[1].iValue;
+                args[0].dValue = args[1].dValue;
+                args[0].oValue = args[1].oValue;
+                args[0].valueType = args[1].valueType;
+                args[1].iValue = iv;
+                args[1].dValue = dv;
+                args[1].oValue = ov;
+                args[1].valueType = vt;
+            }
+            return null;
+        }
+
         internal static JSObject isFinite(JSObject thisBind, Arguments x)
         {
             var d = Tools.JSObjectToDouble(x[0]);

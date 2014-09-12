@@ -30,7 +30,7 @@ namespace NiL.JS.Core
         internal protected override JSObject GetVariable(string name, bool create)
         {
             thisBind = prototype.thisBind;
-            var res = @object.GetMember(name);
+            var res = @object.GetMember(name, create, false);
             if (res.valueType < JSObjectType.Undefined)
             {
                 res = prototype.GetVariable(name, create);

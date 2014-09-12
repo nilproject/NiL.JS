@@ -17,7 +17,7 @@ namespace NiL.JS.Core.TypeProxing
             valueType = JSObjectType.Object;
             oValue = this;
             __proto__ = TypeProxy.GetPrototype(this.GetType());
-            attributes |= JSObjectAttributesInternal.SystemObject;
+            attributes |= JSObjectAttributesInternal.SystemObject | JSObjectAttributesInternal.ReadOnly;
         }
 
         [CLSCompliant(false)]

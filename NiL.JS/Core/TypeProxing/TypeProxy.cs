@@ -318,7 +318,7 @@ namespace NiL.JS.Core
                         if (cache[i].Parameters.Length == l
                         || (cache[i].Parameters.Length == 1
                             && (cache[i].Parameters[0].ParameterType == typeof(Arguments)
-                                //|| cache[i].Parameters[0].ParameterType == typeof(JSObject[])
+                            //|| cache[i].Parameters[0].ParameterType == typeof(JSObject[])
                                 || cache[i].Parameters[0].ParameterType == typeof(object[]))))
                         {
                             object[] cargs = null;
@@ -537,6 +537,8 @@ namespace NiL.JS.Core
 
         public override string ToString()
         {
+            if (hostedType.IsAbstract)
+                return "[object " + hostedType.Name + "]";
             return ((bindFlags & BindingFlags.Static) != 0 ? "Proxy:Static (" : "Proxy:Dynamic (") + hostedType + ")";
         }
     }

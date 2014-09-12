@@ -103,6 +103,7 @@ namespace NiL.JS.Core
                 globalContext.DefineVariable("parseFloat").Assign(new ExternalFunction(GlobalFunctions.parseFloat));
                 globalContext.DefineVariable("parseInt").Assign(new ExternalFunction(GlobalFunctions.parseInt));
                 globalContext.DefineVariable("__pinvoke").Assign(new ExternalFunction(GlobalFunctions.__pinvoke));
+                globalContext.DefineVariable("__swap").Assign(new ExternalFunction(GlobalFunctions.__swap));
                 #endregion
                 #region Consts
                 globalContext.fields["undefined"] = JSObject.undefined;
