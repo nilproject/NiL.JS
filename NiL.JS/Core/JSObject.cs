@@ -100,6 +100,9 @@ namespace NiL.JS.Core
         [Hidden]
         internal static JSObject GlobalPrototype;
 
+        [Hidden]
+        public static JSObject Undefined { get { return undefined; } }
+
         [NonSerialized]
         [Hidden]
         [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]

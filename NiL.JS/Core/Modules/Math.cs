@@ -99,23 +99,46 @@ namespace NiL.JS.Core.Modules
             return System.Math.Exp(Tools.JSObjectToDouble(args.length > 0 ? args[0] : null));
         }
 
-        [DoNotEnumerate]
-        [DoNotDelete]
-        public static JSObject floor(Arguments args)
+        private static ulong shl(ulong x, int y)
         {
-            var a = Tools.JSObjectToDouble(args.length > 0 ? args[0] : null);
-            if (a < 0 && a > -1e-15)
-                a = 0;
-            if (a > 0 && a < 1e-15)
-                a = 0;
-            JSObject result = 0;
-            result.dValue = System.Math.Floor(a);
-            result.valueType = JSObjectType.Double;
-            return result;
+            while (y > 0)
+            {
+                x >>= y % 64;
+                y -= 64;
+            }
+            return x;
         }
 
-        [DoNotEnumerate]
         [DoNotDelete]
+        [DoNotEnumerate]
+        public static JSObject floor(Arguments args)
+        {
+            var a = args.Length > 0 ? Tools.JSObjectToDouble(args[0]) : double.NaN;
+            if (a == 0.0)
+                return a;
+            var b = BitConverter.DoubleToInt64Bits(a);
+            ulong m = ((ulong)b & ((1UL << 52) - 1)) | (1UL << 52);
+            int e = 0;
+            long s = (b >> 63) | 1;
+            unchecked { b &= ((1L << 63) - 1L); }
+            e |= (int)(b >> 52);
+            e = 52 - e + 1023;
+            if (e > 0)
+            {
+                if (s < 0)
+                {
+                    if ((e > 64) || (m & ((1UL << e) - 1UL)) != 0)
+                        return -(long)shl(m, e) - 1;
+                    return -(long)shl(m, e);
+                }
+                return (long)shl(m, e) * s;
+            }
+            else
+                return a;
+        }
+
+        [DoNotDelete]
+        [DoNotEnumerate]
         public static JSObject log(Arguments args)
         {
             return System.Math.Log(Tools.JSObjectToDouble(args.Length > 0 ? args[0] : null));
@@ -187,7 +210,29 @@ namespace NiL.JS.Core.Modules
         [DoNotDelete]
         public static JSObject round(Arguments args)
         {
-            return System.Math.Round(Tools.JSObjectToDouble(args.Length > 0 ? args[0] : null) + 0.001);
+            var a = args.Length > 0 ? Tools.JSObjectToDouble(args[0]) : double.NaN;
+            var b = BitConverter.DoubleToInt64Bits(a);
+            ulong m = ((ulong)b & ((1UL << 52) - 1)) | (1UL << 52);
+            int e = 0;
+            long s = (b >> 63) | 1;
+            unchecked { b &= ((1L << 63) - 1L); }
+            e |= (int)(b >> 52);
+            e = 52 - e + 1023;
+            if (e > 0) // есть что округлить
+            {
+                if (s < 0)
+                {
+                    if ((shl(m, (e - 1)) & 1) == 1)
+                    {
+                        if ((m & ((1UL << (e - 1)) - 1UL)) != 0)
+                            return -(long)shl(m, e) - 1;
+                        return -(long)shl(m, e);
+                    }
+                }
+                return ((long)shl(m, e) + ((long)shl(m, (e - 1)) & 1) * s) * s;
+            }
+            else
+                return a;
         }
 
         [DoNotEnumerate]
