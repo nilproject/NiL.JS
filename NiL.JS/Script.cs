@@ -35,10 +35,21 @@ namespace NiL.JS
         public Context Context { get; private set; }
 
         /// <summary>
-        /// Инициализирует объект типа Script и преобрзует код скрипта во внутреннее представление.
+        /// Инициализирует объект типа Script и преобрзует код сценария во внутреннее представление.
         /// </summary>
-        /// <param name="code">Код скрипта на языке JavaScript</param>
+        /// <param name="code">Код скрипта на языке JavaScript.</param>
         public Script(string code)
+            : this(code, null)
+        {
+
+        }
+
+        /// <summary>
+        /// Инициализирует объект типа Script и преобрзует код сценария во внутреннее представление.
+        /// </summary>
+        /// <param name="code">Код скрипта на языке JavaScript.</param>
+        /// <param name="parentContext">Родительский контекст для контекста выполнения сценария.</param>
+        public Script(string code, Context parentContext)
         {
             if (code == null)
                 throw new ArgumentNullException();
@@ -49,7 +60,7 @@ namespace NiL.JS
                 throw new System.ArgumentException("Invalid char");
             Parser.Optimize(ref root, 0, new System.Collections.Generic.Dictionary<string, VariableDescriptor>(), false);
             var body = root as CodeBlock;
-            Context = new Context(NiL.JS.Core.Context.globalContext, true, pseudoCaller);
+            Context = new Context(parentContext ?? NiL.JS.Core.Context.globalContext, true, pseudoCaller);
             Context.thisBind = new ThisBind(Context);
             Context.variables = (root as CodeBlock).variables;
             Context.strict = (root as CodeBlock).strict;

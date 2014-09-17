@@ -233,25 +233,35 @@ namespace NiL.JS.Core
             RefreshGlobalContext();
         }
 
-        private Context() { tempContainer = new JSObject() { attributes = JSObjectAttributesInternal.Temporary }; }
+        public Context()
+            : this(globalContext, true, Function.emptyFunction)
+        {
+        }
 
         public Context(Context prototype)
-            : this(prototype, true, new Function())
+            : this(prototype, true, Function.emptyFunction)
         {
         }
 
         internal Context(Context prototype, bool createFields, Function caller)
         {
-            tempContainer = tempContainer = prototype.tempContainer;
+            if (prototype != null)
+            {
+                tempContainer = prototype.tempContainer;
+                this.prototype = prototype;
+                this.thisBind = prototype.thisBind;
+#if DEV
+                this.debugging = prototype.debugging;
+#endif
+            }
+            else
+            {
+                tempContainer = new JSObject() { attributes = JSObjectAttributesInternal.Temporary };
+            }
             this.caller = caller;
             if (createFields)
                 this.fields = new Dictionary<string, JSObject>();
-            this.prototype = prototype;
-            this.thisBind = prototype.thisBind;
             this.abortInfo = JSObject.notExists;
-#if DEV
-            this.debugging = prototype.debugging;
-#endif
         }
 
         /// <summary>

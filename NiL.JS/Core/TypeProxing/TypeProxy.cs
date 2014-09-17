@@ -22,7 +22,7 @@ namespace NiL.JS.Core
         {
             get
             {
-                if (_prototypeInstance == null)
+                if (_prototypeInstance == null && (bindFlags & BindingFlags.Instance) != 0 && !hostedType.IsAbstract)
                 {
                     try
                     {
