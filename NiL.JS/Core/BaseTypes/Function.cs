@@ -677,9 +677,10 @@ namespace NiL.JS.Core.BaseTypes
             [Hidden]
             set { if (creator.body.strict || _caller == propertiesDummySM) throw new JSException(new TypeError("Property caller not allowed in strict mode.")); }
         }
-
+        
+#if !NET35
         private Func<Context, JSObject> compiledScript;
-
+#endif
         private void checkUsings()
         {
             for (var i = 0; i < creator.body.variables.Length; i++)
