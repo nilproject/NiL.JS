@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Text;
 using System.Threading;
+using System.Web;
 using NiL.JS.Core.BaseTypes;
 using NiL.JS.Core.Modules;
 
@@ -62,7 +63,8 @@ namespace NiL.JS.Core
 
         internal static JSObject unescape(JSObject thisBind, Arguments x)
         {
-            return System.Web.HttpUtility.HtmlDecode(x[0].ToString());
+            var res = HttpUtility.UrlDecode(x[0].ToString());
+            return res;
         }
 
         [ParametersCount(2)]
