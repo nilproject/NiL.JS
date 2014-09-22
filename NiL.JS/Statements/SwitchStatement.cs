@@ -118,7 +118,7 @@ namespace NiL.JS.Statements
         {
             if (functions != null)
                 throw new InvalidOperationException();
-            int i = cases[0] != null ? cases[0].index : length + 1;
+            int i = cases[0] != null ? cases[0].index : 0;
             var imageVal = image.Evaluate(context);
             for (int j = 1; j < cases.Length; j++)
             {

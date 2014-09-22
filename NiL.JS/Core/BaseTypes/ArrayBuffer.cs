@@ -39,14 +39,22 @@ namespace NiL.JS.Core.BaseTypes
 
         [DoNotEnumerate]
         public ArrayBuffer()
+            : this(0)
         {
-            Data = new byte[0];
         }
 
         [DoNotEnumerate]
         public ArrayBuffer(int length)
+            : this(new byte[length])
         {
-            Data = new byte[length];
+        }
+
+        [Hidden]
+        public ArrayBuffer(byte[] data)
+        {
+            if (data == null)
+                throw new ArgumentNullException();
+            Data = data;
             attributes |= JSObjectAttributesInternal.SystemObject;
         }
 

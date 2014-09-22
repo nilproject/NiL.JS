@@ -830,15 +830,20 @@ namespace NiL.JS.Core.BaseTypes
             dt = dt.AddDays((System.Math.Abs(time) % _weekMilliseconds) / _dayMilliseconds);
             dt = dt.AddMonths(getMonthImpl());
             dt = dt.AddYears(y);
-            var res =
-                dt.ToString("dddd MMMM")
-                + " " + getDateImpl() + " "
-                + getYearImpl() + " "
-                + getHoursImpl().ToString("00:")
-                + getMinutesImpl().ToString("00:")
-                + getSecondsImpl().ToString("00")
-                + " GMT" + (offset.Ticks > 0 ? "+" : "") + (offset.Hours * 100 + offset.Minutes).ToString("0000") + " (" + TimeZone.CurrentTimeZone.DaylightName + ")";
-            return res;
+            dt = dt.AddHours(getHoursImpl());
+            dt = dt.AddMinutes(getMinutesImpl());
+            dt = dt.AddSeconds(getSecondsImpl());
+            dt = dt.AddMilliseconds(getMillisecondsImpl());
+            return dt.ToLongDateString() + " " + dt.ToLongTimeString();
+            //var res =
+            //    dt.ToString("dddd MMMM")
+            //    + " " + getDateImpl() + " "
+            //    + getYearImpl() + " "
+            //    + getHoursImpl().ToString("00:")
+            //    + getMinutesImpl().ToString("00:")
+            //    + getSecondsImpl().ToString("00")
+            //    + " GMT" + (offset.Ticks > 0 ? "+" : "") + (offset.Hours * 100 + offset.Minutes).ToString("0000") + " (" + TimeZone.CurrentTimeZone.DaylightName + ")";
+            //return res;
         }
 
         [DoNotEnumerate]
@@ -930,11 +935,12 @@ namespace NiL.JS.Core.BaseTypes
             dt = dt.AddDays((System.Math.Abs(time) % _weekMilliseconds) / _dayMilliseconds);
             dt = dt.AddMonths(getMonthImpl());
             dt = dt.AddYears(y);
-            var res =
-                dt.ToString("dddd MMMM")
-                + " " + getDateImpl() + " "
-                + getYearImpl();
-            return res;
+            return dt.ToLongDateString();
+            //var res =
+            //    dt.ToString("dddd, MMMM")
+            //    + " " + getDateImpl() + ", "
+            //    + getYearImpl();
+            //return res;
         }
 
         [Hidden]
