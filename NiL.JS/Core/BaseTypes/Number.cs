@@ -67,6 +67,23 @@ namespace NiL.JS.Core.BaseTypes
             attributes |= JSObjectAttributesInternal.SystemObject;
         }
 
+        [Modules.Hidden]
+        public Number(long value)
+        {
+            if ((long)(int)(value) == value)
+            {
+                valueType = JSObjectType.Int;
+                iValue = (int)value;
+            }
+            else
+            {
+                valueType = JSObjectType.Double;
+                dValue = value;
+            }
+            oValue = this;
+            attributes |= JSObjectAttributesInternal.SystemObject;
+        }
+
         [Modules.DoNotEnumerate]
         public Number(double value)
         {
