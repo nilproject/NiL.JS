@@ -1,6 +1,5 @@
 ﻿$ERROR = console.log;
 $FAIL = console.log;
 console.log(function () {
-    var a = 1;
-    return -0x80000000 - a;
+    return /\cA/.exec(String.fromCharCode('A'.charCodeAt(0) % 32));
 }());

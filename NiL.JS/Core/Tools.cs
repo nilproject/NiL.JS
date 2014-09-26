@@ -802,10 +802,10 @@ namespace NiL.JS.Core
 #endif
         public static string Unescape(string code, bool strict)
         {
-            return Unescape(code, strict, true);
+            return Unescape(code, strict, true, false);
         }
 
-        public static string Unescape(string code, bool strict, bool processUnknown)
+        public static string Unescape(string code, bool strict, bool processUnknown, bool processRegexComp)
         {
             if (code == null)
                 throw new ArgumentNullException("code");
@@ -827,7 +827,15 @@ namespace NiL.JS.Core
                         case 'u':
                             {
                                 if (i + (code[i] == 'u' ? 5 : 3) > code.Length)
-                                    throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid escape code (\"" + code + "\")")));
+                                {
+                                    if (processRegexComp)
+                                    {
+                                        res.Append(code[i]);
+                                        break;
+                                    }
+                                    else
+                                        throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid escape code (\"" + code + "\")")));
+                                }
                                 string c = code.Substring(i + 1, code[i] == 'u' ? 4 : 2);
                                 ushort chc = 0;
                                 if (ushort.TryParse(c, System.Globalization.NumberStyles.HexNumber, null, out chc))
@@ -837,7 +845,12 @@ namespace NiL.JS.Core
                                     i += c.Length;
                                 }
                                 else
-                                    throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid escape sequence '\\" + code[i] + c + "'")));
+                                {
+                                    if (processRegexComp)
+                                        res.Append(code[i]);
+                                    else
+                                        throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid escape sequence '\\" + code[i] + c + "'")));
+                                }
                                 break;
                             }
                         case 't':
@@ -868,6 +881,28 @@ namespace NiL.JS.Core
                         case 'r':
                             {
                                 res.Append('\r');
+                                break;
+                            }
+                        case 'c':
+                        case 'C':
+                            {
+                                if (!processRegexComp)
+                                    goto default;
+                                if (i + 1 >= code.Length
+                                    || ((code[i + 1] < 'a' || code[i + 1] > 'z') && (code[i + 1] < 'A' || code[i + 1] > 'Z')))
+                                    goto case 'p';
+                                i++;
+                                res.Append((char)(code[i] % 32));
+                                break;
+                            }
+                        case 'P':
+                        case 'p':
+                        case 'k':
+                        case 'K':
+                            {
+                                if (!processRegexComp)
+                                    goto default;
+                                res.Append(code[i]);
                                 break;
                             }
                         default:

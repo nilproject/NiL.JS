@@ -228,7 +228,7 @@ namespace NiL.JS.Core
             if (allowEscape)
             {
                 int i = 0;
-                var nname = Tools.Unescape(name, strict, false);
+                var nname = Tools.Unescape(name, strict, false, false);
                 if (nname != name)
                 {
                     var res = ValidateName(nname, ref i, reserveControl, false, strict) && i == nname.Length;

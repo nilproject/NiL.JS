@@ -115,7 +115,7 @@ namespace NiL.JSTest
         {
             Script s = null;
             var sw = new Stopwatch();
-            int @case = 2;
+            int @case = 0;
             switch (@case)
             {
                 case 0:
@@ -127,8 +127,8 @@ function fib(x)
     if (x < 2)
         return 1;
     return fib(x - 1) + fib(x - 2);
-}// 420 // 485 // 525 // 600
-for (var i = 0; i < 650; i++) fib(20);
+}// 420 // 485 // 525 // 600 // 650
+for (var i = 0; i < 700; i++) fib(20);
 ");
                         break;
                     }
@@ -190,7 +190,7 @@ console.log((function f(f){ return f; })(1))
 
             Context.GlobalContext.DebuggerCallback += (sender, e) => System.Diagnostics.Debugger.Break();
 
-            int mode = 0//155
+            int mode = 0//158//155
                    ;
             switch (mode)
             {

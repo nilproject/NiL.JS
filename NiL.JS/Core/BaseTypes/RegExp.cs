@@ -8,6 +8,7 @@ namespace NiL.JS.Core.BaseTypes
     [Serializable]
     public sealed class RegExp : CustomType
     {
+        private string _source;
         private JSObject lIndex;
         internal Regex regEx;
 
@@ -31,7 +32,7 @@ namespace NiL.JS.Core.BaseTypes
                 _global = (oValue as RegExp).global;
                 return;
             }
-            var pattern = ptrn.valueType > JSObjectType.Undefined ? ptrn.ToString().Replace("\\P", "P") : "";
+            var pattern = ptrn.valueType > JSObjectType.Undefined ? ptrn.ToString() : "";
             var flags = args.GetMember("length").iValue > 1 && args[1].valueType > JSObjectType.Undefined ? args[1].ToString() : "";
             makeRegex(pattern, flags);
         }
@@ -84,7 +85,8 @@ namespace NiL.JS.Core.BaseTypes
                             }
                     }
                 }
-                regEx = new System.Text.RegularExpressions.Regex(pattern, options);
+                _source = pattern;
+                regEx = new System.Text.RegularExpressions.Regex(Tools.Unescape(pattern, false, false, true), options);
             }
             catch (ArgumentException e)
             {
@@ -151,7 +153,7 @@ namespace NiL.JS.Core.BaseTypes
         {
             get
             {
-                return regEx.ToString();
+                return _source;
             }
         }
 
@@ -251,7 +253,7 @@ namespace NiL.JS.Core.BaseTypes
         [Hidden]
         public override string ToString()
         {
-            return "/" + regEx.ToString() + "/"
+            return "/" + _source + "/"
                 + ((regEx.Options & System.Text.RegularExpressions.RegexOptions.IgnoreCase) != 0 ? "i" : "")
                 + ((regEx.Options & System.Text.RegularExpressions.RegexOptions.Multiline) != 0 ? "m" : "")
                 + (_global ? "g" : "");
