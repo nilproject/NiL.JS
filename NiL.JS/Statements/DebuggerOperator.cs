@@ -40,7 +40,7 @@ namespace NiL.JS.Statements
 
         public override string ToString()
         {
-            return "";
+            return "debugger";
         }
 
         protected override CodeNode[] getChildsImpl()
