@@ -771,7 +771,7 @@ namespace NiL.JS.Core
                         int index = 0;
                         dindex = Tools.JSObjectToDouble(name as JSObject);
 
-                        if (dindex > 0.0
+                        if (dindex >= 0.0
                             && !double.IsNaN(dindex)
                             && !double.IsInfinity(dindex)
                             && ((index = (int)dindex) == dindex)

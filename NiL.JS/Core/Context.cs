@@ -423,10 +423,11 @@ namespace NiL.JS.Core
                 if (p.DebuggerCallback != null)
                 {
                     p.DebuggerCallback(this, new DebuggerCallbackEventArgs() { Statement = nextStatement });
-                    break;
+                    return;
                 }
                 p = p.prototype;
             }
+            System.Diagnostics.Debugger.Break();
         }
 
         /// <summary>
