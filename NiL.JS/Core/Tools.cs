@@ -907,7 +907,7 @@ namespace NiL.JS.Core
                             }
                         default:
                             {
-                                if (isDigit(code[i]))
+                                if (isDigit(code[i]) && !processRegexComp)
                                 {
                                     if (strict)
                                         throw new JSException(TypeProxy.Proxy(new SyntaxError("Octal literals are not allowed in strict mode.")));
