@@ -168,11 +168,11 @@ namespace NiL.JS.Core
                         r = r.ToPrimitiveValue_Value_String();
                         return JSObjectToInt32(r);
                     }
+                case JSObjectType.NotExists:
+                    //throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable not defined.")));
                 case JSObjectType.Undefined:
                 case JSObjectType.NotExistsInObject:
                     return nullOrUndef;
-                case JSObjectType.NotExists:
-                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable not defined.")));
                 default:
                     throw new NotImplementedException();
             }
@@ -315,7 +315,7 @@ namespace NiL.JS.Core
                 return value;
             var tpres = value as TypeProxy;
             if (tpres != null && targetType.IsAssignableFrom(tpres.hostedType))
-                return tpres.prototypeInstance.oValue;
+                return tpres.hostedType == typeof(BaseTypes.String) ? tpres.prototypeInstance : tpres.prototypeInstance.oValue;
             if (targetType.IsEnum && Enum.IsDefined(targetType, value))
                 return value;
             return null;

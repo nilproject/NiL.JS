@@ -22,6 +22,7 @@ namespace NiL.JS.Core.BaseTypes
             this.data = data;
             _length = length;
             attributes |= JSObjectAttributesInternal.SystemObject;
+            __proto__ = TypeProxy.GetPrototype(this.GetType());
         }
 
         [DoNotEnumerate]
@@ -31,6 +32,7 @@ namespace NiL.JS.Core.BaseTypes
             valueType = JSObjectType.Object;
             data = new BinaryTree<long, JSObject>();
             attributes |= JSObjectAttributesInternal.SystemObject;
+            __proto__ = TypeProxy.GetPrototype(this.GetType());
         }
 
         [DoNotEnumerate]
@@ -43,6 +45,7 @@ namespace NiL.JS.Core.BaseTypes
             data = new BinaryTree<long, JSObject>();
             this._length = (long)length;
             attributes |= JSObjectAttributesInternal.SystemObject;
+            __proto__ = TypeProxy.GetPrototype(this.GetType());
         }
 
         [CLSCompliant(false)]
@@ -56,6 +59,7 @@ namespace NiL.JS.Core.BaseTypes
             data = new BinaryTree<long, JSObject>();
             this._length = length;
             attributes |= JSObjectAttributesInternal.SystemObject;
+            __proto__ = TypeProxy.GetPrototype(this.GetType());
         }
 
         [DoNotEnumerate]
@@ -68,6 +72,7 @@ namespace NiL.JS.Core.BaseTypes
             data = new BinaryTree<long, JSObject>();
             this._length = (long)d;
             attributes |= JSObjectAttributesInternal.SystemObject;
+            __proto__ = TypeProxy.GetPrototype(this.GetType());
         }
 
         [DoNotEnumerate]
@@ -90,6 +95,7 @@ namespace NiL.JS.Core.BaseTypes
             foreach (var e in collection)
                 data[index++] = e is JSObject ? (e as JSObject).CloneImpl() : TypeProxy.Proxy(e);
             attributes |= JSObjectAttributesInternal.SystemObject;
+            __proto__ = TypeProxy.GetPrototype(this.GetType());
         }
 
         [Hidden]
@@ -105,6 +111,7 @@ namespace NiL.JS.Core.BaseTypes
                 data[index++] = e is JSObject ? (e as JSObject).CloneImpl() : TypeProxy.Proxy(e);
             _length = (long)index;
             attributes |= JSObjectAttributesInternal.SystemObject;
+            __proto__ = TypeProxy.GetPrototype(this.GetType());
         }
 
         [Hidden]
@@ -123,6 +130,7 @@ namespace NiL.JS.Core.BaseTypes
             }
             _length = (long)index;
             attributes |= JSObjectAttributesInternal.SystemObject;
+            __proto__ = TypeProxy.GetPrototype(this.GetType());
         }
 
         [Hidden]
@@ -489,21 +497,25 @@ namespace NiL.JS.Core.BaseTypes
         [DoNotEnumerate]
         public JSObject join(Arguments separator)
         {
-            if (separator == null)
-                throw new ArgumentNullException("separator");
-            if (separator.Length == 0)
-                return ToString();
-            var el = separator[0].ToString();
+            //if (separator == null)
+            //    throw new ArgumentNullException("separator");
+            //if  separator.Length == 0)
+            //    return ToString();
+            var el = separator == null || separator.length == 0 || !separator[0].isDefinded ? "," : separator[0].ToString();
             System.Text.StringBuilder sb = new System.Text.StringBuilder();
             JSObject t;
             for (var i = 0U; i < _length - 1; i++)
             {
-                if (data.TryGetValue(i, out t) && t.isExist)
-                    sb.Append(t);
+                if ((data.TryGetValue(i, out t) || null != (t = this.GetMember(i.ToString(), false, false))) && t.isDefinded)
+                {
+                    if (t.valueType < JSObjectType.String || t.oValue != null)
+                        sb.Append(t);
+                }
                 sb.Append(el);
             }
-            if (data.TryGetValue(_length - 1, out t) && t.isExist)
-                sb.Append(t);
+            if ((data.TryGetValue(_length - 1, out t) || null != (t = this.GetMember((_length - 1).ToString(), false, false))) && t.isDefinded)
+                if (t.valueType < JSObjectType.String || t.oValue != null)
+                    sb.Append(t);
             return sb.ToString();
         }
 
@@ -876,16 +888,7 @@ namespace NiL.JS.Core.BaseTypes
         {
             if (_length == 0)
                 return "";
-            var res = new StringBuilder();
-            for (var i = 0u; i < _length; i++)
-            {
-                JSObject t = null;
-                if (i > 0)
-                    res.Append(',');
-                if (data.TryGetValue(i, out t) && t.isExist)
-                    res.Append(t);
-            }
-            return res.ToString();
+            return join(null).oValue as string;
         }
 
         [CLSCompliant(false)]
@@ -934,7 +937,8 @@ namespace NiL.JS.Core.BaseTypes
                         {
                             if (create)
                             {
-                                if ((this["length"].oValue as Function[])[0] == null)
+                                var ls = this["length"].oValue;
+                                if (ls != null && (ls as Function[])[0] == null)
                                 {
                                     if (own)
                                         throw new JSException(new TypeError("Cannot add element in fixed size array"));
@@ -960,8 +964,17 @@ namespace NiL.JS.Core.BaseTypes
                                 }
                                 else
                                 {
-                                    notExists.valueType = JSObjectType.NotExistsInObject;
-                                    return notExists;
+                                    if (own)
+                                    {
+                                        notExists.valueType = JSObjectType.NotExistsInObject;
+                                        return notExists;
+                                    }
+                                    else
+                                    {
+                                        if (__proto__ == null)
+                                            __proto__ = TypeProxy.GetPrototype(this.GetType());
+                                        return DefaultFieldGetter(name, false, false);
+                                    }
                                 }
                             }
                             else
@@ -975,10 +988,8 @@ namespace NiL.JS.Core.BaseTypes
                     }
                 }
             }
-            if (__proto__ == null)
-                __proto__ = TypeProxy.GetPrototype(this.GetType());
-            if ((attributes & JSObjectAttributesInternal.ProxyPrototype) != 0)
-                return __proto__.GetMember(name, create, own);
+            //if ((attributes & JSObjectAttributesInternal.ProxyPrototype) != 0)
+            //    return __proto__.GetMember(name, create, own);
             return DefaultFieldGetter(name, create, own);
         }
     }

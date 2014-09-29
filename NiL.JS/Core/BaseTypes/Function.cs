@@ -608,7 +608,7 @@ namespace NiL.JS.Core.BaseTypes
         [Field]
         [DoNotDelete]
         [DoNotEnumerate]
-        public JSObject prototype
+        public virtual JSObject prototype
         {
             [Hidden]
             get
@@ -677,7 +677,7 @@ namespace NiL.JS.Core.BaseTypes
             [Hidden]
             set { if (creator.body.strict || _caller == propertiesDummySM) throw new JSException(new TypeError("Property caller not allowed in strict mode.")); }
         }
-        
+
 #if !NET35
         private Func<Context, JSObject> compiledScript;
 #endif
@@ -723,7 +723,7 @@ namespace NiL.JS.Core.BaseTypes
                 creator = fs.Statement as FunctionStatement;
             }
             else
-                throw new JSException(TypeProxy.Proxy(new SyntaxError()));
+                throw new JSException(TypeProxy.Proxy(new SyntaxError("")));
             valueType = JSObjectType.Function;
             this.oValue = this;
 #if !NET35
@@ -966,12 +966,20 @@ namespace NiL.JS.Core.BaseTypes
         internal protected override JSObject GetMember(JSObject nameObj, bool create, bool own)
         {
             string name = nameObj.ToString();
+            if (__proto__ == null)
+                __proto__ = TypeProxy.GetPrototype(this.GetType());
+            if (name == "__proto__")
+            {
+                if (create
+                    && ((__proto__.attributes & JSObjectAttributesInternal.SystemObject) != 0)
+                    && ((__proto__.attributes & JSObjectAttributesInternal.ReadOnly) == 0))
+                    __proto__ = __proto__.CloneImpl();
+                return __proto__;
+            }
             if (creator.body.strict && (name == "caller" || name == "arguments"))
                 return propertiesDummySM;
             if (name == "prototype")
                 return prototype;
-            if (__proto__ == null)
-                __proto__ = TypeProxy.GetPrototype(this.GetType());
             return DefaultFieldGetter(nameObj, create, own);
         }
 

@@ -47,6 +47,7 @@ namespace NiL.JS.Core.BaseTypes
             iValue = value != 0 && !double.IsNaN(value) ? 1 : 0;
             oValue = this;
             attributes |= JSObjectAttributesInternal.SystemObject;
+            __proto__ = TypeProxy.GetPrototype(this.GetType());
         }
 
         [DoNotEnumerate]
@@ -83,7 +84,7 @@ namespace NiL.JS.Core.BaseTypes
         internal protected override JSObject GetMember(JSObject name, bool create, bool own)
         {
             if (__proto__ == null)
-                __proto__ = TypeProxy.GetPrototype(typeof(Boolean));
+                __proto__ = TypeProxy.GetPrototype(this.GetType());
             return DefaultFieldGetter(name, create, own); // обращение идёт к Объекту Boolean, а не к значению boolean, поэтому члены создавать можно
         }
 

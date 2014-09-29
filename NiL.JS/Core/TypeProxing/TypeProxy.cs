@@ -17,6 +17,7 @@ namespace NiL.JS.Core
         internal Type hostedType;
         [NonSerialized]
         internal Dictionary<string, IList<MemberInfo>> members;
+        private ConstructorInfo ictor;
         private JSObject _prototypeInstance;
         internal JSObject prototypeInstance
         {
@@ -26,22 +27,33 @@ namespace NiL.JS.Core
                 {
                     try
                     {
-                        var ictor = hostedType.GetConstructor(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy, null, System.Type.EmptyTypes, null);
                         if (ictor != null)
                         {
-                            _prototypeInstance = new JSObject()
-                                                    {
-                                                        oValue = ictor.Invoke(null),
-                                                        __proto__ = this,
-                                                        valueType = JSObjectType.Object,
-                                                        attributes = attributes | JSObjectAttributesInternal.ProxyPrototype,
-                                                        fields = fields
-                                                    };
-                            if (_prototypeInstance.oValue is JSObject)
+                            if (hostedType == typeof(JSObject))
                             {
-                                _prototypeInstance.valueType = (JSObjectType)System.Math.Max((int)_prototypeInstance.valueType, (int)(_prototypeInstance.oValue as JSObject).valueType);
-                                (_prototypeInstance.oValue as JSObject).fields = fields;
-                                (_prototypeInstance.oValue as JSObject).attributes |= JSObjectAttributesInternal.ProxyPrototype;
+                                _prototypeInstance = CreateObject();
+                                (_prototypeInstance as JSObject).__proto__ = Null;
+                                (_prototypeInstance as JSObject).fields = fields;
+                                (_prototypeInstance as JSObject).attributes |= JSObjectAttributesInternal.ProxyPrototype;
+                            }
+                            else if (typeof(JSObject).IsAssignableFrom(hostedType))
+                            {
+                                _prototypeInstance = ictor.Invoke(null) as JSObject;
+                                (_prototypeInstance as JSObject).__proto__ = __proto__;
+                                (_prototypeInstance as JSObject).attributes |= JSObjectAttributesInternal.ProxyPrototype;
+                                (_prototypeInstance as JSObject).fields = fields;
+                                valueType = (JSObjectType)System.Math.Max((int)JSObjectType.Object, (int)_prototypeInstance.valueType);
+                            }
+                            else
+                            {
+                                _prototypeInstance = new JSObject()
+                                                        {
+                                                            oValue = ictor.Invoke(null),
+                                                            __proto__ = __proto__,
+                                                            valueType = JSObjectType.Object,
+                                                            attributes = attributes | JSObjectAttributesInternal.ProxyPrototype,
+                                                            fields = fields
+                                                        };
                             }
                         }
                     }
@@ -105,9 +117,16 @@ namespace NiL.JS.Core
 
         public static TypeProxy GetPrototype(Type type)
         {
+            return GetPrototype(type, true);
+        }
+
+        internal static TypeProxy GetPrototype(Type type, bool create)
+        {
             TypeProxy prot = null;
             if (!dynamicProxies.TryGetValue(type, out prot))
             {
+                if (!create)
+                    return null;
                 lock (dynamicProxies)
                 {
                     new TypeProxy(type);
@@ -162,31 +181,24 @@ namespace NiL.JS.Core
             {
                 hostedType = type;
                 dynamicProxies[type] = this;
-                if (hostedType == typeof(JSObject))
-                {
-                    _prototypeInstance = new JSObject()
-                    {
-                        valueType = JSObjectType.Object,
-                        oValue = this, // Не убирать!
-                        attributes = JSObjectAttributesInternal.ProxyPrototype | JSObjectAttributesInternal.ReadOnly,
-                        __proto__ = this
-                    };
-                }
-                else
-                {
-                    if (typeof(JSObject).IsAssignableFrom(hostedType))
-                    {
-                        _prototypeInstance = prototypeInstance;
-                    }
-                }
-
-                valueType = _prototypeInstance is JSObject ? (JSObjectType)System.Math.Max((int)(_prototypeInstance as JSObject).valueType, (int)JSObjectType.Object) : JSObjectType.Object;
+                valueType = JSObjectType.Object;
                 oValue = this;
+                var pa = type.GetCustomAttributes(typeof(PrototypeAttribute), false);
+                if (pa.Length != 0 && (pa[0] as PrototypeAttribute).PrototypeType != hostedType)
+                    __proto__ = GetPrototype((pa[0] as PrototypeAttribute).PrototypeType).CloneImpl();
+                else
+                    __proto__ = GlobalPrototype ?? Null;
+                ictor = hostedType.GetConstructor(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy, null, System.Type.EmptyTypes, null);
+
                 attributes |= JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.SystemObject;
-                if (hostedType.IsDefined(typeof(ImmutableAttribute), false))
+                if (hostedType.IsDefined(typeof(ImmutablePrototypeAttribute), false))
                     attributes |= JSObjectAttributesInternal.Immutable;
                 var staticProxy = new TypeProxy() { hostedType = type, bindFlags = bindFlags | BindingFlags.Static };
                 bindFlags |= BindingFlags.Instance;
+
+                if (typeof(JSObject).IsAssignableFrom(hostedType))
+                    _prototypeInstance = prototypeInstance;
+
                 if (hostedType.IsAbstract)
                 {
                     staticProxies[type] = staticProxy;
@@ -204,9 +216,6 @@ namespace NiL.JS.Core
                     staticProxies[type] = ctor;
                     fields["constructor"] = ctor;
                 }
-                var pa = type.GetCustomAttributes(typeof(PrototypeAttribute), false);
-                if (pa.Length != 0)
-                    __proto__ = GetPrototype((pa[0] as PrototypeAttribute).PrototypeType).CloneImpl();
             }
         }
 
@@ -288,6 +297,7 @@ namespace NiL.JS.Core
                     }
                 }
                 if (create
+                    && ((attributes & JSObjectAttributesInternal.Immutable) == 0)
                     && (r.attributes & JSObjectAttributesInternal.SystemObject) != 0
                     && (r.attributes & JSObjectAttributesInternal.ReadOnly) == 0)
                     fields[name] = r = r.CloneImpl();
@@ -299,6 +309,12 @@ namespace NiL.JS.Core
             members.TryGetValue(name, out m);
             if (m == null || m.Count == 0)
             {
+                if (!own)
+                {
+                    var pi = prototypeInstance as JSObject;
+                    if (pi != null)
+                        return pi.GetMember(nameObj, create, own);
+                }
                 r = DefaultFieldGetter(nameObj, create, own);
                 return r;
             }
@@ -535,11 +551,18 @@ namespace NiL.JS.Core
             }
         }
 
-        public override string ToString()
-        {
-            if (hostedType.IsAbstract)
-                return "[object " + hostedType.Name + "]";
-            return ((bindFlags & BindingFlags.Static) != 0 ? "Proxy:Static (" : "Proxy:Dynamic (") + hostedType + ")";
-        }
+        //public override string ToString()
+        //{
+        //    if (typeof(JSObject).IsAssignableFrom(hostedType))
+        //        return prototypeInstance.ToString();
+        //    return base.ToString();
+        //}
+
+        //public override string ToString()
+        //{
+        //    if (hostedType.IsAbstract)
+        //        return "[object " + hostedType.Name + "]";
+        //    return ((bindFlags & BindingFlags.Static) != 0 ? "Proxy:Static (" : "Proxy:Dynamic (") + hostedType + ")";
+        //}
     }
 }

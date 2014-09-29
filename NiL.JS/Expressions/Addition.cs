@@ -131,12 +131,17 @@ namespace NiL.JS.Expressions
                         {
                             tstr = temp.oValue as string;
                             temp = second.Evaluate(context);
-                            if (temp.valueType == JSObjectType.Date)
-                                temp = temp.ToPrimitiveValue_String_Value();
-                            else if (temp.valueType >= JSObjectType.Object)
-                                temp = temp.ToPrimitiveValue_Value_String();
+                            //if (temp.valueType == JSObjectType.Date)
+                            //    temp = temp.ToPrimitiveValue_String_Value();
+                            //else if (temp.valueType >= JSObjectType.Object)
+                            //    temp = temp.ToPrimitiveValue_Value_String();
                             switch (temp.valueType)
                             {
+                                case JSObjectType.Bool:
+                                    {
+                                        tstr += temp.iValue != 0 ? "true" : "false";
+                                        break;
+                                    }
                                 case JSObjectType.Int:
                                     {
                                         tstr += temp.iValue;
@@ -145,11 +150,6 @@ namespace NiL.JS.Expressions
                                 case JSObjectType.Double:
                                     {
                                         tstr += Tools.DoubleToString(temp.dValue);
-                                        break;
-                                    }
-                                case JSObjectType.Bool:
-                                    {
-                                        tstr += temp.iValue != 0 ? "true" : "false";
                                         break;
                                     }
                                 case JSObjectType.String:
@@ -167,7 +167,7 @@ namespace NiL.JS.Expressions
                                 case JSObjectType.Function:
                                 case JSObjectType.Date:
                                     {
-                                        tstr += "null";
+                                        tstr += temp.ToString();
                                         break;
                                     }
                                 case JSObjectType.NotExists:

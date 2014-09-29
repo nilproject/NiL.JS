@@ -7,6 +7,7 @@ using NiL.JS.Core.Modules;
 namespace NiL.JS.Core
 {
     [Serializable]
+    [Prototype(typeof(Function))]
     internal class ProxyConstructor : Function
     {
         [Hidden]
@@ -36,6 +37,19 @@ namespace NiL.JS.Core
             }
         }
 
+        [Field]
+        [DoNotDelete]
+        [DoNotEnumerate]
+        [NotConfigurable]
+        public override JSObject prototype
+        {
+            [Hidden]
+            get
+            {
+                return TypeProxy.GetPrototype(proxy.hostedType);
+            }
+        }
+
         [Hidden]
         public ProxyConstructor(TypeProxy typeProxy)
         {
@@ -58,7 +72,6 @@ namespace NiL.JS.Core
                 ctorsL.Add(new MethodProxy(new StructureDefaultConstructorInfo(proxy.hostedType)));
             ctorsL.Sort((x, y) => x.Parameters.Length - y.Parameters.Length);
             constructors = ctorsL.ToArray();
-            proxy.__proto__ = __proto__; // для того, чтобы не отвалились стандартные свойства функции
         }
 
         [Hidden]
@@ -66,9 +79,13 @@ namespace NiL.JS.Core
         {
             if (__proto__ == null)
             {
-                __proto__ = TypeProxy.GetPrototype(typeof(Function));
-                proxy.__proto__ = __proto__;
+                __proto__ = TypeProxy.GetPrototype(typeof(ProxyConstructor));
+                __proto__.fields.Clear();
             }
+
+            var res = __proto__.GetMember(name, false, own);
+            if (res.isExist)
+                return res;
             return proxy.GetMember(name, create, own);
         }
 
@@ -160,7 +177,7 @@ namespace NiL.JS.Core
             {
                 if (constructors[i].Parameters.Length == len
                     || (constructors[i].Parameters.Length == 1 && (constructors[i].Parameters[0].ParameterType == typeof(Arguments)
-                                                                   //|| constructors[i].Parameters[0].ParameterType == typeof(JSObject[])
+                    //|| constructors[i].Parameters[0].ParameterType == typeof(JSObject[])
                                                                    || constructors[i].Parameters[0].ParameterType == typeof(object[]))))
                 {
                     if (len == 0)

@@ -372,16 +372,16 @@ namespace NiL.JS.Core
                 {
                     int v = 0;
                     if (s[i] >= 0xdc00 && s[i] <= 0xdfff)
-                        throw new JSException(new URIError());
+                        throw new JSException(new URIError(""));
                     if (s[i] < 0xd800 || s[i] > 0xdbff)
                         v = s[i];
                     else
                     {
                         i++;
                         if (i == s.Length)
-                            throw new JSException(new URIError());
+                            throw new JSException(new URIError(""));
                         if (s[i] < 0xdc00 || s[i] > 0xdfff)
-                            throw new JSException(new URIError());
+                            throw new JSException(new URIError(""));
                         v = (s[i - 1] - 0xd800) * 0x400 + (s[i] - 0xdc00) + 0x10000;
                     }
                     var n = 1;
@@ -390,7 +390,7 @@ namespace NiL.JS.Core
                         while ((v >> (n * 6 - (n - 1))) != 0)
                             n++;
                         if (n > 4)
-                            throw new JSException(new URIError());
+                            throw new JSException(new URIError(""));
                         var b = (v >> ((n - 1) * 6)) | ~((1 << (8 - n)) - 1);
                         res.Append('%')
                             .Append(Tools.NumChars[(b >> 4) & 0xf])
@@ -425,16 +425,16 @@ namespace NiL.JS.Core
                 {
                     int v = 0;
                     if (s[i] >= 0xdc00 && s[i] <= 0xdfff)
-                        throw new JSException(new URIError());
+                        throw new JSException(new URIError(""));
                     if (s[i] < 0xd800 || s[i] > 0xdbff)
                         v = s[i];
                     else
                     {
                         i++;
                         if (i == s.Length)
-                            throw new JSException(new URIError());
+                            throw new JSException(new URIError(""));
                         if (s[i] < 0xdc00 || s[i] > 0xdfff)
-                            throw new JSException(new URIError());
+                            throw new JSException(new URIError(""));
                         v = (s[i - 1] - 0xd800) * 0x400 + (s[i] - 0xdc00) + 0x10000;
                     }
                     var n = 1;
@@ -443,7 +443,7 @@ namespace NiL.JS.Core
                         while ((v >> (n * 6 - (n - 1))) != 0)
                             n++;
                         if (n > 4)
-                            throw new JSException(new URIError());
+                            throw new JSException(new URIError(""));
                         var b = (v >> ((n - 1) * 6)) | ~((1 << (8 - n)) - 1);
                         res.Append('%')
                             .Append(Tools.NumChars[(b >> 4) & 0xf])

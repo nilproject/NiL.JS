@@ -300,5 +300,19 @@ namespace NiL.JS.Core
             while (be.MoveNext())
                 yield return be.Current;
         }
+
+        public void Reset()
+        {
+            fields = null;
+            length = 0;
+            a0 = null;
+            a1 = null;
+            a2 = null;
+            a3 = null;
+            a4 = null;
+            a5 = null;
+            a6 = null;
+            a7 = null;
+        }
     }
 }

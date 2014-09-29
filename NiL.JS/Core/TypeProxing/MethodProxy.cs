@@ -483,8 +483,7 @@ namespace NiL.JS.Core
                 if (e is JSException)
                     throw e;
 #if DEBUG
-                if (e is AccessViolationException
-                    || e is NullReferenceException)
+                if (e is AccessViolationException || e is NullReferenceException)
                     System.Diagnostics.Debugger.Break();
 #endif
                 throw new JSException(new TypeError(e.Message), e);

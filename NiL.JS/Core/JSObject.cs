@@ -11,7 +11,7 @@ using NiL.JS.Statements;
 namespace NiL.JS.Core
 {
     [Serializable]
-    public enum JSObjectType : int
+    public enum JSObjectType : short
     {
         NotExists = 0,
         NotExistsInObject = 1,
@@ -28,7 +28,7 @@ namespace NiL.JS.Core
 
     [Serializable]
     [Flags]
-    internal enum JSObjectAttributesInternal : int
+    internal enum JSObjectAttributesInternal : uint
     {
         None = 0,
         DoNotEnum = 1 << 0,
@@ -196,10 +196,12 @@ namespace NiL.JS.Core
         public JSObject()
         {
             valueType = JSObjectType.Undefined;
+            //__proto__ = TypeProxy.GetPrototype(this.GetType(), false) ?? Null;
         }
 
         [Hidden]
         public JSObject(bool createFields)
+            : this()
         {
             if (createFields)
                 fields = new Dictionary<string, JSObject>();
@@ -339,7 +341,8 @@ namespace NiL.JS.Core
         {
             var t = new JSObject(true)
             {
-                valueType = JSObjectType.Object
+                valueType = JSObjectType.Object,
+                __proto__ = GlobalPrototype
             };
             t.oValue = t;
             return t;
@@ -801,9 +804,9 @@ namespace NiL.JS.Core
                 case JSObjectType.Object:
                     {
                         if (oValue == this)
-                            break;
-                        if ((attributes & JSObjectAttributesInternal.ProxyPrototype) != 0 && !(oValue is BaseTypes.Array))
-                            return __proto__.GetMember(name, createMember, own);
+                            return DefaultFieldGetter(name, createMember, own);
+                        //if ((attributes & JSObjectAttributesInternal.ProxyPrototype) != 0 && !(oValue is BaseTypes.Array))
+                        //    return __proto__.GetMember(name, createMember, own);
                         if (oValue != this && (oValue is JSObject))
                         {
                             var inObj = oValue as JSObject;
@@ -830,8 +833,8 @@ namespace NiL.JS.Core
                         if (oValue == this)
                             System.Diagnostics.Debugger.Break();
 #endif
-                        if ((attributes & JSObjectAttributesInternal.ProxyPrototype) != 0)
-                            return __proto__.GetMember(name, createMember, own);
+                        //if ((attributes & JSObjectAttributesInternal.ProxyPrototype) != 0)
+                        //    return __proto__.GetMember(name, createMember, own);
                         if (oValue == null)
                             throw new JSException(new TypeError("Can't get property \"" + name + "\" of \"null\""));
                         if (oValue == this)
@@ -858,86 +861,84 @@ namespace NiL.JS.Core
         protected JSObject DefaultFieldGetter(JSObject nameObj, bool forWrite, bool own)
         {
             string name = nameObj.ToString();
-            switch (name)
+            if (name == "__proto__")
             {
-                case "__proto__":
+                forWrite &= (attributes & JSObjectAttributesInternal.Immutable) == 0;
+                if (this == GlobalPrototype)
+                {
+                    if (forWrite)
                     {
-                        forWrite &= (attributes & JSObjectAttributesInternal.Immutable) == 0;
-                        if (this == GlobalPrototype)
-                        {
-                            if (forWrite)
-                            {
-                                if (__proto__ == null || (__proto__.attributes & JSObjectAttributesInternal.SystemObject) != 0)
-                                    return __proto__ = new JSObject();
-                                else
-                                    return __proto__ ?? Null;
-                            }
-                            else
-                                return __proto__ ?? Null;
-                        }
+                        if (__proto__ == null || (__proto__.attributes & JSObjectAttributesInternal.SystemObject) != 0)
+                            return __proto__ = new JSObject();
                         else
-                        {
-                            if (forWrite)
-                            {
-                                if (__proto__ == null || (__proto__.attributes & JSObjectAttributesInternal.SystemObject) != 0)
-                                    return __proto__ = new JSObject();
-                                else
-                                    return __proto__ ?? GlobalPrototype ?? Null;
-                            }
-                            else
-                                return __proto__ ?? GlobalPrototype ?? Null;
-                        }
+                            return __proto__ ?? Null;
                     }
-                default:
+                    else
+                        return __proto__ ?? Null;
+                }
+                else
+                {
+                    if (forWrite)
                     {
-                        JSObject res = null;
-                        var proto = __proto__ ?? GlobalPrototype ?? Null;
-                        bool fromProto =
-                            (fields == null || !fields.TryGetValue(name, out res) || res.valueType < JSObjectType.Undefined)
-                            && (proto != null)
-                            && (proto != this)
-                            && (!own || (proto.oValue is TypeProxy && proto.oValue != GlobalPrototype.oValue));
-                        if (fromProto)
-                        {
-                            res = proto.GetMember(nameObj, false, own);
-                            if (own
-                                && (res.valueType != JSObjectType.Property
-                                    || (res.attributes & JSObjectAttributesInternal.Field) == 0)
-                                && (attributes & JSObjectAttributesInternal.ProxyPrototype) == 0)
-                                res = null;
-                            else if (res.valueType < JSObjectType.Undefined)
-                                res = null;
-                        }
-                        if (res == null)
-                        {
-                            if (!forWrite || (attributes & JSObjectAttributesInternal.Immutable) != 0)
-                                return notExists;
-                            res = new JSObject()
-                            {
-                                valueType = JSObjectType.NotExistsInObject
-                            };
-                            if (fields == null)
-                                fields = new Dictionary<string, JSObject>();
-                            fields[name] = res;
-                        }
-                        else if (forWrite && ((res.attributes & JSObjectAttributesInternal.SystemObject) != 0 || fromProto))
-                        {
-                            if ((res.attributes & JSObjectAttributesInternal.ReadOnly) == 0
-                                && (res.valueType != JSObjectType.Property || own))
-                            {
-                                var t = res.CloneImpl();
-                                if (fields == null)
-                                    fields = new Dictionary<string, JSObject>();
-                                fields[name] = t;
-                                res = t;
-                            }
-                        }
-                        if (res.valueType == JSObjectType.NotExists)
-                            res.valueType = JSObjectType.NotExistsInObject;
-                        return res;
+                        if (__proto__ == null || (__proto__.attributes & JSObjectAttributesInternal.SystemObject) != 0)
+                            return __proto__ = new JSObject();
+                        else
+                            return __proto__ ?? GlobalPrototype ?? Null;
                     }
+                    else
+                        return __proto__ ?? GlobalPrototype ?? Null;
+                }
+            }
+            else
+            {
+                JSObject res = null;
+                var proto = __proto__ ?? GlobalPrototype ?? Null;
+                bool fromProto =
+                    (fields == null || !fields.TryGetValue(name, out res) || res.valueType < JSObjectType.Undefined)
+                    && (proto != null)
+                    && (proto != this)
+                    && (proto.oValue != null)
+                    && (!own || proto.oValue is TypeProxy);
+                if (fromProto)
+                {
+                    res = proto.GetMember(nameObj, false, own);
+                    if (((own
+                        && (res.valueType != JSObjectType.Property || (res.attributes & JSObjectAttributesInternal.Field) == 0)
+                        //&& (attributes & JSObjectAttributesInternal.ProxyPrototype) == 0
+                        ))
+                        || !res.isExist)
+                        res = null;
+                }
+                if (res == null)
+                {
+                    if (!forWrite || (attributes & JSObjectAttributesInternal.Immutable) != 0)
+                        return notExists;
+                    res = new JSObject()
+                    {
+                        valueType = JSObjectType.NotExistsInObject
+                    };
+                    if (fields == null)
+                        fields = new Dictionary<string, JSObject>();
+                    fields[name] = res;
+                }
+                else if (forWrite && ((res.attributes & JSObjectAttributesInternal.SystemObject) != 0 || fromProto))
+                {
+                    if ((res.attributes & JSObjectAttributesInternal.ReadOnly) == 0
+                        && (res.valueType != JSObjectType.Property || own))
+                    {
+                        var t = res.CloneImpl();
+                        if (fields == null)
+                            fields = new Dictionary<string, JSObject>();
+                        fields[name] = t;
+                        res = t;
+                    }
+                }
+                if (res.valueType == JSObjectType.NotExists)
+                    res.valueType = JSObjectType.NotExistsInObject;
+                return res;
             }
         }
+
 
         [Hidden]
         internal JSObject ToPrimitiveValue_Value_String()
@@ -1247,47 +1248,7 @@ namespace NiL.JS.Core
         public virtual JSObject hasOwnProperty(Arguments args)
         {
             JSObject name = args[0];
-            string n = "";
-            switch (name.valueType)
-            {
-                case JSObjectType.Undefined:
-                case JSObjectType.NotExistsInObject:
-                    {
-                        n = "undefined";
-                        break;
-                    }
-                case JSObjectType.Int:
-                    {
-                        n = name.iValue.ToString(System.Globalization.CultureInfo.InvariantCulture);
-                        break;
-                    }
-                case JSObjectType.Double:
-                    {
-                        n = Tools.DoubleToString(name.dValue);
-                        break;
-                    }
-                case JSObjectType.String:
-                    {
-                        n = name.oValue as string;
-                        break;
-                    }
-                case JSObjectType.Object:
-                    {
-                        var pn = name.ToPrimitiveValue_Value_String();
-                        if (pn.valueType == JSObjectType.String)
-                            n = pn.oValue as string;
-                        if (pn.valueType == JSObjectType.Int)
-                            n = pn.iValue.ToString(System.Globalization.CultureInfo.InvariantCulture);
-                        if (pn.valueType == JSObjectType.Double)
-                            n = Tools.DoubleToString(pn.dValue);
-                        break;
-                    }
-                case JSObjectType.NotExists:
-                    throw new InvalidOperationException("Variable not defined.");
-                default:
-                    throw new NotImplementedException("Object.hasOwnProperty. Invalid Value Type");
-            }
-            var res = GetMember(n, true);
+            var res = GetMember(name, false, true);
             return res.isExist;
         }
 
@@ -1452,9 +1413,9 @@ namespace NiL.JS.Core
         {
             if (args[0].valueType < JSObjectType.Object)
                 throw new JSException(new TypeError("Parameter isn't an Object."));
-            var res = args[0]["__proto__"];
-            if (res.oValue is TypeProxy && (res.oValue as TypeProxy).prototypeInstance != null)
-                res = (res.oValue as TypeProxy).prototypeInstance;
+            var res = args[0]["__proto__"]; // по имени, поскольку инициализация прототипа может быть "ленивой"
+            //if (res.oValue is TypeProxy && (res.oValue as TypeProxy).prototypeInstance != null)
+            //    res = (res.oValue as TypeProxy).prototypeInstance;
             return res;
         }
 

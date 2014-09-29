@@ -1,12 +1,27 @@
 ﻿using System;
 using NiL.JS.Core.BaseTypes;
+using NiL.JS.Core.Modules;
 
 namespace NiL.JS.Core
 {
     [Serializable]
+    [Prototype(typeof(Function))]
     internal class ObjectConstructor : Function
     {
         private TypeProxy proxy;
+
+        [Field]
+        [DoNotDelete]
+        [DoNotEnumerate]
+        [NotConfigurable]
+        public override JSObject prototype
+        {
+            [Hidden]
+            get
+            {
+                return TypeProxy.GetPrototype(proxy.hostedType);
+            }
+        }
 
         public ObjectConstructor(TypeProxy proxy)
         {
@@ -40,9 +55,13 @@ namespace NiL.JS.Core
         {
             if (__proto__ == null)
             {
-                __proto__ = TypeProxy.GetPrototype(typeof(Function));
-                proxy.__proto__ = __proto__;
+                __proto__ = TypeProxy.GetPrototype(typeof(ObjectConstructor));
+                __proto__.fields.Clear();
             }
+
+            var res = __proto__.GetMember(name, false, own);
+            if (res.isExist)
+                return res;
             return proxy.GetMember(name, create, own);
         }
 
@@ -53,7 +72,7 @@ namespace NiL.JS.Core
                 yield return pe.Current;
             if (__proto__ == null)
             {
-                __proto__ = TypeProxy.GetPrototype(typeof(Function));
+                __proto__ = TypeProxy.GetPrototype(typeof(ObjectConstructor));
                 proxy.__proto__ = __proto__;
             }
             pe = __proto__.GetEnumeratorImpl(hideNonEnum);

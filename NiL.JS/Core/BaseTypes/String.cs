@@ -72,7 +72,7 @@ namespace NiL.JS.Core.BaseTypes
         {
             var strValue = this.ToString();
             int p = Tools.JSObjectToInt32(pos[0]);
-            if ((p < 0) || (p >= (oValue as string).Length))
+            if ((p < 0) || (p >= strValue.Length))
                 return "";
             return strValue[p].ToString();
         }
@@ -82,16 +82,17 @@ namespace NiL.JS.Core.BaseTypes
         public Number charCodeAt(Arguments pos)
         {
             int p = Tools.JSObjectToInt32(pos[0]);
-            if ((p < 0) || (p >= (oValue as string).Length))
+            var selfStr = this.ToString();
+            if ((p < 0) || (p >= selfStr.Length))
                 return double.NaN;
-            return (int)(oValue as string)[p];
+            return (int)selfStr[p];
         }
 
         [AllowUnsafeCall(typeof(JSObject))]
         [DoNotEnumerate]
         public JSObject concat(Arguments args)
         {
-            string res = oValue.ToString();
+            string res = this.ToString();
             for (var i = 0; i < args.Length; i++)
                 res += args[i].ToString();
             return res;
@@ -750,11 +751,27 @@ namespace NiL.JS.Core.BaseTypes
             return (this as JSObject).ToString().ToUpperInvariant();
         }
 
+        private static readonly char[] addTrim = new[] { '\xfeff' };
         [AllowUnsafeCall(typeof(JSObject))]
         [DoNotEnumerate]
         public JSObject trim()
         {
-            return (this as JSObject).ToString().Trim();
+            switch(this.valueType)
+            {
+                case JSObjectType.Undefined:
+                case JSObjectType.NotExists:
+                case JSObjectType.NotExistsInObject:
+                    throw new JSException(new TypeError("string can't be undefined"));
+                case JSObjectType.Function:
+                case JSObjectType.String:
+                case JSObjectType.Object:
+                    {
+                        if (this.oValue == null)
+                            throw new JSException(new TypeError("string can't be null"));
+                        break;
+                    }
+            }
+            return this.ToString().Trim().Trim(addTrim);
         }
 
         [CLSCompliant(false)]
@@ -836,8 +853,6 @@ namespace NiL.JS.Core.BaseTypes
         internal protected override JSObject GetMember(JSObject name, bool create, bool own)
         {
             create &= (attributes & JSObjectAttributesInternal.Immutable) == 0;
-            if (__proto__ == null)
-                __proto__ = TypeProxy.GetPrototype(typeof(String));
             int index = 0;
             double dindex = Tools.JSObjectToDouble(name);
             if (!double.IsInfinity(dindex)
@@ -848,6 +863,16 @@ namespace NiL.JS.Core.BaseTypes
                 && index >= 0)
             {
                 return this[index];
+            }
+            if (__proto__ == null)
+                __proto__ = TypeProxy.GetPrototype(this.GetType());
+            if (name.ToString() == "__proto__")
+            {
+                if (create
+                    && ((__proto__.attributes & JSObjectAttributesInternal.SystemObject) != 0)
+                    && ((__proto__.attributes & JSObjectAttributesInternal.ReadOnly) == 0))
+                    __proto__ = __proto__.CloneImpl();
+                return __proto__;
             }
             return DefaultFieldGetter(name, create, own); // обращение идёт к Объекту String, а не к значению string, поэтому члены создавать можно
         }

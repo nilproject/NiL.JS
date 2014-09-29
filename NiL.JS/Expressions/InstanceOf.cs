@@ -22,14 +22,16 @@ namespace NiL.JS.Expressions
                 var c = second.Evaluate(context);
                 if (c.valueType != JSObjectType.Function)
                     throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError("Right-hand value of instanceof is not function.")));
-                c = c.GetMember("prototype");
-                if (c.valueType < JSObjectType.Object)
+                var p = c.GetMember("prototype");
+                if (p.valueType == JSObjectType.Property)
+                    p = (p.oValue as Function[])[1].Invoke(c, null);
+                if (p.valueType < JSObjectType.Object)
                     throw new JSException(new TypeError("Property \"prototype\" of function not represent object."));
-                if (c.oValue != null)
+                if (p.oValue != null)
                 {
                     while (a.valueType >= JSObjectType.Object && a.oValue != null)
                     {
-                        if (a.oValue == c.oValue)
+                        if (a.oValue == p.oValue)
                             return true;
                         a = a.GetMember("__proto__");
                     }

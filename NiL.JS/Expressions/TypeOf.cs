@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using NiL.JS.Core;
+using NiL.JS.Core.BaseTypes;
 using NiL.JS.Statements;
 
 namespace NiL.JS.Expressions
@@ -27,8 +28,7 @@ namespace NiL.JS.Expressions
             var val = first.Evaluate(context);
             if (val.valueType == JSObjectType.Property)
                 return (val.oValue as NiL.JS.Core.BaseTypes.Function[])[1].Invoke(context.objectSource, null);
-            var vt = val.valueType;
-            switch (vt)
+            switch (val.valueType)
             {
                 case JSObjectType.Int:
                 case JSObjectType.Double:
@@ -57,6 +57,9 @@ namespace NiL.JS.Expressions
                 case JSObjectType.Object:
                 case JSObjectType.Property:
                     {
+                        //if (val.oValue is TypeProxy
+                        //    && (val.oValue as TypeProxy).hostedType == typeof(Function))
+                        //    return functionString;
                         return objectString;
                     }
                 default: throw new NotImplementedException();

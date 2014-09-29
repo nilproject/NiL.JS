@@ -30,6 +30,7 @@ namespace NiL.JS.Core.BaseTypes
                 oValue = ptrn.oValue;
                 regEx = (oValue as RegExp).regEx;
                 _global = (oValue as RegExp).global;
+                _source = (oValue as RegExp)._source;
                 return;
             }
             var pattern = ptrn.valueType > JSObjectType.Undefined ? ptrn.ToString() : "";

@@ -62,8 +62,8 @@ namespace NiL.JS.Statements
                 else
                     res = f.Invoke(source, null);
             }
-            if (res.oValue is TypeProxy && (res.oValue as TypeProxy).prototypeInstance != null)
-                return (res.oValue as TypeProxy).prototypeInstance;
+            //if (res.oValue is TypeProxy && (res.oValue as TypeProxy).prototypeInstance != null)
+            //    return (res.oValue as TypeProxy).prototypeInstance;
             return res;
         }
 

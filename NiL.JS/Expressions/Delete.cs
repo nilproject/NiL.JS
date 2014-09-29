@@ -27,7 +27,7 @@ namespace NiL.JS.Expressions
             internal override JSObject Evaluate(Context context)
             {
                 var source = proto.Source.Evaluate(context);
-                var memberName = proto.FieldName.Evaluate(context).ToString();
+                var memberName = proto.FieldName.Evaluate(context);
                 context.objectSource = source;
                 var res = context.objectSource.GetMember(memberName, false, true);
                 if ((res.attributes & JSObjectAttributesInternal.SystemObject) != 0)

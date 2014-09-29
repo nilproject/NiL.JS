@@ -39,6 +39,8 @@ namespace NiL.JS.Core.TypeProxing
 
         internal protected override JSObject GetMember(JSObject name, bool fast, bool own)
         {
+            if (__proto__ == null)
+                __proto__ = TypeProxy.GetPrototype(this.GetType());
             return DefaultFieldGetter(name, fast, own);
         }
 
@@ -61,8 +63,6 @@ namespace NiL.JS.Core.TypeProxing
                 foreach (var r in fields)
                     if (r.Value.isExist && (!pdef || (r.Value.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
                         yield return r.Key;
-            if (__proto__ == null)
-                __proto__ = TypeProxy.GetPrototype(this.GetType());
             var penum = __proto__.GetEnumeratorImpl(pdef);
             while (penum.MoveNext())
                 yield return penum.Current;

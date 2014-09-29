@@ -134,8 +134,16 @@ namespace NiL.JS.Core.BaseTypes
         internal protected override JSObject GetMember(JSObject name, bool create, bool own)
         {
             if (__proto__ == null)
-                __proto__ = TypeProxy.GetPrototype(typeof(Number));
-            return DefaultFieldGetter(name.ToString(), create, own); // обращение идёт к Объекту Number, а не к значению number, поэтому члены создавать можно
+                __proto__ = TypeProxy.GetPrototype(this.GetType());
+            if (name.ToString() == "__proto__")
+            {
+                if (create
+                    && ((__proto__.attributes & JSObjectAttributesInternal.SystemObject) != 0)
+                    && ((__proto__.attributes & JSObjectAttributesInternal.ReadOnly) == 0))
+                    __proto__ = __proto__.CloneImpl();
+                return __proto__;
+            }
+            return DefaultFieldGetter(name, create, own); // обращение идёт к Объекту Number, а не к значению number, поэтому члены создавать можно
         }
 
         [AllowUnsafeCall(typeof(JSObject))]

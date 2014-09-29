@@ -246,7 +246,8 @@ namespace NiL.JS.Expressions
                 tempContainer.dValue = f.dValue;
                 tempContainer.oValue = f.oValue;
                 var s = second.Evaluate(context);
-                if (tempContainer.valueType == s.valueType && tempContainer.valueType == JSObjectType.Int)
+                if (tempContainer.valueType == s.valueType
+                    && tempContainer.valueType == JSObjectType.Int)
                     return tempContainer.iValue < s.iValue;
                 return Check(tempContainer, s, this is MoreOrEqual);
             }

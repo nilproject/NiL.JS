@@ -33,6 +33,8 @@ namespace NiL.JS.Expressions
                 {
                     var fieldSource = context.objectSource;
                     temp = second.Evaluate(context);
+                    setterArgs.Reset();
+                    setterArgs.length = 1;
                     setterArgs[0] = temp;
                     var setter = (field.oValue as NiL.JS.Core.BaseTypes.Function[])[0];
                     if (setter != null)
