@@ -32,11 +32,11 @@ namespace NiL.JS.Statements
             return descriptor.Get(context, true, functionDepth);
         }
 
-        internal override JSObject Evaluate(Context context)
+        internal sealed override JSObject Evaluate(Context context)
         {
             var res = descriptor.Get(context, false, functionDepth);
             if (res.valueType == JSObjectType.NotExists)
-                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable \"" + variableName + "\" is not defined.")));
+                throw new JSException(new NiL.JS.Core.BaseTypes.ReferenceError("Variable \"" + variableName + "\" is not defined."));
             if (res.valueType == JSObjectType.Property)
             {
                 var getter = (res.oValue as NiL.JS.Core.BaseTypes.Function[])[1];

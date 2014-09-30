@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Globalization;
+using System.Text;
 using NiL.JS.Core.Modules;
 
 namespace NiL.JS.Core.BaseTypes
@@ -751,12 +752,11 @@ namespace NiL.JS.Core.BaseTypes
             return (this as JSObject).ToString().ToUpperInvariant();
         }
 
-        private static readonly char[] addTrim = new[] { '\xfeff' };
         [AllowUnsafeCall(typeof(JSObject))]
         [DoNotEnumerate]
         public JSObject trim()
         {
-            switch(this.valueType)
+            switch (this.valueType)
             {
                 case JSObjectType.Undefined:
                 case JSObjectType.NotExists:
@@ -771,7 +771,38 @@ namespace NiL.JS.Core.BaseTypes
                         break;
                     }
             }
-            return this.ToString().Trim().Trim(addTrim);
+            try
+            {
+                var sb = new StringBuilder(this.ToString());
+                int initialLength = sb.Length;
+                int index = 0;
+                for (; index < sb.Length && System.Array.IndexOf(Tools.TrimChars, sb[index]) != -1; index++) ;
+                if (index > 0)
+                    sb.Remove(0, index);
+                index = sb.Length - 1;
+                for (; index >= 0 && System.Array.IndexOf(Tools.TrimChars, sb[index]) != -1; index--) ;
+                index++;
+                if (index < sb.Length)
+                    sb.Remove(index, sb.Length - index);
+                if (sb.Length != initialLength)
+                {
+                    index = 0;
+                    for (; ; )
+                    {
+                        for (; index < sb.Length && sb[index] != '\n' && sb[index] != '\r'; index++) ;
+                        if (index >= sb.Length)
+                            break;
+                        var startindex = index;
+                        for (; index < sb.Length && System.Array.IndexOf(Tools.TrimChars, sb[index]) != -1; index++) ;
+                        sb.Remove(startindex, index - startindex);
+                    }
+                }
+                return sb.ToString();
+            }
+            catch
+            {
+                throw;
+            }
         }
 
         [CLSCompliant(false)]

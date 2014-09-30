@@ -21,7 +21,7 @@ namespace NiL.JS.Expressions
             lock (this)
             {
                 JSObject temp = first.Evaluate(context);
-                string tstr;
+                object tstr;
                 int tint;
                 double tdouble;
                 JSObjectType ttype;
@@ -129,7 +129,7 @@ namespace NiL.JS.Expressions
                         }
                     case JSObjectType.String:
                         {
-                            tstr = temp.oValue as string;
+                            tstr = temp.oValue;
                             temp = second.Evaluate(context);
                             //if (temp.valueType == JSObjectType.Date)
                             //    temp = temp.ToPrimitiveValue_String_Value();
@@ -137,6 +137,11 @@ namespace NiL.JS.Expressions
                             //    temp = temp.ToPrimitiveValue_Value_String();
                             switch (temp.valueType)
                             {
+                                case JSObjectType.String:
+                                    {
+                                        tstr = string.Concat(tstr, temp.oValue);
+                                        break;
+                                    }
                                 case JSObjectType.Bool:
                                     {
                                         tstr += temp.iValue != 0 ? "true" : "false";
@@ -144,17 +149,12 @@ namespace NiL.JS.Expressions
                                     }
                                 case JSObjectType.Int:
                                     {
-                                        tstr += temp.iValue;
+                                        tstr = string.Concat(tstr, temp.iValue.ToString(CultureInfo.InvariantCulture));
                                         break;
                                     }
                                 case JSObjectType.Double:
                                     {
                                         tstr += Tools.DoubleToString(temp.dValue);
-                                        break;
-                                    }
-                                case JSObjectType.String:
-                                    {
-                                        tstr += temp.oValue;
                                         break;
                                     }
                                 case JSObjectType.Undefined:

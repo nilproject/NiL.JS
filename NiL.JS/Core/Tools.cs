@@ -21,6 +21,8 @@ namespace NiL.JS.Core
             Default = 2 + 4 + 8
         }
 
+        internal static readonly char[] TrimChars = new[] { '\u0009', '\u000A', '\u000B', '\u000C', '\u000D', '\u0020', '\u00A0', '\u1680', '\u180E', '\u2000', '\u2001', '\u2002', '\u2003', '\u2004', '\u2005', '\u2006', '\u2007', '\u2008', '\u2009', '\u200A', '\u2028', '\u2029', '\u202F', '\u205F', '\u3000', '\uFEFF' };
+
         internal static readonly char[] NumChars = new[] 
         { 
             '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 
@@ -169,7 +171,7 @@ namespace NiL.JS.Core
                         return JSObjectToInt32(r);
                     }
                 case JSObjectType.NotExists:
-                    //throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable not defined.")));
+                //throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable not defined.")));
                 case JSObjectType.Undefined:
                 case JSObjectType.NotExistsInObject:
                     return nullOrUndef;

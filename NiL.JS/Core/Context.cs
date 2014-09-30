@@ -383,7 +383,11 @@ namespace NiL.JS.Core
             //if (!IsExcecuting)
             //    System.Diagnostics.Debug.Fail("Try to get varible from stoped context.");
 #endif
-            if (string.CompareOrdinal(name, "this") == 0)
+            if (name.Length == 4
+                && name[0] == 't'
+                && name[1] == 'h'
+                && name[2] == 'i'
+                && name[3] == 's')
                 return ThisBind;
             JSObject res = null;
             bool fromProto = fields == null || (!fields.TryGetValue(name, out res) && (prototype != null));

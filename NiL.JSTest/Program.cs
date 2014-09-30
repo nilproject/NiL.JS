@@ -190,7 +190,7 @@ console.log((function f(f){ return f; })(1))
 
             Context.GlobalContext.DebuggerCallback += (sender, e) => System.Diagnostics.Debugger.Break();
 
-            int mode = 100
+            int mode = 0//101//155
                    ;
             switch (mode)
             {

@@ -805,11 +805,9 @@ namespace NiL.JS.Core
                     {
                         if (oValue == this)
                             return DefaultFieldGetter(name, createMember, own);
-                        //if ((attributes & JSObjectAttributesInternal.ProxyPrototype) != 0 && !(oValue is BaseTypes.Array))
-                        //    return __proto__.GetMember(name, createMember, own);
-                        if (oValue != this && (oValue is JSObject))
+                        var inObj = oValue as JSObject;
+                        if (inObj != null)
                         {
-                            var inObj = oValue as JSObject;
                             try
                             {
                                 var res = inObj.GetMember(name, createMember, own);
@@ -1532,12 +1530,11 @@ namespace NiL.JS.Core
                     return obj.oValue != null;
                 case JSObjectType.String:
                     return !string.IsNullOrEmpty(obj.oValue as string);
-                case JSObjectType.NotExists:
-                case JSObjectType.NotExistsInObject:
-                case JSObjectType.Undefined:
-                    return false;
+                //case JSObjectType.NotExists:
+                //case JSObjectType.NotExistsInObject:
+                //case JSObjectType.Undefined:
                 default:
-                    throw new NotImplementedException();
+                    return false;
             }
         }
 

@@ -29,8 +29,6 @@ namespace NiL.JS.Expressions
                 JSObject ctor = source.Evaluate(context);
                 if (ctor.valueType != JSObjectType.Function && !(ctor.valueType == JSObjectType.Object && ctor.oValue is Function))
                     throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError(ctor + " is not callable")));
-                if (ctor.oValue is MethodProxy)
-                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError(ctor + " can't be used as a constructor")));
                 if (ctor.oValue is EvalFunction
                     || ctor.oValue is ExternalFunction
                     || ctor.oValue is MethodProxy)
