@@ -49,9 +49,8 @@ namespace NiL.JS.Statements
         internal override JSObject Evaluate(Context context)
         {
             var source = objStatement.Evaluate(context);
-            var n = cachedMemberName ?? memberNameStatement.Evaluate(context);
+            var res = source.GetMember(cachedMemberName ?? memberNameStatement.Evaluate(context), false, false);
             context.objectSource = source;
-            var res = source.GetMember(n, false, false);
             if (res.valueType == JSObjectType.NotExists)
                 res.valueType = JSObjectType.NotExistsInObject;
             else if (res.valueType == JSObjectType.Property)
@@ -62,8 +61,6 @@ namespace NiL.JS.Statements
                 else
                     res = f.Invoke(source, null);
             }
-            //if (res.oValue is TypeProxy && (res.oValue as TypeProxy).prototypeInstance != null)
-            //    return (res.oValue as TypeProxy).prototypeInstance;
             return res;
         }
 

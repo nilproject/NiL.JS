@@ -88,6 +88,8 @@ namespace NiL.JS.Statements
             var s = source.Evaluate(context);
             var v = variable.EvaluateForAssing(context);
             int index = 0;
+            if (!s.isDefinded || (s.valueType >= JSObjectType.Object && s.oValue == null))
+                return JSObject.undefined;
             while (s != null)
             {
                 var keys = s.GetEnumerator();
@@ -126,8 +128,6 @@ namespace NiL.JS.Statements
                     }
                     index++;
                 }
-                if (!s.isDefinded || (s.valueType >= JSObjectType.Object && s.oValue == null))
-                    break;
                 s = s.__proto__ ?? s["__proto__"];
                 if (!s.isDefinded || (s.valueType >= JSObjectType.Object && s.oValue == null))
                     break;

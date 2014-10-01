@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Windows.Forms;
+using System.Threading;
 
 namespace NiL.JSTest
 {
@@ -179,6 +180,7 @@ console.log((function f(f){ return f; })(1))
 
         static void Main(string[] args)
         {
+            Thread.CurrentThread.Priority = ThreadPriority.AboveNormal;
             // В текущем процессе часовой пояс будет -8:00:00. 
             // Создатели sputnik'a не удосужились в своих тестах учитывать временную зону 
             // и от всех требуют пребывания в указаном часовом поясе.
@@ -335,7 +337,7 @@ console.log((function f(f){ return f; })(1))
                 case 102:
                     {
                         for (var i = 0; i < 10; i++)
-                            runFile(@"sunspider-0.9.1\string-tagcloud.js");
+                            runFile(@"sunspider-0.9.1\access-fannkuch.js");
                         break;
                     }
             }

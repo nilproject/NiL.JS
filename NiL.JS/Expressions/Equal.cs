@@ -16,12 +16,11 @@ namespace NiL.JS.Expressions
         {
             var temp = first.Evaluate(context);
             JSObject tjso;
-            var lvt = temp.valueType;
             int tint;
             double tdouble;
             string tstr;
             var index = 0;
-            switch (lvt)
+            switch (temp.valueType)
             {
                 case JSObjectType.Bool:
                 case JSObjectType.Int:

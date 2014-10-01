@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using NiL.JS.Core;
 using NiL.JS.Core.BaseTypes;
+using NiL.JS.Statements;
 
 namespace NiL.JS.Expressions
 {
@@ -78,7 +79,30 @@ namespace NiL.JS.Expressions
         {
             for (var i = 0; i < arguments.Length; i++)
                 Parser.Optimize(ref arguments[i], depth + 1, vars, strict);
-            return base.Optimize(ref _this, depth, vars, strict);
+            base.Optimize(ref _this, depth, vars, strict);
+            if (first is GetVariableStatement)
+            {
+                var name = first.ToString();
+                VariableDescriptor f = null;
+                if (vars.TryGetValue(name, out f))
+                {
+                    if (f.Inititalizator != null) // Defined function
+                    {
+                        var func = f.Inititalizator as FunctionStatement;
+                        if (func != null && (func.body == null || func.body.body == null || func.body.body.Length == 0))
+                        {
+                            if (arguments.Length == 0)
+                                _this = new EmptyStatement();
+                            else
+                            {
+                                System.Array.Reverse(arguments, 0, arguments.Length);
+                                _this = new CodeBlock(arguments, strict);
+                            }
+                        }
+                    }
+                }
+            }
+            return false;
         }
 
         public override string ToString()

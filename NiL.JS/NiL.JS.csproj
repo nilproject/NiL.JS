@@ -266,6 +266,7 @@
     <Compile Include="Core\TypeProxing\ProxyConstructor.cs" />
     <Compile Include="Core\WithContext.cs" />
     <Compile Include="Expressions\Neg.cs" />
+    <Compile Include="Expressions\ToInt.cs" />
     <Compile Include="NamespaceProvider.cs" />
     <Compile Include="Statements\LabeledStatement.cs" />
     <Compile Include="Statements\MultilineComment.cs" />
@@ -322,13 +323,14 @@
     <Compile Include="Statements\FunctionStatement.cs" />
     <Compile Include="Statements\GetMemberStatement.cs" />
     <Compile Include="Statements\IfElseStatement.cs" />
-    <Compile Include="Statements\ImmidateStatement.cs" />
+    <Compile Include="Statements\ImmidateValueStatement.cs" />
     <Compile Include="Core\JSObject.cs" />
     <Compile Include="Statements\ExpressionStatement.cs" />
     <Compile Include="Script.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Statements\TryCatchStatement.cs" />
     <Compile Include="Statements\VariableDefineStatement.cs" />
+    <Compile Include="Statements\InfinityLoop.cs" />
     <Compile Include="Statements\WhileStatement.cs" />
     <Compile Include="Statements\WithStatement.cs" />
     <Compile Include="Statements\DebuggerOperator.cs" />

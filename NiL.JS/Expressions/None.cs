@@ -24,10 +24,6 @@ namespace NiL.JS.Expressions
                     context.objectSource = null;
                 temp = second.Evaluate(context);
             }
-#if DEBUG
-            else if (!(first is FunctionStatement))
-            { }
-#endif
             if (context != null)
                 context.objectSource = null;
             return temp;

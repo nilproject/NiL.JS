@@ -131,10 +131,6 @@ namespace NiL.JS.Expressions
                         {
                             tstr = temp.oValue;
                             temp = second.Evaluate(context);
-                            //if (temp.valueType == JSObjectType.Date)
-                            //    temp = temp.ToPrimitiveValue_String_Value();
-                            //else if (temp.valueType >= JSObjectType.Object)
-                            //    temp = temp.ToPrimitiveValue_Value_String();
                             switch (temp.valueType)
                             {
                                 case JSObjectType.String:

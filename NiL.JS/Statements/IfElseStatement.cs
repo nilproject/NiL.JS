@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using NiL.JS.Core;
 using NiL.JS.Core.JIT;
+using NiL.JS.Expressions;
 
 namespace NiL.JS.Statements
 {
@@ -117,6 +118,20 @@ namespace NiL.JS.Statements
             Parser.Optimize(ref condition, 2, variables, strict);
             Parser.Optimize(ref body, depth, variables, strict);
             Parser.Optimize(ref elseBody, depth, variables, strict);
+            try
+            {
+                if (condition is ImmidateValueStatement || (condition as Expression).IsContextIndependent)
+                {
+                    if ((bool)condition.Evaluate(null))
+                        _this = body;
+                    else
+                        _this = elseBody;
+                }
+            }
+            catch (Exception e)
+            {
+                System.Diagnostics.Debugger.Log(10, "Error", e.Message);
+            }
             return false;
         }
 

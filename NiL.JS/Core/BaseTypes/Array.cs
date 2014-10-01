@@ -10,6 +10,55 @@ namespace NiL.JS.Core.BaseTypes
     [Serializable]
     public sealed class Array : JSObject
     {
+        private sealed class _lengthField : JSObject
+        {
+            private Array array;
+
+            public _lengthField(Array owner)
+            {
+                attributes |= JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.NotConfigurable;
+                array = owner;
+                if ((long)(int)array._length == array._length)
+                {
+                    this.iValue = (int)array._length;
+                    this.valueType = JSObjectType.Int;
+                }
+                else
+                {
+                    this.dValue = array._length;
+                    this.valueType = JSObjectType.Double;
+                }
+            }
+
+            public override void Assign(JSObject value)
+            {
+                var nlenD = Tools.JSObjectToDouble(value);
+                var nlen = (uint)nlenD;
+                if (double.IsNaN(nlenD) || double.IsInfinity(nlenD) || nlen != nlenD)
+                    throw new JSException(new RangeError("Invalid array length"));
+                if ((attributes & JSObjectAttributesInternal.ReadOnly) != 0)
+                    return;
+                try
+                {
+                    if (!array.setLength(nlen))
+                        throw new JSException(new TypeError("Unable to reduce length because not configurable elements"));
+                }
+                finally
+                {
+                    if ((long)(int)array._length == array._length)
+                    {
+                        this.iValue = (int)array._length;
+                        this.valueType = JSObjectType.Int;
+                    }
+                    else
+                    {
+                        this.dValue = array._length;
+                        this.valueType = JSObjectType.Double;
+                    }
+                }
+            }
+        }
+
         [Hidden]
         internal BinaryTree<long, JSObject> data;
         [Hidden]
@@ -23,6 +72,7 @@ namespace NiL.JS.Core.BaseTypes
             _length = length;
             attributes |= JSObjectAttributesInternal.SystemObject;
             __proto__ = TypeProxy.GetPrototype(this.GetType());
+            _lengthObj = new _lengthField(this);
         }
 
         [DoNotEnumerate]
@@ -33,6 +83,7 @@ namespace NiL.JS.Core.BaseTypes
             data = new BinaryTree<long, JSObject>();
             attributes |= JSObjectAttributesInternal.SystemObject;
             __proto__ = TypeProxy.GetPrototype(this.GetType());
+            _lengthObj = new _lengthField(this);
         }
 
         [DoNotEnumerate]
@@ -46,6 +97,7 @@ namespace NiL.JS.Core.BaseTypes
             this._length = (long)length;
             attributes |= JSObjectAttributesInternal.SystemObject;
             __proto__ = TypeProxy.GetPrototype(this.GetType());
+            _lengthObj = new _lengthField(this);
         }
 
         [CLSCompliant(false)]
@@ -60,6 +112,7 @@ namespace NiL.JS.Core.BaseTypes
             this._length = length;
             attributes |= JSObjectAttributesInternal.SystemObject;
             __proto__ = TypeProxy.GetPrototype(this.GetType());
+            _lengthObj = new _lengthField(this);
         }
 
         [DoNotEnumerate]
@@ -73,6 +126,7 @@ namespace NiL.JS.Core.BaseTypes
             this._length = (long)d;
             attributes |= JSObjectAttributesInternal.SystemObject;
             __proto__ = TypeProxy.GetPrototype(this.GetType());
+            _lengthObj = new _lengthField(this);
         }
 
         [DoNotEnumerate]
@@ -96,6 +150,7 @@ namespace NiL.JS.Core.BaseTypes
                 data[index++] = e is JSObject ? (e as JSObject).CloneImpl() : TypeProxy.Proxy(e);
             attributes |= JSObjectAttributesInternal.SystemObject;
             __proto__ = TypeProxy.GetPrototype(this.GetType());
+            _lengthObj = new _lengthField(this);
         }
 
         [Hidden]
@@ -112,6 +167,7 @@ namespace NiL.JS.Core.BaseTypes
             _length = (long)index;
             attributes |= JSObjectAttributesInternal.SystemObject;
             __proto__ = TypeProxy.GetPrototype(this.GetType());
+            _lengthObj = new _lengthField(this);
         }
 
         [Hidden]
@@ -131,6 +187,7 @@ namespace NiL.JS.Core.BaseTypes
             _length = (long)index;
             attributes |= JSObjectAttributesInternal.SystemObject;
             __proto__ = TypeProxy.GetPrototype(this.GetType());
+            _lengthObj = new _lengthField(this);
         }
 
         [Hidden]
@@ -146,25 +203,46 @@ namespace NiL.JS.Core.BaseTypes
             data.Add(_length++, obj);
         }
 
-        [Field]
-        [DoNotDelete]
-        [NotConfigurable]
-        [DoNotEnumerateAttribute]
+        //[Field]
+        //[DoNotDelete]
+        //[NotConfigurable]
+        //[DoNotEnumerateAttribute]
+        //public JSObject length
+        //{
+        //    [Hidden]
+        //    get
+        //    {
+        //        return _length > 0xFFFFFFFF ? 0 : _length;
+        //    }
+        //    [Hidden]
+        //    set
+        //    {
+        //        var nlenD = Tools.JSObjectToDouble(value);
+        //        var nlen = (long)nlenD;
+        //        if (double.IsNaN(nlenD) || double.IsInfinity(nlenD) || nlen != nlenD)
+        //            throw new JSException(new RangeError("Invalid array length"));
+        //        setLength(nlen);
+        //    }
+        //}
+
+        private _lengthField _lengthObj;
+        [Hidden]
         public JSObject length
         {
             [Hidden]
             get
             {
-                return _length > 0xFFFFFFFF ? 0 : _length;
-            }
-            [Hidden]
-            set
-            {
-                var nlenD = Tools.JSObjectToDouble(value);
-                var nlen = (long)nlenD;
-                if (double.IsNaN(nlenD) || double.IsInfinity(nlenD) || nlen != nlenD)
-                    throw new JSException(new RangeError("Invalid array length"));
-                setLength(nlen);
+                if ((long)(int)_length == _length)
+                {
+                    _lengthObj.iValue = (int)_length;
+                    _lengthObj.valueType = JSObjectType.Int;
+                }
+                else
+                {
+                    _lengthObj.dValue = _length > uint.MaxValue ? 0 : (uint)_length;
+                    _lengthObj.valueType = JSObjectType.Double;
+                }
+                return _lengthObj;
             }
         }
 
@@ -183,7 +261,7 @@ namespace NiL.JS.Core.BaseTypes
                     }
                 if (!res)
                 {
-                    setLength(nlen + 1);
+                    setLength(nlen + 1); // бесконечной рекурсии не может быть.
                     return false;
                 }
             }
@@ -924,6 +1002,8 @@ namespace NiL.JS.Core.BaseTypes
         [Hidden]
         internal protected override JSObject GetMember(JSObject name, bool create, bool own)
         {
+            if (name.valueType == JSObjectType.String && "length".Equals(name.oValue))
+                return length;
             long index = 0;
             double dindex = Tools.JSObjectToDouble(name);
             if (!double.IsNaN(dindex) && !double.IsInfinity(dindex))
@@ -937,8 +1017,7 @@ namespace NiL.JS.Core.BaseTypes
                         {
                             if (create)
                             {
-                                var ls = this["length"].oValue;
-                                if (ls != null && (ls as Function[])[0] == null)
+                                if ((_lengthObj.attributes & JSObjectAttributesInternal.ReadOnly) != 0)
                                 {
                                     if (own)
                                         throw new JSException(new TypeError("Cannot add element in fixed size array"));

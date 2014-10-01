@@ -1,5 +1,6 @@
 ﻿using System;
 using NiL.JS.Core;
+using NiL.JS.Statements;
 
 namespace NiL.JS.Expressions
 {
@@ -21,6 +22,26 @@ namespace NiL.JS.Expressions
                 tempContainer.valueType = JSObjectType.Int;
                 return tempContainer;
             }
+        }
+
+        internal override bool Optimize(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> vars, bool strict)
+        {
+            var res = base.Optimize(ref _this, depth, vars, strict);
+            if (_this != this)
+                return res;
+            if ((second is ImmidateValueStatement || (second is Expression && (second as Expression).IsContextIndependent))
+                && Tools.JSObjectToInt32(second.Evaluate(null)) == 0)
+            {
+                _this = new ToInt(first);
+                return true;
+            }
+            if ((first is ImmidateValueStatement || (first is Expression && (first as Expression).IsContextIndependent))
+                 && Tools.JSObjectToInt32(first.Evaluate(null)) == 0)
+            {
+                _this = new ToInt(second);
+                return true;
+            }
+            return res;
         }
 
         public override string ToString()

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq.Expressions;
 using NiL.JS.Core;
 using NiL.JS.Core.BaseTypes;
@@ -12,11 +13,11 @@ namespace NiL.JS.Statements
     {
         private CodeNode condition;
         private CodeNode body;
-        private List<string> labels;
+        private string[] labels;
 
         public CodeNode Condition { get { return condition; } }
         public CodeNode Body { get { return body; } }
-        public ICollection<string> Labels { get { return labels.AsReadOnly(); } }
+        public ICollection<string> Labels { get { return new ReadOnlyCollection<string>(labels); } }
 
         private DoWhileStatement()
         {
@@ -65,7 +66,7 @@ namespace NiL.JS.Statements
                 {
                     body = body,
                     condition = condition,
-                    labels = state.Labels.GetRange(state.Labels.Count - labelsCount, labelsCount),
+                    labels = state.Labels.GetRange(state.Labels.Count - labelsCount, labelsCount).ToArray(),
                     Position = pos,
                     Length = index - pos
                 }
@@ -78,7 +79,7 @@ namespace NiL.JS.Statements
         {
             var continueTarget = Expression.Label("continue" + (DateTime.Now.Ticks % 1000));
             var breakTarget = Expression.Label("break" + (DateTime.Now.Ticks % 1000));
-            for (var i = 0; i < labels.Count; i++)
+            for (var i = 0; i < labels.Length; i++)
                 state.NamedContinueLabels[labels[i]] = continueTarget;
             state.BreakLabels.Push(breakTarget);
             state.ContinueLabels.Push(continueTarget);
@@ -102,7 +103,7 @@ namespace NiL.JS.Statements
                 if (state.ContinueLabels.Peek() != continueTarget)
                     throw new InvalidOperationException();
                 state.ContinueLabels.Pop();
-                for (var i = 0; i < labels.Count; i++)
+                for (var i = 0; i < labels.Length; i++)
                     state.NamedContinueLabels.Remove(labels[i]);
             }
         }
@@ -121,8 +122,9 @@ namespace NiL.JS.Statements
                 res = body.Evaluate(context);
                 if (context.abort != AbortType.None)
                 {
-                    bool _break = (context.abort > AbortType.Continue) || ((context.abortInfo != null) && (labels.IndexOf(context.abortInfo.oValue as string) == -1));
-                    if (context.abort < AbortType.Return && ((context.abortInfo == null) || (labels.IndexOf(context.abortInfo.oValue as string) != -1)))
+                    var me = context.abortInfo == null || System.Array.IndexOf(labels, context.abortInfo.oValue as string) != -1;
+                    var _break = (context.abort > AbortType.Continue) || !me;
+                    if (context.abort < AbortType.Return && me)
                     {
                         context.abort = AbortType.None;
                         context.abortInfo = JSObject.notExists;
@@ -155,6 +157,22 @@ namespace NiL.JS.Statements
             depth = System.Math.Max(1, depth);
             Parser.Optimize(ref body, depth, variables, strict);
             Parser.Optimize(ref condition, 2, variables, strict);
+            try
+            {
+                if (condition is ImmidateValueStatement || (condition as Expressions.Expression).IsContextIndependent)
+                {
+                    if ((bool)condition.Evaluate(null))
+                        _this = new InfinityLoop(body, labels);
+                    else if (labels.Length == 0)
+                        _this = body;
+                }
+            }
+            catch (Exception e)
+            {
+                System.Diagnostics.Debugger.Log(10, "Error", e.Message);
+            }
+            if (_this == this && body == null)
+                body = new EmptyStatement();
             return false;
         }
 

@@ -478,17 +478,15 @@ namespace NiL.JS.Core
                     {
                         if (value.isExist)
                         {
-                            if ((obj.oValue as Function[])[0] != null)
-                            {
-                                var nlenD = Tools.JSObjectToDouble(value);
-                                var nlen = (uint)nlenD;
-                                if (double.IsNaN(nlenD) || double.IsInfinity(nlenD) || nlen != nlenD)
-                                    throw new JSException(new RangeError("Invalid array length"));
-                                if (!(target as BaseTypes.Array).setLength(nlen))
-                                    throw new JSException(new TypeError("Unable to reduce length because not configurable elements"));
-                            }
-                            else if (!StrictEqual.Check((obj.oValue as Function[])[1].Invoke(target, null), value, null))
-                                throw new JSException(new TypeError("Cannot redefine property length."));
+                            var nlenD = Tools.JSObjectToDouble(value);
+                            var nlen = (uint)nlenD;
+                            if (double.IsNaN(nlenD) || double.IsInfinity(nlenD) || nlen != nlenD)
+                                throw new JSException(new RangeError("Invalid array length"));
+                            if ((obj.attributes & JSObjectAttributesInternal.ReadOnly) != 0
+                                && ((obj.valueType == JSObjectType.Double && nlenD != obj.dValue)
+                                    || (obj.valueType == JSObjectType.Int && nlen != obj.iValue)))
+                                throw new JSException(new TypeError("Cannot change length of fixed size array"));
+                            (target as BaseTypes.Array).length.Assign(value);
                             value = notExists; // длина всегда неконфигурируема, поэтому код ниже пойдёт в обход,
                             // а там нужные проверки, которые, для экономии кода, сюда переносить не стал
                         }
@@ -496,10 +494,7 @@ namespace NiL.JS.Core
                     finally
                     {
                         if (writable.isExist && !(bool)writable)
-                        {
-                            (obj.oValue as Function[])[0] = null;
                             obj.attributes |= JSObjectAttributesInternal.ReadOnly;
-                        }
                     }
                 }
             }

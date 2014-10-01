@@ -1,20 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using NiL.JS.Core;
 using NiL.JS.Core.BaseTypes;
+using NiL.JS.Expressions;
 
 namespace NiL.JS.Statements
 {
     [Serializable]
-    internal sealed class WhileStatement : CodeNode
+    public sealed class WhileStatement : CodeNode
     {
         private CodeNode condition;
         private CodeNode body;
-        private List<string> labels;
+        private string[] labels;
 
         public CodeNode Condition { get { return condition; } }
         public CodeNode Body { get { return body; } }
-        public string[] Labels { get { return labels.ToArray(); } }
+        public ICollection<string> Labels { get { return new ReadOnlyCollection<string>(labels); } }
 
         internal static ParseResult Parse(ParsingState state, ref int index)
         {
@@ -51,7 +53,7 @@ namespace NiL.JS.Statements
 
                     body = body,
                     condition = condition,
-                    labels = state.Labels.GetRange(state.Labels.Count - labelsCount, labelsCount),
+                    labels = state.Labels.GetRange(state.Labels.Count - labelsCount, labelsCount).ToArray(),
                     Position = pos,
                     Length = index - pos
                 }
@@ -74,8 +76,9 @@ namespace NiL.JS.Statements
                 res = body.Evaluate(context);
                 if (context.abort != AbortType.None)
                 {
-                    bool _break = (context.abort > AbortType.Continue) || ((context.abortInfo != null) && (labels.IndexOf(context.abortInfo.oValue as string) == -1));
-                    if (context.abort < AbortType.Return && ((context.abortInfo == null) || (labels.IndexOf(context.abortInfo.oValue as string) != -1)))
+                    var me = context.abortInfo == null || System.Array.IndexOf(labels, context.abortInfo.oValue as string) != -1;
+                    var _break = (context.abort > AbortType.Continue) || !me;
+                    if (context.abort < AbortType.Return && me)
                     {
                         context.abort = AbortType.None;
                         context.abortInfo = null;
@@ -107,6 +110,20 @@ namespace NiL.JS.Statements
             depth = System.Math.Max(1, depth);
             Parser.Optimize(ref body, depth, variables, strict);
             Parser.Optimize(ref condition, 2, variables, strict);
+            try
+            {
+                if (condition is ImmidateValueStatement || (condition as Expression).IsContextIndependent)
+                {
+                    if ((bool)condition.Evaluate(null))
+                        _this = new InfinityLoop(body, labels);
+                    else
+                        _this = null;
+                }
+            }
+            catch (Exception e)
+            {
+                System.Diagnostics.Debugger.Log(10, "Error", e.Message);
+            }
             return false;
         }
 

@@ -39,6 +39,12 @@ namespace NiL.JS.Statements
             return null;
         }
 
+        internal override bool Optimize(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, bool strict)
+        {
+            _this = null;
+            return false;
+        }
+
         public override string ToString()
         {
             return "";
