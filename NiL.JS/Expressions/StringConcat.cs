@@ -62,10 +62,10 @@ namespace NiL.JS.Expressions
                         prep(sources[3].Evaluate(context)));
                 else
                 {
-                    StringBuilder res = new StringBuilder().Append(prep(sources[0].Evaluate(context)));
-                    for (var i = 1; i < sources.Count; i++)
-                        res.Append(prep(sources[i].Evaluate(context)));
-                    tempContainer.oValue = res.ToString();
+                    var temp = new string[sources.Count];
+                    for (var i = 0; i < sources.Count; i++)
+                        temp[i] = prep(sources[i].Evaluate(context));
+                    tempContainer.oValue = string.Concat(temp);
                 }
                 return tempContainer;
             }
