@@ -18,7 +18,7 @@ namespace NiL.JS.Core
         {
             return System.Linq.Expressions.Expression.Call(
                        System.Linq.Expressions.Expression.Constant(this),
-                       this.GetType().GetMethod("Invoke", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic, null, new[] { typeof(Context) }, null),
+                       JITHelpers.methodof(Evaluate),
                        JITHelpers.ContextParameter
                        );
         }

@@ -1,11 +1,14 @@
 ﻿$ERROR = console.log;
 $FAIL = console.log;
 console.log(function () {
-    var arrObj = [];
+    var s = new String("abc");
+    var desc = Object.getOwnPropertyDescriptor(s, "length");
 
-    Object.defineProperty(arrObj, 4294967296, {
-        value: 100
-    });
-
-    return arrObj.hasOwnProperty("4294967296") && arrObj.length === 0 && arrObj[4294967296] === 100;;
+    if (desc.writable === false &&
+        desc.enumerable === false &&
+        desc.configurable === false &&
+        desc.hasOwnProperty('get') === false &&
+        desc.hasOwnProperty('set') === false) {
+        return true;
+    }
 }());

@@ -1519,15 +1519,12 @@ namespace NiL.JS.Core
                     return obj.iValue != 0;
                 case JSObjectType.Double:
                     return obj.dValue != 0.0 && !double.IsNaN(obj.dValue);
+                case JSObjectType.String:
+                    return !string.IsNullOrEmpty(obj.oValue as string);
                 case JSObjectType.Object:
                 case JSObjectType.Date:
                 case JSObjectType.Function:
                     return obj.oValue != null;
-                case JSObjectType.String:
-                    return !string.IsNullOrEmpty(obj.oValue as string);
-                //case JSObjectType.NotExists:
-                //case JSObjectType.NotExistsInObject:
-                //case JSObjectType.Undefined:
                 default:
                     return false;
             }

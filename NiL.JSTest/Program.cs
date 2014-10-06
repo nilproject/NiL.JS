@@ -192,7 +192,7 @@ console.log((function f(f){ return f; })(1))
 
             Context.GlobalContext.DebuggerCallback += (sender, e) => System.Diagnostics.Debugger.Break();
 
-            int mode = 0//101//155
+            int mode = 0
                    ;
             switch (mode)
             {
@@ -337,7 +337,7 @@ console.log((function f(f){ return f; })(1))
                 case 102:
                     {
                         for (var i = 0; i < 10; i++)
-                            runFile(@"sunspider-0.9.1\access-fannkuch.js");
+                            runFile(@"sunspider-0.9.1\string-tagcloud.js");
                         break;
                     }
             }
@@ -420,6 +420,7 @@ console.log((function f(f){ return f; })(1))
 
             long _total = 0;
             var round = 0;
+            long min = long.MaxValue;
             for (; round < 5; round++)
             {
                 TimeSpan total = new TimeSpan();
@@ -441,9 +442,11 @@ console.log((function f(f){ return f; })(1))
                 }
                 _("Total: " + total);
                 _total += total.Ticks;
+                min = System.Math.Min(total.Ticks, min);
                 GC.GetTotalMemory(true);
             }
             _("Average: " + new TimeSpan(_total / round));
+            _("Minimum: " + new TimeSpan(min));
         }
     }
 }

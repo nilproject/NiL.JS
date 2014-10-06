@@ -110,7 +110,7 @@ namespace NiL.JS.Core
                 JSObject res = null;
                 if (bynew)
                 {
-                    // Здесь нельяз возвращать контейнер с ValueType < Object, иначе из New выйдет служебный экземпляр NewMarker
+                    // Здесь нельзя возвращать контейнер с ValueType < Object, иначе из New выйдет служебный экземпляр NewMarker
                     res = obj as JSObject;
                     if (res != null)
                     {
@@ -176,9 +176,7 @@ namespace NiL.JS.Core
             for (int i = 0; i < constructors.Length; i++)
             {
                 if (constructors[i].Parameters.Length == len
-                    || (constructors[i].Parameters.Length == 1 && (constructors[i].Parameters[0].ParameterType == typeof(Arguments)
-                    //|| constructors[i].Parameters[0].ParameterType == typeof(JSObject[])
-                                                                   || constructors[i].Parameters[0].ParameterType == typeof(object[]))))
+                    || (constructors[i].Parameters.Length == 1 && (constructors[i].Parameters[0].ParameterType == typeof(Arguments))))
                 {
                     if (len == 0)
                         args = _objectA;

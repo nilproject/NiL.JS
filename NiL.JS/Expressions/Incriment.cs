@@ -23,7 +23,7 @@ namespace NiL.JS.Expressions
         }
 
         public Incriment(CodeNode op, Type type)
-            : base(type == Type.Preincriment ? op : null, type == Type.Postincriment ? op : null, type == Type.Postincriment)
+            : base(op, type == Type.Postincriment ? op : null, type == Type.Postincriment)
         {
             if (type > Type.Postincriment)
                 throw new ArgumentException("type");
@@ -35,26 +35,26 @@ namespace NiL.JS.Expressions
 
         internal override JSObject Evaluate(Context context)
         {
+            // Если это постинкремент, то second не будут равен нулю.
+            // first всегда содержит узел, из которого нужно получать пременную
+            // Определяем тип операции по вторичным признакам.
             Function setter = null;
             JSObject prev = null;
             lock (this)
             {
-                var val = (first ?? second).EvaluateForAssing(context);
+                var val = first.EvaluateForAssing(context);
                 if (val.valueType == JSObjectType.Property)
                 {
                     setter = (val.oValue as Function[])[0];
                     if (context.strict && setter == null)
-                        throw new JSException(new TypeError("Can not increment property \"" + (first ?? second) + "\" without setter."));
+                        throw new JSException(new TypeError("Can not increment property \"" + (first) + "\" without setter."));
                     val = (val.oValue as Function[])[1].Invoke(context.objectSource, null).CloneImpl();
                     val.attributes = 0;
                 }
                 else if (context.strict && (val.attributes & JSObjectAttributesInternal.ReadOnly) != 0)
-                    throw new JSException(new TypeError("Can not incriment readonly \"" + (first ?? second) + "\""));
+                    throw new JSException(new TypeError("Can not incriment readonly \"" + (first) + "\""));
                 switch (val.valueType)
                 {
-                    case JSObjectType.Int:
-                    case JSObjectType.Double:
-                        break;
                     case JSObjectType.Bool:
                         {
                             val.valueType = JSObjectType.Int;
@@ -103,9 +103,13 @@ namespace NiL.JS.Expressions
                             }
                             break;
                         }
+                    case JSObjectType.NotExists:
+                        {
+                            Tools.RaiseIfNotExist(val, first);
+                            break;
+                        }
                     default:
                         {
-                            Tools.RaiseIfNotExist(val, first ?? second);
                             if (val.assignCallback != null)
                                 val.assignCallback(val);
                             break;
@@ -161,10 +165,7 @@ namespace NiL.JS.Expressions
         {
             base.Optimize(ref _this, depth, vars, strict);
             if (depth <= 1 && second != null)
-            {
-                first = second;
                 second = null;
-            }
             if (first is VariableReference)
                 ((first as VariableReference).Descriptor.assignations ??
                     ((first as VariableReference).Descriptor.assignations = new System.Collections.Generic.List<CodeNode>())).Add(this);
@@ -173,7 +174,7 @@ namespace NiL.JS.Expressions
 
         public override string ToString()
         {
-            return first != null ? "++" + first : second + "++";
+            return second == null ? "++" + first : first + "++";
         }
     }
 }

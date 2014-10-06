@@ -73,6 +73,9 @@ namespace NiL.JS
                         f.Assign(body.variables[i].Inititalizator.Evaluate(Context));
                 }
             }
+            GC.Collect(0);
+            GC.Collect(1);
+            GC.GetTotalMemory(true);
 #if !NET35
             if (Context.UseJit)
                 compiledScript = JITHelpers.compile(body, false);
@@ -94,7 +97,7 @@ namespace NiL.JS
                 if (IsCompiled)
                 {
 #if DEBUG
-                    System.Diagnostics.Debugger.Log(0, "NiL.JS JIT", "Run compiled script");
+                    System.Diagnostics.Debugger.Log(0, "NiL.JS JIT", "\nRun compiled script");
 #endif
                     compiledScript(Context);
                 }
@@ -102,7 +105,7 @@ namespace NiL.JS
 #endif
                 {
 #if DEBUG && !NET35
-                    System.Diagnostics.Debugger.Log(0, "NiL.JS JIT", "Run non compiled script");
+                    System.Diagnostics.Debugger.Log(0, "NiL.JS JIT", "\nRun non compiled script");
 #endif
                     root.Evaluate(Context);
                 }

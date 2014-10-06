@@ -37,6 +37,7 @@ namespace NiL.JS.Expressions
             lock (this)
             {
                 Function setter = null;
+                JSObject prev = null;
                 var val = Tools.RaiseIfNotExist((first ?? second).EvaluateForAssing(context), first ?? second);
                 if (val.valueType == JSObjectType.Property)
                 {
@@ -48,22 +49,6 @@ namespace NiL.JS.Expressions
                 }
                 else if (context.strict && (val.attributes & JSObjectAttributesInternal.ReadOnly) != 0)
                     throw new JSException(new TypeError("Can not decriment readonly property \"" + (first ?? second) + "\""));
-                switch (val.valueType)
-                {
-                    case JSObjectType.Object:
-                    case JSObjectType.Date:
-                    case JSObjectType.Function:
-                        {
-                            val.Assign(val.ToPrimitiveValue_Value_String());
-                            break;
-                        }
-                    default:
-                        {
-                            if (val.assignCallback != null)
-                                val.assignCallback(val);
-                            break;
-                        }
-                }
                 switch (val.valueType)
                 {
                     case JSObjectType.Bool:
@@ -81,23 +66,58 @@ namespace NiL.JS.Expressions
                             val.dValue = resd;
                             break;
                         }
+                    case JSObjectType.Object:
                     case JSObjectType.Date:
                     case JSObjectType.Function:
-                    case JSObjectType.Object: // null
                         {
-                            val.iValue = 0;
-                            val.valueType = JSObjectType.Int;
+                            val.Assign(val.ToPrimitiveValue_Value_String());
+                            switch (val.valueType)
+                            {
+                                case JSObjectType.Bool:
+                                    {
+                                        val.valueType = JSObjectType.Int;
+                                        break;
+                                    }
+                                case JSObjectType.String:
+                                    {
+                                        double resd;
+                                        int i = 0;
+                                        if (!Tools.ParseNumber(val.oValue as string, i, out resd, Tools.ParseNumberOptions.Default))
+                                            resd = double.NaN;
+                                        val.valueType = JSObjectType.Double;
+                                        val.dValue = resd;
+                                        break;
+                                    }
+                                case JSObjectType.Date:
+                                case JSObjectType.Function:
+                                case JSObjectType.Object: // null
+                                    {
+                                        val.iValue = 0;
+                                        val.valueType = JSObjectType.Int;
+                                        break;
+                                    }
+                            }
+                            break;
+                        }
+                    case JSObjectType.NotExists:
+                        {
+                            Tools.RaiseIfNotExist(val, first ?? second);
+                            break;
+                        }
+                    default:
+                        {
+                            if (val.assignCallback != null)
+                                val.assignCallback(val);
                             break;
                         }
                 }
-                JSObject o = null;
                 if (second != null && val.isDefinded)
                 {
-                    o = tempContainer;
-                    o.Assign(val);
+                    prev = tempContainer;
+                    prev.Assign(val);
                 }
                 else
-                    o = val;
+                    prev = val;
                 switch (val.valueType)
                 {
                     case JSObjectType.Int:
@@ -133,7 +153,7 @@ namespace NiL.JS.Expressions
                     args[0] = val;
                     setter.Invoke(context.objectSource, args);
                 }
-                return o;
+                return prev;
             }
         }
 

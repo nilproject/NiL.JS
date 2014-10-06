@@ -112,7 +112,7 @@ namespace NiL.JS.Statements
             Parser.Optimize(ref condition, 2, variables, strict);
             try
             {
-                if (condition is ImmidateValueStatement || (condition as Expression).IsContextIndependent)
+                if (condition is ImmidateValueStatement || (condition is Expression && (condition as Expression).IsContextIndependent))
                 {
                     if ((bool)condition.Evaluate(null))
                         _this = new InfinityLoop(body, labels);

@@ -37,7 +37,7 @@ namespace NiL.JS.Core.JIT
             catch
             {
 #if DEBUG
-                //System.Diagnostics.Debugger.Break();
+                System.Diagnostics.Debugger.Break();
 #endif
             }
             return null;
@@ -54,6 +54,11 @@ namespace NiL.JS.Core.JIT
         }
 
         internal static MethodInfo methodof(Func<Context, JSObject> method)
+        {
+            return method.Method;
+        }
+
+        internal static MethodInfo methodof(Func<Context, CodeNode[], JSObject> method)
         {
             return method.Method;
         }

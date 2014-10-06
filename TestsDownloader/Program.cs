@@ -49,7 +49,7 @@ namespace TestsDownloader
                 var data = new StreamReader(response.GetResponseStream()).ReadToEnd();
                 var tests = JSON.parse(data).GetMember("testSuite");
                 var host = response.ResponseUri.Scheme + "://" + response.ResponseUri.Host + "/";
-                var res = new string[(int)(tests["length"].Value as NiL.JS.Core.BaseTypes.Function[])[1].Invoke(tests, null).Value];
+                var res = new string[(int)(tests["length"].Value)];
                 int index = 0;
                 foreach (var i in tests)
                 {

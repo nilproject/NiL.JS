@@ -847,7 +847,7 @@ namespace NiL.JS.Core.BaseTypes
                 if (this.GetType() == typeof(String))
                 {
                     if (_length == null)
-                        _length = new Number((oValue as string).Length) { attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum };
+                        _length = new Number((oValue as string).Length) { attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.NotConfigurable };
                     else
                         _length.iValue = (oValue as string).Length;
                     return _length;
@@ -897,7 +897,10 @@ namespace NiL.JS.Core.BaseTypes
             }
             if (__proto__ == null)
                 __proto__ = TypeProxy.GetPrototype(this.GetType());
-            if (name.ToString() == "__proto__")
+            var namestr = name.ToString();
+            if (namestr == "length")
+                return length;
+            if (namestr == "__proto__")
             {
                 if (create
                     && ((__proto__.attributes & JSObjectAttributesInternal.SystemObject) != 0)

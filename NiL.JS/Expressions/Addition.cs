@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using NiL.JS.Core;
+using NiL.JS.Statements;
 
 namespace NiL.JS.Expressions
 {
@@ -166,8 +168,6 @@ namespace NiL.JS.Expressions
                                         tstr += temp.ToString();
                                         break;
                                     }
-                                case JSObjectType.NotExists:
-                                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable not defined.")));
                             }
                             tempContainer.oValue = tstr;
                             tempContainer.valueType = JSObjectType.String;
@@ -268,6 +268,35 @@ namespace NiL.JS.Expressions
                 }
                 throw new NotImplementedException();
             }
+        }
+
+        internal override bool Optimize(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict)
+        {
+            var res = base.Optimize(ref _this, depth, vars, strict);
+            if (!res && _this == this)
+            {
+                if (first is StringConcat)
+                {
+                    _this = first;
+                    (first as StringConcat).sources.Add(second);
+                }
+                else if (second is StringConcat)
+                {
+                    _this = second;
+                    (second as StringConcat).sources.Insert(0, first);                    
+                }
+                else
+                {
+                    if ((first is ImmidateValueStatement
+                        && (first as ImmidateValueStatement).value.valueType == JSObjectType.String)
+                        || (second is ImmidateValueStatement
+                        && (second as ImmidateValueStatement).value.valueType == JSObjectType.String))
+                    {
+                        _this = new StringConcat(new List<CodeNode>() { first, second });
+                    }
+                }
+            }
+            return res;
         }
 
         public override string ToString()

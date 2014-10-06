@@ -203,28 +203,6 @@ namespace NiL.JS.Core.BaseTypes
             data.Add(_length++, obj);
         }
 
-        //[Field]
-        //[DoNotDelete]
-        //[NotConfigurable]
-        //[DoNotEnumerateAttribute]
-        //public JSObject length
-        //{
-        //    [Hidden]
-        //    get
-        //    {
-        //        return _length > 0xFFFFFFFF ? 0 : _length;
-        //    }
-        //    [Hidden]
-        //    set
-        //    {
-        //        var nlenD = Tools.JSObjectToDouble(value);
-        //        var nlen = (long)nlenD;
-        //        if (double.IsNaN(nlenD) || double.IsInfinity(nlenD) || nlen != nlenD)
-        //            throw new JSException(new RangeError("Invalid array length"));
-        //        setLength(nlen);
-        //    }
-        //}
-
         private _lengthField _lengthObj;
         [Hidden]
         public JSObject length
@@ -232,7 +210,7 @@ namespace NiL.JS.Core.BaseTypes
             [Hidden]
             get
             {
-                if ((long)(int)_length == _length)
+                if (_length <= int.MaxValue)
                 {
                     _lengthObj.iValue = (int)_length;
                     _lengthObj.valueType = JSObjectType.Int;
@@ -1004,69 +982,97 @@ namespace NiL.JS.Core.BaseTypes
         {
             if (name.valueType == JSObjectType.String && "length".Equals(name.oValue))
                 return length;
-            long index = 0;
-            double dindex = Tools.JSObjectToDouble(name);
-            if (!double.IsNaN(dindex) && !double.IsInfinity(dindex))
+            bool isIndex = false;
+            uint index = 0;
+            switch (name.valueType)
             {
-                if (dindex >= 0)
-                {
-                    if (((index = (long)dindex) == dindex))
+                case JSObjectType.Bool:
+                case JSObjectType.Int:
                     {
-                        create &= (attributes & JSObjectAttributesInternal.Immutable) == 0;
-                        if (_length <= index)
+                        isIndex = name.iValue >= 0;
+                        index = (uint)name.iValue;
+                        break;
+                    }
+                case JSObjectType.Double:
+                    {
+                        isIndex = (index = (uint)name.dValue) == name.dValue;
+                        break;
+                    }
+                case JSObjectType.String:
+                    {
+                        var fc = (name.oValue as string)[0];
+                        if ('0' <= fc && '9' >= fc)
+                            goto default;
+                        break;
+                    }
+                default:
+                    {
+                        double td = Tools.JSObjectToDouble(name);
+                        isIndex = !double.IsInfinity(td) && !double.IsNaN(td) && (index = (uint)td) == td;
+                        break;
+                    }
+            }
+            if (isIndex)
+            {
+                create &= (attributes & JSObjectAttributesInternal.Immutable) == 0;
+                if (_length <= index)
+                {
+                    if (create)
+                    {
+                        if ((_lengthObj.attributes & JSObjectAttributesInternal.ReadOnly) != 0)
                         {
-                            if (create)
-                            {
-                                if ((_lengthObj.attributes & JSObjectAttributesInternal.ReadOnly) != 0)
-                                {
-                                    if (own)
-                                        throw new JSException(new TypeError("Cannot add element in fixed size array"));
-                                    return notExists;
-                                }
-                                setLength(index + 1);
-                                return data[index] = new JSObject() { valueType = JSObjectType.NotExistsInObject };
-                            }
-                            else
-                                return base.GetMember(name, create, own);
+                            if (own)
+                                throw new JSException(new TypeError("Cannot add element in fixed size array"));
+                            return notExists;
+                        }
+                        setLength(index + 1);
+                        return data[index] = new JSObject() { valueType = JSObjectType.NotExistsInObject };
+                    }
+                    else
+                    {
+                        JSObject element = null;
+                        data.TryGetValue(index, out element);
+                        notExists.valueType = JSObjectType.NotExistsInObject;
+                        return element ?? notExists;
+                    }
+                }
+                else
+                {
+                    JSObject element = null;
+                    bool exists = data.TryGetValue(index, out element);
+                    if (!exists)
+                    {
+                        if (create)
+                        {
+                            element = new JSObject() { valueType = JSObjectType.NotExistsInObject };
+                            data[index] = element;
+                            return element;
                         }
                         else
                         {
-                            JSObject element = null;
-                            bool exists = data.TryGetValue(index, out element);
-                            if (!exists)
+                            if (own)
                             {
-                                if (create)
-                                {
-                                    element = new JSObject() { valueType = JSObjectType.NotExistsInObject };
-                                    data[index] = element;
-                                    return element;
-                                }
-                                else
-                                {
-                                    if (own)
-                                    {
-                                        notExists.valueType = JSObjectType.NotExistsInObject;
-                                        return notExists;
-                                    }
-                                    else
-                                    {
-                                        if (__proto__ == null)
-                                            __proto__ = TypeProxy.GetPrototype(this.GetType());
-                                        return DefaultFieldGetter(name, false, false);
-                                    }
-                                }
+                                notExists.valueType = JSObjectType.NotExistsInObject;
+                                return notExists;
                             }
                             else
                             {
-                                var t = element ?? notExists;
-                                if (create && (t.attributes & (JSObjectAttributesInternal.SystemObject | JSObjectAttributesInternal.ReadOnly)) == JSObjectAttributesInternal.SystemObject)
-                                    data[index] = t = t.CloneImpl();
-                                return t;
+                                if (__proto__ == null)
+                                    __proto__ = TypeProxy.GetPrototype(this.GetType());
+                                return __proto__.GetMember(name, false, false);
                             }
                         }
                     }
+                    else
+                    {
+                        var t = element ?? notExists;
+                        if (create && (t.attributes & (JSObjectAttributesInternal.SystemObject | JSObjectAttributesInternal.ReadOnly)) == JSObjectAttributesInternal.SystemObject)
+                            data[index] = t = t.CloneImpl();
+                        return t;
+                    }
                 }
             }
+
             //if ((attributes & JSObjectAttributesInternal.ProxyPrototype) != 0)
             //    return __proto__.GetMember(name, create, own);
             return DefaultFieldGetter(name, create, own);

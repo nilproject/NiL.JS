@@ -40,5 +40,15 @@ namespace NiL.JS.Core
                 objectSource = @object;
             return res;
         }
+        
+#if !NET35
+        public override bool UseJit
+        {
+            get
+            {
+                return false;
+            }
+        }
     }
+#endif
 }

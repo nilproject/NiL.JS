@@ -187,8 +187,7 @@ namespace NiL.JS.Core
         public event DebuggerCallback DebuggerCallback;
 
 #if !NET35
-
-        public bool UseJit
+        public virtual bool UseJit
         {
             get
             {
@@ -197,9 +196,7 @@ namespace NiL.JS.Core
                 else return false;
             }
         }
-
 #endif
-
         /// <summary>
         /// Указывает, присутствует ли контекст в каскаде выполняющихся контекстов непосредственно
         /// или в качестве одного из прототипов

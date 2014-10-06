@@ -599,6 +599,7 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         #region Runtime
+        private bool compilationInit;
         private bool containsEval;
         private bool containsArguments;
         private bool isRecursive;
@@ -726,10 +727,6 @@ namespace NiL.JS.Core.BaseTypes
                 throw new JSException(TypeProxy.Proxy(new SyntaxError("")));
             valueType = JSObjectType.Function;
             this.oValue = this;
-#if !NET35
-            if (context != null && context.UseJit)
-                compiledScript = JITHelpers.compile(creator.body, true);
-#endif
             checkUsings();
         }
 
@@ -740,10 +737,6 @@ namespace NiL.JS.Core.BaseTypes
             this.creator = creator;
             valueType = JSObjectType.Function;
             this.oValue = this;
-#if !NET35
-            if (context != null && context.UseJit)
-                compiledScript = JITHelpers.compile(creator.body, true);
-#endif
             checkUsings();
         }
 
@@ -827,8 +820,20 @@ namespace NiL.JS.Core.BaseTypes
                 else
 #endif
                 {
+#if !NET35
+                    var starttime = 0;
+                    if (!compilationInit && context.UseJit)
+                        starttime = Environment.TickCount;
+#endif
                     body.Evaluate(internalContext);
                     ai = internalContext.abortInfo;
+#if !NET35
+                    if (!compilationInit && context.UseJit && Environment.TickCount - starttime > 100)
+                    {
+                        compilationInit = true;
+                        System.Threading.ThreadPool.QueueUserWorkItem((o) => { compiledScript = JITHelpers.compile(body, true); });
+                    }
+#endif
                 }
                 if (ai == null)
                 {

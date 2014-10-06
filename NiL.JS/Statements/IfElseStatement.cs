@@ -7,6 +7,61 @@ using NiL.JS.Expressions;
 namespace NiL.JS.Statements
 {
     [Serializable]
+    public sealed class IfStatement : CodeNode
+    {
+        private CodeNode condition;
+        private CodeNode body;
+
+        public CodeNode Body { get { return body; } }
+        public CodeNode Condition { get { return condition; } }
+
+#if !NET35
+
+        internal override System.Linq.Expressions.Expression BuildTree(NiL.JS.Core.JIT.TreeBuildingState state)
+        {
+            return System.Linq.Expressions.Expression.IfThen(System.Linq.Expressions.Expression.Call(JITHelpers.JSObjectToBooleanMethod, condition.BuildTree(state)), body.BuildTree(state));
+        }
+
+#endif
+
+        internal IfStatement(IfElseStatement parent)
+        {
+            condition = parent.Condition;
+            body = parent.Body;
+        }
+
+        internal override JSObject Evaluate(Context context)
+        {
+#if DEV
+            if (context.debugging)
+                context.raiseDebugger(condition);
+#endif
+            if ((bool)condition.Evaluate(context))
+            {
+#if DEV
+                if (context.debugging && !(body is CodeBlock))
+                    context.raiseDebugger(body);
+#endif
+                return body.Evaluate(context);
+            }
+            return null;
+        }
+
+        protected override CodeNode[] getChildsImpl()
+        {
+            return new[] { body, condition };
+        }
+
+        public override string ToString()
+        {
+            string rp = Environment.NewLine;
+            string rs = Environment.NewLine + "  ";
+            var sbody = body.ToString();
+            return "if (" + condition + ")" + (body is CodeBlock ? sbody : Environment.NewLine + "  " + sbody.Replace(rp, rs));
+        }
+    }
+
+    [Serializable]
     public sealed class IfElseStatement : CodeNode
     {
         private CodeNode condition;
@@ -36,7 +91,6 @@ namespace NiL.JS.Statements
 
         internal static ParseResult Parse(ParsingState state, ref int index)
         {
-            //string code = state.Code;
             int i = index;
             if (!Parser.Validate(state.Code, "if (", ref i) && !Parser.Validate(state.Code, "if(", ref i))
                 return new ParseResult();
@@ -120,7 +174,7 @@ namespace NiL.JS.Statements
             Parser.Optimize(ref elseBody, depth, variables, strict);
             try
             {
-                if (condition is ImmidateValueStatement || (condition as Expression).IsContextIndependent)
+                if (condition is ImmidateValueStatement || (condition is Expression && (condition as Expression).IsContextIndependent))
                 {
                     if ((bool)condition.Evaluate(null))
                         _this = body;
@@ -132,6 +186,8 @@ namespace NiL.JS.Statements
             {
                 System.Diagnostics.Debugger.Log(10, "Error", e.Message);
             }
+            if (_this == this && elseBody == null)
+                _this = new IfStatement(this);
             return false;
         }
 

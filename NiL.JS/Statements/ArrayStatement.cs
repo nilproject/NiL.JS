@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using NiL.JS.Core;
 using NiL.JS.Core.JIT;
 
@@ -17,9 +18,9 @@ namespace NiL.JS.Statements
         internal override System.Linq.Expressions.Expression BuildTree(NiL.JS.Core.JIT.TreeBuildingState state)
         {
             return System.Linq.Expressions.Expression.Call(
-                       System.Linq.Expressions.Expression.Constant(this),
-                       this.GetType().GetMethod("Invoke", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic, null, new[] { typeof(Context) }, null),
-                       JITHelpers.ContextParameter
+                       JITHelpers.methodof(impl),
+                       JITHelpers.ContextParameter,
+                       System.Linq.Expressions.Expression.Constant(elements)
                        );
         }
 
@@ -72,7 +73,10 @@ namespace NiL.JS.Statements
             };
         }
 
-        internal override JSObject Evaluate(Context context)
+#if INLINE
+        [MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+#endif
+        private static JSObject impl(Context context, CodeNode[] elements)
         {
             var res = new NiL.JS.Core.BaseTypes.Array(elements.Length);
             for (uint i = 0; i < elements.Length; i++)
@@ -85,6 +89,11 @@ namespace NiL.JS.Statements
                 }
             }
             return res;
+        }
+
+        internal override JSObject Evaluate(Context context)
+        {
+            return impl(context, elements);
         }
 
         protected override CodeNode[] getChildsImpl()

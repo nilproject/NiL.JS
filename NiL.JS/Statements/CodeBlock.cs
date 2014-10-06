@@ -14,7 +14,7 @@ namespace NiL.JS.Statements
 
         private string code;
         internal VariableDescriptor[] variables;
-        internal readonly CodeNode[] body;
+        internal CodeNode[] body;
         internal readonly bool strict;
 
         public VariableDescriptor[] Variables { get { return variables; } }
@@ -231,19 +231,19 @@ namespace NiL.JS.Statements
         internal override JSObject Evaluate(Context context)
         {
             JSObject res = JSObject.notExists;
-            CodeNode node = null;
+            //CodeNode node = null;
             for (int i = body.Length; i-- > 0; )
             {
-                node = body[i];
+                //node = body[i];
                 //if (body[i] is FunctionStatement)
                 //    continue;
-                if (node == null)
-                    return res;
+                //if (node == null)
+                //    return res;
 #if DEV
                 if (context.debugging)
                     context.raiseDebugger(body[i]);
 #endif
-                res = node.Evaluate(context) ?? res;
+                res = body[i].Evaluate(context) ?? res;
 #if DEBUG
                 if (!context.IsExcecuting)
                     if (System.Diagnostics.Debugger.IsAttached)
@@ -327,8 +327,8 @@ namespace NiL.JS.Statements
                 if (needRemove)
                     body[i] = null;
             }
-
-            for (int f = body.Length, t = body.Length - 1; f-- > 0; )
+            int f = body.Length, t = body.Length - 1;
+            for (; f-- > 0; )
             {
                 if (body[f] != null && body[t] == null)
                 {
@@ -337,6 +337,15 @@ namespace NiL.JS.Statements
                 }
                 if (body[t] != null)
                     t--;
+            }
+
+            if (t >= 0)
+            {
+                var newBody = new CodeNode[body.Length - t - 1];
+                f = 0;
+                while (++t < body.Length)
+                    newBody[f++] = body[t];
+                body = newBody;
             }
 
             if (depth > 0)
