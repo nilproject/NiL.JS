@@ -10,7 +10,6 @@ namespace NiL.JS.Expressions
         public InstanceOf(CodeNode first, CodeNode second)
             : base(first, second, true)
         {
-            tempContainer.assignCallback = null;
         }
 
         internal override JSObject Evaluate(Context context)

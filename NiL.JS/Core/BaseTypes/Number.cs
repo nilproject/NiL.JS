@@ -37,15 +37,10 @@ namespace NiL.JS.Core.BaseTypes
         [Modules.DoNotEnumerate]
         static Number()
         {
-            POSITIVE_INFINITY.assignCallback = null;
             POSITIVE_INFINITY.attributes |= JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.SystemObject;
-            NEGATIVE_INFINITY.assignCallback = null;
             NEGATIVE_INFINITY.attributes |= JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.SystemObject;
-            MAX_VALUE.assignCallback = null;
             MAX_VALUE.attributes |= JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.SystemObject;
-            MIN_VALUE.assignCallback = null;
             MIN_VALUE.attributes |= JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.SystemObject;
-            NaN.assignCallback = null;
             NaN.attributes |= JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.SystemObject;
         }
 
@@ -98,7 +93,6 @@ namespace NiL.JS.Core.BaseTypes
         {
             value = value.Trim();
             valueType = JSObjectType.Int;
-            assignCallback = JSObject.ErrorAssignCallback;
             dValue = value.Length != 0 ? double.NaN : 0;
             valueType = JSObjectType.Double;
             double d = 0;

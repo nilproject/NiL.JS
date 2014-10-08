@@ -78,10 +78,7 @@ namespace NiL.JS.Core
         internal protected override JSObject GetMember(JSObject name, bool create, bool own)
         {
             if (__proto__ == null)
-            {
                 __proto__ = TypeProxy.GetPrototype(typeof(ProxyConstructor));
-                __proto__.fields.Clear();
-            }
 
             var res = __proto__.GetMember(name, false, own);
             if (res.isExist)
@@ -215,6 +212,12 @@ namespace NiL.JS.Core
         public override string ToString()
         {
             return "function " + proxy.hostedType.Name + "() { [native code] }";
+        }
+
+        [Hidden]
+        public override JSObject toString(Arguments args)
+        {
+            return base.toString(args);
         }
     }
 }

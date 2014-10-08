@@ -1,6 +1,6 @@
-﻿var form = new System.Windows.Forms.Form();
+﻿var form = new forms.Form();
 form.Text = "Hello, world!";
-var button = new System.Windows.Forms.Button();
+var button = new forms.Button();
 button.Text = "Click Me!";
 button.Click = function (sender) {
     sender.Text = "Tnx!";

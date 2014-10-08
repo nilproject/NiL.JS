@@ -191,9 +191,7 @@ namespace NiL.JS.Core
         {
             get
             {
-                if (prototype != null && prototype != this)
-                    return prototype.UseJit;
-                else return false;
+                return false;
             }
         }
 #endif

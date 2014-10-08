@@ -108,8 +108,6 @@ namespace NiL.JS.Statements
                     var o = keys.Current;
                     v.valueType = JSObjectType.String;
                     v.oValue = o;
-                    if (v.assignCallback != null)
-                        v.assignCallback(v);
 #if DEV
                     if (context.debugging && !(body is CodeBlock))
                         context.raiseDebugger(body);

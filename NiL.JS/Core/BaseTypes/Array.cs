@@ -547,7 +547,7 @@ namespace NiL.JS.Core.BaseTypes
         {
             if (args == null)
                 throw new ArgumentNullException("args");
-            return args[0].Value is Array;
+            return args[0].Value is Array || args[0].Value == TypeProxy.GetPrototype(typeof(Array));
         }
 
         [DoNotEnumerate]
@@ -743,23 +743,19 @@ namespace NiL.JS.Core.BaseTypes
 
         [DoNotEnumerate]
         [ParametersCount(2)]
+        [AllowUnsafeCall(typeof(JSObject))]
         public JSObject slice(Arguments args)
         {
             if (args == null)
                 throw new ArgumentNullException("args");
             if (args.Length == 0)
                 return this;
-            if ((object)this is Array) // Да, Array sealed, но тут и не такое возможно.
+            if (this.GetType() == typeof(Array)) // Да, Array sealed, но тут и не такое возможно.
             {
-                long pos0 = (long)Tools.JSObjectToDouble(args[0]);
+                long pos0 = Tools.JSObjectToInt64(args[0], 0, true);
                 long pos1 = 0;
                 if (args.Length > 1)
-                {
-                    if (args[1].valueType <= JSObjectType.Undefined)
-                        pos1 = 0;
-                    else
-                        pos1 = System.Math.Min((long)Tools.JSObjectToDouble(args[1]), _length);
-                }
+                    pos1 = Tools.JSObjectToInt64(args[1], _length, true);
                 else
                     pos1 = _length;
                 if (pos0 < 0)
@@ -776,8 +772,14 @@ namespace NiL.JS.Core.BaseTypes
                     var res = new Array();
                     foreach (var node in data.Nodes)
                     {
-                        if (pos0 <= node.key && pos1 >= node.key)
-                            res.Add(node.value.CloneImpl());
+                        if (node.key >= pos1)
+                            break;
+                        if (pos0 <= node.key)
+                        {
+                            var temp = node.value;
+                            if (temp.isExist)
+                                res.Add(temp.CloneImpl());
+                        }
                     }
                     return res;
                 }
@@ -785,7 +787,39 @@ namespace NiL.JS.Core.BaseTypes
             }
             else // кто-то отправил объект с полем length
             {
-                throw new NotImplementedException();
+                long _length = Tools.JSObjectToInt64(this.GetMember("length"));
+                long pos0 = Tools.JSObjectToInt64(args[0], 0, true);
+                long pos1 = 0;
+                if (args.Length > 1)
+                    pos1 = Tools.JSObjectToInt64(args[1], _length, true);
+                else
+                    pos1 = _length;
+                if (pos0 < 0)
+                    pos0 = _length + pos0;
+                if (pos0 < 0)
+                    pos0 = 0;
+                if (pos1 < 0)
+                    pos1 = _length + pos1;
+                if (pos1 < 0)
+                    pos1 = 0;
+                pos0 = System.Math.Min(pos0, _length);
+                if (pos0 >= 0 && pos1 >= 0 && pos1 > pos0)
+                {
+                    var res = new Array();
+                    foreach (var i in this)
+                    {
+                        var pindex = 0;
+                        var dindex = 0.0;
+                        if (Tools.ParseNumber(i, ref pindex, out dindex) && (pindex == i.Length) && dindex >= pos0 && dindex < pos1)
+                        {
+                            var temp = this[i];
+                            if (temp.isExist)
+                                res.Add(temp.CloneImpl());
+                        }
+                    }
+                    return res;
+                }
+                return new Array();
             }
         }
 
@@ -984,31 +1018,39 @@ namespace NiL.JS.Core.BaseTypes
                 return length;
             bool isIndex = false;
             uint index = 0;
-            switch (name.valueType)
+            JSObject tname = name;
+            if (tname.valueType >= JSObjectType.Object)
+                tname = tname.ToPrimitiveValue_String_Value();
+            switch (tname.valueType)
             {
+                case JSObjectType.Object:
                 case JSObjectType.Bool:
+                    break;
                 case JSObjectType.Int:
                     {
-                        isIndex = name.iValue >= 0;
-                        index = (uint)name.iValue;
+                        isIndex = tname.iValue >= 0;
+                        index = (uint)tname.iValue;
                         break;
                     }
                 case JSObjectType.Double:
                     {
-                        isIndex = (index = (uint)name.dValue) == name.dValue;
+                        isIndex = (index = (uint)tname.dValue) == tname.dValue;
                         break;
                     }
                 case JSObjectType.String:
                     {
-                        var fc = (name.oValue as string)[0];
+                        var fc = (tname.oValue as string)[0];
                         if ('0' <= fc && '9' >= fc)
-                            goto default;
-                        break;
-                    }
-                default:
-                    {
-                        double td = Tools.JSObjectToDouble(name);
-                        isIndex = !double.IsInfinity(td) && !double.IsNaN(td) && (index = (uint)td) == td;
+                        {
+                            var dindex = 0.0;
+                            int si = 0;
+                            if (Tools.ParseNumber(tname.oValue.ToString(), ref si, out dindex)
+                                && (si == tname.oValue.ToString().Length)
+                                && (index = (uint)dindex) == dindex)
+                            {
+                                isIndex = true;
+                            }
+                        }
                         break;
                     }
             }
@@ -1076,6 +1118,12 @@ namespace NiL.JS.Core.BaseTypes
             //if ((attributes & JSObjectAttributesInternal.ProxyPrototype) != 0)
             //    return __proto__.GetMember(name, create, own);
             return DefaultFieldGetter(name, create, own);
+        }
+
+        [Hidden]
+        public override JSObject valueOf()
+        {
+            return base.valueOf();
         }
     }
 }

@@ -40,15 +40,17 @@ namespace NiL.JS.Core
                 objectSource = @object;
             return res;
         }
-        
+
 #if !NET35
         public override bool UseJit
         {
             get
             {
+                // нет смысла компилировать что-то вложенное в with.
+                // выполнение with проходит через Evalueate и выходит из скомпилированного кода
                 return false;
             }
         }
-    }
 #endif
+    }
 }

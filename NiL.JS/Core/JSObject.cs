@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using NiL.JS.Core.BaseTypes;
 using NiL.JS.Core.Modules;
 using NiL.JS.Expressions;
@@ -11,7 +12,7 @@ using NiL.JS.Statements;
 namespace NiL.JS.Core
 {
     [Serializable]
-    public enum JSObjectType : short
+    public enum JSObjectType
     {
         NotExists = 0,
         NotExistsInObject = 1,
@@ -76,8 +77,7 @@ namespace NiL.JS.Core
         NotConfigurable = 1 << 4,
     }
 
-    public delegate void AssignCallback(JSObject sender);
-
+    [StructLayout(LayoutKind.Sequential)]
     [Serializable]
     /// <summary>
     /// Базовый объект для всех объектов, участвующих в выполнении скрипта.
@@ -86,28 +86,21 @@ namespace NiL.JS.Core
     public class JSObject : IEnumerable<string>, IEnumerable, ICloneable, IComparable<JSObject>
     {
         [Hidden]
-        internal static readonly AssignCallback ErrorAssignCallback = (sender) => { throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Invalid left-hand side"))); };
-        [Hidden]
         internal static readonly IEnumerator<string> EmptyEnumerator = ((IEnumerable<string>)(new string[0])).GetEnumerator();
         [Hidden]
         internal static readonly JSObject undefined = new JSObject() { valueType = JSObjectType.Undefined, attributes = JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.SystemObject };
         [Hidden]
         internal static readonly JSObject notExists = new JSObject() { valueType = JSObjectType.NotExists, attributes = JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.SystemObject };
         [Hidden]
-        internal static readonly JSObject Null = new JSObject() { valueType = JSObjectType.Object, oValue = null, assignCallback = ErrorAssignCallback, attributes = JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.SystemObject };
+        internal static readonly JSObject Null = new JSObject() { valueType = JSObjectType.Object, oValue = null, attributes = JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.SystemObject };
         [Hidden]
-        internal static readonly JSObject nullString = new JSObject() { valueType = JSObjectType.String, oValue = "null", assignCallback = ErrorAssignCallback, attributes = JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.SystemObject };
+        internal static readonly JSObject nullString = new JSObject() { valueType = JSObjectType.String, oValue = "null", attributes = JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.SystemObject };
         [Hidden]
         internal static JSObject GlobalPrototype;
 
         [Hidden]
         public static JSObject Undefined { get { return undefined; } }
 
-        [NonSerialized]
-        [Hidden]
-        [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
-        [System.ComponentModel.Browsable(false)]
-        internal AssignCallback assignCallback;
         [Hidden]
         internal JSObject __proto__;
         [Hidden]
@@ -140,7 +133,7 @@ namespace NiL.JS.Core
             [Hidden]
             set
             {
-                this.GetMember(name, true, true).Assign(value);
+                this.GetMember(name, true, true).Assign(value ?? JSObject.undefined);
             }
         }
 
@@ -1007,47 +1000,39 @@ namespace NiL.JS.Core
             return this;
         }
 
+        private static readonly Func<object, IntPtr> getPtr = Activator.CreateInstance(typeof(Func<object, IntPtr>), null, (new Func<IntPtr, IntPtr>(x => x)).Method.MethodHandle.GetFunctionPointer()) as Func<object, IntPtr>;
+
         [Hidden]
         public virtual void Assign(JSObject value)
         {
-            if (assignCallback != null)
-                assignCallback(this);
 #if DEBUG
             if (valueType == JSObjectType.Property)
                 throw new InvalidOperationException("Try to assign to property.");
 #endif
             if ((attributes & (JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.SystemObject)) != 0)
                 return;
-            if (value == this)
-                return;
-            if (value != null)
+            if (this != value)
             {
                 this.valueType = (value.valueType & ~(JSObjectType.NotExistsInObject | JSObjectType.NotExists)) | JSObjectType.Undefined;
                 if (valueType < JSObjectType.String)
                 {
                     this.iValue = value.iValue;
-                    this.dValue = value.dValue;
+                    if (valueType == JSObjectType.Double)
+                        this.dValue = value.dValue;
                     this.fields = null;
                     this.oValue = null;
                 }
                 else
                 {
-                    if (valueType < JSObjectType.Object)
-                        fields = null;
-                    else
-                        fields = value.fields;
+                    fields = value.fields;
                     oValue = value.oValue;
+                    __proto__ = value.__proto__;
                 }
-                __proto__ = value.__proto__;
                 this.attributes =
                     (this.attributes & ~JSObjectAttributesInternal.PrivateAttributes)
                     | (value.attributes & JSObjectAttributesInternal.PrivateAttributes);
                 return;
             }
-            this.__proto__ = null;
-            this.fields = null;
-            this.oValue = null;
-            this.valueType = JSObjectType.Undefined;
         }
 
         [Hidden]

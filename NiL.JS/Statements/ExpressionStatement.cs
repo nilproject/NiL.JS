@@ -1132,7 +1132,7 @@ namespace NiL.JS.Statements
             if (first == second && first == null)
                 return new ParseResult();
             if (assign)
-                res = new ExpressionStatement() { first = first, second = new ExpressionStatement() { first = first, second = second, _type = type, Position = index, Length = i - index }, _type = OperationType.Assign, Position = index, Length = i - index };
+                res = new ExpressionStatement() { first = first, second = new None(deicstra(new ExpressionStatement() { first = first, second = second, _type = type, Position = index, Length = i - index }), null), _type = OperationType.Assign, Position = index, Length = i - index };
             else
             {
                 if (!root || type != OperationType.None || second != null)

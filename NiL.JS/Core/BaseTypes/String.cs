@@ -75,28 +75,43 @@ namespace NiL.JS.Core.BaseTypes
             int p = Tools.JSObjectToInt32(pos[0]);
             if ((p < 0) || (p >= strValue.Length))
                 return "";
-            return strValue[p].ToString();
+            return strValue[p].ToString();//Tools.charStrings[strValue[p]];
         }
 
         [AllowUnsafeCall(typeof(JSObject))]
         [DoNotEnumerate]
-        public Number charCodeAt(Arguments pos)
+        public JSObject charCodeAt(Arguments pos)
         {
             int p = Tools.JSObjectToInt32(pos[0]);
             var selfStr = this.ToString();
             if ((p < 0) || (p >= selfStr.Length))
                 return double.NaN;
-            return (int)selfStr[p];
+            var res = new JSObject()
+            {
+                iValue = selfStr[p],
+                valueType = JSObjectType.Int
+            };
+            return res;
         }
 
         [AllowUnsafeCall(typeof(JSObject))]
         [DoNotEnumerate]
         public JSObject concat(Arguments args)
         {
-            string res = this.ToString();
+            if (args.length == 0)
+                return this.toString(null);
+            if (args.length == 1)
+                return string.Concat(this.oValue.ToString(), args[0].ToString());
+            if (args.length == 2)
+                return string.Concat(this.oValue.ToString(), args[0].ToString(), args[1].ToString());
+            if (args.length == 3)
+                return string.Concat(this.oValue.ToString(), args[0].ToString(), args[1].ToString(), args[2].ToString());
+            if (args.length == 4)
+                return string.Concat(this.oValue.ToString(), args[0].ToString(), args[1].ToString(), args[2].ToString(), args[3].ToString());
+            var res = new StringBuilder().Append(this.ToString());
             for (var i = 0; i < args.Length; i++)
-                res += args[i].ToString();
-            return res;
+                res.Append(args[i].ToString());
+            return res.ToString();
         }
 
         [AllowUnsafeCall(typeof(JSObject))]
@@ -298,12 +313,9 @@ namespace NiL.JS.Core.BaseTypes
             {
                 if (args.length > 1 && args[1].oValue is Function)
                 {
-                    var oac = assignCallback;
-                    assignCallback = null;
                     string temp = this.oValue as string;
                     var f = args[1].oValue as Function;
                     var match = new String();
-                    match.assignCallback = null;
                     var margs = new Arguments();
                     margs.length = 1;
                     margs[0] = match;
@@ -318,18 +330,15 @@ namespace NiL.JS.Core.BaseTypes
                             for (int i = 1; i < m.Groups.Count; i++)
                             {
                                 t = m.Groups[i].Value;
-                                t.assignCallback = null;
                                 margs[i] = t;
                             }
                             t = m.Index;
-                            t.assignCallback = null;
                             margs[margs.length - 2] = t;
                             margs[margs.length - 1] = this;
                             return f.Invoke(margs).ToString();
                         }), (args[0].oValue as RegExp)._global ? int.MaxValue : 1);
                     this.oValue = temp;
                     this.valueType = JSObjectType.String;
-                    assignCallback = oac;
                     return match;
                 }
                 else
@@ -342,8 +351,6 @@ namespace NiL.JS.Core.BaseTypes
                 string pattern = args.Length > 0 ? args[0].ToString() : "";
                 if (args.Length > 1 && args[1].oValue is Function)
                 {
-                    var oac = assignCallback;
-                    assignCallback = null;
                     string othis = this.oValue as string;
                     var f = args[1].oValue as Function;
                     var margs = new Arguments();
@@ -357,7 +364,6 @@ namespace NiL.JS.Core.BaseTypes
                     var res = othis.Substring(0, index) + f.Invoke(margs).ToString() + othis.Substring(index + pattern.Length);
                     oValue = othis;
                     valueType = JSObjectType.String;
-                    assignCallback = oac;
                     return res;
                 }
                 else

@@ -9,7 +9,8 @@ namespace NiL.JS.Expressions
     [Serializable]
     public sealed class StringConcat : Expression
     {
-        internal readonly IList<CodeNode> sources;
+        internal IList<CodeNode> sources;
+        internal string[] buffer;
 
         public override bool IsContextIndependent
         {
@@ -62,10 +63,14 @@ namespace NiL.JS.Expressions
                         prep(sources[3].Evaluate(context)));
                 else
                 {
-                    var temp = new string[sources.Count];
+                    if (sources.GetType() == typeof(List<CodeNode>))
+                    {
+                        sources = (sources as List<CodeNode>).ToArray();
+                        buffer = new string[sources.Count];
+                    }
                     for (var i = 0; i < sources.Count; i++)
-                        temp[i] = prep(sources[i].Evaluate(context));
-                    tempContainer.oValue = string.Concat(temp);
+                        buffer[i] = prep(sources[i].Evaluate(context));
+                    tempContainer.oValue = string.Concat(buffer);
                 }
                 return tempContainer;
             }

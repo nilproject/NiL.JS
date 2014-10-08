@@ -17,8 +17,13 @@ namespace NiL.JS.Expressions
             lock (this)
             {
                 var left = Tools.JSObjectToInt32(first.Evaluate(context));
-                tempContainer.dValue = (double)((uint)left >> Tools.JSObjectToInt32(second.Evaluate(context)));
-                tempContainer.valueType = JSObjectType.Double;
+                tempContainer.iValue = (int)((uint)left >> Tools.JSObjectToInt32(second.Evaluate(context)));
+                tempContainer.valueType = JSObjectType.Int;
+                if (tempContainer.iValue < 0)
+                {
+                    tempContainer.dValue = (double)(uint)tempContainer.iValue;
+                    tempContainer.valueType = JSObjectType.Double;
+                }
                 return tempContainer;
             }
         }

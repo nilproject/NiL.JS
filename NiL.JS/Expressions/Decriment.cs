@@ -28,8 +28,6 @@ namespace NiL.JS.Expressions
                 throw new ArgumentException("type");
             if (op == null)
                 throw new ArgumentNullException("op");
-            if (tempContainer != null)
-                tempContainer.assignCallback = null;
         }
 
         internal override JSObject Evaluate(Context context)
@@ -102,12 +100,6 @@ namespace NiL.JS.Expressions
                     case JSObjectType.NotExists:
                         {
                             Tools.RaiseIfNotExist(val, first ?? second);
-                            break;
-                        }
-                    default:
-                        {
-                            if (val.assignCallback != null)
-                                val.assignCallback(val);
                             break;
                         }
                 }

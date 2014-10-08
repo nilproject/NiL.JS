@@ -898,19 +898,17 @@ namespace NiL.JS.Core.BaseTypes
 
         private static void initVariables(CodeBlock body, Context internalContext)
         {
-            for (var i = body.variables.Length; i-- > 0; )
+            for (var i = body.localVariables.Length; i-- > 0; )
             {
-                if (body.variables[i].owner == body)
+                JSObject f = null;
+                if (body.localVariables[i].Inititalizator != null
+                    || string.CompareOrdinal(body.localVariables[i].name, "arguments") != 0)
                 {
-                    JSObject f = null;
-                    if (body.variables[i].Inititalizator != null || string.CompareOrdinal(body.variables[i].name, "arguments") != 0)
-                    // нельзя переменной перебить аргументы
-                    // а вот функцией можно
-                    {
-                        (internalContext.fields ?? (internalContext.fields = new Dictionary<string, JSObject>()))[body.variables[i].name] = f = new JSObject() { attributes = JSObjectAttributesInternal.DoNotDelete };
-                        if (body.variables[i].Inititalizator != null)
-                            f.Assign(body.variables[i].Inititalizator.Evaluate(internalContext));
-                    }
+                    f = new JSObject() { attributes = JSObjectAttributesInternal.DoNotDelete };
+                    (internalContext.fields ??
+                        (internalContext.fields = new Dictionary<string, JSObject>()))[body.localVariables[i].name] = f;
+                    if (body.localVariables[i].Inititalizator != null)
+                        f.Assign(body.localVariables[i].Inititalizator.Evaluate(internalContext));
                 }
             }
         }
@@ -956,8 +954,12 @@ namespace NiL.JS.Core.BaseTypes
             if (creator.arguments.Length != 0)
             {
                 var context = creator.arguments[0].descriptor.cacheContext;
-                for (var i = creator.arguments.Length; i-- > 0; )
-                    (context.fields ?? (context.fields = new Dictionary<string, JSObject>()))[creator.arguments[i].Name] = creator.arguments[i].descriptor.cacheRes;
+                if (context.fields == null)
+                    context.fields = new Dictionary<string, JSObject>();
+                if (context.fields.ContainsKey(creator.arguments[0].Name))
+                    return;
+                for (var i = 0; i < creator.arguments.Length; i++)
+                    context.fields[creator.arguments[i].Name] = creator.arguments[i].descriptor.cacheRes;
             }
         }
 

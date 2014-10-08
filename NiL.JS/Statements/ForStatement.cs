@@ -209,172 +209,6 @@ namespace NiL.JS.Statements
             };
         }
 
-        private JSObject impl0(Context context)
-        {
-            JSObject res = JSObject.notExists;
-            for (; ; )
-            {
-#if DEV
-                if (context.debugging && !(body is CodeBlock))
-                    context.raiseDebugger(body);
-#endif
-                res = body.Evaluate(context) ?? res;
-                if (context.abort != AbortType.None)
-                {
-                    bool _break = (context.abort > AbortType.Continue) || ((context.abortInfo != null) && (labels.IndexOf(context.abortInfo.oValue as string) == -1));
-                    if (context.abort < AbortType.Return && ((context.abortInfo == null) || (labels.IndexOf(context.abortInfo.oValue as string) != -1)))
-                    {
-                        context.abort = AbortType.None;
-                        context.abortInfo = JSObject.notExists;
-                    }
-                    if (_break)
-                        return res;
-                }
-            }
-        }
-
-        private JSObject impl1(Context context)
-        {
-            JSObject res = JSObject.undefined;
-            for (; ; )
-            {
-#if DEV
-                if (context.debugging && !(body is CodeBlock))
-                    context.raiseDebugger(body);
-#endif
-                res = body.Evaluate(context) ?? res;
-                if (context.abort != AbortType.None)
-                {
-                    bool _break = (context.abort > AbortType.Continue) || ((context.abortInfo != null) && (labels.IndexOf(context.abortInfo.oValue as string) == -1));
-                    if (context.abort < AbortType.Return && ((context.abortInfo == null) || (labels.IndexOf(context.abortInfo.oValue as string) != -1)))
-                    {
-                        context.abort = AbortType.None;
-                        context.abortInfo = JSObject.notExists;
-                    }
-                    if (_break)
-                        return res;
-                }
-#if DEV
-                if (context.debugging)
-                    context.raiseDebugger(post);
-#endif
-                post.Evaluate(context);
-            }
-        }
-
-        private JSObject impl2(Context context)
-        {
-            JSObject res = JSObject.undefined;
-#if DEV
-            if (context.debugging)
-                context.raiseDebugger(condition);
-#endif
-            while ((bool)condition.Evaluate(context))
-            {
-#if DEV
-                if (context.debugging && !(body is CodeBlock))
-                    context.raiseDebugger(body);
-#endif
-                res = body.Evaluate(context) ?? res;
-                if (context.abort != AbortType.None)
-                {
-                    bool _break = (context.abort > AbortType.Continue) || ((context.abortInfo != null) && (labels.IndexOf(context.abortInfo.oValue as string) == -1));
-                    if (context.abort < AbortType.Return && ((context.abortInfo == null) || (labels.IndexOf(context.abortInfo.oValue as string) != -1)))
-                    {
-                        context.abort = AbortType.None;
-                        context.abortInfo = JSObject.notExists;
-                    }
-                    if (_break)
-                        return res;
-                }
-#if DEV
-                if (context.debugging)
-                    context.raiseDebugger(condition);
-#endif
-            }
-            return res;
-        }
-
-        private JSObject impl3(Context context)
-        {
-            JSObject res = JSObject.undefined;
-#if DEV
-            if (context.debugging)
-                context.raiseDebugger(condition);
-#endif
-            while ((bool)condition.Evaluate(context))
-            {
-#if DEV
-                if (context.debugging && !(body is CodeBlock))
-                    context.raiseDebugger(body);
-#endif
-                res = body.Evaluate(context) ?? res;
-                if (context.abort != AbortType.None)
-                {
-                    bool _break = (context.abort > AbortType.Continue) || ((context.abortInfo != null) && (labels.IndexOf(context.abortInfo.oValue as string) == -1));
-                    if (context.abort < AbortType.Return && ((context.abortInfo == null) || (labels.IndexOf(context.abortInfo.oValue as string) != -1)))
-                    {
-                        context.abort = AbortType.None;
-                        context.abortInfo = JSObject.notExists;
-                    }
-                    if (_break)
-                        return res;
-                }
-#if DEV
-                if (context.debugging)
-                {
-                    context.raiseDebugger(post);
-                    post.Evaluate(context);
-                    context.raiseDebugger(condition);
-                }
-                else
-                    post.Evaluate(context);
-#else
-                post.Evaluate(context);
-#endif
-            }
-            return res;
-        }
-
-        private JSObject impl4(Context context)
-        {
-#if DEV
-            if (context.debugging)
-                context.raiseDebugger(condition);
-#endif
-            while ((bool)condition.Evaluate(context))
-            {
-#if DEV
-                if (context.debugging)
-                {
-                    context.raiseDebugger(post);
-                    post.Evaluate(context);
-                    context.raiseDebugger(condition);
-                }
-                else
-                    post.Evaluate(context);
-#else
-                post.Evaluate(context);
-#endif
-            }
-            return JSObject.undefined;
-        }
-
-        private JSObject impl5(Context context)
-        {
-#if DEV
-            if (context.debugging)
-                context.raiseDebugger(condition);
-#endif
-            while ((bool)condition.Evaluate(context))
-#if DEV
-                if (context.debugging)
-                    context.raiseDebugger(condition);
-#endif
-                ;
-            return JSObject.undefined;
-        }
-
         internal override JSObject Evaluate(Context context)
         {
             if (init != null)
@@ -385,16 +219,49 @@ namespace NiL.JS.Statements
 #endif
                 init.Evaluate(context);
             }
-            switch (implId)
+            JSObject res = JSObject.undefined;
+#if DEV
+            if (context.debugging)
+                context.raiseDebugger(condition);
+#endif
+            while (condition == null || (bool)condition.Evaluate(context))
             {
-                case 0: return impl0(context);
-                case 1: return impl1(context);
-                case 2: return impl2(context);
-                case 3: return impl3(context);
-                case 4: return impl4(context);
-                case 5: return impl5(context);
+#if DEV
+                if (context.debugging && !(body is CodeBlock))
+                    context.raiseDebugger(body);
+#endif
+                if (body != null)
+                {
+                    res = body.Evaluate(context) ?? res;
+                    if (context.abort != AbortType.None)
+                    {
+                        bool _break = (context.abort > AbortType.Continue) || ((context.abortInfo != null) && (labels.IndexOf(context.abortInfo.oValue as string) == -1));
+                        if (context.abort < AbortType.Return && ((context.abortInfo == null) || (labels.IndexOf(context.abortInfo.oValue as string) != -1)))
+                        {
+                            context.abort = AbortType.None;
+                            context.abortInfo = JSObject.notExists;
+                        }
+                        if (_break)
+                            return res;
+                    }
+                }
+                if (post != null)
+                {
+#if DEV
+                    if (context.debugging)
+                    {
+                        context.raiseDebugger(post);
+                        post.Evaluate(context);
+                        context.raiseDebugger(condition);
+                    }
+                    else
+                        post.Evaluate(context);
+#else
+                    post.Evaluate(context);
+#endif
+                }
             }
-            for (; ; ) ;
+            return res;
         }
 
         protected override CodeNode[] getChildsImpl()

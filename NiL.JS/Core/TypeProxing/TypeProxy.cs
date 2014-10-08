@@ -214,7 +214,8 @@ namespace NiL.JS.Core
                     ctor.attributes = attributes;
                     attributes |= JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.ReadOnly;
                     staticProxies[type] = ctor;
-                    fields["constructor"] = ctor;
+                    if (hostedType != typeof(ProxyConstructor))
+                        fields["constructor"] = ctor;
                 }
             }
         }

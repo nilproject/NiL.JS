@@ -192,10 +192,19 @@ console.log((function f(f){ return f; })(1))
 
             Context.GlobalContext.DebuggerCallback += (sender, e) => System.Diagnostics.Debugger.Break();
 
-            int mode = 101//0
+            int mode = 0//101
                    ;
             switch (mode)
             {
+                case -3:
+                    {
+                        Context.GlobalContext.DefineVariable
+                            ("forms") // имя переменной, через которую будет доступно пространство имён.
+                            .Assign(new NamespaceProvider
+                                ("System.Windows.Forms")); // пространство имён, к которому будет осуществляться доступ.
+                        runFile("WinFormsSample.js");
+                        break;
+                    }
                 case -2:
                     {
                         var bf = new BinaryFormatter();
@@ -337,7 +346,7 @@ console.log((function f(f){ return f; })(1))
                 case 102:
                     {
                         for (var i = 0; i < 10; i++)
-                            runFile(@"sunspider-0.9.1\string-tagcloud.js");
+                            runFile(@"sunspider-0.9.1\string-validate-input.js");
                         break;
                     }
             }
@@ -421,7 +430,7 @@ console.log((function f(f){ return f; })(1))
             long _total = 0;
             var round = 0;
             long min = long.MaxValue;
-            for (; round < 5; round++)
+            for (; round < 10; round++)
             {
                 TimeSpan total = new TimeSpan();
 

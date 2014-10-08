@@ -16,9 +16,28 @@ namespace NiL.JS.Expressions
         {
             lock (this)
             {
-                double left = Tools.JSObjectToDouble(first.Evaluate(context));
-                tempContainer.dValue = left % Tools.JSObjectToDouble(second.Evaluate(context));
-                tempContainer.valueType = JSObjectType.Double;
+                var f = first.Evaluate(context);
+                if (f.valueType == JSObjectType.Int)
+                {
+                    var ileft = f.iValue;
+                    f = second.Evaluate(context);
+                    if (ileft >= 0 && f.valueType == JSObjectType.Int && f.iValue != 0)
+                    {
+                        tempContainer.valueType = JSObjectType.Int;
+                        tempContainer.iValue = ileft % f.iValue;
+                    }
+                    else
+                    {
+                        tempContainer.valueType = JSObjectType.Double;
+                        tempContainer.dValue = ileft % Tools.JSObjectToDouble(f);
+                    }
+                }
+                else
+                {
+                    double left = Tools.JSObjectToDouble(f);
+                    tempContainer.dValue = left % Tools.JSObjectToDouble(second.Evaluate(context));
+                    tempContainer.valueType = JSObjectType.Double;
+                }
                 return tempContainer;
             }
         }

@@ -14,10 +14,12 @@ namespace NiL.JS.Statements
 
         private string code;
         internal VariableDescriptor[] variables;
+        internal VariableDescriptor[] localVariables;
         internal CodeNode[] body;
         internal readonly bool strict;
 
         public VariableDescriptor[] Variables { get { return variables; } }
+        public VariableDescriptor[] LocalVariables { get { return localVariables; } }
         public CodeNode[] Body { get { return body; } }
         public bool Strict { get { return strict; } }
         public string Code
@@ -362,9 +364,22 @@ namespace NiL.JS.Statements
                     (this.variables == null || this.variables.Length != variables.Count))
                     this.variables = variables.Values.ToArray();
                 if (this.variables != null)
+                {
+                    int localVariablesCount = 0;
                     for (var i = this.variables.Length; i-- > 0; )
+                    {
                         if (this.variables[i].Defined && this.variables[i].Owner == null) // все объявленные переменные без хозяина наши
                             this.variables[i].owner = this;
+                        if (this.variables[i].owner == this)
+                            localVariablesCount++;
+                    }
+                    this.localVariables = new VariableDescriptor[localVariablesCount];
+                    for (var i = this.variables.Length; i-- > 0; )
+                    {
+                        if (this.variables[i].owner == this)
+                            localVariables[--localVariablesCount] = this.variables[i];
+                    }
+                }
             }
             return false;
         }

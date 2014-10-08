@@ -230,8 +230,6 @@ namespace NiL.JS.Expressions
                     {
                         return moreOrEqual;
                     }
-                case JSObjectType.NotExists:
-                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable not defined.")));
                 default: throw new NotImplementedException();
             }
         }

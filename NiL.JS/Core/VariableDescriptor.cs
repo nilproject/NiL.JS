@@ -32,7 +32,7 @@ namespace NiL.JS.Core
                     yield return item;
             }
         }
-
+        
         internal JSObject Get(Context context, bool create, int depth)
         {
             context.objectSource = null;
@@ -42,7 +42,7 @@ namespace NiL.JS.Core
             JSObject res = null;
             while (depth > defineDepth)
             {
-                if (context is WithContext)
+                if (context.GetType() == typeof(WithContext))
                 {
                     cacheContext = null;
                     break;
