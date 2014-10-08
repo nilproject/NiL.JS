@@ -8,11 +8,14 @@
     Open source JavaScript engine. Beta.
     <ul>
         <li><span style="font-weight:bold">No</span> native dependence.</li>
-        <li><span style="font-weight:bold">No</span> IL generation.</li>
+        <li>Optional generation of <span style="font-weight:bold">IL</span> (Experimental).</li>
         <li><span style="font-weight:bold">One</span> assembly.</li>
         <li><span style="font-weight:bold">Automatically</span> wrapping .NET objects. No changes are required.</li>
         <li>Runs on <span style="font-weight:bold">all</span> platforms supported .NET.</li>
         <li><span style="font-weight:bold">Translator as a service.</span></li>
+        <li>Compatible with <span style="font-weight:bold">ASP.NET</span>.</li>
+        <li>High performance.</li>
+        <li>Integrated debugger (In "For developers" version).</li>
     </ul>
     <a href="https://www.nuget.org/packages/NiL.JS">Available in NuGet</a>
 </body>
