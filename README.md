@@ -8,7 +8,7 @@
     Open source JavaScript engine. Beta.
     <ul>
         <li><span style="font-weight:bold">No</span> native dependence.</li>
-        <li><span style="font-weight:bold">No</span> IL generation.</li>
+        <li>Optional generation of <span style="font-weight:bold">IL</span>.</li>
         <li><span style="font-weight:bold">One</span> assembly.</li>
         <li><span style="font-weight:bold">Automatically</span> wrapping .NET objects. No changes are required.</li>
         <li>Runs on <span style="font-weight:bold">all</span> platforms supported .NET.</li>
