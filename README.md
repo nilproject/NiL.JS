@@ -16,6 +16,9 @@
         <li>Compatible with <span style="font-weight:bold">ASP.NET</span>.</li>
         <li>High performance.</li>
         <li>Integrated debugger (In "For developers" version).</li>
+        <li>Support for..of.</li>
+        <li>Support consts.</li>
+        <li>Support generators (Experimental. With some issues).</li>
     </ul>
     <a href="https://www.nuget.org/packages/NiL.JS">Available in NuGet</a>
 </body>
