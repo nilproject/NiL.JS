@@ -190,3 +190,20 @@ _for: for (var j = 0; ; j++) {
     break;
 }
 console.log(["fail", "pass"][j]);
+function s(x) {
+    return function () { return x };
+}
+var a = s(1);
+var b = s(2);
+if (a() != 1)
+    console.log("scope #1 fail");
+if (b() != 2)
+    console.log("scope #2 fail");
+if (s(3)() != 3)
+    console.log("scope #3 fail");
+if (a() != 1)
+    console.log("scope #1 fail");
+if (b() != 2)
+    console.log("scope #2 fail");
+if (s(3)() != 3)
+    console.log("scope #3 fail");
