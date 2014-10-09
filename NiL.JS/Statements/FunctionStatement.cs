@@ -3,12 +3,78 @@ using System.Collections.Generic;
 using NiL.JS.Core;
 using NiL.JS.Core.BaseTypes;
 using NiL.JS.Core.JIT;
+using NiL.JS.Core.Modules;
+using System.Threading;
 
 namespace NiL.JS.Statements
 {
     [Serializable]
     public sealed class FunctionStatement : CodeNode
     {
+        public sealed class GeneratorInitializator : Function
+        {
+            private Function generator;
+            [Hidden]
+            public GeneratorInitializator(Function generator)
+            {
+                this.generator = generator;
+            }
+
+            [Hidden]
+            public override JSObject Invoke(JSObject thisBind, Arguments args)
+            {
+                return TypeProxy.Proxy(new Generator(generator, thisBind, args));
+            }
+        }
+
+        public sealed class Generator
+        {
+            private Context generatorContext;
+            private JSObject wrapper;
+            private Arguments initialArgs;
+            private Thread thread;
+            private Function generator;
+            private JSObject self;
+
+            public JSObject value { get; private set; }
+
+            [Hidden]
+            public Generator(Function generator, JSObject self, Arguments args)
+            {
+                this.generator = generator;
+                this.initialArgs = args;
+                this.self = self;
+            }
+
+            public JSObject next(Arguments args)
+            {
+                if (thread == null)
+                {
+                    thread = new Thread(() =>
+                    {
+                        value = generator.Invoke(self, initialArgs);
+                    });
+                    thread.SetApartmentState(ApartmentState.STA);
+                    thread.Start();
+                    while (Context.runnedContexts[thread.ManagedThreadId] == null)
+                        Thread.Sleep(0);
+                    generatorContext = Context.runnedContexts[thread.ManagedThreadId];
+                    while (thread.ThreadState == System.Threading.ThreadState.Running) Thread.Sleep(0);
+                    value = generatorContext.abortInfo;
+                }
+                else
+                {
+                    generatorContext.abortInfo = args[0];
+#pragma warning disable 618
+                    thread.Resume();
+#pragma warning restore
+                    while (thread.ThreadState == System.Threading.ThreadState.Running) Thread.Sleep(0);
+                    value = generatorContext.abortInfo;
+                }
+                return wrapper ?? (wrapper = TypeProxy.Proxy(this));
+            }
+        }
+
         [Serializable]
         internal sealed class FunctionReference : VariableReference
         {
@@ -120,7 +186,12 @@ namespace NiL.JS.Statements
                     {
                         if (!Parser.Validate(code, "function", ref i))
                             return new ParseResult();
-                        if ((code[i] != '(') && (!char.IsWhiteSpace(code[i])))
+                        if (code[i] == '*')
+                        {
+                            mode = FunctionType.Generator;
+                            i++;
+                        }
+                        else if ((code[i] != '(') && (!char.IsWhiteSpace(code[i])))
                             return new ParseResult() { IsParsed = false };
                         break;
                     }
@@ -157,7 +228,7 @@ namespace NiL.JS.Statements
                 if (code[i] != '(')
                     throw new JSException(new SyntaxError("Unexpected char at " + Tools.PositionToTextcord(code, i)));
             }
-            else if (mode != FunctionType.Function)
+            else if (mode == FunctionType.Get || mode == FunctionType.Set)
                 throw new JSException(new SyntaxError("Getters and Setters must have name"));
             do i++; while (char.IsWhiteSpace(code[i]));
             if (code[i] == ',')
@@ -203,11 +274,19 @@ namespace NiL.JS.Statements
             CodeBlock body = null;
             try
             {
+                if (mode == FunctionType.Generator)
+                    state.AllowYield.Push(true);
+                state.AllowBreak.Push(false);
+                state.AllowContinue.Push(false);
                 state.AllowStrict = true;
                 body = CodeBlock.Parse(state, ref i).Statement as CodeBlock;
             }
             finally
             {
+                if (mode == FunctionType.Generator)
+                    state.AllowYield.Pop();
+                state.AllowBreak.Pop();
+                state.AllowContinue.Pop();
                 state.AllowStrict = false;
                 state.Labels = labels;
                 state.functionsDepth--;
@@ -325,6 +404,8 @@ namespace NiL.JS.Statements
         /// <returns></returns>
         public Function MakeFunction(Context context)
         {
+            if (type == FunctionType.Generator)
+                return new GeneratorInitializator(new Function(context, this));
             return new Function(context, this);
         }
 

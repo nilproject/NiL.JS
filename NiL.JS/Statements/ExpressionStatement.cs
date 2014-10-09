@@ -61,7 +61,8 @@ namespace NiL.JS.Statements
         Call = OperationTypeGroups.Special + 0,
         TypeOf = OperationTypeGroups.Special + 1,
         New = OperationTypeGroups.Special + 2,
-        Delete = OperationTypeGroups.Special + 3
+        Delete = OperationTypeGroups.Special + 3,
+        Yield = OperationTypeGroups.Special + 4
     }
 
     [Serializable]
@@ -259,6 +260,11 @@ namespace NiL.JS.Statements
                             fastImpl = new Expressions.In(first, second);
                             break;
                         }
+                    case OperationType.Yield:
+                        {
+                            fastImpl = new Expressions.Yield(first);
+                            break;
+                        }
                     default:
                         throw new ArgumentException("invalid operation type");
                 }
@@ -403,10 +409,7 @@ namespace NiL.JS.Statements
                 || Parser.Validate(state.Code, "delete", i)
                 || Parser.Validate(state.Code, "typeof", i)
                 || Parser.Validate(state.Code, "void", i)
-                //|| (state.Code[i] == 'n' && state.Code.Substring(i, 3) == "new")
-                //|| (state.Code[i] == 'd' && state.Code.Substring(i, 6) == "delete")
-                //|| (state.Code[i] == 't' && state.Code.Substring(i, 6) == "typeof")
-                //|| (state.Code[i] == 'v' && state.Code.Substring(i, 4) == "void")
+                || Parser.Validate(state.Code, "yield", i)
                 )
             {
                 switch (state.Code[i])
@@ -555,6 +558,23 @@ namespace NiL.JS.Statements
                                 throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid prefix operation. " + cord)));
                             }
                             first = new Expressions.Delete(first) { Position = index, Length = i - index };
+                            break;
+                        }
+                    case 'y':
+                        {
+                            if (!state.AllowYield.Peek())
+                                throw new JSException(new SyntaxError("Invalid use of yield operator"));
+                            i += 4;
+                            do
+                                i++;
+                            while (char.IsWhiteSpace(state.Code[i]));
+                            first = Parse(state, ref i, false, true, false, true).Statement;
+                            if (first == null)
+                            {
+                                var cord = Tools.PositionToTextcord(state.Code, i);
+                                throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid prefix operation. " + cord)));
+                            }
+                            first = new Expressions.Yield(first) { Position = index, Length = i - index };
                             break;
                         }
                     default:

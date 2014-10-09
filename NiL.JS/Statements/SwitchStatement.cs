@@ -53,7 +53,7 @@ namespace NiL.JS.Statements
             var funcs = new List<FunctionStatement>();
             var cases = new List<SwitchCase>();
             cases.Add(null);
-            state.AllowBreak++;
+            state.AllowBreak.Push(true);
             while (state.Code[i] != '}')
             {
                 do
@@ -96,7 +96,7 @@ namespace NiL.JS.Statements
                     body.Add(t);
                 while (char.IsWhiteSpace(state.Code[i]) || (state.Code[i] == ';')) i++;
             }
-            state.AllowBreak--;
+            state.AllowBreak.Pop();
             i++;
             var pos = index;
             index = i;

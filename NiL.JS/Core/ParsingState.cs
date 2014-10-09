@@ -5,8 +5,9 @@ namespace NiL.JS.Core
     internal sealed class ParsingState
     {
         public int AllowReturn;
-        public int AllowBreak;
-        public int AllowContinue;
+        public readonly Stack<bool> AllowBreak;
+        public readonly Stack<bool> AllowContinue;
+        public readonly Stack<bool> AllowYield;
         public int functionsDepth;
         public int InExpression;
         public List<string> Labels;
@@ -27,6 +28,12 @@ namespace NiL.JS.Core
             AllowStrict = true;
             containsWith = new Stack<bool>();
             containsWith.Push(false);
+            AllowBreak = new Stack<bool>();
+            AllowBreak.Push(false);
+            AllowContinue = new Stack<bool>();
+            AllowContinue.Push(false);
+            AllowYield = new Stack<bool>();
+            AllowYield.Push(false);
         }
     }
 }

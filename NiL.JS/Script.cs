@@ -64,14 +64,15 @@ namespace NiL.JS
             Context.thisBind = new ThisBind(Context);
             Context.variables = (root as CodeBlock).variables;
             Context.strict = (root as CodeBlock).strict;
-            for (i = body.variables.Length; i-- > 0; )
+            for (i = body.localVariables.Length; i-- > 0; )
             {
-                if (body.variables[i].Owner == body)
-                {
-                    var f = Context.DefineVariable(body.variables[i].name);
-                    if (body.variables[i].Inititalizator != null)
-                        f.Assign(body.variables[i].Inititalizator.Evaluate(Context));
-                }
+                var f = Context.DefineVariable(body.localVariables[i].name);
+                body.variables[i].cacheRes = f;
+                body.variables[i].cacheContext = Context;
+                if (body.localVariables[i].Inititalizator != null)
+                    f.Assign(body.localVariables[i].Inititalizator.Evaluate(Context));
+                if (body.localVariables[i].readOnly)
+                    body.localVariables[i].cacheRes.attributes |= JSObjectAttributesInternal.ReadOnly;
             }
             GC.Collect(0);
             GC.Collect(1);

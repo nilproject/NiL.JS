@@ -200,7 +200,7 @@ namespace NiL.JS.Statements
                     for (var j = inits.Length; j-- > 0; )
                     {
                         VariableDescriptor desc = null;
-                        var gvs = (inits[j] as GetVariableStatement) ?? ((inits[j] as Assign).FirstOperand as GetVariableStatement);
+                        var gvs = (inits[j] as VariableReference) ?? ((inits[j] as Assign).FirstOperand as VariableReference);
                         if (!vars.TryGetValue(gvs.Name, out desc))
                             vars[gvs.Name] = new VariableDescriptor(gvs, true, state.functionsDepth);
                         else

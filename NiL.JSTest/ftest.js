@@ -1,13 +1,12 @@
 ﻿$ERROR = console.log;
 $FAIL = console.log;
-console.log(function () {
-    var a = 0;
-    function cicle(x) {
-        if (x == 0)
-            return;
-        a++;
-        cicle(x - 1);
+console.log(function () {    
+    function* gen() {
+        console.log(yield "hello");
+        return yield "world";
     }
-    cicle(10000000);
-    return a;
-}());
+    var g = gen();
+    console.log(g.next().value);
+    console.log(g.next("middle").value);
+    console.log(g.next("finall").value);
+} ());

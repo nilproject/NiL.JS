@@ -32,7 +32,9 @@ namespace NiL.JS.Core
                 new _Rule("[", ExpressionStatement.Parse),
                 new _Rule("{", CodeBlock.Parse),
                 new _Rule("var ", VariableDefineStatement.Parse),
+                new _Rule("const ", VariableDefineStatement.Parse),
                 new _Rule("if", IfElseStatement.Parse),
+                new _Rule("for", ForOfStatement.Parse),
                 new _Rule("for", ForInStatement.Parse),
                 new _Rule("for", ForStatement.Parse),
                 new _Rule("while", WhileStatement.Parse),
@@ -55,6 +57,7 @@ namespace NiL.JS.Core
                 new _Rule("new", ExpressionStatement.Parse),
                 new _Rule("delete", ExpressionStatement.Parse),
                 new _Rule("void", ExpressionStatement.Parse),
+                new _Rule("yield", ExpressionStatement.Parse),
                 new _Rule("break", BreakStatement.Parse),
                 new _Rule("continue", ContinueStatement.Parse),
                 new _Rule("throw", ThrowStatement.Parse),
@@ -83,6 +86,7 @@ namespace NiL.JS.Core
                 new _Rule("new", ExpressionStatement.Parse),
                 new _Rule("delete", ExpressionStatement.Parse),
                 new _Rule("void", ExpressionStatement.Parse),
+                new _Rule("yield", ExpressionStatement.Parse),
                 new _Rule(ValidateName, ExpressionStatement.Parse),
                 new _Rule(ValidateValue, ExpressionStatement.Parse),
             },
@@ -96,6 +100,7 @@ namespace NiL.JS.Core
             // 3
             new _Rule[] // Для for
             {
+                new _Rule("const ", VariableDefineStatement.Parse),
                 new _Rule("var ", VariableDefineStatement.Parse),
                 new _Rule("(", ExpressionStatement.Parse),
                 new _Rule("+", ExpressionStatement.Parse),
@@ -112,18 +117,19 @@ namespace NiL.JS.Core
                 new _Rule("new", ExpressionStatement.Parse),
                 new _Rule("delete", ExpressionStatement.Parse),
                 new _Rule("void", ExpressionStatement.Parse),
+                new _Rule("yield", ExpressionStatement.Parse),
                 new _Rule(ValidateName, ExpressionStatement.Parse),
                 new _Rule(ValidateValue, ExpressionStatement.Parse),
             },
             // 4
             new _Rule[] // Общий без JSON
             {
-                new _Rule("//", SinglelineComment.Parse),
-                new _Rule("/*", MultilineComment.Parse),
                 new _Rule("[", ExpressionStatement.Parse),
                 new _Rule("{", CodeBlock.Parse),
                 new _Rule("var ", VariableDefineStatement.Parse),
+                new _Rule("const ", VariableDefineStatement.Parse),
                 new _Rule("if", IfElseStatement.Parse),
+                new _Rule("for", ForOfStatement.Parse),
                 new _Rule("for", ForInStatement.Parse),
                 new _Rule("for", ForStatement.Parse),
                 new _Rule("while", WhileStatement.Parse),
@@ -146,6 +152,7 @@ namespace NiL.JS.Core
                 new _Rule("new", ExpressionStatement.Parse),
                 new _Rule("delete", ExpressionStatement.Parse),
                 new _Rule("void", ExpressionStatement.Parse),
+                new _Rule("yield", ExpressionStatement.Parse),
                 new _Rule("break", BreakStatement.Parse),
                 new _Rule("continue", ContinueStatement.Parse),
                 new _Rule("throw", ThrowStatement.Parse),
@@ -278,6 +285,7 @@ namespace NiL.JS.Core
                     case "const":
                     case "debugger":
                     case "enum":
+                    case "yield":
                         return false;
                     case "implements":
                     case "interface":
@@ -287,7 +295,6 @@ namespace NiL.JS.Core
                     case "public":
                     case "static":
                     case "let":
-                    case "yield":
                         {
                             if (strict)
                                 return false;

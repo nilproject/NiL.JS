@@ -17,7 +17,8 @@ namespace NiL.JS.Core.BaseTypes
         Function = 0,
         Get = 1,
         Set = 2,
-        AnonymousFunction = 4
+        AnonymousFunction = 4,
+        Generator = 5
     }
 
     [Serializable]
@@ -814,7 +815,8 @@ namespace NiL.JS.Core.BaseTypes
                 }
 
                 internalContext.thisBind = thisBind;
-                if (creator.type == FunctionType.Function
+                if ((creator.type == FunctionType.Function
+                        || creator.type == FunctionType.Generator)
                     && !string.IsNullOrEmpty(creator.name)
                     && (containsEval || creator.containsWith)
                     )
@@ -933,6 +935,10 @@ namespace NiL.JS.Core.BaseTypes
                         (internalContext.fields = new Dictionary<string, JSObject>()))[body.localVariables[i].name] = f;
                     if (body.localVariables[i].Inititalizator != null)
                         f.Assign(body.localVariables[i].Inititalizator.Evaluate(internalContext));
+                    if (body.localVariables[i].readOnly)
+                        f.attributes |= JSObjectAttributesInternal.ReadOnly;
+                    body.localVariables[i].cacheRes = f;
+                    body.localVariables[i].cacheContext = internalContext;
                 }
             }
         }
@@ -1025,7 +1031,23 @@ namespace NiL.JS.Core.BaseTypes
         [Hidden]
         public override string ToString()
         {
-            var res = ((FunctionType)(creator != null ? (int)creator.type & 3 : 0)).ToString().ToLowerInvariant() + " " + name + "(";
+            string res = "";
+            switch (creator.type)
+            {
+                case FunctionType.Generator:
+                    res = "function*";
+                    break;
+                case FunctionType.Get:
+                    res = "get";
+                    break;
+                case FunctionType.Set:
+                    res = "set";
+                    break;
+                default:
+                    res = "function";
+                    break;
+            }
+            res+= " " + name + "(";
             if (creator != null && creator.arguments != null)
                 for (int i = 0; i < creator.arguments.Length; )
                     res += creator.arguments[i].Name + (++i < creator.arguments.Length ? "," : "");
