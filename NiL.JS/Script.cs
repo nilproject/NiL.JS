@@ -67,8 +67,8 @@ namespace NiL.JS
             for (i = body.localVariables.Length; i-- > 0; )
             {
                 var f = Context.DefineVariable(body.localVariables[i].name);
-                body.variables[i].cacheRes = f;
-                body.variables[i].cacheContext = Context;
+                body.localVariables[i].cacheRes = f;
+                body.localVariables[i].cacheContext = Context;
                 if (body.localVariables[i].Inititalizator != null)
                     f.Assign(body.localVariables[i].Inititalizator.Evaluate(Context));
                 if (body.localVariables[i].readOnly)

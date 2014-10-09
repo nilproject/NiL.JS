@@ -16,6 +16,7 @@ namespace NiL.JS.Core
         Return,
         TailRecursion,
         Exception,
+        Yield
     }
 
     /// <summary>
@@ -24,7 +25,7 @@ namespace NiL.JS.Core
     [Serializable]
     public class Context : IEnumerable<string>
     {
-        private const int MaxConcurentContexts = 65535;
+        internal const int MaxConcurentContexts = 65535;
         internal static readonly Context[] runnedContexts = new Context[MaxConcurentContexts];
 
         public static Context CurrentContext
@@ -32,14 +33,12 @@ namespace NiL.JS.Core
             get
             {
                 int threadId = Thread.CurrentThread.ManagedThreadId;
-#if DEBUG
-                for (var i = 0; i < runnedContexts.Length; i++)
-#else
-                for (var i = MaxConcurentContexts; i-- > 0; )
-#endif
+                for (var i = 0; i < MaxConcurentContexts; i++)
                 {
                     var c = runnedContexts[i];
-                    if (c != null && c.threadId == threadId)
+                    if (c == null)
+                        break;
+                    if (c.threadId == threadId)
                         return c;
                 }
                 return null;
@@ -122,7 +121,7 @@ namespace NiL.JS.Core
             }
         }
 
-        private int threadId;
+        internal int threadId;
         private Context oldContext;
         /// <summary>
         /// Временное хранилище для передачи значений.
@@ -274,11 +273,8 @@ namespace NiL.JS.Core
             int threadId = Thread.CurrentThread.ManagedThreadId;
             //lock (runnedContexts)
             {
-#if DEBUG
-                for (var i = 0; i < MaxConcurentContexts; i++)
-#else
-                for (var i = MaxConcurentContexts; i-- > 0; )
-#endif
+                var i = 0;
+                do
                 {
                     var c = runnedContexts[i];
                     if (c == null || c.threadId == threadId)
@@ -287,9 +283,6 @@ namespace NiL.JS.Core
                             return false;
                         if (oldContext != null)
                         {
-#if DEBUG
-                            System.Diagnostics.Debugger.Break();
-#endif
                             throw new ApplicationException("Try to reactivate context");
                         }
                         this.oldContext = c;
@@ -297,7 +290,9 @@ namespace NiL.JS.Core
                         this.threadId = threadId;
                         return true;
                     }
+                    i++;
                 }
+                while (i < MaxConcurentContexts);
             }
             throw new InvalidOperationException("Too many concurrent contexts.");
         }
@@ -310,19 +305,11 @@ namespace NiL.JS.Core
         internal Context Deactivate()
         {
             Context c = null;
-#if DEBUG
             var i = 0;
             //lock (runnedContexts)
             {
                 for (; i < runnedContexts.Length; i++)
                 {
-#else
-            var i = MaxConcurentContexts;
-            //lock (runnedContexts) // Лочить не нужно. Не может в одном потоке одновременно выполняться два действия.
-            {
-                for (; i-- > 0; )
-                {
-#endif
                     c = runnedContexts[i];
                     if (c != null && c.threadId == threadId)
                     {

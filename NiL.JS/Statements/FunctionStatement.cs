@@ -5,6 +5,7 @@ using NiL.JS.Core.BaseTypes;
 using NiL.JS.Core.JIT;
 using NiL.JS.Core.Modules;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace NiL.JS.Statements
 {
@@ -27,7 +28,7 @@ namespace NiL.JS.Statements
             }
         }
 
-        public sealed class Generator
+        public sealed class Generator : IDisposable
         {
             private Context generatorContext;
             private JSObject wrapper;
@@ -35,8 +36,6 @@ namespace NiL.JS.Statements
             private Thread thread;
             private Function generator;
             private JSObject self;
-
-            public JSObject value { get; private set; }
 
             [Hidden]
             public Generator(Function generator, JSObject self, Arguments args)
@@ -46,32 +45,91 @@ namespace NiL.JS.Statements
                 this.self = self;
             }
 
+            ~Generator()
+            {
+                Dispose();
+            }
+
             public JSObject next(Arguments args)
             {
                 if (thread == null)
                 {
                     thread = new Thread(() =>
                     {
-                        value = generator.Invoke(self, initialArgs);
+                        generator.Invoke(self, initialArgs);
+                        GC.SuppressFinalize(this);
                     });
-                    thread.SetApartmentState(ApartmentState.STA);
+                    thread.TrySetApartmentState(ApartmentState.STA);
                     thread.Start();
-                    while (Context.runnedContexts[thread.ManagedThreadId] == null)
-                        Thread.Sleep(0);
-                    generatorContext = Context.runnedContexts[thread.ManagedThreadId];
-                    while (thread.ThreadState == System.Threading.ThreadState.Running) Thread.Sleep(0);
-                    value = generatorContext.abortInfo;
+                    do
+                    {
+                        for (var i = 0; i < Context.MaxConcurentContexts; i++)
+                        {
+                            if (Context.runnedContexts[i] == null)
+                                break;
+                            if (Context.runnedContexts[i].threadId == thread.ManagedThreadId)
+                            {
+                                generatorContext = Context.runnedContexts[i];
+                                break;
+                            }
+                        }
+                    }
+                    while (generatorContext == null);
+                    while (thread.ThreadState != ThreadState.Suspended)
+                        Thread.Yield();
+                    thread.Resume();
+                    while (generatorContext.abort == AbortType.None)
+                        Thread.Yield();
+                    var res = JSObject.CreateObject();
+                    res["value"] = generatorContext.abortInfo;
+                    res["done"] = generatorContext.abort == AbortType.Return;
+                    return res;
                 }
                 else
                 {
-                    generatorContext.abortInfo = args[0];
-#pragma warning disable 618
-                    thread.Resume();
-#pragma warning restore
-                    while (thread.ThreadState == System.Threading.ThreadState.Running) Thread.Sleep(0);
-                    value = generatorContext.abortInfo;
+                    if (thread.ThreadState == ThreadState.Suspended)
+                    {
+                        generatorContext.abortInfo = args[0];
+                        generatorContext.abort = AbortType.None;
+                        thread.Resume();
+                        while (generatorContext.abort == AbortType.None)
+                            Thread.Yield();
+                        var res = JSObject.CreateObject();
+                        res["value"] = generatorContext.abortInfo;
+                        res["done"] = generatorContext.abort == AbortType.Return;
+                        return res;
+                    }
+                    else
+                    {
+                        var res = JSObject.CreateObject();
+                        res["done"] = true;
+                        return res;
+                    }
                 }
-                return wrapper ?? (wrapper = TypeProxy.Proxy(this));
+            }
+
+            public void @throw()
+            {
+                if (thread != null)
+                {
+                    if (thread.ThreadState == ThreadState.Suspended)
+                    {
+                        generatorContext.abort = AbortType.Exception;
+                        thread.Resume();
+                    }
+                }
+            }
+
+            public void Dispose()
+            {
+                try
+                {
+                    thread.Abort();
+                }
+                catch
+                {
+
+                }
             }
         }
 

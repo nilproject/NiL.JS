@@ -1,12 +1,8 @@
 ﻿$ERROR = console.log;
 $FAIL = console.log;
-console.log(function () {    
-    function* gen() {
-        console.log(yield "hello");
-        return yield "world";
-    }
-    var g = gen();
-    console.log(g.next().value);
-    console.log(g.next("middle").value);
-    console.log(g.next("finall").value);
-} ());
+console.log(function () {
+    var gen = (function* (iterations) { while(iterations-->0) yield iterations; });
+        for(var g = gen(100); !g.next().done;)
+            console.log("1234");
+        
+}());

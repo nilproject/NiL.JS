@@ -1,6 +1,7 @@
 ﻿using System;
 using NiL.JS.Core;
 using System.Threading;
+using NiL.JS.Core.BaseTypes;
 
 namespace NiL.JS.Expressions
 {
@@ -27,9 +28,13 @@ namespace NiL.JS.Expressions
             {
                 tempContainer.Assign(first.Evaluate(context));
                 context.abortInfo = tempContainer;
-#pragma warning disable 618
-                Thread.CurrentThread.Suspend();
-#pragma warning restore
+                context.abort = AbortType.Yield;
+                context.Deactivate();
+                while (context.abort == AbortType.Yield) Thread.CurrentThread.Suspend();
+                if (context.abort == AbortType.Exception)
+                    throw new JSException(new Error("Execution aborted"));
+                context.abort = AbortType.None;
+                context.Activate();
                 tempContainer.Assign(context.abortInfo ?? JSObject.notExists);
                 return tempContainer;
             }

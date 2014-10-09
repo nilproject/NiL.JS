@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Threading;
 using NiL.JS.Core.JIT;
 using NiL.JS.Core.Modules;
 using NiL.JS.Expressions;
@@ -824,6 +825,8 @@ namespace NiL.JS.Core.BaseTypes
                 internalContext.strict |= body.strict;
                 internalContext.variables = body.variables;
                 internalContext.Activate();
+                if (creator.type == FunctionType.Generator)
+                    Thread.CurrentThread.Suspend();
                 JSObject ai;
                 initVariables(body, internalContext);
                 do
@@ -838,13 +841,13 @@ namespace NiL.JS.Core.BaseTypes
                     {
 #if !NET35
                         var starttime = 0;
-                        if (!compilationInit && context.UseJit)
+                        if (creator.type != FunctionType.Generator && !compilationInit && context.UseJit)
                             starttime = Environment.TickCount;
 #endif
                         body.Evaluate(internalContext);
                         ai = internalContext.abortInfo;
 #if !NET35
-                        if (!compilationInit && context.UseJit && Environment.TickCount - starttime > 100)
+                        if (creator.type != FunctionType.Generator && !compilationInit && context.UseJit && Environment.TickCount - starttime > 100)
                         {
                             compilationInit = true;
                             System.Threading.ThreadPool.QueueUserWorkItem((o) => { compiledScript = JITHelpers.compile(body, true); });
@@ -866,6 +869,7 @@ namespace NiL.JS.Core.BaseTypes
             {
                 try
                 {
+                    internalContext.abort = AbortType.Return;
                     internalContext.Deactivate();
                 }
                 catch

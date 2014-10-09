@@ -190,7 +190,7 @@ console.log((function f(f){ return f; })(1))
 
             Context.GlobalContext.DebuggerCallback += (sender, e) => System.Diagnostics.Debugger.Break();
 
-            int mode = 2
+            int mode = 101
                    ;
             switch (mode)
             {
@@ -354,7 +354,9 @@ console.log((function f(f){ return f; })(1))
                     }
             }
 
-            GC.Collect();
+            GC.Collect(0);
+            GC.Collect(1);
+            GC.Collect(2);
             GC.WaitForPendingFinalizers();
             Console.WriteLine("GC.GetTotalMemory: " + GC.GetTotalMemory(true));
             Console.WriteLine("GC.CollectionCount: " + GC.CollectionCount(0));
