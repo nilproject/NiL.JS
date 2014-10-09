@@ -11,22 +11,68 @@ namespace NiL.JS.Statements
     [Serializable]
     public sealed class VariableDefineStatement : CodeNode
     {
+        private sealed class AllowWriteCN : VariableReference
+        {
+            internal readonly VariableReference prototype;
+
+            internal AllowWriteCN(VariableReference proto)
+            {
+                prototype = proto;
+            }
+
+            internal override JSObject Evaluate(Context context)
+            {
+                var res = prototype.Evaluate(context);
+                if ((res.attributes & JSObjectAttributesInternal.SystemObject) == 0)
+                    res.attributes &= ~JSObjectAttributesInternal.ReadOnly;
+                return res;
+            }
+
+            internal override JSObject EvaluateForAssing(Context context)
+            {
+                var res = prototype.EvaluateForAssing(context);
+                if ((res.attributes & JSObjectAttributesInternal.SystemObject) == 0)
+                    res.attributes &= ~JSObjectAttributesInternal.ReadOnly;
+                return res;
+            }
+
+            internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
+            {
+                return prototype.Build(ref _this, depth, variables, strict);
+            }
+
+            protected override CodeNode[] getChildsImpl()
+            {
+                return prototype.Childs;
+            }
+
+            public override string Name
+            {
+                get { return prototype.Name; }
+            }
+        }
+
+        internal VariableDescriptor[] variables;
         internal readonly CodeNode[] initializators;
         internal readonly string[] names;
+        internal readonly bool isConst;
 
+        public bool Const { get { return isConst; } }
         public CodeNode[] Initializators { get { return initializators; } }
         public string[] Names { get { return names; } }
 
-        public VariableDefineStatement(string name, CodeNode init)
+        internal VariableDefineStatement(string name, CodeNode init, bool isConst)
         {
             names = new[] { name };
             initializators = new[] { init };
+            this.isConst = isConst;
         }
 
-        private VariableDefineStatement(string[] names, CodeNode[] initializators)
+        private VariableDefineStatement(string[] names, CodeNode[] initializators, bool isConst)
         {
             this.initializators = initializators;
             this.names = names;
+            this.isConst = isConst;
         }
 
         internal static ParseResult Parse(ParsingState state, ref int index)
@@ -34,7 +80,9 @@ namespace NiL.JS.Statements
             //string code = state.Code;
             int i = index;
             while (char.IsWhiteSpace(state.Code[i])) i++;
-            if (!Parser.Validate(state.Code, "var ", ref i))
+            bool isConst = false;
+            if (!Parser.Validate(state.Code, "var ", ref i)
+                && !(isConst = Parser.Validate(state.Code, "const ", ref i)))
                 return new ParseResult();
             bool isDef = false;
             while (char.IsWhiteSpace(state.Code[i])) i++;
@@ -82,8 +130,13 @@ namespace NiL.JS.Statements
                     do i++; while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]));
                     if (i == state.Code.Length)
                         throw new JSException(TypeProxy.Proxy(new SyntaxError("Unexpected end of line in variable defenition.")));
+                    VariableReference accm = new GetVariableStatement(name, state.functionsDepth) { Position = s, Length = name.Length, functionDepth = state.functionsDepth };
+                    if (isConst)
+                        accm = new AllowWriteCN(accm);
                     initializator.Add(
-                        new Assign(new GetVariableStatement(name, state.functionsDepth) { Position = s, Length = name.Length, functionDepth = state.functionsDepth }, ExpressionStatement.Parse(state, ref i, false).Statement)
+                        new Assign(
+                            accm,
+                            ExpressionStatement.Parse(state, ref i, false).Statement)
                         {
                             Position = s,
                             Length = i - s
@@ -115,10 +168,10 @@ namespace NiL.JS.Statements
             return new ParseResult()
             {
                 IsParsed = true,
-                Statement = new VariableDefineStatement(names.ToArray(), inits)
+                Statement = new VariableDefineStatement(names.ToArray(), inits, isConst)
                 {
                     Position = pos,
-                    Length = index - pos
+                    Length = index - pos,
                 }
             };
         }
@@ -138,6 +191,11 @@ namespace NiL.JS.Statements
         {
             for (int i = 0; i < initializators.Length; i++)
                 initializators[i].Evaluate(context);
+            if (isConst)
+            {
+                for (var i = this.variables.Length; i-- > 0; )
+                    this.variables[i].cacheRes.attributes |= JSObjectAttributesInternal.ReadOnly;
+            }
             return JSObject.undefined;
         }
 
@@ -153,14 +211,19 @@ namespace NiL.JS.Statements
         {
             for (int i = 0; i < initializators.Length; i++)
                 Parser.Optimize(ref initializators[i], 2, variables, strict);
+            this.variables = new VariableDescriptor[names.Length];
             for (var i = 0; i < names.Length; i++)
-                variables[names[i]].Defined = true;
+            {
+                this.variables[i] = variables[names[i]];
+                this.variables[i].Defined = true;
+                this.variables[i].readOnly = isConst;
+            }
             return false;
         }
 
         public override string ToString()
         {
-            var res = "var ";
+            var res = isConst ? "conts " : "var ";
             for (var i = 0; i < initializators.Length; i++)
             {
                 var t = initializators[i].ToString();

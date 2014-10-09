@@ -25,7 +25,7 @@ namespace NiL.JS.Core
     public class Context : IEnumerable<string>
     {
         private const int MaxConcurentContexts = 65535;
-        private static readonly Context[] runnedContexts = new Context[MaxConcurentContexts];
+        internal static readonly Context[] runnedContexts = new Context[MaxConcurentContexts];
 
         public static Context CurrentContext
         {

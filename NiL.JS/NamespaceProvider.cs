@@ -15,10 +15,17 @@ namespace NiL.JS
 
         private static void addTypes(System.Reflection.Assembly assembly)
         {
-            var types = assembly.GetTypes();
-            for (var i = 0; i < types.Length; i++)
+            try
             {
-                NamespaceProvider.types[types[i].FullName] = types[i];
+                var types = assembly.GetTypes();
+                for (var i = 0; i < types.Length; i++)
+                {
+                    NamespaceProvider.types[types[i].FullName] = types[i];
+                }
+            }
+            catch
+            {
+
             }
         }
 

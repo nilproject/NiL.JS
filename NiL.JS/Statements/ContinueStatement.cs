@@ -17,7 +17,7 @@ namespace NiL.JS.Statements
             int i = index;
             if (!Parser.Validate(state.Code, "continue", ref i) || !Parser.isIdentificatorTerminator(state.Code[i]))
                 return new ParseResult();
-            if (state.AllowContinue <= 0)
+            if (!state.AllowContinue.Peek())
                 throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.SyntaxError("Invalid use continue statement")));
             while (char.IsWhiteSpace(state.Code[i]) && !Tools.isLineTerminator(state.Code[i])) i++;
             int sl = i;

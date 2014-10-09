@@ -27,9 +27,9 @@ namespace NiL.JS.Statements
             state.Labels.Add(label);
             int oldlc = state.LabelCount;
             state.LabelCount++;
-            state.AllowBreak++;
+            state.AllowBreak.Push(true);
             var stat = Parser.Parse(state, ref i, 0);
-            state.AllowBreak--;
+            state.AllowBreak.Pop();
             state.Labels.Remove(label);
             state.LabelCount = oldlc;
             var pos = index;

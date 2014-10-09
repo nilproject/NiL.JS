@@ -36,13 +36,13 @@ namespace NiL.JS.Statements
             do i++; while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]));
             if (i >= state.Code.Length)
                 throw new JSException(new SyntaxError("Unexpected end of line."));
-            state.AllowBreak++;
-            state.AllowContinue++;
+            state.AllowBreak.Push(true);
+            state.AllowContinue.Push(true);
             var body = Parser.Parse(state, ref i, 0);
             if (body is FunctionStatement && state.strict.Peek())
                 throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
-            state.AllowBreak--;
-            state.AllowContinue--;
+            state.AllowBreak.Pop();
+            state.AllowContinue.Pop();
             var pos = index;
             index = i;
             return new ParseResult()

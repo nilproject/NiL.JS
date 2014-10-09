@@ -34,13 +34,13 @@ namespace NiL.JS.Statements
             int labelsCount = state.LabelCount;
             state.LabelCount = 0;
             while (char.IsWhiteSpace(state.Code[i])) i++;
-            state.AllowBreak++;
-            state.AllowContinue++;
+            state.AllowBreak.Push(true);
+            state.AllowContinue.Push(true);
             var body = Parser.Parse(state, ref i, 4);
             if (body is FunctionStatement && state.strict.Peek())
                 throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
-            state.AllowBreak--;
-            state.AllowContinue--;
+            state.AllowBreak.Pop();
+            state.AllowContinue.Pop();
             if (!(body is CodeBlock) && state.Code[i] == ';')
                 i++;
             while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i])) i++;

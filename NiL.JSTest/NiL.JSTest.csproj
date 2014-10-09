@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>NiL.JSTest</RootNamespace>
     <AssemblyName>NiL.JSTest</AssemblyName>
-    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
     <PublishUrl>publish\</PublishUrl>
@@ -141,6 +141,7 @@
     <Compile Include="Console.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="StringExt.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\NiL.JS\NiL.JS.csproj">

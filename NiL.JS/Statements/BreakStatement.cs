@@ -17,7 +17,7 @@ namespace NiL.JS.Statements
             int i = index;
             if (!Parser.Validate(state.Code, "break", ref i) || !Parser.isIdentificatorTerminator(state.Code[i]))
                 return new ParseResult();
-            if (state.AllowBreak <= 0)
+            if (!state.AllowBreak.Peek())
                 throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.SyntaxError("Invalid use break statement")));
             while (char.IsWhiteSpace(state.Code[i]) && !Tools.isLineTerminator(state.Code[i])) i++;
             int sl = i;
