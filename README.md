@@ -5,7 +5,7 @@
 </head>
 <body style="font-family: 'Duru Sans', sans-serif;">
     <div style="font-weight: 500; font-size: 100px; position: relative; top: -10px;">NiL.JS</div>
-    Open source JavaScript engine. Beta.
+    Open source ECMA5.1 engine. Beta.
     <ul>
         <li><span style="font-weight:bold">No</span> native dependence.</li>
         <li>Optional generation of <span style="font-weight:bold">IL</span> (Experimental).</li>
