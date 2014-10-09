@@ -20,7 +20,7 @@ namespace NiL.JS.Expressions
 
         private CodeNode[] arguments;
         public CodeNode[] Arguments { get { return arguments; } }
-        public bool allowTCO;
+        internal bool allowTCO;
         public bool AllowTCO { get { return allowTCO; } }
 
         internal Call(CodeNode first, CodeNode[] arguments)
