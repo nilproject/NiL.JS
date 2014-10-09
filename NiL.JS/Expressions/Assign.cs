@@ -54,9 +54,9 @@ namespace NiL.JS.Expressions
             return temp;
         }
 
-        internal override bool Optimize(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> vars, bool strict)
+        internal override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> vars, bool strict)
         {
-            var r = base.Optimize(ref _this, depth, vars, strict);
+            var r = base.Build(ref _this, depth, vars, strict);
             if (first is VariableReference)
                 ((first as VariableReference).Descriptor.assignations ??
                     ((first as VariableReference).Descriptor.assignations = new System.Collections.Generic.List<CodeNode>())).Add(this);

@@ -79,9 +79,9 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Optimize(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
-            Parser.Optimize(ref obj, depth, variables, strict);
+            Parser.Optimize(ref obj, depth + 1, variables, strict);
             Parser.Optimize(ref body, depth, variables, strict);
             return false;
         }

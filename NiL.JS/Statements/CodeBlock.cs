@@ -301,7 +301,7 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Optimize(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
             if (this.variables != null)
             {
@@ -360,6 +360,8 @@ namespace NiL.JS.Statements
             }
             else
             {
+                if (body.Length > 0 && body[0] is Call)
+                    (body[0] as Call).allowTCO = true;
                 if (variables.Count != 0 &&
                     (this.variables == null || this.variables.Length != variables.Count))
                     this.variables = variables.Values.ToArray();

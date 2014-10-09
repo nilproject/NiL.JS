@@ -328,16 +328,11 @@ namespace NiL.JS.Statements
             return new Function(context, this);
         }
 
-        internal override bool Optimize(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
-            var stat = body as CodeNode;
+            var bodyCode = body as CodeNode;
             var nvars = new Dictionary<string, VariableDescriptor>();
-            for (var i = 0; i < arguments.Length; i++)
-            {
-                nvars[arguments[i].Name] = arguments[i].Descriptor;
-                arguments[i].Descriptor.owner = this;
-            }
-            stat.Optimize(ref stat, 0, nvars, strict);
+            bodyCode.Build(ref bodyCode, 0, nvars, strict);
             if (type == FunctionType.Function && !string.IsNullOrEmpty(name))
             {
                 VariableDescriptor fdesc = null;
@@ -358,7 +353,18 @@ namespace NiL.JS.Statements
                     }
                 }
             }
-            body = stat as CodeBlock;
+            for (var i = 0; i < arguments.Length; i++)
+            {
+                VariableDescriptor desc = null;
+                if (nvars.TryGetValue(arguments[i].Name, out desc) && desc.Inititalizator == null)
+                {
+                    desc.references.UnionWith(arguments[i].descriptor.references);
+                    arguments[i].descriptor = desc;
+                    desc.Defined = true;
+                    arguments[i].Descriptor.owner = this;
+                }
+            }
+            body = bodyCode as CodeBlock;
             if (body.variables != null)
             {
                 for (var i = body.variables.Length; i-- > 0; )
@@ -372,6 +378,7 @@ namespace NiL.JS.Statements
                         VariableDescriptor desc = null;
                         if (variables.TryGetValue(body.variables[i].name, out desc))
                         {
+                            desc.captured = true;
                             foreach (var r in body.variables[i].References)
                             {
                                 desc.references.Add(r);
@@ -379,7 +386,11 @@ namespace NiL.JS.Statements
                             }
                             body.variables[i] = desc;
                         }
-                        else variables.Add(body.variables[i].name, body.variables[i]);
+                        else
+                        {
+                            body.variables[i].captured = true;
+                            variables.Add(body.variables[i].name, body.variables[i]);
+                        }
                     }
                 }
             }

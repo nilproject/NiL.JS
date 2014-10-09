@@ -270,9 +270,9 @@ namespace NiL.JS.Expressions
             }
         }
 
-        internal override bool Optimize(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict)
         {
-            var res = base.Optimize(ref _this, depth, vars, strict);
+            var res = base.Build(ref _this, depth, vars, strict);
             if (!res && _this == this)
             {
                 if (first is StringConcat)

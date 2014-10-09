@@ -24,9 +24,9 @@ namespace NiL.JS.Expressions
             }
         }
 
-        internal override bool Optimize(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> vars, bool strict)
+        internal override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> vars, bool strict)
         {
-            var res = base.Optimize(ref _this, depth, vars, strict);
+            var res = base.Build(ref _this, depth, vars, strict);
             if (_this != this)
                 return res;
             if ((second is ImmidateValueStatement || (second is Expression && (second as Expression).IsContextIndependent))

@@ -158,7 +158,7 @@ namespace NiL.JS.Statements
             return null;
         }
 
-        internal override bool Optimize(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
             Parser.Optimize(ref body, 1, variables, strict);
             if (catchBody != null)
@@ -172,6 +172,8 @@ namespace NiL.JS.Statements
                     variables[catchVariableDesc.name] = oldVarDesc;
                 else
                     variables.Remove(catchVariableDesc.name);
+                foreach (var v in variables)
+                    v.Value.captured = true;
             }
             Parser.Optimize(ref finallyBody, 1, variables, strict);
             return false;

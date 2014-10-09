@@ -748,8 +748,6 @@ namespace NiL.JS.Core.BaseTypes
         {
             if (args == null)
                 throw new ArgumentNullException("args");
-            if (args.Length == 0)
-                return this;
             if (this.GetType() == typeof(Array)) // Да, Array sealed, но тут и не такое возможно.
             {
                 long pos0 = Tools.JSObjectToInt64(args[0], 0, true);
@@ -770,16 +768,25 @@ namespace NiL.JS.Core.BaseTypes
                 if (pos0 >= 0 && pos1 >= 0 && pos1 > pos0)
                 {
                     var res = new Array();
-                    foreach (var node in data.Nodes)
+                    Array src = this;
+                    while (src != null)
                     {
-                        if (node.key >= pos1)
-                            break;
-                        if (pos0 <= node.key)
+                        foreach (var node in src.data.Nodes)
                         {
-                            var temp = node.value;
-                            if (temp.isExist)
-                                res.Add(temp.CloneImpl());
+                            if (node.key >= pos1)
+                                break;
+                            if (pos0 <= node.key)
+                            {
+                                var temp = node.value;
+                                if (temp.isExist)
+                                    res.Add(temp.CloneImpl());
+                            }
                         }
+                        if (src.__proto__ is TypeProxy
+                            && src.__proto__ == TypeProxy.GetPrototype(typeof(Array)))
+                            src = (src.__proto__ as TypeProxy).prototypeInstance as Array;
+                        else
+                            src = src.__proto__.oValue as Array;
                     }
                     return res;
                 }
@@ -787,7 +794,7 @@ namespace NiL.JS.Core.BaseTypes
             }
             else // кто-то отправил объект с полем length
             {
-                long _length = Tools.JSObjectToInt64(this.GetMember("length"));
+                long _length = (uint)Tools.JSObjectToInt64(this.GetMember("length"));
                 long pos0 = Tools.JSObjectToInt64(args[0], 0, true);
                 long pos1 = 0;
                 if (args.Length > 1)
@@ -810,7 +817,10 @@ namespace NiL.JS.Core.BaseTypes
                     {
                         var pindex = 0;
                         var dindex = 0.0;
-                        if (Tools.ParseNumber(i, ref pindex, out dindex) && (pindex == i.Length) && dindex >= pos0 && dindex < pos1)
+                        if (Tools.ParseNumber(i, ref pindex, out dindex) && (pindex == i.Length)
+                            && dindex < _length
+                            && dindex >= pos0
+                            && dindex < pos1)
                         {
                             var temp = this[i];
                             if (temp.isExist)
@@ -825,22 +835,23 @@ namespace NiL.JS.Core.BaseTypes
 
         [DoNotEnumerate]
         [ParametersCount(2)]
+        [AllowUnsafeCall(typeof(JSObject))]
         public JSObject splice(Arguments args)
         {
             if (args == null)
                 throw new ArgumentNullException("args");
             if (args.Length == 0)
                 return this;
-            if ((object)this is Array) // Да, Array sealed, но тут и не такое возможно.
+            if (this.GetType() == typeof(Array)) // Да, Array sealed, но тут и не такое возможно.
             {
-                long pos0 = (long)Tools.JSObjectToDouble(args[0]);
+                long pos0 = (long)System.Math.Min(Tools.JSObjectToDouble(args[0]), _length);
                 long pos1 = 0;
                 if (args.Length > 1)
                 {
                     if (args[1].valueType <= JSObjectType.Undefined)
                         pos1 = 0;
                     else
-                        pos1 = System.Math.Min((long)Tools.JSObjectToDouble(args[1]), _length);
+                        pos1 = (long)System.Math.Min(Tools.JSObjectToDouble(args[1]), _length);
                 }
                 else
                     pos1 = _length;
@@ -857,7 +868,11 @@ namespace NiL.JS.Core.BaseTypes
                 List<long> keysToRemove = new List<long>();
                 foreach (var node in data.Nodes)
                 {
-                    if (pos0 <= node.key && pos1 >= node.key)
+                    if (node.key >= pos1)
+                    {
+                        node.key -= pos1 - pos0 - args.length + 2;
+                    }
+                    else if (pos0 <= node.key)
                     {
                         res.Add(node.value.CloneImpl());
                         keysToRemove.Add(node.key);
@@ -865,13 +880,64 @@ namespace NiL.JS.Core.BaseTypes
                 }
                 for (var i = keysToRemove.Count; i-- > 0; )
                     data.Remove(keysToRemove[i]);
-                _length -= pos1 - pos0;
-
+                _length -= pos1 - pos0 - args.length + 2;
+                for (var i = 2; i < args.length; i++)
+                    data[i - 2 + pos0] = args[i].CloneImpl();
                 return res;
             }
             else // кто-то отправил объект с полем length
             {
-                throw new NotImplementedException();
+                var _length = (long)(uint)Tools.JSObjectToInt64(this["length"]);
+                long pos0 = (long)System.Math.Min(Tools.JSObjectToDouble(args[0]), _length);
+                long pos1 = 0;
+                if (args.Length > 1)
+                {
+                    if (args[1].valueType <= JSObjectType.Undefined)
+                        pos1 = 0;
+                    else
+                        pos1 = (long)System.Math.Min(Tools.JSObjectToDouble(args[1]), _length);
+                }
+                else
+                    pos1 = _length;
+                if (pos0 < 0)
+                    pos0 = _length + pos0;
+                if (pos0 < 0)
+                    pos0 = 0;
+                if (pos1 < 0)
+                    pos1 = 0;
+                pos0 = System.Math.Min(pos0, _length);
+                pos1 += pos0;
+                pos1 = System.Math.Min(pos1, _length);
+                var res = new Array();
+                List<string> keysToRemove = new List<string>();
+                List<KeyValuePair<long, JSObject>> itemsToReplace = new List<KeyValuePair<long, JSObject>>();
+                foreach (var keyS in this)
+                {
+                    var pindex = 0;
+                    var key = 0.0;
+                    if (Tools.ParseNumber(keyS, ref pindex, out key) && (pindex == keyS.Length))
+                    {                        
+                        if (key >= pos1)
+                        {
+                            keysToRemove.Add(keyS);
+                            itemsToReplace.Add(new KeyValuePair<long, JSObject>((long)key, this[keyS].CloneImpl()));
+                        }
+                        else if (pos0 <= key)
+                        {
+                            res.Add(this[keyS].CloneImpl());
+                            keysToRemove.Add(keyS);
+                        }
+                    }
+                }
+                for (var i = keysToRemove.Count; i-- > 0; )
+                    this[keysToRemove[i]].valueType = JSObjectType.NotExists;
+                _length -= pos1 - pos0 - args.length + 2;
+                for (var i = 2; i < args.length; i++)
+                    this[(i - 2 + pos0).ToString()] = args[i].CloneImpl();
+                for (var i = 0; i < itemsToReplace.Count; i++)
+                    this[(itemsToReplace[i].Key - (pos1 - pos0 - args.length + 2)).ToString()] = itemsToReplace[i].Value;
+                this["length"] = _length;
+                return res;
             }
         }
 
@@ -902,59 +968,162 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [DoNotEnumerate]
+        [AllowUnsafeCall(typeof(JSObject))]
         public JSObject sort(Arguments args)
         {
             if (args == null)
                 throw new ArgumentNullException("args");
             var comparer = args[0].oValue as Function;
-            var len = Tools.JSObjectToInt32(length);
-            if (comparer != null)
+            if (this.GetType() == typeof(Array))
             {
-                var second = new JSObject();
-                var first = new JSObject();
-                args.length = 2;
-                args[0] = first;
-                args[1] = second;
-
-                var tt = new BinaryTree<JSObject, List<JSObject>>(new JSComparer(args, first, second, comparer));
-                foreach (var node in data.Nodes)
+                var len = _length;
+                if (comparer != null)
                 {
-                    if (node.value.isExist)
+                    var second = new JSObject();
+                    var first = new JSObject();
+                    args.length = 2;
+                    args[0] = first;
+                    args[1] = second;
+
+                    var tt = new BinaryTree<JSObject, List<JSObject>>(new JSComparer(args, first, second, comparer));
+                    Array src = this;
+                    while (src != null)
                     {
-                        List<JSObject> els = null;
-                        if (!tt.TryGetValue(node.value, out els))
-                            tt[node.value] = els = new List<JSObject>();
-                        els.Add(node.value);
+                        foreach (var node in src.data.Nodes)
+                        {
+                            if (node.value.isDefinded)
+                            {
+                                if (src != this
+                                    && data.ContainsKey(node.key))
+                                    continue;
+                                List<JSObject> els = null;
+                                if (!tt.TryGetValue(node.value, out els))
+                                    tt[node.value] = els = new List<JSObject>();
+                                els.Add(node.value);
+                            }
+                        }
+                        if (src.__proto__ is TypeProxy
+                            && src.__proto__ == TypeProxy.GetPrototype(typeof(Array)))
+                            src = (src.__proto__ as TypeProxy).prototypeInstance as Array;
+                        else
+                            src = src.__proto__.oValue as Array;
+                    }
+                    data.Clear();
+                    var index = 0u;
+                    foreach (var node in tt.Nodes)
+                    {
+                        for (var i = node.value.Count; i-- > 0; )
+                            data.Add(index++, node.value[i]);
                     }
                 }
-                data.Clear();
-                var index = 0u;
-                foreach (var node in tt.Nodes)
+                else
                 {
-                    for (var i = node.value.Count; i-- > 0; )
-                        data.Add(index++, node.value[i]);
+                    var tt = new BinaryTree<string, List<JSObject>>(StringComparer.Ordinal);
+                    Array src = this;
+                    while (src != null)
+                    {
+                        foreach (var node in src.data.Nodes)
+                        {
+                            if (node.value.isDefinded)
+                            {
+                                if (src != this
+                                    && data.ContainsKey(node.key))
+                                    continue;
+                                List<JSObject> els = null;
+                                var key = node.value.ToString();
+                                if (!tt.TryGetValue(key, out els))
+                                    tt[key] = els = new List<JSObject>();
+                                els.Add(node.value);
+                            }
+                        }
+                        if (src.__proto__ is TypeProxy
+                            && src.__proto__ == TypeProxy.GetPrototype(typeof(Array)))
+                            src = (src.__proto__ as TypeProxy).prototypeInstance as Array;
+                        else
+                            src = src.__proto__.oValue as Array;
+                    }
+                    data.Clear();
+                    var index = 0u;
+                    foreach (var node in tt.Nodes)
+                    {
+                        for (var i = node.value.Count; i-- > 0; )
+                            data.Add(index++, node.value[i]);
+                    }
                 }
             }
             else
             {
-                var tt = new BinaryTree<string, List<JSObject>>();
-                foreach (var node in data.Nodes)
+                var len = (uint)Tools.JSObjectToInt64(this["length"]);
+                if (comparer != null)
                 {
-                    if (node.value.isExist)
+                    var second = new JSObject();
+                    var first = new JSObject();
+                    args.length = 2;
+                    args[0] = first;
+                    args[1] = second;
+
+                    var tt = new BinaryTree<JSObject, List<JSObject>>(new JSComparer(args, first, second, comparer));
+                    List<string> keysToRemove = new List<string>();
+                    foreach (var key in this)
                     {
-                        List<JSObject> els = null;
-                        var key = node.value.ToString();
-                        if (!tt.TryGetValue(key, out els))
-                            tt[key] = els = new List<JSObject>();
-                        els.Add(node.value);
+                        var pindex = 0;
+                        var dindex = 0.0;
+                        if (Tools.ParseNumber(key, ref pindex, out dindex) && (pindex == key.Length)
+                            && dindex < len)
+                        {
+                            keysToRemove.Add(key);
+                            var value = this[key];
+                            if (value.isDefinded)
+                            {
+                                value = value.CloneImpl();
+                                List<JSObject> els = null;
+                                if (!tt.TryGetValue(value, out els))
+                                    tt[value] = els = new List<JSObject>();
+                                els.Add(value);
+                            }
+                        }
+                    }
+                    for (var i = keysToRemove.Count; i-- > 0; )
+                        this[keysToRemove[i]].valueType = JSObjectType.NotExists;
+                    var index = 0u;
+                    foreach (var node in tt.Nodes)
+                    {
+                        for (var i = node.value.Count; i-- > 0; )
+                            this[(index++).ToString()] = node.value[i];
                     }
                 }
-                data.Clear();
-                var index = 0u;
-                foreach (var node in tt.Nodes)
+                else
                 {
-                    for (var i = node.value.Count; i-- > 0; )
-                        data.Add(index++, node.value[i]);
+                    var tt = new BinaryTree<string, List<JSObject>>(StringComparer.Ordinal);
+                    List<string> keysToRemove = new List<string>();
+                    foreach (var key in this)
+                    {
+                        var pindex = 0;
+                        var dindex = 0.0;
+                        if (Tools.ParseNumber(key, ref pindex, out dindex) && (pindex == key.Length)
+                            && dindex < len)
+                        {
+                            keysToRemove.Add(key);
+                            var value = this[key];
+                            if (value.isDefinded)
+                            {
+                                value = value.CloneImpl();
+                                List<JSObject> els = null;
+                                var skey = value.ToString();
+                                if (!tt.TryGetValue(skey, out els))
+                                    tt[skey] = els = new List<JSObject>();
+                                els.Add(value);
+                            }
+                        }
+                    }
+                    for (var i = keysToRemove.Count; i-- > 0; )
+                        this[keysToRemove[i]].valueType = JSObjectType.NotExists;
+                    var index = 0u;
+                    foreach (var node in tt.Nodes)
+                    {
+                        for (var i = node.value.Count; i-- > 0; )
+                            this[(index++).ToString()] = node.value[i];
+                    }
                 }
             }
             return this;
@@ -1012,7 +1181,7 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [Hidden]
-        internal protected override JSObject GetMember(JSObject name, bool create, bool own)
+        internal protected override JSObject GetMember(JSObject name, bool forWrite, bool own)
         {
             if (name.valueType == JSObjectType.String && "length".Equals(name.oValue))
                 return length;
@@ -1056,10 +1225,10 @@ namespace NiL.JS.Core.BaseTypes
             }
             if (isIndex)
             {
-                create &= (attributes & JSObjectAttributesInternal.Immutable) == 0;
+                forWrite &= (attributes & JSObjectAttributesInternal.Immutable) == 0;
                 if (_length <= index)
                 {
-                    if (create)
+                    if (forWrite)
                     {
                         if ((_lengthObj.attributes & JSObjectAttributesInternal.ReadOnly) != 0)
                         {
@@ -1073,9 +1242,15 @@ namespace NiL.JS.Core.BaseTypes
                     else
                     {
                         JSObject element = null;
-                        data.TryGetValue(index, out element);
-                        notExists.valueType = JSObjectType.NotExistsInObject;
-                        return element ?? notExists;
+                        if (!data.TryGetValue(index, out element))
+                        {
+                            return DefaultFieldGetter(name, forWrite, own);
+                        }
+                        else
+                        {
+                            notExists.valueType = JSObjectType.NotExistsInObject;
+                            return element ?? notExists;
+                        }
                     }
                 }
                 else
@@ -1084,7 +1259,7 @@ namespace NiL.JS.Core.BaseTypes
                     bool exists = data.TryGetValue(index, out element);
                     if (!exists)
                     {
-                        if (create)
+                        if (forWrite)
                         {
                             element = new JSObject() { valueType = JSObjectType.NotExistsInObject };
                             data[index] = element;
@@ -1108,7 +1283,7 @@ namespace NiL.JS.Core.BaseTypes
                     else
                     {
                         var t = element ?? notExists;
-                        if (create && (t.attributes & (JSObjectAttributesInternal.SystemObject | JSObjectAttributesInternal.ReadOnly)) == JSObjectAttributesInternal.SystemObject)
+                        if (forWrite && (t.attributes & (JSObjectAttributesInternal.SystemObject | JSObjectAttributesInternal.ReadOnly)) == JSObjectAttributesInternal.SystemObject)
                             data[index] = t = t.CloneImpl();
                         return t;
                     }
@@ -1117,7 +1292,7 @@ namespace NiL.JS.Core.BaseTypes
 
             //if ((attributes & JSObjectAttributesInternal.ProxyPrototype) != 0)
             //    return __proto__.GetMember(name, create, own);
-            return DefaultFieldGetter(name, create, own);
+            return DefaultFieldGetter(name, forWrite, own);
         }
 
         [Hidden]

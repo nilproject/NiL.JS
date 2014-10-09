@@ -29,7 +29,7 @@ namespace NiL.JS.Expressions
             return temp;
         }
 
-        internal override bool Optimize(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict)
         {
             if (second == null && (depth > 2 || first is Expression || first is ExpressionStatement))
             {

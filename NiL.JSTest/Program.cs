@@ -40,8 +40,6 @@ namespace NiL.JSTest
             sw.Start();
             for (int i = 0; i < fls.Length; i++)
             {
-                //if (i < 1033)
-                //continue;
                 bool pass = true;
                 try
                 {
@@ -192,10 +190,15 @@ console.log((function f(f){ return f; })(1))
 
             Context.GlobalContext.DebuggerCallback += (sender, e) => System.Diagnostics.Debugger.Break();
 
-            int mode = 0//101
+            int mode = 0
                    ;
             switch (mode)
             {
+                case -4:
+                    {
+                        runFile(@"sta.js");
+                        break;
+                    }
                 case -3:
                     {
                         Context.GlobalContext.DefineVariable

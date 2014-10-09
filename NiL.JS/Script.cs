@@ -14,7 +14,7 @@ namespace NiL.JS
     [Serializable]
     public sealed class Script
     {
-        private static readonly Function pseudoCaller = new Function(Context.globalContext, FunctionStatement.Parse("function superCaller(){ }"));
+        internal static readonly Function pseudoCaller = new Function(Context.globalContext, FunctionStatement.Parse("function superCaller(){ }"));
 
 #if !NET35
 

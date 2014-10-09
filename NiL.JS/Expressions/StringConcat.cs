@@ -76,6 +76,14 @@ namespace NiL.JS.Expressions
             }
         }
 
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict)
+        {
+            var res = base.Build(ref _this, depth, vars, strict);
+            if (!res)
+                second = sources[sources.Count - 1];
+            return res;
+        }
+
         public override string ToString()
         {
             StringBuilder res = new StringBuilder("(", sources.Count * 10).Append(sources[0]);

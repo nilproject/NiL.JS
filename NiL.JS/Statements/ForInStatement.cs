@@ -145,12 +145,12 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Optimize(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
             Parser.Optimize(ref variable, 1, variables, strict);
             if (variable is VariableDefineStatement)
                 variable = (variable as VariableDefineStatement).initializators[0];
-            Parser.Optimize(ref source, 1, variables, strict);
+            Parser.Optimize(ref source, 2, variables, strict);
             Parser.Optimize(ref body, System.Math.Max(1, depth), variables, strict);
             if (variable is Expressions.None)
             {

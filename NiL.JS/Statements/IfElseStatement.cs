@@ -89,6 +89,13 @@ namespace NiL.JS.Statements
 
         }
 
+        public IfElseStatement(CodeNode condition, CodeNode body, CodeNode elseBody)
+        {
+            this.condition = condition;
+            this.body = body;
+            this.elseBody = elseBody;
+        }
+
         internal static ParseResult Parse(ParsingState state, ref int index)
         {
             int i = index;
@@ -167,7 +174,7 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Optimize(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
             Parser.Optimize(ref condition, 2, variables, strict);
             Parser.Optimize(ref body, depth, variables, strict);

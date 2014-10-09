@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using NiL.JS.Core;
 using NiL.JS.Core.BaseTypes;
 using NiL.JS.Core.JIT;
+using NiL.JS.Expressions;
 
 namespace NiL.JS.Statements
 {
@@ -25,6 +26,11 @@ namespace NiL.JS.Statements
         internal ReturnStatement()
         {
 
+        }
+
+        internal ReturnStatement(CodeNode body)
+        {
+            this.body = body;
         }
 
         internal static ParseResult Parse(ParsingState state, ref int index)
@@ -53,23 +59,32 @@ namespace NiL.JS.Statements
         internal override JSObject Evaluate(Context context)
         {
             context.abortInfo = body != null ? body.Evaluate(context) : JSObject.undefined;
-            context.abort = AbortType.Return;
+            if (context.abort < AbortType.Return)
+                context.abort = AbortType.Return;
             return null;
         }
 
         protected override CodeNode[] getChildsImpl()
         {
-            var res = new List<CodeNode>()
-            {
-                body
-            };
-            res.RemoveAll(x => x == null);
-            return res.ToArray();
+            if (body != null)
+                return new[] { body };
+            return new CodeNode[0];
         }
 
-        internal override bool Optimize(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
             Parser.Optimize(ref body, 2, variables, strict);
+            if (body is Ternary)
+            {
+                var bat = body as Ternary;
+                var bts = bat.Threads;
+                _this = new IfElseStatement(bat.FirstOperand, new ReturnStatement(bts[0]), new ReturnStatement(bts[1]));
+                return true;
+            }
+            if (body is Call)
+            {
+                (body as Call).allowTCO = true;
+            }
             return false;
         }
 

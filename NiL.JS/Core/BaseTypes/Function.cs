@@ -775,6 +775,7 @@ namespace NiL.JS.Core.BaseTypes
             if (oldargs != null && !intricate) // рекурсивный вызов
                 storeParameters();
             Context internalContext = new Context(context ?? Context.CurrentContext, intricate, this);
+            var oldcaller = _caller;
             try
             {
                 thisBind = correctThisBind(thisBind, body, internalContext);
@@ -787,11 +788,22 @@ namespace NiL.JS.Core.BaseTypes
                     args.attributes |= JSObjectAttributesInternal.ReadOnly;
                     args.callee = propertiesDummySM;
                     args.caller = propertiesDummySM;
+                    _caller = propertiesDummySM;
                 }
                 else
                 {
                     args.callee = this;
                     args.caller = notExists;
+                    var cc = Context.CurrentContext;
+                    if (cc != null)
+                    {
+                        if (cc.caller.creator.body.strict)
+                            // контекст может быть строгим, но вызывающая функция нет.
+                            // такое возможно только в том случае, когда вызывющий контекст принадлежит строгому eval'у
+                            _caller = propertiesDummySM;
+                        else
+                            _caller = cc.caller;
+                    }
                 }
                 if (containsEval || containsArguments)
                     internalContext.fields["arguments"] = args;
@@ -800,9 +812,6 @@ namespace NiL.JS.Core.BaseTypes
                     this.creator.Reference.descriptor.cacheContext = internalContext;
                     this.creator.Reference.descriptor.cacheRes = this;
                 }
-
-                initParameters(args, body, intricate, internalContext);
-                initVariables(body, internalContext);
 
                 internalContext.thisBind = thisBind;
                 if (creator.type == FunctionType.Function
@@ -814,27 +823,34 @@ namespace NiL.JS.Core.BaseTypes
                 internalContext.variables = body.variables;
                 internalContext.Activate();
                 JSObject ai;
-#if !NET35
-                if (compiledScript != null)
-                    ai = compiledScript(internalContext);
-                else
-#endif
+                initVariables(body, internalContext);
+                do
                 {
+                    internalContext.abort = AbortType.None;
+                    initParameters(this._arguments, body, intricate, internalContext);
 #if !NET35
-                    var starttime = 0;
-                    if (!compilationInit && context.UseJit)
-                        starttime = Environment.TickCount;
+                    if (compiledScript != null)
+                        ai = compiledScript(internalContext);
+                    else
 #endif
-                    body.Evaluate(internalContext);
-                    ai = internalContext.abortInfo;
-#if !NET35
-                    if (!compilationInit && context.UseJit && Environment.TickCount - starttime > 100)
                     {
-                        compilationInit = true;
-                        System.Threading.ThreadPool.QueueUserWorkItem((o) => { compiledScript = JITHelpers.compile(body, true); });
-                    }
+#if !NET35
+                        var starttime = 0;
+                        if (!compilationInit && context.UseJit)
+                            starttime = Environment.TickCount;
 #endif
-                }
+                        body.Evaluate(internalContext);
+                        ai = internalContext.abortInfo;
+#if !NET35
+                        if (!compilationInit && context.UseJit && Environment.TickCount - starttime > 100)
+                        {
+                            compilationInit = true;
+                            System.Threading.ThreadPool.QueueUserWorkItem((o) => { compiledScript = JITHelpers.compile(body, true); });
+                        }
+#endif
+                    }
+                    intricate = true;
+                } while (internalContext.abort == AbortType.TailRecursion);
                 if (ai == null)
                 {
                     notExists.valueType = JSObjectType.NotExistsInObject;
@@ -852,6 +868,7 @@ namespace NiL.JS.Core.BaseTypes
                 }
                 catch
                 { }
+                _caller = oldcaller;
                 _arguments = oldargs;
             }
         }
@@ -878,7 +895,7 @@ namespace NiL.JS.Core.BaseTypes
                 }
                 if (body.strict && (intricate || creator.arguments[i].descriptor.assignations != null))
                     t = t.CloneImpl();
-                if (intricate)
+                if (intricate || creator.arguments[i].descriptor.captured)
                     (internalContext.fields ?? (internalContext.fields = new Dictionary<string, JSObject>()))[creator.arguments[i].Name] = t;
                 creator.arguments[i].descriptor.cacheContext = internalContext;
                 creator.arguments[i].descriptor.cacheRes = t;
@@ -893,7 +910,14 @@ namespace NiL.JS.Core.BaseTypes
                 t.attributes |= JSObjectAttributesInternal.Argument;
             }
             for (; i < creator.arguments.Length; i++)
-                (internalContext.fields ?? (internalContext.fields = new Dictionary<string, JSObject>()))[creator.arguments[i].Name] = new JSObject() { attributes = JSObjectAttributesInternal.Argument };
+            {
+                if (creator.arguments[i].descriptor.owner != null) // условный флаг того, что параметр является фиктивным. Такое может произойти, если он нигде не используется либо перебит одноимённой функцией
+                {
+                    (internalContext.fields ?? (internalContext.fields = new Dictionary<string, JSObject>()))[creator.arguments[i].Name] = new JSObject() { attributes = JSObjectAttributesInternal.Argument };
+                    creator.arguments[i].descriptor.cacheContext = internalContext;
+                    creator.arguments[i].descriptor.cacheRes = new JSObject() { attributes = JSObjectAttributesInternal.Argument };
+                }
+            }
         }
 
         private static void initVariables(CodeBlock body, Context internalContext)

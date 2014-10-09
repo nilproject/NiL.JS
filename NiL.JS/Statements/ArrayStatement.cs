@@ -101,7 +101,7 @@ namespace NiL.JS.Statements
             return elements;
         }
 
-        internal override bool Optimize(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict)
         {
             for (int i = 0; i < elements.Length; i++)
                 Parser.Optimize(ref elements[i], 2, vars, strict);

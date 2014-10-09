@@ -145,7 +145,7 @@ namespace NiL.JS.Statements
             return JSObject.undefined;
         }
 
-        internal override bool Optimize(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
             if (depth < 1)
                 throw new InvalidOperationException();

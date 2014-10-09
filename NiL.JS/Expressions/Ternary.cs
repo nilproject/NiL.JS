@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using NiL.JS.Core;
 using NiL.JS.Statements;
 
@@ -20,6 +21,8 @@ namespace NiL.JS.Expressions
             }
         }
 
+        public IList<CodeNode> Threads { get { return new ReadOnlyCollection<CodeNode>(threads); } }
+
         public Ternary(CodeNode first, CodeNode[] threads)
             : base(first, null, false)
         {
@@ -33,11 +36,11 @@ namespace NiL.JS.Expressions
             return threads[1].Evaluate(context);
         }
 
-        internal override bool Optimize(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict)
         {
             Parser.Optimize(ref threads[0], depth, vars, strict);
             Parser.Optimize(ref threads[1], depth, vars, strict);
-            base.Optimize(ref _this, depth, vars, strict);
+            base.Build(ref _this, depth, vars, strict);
             return false;
         }
 

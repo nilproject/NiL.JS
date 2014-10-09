@@ -45,7 +45,7 @@ namespace NiL.JS.Statements
             return null;
         }
 
-        internal override bool Optimize(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
             var vss = value.oValue as CodeNode[];
             if (vss != null)
@@ -54,6 +54,8 @@ namespace NiL.JS.Statements
                 //for (int i = 0; i < vss.Length; i++)
                 //    Parser.Optimize(ref vss[i], depth + 1, variables, strict);
             }
+            if (depth <= 1)
+                _this = null;
             return false;
         }
 

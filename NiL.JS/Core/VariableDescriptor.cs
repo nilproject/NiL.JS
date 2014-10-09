@@ -11,6 +11,7 @@ namespace NiL.JS.Core
         internal readonly string name;
         internal CodeNode owner;
         internal int defineDepth;
+        internal bool captured;
         internal JSObject cacheRes;
         internal Context cacheContext;
         internal List<CodeNode> assignations;

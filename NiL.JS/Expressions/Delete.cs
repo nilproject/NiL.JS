@@ -106,9 +106,9 @@ namespace NiL.JS.Expressions
             }
         }
 
-        internal override bool Optimize(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> vars, bool strict)
+        internal override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> vars, bool strict)
         {
-            if (base.Optimize(ref _this, depth, vars, strict))
+            if (base.Build(ref _this, depth, vars, strict))
                 return true;
             if (first is GetVariableStatement)
             {

@@ -14,6 +14,7 @@ namespace NiL.JS.Core
         Continue,
         Break,
         Return,
+        TailRecursion,
         Exception,
     }
 
@@ -146,8 +147,10 @@ namespace NiL.JS.Core
             get
             {
                 var res = this;
-                while (res.prototype != null && res.prototype != globalContext)
-                    res = res.prototype;
+                if (res.prototype != null && res.prototype != globalContext)
+                    do
+                        res = res.prototype;
+                    while (res.prototype != null && res.prototype != globalContext);
                 return res;
             }
         }

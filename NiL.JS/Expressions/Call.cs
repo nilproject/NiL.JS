@@ -18,10 +18,10 @@ namespace NiL.JS.Expressions
             }
         }
 
-        private Arguments cachedArgs;
-
         private CodeNode[] arguments;
         public CodeNode[] Arguments { get { return arguments; } }
+        public bool allowTCO;
+        public bool AllowTCO { get { return allowTCO; } }
 
         internal Call(CodeNode first, CodeNode[] arguments)
             : base(first, null, false)
@@ -36,59 +36,49 @@ namespace NiL.JS.Expressions
             var temp = first.Evaluate(context);
             newThisBind = context.objectSource;
 
-            Arguments arguments = null;
-            bool cached = cachedArgs != null;
-            if (cached)
+            bool tail = false;
+            func = temp.valueType == JSObjectType.Function ? temp.oValue as Function ?? (temp.oValue as TypeProxy).prototypeInstance as Function : null; // будем надеяться, что только в одном случае в oValue не будет лежать функция
+            if (allowTCO
+                && func == context.caller.oValue
+                && context.caller.oValue != Script.pseudoCaller)
             {
-                arguments = cachedArgs;
-                cachedArgs = null;
+                context.abort = AbortType.TailRecursion;
+                tail = true;
             }
-            else
+            Arguments arguments = new Arguments();
+            arguments.length = this.arguments.Length;
+            for (int i = 0; i < arguments.length; i++)
             {
-                arguments = new Arguments()
-                {
-                    length = this.arguments.Length
-                };
-            }
-            JSObject oldCaller = null;
-            try
-            {
-                for (int i = 0; i < arguments.length; i++)
-                {
-                    context.objectSource = null;
-                    var a = this.arguments[i].Evaluate(context);
-                    if ((a.attributes & JSObjectAttributesInternal.Temporary) != 0)
-                    {
-                        a = a.CloneImpl();
-                        a.attributes |= JSObjectAttributesInternal.Cloned;
-                    }
-#if DEBUG
-                    if (a == null)
-                        System.Diagnostics.Debugger.Break();
-#endif
-                    arguments[i] = a;
-                }
                 context.objectSource = null;
-
-                // Аргументы должны быть вычислены даже если функция не существует.
-                if (temp.valueType != JSObjectType.Function
-                    //&& !(temp.valueType == JSObjectType.Object && temp.oValue is Function)
-                    )
-                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError(first + " is not callable")));
-                func = temp.oValue as Function ?? (temp.oValue as TypeProxy).prototypeInstance as Function; // будем надеяться, что только в одном случае в oValue не будет лежать функция
-                func.attributes = (func.attributes & ~JSObjectAttributesInternal.Eval) | (temp.attributes & JSObjectAttributesInternal.Eval);
-
-                oldCaller = func._caller;
-                func._caller = context.caller.creator.body.strict ? Function.propertiesDummySM : context.caller;
-                return func.Invoke(newThisBind, arguments);
+                var a = this.arguments[i].Evaluate(context);
+                if ((a.attributes & JSObjectAttributesInternal.Temporary) != 0)
+                {
+                    a = a.CloneImpl();
+                    a.attributes |= JSObjectAttributesInternal.Cloned;
+                }
+#if DEBUG
+                if (a == null)
+                    System.Diagnostics.Debugger.Break();
+#endif
+                arguments[i] = a;
             }
-            finally
+            context.objectSource = null;
+            if (tail)
             {
-                if (cached)
-                    cachedArgs = arguments;
-                if (oldCaller != null)
-                    func._caller = oldCaller;
+                for (var i = func.creator.body.localVariables.Length; i-- > 0; )
+                {
+                    if (func.creator.body.localVariables[i].Inititalizator == null)
+                        func.creator.body.localVariables[i].cacheRes.Assign(JSObject.undefined);
+                }
+                func._arguments = arguments;
+                return JSObject.undefined;
             }
+            // Аргументы должны быть вычислены даже если функция не существует.
+            if (func == null)
+                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError(first + " is not callable")));
+            func.attributes = (func.attributes & ~JSObjectAttributesInternal.Eval) | (temp.attributes & JSObjectAttributesInternal.Eval);
+
+            return func.Invoke(newThisBind, arguments);
         }
 
         private static bool isSimple(CodeNode expression)
@@ -115,11 +105,11 @@ namespace NiL.JS.Expressions
             return false;
         }
 
-        internal override bool Optimize(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict)
         {
             for (var i = 0; i < arguments.Length; i++)
                 Parser.Optimize(ref arguments[i], depth + 1, vars, strict);
-            base.Optimize(ref _this, depth, vars, strict);
+            base.Build(ref _this, depth, vars, strict);
             if (first is GetVariableStatement)
             {
                 var name = first.ToString();
@@ -154,16 +144,6 @@ namespace NiL.JS.Expressions
                                 }
                             }
                             */
-                            else
-                            {
-                                if (System.Array.Find(func.body.variables, x => x.Name == "arguments" || x.Name == "eval") == null)
-                                {
-                                    cachedArgs = new Arguments()
-                                    {
-                                        length = this.arguments.Length
-                                    };
-                                }
-                            }
                         }
                     }
                 }

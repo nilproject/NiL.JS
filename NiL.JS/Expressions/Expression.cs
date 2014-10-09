@@ -83,7 +83,7 @@ namespace NiL.JS.Expressions
             this.second = second;
         }
 
-        internal override bool Optimize(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict)
         {
             //while (first is None && (first as None).second == null)
             //    first = (first as None).first;
