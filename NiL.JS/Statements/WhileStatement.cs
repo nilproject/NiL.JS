@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using NiL.JS.Core;
 using NiL.JS.Core.BaseTypes;
+using NiL.JS.Core.JIT;
 using NiL.JS.Expressions;
 
 namespace NiL.JS.Statements
@@ -10,6 +11,7 @@ namespace NiL.JS.Statements
     [Serializable]
     public sealed class WhileStatement : CodeNode
     {
+        private bool allowRemove;
         private CodeNode condition;
         private CodeNode body;
         private string[] labels;
@@ -38,6 +40,8 @@ namespace NiL.JS.Statements
                 throw new JSException(new SyntaxError("Unexpected end of line."));
             state.AllowBreak.Push(true);
             state.AllowContinue.Push(true);
+            int ccs = state.continiesCount;
+            int cbs = state.breaksCount;
             var body = Parser.Parse(state, ref i, 0);
             if (body is FunctionStatement && state.strict.Peek())
                 throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
@@ -50,7 +54,7 @@ namespace NiL.JS.Statements
                 IsParsed = true,
                 Statement = new WhileStatement()
                 {
-
+                    allowRemove = ccs == state.continiesCount && cbs == state.breaksCount,
                     body = body,
                     condition = condition,
                     labels = state.Labels.GetRange(state.Labels.Count - labelsCount, labelsCount).ToArray(),
@@ -58,6 +62,39 @@ namespace NiL.JS.Statements
                     Length = index - pos
                 }
             };
+        }
+
+        internal override System.Linq.Expressions.Expression CompileToIL(Core.JIT.TreeBuildingState state)
+        {
+            var continueTarget = System.Linq.Expressions.Expression.Label("continue" + (DateTime.Now.Ticks % 1000));
+            var breakTarget = System.Linq.Expressions.Expression.Label("break" + (DateTime.Now.Ticks % 1000));
+            for (var i = 0; i < labels.Length; i++)
+                state.NamedContinueLabels[labels[i]] = continueTarget;
+            state.BreakLabels.Push(breakTarget);
+            state.ContinueLabels.Push(continueTarget);
+            try
+            {
+                return System.Linq.Expressions.Expression.Loop(
+                    System.Linq.Expressions.Expression.Block(
+                        System.Linq.Expressions.Expression.IfThen(System.Linq.Expressions.Expression.Not(System.Linq.Expressions.Expression.Call(null, JITHelpers.JSObjectToBooleanMethod, condition.CompileToIL(state))),
+                                                                  System.Linq.Expressions.Expression.Goto(breakTarget)),
+                        body.CompileToIL(state)
+                    ),
+                    breakTarget,
+                    continueTarget
+                );
+            }
+            finally
+            {
+                if (state.BreakLabels.Peek() != breakTarget)
+                    throw new InvalidOperationException();
+                state.BreakLabels.Pop();
+                if (state.ContinueLabels.Peek() != continueTarget)
+                    throw new InvalidOperationException();
+                state.ContinueLabels.Pop();
+                for (var i = 0; i < labels.Length; i++)
+                    state.NamedContinueLabels.Remove(labels[i]);
+            }
         }
 
         internal override JSObject Evaluate(Context context)
@@ -112,7 +149,7 @@ namespace NiL.JS.Statements
             Parser.Optimize(ref condition, 2, variables, strict);
             try
             {
-                if (condition is ImmidateValueStatement || (condition is Expression && (condition as Expression).IsContextIndependent))
+                if (allowRemove && (condition is ImmidateValueStatement || (condition is Expression && (condition as Expression).IsContextIndependent)))
                 {
                     if ((bool)condition.Evaluate(null))
                         _this = new InfinityLoop(body, labels);

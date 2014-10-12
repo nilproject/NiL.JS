@@ -31,7 +31,6 @@ namespace NiL.JS.Statements
         public sealed class Generator : IDisposable
         {
             private Context generatorContext;
-            private JSObject wrapper;
             private Arguments initialArgs;
             private Thread thread;
             private Function generator;
@@ -203,7 +202,7 @@ namespace NiL.JS.Statements
 
 #if !NET35
 
-        internal override System.Linq.Expressions.Expression BuildTree(NiL.JS.Core.JIT.TreeBuildingState state)
+        internal override System.Linq.Expressions.Expression CompileToIL(NiL.JS.Core.JIT.TreeBuildingState state)
         {
             return System.Linq.Expressions.Expression.Call(
                        System.Linq.Expressions.Expression.Constant(this),

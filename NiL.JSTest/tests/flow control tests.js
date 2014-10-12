@@ -207,3 +207,13 @@ if (b() != 2)
     console.log("scope #2 fail");
 if (s(3)() != 3)
     console.log("scope #3 fail");
+
+if (!(function () {
+    do {
+
+        break;
+} while (false);
+    console.log("dead do-while pass");
+    return true;
+})())
+    console.log("dead do-while fail")

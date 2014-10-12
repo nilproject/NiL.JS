@@ -164,7 +164,7 @@ namespace NiL.JS.Core
                     }
                     return false;
                 }),
-                waitEnd = new Action(() =>
+                wait = new Action(() =>
                 {
                     if (threads == null)
                         return;

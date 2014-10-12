@@ -151,6 +151,8 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Samples\async.js" />
+    <Content Include="Samples\swap.js" />
     <Content Include="sunspider-0.9.1\3d-cube.js" />
     <Content Include="sunspider-0.9.1\3d-morph.js" />
     <Content Include="sunspider-0.9.1\3d-raytrace.js" />
@@ -11743,7 +11745,7 @@
     <Content Include="v8\v8-logo.png" />
     <Content Include="sta.js" />
     <Content Include="tests\this linking test.js" />
-    <Content Include="WinFormsSample.js" />
+    <Content Include="Samples\WinFormsSample.js" />
     <Content Include="ftest.js" />
     <Content Include="tests\flow control tests.js" />
   </ItemGroup>

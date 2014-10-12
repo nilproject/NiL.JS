@@ -1,12 +1,81 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using NiL.JS.Core;
+using NiL.JS.Core.JIT;
 
 namespace NiL.JS.Statements
 {
     [Serializable]
     public sealed class ForInStatement : CodeNode
     {
+        internal sealed class _ForcedEnumerator<T> : IEnumerator<T>
+        {
+            private int index;
+            private IEnumerable<T> owner;
+            private IEnumerator<T> parent;
+
+            private _ForcedEnumerator(IEnumerable<T> owner)
+            {
+                this.owner = owner;
+                this.parent = owner.GetEnumerator();
+            }
+
+            public static _ForcedEnumerator<T> create(IEnumerable<T> owner)
+            {
+                return new _ForcedEnumerator<T>(owner);
+            }
+
+            #region Члены IEnumerator<T>
+
+            public T Current
+            {
+                get { return parent.Current; }
+            }
+
+            #endregion
+
+            #region Члены IDisposable
+
+            public void Dispose()
+            {
+                parent.Dispose();
+            }
+
+            #endregion
+
+            #region Члены IEnumerator
+
+            object System.Collections.IEnumerator.Current
+            {
+                get { return parent.Current; }
+            }
+
+            public bool MoveNext()
+            {
+                try
+                {
+                    var res = parent.MoveNext();
+                    if (res)
+                        index++;
+                    return res;
+                }
+                catch
+                {
+                    parent = owner.GetEnumerator();
+                    for (int i = 0; i < index && parent.MoveNext(); i++) ;
+                    return MoveNext();
+                }
+            }
+
+            public void Reset()
+            {
+                parent.Reset();
+            }
+
+            #endregion
+        }
+
         private CodeNode variable;
         private CodeNode source;
         private CodeNode body;
@@ -24,7 +93,6 @@ namespace NiL.JS.Statements
 
         internal static ParseResult Parse(ParsingState state, ref int index)
         {
-            //string code = state.Code;
             int i = index;
             while (char.IsWhiteSpace(state.Code[i])) i++;
             if (!Parser.Validate(state.Code, "for(", ref i) && (!Parser.Validate(state.Code, "for (", ref i)))
@@ -82,29 +150,84 @@ namespace NiL.JS.Statements
             };
         }
 
+#if !NET35
+
+        internal override System.Linq.Expressions.Expression CompileToIL(Core.JIT.TreeBuildingState state)
+        {
+            var continueTarget = System.Linq.Expressions.Expression.Label("continue" + (DateTime.Now.Ticks % 10000));
+            var nextProto = Expression.Label();
+            var breakTarget = System.Linq.Expressions.Expression.Label("break" + (DateTime.Now.Ticks % 10000));
+            for (var i = 0; i < labels.Count; i++)
+                state.NamedContinueLabels[labels[i]] = continueTarget;
+            state.BreakLabels.Push(breakTarget);
+            state.ContinueLabels.Push(continueTarget);
+            try
+            {
+                var val = Expression.Parameter(typeof(JSObject));
+                var @enum = Expression.Parameter(typeof(_ForcedEnumerator<string>));
+                var source = Expression.Parameter(typeof(JSObject));
+                var res = Expression.Block(new[] { val, @enum, source },
+                    Expression.Assign(source, this.source.CompileToIL(state)),
+                    Expression.Assign(val, Expression.Call(JITHelpers.ContextParameter, typeof(Context).GetMethod("GetVariable", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic, null, new[] { typeof(string), typeof(bool) }, null), JITHelpers.wrap(variable.ToString()), JITHelpers.wrap(true))),
+                    Expression.Loop(
+                            Expression.IfThenElse(
+                                    Expression.AndAlso(Expression.ReferenceNotEqual(source, JITHelpers.wrap(null)),
+                                        Expression.AndAlso(Expression.Property(source, "isDefinded"),
+                                                        Expression.OrElse(Expression.LessThan(Expression.Convert(Expression.Field(source, "valueType"), typeof(int)), JITHelpers.wrap((int)JSObjectType.Object)),
+                                                                       Expression.ReferenceNotEqual(Expression.Field(source, "oValue"), JITHelpers.wrap(null))))),
+                                      Expression.Block(
+                                                Expression.Assign(@enum, Expression.Call(JITHelpers.methodof(new Func<JSObject, object>(_ForcedEnumerator<string>.create)), source))
+                                                , Expression.Loop(
+                                                    Expression.IfThenElse(Expression.Call(@enum, typeof(_ForcedEnumerator<string>).GetMethod("MoveNext")), Expression.Block(
+                                                        Expression.Assign(Expression.Field(val, "valueType"), JITHelpers.wrap(JSObjectType.String))
+                                                        , Expression.Assign(Expression.Field(val, "oValue"), Expression.Property(@enum, "Current"))
+                                                        , this.body.CompileToIL(state)
+                                                        , Expression.Label(continueTarget)
+                                                    ), Expression.Goto(nextProto)))
+                                                , Expression.Label(nextProto)
+                                                , Expression.IfThenElse(Expression.ReferenceNotEqual(Expression.Field(source, "__proto__"), JITHelpers.wrap(null)),
+                                                    Expression.Assign(source, Expression.Field(source, "__proto__"))
+                                                , Expression.Block(
+                                                    Expression.Assign(Expression.Field(val, "valueType"), JITHelpers.wrap(JSObjectType.String))
+                                                    , Expression.Assign(Expression.Field(val, "oValue"), JITHelpers.wrap("__proto__"))
+                                                    , Expression.Assign(source, Expression.Call(source, typeof(JSObject).GetMethod("GetMember", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance, null, new Type[] { typeof(JSObject), typeof(bool), typeof(bool) }, null), val, JITHelpers.wrap(false), JITHelpers.wrap(false)))
+                                                ))
+                                            )
+                                      , Expression.Goto(breakTarget)))
+                    , Expression.Label(breakTarget)
+                    );
+                return res;
+            }
+            finally
+            {
+                if (state.BreakLabels.Peek() != breakTarget)
+                    throw new InvalidOperationException();
+                state.BreakLabels.Pop();
+                if (state.ContinueLabels.Peek() != continueTarget)
+                    throw new InvalidOperationException();
+                state.ContinueLabels.Pop();
+                for (var i = 0; i < labels.Count; i++)
+                    state.NamedContinueLabels.Remove(labels[i]);
+            }
+        }
+
+#endif
+
         internal override JSObject Evaluate(Context context)
         {
             JSObject res = JSObject.undefined;
             var s = source.Evaluate(context);
-            var v = variable.EvaluateForAssing(context);
-            int index = 0;
             if (!s.isDefinded || (s.valueType >= JSObjectType.Object && s.oValue == null))
                 return JSObject.undefined;
+            var v = variable.EvaluateForAssing(context);
+            int index = 0;
             while (s != null)
             {
-                var keys = s.GetEnumerator();
+                var keys = _ForcedEnumerator<string>.create(s);
                 for (; ; )
                 {
-                    try
-                    {
-                        if (!keys.MoveNext())
-                            break;
-                    }
-                    catch (InvalidOperationException)
-                    {
-                        keys = s.GetEnumerator();
-                        for (int i = 0; i < index && keys.MoveNext(); i++) ;
-                    }
+                    if (!keys.MoveNext())
+                        break;
                     var o = keys.Current;
                     v.valueType = JSObjectType.String;
                     v.oValue = o;
@@ -150,6 +273,7 @@ namespace NiL.JS.Statements
             Parser.Optimize(ref variable, 1, variables, strict);
             if (variable is VariableDefineStatement)
                 variable = (variable as VariableDefineStatement).initializators[0];
+            variable = (GetVariableStatement)variable;
             Parser.Optimize(ref source, 2, variables, strict);
             Parser.Optimize(ref body, System.Math.Max(1, depth), variables, strict);
             if (variable is Expressions.None)

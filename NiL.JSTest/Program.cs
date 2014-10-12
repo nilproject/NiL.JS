@@ -37,9 +37,13 @@ namespace NiL.JSTest
             _("Scaning directory...");
             var fls = Directory.EnumerateFiles(folderPath, "*.js", SearchOption.AllDirectories).ToArray();
             _("Found " + fls.Length + " js-files");
+            bool skipedShowed = false;
             sw.Start();
-            for (int i = 0; i < fls.Length; i++)
+            for (int i = 2936; i < fls.Length; i++)
             {
+                if (i != 0 && !skipedShowed)
+                    _("Skiped: " + i);
+                skipedShowed = true;
                 bool pass = true;
                 try
                 {
@@ -190,13 +194,13 @@ console.log((function f(f){ return f; })(1))
 
             Context.GlobalContext.DebuggerCallback += (sender, e) => System.Diagnostics.Debugger.Break();
 
-            int mode = 101
+            int mode = 4//2//0
                    ;
             switch (mode)
             {
                 case -4:
                     {
-                        runFile(@"sta.js");
+                        runFile(@"samples/async.js");
                         break;
                     }
                 case -3:
@@ -205,7 +209,7 @@ console.log((function f(f){ return f; })(1))
                             ("forms") // имя переменной, через которую будет доступно пространство имён.
                             .Assign(new NamespaceProvider
                                 ("System.Windows.Forms")); // пространство имён, к которому будет осуществляться доступ.
-                        runFile("WinFormsSample.js");
+                        runFile("samples/WinFormsSample.js");
                         break;
                     }
                 case -2:

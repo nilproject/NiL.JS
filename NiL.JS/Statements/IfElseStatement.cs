@@ -17,9 +17,9 @@ namespace NiL.JS.Statements
 
 #if !NET35
 
-        internal override System.Linq.Expressions.Expression BuildTree(NiL.JS.Core.JIT.TreeBuildingState state)
+        internal override System.Linq.Expressions.Expression CompileToIL(NiL.JS.Core.JIT.TreeBuildingState state)
         {
-            return System.Linq.Expressions.Expression.IfThen(System.Linq.Expressions.Expression.Call(JITHelpers.JSObjectToBooleanMethod, condition.BuildTree(state)), body.BuildTree(state));
+            return System.Linq.Expressions.Expression.IfThen(System.Linq.Expressions.Expression.Call(JITHelpers.JSObjectToBooleanMethod, condition.CompileToIL(state)), body.CompileToIL(state));
         }
 
 #endif
@@ -74,12 +74,12 @@ namespace NiL.JS.Statements
 
 #if !NET35
 
-        internal override System.Linq.Expressions.Expression BuildTree(NiL.JS.Core.JIT.TreeBuildingState state)
+        internal override System.Linq.Expressions.Expression CompileToIL(NiL.JS.Core.JIT.TreeBuildingState state)
         {
             return elseBody != null ?
-                System.Linq.Expressions.Expression.IfThenElse(System.Linq.Expressions.Expression.Call(JITHelpers.JSObjectToBooleanMethod, condition.BuildTree(state)), body.BuildTree(state), elseBody.BuildTree(state))
+                System.Linq.Expressions.Expression.IfThenElse(System.Linq.Expressions.Expression.Call(JITHelpers.JSObjectToBooleanMethod, condition.CompileToIL(state)), body.CompileToIL(state), elseBody.CompileToIL(state))
                 :
-                System.Linq.Expressions.Expression.IfThen(System.Linq.Expressions.Expression.Call(JITHelpers.JSObjectToBooleanMethod, condition.BuildTree(state)), body.BuildTree(state));
+                System.Linq.Expressions.Expression.IfThen(System.Linq.Expressions.Expression.Call(JITHelpers.JSObjectToBooleanMethod, condition.CompileToIL(state)), body.CompileToIL(state));
         }
 
 #endif

@@ -13,7 +13,7 @@ namespace NiL.JS.Core
 
 #if !NET35
 
-        internal virtual Expression BuildTree(TreeBuildingState state)
+        internal virtual Expression CompileToIL(TreeBuildingState state)
         {
 #if DEBUG
             System.Diagnostics.Debug.Print("JIT for " + this.GetType() + " not implemented");
@@ -28,18 +28,12 @@ namespace NiL.JS.Core
                 this.GetType().GetMethod("Evaluate", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic, null, new[] { typeof(Context) }, null),
                 JITHelpers.ContextParameter
                 );
-            if (state.AllowReturn)
-                return System.Linq.Expressions.Expression.Block(
-                        wraper,
-                        Expression.IfThen(Expression.Equal(JITHelpers.wrap(AbortType.Return), Expression.Field(JITHelpers.ContextParameter, "abort")),
-                                            Expression.Return(JITHelpers.ReturnTarget, Expression.Field(JITHelpers.ContextParameter, "abortInfo"))),
-                        JITHelpers.UndefinedConstant
-                       );
-            else
-                return System.Linq.Expressions.Expression.Block(
-                        wraper,
-                        JITHelpers.UndefinedConstant
-                       );
+            return System.Linq.Expressions.Expression.Block(
+                    wraper,
+                    Expression.IfThen(Expression.Equal(JITHelpers.wrap(AbortType.Return), Expression.Field(JITHelpers.ContextParameter, "abort")),
+                                        Expression.Return(state.ReturnTarget, Expression.Field(JITHelpers.ContextParameter, "abortInfo"))),
+                    JITHelpers.UndefinedConstant
+                   );
         }
 
 #endif

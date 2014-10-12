@@ -1,8 +1,11 @@
-﻿using System;
+﻿//#define JIT
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using NiL.JS.Core;
 using NiL.JS.Core.BaseTypes;
+using NiL.JS.Core.JIT;
 using NiL.JS.Expressions;
 
 namespace NiL.JS.Statements
@@ -13,6 +16,9 @@ namespace NiL.JS.Statements
         private static readonly VariableDescriptor[] emptyVariables = new VariableDescriptor[0];
 
         private string code;
+#if (NET40 || INLINE) && JIT
+        internal Func<Context, JSObject> compiledVersion;
+#endif
         internal VariableDescriptor[] variables;
         internal VariableDescriptor[] localVariables;
         internal CodeNode[] body;
@@ -57,9 +63,9 @@ namespace NiL.JS.Statements
 
 #if !NET35
 
-        internal override System.Linq.Expressions.Expression BuildTree(NiL.JS.Core.JIT.TreeBuildingState state)
+        internal override System.Linq.Expressions.Expression CompileToIL(NiL.JS.Core.JIT.TreeBuildingState state)
         {
-            for (int i = 0; i < body.Length >> 1; i++)
+            for (int i = body.Length >> 1; i-- > 0; )
             {
                 var t = body[i];
                 body[i] = body[body.Length - i - 1];
@@ -67,11 +73,15 @@ namespace NiL.JS.Statements
             }
             try
             {
-                return System.Linq.Expressions.Expression.Block(from x in body where x != null select x.BuildTree(state));
+                if (body.Length == 1)
+                    return body[0].CompileToIL(state);
+                if (body.Length == 0)
+                    return JITHelpers.UndefinedConstant;
+                return System.Linq.Expressions.Expression.Block(from x in body where x != null select x.CompileToIL(state));
             }
             finally
             {
-                for (int i = 0; i < body.Length >> 1; i++)
+                for (int i = body.Length >> 1; i-- > 0; )
                 {
                     var t = body[i];
                     body[i] = body[body.Length - i - 1];
@@ -232,15 +242,17 @@ namespace NiL.JS.Statements
 
         internal override JSObject Evaluate(Context context)
         {
+#if (NET40 || INLINE) && JIT
+            if (compiledVersion != null)
+            {
+                context.abortInfo = compiledVersion(context);
+                context.abort = AbortType.Return;
+                return context.abortInfo;
+            }
+#endif
             JSObject res = JSObject.notExists;
-            //CodeNode node = null;
             for (int i = body.Length; i-- > 0; )
             {
-                //node = body[i];
-                //if (body[i] is FunctionStatement)
-                //    continue;
-                //if (node == null)
-                //    return res;
 #if DEV
                 if (context.debugging)
                     context.raiseDebugger(body[i]);
@@ -382,6 +394,9 @@ namespace NiL.JS.Statements
                             localVariables[--localVariablesCount] = this.variables[i];
                     }
                 }
+#if (NET40 || INLINE) && JIT
+                compiledVersion = JITHelpers.compile(this, depth >= 0);
+#endif
             }
             return false;
         }

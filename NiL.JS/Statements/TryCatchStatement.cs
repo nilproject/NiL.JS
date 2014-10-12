@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
+using System.Runtime.CompilerServices;
 using NiL.JS.Core;
 using NiL.JS.Core.BaseTypes;
+using NiL.JS.Core.JIT;
 
 namespace NiL.JS.Statements
 {
@@ -89,6 +92,139 @@ namespace NiL.JS.Statements
             };
         }
 
+        internal override System.Linq.Expressions.Expression CompileToIL(Core.JIT.TreeBuildingState state)
+        {
+            var except = Expression.Parameter(typeof(object));
+            Expression impl = null;
+            if (finallyBody == null)
+            {
+                var bd = body.CompileToIL(state);
+                if (bd.Type == typeof(void))
+                    bd = Expression.Block(bd, JITHelpers.UndefinedConstant);
+                impl = Expression.TryCatch(bd, Expression.Catch(except, makeCatch(except, state)));
+            }
+            else
+            {
+                var sexcept = Expression.Parameter(typeof(object));
+                var sexceptb = Expression.Parameter(typeof(object));
+                var rethrow = Expression.Parameter(typeof(bool));
+                var finallyProc = Expression.Parameter(typeof(bool));
+                LabelTarget breakTarget = null;
+                if (state.BreakLabels.Count != 0)
+                {
+                    breakTarget = Expression.Label();
+                    state.BreakLabels.Push(breakTarget);
+                }
+                LabelTarget continueTarget = null;
+                if (state.ContinueLabels.Count != 0)
+                {
+                    continueTarget = Expression.Label();
+                    state.ContinueLabels.Push(continueTarget);
+                }
+                LabelTarget finallyBodyTarget = null;
+                var tempResult = Expression.Parameter(typeof(JSObject));
+                finallyBodyTarget = Expression.Label();
+                LabelTarget newReturnTarget = null;
+                LabelTarget oldRetirnTarget = null;
+                if (state.ReturnTarget != null)
+                {
+                    newReturnTarget = Expression.Label();
+                    oldRetirnTarget = state.ReturnTarget;
+                    state.ReturnTarget = newReturnTarget;
+                }
+                var oldNamedBreaks = new Dictionary<string, LabelTarget>(state.NamedBreakLabels);
+                var oldNamedContinies = new Dictionary<string, LabelTarget>(state.NamedContinueLabels);
+                List<KeyValuePair<string, LabelTarget>> nBreaks = new List<KeyValuePair<string, LabelTarget>>();
+                List<KeyValuePair<string, LabelTarget>> nContinues = new List<KeyValuePair<string, LabelTarget>>();
+                if (oldNamedBreaks.Count > 0)
+                    foreach (var i in oldNamedBreaks)
+                    {
+                        nBreaks.Add(new KeyValuePair<string, LabelTarget>(i.Key, Expression.Label()));
+                        state.NamedBreakLabels[i.Key] = nBreaks[nBreaks.Count - 1].Value;
+                    }
+                if (oldNamedContinies.Count > 0)
+                    foreach (var i in oldNamedContinies)
+                    {
+                        nContinues.Add(new KeyValuePair<string, LabelTarget>(i.Key, Expression.Label()));
+                        state.NamedContinueLabels[i.Key] = nContinues[nContinues.Count - 1].Value;
+                    }
+                var labelId = Expression.Parameter(typeof(int));
+                state.TryFinally++;
+                var bd = body.CompileToIL(state);
+                if (bd.Type == typeof(void))
+                    bd = Expression.Block(bd, JITHelpers.UndefinedConstant);
+                List<Expression> implList = new List<Expression>()
+                    {
+                        Expression.TryCatch(bd, Expression.Catch(except, Expression.TryCatch(
+                            makeCatch(except, state),
+                            Expression.Catch(sexcept, Expression.Block(
+                                    Expression.Assign(rethrow, JITHelpers.wrap(true)),
+                                    Expression.Assign(sexceptb, sexcept),
+                                    JITHelpers.UndefinedConstant)
+                        ))))
+                    };
+                implList.Add(Expression.Goto(finallyBodyTarget, Expression.Empty()));
+                if (breakTarget != null)
+                {
+                    implList.Add(Expression.Label(breakTarget));
+                    implList.Add(Expression.Assign(labelId, JITHelpers.wrap(0)));
+                    implList.Add(Expression.Goto(finallyBodyTarget));
+                    state.BreakLabels.Pop();
+                }
+                if (continueTarget != null)
+                {
+                    implList.Add(Expression.Label(continueTarget));
+                    implList.Add(Expression.Assign(labelId, JITHelpers.wrap(1)));
+                    implList.Add(Expression.Goto(finallyBodyTarget));
+                    state.ContinueLabels.Pop();
+                }
+                if (newReturnTarget != null)
+                {
+                    implList.Add(Expression.Label(newReturnTarget));
+                    implList.Add(Expression.Assign(tempResult, Expression.Field(JITHelpers.ContextParameter, "abortInfo")));
+                    implList.Add(Expression.Assign(labelId, JITHelpers.wrap(2)));
+                    implList.Add(Expression.Goto(finallyBodyTarget));
+                }
+                for (var i = nBreaks.Count; i-- > 0; )
+                {
+                    implList.Add(Expression.Label(nBreaks[i].Value));
+                    implList.Add(Expression.Assign(labelId, JITHelpers.wrap(i + 3)));
+                    implList.Add(Expression.Goto(finallyBodyTarget));
+                }
+                for (var i = nContinues.Count; i-- > 0; )
+                {
+                    implList.Add(Expression.Label(nContinues[i].Value));
+                    implList.Add(Expression.Assign(labelId, JITHelpers.wrap(-i - 1)));
+                    implList.Add(Expression.Goto(finallyBodyTarget));
+                }
+                state.NamedBreakLabels = oldNamedBreaks;
+                state.NamedContinueLabels = oldNamedContinies;
+                state.ReturnTarget = oldRetirnTarget;
+                state.TryFinally--;
+                implList.Add(Expression.Label(finallyBodyTarget));
+                implList.Add(finallyBody.CompileToIL(state));
+                implList.Add(Expression.IfThen(rethrow, Expression.Throw(sexceptb)));
+                if (state.BreakLabels.Count > 0)
+                    implList.Add(Expression.IfThen(Expression.Equal(labelId, JITHelpers.wrap(0)), Expression.Goto(state.BreakLabels.Peek())));
+                if (state.ContinueLabels.Count > 0)
+                    implList.Add(Expression.IfThen(Expression.Equal(labelId, JITHelpers.wrap(1)), Expression.Goto(state.ContinueLabels.Peek())));
+                if (state.ReturnTarget != null)
+                {
+                    if (state.TryFinally <= 0)
+                        implList.Add(Expression.IfThen(Expression.Equal(labelId, JITHelpers.wrap(2)), Expression.Goto(state.ReturnTarget, tempResult)));
+                    else
+                        implList.Add(Expression.IfThen(Expression.Equal(labelId, JITHelpers.wrap(2)), Expression.Block(Expression.Assign(Expression.Field(JITHelpers.ContextParameter, "abortInfo"), tempResult), Expression.Goto(state.ReturnTarget, tempResult))));
+                }
+                for (var i = nBreaks.Count; i-- > 0; )
+                    implList.Add(Expression.IfThen(Expression.Equal(labelId, JITHelpers.wrap(i + 3)), Expression.Goto(state.NamedBreakLabels[nBreaks[i].Key])));
+                for (var i = nContinues.Count; i-- > 0; )
+                    implList.Add(Expression.IfThen(Expression.Equal(labelId, JITHelpers.wrap(-i - 1)), Expression.Goto(state.NamedContinueLabels[nContinues[i].Key])));
+                impl = Expression.Block(new[] { sexceptb, rethrow, labelId, tempResult },
+                    implList);
+            }
+            return Expression.Block(new[] { except }, impl);
+        }
+
         internal override JSObject Evaluate(Context context)
         {
             Exception except = null;
@@ -99,63 +235,107 @@ namespace NiL.JS.Statements
             catch (Exception e)
             {
                 if (catchBody != null)
-                {
-#if DEV
-                    if (context.debugging)
-                        context.raiseDebugger(catchBody);
-#endif
-                    var catchContext = new Context(context, true, context.caller) { strict = context.strict, variables = context.variables };
-                    var cvar = catchContext.DefineVariable(catchVariableDesc.name);
-#if DEBUG
-                    if (!(e is JSException))
-                        System.Diagnostics.Debugger.Break();
-#endif
-                    cvar.Assign(e is JSException ? (e as JSException).Avatar : TypeProxy.Proxy(e));
-                    try
-                    {
-                        catchContext.Activate();
-                        catchBody.Evaluate(catchContext);
-                    }
-                    finally
-                    {
-                        catchContext.Deactivate();
-                    }
-                    context.abort = catchContext.abort;
-                    context.abortInfo = catchContext.abortInfo;
-                }
+                    catchHandler(context, e);
                 else except = e;
             }
             finally
             {
                 if (finallyBody != null)
-                {
-#if DEV
-                    if (context.debugging)
-                        context.raiseDebugger(finallyBody);
-#endif
-                    var abort = context.abort;
-                    var ainfo = context.abortInfo;
-                    context.abort = AbortType.None;
-                    context.abortInfo = JSObject.undefined;
-                    try
-                    {
-                        finallyBody.Evaluate(context);
-                    }
-                    finally
-                    {
-                        if (context.abort == AbortType.None)
-                        {
-                            context.abort = abort;
-                            context.abortInfo = ainfo;
-                        }
-                        else
-                            except = null;
-                    }
-                }
+                    if (finallyHandler(context))
+                        except = null;
             }
             if (except != null)
                 throw except;
             return null;
+        }
+
+        private bool finallyHandler(Context context)
+        {
+#if DEV
+            if (context.debugging)
+                context.raiseDebugger(finallyBody);
+#endif
+            var abort = context.abort;
+            var ainfo = context.abortInfo;
+            context.abort = AbortType.None;
+            context.abortInfo = JSObject.undefined;
+            finallyBody.Evaluate(context);
+            if (context.abort == AbortType.None)
+            {
+                context.abort = abort;
+                context.abortInfo = ainfo;
+            }
+            else
+                return true;
+            return false;
+        }
+
+        private Expression makeCatch(ParameterExpression except, Core.JIT.TreeBuildingState state)
+        {
+            if (catchBody == null)
+                return JITHelpers.UndefinedConstant;
+            var cb = catchBody.CompileToIL(state);
+            if (cb.Type == typeof(void))
+                cb = Expression.Block(cb, JITHelpers.UndefinedConstant);
+            var catchContext = Expression.Parameter(typeof(Context));
+            var tempContainer = Expression.Parameter(typeof(Context));
+            return Expression.Block(new[] { catchContext, tempContainer }
+                , Expression.Assign(catchContext, Expression.Call(new Func<Context, Context>(createCatchContext).Method, JITHelpers.ContextParameter))
+                , Expression.Call(JITHelpers.methodof(prepareCatchVar), JITHelpers.wrap(catchVariableDesc.name), except, catchContext)
+                , Expression.TryFinally(
+                    Expression.Block(
+                        Expression.Assign(tempContainer, JITHelpers.ContextParameter)
+                        , Expression.Assign(JITHelpers.ContextParameter, catchContext)
+                        , Expression.Call(catchContext, typeof(WithContext).GetMethod("Activate", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance))
+                        , cb
+                    )
+                    , Expression.Block(
+                        Expression.Assign(JITHelpers.ContextParameter, tempContainer)
+                        , Expression.Call(catchContext, typeof(WithContext).GetMethod("Deactivate", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance))
+                        , Expression.Assign(Expression.Field(JITHelpers.ContextParameter, "abort"), Expression.Field(catchContext, "abort"))
+                        , Expression.Assign(Expression.Field(JITHelpers.ContextParameter, "abortInfo"), Expression.Field(catchContext, "abortInfo"))
+                    ))
+                );
+        }
+
+        private void catchHandler(Context context, Exception e)
+        {
+
+#if DEV
+            if (context.debugging)
+                context.raiseDebugger(catchBody);
+#endif
+            var catchContext = createCatchContext(context);
+#if DEBUG
+            if (!(e is JSException) && !(e is RuntimeWrappedException))
+                System.Diagnostics.Debugger.Break();
+#endif
+            prepareCatchVar(catchVariableDesc.name, e, catchContext);
+            try
+            {
+                catchContext.Activate();
+                catchBody.Evaluate(catchContext);
+            }
+            finally
+            {
+                catchContext.Deactivate();
+            }
+            context.abort = catchContext.abort;
+            context.abortInfo = catchContext.abortInfo;
+        }
+
+        private static void prepareCatchVar(string varName, object e, Context catchContext)
+        {
+            var cvar = catchContext.DefineVariable(varName);
+            if (e is RuntimeWrappedException)
+                cvar.Assign((e as RuntimeWrappedException).WrappedException as JSObject);
+            else
+                cvar.Assign(e is JSException ? (e as JSException).Avatar : TypeProxy.Proxy(e));
+        }
+
+        private static Context createCatchContext(Context context)
+        {
+            return new Context(context, true, context.caller) { strict = context.strict, variables = context.variables };
         }
 
         internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)

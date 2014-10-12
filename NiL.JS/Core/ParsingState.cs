@@ -17,6 +17,8 @@ namespace NiL.JS.Core
         public readonly string SourceCode;
         public bool AllowStrict;
         public readonly Stack<bool> containsWith;
+        public int breaksCount;
+        public int continiesCount;
 
         public ParsingState(string code, string sourceCode)
         {

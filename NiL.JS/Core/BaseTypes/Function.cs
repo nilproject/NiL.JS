@@ -601,7 +601,6 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         #region Runtime
-        private bool compilationInit;
         private bool containsEval;
         private bool containsArguments;
         private bool isRecursive;
@@ -681,9 +680,6 @@ namespace NiL.JS.Core.BaseTypes
             set { if (creator.body.strict || _caller == propertiesDummySM) throw new JSException(new TypeError("Property caller not allowed in strict mode.")); }
         }
 
-#if !NET35
-        private Func<Context, JSObject> compiledScript;
-#endif
         private void checkUsings()
         {
             for (var i = 0; i < creator.body.variables.Length; i++)
@@ -827,33 +823,14 @@ namespace NiL.JS.Core.BaseTypes
                 internalContext.Activate();
                 if (creator.type == FunctionType.Generator)
                     Thread.CurrentThread.Suspend();
-                JSObject ai;
+                JSObject ai = null;
                 initVariables(body, internalContext);
                 do
                 {
                     internalContext.abort = AbortType.None;
                     initParameters(this._arguments, body, intricate, internalContext);
-#if !NET35
-                    if (compiledScript != null)
-                        ai = compiledScript(internalContext);
-                    else
-#endif
-                    {
-#if !NET35
-                        var starttime = 0;
-                        if (creator.type != FunctionType.Generator && !compilationInit && context.UseJit)
-                            starttime = Environment.TickCount;
-#endif
-                        body.Evaluate(internalContext);
-                        ai = internalContext.abortInfo;
-#if !NET35
-                        if (creator.type != FunctionType.Generator && !compilationInit && context.UseJit && Environment.TickCount - starttime > 100)
-                        {
-                            compilationInit = true;
-                            System.Threading.ThreadPool.QueueUserWorkItem((o) => { compiledScript = JITHelpers.compile(body, true); });
-                        }
-#endif
-                    }
+                    body.Evaluate(internalContext);
+                    ai = internalContext.abortInfo;
                     intricate = true;
                 } while (internalContext.abort == AbortType.TailRecursion);
                 if (ai == null)
@@ -1051,7 +1028,7 @@ namespace NiL.JS.Core.BaseTypes
                     res = "function";
                     break;
             }
-            res+= " " + name + "(";
+            res += " " + name + "(";
             if (creator != null && creator.arguments != null)
                 for (int i = 0; i < creator.arguments.Length; )
                     res += creator.arguments[i].Name + (++i < creator.arguments.Length ? "," : "");

@@ -9,15 +9,16 @@ namespace NiL.JS.Core.JIT
     {
         public readonly Stack<LabelTarget> BreakLabels;
         public readonly Stack<LabelTarget> ContinueLabels;
-        public readonly Dictionary<string, LabelTarget> NamedBreakLabels;
-        public readonly Dictionary<string, LabelTarget> NamedContinueLabels;
-        public readonly bool AllowReturn;
+        public Dictionary<string, LabelTarget> NamedBreakLabels;
+        public Dictionary<string, LabelTarget> NamedContinueLabels;
+        public LabelTarget ReturnTarget;
+        public int TryFinally;
+        public LabelExpression ReturnLabel { get { return Expression.Label(ReturnTarget, Expression.Constant(JSObject.notExists)); } }
 
-        public TreeBuildingState(bool allowReturn)
+        public TreeBuildingState()
         {
             BreakLabels = new Stack<LabelTarget>();
             ContinueLabels = new Stack<LabelTarget>();
-            AllowReturn = allowReturn;
             NamedBreakLabels = new Dictionary<string, LabelTarget>();
             NamedContinueLabels = new Dictionary<string, LabelTarget>();
         }

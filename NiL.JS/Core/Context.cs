@@ -132,7 +132,7 @@ namespace NiL.JS.Core
         /// </remarks>
         /// </summary>
         internal JSObject tempContainer;
-        internal readonly Context prototype;
+        internal readonly Context parent;
         internal IDictionary<string, JSObject> fields;
         internal AbortType abort;
         internal JSObject objectSource;
@@ -146,10 +146,10 @@ namespace NiL.JS.Core
             get
             {
                 var res = this;
-                if (res.prototype != null && res.prototype != globalContext)
+                if (res.parent != null && res.parent != globalContext)
                     do
-                        res = res.prototype;
-                    while (res.prototype != null && res.prototype != globalContext);
+                        res = res.parent;
+                    while (res.parent != null && res.parent != globalContext);
                 return res;
             }
         }
@@ -164,14 +164,14 @@ namespace NiL.JS.Core
                         return JSObject.undefined;
                     for (; c.thisBind == null; )
                     {
-                        if (c.prototype == globalContext)
+                        if (c.parent == globalContext)
                         {
                             thisBind = new ThisBind(c);
                             c.thisBind = thisBind;
                             break;
                         }
                         else
-                            c = c.prototype;
+                            c = c.parent;
                     }
                     thisBind = c.thisBind;
                 }
@@ -188,15 +188,6 @@ namespace NiL.JS.Core
         /// </summary>
         public event DebuggerCallback DebuggerCallback;
 
-#if !NET35
-        public virtual bool UseJit
-        {
-            get
-            {
-                return false;
-            }
-        }
-#endif
         /// <summary>
         /// Указывает, присутствует ли контекст в каскаде выполняющихся контекстов непосредственно
         /// или в качестве одного из прототипов
@@ -212,12 +203,12 @@ namespace NiL.JS.Core
                 {
                     if (ccontext == this)
                         return true;
-                    var pc = ccontext.prototype;
+                    var pc = ccontext.parent;
                     while (pc != null)
                     {
                         if (pc == this)
                             return true;
-                        pc = pc.prototype;
+                        pc = pc.parent;
                     }
                     ccontext = ccontext.oldContext;
                 } while (ccontext != null);
@@ -245,7 +236,7 @@ namespace NiL.JS.Core
             if (prototype != null)
             {
                 tempContainer = prototype.tempContainer;
-                this.prototype = prototype;
+                this.parent = prototype;
                 this.thisBind = prototype.thisBind;
 #if DEV
                 this.debugging = prototype.debugging;
@@ -375,9 +366,9 @@ namespace NiL.JS.Core
                 && name[3] == 's')
                 return ThisBind;
             JSObject res = null;
-            bool fromProto = fields == null || (!fields.TryGetValue(name, out res) && (prototype != null));
+            bool fromProto = fields == null || (!fields.TryGetValue(name, out res) && (parent != null));
             if (fromProto)
-                res = prototype.GetVariable(name, create);
+                res = parent.GetVariable(name, create);
             if (res == null) // значит вышли из глобального контекста
             {
                 if (this == globalContext)
@@ -395,7 +386,7 @@ namespace NiL.JS.Core
                 }
             }
             else if (fromProto)
-                objectSource = prototype.objectSource;
+                objectSource = parent.objectSource;
             else
             {
                 if (create && (res.attributes & (JSObjectAttributesInternal.SystemObject | JSObjectAttributesInternal.ReadOnly)) == JSObjectAttributesInternal.SystemObject)
@@ -414,7 +405,7 @@ namespace NiL.JS.Core
                     p.DebuggerCallback(this, new DebuggerCallbackEventArgs() { Statement = nextStatement });
                     return;
                 }
-                p = p.prototype;
+                p = p.parent;
             }
             System.Diagnostics.Debugger.Break();
         }

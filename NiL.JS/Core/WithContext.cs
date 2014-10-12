@@ -24,33 +24,21 @@ namespace NiL.JS.Core
 
         public override JSObject DefineVariable(string name)
         {
-            return prototype.DefineVariable(name);
+            return parent.DefineVariable(name);
         }
 
         internal protected override JSObject GetVariable(string name, bool create)
         {
-            thisBind = prototype.thisBind;
+            thisBind = parent.thisBind;
             var res = @object.GetMember(name, create, false);
             if (res.valueType < JSObjectType.Undefined)
             {
-                res = prototype.GetVariable(name, create);
-                objectSource = prototype.objectSource;
+                res = parent.GetVariable(name, create);
+                objectSource = parent.objectSource;
             }
             else
                 objectSource = @object;
             return res;
         }
-
-#if !NET35
-        public override bool UseJit
-        {
-            get
-            {
-                // нет смысла компилировать что-то вложенное в with.
-                // выполнение with проходит через Evalueate и выходит из скомпилированного кода
-                return false;
-            }
-        }
-#endif
     }
 }

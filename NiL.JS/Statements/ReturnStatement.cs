@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using NiL.JS.Core;
 using NiL.JS.Core.BaseTypes;
 using NiL.JS.Core.JIT;
-using NiL.JS.Expressions;
 
 namespace NiL.JS.Statements
 {
@@ -12,9 +12,12 @@ namespace NiL.JS.Statements
     {
 #if !NET35
 
-        internal override System.Linq.Expressions.Expression BuildTree(NiL.JS.Core.JIT.TreeBuildingState state)
+        internal override System.Linq.Expressions.Expression CompileToIL(NiL.JS.Core.JIT.TreeBuildingState state)
         {
-            return System.Linq.Expressions.Expression.Return(JITHelpers.ReturnTarget, body != null ? body.BuildTree(state) : JITHelpers.UndefinedConstant);
+            if (state.TryFinally <= 0)
+                return Expression.Goto(state.ReturnTarget, body != null ? body.CompileToIL(state) : JITHelpers.NotExistsConstant);
+            else
+                return Expression.Goto(state.ReturnTarget, Expression.Assign(Expression.Field(JITHelpers.ContextParameter, "abortInfo"), body != null ? body.CompileToIL(state) : JITHelpers.NotExistsConstant));
         }
 
 #endif
@@ -74,16 +77,16 @@ namespace NiL.JS.Statements
         internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
             Parser.Optimize(ref body, 2, variables, strict);
-            if (body is Ternary)
+            if (body is NiL.JS.Expressions.Ternary)
             {
-                var bat = body as Ternary;
+                var bat = body as NiL.JS.Expressions.Ternary;
                 var bts = bat.Threads;
                 _this = new IfElseStatement(bat.FirstOperand, new ReturnStatement(bts[0]), new ReturnStatement(bts[1]));
                 return true;
             }
-            if (body is Call)
+            if (body is NiL.JS.Expressions.Call)
             {
-                (body as Call).allowTCO = true;
+                (body as NiL.JS.Expressions.Call).allowTCO = true;
             }
             return false;
         }

@@ -22,7 +22,7 @@ namespace NiL.JS.Statements
 
 #if !NET35
 
-        internal override System.Linq.Expressions.Expression BuildTree(NiL.JS.Core.JIT.TreeBuildingState state)
+        internal override System.Linq.Expressions.Expression CompileToIL(NiL.JS.Core.JIT.TreeBuildingState state)
         {
             return JITHelpers.UndefinedConstant;
         }

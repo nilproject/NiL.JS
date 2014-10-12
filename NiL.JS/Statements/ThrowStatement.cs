@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using NiL.JS.Core;
+using NiL.JS.Core.JIT;
 
 namespace NiL.JS.Statements
 {
@@ -41,6 +43,11 @@ namespace NiL.JS.Statements
                     Length = index - pos
                 }
             };
+        }
+
+        internal override System.Linq.Expressions.Expression CompileToIL(Core.JIT.TreeBuildingState state)
+        {
+            return System.Linq.Expressions.Expression.Throw(Expression.New(typeof(JSException).GetConstructor(new[] { typeof(JSObject) }), body.CompileToIL(state)));
         }
 
         internal override JSObject Evaluate(Context context)

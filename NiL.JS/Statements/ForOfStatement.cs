@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using NiL.JS.Core;
+using NiL.JS.Core.JIT;
 
 namespace NiL.JS.Statements
 {
@@ -81,6 +83,70 @@ namespace NiL.JS.Statements
                 Statement = res
             };
         }
+
+#if !NET35
+
+        internal override System.Linq.Expressions.Expression CompileToIL(Core.JIT.TreeBuildingState state)
+        {
+            var continueTarget = System.Linq.Expressions.Expression.Label("continue" + (DateTime.Now.Ticks % 10000));
+            var nextProto = Expression.Label();
+            var breakTarget = System.Linq.Expressions.Expression.Label("break" + (DateTime.Now.Ticks % 10000));
+            for (var i = 0; i < labels.Count; i++)
+                state.NamedContinueLabels[labels[i]] = continueTarget;
+            state.BreakLabels.Push(breakTarget);
+            state.ContinueLabels.Push(continueTarget);
+            try
+            {
+                var val = Expression.Parameter(typeof(JSObject));
+                var @enum = Expression.Parameter(typeof(NiL.JS.Statements.ForInStatement._ForcedEnumerator<string>));
+                var source = Expression.Parameter(typeof(JSObject));
+                var res = Expression.Block(new[] { val, @enum, source },
+                    Expression.Assign(source, this.source.CompileToIL(state)),
+                    Expression.Assign(val, Expression.Call(JITHelpers.ContextParameter, typeof(Context).GetMethod("GetVariable", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic, null, new[] { typeof(string), typeof(bool) }, null), JITHelpers.wrap(variable.ToString()), JITHelpers.wrap(true))),
+                    Expression.Loop(
+                            Expression.IfThenElse(
+                                    Expression.AndAlso(Expression.ReferenceNotEqual(source, JITHelpers.wrap(null)),
+                                        Expression.AndAlso(Expression.Property(source, "isDefinded"),
+                                                        Expression.OrElse(Expression.LessThan(Expression.Convert(Expression.Field(source, "valueType"), typeof(int)), JITHelpers.wrap((int)JSObjectType.Object)),
+                                                                       Expression.ReferenceNotEqual(Expression.Field(source, "oValue"), JITHelpers.wrap(null))))),
+                                      Expression.Block(
+                                                Expression.Assign(@enum, Expression.Call(JITHelpers.methodof(new Func<JSObject, object>(NiL.JS.Statements.ForInStatement._ForcedEnumerator<string>.create)), source))
+                                                , Expression.Loop(
+                                                    Expression.IfThenElse(Expression.Call(@enum, typeof(NiL.JS.Statements.ForInStatement._ForcedEnumerator<string>).GetMethod("MoveNext")), Expression.Block(
+                                                        Expression.Assign(Expression.Field(val, "valueType"), JITHelpers.wrap(JSObjectType.String))
+                                                        , Expression.Assign(Expression.Field(val, "oValue"), Expression.Property(@enum, "Current"))
+                                                        , Expression.Call(val, typeof(JSObject).GetMethod("Assign"), Expression.Call(source, typeof(JSObject).GetMethod("GetMember", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance, null, new Type[] { typeof(JSObject), typeof(bool), typeof(bool) }, null), val, JITHelpers.wrap(false), JITHelpers.wrap(false)))
+                                                        , this.body.CompileToIL(state)
+                                                        , Expression.Label(continueTarget)
+                                                    ), Expression.Goto(nextProto)))
+                                                , Expression.Label(nextProto)
+                                                , Expression.IfThenElse(Expression.ReferenceNotEqual(Expression.Field(source, "__proto__"), JITHelpers.wrap(null)),
+                                                    Expression.Assign(source, Expression.Field(source, "__proto__"))
+                                                , Expression.Block(
+                                                    Expression.Assign(Expression.Field(val, "valueType"), JITHelpers.wrap(JSObjectType.String))
+                                                    , Expression.Assign(Expression.Field(val, "oValue"), JITHelpers.wrap("__proto__"))
+                                                    , Expression.Assign(source, Expression.Call(source, typeof(JSObject).GetMethod("GetMember", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance, null, new Type[] { typeof(JSObject), typeof(bool), typeof(bool) }, null), val, JITHelpers.wrap(false), JITHelpers.wrap(false)))
+                                                ))
+                                            )
+                                      , Expression.Goto(breakTarget)))
+                    , Expression.Label(breakTarget)
+                    );
+                return res;
+            }
+            finally
+            {
+                if (state.BreakLabels.Peek() != breakTarget)
+                    throw new InvalidOperationException();
+                state.BreakLabels.Pop();
+                if (state.ContinueLabels.Peek() != continueTarget)
+                    throw new InvalidOperationException();
+                state.ContinueLabels.Pop();
+                for (var i = 0; i < labels.Count; i++)
+                    state.NamedContinueLabels.Remove(labels[i]);
+            }
+        }
+
+#endif
 
         internal override JSObject Evaluate(Context context)
         {

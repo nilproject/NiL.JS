@@ -11,6 +11,7 @@ namespace NiL.JS.Statements
     [Serializable]
     public sealed class DoWhileStatement : CodeNode
     {
+        private bool allowRemove;
         private CodeNode condition;
         private CodeNode body;
         private string[] labels;
@@ -36,6 +37,8 @@ namespace NiL.JS.Statements
             while (char.IsWhiteSpace(state.Code[i])) i++;
             state.AllowBreak.Push(true);
             state.AllowContinue.Push(true);
+            int ccs = state.continiesCount;
+            int cbs = state.breaksCount;
             var body = Parser.Parse(state, ref i, 4);
             if (body is FunctionStatement && state.strict.Peek())
                 throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
@@ -64,6 +67,7 @@ namespace NiL.JS.Statements
                 IsParsed = true,
                 Statement = new DoWhileStatement()
                 {
+                    allowRemove = ccs == state.continiesCount && cbs == state.breaksCount,
                     body = body,
                     condition = condition,
                     labels = state.Labels.GetRange(state.Labels.Count - labelsCount, labelsCount).ToArray(),
@@ -75,7 +79,7 @@ namespace NiL.JS.Statements
 
 #if !NET35
 
-        internal override System.Linq.Expressions.Expression BuildTree(NiL.JS.Core.JIT.TreeBuildingState state)
+        internal override System.Linq.Expressions.Expression CompileToIL(NiL.JS.Core.JIT.TreeBuildingState state)
         {
             var continueTarget = Expression.Label("continue" + (DateTime.Now.Ticks % 1000));
             var breakTarget = Expression.Label("break" + (DateTime.Now.Ticks % 1000));
@@ -87,9 +91,9 @@ namespace NiL.JS.Statements
             {
                 return System.Linq.Expressions.Expression.Loop(
                     System.Linq.Expressions.Expression.Block(
-                        body.BuildTree(state),
+                        body.CompileToIL(state),
                         System.Linq.Expressions.Expression.Label(continueTarget),
-                        System.Linq.Expressions.Expression.IfThen(System.Linq.Expressions.Expression.Not(System.Linq.Expressions.Expression.Call(null, JITHelpers.JSObjectToBooleanMethod, condition.BuildTree(state))),
+                        System.Linq.Expressions.Expression.IfThen(System.Linq.Expressions.Expression.Not(System.Linq.Expressions.Expression.Call(null, JITHelpers.JSObjectToBooleanMethod, condition.CompileToIL(state))),
                                                                   System.Linq.Expressions.Expression.Goto(breakTarget))
                     ),
                     breakTarget
@@ -159,7 +163,7 @@ namespace NiL.JS.Statements
             Parser.Optimize(ref condition, 2, variables, strict);
             try
             {
-                if (condition is ImmidateValueStatement || (condition as Expressions.Expression).IsContextIndependent)
+                if (allowRemove && (condition is ImmidateValueStatement || (condition as Expressions.Expression).IsContextIndependent))
                 {
                     if ((bool)condition.Evaluate(null))
                         _this = new InfinityLoop(body, labels);

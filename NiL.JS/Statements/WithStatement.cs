@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using NiL.JS.Core;
+using NiL.JS.Core.JIT;
 
 namespace NiL.JS.Statements
 {
@@ -43,6 +45,33 @@ namespace NiL.JS.Statements
             };
         }
 
+        internal override System.Linq.Expressions.Expression CompileToIL(Core.JIT.TreeBuildingState state)
+        {
+            var intContext = Expression.Parameter(typeof(WithContext));
+            var tempContainer = Expression.Parameter(typeof(Context));
+            return Expression.Block(new[] { intContext, tempContainer }
+                , Expression.Assign(intContext, Expression.Call(JITHelpers.methodof(initContext), JITHelpers.ContextParameter, obj.CompileToIL(state)))
+                , Expression.TryFinally(
+                    Expression.Block(
+                        Expression.Assign(tempContainer, JITHelpers.ContextParameter)
+                        , Expression.Assign(JITHelpers.ContextParameter, intContext)
+                        , Expression.Call(intContext, typeof(WithContext).GetMethod("Activate", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance))
+                        , body.CompileToIL(state)
+                    )
+                    , Expression.Block(
+                        Expression.Assign(JITHelpers.ContextParameter, tempContainer)
+                        , Expression.Call(intContext, typeof(WithContext).GetMethod("Deactivate", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance))
+                        , Expression.Assign(Expression.Field(JITHelpers.ContextParameter, "abort"), Expression.Field(intContext, "abort"))
+                        , Expression.Assign(Expression.Field(JITHelpers.ContextParameter, "abortInfo"), Expression.Field(intContext, "abortInfo"))
+                    )
+                ));
+        }
+
+        private static WithContext initContext(Context parent, JSObject obj)
+        {
+            return new WithContext(obj, parent);
+        }
+
         internal override JSObject Evaluate(Context context)
         {
 #if DEV
@@ -60,12 +89,12 @@ namespace NiL.JS.Statements
                 body.Evaluate(intcontext);
                 context.abort = intcontext.abort;
                 context.abortInfo = intcontext.abortInfo;
-                return JSObject.undefined;
             }
             finally
             {
                 intcontext.Deactivate();
             }
+            return JSObject.undefined;
         }
 
         protected override CodeNode[] getChildsImpl()

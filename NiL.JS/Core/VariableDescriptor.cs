@@ -49,7 +49,7 @@ namespace NiL.JS.Core
                     cacheContext = null;
                     break;
                 }
-                context = context.prototype;
+                context = context.parent;
                 depth--;
             }
             if (context != cacheContext)

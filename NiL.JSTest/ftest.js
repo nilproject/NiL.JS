@@ -1,8 +1,3 @@
-﻿$ERROR = console.log;
-$FAIL = console.log;
-console.log(function () {
-    var gen = (function* (iterations) { while(iterations-->0) yield iterations; });
-        for(var g = gen(100); !g.next().done;)
-            console.log("1234");
-        
-}());
+﻿__evaluated = eval("do {__in__do__before__break=1; if(true) break; __in__do__after__break=2;} while(0)");
+console.log(__evaluated);
+console.log(__in__do__before__break);

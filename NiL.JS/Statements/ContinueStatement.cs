@@ -30,6 +30,7 @@ namespace NiL.JS.Statements
             }
             int pos = index;
             index = i;
+            state.continiesCount++;
             return new ParseResult()
             {
                 IsParsed = true,
@@ -44,11 +45,11 @@ namespace NiL.JS.Statements
 
 #if !NET35
 
-        internal override System.Linq.Expressions.Expression BuildTree(Core.JIT.TreeBuildingState state)
+        internal override System.Linq.Expressions.Expression CompileToIL(Core.JIT.TreeBuildingState state)
         {
             if (label != null)
-                return Expression.Continue(state.NamedContinueLabels[label.ToString()]);
-            return Expression.Continue(state.ContinueLabels.Peek());
+                return Expression.Goto(state.NamedContinueLabels[label.ToString()]);
+            return Expression.Goto(state.ContinueLabels.Peek());
         }
 
 #endif

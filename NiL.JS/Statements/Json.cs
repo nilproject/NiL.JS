@@ -18,7 +18,7 @@ namespace NiL.JS.Statements
 
 #if !NET35
 
-        internal override System.Linq.Expressions.Expression BuildTree(NiL.JS.Core.JIT.TreeBuildingState state)
+        internal override System.Linq.Expressions.Expression CompileToIL(NiL.JS.Core.JIT.TreeBuildingState state)
         {
             return System.Linq.Expressions.Expression.Call(
                        System.Linq.Expressions.Expression.Constant(this),
@@ -182,7 +182,10 @@ namespace NiL.JS.Statements
                 {
                     val = val.CloneImpl();
                     val.attributes = JSObjectAttributesInternal.None;
-                    res.fields[this.fields[i]] = val;
+                    if (this.fields[i] == "__proto__")
+                        res.__proto__ = val.CloneImpl();
+                    else
+                        res.fields[this.fields[i]] = val;
                 }
             }
             return res;
