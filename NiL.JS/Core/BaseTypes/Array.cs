@@ -226,6 +226,8 @@ namespace NiL.JS.Core.BaseTypes
 
         internal bool setLength(long nlen)
         {
+            if (_length == nlen)
+                return true;
             if (nlen < 0)
                 throw new JSException(new RangeError("Invalid array length"));
             if (_length > nlen)
@@ -245,6 +247,11 @@ namespace NiL.JS.Core.BaseTypes
             }
             foreach (var i in data.NotLess(nlen))
                 data.Remove(i.Key);
+            //if (_length < nlen)
+            //{
+            //    for (var i = _length; i < nlen; i++)
+            //        data[i] = __proto__[i.ToString()];
+            //}
             _length = nlen;
             return true;
         }
@@ -426,9 +433,10 @@ namespace NiL.JS.Core.BaseTypes
             ao[0] = undefined;
             ao[1] = undefined;
             ao[2] = this;
-            var res = new Array();
+            var res = new Array(_length);
             bool isArray = this.GetType() == typeof(Array);
             var context = Context.CurrentContext;
+            int rindex = 0;
             if (isArray)
             {
                 foreach (var element in data)
@@ -439,7 +447,7 @@ namespace NiL.JS.Core.BaseTypes
                         ao[0].Assign(element.Value);
                     ao[1].Assign(context.wrap(element.Key));
                     res._length = element.Key;
-                    res.Add(f.Invoke(tb, ao).CloneImpl());
+                    res.data[rindex++] = f.Invoke(tb, ao).CloneImpl();
                 }
             }
             else
@@ -452,7 +460,7 @@ namespace NiL.JS.Core.BaseTypes
                         continue;
                     ao[0] = v;
                     ao[1].Assign(context.wrap(i));
-                    res.Add(f.Invoke(tb, ao).CloneImpl());
+                    res.data[rindex++] = f.Invoke(tb, ao).CloneImpl();
                 }
             }
             return res;
@@ -861,13 +869,21 @@ namespace NiL.JS.Core.BaseTypes
                     pos0 = 0;
                 if (pos1 < 0)
                     pos1 = 0;
-                pos0 = System.Math.Min(pos0, _length);
+                pos0 = (uint)System.Math.Min(pos0, _length);
                 pos1 += pos0;
-                pos1 = System.Math.Min(pos1, _length);
+                pos1 = (uint)System.Math.Min(pos1, _length);
                 var res = new Array();
                 List<long> keysToRemove = new List<long>();
+                long prewKey = -1;
                 foreach (var node in data.Nodes)
                 {
+                    if (prewKey == -1)
+                        prewKey = node.key;
+                    if (node.key - prewKey > 1 && node.key < pos1)
+                    {
+                        for (var i = prewKey + 1; i < node.key; i++)
+                            res.data[i] = __proto__[i.ToString()].CloneImpl();
+                    }
                     if (node.key >= pos1)
                     {
                         node.key -= pos1 - pos0 - args.length + 2;
@@ -877,6 +893,12 @@ namespace NiL.JS.Core.BaseTypes
                         res.Add(node.value.CloneImpl());
                         keysToRemove.Add(node.key);
                     }
+                    prewKey = node.key;
+                }
+                if (prewKey == -1)
+                {
+                    for (var i = 0; i < pos1; i++)
+                        res.Add(__proto__[i.ToString()].CloneImpl());
                 }
                 for (var i = keysToRemove.Count; i-- > 0; )
                     data.Remove(keysToRemove[i]);
@@ -888,7 +910,7 @@ namespace NiL.JS.Core.BaseTypes
             else // кто-то отправил объект с полем length
             {
                 var _length = (long)(uint)Tools.JSObjectToInt64(this["length"]);
-                long pos0 = (long)System.Math.Min(Tools.JSObjectToDouble(args[0]), _length);
+                var pos0 = (long)System.Math.Min(Tools.JSObjectToDouble(args[0]), _length);
                 long pos1 = 0;
                 if (args.Length > 1)
                 {
@@ -905,29 +927,43 @@ namespace NiL.JS.Core.BaseTypes
                     pos0 = 0;
                 if (pos1 < 0)
                     pos1 = 0;
-                pos0 = System.Math.Min(pos0, _length);
+                pos0 = (uint)System.Math.Min(pos0, _length);
                 pos1 += pos0;
-                pos1 = System.Math.Min(pos1, _length);
+                pos1 = (uint)System.Math.Min(pos1, _length);
                 var res = new Array();
                 List<string> keysToRemove = new List<string>();
-                List<KeyValuePair<long, JSObject>> itemsToReplace = new List<KeyValuePair<long, JSObject>>();
+                List<KeyValuePair<uint, JSObject>> itemsToReplace = new List<KeyValuePair<uint, JSObject>>();
+                long prewKey = -1;
                 foreach (var keyS in this)
                 {
                     var pindex = 0;
-                    var key = 0.0;
-                    if (Tools.ParseNumber(keyS, ref pindex, out key) && (pindex == keyS.Length))
-                    {                        
-                        if (key >= pos1)
+                    var dkey = 0.0;
+                    if (Tools.ParseNumber(keyS, ref pindex, out dkey) && (pindex == keyS.Length))
+                    {
+                        if (prewKey == -1)
+                            prewKey = (uint)dkey;
+                        if (dkey - prewKey > 1 && dkey < pos1)
+                        {
+                            for (var i = prewKey + 1; i < dkey; i++)
+                                res.data[i] = __proto__[i.ToString()].CloneImpl();
+                        }
+                        if (dkey >= pos1)
                         {
                             keysToRemove.Add(keyS);
-                            itemsToReplace.Add(new KeyValuePair<long, JSObject>((long)key, this[keyS].CloneImpl()));
+                            itemsToReplace.Add(new KeyValuePair<uint, JSObject>((uint)dkey, this[keyS].CloneImpl()));
                         }
-                        else if (pos0 <= key)
+                        else if (pos0 <= dkey)
                         {
                             res.Add(this[keyS].CloneImpl());
                             keysToRemove.Add(keyS);
                         }
+                        prewKey = (long)dkey;
                     }
+                }
+                if (prewKey == -1)
+                {
+                    for (var i = 0; i < pos1; i++)
+                        res.Add(__proto__[i.ToString()].CloneImpl());
                 }
                 for (var i = keysToRemove.Count; i-- > 0; )
                     this[keysToRemove[i]].valueType = JSObjectType.NotExists;
@@ -1203,7 +1239,7 @@ namespace NiL.JS.Core.BaseTypes
                     }
                 case JSObjectType.Double:
                     {
-                        isIndex = (index = (uint)tname.dValue) == tname.dValue;
+                        isIndex = (index = (uint)tname.dValue) == tname.dValue && index < uint.MaxValue;
                         break;
                     }
                 case JSObjectType.String:
@@ -1215,7 +1251,8 @@ namespace NiL.JS.Core.BaseTypes
                             int si = 0;
                             if (Tools.ParseNumber(tname.oValue.ToString(), ref si, out dindex)
                                 && (si == tname.oValue.ToString().Length)
-                                && (index = (uint)dindex) == dindex)
+                                && (index = (uint)dindex) == dindex
+                                && index < uint.MaxValue)
                             {
                                 isIndex = true;
                             }
@@ -1256,7 +1293,7 @@ namespace NiL.JS.Core.BaseTypes
                 else
                 {
                     JSObject element = null;
-                    bool exists = data.TryGetValue(index, out element);
+                    bool exists = data.TryGetValue(index, out element) && (element ?? (element = notExists)).isExist;
                     if (!exists)
                     {
                         if (forWrite)
@@ -1282,7 +1319,7 @@ namespace NiL.JS.Core.BaseTypes
                     }
                     else
                     {
-                        var t = element ?? notExists;
+                        var t = element;
                         if (forWrite && (t.attributes & (JSObjectAttributesInternal.SystemObject | JSObjectAttributesInternal.ReadOnly)) == JSObjectAttributesInternal.SystemObject)
                             data[index] = t = t.CloneImpl();
                         return t;

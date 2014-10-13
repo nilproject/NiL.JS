@@ -211,12 +211,28 @@ namespace NiL.JS.Statements
         {
             for (int i = 0; i < initializators.Length; i++)
                 Parser.Optimize(ref initializators[i], 2, variables, strict);
-            this.variables = new VariableDescriptor[names.Length];
-            for (var i = 0; i < names.Length; i++)
+            if (names.Length == 1 && depth < 2 && depth >= 0)
             {
-                this.variables[i] = variables[names[i]];
-                this.variables[i].Defined = true;
-                this.variables[i].readOnly = isConst;
+                if (initializators[0] is GetVariableStatement)
+                    _this = null;
+                else
+                    _this = initializators[0];
+                for (var i = 0; i < names.Length; i++)
+                {
+                    var t = variables[names[i]];
+                    t.Defined = true;
+                    t.readOnly = isConst;
+                }
+            }
+            else
+            {
+                this.variables = new VariableDescriptor[names.Length];
+                for (var i = 0; i < names.Length; i++)
+                {
+                    this.variables[i] = variables[names[i]];
+                    this.variables[i].Defined = true;
+                    this.variables[i].readOnly = isConst;
+                }
             }
             return false;
         }

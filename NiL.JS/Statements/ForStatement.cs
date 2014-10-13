@@ -149,44 +149,45 @@ namespace NiL.JS.Statements
             if (context.debugging)
                 context.raiseDebugger(condition);
 #endif
-            while (condition == null || (bool)condition.Evaluate(context))
-            {
-#if DEV
-                if (context.debugging && !(body is CodeBlock))
-                    context.raiseDebugger(body);
-#endif
-                if (body != null)
+            if (condition == null || (bool)condition.Evaluate(context))
+                do
                 {
-                    res = body.Evaluate(context) ?? res;
-                    if (context.abort != AbortType.None)
+#if DEV
+                    if (context.debugging && !(body is CodeBlock))
+                        context.raiseDebugger(body);
+#endif
+                    if (body != null)
                     {
-                        var me = context.abortInfo == null || System.Array.IndexOf(labels, context.abortInfo.oValue as string) != -1;
-                        var _break = (context.abort > AbortType.Continue) || !me;
-                        if (context.abort < AbortType.Return && me)
+                        res = body.Evaluate(context) ?? res;
+                        if (context.abort != AbortType.None)
                         {
-                            context.abort = AbortType.None;
-                            context.abortInfo = null;
+                            var me = context.abortInfo == null || System.Array.IndexOf(labels, context.abortInfo.oValue as string) != -1;
+                            var _break = (context.abort > AbortType.Continue) || !me;
+                            if (context.abort < AbortType.Return && me)
+                            {
+                                context.abort = AbortType.None;
+                                context.abortInfo = null;
+                            }
+                            if (_break)
+                                return res;
                         }
-                        if (_break)
-                            return res;
                     }
-                }
-                if (post != null)
-                {
-#if DEV
-                    if (context.debugging)
+                    if (post != null)
                     {
-                        context.raiseDebugger(post);
-                        post.Evaluate(context);
-                        context.raiseDebugger(condition);
-                    }
-                    else
-                        post.Evaluate(context);
+#if DEV
+                        if (context.debugging)
+                        {
+                            context.raiseDebugger(post);
+                            post.Evaluate(context);
+                            context.raiseDebugger(condition);
+                        }
+                        else
+                            post.Evaluate(context);
 #else
-                    post.Evaluate(context);
+                        post.Evaluate(context);
 #endif
-                }
-            }
+                    }
+                } while (condition == null || (bool)condition.Evaluate(context));
             return res;
         }
 

@@ -859,7 +859,7 @@ namespace NiL.JS.Core.BaseTypes
         [DoNotEnumerate]
         public JSObject toISOString()
         {
-            if (time > 8702135596800000 || time < -8577864432000000)// - 8577864435600000)
+            if (time > 8702135596800000 || time < -8577864432000000 || error)// - 8577864435600000)
                 throw new JSException(new RangeError("Invalid time value"));
             try
             {

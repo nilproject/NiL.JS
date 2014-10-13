@@ -118,7 +118,7 @@ namespace NiL.JS.Core
         internal static uint __pinvokeCalled;
         internal static JSObject __pinvoke(JSObject thisBind, Arguments args)
         {
-            var argsCount = Tools.JSObjectToInt32(args.GetMember("length"));
+            var argsCount = args.length;
             var threadsCount = 1;
             if (argsCount == 0)
                 return null;

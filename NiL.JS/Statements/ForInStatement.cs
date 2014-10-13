@@ -270,9 +270,10 @@ namespace NiL.JS.Statements
 
         internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
-            Parser.Optimize(ref variable, 1, variables, strict);
-            if (variable is VariableDefineStatement)
-                variable = (variable as VariableDefineStatement).initializators[0];
+            var tvar = variable;
+            if (tvar is VariableDefineStatement)
+                variable = (tvar as VariableDefineStatement).initializators[0];
+            Parser.Optimize(ref tvar, 1, variables, strict);
             variable = (GetVariableStatement)variable;
             Parser.Optimize(ref source, 2, variables, strict);
             Parser.Optimize(ref body, System.Math.Max(1, depth), variables, strict);

@@ -101,13 +101,13 @@ namespace NiL.JS.Core.BaseTypes
             if (args.length == 0)
                 return this.toString(null);
             if (args.length == 1)
-                return string.Concat(this.oValue.ToString(), args[0].ToString());
+                return string.Concat(this.ToString(), args[0].ToString());
             if (args.length == 2)
-                return string.Concat(this.oValue.ToString(), args[0].ToString(), args[1].ToString());
+                return string.Concat(this.ToString(), args[0].ToString(), args[1].ToString());
             if (args.length == 3)
-                return string.Concat(this.oValue.ToString(), args[0].ToString(), args[1].ToString(), args[2].ToString());
+                return string.Concat(this.ToString(), args[0].ToString(), args[1].ToString(), args[2].ToString());
             if (args.length == 4)
-                return string.Concat(this.oValue.ToString(), args[0].ToString(), args[1].ToString(), args[2].ToString(), args[3].ToString());
+                return string.Concat(this.ToString(), args[0].ToString(), args[1].ToString(), args[2].ToString(), args[3].ToString());
             var res = new StringBuilder().Append(this.ToString());
             for (var i = 0; i < args.Length; i++)
                 res.Append(args[i].ToString());
