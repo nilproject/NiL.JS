@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using NiL.JS.Statements;
+using System.Collections.ObjectModel;
 
 namespace NiL.JS.Core
 {
@@ -25,6 +26,7 @@ namespace NiL.JS.Core
         public CodeNode Inititalizator { get; internal set; }
         public string Name { get { return name; } }
         public int ReferenceCount { get { return references.Count; } }
+        public ReadOnlyCollection<CodeNode> Assignations { get { return assignations.AsReadOnly(); } }
 
         public IEnumerable<VariableReference> References
         {
