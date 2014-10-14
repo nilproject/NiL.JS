@@ -144,64 +144,8 @@ namespace NiL.JS.Core.BaseTypes
         [Modules.DoNotEnumerate]
         public JSObject toPrecision(Arguments digits)
         {
-            double res = 0;
-            switch (valueType)
-            {
-                case JSObjectType.Int:
-                    {
-                        res = iValue;
-                        break;
-                    }
-                case JSObjectType.Double:
-                    {
-                        res = dValue;
-                        break;
-                    }
-                default:
-                    throw new InvalidOperationException();
-            }
-            int dgts = 0;
-            switch ((digits ?? JSObject.undefined).valueType)
-            {
-                case JSObjectType.Int:
-                    {
-                        dgts = digits.iValue;
-                        break;
-                    }
-                case JSObjectType.Double:
-                    {
-                        dgts = (int)digits.dValue;
-                        break;
-                    }
-                case JSObjectType.String:
-                    {
-                        double d = 0;
-                        int i = 0;
-                        if (Tools.ParseNumber(digits.oValue.ToString(), i, out d, Tools.ParseNumberOptions.Default))
-                            dgts = (int)d;
-                        break;
-                    }
-                case JSObjectType.Object:
-                    {
-                        var d = digits[0].ToPrimitiveValue_Value_String();
-                        if (d.valueType == JSObjectType.String)
-                            goto case JSObjectType.String;
-                        if (d.valueType == JSObjectType.Int)
-                            goto case JSObjectType.Int;
-                        if (d.valueType == JSObjectType.Double)
-                            goto case JSObjectType.Double;
-                        break;
-                    }
-                case JSObjectType.NotExists:
-                    throw new InvalidOperationException("Variable not defined.");
-                default:
-                    return Tools.DoubleToString(res);
-            }
-            string integerPart = ((int)res).ToString(CultureInfo.InvariantCulture);
-            if (integerPart.Length <= dgts)
-                return Tools.DoubleToString(System.Math.Round(res, dgts - integerPart.Length));
-            var sres = ((int)res).ToString("e" + (dgts - 1), System.Globalization.CultureInfo.InvariantCulture);
-            return sres;
+            double res = Tools.JSObjectToDouble(this);
+            return res.ToString("G" + Tools.JSObjectToInt32(digits[0]), CultureInfo.InvariantCulture);
         }
 
         [AllowUnsafeCall(typeof(JSObject))]

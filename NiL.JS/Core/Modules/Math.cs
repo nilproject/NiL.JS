@@ -75,7 +75,12 @@ namespace NiL.JS.Core.Modules
         {
             if (args.Length < 2)
                 return double.NaN;
-            return System.Math.Atan2(Tools.JSObjectToDouble(args[0]), Tools.JSObjectToDouble(args[1]));
+            var a = Tools.JSObjectToDouble(args[0]);
+            var b = Tools.JSObjectToDouble(args[1]);
+            if (double.IsInfinity(a)
+                && double.IsInfinity(b))
+                return System.Math.Atan2(System.Math.Sign(a), System.Math.Sign(b));
+            return System.Math.Atan2(a, b);
         }
 
         [DoNotEnumerate]

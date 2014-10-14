@@ -489,7 +489,8 @@ namespace NiL.JS.Core
                         throw new NotImplementedException("Convertion from " + m[0].MemberType + " not implemented");
                 }
             }
-            r.attributes |= JSObjectAttributesInternal.DoNotEnum;
+            if (m[0].IsDefined(typeof(DoNotEnumerateAttribute), false))
+                r.attributes |= JSObjectAttributesInternal.DoNotEnum;
             lock (fields)
                 fields[name] = create && r.GetType() != typeof(JSObject) ? (r = r.CloneImpl()) : r;
             if (m[0].IsDefined(typeof(ReadOnlyAttribute), false))
@@ -532,10 +533,19 @@ namespace NiL.JS.Core
         {
             if (members == null)
                 fillMembers();
-            foreach (var f in fields)
+            if (prototypeInstance != null)
             {
-                if (f.Value.isExist && (!pdef || (f.Value.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
-                    yield return f.Key;
+                var @enum = prototypeInstance.GetEnumeratorImpl(pdef);
+                while (@enum.MoveNext())
+                    yield return @enum.Current;
+            }
+            else
+            {
+                foreach (var f in fields)
+                {
+                    if (!pdef || (f.Value.attributes & JSObjectAttributesInternal.DoNotEnum) == 0)
+                        yield return f.Key;
+                }
             }
             foreach (var m in members)
             {
@@ -551,19 +561,5 @@ namespace NiL.JS.Core
                 }
             }
         }
-
-        //public override string ToString()
-        //{
-        //    if (typeof(JSObject).IsAssignableFrom(hostedType))
-        //        return prototypeInstance.ToString();
-        //    return base.ToString();
-        //}
-
-        //public override string ToString()
-        //{
-        //    if (hostedType.IsAbstract)
-        //        return "[object " + hostedType.Name + "]";
-        //    return ((bindFlags & BindingFlags.Static) != 0 ? "Proxy:Static (" : "Proxy:Dynamic (") + hostedType + ")";
-        //}
     }
 }

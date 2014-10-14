@@ -23,12 +23,14 @@ namespace NiL.JS.Core
             }
         }
 
+        [Hidden]
         public ObjectConstructor(TypeProxy proxy)
         {
             _length = 1;
             this.proxy = proxy;
         }
 
+        [Hidden]
         public override NiL.JS.Core.JSObject Invoke(JSObject thisBind, Arguments args)
         {
             object oVal = null;
@@ -80,6 +82,7 @@ namespace NiL.JS.Core
                 yield return pe.Current;
         }
 
+        [Hidden]
         public override string ToString()
         {
             return "function Object() { [native code] }";

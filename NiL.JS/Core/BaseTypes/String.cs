@@ -171,7 +171,7 @@ namespace NiL.JS.Core.BaseTypes
             if (args.Length == 0)
                 return -1;
             string fstr = args[0].ToString();
-            int pos = int.MaxValue;
+            int pos = int.MaxValue >> 1;
             while (args.Length > 1)
             {
                 JSObject value = null;
@@ -185,7 +185,8 @@ namespace NiL.JS.Core.BaseTypes
                         }
                     case JSObjectType.Double:
                         {
-                            pos = (int)args[1].dValue;
+                            if (!double.IsNaN(args[1].dValue))
+                                pos = (int)args[1].dValue;
                             break;
                         }
                     case JSObjectType.Object:
@@ -211,6 +212,7 @@ namespace NiL.JS.Core.BaseTypes
                 break;
             }
             var strValue = this.ToString();
+            pos += strValue.Length;
             return strValue.LastIndexOf(fstr, System.Math.Max(0, System.Math.Min(pos, strValue.Length)), StringComparison.CurrentCulture);
         }
 
@@ -219,7 +221,7 @@ namespace NiL.JS.Core.BaseTypes
         public JSObject localeCompare(Arguments args)
         {
             string str0 = oValue.ToString();
-            string str1 = args.Length > 0 ? args[0].ToString() : "";
+            string str1 = args[0].ToString();
             return string.CompareOrdinal(str0, str1);
         }
 

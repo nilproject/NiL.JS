@@ -161,8 +161,12 @@ namespace NiL.JS.Core
                         double x = 0;
                         int ix = 0;
                         string s = (r.oValue as string).Trim();
-                        if (!Tools.ParseNumber(s, ref ix, out x) || ix < s.Length)
+                        if (!Tools.ParseNumber(s, ref ix, out x, 0, ParseNumberOptions.AllowAutoRadix | ParseNumberOptions.AllowFloat) || ix < s.Length)
                             return 0;
+                        if (double.IsNaN(x))
+                            return 0;
+                        if (double.IsInfinity(x))
+                            return alternateInfinity ? double.IsPositiveInfinity(x) ? int.MaxValue : int.MinValue : 0;
                         return (int)x;
                     }
                 case JSObjectType.Date:
@@ -244,8 +248,12 @@ namespace NiL.JS.Core
                         double x = 0;
                         int ix = 0;
                         string s = (r.oValue as string).Trim();
-                        if (!Tools.ParseNumber(s, ref ix, out x) || ix < s.Length)
+                        if (!Tools.ParseNumber(s, ref ix, out x, 0, ParseNumberOptions.AllowAutoRadix | ParseNumberOptions.AllowFloat) || ix < s.Length)
                             return 0;
+                        if (double.IsNaN(x))
+                            return 0;
+                        if (double.IsInfinity(x))
+                            return alternateInfinity ? double.IsPositiveInfinity(x) ? long.MaxValue : long.MinValue : 0;
                         return (long)x;
                     }
                 case JSObjectType.Date:

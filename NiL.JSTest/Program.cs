@@ -172,8 +172,9 @@ for (var i = 0; i < 55000000; i++) abs(i * (1 - 2 * (i & 1)));
             var sw = new Stopwatch();
             var s = new Script(
 @"
-console.log((function f(f){ return f; })(1))
+console.log(array[0]);
 ");
+            s.Context.DefineVariable("array").Assign(TypeProxy.Proxy(new[] { "hello", "world", "!" }));
             sw.Start();
             s.Invoke();
             sw.Stop();
@@ -194,7 +195,7 @@ console.log((function f(f){ return f; })(1))
 
             Context.GlobalContext.DebuggerCallback += (sender, e) => System.Diagnostics.Debugger.Break();
 
-            int mode = 101//0
+            int mode = 0
                    ;
             switch (mode)
             {
@@ -226,8 +227,10 @@ console.log((function f(f){ return f; })(1))
                         sputnikTests(@"tests\sputnik\ch15\15.1\");
                         sputnikTests(@"tests\sputnik\ch15\15.2\");
                         sputnikTests(@"tests\sputnik\ch15\15.3\");
+                        sputnikTests(@"tests\sputnik\ch15\15.5\"); // with some errors due double.toString()
                         sputnikTests(@"tests\sputnik\ch15\15.6\");
                         sputnikTests(@"tests\sputnik\ch15\15.7\");
+                        sputnikTests(@"tests\sputnik\ch15\15.8\"); // with some errors due accuracy comparison
                         sputnikTests(@"tests\sputnik\ch15\15.9\");
                         sputnikTests(@"tests\sputnik\ch15\15.11\");
                         sputnikTests(@"tests\sputnik\ch15\15.12\");

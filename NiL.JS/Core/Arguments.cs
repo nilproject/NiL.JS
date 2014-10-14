@@ -175,6 +175,7 @@ namespace NiL.JS.Core
         public Arguments()
             : base()
         {
+            __proto__ = GlobalPrototype;
             valueType = JSObjectType.Object;
             oValue = this;
             attributes = JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.SystemObject;

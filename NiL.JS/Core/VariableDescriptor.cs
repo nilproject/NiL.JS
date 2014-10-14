@@ -46,7 +46,7 @@ namespace NiL.JS.Core
             JSObject res = null;
             while (depth > defineDepth)
             {
-                if (context.GetType() == typeof(WithContext))
+                if (context is WithContext)
                 {
                     cacheContext = null;
                     break;
@@ -63,7 +63,7 @@ namespace NiL.JS.Core
                     res.attributes = JSObjectAttributesInternal.None;
                 else
                 {
-                    tp = res.valueType != JSObjectType.Object ? null : res.oValue as TypeProxy;
+                    tp = res.oValue as TypeProxy;
                     if (tp != null)
                         res = tp.prototypeInstance ?? res;
                 }

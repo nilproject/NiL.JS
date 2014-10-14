@@ -737,8 +737,23 @@ namespace NiL.JS
                     {
                         step[sindex] = 2;
                         yield return stack[sindex];
+                        //if (sstate != state)
+                        //    throw new InvalidOperationException("Коллекция была изменена после создания перечислителя.");
                         if (sstate != state)
-                            throw new InvalidOperationException("Коллекция была изменена после создания перечислителя.");
+                        {
+                            if (node.height > stack.Length)
+                            {
+                                var newStack = new Node[node.height];
+                                for (var i = 0; i < stack.Length; i++)
+                                    newStack[i] = stack[i];
+                                stack = newStack;
+
+                                var newStep = new int[node.height];
+                                for (var i = 0; i < step.Length; i++)
+                                    newStep[i] = step[i];
+                                step = newStep;
+                            }
+                        }
                     }
                     if (step[sindex] < 3 && stack[sindex].less != null)
                     {
@@ -776,8 +791,23 @@ namespace NiL.JS
                     {
                         step[sindex] = 2;
                         yield return stack[sindex];
+                        //if (sstate != state)
+                        //    throw new InvalidOperationException("Коллекция была изменена после создания перечислителя.");
                         if (sstate != state)
-                            throw new InvalidOperationException("Коллекция была изменена после создания перечислителя.");
+                        {
+                            if (node.height > stack.Length)
+                            {
+                                var newStack = new Node[node.height];
+                                for (var i = 0; i < stack.Length; i++)
+                                    newStack[i] = stack[i];
+                                stack = newStack;
+
+                                var newStep = new int[node.height];
+                                for (var i = 0; i < step.Length; i++)
+                                    newStep[i] = step[i];
+                                step = newStep;
+                            }
+                        }
                     }
                     if (step[sindex] < 3 && stack[sindex].greater != null)
                     {
