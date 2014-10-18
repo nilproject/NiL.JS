@@ -164,7 +164,7 @@ namespace NiL.JS.Core
                     //    break;
                     default:
                         if (fields == null)
-                            fields = new Dictionary<string, JSObject>();
+                            fields = createFields();
                         fields[index.ToString()] = value;
                         break;
                 }

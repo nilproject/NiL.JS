@@ -37,7 +37,7 @@ namespace NiL.JS.Expressions
                                 {
                                     var index = 0;
                                     double td = 0;
-                                    if (Tools.ParseNumber(second.oValue as string, ref index, out td) && (index == (second.oValue as string).Length))
+                                    if (Tools.ParseNumber(second.oValue.ToString(), ref index, out td) && (index == (second.oValue.ToString()).Length))
                                         return first.iValue > td;
                                     else
                                         return lessOrEqual;
@@ -92,7 +92,7 @@ namespace NiL.JS.Expressions
                                     {
                                         var index = 0;
                                         double td = 0;
-                                        if (Tools.ParseNumber(second.oValue as string, ref index, out td) && (index == (second.oValue as string).Length))
+                                        if (Tools.ParseNumber(second.oValue.ToString(), ref index, out td) && (index == (second.oValue.ToString()).Length))
                                             return first.dValue > td;
                                         else
                                             return lessOrEqual;
@@ -126,7 +126,7 @@ namespace NiL.JS.Expressions
                     }
                 case JSObjectType.String:
                     {
-                        string left = first.oValue as string;
+                        string left = first.oValue.ToString();
                         switch (second.valueType)
                         {
                             case JSObjectType.Bool:
@@ -150,7 +150,7 @@ namespace NiL.JS.Expressions
                                 }
                             case JSObjectType.String:
                                 {
-                                    return string.CompareOrdinal(left, second.oValue as string) > 0;
+                                    return string.CompareOrdinal(left, second.oValue.ToString()) > 0;
                                 }
                             case JSObjectType.Function:
                             case JSObjectType.Object:

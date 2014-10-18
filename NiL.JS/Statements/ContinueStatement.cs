@@ -25,7 +25,7 @@ namespace NiL.JS.Statements
             if (Parser.ValidateName(state.Code, ref i, state.strict.Peek()))
             {
                 label = Tools.Unescape(state.Code.Substring(sl, i - sl), state.strict.Peek());
-                if (!state.Labels.Contains(label.oValue as string))
+                if (!state.Labels.Contains(label.oValue.ToString()))
                     throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.SyntaxError("Try to continue to undefined label.")));
             }
             int pos = index;

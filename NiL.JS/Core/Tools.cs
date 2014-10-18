@@ -60,7 +60,7 @@ namespace NiL.JS.Core
                         {
                             double x = double.NaN;
                             int ix = 0;
-                            string s = (arg.oValue as string);
+                            string s = (arg.oValue.ToString());
                             if (s.Length > 0 && (char.IsWhiteSpace(s[0]) || char.IsWhiteSpace(s[s.Length - 1])))
                                 s = s.Trim();
                             if (Tools.ParseNumber(s, ref ix, out x, 0, ParseNumberOptions.AllowFloat | ParseNumberOptions.AllowAutoRadix) && ix < s.Length)
@@ -160,7 +160,7 @@ namespace NiL.JS.Core
                     {
                         double x = 0;
                         int ix = 0;
-                        string s = (r.oValue as string).Trim();
+                        string s = (r.oValue.ToString()).Trim();
                         if (!Tools.ParseNumber(s, ref ix, out x, 0, ParseNumberOptions.AllowAutoRadix | ParseNumberOptions.AllowFloat) || ix < s.Length)
                             return 0;
                         if (double.IsNaN(x))
@@ -247,7 +247,7 @@ namespace NiL.JS.Core
                     {
                         double x = 0;
                         int ix = 0;
-                        string s = (r.oValue as string).Trim();
+                        string s = (r.oValue.ToString()).Trim();
                         if (!Tools.ParseNumber(s, ref ix, out x, 0, ParseNumberOptions.AllowAutoRadix | ParseNumberOptions.AllowFloat) || ix < s.Length)
                             return 0;
                         if (double.IsNaN(x))
@@ -291,7 +291,7 @@ namespace NiL.JS.Core
                     {
                         double x = 0;
                         int ix = 0;
-                        string s = (arg.oValue as string).Trim();
+                        string s = (arg.oValue.ToString()).Trim();
                         if (!Tools.ParseNumber(s, ref ix, out x) || ix < s.Length)
                             return Number.NaN;
                         return x;

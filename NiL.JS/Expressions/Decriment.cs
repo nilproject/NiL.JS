@@ -58,7 +58,7 @@ namespace NiL.JS.Expressions
                         {
                             double resd;
                             int i = 0;
-                            if (!Tools.ParseNumber(val.oValue as string, i, out resd, Tools.ParseNumberOptions.Default))
+                            if (!Tools.ParseNumber(val.oValue.ToString(), i, out resd, Tools.ParseNumberOptions.Default))
                                 resd = double.NaN;
                             val.valueType = JSObjectType.Double;
                             val.dValue = resd;
@@ -80,7 +80,7 @@ namespace NiL.JS.Expressions
                                     {
                                         double resd;
                                         int i = 0;
-                                        if (!Tools.ParseNumber(val.oValue as string, i, out resd, Tools.ParseNumberOptions.Default))
+                                        if (!Tools.ParseNumber(val.oValue.ToString(), i, out resd, Tools.ParseNumberOptions.Default))
                                             resd = double.NaN;
                                         val.valueType = JSObjectType.Double;
                                         val.dValue = resd;

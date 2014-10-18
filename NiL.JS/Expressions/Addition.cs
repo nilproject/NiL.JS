@@ -68,7 +68,7 @@ namespace NiL.JS.Expressions
                                 }
                             case JSObjectType.String:
                                 {
-                                    resultContainer.oValue = (first.valueType == JSObjectType.Bool ? (first.iValue != 0 ? "true" : "false") : first.iValue.ToString(CultureInfo.InvariantCulture)) + (string)second.oValue;
+                                    resultContainer.oValue = (first.valueType == JSObjectType.Bool ? (first.iValue != 0 ? "true" : "false") : first.iValue.ToString(CultureInfo.InvariantCulture)) + second.oValue.ToString();
                                     resultContainer.valueType = JSObjectType.String;
                                     return;
                                 }
@@ -110,7 +110,7 @@ namespace NiL.JS.Expressions
                                 }
                             case JSObjectType.String:
                                 {
-                                    resultContainer.oValue = Tools.DoubleToString(first.dValue) + (string)second.oValue;
+                                    resultContainer.oValue = Tools.DoubleToString(first.dValue) + second.oValue.ToString();
                                     resultContainer.valueType = JSObjectType.String;
                                     return;
                                 }
@@ -191,7 +191,7 @@ namespace NiL.JS.Expressions
                             case JSObjectType.String:
                                 {
                                     resultContainer.valueType = JSObjectType.String;
-                                    resultContainer.oValue = string.Concat("undefined", second.oValue as string);
+                                    resultContainer.oValue = string.Concat("undefined", second.oValue.ToString());
                                     return;
                                 }
                             case JSObjectType.Double:
@@ -225,7 +225,7 @@ namespace NiL.JS.Expressions
                                 second = second.ToPrimitiveValue_Value_String();
                             if (second.valueType == JSObjectType.String)
                             {
-                                resultContainer.oValue = "null" + second.oValue as string;
+                                resultContainer.oValue = "null" + second.oValue.ToString();
                                 resultContainer.valueType = JSObjectType.String;
                                 return;
                             }

@@ -1410,7 +1410,7 @@ namespace NiL.JS.Core.BaseTypes
         {
             if (_length == 0)
                 return "";
-            return join(null).oValue as string;
+            return join(null).oValue.ToString();
         }
 
         [CLSCompliant(false)]
@@ -1471,7 +1471,7 @@ namespace NiL.JS.Core.BaseTypes
                     }
                 case JSObjectType.String:
                     {
-                        var fc = (tname.oValue as string)[0];
+                        var fc = tname.oValue.ToString()[0];
                         if ('0' <= fc && '9' >= fc)
                         {
                             var dindex = 0.0;

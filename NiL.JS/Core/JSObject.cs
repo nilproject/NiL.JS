@@ -104,7 +104,7 @@ namespace NiL.JS.Core
         [Hidden]
         internal JSObject __proto__;
         [Hidden]
-        internal IDictionary<string, JSObject> fields;
+        internal Dictionary<string, JSObject> fields;
 
         [Hidden]
         internal JSObjectType valueType;
@@ -197,7 +197,7 @@ namespace NiL.JS.Core
             : this()
         {
             if (createFields)
-                fields = new Dictionary<string, JSObject>();
+                fields = JSObject.createFields();
         }
 
         [Hidden]
@@ -207,7 +207,7 @@ namespace NiL.JS.Core
             oValue = content;
             valueType = JSObjectType.Object;
         }
-        
+
         [Hidden]
         public static JSObject CreateObject()
         {
@@ -497,7 +497,7 @@ namespace NiL.JS.Core
                         valueType = JSObjectType.NotExistsInObject
                     };
                     if (fields == null)
-                        fields = new Dictionary<string, JSObject>();
+                        fields = createFields();
                     fields[name] = res;
                 }
                 else if (forWrite && ((res.attributes & JSObjectAttributesInternal.SystemObject) != 0 || fromProto))
@@ -507,7 +507,7 @@ namespace NiL.JS.Core
                     {
                         var t = res.CloneImpl();
                         if (fields == null)
-                            fields = new Dictionary<string, JSObject>();
+                            fields = createFields();
                         fields[name] = t;
                         res = t;
                     }
@@ -646,7 +646,7 @@ namespace NiL.JS.Core
         public override string ToString()
         {
             if (valueType == JSObjectType.String)
-                return oValue as string;
+                return oValue.ToString();
             if (valueType <= JSObjectType.Undefined)
                 return "undefined";
             if (valueType == JSObjectType.Property)
@@ -671,7 +671,7 @@ namespace NiL.JS.Core
                 case JSObjectType.Double:
                     return Tools.DoubleToString(res.dValue);
                 case JSObjectType.String:
-                    return res.oValue as string;
+                    return res.oValue.ToString();
                 default:
                     return (res.oValue ?? "null").ToString();
             }
@@ -837,6 +837,12 @@ namespace NiL.JS.Core
             return res.isExist;
         }
 
+        internal static Dictionary<string, JSObject> createFields()
+        {
+            return new Dictionary<string, JSObject>();
+            //return new IndexedDictionary<string, JSObject>();
+        }
+
         [Hidden]
         public override bool Equals(object obj)
         {
@@ -902,7 +908,7 @@ namespace NiL.JS.Core
                 case JSObjectType.Double:
                     return obj.dValue != 0.0 && !double.IsNaN(obj.dValue);
                 case JSObjectType.String:
-                    return !string.IsNullOrEmpty(obj.oValue as string);
+                    return !string.IsNullOrEmpty(obj.oValue.ToString());
                 case JSObjectType.Object:
                 case JSObjectType.Date:
                 case JSObjectType.Function:

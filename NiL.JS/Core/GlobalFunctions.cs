@@ -54,7 +54,7 @@ namespace NiL.JS.Core
             {
                 double d = 0;
                 int i = 0;
-                if (Tools.ParseNumber(r.oValue as string, i, out d, Tools.ParseNumberOptions.Default))
+                if (Tools.ParseNumber(r.oValue.ToString(), i, out d, Tools.ParseNumberOptions.Default))
                     return double.IsNaN(d);
                 return true;
             }

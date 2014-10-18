@@ -61,9 +61,9 @@ namespace NiL.JS.Core.BaseTypes
             [Hidden]
             get
             {
-                if ((pos < 0) || (pos >= (oValue as string).Length))
+                if ((pos < 0) || (pos >= oValue.ToString().Length))
                     return JSObject.notExists;
-                return new JSObject(false) { valueType = JSObjectType.String, oValue = (oValue as string)[pos].ToString(), attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.DoNotDelete };
+                return new JSObject(false) { valueType = JSObjectType.String, oValue = (oValue.ToString())[pos].ToString(), attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.DoNotDelete };
             }
         }
 
@@ -244,7 +244,7 @@ namespace NiL.JS.Core.BaseTypes
                 }
                 else
                 {
-                    var match = regex.regEx.Match(oValue as string ?? this.ToString());
+                    var match = regex.regEx.Match(oValue.ToString() ?? this.ToString());
                     int index = 0;
                     var res = new Array();
 
@@ -259,7 +259,7 @@ namespace NiL.JS.Core.BaseTypes
             }
             else
             {
-                var match = new System.Text.RegularExpressions.Regex((a0.valueType > JSObjectType.Undefined ? (object)a0 : "").ToString(), System.Text.RegularExpressions.RegexOptions.ECMAScript).Match(oValue as string ?? this.ToString());
+                var match = new System.Text.RegularExpressions.Regex((a0.valueType > JSObjectType.Undefined ? (object)a0 : "").ToString(), System.Text.RegularExpressions.RegexOptions.ECMAScript).Match(oValue.ToString() ?? this.ToString());
                 var res = new Array(match.Groups.Count);
                 for (int i = 0; i < match.Groups.Count; i++)
                     res.data[(uint)i] = match.Groups[i].Value;
@@ -293,7 +293,7 @@ namespace NiL.JS.Core.BaseTypes
                 }
                 else
                 {
-                    return regex.regEx.Match(oValue as string ?? this.ToString()).Index;
+                    return regex.regEx.Match(oValue.ToString() ?? this.ToString()).Index;
                 }
             }
             else
@@ -315,7 +315,7 @@ namespace NiL.JS.Core.BaseTypes
             {
                 if (args.length > 1 && args[1].oValue is Function)
                 {
-                    string temp = this.oValue as string;
+                    string temp = this.oValue.ToString();
                     var f = args[1].oValue as Function;
                     var match = new String();
                     var margs = new Arguments();
@@ -353,7 +353,7 @@ namespace NiL.JS.Core.BaseTypes
                 string pattern = args.Length > 0 ? args[0].ToString() : "";
                 if (args.Length > 1 && args[1].oValue is Function)
                 {
-                    string othis = this.oValue as string;
+                    string othis = this.oValue.ToString();
                     var f = args[1].oValue as Function;
                     var margs = new Arguments();
                     margs.length = 3;
@@ -701,7 +701,7 @@ namespace NiL.JS.Core.BaseTypes
                         }
                 }
             }
-            int len = (oValue as string).Length - pos0;
+            int len = (oValue.ToString()).Length - pos0;
             if (args.Length > 1)
             {
                 switch (args[1].valueType)
@@ -855,13 +855,13 @@ namespace NiL.JS.Core.BaseTypes
                 if (this.GetType() == typeof(String))
                 {
                     if (_length == null)
-                        _length = new Number((oValue as string).Length) { attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.NotConfigurable };
+                        _length = new Number((oValue.ToString()).Length) { attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.NotConfigurable };
                     else
-                        _length.iValue = (oValue as string).Length;
+                        _length.iValue = (oValue.ToString()).Length;
                     return _length;
                 }
                 else
-                    return (oValue as string).Length;
+                    return (oValue.ToString()).Length;
             }
         }
 
@@ -869,7 +869,7 @@ namespace NiL.JS.Core.BaseTypes
         public override string ToString()
         {
             if ((this as object) is String)
-                return oValue as string;
+                return oValue.ToString();
             else
                 throw new JSException(new TypeError("Try to call String.toString for not string object."));
         }
@@ -898,7 +898,7 @@ namespace NiL.JS.Core.BaseTypes
                 && !double.IsNaN(dindex)
                 && ((index = (int)dindex) == dindex)
                 && ((index = (int)dindex) == dindex)
-                && index < (oValue as string).Length
+                && index < (oValue.ToString()).Length
                 && index >= 0)
             {
                 return this[index];
@@ -1003,7 +1003,7 @@ namespace NiL.JS.Core.BaseTypes
         {
             if (!hideNonEnum)
             {
-                var len = (oValue as string).Length;
+                var len = (oValue.ToString()).Length;
                 for (var i = 0; i < len; i++)
                     yield return i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture);
                 yield return "length";

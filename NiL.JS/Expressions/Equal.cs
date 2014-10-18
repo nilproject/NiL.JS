@@ -40,7 +40,7 @@ namespace NiL.JS.Expressions
                                 }
                             case JSObjectType.String:
                                 {
-                                    tstr = tjso.oValue as string;
+                                    tstr = tjso.oValue.ToString();
                                     if (Tools.ParseNumber(tstr, ref index, out tdouble) && (index == tstr.Length))
                                         return tint == tdouble ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
                                     else
@@ -90,7 +90,7 @@ namespace NiL.JS.Expressions
                                 }
                             case JSObjectType.String:
                                 {
-                                    tstr = tjso.oValue as string;
+                                    tstr = tjso.oValue.ToString();
                                     if (Tools.ParseNumber(tstr, ref index, out tjso.dValue) && (index == tstr.Length))
                                         return tdouble == tjso.dValue ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
                                     else
@@ -128,7 +128,7 @@ namespace NiL.JS.Expressions
                     }
                 case JSObjectType.String:
                     {
-                        tstr = temp.oValue as string;
+                        tstr = temp.oValue.ToString();
                         temp = second.Evaluate(context);
                         switch (temp.valueType)
                         {
@@ -149,7 +149,7 @@ namespace NiL.JS.Expressions
                                 }
                             case JSObjectType.String:
                                 {
-                                    return string.CompareOrdinal(tstr, temp.oValue as string) == 0 ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+                                    return string.CompareOrdinal(tstr, temp.oValue.ToString()) == 0 ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
                                 }
                             case JSObjectType.Function:
                             case JSObjectType.Object:
@@ -217,7 +217,7 @@ namespace NiL.JS.Expressions
                                             }
                                         case JSObjectType.String:
                                             {
-                                                tstr = temp.oValue as string;
+                                                tstr = temp.oValue.ToString();
                                                 if (Tools.ParseNumber(tstr, ref index, out temp.dValue) && (index == tstr.Length))
                                                     return tdouble == temp.dValue ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
                                                 else
@@ -228,7 +228,7 @@ namespace NiL.JS.Expressions
                                 }
                             case JSObjectType.String:
                                 {
-                                    tstr = tjso.oValue as string;
+                                    tstr = tjso.oValue.ToString();
                                     temp = temp.ToPrimitiveValue_Value_String();
                                     switch (temp.valueType)
                                     {
@@ -244,7 +244,7 @@ namespace NiL.JS.Expressions
                                             }
                                         case JSObjectType.String:
                                             {
-                                                return temp.oValue as string == tstr ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+                                                return temp.oValue.ToString() == tstr ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
                                             }
                                     }
                                     break;

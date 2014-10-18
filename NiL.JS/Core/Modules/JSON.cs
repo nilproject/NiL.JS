@@ -309,7 +309,7 @@ namespace NiL.JS.Core.Modules
                 if (obj.valueType < JSObjectType.Object)
                 {
                     if (obj.valueType == JSObjectType.String)
-                        return "\"" + (obj.oValue as string)
+                        return "\"" + (obj.oValue.ToString())
                             .Replace("\\", "\\\\")
                             .Replace("\"", "\\\"")
                             .Replace("\n", "\\\n")
