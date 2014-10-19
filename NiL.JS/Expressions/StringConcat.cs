@@ -34,11 +34,17 @@ namespace NiL.JS.Expressions
             this.sources = sources;
         }
 
-        private static string prep(JSObject x)
+        private static object prep(JSObject x)
         {
+            if (x.valueType == JSObjectType.String)
+                return x.oValue;
             if (x.valueType == JSObjectType.Date)
-                return x.ToPrimitiveValue_String_Value().ToString();
-            return x.ToPrimitiveValue_Value_String().ToString();
+                x = x.ToPrimitiveValue_String_Value();
+            else
+                x = x.ToPrimitiveValue_Value_String();
+            if (x.valueType == JSObjectType.String)
+                return x.oValue;
+            return x.ToString();
         }
 
         internal override JSObject Evaluate(Context context)
@@ -46,32 +52,35 @@ namespace NiL.JS.Expressions
             lock (this)
             {
                 tempContainer.valueType = JSObjectType.String;
-                if (sources.Count == 2)
-                    tempContainer.oValue = string.Concat(
-                        prep(sources[0].Evaluate(context)),
-                        prep(sources[1].Evaluate(context)));
-                else if (sources.Count == 3)
-                    tempContainer.oValue = string.Concat(
-                        prep(sources[0].Evaluate(context)),
-                        prep(sources[1].Evaluate(context)),
-                        prep(sources[2].Evaluate(context)));
-                else if (sources.Count == 4)
-                    tempContainer.oValue = string.Concat(
-                        prep(sources[0].Evaluate(context)),
-                        prep(sources[1].Evaluate(context)),
-                        prep(sources[2].Evaluate(context)),
-                        prep(sources[3].Evaluate(context)));
-                else
-                {
-                    if (sources.GetType() == typeof(List<CodeNode>))
-                    {
-                        sources = (sources as List<CodeNode>).ToArray();
-                        buffer = new string[sources.Count];
-                    }
-                    for (var i = 0; i < sources.Count; i++)
-                        buffer[i] = prep(sources[i].Evaluate(context));
-                    tempContainer.oValue = string.Concat(buffer);
-                }
+                tempContainer.oValue = prep(sources[0].Evaluate(context));
+                for (var i = 1; i < sources.Count; i++)
+                    tempContainer.oValue = new RopeString(tempContainer.oValue, prep(sources[i].Evaluate(context)));
+                //if (sources.Count == 2)
+                //    tempContainer.oValue = string.Concat(
+                //        prep(sources[0].Evaluate(context)),
+                //        prep(sources[1].Evaluate(context)));
+                //else if (sources.Count == 3)
+                //    tempContainer.oValue = string.Concat(
+                //        prep(sources[0].Evaluate(context)),
+                //        prep(sources[1].Evaluate(context)),
+                //        prep(sources[2].Evaluate(context)));
+                //else if (sources.Count == 4)
+                //    tempContainer.oValue = string.Concat(
+                //        prep(sources[0].Evaluate(context)),
+                //        prep(sources[1].Evaluate(context)),
+                //        prep(sources[2].Evaluate(context)),
+                //        prep(sources[3].Evaluate(context)));
+                //else
+                //{
+                //    if (sources.GetType() == typeof(List<CodeNode>))
+                //    {
+                //        sources = (sources as List<CodeNode>).ToArray();
+                //        buffer = new string[sources.Count];
+                //    }
+                //    for (var i = 0; i < sources.Count; i++)
+                //        buffer[i] = prep(sources[i].Evaluate(context));
+                //    tempContainer.oValue = string.Concat(buffer);
+                //}
                 return tempContainer;
             }
         }

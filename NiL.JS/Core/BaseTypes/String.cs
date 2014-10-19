@@ -852,16 +852,21 @@ namespace NiL.JS.Core.BaseTypes
             [Hidden]
             get
             {
+                var len = 0;
+                if (oValue is RopeString)
+                    len = (oValue as RopeString).Length;
+                else
+                    len = oValue.ToString().Length;
                 if (this.GetType() == typeof(String))
                 {
                     if (_length == null)
-                        _length = new Number((oValue.ToString()).Length) { attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.NotConfigurable };
+                        _length = new Number(len) { attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.NotConfigurable };
                     else
-                        _length.iValue = (oValue.ToString()).Length;
+                        _length.iValue = len;
                     return _length;
                 }
                 else
-                    return (oValue.ToString()).Length;
+                    return len;
             }
         }
 

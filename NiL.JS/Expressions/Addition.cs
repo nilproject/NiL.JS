@@ -139,7 +139,7 @@ namespace NiL.JS.Expressions
                         {
                             case JSObjectType.String:
                                 {
-                                    tstr = string.Concat(tstr, second.oValue);
+                                    tstr = new RopeString(tstr, second.oValue);
                                     break;
                                 }
                             case JSObjectType.Bool:

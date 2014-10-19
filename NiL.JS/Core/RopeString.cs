@@ -58,7 +58,16 @@ namespace NiL.JS.Core
         {
             get
             {
-                return firstSource.Length + secondSource.Length;
+                int res = 0;
+                if (_firstSource is RopeString)
+                    res = (_firstSource as RopeString).Length;
+                else
+                    res = firstSource.Length;
+                if (_secondSource is RopeString)
+                    res += (_secondSource as RopeString).Length;
+                else
+                    res += secondSource.Length;
+                return res;
             }
         }
 
