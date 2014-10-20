@@ -1,7 +1,6 @@
 ﻿var $ERROR = console.log;
 
 console.log(function () {
-    var x = [1, 2, 3, 4, 5].sort();
-    x.length = 0;
-    return x[2];
+    
+    return "\u0009" + "var" + "\t" + "x" + "\u0009" + "=" + "\t" + "1" + "\u0009";
 }());

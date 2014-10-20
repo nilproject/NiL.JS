@@ -68,7 +68,7 @@ namespace NiL.JS.Expressions
                                 }
                             case JSObjectType.String:
                                 {
-                                    resultContainer.oValue = (first.valueType == JSObjectType.Bool ? (first.iValue != 0 ? "true" : "false") : first.iValue.ToString(CultureInfo.InvariantCulture)) + second.oValue.ToString();
+                                    resultContainer.oValue = new RopeString((first.valueType == JSObjectType.Bool ? (first.iValue != 0 ? "true" : "false") : first.iValue.ToString(CultureInfo.InvariantCulture)), second.oValue);
                                     resultContainer.valueType = JSObjectType.String;
                                     return;
                                 }
@@ -110,7 +110,7 @@ namespace NiL.JS.Expressions
                                 }
                             case JSObjectType.String:
                                 {
-                                    resultContainer.oValue = Tools.DoubleToString(first.dValue) + second.oValue.ToString();
+                                    resultContainer.oValue = new RopeString(Tools.DoubleToString(first.dValue), second.oValue);
                                     resultContainer.valueType = JSObjectType.String;
                                     return;
                                 }
@@ -144,30 +144,30 @@ namespace NiL.JS.Expressions
                                 }
                             case JSObjectType.Bool:
                                 {
-                                    tstr += second.iValue != 0 ? "true" : "false";
+                                    tstr = new RopeString(tstr, second.iValue != 0 ? "true" : "false");
                                     break;
                                 }
                             case JSObjectType.Int:
                                 {
-                                    tstr = string.Concat(tstr, second.iValue.ToString(CultureInfo.InvariantCulture));
+                                    tstr = new RopeString(tstr, second.iValue.ToString(CultureInfo.InvariantCulture));
                                     break;
                                 }
                             case JSObjectType.Double:
                                 {
-                                    tstr += Tools.DoubleToString(second.dValue);
+                                    tstr = new RopeString(tstr, Tools.DoubleToString(second.dValue));
                                     break;
                                 }
                             case JSObjectType.Undefined:
                             case JSObjectType.NotExistsInObject:
                                 {
-                                    tstr += "undefined";
+                                    tstr = new RopeString(tstr, "undefined");
                                     break;
                                 }
                             case JSObjectType.Object:
                             case JSObjectType.Function:
                             case JSObjectType.Date:
                                 {
-                                    tstr += second.ToString();
+                                    tstr = new RopeString(tstr, second.ToString());
                                     break;
                                 }
                         }
@@ -191,7 +191,7 @@ namespace NiL.JS.Expressions
                             case JSObjectType.String:
                                 {
                                     resultContainer.valueType = JSObjectType.String;
-                                    resultContainer.oValue = string.Concat("undefined", second.oValue.ToString());
+                                    resultContainer.oValue = new RopeString("undefined", second.oValue);
                                     return;
                                 }
                             case JSObjectType.Double:
@@ -225,7 +225,7 @@ namespace NiL.JS.Expressions
                                 second = second.ToPrimitiveValue_Value_String();
                             if (second.valueType == JSObjectType.String)
                             {
-                                resultContainer.oValue = "null" + second.oValue.ToString();
+                                resultContainer.oValue = new RopeString("null", second.oValue);
                                 resultContainer.valueType = JSObjectType.String;
                                 return;
                             }

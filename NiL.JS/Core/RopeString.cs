@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 namespace NiL.JS.Core
 {
@@ -15,14 +18,18 @@ namespace NiL.JS.Core
         {
             get
             {
-                return _firstSource as string ?? (_firstSource = _firstSource.ToString()) as string;
+                if (_firstSource == null || _firstSource is string)
+                    return _firstSource as string;
+                return (_firstSource = _firstSource.ToString()) as string;
             }
         }
         private string secondSource
         {
             get
             {
-                return _secondSource as string ?? (_secondSource = _secondSource.ToString()) as string;
+                if (_secondSource == null || _secondSource is string)
+                    return _secondSource as string;
+                return (_secondSource = _secondSource.ToString()) as string;
             }
         }
 
@@ -48,9 +55,24 @@ namespace NiL.JS.Core
         {
             get
             {
-                if (firstSource.ToString().Length < index)
-                    return firstSource[index];
-                return secondSource[index];
+                if (_firstSource != null)
+                {
+                    if ((_firstSource is RopeString) && (_firstSource as RopeString).Length < index)
+                        return (_firstSource as RopeString)[index];
+                    if ((_firstSource is StringBuilder) && (_firstSource as StringBuilder).Length < index)
+                        return (_firstSource as StringBuilder)[index];
+                    if (firstSource.Length < index)
+                        return firstSource[index];
+                }
+                if (_secondSource != null)
+                {
+                    if (_secondSource is RopeString)
+                        return (_secondSource as RopeString)[index];
+                    if (_secondSource is StringBuilder)
+                        return (_secondSource as StringBuilder)[index];
+                    return secondSource[index];
+                }
+                throw new ArgumentOutOfRangeException();
             }
         }
 
@@ -59,21 +81,51 @@ namespace NiL.JS.Core
             get
             {
                 int res = 0;
-                if (_firstSource is RopeString)
-                    res = (_firstSource as RopeString).Length;
-                else
-                    res = firstSource.Length;
-                if (_secondSource is RopeString)
-                    res += (_secondSource as RopeString).Length;
-                else
-                    res += secondSource.Length;
+                if (_firstSource != null)
+                {
+                    try
+                    {
+                        if (_firstSource is RopeString)
+                        {
+                            RuntimeHelpers.EnsureSufficientExecutionStack();
+                            res = (_firstSource as RopeString).Length;
+                        }
+                        else if (_firstSource is StringBuilder)
+                            res = (_firstSource as StringBuilder).Length;
+                        else
+                            res = firstSource.Length;
+                    }
+                    catch (InsufficientExecutionStackException)
+                    {
+                        res = firstSource.Length;
+                    }
+                }
+                if (_secondSource != null)
+                {
+                    try
+                    {                        
+                        if (_secondSource is RopeString)
+                        {
+                            RuntimeHelpers.EnsureSufficientExecutionStack();
+                            res += (_secondSource as RopeString).Length;
+                        }
+                        else if (_secondSource is StringBuilder)
+                            res += (_secondSource as StringBuilder).Length;
+                        else
+                            res += secondSource.Length;
+                    }
+                    catch (InsufficientExecutionStackException)
+                    {
+                        res += secondSource.Length;
+                    }
+                }
                 return res;
             }
         }
 
         public object Clone()
         {
-            return new RopeString(firstSource.Clone(), secondSource.Clone());
+            return new RopeString(_firstSource, _secondSource);
         }
         public int CompareTo(object value)
         {
@@ -394,21 +446,11 @@ namespace NiL.JS.Core
             return ToString().ToLowerInvariant();
         }
 
-        internal StringBuilder toString(bool forceCreate)
-        {
-            if (_firstSource is RopeString)
-                return _append((_firstSource as RopeString).toString(true), secondSource);
-            else if (_secondSource is RopeString)
-                return _prefix((_secondSource as RopeString).toString(true), firstSource);
-            else
-                return forceCreate ? _append(_append(new StringBuilder(Length), firstSource), secondSource) : null;
-        }
-
         private static StringBuilder _append(StringBuilder sb, object arg)
         {
             var str = arg.ToString();
             if (sb.Capacity < sb.Length + str.Length)
-                sb.Capacity = Math.Max(sb.Capacity * 2, sb.Length + str.Length);
+                sb.EnsureCapacity(Math.Max(sb.Capacity * 2, sb.Length + str.Length));
             for (var i = 0; i < str.Length; i++)
             {
                 sb.Append('\0');
@@ -421,7 +463,7 @@ namespace NiL.JS.Core
         {
             var str = arg.ToString();
             if (sb.Capacity < sb.Length + str.Length)
-                sb.Capacity = Math.Max(sb.Capacity * 2, sb.Length + str.Length);
+                sb.EnsureCapacity(Math.Max(sb.Capacity * 2, sb.Length + str.Length));
             for (var i = 0; i < str.Length; i++)
                 sb.Append('\0');
             for (var i = sb.Length; i-- > str.Length; )
@@ -435,14 +477,58 @@ namespace NiL.JS.Core
         {
             if (!string.IsNullOrEmpty(secondSource))
             {
-                if (_firstSource is RopeString
-                    || _secondSource is RopeString)
-                    _firstSource = (toString(false) as object ?? (firstSource + secondSource)).ToString();
-                else
-                    _firstSource = firstSource + secondSource;
-                _secondSource = "";
+                Stack<RopeString> stack = new Stack<RopeString>();
+                Stack<int> step = new Stack<int>();
+                StringBuilder res = new StringBuilder();
+                stack.Push(this);
+                step.Push(0);
+                while (stack.Count != 0)
+                {
+                    if (step.Peek() < 1)
+                    {
+                        if (stack.Peek()._firstSource is RopeString)
+                        {
+                            var child = stack.Peek()._firstSource as RopeString;
+                            stack.Push(child);
+                            step.Pop();
+                            step.Push(1);
+                            step.Push(0);
+                            continue;
+                        }
+                        else
+                        {
+                            _append(res, stack.Peek().firstSource ?? "");
+                            step.Pop();
+                            step.Push(1);
+                        }
+                    }
+                    if (step.Peek() < 2)
+                    {
+                        if (stack.Peek()._secondSource is RopeString)
+                        {
+                            var child = stack.Peek()._secondSource as RopeString;
+                            stack.Push(child);
+                            step.Pop();
+                            step.Push(2);
+                            step.Push(0);
+                            continue;
+                        }
+                        else
+                        {
+                            _append(res, stack.Peek().secondSource ?? "");
+                            step.Pop();
+                            step.Push(2);
+                        }
+                    }
+                    stack.Pop();
+                    step.Pop();
+                }
+                _firstSource = res.ToString();
+                _secondSource = null;
+                return _firstSource.ToString();
             }
-            return firstSource;
+            else
+                return firstSource + secondSource;
         }
         public string ToString(IFormatProvider provider)
         {

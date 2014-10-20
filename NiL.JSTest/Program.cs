@@ -195,7 +195,7 @@ console.log(array[0]);
 
             Context.GlobalContext.DebuggerCallback += (sender, e) => System.Diagnostics.Debugger.Break();
 
-            int mode = 100
+            int mode = 101
                    ;
             switch (mode)
             {
@@ -356,7 +356,7 @@ console.log(array[0]);
                 case 102:
                     {
                         for (var i = 0; i < 10; i++)
-                            runFile(@"sunspider-0.9.1\string-validate-input.js");
+                            runFile(@"sunspider-0.9.1\string-tagcloud.js");
                         break;
                     }
             }
