@@ -15,6 +15,7 @@ namespace NiL.JS.Core.BaseTypes
         [DoNotEnumerate]
         public RegExp()
         {
+            _source = "";
             _global = false;
             regEx = new System.Text.RegularExpressions.Regex("");
             attributes |= JSObjectAttributesInternal.ReadOnly;
@@ -210,7 +211,7 @@ namespace NiL.JS.Core.BaseTypes
             }
             var res = new Array(m.Groups.Count);
             for (int i = 0; i < m.Groups.Count; i++)
-                res.data[(uint)i] = m.Groups[i].Success ? (JSObject)m.Groups[i].Value : null;
+                res.data[i] = m.Groups[i].Success ? (JSObject)m.Groups[i].Value : null;
             if (_global)
                 lIndex.iValue = m.Index + m.Length;
             res.DefineMember("index").Assign(m.Index);

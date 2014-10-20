@@ -64,7 +64,6 @@ namespace NiL.JS.Statements
             }
         }
 #endif
-        private bool allowRemove;
         private CodeNode init;
         private CodeNode condition;
         private CodeNode post;
@@ -122,7 +121,6 @@ namespace NiL.JS.Statements
                 IsParsed = true,
                 Statement = new ForStatement()
                 {
-                    allowRemove = ccs == state.continiesCount && cbs == state.breaksCount,
                     body = body,
                     condition = condition,
                     init = init,

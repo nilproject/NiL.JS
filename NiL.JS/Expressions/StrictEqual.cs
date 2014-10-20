@@ -46,14 +46,19 @@ namespace NiL.JS.Expressions
                             return first.dValue == second.dValue;
                     }
                 case JSObjectType.String:
+                    {
+                        if (second.valueType != JSObjectType.String)
+                            return false;
+                        return string.CompareOrdinal(first.oValue.ToString(), second.oValue.ToString()) == 0;
+                    }
                 case JSObjectType.Date:
                 case JSObjectType.Function:
                 case JSObjectType.Object:
                     {
                         if (first.valueType != second.valueType)
                             return false;
-                        else if (first.oValue == null || second.oValue == null)
-                            return first.oValue == second.oValue;
+                        else if (first.oValue == null)
+                            return second.oValue == null || second.oValue.Equals(first.oValue);
                         else
                             return first.oValue.Equals(second.oValue);
                     }

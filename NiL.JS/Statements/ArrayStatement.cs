@@ -78,15 +78,19 @@ namespace NiL.JS.Statements
 #endif
         private static JSObject impl(Context context, CodeNode[] elements)
         {
-            var res = new NiL.JS.Core.BaseTypes.Array(elements.Length);
-            for (uint i = 0; i < elements.Length; i++)
+            var res = new NiL.JS.Core.BaseTypes.Array((long)elements.Length);
+            if (elements.Length > 0)
             {
-                if (elements[i] != null)
+                for (int i = 0; i < elements.Length; i++)
                 {
-                    var e = elements[i].Evaluate(context).CloneImpl();
-                    e.attributes = 0;
-                    res.data[i] = e;
+                    if (elements[i] != null)
+                    {
+                        var e = elements[i].Evaluate(context).CloneImpl();
+                        e.attributes = 0;
+                        res.data[i] = e;
+                    }
                 }
+                res.data[elements.Length - 1] = res.data[elements.Length - 1];
             }
             return res;
         }

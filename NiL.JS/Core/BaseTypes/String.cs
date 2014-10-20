@@ -253,16 +253,15 @@ namespace NiL.JS.Core.BaseTypes
                         res.data[index++] = match.Value;
                         match = match.NextMatch();
                     }
-                    res._length = index;
                     return res;
                 }
             }
             else
             {
-                var match = new System.Text.RegularExpressions.Regex((a0.valueType > JSObjectType.Undefined ? (object)a0 : "").ToString(), System.Text.RegularExpressions.RegexOptions.ECMAScript).Match(oValue.ToString() ?? this.ToString());
+                var match = new System.Text.RegularExpressions.Regex((a0.valueType > JSObjectType.Undefined ? (object)a0 : "").ToString(), System.Text.RegularExpressions.RegexOptions.ECMAScript).Match(this.ToString());
                 var res = new Array(match.Groups.Count);
                 for (int i = 0; i < match.Groups.Count; i++)
-                    res.data[(uint)i] = match.Groups[i].Value;
+                    res.data[i] = match.Groups[i].Value;
                 res.GetMember("index", true, true).Assign(match.Index);
                 res.GetMember("input", true, true).Assign(this);
                 return res;
@@ -518,26 +517,23 @@ namespace NiL.JS.Core.BaseTypes
                 }
                 Array res = new Array();
                 int index = 0;
-                while (res._length < limit)
+                while (res.data.Length < limit)
                 {
                     if (!match.Success)
                     {
-                        res.data.Add(res._length, selfString.Substring(index, selfString.Length - index));
-                        res._length++;
+                        res.data.Add(selfString.Substring(index, selfString.Length - index));
                         break;
                     }
                     int nindex = match.Index;
                     if (nindex == -1)
                     {
-                        res.data.Add(res._length, selfString.Substring(index, selfString.Length - index));
-                        res._length++;
+                        res.data.Add(selfString.Substring(index, selfString.Length - index));
                         break;
                     }
                     else
                     {
                         var item = selfString.Substring(index, nindex - index);
-                        res.data.Add(res._length, item);
-                        res._length++;
+                        res.data.Add(item);
                         index = nindex + match.Length;
                     }
                     match = match.NextMatch();
@@ -552,25 +548,23 @@ namespace NiL.JS.Core.BaseTypes
                 if (string.IsNullOrEmpty(fstr))
                 {
                     for (var i = 0; i < System.Math.Min(selfString.Length, limit); i++)
-                        res.data.Add(res._length++, selfString[i]);
+                        res.data.Add(selfString[i]);
                 }
                 else
                 {
                     int index = 0;
-                    while (res._length < limit)
+                    while (res.data.Length < limit)
                     {
                         int nindex = selfString.IndexOf(fstr, index);
                         if (nindex == -1)
                         {
-                            res.data.Add(res._length, selfString.Substring(index, selfString.Length - index));
-                            res._length++;
+                            res.data.Add(selfString.Substring(index, selfString.Length - index));
                             break;
                         }
                         else
                         {
                             var item = selfString.Substring(index, nindex - index);
-                            res.data.Add(res._length, item);
-                            res._length++;
+                            res.data.Add(item);
                             index = nindex + fstr.Length;
                         }
                     }

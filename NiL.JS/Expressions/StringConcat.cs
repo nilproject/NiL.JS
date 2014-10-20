@@ -10,7 +10,6 @@ namespace NiL.JS.Expressions
     public sealed class StringConcat : Expression
     {
         internal IList<CodeNode> sources;
-        internal string[] buffer;
 
         public override bool IsContextIndependent
         {
@@ -55,32 +54,6 @@ namespace NiL.JS.Expressions
                 tempContainer.oValue = prep(sources[0].Evaluate(context));
                 for (var i = 1; i < sources.Count; i++)
                     tempContainer.oValue = new RopeString(tempContainer.oValue, prep(sources[i].Evaluate(context)));
-                //if (sources.Count == 2)
-                //    tempContainer.oValue = string.Concat(
-                //        prep(sources[0].Evaluate(context)),
-                //        prep(sources[1].Evaluate(context)));
-                //else if (sources.Count == 3)
-                //    tempContainer.oValue = string.Concat(
-                //        prep(sources[0].Evaluate(context)),
-                //        prep(sources[1].Evaluate(context)),
-                //        prep(sources[2].Evaluate(context)));
-                //else if (sources.Count == 4)
-                //    tempContainer.oValue = string.Concat(
-                //        prep(sources[0].Evaluate(context)),
-                //        prep(sources[1].Evaluate(context)),
-                //        prep(sources[2].Evaluate(context)),
-                //        prep(sources[3].Evaluate(context)));
-                //else
-                //{
-                //    if (sources.GetType() == typeof(List<CodeNode>))
-                //    {
-                //        sources = (sources as List<CodeNode>).ToArray();
-                //        buffer = new string[sources.Count];
-                //    }
-                //    for (var i = 0; i < sources.Count; i++)
-                //        buffer[i] = prep(sources[i].Evaluate(context));
-                //    tempContainer.oValue = string.Concat(buffer);
-                //}
                 return tempContainer;
             }
         }

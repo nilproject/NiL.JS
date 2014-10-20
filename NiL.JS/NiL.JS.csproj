@@ -216,6 +216,7 @@
     <Compile Include="Core\IndexedDictionary.cs" />
     <Compile Include="Core\Modules\ImmutablePrototypeAttribute.cs" />
     <Compile Include="Core\RopeString.cs" />
+    <Compile Include="Core\SparseArray.cs" />
     <Compile Include="Core\TypeProxing\CustomType.cs" />
     <Compile Include="Core\BaseTypes\Date.cs" />
     <Compile Include="Core\BaseTypes\RegExp.cs" />

@@ -397,11 +397,38 @@ namespace NiL.JS.Core
         internal StringBuilder toString(bool forceCreate)
         {
             if (_firstSource is RopeString)
-                return (_firstSource as RopeString).toString(true).Append(secondSource);
+                return _append((_firstSource as RopeString).toString(true), secondSource);
             else if (_secondSource is RopeString)
-                return (_secondSource as RopeString).toString(true).Insert(0, firstSource);
+                return _prefix((_secondSource as RopeString).toString(true), firstSource);
             else
-                return forceCreate ? new StringBuilder().Append(firstSource).Append(secondSource) : null;
+                return forceCreate ? _append(_append(new StringBuilder(Length), firstSource), secondSource) : null;
+        }
+
+        private static StringBuilder _append(StringBuilder sb, object arg)
+        {
+            var str = arg.ToString();
+            if (sb.Capacity < sb.Length + str.Length)
+                sb.Capacity = Math.Max(sb.Capacity * 2, sb.Length + str.Length);
+            for (var i = 0; i < str.Length; i++)
+            {
+                sb.Append('\0');
+                sb[sb.Length - 1] = str[i];
+            }
+            return sb;
+        }
+
+        private static StringBuilder _prefix(StringBuilder sb, object arg)
+        {
+            var str = arg.ToString();
+            if (sb.Capacity < sb.Length + str.Length)
+                sb.Capacity = Math.Max(sb.Capacity * 2, sb.Length + str.Length);
+            for (var i = 0; i < str.Length; i++)
+                sb.Append('\0');
+            for (var i = sb.Length; i-- > str.Length; )
+                sb[i] = sb[i - str.Length];
+            for (var i = 0; i < str.Length; i++)
+                sb[i] = str[i];
+            return sb;
         }
 
         public override string ToString()

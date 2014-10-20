@@ -1354,7 +1354,8 @@ namespace NiL.JS.Core
             {
                 var arr = obj as BaseTypes.Array;
                 foreach (var element in arr.data)
-                    element.Value.attributes |= JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete;
+                    if (element != null && element.isExist)
+                        element.attributes |= JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete;
             }
             else if (obj is Arguments)
             {
@@ -1409,10 +1410,12 @@ namespace NiL.JS.Core
             if (obj is BaseTypes.Array)
             {
                 var arr = obj as BaseTypes.Array;
-                foreach (var node in arr.data.Nodes)
+                foreach (var node in arr.data)
                 {
-                    if (node.value.valueType >= JSObjectType.Object && node.value.oValue != null
-                        && (node.value.attributes & JSObjectAttributesInternal.NotConfigurable) == 0)
+                    if (node != null
+                        && node.isExist
+                        && node.valueType >= JSObjectType.Object && node.oValue != null
+                        && (node.attributes & JSObjectAttributesInternal.NotConfigurable) == 0)
                         return false;
                 }
             }
@@ -1440,7 +1443,8 @@ namespace NiL.JS.Core
             {
                 var arr = obj as BaseTypes.Array;
                 foreach (var element in arr.data)
-                    element.Value.attributes |= JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.DoNotDelete;
+                    if (element != null && element.isExist)
+                        element.attributes |= JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.DoNotDelete;
             }
             else if (obj is Arguments)
             {
@@ -1471,10 +1475,11 @@ namespace NiL.JS.Core
             if (obj is BaseTypes.Array)
             {
                 var arr = obj as BaseTypes.Array;
-                foreach (var node in arr.data.Nodes)
+                foreach (var node in (arr.data as IEnumerable<KeyValuePair<int, JSObject>>))
                 {
-                    if (((node.value.attributes & JSObjectAttributesInternal.NotConfigurable) == 0
-                        || (node.value.valueType != JSObjectType.Property && (node.value.attributes & JSObjectAttributesInternal.ReadOnly) == 0)))
+                    if (node.Value != null && node.Value.isExist &&
+                        ((node.Value.attributes & JSObjectAttributesInternal.NotConfigurable) == 0
+                        || (node.Value.valueType != JSObjectType.Property && (node.Value.attributes & JSObjectAttributesInternal.ReadOnly) == 0)))
                         return false;
                 }
             }
