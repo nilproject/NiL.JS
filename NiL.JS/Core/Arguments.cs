@@ -22,22 +22,14 @@ namespace NiL.JS.Core
             }
         }
 
-        private JSObject a0;
-        private JSObject a1;
-        private JSObject a2;
-        private JSObject a3;
-        private JSObject a4;
-        private JSObject a5;
-        private JSObject a6;
-        private JSObject a7;
-        //private JSObject a8;
-        //private JSObject a9;
-        //private JSObject a10;
-        //private JSObject a11;
-        //private JSObject a12;
-        //private JSObject a13;
-        //private JSObject a14;
-        //private JSObject a15;
+        internal JSObject a0;
+        internal JSObject a1;
+        internal JSObject a2;
+        internal JSObject a3;
+        internal JSObject a4;
+        internal JSObject a5;
+        internal JSObject a6;
+        internal JSObject a7;
         internal JSObject callee;
         internal JSObject caller;
         private _LengthContainer _length;
@@ -138,30 +130,6 @@ namespace NiL.JS.Core
                     case 7:
                         a7 = value;
                         break;
-                    //case 8:
-                    //    a8 = value;
-                    //    break;
-                    //case 9:
-                    //    a9 = value;
-                    //    break;
-                    //case 10:
-                    //    a10 = value;
-                    //    break;
-                    //case 11:
-                    //    a11 = value;
-                    //    break;
-                    //case 12:
-                    //    a12 = value;
-                    //    break;
-                    //case 13:
-                    //    a13 = value;
-                    //    break;
-                    //case 14:
-                    //    a14 = value;
-                    //    break;
-                    //case 15:
-                    //    a15 = value;
-                    //    break;
                     default:
                         if (fields == null)
                             fields = createFields();
@@ -213,22 +181,6 @@ namespace NiL.JS.Core
                     return (a6 ?? (!createMember ? notExists : (a6 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
                 case "7":
                     return (a7 ?? (!createMember ? notExists : (a7 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
-                //case "8":
-                //    return (a8 ?? (!createMember ? notExists : (a8 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
-                //case "9":
-                //    return (a9 ?? (!createMember ? notExists : (a9 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
-                //case "10":
-                //    return (a10 ?? (!createMember ? notExists : (a10 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
-                //case "11":
-                //    return (a11 ?? (!createMember ? notExists : (a11 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
-                //case "12":
-                //    return (a12 ?? (!createMember ? notExists : (a12 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
-                //case "13":
-                //    return (a13 ?? (!createMember ? notExists : (a13 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
-                //case "14":
-                //    return (a14 ?? (!createMember ? notExists : (a14 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
-                //case "15":
-                //    return (a15 ?? (!createMember ? notExists : (a15 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
                 case "length":
                     {
                         if (_length == null)

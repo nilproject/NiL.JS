@@ -60,7 +60,7 @@ namespace NiL.JS.Core
                     if ((_firstSource is StringBuilder) && (_firstSource as StringBuilder).Length < index)
                         return (_firstSource as StringBuilder)[index];
                     if (firstSource.Length < index)
-                    return firstSource[index];
+                        return firstSource[index];
                 }
                 if (_secondSource != null)
                 {
@@ -68,56 +68,57 @@ namespace NiL.JS.Core
                         return (_secondSource as RopeString)[index];
                     if (_secondSource is StringBuilder)
                         return (_secondSource as StringBuilder)[index];
-                return secondSource[index];
-            }
+                    return secondSource[index];
+                }
                 throw new ArgumentOutOfRangeException();
-        }
+            }
         }
 
         public int Length
         {
             get
             {
-                int res = 0;
-                if (_firstSource != null)
-                {
-                    try
-                    {
-                if (_firstSource is RopeString)
-                        {
-                            RuntimeHelpers.EnsureSufficientExecutionStack();
-                    res = (_firstSource as RopeString).Length;
-                        }
-                        else if (_firstSource is StringBuilder)
-                            res = (_firstSource as StringBuilder).Length;
-                else
-                    res = firstSource.Length;
-                    }
-                    catch (InsufficientExecutionStackException)
-                    {
-                        res = firstSource.Length;
-                    }
-                }
-                if (_secondSource != null)
-                {
-                    try
-                    {                        
-                if (_secondSource is RopeString)
-                        {
-                            RuntimeHelpers.EnsureSufficientExecutionStack();
-                    res += (_secondSource as RopeString).Length;
-                        }
-                        else if (_secondSource is StringBuilder)
-                            res += (_secondSource as StringBuilder).Length;
-                else
-                    res += secondSource.Length;
-                    }
-                    catch (InsufficientExecutionStackException)
-                    {
-                        res += secondSource.Length;
-                    }
-                }
-                return res;
+                return ToString().Length;
+                //int res = 0;
+                //if (_firstSource != null)
+                //{
+                //    try
+                //    {
+                //        if (_firstSource is RopeString)
+                //        {
+                //            RuntimeHelpers.EnsureSufficientExecutionStack();
+                //            res = (_firstSource as RopeString).Length;
+                //        }
+                //        else if (_firstSource is StringBuilder)
+                //            res = (_firstSource as StringBuilder).Length;
+                //        else
+                //            res = firstSource.Length;
+                //    }
+                //    catch (InsufficientExecutionStackException)
+                //    {
+                //        res = firstSource.Length;
+                //    }
+                //}
+                //if (_secondSource != null)
+                //{
+                //    try
+                //    {
+                //        if (_secondSource is RopeString)
+                //        {
+                //            RuntimeHelpers.EnsureSufficientExecutionStack();
+                //            res += (_secondSource as RopeString).Length;
+                //        }
+                //        else if (_secondSource is StringBuilder)
+                //            res += (_secondSource as StringBuilder).Length;
+                //        else
+                //            res += secondSource.Length;
+                //    }
+                //    catch (InsufficientExecutionStackException)
+                //    {
+                //        res += secondSource.Length;
+                //    }
+                //}
+                //return res;
             }
         }
 
@@ -475,58 +476,65 @@ namespace NiL.JS.Core
         {
             if (!string.IsNullOrEmpty(secondSource))
             {
-                Stack<RopeString> stack = new Stack<RopeString>();
-                Stack<int> step = new Stack<int>();
-                StringBuilder res = new StringBuilder();
-                stack.Push(this);
-                step.Push(0);
-                while (stack.Count != 0)
+                if (!(_firstSource is RopeString)
+                    && !(_secondSource is RopeString))
                 {
-                    if (step.Peek() < 1)
-                    {
-                        if (stack.Peek()._firstSource is RopeString)
-                        {
-                            var child = stack.Peek()._firstSource as RopeString;
-                            stack.Push(child);
-                            step.Pop();
-                            step.Push(1);
-                            step.Push(0);
-                            continue;
-                        }
-                else
-                        {
-                            _append(res, stack.Peek().firstSource ?? "");
-                            step.Pop();
-                            step.Push(1);
-            }
-        }
-                    if (step.Peek() < 2)
-                    {
-                        if (stack.Peek()._secondSource is RopeString)
-                        {
-                            var child = stack.Peek()._secondSource as RopeString;
-                            stack.Push(child);
-                            step.Pop();
-                            step.Push(2);
-                            step.Push(0);
-                            continue;
-                        }
-                        else
-                        {
-                            _append(res, stack.Peek().secondSource ?? "");
-                            step.Pop();
-                            step.Push(2);
-                        }
-                    }
-                    stack.Pop();
-                    step.Pop();
+                    _firstSource = firstSource + secondSource;
+                    _secondSource = null;
                 }
-                _firstSource = res.ToString();
-                _secondSource = null;
-                return _firstSource.ToString();
+                else
+                {
+                    Stack<RopeString> stack = new Stack<RopeString>();
+                    Stack<int> step = new Stack<int>();
+                    StringBuilder res = new StringBuilder();
+                    stack.Push(this);
+                    step.Push(0);
+                    while (stack.Count != 0)
+                    {
+                        if (step.Peek() < 1)
+                        {
+                            if (stack.Peek()._firstSource is RopeString)
+                            {
+                                var child = stack.Peek()._firstSource as RopeString;
+                                stack.Push(child);
+                                step.Pop();
+                                step.Push(1);
+                                step.Push(0);
+                                continue;
+                            }
+                            else
+                            {
+                                _append(res, stack.Peek().firstSource ?? "");
+                                step.Pop();
+                                step.Push(1);
+                            }
+                        }
+                        if (step.Peek() < 2)
+                        {
+                            if (stack.Peek()._secondSource is RopeString)
+                            {
+                                var child = stack.Peek()._secondSource as RopeString;
+                                stack.Push(child);
+                                step.Pop();
+                                step.Push(2);
+                                step.Push(0);
+                                continue;
+                            }
+                            else
+                            {
+                                _append(res, stack.Peek().secondSource ?? "");
+                                step.Pop();
+                                step.Push(2);
+                            }
+                        }
+                        stack.Pop();
+                        step.Pop();
+                    }
+                    _firstSource = res.ToString();
+                    _secondSource = null;
+                }
             }
-            else
-                return firstSource + secondSource;
+            return firstSource;
         }
         public string ToString(IFormatProvider provider)
         {

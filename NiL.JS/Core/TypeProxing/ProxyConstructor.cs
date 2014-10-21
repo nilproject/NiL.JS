@@ -161,6 +161,8 @@ namespace NiL.JS.Core
             }
             catch (TargetInvocationException e)
             {
+                if (System.Diagnostics.Debugger.IsAttached)
+                    System.Diagnostics.Debugger.Log(10, "Exception", e.Message);
                 throw e.InnerException;
             }
         }

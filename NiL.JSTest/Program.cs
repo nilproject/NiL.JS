@@ -356,7 +356,7 @@ console.log(array[0]);
                 case 102:
                     {
                         for (var i = 0; i < 10; i++)
-                            runFile(@"sunspider-0.9.1\string-tagcloud.js");
+                            runFile(@"sunspider-0.9.1\string-base64.js");
                         break;
                     }
             }

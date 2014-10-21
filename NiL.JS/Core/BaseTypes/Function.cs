@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Text;
 using System.Threading;
 using NiL.JS.Core.JIT;
 using NiL.JS.Core.Modules;
@@ -908,18 +909,19 @@ namespace NiL.JS.Core.BaseTypes
             for (var i = body.localVariables.Length; i-- > 0; )
             {
                 JSObject f = null;
-                if (body.localVariables[i].Inititalizator != null
-                    || string.CompareOrdinal(body.localVariables[i].name, "arguments") != 0)
+                var v = body.localVariables[i];
+                if (v.Inititalizator != null
+                    || string.CompareOrdinal(v.name, "arguments") != 0)
                 {
                     f = new JSObject() { attributes = JSObjectAttributesInternal.DoNotDelete };
                     (internalContext.fields ??
-                        (internalContext.fields = new Dictionary<string, JSObject>()))[body.localVariables[i].name] = f;
-                    if (body.localVariables[i].Inititalizator != null)
-                        f.Assign(body.localVariables[i].Inititalizator.Evaluate(internalContext));
-                    if (body.localVariables[i].readOnly)
+                        (internalContext.fields = createFields()))[v.name] = f;
+                    if (v.Inititalizator != null)
+                        f.Assign(v.Inititalizator.Evaluate(internalContext));
+                    if (v.readOnly)
                         f.attributes |= JSObjectAttributesInternal.ReadOnly;
-                    body.localVariables[i].cacheRes = f;
-                    body.localVariables[i].cacheContext = internalContext;
+                    v.cacheRes = f;
+                    v.cacheContext = internalContext;
                 }
             }
         }
@@ -1012,28 +1014,28 @@ namespace NiL.JS.Core.BaseTypes
         [Hidden]
         public override string ToString()
         {
-            string res = "";
+            StringBuilder res = new StringBuilder();
             switch (creator.type)
             {
                 case FunctionType.Generator:
-                    res = "function*";
+                    res.Append("function*");
                     break;
                 case FunctionType.Get:
-                    res = "get";
+                    res.Append("get");
                     break;
                 case FunctionType.Set:
-                    res = "set";
+                    res.Append("set");
                     break;
                 default:
-                    res = "function";
+                    res.Append("function");
                     break;
             }
-            res += " " + name + "(";
+            res.Append(" ").Append(name).Append("(");
             if (creator != null && creator.arguments != null)
                 for (int i = 0; i < creator.arguments.Length; )
-                    res += creator.arguments[i].Name + (++i < creator.arguments.Length ? "," : "");
-            res += ")" + (creator != creatorDummy ? creator.body as object : "{ [native code] }").ToString();
-            return res;
+                    res.Append(creator.arguments[i].Name).Append(++i < creator.arguments.Length ? "," : "");
+            res.Append(")").Append(creator != creatorDummy ? creator.body as object : "{ [native code] }");
+            return res.ToString();
         }
 
         [Hidden]

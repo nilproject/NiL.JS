@@ -16,15 +16,15 @@ namespace NiL.JS.Core
     {
         NotExists = 0,
         NotExistsInObject = 1,
-        Undefined = 2,
-        Bool = 6,
-        Int = 10,
-        Double = 18,
-        String = 34,
-        Object = 66,
-        Function = 130,
-        Date = 258,
-        Property = 514
+        Undefined = 3,
+        Bool = 7,
+        Int = 11,
+        Double = 19,
+        String = 35,
+        Object = 67,
+        Function = 131,
+        Date = 259,
+        Property = 515
     }
 
     [Serializable]
@@ -59,6 +59,8 @@ namespace NiL.JS.Core
         /// Объект был скопирован перед передачей как параметр в вызов функции.
         /// </summary>
         Cloned = 1 << 22,
+        ContainsParsedInt = 1 << 23,
+        ContainsParsedDouble = 1 << 24,
         /// <summary>
         /// Аттрибуты, переносимые при присваивании значения.
         /// </summary>
@@ -356,8 +358,6 @@ namespace NiL.JS.Core
                         dindex = Tools.JSObjectToDouble(name as JSObject);
 
                         if (dindex >= 0.0
-                            && !double.IsNaN(dindex)
-                            && !double.IsInfinity(dindex)
                             && ((index = (int)dindex) == dindex)
                             && oValue.ToString().Length > index)
                             return oValue.ToString()[index];
@@ -408,30 +408,22 @@ namespace NiL.JS.Core
                     }
                 case JSObjectType.Function:
                     {
-#if DEBUG
-                        if (oValue == this)
-                            System.Diagnostics.Debugger.Break();
-#endif
-                        //if ((attributes & JSObjectAttributesInternal.ProxyPrototype) != 0)
-                        //    return __proto__.GetMember(name, createMember, own);
                         if (oValue == null)
                             throw new JSException(new TypeError("Can't get property \"" + name + "\" of \"null\""));
                         if (oValue == this)
+                        {
+#if DEBUG
+                            System.Diagnostics.Debugger.Break();
+#endif
                             break;
-                        try
-                        {
-                            return (oValue as JSObject).GetMember(name, createMember, own);
                         }
-                        finally
-                        {
-                            if (fields == null)
-                                fields = (oValue as JSObject).fields;
-                        }
+                        var res = (oValue as JSObject).GetMember(name, createMember, own);
+                        if (fields == null)
+                            fields = (oValue as JSObject).fields;
+                        return res;
                     }
                 case JSObjectType.Property:
                     throw new InvalidOperationException("Try to get member of property");
-                default:
-                    throw new NotImplementedException();
             }
             return DefaultFieldGetter(name, createMember, own);
         }
@@ -439,8 +431,7 @@ namespace NiL.JS.Core
         [Hidden]
         protected JSObject DefaultFieldGetter(JSObject nameObj, bool forWrite, bool own)
         {
-            string name = nameObj.ToString();
-            if (name == "__proto__")
+            if (nameObj.valueType == JSObjectType.String && nameObj.oValue.ToString() == "__proto__")
             {
                 forWrite &= (attributes & JSObjectAttributesInternal.Immutable) == 0;
                 if (this == GlobalPrototype)
@@ -470,6 +461,7 @@ namespace NiL.JS.Core
             }
             else
             {
+                string name = nameObj.ToString();
                 JSObject res = null;
                 var proto = __proto__ ?? GlobalPrototype ?? Null;
                 bool fromProto =
@@ -483,7 +475,6 @@ namespace NiL.JS.Core
                     res = proto.GetMember(nameObj, false, own);
                     if (((own
                         && (res.valueType != JSObjectType.Property || (res.attributes & JSObjectAttributesInternal.Field) == 0)
-                        //&& (attributes & JSObjectAttributesInternal.ProxyPrototype) == 0
                         ))
                         || !res.isExist)
                         res = null;
@@ -512,8 +503,7 @@ namespace NiL.JS.Core
                         res = t;
                     }
                 }
-                if (res.valueType == JSObjectType.NotExists)
-                    res.valueType = JSObjectType.NotExistsInObject;
+                res.valueType |= JSObjectType.NotExistsInObject;
                 return res;
             }
         }
@@ -606,12 +596,11 @@ namespace NiL.JS.Core
                 return;
             if (this != value)
             {
-                this.valueType = (value.valueType & ~(JSObjectType.NotExistsInObject | JSObjectType.NotExists)) | JSObjectType.Undefined;
+                this.valueType = value.valueType | JSObjectType.Undefined;
                 if (valueType < JSObjectType.String)
                 {
                     this.iValue = value.iValue;
-                    if (valueType == JSObjectType.Double)
-                        this.dValue = value.dValue;
+                    this.dValue = value.dValue;
                     this.fields = null;
                     this.oValue = null;
                 }

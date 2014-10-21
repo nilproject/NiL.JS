@@ -5,16 +5,18 @@ using NiL.JS.Core.JIT;
 namespace NiL.JS.Statements
 {
     [Serializable]
-    public sealed class EmptyStatement : CodeNode
+    public sealed class EmptyStatement : Expressions.Expression
     {
         private static readonly EmptyStatement _instance = new EmptyStatement();
         public static EmptyStatement Instance { get { return _instance; } }
 
         public EmptyStatement()
+            : base(null, null, false)
         {
         }
 
         public EmptyStatement(int position)
+            : base(null, null, false)
         {
             Position = position;
             Length = 0;
@@ -41,7 +43,8 @@ namespace NiL.JS.Statements
 
         internal override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, bool strict)
         {
-            _this = null;
+            if (depth < 2)
+                _this = null;
             return false;
         }
 

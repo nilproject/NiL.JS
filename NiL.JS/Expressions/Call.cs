@@ -29,6 +29,18 @@ namespace NiL.JS.Expressions
             this.arguments = arguments;
         }
 
+        private JSObject prepareArg(Context context, CodeNode source)
+        {
+            context.objectSource = null;
+            var a = source.Evaluate(context);
+            if ((a.attributes & JSObjectAttributesInternal.Temporary) != 0)
+            {
+                a = a.CloneImpl();
+                a.attributes |= JSObjectAttributesInternal.Cloned;
+            }
+            return a;
+        }
+
         internal override JSObject Evaluate(Context context)
         {
             JSObject newThisBind = null;
@@ -47,21 +59,24 @@ namespace NiL.JS.Expressions
             }
             Arguments arguments = new Arguments();
             arguments.length = this.arguments.Length;
-            for (int i = 0; i < arguments.length; i++)
-            {
-                context.objectSource = null;
-                var a = this.arguments[i].Evaluate(context);
-                if ((a.attributes & JSObjectAttributesInternal.Temporary) != 0)
-                {
-                    a = a.CloneImpl();
-                    a.attributes |= JSObjectAttributesInternal.Cloned;
-                }
-#if DEBUG
-                if (a == null)
-                    System.Diagnostics.Debugger.Break();
-#endif
-                arguments[i] = a;
-            }
+            if (arguments.length > 0)
+                arguments.a0 = prepareArg(context, this.arguments[0]);
+            if (arguments.length > 1)
+                arguments.a1 = prepareArg(context, this.arguments[1]);
+            if (arguments.length > 2)
+                arguments.a2 = prepareArg(context, this.arguments[2]);
+            if (arguments.length > 3)
+                arguments.a3 = prepareArg(context, this.arguments[3]);
+            if (arguments.length > 4)
+                arguments.a4 = prepareArg(context, this.arguments[4]);
+            if (arguments.length > 5)
+                arguments.a5 = prepareArg(context, this.arguments[5]);
+            if (arguments.length > 6)
+                arguments.a6 = prepareArg(context, this.arguments[6]);
+            if (arguments.length > 7)
+                arguments.a7 = prepareArg(context, this.arguments[7]);
+            for (int i = 8; i < arguments.length; i++)
+                arguments[i] = prepareArg(context, this.arguments[i]);
             context.objectSource = null;
             if (tail)
             {

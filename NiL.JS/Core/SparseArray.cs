@@ -49,7 +49,10 @@ namespace NiL.JS.Core
 
         public SparseArray(int capacity)
         {
-            data = new _Item[capacity];
+            if (capacity == null)
+                data = emptyData;
+            else
+                data = new _Item[capacity];
         }
 
         #region Члены IList<TValue>

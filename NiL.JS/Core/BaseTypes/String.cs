@@ -82,10 +82,10 @@ namespace NiL.JS.Core.BaseTypes
         [DoNotEnumerate]
         public JSObject charCodeAt(Arguments pos)
         {
-            int p = Tools.JSObjectToInt32(pos[0]);
+            int p = Tools.JSObjectToInt32(pos.a0 ?? notExists);
             var selfStr = this.ToString();
             if ((p < 0) || (p >= selfStr.Length))
-                return double.NaN;
+                return Number.NaN;
             var res = new JSObject()
             {
                 iValue = selfStr[p],
@@ -244,15 +244,15 @@ namespace NiL.JS.Core.BaseTypes
                 }
                 else
                 {
-                    var match = regex.regEx.Match(oValue.ToString() ?? this.ToString());
+                    var match = regex.regEx.Match(this.ToString());
                     int index = 0;
                     var res = new Array();
-
-                    while (match.Success)
-                    {
-                        res.data[index++] = match.Value;
-                        match = match.NextMatch();
-                    }
+                    if (match.Success) do
+                        {
+                            res.data[index++] = match.Value;
+                            match = match.NextMatch();
+                        }
+                        while (match.Success);
                     return res;
                 }
             }
@@ -846,11 +846,7 @@ namespace NiL.JS.Core.BaseTypes
             [Hidden]
             get
             {
-                var len = 0;
-                if (oValue is RopeString)
-                    len = (oValue as RopeString).Length;
-                else
-                    len = oValue.ToString().Length;
+                var len = oValue.ToString().Length;
                 if (this.GetType() == typeof(String))
                 {
                     if (_length == null)

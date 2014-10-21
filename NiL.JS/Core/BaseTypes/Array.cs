@@ -69,7 +69,7 @@ namespace NiL.JS.Core.BaseTypes
             valueType = JSObjectType.Object;
             data = new SparseArray<JSObject>();
             attributes |= JSObjectAttributesInternal.SystemObject;
-            __proto__ = TypeProxy.GetPrototype(this.GetType());
+            __proto__ = TypeProxy.GetPrototype(typeof(Array));
             _lengthObj = new _lengthField(this);
         }
 
@@ -99,7 +99,6 @@ namespace NiL.JS.Core.BaseTypes
             data = new SparseArray<JSObject>((int)length);
             attributes |= JSObjectAttributesInternal.SystemObject;
             __proto__ = TypeProxy.GetPrototype(this.GetType());
-            _lengthObj = new _lengthField(this);
         }
 
         [DoNotEnumerate]
@@ -114,7 +113,6 @@ namespace NiL.JS.Core.BaseTypes
                 data[(int)((uint)d - 1)] = null;
             attributes |= JSObjectAttributesInternal.SystemObject;
             __proto__ = TypeProxy.GetPrototype(this.GetType());
-            _lengthObj = new _lengthField(this);
         }
 
         [DoNotEnumerate]
@@ -139,7 +137,6 @@ namespace NiL.JS.Core.BaseTypes
                 data[index++] = e is JSObject ? (e as JSObject).CloneImpl() : TypeProxy.Proxy(e);
             attributes |= JSObjectAttributesInternal.SystemObject;
             __proto__ = TypeProxy.GetPrototype(this.GetType());
-            _lengthObj = new _lengthField(this);
         }
 
         [Hidden]
@@ -155,7 +152,6 @@ namespace NiL.JS.Core.BaseTypes
                 data[index++] = e is JSObject ? (e as JSObject).CloneImpl() : TypeProxy.Proxy(e);
             attributes |= JSObjectAttributesInternal.SystemObject;
             __proto__ = TypeProxy.GetPrototype(this.GetType());
-            _lengthObj = new _lengthField(this);
         }
 
         [Hidden]
@@ -174,7 +170,6 @@ namespace NiL.JS.Core.BaseTypes
             }
             attributes |= JSObjectAttributesInternal.SystemObject;
             __proto__ = TypeProxy.GetPrototype(this.GetType());
-            _lengthObj = new _lengthField(this);
         }
 
         [Hidden]
@@ -197,6 +192,8 @@ namespace NiL.JS.Core.BaseTypes
             [Hidden]
             get
             {
+                if (_lengthObj == null)
+                    _lengthObj = new _lengthField(this);
                 if (data.Length <= int.MaxValue)
                 {
                     _lengthObj.iValue = (int)data.Length;
@@ -697,16 +694,12 @@ namespace NiL.JS.Core.BaseTypes
         [DoNotEnumerate]
         public JSObject join(Arguments separator)
         {
-            //if (separator == null)
-            //    throw new ArgumentNullException("separator");
-            //if  separator.Length == 0)
-            //    return ToString();
             if (data.Length == 0)
                 return "";
             var el = separator == null || separator.length == 0 || !separator[0].isDefinded ? "," : separator[0].ToString();
             System.Text.StringBuilder sb = new System.Text.StringBuilder();
             JSObject t;
-            for (var i = 0L; i < (long)data.Length - 1; i++)
+            for (var i = 0L; i < (long)data.Length; i++)
             {
                 t = data[(int)i];
                 if (((t != null && t.isExist) || null != (t = this.GetMember(i.ToString(), false, false)))
@@ -717,13 +710,7 @@ namespace NiL.JS.Core.BaseTypes
                 }
                 sb.Append(el);
             }
-            t = data[(int)data.Length - 1];
-            if (((t != null && t.isExist) || null != (t = this.GetMember((data.Length - 1).ToString(), false, false)))
-                && t.isDefinded)
-            {
-                if (t.valueType < JSObjectType.String || t.oValue != null)
-                    sb.Append(t);
-            }
+            sb.Length -= el.Length;
             return sb.ToString();
         }
 
@@ -1579,8 +1566,6 @@ namespace NiL.JS.Core.BaseTypes
         [Hidden]
         public override string ToString()
         {
-            if (data.Length == 0)
-                return "";
             return join(null).oValue.ToString();
         }
 
@@ -1622,7 +1607,7 @@ namespace NiL.JS.Core.BaseTypes
             if (name.valueType == JSObjectType.String && "length".Equals(name.oValue))
                 return length;
             bool isIndex = false;
-            uint index = 0;
+            int index = 0;
             JSObject tname = name;
             if (tname.valueType >= JSObjectType.Object)
                 tname = tname.ToPrimitiveValue_String_Value();
@@ -1634,12 +1619,14 @@ namespace NiL.JS.Core.BaseTypes
                 case JSObjectType.Int:
                     {
                         isIndex = tname.iValue >= 0;
-                        index = (uint)tname.iValue;
+                        index = tname.iValue;
                         break;
                     }
                 case JSObjectType.Double:
                     {
-                        isIndex = (index = (uint)tname.dValue) == tname.dValue && index < uint.MaxValue;
+                        isIndex = tname.dValue >= 0 && tname.dValue < uint.MaxValue && (long)tname.dValue == tname.dValue;
+                        if (isIndex)
+                            index = (int)(uint)tname.dValue;
                         break;
                     }
                 case JSObjectType.String:
@@ -1651,10 +1638,12 @@ namespace NiL.JS.Core.BaseTypes
                             int si = 0;
                             if (Tools.ParseNumber(tname.oValue.ToString(), ref si, out dindex)
                                 && (si == tname.oValue.ToString().Length)
-                                && (index = (uint)dindex) == dindex
-                                && index < uint.MaxValue)
+                                && dindex >= 0
+                                && dindex < uint.MaxValue
+                                && (long)dindex == dindex)
                             {
                                 isIndex = true;
+                                index = (int)(uint)dindex;
                             }
                         }
                         break;
@@ -1665,7 +1654,7 @@ namespace NiL.JS.Core.BaseTypes
                 forWrite &= (attributes & JSObjectAttributesInternal.Immutable) == 0;
                 if (forWrite)
                 {
-                    if ((_lengthObj.attributes & JSObjectAttributesInternal.ReadOnly) != 0 && index >= data.Length)
+                    if (_lengthObj != null && (_lengthObj.attributes & JSObjectAttributesInternal.ReadOnly) != 0 && index >= data.Length)
                     {
                         if (own)
                             throw new JSException(new TypeError("Cannot add element in fixed size array"));

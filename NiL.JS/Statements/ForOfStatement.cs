@@ -12,12 +12,12 @@ namespace NiL.JS.Statements
         private CodeNode variable;
         private CodeNode source;
         private CodeNode body;
-        private List<string> labels;
+        private string[] labels;
 
         public CodeNode Variable { get { return variable; } }
         public CodeNode Source { get { return source; } }
         public CodeNode Body { get { return body; } }
-        public string[] Labels { get { return labels.ToArray(); } }
+        public IReadOnlyCollection<string> Labels { get { return Array.AsReadOnly<string>(labels); } }
 
         private ForOfStatement()
         {
@@ -34,7 +34,7 @@ namespace NiL.JS.Statements
             while (char.IsWhiteSpace(state.Code[i])) i++;
             var res = new ForOfStatement()
             {
-                labels = state.Labels.GetRange(state.Labels.Count - state.LabelCount, state.LabelCount)
+                labels = state.Labels.GetRange(state.Labels.Count - state.LabelCount, state.LabelCount).ToArray()
             };
             var vStart = i;
             if (Parser.Validate(state.Code, "var", ref i))
@@ -91,7 +91,7 @@ namespace NiL.JS.Statements
             var continueTarget = System.Linq.Expressions.Expression.Label("continue" + (DateTime.Now.Ticks % 10000));
             var nextProto = Expression.Label();
             var breakTarget = System.Linq.Expressions.Expression.Label("break" + (DateTime.Now.Ticks % 10000));
-            for (var i = 0; i < labels.Count; i++)
+            for (var i = 0; i < labels.Length; i++)
                 state.NamedContinueLabels[labels[i]] = continueTarget;
             state.BreakLabels.Push(breakTarget);
             state.ContinueLabels.Push(continueTarget);
@@ -141,7 +141,7 @@ namespace NiL.JS.Statements
                 if (state.ContinueLabels.Peek() != continueTarget)
                     throw new InvalidOperationException();
                 state.ContinueLabels.Pop();
-                for (var i = 0; i < labels.Count; i++)
+                for (var i = 0; i < labels.Length; i++)
                     state.NamedContinueLabels.Remove(labels[i]);
             }
         }
@@ -158,40 +158,101 @@ namespace NiL.JS.Statements
                 return JSObject.undefined;
             while (s != null)
             {
-                var keys = s.GetEnumerator();
-                for (; ; )
+                if (s.oValue is Core.BaseTypes.Array)
                 {
-                    try
+                    var src = s.oValue as Core.BaseTypes.Array;
+                    foreach (var item in src.data)
                     {
-                        if (!keys.MoveNext())
-                            break;
+                        if (item == null
+                            || !item.isExist
+                            || (item.attributes & JSObjectAttributesInternal.DoNotEnum) != 0)
+                            continue;
+                        v.Assign(item);
+#if DEV
+                        if (context.debugging && !(body is CodeBlock))
+                            context.raiseDebugger(body);
+#endif
+                        res = body.Evaluate(context) ?? res;
+                        if (context.abort != AbortType.None)
+                        {
+
+                            var me = context.abortInfo == null || System.Array.IndexOf(labels, context.abortInfo.oValue as string) != -1;
+                            var _break = (context.abort > AbortType.Continue) || !me;
+                            if (context.abort < AbortType.Return && me)
+                            {
+                                context.abort = AbortType.None;
+                                context.abortInfo = JSObject.notExists;
+                            }
+                            if (_break)
+                                return null;
+                        }
                     }
-                    catch (InvalidOperationException)
+                    if (src.fields != null)
+                        foreach (var item in src.fields)
+                        {
+                            if (item.Value == null
+                                || !item.Value.isExist
+                                || (item.Value.attributes & JSObjectAttributesInternal.DoNotEnum) != 0)
+                                continue;
+                            v.Assign(item.Value);
+#if DEV
+                        if (context.debugging && !(body is CodeBlock))
+                            context.raiseDebugger(body);
+#endif
+                            res = body.Evaluate(context) ?? res;
+                            if (context.abort != AbortType.None)
+                            {
+
+                                var me = context.abortInfo == null || System.Array.IndexOf(labels, context.abortInfo.oValue as string) != -1;
+                                var _break = (context.abort > AbortType.Continue) || !me;
+                                if (context.abort < AbortType.Return && me)
+                                {
+                                    context.abort = AbortType.None;
+                                    context.abortInfo = JSObject.notExists;
+                                }
+                                if (_break)
+                                    return null;
+                            }
+                        }
+                }
+                else
+                {
+                    var keys = s.GetEnumerator();
+                    for (; ; )
                     {
-                        keys = s.GetEnumerator();
-                        for (int i = 0; i < index && keys.MoveNext(); i++) ;
-                    }
-                    var o = keys.Current;
-                    v.valueType = JSObjectType.String;
-                    v.oValue = o;
-                    v.Assign(s.GetMember(v, false, true));
+                        try
+                        {
+                            if (!keys.MoveNext())
+                                break;
+                        }
+                        catch (InvalidOperationException)
+                        {
+                            keys = s.GetEnumerator();
+                            for (int i = 0; i < index && keys.MoveNext(); i++) ;
+                        }
+                        var o = keys.Current;
+                        v.valueType = JSObjectType.String;
+                        v.oValue = o;
+                        v.Assign(s.GetMember(v, false, true));
 #if DEV
                     if (context.debugging && !(body is CodeBlock))
                         context.raiseDebugger(body);
 #endif
-                    res = body.Evaluate(context) ?? res;
-                    if (context.abort != AbortType.None)
-                    {
-                        bool _break = (context.abort > AbortType.Continue) || ((context.abortInfo != null) && (labels.IndexOf(context.abortInfo.oValue.ToString()) == -1));
-                        if (context.abort < AbortType.Return && ((context.abortInfo == null) || (labels.IndexOf(context.abortInfo.oValue.ToString()) != -1)))
+                        res = body.Evaluate(context) ?? res;
+                        if (context.abort != AbortType.None)
                         {
-                            context.abort = AbortType.None;
-                            context.abortInfo = JSObject.notExists;
+                            var me = context.abortInfo == null || System.Array.IndexOf(labels, context.abortInfo.oValue as string) != -1;
+                            var _break = (context.abort > AbortType.Continue) || !me;
+                            if (context.abort < AbortType.Return && me)
+                            {
+                                context.abort = AbortType.None;
+                                context.abortInfo = JSObject.notExists;
+                            }
+                            if (_break)
+                                return null;
                         }
-                        if (_break)
-                            return null;
+                        index++;
                     }
-                    index++;
                 }
                 s = s.__proto__ ?? s["__proto__"];
                 if (!s.isDefinded || (s.valueType >= JSObjectType.Object && s.oValue == null))

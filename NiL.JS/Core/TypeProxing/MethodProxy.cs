@@ -127,12 +127,6 @@ namespace NiL.JS.Core
                             {
                                 if (methodinfo.IsStatic)
                                 {
-                                    //if (parameters[0].ParameterType == typeof(JSObject[]))
-                                    //{
-                                    //    this.delegateF1 = Activator.CreateInstance(typeof(Func<object, object>), null, info.MethodHandle.GetFunctionPointer()) as Func<object, object>;
-                                    //    mode = CallMode.FuncStaticOneArray;
-                                    //}
-                                    //else 
                                     if (parameters[0].ParameterType == typeof(Arguments))
                                     {
                                         this.delegateF1 = Activator.CreateInstance(typeof(Func<object, object>), null, info.MethodHandle.GetFunctionPointer()) as Func<object, object>;
@@ -145,14 +139,7 @@ namespace NiL.JS.Core
                                     }
                                 }
                                 else
-                                {
-                                    //if (parameters[0].ParameterType == typeof(JSObject[]))
-                                    //{
-                                    //    this.delegateF2 = Activator.CreateInstance(typeof(Func<object, object, object>), null, info.MethodHandle.GetFunctionPointer()) as Func<object, object, object>;
-                                    //    this.delegateF1 = Activator.CreateInstance(typeof(Func<object, object>), this, info.MethodHandle.GetFunctionPointer()) as Func<object, object>;
-                                    //    mode = CallMode.FuncDynamicOneArray;
-                                    //}
-                                    //else 
+                                { 
                                     if (parameters[0].ParameterType == typeof(Arguments))
                                     {
                                         this.delegateF2 = Activator.CreateInstance(typeof(Func<object, object, object>), null, info.MethodHandle.GetFunctionPointer()) as Func<object, object, object>;
@@ -299,6 +286,22 @@ namespace NiL.JS.Core
             {
                 switch (mode)
                 {
+                    case CallMode.FuncDynamicOneRaw:
+                        {
+                            if (target != null && info.IsVirtual && target.GetType() != info.ReflectedType) // your bunny wrote
+#if !NET35
+                            {
+                                bool di = true;
+                                SetFieldValue(_targetInfo, delegateF1, target, typeof(object), _targetInfo.Attributes, typeof(Action), ref di);
+                                res = delegateF1(argsSource);
+                            }
+                            else
+#else
+                                goto default;
+#endif
+                                res = delegateF2(target, argsSource);
+                            break;
+                        }
                     case CallMode.FuncDynamicZero:
                         {
                             if (target != null && info.IsVirtual && target.GetType() != info.ReflectedType) // your bunny wrote
@@ -329,22 +332,6 @@ namespace NiL.JS.Core
                                 goto default;
 #endif
                                 res = delegateF2(target, args ?? argumentsToArray<object>(argsSource));
-                            break;
-                        }
-                    case CallMode.FuncDynamicOneRaw:
-                        {
-                            if (target != null && info.IsVirtual && target.GetType() != info.ReflectedType) // your bunny wrote
-#if !NET35
-                            {
-                                bool di = true;
-                                SetFieldValue(_targetInfo, delegateF1, target, typeof(object), _targetInfo.Attributes, typeof(Action), ref di);
-                                res = delegateF1(argsSource);
-                            }
-                            else
-#else
-                                goto default;
-#endif
-                                res = delegateF2(target, argsSource);
                             break;
                         }
                     case CallMode.FuncDynamicOne:

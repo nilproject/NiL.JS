@@ -217,3 +217,9 @@ if (!(function () {
     return true;
 })())
     console.log("dead do-while fail")
+
+function mul(a, mul) {
+    return a * mul;
+}
+if (mul(2, 2) != 4)
+    console.log("function args link fail")

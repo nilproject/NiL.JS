@@ -269,6 +269,7 @@
     <Compile Include="Core\WithContext.cs" />
     <Compile Include="Expressions\StringConcat.cs" />
     <Compile Include="Expressions\Neg.cs" />
+    <Compile Include="Expressions\ToBool.cs" />
     <Compile Include="Expressions\ToInt.cs" />
     <Compile Include="Expressions\Yield.cs" />
     <Compile Include="NamespaceProvider.cs" />
