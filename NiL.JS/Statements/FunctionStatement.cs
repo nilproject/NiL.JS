@@ -475,20 +475,21 @@ namespace NiL.JS.Statements
                 VariableDescriptor fdesc = null;
                 if (Reference.Descriptor == null)
                     Reference.descriptor = new VariableDescriptor(Reference, true, Reference.functionDepth + 1) { owner = this };
-                if (nvars.TryGetValue(name, out fdesc) && !fdesc.Defined)
-                {
-                    foreach (var r in fdesc.references)
-                        r.descriptor = Reference.Descriptor;
-                    Reference.Descriptor.references.UnionWith(fdesc.references);
-                    for (var i = body.variables.Length; i-- > 0; )
+                if (System.Array.FindIndex(arguments, x => x.Name == Reference.descriptor.name) == -1)
+                    if (nvars.TryGetValue(name, out fdesc) && !fdesc.Defined)
                     {
-                        if (body.variables[i] == fdesc)
+                        foreach (var r in fdesc.references)
+                            r.descriptor = Reference.Descriptor;
+                        Reference.Descriptor.references.UnionWith(fdesc.references);
+                        for (var i = body.variables.Length; i-- > 0; )
                         {
-                            body.variables[i] = Reference.Descriptor;
-                            break;
+                            if (body.variables[i] == fdesc)
+                            {
+                                body.variables[i] = Reference.Descriptor;
+                                break;
+                            }
                         }
                     }
-                }
             }
             for (var i = 0; i < arguments.Length; i++)
             {
