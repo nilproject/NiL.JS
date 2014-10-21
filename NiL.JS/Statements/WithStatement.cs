@@ -44,7 +44,7 @@ namespace NiL.JS.Statements
                 }
             };
         }
-
+#if !NET35
         internal override System.Linq.Expressions.Expression CompileToIL(Core.JIT.TreeBuildingState state)
         {
             var intContext = Expression.Parameter(typeof(WithContext));
@@ -66,7 +66,7 @@ namespace NiL.JS.Statements
                     )
                 ));
         }
-
+#endif
         private static WithContext initContext(Context parent, JSObject obj)
         {
             return new WithContext(obj, parent);

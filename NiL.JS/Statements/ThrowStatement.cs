@@ -44,12 +44,12 @@ namespace NiL.JS.Statements
                 }
             };
         }
-
+#if !NET35
         internal override System.Linq.Expressions.Expression CompileToIL(Core.JIT.TreeBuildingState state)
         {
             return System.Linq.Expressions.Expression.Throw(Expression.New(typeof(JSException).GetConstructor(new[] { typeof(JSObject) }), body.CompileToIL(state)));
         }
-
+#endif
         internal override JSObject Evaluate(Context context)
         {
 #if DEBUG // Экономим на переменных в релизе

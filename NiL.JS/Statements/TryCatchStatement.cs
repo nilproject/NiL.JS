@@ -91,7 +91,7 @@ namespace NiL.JS.Statements
                 }
             };
         }
-
+#if !NET35
         internal override System.Linq.Expressions.Expression CompileToIL(Core.JIT.TreeBuildingState state)
         {
             var except = Expression.Parameter(typeof(object));
@@ -224,7 +224,7 @@ namespace NiL.JS.Statements
             }
             return Expression.Block(new[] { except }, impl);
         }
-
+#endif
         internal override JSObject Evaluate(Context context)
         {
             Exception except = null;
@@ -269,7 +269,7 @@ namespace NiL.JS.Statements
                 return true;
             return false;
         }
-
+#if !NET35
         private Expression makeCatch(ParameterExpression except, Core.JIT.TreeBuildingState state)
         {
             if (catchBody == null)
@@ -297,7 +297,7 @@ namespace NiL.JS.Statements
                     ))
                 );
         }
-
+#endif
         private void catchHandler(Context context, Exception e)
         {
 

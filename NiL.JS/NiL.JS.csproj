@@ -213,7 +213,6 @@
     <Compile Include="Core\BaseTypes\Boolean.cs" />
     <Compile Include="Core\BinaryTree.cs" />
     <Compile Include="Core\BindedFunction.cs" />
-    <Compile Include="Core\IndexedDictionary.cs" />
     <Compile Include="Core\Modules\ImmutablePrototypeAttribute.cs" />
     <Compile Include="Core\RopeString.cs" />
     <Compile Include="Core\SparseArray.cs" />

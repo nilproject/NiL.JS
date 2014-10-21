@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using NiL.JS.Core;
 using NiL.JS.Core.BaseTypes;
 using NiL.JS.Core.JIT;
 using NiL.JS.Core.Modules;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace NiL.JS.Statements
 {
@@ -75,10 +74,10 @@ namespace NiL.JS.Statements
                     }
                     while (generatorContext == null);
                     while (thread.ThreadState != ThreadState.Suspended)
-                        Thread.Yield();
+                        Thread.Sleep(0);
                     thread.Resume();
                     while (generatorContext.abort == AbortType.None)
-                        Thread.Yield();
+                        Thread.Sleep(0);
                     var res = JSObject.CreateObject();
                     res["value"] = generatorContext.abortInfo;
                     res["done"] = generatorContext.abort == AbortType.Return;
@@ -92,7 +91,7 @@ namespace NiL.JS.Statements
                         generatorContext.abort = AbortType.None;
                         thread.Resume();
                         while (generatorContext.abort == AbortType.None)
-                            Thread.Yield();
+                            Thread.Sleep(0);
                         var res = JSObject.CreateObject();
                         res["value"] = generatorContext.abortInfo;
                         res["done"] = generatorContext.abort == AbortType.Return;

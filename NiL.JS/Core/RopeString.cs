@@ -3,11 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
+
 namespace NiL.JS.Core
 {
     public sealed class RopeString : IComparable, ICloneable, IComparable<string>, IEnumerable<char>, IEnumerable, IEquatable<string>
@@ -62,7 +60,7 @@ namespace NiL.JS.Core
                     if ((_firstSource is StringBuilder) && (_firstSource as StringBuilder).Length < index)
                         return (_firstSource as StringBuilder)[index];
                     if (firstSource.Length < index)
-                        return firstSource[index];
+                    return firstSource[index];
                 }
                 if (_secondSource != null)
                 {
@@ -70,10 +68,10 @@ namespace NiL.JS.Core
                         return (_secondSource as RopeString)[index];
                     if (_secondSource is StringBuilder)
                         return (_secondSource as StringBuilder)[index];
-                    return secondSource[index];
-                }
-                throw new ArgumentOutOfRangeException();
+                return secondSource[index];
             }
+                throw new ArgumentOutOfRangeException();
+        }
         }
 
         public int Length
@@ -85,15 +83,15 @@ namespace NiL.JS.Core
                 {
                     try
                     {
-                        if (_firstSource is RopeString)
+                if (_firstSource is RopeString)
                         {
                             RuntimeHelpers.EnsureSufficientExecutionStack();
-                            res = (_firstSource as RopeString).Length;
+                    res = (_firstSource as RopeString).Length;
                         }
                         else if (_firstSource is StringBuilder)
                             res = (_firstSource as StringBuilder).Length;
-                        else
-                            res = firstSource.Length;
+                else
+                    res = firstSource.Length;
                     }
                     catch (InsufficientExecutionStackException)
                     {
@@ -104,15 +102,15 @@ namespace NiL.JS.Core
                 {
                     try
                     {                        
-                        if (_secondSource is RopeString)
+                if (_secondSource is RopeString)
                         {
                             RuntimeHelpers.EnsureSufficientExecutionStack();
-                            res += (_secondSource as RopeString).Length;
+                    res += (_secondSource as RopeString).Length;
                         }
                         else if (_secondSource is StringBuilder)
                             res += (_secondSource as StringBuilder).Length;
-                        else
-                            res += secondSource.Length;
+                else
+                    res += secondSource.Length;
                     }
                     catch (InsufficientExecutionStackException)
                     {
@@ -495,13 +493,13 @@ namespace NiL.JS.Core
                             step.Push(0);
                             continue;
                         }
-                        else
+                else
                         {
                             _append(res, stack.Peek().firstSource ?? "");
                             step.Pop();
                             step.Push(1);
-                        }
-                    }
+            }
+        }
                     if (step.Peek() < 2)
                     {
                         if (stack.Peek()._secondSource is RopeString)
