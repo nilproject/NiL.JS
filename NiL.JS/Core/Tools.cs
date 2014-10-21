@@ -374,28 +374,27 @@ namespace NiL.JS.Core
             //return dtoString(d);
             var abs = Math.Abs(d);
             string res = null;
-            try
+            if (abs < 1.0)
             {
-                if (abs < 1.0)
-                {
-                    if (d == (d % 0.000001))
-                        return res = d.ToString("0.####e-0", System.Globalization.CultureInfo.InvariantCulture);
-                }
-                else if (abs >= 1e+21)
-                    return res = d.ToString("0.####e+0", System.Globalization.CultureInfo.InvariantCulture);
-                int neg = (d < 0 || (d == -0.0 && double.IsNegativeInfinity(1.0 / d))) ? 1 : 0;
-                res = abs < 1.0 ? neg == 1 ? "-0" : "0" : ((long)d).ToString(System.Globalization.CultureInfo.InvariantCulture);
-                abs %= 1.0;
-                if (abs != 0 && res.Length < (15 + neg))
-                    res += abs.ToString(divFormats[15 - res.Length + neg], System.Globalization.CultureInfo.InvariantCulture);
-                return res;
+                if (d == (d % 0.000001))
+                    return res = d.ToString("0.####e-0", System.Globalization.CultureInfo.InvariantCulture);
             }
-            finally
-            {
-                cachedDoubleStringsKeys[cachedDoubleStringsIter] = d;
-                cachedDoubleStringsValues[cachedDoubleStringsIter++] = res;
-                cachedDoubleStringsIter %= 5;
-            }
+            else if (abs >= 1e+21)
+                return res = d.ToString("0.####e+0", System.Globalization.CultureInfo.InvariantCulture);
+            int neg = (d < 0 || (d == -0.0 && double.IsNegativeInfinity(1.0 / d))) ? 1 : 0;
+            if (d == 100000000000000000000d)
+                res = "100000000000000000000";
+            else if (d == -100000000000000000000d)
+                res = "-100000000000000000000";
+            else
+                res = abs < 1.0 ? neg == 1 ? "-0" : "0" : ((d < 0 ? "-" : "") + ((ulong)(Math.Abs(d))).ToString(System.Globalization.CultureInfo.InvariantCulture));
+            abs %= 1.0;
+            if (abs != 0 && res.Length < (15 + neg))
+                res += abs.ToString(divFormats[15 - res.Length + neg], System.Globalization.CultureInfo.InvariantCulture);
+            cachedDoubleStringsKeys[cachedDoubleStringsIter] = d;
+            cachedDoubleStringsValues[cachedDoubleStringsIter++] = res;
+            cachedDoubleStringsIter %= 5;
+            return res;
         }
 
         private static string dtoString(double a)
