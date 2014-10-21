@@ -874,6 +874,9 @@ namespace NiL.JS.Core.BaseTypes
             if (data.Length == 0)
                 return notExists;
             var res = data[(int)(data.Length - 1)] ?? notExists;
+            int newLen = (int)(data.Length - 1);
+            data.RemoveAt(newLen);
+            data[newLen - 1] = data[newLen - 1];
             return res;
         }
 
