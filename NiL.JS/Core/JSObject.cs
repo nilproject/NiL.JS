@@ -1209,7 +1209,8 @@ namespace NiL.JS.Core
                                 && ((obj.valueType == JSObjectType.Double && nlenD != obj.dValue)
                                     || (obj.valueType == JSObjectType.Int && nlen != obj.iValue)))
                                 throw new JSException(new TypeError("Cannot change length of fixed size array"));
-                            (target as BaseTypes.Array).length.Assign(value);
+                            if (!(target as BaseTypes.Array).setLength(nlen))
+                                throw new JSException(new TypeError("Unable to reduce length because not configurable elements"));
                             value = notExists; // длина всегда неконфигурируема, поэтому код ниже пойдёт в обход,
                             // а там нужные проверки, которые, для экономии кода, сюда переносить не стал
                         }

@@ -1,5 +1,6 @@
 ﻿var $ERROR = console.log;
 
 console.log(function () {
-    return String(100000000000000000000);
+    var a = { 0: "hello", length : 1 };
+    return [].shift.call(a);
 }());

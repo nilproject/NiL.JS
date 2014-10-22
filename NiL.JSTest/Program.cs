@@ -195,7 +195,7 @@ console.log(array[0]);
 
             Context.GlobalContext.DebuggerCallback += (sender, e) => System.Diagnostics.Debugger.Break();
 
-            int mode = 100
+            int mode = 154//100
                    ;
             switch (mode)
             {

@@ -38,23 +38,16 @@ namespace NiL.JS.Core.BaseTypes
                     throw new JSException(new RangeError("Invalid array length"));
                 if ((attributes & JSObjectAttributesInternal.ReadOnly) != 0)
                     return;
-                try
+                array.setLength(nlen);
+                if ((long)(int)array.data.Length == array.data.Length)
                 {
-                    if (!array.setLength(nlen))
-                        throw new JSException(new TypeError("Unable to reduce length because not configurable elements"));
+                    this.iValue = (int)array.data.Length;
+                    this.valueType = JSObjectType.Int;
                 }
-                finally
+                else
                 {
-                    if ((long)(int)array.data.Length == array.data.Length)
-                    {
-                        this.iValue = (int)array.data.Length;
-                        this.valueType = JSObjectType.Int;
-                    }
-                    else
-                    {
-                        this.dValue = array.data.Length;
-                        this.valueType = JSObjectType.Double;
-                    }
+                    this.dValue = array.data.Length;
+                    this.valueType = JSObjectType.Double;
                 }
             }
         }
@@ -1001,13 +994,14 @@ namespace NiL.JS.Core.BaseTypes
                 if (data.Length == 0)
                     return notExists;
                 var res = data[0] ?? notExists;
+                data[0] = null;
                 if (res.valueType == JSObjectType.Property)
                     res = ((res.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(this, null);
                 foreach (var item in (data as IEnumerable<KeyValuePair<int, JSObject>>))
                 {
                     if (item.Key == 0)
                         continue;
-                    data[item.Key - 1] = item.Key;
+                    data[item.Key - 1] = item.Value;
                     data[item.Key] = null;
                 }
                 data.RemoveAt((int)(data.Length - 1));
@@ -1027,7 +1021,7 @@ namespace NiL.JS.Core.BaseTypes
                     return notExists;
                 }
                 this["length"] = lenObj = _length - 1;
-                var res = this["0"];
+                var res = this["0"].CloneImpl();
                 if (_length == 1)
                 {
                     this["0"] = notExists;
@@ -1082,7 +1076,7 @@ namespace NiL.JS.Core.BaseTypes
                 throw new ArgumentNullException("args");
             JSObject src = this;
             if (!src.isDefinded || (src.valueType >= JSObjectType.Object && src.oValue == null))
-                throw new JSException(new TypeError("Can not call Array.prototype.indexOf for null or undefined"));
+                throw new JSException(new TypeError("Can not call Array.prototype.slice for null or undefined"));
             HashSet<string> processedKeys = null;
             Array res = new Array();
             for (; ; )
@@ -1118,8 +1112,6 @@ namespace NiL.JS.Core.BaseTypes
                 }
                 else
                 {
-                    if (src.valueType == JSObjectType.String)
-                        return (src["indexOf"].oValue as Function).Invoke(src, args);
                     var lenObj = this["length"]; // тут же проверка на null/undefined с падением если надо
                     if (!lenObj.isDefinded)
                         return new Array();
