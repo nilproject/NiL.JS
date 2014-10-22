@@ -106,7 +106,7 @@ namespace NiL.JS.Core
         [Hidden]
         internal JSObject __proto__;
         [Hidden]
-        internal Dictionary<string, JSObject> fields;
+        internal IDictionary<string, JSObject> fields;
 
         [Hidden]
         internal JSObjectType valueType;
@@ -685,6 +685,12 @@ namespace NiL.JS.Core
 
         protected internal virtual IEnumerator<string> GetEnumeratorImpl(bool hideNonEnum)
         {
+            if (!hideNonEnum && valueType == JSObjectType.String)
+            {
+                var len = oValue.ToString().Length;
+                for (var i = 0; i < len; i++)
+                    yield return i.ToString();
+            }
             if (fields != null)
             {
                 foreach (var f in fields)
@@ -826,10 +832,10 @@ namespace NiL.JS.Core
             return res.isExist;
         }
 
-        internal static Dictionary<string, JSObject> createFields()
+        internal static IDictionary<string, JSObject> createFields()
         {
-            return new Dictionary<string, JSObject>();
-            //return new IndexedDictionary<string, JSObject>();
+            //return new Dictionary<string, JSObject>();
+            return new BinaryTree<JSObject>();
         }
 
         [Hidden]
@@ -953,12 +959,13 @@ namespace NiL.JS.Core
             var proto = args[0];
             if (proto.valueType < JSObjectType.Object)
                 throw new JSException(new TypeError("Prototype may be only Object or null."));
-            proto = proto.oValue as JSObject ?? proto;
+            if (proto.oValue is JSObject && (proto.oValue as JSObject).valueType >= JSObjectType.Object)
+                proto = proto.oValue as JSObject;
             var members = args[1];
             if (members.valueType >= JSObjectType.Object && members.oValue == null)
                 throw new JSException(new TypeError("Properties descriptor may be only Object."));
             var res = CreateObject();
-            if (proto.valueType >= JSObjectType.Object && proto.oValue != null)
+            if (proto.oValue != null)
                 res.__proto__ = proto;
             if (members.valueType >= JSObjectType.Object)
             {

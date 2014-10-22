@@ -406,137 +406,264 @@ namespace NiL.JS.Core.BaseTypes
         [AllowUnsafeCall(typeof(JSObject))]
         public JSObject filter(Arguments args)
         {
+            JSObject src = this;
+            if (!src.isDefinded || (src.valueType >= JSObjectType.Object && src.oValue == null))
+                throw new JSException(new TypeError("Can not call Array.prototype.filter for null or undefined"));
             if (args.Length < 1)
                 return undefined;
             var f = args[0] == null ? null : args[0].oValue as Function;
             if (f == null)
                 throw new JSException(new TypeError("Callback argument is not a function."));
-            var tb = args.Length > 1 ? args[1] : null;
-            var res = new Array();
             var ao = new Arguments();
             ao.length = 3;
             ao[0] = new JSObject();
             ao[1] = new JSObject();
-            ao[2] = this;
-            bool isArray = this.GetType() == typeof(Array);
+            ao[2] = src;
+            if (src.valueType < JSObjectType.Object)
+            {
+                ao[2] = new JSObject() { valueType = JSObjectType.Object, __proto__ = src.__proto__ ?? src["__proto__"], fields = src.fields };
+                ao[2].oValue = src;
+            }
+            var tb = args.Length > 1 ? args[1] : null;
             var context = Context.CurrentContext;
-            if (isArray)
+            var res = new SparseArray<JSObject>();
+            
+            if (args == null)
+                throw new ArgumentNullException("args");
+            var el = args[0];
+            long _length = -1;
+            HashSet<string> processedKeys = null;
+            bool goDeep = true;
+            for (; goDeep; )
             {
-                var len = data.Length;
-                foreach (var element in (data as IEnumerable<KeyValuePair<int, JSObject>>))
+                goDeep = false;
+                if (src.GetType() == typeof(Array))
                 {
-                    if (element.Value == null || !element.Value.isExist)
-                        continue;
-                    if (element.Key >= len)
-                        break;
-                    var v = element.Value;
-                    if (v.valueType == JSObjectType.Property)
-                        v = ((v.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(this, null);
-                    ao[0].Assign(v);
-                    ao[1].Assign(context.wrap(element.Key));
-                    if ((bool)f.Invoke(tb, ao).CloneImpl())
-                        res.data.Add(v);
+                    if (_length == -1)
+                        _length = data.Length;
+                    long prew = -1;
+                    foreach (var element in ((src as Array).data as IEnumerable<KeyValuePair<int, JSObject>>))
+                    {
+                        if (element.Key >= _length) // эээ...
+                            break;
+                        var value = element.Value;
+                        if (value == null || !value.isExist)
+                            continue;
+                        if (!goDeep && System.Math.Abs(prew - element.Key) > 1)
+                            goDeep = true;
+                        if (value.valueType == JSObjectType.Property)
+                            value = (value.oValue as Function[])[1] == null ? undefined : (value.oValue as Function[])[1].Invoke(src, null);
+                        if (processedKeys != null)
+                        {
+                            var sk = element.Key.ToString();
+                            if (processedKeys.Contains(sk))
+                                continue;
+                            processedKeys.Add(sk);
+                        }
+                        ao[0].Assign(value);
+                        ao[1].Assign(context.wrap(element.Key));
+                        if ((bool)f.Invoke(tb, ao))
+                            res[element.Key] = value.CloneImpl();
+                    }
+                    goDeep |= System.Math.Abs(prew - _length) > 1;
+                }
+                else
+                {
+                    if (_length == -1)
+                    {
+                        var len = src["length"]; // тут же проверка на null/undefined с падением если надо
+                        if (!len.isDefinded)
+                            return -1;
+                        if (len.valueType == JSObjectType.Property)
+                            len = ((len.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(src, null);
+                        if (len.valueType >= JSObjectType.Object)
+                            len = len.ToPrimitiveValue_Value_String();
+                        _length = (uint)Tools.JSObjectToInt64(len, 0, true);
+                        src["length"] = _length;
+                    }
+                    long prew = -1;
+                    var @enum = src.GetEnumeratorImpl(false);
+                    while (@enum.MoveNext())
+                    {
+                        var i = @enum.Current;
+                        var pindex = 0;
+                        var dindex = 0.0;
+                        long lindex = 0;
+                        if (Tools.ParseNumber(i, ref pindex, out dindex)
+                            && (pindex == i.Length)
+                            && dindex < _length
+                            && (lindex = (long)dindex) == dindex)
+                        {
+                            var value = src[i];
+                            if (value.valueType == JSObjectType.Property)
+                                value = (value.oValue as Function[])[1] == null ? undefined : (value.oValue as Function[])[1].Invoke(src, null);
+                            if (!value.isExist)
+                                continue;
+                            if (!goDeep && System.Math.Abs(prew - lindex) > 1)
+                                goDeep = true;
+                            if (processedKeys != null)
+                            {
+                                var sk = lindex.ToString();
+                                if (processedKeys.Contains(sk))
+                                    continue;
+                                processedKeys.Add(sk);
+                            }
+                            ao[0].Assign(value);
+                            ao[1].Assign(context.wrap(lindex));
+                            if ((bool)f.Invoke(tb, ao))
+                                res[(int)(uint)lindex] = value.CloneImpl();
+                        }
+                    }
+                    goDeep |= System.Math.Abs(prew - _length) > 1;
+                }
+                var crnt = src;
+                if (src.__proto__ == null)
+                    src.GetMember("__proto__");
+                if (src.__proto__ == null)
+                    break;
+                src = src.__proto__.oValue as JSObject ?? src.__proto__;
+                if (src == null || (src.valueType >= JSObjectType.String && src.oValue == null))
+                    break;
+                if (processedKeys == null)
+                {
+                    processedKeys = new HashSet<string>();
+                    for (var @enum = crnt.GetEnumeratorImpl(false); @enum.MoveNext(); )
+                        processedKeys.Add(@enum.Current);
                 }
             }
-            else
-            {
-                var lenObj = this["length"];
-                if (lenObj.valueType == JSObjectType.Property)
-                    lenObj = ((lenObj.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(this, null);
-                long len = (long)(uint)Tools.JSObjectToDouble(lenObj);
-                if (len > uint.MaxValue)
-                    throw new JSException(new RangeError("Invalid array length"));
-                for (var i = 0L; i < len; i++)
-                {
-                    if (i <= int.MaxValue)
-                    {
-                        ao[1].valueType = JSObjectType.Int;
-                        ao[1].iValue = (int)i;
-                    }
-                    else
-                    {
-                        ao[1].valueType = JSObjectType.Double;
-                        ao[1].dValue = i;
-                    }
-                    var v = this.GetMember(ao[1], false, false);
-                    if (!v.isExist)
-                        continue;
-                    if (v.valueType == JSObjectType.Property)
-                        v = ((v.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(this, null);
-                    ao[0].Assign(v);
-                    if ((bool)f.Invoke(tb, ao).CloneImpl())
-                        res.data.Add(v);
-                }
-            }
-            return res;
+            var rres = new Array();
+            foreach (var item in res)
+                if (item != null)
+                    rres.data.Add(item);
+            return rres;
         }
 
         [DoNotEnumerate]
         [AllowUnsafeCall(typeof(JSObject))]
         public JSObject map(Arguments args)
         {
+            JSObject src = this;
+            if (!src.isDefinded || (src.valueType >= JSObjectType.Object && src.oValue == null))
+                throw new JSException(new TypeError("Can not call Array.prototype.map for null or undefined"));
+            if (src.valueType < JSObjectType.Object)
+            {
+                src = new JSObject() { valueType = JSObjectType.Object, __proto__ = src.__proto__ ?? src["__proto__"], fields = src.fields };
+                src.oValue = src;
+            }
             if (args.Length < 1)
                 return undefined;
             var f = args[0] == null ? null : args[0].oValue as Function;
             if (f == null)
                 throw new JSException(new TypeError("Callback argument is not a function."));
             var tb = args.Length > 1 ? args[1] : null;
+            var context = Context.CurrentContext;
             var res = new Array();
             var ao = new Arguments();
             ao.length = 3;
             ao[0] = new JSObject();
             ao[1] = new JSObject();
-            ao[2] = this;
-            bool isArray = this.GetType() == typeof(Array);
-            var context = Context.CurrentContext;
-            if (isArray)
+            ao[2] = src;
+            if (args == null)
+                throw new ArgumentNullException("args");
+            var el = args[0];
+            long _length = -1;
+            HashSet<string> processedKeys = null;
+            bool goDeep = true;
+            for (; goDeep; )
             {
-                var len = data.Length;
-                foreach (var element in (data as IEnumerable<KeyValuePair<int, JSObject>>))
+                goDeep = false;
+                if (src.GetType() == typeof(Array))
                 {
-                    if (element.Value == null || !element.Value.isExist)
-                        continue;
-                    if (element.Key >= len)
-                        break;
-                    var v = element.Value;
-                    if (v.valueType == JSObjectType.Property)
-                        v = ((v.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(this, null);
-                    ao[0].Assign(v);
-                    ao[1].Assign(context.wrap(element.Key));
-                    res.data[element.Key] = f.Invoke(tb, ao).CloneImpl();
+                    if (_length == -1)
+                        _length = data.Length;
+                    long prew = -1;
+                    foreach (var element in ((src as Array).data as IEnumerable<KeyValuePair<int, JSObject>>))
+                    {
+                        if (element.Key >= _length) // эээ...
+                            break;
+                        var value = element.Value;
+                        if (value == null || !value.isExist)
+                            continue;
+                        if (!goDeep && System.Math.Abs(prew - element.Key) > 1)
+                            goDeep = true;
+                        if (value.valueType == JSObjectType.Property)
+                            value = (value.oValue as Function[])[1] == null ? undefined : (value.oValue as Function[])[1].Invoke(src, null);
+                        if (processedKeys != null)
+                        {
+                            var sk = element.Key.ToString();
+                            if (processedKeys.Contains(sk))
+                                continue;
+                            processedKeys.Add(sk);
+                        }
+                        ao[0].Assign(value);
+                        ao[1].Assign(context.wrap(element.Key));
+                        res.data[element.Key] = f.Invoke(tb, ao).CloneImpl();
+                    }
+                    goDeep |= System.Math.Abs(prew - _length) > 1;
                 }
-                res.data[(int)len] = res.data[(int)len];
-            }
-            else
-            {
-                var lenObj = this["length"];
-                if (lenObj.valueType == JSObjectType.Property)
-                    lenObj = ((lenObj.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(this, null);
-                long len = (long)(uint)Tools.JSObjectToDouble(lenObj);
-                if (len > uint.MaxValue)
-                    throw new JSException(new RangeError("Invalid array length"));
-                for (var i = 0L; i < len; i++)
+                else
                 {
-                    if (i <= int.MaxValue)
+                    if (_length == -1)
                     {
-                        ao[1].valueType = JSObjectType.Int;
-                        ao[1].iValue = (int)i;
+                        var len = src["length"]; // тут же проверка на null/undefined с падением если надо
+                        if (!len.isDefinded)
+                            return -1;
+                        if (len.valueType == JSObjectType.Property)
+                            len = ((len.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(src, null);
+                        if (len.valueType >= JSObjectType.Object)
+                            len = len.ToPrimitiveValue_Value_String();
+                        _length = (uint)Tools.JSObjectToInt64(len);
                     }
-                    else
+                    long prew = -1;
+                    var @enum = src.GetEnumeratorImpl(false);
+                    while (@enum.MoveNext())
                     {
-                        ao[1].valueType = JSObjectType.Double;
-                        ao[1].dValue = i;
+                        var i = @enum.Current;
+                        var pindex = 0;
+                        var dindex = 0.0;
+                        long lindex = 0;
+                        if (Tools.ParseNumber(i, ref pindex, out dindex)
+                            && (pindex == i.Length)
+                            && dindex < _length
+                            && (lindex = (long)dindex) == dindex)
+                        {
+                            var value = src[i];
+                            if (value.valueType == JSObjectType.Property)
+                                value = (value.oValue as Function[])[1] == null ? undefined : (value.oValue as Function[])[1].Invoke(src, null);
+                            if (!value.isExist)
+                                continue;
+                            if (!goDeep && System.Math.Abs(prew - lindex) > 1)
+                                goDeep = true;
+                            if (processedKeys != null)
+                            {
+                                var sk = lindex.ToString();
+                                if (processedKeys.Contains(sk))
+                                    continue;
+                                processedKeys.Add(sk);
+                            }
+                            ao[0].Assign(value);
+                            ao[1].Assign(context.wrap(lindex));
+                            res.data[(int)(uint)lindex] = f.Invoke(tb, ao).CloneImpl();
+                        }
                     }
-                    var v = this.GetMember(ao[1], false, false);
-                    if (!v.isExist)
-                        continue;
-                    if (v.valueType == JSObjectType.Property)
-                        v = ((v.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(this, null);
-                    ao[0].Assign(v);
-                    res.data[(int)i] = f.Invoke(tb, ao).CloneImpl();
+                    goDeep |= System.Math.Abs(prew - _length) > 1;
                 }
-                res.data[(int)len] = res.data[(int)len];
+                var crnt = src;
+                if (src.__proto__ == null)
+                    src.GetMember("__proto__");
+                if (src.__proto__ == null)
+                    break;
+                src = src.__proto__.oValue as JSObject ?? src.__proto__;
+                if (src == null || (src.valueType >= JSObjectType.String && src.oValue == null))
+                    break;
+                if (processedKeys == null)
+                {
+                    processedKeys = new HashSet<string>();
+                    for (var @enum = crnt.GetEnumeratorImpl(false); @enum.MoveNext(); )
+                        processedKeys.Add(@enum.Current);
+                }
             }
+            res.data[(int)_length - 1] = res.data[(int)_length - 1];
             return res;
         }
 
@@ -627,8 +754,6 @@ namespace NiL.JS.Core.BaseTypes
                     var fromIndex = Tools.JSObjectToInt64(args[1], 0, true);
                     if (fromIndex < 0)
                         fromIndex += _length;
-                    if (args.Length == 0)
-                        return -1;
                     var len = _length;
                     foreach (var element in ((src as Array).data as IEnumerable<KeyValuePair<int, JSObject>>))
                     {
@@ -638,7 +763,7 @@ namespace NiL.JS.Core.BaseTypes
                         if (value == null || !value.isExist)
                             continue;
                         if (value.valueType == JSObjectType.Property)
-                            value = ((value.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(src, null);
+                            value = (value.oValue as Function[])[1] == null ? undefined : (value.oValue as Function[])[1].Invoke(src, null);
                         if (processedKeys != null)
                         {
                             var sk = element.Key.ToString();
@@ -665,8 +790,6 @@ namespace NiL.JS.Core.BaseTypes
                             len = len.ToPrimitiveValue_Value_String();
                         _length = (uint)Tools.JSObjectToInt64(len);
                     }
-                    if (args.Length == 0)
-                        return -1;
                     var fromIndex = Tools.JSObjectToInt64(args[1], 0, true);
                     if (fromIndex < 0)
                         fromIndex += _length;
@@ -684,7 +807,7 @@ namespace NiL.JS.Core.BaseTypes
                         {
                             var temp = src[i];
                             if (temp.valueType == JSObjectType.Property)
-                                temp = ((temp.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(src, null);
+                                temp = (temp.oValue as Function[])[1] == null ? undefined : (temp.oValue as Function[])[1].Invoke(src, null);
                             if (!temp.isExist)
                                 continue;
                             if (processedKeys != null)
@@ -753,46 +876,35 @@ namespace NiL.JS.Core.BaseTypes
             if (args == null)
                 throw new ArgumentNullException("args");
             var el = args[0];
-            int pos = 0;
-            if (args.Length > 1)
-            {
-                switch (args[1].valueType)
-                {
-                    case JSObjectType.Int:
-                    case JSObjectType.Bool:
-                        {
-                            pos = args[1].iValue;
-                            break;
-                        }
-                    case JSObjectType.Double:
-                        {
-                            pos = (int)args[1].dValue;
-                            break;
-                        }
-                    case JSObjectType.Object:
-                    case JSObjectType.Date:
-                    case JSObjectType.Function:
-                    case JSObjectType.String:
-                        {
-                            double d;
-                            Tools.ParseNumber(args[1].ToString(), pos, out d, Tools.ParseNumberOptions.Default);
-                            pos = (int)d;
-                            break;
-                        }
-                }
-            }
             JSObject src = this;
             if (!src.isDefinded || (src.valueType >= JSObjectType.Object && src.oValue == null))
                 throw new JSException(new TypeError("Can not call Array.prototype.indexOf for null or undefined"));
             HashSet<string> processedKeys = null;
+            long _length = -1;
             for (; ; )
             {
                 if (src.GetType() == typeof(Array))
                 {
-                    if (args.Length == 0)
-                        return -1;
+                    if (_length == -1)
+                    {
+                        _length = (src as Array).data.Length;
+                        long pos = long.MaxValue;
+                        if (args.Length > 1)
+                            pos = Tools.JSObjectToInt64(args[1], 0, true);
+                        if (pos < 0)
+                            _length = pos + _length + 1;
+                        else if (pos < _length)
+                            _length = pos + 1;
+                    }
                     foreach (var element in (src as Array).data.Reversed)
                     {
+                        if ((uint)element.Key >= _length
+                               || element.Value == null
+                               || !element.Value.isExist)
+                            continue;
+                        var item = element.Value;
+                        if (item.valueType == JSObjectType.Property)
+                            item = (item.oValue as Function[])[1] == null ? undefined : (item.oValue as Function[])[1].Invoke(src, null);
                         if (processedKeys != null)
                         {
                             var sk = element.Key.ToString();
@@ -800,27 +912,37 @@ namespace NiL.JS.Core.BaseTypes
                                 continue;
                             processedKeys.Add(sk);
                         }
-                        if (element.Value != null && element.Value.isExist && Expressions.StrictEqual.Check(element.Value, el, null))
-                            return Context.CurrentContext.wrap(element.Key);
+                        if (Expressions.StrictEqual.Check(item, el, null))
+                            return Context.CurrentContext.wrap((uint)element.Key);
                     }
                 }
                 else
                 {
                     if (src.valueType == JSObjectType.String)
                         return (src["lastIndexOf"].oValue as Function).Invoke(src, args);
-                    var len = src["length"]; // тут же проверка на null/undefined с падением если надо
-                    if (!len.isDefinded)
-                        return -1;
-                    if (len.valueType == JSObjectType.Property)
-                        len = ((len.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(src, null);
-                    if (len.valueType >= JSObjectType.Object)
-                        len = len.ToPrimitiveValue_Value_String();
-                    var _length = (uint)Tools.JSObjectToInt64(len);
-                    if (args.Length == 0)
-                        return -1;
-                    long result = -1;
-                    foreach (var i in src)
+                    if (_length == -1)
                     {
+                        var len = src["length"]; // тут же проверка на null/undefined с падением если надо
+                        if (!len.isDefinded)
+                            return -1;
+                        if (len.valueType == JSObjectType.Property)
+                            len = ((len.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(src, null);
+                        if (len.valueType >= JSObjectType.Object)
+                            len = len.ToPrimitiveValue_Value_String();
+                        _length = (uint)Tools.JSObjectToInt64(len);
+                        long pos = long.MaxValue;
+                        if (args.Length > 1)
+                            pos = Tools.JSObjectToInt64(args[1], 0, true);
+                        if (pos < 0)
+                            _length = pos + _length + 1;
+                        else if (pos < _length)
+                            _length = pos + 1;
+                    }
+                    long result = -1;
+                    var @enum = src.GetEnumeratorImpl(false);
+                    while (@enum.MoveNext())
+                    {
+                        var i = @enum.Current;
                         var pindex = 0;
                         var dindex = 0.0;
                         long lindex = 0;
@@ -836,8 +958,10 @@ namespace NiL.JS.Core.BaseTypes
                                     continue;
                                 processedKeys.Add(sk);
                             }
-                            var temp = this[i];
-                            if (temp.isExist && Expressions.StrictEqual.Check(temp, el, null))
+                            var item = this[i];
+                            if (item.valueType == JSObjectType.Property)
+                                item = (item.oValue as Function[])[1] == null ? undefined : (item.oValue as Function[])[1].Invoke(src, null);
+                            if (item.isExist && Expressions.StrictEqual.Check(item, el, null))
                             {
                                 result = lindex;
                             }
@@ -1098,7 +1222,7 @@ namespace NiL.JS.Core.BaseTypes
                         if (value == null || !value.isExist)
                             continue;
                         if (value.valueType == JSObjectType.Property)
-                            value = ((value.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(src, null);
+                            value = (value.oValue as Function[])[1] == null ? undefined : (value.oValue as Function[])[1].Invoke(src, null);
                         if (processedKeys != null)
                         {
                             var sk = element.Key.ToString();
@@ -1618,8 +1742,9 @@ namespace NiL.JS.Core.BaseTypes
             return join(null).oValue.ToString();
         }
 
-        [CLSCompliant(false)]
         [DoNotEnumerate]
+        [CLSCompliant(false)]
+        [ParametersCount(0)]
         public new JSObject toString(Arguments args)
         {
             if (this.GetType() != typeof(Array) && !this.GetType().IsSubclassOf(typeof(Array)))
@@ -1636,7 +1761,7 @@ namespace NiL.JS.Core.BaseTypes
                 if (node.Value != null
                     && node.Value.isExist
                     && (!hideNonEnum || (node.Value.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
-                    yield return node.Key.ToString();
+                    yield return ((uint)node.Key).ToString();
             }
             if (!hideNonEnum)
                 yield return "length";
