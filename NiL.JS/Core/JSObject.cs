@@ -687,9 +687,10 @@ namespace NiL.JS.Core
         {
             if (!hideNonEnum && valueType == JSObjectType.String)
             {
-                var len = oValue.ToString().Length;
+                var len = (oValue.ToString()).Length;
                 for (var i = 0; i < len; i++)
-                    yield return i.ToString();
+                    yield return i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture);
+                yield return "length";
             }
             if (fields != null)
             {
@@ -834,8 +835,8 @@ namespace NiL.JS.Core
 
         internal static IDictionary<string, JSObject> createFields()
         {
-            //return new Dictionary<string, JSObject>();
-            return new BinaryTree<JSObject>();
+            return new Dictionary<string, JSObject>();
+            //return new BinaryTree<JSObject>();
         }
 
         [Hidden]

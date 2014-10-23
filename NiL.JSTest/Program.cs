@@ -39,7 +39,7 @@ namespace NiL.JSTest
             _("Found " + fls.Length + " js-files");
             bool skipedShowed = false;
             sw.Start();
-            for (int i = 1300; i < fls.Length; i++)
+            for (int i = 0; i < fls.Length; i++)
             {
                 if (i != 0 && !skipedShowed)
                     _("Skiped: " + i);
@@ -195,7 +195,7 @@ console.log(array[0]);
 
             Context.GlobalContext.DebuggerCallback += (sender, e) => System.Diagnostics.Debugger.Break();
 
-            int mode = 154//100
+            int mode = 0//152//154//100
                    ;
             switch (mode)
             {

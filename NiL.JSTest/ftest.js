@@ -1,17 +1,13 @@
 ﻿var $ERROR = console.log;
 
 console.log(function () {
-    function callbackfn(val, idx, obj) {
-        return obj instanceof Function;
-    }
+    var str = new String("abc");
+    str[5] = "de";
 
-    var obj = function (a, b) {
-        return a + b;
-    };
-    obj[0] = 11;
-    obj[1] = 9;
+    var expResult = ["0", "1", "2", "length", "5"];
 
-    var newArr = Array.prototype.filter.call(obj, callbackfn);
+    var result = Object.getOwnPropertyNames(str);
 
-    return newArr[0] === 11 && newArr[1] === 9;
+    for (var i of result)
+        console.log(i);
 }());

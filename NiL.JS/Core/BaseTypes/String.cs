@@ -994,19 +994,6 @@ namespace NiL.JS.Core.BaseTypes
         }
         #endregion
 
-        protected internal override System.Collections.Generic.IEnumerator<string> GetEnumeratorImpl(bool hideNonEnum)
-        {
-            if (!hideNonEnum)
-            {
-                var len = (oValue.ToString()).Length;
-                for (var i = 0; i < len; i++)
-                    yield return i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture);
-                yield return "length";
-            }
-            for (var e = base.GetEnumeratorImpl(hideNonEnum); e.MoveNext(); )
-                yield return e.Current;
-        }
-
         [Hidden]
         public static implicit operator String(string val)
         {
