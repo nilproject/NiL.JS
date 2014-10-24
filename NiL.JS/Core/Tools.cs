@@ -62,7 +62,7 @@ namespace NiL.JS.Core
                             int ix = 0;
                             string s = (arg.oValue.ToString());
                             if (s.Length > 0 && (char.IsWhiteSpace(s[0]) || char.IsWhiteSpace(s[s.Length - 1])))
-                                s = s.Trim();
+                                s = s.Trim(Tools.TrimChars);
                             if (Tools.ParseNumber(s, ref ix, out x, 0, ParseNumberOptions.AllowFloat | ParseNumberOptions.AllowAutoRadix) && ix < s.Length)
                                 return double.NaN;
                             return x;

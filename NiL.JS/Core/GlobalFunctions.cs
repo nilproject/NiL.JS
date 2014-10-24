@@ -87,7 +87,7 @@ namespace NiL.JS.Core
                 return double.IsInfinity(source.dValue) || double.IsNaN(source.dValue) ?
                     Number.NaN : source.dValue == 0.0 ? (Number)0 : // +0 и -0 должны стать равными
                     (Number)System.Math.Truncate(source.dValue);
-            var arg = source.ToString().Trim();
+            var arg = source.ToString().Trim(Tools.TrimChars);
             if (!string.IsNullOrEmpty(arg))
                 Tools.ParseNumber(arg, out result, radix, Tools.ParseNumberOptions.AllowAutoRadix);
             if (double.IsInfinity(result))
@@ -104,7 +104,7 @@ namespace NiL.JS.Core
             if (source.valueType == JSObjectType.Double)
                 return source.dValue == 0.0 ? (Number)0 : // +0 и -0 должны стать равными
                     (Number)source.dValue;
-            var arg = source.ToString().Trim();
+            var arg = source.ToString().Trim(Tools.TrimChars);
             if (!string.IsNullOrEmpty(arg))
                 Tools.ParseNumber(arg, out result, Tools.ParseNumberOptions.AllowFloat);
             return result;

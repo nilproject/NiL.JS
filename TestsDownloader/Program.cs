@@ -63,17 +63,32 @@ namespace TestsDownloader
 
         private static void download(string url, string rootDir)
         {
-            string title = "downloading: " + url + " ...";
+            string title = "downloading: " + url;
             Console.Write(title);
             WebRequest wr = HttpWebRequest.Create(url);
+            char[] buffer = new char[17];
             using (var response = wr.GetResponse())
             {
-                var data = new StreamReader(response.GetResponseStream()).ReadToEnd();
                 int line = Console.CursorTop;
+                var stream = new StreamReader(response.GetResponseStream());
+                var data = new StringBuilder();
+                while (!stream.EndOfStream)
+                {
+                    var i = 0;
+                    while (i < buffer.Length && !stream.EndOfStream)
+                        i += stream.ReadBlock(buffer, i, buffer.Length - i);
+                    data.Append(buffer);
+                    if (i < buffer.Length)
+                        data.Length -= buffer.Length - i;
+                    Console.SetCursorPosition(title.Length + 1, line);
+                    Console.Write(data.Length * sizeof(char) + " bytes");
+                }
+                Console.SetCursorPosition(title.Length + 1, line);
+                Console.Write("                              ");
                 title = "saving: " + url;
                 Console.SetCursorPosition(0, line);
                 Console.Write(title + "         ");
-                var tests = JSON.parse(data).GetMember("testsCollection");
+                var tests = JSON.parse(data.ToString()).GetMember("testsCollection");
                 var testsCount = Tools.JSObjectToDouble(tests.GetMember("numTests")) * 0.01;
                 tests = tests.GetMember("tests");
                 double index = 0;

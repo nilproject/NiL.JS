@@ -755,19 +755,10 @@ namespace NiL.JS.Core.BaseTypes
         public virtual JSObject Invoke(JSObject thisBind, Arguments args)
         {
             var body = creator.body;
-            if (body == null || body.body.Length == 0)
+            if ((body == null || body.body.Length == 0) && thisBind != null)
             {
-                if (thisBind != null && thisBind.oValue == typeof(New) as object)
-                {
-                    thisBind.__proto__ = prototype;
-                    if (thisBind.__proto__.valueType < JSObjectType.Object)
-                        thisBind.__proto__ = null;
-                    else
-                        thisBind.__proto__ = thisBind.__proto__.CloneImpl();
-                    thisBind.oValue = thisBind;
-                }
-                notExists.valueType = JSObjectType.NotExistsInObject;
-                return notExists;
+                correctThisBind(thisBind, body, null);
+                return undefined;
             }
             var oldargs = _arguments;
             bool intricate = creator.containsWith || containsArguments || containsEval;
@@ -939,7 +930,7 @@ namespace NiL.JS.Core.BaseTypes
                     thisBind.__proto__ = thisBind.__proto__.CloneImpl();
                 thisBind.oValue = thisBind;
             }
-            else
+            else if (internalContext != null)
             {
                 if (!body.strict) // Поправляем this
                 {

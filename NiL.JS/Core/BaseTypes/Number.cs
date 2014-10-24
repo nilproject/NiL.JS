@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Text;
 using NiL.JS.Core.Modules;
 
 namespace NiL.JS.Core.BaseTypes
@@ -91,7 +92,8 @@ namespace NiL.JS.Core.BaseTypes
         [Modules.DoNotEnumerate]
         public Number(string value)
         {
-            value = value.Trim();
+            var sb = new StringBuilder(value);
+            value = value.Trim(Tools.TrimChars);
             valueType = JSObjectType.Int;
             dValue = value.Length != 0 ? double.NaN : 0;
             valueType = JSObjectType.Double;

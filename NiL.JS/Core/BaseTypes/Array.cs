@@ -10,6 +10,120 @@ namespace NiL.JS.Core.BaseTypes
     [Serializable]
     public sealed class Array : JSObject
     {
+        private static long getLengthOfIterably(JSObject src)
+        {
+            var len = src.GetMember("length", true, false); // тут же проверка на null/undefined с падением если надо
+            if (src.valueType != JSObjectType.Object)
+                len = len.CloneImpl();
+            if (len.valueType == JSObjectType.Property)
+            {
+                if ((len.attributes & JSObjectAttributesInternal.ReadOnly) == 0)
+                {
+                    len.valueType = JSObjectType.Undefined;
+                    len.Assign(((len.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(src, null));
+                }
+                else
+                    len = ((len.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(src, null);
+            }
+            if (len.valueType >= JSObjectType.Object)
+                len.Assign(len.ToPrimitiveValue_Value_String());
+            return (uint)Tools.JSObjectToInt64(len, 0, false);
+        }
+
+        private static Array iterableToArray(JSObject src)
+        {
+            Array temp = new Array();
+            long _length = -1;
+            HashSet<string> processedKeys = null;
+            bool goDeep = true;
+            for (; goDeep; )
+            {
+                goDeep = false;
+                if (src.GetType() == typeof(Array))
+                {
+                    if (_length == -1)
+                        _length = (src as Array).data.Length;
+                    long prew = -1;
+                    foreach (var element in ((src as Array).data as IEnumerable<KeyValuePair<int, JSObject>>))
+                    {
+                        if (element.Key >= _length) // эээ...
+                            break;
+                        var value = element.Value;
+                        if (value == null || !value.isExist)
+                            continue;
+                        if (!goDeep && System.Math.Abs(prew - element.Key) > 1)
+                            goDeep = true;
+                        if (value.valueType == JSObjectType.Property)
+                            value = (value.oValue as Function[])[1] == null ? undefined : (value.oValue as Function[])[1].Invoke(src, null);
+                        if (processedKeys != null)
+                        {
+                            var sk = element.Key.ToString();
+                            if (processedKeys.Contains(sk))
+                                continue;
+                            processedKeys.Add(sk);
+                        }
+                        temp.data[element.Key] = element.Value;
+                    }
+                    goDeep |= System.Math.Abs(prew - _length) > 1;
+                }
+                else
+                {
+                    if (_length == -1)
+                    {
+                        _length = getLengthOfIterably(src);
+                        if (_length == 0)
+                            return new Array();
+                    }
+                    long prew = -1;
+                    var @enum = src.GetEnumeratorImpl(false);
+                    while (@enum.MoveNext())
+                    {
+                        var i = @enum.Current;
+                        var pindex = 0;
+                        var dindex = 0.0;
+                        long lindex = 0;
+                        if (Tools.ParseNumber(i, ref pindex, out dindex)
+                            && (pindex == i.Length)
+                            && dindex < _length
+                            && (lindex = (long)dindex) == dindex)
+                        {
+                            var value = src[i];
+                            if (value.valueType == JSObjectType.Property)
+                                value = (value.oValue as Function[])[1] == null ? undefined : (value.oValue as Function[])[1].Invoke(src, null);
+                            if (!value.isExist)
+                                continue;
+                            if (!goDeep && System.Math.Abs(prew - lindex) > 1)
+                                goDeep = true;
+                            if (processedKeys != null)
+                            {
+                                var sk = lindex.ToString();
+                                if (processedKeys.Contains(sk))
+                                    continue;
+                                processedKeys.Add(sk);
+                            }
+                            temp.data[(int)(uint)lindex] = value;
+                        }
+                    }
+                    goDeep |= System.Math.Abs(prew - _length) > 1;
+                }
+                var crnt = src;
+                if (src.__proto__ == null)
+                    src.GetMember("__proto__");
+                if (src.__proto__ == null)
+                    break;
+                src = src.__proto__.oValue as JSObject ?? src.__proto__;
+                if (src == null || (src.valueType >= JSObjectType.String && src.oValue == null))
+                    break;
+                if (processedKeys == null)
+                {
+                    processedKeys = new HashSet<string>();
+                    for (var @enum = crnt.GetEnumeratorImpl(false); @enum.MoveNext(); )
+                        processedKeys.Add(@enum.Current);
+                }
+            }
+            return temp;
+        }
+
         private sealed class _lengthField : JSObject
         {
             private Array array;
@@ -299,7 +413,7 @@ namespace NiL.JS.Core.BaseTypes
                 {
                     if (_length == -1)
                     {
-                        _length = data.Length;
+                        _length = (src as Array).data.Length;
                         if (f == null)
                             throw new JSException(new TypeError("Callback argument is not a function."));
                     }
@@ -333,18 +447,7 @@ namespace NiL.JS.Core.BaseTypes
                 {
                     if (_length == -1)
                     {
-                        var len = src["length"]; // тут же проверка на null/undefined с падением если надо
-                        if (src.valueType != JSObjectType.Object)
-                            len = len.CloneImpl();
-                        if (len.valueType == JSObjectType.Property)
-                        {
-                            len.valueType = JSObjectType.Undefined;
-                            len.attributes &= ~JSObjectAttributesInternal.ReadOnly;
-                            len.Assign(((len.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(src, null));
-                        }
-                        if (len.valueType >= JSObjectType.Object)
-                            len.Assign(len.ToPrimitiveValue_Value_String());
-                        _length = (uint)Tools.JSObjectToInt64(len, 0, false);
+                        _length = getLengthOfIterably(src);
                         if (_length == 0)
                             return new Array();
                         if (f == null)
@@ -436,7 +539,7 @@ namespace NiL.JS.Core.BaseTypes
                 {
                     if (_length == -1)
                     {
-                        _length = data.Length;
+                        _length = (src as Array).data.Length;
                         if (f == null)
                             throw new JSException(new TypeError("Callback argument is not a function."));
                     }
@@ -470,18 +573,7 @@ namespace NiL.JS.Core.BaseTypes
                 {
                     if (_length == -1)
                     {
-                        var len = src["length"]; // тут же проверка на null/undefined с падением если надо
-                        if (src.valueType != JSObjectType.Object)
-                            len = len.CloneImpl();
-                        if (len.valueType == JSObjectType.Property)
-                        {
-                            len.valueType = JSObjectType.Undefined;
-                            len.attributes &= ~JSObjectAttributesInternal.ReadOnly;
-                            len.Assign(((len.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(src, null));
-                        }
-                        if (len.valueType >= JSObjectType.Object)
-                            len.Assign(len.ToPrimitiveValue_Value_String());
-                        _length = (uint)Tools.JSObjectToInt64(len, 0, false);
+                        _length = getLengthOfIterably(src);
                         if (_length == 0)
                             return new Array();
                         if (f == null)
@@ -574,7 +666,7 @@ namespace NiL.JS.Core.BaseTypes
                 {
                     if (_length == -1)
                     {
-                        _length = data.Length;
+                        _length = (src as Array).data.Length;
                         if (f == null)
                             throw new JSException(new TypeError("Callback argument is not a function."));
                     }
@@ -608,18 +700,7 @@ namespace NiL.JS.Core.BaseTypes
                 {
                     if (_length == -1)
                     {
-                        var len = src["length"]; // тут же проверка на null/undefined с падением если надо
-                        if (src.valueType != JSObjectType.Object)
-                            len = len.CloneImpl();
-                        if (len.valueType == JSObjectType.Property)
-                        {
-                            len.valueType = JSObjectType.Undefined;
-                            len.attributes &= ~JSObjectAttributesInternal.ReadOnly;
-                            len.Assign(((len.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(src, null));
-                        }
-                        if (len.valueType >= JSObjectType.Object)
-                            len.Assign(len.ToPrimitiveValue_Value_String());
-                        _length = (uint)Tools.JSObjectToInt64(len, 0, false);
+                        _length = getLengthOfIterably(src);
                         if (_length == 0)
                             return new Array();
                         if (f == null)
@@ -716,7 +797,7 @@ namespace NiL.JS.Core.BaseTypes
                 {
                     if (_length == -1)
                     {
-                        _length = data.Length;
+                        _length = (src as Array).data.Length;
                         if (f == null)
                             throw new JSException(new TypeError("Callback argument is not a function."));
                     }
@@ -749,18 +830,7 @@ namespace NiL.JS.Core.BaseTypes
                 {
                     if (_length == -1)
                     {
-                        var len = src["length"]; // тут же проверка на null/undefined с падением если надо
-                        if (src.valueType != JSObjectType.Object)
-                            len = len.CloneImpl();
-                        if (len.valueType == JSObjectType.Property)
-                        {
-                            len.valueType = JSObjectType.Undefined;
-                            len.attributes &= ~JSObjectAttributesInternal.ReadOnly;
-                            len.Assign(((len.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(src, null));
-                        }
-                        if (len.valueType >= JSObjectType.Object)
-                            len.Assign(len.ToPrimitiveValue_Value_String());
-                        _length = (uint)Tools.JSObjectToInt64(len, 0, false);
+                        _length = getLengthOfIterably(src);
                         if (_length == 0)
                             return new Array();
                         if (f == null)
@@ -841,7 +911,6 @@ namespace NiL.JS.Core.BaseTypes
             var context = Context.CurrentContext;
             if (args == null)
                 throw new ArgumentNullException("args");
-            var el = args[0];
             long _length = -1;
             HashSet<string> processedKeys = null;
             bool goDeep = true;
@@ -852,7 +921,7 @@ namespace NiL.JS.Core.BaseTypes
                 {
                     if (_length == -1)
                     {
-                        _length = data.Length;
+                        _length = (src as Array).data.Length;
                         if (f == null)
                             throw new JSException(new TypeError("Callback argument is not a function."));
                     }
@@ -885,18 +954,7 @@ namespace NiL.JS.Core.BaseTypes
                 {
                     if (_length == -1)
                     {
-                        var len = src["length"]; // тут же проверка на null/undefined с падением если надо
-                        if (src.valueType != JSObjectType.Object)
-                            len = len.CloneImpl();
-                        if (len.valueType == JSObjectType.Property)
-                        {
-                            len.valueType = JSObjectType.Undefined;
-                            len.attributes &= ~JSObjectAttributesInternal.ReadOnly;
-                            len.Assign(((len.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(src, null));
-                        }
-                        if (len.valueType >= JSObjectType.Object)
-                            len.Assign(len.ToPrimitiveValue_Value_String());
-                        _length = (uint)Tools.JSObjectToInt64(len, 0, false);
+                        _length = getLengthOfIterably(src);
                         if (_length == 0)
                             return new Array();
                         if (f == null)
@@ -971,7 +1029,7 @@ namespace NiL.JS.Core.BaseTypes
                 if (src.GetType() == typeof(Array))
                 {
                     if (_length == -1)
-                        _length = data.Length;
+                        _length = (src as Array).data.Length;
                     var fromIndex = Tools.JSObjectToInt64(args[1], 0, true);
                     if (fromIndex < 0)
                         fromIndex += _length;
@@ -1002,14 +1060,7 @@ namespace NiL.JS.Core.BaseTypes
                         return (src["indexOf"].oValue as Function).Invoke(src, args);
                     if (_length == -1)
                     {
-                        var len = src["length"]; // тут же проверка на null/undefined с падением если надо
-                        if (!len.isDefinded)
-                            return -1;
-                        if (len.valueType == JSObjectType.Property)
-                            len = ((len.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(src, null);
-                        if (len.valueType >= JSObjectType.Object)
-                            len = len.ToPrimitiveValue_Value_String();
-                        _length = (uint)Tools.JSObjectToInt64(len);
+                        _length = getLengthOfIterably(src);
                     }
                     var fromIndex = Tools.JSObjectToInt64(args[1], 0, true);
                     if (fromIndex < 0)
@@ -1068,26 +1119,36 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [DoNotEnumerate]
+        [AllowUnsafeCall(typeof(JSObject))]
         public JSObject join(Arguments separator)
         {
-            if (data.Length == 0)
-                return "";
-            var el = separator == null || separator.length == 0 || !separator[0].isDefinded ? "," : separator[0].ToString();
-            System.Text.StringBuilder sb = new System.Text.StringBuilder();
-            JSObject t;
-            for (var i = 0L; i < (long)data.Length; i++)
+            if ((this.oValue == null && this.valueType >= JSObjectType.Object) || this.valueType <= JSObjectType.Undefined)
+                throw new JSException(new TypeError("Array.prototype.join called for null or undefined"));
+            if (this.valueType >= JSObjectType.Object && this.oValue.GetType() == typeof(Array))
             {
-                t = data[(int)i];
-                if (((t != null && t.isExist) || null != (t = this.GetMember(i.ToString(), false, false)))
-                    && t.isDefinded)
+                if (data.Length == 0)
+                    return "";
+                var el = separator == null || separator.length == 0 || !separator[0].isDefinded ? "," : separator[0].ToString();
+                System.Text.StringBuilder sb = new System.Text.StringBuilder();
+                JSObject t;
+                for (var i = 0L; i < (long)data.Length; i++)
                 {
-                    if (t.valueType < JSObjectType.String || t.oValue != null)
-                        sb.Append(t);
+                    t = data[(int)i];
+                    if (((t != null && t.isExist) || null != (t = this.GetMember(i.ToString(), false, false)))
+                        && t.isDefinded)
+                    {
+                        if (t.valueType < JSObjectType.String || t.oValue != null)
+                            sb.Append(t);
+                    }
+                    sb.Append(el);
                 }
-                sb.Append(el);
+                sb.Length -= el.Length;
+                return sb.ToString();
             }
-            sb.Length -= el.Length;
-            return sb.ToString();
+            else
+            {
+                return iterableToArray(this).join(separator);
+            }
         }
 
         [DoNotEnumerateAttribute]
@@ -1206,127 +1267,245 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [DoNotEnumerate]
+        [AllowUnsafeCall(typeof(JSObject))]
         public JSObject pop()
         {
             notExists.valueType = JSObjectType.NotExistsInObject;
-            if (data.Length == 0)
-                return notExists;
-            var res = data[(int)(data.Length - 1)] ?? notExists;
-            int newLen = (int)(data.Length - 1);
-            data.RemoveAt(newLen);
-            data[newLen - 1] = data[newLen - 1];
-            return res;
+            if (this.GetType() == typeof(Array))
+            {
+                if (data.Length == 0)
+                    return notExists;
+                var res = data[(int)(data.Length - 1)] ?? notExists;
+                int newLen = (int)(data.Length - 1);
+                data.RemoveAt(newLen);
+                data[newLen - 1] = data[newLen - 1];
+                return res;
+            }
+            else
+            {
+                var length = getLengthOfIterably(this);
+                if (length <= 0 && length >= uint.MaxValue)
+                    return notExists;
+                length--;
+                this["length"] = length;
+                var tres = this.GetMember(Context.CurrentContext.wrap(length.ToString()), true, false);
+                var res = tres.CloneImpl();
+                if ((tres.attributes & JSObjectAttributesInternal.DoNotDelete) == 0)
+                {
+                    tres.Assign(notExists);
+                    tres.valueType = JSObjectType.NotExistsInObject;
+                }
+                return res;
+            }
         }
 
         [DoNotEnumerate]
+        [AllowUnsafeCall(typeof(JSObject))]
         public JSObject push(Arguments args)
         {
-            for (var i = 0; i < args.Length; i++)
-                data.Add(args[i].CloneImpl());
-            return this.length;
+            notExists.valueType = JSObjectType.NotExistsInObject;
+            if (this.GetType() == typeof(Array))
+            {
+                for (var i = 0; i < args.length; i++)
+                    data.Add(args[i].CloneImpl());
+                return this.length;
+            }
+            else
+            {
+                var length = getLengthOfIterably(this);
+                var i = length;
+                length += args.length;
+                this["length"] = length;
+                for (var j = 0; i < length; i++, j++)
+                    this[i.ToString()] = args[j].CloneImpl();
+                return length;
+            }
         }
 
         [DoNotEnumerate]
+        [AllowUnsafeCall(typeof(JSObject))]
         public JSObject reverse()
         {
-            for (var i = data.Length >> 1; i-- > 0; )
+            if (this.GetType() == typeof(Array))
             {
-                var v0 = data[(int)(data.Length - 1 - i)];
-                var v1 = data[(int)(i)];
-                if (v1 != null && v1.isExist)
-                    data[(int)(data.Length - 1 - i)] = v1;
-                else if (v0 != null)
-                    data[(int)(data.Length - 1 - i)] = null;
-                if (v0 != null && v0.isExist)
-                    data[(int)i] = v0;
-                else if (v1 != null)
-                    data[(int)i] = null;
+                for (var i = data.Length >> 1; i-- > 0; )
+                {
+                    var v0 = data[(int)(data.Length - 1 - i)];
+                    var v1 = data[(int)(i)];
+                    if (v1 != null && v1.isExist)
+                        data[(int)(data.Length - 1 - i)] = v1;
+                    else if (v0 != null)
+                        data[(int)(data.Length - 1 - i)] = null;
+                    if (v0 != null && v0.isExist)
+                        data[(int)i] = v0;
+                    else if (v1 != null)
+                        data[(int)i] = null;
+                }
+                return this;
             }
-            return this;
+            else
+            {
+                var length = getLengthOfIterably(this);
+                if (length > 0)
+                    for (var i = 0; i < length >> 1; i++)
+                    {
+                        JSObject i1 = i.ToString();
+                        JSObject i0 = (length - 1 - i).ToString();
+                        var v0 = this.GetMember(i0, false, false).CloneImpl();
+                        var v1 = this.GetMember(i1, false, false);
+                        if (v1 != null && v1.isExist)
+                            this.GetMember(i0, true, false).Assign(v1);
+                        else if (v0 != null)
+                        {
+                            var t = this.GetMember(i0, false, false);
+                            if ((t.attributes & JSObjectAttributesInternal.ReadOnly) == 0)
+                            {
+                                t.Assign(notExists);
+                                t.valueType = JSObjectType.NotExists;
+                            }
+                        }
+                        if (v0 != null && v0.isExist)
+                            this.GetMember(i1, true, false).Assign(v0);
+                        else if (v1 != null)
+                        {
+                            var t = this.GetMember(i1, false, false);
+                            if ((t.attributes & JSObjectAttributesInternal.ReadOnly) == 0)
+                            {
+                                t.Assign(notExists);
+                                t.valueType = JSObjectType.NotExists;
+                            }
+                        }
+                    }
+                return this;
+            }
         }
 
         [DoNotEnumerate]
+        [AllowUnsafeCall(typeof(JSObject))]
         public JSObject reduce(Arguments args)
         {
-            var funco = args[0];
-            if (funco.valueType != JSObjectType.Function)
-                throw new JSException(new TypeError("First argument on reduce mast be a function."));
-            var func = funco.oValue as Function;
-            var accum = args[1];
-            if ((accum.attributes & JSObjectAttributesInternal.SystemObject) != 0)
-                accum = accum.CloneImpl();
-            var index = 0;
-            if (accum.valueType < JSObjectType.Undefined)
+            if (this.GetType() == typeof(Array))
             {
-                if (data.Length == 0)
-                    throw new JSException(new TypeError("Array is empty."));
-                index++;
-                accum.attributes = 0;
-                accum.Assign(data[0]);
-            }
-            if (index >= data.Length)
+                var funco = args[0];
+                var func = funco.oValue as Function;
+                var accum = new JSObject() { valueType = JSObjectType.NotExists };
+                if (args.length > 1)
+                    accum.Assign(args[1]);
+                var context = Context.CurrentContext;
+                bool skip = false;
+                if (accum.valueType < JSObjectType.Undefined)
+                {
+                    if (data.Length == 0)
+                        throw new JSException(new TypeError("Array is empty."));
+                    accum.Assign(data[0] ?? notExists);
+                    skip = true;
+                }
+                else if (data.Length == 0)
+                    return accum;
+                if (funco.valueType != JSObjectType.Function)
+                    throw new JSException(new TypeError("First argument on reduce mast be a function."));
+                if (accum.GetType() != typeof(JSObject))
+                    accum = accum.CloneImpl();
+                args.length = 4;
+                args[2] = new JSObject();
+                foreach (var element in (data as IEnumerable<KeyValuePair<int, JSObject>>))
+                {
+                    if (element.Value == null || !element.Value.isExist)
+                        continue;
+                    args[0] = accum;
+                    if (element.Value.valueType == JSObjectType.Property)
+                        args[1] = (element.Value.oValue as Function[])[1] == null ? undefined : (element.Value.oValue as Function[])[1].Invoke(this, null);
+                    else
+                        args[1] = element.Value;
+                    if (skip)
+                    {
+                        accum.Assign(args.a1);
+                        skip = false;
+                        continue;
+                    }
+                    if (element.Key >= 0)
+                    {
+                        args.a2.valueType = JSObjectType.Int;
+                        args.a2.iValue = element.Key;
+                    }
+                    else
+                    {
+                        args.a2.valueType = JSObjectType.Double;
+                        args.a2.dValue = (uint)element.Key;
+                    }
+                    args[3] = this;
+                    accum.Assign(func.Invoke(args));
+                }
                 return accum;
-            if (accum.GetType() != typeof(JSObject))
-                accum = accum.CloneImpl();
-            args.length = 4;
-            args[2] = new JSObject();
-            var context = Context.CurrentContext;
-            foreach (var element in (data as IEnumerable<KeyValuePair<int, JSObject>>))
-            {
-                if (element.Value == null || !element.Value.isExist)
-                    continue;
-                args[0] = accum;
-                if (element.Value.valueType == JSObjectType.Property)
-                    args[1] = (element.Value.oValue as Function[])[1] == null ? undefined : (element.Value.oValue as Function[])[1].Invoke(this, null);
-                else
-                    args[1] = element.Value;
-                args[2].Assign(element.Key);
-                args[3] = this;
-                accum.Assign(func.Invoke(args));
             }
-            return accum;
+            else
+            {
+                return iterableToArray(this).reduce(args);
+            }
         }
 
         [DoNotEnumerate]
+        [AllowUnsafeCall(typeof(JSObject))]
         public JSObject reduceRight(Arguments args)
         {
-            var funco = args[0];
-            if (funco.valueType != JSObjectType.Function)
-                throw new JSException(new TypeError("First argument on reduce mast be a function."));
-            var func = funco.oValue as Function;
-            var accum = args[1];
-            if ((accum.attributes & JSObjectAttributesInternal.SystemObject) != 0)
-                accum = accum.CloneImpl();
-            var index = 0;
-            if (accum.valueType < JSObjectType.Undefined)
+            if (this.GetType() == typeof(Array))
             {
-                if (data.Length == 0)
-                    throw new JSException(new TypeError("Array is empty."));
-                index++;
-                accum.attributes = 0;
-                accum.Assign(data[0]);
-            }
-            if (index >= data.Count)
+                var funco = args[0];
+                var func = funco.oValue as Function;
+                var accum = new JSObject() { valueType = JSObjectType.NotExists };
+                if (args.length > 1)
+                    accum.Assign(args[1]);
+                var context = Context.CurrentContext;
+                bool skip = false;
+                if (accum.valueType < JSObjectType.Undefined)
+                {
+                    if (data.Length == 0)
+                        throw new JSException(new TypeError("Array is empty."));
+                    accum.Assign(data[(int)(data.Length - 1)] ?? notExists);
+                    skip = true;
+                }
+                else if (data.Length == 0)
+                    return accum;
+                if (funco.valueType != JSObjectType.Function)
+                    throw new JSException(new TypeError("First argument on reduce mast be a function."));
+                if (accum.GetType() != typeof(JSObject))
+                    accum = accum.CloneImpl();
+                args.length = 4;
+                args[2] = new JSObject();
+                foreach (var element in data.Reversed)
+                {
+                    if (element.Value == null || !element.Value.isExist)
+                        continue;
+                    args[0] = accum;
+                    if (element.Value.valueType == JSObjectType.Property)
+                        args[1] = (element.Value.oValue as Function[])[1] == null ? undefined : (element.Value.oValue as Function[])[1].Invoke(this, null);
+                    else
+                        args[1] = element.Value;
+                    if (skip)
+                    {
+                        accum.Assign(args.a1);
+                        skip = false;
+                        continue;
+                    }
+                    if (element.Key >= 0)
+                    {
+                        args.a2.valueType = JSObjectType.Int;
+                        args.a2.iValue = element.Key;
+                    }
+                    else
+                    {
+                        args.a2.valueType = JSObjectType.Double;
+                        args.a2.dValue = (uint)element.Key;
+                    }
+                    args[3] = this;
+                    accum.Assign(func.Invoke(args));
+                }
                 return accum;
-            if (accum.GetType() != typeof(JSObject))
-                accum = accum.CloneImpl();
-            args.length = 4;
-            args[2] = new JSObject();
-            var context = Context.CurrentContext;
-            foreach (var element in data.Reversed)
-            {
-                if (element.Value == null || !element.Value.isExist)
-                    continue;
-                args[0] = accum;
-                if (element.Value.valueType == JSObjectType.Property)
-                    args[1] = (element.Value.oValue as Function[])[1] == null ? undefined : (element.Value.oValue as Function[])[1].Invoke(this, null);
-                else
-                    args[1] = element.Value;
-                args[2].Assign(element.Key);
-                args[3] = this;
-                accum.Assign(func.Invoke(args));
             }
-            return accum;
+            else
+            {
+                return iterableToArray(this).reduceRight(args);
+            }
         }
 
         [DoNotEnumerate]
@@ -1780,7 +1959,7 @@ namespace NiL.JS.Core.BaseTypes
             }
             else
             {
-                var len = (uint)Tools.JSObjectToInt64(this["length"]);
+                var len = getLengthOfIterably(this);
                 if (comparer != null)
                 {
                     var second = new JSObject();

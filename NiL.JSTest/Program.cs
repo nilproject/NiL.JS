@@ -14,7 +14,7 @@ namespace NiL.JSTest
 {
     class Program
     {
-        private static void sputnikTests(string folderPath = "tests\\")
+        private static void sputnikTests(string folderPath = "tests\\sputnik\\")
         {
             bool showAll = false;
             bool refresh = true;
@@ -114,6 +114,86 @@ namespace NiL.JSTest
             _("Sputnik testing complite");
         }
 
+        private static void webkitTests(string folderPath = "tests\\webkit\\")
+        {
+            bool showAll = false;
+            bool refresh = true;
+            int lastUpdate = Environment.TickCount;
+
+            Action<string> _ = Console.WriteLine;
+            var sw = new Stopwatch();
+            string code;
+            string preCode = "";
+            string postCode = "";
+            Script s = null;
+            _("webkit testing begun...");
+            _("Load standalone-pre.js...");
+            using (var staFile = new FileStream(folderPath + "resources\\standalone-pre.js", FileMode.Open, FileAccess.Read))
+                preCode = new StreamReader(staFile).ReadToEnd();
+            _("Load standalone-post.js...");
+            using (var staFile = new FileStream(folderPath + "resources\\standalone-post.js", FileMode.Open, FileAccess.Read))
+                postCode = new StreamReader(staFile).ReadToEnd();
+            _("Directory: \"" + Directory.GetParent(folderPath) + "\"");
+
+            _("Scaning directory...");
+            var fls = Directory.EnumerateFiles(folderPath, "*.js", SearchOption.AllDirectories).ToArray();
+            _("Found " + (fls.Length - 2) + " js-files");
+            bool skipedShowed = false;
+            sw.Start();
+            for (int i = 0; i < fls.Length; i++)
+            {
+                if (i != 0 && !skipedShowed)
+                    _("Skiped: " + i);
+                skipedShowed = true;
+                try
+                {
+                    if (fls[i].EndsWith("standalone-pre.js")
+                        || fls[i].EndsWith("standalone-post.js"))
+                        continue;
+                    if (showAll)
+                        Console.Write("Processing file \"" + fls[i] + "\" ");
+                    var f = new FileStream(fls[i], FileMode.Open, FileAccess.Read);
+                    var sr = new StreamReader(f);
+                    code = sr.ReadToEnd();
+                    sr.Dispose();
+                    f.Dispose();
+                    Context econtext = null;
+                    if (refresh || s == null)
+                    {
+                        Context.RefreshGlobalContext();
+                        s = new Script(preCode);// инициализация
+                        s.Invoke();
+                        econtext = s.Context;
+                        s.Context.DefineVariable("print").Assign(new ExternalFunction((t, e) =>
+                        {
+                            var text = e[0].ToString();
+                            if (text == "FAIL")
+                                System.Diagnostics.Debugger.Break();
+                            Console.WriteLine(text);
+                            return JSObject.Undefined;
+                        }));
+                    }
+                    else
+                        econtext = new Context(s.Context);
+                    try
+                    {
+                        econtext.Eval(code);
+                    }
+                    finally
+                    {
+                    }
+                }
+                catch (Exception e)
+                {
+                    System.Diagnostics.Debugger.Break();
+                    Console.WriteLine(e);
+                }
+            }
+            sw.Stop();
+            _("time: " + sw.Elapsed);
+            _("webkit testing complite");
+        }
+
         private static void benchmark()
         {
             Script s = null;
@@ -191,11 +271,10 @@ console.log(array[0]);
             var offset = currentTimeZone.GetType().GetField("m_ticksOffset", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
             offset.SetValue(currentTimeZone, new TimeSpan(-8, 0, 0).Ticks);
 
-            typeof(System.Windows.Forms.Button).GetType(); // Заставляет подгрузить сборку System.Windows.Forms. Это исключительно для баловства
-
             Context.GlobalContext.DebuggerCallback += (sender, e) => System.Diagnostics.Debugger.Break();
+            Context.GlobalContext.DefineVariable("alert").Assign(new ExternalFunction((t, a) => { System.Windows.Forms.MessageBox.Show(a[0].ToString()); return JSObject.Undefined; }));
 
-            int mode = 0//152//154//100
+            int mode = 0//100
                    ;
             switch (mode)
             {
@@ -242,6 +321,11 @@ console.log(array[0]);
                         break;
                     }
                 case 1:
+                    {
+                        webkitTests();
+                        break;
+                    }
+                case 10:
                     {
                         runTestFile(@"ftest.js");
                         break;

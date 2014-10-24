@@ -148,7 +148,7 @@ namespace NiL.JS.Statements
                     break;
                 s = i;
                 if ((state.Code[i] != ',') && (state.Code[i] != ';') && (state.Code[i] != '=') && (state.Code[i] != '}') && (!Tools.isLineTerminator(state.Code[i])))
-                    throw new ArgumentException("code (" + i + ")");
+                    throw new JSException(new SyntaxError("Unexpected token at " + Tools.PositionToTextcord(state.Code, i)));
                 while (s < state.Code.Length && char.IsWhiteSpace(state.Code[s])) s++;
                 if (s >= state.Code.Length)
                     break;
