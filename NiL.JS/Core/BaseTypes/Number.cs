@@ -127,19 +127,9 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [Hidden]
-        internal protected override JSObject GetMember(JSObject name, bool create, bool own)
+        internal protected override JSObject GetMember(JSObject name, bool forWrite, bool own)
         {
-            if (__proto__ == null)
-                __proto__ = TypeProxy.GetPrototype(this.GetType());
-            if (name.ToString() == "__proto__")
-            {
-                if (create
-                    && ((__proto__.attributes & JSObjectAttributesInternal.SystemObject) != 0)
-                    && ((__proto__.attributes & JSObjectAttributesInternal.ReadOnly) == 0))
-                    __proto__ = __proto__.CloneImpl();
-                return __proto__;
-            }
-            return DefaultFieldGetter(name, create, own); // обращение идёт к Объекту Number, а не к значению number, поэтому члены создавать можно
+            return DefaultFieldGetter(name, forWrite, own); // обращение идёт к Объекту Number, а не к значению number, поэтому члены создавать можно
         }
 
         [AllowUnsafeCall(typeof(JSObject))]
@@ -259,6 +249,8 @@ namespace NiL.JS.Core.BaseTypes
         [Modules.DoNotEnumerate]
         public new JSObject toString(Arguments radix)
         {
+            if ((attributes & JSObjectAttributesInternal.ProxyPrototype) != 0 && this.GetType() == typeof(Number))
+                return "0";
             if (this.valueType != JSObjectType.Int && this.valueType != JSObjectType.Double)
                 throw new JSException(TypeProxy.Proxy(new TypeError("Try to call Number.toString on not Number object")));
             int r = 10;
@@ -328,7 +320,7 @@ namespace NiL.JS.Core.BaseTypes
         [Modules.DoNotEnumerate]
         public override JSObject valueOf()
         {
-            if (this.GetType() == typeof(Number) && valueType == JSObjectType.Object) // prototype instance
+            if ((attributes & JSObjectAttributesInternal.ProxyPrototype) != 0 && this.GetType() == typeof(Number))
                 return 0;
             if (valueType != JSObjectType.Int && valueType != JSObjectType.Double)
                 throw new JSException(TypeProxy.Proxy(new TypeError("Try to call Number.valueOf on not number object.")));

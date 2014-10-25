@@ -27,7 +27,7 @@ namespace NiL.JS.Expressions
                 tempContainer.oValue = f.oValue;
                 tempContainer.iValue = f.iValue;
                 tempContainer.dValue = f.dValue;
-                tempContainer.__proto__ = f.__proto__;
+                tempContainer.__prototype = f.__prototype;
                 Impl(tempContainer, tempContainer, second.Evaluate(context));
                 return tempContainer;
             }

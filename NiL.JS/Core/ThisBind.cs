@@ -19,6 +19,11 @@ namespace NiL.JS.Core
 
         private Context context;
 
+        protected override JSObject getDefaultPrototype()
+        {
+            return thisProto;
+        }
+
         public ThisBind(Context context)
             : base(false)
         {
@@ -27,7 +32,6 @@ namespace NiL.JS.Core
             fields = context.fields;
             valueType = JSObjectType.Object;
             oValue = this;
-            __proto__ = thisProto ?? refreshThisBindProto();
         }
 
         public override void Assign(NiL.JS.Core.JSObject value)
@@ -35,16 +39,10 @@ namespace NiL.JS.Core
             throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Invalid left-hand side")));
         }
 
-        internal protected override JSObject GetMember(JSObject name, bool create, bool own)
+        internal protected override JSObject GetMember(JSObject name, bool forWrite, bool own)
         {
             var nameStr = name.ToString();
-            if (nameStr == "__proto__")
-            {
-                if (__proto__ == null)
-                    __proto__ = thisProto;
-                return __proto__;
-            }
-            var res = context.GetVariable(nameStr, create);
+            var res = context.GetVariable(nameStr, forWrite);
             return res;
         }
 

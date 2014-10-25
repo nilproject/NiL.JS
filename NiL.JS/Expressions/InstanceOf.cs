@@ -28,11 +28,11 @@ namespace NiL.JS.Expressions
                     throw new JSException(new TypeError("Property \"prototype\" of function not represent object."));
                 if (p.oValue != null)
                 {
-                    while (a.valueType >= JSObjectType.Object && a.oValue != null)
+                    while (a != null && a.valueType >= JSObjectType.Object && a.oValue != null)
                     {
                         if (a.oValue == p.oValue)
                             return true;
-                        a = a.GetMember("__proto__");
+                        a = a.__proto__;
                     }
                 }
                 return false;

@@ -113,7 +113,7 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [Hidden]
-        internal protected override JSObject GetMember(JSObject name, bool create, bool own)
+        internal protected override JSObject GetMember(JSObject name, bool forWrite, bool own)
         {
             int index = 0;
             double dindex = Tools.JSObjectToDouble(name);
@@ -128,7 +128,7 @@ namespace NiL.JS.Core.BaseTypes
                     return new Element(index, Data);
                 }
             }
-            return base.GetMember(name, create, own);
+            return base.GetMember(name, forWrite, own);
         }
 
         protected internal override IEnumerator<string> GetEnumeratorImpl(bool pdef)

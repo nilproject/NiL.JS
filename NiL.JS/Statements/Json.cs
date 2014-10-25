@@ -165,7 +165,6 @@ namespace NiL.JS.Statements
         internal override JSObject Evaluate(Context context)
         {
             var res = new JSObject(true);
-            res.__proto__ = TypeProxy.GetPrototype(typeof(JSObject));
             res.valueType = JSObjectType.Object;
             res.oValue = res;
             for (int i = 0; i < fields.Length; i++)

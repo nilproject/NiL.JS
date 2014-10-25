@@ -156,7 +156,13 @@ namespace NiL.JS.Core
                         if (data[i].index > _index)
                         {
                             if (@default)
+                            {
+                                if (pseudoLength <= _index)
+                                    pseudoLength = _index + 1; // длина может быть меньше 
+                                // уже записанных элементов если эти элементы имеют значение 
+                                // по-умолчанию и был вызван Trim
                                 return;
+                            }
                             var oi = data[i].index;
                             var ov = data[i].value;
                             data[i].index = _index;

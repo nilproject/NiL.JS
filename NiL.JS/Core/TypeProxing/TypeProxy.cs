@@ -39,9 +39,10 @@ namespace NiL.JS.Core
                             else if (typeof(JSObject).IsAssignableFrom(hostedType))
                             {
                                 _prototypeInstance = ictor.Invoke(null) as JSObject;
-                                (_prototypeInstance as JSObject).__proto__ = __proto__;
-                                (_prototypeInstance as JSObject).attributes |= JSObjectAttributesInternal.ProxyPrototype;
-                                (_prototypeInstance as JSObject).fields = fields;
+                                _prototypeInstance.__proto__ = __proto__;
+                                _prototypeInstance.attributes |= JSObjectAttributesInternal.ProxyPrototype;
+                                _prototypeInstance.fields = fields;
+                                _prototypeInstance.valueType = (JSObjectType)System.Math.Max((int)JSObjectType.Object, (int)_prototypeInstance.valueType);
                                 valueType = (JSObjectType)System.Math.Max((int)JSObjectType.Object, (int)_prototypeInstance.valueType);
                             }
                             else
@@ -49,7 +50,6 @@ namespace NiL.JS.Core
                                 _prototypeInstance = new JSObject()
                                                         {
                                                             oValue = ictor.Invoke(null),
-                                                            __proto__ = __proto__,
                                                             valueType = JSObjectType.Object,
                                                             attributes = attributes | JSObjectAttributesInternal.ProxyPrototype,
                                                             fields = fields
@@ -186,8 +186,6 @@ namespace NiL.JS.Core
                 var pa = type.GetCustomAttributes(typeof(PrototypeAttribute), false);
                 if (pa.Length != 0 && (pa[0] as PrototypeAttribute).PrototypeType != hostedType)
                     __proto__ = GetPrototype((pa[0] as PrototypeAttribute).PrototypeType).CloneImpl();
-                else
-                    __proto__ = GlobalPrototype ?? Null;
                 ictor = hostedType.GetConstructor(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy, null, System.Type.EmptyTypes, null);
 
                 attributes |= JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.SystemObject;
@@ -218,6 +216,11 @@ namespace NiL.JS.Core
                         fields["constructor"] = ctor;
                 }
             }
+        }
+
+        protected override JSObject getDefaultPrototype()
+        {
+            return GlobalPrototype;
         }
 
         private void fillMembers()

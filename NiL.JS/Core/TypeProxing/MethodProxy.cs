@@ -37,6 +37,7 @@ namespace NiL.JS.Core
         private Modules.ConvertValueAttribute[] paramsConverters;
         private ParameterInfo[] parameters;
         private bool constructorMode;
+        private bool callOverload;
 
         [Hidden]
         public override FunctionType Type
@@ -164,6 +165,7 @@ namespace NiL.JS.Core
             }
             else
                 throw new ArgumentException("methodinfo");
+            callOverload = info.IsDefined(typeof(CallOverloaded));
             if (_length == null)
                 _length = new Number(0) { attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.SystemObject };
             var pc = info.GetCustomAttributes(typeof(Modules.ParametersCountAttribute), false);
@@ -288,7 +290,7 @@ namespace NiL.JS.Core
                 {
                     case CallMode.FuncDynamicOneRaw:
                         {
-                            if (target != null && info.IsVirtual && target.GetType() != info.ReflectedType) // your bunny wrote
+                            if (!callOverload && target != null && info.IsVirtual && target.GetType() != info.ReflectedType) // your bunny wrote
 #if !NET35
                             {
                                 bool di = true;
@@ -304,7 +306,7 @@ namespace NiL.JS.Core
                         }
                     case CallMode.FuncDynamicZero:
                         {
-                            if (target != null && info.IsVirtual && target.GetType() != info.ReflectedType) // your bunny wrote
+                            if (!callOverload && target != null && info.IsVirtual && target.GetType() != info.ReflectedType) // your bunny wrote
 #if !NET35
                             {
                                 bool di = true;
@@ -320,7 +322,7 @@ namespace NiL.JS.Core
                         }
                     case CallMode.FuncDynamicOneArray:
                         {
-                            if (target != null && info.IsVirtual && target.GetType() != info.ReflectedType) // your bunny wrote
+                            if (!callOverload && target != null && info.IsVirtual && target.GetType() != info.ReflectedType) // your bunny wrote
 #if !NET35
                             {
                                 bool di = true;
@@ -336,7 +338,7 @@ namespace NiL.JS.Core
                         }
                     case CallMode.FuncDynamicOne:
                         {
-                            if (target != null && info.IsVirtual && target.GetType() != info.ReflectedType) // your bunny wrote
+                            if (!callOverload && target != null && info.IsVirtual && target.GetType() != info.ReflectedType) // your bunny wrote
 #if !NET35
                             {
                                 bool di = true;
@@ -378,7 +380,7 @@ namespace NiL.JS.Core
                                 res = (info as ConstructorInfo).Invoke(args);
                             else
                             {
-                                if (target != null && info.IsVirtual && target.GetType() != info.ReflectedType) // your bunny wrote
+                                if (!callOverload && target != null && info.IsVirtual && target.GetType() != info.ReflectedType) // your bunny wrote
                                 {
                                     var minfo = info as MethodInfo;
                                     if (minfo.ReturnType != typeof(void) && minfo.ReturnType.IsValueType)

@@ -5,32 +5,24 @@ using NiL.JS.Core.Modules;
 namespace NiL.JS.Core
 {
     [Serializable]
-    [Prototype(typeof(Function))]
     internal class ObjectConstructor : Function
     {
         private TypeProxy proxy;
 
-        [Field]
-        [DoNotDelete]
-        [DoNotEnumerate]
-        [NotConfigurable]
         public override JSObject prototype
         {
-            [Hidden]
             get
             {
                 return TypeProxy.GetPrototype(proxy.hostedType);
             }
         }
 
-        [Hidden]
         public ObjectConstructor(TypeProxy proxy)
         {
             _length = 1;
             this.proxy = proxy;
         }
 
-        [Hidden]
         public override NiL.JS.Core.JSObject Invoke(JSObject thisBind, Arguments args)
         {
             object oVal = null;
@@ -48,23 +40,24 @@ namespace NiL.JS.Core
 
             res.valueType = JSObjectType.Object;
             res.oValue = (oVal is JSObject && ((oVal as JSObject).attributes & JSObjectAttributesInternal.SystemObject) != 0) ? (oVal as JSObject).Clone() : oVal;
-            if (oVal is JSObject)
-                res.__proto__ = (oVal as JSObject).GetMember("__proto__", false, true);
             return res;
         }
 
-        internal protected override JSObject GetMember(JSObject name, bool create, bool own)
+        protected override JSObject getDefaultPrototype()
         {
-            if (__proto__ == null)
-            {
-                __proto__ = TypeProxy.GetPrototype(typeof(ObjectConstructor));
-                __proto__.fields.Clear();
-            }
+            return TypeProxy.GetPrototype(typeof(Function));
+        }
 
-            var res = __proto__.GetMember(name, false, own);
+        internal protected override JSObject GetMember(JSObject name, bool forWrite, bool own)
+        {
+            var res = proxy.GetMember(name, false, own);
             if (res.isExist)
+            {
+                if (forWrite && res.isNeedClone)
+                    res = proxy.GetMember(name, true, own);
                 return res;
-            return proxy.GetMember(name, create, own);
+            }
+            return __proto__.GetMember(name, forWrite, own);
         }
 
         protected internal override System.Collections.Generic.IEnumerator<string> GetEnumeratorImpl(bool hideNonEnum)
@@ -72,17 +65,11 @@ namespace NiL.JS.Core
             var pe = proxy.GetEnumeratorImpl(hideNonEnum);
             while (pe.MoveNext())
                 yield return pe.Current;
-            if (__proto__ == null)
-            {
-                __proto__ = TypeProxy.GetPrototype(typeof(ObjectConstructor));
-                proxy.__proto__ = __proto__;
-            }
             pe = __proto__.GetEnumeratorImpl(hideNonEnum);
             while (pe.MoveNext())
                 yield return pe.Current;
         }
 
-        [Hidden]
         public override string ToString()
         {
             return "function Object() { [native code] }";

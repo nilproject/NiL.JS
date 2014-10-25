@@ -552,9 +552,9 @@ namespace NiL.JS.Core.BaseTypes
         private static readonly FunctionStatement creatorDummy = new FunctionStatement("anonymous");
         internal static readonly Function emptyFunction = new Function();
         private static readonly Function TTEProxy = new MethodProxy(typeof(Function).GetMethod("ThrowTypeError", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic)) { attributes = JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.Immutable | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.ReadOnly };
-        private static void ThrowTypeError()
+        protected static void ThrowTypeError()
         {
-            throw new JSException(new TypeError("Properties caller and arguments not allowed in strict mode."));
+            throw new JSException(new TypeError("Properties caller, callee and arguments not allowed in strict mode."));
         }
         internal static readonly JSObject propertiesDummySM = new JSObject()
         {
@@ -574,6 +574,7 @@ namespace NiL.JS.Core.BaseTypes
         [Hidden]
         public Context Context
         {
+            [CallOverloaded]
             [Hidden]
             get { return context; }
         }
@@ -582,18 +583,21 @@ namespace NiL.JS.Core.BaseTypes
         [DoNotEnumerate]
         public virtual string name
         {
+            [CallOverloaded]
             [Hidden]
             get { return creator.name; }
         }
         [Hidden]
         public virtual FunctionType Type
         {
+            [CallOverloaded]
             [Hidden]
             get { return creator.type; }
         }
         [Hidden]
         public virtual bool Strict
         {
+            [CallOverloaded]
             [Hidden]
             get
             {
@@ -613,6 +617,7 @@ namespace NiL.JS.Core.BaseTypes
         [DoNotEnumerate]
         public virtual JSObject prototype
         {
+            [CallOverloaded]
             [Hidden]
             get
             {
@@ -621,7 +626,6 @@ namespace NiL.JS.Core.BaseTypes
                     _prototype = new JSObject(true)
                     {
                         valueType = JSObjectType.Object,
-                        __proto__ = JSObject.GlobalPrototype,
                         attributes = JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.DoNotDelete
                     };
                     _prototype.oValue = _prototype;
@@ -640,12 +644,14 @@ namespace NiL.JS.Core.BaseTypes
         [Field]
         [DoNotDelete]
         [DoNotEnumerate]
-        public JSObject arguments
+        public virtual JSObject arguments
         {
+            [CallOverloaded]
             [Hidden]
-            get { if (creator.body.strict || _arguments == propertiesDummySM) throw new JSException(new TypeError("Property arguments not allowed in strict mode.")); return _arguments; }
+            get { if (creator.body.strict) throw new JSException(new TypeError("Property arguments not allowed in strict mode.")); return _arguments; }
+            [CallOverloaded]
             [Hidden]
-            set { if (creator.body.strict || _arguments == propertiesDummySM) throw new JSException(new TypeError("Property arguments not allowed in strict mode.")); }
+            set { if (creator.body.strict) throw new JSException(new TypeError("Property arguments not allowed in strict mode.")); }
         }
 
         [Hidden]
@@ -655,8 +661,9 @@ namespace NiL.JS.Core.BaseTypes
         [DoNotDelete]
         [DoNotEnumerate]
         [NotConfigurable]
-        public JSObject length
+        public virtual JSObject length
         {
+            [CallOverloaded]
             [Hidden]
             get
             {
@@ -673,10 +680,12 @@ namespace NiL.JS.Core.BaseTypes
         [Field]
         [DoNotDelete]
         [DoNotEnumerate]
-        public JSObject caller
+        public virtual JSObject caller
         {
+            [CallOverloaded]
             [Hidden]
             get { if (creator.body.strict || _caller == propertiesDummySM) throw new JSException(new TypeError("Property caller not allowed in strict mode.")); return _caller; }
+            [CallOverloaded]
             [Hidden]
             set { if (creator.body.strict || _caller == propertiesDummySM) throw new JSException(new TypeError("Property caller not allowed in strict mode.")); }
         }
@@ -923,11 +932,7 @@ namespace NiL.JS.Core.BaseTypes
                 thisBind = body.strict ? undefined : internalContext.Root.thisBind;
             else if (thisBind.oValue == typeof(New) as object)
             {
-                thisBind.__proto__ = prototype;
-                if (thisBind.__proto__.valueType < JSObjectType.Object)
-                    thisBind.__proto__ = null;
-                else
-                    thisBind.__proto__ = thisBind.__proto__.CloneImpl();
+                thisBind.__proto__ = prototype.CloneImpl();
                 thisBind.oValue = thisBind;
             }
             else if (internalContext != null)
@@ -940,8 +945,7 @@ namespace NiL.JS.Core.BaseTypes
                         {
                             valueType = JSObjectType.Object,
                             oValue = thisBind,
-                            attributes = JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.DoNotDelete,
-                            __proto__ = thisBind.__proto__ ?? (thisBind.valueType <= JSObjectType.Undefined ? thisBind.__proto__ : thisBind.GetMember("__proto__"))
+                            attributes = JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.DoNotDelete
                         };
                     }
                     else if (thisBind.valueType <= JSObjectType.Undefined || thisBind.oValue == null)
@@ -977,16 +981,6 @@ namespace NiL.JS.Core.BaseTypes
         internal protected override JSObject GetMember(JSObject nameObj, bool create, bool own)
         {
             string name = nameObj.ToString();
-            if (__proto__ == null)
-                __proto__ = TypeProxy.GetPrototype(this.GetType());
-            if (name == "__proto__")
-            {
-                if (create
-                    && ((__proto__.attributes & JSObjectAttributesInternal.SystemObject) != 0)
-                    && ((__proto__.attributes & JSObjectAttributesInternal.ReadOnly) == 0))
-                    __proto__ = __proto__.CloneImpl();
-                return __proto__;
-            }
             if (creator.body.strict && (name == "caller" || name == "arguments"))
                 return propertiesDummySM;
             if (name == "prototype")

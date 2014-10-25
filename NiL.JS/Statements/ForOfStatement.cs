@@ -98,7 +98,7 @@ namespace NiL.JS.Statements
             try
             {
                 var val = Expression.Parameter(typeof(JSObject));
-                var @enum = Expression.Parameter(typeof(NiL.JS.Statements.ForInStatement._ForcedEnumerator<string>));
+                var @enum = Expression.Parameter(typeof(NiL.JS.Core.Tools._ForcedEnumerator<string>));
                 var source = Expression.Parameter(typeof(JSObject));
                 var res = Expression.Block(new[] { val, @enum, source },
                     Expression.Assign(source, this.source.CompileToIL(state)),
@@ -110,9 +110,9 @@ namespace NiL.JS.Statements
                                                         Expression.OrElse(Expression.LessThan(Expression.Convert(Expression.Field(source, "valueType"), typeof(int)), JITHelpers.wrap((int)JSObjectType.Object)),
                                                                        Expression.ReferenceNotEqual(Expression.Field(source, "oValue"), JITHelpers.wrap(null))))),
                                       Expression.Block(
-                                                Expression.Assign(@enum, Expression.Call(JITHelpers.methodof(new Func<JSObject, object>(NiL.JS.Statements.ForInStatement._ForcedEnumerator<string>.create)), source))
+                                                Expression.Assign(@enum, Expression.Call(JITHelpers.methodof(new Func<JSObject, object>(NiL.JS.Core.Tools._ForcedEnumerator<string>.create)), source))
                                                 , Expression.Loop(
-                                                    Expression.IfThenElse(Expression.Call(@enum, typeof(NiL.JS.Statements.ForInStatement._ForcedEnumerator<string>).GetMethod("MoveNext")), Expression.Block(
+                                                    Expression.IfThenElse(Expression.Call(@enum, typeof(NiL.JS.Core.Tools._ForcedEnumerator<string>).GetMethod("MoveNext")), Expression.Block(
                                                         Expression.Assign(Expression.Field(val, "valueType"), JITHelpers.wrap(JSObjectType.String))
                                                         , Expression.Assign(Expression.Field(val, "oValue"), Expression.Property(@enum, "Current"))
                                                         , Expression.Call(val, typeof(JSObject).GetMethod("Assign"), Expression.Call(source, typeof(JSObject).GetMethod("GetMember", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance, null, new Type[] { typeof(JSObject), typeof(bool), typeof(bool) }, null), val, JITHelpers.wrap(false), JITHelpers.wrap(false)))
@@ -196,8 +196,8 @@ namespace NiL.JS.Statements
                                 continue;
                             v.Assign(item.Value);
 #if DEV
-                        if (context.debugging && !(body is CodeBlock))
-                            context.raiseDebugger(body);
+                            if (context.debugging && !(body is CodeBlock))
+                                context.raiseDebugger(body);
 #endif
                             res = body.Evaluate(context) ?? res;
                             if (context.abort != AbortType.None)
@@ -235,8 +235,8 @@ namespace NiL.JS.Statements
                         v.oValue = o;
                         v.Assign(s.GetMember(v, false, true));
 #if DEV
-                    if (context.debugging && !(body is CodeBlock))
-                        context.raiseDebugger(body);
+                        if (context.debugging && !(body is CodeBlock))
+                            context.raiseDebugger(body);
 #endif
                         res = body.Evaluate(context) ?? res;
                         if (context.abort != AbortType.None)
@@ -254,8 +254,8 @@ namespace NiL.JS.Statements
                         index++;
                     }
                 }
-                s = s.__proto__ ?? s["__proto__"];
-                if (!s.isDefinded || (s.valueType >= JSObjectType.Object && s.oValue == null))
+                s = s.__proto__;
+                if (s == JSObject.Null || !s.isDefinded || (s.valueType >= JSObjectType.Object && s.oValue == null))
                     break;
             }
             return res;

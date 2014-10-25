@@ -884,9 +884,8 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [Hidden]
-        internal protected override JSObject GetMember(JSObject name, bool create, bool own)
+        internal protected override JSObject GetMember(JSObject name, bool forWrite, bool own)
         {
-            create &= (attributes & JSObjectAttributesInternal.Immutable) == 0;
             int index = 0;
             double dindex = Tools.JSObjectToDouble(name);
             if (!double.IsInfinity(dindex)
@@ -898,20 +897,10 @@ namespace NiL.JS.Core.BaseTypes
             {
                 return this[index];
             }
-            if (__proto__ == null)
-                __proto__ = TypeProxy.GetPrototype(this.GetType());
             var namestr = name.ToString();
             if (namestr == "length")
                 return length;
-            if (namestr == "__proto__")
-            {
-                if (create
-                    && ((__proto__.attributes & JSObjectAttributesInternal.SystemObject) != 0)
-                    && ((__proto__.attributes & JSObjectAttributesInternal.ReadOnly) == 0))
-                    __proto__ = __proto__.CloneImpl();
-                return __proto__;
-            }
-            return DefaultFieldGetter(name, create, own); // обращение идёт к Объекту String, а не к значению string, поэтому члены создавать можно
+            return DefaultFieldGetter(name, forWrite, own); // обращение идёт к Объекту String, а не к значению string, поэтому члены создавать можно
         }
 
         #region HTML Wraping

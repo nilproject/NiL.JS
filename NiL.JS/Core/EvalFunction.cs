@@ -71,11 +71,11 @@ namespace NiL.JS.Core
             }
         }
 
-        protected internal override JSObject GetMember(JSObject name, bool create, bool own)
+        protected internal override JSObject GetMember(JSObject name, bool forWrite, bool own)
         {
             if (name.ToString() == "prototype")
                 return undefined;
-            return base.GetMember(name, create, own);
+            return base.GetMember(name, forWrite, own);
         }
     }
 }

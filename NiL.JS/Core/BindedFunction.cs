@@ -13,14 +13,38 @@ namespace NiL.JS.Core
     [Serializable]
     internal sealed class BindedFunction : Function
     {
-        private static readonly FunctionStatement dummyCreator = FunctionStatement.Parse("function bindDummy(){'use strict'}");
-
         private Function proto;
         private JSObject thisBind;
         private Arguments bindedArguments;
 
+        public override JSObject caller
+        {
+            get
+            {
+                ThrowTypeError();
+                return null;
+            }
+            set
+            {
+                ThrowTypeError();
+            }
+        }
+
+        public override JSObject arguments
+        {
+            get
+            {
+                ThrowTypeError();
+                return null;
+            }
+            set
+            {
+                ThrowTypeError();
+            }
+        }
+
         public BindedFunction(Function proto, Arguments args)
-            : base(null, dummyCreator)
+            : base(null, proto.creator)
         {
             if (_length == null)
                 _length = 0;
@@ -44,26 +68,6 @@ namespace NiL.JS.Core
         }
 
         [Hidden]
-        public override string name
-        {
-            [Hidden]
-            get
-            {
-                return proto.name;
-            }
-        }
-
-        [Hidden]
-        public override FunctionType Type
-        {
-            [Hidden]
-            get
-            {
-                return proto.Type;
-            }
-        }
-
-        [Hidden]
         public override JSObject Invoke(JSObject thisBind, Arguments args)
         {
             if (bindedArguments != null)
@@ -79,22 +83,21 @@ namespace NiL.JS.Core
             return proto.Invoke(this.thisBind, args);
         }
 
-        [DoNotEnumerate]
+        [Hidden]
         protected internal override IEnumerator<string> GetEnumeratorImpl(bool pdef)
         {
             return proto.GetEnumeratorImpl(pdef);
         }
 
-        [DoNotEnumerate]
-        public override JSObject hasOwnProperty(Arguments args)
+        [Hidden]
+        protected internal override JSObject GetMember(JSObject name, bool forWrite, bool own)
         {
-            return proto.hasOwnProperty(args);
+            return proto.GetMember(name, forWrite, own);
         }
 
-        [Hidden]
-        protected internal override JSObject GetMember(JSObject name, bool create, bool own)
+        protected override JSObject getDefaultPrototype()
         {
-            return proto.GetMember(name, create, own);
+            return TypeProxy.GetPrototype(typeof(Function));
         }
     }
 }

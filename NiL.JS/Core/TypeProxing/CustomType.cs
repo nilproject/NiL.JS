@@ -16,7 +16,6 @@ namespace NiL.JS.Core.TypeProxing
         {
             valueType = JSObjectType.Object;
             oValue = this;
-            __proto__ = TypeProxy.GetPrototype(this.GetType());
             attributes |= JSObjectAttributesInternal.SystemObject | JSObjectAttributesInternal.ReadOnly;
         }
 
@@ -39,8 +38,6 @@ namespace NiL.JS.Core.TypeProxing
 
         internal protected override JSObject GetMember(JSObject name, bool fast, bool own)
         {
-            if (__proto__ == null)
-                __proto__ = TypeProxy.GetPrototype(this.GetType());
             return DefaultFieldGetter(name, fast, own);
         }
 

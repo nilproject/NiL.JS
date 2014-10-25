@@ -9,73 +9,6 @@ namespace NiL.JS.Statements
     [Serializable]
     public sealed class ForInStatement : CodeNode
     {
-        internal sealed class _ForcedEnumerator<T> : IEnumerator<T>
-        {
-            private int index;
-            private IEnumerable<T> owner;
-            private IEnumerator<T> parent;
-
-            private _ForcedEnumerator(IEnumerable<T> owner)
-            {
-                this.owner = owner;
-                this.parent = owner.GetEnumerator();
-            }
-
-            public static _ForcedEnumerator<T> create(IEnumerable<T> owner)
-            {
-                return new _ForcedEnumerator<T>(owner);
-            }
-
-            #region Члены IEnumerator<T>
-
-            public T Current
-            {
-                get { return parent.Current; }
-            }
-
-            #endregion
-
-            #region Члены IDisposable
-
-            public void Dispose()
-            {
-                parent.Dispose();
-            }
-
-            #endregion
-
-            #region Члены IEnumerator
-
-            object System.Collections.IEnumerator.Current
-            {
-                get { return parent.Current; }
-            }
-
-            public bool MoveNext()
-            {
-                try
-                {
-                    var res = parent.MoveNext();
-                    if (res)
-                        index++;
-                    return res;
-                }
-                catch
-                {
-                    parent = owner.GetEnumerator();
-                    for (int i = 0; i < index && parent.MoveNext(); i++) ;
-                    return MoveNext();
-                }
-            }
-
-            public void Reset()
-            {
-                parent.Reset();
-            }
-
-            #endregion
-        }
-
         private CodeNode variable;
         private CodeNode source;
         private CodeNode body;
@@ -164,7 +97,7 @@ namespace NiL.JS.Statements
             try
             {
                 var val = Expression.Parameter(typeof(JSObject));
-                var @enum = Expression.Parameter(typeof(_ForcedEnumerator<string>));
+                var @enum = Expression.Parameter(typeof(NiL.JS.Core.Tools._ForcedEnumerator<string>));
                 var source = Expression.Parameter(typeof(JSObject));
                 var res = Expression.Block(new[] { val, @enum, source },
                     Expression.Assign(source, this.source.CompileToIL(state)),
@@ -176,9 +109,9 @@ namespace NiL.JS.Statements
                                                         Expression.OrElse(Expression.LessThan(Expression.Convert(Expression.Field(source, "valueType"), typeof(int)), JITHelpers.wrap((int)JSObjectType.Object)),
                                                                        Expression.ReferenceNotEqual(Expression.Field(source, "oValue"), JITHelpers.wrap(null))))),
                                       Expression.Block(
-                                                Expression.Assign(@enum, Expression.Call(JITHelpers.methodof(new Func<JSObject, object>(_ForcedEnumerator<string>.create)), source))
+                                                Expression.Assign(@enum, Expression.Call(JITHelpers.methodof(new Func<JSObject, object>(NiL.JS.Core.Tools._ForcedEnumerator<string>.create)), source))
                                                 , Expression.Loop(
-                                                    Expression.IfThenElse(Expression.Call(@enum, typeof(_ForcedEnumerator<string>).GetMethod("MoveNext")), Expression.Block(
+                                                    Expression.IfThenElse(Expression.Call(@enum, typeof(NiL.JS.Core.Tools._ForcedEnumerator<string>).GetMethod("MoveNext")), Expression.Block(
                                                         Expression.Assign(Expression.Field(val, "valueType"), JITHelpers.wrap(JSObjectType.String))
                                                         , Expression.Assign(Expression.Field(val, "oValue"), Expression.Property(@enum, "Current"))
                                                         , this.body.CompileToIL(state)
@@ -273,8 +206,8 @@ namespace NiL.JS.Statements
                             v.valueType = JSObjectType.String;
                             v.oValue = item.Key;
 #if DEV
-                        if (context.debugging && !(body is CodeBlock))
-                            context.raiseDebugger(body);
+                            if (context.debugging && !(body is CodeBlock))
+                                context.raiseDebugger(body);
 #endif
                             res = body.Evaluate(context) ?? res;
                             if (context.abort != AbortType.None)
@@ -294,7 +227,7 @@ namespace NiL.JS.Statements
                 }
                 else
                 {
-                    var keys = _ForcedEnumerator<string>.create(s);
+                    var keys = NiL.JS.Core.Tools._ForcedEnumerator<string>.create(s);
                     for (; ; )
                     {
                         if (!keys.MoveNext())
@@ -323,8 +256,8 @@ namespace NiL.JS.Statements
                         index++;
                     }
                 }
-                s = s.__proto__ ?? s["__proto__"];
-                if (!s.isDefinded || (s.valueType >= JSObjectType.Object && s.oValue == null))
+                s = s.__proto__;
+                if (s == JSObject.Null || !s.isDefinded || (s.valueType >= JSObjectType.Object && s.oValue == null))
                     break;
             }
             return res;

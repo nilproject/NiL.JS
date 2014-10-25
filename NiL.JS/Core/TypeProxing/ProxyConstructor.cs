@@ -75,15 +75,16 @@ namespace NiL.JS.Core
         }
 
         [Hidden]
-        internal protected override JSObject GetMember(JSObject name, bool create, bool own)
+        internal protected override JSObject GetMember(JSObject name, bool forWrite, bool own)
         {
-            if (__proto__ == null)
-                __proto__ = TypeProxy.GetPrototype(typeof(ProxyConstructor));
-
-            var res = __proto__.GetMember(name, false, own);
+            var res = proxy.GetMember(name, false, own);
             if (res.isExist)
+            {
+                if (forWrite && res.isNeedClone)
+                    res = proxy.GetMember(name, true, own);
                 return res;
-            return proxy.GetMember(name, create, own);
+            }
+            return __proto__.GetMember(name, forWrite, own);
         }
 
         [Hidden]
@@ -115,7 +116,6 @@ namespace NiL.JS.Core
                         {
                             _this.oValue = obj;
                             _this.valueType = JSObjectType.Object;
-                            _this.__proto__ = res.__proto__ ?? TypeProxy.GetPrototype(proxy.hostedType);
                             res = _this;
                         }
                         // Для Number, Boolean и String
@@ -199,10 +199,15 @@ namespace NiL.JS.Core
             return null;
         }
 
+        protected override JSObject getDefaultPrototype()
+        {
+            return TypeProxy.GetPrototype(typeof(Function));
+        }
+
         [Hidden]
         protected internal override IEnumerator<string> GetEnumeratorImpl(bool pdef)
         {
-            var e = (__proto__ ?? GetMember("__proto__")).GetEnumeratorImpl(pdef);
+            var e = __proto__.GetEnumeratorImpl(pdef);
             while (e.MoveNext())
                 yield return e.Current;
             e = proxy.GetEnumeratorImpl(pdef);

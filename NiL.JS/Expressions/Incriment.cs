@@ -149,6 +149,8 @@ namespace NiL.JS.Expressions
                     args[0] = val;
                     setter.Invoke(context.objectSource, args);
                 }
+                else if ((val.attributes & JSObjectAttributesInternal.Reassign) != 0)
+                    val.Assign(val);
                 return prev;
             }
         }

@@ -47,7 +47,6 @@ namespace NiL.JS.Core.BaseTypes
             iValue = value != 0 && !double.IsNaN(value) ? 1 : 0;
             oValue = this;
             attributes |= JSObjectAttributesInternal.SystemObject;
-            __proto__ = TypeProxy.GetPrototype(this.GetType());
         }
 
         [DoNotEnumerate]
@@ -69,6 +68,12 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [Hidden]
+        internal protected override JSObject GetMember(JSObject name, bool forWrite, bool own)
+        {
+            return DefaultFieldGetter(name, forWrite, own); // обращение идёт к Объекту Number, а не к значению number, поэтому члены создавать можно
+        }
+
+        [Hidden]
         public override void Assign(JSObject value)
         {
             if ((attributes & JSObjectAttributesInternal.ReadOnly) == 0)
@@ -78,14 +83,6 @@ namespace NiL.JS.Core.BaseTypes
 #endif
                 throw new InvalidOperationException("Try to assign to Boolean");
             }
-        }
-
-        [Hidden]
-        internal protected override JSObject GetMember(JSObject name, bool create, bool own)
-        {
-            if (__proto__ == null)
-                __proto__ = TypeProxy.GetPrototype(this.GetType());
-            return DefaultFieldGetter(name, create, own); // обращение идёт к Объекту Boolean, а не к значению boolean, поэтому члены создавать можно
         }
 
 #if INLINE
@@ -116,8 +113,10 @@ namespace NiL.JS.Core.BaseTypes
         [AllowUnsafeCall(typeof(JSObject))]
         public override JSObject toLocaleString()
         {
+            if ((attributes & JSObjectAttributesInternal.ProxyPrototype) != 0 && this.GetType() == typeof(Boolean))
+                return "false";
             if (!typeof(JSObject).IsAssignableFrom(this.GetType()) || valueType != JSObjectType.Bool)
-                throw new JSException(new TypeError("Boolean.prototype.toString called for not boolean."));
+                throw new JSException(new TypeError("Boolean.prototype.toLocaleString called for not boolean."));
             return iValue != 0 ? "true" : "false";
         }
 
@@ -125,8 +124,10 @@ namespace NiL.JS.Core.BaseTypes
         [AllowUnsafeCall(typeof(JSObject))]
         public override JSObject valueOf()
         {
+            if ((attributes & JSObjectAttributesInternal.ProxyPrototype) != 0 && this.GetType() == typeof(Boolean))
+                return false;
             if (!typeof(JSObject).IsAssignableFrom(this.GetType()) || valueType != JSObjectType.Bool)
-                throw new JSException(new TypeError("Boolean.prototype.toString called for not boolean."));
+                throw new JSException(new TypeError("Boolean.prototype.valueOf called for not boolean."));
             return this;
         }
 
@@ -135,6 +136,8 @@ namespace NiL.JS.Core.BaseTypes
         [DoNotEnumerate]
         public new JSObject toString(Arguments args)
         {
+            if ((attributes & JSObjectAttributesInternal.ProxyPrototype) != 0 && this.GetType() == typeof(Boolean))
+                return "false";
             if (!typeof(JSObject).IsAssignableFrom(this.GetType()) || valueType != JSObjectType.Bool)
                 throw new JSException(new TypeError("Boolean.prototype.toString called for not boolean."));
             return iValue != 0 ? "true" : "false";

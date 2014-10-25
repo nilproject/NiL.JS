@@ -143,10 +143,14 @@ namespace NiL.JS.Core
         public Arguments()
             : base()
         {
-            __proto__ = GlobalPrototype;
             valueType = JSObjectType.Object;
             oValue = this;
             attributes = JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.SystemObject;
+        }
+
+        protected override JSObject getDefaultPrototype()
+        {
+            return GlobalPrototype ?? Null;
         }
 
         public override void Assign(NiL.JS.Core.JSObject value)

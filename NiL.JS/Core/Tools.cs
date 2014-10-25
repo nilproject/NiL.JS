@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -35,6 +36,73 @@ namespace NiL.JS.Core
 		};
 
         //internal static readonly string[] charStrings = (from x in Enumerable.Range(char.MinValue, char.MaxValue) select ((char)x).ToString()).ToArray();
+
+        internal sealed class _ForcedEnumerator<T> : IEnumerator<T>
+        {
+            private int index;
+            private IEnumerable<T> owner;
+            private IEnumerator<T> parent;
+
+            private _ForcedEnumerator(IEnumerable<T> owner)
+            {
+                this.owner = owner;
+                this.parent = owner.GetEnumerator();
+            }
+
+            public static _ForcedEnumerator<T> create(IEnumerable<T> owner)
+            {
+                return new _ForcedEnumerator<T>(owner);
+            }
+
+            #region Члены IEnumerator<T>
+
+            public T Current
+            {
+                get { return parent.Current; }
+            }
+
+            #endregion
+
+            #region Члены IDisposable
+
+            public void Dispose()
+            {
+                parent.Dispose();
+            }
+
+            #endregion
+
+            #region Члены IEnumerator
+
+            object System.Collections.IEnumerator.Current
+            {
+                get { return parent.Current; }
+            }
+
+            public bool MoveNext()
+            {
+                try
+                {
+                    var res = parent.MoveNext();
+                    if (res)
+                        index++;
+                    return res;
+                }
+                catch
+                {
+                    parent = owner.GetEnumerator();
+                    for (int i = 0; i < index && parent.MoveNext(); i++) ;
+                    return MoveNext();
+                }
+            }
+
+            public void Reset()
+            {
+                parent.Reset();
+            }
+
+            #endregion
+        }
 
 #if INLINE
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
