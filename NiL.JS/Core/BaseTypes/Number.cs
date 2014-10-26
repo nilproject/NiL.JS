@@ -157,6 +157,13 @@ namespace NiL.JS.Core.BaseTypes
                         res = dValue;
                         break;
                     }
+                case JSObjectType.Object:
+                    {
+                        if (typeof(Number) != GetType())
+                            throw new JSException(TypeProxy.Proxy(new TypeError("Try to call Number.toExponential on not number object.")));
+                        res = iValue == 0 ? dValue : iValue;
+                        break;
+                    }
                 default:
                     throw new InvalidOperationException();
             }
@@ -219,9 +226,9 @@ namespace NiL.JS.Core.BaseTypes
                     }
                 case JSObjectType.Object:
                     {
-                        if (!typeof(Number).IsAssignableFrom(GetType()))
+                        if (typeof(Number) != GetType())
                             throw new JSException(TypeProxy.Proxy(new TypeError("Try to call Number.toFixed on not number object.")));
-                        res = 0;
+                        res = iValue == 0 ? dValue : iValue;
                         break;
                     }
                 default:
@@ -249,70 +256,78 @@ namespace NiL.JS.Core.BaseTypes
         [Modules.DoNotEnumerate]
         public new JSObject toString(Arguments radix)
         {
-            if ((attributes & JSObjectAttributesInternal.ProxyPrototype) != 0 && this.GetType() == typeof(Number))
-                return "0";
-            if (this.valueType != JSObjectType.Int && this.valueType != JSObjectType.Double)
-                throw new JSException(TypeProxy.Proxy(new TypeError("Try to call Number.toString on not Number object")));
-            int r = 10;
-            if (radix != null && radix.GetMember("length").iValue > 0)
+            var ovt = valueType;
+            if (this.GetType() == typeof(Number))
+                valueType = dValue == 0.0 ? JSObjectType.Int : JSObjectType.Double;
+            try
             {
-                var ar = radix[0];
-                if (ar.valueType == JSObjectType.Object && ar.oValue == null)
-                    throw new JSException(TypeProxy.Proxy(new Error("Radix can't be null.")));
-                switch (ar.valueType)
+                if (this.valueType != JSObjectType.Int && this.valueType != JSObjectType.Double)
+                    throw new JSException(TypeProxy.Proxy(new TypeError("Try to call Number.toString on not Number object")));
+                int r = 10;
+                if (radix != null && radix.GetMember("length").iValue > 0)
                 {
-                    case JSObjectType.Int:
-                    case JSObjectType.Bool:
-                        {
-                            r = ar.iValue;
-                            break;
-                        }
-                    case JSObjectType.Double:
-                        {
-                            r = (int)ar.dValue;
-                            break;
-                        }
-                    case JSObjectType.NotExistsInObject:
-                    case JSObjectType.Undefined:
-                        {
-                            r = 10;
-                            break;
-                        }
-                    default:
-                        {
-                            r = Tools.JSObjectToInt32(ar);
-                            break;
-                        }
+                    var ar = radix[0];
+                    if (ar.valueType == JSObjectType.Object && ar.oValue == null)
+                        throw new JSException(TypeProxy.Proxy(new Error("Radix can't be null.")));
+                    switch (ar.valueType)
+                    {
+                        case JSObjectType.Int:
+                        case JSObjectType.Bool:
+                            {
+                                r = ar.iValue;
+                                break;
+                            }
+                        case JSObjectType.Double:
+                            {
+                                r = (int)ar.dValue;
+                                break;
+                            }
+                        case JSObjectType.NotExistsInObject:
+                        case JSObjectType.Undefined:
+                            {
+                                r = 10;
+                                break;
+                            }
+                        default:
+                            {
+                                r = Tools.JSObjectToInt32(ar);
+                                break;
+                            }
+                    }
+                }
+                if (r < 2 || r > 36)
+                    throw new JSException(TypeProxy.Proxy(new TypeError("Radix must be between 2 and 36.")));
+                if (r == 10)
+                    return ToString();
+                else
+                {
+                    long res = iValue;
+                    if (valueType == JSObjectType.Double)
+                    {
+                        if (double.IsNaN(dValue))
+                            return "NaN";
+                        if (double.IsPositiveInfinity(dValue))
+                            return "Infinity";
+                        if (double.IsNegativeInfinity(dValue))
+                            return "-Infinity";
+                        res = (int)dValue;
+                    }
+                    bool neg = res < 0;
+                    if (neg)
+                        res = -res;
+                    string sres = Tools.NumChars[res % r].ToString();
+                    res /= r;
+                    while (res != 0)
+                    {
+                        sres = Tools.NumChars[res % r] + sres;
+                        res /= r;
+                    }
+                    return neg ? "-" + sres : sres;
                 }
             }
-            if (r < 2 || r > 36)
-                throw new JSException(TypeProxy.Proxy(new TypeError("Radix must be between 2 and 36.")));
-            if (r == 10)
-                return ToString();
-            else
+            finally
             {
-                long res = iValue;
-                if (valueType == JSObjectType.Double)
-                {
-                    if (double.IsNaN(dValue))
-                        return "NaN";
-                    if (double.IsPositiveInfinity(dValue))
-                        return "Infinity";
-                    if (double.IsNegativeInfinity(dValue))
-                        return "-Infinity";
-                    res = (int)dValue;
-                }
-                bool neg = res < 0;
-                if (neg)
-                    res = -res;
-                string sres = Tools.NumChars[res % r].ToString();
-                res /= r;
-                while (res != 0)
-                {
-                    sres = Tools.NumChars[res % r] + sres;
-                    res /= r;
-                }
-                return neg ? "-" + sres : sres;
+                valueType = ovt;
             }
         }
 
@@ -320,8 +335,8 @@ namespace NiL.JS.Core.BaseTypes
         [Modules.DoNotEnumerate]
         public override JSObject valueOf()
         {
-            if ((attributes & JSObjectAttributesInternal.ProxyPrototype) != 0 && this.GetType() == typeof(Number))
-                return 0;
+            if (this.GetType() == typeof(Number))
+                return iValue == 0 ? dValue : iValue;
             if (valueType != JSObjectType.Int && valueType != JSObjectType.Double)
                 throw new JSException(TypeProxy.Proxy(new TypeError("Try to call Number.valueOf on not number object.")));
             return this;
@@ -330,7 +345,9 @@ namespace NiL.JS.Core.BaseTypes
         [Hidden]
         public override string ToString()
         {
-            return valueType == JSObjectType.Int ? iValue >= 0 && iValue < 16 ? Tools.NumString[iValue] : iValue.ToString(System.Globalization.CultureInfo.InvariantCulture) : Tools.DoubleToString(dValue);
+            if (valueType == JSObjectType.Int || valueType == JSObjectType.Double)
+                return valueType == JSObjectType.Int ? iValue >= 0 && iValue < 16 ? Tools.NumString[iValue] : iValue.ToString(System.Globalization.CultureInfo.InvariantCulture) : Tools.DoubleToString(dValue);
+            return iValue != 0 ? iValue.ToString() : Tools.DoubleToString(dValue);
         }
 
         [Hidden]

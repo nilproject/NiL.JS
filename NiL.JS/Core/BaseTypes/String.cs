@@ -814,7 +814,7 @@ namespace NiL.JS.Core.BaseTypes
         public new JSObject toString(Arguments args)
         {
             if ((this as object) is String && valueType == JSObjectType.Object) // prototype instance
-                return "";
+                return oValue.ToString();
             if (this.valueType == JSObjectType.String)
                 return this;
             else
@@ -825,8 +825,8 @@ namespace NiL.JS.Core.BaseTypes
         [AllowUnsafeCall(typeof(JSObject))]
         public override JSObject valueOf()
         {
-            if (typeof(String) == this.GetType() && valueType == JSObjectType.Object) // prototype instance
-                return "";
+            if (typeof(String) == this.GetType() && valueType == JSObjectType.Object) // class instance
+                return oValue.ToString();
             if (this.valueType == JSObjectType.String)
                 return this;
             else

@@ -525,48 +525,26 @@ namespace NiL.JS.Core
         [Hidden]
         internal JSObject ToPrimitiveValue_Value_String()
         {
-            if (valueType >= JSObjectType.Object && oValue != null)
-            {
-                if (oValue == null)
-                    return nullString;
-                var tpvs = GetMember("valueOf");
-                JSObject res = null;
-                if (tpvs.valueType == JSObjectType.Function)
-                {
-                    res = (tpvs.oValue as NiL.JS.Core.BaseTypes.Function).Invoke(this, null);
-                    if (res.valueType == JSObjectType.Object)
-                    {
-                        if (res.oValue is BaseTypes.String)
-                            res = res.oValue as BaseTypes.String;
-                    }
-                    if (res.valueType < JSObjectType.Object)
-                        return res;
-                }
-                tpvs = GetMember("toString");
-                if (tpvs.valueType == JSObjectType.Function)
-                {
-                    res = (tpvs.oValue as NiL.JS.Core.BaseTypes.Function).Invoke(this, null);
-                    if (res.valueType == JSObjectType.Object)
-                    {
-                        if (res.oValue is BaseTypes.String)
-                            res = res.oValue as BaseTypes.String;
-                    }
-                    if (res.valueType < JSObjectType.Object)
-                        return res;
-                }
-                throw new JSException(new TypeError("Can't convert object to primitive value."));
-            }
-            return this;
+            return ToPrimitiveValue("valueOf", "toString");
         }
 
-        [Hidden]
+        internal JSObject ToPrimitiveValue_LocaleString_Value()
+        {
+            return ToPrimitiveValue("toLocaleString", "valueOf");
+        }
+
         internal JSObject ToPrimitiveValue_String_Value()
+        {
+            return ToPrimitiveValue("toString", "valueOf");
+        }
+
+        internal JSObject ToPrimitiveValue(string func0, string func1)
         {
             if (valueType >= JSObjectType.Object && oValue != null)
             {
                 if (oValue == null)
                     return nullString;
-                var tpvs = GetMember("toString");
+                var tpvs = GetMember(func0);
                 JSObject res = null;
                 if (tpvs.valueType == JSObjectType.Function)
                 {
@@ -579,7 +557,7 @@ namespace NiL.JS.Core
                     if (res.valueType < JSObjectType.Object)
                         return res;
                 }
-                tpvs = GetMember("valueOf");
+                tpvs = GetMember(func1);
                 if (tpvs.valueType == JSObjectType.Function)
                 {
                     res = (tpvs.oValue as NiL.JS.Core.BaseTypes.Function).Invoke(this, null);
@@ -697,14 +675,26 @@ namespace NiL.JS.Core
             return GetEnumeratorImpl(true);
         }
 
+        [Hidden]
+        public IEnumerator<string> GetEnumerator(bool hideNonEnum)
+        {
+            if (this is JSObject && valueType >= JSObjectType.Object)
+            {
+                if (oValue != this && oValue is JSObject)
+                    return (oValue as JSObject).GetEnumeratorImpl(hideNonEnum);
+            }
+            return GetEnumeratorImpl(hideNonEnum);
+        }
+
         protected internal virtual IEnumerator<string> GetEnumeratorImpl(bool hideNonEnum)
         {
-            if (!hideNonEnum && valueType == JSObjectType.String)
+            if (valueType == JSObjectType.String || this.GetType() == typeof(BaseTypes.String))
             {
                 var len = (oValue.ToString()).Length;
                 for (var i = 0; i < len; i++)
                     yield return i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture);
-                yield return "length";
+                if (!hideNonEnum)
+                    yield return "length";
             }
             if (fields != null)
             {
@@ -775,7 +765,9 @@ namespace NiL.JS.Core
                 throw new JSException(new TypeError("toLocaleString calling on null."));
             if (self.valueType <= JSObjectType.Undefined)
                 throw new JSException(new TypeError("toLocaleString calling on undefined value."));
-            return self.toString(null);
+            if (self == this)
+                return toString(null);
+            return self.toLocaleString();
         }
 
         [DoNotEnumerate]

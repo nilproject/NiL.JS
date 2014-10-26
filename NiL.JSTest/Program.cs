@@ -274,7 +274,7 @@ console.log(array[0]);
             Context.GlobalContext.DebuggerCallback += (sender, e) => System.Diagnostics.Debugger.Break();
             Context.GlobalContext.DefineVariable("alert").Assign(new ExternalFunction((t, a) => { System.Windows.Forms.MessageBox.Show(a[0].ToString()); return JSObject.Undefined; }));
 
-            int mode = 0
+            int mode = 0//154
                    ;
             switch (mode)
             {

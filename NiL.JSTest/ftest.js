@@ -1,30 +1,32 @@
 ﻿var $ERROR = console.log;
 
 console.log(function () {
-    try {
-        var s1 = new Number();
-        console.log(typeof s1);
-        debugger;
-        s1.toString = Boolean.prototype.toString;
-        var v1 = s1.toString();
-        $ERROR('#1: Boolean.prototype.toString on not a Boolean object should throw TypeError');
+    var x = [];
+    x.length = 4294967295;
+
+    //CHECK#1
+    var push = x.push();
+    if (push !== 4294967295) {
+        $ERROR('#1: x = []; x.length = 4294967295; x.push() === 4294967295. Actual: ' + (push));
     }
-    catch (e) {
-        if (!(e instanceof TypeError)) {
-            $ERROR('#1: Boolean.prototype.toString on not a Boolean object should throw TypeError, not ' + e);
+
+    //CHECK#2
+    try {
+        x.push("x");
+        $ERROR('#2.1: x = []; x.length = 4294967295; x.push("x") throw RangeError. Actual: ' + (push));
+    } catch (e) {
+        if ((e instanceof RangeError) !== true) {
+            $ERROR('#2.2: x = []; x.length = 4294967295; x.push("x") throw RangeError. Actual: ' + (e));
         }
     }
 
-    //CHECK#1
-    try {
-        var s2 = new Number();
-        s2.myToString = Boolean.prototype.toString;
-        var v2 = s2.myToString();
-        $ERROR('#2: Boolean.prototype.toString on not a Boolean object should throw TypeError');
+    //CHECK#3
+    if (x[4294967295] !== "x") {
+        $ERROR('#3: x = []; x.length = 4294967295; try {x.push("x")}catch(e){}; x[4294967295] === "x". Actual: ' + (x[4294967295]));
     }
-    catch (e) {
-        if (!(e instanceof TypeError)) {
-            $ERROR('#2: Boolean.prototype.toString on not a Boolean object should throw TypeError, not ' + e);
-        }
+
+    //CHECK#4
+    if (x.length !== 4294967295) {
+        $ERROR('#4: x = []; x.length = 4294967295; try {x.push("x")}catch(e){}; x.length === 4294967295. Actual: ' + (x.length));
     }
 }());

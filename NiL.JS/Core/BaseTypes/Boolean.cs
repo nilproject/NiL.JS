@@ -113,9 +113,7 @@ namespace NiL.JS.Core.BaseTypes
         [AllowUnsafeCall(typeof(JSObject))]
         public override JSObject toLocaleString()
         {
-            if ((attributes & JSObjectAttributesInternal.ProxyPrototype) != 0 && this.GetType() == typeof(Boolean))
-                return "false";
-            if (!typeof(JSObject).IsAssignableFrom(this.GetType()) || valueType != JSObjectType.Bool)
+            if (this.GetType() != typeof(Boolean) && valueType != JSObjectType.Bool)
                 throw new JSException(new TypeError("Boolean.prototype.toLocaleString called for not boolean."));
             return iValue != 0 ? "true" : "false";
         }
@@ -124,8 +122,8 @@ namespace NiL.JS.Core.BaseTypes
         [AllowUnsafeCall(typeof(JSObject))]
         public override JSObject valueOf()
         {
-            if ((attributes & JSObjectAttributesInternal.ProxyPrototype) != 0 && this.GetType() == typeof(Boolean))
-                return false;
+            if (this.GetType() == typeof(Boolean))
+                return iValue != 0;
             if (!typeof(JSObject).IsAssignableFrom(this.GetType()) || valueType != JSObjectType.Bool)
                 throw new JSException(new TypeError("Boolean.prototype.valueOf called for not boolean."));
             return this;
@@ -136,9 +134,7 @@ namespace NiL.JS.Core.BaseTypes
         [DoNotEnumerate]
         public new JSObject toString(Arguments args)
         {
-            if ((attributes & JSObjectAttributesInternal.ProxyPrototype) != 0 && this.GetType() == typeof(Boolean))
-                return "false";
-            if (!typeof(JSObject).IsAssignableFrom(this.GetType()) || valueType != JSObjectType.Bool)
+            if (this.GetType() != typeof(Boolean) && valueType != JSObjectType.Bool)
                 throw new JSException(new TypeError("Boolean.prototype.toString called for not boolean."));
             return iValue != 0 ? "true" : "false";
         }

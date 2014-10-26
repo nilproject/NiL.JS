@@ -5,10 +5,8 @@ using NiL.JS.Core.Modules;
 namespace NiL.JS.Core
 {
     [Serializable]
-    internal class ObjectConstructor : Function
+    internal class ObjectConstructor : ProxyConstructor
     {
-        private TypeProxy proxy;
-
         public override JSObject prototype
         {
             get
@@ -18,9 +16,9 @@ namespace NiL.JS.Core
         }
 
         public ObjectConstructor(TypeProxy proxy)
+            : base(proxy)
         {
             _length = 1;
-            this.proxy = proxy;
         }
 
         public override NiL.JS.Core.JSObject Invoke(JSObject thisBind, Arguments args)
@@ -46,18 +44,6 @@ namespace NiL.JS.Core
         protected override JSObject getDefaultPrototype()
         {
             return TypeProxy.GetPrototype(typeof(Function));
-        }
-
-        internal protected override JSObject GetMember(JSObject name, bool forWrite, bool own)
-        {
-            var res = proxy.GetMember(name, false, own);
-            if (res.isExist)
-            {
-                if (forWrite && res.isNeedClone)
-                    res = proxy.GetMember(name, true, own);
-                return res;
-            }
-            return __proto__.GetMember(name, forWrite, own);
         }
 
         protected internal override System.Collections.Generic.IEnumerator<string> GetEnumeratorImpl(bool hideNonEnum)

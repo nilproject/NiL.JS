@@ -78,7 +78,8 @@ namespace NiL.JS.Core
         {
             if (pseudoLength == 0 || index != (int)(pseudoLength - 1))
                 throw new InvalidOperationException();
-            this[(int)(--pseudoLength)] = default(TValue);
+            this[(int)(pseudoLength - 1)] = default(TValue);
+            pseudoLength --;
         }
 
         /// <summary>
@@ -195,6 +196,8 @@ namespace NiL.JS.Core
                     else
                     {
                         data[i].value = value;
+                        if (pseudoLength == 0)
+                            pseudoLength = _index + 1;
                         return;
                     }
                 }

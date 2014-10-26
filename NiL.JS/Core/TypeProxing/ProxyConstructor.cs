@@ -77,14 +77,18 @@ namespace NiL.JS.Core
         [Hidden]
         internal protected override JSObject GetMember(JSObject name, bool forWrite, bool own)
         {
-            var res = proxy.GetMember(name, false, own);
-            if (res.isExist)
+            var res = proxy.GetMember(name, forWrite && own, own);
+            if (res.isExist || (own && forWrite))
             {
                 if (forWrite && res.isNeedClone)
                     res = proxy.GetMember(name, true, own);
                 return res;
             }
-            return __proto__.GetMember(name, forWrite, own);
+            res = __proto__.GetMember(name, forWrite, own);
+            if (own
+                && (res.valueType != JSObjectType.Property || (res.attributes & JSObjectAttributesInternal.Field) == 0))
+                return notExists; // если для записи, то первая ветка всё разрулит и сюда выполнение не придёт
+            return res;
         }
 
         [Hidden]
@@ -116,6 +120,7 @@ namespace NiL.JS.Core
                         {
                             _this.oValue = obj;
                             _this.valueType = JSObjectType.Object;
+                            _this.__proto__ = res.__proto__;
                             res = _this;
                         }
                         // Для Number, Boolean и String
