@@ -19,7 +19,7 @@ var o = {
     f: function () {
         f1();
     },
-    getx:function(){
+    getx: function () {
         return this.x;
     }
 };
@@ -28,19 +28,19 @@ o.f();
 if (o.getx() != 2)
     $ERROR("#1.1");
 
-if ((1,o.getx)() != 1)
+if ((1, o.getx)() != 1)
     $ERROR("#1.2");
 
 (function (a) {
     if (a != this)
         $ERROR("#2.");
-}) (this)
+})(this)
 
-if (function () { return this } () != this)
+if (function () { return this }() != this)
     $ERROR("#3.");
 
-var o1 = { x: 4, set p(v){this.x = v;} };
-var o2 = { y: 3, set p(v){this.y = v;} };
+var o1 = { x: 4, set p(v) { this.x = v; } };
+var o2 = { y: 3, set p(v) { this.y = v; } };
 o2.p = (o1.x / 2);
 if (o1.y)
     $ERROR("#4");
@@ -62,12 +62,12 @@ var t = function () {
     return o.m1()
 }();
 if (t != 1)
-$ERROR("#8");
+    $ERROR("#8");
 
 var o = { x: 0, getx: function () { this.x = 1; return function () { return this.x }; } };
 var x = 2;
 if (o.getx().call(null) != 2)
-$ERROR("#9");
+    $ERROR("#9");
 
 var x = 1;
 var o = {
@@ -81,17 +81,17 @@ var t = o.s[this.x]();
 if (t == 'fail')
     $ERROR('#10');
 
+var x = 1;
 function f11() {
     this.x = 2;
 }
-var x = 1;
 function f12() {
     return this.x;
 }
 if (f12(new f11()) != 1)
     $ERROR('#11');
 
-var t = { x : 2, f:function(){ return function(){ return this.x; } } };
+var t = { x: 2, f: function () { return function () { return this.x; } } };
 if (t.f()() != 1)
     $ERROR("#12");
 

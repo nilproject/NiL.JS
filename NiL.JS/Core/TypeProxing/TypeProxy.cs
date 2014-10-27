@@ -251,17 +251,22 @@ namespace NiL.JS.Core.TypeProxing
                         {
                             if (temp != null && temp.Count > 1)
                             {
+                                // выбираетс€ последний наследник, 
+                                // объ€вивший член и удал€ютс€ все одноимЄнные члены предков.
                                 var type = temp[0].DeclaringType;
                                 for (var j = 1; j < temp.Count; j++)
                                 {
                                     if (type != temp[j].DeclaringType && type.IsAssignableFrom(temp[j].DeclaringType))
-                                    {
                                         type = temp[j].DeclaringType;
-                                        j = 0;
-                                        continue;
-                                    }
+                                }
+                                int offset = 0;
+                                for (var j = 1; j < temp.Count; j++)
+                                {
                                     if (!type.IsAssignableFrom(temp[j].DeclaringType))
+                                    {
                                         temp.RemoveAt(j--);
+                                        tempmemb.Remove(prewName + "$" + (++offset + j));
+                                    }
                                 }
                             }
                             if (!tempmemb.TryGetValue(membername, out temp))
