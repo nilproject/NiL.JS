@@ -5,7 +5,7 @@
 </head>
 <body style="font-family: 'Duru Sans', sans-serif;">
     <div style="font-weight: 500; font-size: 100px; position: relative; top: -10px;">NiL.JS</div>
-    Open source ECMAScript 5.1 engine. Beta.
+    Open source ECMAScript 5.1 (JavaScript) engine.
     <ul>
         <li><span style="font-weight:bold">No</span> native dependence.</li>
         <li>Optional generation of <span style="font-weight:bold">IL</span> (Experimental).</li>
@@ -19,6 +19,7 @@
         <li>Support for..of.</li>
         <li>Support consts.</li>
         <li>Support generators (Experimental. With some issues).</li>
+        <li>99% of Sputnik tests passed.</li>
     </ul>
     <a href="https://www.nuget.org/packages/NiL.JS">Available in NuGet</a>
 </body>
