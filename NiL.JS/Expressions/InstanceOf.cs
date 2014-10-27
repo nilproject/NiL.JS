@@ -1,6 +1,7 @@
 ﻿using System;
 using NiL.JS.Core;
 using NiL.JS.Core.BaseTypes;
+using NiL.JS.Core.TypeProxing;
 
 namespace NiL.JS.Expressions
 {
@@ -20,7 +21,7 @@ namespace NiL.JS.Expressions
                 a.Assign(first.Evaluate(context));
                 var c = second.Evaluate(context);
                 if (c.valueType != JSObjectType.Function)
-                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError("Right-hand value of instanceof is not function.")));
+                    throw new JSException(new NiL.JS.Core.BaseTypes.TypeError("Right-hand value of instanceof is not function."));
                 var p = c.GetMember("prototype");
                 if (p.valueType == JSObjectType.Property)
                     p = (p.oValue as Function[])[1].Invoke(c, null);

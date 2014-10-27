@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 using NiL.JS.Core;
 using NiL.JS.Core.BaseTypes;
 using NiL.JS.Core.JIT;
+using NiL.JS.Core.TypeProxing;
 
 namespace NiL.JS.Statements
 {
@@ -31,7 +32,7 @@ namespace NiL.JS.Statements
             if (i >= state.Code.Length)
                 throw new JSException(new SyntaxError("Unexpected end of line."));
             if (state.Code[i] != '{')
-                throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid try statement definition at " + Tools.PositionToTextcord(state.Code, i))));
+                throw new JSException((new Core.BaseTypes.SyntaxError("Invalid try statement definition at " + Tools.PositionToTextcord(state.Code, i))));
             var b = CodeBlock.Parse(state, ref i).Statement;
             while (char.IsWhiteSpace(state.Code[i])) i++;
             CodeNode cb = null;
@@ -40,19 +41,19 @@ namespace NiL.JS.Statements
             {
                 int s = i;
                 if (!Parser.ValidateName(state.Code, ref i, state.strict.Peek()))
-                    throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Catch block must contain variable name " + Tools.PositionToTextcord(state.Code, i))));
+                    throw new JSException((new Core.BaseTypes.SyntaxError("Catch block must contain variable name " + Tools.PositionToTextcord(state.Code, i))));
                 exptn = Tools.Unescape(state.Code.Substring(s, i - s), state.strict.Peek());
                 if (state.strict.Peek())
                 {
                     if (exptn == "arguments" || exptn == "eval")
-                        throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Varible name may not be \"arguments\" or \"eval\" in strict mode at " + Tools.PositionToTextcord(state.Code, s))));
+                        throw new JSException((new Core.BaseTypes.SyntaxError("Varible name may not be \"arguments\" or \"eval\" in strict mode at " + Tools.PositionToTextcord(state.Code, s))));
                 }
                 while (char.IsWhiteSpace(state.Code[i])) i++;
                 if (!Parser.Validate(state.Code, ")", ref i))
-                    throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \")\" at + " + Tools.PositionToTextcord(state.Code, i))));
+                    throw new JSException((new Core.BaseTypes.SyntaxError("Expected \")\" at + " + Tools.PositionToTextcord(state.Code, i))));
                 while (char.IsWhiteSpace(state.Code[i])) i++;
                 if (state.Code[i] != '{')
-                    throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid catch block statement definition at " + Tools.PositionToTextcord(state.Code, i))));
+                    throw new JSException((new Core.BaseTypes.SyntaxError("Invalid catch block statement definition at " + Tools.PositionToTextcord(state.Code, i))));
                 state.functionsDepth++;
                 try
                 {
@@ -70,11 +71,11 @@ namespace NiL.JS.Statements
                 i += 7;
                 while (char.IsWhiteSpace(state.Code[i])) i++;
                 if (state.Code[i] != '{')
-                    throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid finally block statement definition at " + Tools.PositionToTextcord(state.Code, i))));
+                    throw new JSException((new Core.BaseTypes.SyntaxError("Invalid finally block statement definition at " + Tools.PositionToTextcord(state.Code, i))));
                 f = CodeBlock.Parse(state, ref i).Statement;
             }
             if (cb == null && f == null)
-                throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("try block must contain 'catch' or/and 'finally' block")));
+                throw new JSException((new Core.BaseTypes.SyntaxError("try block must contain 'catch' or/and 'finally' block")));
             var pos = index;
             index = i;
             return new ParseResult()

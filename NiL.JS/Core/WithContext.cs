@@ -1,5 +1,6 @@
 ﻿using System;
 using NiL.JS.Core.BaseTypes;
+using NiL.JS.Core.TypeProxing;
 
 namespace NiL.JS.Core
 {
@@ -14,7 +15,7 @@ namespace NiL.JS.Core
             if (obj == null)
                 throw new ArgumentNullException("obj");
             if (obj.valueType == JSObjectType.NotExists)
-                throw new JSException(TypeProxy.Proxy(new ReferenceError("Variable not defined.")));
+                throw new JSException((new ReferenceError("Variable not defined.")));
             if (obj.valueType <= JSObjectType.Undefined)
                 throw new JSException(new TypeError("Can't access to property value of \"undefined\"."));
             if (obj.valueType >= JSObjectType.Object && obj.oValue == null)

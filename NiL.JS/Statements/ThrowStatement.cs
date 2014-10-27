@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using NiL.JS.Core;
 using NiL.JS.Core.JIT;
+using NiL.JS.Core.TypeProxing;
 
 namespace NiL.JS.Statements
 {
@@ -13,7 +14,7 @@ namespace NiL.JS.Statements
 
         public ThrowStatement(Exception e)
         {
-            body = new ImmidateValueStatement(TypeProxy.Proxy(e));
+            body = new Constant(TypeProxy.Proxy(e));
         }
 
         private ThrowStatement(CodeNode statement)
@@ -31,7 +32,7 @@ namespace NiL.JS.Statements
                 return new ParseResult();
             var b = Parser.Parse(state, ref i, 1, true);
             if (b is EmptyStatement)
-                throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Can't throw result of EmptyStatement " + Tools.PositionToTextcord(state.Code, i - 1))));
+                throw new JSException((new Core.BaseTypes.SyntaxError("Can't throw result of EmptyStatement " + Tools.PositionToTextcord(state.Code, i - 1))));
             var pos = index;
             index = i;
             return new ParseResult()

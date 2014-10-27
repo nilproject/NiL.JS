@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using NiL.JS.Core;
 using NiL.JS.Core.BaseTypes;
+using NiL.JS.Core.TypeProxing;
 using NiL.JS.Statements;
 
 namespace NiL.JS.Expressions
@@ -28,7 +29,7 @@ namespace NiL.JS.Expressions
             {
                 JSObject ctor = source.Evaluate(context);
                 if (ctor.valueType != JSObjectType.Function && !(ctor.valueType == JSObjectType.Object && ctor.oValue is Function))
-                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError(ctor + " is not callable")));
+                    throw new JSException((new NiL.JS.Core.BaseTypes.TypeError(ctor + " is not callable")));
                 if (ctor.oValue is EvalFunction
                     || ctor.oValue is ExternalFunction
                     || ctor.oValue is MethodProxy)

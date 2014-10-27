@@ -329,7 +329,7 @@
     <Compile Include="Statements\FunctionStatement.cs" />
     <Compile Include="Statements\GetMemberStatement.cs" />
     <Compile Include="Statements\IfElseStatement.cs" />
-    <Compile Include="Statements\ImmidateValueStatement.cs" />
+    <Compile Include="Statements\Constant.cs" />
     <Compile Include="Core\JSObject.cs" />
     <Compile Include="Statements\ExpressionStatement.cs" />
     <Compile Include="Script.cs" />

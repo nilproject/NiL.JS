@@ -63,27 +63,27 @@ namespace NiL.JS.Core.BaseTypes
                         case 'i':
                             {
                                 if ((options & System.Text.RegularExpressions.RegexOptions.IgnoreCase) != 0)
-                                    throw new JSException(TypeProxy.Proxy(new SyntaxError("Try to double use RegExp flag \"" + flags[i] + '"')));
+                                    throw new JSException((new SyntaxError("Try to double use RegExp flag \"" + flags[i] + '"')));
                                 options |= System.Text.RegularExpressions.RegexOptions.IgnoreCase;
                                 break;
                             }
                         case 'm':
                             {
                                 if ((options & System.Text.RegularExpressions.RegexOptions.Multiline) != 0)
-                                    throw new JSException(TypeProxy.Proxy(new SyntaxError("Try to double use RegExp flag \"" + flags[i] + '"')));
+                                    throw new JSException((new SyntaxError("Try to double use RegExp flag \"" + flags[i] + '"')));
                                 options |= System.Text.RegularExpressions.RegexOptions.Multiline;
                                 break;
                             }
                         case 'g':
                             {
                                 if (_global)
-                                    throw new JSException(TypeProxy.Proxy(new SyntaxError("Try to double use RegExp flag \"" + flags[i] + '"')));
+                                    throw new JSException((new SyntaxError("Try to double use RegExp flag \"" + flags[i] + '"')));
                                 _global = true;
                                 break;
                             }
                         default:
                             {
-                                throw new JSException(TypeProxy.Proxy(new SyntaxError("Invalid RegExp flag \"" + flags[i] + '"')));
+                                throw new JSException((new SyntaxError("Invalid RegExp flag \"" + flags[i] + '"')));
                             }
                     }
                 }
@@ -92,7 +92,7 @@ namespace NiL.JS.Core.BaseTypes
             }
             catch (ArgumentException e)
             {
-                throw new JSException(TypeProxy.Proxy(new SyntaxError(e.Message)));
+                throw new JSException((new SyntaxError(e.Message)));
             }
         }
 

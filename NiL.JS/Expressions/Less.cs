@@ -58,15 +58,8 @@ namespace NiL.JS.Expressions
                                         return first.iValue < 0;
                                     throw new NotImplementedException();
                                 }
-                            case JSObjectType.Undefined:
-                            case JSObjectType.NotExistsInObject:
-                                {
-                                    return moreOrEqual;
-                                }
-                            case JSObjectType.NotExists:
-                                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable not defined.")));
                             default:
-                                throw new NotImplementedException();
+                                return moreOrEqual;
                         }
                     }
                 case JSObjectType.Double:
@@ -97,11 +90,6 @@ namespace NiL.JS.Expressions
                                         else
                                             return moreOrEqual;
                                     }
-                                case JSObjectType.Undefined:
-                                case JSObjectType.NotExistsInObject:
-                                    {
-                                        return moreOrEqual;
-                                    }
                                 case JSObjectType.Date:
                                 case JSObjectType.Object:
                                     {
@@ -118,10 +106,8 @@ namespace NiL.JS.Expressions
                                             return first.dValue < 0;
                                         throw new NotImplementedException();
                                     }
-                                case JSObjectType.NotExists:
-                                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable not defined.")));
                                 default:
-                                    throw new NotImplementedException();
+                                    return moreOrEqual;
                             }
                     }
                 case JSObjectType.String:
@@ -191,18 +177,12 @@ namespace NiL.JS.Expressions
                                                     return moreOrEqual;
                                             }
                                         case JSObjectType.NotExists:
-                                            throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable not defined.")));
+                                            throw new JSException((new NiL.JS.Core.BaseTypes.ReferenceError("Variable not defined.")));
                                         default: throw new NotImplementedException();
                                     }
                                 }
-                            case JSObjectType.Undefined:
-                            case JSObjectType.NotExistsInObject:
-                                {
-                                    return moreOrEqual;
-                                }
-                            case JSObjectType.NotExists:
-                                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable not defined.")));
-                            default: throw new NotImplementedException();
+                            default:
+                                return moreOrEqual;
                         }
                     }
                 case JSObjectType.Function:
@@ -225,12 +205,8 @@ namespace NiL.JS.Expressions
                         }
                         throw new NotImplementedException();
                     }
-                case JSObjectType.Undefined:
-                case JSObjectType.NotExistsInObject:
-                    {
-                        return moreOrEqual;
-                    }
-                default: throw new NotImplementedException();
+                default:
+                    return moreOrEqual;
             }
         }
 

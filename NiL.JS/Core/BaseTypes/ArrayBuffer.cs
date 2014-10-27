@@ -71,7 +71,7 @@ namespace NiL.JS.Core.BaseTypes
         public ArrayBuffer slice(int begin, int end)
         {
             if (end < begin || begin >= Data.Length || end >= Data.Length)
-                throw new JSException(TypeProxy.Proxy(new RangeError("Invalid begin or end index")));
+                throw new JSException((new RangeError("Invalid begin or end index")));
             var res = new ArrayBuffer(end - begin + 1);
             for (int i = 0, j = begin; j <= end; j++, i++)
                 res.Data[i] = Data[j];
@@ -120,7 +120,7 @@ namespace NiL.JS.Core.BaseTypes
             if (!double.IsInfinity(dindex) && !double.IsNaN(dindex) && ((index = (int)dindex) == dindex))
             {
                 if (dindex > 0x7fffffff || dindex < 0)
-                    throw new JSException(TypeProxy.Proxy(new RangeError("Invalid array index")));
+                    throw new JSException((new RangeError("Invalid array index")));
                 if (((index = (int)dindex) == dindex))
                 {
                     if (index >= Data.Length)

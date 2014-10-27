@@ -68,9 +68,9 @@ namespace NiL.JS.Expressions
 
         public override string ToString()
         {
-            if (first is ImmidateValueStatement
-                && ((first as ImmidateValueStatement).value.valueType == JSObjectType.Int)
-                && ((first as ImmidateValueStatement).value.iValue == -1))
+            if (first is Constant
+                && ((first as Constant).value.valueType == JSObjectType.Int)
+                && ((first as Constant).value.iValue == -1))
                 return "-" + second;
             return "(" + first + " * " + second + ")";
         }

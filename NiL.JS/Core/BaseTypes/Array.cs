@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using NiL.JS.Core.Modules;
+using NiL.JS.Core.TypeProxing;
 
 namespace NiL.JS.Core.BaseTypes
 {
@@ -214,7 +215,7 @@ namespace NiL.JS.Core.BaseTypes
             oValue = this;
             valueType = JSObjectType.Object;
             if (length < 0)
-                throw new JSException(TypeProxy.Proxy(new RangeError("Invalid array length.")));
+                throw new JSException((new RangeError("Invalid array length.")));
             data = new SparseArray<JSObject>();
             if (length > 0)
                 data[length - 1] = null;
@@ -229,7 +230,7 @@ namespace NiL.JS.Core.BaseTypes
             oValue = this;
             valueType = JSObjectType.Object;
             if (length < 0 || (uint)length > uint.MaxValue)
-                throw new JSException(TypeProxy.Proxy(new RangeError("Invalid array length.")));
+                throw new JSException((new RangeError("Invalid array length.")));
             data = new SparseArray<JSObject>((int)length);
             attributes |= JSObjectAttributesInternal.SystemObject;
         }
@@ -240,7 +241,7 @@ namespace NiL.JS.Core.BaseTypes
             oValue = this;
             valueType = JSObjectType.Object;
             if (((long)d != d) || (d < 0) || (d > 0xffffffff))
-                throw new JSException(TypeProxy.Proxy(new RangeError("Invalid array length.")));
+                throw new JSException((new RangeError("Invalid array length.")));
             data = new SparseArray<JSObject>();
             if (d > 0)
                 data[(int)((uint)d - 1)] = null;

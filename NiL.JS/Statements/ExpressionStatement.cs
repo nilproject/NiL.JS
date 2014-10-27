@@ -355,7 +355,7 @@ namespace NiL.JS.Statements
             {
                 var name = Tools.Unescape(state.Code.Substring(s, i - s), state.strict.Peek());
                 if (name == "undefined")
-                    first = new ImmidateValueStatement(JSObject.undefined) { Position = index, Length = i - index };
+                    first = new Constant(JSObject.undefined) { Position = index, Length = i - index };
                 else
                     first = new GetVariableStatement(name, state.functionsDepth) { Position = index, Length = i - index, functionDepth = state.functionsDepth };
             }
@@ -363,14 +363,14 @@ namespace NiL.JS.Statements
             {
                 string value = state.Code.Substring(s, i - s);
                 if ((value[0] == '\'') || (value[0] == '"'))
-                    first = new ImmidateValueStatement(Tools.Unescape(value.Substring(1, value.Length - 2), state.strict.Peek())) { Position = index, Length = i - s };
+                    first = new Constant(Tools.Unescape(value.Substring(1, value.Length - 2), state.strict.Peek())) { Position = index, Length = i - s };
                 else
                 {
                     bool b = false;
                     if (value == "null")
-                        first = new ImmidateValueStatement(JSObject.Null);
+                        first = new Constant(JSObject.Null);
                     else if (bool.TryParse(value, out b))
-                        first = new ImmidateValueStatement(b) { Position = index, Length = i - s };
+                        first = new Constant(b) { Position = index, Length = i - s };
                     else
                     {
                         int n = 0;
@@ -378,9 +378,9 @@ namespace NiL.JS.Statements
                         if (Tools.ParseNumber(state.Code, ref s, out d, 0, Tools.ParseNumberOptions.Default | (state.strict.Peek() ? Tools.ParseNumberOptions.RaiseIfOctal : Tools.ParseNumberOptions.None)))
                         {
                             if ((n = (int)d) == d && !double.IsNegativeInfinity(1.0 / d))
-                                first = new ImmidateValueStatement(n) { Position = index, Length = i - index };
+                                first = new Constant(n) { Position = index, Length = i - index };
                             else
-                                first = new ImmidateValueStatement(d) { Position = index, Length = i - index };
+                                first = new Constant(d) { Position = index, Length = i - index };
                         }
                         else if (Parser.ValidateRegex(state.Code, ref s, true))
                         {
@@ -428,7 +428,7 @@ namespace NiL.JS.Statements
                                 if (((first as GetMemberStatement) as object ?? (first as GetVariableStatement)) == null)
                                 {
                                     var cord = Tools.PositionToTextcord(state.Code, i);
-                                    throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid prefix operation. " + cord)));
+                                    throw new JSException((new Core.BaseTypes.SyntaxError("Invalid prefix operation. " + cord)));
                                 }
                                 if (state.strict.Peek()
                                     && (first is GetVariableStatement) && ((first as GetVariableStatement).Name == "arguments" || (first as GetVariableStatement).Name == "eval"))
@@ -440,7 +440,7 @@ namespace NiL.JS.Statements
                                 while (char.IsWhiteSpace(state.Code[i]))
                                     i++;
                                 var f = Parse(state, ref i, true, true, false, true).Statement;
-                                first = new Expressions.Mul(new ImmidateValueStatement(1), f) { Position = index, Length = i - index };
+                                first = new Expressions.Mul(new Constant(1), f) { Position = index, Length = i - index };
                             }
                             break;
                         }
@@ -458,7 +458,7 @@ namespace NiL.JS.Statements
                                 if (((first as GetMemberStatement) as object ?? (first as GetVariableStatement)) == null)
                                 {
                                     var cord = Tools.PositionToTextcord(state.Code, i);
-                                    throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid prefix operation. " + cord)));
+                                    throw new JSException((new Core.BaseTypes.SyntaxError("Invalid prefix operation. " + cord)));
                                 }
                                 if (state.strict.Peek()
                                     && (first is GetVariableStatement) && ((first as GetVariableStatement).Name == "arguments" || (first as GetVariableStatement).Name == "eval"))
@@ -483,7 +483,7 @@ namespace NiL.JS.Statements
                             if (first == null)
                             {
                                 var cord = Tools.PositionToTextcord(state.Code, i);
-                                throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid prefix operation. " + cord)));
+                                throw new JSException((new Core.BaseTypes.SyntaxError("Invalid prefix operation. " + cord)));
                             }
                             break;
                         }
@@ -496,7 +496,7 @@ namespace NiL.JS.Statements
                             if (first == null)
                             {
                                 var cord = Tools.PositionToTextcord(state.Code, i);
-                                throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid prefix operation. " + cord)));
+                                throw new JSException((new Core.BaseTypes.SyntaxError("Invalid prefix operation. " + cord)));
                             }
                             first = new Expressions.Not(first) { Position = index, Length = i - index };
                             break;
@@ -511,7 +511,7 @@ namespace NiL.JS.Statements
                             if (first == null)
                             {
                                 var cord = Tools.PositionToTextcord(state.Code, i);
-                                throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid prefix operation. " + cord)));
+                                throw new JSException((new Core.BaseTypes.SyntaxError("Invalid prefix operation. " + cord)));
                             }
                             first = new Expressions.TypeOf(first) { Position = index, Length = i - index };
                             break;
@@ -522,11 +522,11 @@ namespace NiL.JS.Statements
                             do
                                 i++;
                             while (char.IsWhiteSpace(state.Code[i]));
-                            first = new Expressions.None(Parse(state, ref i, false, true, false, true).Statement, new ImmidateValueStatement(JSObject.undefined)) { Position = index, Length = i - index };
+                            first = new Expressions.None(Parse(state, ref i, false, true, false, true).Statement, new Constant(JSObject.undefined)) { Position = index, Length = i - index };
                             if (first == null)
                             {
                                 var cord = Tools.PositionToTextcord(state.Code, i);
-                                throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid prefix operation. " + cord)));
+                                throw new JSException((new Core.BaseTypes.SyntaxError("Invalid prefix operation. " + cord)));
                             }
                             break;
                         }
@@ -540,7 +540,7 @@ namespace NiL.JS.Statements
                             if (first == null)
                             {
                                 var cord = Tools.PositionToTextcord(state.Code, i);
-                                throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid prefix operation. " + cord)));
+                                throw new JSException((new Core.BaseTypes.SyntaxError("Invalid prefix operation. " + cord)));
                             }
                             first = new Expressions.New(first, new CodeNode[0]) { Position = index, Length = i - index };
                             break;
@@ -555,7 +555,7 @@ namespace NiL.JS.Statements
                             if (first == null)
                             {
                                 var cord = Tools.PositionToTextcord(state.Code, i);
-                                throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid prefix operation. " + cord)));
+                                throw new JSException((new Core.BaseTypes.SyntaxError("Invalid prefix operation. " + cord)));
                             }
                             first = new Expressions.Delete(first) { Position = index, Length = i - index };
                             break;
@@ -572,7 +572,7 @@ namespace NiL.JS.Statements
                             if (first == null)
                             {
                                 var cord = Tools.PositionToTextcord(state.Code, i);
-                                throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid prefix operation. " + cord)));
+                                throw new JSException((new Core.BaseTypes.SyntaxError("Invalid prefix operation. " + cord)));
                             }
                             first = new Expressions.Yield(first) { Position = index, Length = i - index };
                             break;
@@ -590,7 +590,7 @@ namespace NiL.JS.Statements
                 while (char.IsWhiteSpace(state.Code[i]))
                     i++;
                 if (state.Code[i] != ')')
-                    throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \")\"")));
+                    throw new JSException((new Core.BaseTypes.SyntaxError("Expected \")\"")));
                 i++;
                 if ((state.InExpression > 0 && first is FunctionStatement)
                     || (forNew && first is Call))
@@ -599,7 +599,7 @@ namespace NiL.JS.Statements
             else
                 first = Parser.Parse(state, ref i, 2);
             if (first is EmptyStatement)
-                throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid operator argument at " + Tools.PositionToTextcord(state.Code, i))));
+                throw new JSException((new Core.BaseTypes.SyntaxError("Invalid operator argument at " + Tools.PositionToTextcord(state.Code, i))));
             bool canAsign = true && !forUnary; // на случай f() = x
             bool assign = false; // на случай операторов 'x='
             bool binary = false;
@@ -700,7 +700,7 @@ namespace NiL.JS.Statements
                             do
                                 i++;
                             while (char.IsWhiteSpace(state.Code[i]));
-                            second = new ImmidateValueStatement(new JSObject() { valueType = JSObjectType.Object, oValue = threads }) { Position = position };
+                            second = new Constant(new JSObject() { valueType = JSObjectType.Object, oValue = threads }) { Position = position };
                             threads[1] = Parser.Parse(state, ref i, 1);
                             second.Length = i - second.Position;
                             binary = false;
@@ -1022,7 +1022,7 @@ namespace NiL.JS.Statements
                             if (!Parser.ValidateName(state.Code, ref i, false, true, state.strict.Peek()))
                                 throw new ArgumentException("code (" + i + ")");
                             string name = state.Code.Substring(s, i - s);
-                            first = new GetMemberStatement(first, new ImmidateValueStatement(name)
+                            first = new GetMemberStatement(first, new Constant(name)
                                                                      {
                                                                          Position = s,
                                                                          Length = i - s
@@ -1052,7 +1052,7 @@ namespace NiL.JS.Statements
                                     while (char.IsWhiteSpace(state.Code[i]));
                                 args.Add(Parser.Parse(state, ref i, 1));
                                 if (args[args.Count - 1] == null)
-                                    throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \"]\" at " + Tools.PositionToTextcord(state.Code, startPos))));
+                                    throw new JSException((new Core.BaseTypes.SyntaxError("Expected \"]\" at " + Tools.PositionToTextcord(state.Code, startPos))));
                                 if ((args[args.Count - 1] is ExpressionStatement) && (args[args.Count - 1] as ExpressionStatement)._type == OperationType.None)
                                     args[args.Count - 1] = (args[args.Count - 1] as ExpressionStatement).first;
                             }
@@ -1078,10 +1078,10 @@ namespace NiL.JS.Statements
                                         i++;
                                     while (char.IsWhiteSpace(state.Code[i]));
                                 if (i + 1 == state.Code.Length)
-                                    throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Unexpected end of line")));
+                                    throw new JSException((new Core.BaseTypes.SyntaxError("Unexpected end of line")));
                                 args.Add(ExpressionStatement.Parse(state, ref i, false).Statement);
                                 if (args[args.Count - 1] == null)
-                                    throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \")\" at " + Tools.PositionToTextcord(state.Code, startPos))));
+                                    throw new JSException((new Core.BaseTypes.SyntaxError("Expected \")\" at " + Tools.PositionToTextcord(state.Code, startPos))));
                             }
                             first = new Call(first, args.ToArray())
                             {
@@ -1126,7 +1126,7 @@ namespace NiL.JS.Statements
                                 i = rollbackPos;
                                 goto case '\n';
                             }
-                            throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid operator '" + state.Code[i] + "' at " + Tools.PositionToTextcord(state.Code, i))));
+                            throw new JSException((new Core.BaseTypes.SyntaxError("Invalid operator '" + state.Code[i] + "' at " + Tools.PositionToTextcord(state.Code, i))));
                         }
                 }
             } while (repeat);
@@ -1134,7 +1134,7 @@ namespace NiL.JS.Statements
                 && (first is GetVariableStatement) && ((first as GetVariableStatement).Name == "arguments" || (first as GetVariableStatement).Name == "eval"))
             {
                 if (assign || type == OperationType.Assign)
-                    throw new JSException(TypeProxy.Proxy(new SyntaxError("Assignment to eval or arguments is not allowed in strict mode")));
+                    throw new JSException((new SyntaxError("Assignment to eval or arguments is not allowed in strict mode")));
                 //if (type == OperationType.Incriment || type == OperationType.Decriment)
                 //    throw new JSException(new SyntaxError("Can not " + type.ToString().ToLower() + " \"" + (first as GetVariableStatement).Name + "\" in strict mode."));
             }

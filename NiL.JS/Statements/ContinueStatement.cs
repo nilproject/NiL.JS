@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq.Expressions;
 using NiL.JS.Core;
+using NiL.JS.Core.TypeProxing;
 
 namespace NiL.JS.Statements
 {
@@ -18,7 +19,7 @@ namespace NiL.JS.Statements
             if (!Parser.Validate(state.Code, "continue", ref i) || !Parser.isIdentificatorTerminator(state.Code[i]))
                 return new ParseResult();
             if (!state.AllowContinue.Peek())
-                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.SyntaxError("Invalid use continue statement")));
+                throw new JSException((new NiL.JS.Core.BaseTypes.SyntaxError("Invalid use continue statement")));
             while (char.IsWhiteSpace(state.Code[i]) && !Tools.isLineTerminator(state.Code[i])) i++;
             int sl = i;
             JSObject label = null;
@@ -26,7 +27,7 @@ namespace NiL.JS.Statements
             {
                 label = Tools.Unescape(state.Code.Substring(sl, i - sl), state.strict.Peek());
                 if (!state.Labels.Contains(label.oValue.ToString()))
-                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.SyntaxError("Try to continue to undefined label.")));
+                    throw new JSException((new NiL.JS.Core.BaseTypes.SyntaxError("Try to continue to undefined label.")));
             }
             int pos = index;
             index = i;

@@ -422,7 +422,7 @@ namespace NiL.JS.Core
                     {
                         if (!@throw)
                             return false;
-                        throw new JSException(TypeProxy.Proxy(new BaseTypes.SyntaxError("Unterminated string constant")));
+                        throw new JSException((new BaseTypes.SyntaxError("Unterminated string constant")));
                     }
                     j++;
                     if (j >= code.Length)
@@ -525,7 +525,7 @@ namespace NiL.JS.Core
                 }
             }
             var cord = Tools.PositionToTextcord(state.Code, sindex);
-            throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.SyntaxError("Unexpected token at " + cord + " : "
+            throw new JSException((new NiL.JS.Core.BaseTypes.SyntaxError("Unexpected token at " + cord + " : "
                 + state.Code.Substring(index, Math.Min(20, state.Code.Length - index)).Split(new[] { ' ', '\n', '\r' })[0])));
         }
 

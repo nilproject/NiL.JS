@@ -57,8 +57,8 @@ namespace NiL.JS.Expressions
         {
             get
             {
-                return (first == null || first is ImmidateValueStatement || (first is Expression && (first as Expression).IsContextIndependent))
-                    && (second == null || second is ImmidateValueStatement || (second is Expression && (second as Expression).IsContextIndependent));
+                return (first == null || first is Constant || (first is Expression && (first as Expression).IsContextIndependent))
+                    && (second == null || second is Constant || (second is Expression && (second as Expression).IsContextIndependent));
             }
         }
 
@@ -103,7 +103,7 @@ namespace NiL.JS.Expressions
                         res.iValue = (int)res.dValue;
                         res.valueType = JSObjectType.Int;
                     }
-                    _this = new ImmidateValueStatement(res);
+                    _this = new Constant(res);
                     return true;
                 }
             }

@@ -58,15 +58,8 @@ namespace NiL.JS.Expressions
                                         return first.iValue > 0;
                                     throw new NotImplementedException();
                                 }
-                            case JSObjectType.Undefined:
-                            case JSObjectType.NotExistsInObject:
-                                {
-                                    return lessOrEqual;
-                                }
-                            case JSObjectType.NotExists:
-                                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable not defined.")));
                             default:
-                                throw new NotImplementedException();
+                                return lessOrEqual;
                         }
                     }
                 case JSObjectType.Double:
@@ -118,10 +111,8 @@ namespace NiL.JS.Expressions
                                             return first.dValue > 0;
                                         throw new NotImplementedException();
                                     }
-                                case JSObjectType.NotExists:
-                                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable not defined.")));
                                 default:
-                                    throw new NotImplementedException();
+                                    return lessOrEqual;
                             }
                     }
                 case JSObjectType.String:
@@ -191,18 +182,12 @@ namespace NiL.JS.Expressions
                                                     return lessOrEqual;
                                             }
                                         case JSObjectType.NotExists:
-                                            throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable not defined.")));
+                                            throw new JSException((new NiL.JS.Core.BaseTypes.ReferenceError("Variable not defined.")));
                                         default: throw new NotImplementedException();
                                     }
                                 }
-                            case JSObjectType.Undefined:
-                            case JSObjectType.NotExistsInObject:
-                                {
-                                    return lessOrEqual;
-                                }
-                            case JSObjectType.NotExists:
-                                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable not defined.")));
-                            default: throw new NotImplementedException();
+                            default:
+                                return lessOrEqual;
                         }
                     }
                 case JSObjectType.Function:
@@ -225,14 +210,8 @@ namespace NiL.JS.Expressions
                         }
                         throw new NotImplementedException();
                     }
-                case JSObjectType.Undefined:
-                case JSObjectType.NotExistsInObject:
-                    {
-                        return lessOrEqual;
-                    }
-                case JSObjectType.NotExists:
-                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable not defined.")));
-                default: throw new NotImplementedException();
+                default:
+                    return lessOrEqual;
             }
         }
 

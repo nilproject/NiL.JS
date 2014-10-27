@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace NiL.JS.Core
+namespace NiL.JS.Core.TypeProxing
 {
     [Serializable]
     internal sealed class GenericType : Type, IEnumerable

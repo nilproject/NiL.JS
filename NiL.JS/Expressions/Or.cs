@@ -29,13 +29,13 @@ namespace NiL.JS.Expressions
             var res = base.Build(ref _this, depth, vars, strict);
             if (_this != this)
                 return res;
-            if ((second is ImmidateValueStatement || (second is Expression && (second as Expression).IsContextIndependent))
+            if ((second is Constant || (second is Expression && (second as Expression).IsContextIndependent))
                 && Tools.JSObjectToInt32(second.Evaluate(null)) == 0)
             {
                 _this = new ToInt(first);
                 return true;
             }
-            if ((first is ImmidateValueStatement || (first is Expression && (first as Expression).IsContextIndependent))
+            if ((first is Constant || (first is Expression && (first as Expression).IsContextIndependent))
                  && Tools.JSObjectToInt32(first.Evaluate(null)) == 0)
             {
                 _this = new ToInt(second);

@@ -6,7 +6,7 @@ using NiL.JS.Core.JIT;
 namespace NiL.JS.Statements
 {
     [Serializable]
-    public sealed class ImmidateValueStatement : CodeNode
+    public sealed class Constant : CodeNode
     {
 #if !NET35
 
@@ -21,7 +21,7 @@ namespace NiL.JS.Statements
 
         public JSObject Value { get { return value; } }
 
-        public ImmidateValueStatement(JSObject value)
+        public Constant(JSObject value)
         {
             this.value = value;
         }

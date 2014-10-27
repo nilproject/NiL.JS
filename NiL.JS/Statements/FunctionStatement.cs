@@ -5,6 +5,7 @@ using NiL.JS.Core;
 using NiL.JS.Core.BaseTypes;
 using NiL.JS.Core.JIT;
 using NiL.JS.Core.Modules;
+using NiL.JS.Core.TypeProxing;
 
 namespace NiL.JS.Statements
 {
@@ -278,7 +279,7 @@ namespace NiL.JS.Statements
             {
                 nameStartPos = i;
                 if (!Parser.ValidateName(code, ref i, false, true, state.strict.Peek()))
-                    throw new JSException(TypeProxy.Proxy(new SyntaxError("Invalid function name at " + Tools.PositionToTextcord(code, nameStartPos))));
+                    throw new JSException((new SyntaxError("Invalid function name at " + Tools.PositionToTextcord(code, nameStartPos))));
                 name = Tools.Unescape(code.Substring(nameStartPos, i - nameStartPos), state.strict.Peek());
                 while (char.IsWhiteSpace(code[i])) i++;
                 if (code[i] != '(')
@@ -295,7 +296,7 @@ namespace NiL.JS.Statements
                     do i++; while (char.IsWhiteSpace(code[i]));
                 int n = i;
                 if (!Parser.ValidateName(code, ref i, state.strict.Peek()))
-                    throw new JSException(TypeProxy.Proxy(new SyntaxError("Invalid description of function arguments at " + Tools.PositionToTextcord(code, nameStartPos))));
+                    throw new JSException((new SyntaxError("Invalid description of function arguments at " + Tools.PositionToTextcord(code, nameStartPos))));
                 var pname = Tools.Unescape(code.Substring(n, i - n), state.strict.Peek());
                 parameters.Add(new ParameterReference(pname, state.functionsDepth + 1) { Position = n, Length = i - n });
                 while (char.IsWhiteSpace(code[i])) i++;
@@ -355,11 +356,11 @@ namespace NiL.JS.Statements
                         if (parameters[j].Name == parameters[k].Name)
                             throw new JSException(new SyntaxError("Duplicate names of function parameters not allowed in strict mode."));
                 if (name == "arguments" || name == "eval")
-                    throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Functions name may not be \"arguments\" or \"eval\" in strict mode at " + Tools.PositionToTextcord(code, index))));
+                    throw new JSException((new Core.BaseTypes.SyntaxError("Functions name may not be \"arguments\" or \"eval\" in strict mode at " + Tools.PositionToTextcord(code, index))));
                 for (int j = parameters.Count; j-- > 0; )
                 {
                     if (parameters[j].Name == "arguments" || parameters[j].Name == "eval")
-                        throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Parameters name may not be \"arguments\" or \"eval\" in strict mode at " + Tools.PositionToTextcord(code, index))));
+                        throw new JSException((new Core.BaseTypes.SyntaxError("Parameters name may not be \"arguments\" or \"eval\" in strict mode at " + Tools.PositionToTextcord(code, index))));
                 }
             }
             FunctionStatement func = new FunctionStatement(name)
@@ -402,7 +403,7 @@ namespace NiL.JS.Statements
                     index = i;
                     while (i < code.Length && char.IsWhiteSpace(code[i])) i++;
                     if (i < code.Length && code[i] == ';')
-                        throw new JSException(TypeProxy.Proxy(new SyntaxError("Expression can not start with word \"function\"")));
+                        throw new JSException((new SyntaxError("Expression can not start with word \"function\"")));
                     return new ParseResult()
                     {
                         IsParsed = true,

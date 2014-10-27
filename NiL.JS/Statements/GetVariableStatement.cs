@@ -26,7 +26,7 @@ namespace NiL.JS.Statements
             {
                 var res = Descriptor.Get(context, false, functionDepth);
                 if (res.valueType < JSObjectType.Undefined)
-                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable \"" + variableName + "\" is not defined.")));
+                    throw new JSException((new NiL.JS.Core.BaseTypes.ReferenceError("Variable \"" + variableName + "\" is not defined.")));
                 return res;
             }
             return descriptor.Get(context, true, functionDepth);

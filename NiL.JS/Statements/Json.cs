@@ -64,19 +64,19 @@ namespace NiL.JS.Statements
                     var setter = FunctionStatement.Parse(state, ref i, FunctionType.Set).Statement as FunctionStatement;
                     if (!flds.ContainsKey(setter.Name))
                     {
-                        var vle = new ImmidateValueStatement(new JSObject() { valueType = JSObjectType.Object, oValue = new CodeNode[2] { setter, null } });
+                        var vle = new Constant(new JSObject() { valueType = JSObjectType.Object, oValue = new CodeNode[2] { setter, null } });
                         vle.value.valueType = JSObjectType.Property;
                         flds.Add(setter.Name, vle);
                     }
                     else
                     {
                         var vle = flds[setter.Name];
-                        if (!(vle is ImmidateValueStatement)
-                            || (vle as ImmidateValueStatement).value.valueType != JSObjectType.Property)
-                            throw new JSException(TypeProxy.Proxy(new SyntaxError("Try to define setter for defined field at " + Tools.PositionToTextcord(state.Code, pos))));
-                        if (((vle as ImmidateValueStatement).value.oValue as CodeNode[])[0] != null)
-                            throw new JSException(TypeProxy.Proxy(new SyntaxError("Try to redefine setter " + setter.Name + " at " + Tools.PositionToTextcord(state.Code, pos))));
-                        ((vle as ImmidateValueStatement).value.oValue as CodeNode[])[0] = setter;
+                        if (!(vle is Constant)
+                            || (vle as Constant).value.valueType != JSObjectType.Property)
+                            throw new JSException((new SyntaxError("Try to define setter for defined field at " + Tools.PositionToTextcord(state.Code, pos))));
+                        if (((vle as Constant).value.oValue as CodeNode[])[0] != null)
+                            throw new JSException((new SyntaxError("Try to redefine setter " + setter.Name + " at " + Tools.PositionToTextcord(state.Code, pos))));
+                        ((vle as Constant).value.oValue as CodeNode[])[0] = setter;
                     }
                 }
                 else if ((i = pos) >= 0 && Parser.Validate(state.Code, "get ", ref i) && !Parser.isIdentificatorTerminator(state.Code[i]))
@@ -85,19 +85,19 @@ namespace NiL.JS.Statements
                     var getter = FunctionStatement.Parse(state, ref i, FunctionType.Get).Statement as FunctionStatement;
                     if (!flds.ContainsKey(getter.Name))
                     {
-                        var vle = new ImmidateValueStatement(new JSObject() { valueType = JSObjectType.Object, oValue = new CodeNode[2] { null, getter } });
+                        var vle = new Constant(new JSObject() { valueType = JSObjectType.Object, oValue = new CodeNode[2] { null, getter } });
                         vle.value.valueType = JSObjectType.Property;
                         flds.Add(getter.Name, vle);
                     }
                     else
                     {
                         var vle = flds[getter.Name];
-                        if (!(vle is ImmidateValueStatement)
-                            || (vle as ImmidateValueStatement).value.valueType != JSObjectType.Property)
-                            throw new JSException(TypeProxy.Proxy(new SyntaxError("Try to define getter for defined field at " + Tools.PositionToTextcord(state.Code, pos))));
-                        if (((vle as ImmidateValueStatement).value.oValue as CodeNode[])[1] != null)
-                            throw new JSException(TypeProxy.Proxy(new SyntaxError("Try to redefine getter " + getter.Name + " at " + Tools.PositionToTextcord(state.Code, pos))));
-                        ((vle as ImmidateValueStatement).value.oValue as CodeNode[])[1] = getter;
+                        if (!(vle is Constant)
+                            || (vle as Constant).value.valueType != JSObjectType.Property)
+                            throw new JSException((new SyntaxError("Try to define getter for defined field at " + Tools.PositionToTextcord(state.Code, pos))));
+                        if (((vle as Constant).value.oValue as CodeNode[])[1] != null)
+                            throw new JSException((new SyntaxError("Try to redefine getter " + getter.Name + " at " + Tools.PositionToTextcord(state.Code, pos))));
+                        ((vle as Constant).value.oValue as CodeNode[])[1] = getter;
                     }
                 }
                 else
@@ -120,7 +120,7 @@ namespace NiL.JS.Statements
                             else if (double.TryParse(value, out d))
                                 fieldName = Tools.DoubleToString(d);
                             else if (flds.Count != 0)
-                                throw new JSException(TypeProxy.Proxy(new SyntaxError("Invalid field name at " + Tools.PositionToTextcord(state.Code, pos))));
+                                throw new JSException((new SyntaxError("Invalid field name at " + Tools.PositionToTextcord(state.Code, pos))));
                             else
                                 return new ParseResult();
                         }
@@ -138,8 +138,8 @@ namespace NiL.JS.Statements
                     CodeNode aei = null;
                     flds.TryGetValue(fieldName, out aei);
                     if (aei != null
-                        && ((state.strict.Peek() && (!(aei is ImmidateValueStatement) || (aei as ImmidateValueStatement).value != JSObject.undefined))
-                            || (aei is ImmidateValueStatement && ((aei as ImmidateValueStatement).value.valueType == JSObjectType.Property))))
+                        && ((state.strict.Peek() && (!(aei is Constant) || (aei as Constant).value != JSObject.undefined))
+                            || (aei is Constant && ((aei as Constant).value.valueType == JSObjectType.Property))))
                         throw new JSException(new SyntaxError("Try to redefine field \"" + fieldName + "\" at " + Tools.PositionToTextcord(state.Code, pos)));
                     flds[fieldName] = initializator;
                 }
@@ -194,9 +194,9 @@ namespace NiL.JS.Statements
         {
             for (int i = 0; i < values.Length; i++)
             {
-                if ((values[i] is ImmidateValueStatement) && ((values[i] as ImmidateValueStatement).value.valueType == JSObjectType.Property))
+                if ((values[i] is Constant) && ((values[i] as Constant).value.valueType == JSObjectType.Property))
                 {
-                    var gs = (values[i] as ImmidateValueStatement).value.oValue as CodeNode[];
+                    var gs = (values[i] as Constant).value.oValue as CodeNode[];
                     Parser.Optimize(ref gs[0], 1, vars, strict);
                     Parser.Optimize(ref gs[1], 1, vars, strict);
                 }
@@ -216,9 +216,9 @@ namespace NiL.JS.Statements
             string res = "{ ";
             for (int i = 0; i < fields.Length; i++)
             {
-                if ((values[i] is ImmidateValueStatement) && ((values[i] as ImmidateValueStatement).value.valueType == JSObjectType.Property))
+                if ((values[i] is Constant) && ((values[i] as Constant).value.valueType == JSObjectType.Property))
                 {
-                    var gs = (values[i] as ImmidateValueStatement).value.oValue as CodeNode[];
+                    var gs = (values[i] as Constant).value.oValue as CodeNode[];
                     res += gs[0];
                     if (gs[0] != null && gs[1] != null)
                         res += ", ";

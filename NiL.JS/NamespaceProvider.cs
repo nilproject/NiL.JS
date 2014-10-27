@@ -105,7 +105,7 @@ namespace NiL.JS
                     return res;
                 }
                 if (selection.Current.Key == reqname)
-                    return NiL.JS.Core.TypeProxy.GetConstructor(selection.Current.Value);
+                    return TypeProxy.GetConstructor(selection.Current.Value);
                 res = TypeProxy.Proxy(new NamespaceProvider(reqname, unions != null));
                 childs.Add(name, res);
                 return res;

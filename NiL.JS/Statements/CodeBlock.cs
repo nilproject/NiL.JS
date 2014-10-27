@@ -150,7 +150,7 @@ namespace NiL.JS.Statements
                             if (directives == null)
                                 directives = new HashSet<string>();
                             directives.Add(str);
-                            body.Add(new ImmidateValueStatement(str));
+                            body.Add(new Constant(str));
                         }
                         else
                         {
@@ -171,7 +171,7 @@ namespace NiL.JS.Statements
                 } while (true);
             }
             for (var j = body.Count; j-- > 0; )
-                (body[j] as ImmidateValueStatement).value.oValue = Tools.Unescape((body[j] as ImmidateValueStatement).value.oValue.ToString(), state.strict.Peek());
+                (body[j] as Constant).value.oValue = Tools.Unescape((body[j] as Constant).value.oValue.ToString(), state.strict.Peek());
             Dictionary<string, VariableDescriptor> vars = null;
             while ((sroot && i < state.Code.Length) || (!sroot && state.Code[i] != '}'))
             {
@@ -185,9 +185,9 @@ namespace NiL.JS.Statements
                 if (t is FunctionStatement)
                 {
                     if (state.strict.Peek() && !allowStrict)
-                        throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
+                        throw new JSException((new NiL.JS.Core.BaseTypes.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
                     if (state.InExpression == 0 && string.IsNullOrEmpty((t as FunctionStatement).Name))
-                        throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.SyntaxError("Declarated function must have name.")));
+                        throw new JSException((new NiL.JS.Core.BaseTypes.SyntaxError("Declarated function must have name.")));
                     if (vars == null)
                         vars = new Dictionary<string, VariableDescriptor>();
                     VariableDescriptor vd = null;

@@ -36,7 +36,7 @@ namespace NiL.JS.Core
 
         public override void Assign(NiL.JS.Core.JSObject value)
         {
-            throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Invalid left-hand side")));
+            throw new JSException((new NiL.JS.Core.BaseTypes.ReferenceError("Invalid left-hand side")));
         }
 
         internal protected override JSObject GetMember(JSObject name, bool forWrite, bool own)

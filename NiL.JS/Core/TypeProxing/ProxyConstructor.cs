@@ -4,7 +4,7 @@ using System.Reflection;
 using NiL.JS.Core.BaseTypes;
 using NiL.JS.Core.Modules;
 
-namespace NiL.JS.Core
+namespace NiL.JS.Core.TypeProxing
 {
     [Serializable]
     [Prototype(typeof(Function))]
@@ -95,7 +95,7 @@ namespace NiL.JS.Core
         public override JSObject Invoke(JSObject thisOverride, Arguments argsObj)
         {
             if (proxy.hostedType.ContainsGenericParameters)
-                throw new JSException(TypeProxy.Proxy(new BaseTypes.TypeError(proxy.hostedType.Name + " can't be created because it's generic type.")));
+                throw new JSException((new BaseTypes.TypeError(proxy.hostedType.Name + " can't be created because it's generic type.")));
             var _this = thisOverride;
             bool bynew = false;
             if (_this != null)
@@ -107,7 +107,7 @@ namespace NiL.JS.Core
                 object[] args = null;
                 MethodProxy constructor = findConstructor(argsObj, ref args);
                 if (constructor == null)
-                    throw new JSException(TypeProxy.Proxy(new BaseTypes.TypeError(proxy.hostedType.Name + " can't be created.")));
+                    throw new JSException((new BaseTypes.TypeError(proxy.hostedType.Name + " can't be created.")));
                 var obj = constructor.InvokeImpl(null, args, argsObj);
                 JSObject res = null;
                 if (bynew)

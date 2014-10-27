@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using NiL.JS.Core.JIT;
 using NiL.JS.Core.Modules;
+using NiL.JS.Core.TypeProxing;
 using NiL.JS.Expressions;
 using NiL.JS.Statements;
 
@@ -732,7 +733,7 @@ namespace NiL.JS.Core.BaseTypes
                 creator = fs.Statement as FunctionStatement;
             }
             else
-                throw new JSException(TypeProxy.Proxy(new SyntaxError("")));
+                throw new JSException((new SyntaxError("")));
             valueType = JSObjectType.Function;
             this.oValue = this;
             checkUsings();

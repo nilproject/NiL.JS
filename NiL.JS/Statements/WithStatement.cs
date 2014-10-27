@@ -23,11 +23,11 @@ namespace NiL.JS.Statements
             if (!Parser.Validate(state.Code, "with (", ref i) && !Parser.Validate(state.Code, "with(", ref i))
                 return new ParseResult();
             if (state.strict.Peek())
-                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.SyntaxError("WithStatement is not allowed in strict mode.")));
+                throw new JSException((new NiL.JS.Core.BaseTypes.SyntaxError("WithStatement is not allowed in strict mode.")));
             var obj = Parser.Parse(state, ref i, 1);
             while (char.IsWhiteSpace(state.Code[i])) i++;
             if (state.Code[i] != ')')
-                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.SyntaxError("Invalid syntax WithStatement.")));
+                throw new JSException((new NiL.JS.Core.BaseTypes.SyntaxError("Invalid syntax WithStatement.")));
             do i++; while (char.IsWhiteSpace(state.Code[i]));
             var body = Parser.Parse(state, ref i, 0);
             var pos = index;

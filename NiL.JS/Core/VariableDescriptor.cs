@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using NiL.JS.Statements;
 using System.Collections.ObjectModel;
+using NiL.JS.Core.TypeProxing;
 
 namespace NiL.JS.Core
 {
@@ -36,7 +37,7 @@ namespace NiL.JS.Core
                     yield return item;
             }
         }
-        
+
         internal JSObject Get(Context context, bool create, int depth)
         {
             context.objectSource = null;
@@ -44,16 +45,17 @@ namespace NiL.JS.Core
                 return context.GetVariable(name, create);
             TypeProxy tp = null;
             JSObject res = null;
-            while (depth > defineDepth)
-            {
-                if (context is WithContext)
+            if (depth > defineDepth) do
                 {
-                    cacheContext = null;
-                    break;
+                    if (context is WithContext)
+                    {
+                        cacheContext = null;
+                        break;
+                    }
+                    context = context.parent;
+                    depth--;
                 }
-                context = context.parent;
-                depth--;
-            }
+                while (depth > defineDepth);
             if (context != cacheContext)
                 cacheRes = null;
             if (cacheRes == null)

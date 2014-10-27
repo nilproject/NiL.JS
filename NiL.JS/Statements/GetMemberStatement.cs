@@ -79,7 +79,7 @@ namespace NiL.JS.Statements
         {
             Parser.Optimize(ref objStatement, depth + 1, variables, strict);
             Parser.Optimize(ref memberNameStatement, depth + 1, variables, strict);
-            if (memberNameStatement is ImmidateValueStatement)
+            if (memberNameStatement is Constant)
                 cachedMemberName = memberNameStatement.Evaluate(null);
             return false;
         }
@@ -88,10 +88,10 @@ namespace NiL.JS.Statements
         {
             var res = objStatement.ToString();
             int i = 0;
-            if (memberNameStatement is ImmidateValueStatement
-                && (memberNameStatement as ImmidateValueStatement).value.ToString().Length > 0
-                && (Parser.ValidateName((memberNameStatement as ImmidateValueStatement).value.ToString(), ref i, true)))
-                res += "." + (memberNameStatement as ImmidateValueStatement).value;
+            if (memberNameStatement is Constant
+                && (memberNameStatement as Constant).value.ToString().Length > 0
+                && (Parser.ValidateName((memberNameStatement as Constant).value.ToString(), ref i, true)))
+                res += "." + (memberNameStatement as Constant).value;
             else
                 res += "[" + memberNameStatement.ToString() + "]";
             return res;

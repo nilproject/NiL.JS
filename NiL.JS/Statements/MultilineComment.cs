@@ -1,5 +1,6 @@
 ﻿using NiL.JS.Core;
 using NiL.JS.Core.BaseTypes;
+using NiL.JS.Core.TypeProxing;
 
 namespace NiL.JS.Statements
 {
@@ -15,7 +16,7 @@ namespace NiL.JS.Statements
                 return new ParseResult();
             while (i + 1 < state.Code.Length && (state.Code[i] != '*' || state.Code[i + 1] != '/')) i++;
             if (i + 1 >= state.Code.Length)
-                throw new JSException(TypeProxy.Proxy(new SyntaxError("Non terminated multiline comment")));
+                throw new JSException((new SyntaxError("Non terminated multiline comment")));
             i += 2;
             try
             {

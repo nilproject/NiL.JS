@@ -109,7 +109,7 @@ namespace NiL.JS.Statements
             do i++; while (char.IsWhiteSpace(state.Code[i]));
             CodeNode body = Parser.Parse(state, ref i, 0);
             if (body is FunctionStatement && state.strict.Peek())
-                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
+                throw new JSException((new NiL.JS.Core.BaseTypes.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
             CodeNode elseBody = null;
             while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i])) i++;
             if (i < state.Code.Length && !(body is CodeBlock) && (state.Code[i] == ';'))
@@ -119,7 +119,7 @@ namespace NiL.JS.Statements
                 while (char.IsWhiteSpace(state.Code[i])) i++;
                 elseBody = Parser.Parse(state, ref i, 0);
                 if (elseBody is FunctionStatement && state.strict.Peek())
-                    throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
+                    throw new JSException((new NiL.JS.Core.BaseTypes.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
             }
             var pos = index;
             index = i;
@@ -181,7 +181,7 @@ namespace NiL.JS.Statements
             Parser.Optimize(ref elseBody, depth, variables, strict);
             try
             {
-                if (condition is ImmidateValueStatement || (condition is Expression && (condition as Expression).IsContextIndependent))
+                if (condition is Constant || (condition is Expression && (condition as Expression).IsContextIndependent))
                 {
                     if ((bool)condition.Evaluate(null))
                         _this = body;

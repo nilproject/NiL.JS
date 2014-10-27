@@ -94,16 +94,16 @@ namespace NiL.JS.Statements
             state.LabelCount = 0;
             init = state.Code[i] == ';' ? null as CodeNode : Parser.Parse(state, ref i, 3);
             if (state.Code[i] != ';')
-                throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \";\" at + " + Tools.PositionToTextcord(state.Code, i))));
+                throw new JSException((new Core.BaseTypes.SyntaxError("Expected \";\" at + " + Tools.PositionToTextcord(state.Code, i))));
             do i++; while (char.IsWhiteSpace(state.Code[i]));
             var condition = state.Code[i] == ';' ? null as CodeNode : ExpressionStatement.Parse(state, ref i).Statement;
             if (state.Code[i] != ';')
-                throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \";\" at + " + Tools.PositionToTextcord(state.Code, i))));
+                throw new JSException((new Core.BaseTypes.SyntaxError("Expected \";\" at + " + Tools.PositionToTextcord(state.Code, i))));
             do i++; while (char.IsWhiteSpace(state.Code[i]));
             var post = state.Code[i] == ')' ? null as CodeNode : ExpressionStatement.Parse(state, ref i).Statement;
             while (char.IsWhiteSpace(state.Code[i])) i++;
             if (state.Code[i] != ')')
-                throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \";\" at + " + Tools.PositionToTextcord(state.Code, i))));
+                throw new JSException((new Core.BaseTypes.SyntaxError("Expected \";\" at + " + Tools.PositionToTextcord(state.Code, i))));
             do i++; while (char.IsWhiteSpace(state.Code[i]));
             state.AllowBreak.Push(true);
             state.AllowContinue.Push(true);
@@ -111,7 +111,7 @@ namespace NiL.JS.Statements
             int cbs = state.breaksCount;
             var body = Parser.Parse(state, ref i, 0);
             if (body is FunctionStatement && state.strict.Peek())
-                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
+                throw new JSException((new NiL.JS.Core.BaseTypes.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
             state.AllowBreak.Pop();
             state.AllowContinue.Pop();
             int startPos = index;

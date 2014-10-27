@@ -44,7 +44,7 @@ namespace NiL.JS.Statements
             int cbs = state.breaksCount;
             var body = Parser.Parse(state, ref i, 0);
             if (body is FunctionStatement && state.strict.Peek())
-                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
+                throw new JSException((new NiL.JS.Core.BaseTypes.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
             state.AllowBreak.Pop();
             state.AllowContinue.Pop();
             var pos = index;
@@ -149,7 +149,7 @@ namespace NiL.JS.Statements
             Parser.Optimize(ref condition, 2, variables, strict);
             try
             {
-                if (allowRemove && (condition is ImmidateValueStatement || (condition is Expression && (condition as Expression).IsContextIndependent)))
+                if (allowRemove && (condition is Constant || (condition is Expression && (condition as Expression).IsContextIndependent)))
                 {
                     if ((bool)condition.Evaluate(null))
                         _this = new InfinityLoop(body, labels);

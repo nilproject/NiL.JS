@@ -85,10 +85,10 @@ namespace NiL.JS.Core.Modules
                 if (char.IsDigit(code[start]) || (code[start] == '-' && char.IsDigit(code[start + 1])))
                 {
                     if (stack.Peek().state != ParseState.Value)
-                        throw new JSException(TypeProxy.Proxy(new SyntaxError("Unexpected token.")));
+                        throw new JSException((new SyntaxError("Unexpected token.")));
                     double value;
                     if (!Tools.ParseNumber(code, ref pos, out value))
-                        throw new JSException(TypeProxy.Proxy(new SyntaxError("Invalid number definition.")));
+                        throw new JSException((new SyntaxError("Invalid number definition.")));
                     var v = stack.Peek();
                     v.state = ParseState.End;
                     v.value = value;
@@ -109,14 +109,14 @@ namespace NiL.JS.Core.Modules
                         while (isSpace(code[pos]))
                             pos++;
                         if (code[pos] != ':')
-                            throw new JSException(TypeProxy.Proxy(new SyntaxError("Unexpected token.")));
+                            throw new JSException((new SyntaxError("Unexpected token.")));
                         pos++;
                     }
                     else
                     {
                         value = Tools.Unescape(value, false);
                         if (stack.Peek().state != ParseState.Value)
-                            throw new JSException(TypeProxy.Proxy(new SyntaxError("Unexpected token.")));
+                            throw new JSException((new SyntaxError("Unexpected token.")));
                         var v = stack.Peek();
                         v.state = ParseState.End;
                         v.value = value;
@@ -125,7 +125,7 @@ namespace NiL.JS.Core.Modules
                 else if (Parser.Validate(code, "null", ref pos))
                 {
                     if (stack.Peek().state != ParseState.Value)
-                        throw new JSException(TypeProxy.Proxy(new SyntaxError("Unexpected token.")));
+                        throw new JSException((new SyntaxError("Unexpected token.")));
                     var v = stack.Peek();
                     v.state = ParseState.End;
                     v.value = JSObject.Null;
@@ -133,7 +133,7 @@ namespace NiL.JS.Core.Modules
                 else if (Parser.Validate(code, "true", ref pos))
                 {
                     if (stack.Peek().state != ParseState.Value)
-                        throw new JSException(TypeProxy.Proxy(new SyntaxError("Unexpected token.")));
+                        throw new JSException((new SyntaxError("Unexpected token.")));
                     var v = stack.Peek();
                     v.state = ParseState.End;
                     v.value = true;
@@ -141,7 +141,7 @@ namespace NiL.JS.Core.Modules
                 else if (Parser.Validate(code, "false", ref pos))
                 {
                     if (stack.Peek().state != ParseState.Value)
-                        throw new JSException(TypeProxy.Proxy(new SyntaxError("Unexpected token.")));
+                        throw new JSException((new SyntaxError("Unexpected token.")));
                     var v = stack.Peek();
                     v.state = ParseState.End;
                     v.value = true;
@@ -149,7 +149,7 @@ namespace NiL.JS.Core.Modules
                 else if (code[pos] == '{')
                 {
                     if (stack.Peek().state == ParseState.Name)
-                        throw new JSException(TypeProxy.Proxy(new SyntaxError("Unexpected token.")));
+                        throw new JSException((new SyntaxError("Unexpected token.")));
                     stack.Peek().value = JSObject.CreateObject();
                     stack.Peek().state = ParseState.Object;
                     //stack.Push(new StackFrame() { state = ParseState.Name, container = stack.Peek().value });
@@ -158,14 +158,14 @@ namespace NiL.JS.Core.Modules
                 else if (code[pos] == '[')
                 {
                     if (stack.Peek().state == ParseState.Name)
-                        throw new JSException(TypeProxy.Proxy(new SyntaxError("Unexpected token.")));
+                        throw new JSException((new SyntaxError("Unexpected token.")));
                     stack.Peek().value = new BaseTypes.Array();
                     stack.Peek().state = ParseState.Array;
                     //stack.Push(new StackFrame() { state = ParseState.Value, fieldName = (stack.Peek().valuesCount++).ToString(CultureInfo.InvariantCulture), container = stack.Peek().value });
                     pos++;
                 }
                 else if (stack.Peek().state != ParseState.End)
-                    throw new JSException(TypeProxy.Proxy(new SyntaxError("Unexpected token.")));
+                    throw new JSException((new SyntaxError("Unexpected token.")));
                 if (stack.Peek().state == ParseState.End)
                 {
                     var t = stack.Pop();
@@ -208,14 +208,14 @@ namespace NiL.JS.Core.Modules
                             else if (stack.Peek().state == ParseState.Object)
                                 stack.Push(new StackFrame() { state = ParseState.Name, container = stack.Peek().value });
                             else
-                                throw new JSException(TypeProxy.Proxy(new SyntaxError("Unexpected token.")));
+                                throw new JSException((new SyntaxError("Unexpected token.")));
                             pos++;
                             break;
                         }
                     case ']':
                         {
                             if (stack.Peek().state != ParseState.Array)
-                                throw new JSException(TypeProxy.Proxy(new SyntaxError("Unexpected token.")));
+                                throw new JSException((new SyntaxError("Unexpected token.")));
                             stack.Peek().state = ParseState.End;
                             pos++;
                             break;
@@ -223,7 +223,7 @@ namespace NiL.JS.Core.Modules
                     case '}':
                         {
                             if (stack.Peek().state != ParseState.Object)
-                                throw new JSException(TypeProxy.Proxy(new SyntaxError("Unexpected token.")));
+                                throw new JSException((new SyntaxError("Unexpected token.")));
                             stack.Peek().state = ParseState.End;
                             pos++;
                             break;

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using NiL.JS.Core;
 using NiL.JS.Core.BaseTypes;
+using NiL.JS.Core.TypeProxing;
 using NiL.JS.Statements;
 
 namespace NiL.JS.Expressions
@@ -29,7 +30,7 @@ namespace NiL.JS.Expressions
             this.arguments = arguments;
         }
 
-        private JSObject prepareArg(Context context, CodeNode source)
+        private static JSObject prepareArg(Context context, CodeNode source)
         {
             context.objectSource = null;
             var a = source.Evaluate(context);
@@ -90,13 +91,13 @@ namespace NiL.JS.Expressions
             }
             // Аргументы должны быть вычислены даже если функция не существует.
             if (func == null)
-                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError(first + " is not callable")));
+                throw new JSException((new NiL.JS.Core.BaseTypes.TypeError(first + " is not callable")));
             func.attributes = (func.attributes & ~JSObjectAttributesInternal.Eval) | (temp.attributes & JSObjectAttributesInternal.Eval);
 
             return func.Invoke(newThisBind, arguments);
         }
 
-        private static bool isSimple(CodeNode expression)
+        /*private static bool isSimple(CodeNode expression)
         {
             if (expression == null
                 || expression is ImmidateValueStatement
@@ -118,7 +119,7 @@ namespace NiL.JS.Expressions
             if (expression is Expression)
                 return isSimple((expression as Expression).FirstOperand) && isSimple((expression as Expression).SecondOperand);
             return false;
-        }
+        }*/
 
         internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict)
         {

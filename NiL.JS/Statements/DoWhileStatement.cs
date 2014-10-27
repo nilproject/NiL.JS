@@ -41,7 +41,7 @@ namespace NiL.JS.Statements
             int cbs = state.breaksCount;
             var body = Parser.Parse(state, ref i, 4);
             if (body is FunctionStatement && state.strict.Peek())
-                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
+                throw new JSException((new NiL.JS.Core.BaseTypes.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
             state.AllowBreak.Pop();
             state.AllowContinue.Pop();
             if (!(body is CodeBlock) && state.Code[i] == ';')
@@ -50,15 +50,15 @@ namespace NiL.JS.Statements
             if (i >= state.Code.Length)
                 throw new JSException(new SyntaxError("Unexpected end of source."));
             if (!Parser.Validate(state.Code, "while", ref i))
-                throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \"while\" at + " + Tools.PositionToTextcord(state.Code, i))));
+                throw new JSException((new Core.BaseTypes.SyntaxError("Expected \"while\" at + " + Tools.PositionToTextcord(state.Code, i))));
             while (char.IsWhiteSpace(state.Code[i])) i++;
             if (state.Code[i] != '(')
-                throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \"(\" at + " + Tools.PositionToTextcord(state.Code, i))));
+                throw new JSException((new Core.BaseTypes.SyntaxError("Expected \"(\" at + " + Tools.PositionToTextcord(state.Code, i))));
             do i++; while (char.IsWhiteSpace(state.Code[i]));
             var condition = Parser.Parse(state, ref i, 1);
             while (char.IsWhiteSpace(state.Code[i])) i++;
             if (state.Code[i] != ')')
-                throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \")\" at + " + Tools.PositionToTextcord(state.Code, i))));
+                throw new JSException((new Core.BaseTypes.SyntaxError("Expected \")\" at + " + Tools.PositionToTextcord(state.Code, i))));
             i++;
             var pos = index;
             index = i;
@@ -163,7 +163,7 @@ namespace NiL.JS.Statements
             Parser.Optimize(ref condition, 2, variables, strict);
             try
             {
-                if (allowRemove && (condition is ImmidateValueStatement || (condition as Expressions.Expression).IsContextIndependent))
+                if (allowRemove && (condition is Constant || (condition as Expressions.Expression).IsContextIndependent))
                 {
                     if ((bool)condition.Evaluate(null))
                         _this = new InfinityLoop(body, labels);

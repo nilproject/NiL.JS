@@ -4,6 +4,7 @@ using System.Threading;
 using System.Web;
 using NiL.JS.Core.BaseTypes;
 using NiL.JS.Core.Modules;
+using NiL.JS.Core.TypeProxing;
 
 namespace NiL.JS.Core
 {

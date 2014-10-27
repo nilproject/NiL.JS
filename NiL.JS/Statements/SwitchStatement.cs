@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using NiL.JS.Core;
+using NiL.JS.Core.TypeProxing;
 
 namespace NiL.JS.Statements
 {
@@ -19,7 +20,6 @@ namespace NiL.JS.Statements
     public sealed class SwitchStatement : CodeNode
     {
         private FunctionStatement[] functions;
-        private int length;
         private readonly CodeNode[] body;
         private SwitchCase[] cases;
         private CodeNode image;
@@ -32,7 +32,6 @@ namespace NiL.JS.Statements
         internal SwitchStatement(CodeNode[] body)
         {
             this.body = body;
-            length = body.Length - 1;
         }
 
         internal static ParseResult Parse(ParsingState state, ref int index)
@@ -44,10 +43,10 @@ namespace NiL.JS.Statements
             while (char.IsWhiteSpace(state.Code[i])) i++;
             var image = ExpressionStatement.Parse(state, ref i).Statement;
             if (state.Code[i] != ')')
-                throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \")\" at + " + Tools.PositionToTextcord(state.Code, i))));
+                throw new JSException((new Core.BaseTypes.SyntaxError("Expected \")\" at + " + Tools.PositionToTextcord(state.Code, i))));
             do i++; while (char.IsWhiteSpace(state.Code[i]));
             if (state.Code[i] != '{')
-                throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \"{\" at + " + Tools.PositionToTextcord(state.Code, i))));
+                throw new JSException((new Core.BaseTypes.SyntaxError("Expected \"{\" at + " + Tools.PositionToTextcord(state.Code, i))));
             do i++; while (char.IsWhiteSpace(state.Code[i]));
             var body = new List<CodeNode>();
             var funcs = new List<FunctionStatement>();
@@ -64,17 +63,17 @@ namespace NiL.JS.Statements
                         while (char.IsWhiteSpace(state.Code[i])) i++;
                         var sample = ExpressionStatement.Parse(state, ref i).Statement;
                         if (state.Code[i] != ':')
-                            throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \":\" at + " + Tools.PositionToTextcord(state.Code, i))));
+                            throw new JSException((new Core.BaseTypes.SyntaxError("Expected \":\" at + " + Tools.PositionToTextcord(state.Code, i))));
                         i++;
                         cases.Add(new SwitchCase() { index = body.Count, statement = sample });
                     }
                     else if (Parser.Validate(state.Code, "default", i) && Parser.isIdentificatorTerminator(state.Code[i + 7]))
                     {
                         if (cases[0] != null)
-                            throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Duplicate default case in switch at " + Tools.PositionToTextcord(state.Code, i))));
+                            throw new JSException((new Core.BaseTypes.SyntaxError("Duplicate default case in switch at " + Tools.PositionToTextcord(state.Code, i))));
                         i += 7;
                         if (state.Code[i] != ':')
-                            throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Expected \":\" at + " + Tools.PositionToTextcord(state.Code, i))));
+                            throw new JSException((new Core.BaseTypes.SyntaxError("Expected \":\" at + " + Tools.PositionToTextcord(state.Code, i))));
                         i++;
                         cases[0] = new SwitchCase() { index = body.Count, statement = null };
                     }
@@ -82,14 +81,14 @@ namespace NiL.JS.Statements
                     while (char.IsWhiteSpace(state.Code[i]) || (state.Code[i] == ';')) i++;
                 } while (true);
                 if (cases.Count == 1 && cases[0] == null)
-                    throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Switch statement must be contain cases. " + Tools.PositionToTextcord(state.Code, index))));
+                    throw new JSException((new Core.BaseTypes.SyntaxError("Switch statement must be contain cases. " + Tools.PositionToTextcord(state.Code, index))));
                 var t = Parser.Parse(state, ref i, 0);
                 if (t == null)
                     continue;
                 if (t is FunctionStatement)
                 {
                     if (state.strict.Peek())
-                        throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
+                        throw new JSException((new NiL.JS.Core.BaseTypes.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
                     funcs.Add(t as FunctionStatement);
                 }
                 else

@@ -160,7 +160,7 @@ namespace NiL.JS.Core.BaseTypes
                 case JSObjectType.Object:
                     {
                         if (typeof(Number) != GetType())
-                            throw new JSException(TypeProxy.Proxy(new TypeError("Try to call Number.toExponential on not number object.")));
+                            throw new JSException((new TypeError("Try to call Number.toExponential on not number object.")));
                         res = iValue == 0 ? dValue : iValue;
                         break;
                     }
@@ -227,7 +227,7 @@ namespace NiL.JS.Core.BaseTypes
                 case JSObjectType.Object:
                     {
                         if (typeof(Number) != GetType())
-                            throw new JSException(TypeProxy.Proxy(new TypeError("Try to call Number.toFixed on not number object.")));
+                            throw new JSException((new TypeError("Try to call Number.toFixed on not number object.")));
                         res = iValue == 0 ? dValue : iValue;
                         break;
                     }
@@ -236,7 +236,7 @@ namespace NiL.JS.Core.BaseTypes
             }
             int dgts = Tools.JSObjectToInt32(digits[0], true);
             if (dgts < 0 || dgts > 20)
-                throw new JSException(TypeProxy.Proxy(new RangeError("toFixed() digits argument must be between 0 and 20")));
+                throw new JSException((new RangeError("toFixed() digits argument must be between 0 and 20")));
             if (System.Math.Abs(dValue) >= 1e+21)
                 return dValue.ToString("0.####e+0", System.Globalization.CultureInfo.InvariantCulture);
             if (dgts > 0)
@@ -262,13 +262,13 @@ namespace NiL.JS.Core.BaseTypes
             try
             {
                 if (this.valueType != JSObjectType.Int && this.valueType != JSObjectType.Double)
-                    throw new JSException(TypeProxy.Proxy(new TypeError("Try to call Number.toString on not Number object")));
+                    throw new JSException((new TypeError("Try to call Number.toString on not Number object")));
                 int r = 10;
                 if (radix != null && radix.GetMember("length").iValue > 0)
                 {
                     var ar = radix[0];
                     if (ar.valueType == JSObjectType.Object && ar.oValue == null)
-                        throw new JSException(TypeProxy.Proxy(new Error("Radix can't be null.")));
+                        throw new JSException((new Error("Radix can't be null.")));
                     switch (ar.valueType)
                     {
                         case JSObjectType.Int:
@@ -296,7 +296,7 @@ namespace NiL.JS.Core.BaseTypes
                     }
                 }
                 if (r < 2 || r > 36)
-                    throw new JSException(TypeProxy.Proxy(new TypeError("Radix must be between 2 and 36.")));
+                    throw new JSException((new TypeError("Radix must be between 2 and 36.")));
                 if (r == 10)
                     return ToString();
                 else
@@ -338,7 +338,7 @@ namespace NiL.JS.Core.BaseTypes
             if (this.GetType() == typeof(Number))
                 return iValue == 0 ? dValue : iValue;
             if (valueType != JSObjectType.Int && valueType != JSObjectType.Double)
-                throw new JSException(TypeProxy.Proxy(new TypeError("Try to call Number.valueOf on not number object.")));
+                throw new JSException((new TypeError("Try to call Number.valueOf on not number object.")));
             return this;
         }
 

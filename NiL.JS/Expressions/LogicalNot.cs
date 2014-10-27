@@ -30,12 +30,12 @@ namespace NiL.JS.Expressions
                 }
                 if (first.GetType() == typeof(Json))
                 {
-                    _this = new ImmidateValueStatement(false);
+                    _this = new Constant(false);
                     return true;
                 }
                 if (first.GetType() == typeof(ArrayStatement))
                 {
-                    _this = new ImmidateValueStatement(false);
+                    _this = new Constant(false);
                     return true;
                 }
             }

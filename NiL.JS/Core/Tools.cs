@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using NiL.JS.Core.BaseTypes;
+using NiL.JS.Core.TypeProxing;
 
 namespace NiL.JS.Core
 {
@@ -149,7 +150,7 @@ namespace NiL.JS.Core
                     case JSObjectType.NotExistsInObject:
                         return double.NaN;
                     case JSObjectType.NotExists:
-                        throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable not defined.")));
+                        throw new JSException((new NiL.JS.Core.BaseTypes.ReferenceError("Variable not defined.")));
                     default:
                         throw new NotImplementedException();
                 }
@@ -247,7 +248,7 @@ namespace NiL.JS.Core
                         return JSObjectToInt32(r);
                     }
                 case JSObjectType.NotExists:
-                //throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable not defined.")));
+                //throw new JSException((new NiL.JS.Core.BaseTypes.ReferenceError("Variable not defined.")));
                 case JSObjectType.Undefined:
                 case JSObjectType.NotExistsInObject:
                     return nullOrUndef;
@@ -707,7 +708,7 @@ namespace NiL.JS.Core
                 else if (radix == 0 && code[i] == '0' && isDigit(code[i + 1]))
                 {
                     if (raiseOctal)
-                        throw new JSException(TypeProxy.Proxy(new SyntaxError("Octal literals not allowed in strict mode")));
+                        throw new JSException((new SyntaxError("Octal literals not allowed in strict mode")));
                     i += 1;
                     if (processOctal)
                         radix = 8;
@@ -828,7 +829,7 @@ namespace NiL.JS.Core
                 else
                     value = temp;
                 if (value == 0 && skiped)
-                    throw new JSException(TypeProxy.Proxy(new SyntaxError("Octal literals not allowed in strict mode")));
+                    throw new JSException((new SyntaxError("Octal literals not allowed in strict mode")));
                 value *= sig;
                 index = i;
                 return true;
@@ -915,7 +916,7 @@ namespace NiL.JS.Core
                                         break;
                                     }
                                     else
-                                        throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid escape code (\"" + code + "\")")));
+                                        throw new JSException((new Core.BaseTypes.SyntaxError("Invalid escape code (\"" + code + "\")")));
                                 }
                                 string c = code.Substring(i + 1, code[i] == 'u' ? 4 : 2);
                                 ushort chc = 0;
@@ -930,7 +931,7 @@ namespace NiL.JS.Core
                                     if (processRegexComp)
                                         res.Append(code[i]);
                                     else
-                                        throw new JSException(TypeProxy.Proxy(new Core.BaseTypes.SyntaxError("Invalid escape sequence '\\" + code[i] + c + "'")));
+                                        throw new JSException((new Core.BaseTypes.SyntaxError("Invalid escape sequence '\\" + code[i] + c + "'")));
                                 }
                                 break;
                             }
@@ -991,7 +992,7 @@ namespace NiL.JS.Core
                                 if (isDigit(code[i]) && !processRegexComp)
                                 {
                                     if (strict)
-                                        throw new JSException(TypeProxy.Proxy(new SyntaxError("Octal literals are not allowed in strict mode.")));
+                                        throw new JSException((new SyntaxError("Octal literals are not allowed in strict mode.")));
                                     var ccode = code[i] - '0';
                                     if (i + 1 < code.Length && isDigit(code[i + 1]))
                                         ccode = ccode * 10 + (code[++i] - '0');
@@ -1121,7 +1122,7 @@ namespace NiL.JS.Core
         internal static JSObject RaiseIfNotExist(JSObject obj, object name)
         {
             if (obj.valueType == JSObjectType.NotExists)
-                throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.ReferenceError("Variable \"" + name + "\" is not defined.")));
+                throw new JSException((new NiL.JS.Core.BaseTypes.ReferenceError("Variable \"" + name + "\" is not defined.")));
             return obj;
         }
 

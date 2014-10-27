@@ -458,20 +458,6 @@ namespace NiL.JS.Core
             return sb;
         }
 
-        private static StringBuilder _prefix(StringBuilder sb, object arg)
-        {
-            var str = arg.ToString();
-            if (sb.Capacity < sb.Length + str.Length)
-                sb.EnsureCapacity(Math.Max(sb.Capacity * 2, sb.Length + str.Length));
-            for (var i = 0; i < str.Length; i++)
-                sb.Append('\0');
-            for (var i = sb.Length; i-- > str.Length; )
-                sb[i] = sb[i - str.Length];
-            for (var i = 0; i < str.Length; i++)
-                sb[i] = str[i];
-            return sb;
-        }
-
         public override string ToString()
         {
             if (!string.IsNullOrEmpty(secondSource))

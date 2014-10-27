@@ -3,7 +3,7 @@ using System.Reflection;
 using NiL.JS.Core.BaseTypes;
 using NiL.JS.Core.Modules;
 
-namespace NiL.JS.Core
+namespace NiL.JS.Core.TypeProxing
 {
     [Serializable]
     public sealed class MethodProxy : Function
@@ -384,12 +384,12 @@ namespace NiL.JS.Core
                                 {
                                     var minfo = info as MethodInfo;
                                     if (minfo.ReturnType != typeof(void) && minfo.ReturnType.IsValueType)
-                                        throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError("Invalid return type of method " + minfo)));
+                                        throw new JSException((new NiL.JS.Core.BaseTypes.TypeError("Invalid return type of method " + minfo)));
                                     if (parameters.Length > 16)
-                                        throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError("Invalid parameters count of method " + minfo)));
+                                        throw new JSException((new NiL.JS.Core.BaseTypes.TypeError("Invalid parameters count of method " + minfo)));
                                     for (int i = 0; i < parameters.Length; i++)
                                         if (parameters[i].ParameterType.IsValueType)
-                                            throw new JSException(TypeProxy.Proxy(new NiL.JS.Core.BaseTypes.TypeError("Invalid parameter (" + parameters[i].Name + ") type of method " + minfo)));
+                                            throw new JSException((new NiL.JS.Core.BaseTypes.TypeError("Invalid parameter (" + parameters[i].Name + ") type of method " + minfo)));
                                     var cargs = args;
                                     Delegate del = null;
                                     switch (parameters.Length)

@@ -31,20 +31,20 @@ namespace NiL.JS.Core.BaseTypes
         //                                       { 30 * _dayMilliseconds, 30 * _dayMilliseconds},
         //                                       { 31 * _dayMilliseconds, 31 * _dayMilliseconds} };
 
-        private static readonly long[,] timeToMonthLengths = { 
-                                                { 0 * _dayMilliseconds, 0 * _dayMilliseconds },
-                                                { 31 * _dayMilliseconds, 31 * _dayMilliseconds },
-                                                { 59 * _dayMilliseconds, 60 * _dayMilliseconds },
-                                                { 90 * _dayMilliseconds, 91 * _dayMilliseconds },
-                                                { 120 * _dayMilliseconds, 121 * _dayMilliseconds },
-                                                { 151 * _dayMilliseconds, 152 * _dayMilliseconds },
-                                                { 181 * _dayMilliseconds, 182 * _dayMilliseconds },
-                                                { 212 * _dayMilliseconds, 213 * _dayMilliseconds },
-                                                { 243 * _dayMilliseconds, 244 * _dayMilliseconds },
-                                                { 273 * _dayMilliseconds, 274 * _dayMilliseconds },
-                                                { 304 * _dayMilliseconds, 305 * _dayMilliseconds },
-                                                { 334 * _dayMilliseconds, 335 * _dayMilliseconds },
-                                                { 365 * _dayMilliseconds, 366 * _dayMilliseconds } };
+        private static readonly long[][] timeToMonthLengths = { 
+                                                new[]{ 0 * _dayMilliseconds, 0 * _dayMilliseconds },
+                                                new[]{ 31 * _dayMilliseconds, 31 * _dayMilliseconds },
+                                                new[]{ 59 * _dayMilliseconds, 60 * _dayMilliseconds },
+                                                new[]{ 90 * _dayMilliseconds, 91 * _dayMilliseconds },
+                                                new[]{ 120 * _dayMilliseconds, 121 * _dayMilliseconds },
+                                                new[]{ 151 * _dayMilliseconds, 152 * _dayMilliseconds },
+                                                new[]{ 181 * _dayMilliseconds, 182 * _dayMilliseconds },
+                                                new[]{ 212 * _dayMilliseconds, 213 * _dayMilliseconds },
+                                                new[]{ 243 * _dayMilliseconds, 244 * _dayMilliseconds },
+                                                new[]{ 273 * _dayMilliseconds, 274 * _dayMilliseconds },
+                                                new[]{ 304 * _dayMilliseconds, 305 * _dayMilliseconds },
+                                                new[]{ 334 * _dayMilliseconds, 335 * _dayMilliseconds },
+                                                new[]{ 365 * _dayMilliseconds, 366 * _dayMilliseconds } };
 
         private static readonly string[] daysOfWeekNames = { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun", };
 
@@ -70,7 +70,7 @@ namespace NiL.JS.Core.BaseTypes
             time += (year / 4) * _4yearsMilliseconds;
             year %= 4;
             time += 365 * year * _dayMilliseconds;
-            time += timeToMonthLengths[month, isLeap];
+            time += timeToMonthLengths[month][isLeap];
             time += day * _dayMilliseconds;
             time += hour * _hourMilliseconds;
             time += minute * _minuteMillisecond;
@@ -509,7 +509,7 @@ namespace NiL.JS.Core.BaseTypes
             int isLeap = (y % 4 == 0 && y % 100 != 0) || y % 400 == 0 ? 1 : 0;
             t -= System.Math.Min(3, t / _yearMilliseconds) * _yearMilliseconds;
             var m = 0;
-            while (timeToMonthLengths[m, isLeap] <= t)
+            while (timeToMonthLengths[m][isLeap] <= t)
                 m++;
             return m - 1;
         }
@@ -541,10 +541,10 @@ namespace NiL.JS.Core.BaseTypes
             int isLeap = (y % 4 == 0 && y % 100 != 0) || y % 400 == 0 ? 1 : 0;
             t -= System.Math.Min(3, t / _yearMilliseconds) * _yearMilliseconds;
             var m = 0;
-            while (timeToMonthLengths[m, isLeap] <= t)
+            while (timeToMonthLengths[m][isLeap] <= t)
                 m++;
             if (m > 0)
-                t -= timeToMonthLengths[m - 1, isLeap];
+                t -= timeToMonthLengths[m - 1][isLeap];
             return (int)(t / _dayMilliseconds + 1);
         }
 
@@ -740,13 +740,13 @@ namespace NiL.JS.Core.BaseTypes
                 var month = Tools.JSObjectToInt64(monthO);
                 if (month < 0 || month > 12)
                 {
-                    this.time = this.time - timeToMonthLengths[getMonthImpl(), isLeap(getYearImpl()) ? 1 : 0];
+                    this.time = this.time - timeToMonthLengths[getMonthImpl()][isLeap(getYearImpl()) ? 1 : 0];
                     time = dateToMilliseconds(getYearImpl(), month, getDateImpl(), getHoursImpl(), getMinutesImpl(), getSecondsImpl(), getMillisecondsImpl());
                     return getMonthImpl();
                 }
                 else
                 {
-                    this.time = this.time - timeToMonthLengths[getMonthImpl(), isLeap(getYearImpl()) ? 1 : 0] + timeToMonthLengths[month, isLeap(getYearImpl()) ? 1 : 0];
+                    this.time = this.time - timeToMonthLengths[getMonthImpl()][isLeap(getYearImpl()) ? 1 : 0] + timeToMonthLengths[month][isLeap(getYearImpl()) ? 1 : 0];
                     return monthO;
                 }
             }
@@ -764,13 +764,13 @@ namespace NiL.JS.Core.BaseTypes
                 var month = Tools.JSObjectToInt64(monthO);
                 if (month < 0 || month > 12)
                 {
-                    this.time = this.time - timeToMonthLengths[getMonthImpl(), isLeap(getYearImpl()) ? 1 : 0];
+                    this.time = this.time - timeToMonthLengths[getMonthImpl()][isLeap(getYearImpl()) ? 1 : 0];
                     time = dateToMilliseconds(getYearImpl(), month, getDateImpl(), getHoursImpl(), getMinutesImpl(), getSecondsImpl(), getMillisecondsImpl());
                     return getMonthImpl();
                 }
                 else
                 {
-                    this.time = this.time - timeToMonthLengths[getMonthImpl(), isLeap(getYearImpl()) ? 1 : 0] + timeToMonthLengths[month, isLeap(getYearImpl()) ? 1 : 0];
+                    this.time = this.time - timeToMonthLengths[getMonthImpl()][isLeap(getYearImpl()) ? 1 : 0] + timeToMonthLengths[month][isLeap(getYearImpl()) ? 1 : 0];
                     return monthO;
                 }
             }

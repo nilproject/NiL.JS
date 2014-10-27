@@ -1,32 +1,41 @@
 ﻿var $ERROR = console.log;
 
 console.log(function () {
-    var x = [];
-    x.length = 4294967295;
-
-    //CHECK#1
-    var push = x.push();
-    if (push !== 4294967295) {
-        $ERROR('#1: x = []; x.length = 4294967295; x.push() === 4294967295. Actual: ' + (push));
-    }
-
-    //CHECK#2
-    try {
-        x.push("x");
-        $ERROR('#2.1: x = []; x.length = 4294967295; x.push("x") throw RangeError. Actual: ' + (push));
-    } catch (e) {
-        if ((e instanceof RangeError) !== true) {
-            $ERROR('#2.2: x = []; x.length = 4294967295; x.push("x") throw RangeError. Actual: ' + (e));
+    var errorCount = 0;
+    var count = 0;
+    var hex = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F"];
+    for (var i1 = 0; i1 < 16; i1++) {
+        for (var i2 = 0; i2 < 16; i2++) {
+            for (var i3 = 0; i3 < 16; i3++) {
+                for (var i4 = 0; i4 < 16; i4++) {
+                    try {
+                        var uu = hex[i1] + hex[i2] + hex[i3] + hex[i4];
+                        var xx = String.fromCharCode("0x" + uu);
+                        var LineTerminators = ((uu === "000A") || (uu === "000D") || (uu === "2028") || (uu === "2029"));
+                        var yy = 0;
+                        eval("//var " + xx + "yy = -1");
+                        if (LineTerminators !== true) {
+                            if (yy !== 0) {
+                                $ERROR('#' + uu + ' ');
+                                errorCount++;
+                            }
+                        } else {
+                            if (yy !== -1) {
+                                $ERROR('#' + uu + ' ');
+                                errorCount++;
+                            }
+                        }
+                    } catch (e) {
+                        $ERROR('#' + uu + ' ');
+                        errorCount++;
+                    }
+                    count++;
+                }
+            }
         }
     }
 
-    //CHECK#3
-    if (x[4294967295] !== "x") {
-        $ERROR('#3: x = []; x.length = 4294967295; try {x.push("x")}catch(e){}; x[4294967295] === "x". Actual: ' + (x[4294967295]));
-    }
-
-    //CHECK#4
-    if (x.length !== 4294967295) {
-        $ERROR('#4: x = []; x.length = 4294967295; try {x.push("x")}catch(e){}; x.length === 4294967295. Actual: ' + (x.length));
+    if (errorCount > 0) {
+        $ERROR('Total error: ' + errorCount + ' bad Unicode character in ' + count);
     }
 }());

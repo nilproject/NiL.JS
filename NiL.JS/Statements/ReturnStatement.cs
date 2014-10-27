@@ -43,7 +43,7 @@ namespace NiL.JS.Statements
             if (!Parser.Validate(state.Code, "return", ref i) || !Parser.isIdentificatorTerminator(state.Code[i]))
                 return new ParseResult();
             if (state.AllowReturn == 0)
-                throw new JSException(TypeProxy.Proxy(new SyntaxError("Invalid use of return statement.")));
+                throw new JSException((new SyntaxError("Invalid use of return statement.")));
             var body = Parser.Parse(state, ref i, 1, true);
             var pos = index;
             index = i;

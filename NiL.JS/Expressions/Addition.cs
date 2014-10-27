@@ -259,10 +259,10 @@ namespace NiL.JS.Expressions
                 }
                 else
                 {
-                    if ((first is ImmidateValueStatement
-                        && (first as ImmidateValueStatement).value.valueType == JSObjectType.String)
-                        || (second is ImmidateValueStatement
-                        && (second as ImmidateValueStatement).value.valueType == JSObjectType.String))
+                    if ((first is Constant
+                        && (first as Constant).value.valueType == JSObjectType.String)
+                        || (second is Constant
+                        && (second as Constant).value.valueType == JSObjectType.String))
                     {
                         _this = new StringConcat(new List<CodeNode>() { first, second });
                     }

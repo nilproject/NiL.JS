@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 using NiL.JS.Core.BaseTypes;
 using NiL.JS.Core.Modules;
 
-namespace NiL.JS.Core
+namespace NiL.JS.Core.TypeProxing
 {
     [Serializable]
     public sealed class TypeProxy : JSObject
