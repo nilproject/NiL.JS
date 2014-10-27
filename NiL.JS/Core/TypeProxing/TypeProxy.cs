@@ -48,12 +48,12 @@ namespace NiL.JS.Core.TypeProxing
                             else
                             {
                                 _prototypeInstance = new JSObject()
-                                                        {
-                                                            oValue = ictor.Invoke(null),
-                                                            valueType = JSObjectType.Object,
-                                                            attributes = attributes | JSObjectAttributesInternal.ProxyPrototype,
-                                                            fields = fields
-                                                        };
+                                {
+                                    oValue = ictor.Invoke(null),
+                                    valueType = JSObjectType.Object,
+                                    attributes = attributes | JSObjectAttributesInternal.ProxyPrototype,
+                                    fields = fields
+                                };
                             }
                         }
                     }
@@ -268,6 +268,8 @@ namespace NiL.JS.Core.TypeProxing
                                         tempmemb.Remove(prewName + "$" + (++offset + j));
                                     }
                                 }
+                                if (temp.Count == 1)
+                                    tempmemb.Remove(prewName + "$0");
                             }
                             if (!tempmemb.TryGetValue(membername, out temp))
                                 tempmemb[membername] = temp = new List<MemberInfo>();
@@ -447,14 +449,14 @@ namespace NiL.JS.Core.TypeProxing
                             if (cva != null)
                             {
                                 r = new JSObject()
-                                    {
-                                        valueType = JSObjectType.Property,
-                                        oValue = new Function[] 
+                                {
+                                    valueType = JSObjectType.Property,
+                                    oValue = new Function[] 
                                         { 
                                             pinfo.CanWrite && pinfo.GetSetMethod(false) != null && !pinfo.IsDefined(typeof(ReadOnlyAttribute), false) ? new MethodProxy(pinfo.GetSetMethod(false), cva, new[]{ cva }) : null,
                                             pinfo.CanRead && pinfo.GetGetMethod(false) != null ? new MethodProxy(pinfo.GetGetMethod(false), cva, null) : null 
                                         }
-                                    };
+                                };
                             }
                             else
                             {

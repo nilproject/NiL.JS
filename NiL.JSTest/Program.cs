@@ -304,6 +304,7 @@ console.log(array[0]);
                     }
                 case -1:
                     {
+                        runFiles("tests/custom/");
                         sputnikTests(@"tests\sputnik\ch15\15.1\");
                         sputnikTests(@"tests\sputnik\ch15\15.2\");
                         sputnikTests(@"tests\sputnik\ch15\15.3\");
@@ -318,17 +319,14 @@ console.log(array[0]);
                     }
                 case 0:
                     {
+                        runFiles("tests/custom/");
                         sputnikTests();
                         break;
                     }
                 case 1:
                     {
+                        runFiles("tests/custom/");
                         webkitTests();
-                        break;
-                    }
-                case 10:
-                    {
-                        runTestFile(@"ftest.js");
                         break;
                     }
                 case 2:
@@ -465,6 +463,16 @@ console.log(array[0]);
             }
             else if (Debugger.IsAttached)
                 Console.ReadKey();
+        }
+
+        private static void runFiles(string folderPath)
+        {
+            Action<string> _ = Console.WriteLine;
+            _("Scaning directory...");
+            var fls = Directory.EnumerateFiles(folderPath, "*.js", SearchOption.AllDirectories).ToArray();
+            _("Found " + (fls.Length - 2) + " js-files");
+            for (var i = 0; i < fls.Length; i++)
+                runFile(fls[i]);
         }
 
         private static void runFile(string filename)

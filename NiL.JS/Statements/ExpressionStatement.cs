@@ -1074,9 +1074,13 @@ namespace NiL.JS.Statements
                                 if (state.Code[i] == ')')
                                     break;
                                 else if (state.Code[i] == ',')
+                                {
+                                    if (args.Count == 0)
+                                        throw new JSException(new SyntaxError("Empty argument of function"));
                                     do
                                         i++;
                                     while (char.IsWhiteSpace(state.Code[i]));
+                                }
                                 if (i + 1 == state.Code.Length)
                                     throw new JSException((new Core.BaseTypes.SyntaxError("Unexpected end of line")));
                                 args.Add(ExpressionStatement.Parse(state, ref i, false).Statement);

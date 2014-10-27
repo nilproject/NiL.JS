@@ -165,7 +165,7 @@ namespace NiL.JS.Core.TypeProxing
             }
             else
                 throw new ArgumentException("methodinfo");
-            callOverload = info.IsDefined(typeof(CallOverloaded));
+            callOverload = info.IsDefined(typeof(CallOverloaded), true);
             if (_length == null)
                 _length = new Number(0) { attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.SystemObject };
             var pc = info.GetCustomAttributes(typeof(Modules.ParametersCountAttribute), false);

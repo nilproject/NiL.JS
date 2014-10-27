@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq.Expressions;
 using NiL.JS.Core;
 using NiL.JS.Core.JIT;
@@ -17,7 +18,7 @@ namespace NiL.JS.Statements
         public CodeNode Variable { get { return variable; } }
         public CodeNode Source { get { return source; } }
         public CodeNode Body { get { return body; } }
-        public IReadOnlyCollection<string> Labels { get { return Array.AsReadOnly<string>(labels); } }
+        public ReadOnlyCollection<string> Labels { get { return Array.AsReadOnly<string>(labels); } }
 
         private ForInStatement()
         {
