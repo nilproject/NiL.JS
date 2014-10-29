@@ -1505,13 +1505,32 @@ namespace NiL.JS.Core.BaseTypes
                 }
                 if (len - prew > 1)
                     source = iterableToArray(this, false, false, false);
+                JSObject prw = null;
                 foreach (var item in (source.data as IEnumerable<KeyValuePair<int, JSObject>>))
                 {
                     if (item.Key == 0)
+                    {
+                        prw = item.Value;
                         continue;
-                    if (item.Value != null && item.Value.isExist)
-                        data[item.Key - 1] = item.Value;
-                    data[item.Key] = null;
+                    }
+                    var value = item.Value;
+                    if (value != null && value.valueType == JSObjectType.Property)
+                        value = ((value.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(this, null);
+                    if (prw != null && prw.valueType == JSObjectType.Property)
+                    {
+                        ((prw.oValue as Function[])[0] ?? Function.emptyFunction).Invoke(this, new Arguments() { a0 = value, length = 1 });
+                    }
+                    else
+                    {
+                        if (item.Value != null)
+                        {
+                            if (item.Value.isExist)
+                                data[item.Key - 1] = value;
+                            if (item.Value.valueType != JSObjectType.Property)
+                                data[item.Key] = null;
+                        }
+                    }
+                    prw = item.Value;
                 }
                 if (len == 1)
                     data.Clear();
@@ -1538,8 +1557,12 @@ namespace NiL.JS.Core.BaseTypes
                     return notExists;
                 }
                 var ti = new JSObject() { valueType = JSObjectType.String, oValue = "0" };
-                var res = this.GetMember(ti, false, false).CloneImpl();
                 var t = this.GetMember(ti, true, false);
+                var res = t;
+                if (res.valueType == JSObjectType.Property)
+                    res = ((res.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(this, null).CloneImpl();
+                else
+                    res = res.CloneImpl();
                 if ((t.attributes & (JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete)) == 0)
                 {
                     t.oValue = null;
@@ -1567,7 +1590,8 @@ namespace NiL.JS.Core.BaseTypes
                         var temp = this[key];
                         if (!temp.isExist)
                             continue;
-                        keysToRemove.Add(key);
+                        if (temp.valueType != JSObjectType.Property)
+                            keysToRemove.Add(key);
                     }
                 }
                 var tjo = new JSObject() { valueType = JSObjectType.String };
@@ -1592,7 +1616,13 @@ namespace NiL.JS.Core.BaseTypes
                     else
                         tjo.iValue = (item.Key - 1);
                     if (item.Value != null && item.Value.isExist)
-                        this.GetMember(tjo, true, false).Assign(item.Value);
+                    {
+                        var temp = this.GetMember(tjo, true, false);
+                        if (temp.valueType == JSObjectType.Property)
+                            ((temp.oValue as Function[])[0] ?? Function.emptyFunction).Invoke(this, new Arguments() { a0 = item.Value, length = 1 });
+                        else
+                            temp.Assign(item.Value);
+                    }
                 }
                 return res;
             }

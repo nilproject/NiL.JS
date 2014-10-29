@@ -2,121 +2,65 @@
 var print = console.log;
 
 console.log(function () {
-    var obj = {};
-    obj.length = 10;
-    obj.reverse = Array.prototype.reverse;
+    var a = ["zero", , "two"];
+    Object.defineProperty(a, "1", {
+        get: function () { return "one"; },
+        set: function (v) { console.log(v); },
+        enumerable: true,
+        configurable: true
+    });
+    console.log(JSON.stringify(a));
+    console.log([].shift.call(a));
+    return JSON.stringify(a);
 
-    obj[0] = true;
-    obj[2] = Infinity;
-    obj[4] = undefined;
-    obj[5] = undefined;
-    obj[8] = "NaN";
-    obj[9] = "-1";
-
-    var reverse = obj.reverse();
-    if (reverse !== obj) {
-        $ERROR('#1: var obj = {}; obj.reverse = Array.prototype.reverse; obj.length = 10; obj[0] = true; obj[2] = Infinity; obj[4] = undefined; obj[5] = undefined; obj[8] = "NaN"; obj[9] = "-1"; obj.reverse() === obj. Actual: ' + (reverse));
+    function shouldBeTrue(x) {
+        if (eval(x) !== true)
+            print("FAIL(true): " + x);
+    }
+    function shouldBeFalse(x) {
+        if (eval(x) !== false)
+            print("FAIL(false): " + x);
     }
 
-    //CHECK#2
-    if (obj[0] !== "-1") {
-        $ERROR('#2: var obj = {}; obj.reverse = Array.prototype.reverse; obj.length = 10; obj[0] = true; obj[2] = Infinity; obj[4] = undefined; obj[5] = undefined; obj[8] = "NaN"; obj[9] = "-1"; obj.reverse(); obj[0] === "-1". Actual: ' + (obj[0]));
+    function test(f) {
+
+        var testObj = {
+            length: 3
+        };
+        var propertyGetter = {
+            get: (function () { throw true; })
+        }
+        Object.defineProperty(testObj, 0, propertyGetter);
+        Object.defineProperty(testObj, 1, propertyGetter);
+        Object.defineProperty(testObj, 2, propertyGetter);
+
+        try {
+            f.call(testObj, function () { });
+            return false;
+        } catch (e) {
+            return e === true;
+        }
     }
 
-    //CHECK#3
-    if (obj[1] !== "NaN") {
-        $ERROR('#3: var obj = {}; obj.reverse = Array.prototype.reverse; obj.length = 10; obj[0] = true; obj[2] = Infinity; obj[4] = undefined; obj[5] = undefined; obj[8] = "NaN"; obj[9] = "-1"; obj.reverse(); obj[1] === "NaN". Actual: ' + (obj[1]));
-    }
+    // This test makes sense for these functions: (they should get all properties on the array)
+    shouldBeTrue("test(Array.prototype.sort)");
+    shouldBeTrue("test(Array.prototype.every)");
+    shouldBeTrue("test(Array.prototype.some)");
+    shouldBeTrue("test(Array.prototype.forEach)");
+    shouldBeTrue("test(Array.prototype.map)");
+    shouldBeTrue("test(Array.prototype.filter)");
+    shouldBeTrue("test(Array.prototype.reduce)");
+    shouldBeTrue("test(Array.prototype.reduceRight)");
 
-    //CHECK#4
-    if (obj[2] !== undefined) {
-        $ERROR('#4: var obj = {}; obj.reverse = Array.prototype.reverse; obj.length = 10; obj[0] = true; obj[2] = Infinity; obj[4] = undefined; obj[5] = undefined; obj[8] = "NaN"; obj[9] = "-1"; obj.reverse(); obj[2] === undefined. Actual: ' + (obj[2]));
-    }
-
-    //CHECK#5
-    if (obj[3] !== undefined) {
-        $ERROR('#5: var obj = {}; obj.reverse = Array.prototype.reverse; obj.length = 10; obj[0] = true; obj[2] = Infinity; obj[4] = undefined; obj[5] = undefined; obj[8] = "NaN"; obj[9] = "-1"; obj.reverse(); obj[3] === undefined. Actual: ' + (obj[3]));
-    }
-
-    //CHECK#6
-    if (obj[4] !== undefined) {
-        $ERROR('#6: var obj = {}; obj.reverse = Array.prototype.reverse; obj.length = 10; obj[0] = true; obj[2] = Infinity; obj[4] = undefined; obj[5] = undefined; obj[8] = "NaN"; obj[9] = "-1"; obj.reverse(); obj[4] === undefined. Actual: ' + (obj[4]));
-    }
-
-    //CHECK#7
-    if (obj[5] !== undefined) {
-        $ERROR('#7: var obj = {}; obj.reverse = Array.prototype.reverse; obj.length = 10; obj[0] = true; obj[2] = Infinity; obj[4] = undefined; obj[5] = undefined; obj[8] = "NaN"; obj[9] = "-1"; obj.reverse(); obj[5] === undefined. Actual: ' + (obj[5]));
-    }
-
-    //CHECK#8
-    if (obj[6] !== undefined) {
-        $ERROR('#8: var obj = {}; obj.reverse = Array.prototype.reverse; obj.length = 10; obj[0] = true; obj[2] = Infinity; obj[4] = undefined; obj[5] = undefined; obj[8] = "NaN"; obj[9] = "-1"; obj.reverse(); obj[6] === undefined. Actual: ' + (obj[6]));
-    }
-
-    //CHECK#9
-    if (obj[7] !== Infinity) {
-        $ERROR('#9: var obj = {}; obj.reverse = Array.prototype.reverse; obj.length = 10; obj[0] = true; obj[2] = Infinity; obj[4] = undefined; obj[5] = undefined; obj[8] = "NaN"; obj[9] = "-1"; obj.reverse(); obj[7] === Infinity. Actual: ' + (obj[7]));
-    }
-
-    //CHECK#10
-    if (obj[8] !== undefined) {
-        $ERROR('#10: var obj = {}; obj.reverse = Array.prototype.reverse; obj.length = 10; obj[0] = true; obj[2] = Infinity; obj[4] = undefined; obj[5] = undefined; obj[8] = "NaN"; obj[9] = "-1"; obj.reverse(); obj[8] === undefined. Actual: ' + (obj[8]));
-    }
-
-    //CHECK#11
-    if (obj[9] !== true) {
-        $ERROR('#11: var obj = {}; obj.reverse = Array.prototype.reverse; obj.length = 10; obj[0] = true; obj[2] = Infinity; obj[4] = undefined; obj[5] = undefined; obj[8] = "NaN"; obj[9] = "-1"; obj.reverse(); obj[9] === true. Actual: ' + (obj[9]));
-    }
-
-    obj.length = 9;
-
-    var reverse = obj.reverse();
-    if (reverse !== obj) {
-        $ERROR('#1: var obj = {}; obj.reverse = Array.prototype.reverse; obj.length = 10; obj[0] = true; obj[2] = Infinity; obj[4] = undefined; obj[5] = undefined; obj[8] = "NaN"; obj[9] = "-1"; obj.reverse(); obj.length = 9; obj.reverse() === obj. Actual: ' + (reverse));
-    }
-
-    //CHECK#12
-    if (obj[0] !== undefined) {
-        $ERROR('#12: var obj = {}; obj.reverse = Array.prototype.reverse; obj.length = 10; obj[0] = true; obj[2] = Infinity; obj[4] = undefined; obj[5] = undefined; obj[8] = "NaN"; obj[9] = "-1"; obj.reverse(); obj.length = 9; obj.reverse(); obj[0] === undefined. Actual: ' + (obj[0]));
-    }
-
-    //CHECK#13
-    if (obj[1] !== Infinity) {
-        $ERROR('#13: var obj = {}; obj.reverse = Array.prototype.reverse; obj.length = 10; obj[0] = true; obj[2] = Infinity; obj[4] = undefined; obj[5] = undefined; obj[8] = "NaN"; obj[9] = "-1"; obj.reverse(); obj.length = 9; obj.reverse(); obj[1] === Infinity. Actual: ' + (obj[1]));
-    }
-
-    //CHECK#14
-    if (obj[2] !== undefined) {
-        $ERROR('#14: var obj = {}; obj.reverse = Array.prototype.reverse; obj.length = 10; obj[0] = true; obj[2] = Infinity; obj[4] = undefined; obj[5] = undefined; obj[8] = "NaN"; obj[9] = "-1"; obj.reverse(); obj.length = 9; obj.reverse(); obj[2] === undefined. Actual: ' + (obj[2]));
-    }
-
-    //CHECK#15
-    if (obj[3] !== undefined) {
-        $ERROR('#15: var obj = {}; obj.reverse = Array.prototype.reverse; obj.length = 10; obj[0] = true; obj[2] = Infinity; obj[4] = undefined; obj[5] = undefined; obj[8] = "NaN"; obj[9] = "-1"; obj.reverse(); obj.length = 9; obj.reverse(); obj[3] === undefined. Actual: ' + (obj[3]));
-    }
-
-    //CHECK#16
-    if (obj[4] !== undefined) {
-        $ERROR('#16: var obj = {}; obj.reverse = Array.prototype.reverse; obj.length = 10; obj[0] = true; obj[2] = Infinity; obj[4] = undefined; obj[5] = undefined; obj[8] = "NaN"; obj[9] = "-1"; obj.reverse(); obj.length = 9; obj.reverse(); obj[4] === undefined. Actual: ' + (obj[4]));
-    }
-
-    //CHECK#17
-    if (obj[5] !== undefined) {
-        $ERROR('#17: var obj = {}; obj.reverse = Array.prototype.reverse; obj.length = 10; obj[0] = true; obj[2] = Infinity; obj[4] = undefined; obj[5] = undefined; obj[8] = "NaN"; obj[9] = "-1"; obj.reverse(); obj.length = 9; obj.reverse(); obj[5] === undefined. Actual: ' + (obj[5]));
-    }
-
-    //CHECK#18
-    if (obj[6] !== undefined) {
-        $ERROR('#18: var obj = {}; obj.reverse = Array.prototype.reverse; obj.length = 10; obj[0] = true; obj[2] = Infinity; obj[4] = undefined; obj[5] = undefined; obj[8] = "NaN"; obj[9] = "-1"; obj.reverse(); obj.length = 9; obj.reverse(); obj[6] === undefined. Actual: ' + (obj[6]));
-    }
-
-    //CHECK#19
-    if (obj[7] !== "NaN") {
-        $ERROR('#19: var obj = {}; obj.reverse = Array.prototype.reverse; obj.length = 10; obj[0] = true; obj[2] = Infinity; obj[4] = undefined; obj[5] = undefined; obj[8] = "NaN"; obj[9] = "-1"; obj.reverse(); obj.length = 9; obj.reverse(); obj[7] === "NaN". Actual: ' + (obj[7]));
-    }
-
-    //CHECK#20
-    if (obj[8] !== "-1") {
-        $ERROR('#20: var obj = {}; obj.reverse = Array.prototype.reverse; obj.length = 10; obj[0] = true; obj[2] = Infinity; obj[4] = undefined; obj[5] = undefined; obj[8] = "NaN"; obj[9] = "-1"; obj.reverse(); obj.length = 9; obj.reverse(); obj[8] === "-1". Actual: ' + (obj[8]));
-    }
+    // Probably not testing much of anything in these cases, but make sure they don't crash!
+    shouldBeTrue("test(Array.prototype.join)");
+    shouldBeTrue("test(Array.prototype.pop)");
+    shouldBeFalse("test(Array.prototype.push)");
+    shouldBeTrue("test(Array.prototype.reverse)");
+    shouldBeTrue("test(Array.prototype.shift)");
+    shouldBeTrue("test(Array.prototype.slice)");
+    shouldBeTrue("test(Array.prototype.splice)");
+    shouldBeTrue("test(Array.prototype.unshift)");
+    shouldBeTrue("test(Array.prototype.indexOf)");
+    shouldBeTrue("test(Array.prototype.lastIndexOf)");
 }());
