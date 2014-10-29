@@ -168,8 +168,8 @@ namespace NiL.JSTest
                         s.Context.DefineVariable("print").Assign(new ExternalFunction((t, e) =>
                         {
                             var text = e[0].ToString();
-                            //if (text == "FAIL")
-                            //    System.Diagnostics.Debugger.Break();
+                            if (text == "FAIL")
+                                System.Diagnostics.Debugger.Break();
                             Console.WriteLine(text);
                             return JSObject.Undefined;
                         }));
@@ -308,6 +308,7 @@ console.log(array[0]);
                         sputnikTests(@"tests\sputnik\ch15\15.1\");
                         sputnikTests(@"tests\sputnik\ch15\15.2\");
                         sputnikTests(@"tests\sputnik\ch15\15.3\");
+                        sputnikTests(@"tests\sputnik\ch15\15.4\"); // with 43 asserts
                         sputnikTests(@"tests\sputnik\ch15\15.5\"); // with some errors due double.toString()
                         sputnikTests(@"tests\sputnik\ch15\15.6\");
                         sputnikTests(@"tests\sputnik\ch15\15.7\");

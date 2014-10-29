@@ -30,7 +30,7 @@ namespace NiL.JS.Expressions
                 var memberName = proto.FieldName.Evaluate(context);
                 context.objectSource = source;
                 var res = context.objectSource.GetMember(memberName, false, true);
-                if ((res.attributes & JSObjectAttributesInternal.SystemObject) != 0)
+                if (res.isExist && (res.attributes & JSObjectAttributesInternal.SystemObject) != 0)
                     return context.objectSource.GetMember(memberName, true, true);
                 return res;
             }

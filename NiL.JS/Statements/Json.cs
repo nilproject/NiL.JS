@@ -57,8 +57,9 @@ namespace NiL.JS.Statements
                 int s = i;
                 if (state.Code[i] == '}')
                     break;
-                pos = i;
-                if (Parser.Validate(state.Code, "set ", ref i) && !Parser.isIdentificatorTerminator(state.Code[i]))
+                pos = i; 
+                if ((i = pos) >= 0 && Parser.Validate(state.Code, "set ", ref i)
+                     && (state.Code[i] == '"' || state.Code[i] == '\'' || !Parser.isIdentificatorTerminator(state.Code[i])))
                 {
                     i = pos;
                     var setter = FunctionStatement.Parse(state, ref i, FunctionType.Set).Statement as FunctionStatement;
@@ -79,7 +80,8 @@ namespace NiL.JS.Statements
                         ((vle as Constant).value.oValue as CodeNode[])[0] = setter;
                     }
                 }
-                else if ((i = pos) >= 0 && Parser.Validate(state.Code, "get ", ref i) && !Parser.isIdentificatorTerminator(state.Code[i]))
+                else if ((i = pos) >= 0 && Parser.Validate(state.Code, "get ", ref i)
+                    && (state.Code[i] == '"' || state.Code[i] == '\'' || !Parser.isIdentificatorTerminator(state.Code[i])))
                 {
                     i = pos;
                     var getter = FunctionStatement.Parse(state, ref i, FunctionType.Get).Statement as FunctionStatement;

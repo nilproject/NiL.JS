@@ -320,14 +320,11 @@ namespace NiL.JS.Core.TypeProxing
             members.TryGetValue(name, out m);
             if (m == null || m.Count == 0)
             {
-                if (!own)
-                {
-                    var pi = prototypeInstance as JSObject;
-                    if (pi != null)
-                        return pi.GetMember(nameObj, create, own);
-                }
-                r = DefaultFieldGetter(nameObj, create, own);
-                return r;
+                var pi = prototypeInstance as JSObject;
+                if (pi != null)
+                    return pi.GetMember(nameObj, create, own);
+                else
+                    return DefaultFieldGetter(nameObj, create, own);
             }
             if (m.Count > 1)
             {

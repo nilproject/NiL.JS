@@ -278,9 +278,13 @@ namespace NiL.JS.Statements
             if (code[i] != '(')
             {
                 nameStartPos = i;
-                if (!Parser.ValidateName(code, ref i, false, true, state.strict.Peek()))
-                    throw new JSException((new SyntaxError("Invalid function name at " + Tools.PositionToTextcord(code, nameStartPos))));
-                name = Tools.Unescape(code.Substring(nameStartPos, i - nameStartPos), state.strict.Peek());
+                if (Parser.ValidateName(code, ref i, false, true, state.strict.Peek()))
+                    name = Tools.Unescape(code.Substring(nameStartPos, i - nameStartPos), state.strict.Peek());
+                else if ((mode == FunctionType.Get || mode == FunctionType.Set) && Parser.ValidateString(code, ref i, false))
+                    name = Tools.Unescape(code.Substring(nameStartPos + 1, i - nameStartPos - 2), state.strict.Peek());
+                else if ((mode == FunctionType.Get || mode == FunctionType.Set) && Parser.ValidateNumber(code, ref i))
+                    name = Tools.Unescape(code.Substring(nameStartPos, i - nameStartPos), state.strict.Peek());
+                else throw new JSException((new SyntaxError("Invalid function name at " + Tools.PositionToTextcord(code, nameStartPos))));
                 while (char.IsWhiteSpace(code[i])) i++;
                 if (code[i] != '(')
                     throw new JSException(new SyntaxError("Unexpected char at " + Tools.PositionToTextcord(code, i)));

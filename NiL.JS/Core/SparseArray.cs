@@ -190,7 +190,7 @@ namespace NiL.JS.Core
                     else
                     {
                         values[i] = value;
-                        if (pseudoLength == 0)
+                        if (pseudoLength <= index)
                             pseudoLength = _index + 1;
                         return;
                     }
