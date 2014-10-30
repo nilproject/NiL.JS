@@ -124,7 +124,7 @@ namespace NiL.JS.Expressions
         internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict)
         {
             for (var i = 0; i < arguments.Length; i++)
-                Parser.Optimize(ref arguments[i], depth + 1, vars, strict);
+                Parser.Build(ref arguments[i], depth + 1, vars, strict);
             base.Build(ref _this, depth, vars, strict);
             if (first is GetVariableStatement)
             {

@@ -279,9 +279,9 @@ namespace NiL.JS.Statements
             var tvar = variable;
             if (tvar is VariableDefineStatement)
                 variable = (tvar as VariableDefineStatement).initializators[0];
-            Parser.Optimize(ref tvar, 1, variables, strict);
-            Parser.Optimize(ref source, 2, variables, strict);
-            Parser.Optimize(ref body, System.Math.Max(1, depth), variables, strict);
+            Parser.Build(ref tvar, 1, variables, strict);
+            Parser.Build(ref source, 2, variables, strict);
+            Parser.Build(ref body, System.Math.Max(1, depth), variables, strict);
             if (variable is Expressions.None)
             {
                 if ((variable as Expressions.None).SecondOperand != null)

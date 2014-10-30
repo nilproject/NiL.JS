@@ -89,8 +89,8 @@ namespace NiL.JS.Expressions
             //    first = (first as None).first;
             //while (second is None && (second as None).second == null)
             //    second = (second as None).first;
-            Parser.Optimize(ref first, depth + 1, vars, strict);
-            Parser.Optimize(ref second, depth + 1, vars, strict);
+            Parser.Build(ref first, depth + 1, vars, strict);
+            Parser.Build(ref second, depth + 1, vars, strict);
             try
             {
                 if (this.IsContextIndependent)

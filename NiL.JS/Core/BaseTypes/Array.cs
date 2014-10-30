@@ -51,18 +51,12 @@ namespace NiL.JS.Core.BaseTypes
                 res = (uint)Tools.JSObjectToInt64(len.ToPrimitiveValue_Value_String(), 0, false);
             else
                 res = (uint)Tools.JSObjectToInt64(len, 0, false);
-            if (reassignLen & (len.attributes & JSObjectAttributesInternal.ReadOnly) == 0)
+            if (reassignLen)
             {
-                if (res <= int.MaxValue)
-                {
-                    len.valueType = JSObjectType.Int;
-                    len.iValue = (int)res;
-                }
+                if (len.valueType == JSObjectType.Property)
+                    ((len.oValue as Function[])[0] ?? Function.emptyFunction).Invoke(src, new Arguments() { a0 = res, length = 1 });
                 else
-                {
-                    len.valueType = JSObjectType.Double;
-                    len.dValue = res;
-                }
+                    len.Assign(res);
             }
             return res;
         }
@@ -605,7 +599,7 @@ namespace NiL.JS.Core.BaseTypes
             bool nativeMode = this.GetType() == typeof(Array);
             Array src = this;
             if (!src.isDefinded || (src.valueType >= JSObjectType.Object && src.oValue == null))
-                throw new JSException(new TypeError("Can not call Array.prototype.every for null or undefined"));
+                throw new JSException(new TypeError("Can not call Array.prototype.filter for null or undefined"));
             if (!nativeMode)
                 src = iterableToArray(src, false, false, false);
             Function f = args[0] == null ? null : args[0].oValue as Function;
@@ -699,7 +693,7 @@ namespace NiL.JS.Core.BaseTypes
             bool nativeMode = this.GetType() == typeof(Array);
             Array src = this;
             if (!src.isDefinded || (src.valueType >= JSObjectType.Object && src.oValue == null))
-                throw new JSException(new TypeError("Can not call Array.prototype.every for null or undefined"));
+                throw new JSException(new TypeError("Can not call Array.prototype.map for null or undefined"));
             if (!nativeMode)
                 src = iterableToArray(src, false, false, false);
             Function f = args[0] == null ? null : args[0].oValue as Function;
@@ -789,7 +783,7 @@ namespace NiL.JS.Core.BaseTypes
             bool nativeMode = this.GetType() == typeof(Array);
             Array src = this;
             if (!src.isDefinded || (src.valueType >= JSObjectType.Object && src.oValue == null))
-                throw new JSException(new TypeError("Can not call Array.prototype.every for null or undefined"));
+                throw new JSException(new TypeError("Can not call Array.prototype.forEach for null or undefined"));
             if (!nativeMode)
                 src = iterableToArray(src, false, false, false);
             Function f = args[0] == null ? null : args[0].oValue as Function;
@@ -1762,6 +1756,8 @@ namespace NiL.JS.Core.BaseTypes
                     pos0 = 0;
                 if (pos1 < 0)
                     pos1 = 0;
+                if (pos1 == 0 && args.length <= 2)
+                    return new Array();
                 pos0 = (uint)System.Math.Min(pos0, data.Length);
                 pos1 += pos0;
                 pos1 = (uint)System.Math.Min(pos1, data.Length);
@@ -1774,47 +1770,55 @@ namespace NiL.JS.Core.BaseTypes
                 {
                     if (node.Value != null && node.Value.isExist && node.Key >= pos0)
                     {
+                        if (node.Key >= pos1 && delta == 0)
+                            break;
+                        var value = node.Value;
+                        if (value != null && value.valueType == JSObjectType.Property)
+                            value = ((value.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(this, null).CloneImpl();
                         if (node.Key < pos1)
-                        {
-                            res.data[(int)(node.Key - pos0)] = node.Value;
-                            data[node.Key] = null;
-                        }
+                            res.data[(int)(node.Key - pos0)] = value;
                         else
                         {
-                            if (delta == 0)
-                                break;
                             if (delta > 0)
-                                relocated.Add(node);
+                                relocated.Add(new KeyValuePair<int, JSObject>(node.Key, value));
                             else
-                                data[(int)(node.Key + delta)] = node.Value;
-                            data[node.Key] = null;
+                            {
+                                var t = data[(int)(node.Key + delta)];
+                                if (t != null && t.valueType == JSObjectType.Property)
+                                    ((t.oValue as Function[])[0] ?? Function.emptyFunction).Invoke(this, new Arguments() { a0 = value, length = 1 });
+                                else
+                                    data[(int)(node.Key + delta)] = value;
+                            }
                         }
                     }
                 }
                 if (delta > 0)
                 {
                     for (var i = 0; i < relocated.Count; i++)
-                        data[(int)(relocated[i].Key + delta)] = relocated[i].Value;
+                    {
+                        var t = data[(int)(relocated[i].Key + delta)];
+                        if (t != null && t.valueType == JSObjectType.Property)
+                            ((t.oValue as Function[])[0] ?? Function.emptyFunction).Invoke(this, new Arguments() { a0 = relocated[i].Value, length = 1 });
+                        else
+                            data[(int)(relocated[i].Key + delta)] = relocated[i].Value;
+                    }
                 }
                 else while (delta++ < 0)
                         data.RemoveAt((int)(data.Length - 1));
                 for (var i = 2; i < args.length; i++)
                     if (args[i].isExist)
-                        data[(int)(pos0 + i - 2)] = args[i].CloneImpl();
+                    {
+                        var t = data[(int)(pos0 + i - 2)];
+                        if (t != null && t.valueType == JSObjectType.Property)
+                            ((t.oValue as Function[])[0] ?? Function.emptyFunction).Invoke(this, new Arguments() { a0 = args[i], length = 1 });
+                        else
+                            data[(int)(pos0 + i - 2)] = args[i].CloneImpl();
+                    }
                 return res;
             }
             else // кто-то отправил объект с полем length
             {
-                var lenObj = this["length"]; // тут же проверка на null/undefined с падением если надо
-                if (!lenObj.isDefinded)
-                    return new Array();
-                if (lenObj.valueType == JSObjectType.Property)
-                    lenObj = ((lenObj.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(this, null);
-                if (lenObj.valueType >= JSObjectType.Object)
-                    lenObj = lenObj.ToPrimitiveValue_Value_String();
-                if (!lenObj.isDefinded)
-                    return new Array();
-                long _length = (uint)Tools.JSObjectToInt64(lenObj);
+                long _length = getLengthOfIterably(this, false);
                 var pos0 = (long)System.Math.Min(Tools.JSObjectToDouble(args[0]), _length);
                 long pos1 = 0;
                 if (args.Length > 1)
@@ -1832,52 +1836,182 @@ namespace NiL.JS.Core.BaseTypes
                     pos0 = 0;
                 if (pos1 < 0)
                     pos1 = 0;
+                if (pos1 == 0 && args.length <= 2)
+                {
+                    var lenobj = this.GetMember("length", true, false);
+                    if (lenobj.valueType == JSObjectType.Property)
+                        ((lenobj.oValue as Function[])[0] ?? Function.emptyFunction).Invoke(this, new Arguments() { a0 = _length, length = 1 });
+                    else
+                        lenobj.Assign(_length);
+                    return new Array();
+                }
                 pos0 = (uint)System.Math.Min(pos0, _length);
                 pos1 += pos0;
                 pos1 = (uint)System.Math.Min(pos1, _length);
+                var delta = System.Math.Max(0, args.length - 2) - (pos1 - pos0);
                 var res = new Array();
-                List<string> keysToRemove = new List<string>();
-                List<KeyValuePair<uint, JSObject>> itemsToReplace = new List<KeyValuePair<uint, JSObject>>();
                 long prewKey = -1;
-                foreach (var keyS in this)
+                foreach (var keyS in iterablyEnum(_length, this))
                 {
-                    var pindex = 0;
-                    var dkey = 0.0;
-                    if (Tools.ParseNumber(keyS, ref pindex, out dkey) && (pindex == keyS.Length))
+                    if (prewKey == -1)
+                        prewKey = (uint)keyS.Key;
+                    if (keyS.Key - prewKey > 1 && keyS.Key < pos1)
                     {
-                        if (prewKey == -1)
-                            prewKey = (uint)dkey;
-                        if (dkey - prewKey > 1 && dkey < pos1)
+                        for (var i = prewKey + 1; i < keyS.Key; i++)
                         {
-                            for (var i = prewKey + 1; i < dkey; i++)
-                                res.data[(int)i] = __proto__[i.ToString()].CloneImpl();
+                            var value = __proto__[i.ToString()];
+                            if (value.valueType == JSObjectType.Property)
+                                value = ((value.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(__proto__, null).CloneImpl();
+                            else
+                                value = value.CloneImpl();
+                            res.data[(int)i] = value.CloneImpl();
                         }
-                        if (dkey >= pos1)
-                        {
-                            keysToRemove.Add(keyS);
-                            itemsToReplace.Add(new KeyValuePair<uint, JSObject>((uint)dkey, this[keyS].CloneImpl()));
-                        }
-                        else if (pos0 <= dkey)
-                        {
-                            res.Add(this[keyS].CloneImpl());
-                            keysToRemove.Add(keyS);
-                        }
-                        prewKey = (long)dkey;
                     }
+                    if (keyS.Key >= pos1)
+                        break;
+                    else if (pos0 <= keyS.Key)
+                    {
+                        var value = this[keyS.Value];
+                        if (value.ValueType == JSObjectType.Property)
+                            value = ((value.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(this, null).CloneImpl();
+                        else
+                            value = value.CloneImpl();
+                        res.data[(int)(keyS.Key - pos0)] = value;
+                    }
+                    prewKey = keyS.Key;
                 }
                 if (prewKey == -1)
                 {
-                    for (var i = 0; i < pos1; i++)
-                        res.Add(__proto__[i.ToString()].CloneImpl());
+                    for (var i = 0; i < (pos1 - pos0); i++)
+                        res.Add(__proto__[(i + pos0).ToString()].CloneImpl());
                 }
-                for (var i = keysToRemove.Count; i-- > 0; )
-                    this[keysToRemove[i]].valueType = JSObjectType.NotExists;
-                _length -= pos1 - pos0 - args.length + 2;
+                var tjo = new JSObject();
+                if (delta > 0)
+                {
+                    for (var i = _length; i-- > pos1; )
+                    {
+                        if (i <= int.MaxValue)
+                        {
+                            tjo.valueType = JSObjectType.Int;
+                            tjo.iValue = (int)(i + delta);
+                        }
+                        else
+                        {
+                            tjo.valueType = JSObjectType.Double;
+                            tjo.dValue = i + delta;
+                        }
+                        var dst = this.GetMember(tjo, true, false);
+                        if (i + delta <= int.MaxValue)
+                        {
+                            tjo.valueType = JSObjectType.Int;
+                            tjo.iValue = (int)(i);
+                        }
+                        else
+                        {
+                            tjo.valueType = JSObjectType.Double;
+                            tjo.dValue = i;
+                        }
+                        var src = this.GetMember(tjo, true, false);
+                        if (src.valueType == JSObjectType.Property)
+                            src = ((src.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(this, null);
+                        if (dst.valueType == JSObjectType.Property)
+                            ((dst.oValue as Function[])[0] ?? Function.emptyFunction).Invoke(this, new Arguments() { a0 = src, length = 1 });
+                        else
+                            dst.Assign(src);
+                    }
+                }
+                else if (delta < 0)
+                {
+                    for (var i = pos0; i < pos1; i++)
+                    {
+                        if (i + delta <= int.MaxValue)
+                        {
+                            tjo.valueType = JSObjectType.Int;
+                            tjo.iValue = (int)(i);
+                        }
+                        else
+                        {
+                            tjo.valueType = JSObjectType.Double;
+                            tjo.dValue = i;
+                        }
+                        var src = this.GetMember(tjo, true, false);
+                        if (i >= _length + delta)
+                        {
+                            if ((src.attributes & JSObjectAttributesInternal.DoNotDelete) == 0)
+                            {
+                                src.valueType = JSObjectType.NotExists;
+                                src.oValue = null;
+                            }
+                        }
+                    }
+
+                    for (var i = pos1; i < _length; i++)
+                    {
+                        if (i <= int.MaxValue)
+                        {
+                            tjo.valueType = JSObjectType.Int;
+                            tjo.iValue = (int)(i + delta);
+                        }
+                        else
+                        {
+                            tjo.valueType = JSObjectType.Double;
+                            tjo.dValue = i + delta;
+                        }
+                        var dst = this.GetMember(tjo, true, false);
+                        if (i + delta <= int.MaxValue)
+                        {
+                            tjo.valueType = JSObjectType.Int;
+                            tjo.iValue = (int)(i);
+                        }
+                        else
+                        {
+                            tjo.valueType = JSObjectType.Double;
+                            tjo.dValue = i;
+                        }
+                        var srcItem = this.GetMember(tjo, true, false);
+                        var src = srcItem;
+                        if (src.valueType == JSObjectType.Property)
+                            src = ((src.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(this, null);
+                        if (dst.valueType == JSObjectType.Property)
+                            ((dst.oValue as Function[])[0] ?? Function.emptyFunction).Invoke(this, new Arguments() { a0 = src, length = 1 });
+                        else
+                            dst.Assign(src);
+                        if (i >= _length + delta)
+                        {
+                            if ((srcItem.attributes & JSObjectAttributesInternal.DoNotDelete) == 0)
+                            {
+                                srcItem.valueType = JSObjectType.NotExists;
+                                srcItem.oValue = null;
+                            }
+                        }
+                    }
+                }
                 for (var i = 2; i < args.length; i++)
-                    this[(i - 2 + pos0).ToString()] = args[i].CloneImpl();
-                for (var i = 0; i < itemsToReplace.Count; i++)
-                    this[(itemsToReplace[i].Key - (pos1 - pos0 - args.length + 2)).ToString()] = itemsToReplace[i].Value;
-                this["length"] = _length;
+                {
+                    if ((i - 2 + pos0) <= int.MaxValue)
+                    {
+                        tjo.valueType = JSObjectType.Int;
+                        tjo.iValue = (int)(i - 2 + pos0);
+                    }
+                    else
+                    {
+                        tjo.valueType = JSObjectType.Double;
+                        tjo.dValue = (i - 2 + pos0);
+                    }
+                    var dst = this.GetMember(tjo, true, false);
+                    if (dst.valueType == JSObjectType.Property)
+                        ((dst.oValue as Function[])[0] ?? Function.emptyFunction).Invoke(this, new Arguments() { a0 = args[i], length = 1 });
+                    else
+                        dst.Assign(args[i]);
+                }
+                {
+                    _length += delta;
+                    var lenobj = this.GetMember("length", true, false);
+                    if (lenobj.valueType == JSObjectType.Property)
+                        ((lenobj.oValue as Function[])[0] ?? Function.emptyFunction).Invoke(this, new Arguments() { a0 = _length, length = 1 });
+                    else
+                        lenobj.Assign(_length);
+                }
                 return res;
             }
         }

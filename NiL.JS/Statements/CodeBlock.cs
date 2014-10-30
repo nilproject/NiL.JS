@@ -337,7 +337,7 @@ namespace NiL.JS.Statements
             for (int i = body.Length; i-- > 0; )
             {
                 bool needRemove = (body[i] is FunctionStatement);// && depth >= 0;
-                Parser.Optimize(ref body[i], depth < 0 ? 2 : Math.Max(1, depth), variables, this.strict);
+                Parser.Build(ref body[i], depth < 0 ? 2 : Math.Max(1, depth), variables, this.strict);
                 if (needRemove)
                     body[i] = null;
             }

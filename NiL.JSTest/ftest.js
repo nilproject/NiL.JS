@@ -2,65 +2,30 @@
 var print = console.log;
 
 console.log(function () {
-    var a = ["zero", , "two"];
-    Object.defineProperty(a, "1", {
-        get: function () { return "one"; },
-        set: function (v) { console.log(v); },
-        enumerable: true,
-        configurable: true
-    });
-    console.log(JSON.stringify(a));
-    console.log([].shift.call(a));
-    return JSON.stringify(a);
+    var obj = {};
+    obj.splice = Array.prototype.splice;
+    obj[0] = "x";
+    obj[4294967295] = "y";
+    obj.length = 4294967296;
+    var arr = obj.splice(4294967295, 1);
 
-    function shouldBeTrue(x) {
-        if (eval(x) !== true)
-            print("FAIL(true): " + x);
-    }
-    function shouldBeFalse(x) {
-        if (eval(x) !== false)
-            print("FAIL(false): " + x);
+    //CHECK#1
+    if (arr.length !== 0) {
+        $ERROR('#1: var obj = {}; obj.splice = Array.prototype.splice; obj[0] = "x"; obj[4294967295] = "y"; obj.length = 4294967296; var arr = obj.splice(4294967295,1); arr.length === 0. Actual: ' + (arr.length));
     }
 
-    function test(f) {
-
-        var testObj = {
-            length: 3
-        };
-        var propertyGetter = {
-            get: (function () { throw true; })
-        }
-        Object.defineProperty(testObj, 0, propertyGetter);
-        Object.defineProperty(testObj, 1, propertyGetter);
-        Object.defineProperty(testObj, 2, propertyGetter);
-
-        try {
-            f.call(testObj, function () { });
-            return false;
-        } catch (e) {
-            return e === true;
-        }
+    //CHECK#2
+    if (obj.length !== 0) {
+        $ERROR('#2: var obj = {}; obj.splice = Array.prototype.splice; obj[0] = "x"; obj[4294967295] = "y"; obj.length = 4294967296; var arr = obj.splice(4294967295,1); obj.length === 0. Actual: ' + (obj.length));
     }
 
-    // This test makes sense for these functions: (they should get all properties on the array)
-    shouldBeTrue("test(Array.prototype.sort)");
-    shouldBeTrue("test(Array.prototype.every)");
-    shouldBeTrue("test(Array.prototype.some)");
-    shouldBeTrue("test(Array.prototype.forEach)");
-    shouldBeTrue("test(Array.prototype.map)");
-    shouldBeTrue("test(Array.prototype.filter)");
-    shouldBeTrue("test(Array.prototype.reduce)");
-    shouldBeTrue("test(Array.prototype.reduceRight)");
+    //CHECK#3
+    if (obj[0] !== "x") {
+        $ERROR('#3: var obj = {}; obj.splice = Array.prototype.splice; obj[0] = "x"; obj[4294967295] = "y"; obj.length = 4294967296; var arr = obj.splice(4294967295,1); obj[0] === "x". Actual: ' + (obj[0]));
+    }
 
-    // Probably not testing much of anything in these cases, but make sure they don't crash!
-    shouldBeTrue("test(Array.prototype.join)");
-    shouldBeTrue("test(Array.prototype.pop)");
-    shouldBeFalse("test(Array.prototype.push)");
-    shouldBeTrue("test(Array.prototype.reverse)");
-    shouldBeTrue("test(Array.prototype.shift)");
-    shouldBeTrue("test(Array.prototype.slice)");
-    shouldBeTrue("test(Array.prototype.splice)");
-    shouldBeTrue("test(Array.prototype.unshift)");
-    shouldBeTrue("test(Array.prototype.indexOf)");
-    shouldBeTrue("test(Array.prototype.lastIndexOf)");
+    //CHECK#4
+    if (obj[4294967295] !== "y") {
+        $ERROR('#4: var obj = {}; obj.splice = Array.prototype.splice; obj[0] = "x"; obj[4294967295] = "y"; obj.length = 4294967296; var arr = obj.splice(4294967295,1); obj[4294967295] === "y". Actual: ' + (obj[4294967295]));
+    }
 }());

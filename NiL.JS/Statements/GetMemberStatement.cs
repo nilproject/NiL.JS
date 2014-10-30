@@ -77,8 +77,8 @@ namespace NiL.JS.Statements
 
         internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
-            Parser.Optimize(ref objStatement, depth + 1, variables, strict);
-            Parser.Optimize(ref memberNameStatement, depth + 1, variables, strict);
+            Parser.Build(ref objStatement, depth + 1, variables, strict);
+            Parser.Build(ref memberNameStatement, depth + 1, variables, strict);
             if (memberNameStatement is Constant)
                 cachedMemberName = memberNameStatement.Evaluate(null);
             return false;

@@ -36,8 +36,8 @@ namespace NiL.JS.Expressions
                 _this = first;
                 return true;
             }
-            Parser.Optimize(ref first, depth + 1, vars, strict);
-            Parser.Optimize(ref second, depth + 1, vars, strict);
+            Parser.Build(ref first, depth + 1, vars, strict);
+            Parser.Build(ref second, depth + 1, vars, strict);
             return false;
         }
 

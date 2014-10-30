@@ -176,9 +176,9 @@ namespace NiL.JS.Statements
 
         internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
-            Parser.Optimize(ref condition, 2, variables, strict);
-            Parser.Optimize(ref body, depth, variables, strict);
-            Parser.Optimize(ref elseBody, depth, variables, strict);
+            Parser.Build(ref condition, 2, variables, strict);
+            Parser.Build(ref body, depth, variables, strict);
+            Parser.Build(ref elseBody, depth, variables, strict);
             try
             {
                 if (condition is Constant || (condition is Expression && (condition as Expression).IsContextIndependent))

@@ -148,18 +148,18 @@ namespace NiL.JS.Statements
         {
             if (depth < 1)
                 throw new InvalidOperationException();
-            Parser.Optimize(ref image, 2, variables, strict);
+            Parser.Build(ref image, 2, variables, strict);
             for (int i = 0; i < body.Length; i++)
-                Parser.Optimize(ref body[i], 1, variables, strict);
+                Parser.Build(ref body[i], 1, variables, strict);
             for (int i = 0; i < functions.Length; i++)
             {
                 CodeNode stat = functions[i];
-                Parser.Optimize(ref stat, 1, variables, strict);
+                Parser.Build(ref stat, 1, variables, strict);
                 variables[functions[i].Name] = new VariableDescriptor(functions[i].Reference, true, functions[i].Reference.functionDepth);
             }
             functions = null;
             for (int i = 1; i < cases.Length; i++)
-                Parser.Optimize(ref cases[i].statement, 2, variables, strict);
+                Parser.Build(ref cases[i].statement, 2, variables, strict);
             for (int i = 0; i < body.Length / 2; i++)
             {
                 var t = body[i];

@@ -210,7 +210,7 @@ namespace NiL.JS.Statements
         internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
             for (int i = 0; i < initializators.Length; i++)
-                Parser.Optimize(ref initializators[i], 2, variables, strict);
+                Parser.Build(ref initializators[i], 2, variables, strict);
             if (names.Length == 1 && depth < 2 && depth >= 0)
             {
                 if (initializators[0] is GetVariableStatement)

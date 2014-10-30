@@ -341,14 +341,14 @@ namespace NiL.JS.Statements
 
         internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
-            Parser.Optimize(ref body, 1, variables, strict);
+            Parser.Build(ref body, 1, variables, strict);
             if (catchBody != null)
             {
                 catchVariableDesc.owner = this;
                 VariableDescriptor oldVarDesc = null;
                 variables.TryGetValue(catchVariableDesc.name, out oldVarDesc);
                 variables[catchVariableDesc.name] = catchVariableDesc;
-                Parser.Optimize(ref catchBody, 1 + 1, variables, strict);
+                Parser.Build(ref catchBody, 1 + 1, variables, strict);
                 if (oldVarDesc != null)
                     variables[catchVariableDesc.name] = oldVarDesc;
                 else
@@ -356,7 +356,7 @@ namespace NiL.JS.Statements
                 foreach (var v in variables)
                     v.Value.captured = true;
             }
-            Parser.Optimize(ref finallyBody, 1, variables, strict);
+            Parser.Build(ref finallyBody, 1, variables, strict);
             return false;
         }
 

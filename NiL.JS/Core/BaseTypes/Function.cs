@@ -728,7 +728,7 @@ namespace NiL.JS.Core.BaseTypes
             var fs = NiL.JS.Statements.FunctionStatement.Parse(new ParsingState(code, code), ref index);
             if (fs.IsParsed)
             {
-                Parser.Optimize(ref fs.Statement, 0, new Dictionary<string, VariableDescriptor>(), context.strict);
+                Parser.Build(ref fs.Statement, 0, new Dictionary<string, VariableDescriptor>(), context.strict);
                 var func = fs.Statement.Evaluate(context) as Function;
                 creator = fs.Statement as FunctionStatement;
             }
@@ -765,9 +765,10 @@ namespace NiL.JS.Core.BaseTypes
         public virtual JSObject Invoke(JSObject thisBind, Arguments args)
         {
             var body = creator.body;
-            if ((body == null || body.body.Length == 0) && thisBind != null)
+            if (body == null || body.body.Length == 0)
             {
-                correctThisBind(thisBind, body, null);
+                if (thisBind != null)
+                    correctThisBind(thisBind, body, null); // на тот случай, когда функция вызвана как конструктор
                 return undefined;
             }
             var oldargs = _arguments;

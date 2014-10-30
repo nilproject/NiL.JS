@@ -38,8 +38,8 @@ namespace NiL.JS.Expressions
 
         internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict)
         {
-            Parser.Optimize(ref threads[0], depth, vars, strict);
-            Parser.Optimize(ref threads[1], depth, vars, strict);
+            Parser.Build(ref threads[0], depth, vars, strict);
+            Parser.Build(ref threads[1], depth, vars, strict);
             base.Build(ref _this, depth, vars, strict);
             return false;
         }

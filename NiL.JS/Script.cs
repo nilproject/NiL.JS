@@ -51,7 +51,7 @@ namespace NiL.JS
             root = CodeBlock.Parse(new ParsingState(Tools.RemoveComments(code, 0), Code), ref i).Statement;
             if (i < code.Length)
                 throw new System.ArgumentException("Invalid char");
-            Parser.Optimize(ref root, 0, new System.Collections.Generic.Dictionary<string, VariableDescriptor>(), false);
+            Parser.Build(ref root, 0, new System.Collections.Generic.Dictionary<string, VariableDescriptor>(), false);
             var body = root as CodeBlock;
             Context = new Context(parentContext ?? NiL.JS.Core.Context.globalContext, true, pseudoCaller);
             Context.thisBind = new ThisBind(Context);

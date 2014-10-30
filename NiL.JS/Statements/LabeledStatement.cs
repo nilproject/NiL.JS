@@ -76,7 +76,7 @@ namespace NiL.JS.Statements
 
         internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
-            Parser.Optimize(ref statement, depth, variables, strict);
+            Parser.Build(ref statement, depth, variables, strict);
             return false;
         }
 

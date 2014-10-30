@@ -110,8 +110,8 @@ namespace NiL.JS.Statements
 
         internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
-            Parser.Optimize(ref obj, depth + 1, variables, strict);
-            Parser.Optimize(ref body, depth, variables, strict);
+            Parser.Build(ref obj, depth + 1, variables, strict);
+            Parser.Build(ref body, depth, variables, strict);
             return false;
         }
 

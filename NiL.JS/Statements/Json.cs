@@ -199,11 +199,11 @@ namespace NiL.JS.Statements
                 if ((values[i] is Constant) && ((values[i] as Constant).value.valueType == JSObjectType.Property))
                 {
                     var gs = (values[i] as Constant).value.oValue as CodeNode[];
-                    Parser.Optimize(ref gs[0], 1, vars, strict);
-                    Parser.Optimize(ref gs[1], 1, vars, strict);
+                    Parser.Build(ref gs[0], 1, vars, strict);
+                    Parser.Build(ref gs[1], 1, vars, strict);
                 }
                 else
-                    Parser.Optimize(ref values[i], 2, vars, strict);
+                    Parser.Build(ref values[i], 2, vars, strict);
             }
             return false;
         }
