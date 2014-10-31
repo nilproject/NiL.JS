@@ -199,6 +199,7 @@ namespace NiL.JS.Core
                     case JSObjectType.Double:
                         return dValue;
                     case JSObjectType.String:
+                        return oValue.ToString();
                     case JSObjectType.Object:
                     case JSObjectType.Function:
                     case JSObjectType.Property:
