@@ -151,6 +151,8 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="coffee-script.js" />
+    <Content Include="Draft\generators.js" />
     <Content Include="Samples\async.js" />
     <Content Include="Samples\swap.js" />
     <Content Include="sunspider-0.9.1\3d-cube.js" />

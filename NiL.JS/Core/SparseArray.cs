@@ -99,20 +99,21 @@ namespace NiL.JS.Core
                 uint _index = (uint)index;
                 bool first = true;
                 int bi = 31;
-                for (uint i = 0; ; bi--)
+                uint i = 0;
+                if (_index < allocatedCount)
                 {
-                    if (first && i == 0 && _index < allocatedCount)
+                    bi = navyData[(int)_index].bitIndex;
+                    i = (uint)(-1 ^ ((1 << bi) - 1));
+                    if ((navyData[_index].index & i) != (_index & i))
                     {
-                        bi = navyData[(int)_index].bitIndex;
-                        i = (uint)(-1 ^ ((1 << bi) - 1));
-                        if ((navyData[_index].index & i) != (_index & i))
-                        {
-                            bi = 31;
-                            i = 0;
-                        }
-                        else
-                            i = _index;
+                        bi = 31;
+                        i = 0;
                     }
+                    else
+                        i = _index;
+                }
+                for (; ; bi--)
+                {
                     if (navyData[i].index != _index)
                     {
                         i = (_index & (1 << bi)) == 0 ? navyData[i].zeroContinue : navyData[i].oneContinue;

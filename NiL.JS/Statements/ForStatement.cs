@@ -147,7 +147,7 @@ namespace NiL.JS.Statements
             if (context.debugging)
                 context.raiseDebugger(condition);
 #endif
-            if (condition == null || (bool)condition.Evaluate(context))
+            if ((bool)condition.Evaluate(context))
                 do
                 {
 #if DEV
@@ -170,22 +170,21 @@ namespace NiL.JS.Statements
                                 return res;
                         }
                     }
-                    if (post != null)
-                    {
+                    if (post == null)
+                        continue;
 #if DEV
-                        if (context.debugging)
-                        {
-                            context.raiseDebugger(post);
-                            post.Evaluate(context);
-                            context.raiseDebugger(condition);
-                        }
-                        else
-                            post.Evaluate(context);
-#else
+                    if (context.debugging)
+                    {
+                        context.raiseDebugger(post);
                         post.Evaluate(context);
-#endif
+                        context.raiseDebugger(condition);
                     }
-                } while (condition == null || (bool)condition.Evaluate(context));
+                    else
+                        post.Evaluate(context);
+#else
+                    post.Evaluate(context);
+#endif
+                } while ((bool)condition.Evaluate(context));
             return res;
         }
 
@@ -208,6 +207,8 @@ namespace NiL.JS.Statements
             Parser.Build(ref condition, 2, variables, strict);
             Parser.Build(ref post, 1, variables, strict);
             Parser.Build(ref body, System.Math.Max(1, depth), variables, strict);
+            if (condition == null)
+                condition = new Constant(Core.BaseTypes.Boolean.True);
             return false;
         }
 

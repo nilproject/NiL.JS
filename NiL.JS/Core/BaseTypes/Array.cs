@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Text;
 using NiL.JS.Core.Modules;
 using NiL.JS.Core.TypeProxing;
 
@@ -245,7 +244,7 @@ namespace NiL.JS.Core.BaseTypes
 
         [DoNotEnumerate]
         public Array(Arguments args)
-            : this(MethodProxy.argumentsToArray<object>(args))
+            : this(MethodProxy.argumentsToArray(args))
         {
 
         }

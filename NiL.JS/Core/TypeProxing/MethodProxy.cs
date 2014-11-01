@@ -140,7 +140,7 @@ namespace NiL.JS.Core.TypeProxing
                                     }
                                 }
                                 else
-                                { 
+                                {
                                     if (parameters[0].ParameterType == typeof(Arguments))
                                     {
                                         this.delegateF2 = Activator.CreateInstance(typeof(Func<object, object, object>), null, info.MethodHandle.GetFunctionPointer()) as Func<object, object, object>;
@@ -186,12 +186,12 @@ namespace NiL.JS.Core.TypeProxing
             return arg;
         }
 
-        internal static T[] argumentsToArray<T>(Arguments source) where T : class
+        internal static object[] argumentsToArray(Arguments source)
         {
             var len = source.length;
-            var res = new T[len];
+            var res = new object[len];
             for (int i = 0; i < len; i++)
-                res[i] = source[i] as T;
+                res[i] = source[i] as object;
             return res;
         }
 
@@ -327,13 +327,13 @@ namespace NiL.JS.Core.TypeProxing
                             {
                                 bool di = true;
                                 SetFieldValue(_targetInfo, delegateF1, target, typeof(object), _targetInfo.Attributes, typeof(Action), ref di);
-                                res = delegateF1(args != null ? args[0] : argumentsToArray<object>(argsSource));
+                                res = delegateF1(args != null ? args[0] : argumentsToArray(argsSource));
                             }
                             else
 #else
                                 goto default;
 #endif
-                                res = delegateF2(target, args ?? argumentsToArray<object>(argsSource));
+                                res = delegateF2(target, args ?? argumentsToArray(argsSource));
                             break;
                         }
                     case CallMode.FuncDynamicOne:
@@ -359,7 +359,7 @@ namespace NiL.JS.Core.TypeProxing
                         }
                     case CallMode.FuncStaticOneArray:
                         {
-                            res = delegateF1(args != null ? args[0] : argumentsToArray<object>(argsSource));
+                            res = delegateF1(args != null ? args[0] : argumentsToArray(argsSource));
                             break;
                         }
                     case CallMode.FuncStaticOneRaw:

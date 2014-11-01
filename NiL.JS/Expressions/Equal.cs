@@ -62,16 +62,8 @@ namespace NiL.JS.Expressions
                                         return false;
                                     throw new NotImplementedException();
                                 }
-                            case JSObjectType.Undefined:
-                            case JSObjectType.NotExistsInObject:
-                                {
-                                    return false;
-                                }
-                            case JSObjectType.NotExists:
-                                throw new JSException((new NiL.JS.Core.BaseTypes.ReferenceError("Variable not defined.")));
-                            default:
-                                throw new NotImplementedException();
                         }
+                        return false;
                     }
                 case JSObjectType.Double:
                     {
@@ -96,11 +88,6 @@ namespace NiL.JS.Expressions
                                     else
                                         return false;
                                 }
-                            case JSObjectType.Undefined:
-                            case JSObjectType.NotExistsInObject:
-                                {
-                                    return false;
-                                }
                             case JSObjectType.Date:
                             case JSObjectType.Object:
                                 {
@@ -120,11 +107,8 @@ namespace NiL.JS.Expressions
                                     }
                                     throw new NotImplementedException();
                                 }
-                            case JSObjectType.NotExists:
-                                throw new JSException((new NiL.JS.Core.BaseTypes.ReferenceError("Variable not defined.")));
-                            default:
-                                throw new NotImplementedException();
                         }
+                        return false;
                     }
                 case JSObjectType.String:
                     {
@@ -176,20 +160,11 @@ namespace NiL.JS.Expressions
                                             {
                                                 return string.CompareOrdinal(tstr, temp.Value.ToString()) == 0 ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
                                             }
-                                        case JSObjectType.Object:
-                                            {
-                                                return false;
-                                            }
-                                        default: throw new NotImplementedException();
                                     }
+                                    break;
                                 }
-                            case JSObjectType.Undefined:
-                            case JSObjectType.NotExistsInObject:
-                                {
-                                    return false;
-                                }
-                            default: throw new NotImplementedException();
                         }
+                        return false;
                     }
                 case JSObjectType.Function:
                 case JSObjectType.Date:
@@ -223,8 +198,8 @@ namespace NiL.JS.Expressions
                                                 else
                                                     return false;
                                             }
-                                        default: return false;
                                     }
+                                    return false;
                                 }
                             case JSObjectType.String:
                                 {
@@ -251,7 +226,7 @@ namespace NiL.JS.Expressions
                                 }
                             default:
                                 {
-                                    return temp.Value == tjso.Value ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+                                    return temp.oValue == tjso.oValue ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
                                 }
                         }
                         break;

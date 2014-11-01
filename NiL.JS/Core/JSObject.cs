@@ -584,30 +584,27 @@ namespace NiL.JS.Core
             if (valueType == JSObjectType.Property)
                 throw new InvalidOperationException("Try to assign to property.");
 #endif
-            if ((attributes & (JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.SystemObject)) != 0)
+            if (this == value || (attributes & (JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.SystemObject)) != 0)
                 return;
-            if (this != value)
+            this.valueType = value.valueType | JSObjectType.Undefined;
+            if (valueType < JSObjectType.String)
             {
-                this.valueType = value.valueType | JSObjectType.Undefined;
-                if (valueType < JSObjectType.String)
-                {
-                    this.iValue = value.iValue;
-                    this.dValue = value.dValue;
-                    this.fields = null;
-                    this.oValue = null;
-                    __prototype = null;
-                }
-                else
-                {
-                    fields = value.fields;
-                    oValue = value.oValue;
-                    __prototype = value.__prototype;
-                }
-                this.attributes =
-                    (this.attributes & ~JSObjectAttributesInternal.PrivateAttributes)
-                    | (value.attributes & JSObjectAttributesInternal.PrivateAttributes);
-                return;
+                this.iValue = value.iValue;
+                this.dValue = value.dValue;
+                this.fields = null;
+                this.oValue = null;
+                __prototype = null;
             }
+            else
+            {
+                fields = value.fields;
+                oValue = value.oValue;
+                __prototype = value.__prototype;
+            }
+            this.attributes =
+                (this.attributes & ~JSObjectAttributesInternal.PrivateAttributes)
+                | (value.attributes & JSObjectAttributesInternal.PrivateAttributes);
+            return;
         }
 
         [Hidden]

@@ -253,9 +253,10 @@ for (var i = 0; i < 55000000; i++) abs(i * (1 - 2 * (i & 1)));
             var sw = new Stopwatch();
             var s = new Script(
 @"
-console.log(array[0]);
+test.f(true);
 ");
-            s.Context.DefineVariable("array").Assign(TypeProxy.Proxy(new[] { "hello", "world", "!" }));
+            s.Context.DefineVariable("System").Assign(new NamespaceProvider("System"));
+            s.Context.DefineVariable("test").Assign(TypeProxy.Proxy(new { f = new Action<bool>(b => System.Console.WriteLine(b)) }));
             sw.Start();
             s.Invoke();
             sw.Stop();
@@ -275,7 +276,7 @@ console.log(array[0]);
             Context.GlobalContext.DebuggerCallback += (sender, e) => System.Diagnostics.Debugger.Break();
             Context.GlobalContext.DefineVariable("alert").Assign(new ExternalFunction((t, a) => { System.Windows.Forms.MessageBox.Show(a[0].ToString()); return JSObject.Undefined; }));
 
-            int mode = 154
+            int mode = 5//101
                    ;
             switch (mode)
             {
@@ -343,6 +344,11 @@ console.log(array[0]);
                 case 4:
                     {
                         benchmark();
+                        break;
+                    }
+                case 5:
+                    {
+                        runFile(@"coffee-script.js");
                         break;
                     }
                 case 151:

@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using NiL.JS.Core;
-using NiL.JS.Core.BaseTypes;
-using NiL.JS.Expressions;
 
 namespace NiL.JS.Statements
 {

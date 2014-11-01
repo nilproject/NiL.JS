@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using NiL.JS.Core;
-using NiL.JS.Core.TypeProxing;
 
 namespace NiL.JS.Statements
 {
@@ -151,7 +150,7 @@ namespace NiL.JS.Statements
             Parser.Build(ref image, 2, variables, strict);
             for (int i = 0; i < body.Length; i++)
                 Parser.Build(ref body[i], 1, variables, strict);
-            for (int i = 0; i < functions.Length; i++)
+            for (int i = 0; functions != null && i < functions.Length; i++)
             {
                 CodeNode stat = functions[i];
                 Parser.Build(ref stat, 1, variables, strict);

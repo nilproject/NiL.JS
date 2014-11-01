@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq.Expressions;
 using NiL.JS.Core;
 using NiL.JS.Core.JIT;
-using System.Collections.ObjectModel;
 
 namespace NiL.JS.Statements
 {

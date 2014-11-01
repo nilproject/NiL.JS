@@ -7,7 +7,7 @@ namespace NiL.JS.Expressions
     public sealed class LogicalOr : Expression
     {
         public LogicalOr(CodeNode first, CodeNode second)
-            : base(first, second, true)
+            : base(first, second, false)
         {
 
         }

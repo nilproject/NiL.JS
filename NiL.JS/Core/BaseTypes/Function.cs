@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using System.Threading;
-using NiL.JS.Core.JIT;
 using NiL.JS.Core.Modules;
 using NiL.JS.Core.TypeProxing;
 using NiL.JS.Expressions;
