@@ -215,6 +215,7 @@
     <Compile Include="Core\BindedFunction.cs" />
     <Compile Include="Core\Modules\CallOverloaded.cs" />
     <Compile Include="Core\Modules\ImmutablePrototypeAttribute.cs" />
+    <Compile Include="Core\PropertyPair.cs" />
     <Compile Include="Core\RopeString.cs" />
     <Compile Include="Core\SparseArray.cs" />
     <Compile Include="Core\TypeProxing\CustomType.cs" />

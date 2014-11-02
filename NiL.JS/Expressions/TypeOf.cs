@@ -26,7 +26,7 @@ namespace NiL.JS.Expressions
         {
             var val = first.Evaluate(context);
             if (val.valueType == JSObjectType.Property)
-                return (val.oValue as NiL.JS.Core.BaseTypes.Function[])[1].Invoke(context.objectSource, null);
+                return (val.oValue as PropertyPair).get.Invoke(context.objectSource, null);
             switch (val.valueType)
             {
                 case JSObjectType.Int:

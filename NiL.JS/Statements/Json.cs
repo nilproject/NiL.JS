@@ -57,7 +57,7 @@ namespace NiL.JS.Statements
                 int s = i;
                 if (state.Code[i] == '}')
                     break;
-                pos = i; 
+                pos = i;
                 if ((i = pos) >= 0 && Parser.Validate(state.Code, "set ", ref i)
                      && (state.Code[i] == '"' || state.Code[i] == '\'' || !Parser.isIdentificatorTerminator(state.Code[i])))
                 {
@@ -176,7 +176,11 @@ namespace NiL.JS.Statements
                 {
                     var gs = val.oValue as CodeNode[];
                     var prop = res.GetMember(fields[i], true, true);
-                    prop.oValue = new Function[] { gs[0] != null ? gs[0].Evaluate(context) as Function : null, gs[1] != null ? gs[1].Evaluate(context) as Function : null };
+                    prop.oValue = new PropertyPair
+                    {
+                        set = gs[0] != null ? gs[0].Evaluate(context) as Function : null,
+                        get = gs[1] != null ? gs[1].Evaluate(context) as Function : null
+                    };
                     prop.valueType = JSObjectType.Property;
                 }
                 else

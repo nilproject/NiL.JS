@@ -39,10 +39,10 @@ namespace NiL.JS.Expressions
                 var val = Tools.RaiseIfNotExist((first ?? second).EvaluateForAssing(context), first ?? second);
                 if (val.valueType == JSObjectType.Property)
                 {
-                    setter = (val.oValue as Function[])[0];
+                    setter = (val.oValue as PropertyPair).set;
                     if (context.strict && setter == null)
                         throw new JSException(new TypeError("Can not increment property \"" + (first ?? second) + "\" without setter."));
-                    val = (val.oValue as Function[])[1].Invoke(context.objectSource, null).CloneImpl();
+                    val = (val.oValue as PropertyPair).get.Invoke(context.objectSource, null).CloneImpl();
                     val.attributes = 0;
                 }
                 else if (context.strict && (val.attributes & JSObjectAttributesInternal.ReadOnly) != 0)

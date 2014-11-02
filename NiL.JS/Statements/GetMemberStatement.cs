@@ -55,7 +55,7 @@ namespace NiL.JS.Statements
                 res.valueType = JSObjectType.NotExistsInObject;
             else if (res.valueType == JSObjectType.Property)
             {
-                var f = (res.oValue as Function[])[1];
+                var f = (res.oValue as PropertyPair).get;
                 if (f == null)
                     res = JSObject.notExists;
                 else

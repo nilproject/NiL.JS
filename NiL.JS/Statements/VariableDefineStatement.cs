@@ -217,12 +217,9 @@ namespace NiL.JS.Statements
                     _this = null;
                 else
                     _this = initializators[0];
-                for (var i = 0; i < names.Length; i++)
-                {
-                    var t = variables[names[i]];
-                    t.Defined = true;
-                    t.readOnly = isConst;
-                }
+                var t = variables[names[0]];
+                t.Defined = true;
+                t.readOnly = isConst;
             }
             else
             {

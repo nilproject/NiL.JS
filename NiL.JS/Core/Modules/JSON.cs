@@ -333,7 +333,7 @@ namespace NiL.JS.Core.Modules
                     if (value.valueType < JSObjectType.Undefined)
                         continue;
                     if (value.valueType == JSObjectType.Property)
-                        value = ((value.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(obj, null);
+                        value = ((value.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(obj, null);
                     string strval = stringifyImpl(member, value, replacer, space, processed, args);
                     if (strval == null)
                         continue;

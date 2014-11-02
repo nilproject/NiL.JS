@@ -130,9 +130,10 @@ namespace NiL.JS.Statements
                     break;
                 }
             }
+            var res = JSObject.undefined;
             while (i-- > 0)
             {
-                body[i].Evaluate(context);
+                res = body[i].Evaluate(context) ?? res;
                 if (context.abort != AbortType.None)
                 {
                     if (context.abort == AbortType.Break)
@@ -140,7 +141,7 @@ namespace NiL.JS.Statements
                     return context.abortInfo;
                 }
             }
-            return JSObject.undefined;
+            return res;
         }
 
         internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)

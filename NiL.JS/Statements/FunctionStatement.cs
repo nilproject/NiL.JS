@@ -192,7 +192,7 @@ namespace NiL.JS.Statements
         internal bool containsWith;
         internal VariableReference[] arguments;
         internal CodeBlock body;
-        internal readonly string name;
+        internal string name;
         internal FunctionType type;
 
         public CodeBlock Body { get { return body; } }
@@ -367,6 +367,8 @@ namespace NiL.JS.Statements
                         throw new JSException((new Core.BaseTypes.SyntaxError("Parameters name may not be \"arguments\" or \"eval\" in strict mode at " + Tools.PositionToTextcord(code, index))));
                 }
             }
+            if (mode == FunctionType.Function && string.IsNullOrEmpty(name))
+                mode = FunctionType.AnonymousFunction;
             FunctionStatement func = new FunctionStatement(name)
             {
                 arguments = parameters.ToArray(),
@@ -472,6 +474,8 @@ namespace NiL.JS.Statements
 
         internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
+            if (body.localVariables != null)
+                return false;
             var bodyCode = body as CodeNode;
             var nvars = new Dictionary<string, VariableDescriptor>();
             bodyCode.Build(ref bodyCode, 0, nvars, strict);

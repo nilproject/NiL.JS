@@ -559,11 +559,7 @@ namespace NiL.JS.Core.BaseTypes
         internal static readonly JSObject propertiesDummySM = new JSObject()
         {
             valueType = JSObjectType.Property,
-            oValue = new Function[2] 
-            { 
-                TTEProxy,
-                TTEProxy
-            },
+            oValue = new PropertyPair() { get = TTEProxy, set = TTEProxy },
             attributes = JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.Immutable | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.NotConfigurable
         };
 
@@ -1058,7 +1054,7 @@ namespace NiL.JS.Core.BaseTypes
                     throw new JSException(new TypeError("Argument list has wrong type."));
                 var len = argsSource["length"];
                 if (len.valueType == JSObjectType.Property)
-                    len = (len.oValue as Function[])[1].Invoke(argsSource, null);
+                    len = (len.oValue as PropertyPair).get.Invoke(argsSource, null);
                 nargs.length = Tools.JSObjectToInt32(len);
                 for (var i = nargs.length; i-- > 0; )
                     nargs[i] = argsSource[i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture)];

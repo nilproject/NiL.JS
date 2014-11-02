@@ -147,31 +147,32 @@ namespace NiL.JS.Statements
             if (context.debugging)
                 context.raiseDebugger(condition);
 #endif
-            if ((bool)condition.Evaluate(context))
-                do
-                {
+            if (!(bool)condition.Evaluate(context))
+                return res;
+            do
+            {
 #if DEV
                     if (context.debugging && !(body is CodeBlock))
                         context.raiseDebugger(body);
 #endif
-                    if (body != null)
+                if (body != null)
+                {
+                    res = body.Evaluate(context) ?? res;
+                    if (context.abort != AbortType.None)
                     {
-                        res = body.Evaluate(context) ?? res;
-                        if (context.abort != AbortType.None)
+                        var me = context.abortInfo == null || System.Array.IndexOf(labels, context.abortInfo.oValue as string) != -1;
+                        var _break = (context.abort > AbortType.Continue) || !me;
+                        if (context.abort < AbortType.Return && me)
                         {
-                            var me = context.abortInfo == null || System.Array.IndexOf(labels, context.abortInfo.oValue as string) != -1;
-                            var _break = (context.abort > AbortType.Continue) || !me;
-                            if (context.abort < AbortType.Return && me)
-                            {
-                                context.abort = AbortType.None;
-                                context.abortInfo = null;
-                            }
-                            if (_break)
-                                return res;
+                            context.abort = AbortType.None;
+                            context.abortInfo = null;
                         }
+                        if (_break)
+                            return res;
                     }
-                    if (post == null)
-                        continue;
+                }
+                if (post == null)
+                    continue;
 #if DEV
                     if (context.debugging)
                     {
@@ -182,9 +183,9 @@ namespace NiL.JS.Statements
                     else
                         post.Evaluate(context);
 #else
-                    post.Evaluate(context);
+                post.Evaluate(context);
 #endif
-                } while ((bool)condition.Evaluate(context));
+            } while ((bool)condition.Evaluate(context));
             return res;
         }
 

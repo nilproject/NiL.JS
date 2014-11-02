@@ -35,7 +35,7 @@ namespace NiL.JS.Expressions
                     setterArgs.Reset();
                     setterArgs.length = 1;
                     setterArgs[0] = temp;
-                    var setter = (field.oValue as NiL.JS.Core.BaseTypes.Function[])[0];
+                    var setter = (field.oValue as PropertyPair).set;
                     if (setter != null)
                         setter.Invoke(fieldSource, setterArgs);
                     else if (context.strict)
@@ -55,6 +55,12 @@ namespace NiL.JS.Expressions
 
         internal override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> vars, bool strict)
         {
+            if (first is VariableReference && second is Statements.FunctionStatement)
+            {
+                var fs = second as Statements.FunctionStatement;
+                if (fs.name == null)
+                    fs.name = (first as VariableReference).Name;
+            }
             var r = base.Build(ref _this, depth, vars, strict);
             if (first is VariableReference)
                 ((first as VariableReference).Descriptor.assignations ??

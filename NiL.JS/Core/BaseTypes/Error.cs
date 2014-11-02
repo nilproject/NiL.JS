@@ -1,4 +1,7 @@
-﻿using System;
+﻿//#define CALLSTACKTOSTRING
+
+using System;
+using System.Text;
 using NiL.JS.Core.Modules;
 
 namespace NiL.JS.Core.BaseTypes
@@ -20,12 +23,18 @@ namespace NiL.JS.Core.BaseTypes
             get;
             set;
         }
+        public JSObject callstack
+        {
+            get;
+            private set;
+        }
 
         [DoNotEnumerate]
         public Error()
         {
             name = this.GetType().Name;
             message = "";
+            makeCallStack();
         }
 
         [DoNotEnumerate]
@@ -33,6 +42,7 @@ namespace NiL.JS.Core.BaseTypes
         {
             name = this.GetType().Name;
             message = args[0].ToString();
+            makeCallStack();
         }
 
         [DoNotEnumerate]
@@ -40,6 +50,19 @@ namespace NiL.JS.Core.BaseTypes
         {
             name = this.GetType().Name;
             this.message = message;
+            makeCallStack();
+        }
+
+        private void makeCallStack()
+        {
+            StringBuilder res = new StringBuilder();
+            var context = Context.CurrentContext;
+            while (context != null)
+            {
+                res.Append("in ").AppendLine(context.caller.name ?? "<anonymous method>");
+                context = context.oldContext;
+            }
+            callstack = res.ToString();
         }
 
         [Hidden]
@@ -50,12 +73,24 @@ namespace NiL.JS.Core.BaseTypes
             if (message == null
                 || message.valueType <= JSObjectType.Undefined
                 || (mstring = message.ToString()) == "")
-                return name.ToString();
+                return name.ToString()
+#if CALLSTACKTOSTRING
+ + Environment.NewLine + callstack
+#endif
+;
             if (name == null
                 || name.valueType <= JSObjectType.Undefined
                 || (nstring = name.ToString()) == "")
-                return mstring;
-            return nstring + ": " + mstring;
+                return mstring
+#if CALLSTACKTOSTRING
+ + Environment.NewLine + callstack
+#endif
+;
+            return nstring + ": " + mstring
+#if CALLSTACKTOSTRING
+ + Environment.NewLine + callstack
+#endif
+;
         }
 
         [DoNotEnumerate]

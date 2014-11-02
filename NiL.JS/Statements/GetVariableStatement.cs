@@ -39,7 +39,7 @@ namespace NiL.JS.Statements
                 throw new JSException(new NiL.JS.Core.BaseTypes.ReferenceError("Variable \"" + variableName + "\" is not defined."));
             if (res.valueType == JSObjectType.Property)
             {
-                var getter = (res.oValue as NiL.JS.Core.BaseTypes.Function[])[1];
+                var getter = (res.oValue as PropertyPair).get;
                 if (getter == null)
                     return JSObject.notExists;
                 return getter.Invoke(context.objectSource, null);

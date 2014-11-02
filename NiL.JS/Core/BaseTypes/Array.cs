@@ -40,10 +40,10 @@ namespace NiL.JS.Core.BaseTypes
                 if (reassignLen && (len.attributes & JSObjectAttributesInternal.ReadOnly) == 0)
                 {
                     len.valueType = JSObjectType.Undefined;
-                    len.Assign(((len.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(src, null));
+                    len.Assign(((len.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(src, null));
                 }
                 else
-                    len = ((len.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(src, null);
+                    len = ((len.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(src, null);
             }
             uint res;
             if (len.valueType >= JSObjectType.Object)
@@ -53,7 +53,7 @@ namespace NiL.JS.Core.BaseTypes
             if (reassignLen)
             {
                 if (len.valueType == JSObjectType.Property)
-                    ((len.oValue as Function[])[0] ?? Function.emptyFunction).Invoke(src, new Arguments() { a0 = res, length = 1 });
+                    ((len.oValue as PropertyPair).set ?? Function.emptyFunction).Invoke(src, new Arguments() { a0 = res, length = 1 });
                 else
                     len.Assign(res);
             }
@@ -83,7 +83,7 @@ namespace NiL.JS.Core.BaseTypes
                         if (!goDeep && System.Math.Abs(prew - element.Key) > 1)
                             goDeep = true;
                         if (evalProps && value.valueType == JSObjectType.Property)
-                            value = (value.oValue as Function[])[1] == null ? undefined : (value.oValue as Function[])[1].Invoke(src, null).CloneImpl();
+                            value = (value.oValue as PropertyPair).get == null ? undefined : (value.oValue as PropertyPair).get.Invoke(src, null).CloneImpl();
                         else if (clone)
                             value = value.CloneImpl();
                         if (processedKeys != null)
@@ -114,7 +114,7 @@ namespace NiL.JS.Core.BaseTypes
                         if (!value.isExist)
                             continue;
                         if (evalProps && value.valueType == JSObjectType.Property)
-                            value = (value.oValue as Function[])[1] == null ? undefined : (value.oValue as Function[])[1].Invoke(src, null).CloneImpl();
+                            value = (value.oValue as PropertyPair).get == null ? undefined : (value.oValue as PropertyPair).get.Invoke(src, null).CloneImpl();
                         else if (clone)
                             value = value.CloneImpl();
                         if (!goDeep && System.Math.Abs(prew - index.Key) > 1)
@@ -491,7 +491,7 @@ namespace NiL.JS.Core.BaseTypes
                     if (value == null || !value.isExist)
                         continue;
                     if (value.valueType == JSObjectType.Property)
-                        value = (value.oValue as Function[])[1] == null ? undefined : (value.oValue as Function[])[1].Invoke(this, null);
+                        value = (value.oValue as PropertyPair).get == null ? undefined : (value.oValue as PropertyPair).get.Invoke(this, null);
                     ao[0].Assign(value);
                     ao[1].Assign(context.wrap(key));
                     if (!(bool)f.Invoke(tb, ao))
@@ -580,7 +580,7 @@ namespace NiL.JS.Core.BaseTypes
                     if (value == null || !value.isExist)
                         continue;
                     if (value.valueType == JSObjectType.Property)
-                        value = (value.oValue as Function[])[1] == null ? undefined : (value.oValue as Function[])[1].Invoke(this, null);
+                        value = (value.oValue as PropertyPair).get == null ? undefined : (value.oValue as PropertyPair).get.Invoke(this, null);
                     ao[0].Assign(value);
                     ao[1].Assign(context.wrap(key));
                     if ((bool)f.Invoke(tb, ao))
@@ -670,7 +670,7 @@ namespace NiL.JS.Core.BaseTypes
                     if (value == null || !value.isExist)
                         continue;
                     if (value.valueType == JSObjectType.Property)
-                        value = (value.oValue as Function[])[1] == null ? undefined : (value.oValue as Function[])[1].Invoke(this, null);
+                        value = (value.oValue as PropertyPair).get == null ? undefined : (value.oValue as PropertyPair).get.Invoke(this, null);
                     ao[0].Assign(value);
                     ao[1].Assign(context.wrap(key));
                     if ((bool)f.Invoke(tb, ao))
@@ -764,7 +764,7 @@ namespace NiL.JS.Core.BaseTypes
                     if (value == null || !value.isExist)
                         continue;
                     if (value.valueType == JSObjectType.Property)
-                        value = (value.oValue as Function[])[1] == null ? undefined : (value.oValue as Function[])[1].Invoke(this, null);
+                        value = (value.oValue as PropertyPair).get == null ? undefined : (value.oValue as PropertyPair).get.Invoke(this, null);
                     ao[0].Assign(value);
                     ao[1].Assign(context.wrap(key));
                     res.data[(int)key] = f.Invoke(tb, ao).CloneImpl();
@@ -853,7 +853,7 @@ namespace NiL.JS.Core.BaseTypes
                     if (value == null || !value.isExist)
                         continue;
                     if (value.valueType == JSObjectType.Property)
-                        value = (value.oValue as Function[])[1] == null ? undefined : (value.oValue as Function[])[1].Invoke(this, null);
+                        value = (value.oValue as PropertyPair).get == null ? undefined : (value.oValue as PropertyPair).get.Invoke(this, null);
                     ao[0].Assign(value);
                     ao[1].Assign(context.wrap(key));
                     f.Invoke(tb, ao);
@@ -893,7 +893,7 @@ namespace NiL.JS.Core.BaseTypes
                         if (value == null || !value.isExist)
                             continue;
                         if (value.valueType == JSObjectType.Property)
-                            value = (value.oValue as Function[])[1] == null ? undefined : (value.oValue as Function[])[1].Invoke(src, null);
+                            value = (value.oValue as PropertyPair).get == null ? undefined : (value.oValue as PropertyPair).get.Invoke(src, null);
                         if (processedKeys != null)
                         {
                             var sk = element.Key.ToString();
@@ -930,7 +930,7 @@ namespace NiL.JS.Core.BaseTypes
                         {
                             var temp = src[i];
                             if (temp.valueType == JSObjectType.Property)
-                                temp = (temp.oValue as Function[])[1] == null ? undefined : (temp.oValue as Function[])[1].Invoke(src, null);
+                                temp = (temp.oValue as PropertyPair).get == null ? undefined : (temp.oValue as PropertyPair).get.Invoke(src, null);
                             if (!temp.isExist)
                                 continue;
                             if (processedKeys != null)
@@ -1048,7 +1048,7 @@ namespace NiL.JS.Core.BaseTypes
                             continue;
                         var item = element.Value;
                         if (item.valueType == JSObjectType.Property)
-                            item = (item.oValue as Function[])[1] == null ? undefined : (item.oValue as Function[])[1].Invoke(src, null);
+                            item = (item.oValue as PropertyPair).get == null ? undefined : (item.oValue as PropertyPair).get.Invoke(src, null);
                         if (processedKeys != null)
                         {
                             var sk = element.Key.ToString();
@@ -1070,7 +1070,7 @@ namespace NiL.JS.Core.BaseTypes
                         if (!len.isDefinded)
                             return -1;
                         if (len.valueType == JSObjectType.Property)
-                            len = ((len.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(src, null);
+                            len = ((len.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(src, null);
                         if (len.valueType >= JSObjectType.Object)
                             len = len.ToPrimitiveValue_Value_String();
                         _length = (uint)Tools.JSObjectToInt64(len);
@@ -1104,7 +1104,7 @@ namespace NiL.JS.Core.BaseTypes
                             }
                             var item = this[i];
                             if (item.valueType == JSObjectType.Property)
-                                item = (item.oValue as Function[])[1] == null ? undefined : (item.oValue as Function[])[1].Invoke(src, null);
+                                item = (item.oValue as PropertyPair).get == null ? undefined : (item.oValue as PropertyPair).get.Invoke(src, null);
                             if (item.isExist && Expressions.StrictEqual.Check(item, el, null))
                             {
                                 result = lindex;
@@ -1140,7 +1140,7 @@ namespace NiL.JS.Core.BaseTypes
                 data.RemoveAt(newLen);
                 data[newLen - 1] = data[newLen - 1];
                 if (res.valueType == JSObjectType.Property)
-                    res = ((res.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(this, null).CloneImpl();
+                    res = ((res.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(this, null).CloneImpl();
                 return res;
             }
             else
@@ -1153,7 +1153,7 @@ namespace NiL.JS.Core.BaseTypes
                 var tres = this.GetMember(Context.CurrentContext.wrap(length.ToString()), true, false);
                 JSObject res;
                 if (tres.valueType == JSObjectType.Property)
-                    res = ((tres.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(this, null).CloneImpl();
+                    res = ((tres.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(this, null).CloneImpl();
                 else
                     res = tres.CloneImpl();
                 if ((tres.attributes & JSObjectAttributesInternal.DoNotDelete) == 0)
@@ -1212,13 +1212,13 @@ namespace NiL.JS.Core.BaseTypes
                     if (item0 == null || !item0.isExist)
                         item0 = __proto__[(data.Length - 1 - i).ToString()];
                     if (item0.valueType == JSObjectType.Property)
-                        value0 = ((item0.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(this, null).CloneImpl();
+                        value0 = ((item0.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(this, null).CloneImpl();
                     else
                         value0 = item0;
                     if (item1 == null || !item1.isExist)
                         item1 = __proto__[i.ToString()];
                     if (item1.valueType == JSObjectType.Property)
-                        value1 = ((item1.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(this, null).CloneImpl();
+                        value1 = ((item1.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(this, null).CloneImpl();
                     else
                         value1 = item1;
                     if (item0 != null && item0.valueType == JSObjectType.Property)
@@ -1227,7 +1227,7 @@ namespace NiL.JS.Core.BaseTypes
                             args = new Arguments();
                         args.length = 1;
                         args.a0 = item1;
-                        ((item0.oValue as Function[])[0] ?? Function.emptyFunction).Invoke(this, args);
+                        ((item0.oValue as PropertyPair).set ?? Function.emptyFunction).Invoke(this, args);
                     }
                     else if (value1.isExist)
                         data[(int)(data.Length - 1 - i)] = value1;
@@ -1240,7 +1240,7 @@ namespace NiL.JS.Core.BaseTypes
                             args = new Arguments();
                         args.length = 1;
                         args.a0 = item0;
-                        ((item1.oValue as Function[])[0] ?? Function.emptyFunction).Invoke(this, args);
+                        ((item1.oValue as PropertyPair).set ?? Function.emptyFunction).Invoke(this, args);
                     }
                     else if (value0.isExist)
                         data[(int)i] = value0;
@@ -1262,11 +1262,11 @@ namespace NiL.JS.Core.BaseTypes
                         var value0 = item0;
                         var value1 = item1;
                         if (value0.valueType == JSObjectType.Property)
-                            value0 = ((item0.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(this, null).CloneImpl();
+                            value0 = ((item0.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(this, null).CloneImpl();
                         else
                             value0 = value0.CloneImpl();
                         if (value1.valueType == JSObjectType.Property)
-                            value1 = ((item1.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(this, null).CloneImpl();
+                            value1 = ((item1.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(this, null).CloneImpl();
                         else
                             value1 = value1.CloneImpl();
 
@@ -1276,7 +1276,7 @@ namespace NiL.JS.Core.BaseTypes
                                 args = new Arguments();
                             args.length = 1;
                             args.a0 = value1;
-                            ((item0.oValue as Function[])[0] ?? Function.emptyFunction).Invoke(this, args);
+                            ((item0.oValue as PropertyPair).set ?? Function.emptyFunction).Invoke(this, args);
                         }
                         else if (value1.isExist)
                             this.GetMember(i0, true, true).Assign(value1);
@@ -1295,7 +1295,7 @@ namespace NiL.JS.Core.BaseTypes
                                 args = new Arguments();
                             args.length = 1;
                             args.a0 = value0;
-                            ((item1.oValue as Function[])[0] ?? Function.emptyFunction).Invoke(this, args);
+                            ((item1.oValue as PropertyPair).set ?? Function.emptyFunction).Invoke(this, args);
                         }
                         else if (value0.isExist)
                             this.GetMember(i1, true, true).Assign(value0);
@@ -1361,7 +1361,7 @@ namespace NiL.JS.Core.BaseTypes
                     continue;
                 args[0] = accum;
                 if (element.Value.valueType == JSObjectType.Property)
-                    args.a1.Assign((element.Value.oValue as Function[])[1] == null ? undefined : (element.Value.oValue as Function[])[1].Invoke(this, null));
+                    args.a1.Assign((element.Value.oValue as PropertyPair).get == null ? undefined : (element.Value.oValue as PropertyPair).get.Invoke(this, null));
                 else
                     args.a1.Assign(element.Value);
                 called = true;
@@ -1436,7 +1436,7 @@ namespace NiL.JS.Core.BaseTypes
                     continue;
                 args[0] = accum;
                 if (element.Value.valueType == JSObjectType.Property)
-                    args.a1.Assign((element.Value.oValue as Function[])[1] == null ? undefined : (element.Value.oValue as Function[])[1].Invoke(this, null));
+                    args.a1.Assign((element.Value.oValue as PropertyPair).get == null ? undefined : (element.Value.oValue as PropertyPair).get.Invoke(this, null));
                 else
                     args.a1.Assign(element.Value);
                 called = true;
@@ -1484,7 +1484,7 @@ namespace NiL.JS.Core.BaseTypes
                 { }
                 data[0] = null;
                 if (res.valueType == JSObjectType.Property)
-                    res = ((res.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(this, null);
+                    res = ((res.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(this, null);
 
                 var source = this;
                 var prew = 0U;
@@ -1508,10 +1508,10 @@ namespace NiL.JS.Core.BaseTypes
                     }
                     var value = item.Value;
                     if (value != null && value.valueType == JSObjectType.Property)
-                        value = ((value.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(this, null);
+                        value = ((value.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(this, null);
                     if (prw != null && prw.valueType == JSObjectType.Property)
                     {
-                        ((prw.oValue as Function[])[0] ?? Function.emptyFunction).Invoke(this, new Arguments() { a0 = value, length = 1 });
+                        ((prw.oValue as PropertyPair).set ?? Function.emptyFunction).Invoke(this, new Arguments() { a0 = value, length = 1 });
                     }
                     else
                     {
@@ -1540,7 +1540,7 @@ namespace NiL.JS.Core.BaseTypes
             {
                 var lenObj = this["length"];
                 if (lenObj.valueType == JSObjectType.Property)
-                    lenObj = ((lenObj.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(this, null);
+                    lenObj = ((lenObj.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(this, null);
                 long _length = (long)(uint)Tools.JSObjectToDouble(lenObj);
                 if (_length > uint.MaxValue)
                     throw new JSException(new RangeError("Invalid array length"));
@@ -1553,7 +1553,7 @@ namespace NiL.JS.Core.BaseTypes
                 var t = this.GetMember(ti, true, false);
                 var res = t;
                 if (res.valueType == JSObjectType.Property)
-                    res = ((res.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(this, null).CloneImpl();
+                    res = ((res.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(this, null).CloneImpl();
                 else
                     res = res.CloneImpl();
                 if ((t.attributes & (JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete)) == 0)
@@ -1612,7 +1612,7 @@ namespace NiL.JS.Core.BaseTypes
                     {
                         var temp = this.GetMember(tjo, true, false);
                         if (temp.valueType == JSObjectType.Property)
-                            ((temp.oValue as Function[])[0] ?? Function.emptyFunction).Invoke(this, new Arguments() { a0 = item.Value, length = 1 });
+                            ((temp.oValue as PropertyPair).set ?? Function.emptyFunction).Invoke(this, new Arguments() { a0 = item.Value, length = 1 });
                         else
                             temp.Assign(item.Value);
                     }
@@ -1654,7 +1654,7 @@ namespace NiL.JS.Core.BaseTypes
                         if (value == null || !value.isExist)
                             continue;
                         if (value.valueType == JSObjectType.Property)
-                            value = (value.oValue as Function[])[1] == null ? undefined : (value.oValue as Function[])[1].Invoke(src, null);
+                            value = (value.oValue as PropertyPair).get == null ? undefined : (value.oValue as PropertyPair).get.Invoke(src, null);
                         if (processedKeys != null)
                         {
                             var sk = element.Key.ToString();
@@ -1672,7 +1672,7 @@ namespace NiL.JS.Core.BaseTypes
                     if (!lenObj.isDefinded)
                         return new Array();
                     if (lenObj.valueType == JSObjectType.Property)
-                        lenObj = ((lenObj.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(this, null);
+                        lenObj = ((lenObj.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(this, null);
                     if (lenObj.valueType >= JSObjectType.Object)
                         lenObj = lenObj.ToPrimitiveValue_Value_String();
                     if (!lenObj.isDefinded)
@@ -1700,7 +1700,7 @@ namespace NiL.JS.Core.BaseTypes
                         {
                             var temp = src[i];
                             if (temp.valueType == JSObjectType.Property)
-                                temp = ((temp.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(src, null);
+                                temp = ((temp.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(src, null);
                             if (!temp.isExist)
                                 continue;
                             if (processedKeys != null)
@@ -1773,7 +1773,7 @@ namespace NiL.JS.Core.BaseTypes
                             break;
                         var value = node.Value;
                         if (value != null && value.valueType == JSObjectType.Property)
-                            value = ((value.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(this, null).CloneImpl();
+                            value = ((value.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(this, null).CloneImpl();
                         if (node.Key < pos1)
                             res.data[(int)(node.Key - pos0)] = value;
                         else
@@ -1784,7 +1784,7 @@ namespace NiL.JS.Core.BaseTypes
                             {
                                 var t = data[(int)(node.Key + delta)];
                                 if (t != null && t.valueType == JSObjectType.Property)
-                                    ((t.oValue as Function[])[0] ?? Function.emptyFunction).Invoke(this, new Arguments() { a0 = value, length = 1 });
+                                    ((t.oValue as PropertyPair).set ?? Function.emptyFunction).Invoke(this, new Arguments() { a0 = value, length = 1 });
                                 else
                                     data[(int)(node.Key + delta)] = value;
                             }
@@ -1797,7 +1797,7 @@ namespace NiL.JS.Core.BaseTypes
                     {
                         var t = data[(int)(relocated[i].Key + delta)];
                         if (t != null && t.valueType == JSObjectType.Property)
-                            ((t.oValue as Function[])[0] ?? Function.emptyFunction).Invoke(this, new Arguments() { a0 = relocated[i].Value, length = 1 });
+                            ((t.oValue as PropertyPair).set ?? Function.emptyFunction).Invoke(this, new Arguments() { a0 = relocated[i].Value, length = 1 });
                         else
                             data[(int)(relocated[i].Key + delta)] = relocated[i].Value;
                     }
@@ -1809,7 +1809,7 @@ namespace NiL.JS.Core.BaseTypes
                     {
                         var t = data[(int)(pos0 + i - 2)];
                         if (t != null && t.valueType == JSObjectType.Property)
-                            ((t.oValue as Function[])[0] ?? Function.emptyFunction).Invoke(this, new Arguments() { a0 = args[i], length = 1 });
+                            ((t.oValue as PropertyPair).set ?? Function.emptyFunction).Invoke(this, new Arguments() { a0 = args[i], length = 1 });
                         else
                             data[(int)(pos0 + i - 2)] = args[i].CloneImpl();
                     }
@@ -1839,7 +1839,7 @@ namespace NiL.JS.Core.BaseTypes
                 {
                     var lenobj = this.GetMember("length", true, false);
                     if (lenobj.valueType == JSObjectType.Property)
-                        ((lenobj.oValue as Function[])[0] ?? Function.emptyFunction).Invoke(this, new Arguments() { a0 = _length, length = 1 });
+                        ((lenobj.oValue as PropertyPair).set ?? Function.emptyFunction).Invoke(this, new Arguments() { a0 = _length, length = 1 });
                     else
                         lenobj.Assign(_length);
                     return new Array();
@@ -1860,7 +1860,7 @@ namespace NiL.JS.Core.BaseTypes
                         {
                             var value = __proto__[i.ToString()];
                             if (value.valueType == JSObjectType.Property)
-                                value = ((value.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(__proto__, null).CloneImpl();
+                                value = ((value.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(__proto__, null).CloneImpl();
                             else
                                 value = value.CloneImpl();
                             res.data[(int)i] = value.CloneImpl();
@@ -1872,7 +1872,7 @@ namespace NiL.JS.Core.BaseTypes
                     {
                         var value = this[keyS.Value];
                         if (value.ValueType == JSObjectType.Property)
-                            value = ((value.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(this, null).CloneImpl();
+                            value = ((value.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(this, null).CloneImpl();
                         else
                             value = value.CloneImpl();
                         res.data[(int)(keyS.Key - pos0)] = value;
@@ -1912,9 +1912,9 @@ namespace NiL.JS.Core.BaseTypes
                         }
                         var src = this.GetMember(tjo, true, false);
                         if (src.valueType == JSObjectType.Property)
-                            src = ((src.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(this, null);
+                            src = ((src.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(this, null);
                         if (dst.valueType == JSObjectType.Property)
-                            ((dst.oValue as Function[])[0] ?? Function.emptyFunction).Invoke(this, new Arguments() { a0 = src, length = 1 });
+                            ((dst.oValue as PropertyPair).set ?? Function.emptyFunction).Invoke(this, new Arguments() { a0 = src, length = 1 });
                         else
                             dst.Assign(src);
                     }
@@ -1970,9 +1970,9 @@ namespace NiL.JS.Core.BaseTypes
                         var srcItem = this.GetMember(tjo, true, false);
                         var src = srcItem;
                         if (src.valueType == JSObjectType.Property)
-                            src = ((src.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(this, null);
+                            src = ((src.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(this, null);
                         if (dst.valueType == JSObjectType.Property)
-                            ((dst.oValue as Function[])[0] ?? Function.emptyFunction).Invoke(this, new Arguments() { a0 = src, length = 1 });
+                            ((dst.oValue as PropertyPair).set ?? Function.emptyFunction).Invoke(this, new Arguments() { a0 = src, length = 1 });
                         else
                             dst.Assign(src);
                         if (i >= _length + delta)
@@ -1999,7 +1999,7 @@ namespace NiL.JS.Core.BaseTypes
                     }
                     var dst = this.GetMember(tjo, true, false);
                     if (dst.valueType == JSObjectType.Property)
-                        ((dst.oValue as Function[])[0] ?? Function.emptyFunction).Invoke(this, new Arguments() { a0 = args[i], length = 1 });
+                        ((dst.oValue as PropertyPair).set ?? Function.emptyFunction).Invoke(this, new Arguments() { a0 = args[i], length = 1 });
                     else
                         dst.Assign(args[i]);
                 }
@@ -2007,7 +2007,7 @@ namespace NiL.JS.Core.BaseTypes
                     _length += delta;
                     var lenobj = this.GetMember("length", true, false);
                     if (lenobj.valueType == JSObjectType.Property)
-                        ((lenobj.oValue as Function[])[0] ?? Function.emptyFunction).Invoke(this, new Arguments() { a0 = _length, length = 1 });
+                        ((lenobj.oValue as PropertyPair).set ?? Function.emptyFunction).Invoke(this, new Arguments() { a0 = _length, length = 1 });
                     else
                         lenobj.Assign(_length);
                 }
@@ -2068,7 +2068,7 @@ namespace NiL.JS.Core.BaseTypes
                             continue;
                         var v = item.Value;
                         if (v.valueType == JSObjectType.Property)
-                            v = ((v.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(this, null).CloneImpl();
+                            v = ((v.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(this, null).CloneImpl();
                         List<JSObject> list = null;
                         if (!tt.TryGetValue(v, out list))
                             tt[v] = list = new List<JSObject>();
@@ -2093,7 +2093,7 @@ namespace NiL.JS.Core.BaseTypes
                             continue;
                         var v = item.Value;
                         if (v.valueType == JSObjectType.Property)
-                            v = ((v.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(this, null).CloneImpl();
+                            v = ((v.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(this, null).CloneImpl();
                         List<JSObject> list = null;
                         var key = v.ToString();
                         if (!tt.TryGetValue(key, out list))
@@ -2131,7 +2131,7 @@ namespace NiL.JS.Core.BaseTypes
                             item = item.CloneImpl();
                             JSObject value;
                             if (item.valueType == JSObjectType.Property)
-                                value = ((item.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(this, null);
+                                value = ((item.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(this, null);
                             else
                                 value = item;
                             List<JSObject> els = null;
@@ -2242,7 +2242,7 @@ namespace NiL.JS.Core.BaseTypes
             {
                 var lenObj = this["length"];
                 if (lenObj.valueType == JSObjectType.Property)
-                    lenObj = ((lenObj.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(this, null);
+                    lenObj = ((lenObj.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(this, null);
                 long _length = (long)(uint)Tools.JSObjectToDouble(this["length"]);
                 if (_length + args.length > uint.MaxValue)
                     throw new JSException(new RangeError("Invalid array length"));

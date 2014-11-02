@@ -632,9 +632,9 @@ namespace NiL.JS.Core
             if (valueType == JSObjectType.Property)
             {
                 var tempStr = "[";
-                if ((oValue as Function[])[1] != null)
+                if ((oValue as PropertyPair).get != null)
                     tempStr += "Getter";
-                if ((oValue as Function[])[0] != null)
+                if ((oValue as PropertyPair).set != null)
                     tempStr += (tempStr.Length != 1 ? "/Setter" : "Setter");
                 if (tempStr.Length == 1)
                     return "[Invalid Property]";
@@ -981,7 +981,7 @@ namespace NiL.JS.Core
                     var desc = members[member];
                     if (desc.valueType == JSObjectType.Property)
                     {
-                        var getter = (desc.oValue as Function[])[1];
+                        var getter = (desc.oValue as PropertyPair).get;
                         if (getter == null || getter.oValue == null)
                             throw new JSException(new TypeError("Invalid property descriptor for property " + member + " ."));
                         desc = (getter.oValue as Function).Invoke(members, null);
@@ -991,42 +991,42 @@ namespace NiL.JS.Core
                     var value = desc["value"];
                     if (value.valueType == JSObjectType.Property)
                     {
-                        value = ((value.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(desc, null);
+                        value = ((value.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(desc, null);
                         if (value.valueType < JSObjectType.Undefined)
                             value = undefined;
                     }
                     var configurable = desc["configurable"];
                     if (configurable.valueType == JSObjectType.Property)
                     {
-                        configurable = ((configurable.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(desc, null);
+                        configurable = ((configurable.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(desc, null);
                         if (configurable.valueType < JSObjectType.Undefined)
                             configurable = undefined;
                     }
                     var enumerable = desc["enumerable"];
                     if (enumerable.valueType == JSObjectType.Property)
                     {
-                        enumerable = ((enumerable.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(desc, null);
+                        enumerable = ((enumerable.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(desc, null);
                         if (enumerable.valueType < JSObjectType.Undefined)
                             enumerable = undefined;
                     }
                     var writable = desc["writable"];
                     if (writable.valueType == JSObjectType.Property)
                     {
-                        writable = ((writable.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(desc, null);
+                        writable = ((writable.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(desc, null);
                         if (writable.valueType < JSObjectType.Undefined)
                             writable = undefined;
                     }
                     var get = desc["get"];
                     if (get.valueType == JSObjectType.Property)
                     {
-                        get = ((get.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(desc, null);
+                        get = ((get.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(desc, null);
                         if (get.valueType < JSObjectType.Undefined)
                             get = undefined;
                     }
                     var set = desc["set"];
                     if (set.valueType == JSObjectType.Property)
                     {
-                        set = ((set.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(desc, null);
+                        set = ((set.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(desc, null);
                         if (set.valueType < JSObjectType.Undefined)
                             set = undefined;
                     }
@@ -1063,14 +1063,14 @@ namespace NiL.JS.Core
                         Function setter = null, getter = null;
                         if (obj.valueType == JSObjectType.Property)
                         {
-                            setter = (obj.oValue as Function[])[0];
-                            getter = (obj.oValue as Function[])[1];
+                            setter = (obj.oValue as PropertyPair).set;
+                            getter = (obj.oValue as PropertyPair).get;
                         }
                         obj.valueType = JSObjectType.Property;
-                        obj.oValue = new Function[]
+                        obj.oValue = new PropertyPair
                         {
-                            set.isExist ? set.oValue as Function : setter,
-                            get.isExist ? get.oValue as Function : getter
+                            set = set.isExist ? set.oValue as Function : setter,
+                            get = get.isExist ? get.oValue as Function : getter
                         };
                     }
                     else if ((bool)writable) // На тот случай, когда в дескрипторе не указано ни значение, ни геттер/сеттер
@@ -1108,7 +1108,7 @@ namespace NiL.JS.Core
                     var desc = members[memberName];
                     if (desc.valueType == JSObjectType.Property)
                     {
-                        var getter = (desc.oValue as Function[])[1];
+                        var getter = (desc.oValue as PropertyPair).get;
                         if (getter == null || getter.oValue == null)
                             throw new JSException(new TypeError("Invalid property descriptor for property " + memberName + " ."));
                         desc = (getter.oValue as Function).Invoke(members, null);
@@ -1145,42 +1145,42 @@ namespace NiL.JS.Core
             var value = desc["value"];
             if (value.valueType == JSObjectType.Property)
             {
-                value = ((value.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(desc, null);
+                value = ((value.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(desc, null);
                 if (value.valueType < JSObjectType.Undefined)
                     value = undefined;
             }
             var configurable = desc["configurable"];
             if (configurable.valueType == JSObjectType.Property)
             {
-                configurable = ((configurable.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(desc, null);
+                configurable = ((configurable.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(desc, null);
                 if (configurable.valueType < JSObjectType.Undefined)
                     configurable = undefined;
             }
             var enumerable = desc["enumerable"];
             if (enumerable.valueType == JSObjectType.Property)
             {
-                enumerable = ((enumerable.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(desc, null);
+                enumerable = ((enumerable.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(desc, null);
                 if (enumerable.valueType < JSObjectType.Undefined)
                     enumerable = undefined;
             }
             var writable = desc["writable"];
             if (writable.valueType == JSObjectType.Property)
             {
-                writable = ((writable.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(desc, null);
+                writable = ((writable.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(desc, null);
                 if (writable.valueType < JSObjectType.Undefined)
                     writable = undefined;
             }
             var get = desc["get"];
             if (get.valueType == JSObjectType.Property)
             {
-                get = ((get.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(desc, null);
+                get = ((get.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(desc, null);
                 if (get.valueType < JSObjectType.Undefined)
                     get = undefined;
             }
             var set = desc["set"];
             if (set.valueType == JSObjectType.Property)
             {
-                set = ((set.oValue as Function[])[1] ?? Function.emptyFunction).Invoke(desc, null);
+                set = ((set.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(desc, null);
                 if (set.valueType < JSObjectType.Undefined)
                     set = undefined;
             }
@@ -1258,13 +1258,13 @@ namespace NiL.JS.Core
                     throw new JSException(new TypeError("Cannot redefine not configurable property from accessor property to immediate value"));
                 if (obj.valueType == JSObjectType.Property && (obj.attributes & JSObjectAttributesInternal.Field) == 0
                     && set.isExist
-                    && (((obj.oValue as Function[])[0] != null && (obj.oValue as Function[])[0].oValue != set.oValue)
-                        || ((obj.oValue as Function[])[0] == null && set.isDefinded)))
+                    && (((obj.oValue as PropertyPair).set != null && (obj.oValue as PropertyPair).set.oValue != set.oValue)
+                        || ((obj.oValue as PropertyPair).set == null && set.isDefinded)))
                     throw new JSException(new TypeError("Cannot redefine setter of not configurable property."));
                 if (obj.valueType == JSObjectType.Property && (obj.attributes & JSObjectAttributesInternal.Field) == 0
                     && get.isExist
-                    && (((obj.oValue as Function[])[1] != null && (obj.oValue as Function[])[1].oValue != get.oValue)
-                        || ((obj.oValue as Function[])[1] == null && get.isDefinded)))
+                    && (((obj.oValue as PropertyPair).get != null && (obj.oValue as PropertyPair).get.oValue != get.oValue)
+                        || ((obj.oValue as PropertyPair).get == null && get.isDefinded)))
                     throw new JSException(new TypeError("Cannot redefine getter of not configurable property."));
             }
 
@@ -1289,14 +1289,14 @@ namespace NiL.JS.Core
                 Function setter = null, getter = null;
                 if (obj.valueType == JSObjectType.Property)
                 {
-                    setter = (obj.oValue as Function[])[0];
-                    getter = (obj.oValue as Function[])[1];
+                    setter = (obj.oValue as PropertyPair).set;
+                    getter = (obj.oValue as PropertyPair).get;
                 }
                 obj.valueType = JSObjectType.Property;
-                obj.oValue = new Function[]
+                obj.oValue = new PropertyPair
                 {
-                    set.isExist ? set.oValue as Function : setter,
-                    get.isExist ? get.oValue as Function : getter
+                    set = set.isExist ? set.oValue as Function : setter,
+                    get = get.isExist ? get.oValue as Function : getter
                 };
             }
             else if (newProp)
@@ -1535,15 +1535,15 @@ namespace NiL.JS.Core
             if (obj.valueType != JSObjectType.Property || (obj.attributes & JSObjectAttributesInternal.Field) != 0)
             {
                 if (obj.valueType == JSObjectType.Property)
-                    res["value"] = (obj.oValue as Function[])[1].Invoke(source, null);
+                    res["value"] = (obj.oValue as PropertyPair).get.Invoke(source, null);
                 else
                     res["value"] = obj;
                 res["writable"] = obj.valueType < JSObjectType.Undefined || (obj.attributes & JSObjectAttributesInternal.ReadOnly) == 0;
             }
             else
             {
-                res["set"] = (obj.oValue as Function[])[0];
-                res["get"] = (obj.oValue as Function[])[1];
+                res["set"] = (obj.oValue as PropertyPair).set;
+                res["get"] = (obj.oValue as PropertyPair).get;
             }
             res["configurable"] = (obj.attributes & JSObjectAttributesInternal.NotConfigurable) == 0 || (obj.attributes & JSObjectAttributesInternal.DoNotDelete) == 0;
             res["enumerable"] = (obj.attributes & JSObjectAttributesInternal.DoNotEnum) == 0;

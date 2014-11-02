@@ -123,7 +123,7 @@ namespace NiL.JS.Core
         }
 
         internal int threadId;
-        private Context oldContext;
+        internal Context oldContext;
         /// <summary>
         /// Временное хранилище для передачи значений.
         /// <remarks>
