@@ -298,7 +298,6 @@
     <Compile Include="Expressions\LogicalAnd.cs" />
     <Compile Include="Expressions\Xor.cs" />
     <Compile Include="Expressions\Or.cs" />
-    <Compile Include="Expressions\UnsignedShiftLeft.cs" />
     <Compile Include="Expressions\UnsignedShiftRight.cs" />
     <Compile Include="Expressions\SignedShiftRight.cs" />
     <Compile Include="Expressions\SignedShiftLeft.cs" />

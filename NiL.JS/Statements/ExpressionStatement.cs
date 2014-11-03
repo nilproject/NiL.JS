@@ -12,13 +12,18 @@ namespace NiL.JS.Statements
         None = 0x0,
         Assign = 0x10,
         Choice = 0x20,
-        Logic0 = 0x30,
-        Logic1 = 0x40,
-        Logic2 = 0x50,
-        Bit = 0x60,
-        Arithmetic0 = 0x70,
-        Arithmetic1 = 0x80,
-        Unary = 0x90,
+        LOr = 0x30,
+        LAnd = 0x40,
+        Or = 0x50,
+        Xor = 0x60,
+        And = 0x70,
+        Logic1 = 0x80,
+        Logic2 = 0x90,
+        Bit = 0xa0,
+        Arithmetic0 = 0xb0,
+        Arithmetic1 = 0xc0,
+        Unary0 = 0xd0,
+        Unary1 = 0xe0,
         Special = 0xF0
     }
 
@@ -28,40 +33,47 @@ namespace NiL.JS.Statements
         None = OperationTypeGroups.None + 0,
         Assign = OperationTypeGroups.Assign + 0,
         Ternary = OperationTypeGroups.Choice + 0,
-        And = OperationTypeGroups.Logic0 + 0,
-        Or = OperationTypeGroups.Logic0 + 1,
-        Xor = OperationTypeGroups.Logic0 + 2,
-        LogicalAnd = OperationTypeGroups.Logic0 + 3,
-        LogicalOr = OperationTypeGroups.Logic0 + 4,
+
+        LogicalOr = OperationTypeGroups.LOr,
+        LogicalAnd = OperationTypeGroups.LAnd,
+        Or = OperationTypeGroups.Or,
+        Xor = OperationTypeGroups.Xor,
+        And = OperationTypeGroups.And,
+
         Equal = OperationTypeGroups.Logic1 + 0,
         NotEqual = OperationTypeGroups.Logic1 + 1,
         StrictEqual = OperationTypeGroups.Logic1 + 2,
         StrictNotEqual = OperationTypeGroups.Logic1 + 3,
+
         InstanceOf = OperationTypeGroups.Logic2 + 0,
         In = OperationTypeGroups.Logic2 + 1,
         More = OperationTypeGroups.Logic2 + 2,
         Less = OperationTypeGroups.Logic2 + 3,
         MoreOrEqual = OperationTypeGroups.Logic2 + 4,
         LessOrEqual = OperationTypeGroups.Logic2 + 5,
+
         SignedShiftLeft = OperationTypeGroups.Bit + 0,
         SignedShiftRight = OperationTypeGroups.Bit + 1,
-        UnsignedShiftLeft = OperationTypeGroups.Bit + 2,
-        UnsignedShiftRight = OperationTypeGroups.Bit + 3,
+        UnsignedShiftRight = OperationTypeGroups.Bit + 2,
+
         Addition = OperationTypeGroups.Arithmetic0 + 0,
         Substract = OperationTypeGroups.Arithmetic0 + 1,
         Multiply = OperationTypeGroups.Arithmetic1 + 0,
         Module = OperationTypeGroups.Arithmetic1 + 1,
         Division = OperationTypeGroups.Arithmetic1 + 2,
-        Incriment = OperationTypeGroups.Unary + 0,
-        Decriment = OperationTypeGroups.Unary + 1,
-        Negative = OperationTypeGroups.Unary + 2,
-        Positive = OperationTypeGroups.Unary + 3,
-        LogicalNot = OperationTypeGroups.Unary + 4,
-        Not = OperationTypeGroups.Unary + 5,
+
+        Negative = OperationTypeGroups.Unary0 + 0,
+        Positive = OperationTypeGroups.Unary0 + 1,
+        LogicalNot = OperationTypeGroups.Unary0 + 2,
+        Not = OperationTypeGroups.Unary0 + 3,
+        TypeOf = OperationTypeGroups.Unary0 + 4,
+        Delete = OperationTypeGroups.Unary0 + 5,
+
+        Incriment = OperationTypeGroups.Unary1 + 0,
+        Decriment = OperationTypeGroups.Unary1 + 1,
+
         Call = OperationTypeGroups.Special + 0,
-        TypeOf = OperationTypeGroups.Special + 1,
         New = OperationTypeGroups.Special + 2,
-        Delete = OperationTypeGroups.Special + 3,
         Yield = OperationTypeGroups.Special + 4
     }
 
@@ -179,11 +191,6 @@ namespace NiL.JS.Statements
                             fastImpl = new Expressions.NotEqual(first, second);
                             break;
                         }
-                    case OperationType.UnsignedShiftLeft:
-                        {
-                            fastImpl = new Expressions.UnsignedShiftLeft(first, second);
-                            break;
-                        }
                     case OperationType.UnsignedShiftRight:
                         {
                             fastImpl = new Expressions.UnsignedShiftRight(first, second);
@@ -297,7 +304,7 @@ namespace NiL.JS.Statements
                     var topType = (int)(types.Peek() as ExpressionStatement)._type;
                     if (((topType & (int)OperationTypeGroups.Special) > ((int)cur._type & (int)OperationTypeGroups.Special))
                         || (((topType & (int)OperationTypeGroups.Special) == ((int)cur._type & (int)OperationTypeGroups.Special))
-                            && (((int)cur._type & (int)OperationTypeGroups.Special) > 0x10)))
+                            && (((int)cur._type & (int)OperationTypeGroups.Special) > (int)OperationTypeGroups.Choice)))
                     {
                         var stat = types.Pop() as ExpressionStatement;
                         stat.second = stats.Pop();
@@ -734,13 +741,7 @@ namespace NiL.JS.Statements
                         }
                     case '+':
                         {
-                            if (forUnary)
-                            {
-                                binary = false;
-                                repeat = false;
-                                i = rollbackPos;
-                                break;
-                            }
+
                             if (state.Code[i + 1] == '+')
                             {
                                 if (rollbackPos != i)
@@ -756,6 +757,13 @@ namespace NiL.JS.Statements
                                 repeat = true;
                                 i += 2;
                             }
+                            else if (forUnary)
+                            {
+                                binary = false;
+                                repeat = false;
+                                i = rollbackPos;
+                                break;
+                            }
                             else
                             {
                                 binary = true;
@@ -770,13 +778,7 @@ namespace NiL.JS.Statements
                         }
                     case '-':
                         {
-                            if (forUnary)
-                            {
-                                binary = false;
-                                repeat = false;
-                                i = rollbackPos;
-                                break;
-                            }
+
                             if (state.Code[i + 1] == '-')
                             {
                                 if (rollbackPos != i)
@@ -791,6 +793,13 @@ namespace NiL.JS.Statements
                                 //first = new OperatorStatement() { second = first, _type = OperationType.Decriment, Position = first.Position, Length = i + 2 - first.Position };
                                 repeat = true;
                                 i += 2;
+                            }
+                            else if (forUnary)
+                            {
+                                binary = false;
+                                repeat = false;
+                                i = rollbackPos;
+                                break;
                             }
                             else
                             {
@@ -949,13 +958,7 @@ namespace NiL.JS.Statements
                             if (state.Code[i + 1] == '<')
                             {
                                 i++;
-                                if (state.Code[i + 1] == '<')
-                                {
-                                    type = OperationType.UnsignedShiftLeft;
-                                    i++;
-                                }
-                                else
-                                    type = OperationType.SignedShiftLeft;
+                                type = OperationType.SignedShiftLeft;
                             }
                             else
                             {
