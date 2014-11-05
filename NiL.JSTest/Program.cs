@@ -276,7 +276,7 @@ test.f(true);
             Context.GlobalContext.DebuggerCallback += (sender, e) => System.Diagnostics.Debugger.Break();
             Context.GlobalContext.DefineVariable("alert").Assign(new ExternalFunction((t, a) => { System.Windows.Forms.MessageBox.Show(a[0].ToString()); return JSObject.Undefined; }));
 
-            int mode = 101
+            int mode = 100
                    ;
             switch (mode)
             {
@@ -349,6 +349,16 @@ test.f(true);
                 case 5:
                     {
                         runFile(@"coffee-script.js");
+                        break;
+                    }
+                case 6:
+                    {
+                        runFile(@"linq.js");
+                        break;
+                    }
+                case 7:
+                    {
+                        runFile(@"arraytests.js");
                         break;
                     }
                 case 151:

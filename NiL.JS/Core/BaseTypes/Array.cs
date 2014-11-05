@@ -1136,12 +1136,12 @@ namespace NiL.JS.Core.BaseTypes
             {
                 if (data.Length == 0)
                     return notExists;
-                var res = data[(int)(data.Length - 1)] ?? this[(data.Length - 1).ToString()];
                 int newLen = (int)(data.Length - 1);
+                var res = data[newLen] ?? this[newLen.ToString()];
+                if (res.valueType == JSObjectType.Property)
+                    res = ((res.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(this, null);
                 data.RemoveAt(newLen);
                 data[newLen - 1] = data[newLen - 1];
-                if (res.valueType == JSObjectType.Property)
-                    res = ((res.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(this, null).CloneImpl();
                 return res;
             }
             else
@@ -1150,11 +1150,10 @@ namespace NiL.JS.Core.BaseTypes
                 if (length <= 0 || length > uint.MaxValue)
                     return notExists;
                 length--;
-                this["length"] = length;
                 var tres = this.GetMember(Context.CurrentContext.wrap(length.ToString()), true, false);
                 JSObject res;
                 if (tres.valueType == JSObjectType.Property)
-                    res = ((tres.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(this, null).CloneImpl();
+                    res = ((tres.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(this, null);
                 else
                     res = tres.CloneImpl();
                 if ((tres.attributes & JSObjectAttributesInternal.DoNotDelete) == 0)
@@ -1162,6 +1161,7 @@ namespace NiL.JS.Core.BaseTypes
                     tres.oValue = null;
                     tres.valueType = JSObjectType.NotExistsInObject;
                 }
+                this["length"] = length;
                 return res;
             }
         }
@@ -1731,7 +1731,13 @@ namespace NiL.JS.Core.BaseTypes
         [DoNotEnumerate]
         [ParametersCount(2)]
         [AllowUnsafeCall(typeof(JSObject))]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public JSObject splice(Arguments args)
+        {
+            return spliceImpl(args, true);
+        }
+
+        private JSObject spliceImpl(Arguments args, bool needResult)
         {
             if (args == null)
                 throw new ArgumentNullException("args");
@@ -1758,11 +1764,11 @@ namespace NiL.JS.Core.BaseTypes
                 if (pos1 < 0)
                     pos1 = 0;
                 if (pos1 == 0 && args.length <= 2)
-                    return new Array();
+                    return needResult ? new Array() : null;
                 pos0 = (uint)System.Math.Min(pos0, data.Length);
                 pos1 += pos0;
                 pos1 = (uint)System.Math.Min(pos1, data.Length);
-                var res = new Array((int)(pos1 - pos0));
+                var res = needResult ? new Array((int)(pos1 - pos0)) : null;
                 var delta = args.length - (pos1 - pos0) - 2;
                 List<KeyValuePair<int, JSObject>> relocated = null;
                 if (delta > 0)
@@ -1784,7 +1790,10 @@ namespace NiL.JS.Core.BaseTypes
                     if (value.valueType == JSObjectType.Property)
                         value = ((value.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(this, null).CloneImpl();
                     if (node.Key < pos1)
-                        res.data[(int)(node.Key - pos0)] = value;
+                    {
+                        if (needResult)
+                            res.data[(int)(node.Key - pos0)] = value;
+                    }
                     else
                     {
                         var t = data[(int)(node.Key + delta)];
@@ -1841,7 +1850,7 @@ namespace NiL.JS.Core.BaseTypes
                 pos1 += pos0;
                 pos1 = (uint)System.Math.Min(pos1, _length);
                 var delta = System.Math.Max(0, args.length - 2) - (pos1 - pos0);
-                var res = new Array();
+                var res = needResult ? new Array() : null;
                 long prewKey = -1;
                 foreach (var keyS in iterablyEnum(_length, this))
                 {
@@ -1856,7 +1865,8 @@ namespace NiL.JS.Core.BaseTypes
                                 value = ((value.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(__proto__, null).CloneImpl();
                             else
                                 value = value.CloneImpl();
-                            res.data[(int)i] = value.CloneImpl();
+                            if (needResult)
+                                res.data[(int)i] = value.CloneImpl();
                         }
                     }
                     if (keyS.Key >= pos1)
@@ -1868,11 +1878,12 @@ namespace NiL.JS.Core.BaseTypes
                             value = ((value.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(this, null).CloneImpl();
                         else
                             value = value.CloneImpl();
-                        res.data[(int)(keyS.Key - pos0)] = value;
+                        if (needResult)
+                            res.data[(int)(keyS.Key - pos0)] = value;
                     }
                     prewKey = keyS.Key;
                 }
-                if (prewKey == -1)
+                if (prewKey == -1 && needResult)
                 {
                     for (var i = 0; i < (pos1 - pos0); i++)
                         res.Add(__proto__[(i + pos0).ToString()].CloneImpl());
@@ -2197,7 +2208,7 @@ namespace NiL.JS.Core.BaseTypes
             args.length += 2;
             args.a0 = 0;
             args.a1 = args.a0;
-            splice(args);
+            spliceImpl(args, false);
             return getLengthOfIterably(this, false);
         }
 

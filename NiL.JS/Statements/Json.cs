@@ -51,9 +51,7 @@ namespace NiL.JS.Statements
             int pos = 0;
             while (state.Code[i] != '}')
             {
-                do
-                    i++;
-                while (char.IsWhiteSpace(state.Code[i]));
+                do i++; while (char.IsWhiteSpace(state.Code[i]));
                 int s = i;
                 if (state.Code[i] == '}')
                     break;
@@ -133,9 +131,7 @@ namespace NiL.JS.Statements
                         i++;
                     if (state.Code[i] != ':')
                         return new ParseResult();
-                    do
-                        i++;
-                    while (char.IsWhiteSpace(state.Code[i]));
+                    do i++; while (char.IsWhiteSpace(state.Code[i]));
                     var initializator = ExpressionStatement.Parse(state, ref i, false).Statement;
                     CodeNode aei = null;
                     flds.TryGetValue(fieldName, out aei);

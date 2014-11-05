@@ -699,7 +699,7 @@ namespace NiL.JS.Statements
                             position = i;
                             var threads = new CodeNode[]
                                 {
-                                    Parser.Parse(state, ref i, 1),
+                                    ExpressionStatement.Parse(state, ref i, true, false, false, true).Statement,
                                     null
                                 };
                             if (state.Code[i] != ':')
@@ -708,7 +708,7 @@ namespace NiL.JS.Statements
                                 i++;
                             while (char.IsWhiteSpace(state.Code[i]));
                             second = new Constant(new JSObject() { valueType = JSObjectType.Object, oValue = threads }) { Position = position };
-                            threads[1] = Parser.Parse(state, ref i, 1);
+                            threads[1] = ExpressionStatement.Parse(state, ref i, processComma, false, false, true).Statement;
                             second.Length = i - second.Position;
                             binary = false;
                             repeat = false;
