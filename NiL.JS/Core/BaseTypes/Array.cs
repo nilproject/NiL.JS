@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using NiL.JS.Core.Modules;
 using NiL.JS.Core.TypeProxing;
 
@@ -1738,6 +1739,7 @@ namespace NiL.JS.Core.BaseTypes
                 return this;
             if (this.GetType() == typeof(Array)) // Да, Array sealed, но тут и не такое возможно.
             {
+                var _length = data.Length;
                 long pos0 = (long)System.Math.Min(Tools.JSObjectToDouble(args[0]), data.Length);
                 long pos1 = 0;
                 if (args.Length > 1)
@@ -1765,45 +1767,36 @@ namespace NiL.JS.Core.BaseTypes
                 List<KeyValuePair<int, JSObject>> relocated = null;
                 if (delta > 0)
                     relocated = new List<KeyValuePair<int, JSObject>>();
-                foreach (var node in (data as IEnumerable<KeyValuePair<int, JSObject>>))
+                foreach (var node in (delta > 0 ? data.Reversed : (data as IEnumerable<KeyValuePair<int, JSObject>>)))
                 {
-                    if (node.Value != null && node.Value.isExist && node.Key >= pos0)
+                    if (node.Key < pos0)
+                        continue;
+                    if (node.Key >= pos1 && delta == 0)
+                        break;
+                    var value = node.Value;
+                    if (value == null || !value.isExist)
                     {
-                        if (node.Key >= pos1 && delta == 0)
-                            break;
-                        var value = node.Value;
-                        if (value != null && value.valueType == JSObjectType.Property)
-                            value = ((value.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(this, null).CloneImpl();
-                        if (node.Key < pos1)
-                            res.data[(int)(node.Key - pos0)] = value;
-                        else
-                        {
-                            if (delta > 0)
-                                relocated.Add(new KeyValuePair<int, JSObject>(node.Key, value));
-                            else
-                            {
-                                var t = data[(int)(node.Key + delta)];
-                                if (t != null && t.valueType == JSObjectType.Property)
-                                    ((t.oValue as PropertyPair).set ?? Function.emptyFunction).Invoke(this, new Arguments() { a0 = value, length = 1 });
-                                else
-                                    data[(int)(node.Key + delta)] = value;
-                            }
-                        }
+                        value = __proto__[((uint)node.Key).ToString()];
+                        if (!value.isExist)
+                            continue;
+                        value = value.CloneImpl();
                     }
-                }
-                if (delta > 0)
-                {
-                    for (var i = 0; i < relocated.Count; i++)
+                    if (value.valueType == JSObjectType.Property)
+                        value = ((value.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(this, null).CloneImpl();
+                    if (node.Key < pos1)
+                        res.data[(int)(node.Key - pos0)] = value;
+                    else
                     {
-                        var t = data[(int)(relocated[i].Key + delta)];
+                        var t = data[(int)(node.Key + delta)];
                         if (t != null && t.valueType == JSObjectType.Property)
-                            ((t.oValue as PropertyPair).set ?? Function.emptyFunction).Invoke(this, new Arguments() { a0 = relocated[i].Value, length = 1 });
+                            ((t.oValue as PropertyPair).set ?? Function.emptyFunction).Invoke(this, new Arguments() { a0 = value, length = 1 });
                         else
-                            data[(int)(relocated[i].Key + delta)] = relocated[i].Value;
+                            data[(int)(node.Key + delta)] = value;
                     }
                 }
-                else while (delta++ < 0)
+                if (delta < 0) do
                         data.RemoveAt((int)(data.Length - 1));
+                    while (++delta < 0);
                 for (var i = 2; i < args.length; i++)
                     if (args[i].isExist)
                     {
@@ -2199,101 +2192,13 @@ namespace NiL.JS.Core.BaseTypes
         [AllowUnsafeCall(typeof(JSObject))]
         public JSObject unshift(Arguments args)
         {
-            if (args == null)
-                throw new ArgumentNullException();
-            if (this.GetType() == typeof(Array))
-            {
-                if (args.length == 0)
-                    return data.Length;
-                if (data.Length + args.length > uint.MaxValue)
-                    throw new JSException(new RangeError("Invalid array length"));
-                var len = data.Length;
-                var prewIndex = -1;
-                foreach (var node in data.Reversed)
-                {
-                    if (prewIndex == -1)
-                        prewIndex = node.Key;
-                    else if (prewIndex - node.Key > 1)
-                    {
-                        for (var i = node.Key + 1; i < prewIndex; i++)
-                        {
-                            var t = __proto__[i.ToString()];
-                            if (t.isExist)
-                                data[(int)(i + args.Length)] = t.CloneImpl();
-                        }
-                    }
-                    data[(int)node.Key] = null;
-                    if (node.Value != null && node.Value.isExist)
-                        data[(int)(node.Key + args.Length)] = node.Value;
-                    else
-                    {
-                        var t = __proto__[node.Key.ToString()];
-                        if (t.isExist)
-                            data[(int)(node.Key + args.Length)] = t.CloneImpl();
-                    }
-                    prewIndex = node.Key;
-                }
-                data[(int)(args.Length + len - 1)] = data[(int)(args.Length + len - 1)];
-                for (var i = 0; i < args.Length; i++)
-                    data[i] = args[i].CloneImpl();
-                return length;
-            }
-            else
-            {
-                var lenObj = this["length"];
-                if (lenObj.valueType == JSObjectType.Property)
-                    lenObj = ((lenObj.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(this, null);
-                long _length = (long)(uint)Tools.JSObjectToDouble(this["length"]);
-                if (_length + args.length > uint.MaxValue)
-                    throw new JSException(new RangeError("Invalid array length"));
-                this["length"] = lenObj = _length;
-                if (args.length == 0)
-                    return lenObj;
-                List<KeyValuePair<KeyValuePair<long, string>, JSObject>> keysToRemove = new List<KeyValuePair<KeyValuePair<long, string>, JSObject>>();
-                long prewKey = -1;
-                foreach (var key in this)
-                {
-                    var pindex = 0;
-                    var dindex = 0.0;
-                    if (Tools.ParseNumber(key, ref pindex, out dindex) && (pindex == key.Length)
-                        && dindex < _length
-                        && (long)dindex == dindex)
-                    {
-                        if (prewKey == -1)
-                            prewKey = (uint)dindex;
-                        if (dindex - prewKey > 1)
-                        {
-                            for (var i = prewKey + 1; i < dindex; i++)
-                            {
-                                var t = __proto__[i.ToString()];
-                                if (t.isExist)
-                                    this[(i + args.Length).ToString()] = t.CloneImpl();
-                            }
-                        }
-                        keysToRemove.Add(new KeyValuePair<KeyValuePair<long, string>, JSObject>(new KeyValuePair<long, string>((long)dindex, key), this[key].CloneImpl()));
-                    }
-                }
-                if (prewKey == -1)
-                {
-                    for (var i = 0; i < _length; i++)
-                    {
-                        var t = __proto__[i.ToString()];
-                        if (t.isExist)
-                            this[(i + args.Length).ToString()] = t.CloneImpl();
-                    }
-                }
-                for (var i = keysToRemove.Count; i-- > 0; )
-                    this[keysToRemove[i].Key.Value] = notExists;
-                for (var i = keysToRemove.Count; i-- > 0; )
-                {
-                    this[(keysToRemove[i].Key.Key + args.length).ToString(CultureInfo.InvariantCulture)] = keysToRemove[i].Value;
-                }
-                for (var i = 0; i < args.Length; i++)
-                    this[i.ToString()] = args[i].CloneImpl();
-                _length += args.length;
-                this["length"] = _length;
-                return _length;
-            }
+            for (var i = args.length; i-- > 0; )
+                args[i + 2] = args[i];
+            args.length += 2;
+            args.a0 = 0;
+            args.a1 = args.a0;
+            splice(args);
+            return getLengthOfIterably(this, false);
         }
 
         [Hidden]

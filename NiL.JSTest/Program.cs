@@ -276,7 +276,7 @@ test.f(true);
             Context.GlobalContext.DebuggerCallback += (sender, e) => System.Diagnostics.Debugger.Break();
             Context.GlobalContext.DefineVariable("alert").Assign(new ExternalFunction((t, a) => { System.Windows.Forms.MessageBox.Show(a[0].ToString()); return JSObject.Undefined; }));
 
-            int mode = 2//154
+            int mode = 154
                    ;
             switch (mode)
             {
@@ -551,12 +551,12 @@ test.f(true);
                     _("Process " + fls[i]);
                     var f = new FileStream(fls[i], FileMode.Open, FileAccess.Read);
                     var sr = new StreamReader(f);
-                    var script = new Script(sr.ReadToEnd());
+                    var script = sr.ReadToEnd();
                     sr.Dispose();
                     f.Dispose();
 
                     sw.Restart();
-                    script.Invoke();
+                    new Script(script).Invoke();
                     sw.Stop();
                     total += sw.Elapsed;
                     _(sw.Elapsed.ToString());
