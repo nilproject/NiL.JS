@@ -189,6 +189,10 @@ namespace NiL.JS.Statements
             }
         }
 
+        internal bool isClear;
+        internal bool containsEval;
+        internal bool containsArguments;
+        internal bool isRecursive;
         internal bool containsWith;
         internal VariableReference[] arguments;
         internal CodeBlock body;
@@ -541,7 +545,28 @@ namespace NiL.JS.Statements
                     }
                 }
             }
+            checkUsings();
             return false;
+        }
+
+        private void checkUsings()
+        {
+            isClear = true;
+            if (body == null
+                || body.body == null
+                || body.body.Length == 0)
+                return;
+            for (var i = 0; i < body.variables.Length; i++)
+            {
+                containsArguments |= body.variables[i].name == "arguments";
+                containsEval |= body.variables[i].name == "eval";
+                isRecursive |= body.variables[i].name == name;
+                isClear &= !containsEval;
+            }
+            if (body.localVariables != null)
+                for (var i = 0; i < body.localVariables.Length; i++)
+                    isClear &= body.localVariables[i].Inititalizator == null;
+            isClear &= body.variables.Length == (body.localVariables == null ? 0 : body.localVariables.Length) + arguments.Length;
         }
 
         public override string ToString()

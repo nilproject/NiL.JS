@@ -19,6 +19,7 @@ namespace NiL.JS.Statements
 #if (NET40 || INLINE) && JIT
         internal Func<Context, JSObject> compiledVersion;
 #endif
+        private bool builded;
         internal VariableDescriptor[] variables;
         internal VariableDescriptor[] localVariables;
         internal CodeNode[] body;
@@ -315,6 +316,8 @@ namespace NiL.JS.Statements
 
         internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
+            if (builded)
+                return false;
             if (this.variables != null)
             {
                 for (var i = this.variables.Length; i-- > 0; )
@@ -335,12 +338,23 @@ namespace NiL.JS.Statements
             }
 
             for (int i = body.Length; i-- > 0; )
-            {
-                bool needRemove = (body[i] is FunctionStatement);// && depth >= 0;
-                Parser.Build(ref body[i], depth < 0 ? 2 : Math.Max(1, depth), variables, this.strict);
-                if (needRemove)
+                if (body[i] is FunctionStatement)
+                {
+                    Parser.Build(ref body[i], depth < 0 ? 2 : Math.Max(1, depth), variables, this.strict);
                     body[i] = null;
+                }
+
+            for (int i = body.Length; i-- > 0; )
+            {
+                if (body[i] != null)
+                {
+                    if (body[i] is EmptyStatement)
+                        body[i] = null;
+                    else
+                        Parser.Build(ref body[i], depth < 0 ? 2 : Math.Max(1, depth), variables, this.strict);
+                }
             }
+
             int f = body.Length, t = body.Length - 1;
             for (; f-- > 0; )
             {
@@ -353,25 +367,17 @@ namespace NiL.JS.Statements
                     t--;
             }
 
-            if (t >= 0)
-            {
-                var newBody = new CodeNode[body.Length - t - 1];
-                f = 0;
-                while (++t < body.Length)
-                    newBody[f++] = body[t];
-                body = newBody;
-            }
-
             if (depth > 0)
             {
                 variables = null;
-                if (body.Length == 1)
-                    _this = body[0];
-                if (body.Length == 0)
+                if (body.Length == 1 || (t >= 0 && (body.Length - t - 1) == 1))
+                    _this = body[body.Length - 1] ?? EmptyStatement.Instance; // блок не должен быть null, так как он может быть вложен в выражение
+                else if (body.Length == 0)
                     _this = EmptyStatement.Instance;
             }
             else
             {
+
                 if (body.Length > 0 && body[0] is Call)
                     (body[0] as Call).allowTCO = true;
                 if (variables.Count != 0 &&
@@ -398,6 +404,15 @@ namespace NiL.JS.Statements
                 compiledVersion = JITHelpers.compile(this, depth >= 0);
 #endif
             }
+            if (t >= 0 && this == _this)
+            {
+                var newBody = new CodeNode[body.Length - t - 1];
+                f = 0;
+                while (++t < body.Length)
+                    newBody[f++] = body[t];
+                body = newBody;
+            }
+            builded = true;
             return false;
         }
 

@@ -38,6 +38,31 @@ namespace NiL.JS.Expressions
                     _this = new Constant(false);
                     return true;
                 }
+                if (first.GetType() == typeof(Equal))
+                {
+                    _this = new NotEqual((first as Expression).FirstOperand, (first as Expression).SecondOperand);
+                    return true;
+                }
+                if (first.GetType() == typeof(More))
+                {
+                    _this = new LessOrEqual((first as Expression).FirstOperand, (first as Expression).SecondOperand);
+                    return true;
+                }
+                if (first.GetType() == typeof(Less))
+                {
+                    _this = new MoreOrEqual((first as Expression).FirstOperand, (first as Expression).SecondOperand);
+                    return true;
+                }
+                if (first.GetType() == typeof(MoreOrEqual))
+                {
+                    _this = new Less((first as Expression).FirstOperand, (first as Expression).SecondOperand);
+                    return true;
+                }
+                if (first.GetType() == typeof(LessOrEqual))
+                {
+                    _this = new More((first as Expression).FirstOperand, (first as Expression).SecondOperand);
+                    return true;
+                }
             }
             return res;
         }

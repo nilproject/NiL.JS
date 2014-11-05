@@ -152,8 +152,8 @@ namespace NiL.JS.Statements
             do
             {
 #if DEV
-                    if (context.debugging && !(body is CodeBlock))
-                        context.raiseDebugger(body);
+                if (context.debugging && !(body is CodeBlock))
+                    context.raiseDebugger(body);
 #endif
                 if (body != null)
                 {
@@ -174,14 +174,14 @@ namespace NiL.JS.Statements
                 if (post == null)
                     continue;
 #if DEV
-                    if (context.debugging)
-                    {
-                        context.raiseDebugger(post);
-                        post.Evaluate(context);
-                        context.raiseDebugger(condition);
-                    }
-                    else
-                        post.Evaluate(context);
+                if (context.debugging)
+                {
+                    context.raiseDebugger(post);
+                    post.Evaluate(context);
+                    context.raiseDebugger(condition);
+                }
+                else
+                    post.Evaluate(context);
 #else
                 post.Evaluate(context);
 #endif
@@ -205,11 +205,81 @@ namespace NiL.JS.Statements
         internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
             Parser.Build(ref init, 1, variables, strict);
+            if (init is VariableDefineStatement
+                && (init as VariableDefineStatement).initializators.Length == 1)
+                init = (init as VariableDefineStatement).initializators[0];
             Parser.Build(ref condition, 2, variables, strict);
             Parser.Build(ref post, 1, variables, strict);
             Parser.Build(ref body, System.Math.Max(1, depth), variables, strict);
             if (condition == null)
                 condition = new Constant(Core.BaseTypes.Boolean.True);
+            else if ((condition is Expressions.Expression)
+                && (condition as Expressions.Expression).IsContextIndependent
+                && !(bool)condition.Evaluate(null))
+            {
+                _this = init;
+                return false;
+            }
+            else if (body == null || body is EmptyStatement) // initial solution. Will extended
+            {
+                VariableReference variable = null;
+                Constant limit = null;
+                if (condition is NiL.JS.Expressions.Less)
+                {
+                    variable = (condition as NiL.JS.Expressions.Less).FirstOperand as VariableReference;
+                    limit = (condition as NiL.JS.Expressions.Less).SecondOperand as Constant;
+                }
+                else if (condition is NiL.JS.Expressions.More)
+                {
+                    variable = (condition as NiL.JS.Expressions.Less).SecondOperand as VariableReference;
+                    limit = (condition as NiL.JS.Expressions.Less).FirstOperand as Constant;
+                }
+                else if (condition is NiL.JS.Expressions.NotEqual)
+                {
+                    variable = (condition as NiL.JS.Expressions.Less).SecondOperand as VariableReference;
+                    limit = (condition as NiL.JS.Expressions.Less).FirstOperand as Constant;
+                    if (variable == null && limit == null)
+                    {
+                        variable = (condition as NiL.JS.Expressions.Less).FirstOperand as VariableReference;
+                        limit = (condition as NiL.JS.Expressions.Less).SecondOperand as Constant;
+                    }
+                }
+                if (variable != null
+                    && limit != null
+                    && post is NiL.JS.Expressions.Incriment
+                    && ((post as NiL.JS.Expressions.Incriment).FirstOperand as VariableReference).descriptor == variable.descriptor)
+                {
+                    if (variable.functionDepth >= 0 && variable.descriptor.defineDepth >= 0)
+                    {
+                        if (init is NiL.JS.Expressions.Assign
+                            && (init as NiL.JS.Expressions.Assign).FirstOperand is GetVariableStatement
+                            && ((init as NiL.JS.Expressions.Assign).FirstOperand as GetVariableStatement).descriptor == variable.descriptor)
+                        {
+                            var value = (init as NiL.JS.Expressions.Assign).SecondOperand;
+                            if (value is Constant)
+                            {
+                                var vvalue = value.Evaluate(null);
+                                var lvalue = limit.Evaluate(null);
+                                if ((vvalue.valueType == JSObjectType.Int
+                                    || vvalue.valueType == JSObjectType.Bool
+                                    || vvalue.valueType == JSObjectType.Double)
+                                    && (lvalue.valueType == JSObjectType.Int
+                                    || lvalue.valueType == JSObjectType.Bool
+                                    || lvalue.valueType == JSObjectType.Double))
+                                {
+                                    if (!(bool)NiL.JS.Expressions.Less.Check(vvalue, lvalue))
+                                    {
+                                        _this = init;
+                                        return false;
+                                    }
+                                    _this = new CodeBlock(new[] { new NiL.JS.Expressions.Assign(variable, limit), init }, false);
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
             return false;
         }
 

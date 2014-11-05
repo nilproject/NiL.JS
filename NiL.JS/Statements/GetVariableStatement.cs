@@ -62,7 +62,8 @@ namespace NiL.JS.Statements
             VariableDescriptor desc = null;
             if (!variables.TryGetValue(variableName, out desc) || desc == null)
             {
-                descriptor = new VariableDescriptor(this, false, functionDepth);
+                desc = new VariableDescriptor(this, false, functionDepth);
+                descriptor = desc;
                 variables[variableName] = this.Descriptor;
             }
             else
@@ -70,6 +71,8 @@ namespace NiL.JS.Statements
                 desc.references.Add(this);
                 descriptor = desc;
             }
+            if (depth >= 0 && depth < 2 && desc.Defined)
+                _this = null;
             return false;
         }
     }

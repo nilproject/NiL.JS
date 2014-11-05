@@ -11,49 +11,53 @@ namespace NiL.JS.Statements
     [Serializable]
     public sealed class VariableDefineStatement : CodeNode
     {
-        private sealed class AllowWriteCN : VariableReference
+        private sealed class AllowWriteCN : CodeNode
         {
-            internal readonly VariableReference prototype;
+            internal readonly VariableReference variable;
+            internal readonly CodeNode source;
 
-            internal AllowWriteCN(VariableReference proto)
+            internal AllowWriteCN(VariableReference variable, CodeNode source)
             {
-                prototype = proto;
+                this.variable = variable;
+                this.source = source;
             }
 
             internal override JSObject Evaluate(Context context)
             {
-                var res = prototype.Evaluate(context);
-                if ((res.attributes & JSObjectAttributesInternal.SystemObject) == 0)
-                    res.attributes &= ~JSObjectAttributesInternal.ReadOnly;
+                var res = source.Evaluate(context);
+                var v = variable.Evaluate(context);
+                if ((v.attributes & JSObjectAttributesInternal.SystemObject) == 0)
+                    v.attributes &= ~JSObjectAttributesInternal.ReadOnly;
                 return res;
             }
 
             internal override JSObject EvaluateForAssing(Context context)
             {
-                var res = prototype.EvaluateForAssing(context);
-                if ((res.attributes & JSObjectAttributesInternal.SystemObject) == 0)
-                    res.attributes &= ~JSObjectAttributesInternal.ReadOnly;
+                var res = source.EvaluateForAssing(context);
+                var v = variable.Evaluate(context);
+                if ((v.attributes & JSObjectAttributesInternal.SystemObject) == 0)
+                    v.attributes &= ~JSObjectAttributesInternal.ReadOnly;
                 return res;
             }
 
             internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
             {
-                return prototype.Build(ref _this, depth, variables, strict);
+                return variable.Build(ref _this, depth, variables, strict);
             }
 
             protected override CodeNode[] getChildsImpl()
             {
-                return prototype.Childs;
+                return variable.Childs;
             }
 
-            public override string Name
+            public override string ToString()
             {
-                get { return prototype.Name; }
+                return source.ToString();
             }
         }
-
+        internal int functionDepth;
         internal VariableDescriptor[] variables;
-        internal readonly CodeNode[] initializators;
+        internal CodeNode[] initializators;
         internal readonly string[] names;
         internal readonly bool isConst;
 
@@ -61,18 +65,20 @@ namespace NiL.JS.Statements
         public CodeNode[] Initializators { get { return initializators; } }
         public string[] Names { get { return names; } }
 
-        internal VariableDefineStatement(string name, CodeNode init, bool isConst)
+        internal VariableDefineStatement(string name, CodeNode init, bool isConst, int functionDepth)
         {
             names = new[] { name };
             initializators = new[] { init };
             this.isConst = isConst;
+            this.functionDepth = functionDepth;
         }
 
-        private VariableDefineStatement(string[] names, CodeNode[] initializators, bool isConst)
+        private VariableDefineStatement(string[] names, CodeNode[] initializators, bool isConst, int functionDepth)
         {
             this.initializators = initializators;
             this.names = names;
             this.isConst = isConst;
+            this.functionDepth = functionDepth;
         }
 
         internal static ParseResult Parse(ParsingState state, ref int index)
@@ -131,19 +137,24 @@ namespace NiL.JS.Statements
                     if (i == state.Code.Length)
                         throw new JSException((new SyntaxError("Unexpected end of line in variable defenition.")));
                     VariableReference accm = new GetVariableStatement(name, state.functionsDepth) { Position = s, Length = name.Length, functionDepth = state.functionsDepth };
+                    CodeNode source = ExpressionStatement.Parse(state, ref i, false).Statement;
                     if (isConst)
-                        accm = new AllowWriteCN(accm);
+                        source = new AllowWriteCN(accm, source);
                     initializator.Add(
                         new Assign(
                             accm,
-                            ExpressionStatement.Parse(state, ref i, false).Statement)
+                            source)
                         {
                             Position = s,
                             Length = i - s
                         });
                 }
                 else
+                {
+                    if (isConst)
+                        throw new JSException(new SyntaxError("Constant must contain value at " + Tools.PositionToTextcord(state.Code, i)));
                     initializator.Add(new GetVariableStatement(name, state.functionsDepth) { Position = s, Length = name.Length, functionDepth = state.functionsDepth });
+                }
                 if (i >= state.Code.Length)
                     break;
                 s = i;
@@ -168,10 +179,10 @@ namespace NiL.JS.Statements
             return new ParseResult()
             {
                 IsParsed = true,
-                Statement = new VariableDefineStatement(names.ToArray(), inits, isConst)
+                Statement = new VariableDefineStatement(names.ToArray(), inits, isConst, state.functionsDepth)
                 {
                     Position = pos,
-                    Length = index - pos,
+                    Length = index - pos
                 }
             };
         }
@@ -190,10 +201,9 @@ namespace NiL.JS.Statements
         internal override JSObject Evaluate(Context context)
         {
             for (int i = 0; i < initializators.Length; i++)
-                initializators[i].Evaluate(context);
-            if (isConst)
             {
-                for (var i = this.variables.Length; i-- > 0; )
+                initializators[i].Evaluate(context);
+                if (isConst)
                     this.variables[i].cacheRes.attributes |= JSObjectAttributesInternal.ReadOnly;
             }
             return JSObject.undefined;
@@ -209,27 +219,30 @@ namespace NiL.JS.Statements
 
         internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
-            for (int i = 0; i < initializators.Length; i++)
-                Parser.Build(ref initializators[i], 2, variables, strict);
-            if (names.Length == 1 && depth < 2 && depth >= 0)
+            this.variables = new VariableDescriptor[names.Length];
+            for (var i = 0; i < names.Length; i++)
             {
-                if (initializators[0] is GetVariableStatement)
-                    _this = null;
-                else
-                    _this = initializators[0];
-                var t = variables[names[0]];
-                t.Defined = true;
-                t.readOnly = isConst;
+                VariableDescriptor desc = null;
+                if (!variables.TryGetValue(names[i], out desc))
+                    variables[names[i]] = desc = new VariableDescriptor(names[i], functionDepth);
+                this.variables[i] = desc;
+                this.variables[i].Defined = true;
+                this.variables[i].readOnly = isConst;
             }
-            else
+            int actualChilds = 0;
+            for (int i = 0; i < initializators.Length; i++)
             {
-                this.variables = new VariableDescriptor[names.Length];
-                for (var i = 0; i < names.Length; i++)
-                {
-                    this.variables[i] = variables[names[i]];
-                    this.variables[i].Defined = true;
-                    this.variables[i].readOnly = isConst;
-                }
+                Parser.Build(ref initializators[i], 1, variables, strict);
+                if (initializators[i] != null)
+                    actualChilds++;
+            }
+            if (this == _this && actualChilds < initializators.Length)
+            {
+                var newinits = new CodeNode[actualChilds];
+                for (int i = 0, j = 0; i < initializators.Length; i++)
+                    if (initializators[i] != null)
+                        newinits[j++] = initializators[i];
+                initializators = newinits;
             }
             return false;
         }

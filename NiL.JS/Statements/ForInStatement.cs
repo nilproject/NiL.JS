@@ -50,7 +50,7 @@ namespace NiL.JS.Statements
                     if (varName == "arguments" || varName == "eval")
                         throw new JSException((new Core.BaseTypes.SyntaxError("Parameters name may not be \"arguments\" or \"eval\" in strict mode at " + Tools.PositionToTextcord(state.Code, start))));
                 }
-                res.variable = new VariableDefineStatement(varName, new GetVariableStatement(varName, state.functionsDepth) { Position = start, Length = i - start, functionDepth = state.functionsDepth }, false) { Position = vStart, Length = i - vStart };
+                res.variable = new VariableDefineStatement(varName, new GetVariableStatement(varName, state.functionsDepth) { Position = start, Length = i - start, functionDepth = state.functionsDepth }, false, state.functionsDepth) { Position = vStart, Length = i - vStart };
             }
             else
             {

@@ -12,7 +12,12 @@ namespace NiL.JS.Expressions
 
         }
 
-        internal static bool Check(JSObject first, JSObject second, bool moreOrEqual)
+        internal static bool Check(JSObject first, JSObject second)
+        {
+            return Check(first, second, false);
+        }
+
+        protected static bool Check(JSObject first, JSObject second, bool moreOrEqual)
         {
             switch (first.valueType)
             {

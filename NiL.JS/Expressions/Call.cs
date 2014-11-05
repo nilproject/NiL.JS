@@ -136,7 +136,10 @@ namespace NiL.JS.Expressions
                         var func = f.Inititalizator as FunctionStatement;
                         if (func != null)
                         {
-                            if (func.body == null || func.body.body == null || func.body.body.Length == 0)
+                            if (func.body == null
+                                || func.body.body == null
+                                || func.body.body.Length == 0
+                                || (depth >= 0 && depth < 2 && func.isClear && arguments.Length == 0))
                             {
                                 if (arguments.Length == 0)
                                     _this = new EmptyStatement();
@@ -144,6 +147,7 @@ namespace NiL.JS.Expressions
                                 {
                                     System.Array.Reverse(arguments, 0, arguments.Length);
                                     _this = new CodeBlock(arguments, strict);
+                                    return true;
                                 }
                             }
                             /* // TODO
