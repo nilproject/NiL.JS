@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections;
 
 namespace NiL.JS.Core
 {
     [Serializable]
-    public sealed class Arguments : JSObject
+    public sealed class Arguments : JSObject, IEnumerable
     {
         private sealed class _LengthContainer : JSObject
         {
@@ -146,6 +147,11 @@ namespace NiL.JS.Core
             valueType = JSObjectType.Object;
             oValue = this;
             attributes = JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.SystemObject;
+        }
+
+        public void Add(JSObject arg)
+        {
+            this[length++] = arg;
         }
 
         protected override JSObject getDefaultPrototype()
