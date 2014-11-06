@@ -748,7 +748,8 @@ namespace NiL.JS.Core.BaseTypes
             {
                 if (thisBind != null)
                     correctThisBind(thisBind, body, null); // на тот случай, когда функция вызвана как конструктор
-                return undefined;
+                notExists.valueType = JSObjectType.NotExistsInObject;
+                return notExists;
             }
             var oldargs = _arguments;
             bool intricate = creator.containsWith || creator.containsArguments || creator.containsEval;
@@ -945,7 +946,7 @@ namespace NiL.JS.Core.BaseTypes
             {
                 var context = creator.arguments[0].descriptor.cacheContext;
                 if (context.fields == null)
-                    context.fields = new Dictionary<string, JSObject>();
+                    context.fields = createFields();
                 if (context.fields.ContainsKey(creator.arguments[0].Name))
                     return;
                 for (var i = 0; i < creator.arguments.Length; i++)
