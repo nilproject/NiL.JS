@@ -708,7 +708,7 @@ namespace NiL.JS.Statements
                                 i++;
                             while (char.IsWhiteSpace(state.Code[i]));
                             second = new Constant(new JSObject() { valueType = JSObjectType.Object, oValue = threads }) { Position = position };
-                            threads[1] = ExpressionStatement.Parse(state, ref i, processComma, false, false, true).Statement;
+                            threads[1] = ExpressionStatement.Parse(state, ref i, false, false, false, true).Statement;
                             second.Length = i - second.Position;
                             binary = false;
                             repeat = false;
