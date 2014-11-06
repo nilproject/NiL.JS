@@ -218,8 +218,8 @@ namespace NiL.JS.Core.BaseTypes
             _lengthObj = new _lengthField(this);
         }
 
-        [CLSCompliant(false)]
         [Hidden]
+        [CLSCompliant(false)]
         public Array(long length)
         {
             oValue = this;
