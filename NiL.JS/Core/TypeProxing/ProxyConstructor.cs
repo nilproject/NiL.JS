@@ -70,7 +70,9 @@ namespace NiL.JS.Core.TypeProxing
             }
             if (typeProxy.hostedType.IsValueType)
                 ctorsL.Add(new MethodProxy(new StructureDefaultConstructorInfo(proxy.hostedType)));
-            ctorsL.Sort((x, y) => x.Parameters.Length == 1 && x.Parameters[0].ParameterType == typeof(Arguments) ? 1 : x.Parameters.Length - y.Parameters.Length);
+            ctorsL.Sort((x, y) => x.Parameters.Length == 1 && x.Parameters[0].ParameterType == typeof(Arguments) ? 1 :
+                y.Parameters.Length == 1 && y.Parameters[0].ParameterType == typeof(Arguments) ? -1 : 
+                x.Parameters.Length - y.Parameters.Length);
             constructors = ctorsL.ToArray();
         }
 
