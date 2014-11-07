@@ -6,6 +6,8 @@ using NiL.JS.Core.BaseTypes;
 using NiL.JS.Core.JIT;
 using NiL.JS.Core.Modules;
 using NiL.JS.Core.TypeProxing;
+using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace NiL.JS.Statements
 {
@@ -194,14 +196,14 @@ namespace NiL.JS.Statements
         internal bool containsArguments;
         internal bool isRecursive;
         internal bool containsWith;
-        internal VariableReference[] arguments;
+        internal VariableDescriptor[] arguments;
         internal CodeBlock body;
         internal string name;
         internal FunctionType type;
 
         public CodeBlock Body { get { return body; } }
         public string Name { get { return name; } }
-        public VariableReference[] Parameters { get { return arguments; } }
+        public ReadOnlyCollection<VariableDescriptor> Parameters { get { return new ReadOnlyCollection<VariableDescriptor>(arguments); } }
         public VariableReference Reference { get; private set; }
 
 #if !NET35
@@ -220,7 +222,7 @@ namespace NiL.JS.Statements
         internal FunctionStatement(string name)
         {
             Reference = new FunctionReference(this);
-            arguments = new VariableReference[0];
+            arguments = new VariableDescriptor[0];
             body = new CodeBlock(new CodeNode[0], false);
             body.variables = new VariableDescriptor[0];
             this.name = name;
@@ -375,7 +377,7 @@ namespace NiL.JS.Statements
                 mode = FunctionType.AnonymousFunction;
             FunctionStatement func = new FunctionStatement(name)
             {
-                arguments = parameters.ToArray(),
+                arguments = (from prm in parameters select prm.descriptor).ToArray(),
                 body = body,
                 type = mode,
                 Position = index,
@@ -447,7 +449,7 @@ namespace NiL.JS.Statements
         {
             var res = new CodeNode[1 + arguments.Length + (Reference != null ? 1 : 0)];
             for (var i = 0; i < arguments.Length; i++)
-                res[i] = arguments[i];
+                res[i] = arguments[i].references[0];
             res[arguments.Length] = body;
             if (Reference != null)
                 res[res.Length - 1] = Reference;
@@ -493,7 +495,7 @@ namespace NiL.JS.Statements
                     {
                         foreach (var r in fdesc.references)
                             r.descriptor = Reference.Descriptor;
-                        Reference.Descriptor.references.UnionWith(fdesc.references);
+                        Reference.Descriptor.references.AddRange(fdesc.references);
                         for (var i = body.variables.Length; i-- > 0; )
                         {
                             if (body.variables[i] == fdesc)
@@ -509,10 +511,10 @@ namespace NiL.JS.Statements
                 VariableDescriptor desc = null;
                 if (nvars.TryGetValue(arguments[i].Name, out desc) && desc.Inititalizator == null)
                 {
-                    desc.references.UnionWith(arguments[i].descriptor.references);
-                    arguments[i].descriptor = desc;
+                    desc.references.AddRange(arguments[i].references);
                     desc.Defined = true;
-                    arguments[i].Descriptor.owner = this;
+                    arguments[i] = desc;
+                    arguments[i].owner = this;
                 }
             }
             body = bodyCode as CodeBlock;

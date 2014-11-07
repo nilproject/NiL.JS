@@ -168,8 +168,8 @@ namespace NiL.JSTest
                         s.Context.DefineVariable("print").Assign(new ExternalFunction((t, e) =>
                         {
                             var text = e[0].isDefinded ? e[0].ToString() : "";
-                            if (text == "FAIL")
-                                System.Diagnostics.Debugger.Break();
+                            //if (text == "FAIL")
+                            //    System.Diagnostics.Debugger.Break();
                             Console.WriteLine(text);
                             return JSObject.Undefined;
                         }));
@@ -199,7 +199,7 @@ namespace NiL.JSTest
         {
             Script s = null;
             var sw = new Stopwatch();
-            int @case = 1;
+            int @case = 0;
             switch (@case)
             {
                 case 0:
@@ -263,6 +263,31 @@ test.f(true);
             Console.WriteLine(sw.Elapsed);
         }
 
+        private static void strongTests()
+        {
+            var sw = new Stopwatch();
+            var s = new Script(
+@"
+function strongFunction(i, d, s, o)
+{
+    'use strong';
+    i = i | 0;
+    d = +d;
+    s += '';
+    o = Object(o);
+    console.log(typeof i);
+    console.log(typeof d);
+    console.log(typeof s);
+    console.log(typeof o);
+}
+strongFunction(1, 2, 3, 4);
+");
+            sw.Start();
+            s.Invoke();
+            sw.Stop();
+            Console.WriteLine(sw.Elapsed);
+        }
+
         static void Main(string[] args)
         {
             Thread.CurrentThread.Priority = ThreadPriority.AboveNormal;
@@ -276,10 +301,15 @@ test.f(true);
             Context.GlobalContext.DebuggerCallback += (sender, e) => System.Diagnostics.Debugger.Break();
             Context.GlobalContext.DefineVariable("alert").Assign(new ExternalFunction((t, a) => { System.Windows.Forms.MessageBox.Show(a[0].ToString()); return JSObject.Undefined; }));
 
-            int mode = 0
+            int mode = 1
                    ;
             switch (mode)
             {
+                case -5:
+                    {
+                        strongTests();
+                        break;
+                    }
                 case -4:
                     {
                         runFile(@"samples/async.js");

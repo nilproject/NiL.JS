@@ -238,6 +238,10 @@ namespace NiL.JS.Statements
                         }
                     case OperationType.Ternary:
                         {
+                            while ((second is ExpressionStatement)
+                                && (second as ExpressionStatement)._type == OperationType.None
+                                && (second as ExpressionStatement).second == null)
+                                second = (second as ExpressionStatement).first;
                             fastImpl = new Expressions.Ternary(first, second.Evaluate(null).oValue as CodeNode[]);
                             break;
                         }
@@ -335,20 +339,20 @@ namespace NiL.JS.Statements
 
         internal static ParseResult Parse(ParsingState state, ref int index)
         {
-            return Parse(state, ref index, true, false, false, true);
+            return Parse(state, ref index, true, false, false, true, false);
         }
 
         internal static ParseResult Parse(ParsingState state, ref int index, bool processComma)
         {
-            return Parse(state, ref index, processComma, false, false, true);
+            return Parse(state, ref index, processComma, false, false, true, false);
         }
 
         internal static ParseResult Parse(ParsingState state, ref int index, bool processComma, bool forUnary)
         {
-            return Parse(state, ref index, processComma, forUnary, false, true);
+            return Parse(state, ref index, processComma, forUnary, false, true, false);
         }
 
-        private static ParseResult Parse(ParsingState state, ref int index, bool processComma, bool forUnary, bool forNew, bool root)
+        private static ParseResult Parse(ParsingState state, ref int index, bool processComma, bool forUnary, bool forNew, bool root, bool forTernary)
         {
             //string code = state.Code;
             int i = index;
@@ -358,7 +362,24 @@ namespace NiL.JS.Statements
             CodeNode second = null;
             int s = i;
             state.InExpression++;
-            if (Parser.ValidateName(state.Code, ref i, state.strict.Peek()) || Parser.Validate(state.Code, "this", ref i))
+            if (forTernary)
+            {
+                position = i;
+                var threads = new CodeNode[]
+                    {
+                        ExpressionStatement.Parse(state, ref i, true, false, false, false, false).Statement,
+                        null
+                    };
+                if (state.Code[i] != ':')
+                    throw new ArgumentException("Invalid char in ternary operator");
+                do
+                    i++;
+                while (char.IsWhiteSpace(state.Code[i]));
+                first = new Constant(new JSObject() { valueType = JSObjectType.Object, oValue = threads }) { Position = position };
+                threads[1] = ExpressionStatement.Parse(state, ref i, false, false, false, false, false).Statement;
+                first.Length = i - first.Position;
+            }
+            else if (Parser.ValidateName(state.Code, ref i, state.strict.Peek()) || Parser.Validate(state.Code, "this", ref i))
             {
                 var name = Tools.Unescape(state.Code.Substring(s, i - s), state.strict.Peek());
                 if (name == "undefined")
@@ -431,7 +452,7 @@ namespace NiL.JS.Statements
                                 while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]));
                                 if (i >= state.Code.Length)
                                     throw new JSException(new SyntaxError("Unexpected end of source."));
-                                first = Parse(state, ref i, true, true, false, true).Statement;
+                                first = Parse(state, ref i, true, true, false, true, false).Statement;
                                 if (((first as GetMemberStatement) as object ?? (first as GetVariableStatement)) == null)
                                 {
                                     var cord = Tools.PositionToTextcord(state.Code, i);
@@ -446,7 +467,7 @@ namespace NiL.JS.Statements
                             {
                                 while (char.IsWhiteSpace(state.Code[i]))
                                     i++;
-                                var f = Parse(state, ref i, true, true, false, true).Statement;
+                                var f = Parse(state, ref i, true, true, false, true, false).Statement;
                                 first = new Expressions.Mul(new Constant(1), f) { Position = index, Length = i - index };
                             }
                             break;
@@ -461,7 +482,7 @@ namespace NiL.JS.Statements
                                 while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]));
                                 if (i >= state.Code.Length)
                                     throw new JSException(new SyntaxError("Unexpected end of source."));
-                                first = Parse(state, ref i, true, true, false, true).Statement;
+                                first = Parse(state, ref i, true, true, false, true, false).Statement;
                                 if (((first as GetMemberStatement) as object ?? (first as GetVariableStatement)) == null)
                                 {
                                     var cord = Tools.PositionToTextcord(state.Code, i);
@@ -476,7 +497,7 @@ namespace NiL.JS.Statements
                             {
                                 while (char.IsWhiteSpace(state.Code[i]))
                                     i++;
-                                var f = Parse(state, ref i, true, true, false, true).Statement;
+                                var f = Parse(state, ref i, true, true, false, true, false).Statement;
                                 first = new Expressions.Neg(f) { Position = index, Length = i - index };
                             }
                             break;
@@ -486,7 +507,7 @@ namespace NiL.JS.Statements
                             do
                                 i++;
                             while (char.IsWhiteSpace(state.Code[i]));
-                            first = new Expressions.LogicalNot(Parse(state, ref i, true, true, false, true).Statement) { Position = index, Length = i - index };
+                            first = new Expressions.LogicalNot(Parse(state, ref i, true, true, false, true, false).Statement) { Position = index, Length = i - index };
                             if (first == null)
                             {
                                 var cord = Tools.PositionToTextcord(state.Code, i);
@@ -499,7 +520,7 @@ namespace NiL.JS.Statements
                             do
                                 i++;
                             while (char.IsWhiteSpace(state.Code[i]));
-                            first = Parse(state, ref i, true, true, false, true).Statement;
+                            first = Parse(state, ref i, true, true, false, true, false).Statement;
                             if (first == null)
                             {
                                 var cord = Tools.PositionToTextcord(state.Code, i);
@@ -514,7 +535,7 @@ namespace NiL.JS.Statements
                             do
                                 i++;
                             while (char.IsWhiteSpace(state.Code[i]));
-                            first = Parse(state, ref i, false, true, false, true).Statement;
+                            first = Parse(state, ref i, false, true, false, true, false).Statement;
                             if (first == null)
                             {
                                 var cord = Tools.PositionToTextcord(state.Code, i);
@@ -529,7 +550,7 @@ namespace NiL.JS.Statements
                             do
                                 i++;
                             while (char.IsWhiteSpace(state.Code[i]));
-                            first = new Expressions.None(Parse(state, ref i, false, true, false, true).Statement, new Constant(JSObject.undefined)) { Position = index, Length = i - index };
+                            first = new Expressions.None(Parse(state, ref i, false, true, false, true, false).Statement, new Constant(JSObject.undefined)) { Position = index, Length = i - index };
                             if (first == null)
                             {
                                 var cord = Tools.PositionToTextcord(state.Code, i);
@@ -543,7 +564,7 @@ namespace NiL.JS.Statements
                             do
                                 i++;
                             while (char.IsWhiteSpace(state.Code[i]));
-                            first = Parse(state, ref i, false, true, true, true).Statement;
+                            first = Parse(state, ref i, false, true, true, true, false).Statement;
                             if (first == null)
                             {
                                 var cord = Tools.PositionToTextcord(state.Code, i);
@@ -558,7 +579,7 @@ namespace NiL.JS.Statements
                             do
                                 i++;
                             while (char.IsWhiteSpace(state.Code[i]));
-                            first = Parse(state, ref i, false, true, false, true).Statement;
+                            first = Parse(state, ref i, false, true, false, true, false).Statement;
                             if (first == null)
                             {
                                 var cord = Tools.PositionToTextcord(state.Code, i);
@@ -575,7 +596,7 @@ namespace NiL.JS.Statements
                             do
                                 i++;
                             while (char.IsWhiteSpace(state.Code[i]));
-                            first = Parse(state, ref i, false, true, false, true).Statement;
+                            first = Parse(state, ref i, false, true, false, true, false).Statement;
                             if (first == null)
                             {
                                 var cord = Tools.PositionToTextcord(state.Code, i);
@@ -693,24 +714,24 @@ namespace NiL.JS.Statements
                                 break;
                             }
                             type = OperationType.Ternary;
-                            do
-                                i++;
-                            while (char.IsWhiteSpace(state.Code[i]));
-                            position = i;
-                            var threads = new CodeNode[]
-                                {
-                                    ExpressionStatement.Parse(state, ref i, true, false, false, true).Statement,
-                                    null
-                                };
-                            if (state.Code[i] != ':')
-                                throw new ArgumentException("Invalid char in ternary operator");
-                            do
-                                i++;
-                            while (char.IsWhiteSpace(state.Code[i]));
-                            second = new Constant(new JSObject() { valueType = JSObjectType.Object, oValue = threads }) { Position = position };
-                            threads[1] = ExpressionStatement.Parse(state, ref i, false, false, false, true).Statement;
-                            second.Length = i - second.Position;
-                            binary = false;
+                            //do
+                            //    i++;
+                            //while (char.IsWhiteSpace(state.Code[i]));
+                            //position = i;
+                            //var threads = new CodeNode[]
+                            //    {
+                            //        ExpressionStatement.Parse(state, ref i, true, false, false, true, false).Statement,
+                            //        null
+                            //    };
+                            //if (state.Code[i] != ':')
+                            //    throw new ArgumentException("Invalid char in ternary operator");
+                            //do
+                            //    i++;
+                            //while (char.IsWhiteSpace(state.Code[i]));
+                            //second = new Constant(new JSObject() { valueType = JSObjectType.Object, oValue = threads }) { Position = position };
+                            //threads[1] = ExpressionStatement.Parse(state, ref i, false, false, false, true, false).Statement;
+                            //second.Length = i - second.Position;
+                            binary = true;
                             repeat = false;
                             break;
                         }
@@ -1153,7 +1174,7 @@ namespace NiL.JS.Statements
                     i++;
                 while (state.Code.Length > i && char.IsWhiteSpace(state.Code[i]));
                 if (state.Code.Length > i)
-                    second = ExpressionStatement.Parse(state, ref i, processComma, false, false, false).Statement;
+                    second = ExpressionStatement.Parse(state, ref i, processComma, false, false, false, type == OperationType.Ternary).Statement;
             }
             CodeNode res = null;
             if (first == second && first == null)

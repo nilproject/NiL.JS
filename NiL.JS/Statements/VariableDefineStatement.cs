@@ -151,8 +151,8 @@ namespace NiL.JS.Statements
                 }
                 else
                 {
-                    if (isConst)
-                        throw new JSException(new SyntaxError("Constant must contain value at " + Tools.PositionToTextcord(state.Code, i)));
+                    //if (isConst)
+                    //    throw new JSException(new SyntaxError("Constant must contain value at " + Tools.PositionToTextcord(state.Code, i)));
                     initializator.Add(new GetVariableStatement(name, state.functionsDepth) { Position = s, Length = name.Length, functionDepth = state.functionsDepth });
                 }
                 if (i >= state.Code.Length)

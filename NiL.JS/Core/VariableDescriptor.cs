@@ -9,7 +9,7 @@ namespace NiL.JS.Core
     [Serializable]
     public sealed class VariableDescriptor
     {
-        internal readonly HashSet<VariableReference> references;
+        internal readonly List<VariableReference> references;
         internal readonly string name;
         internal CodeNode owner;
         internal int defineDepth;
@@ -33,8 +33,8 @@ namespace NiL.JS.Core
         {
             get
             {
-                foreach (var item in references)
-                    yield return item;
+                for (var i = 0; i < references.Count; i++)
+                    yield return references[i];
             }
         }
 
@@ -82,7 +82,7 @@ namespace NiL.JS.Core
         {
             this.defineDepth = defineDepth;
             this.name = name;
-            references = new HashSet<VariableReference>();
+            references = new List<VariableReference>();
             Defined = true;
         }
 
@@ -92,7 +92,7 @@ namespace NiL.JS.Core
             this.name = proto.Name;
             if (proto is FunctionStatement.FunctionReference)
                 Inititalizator = (proto as FunctionStatement.FunctionReference).Owner;
-            references = new HashSet<VariableReference>();
+            references = new List<VariableReference>();
             references.Add(proto);
             proto.descriptor = this;
             Defined = defined;

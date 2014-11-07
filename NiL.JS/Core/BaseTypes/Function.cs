@@ -832,8 +832,19 @@ namespace NiL.JS.Core.BaseTypes
                     internalContext.abort = AbortType.Return;
                     internalContext.Deactivate();
                 }
-                catch
-                { }
+                finally
+                {
+                    for (var i = body.localVariables.Length; i-- > 0; )
+                    {
+                        body.localVariables[i].cacheRes = null;
+                        body.localVariables[i].cacheContext = null;
+                    }
+                    for (var i = creator.arguments.Length; i-- > 0; )
+                    {
+                        creator.arguments[i].cacheRes = null;
+                        creator.arguments[i].cacheContext = null;
+                    }
+                }
                 _caller = oldcaller;
                 _arguments = oldargs;
             }
@@ -853,18 +864,18 @@ namespace NiL.JS.Core.BaseTypes
                 }
                 else
                 {
-                    if (intricate || creator.arguments[i].descriptor.assignations != null)
+                    if (intricate || creator.arguments[i].assignations != null)
                     {
                         args[i] = t = t.CloneImpl();
                         t.attributes |= JSObjectAttributesInternal.Argument;
                     }
                 }
-                if (body.strict && (intricate || creator.arguments[i].descriptor.assignations != null))
+                if (body.strict && (intricate || creator.arguments[i].assignations != null))
                     t = t.CloneImpl();
-                if (intricate || creator.arguments[i].descriptor.captured)
+                if (intricate || creator.arguments[i].captured)
                     (internalContext.fields ?? (internalContext.fields = new Dictionary<string, JSObject>()))[creator.arguments[i].Name] = t;
-                creator.arguments[i].descriptor.cacheContext = internalContext;
-                creator.arguments[i].descriptor.cacheRes = t;
+                creator.arguments[i].cacheContext = internalContext;
+                creator.arguments[i].cacheRes = t;
             }
             for (; i < args.length; i++)
             {
@@ -877,11 +888,11 @@ namespace NiL.JS.Core.BaseTypes
             }
             for (; i < creator.arguments.Length; i++)
             {
-                if (creator.arguments[i].descriptor.owner != null) // условный флаг того, что параметр является фиктивным. Такое может произойти, если он нигде не используется либо перебит одноимённой функцией
+                if (creator.arguments[i].owner != null) // условный флаг того, что параметр является фиктивным. Такое может произойти, если он нигде не используется либо перебит одноимённой функцией
                 {
                     (internalContext.fields ?? (internalContext.fields = new Dictionary<string, JSObject>()))[creator.arguments[i].Name] = new JSObject() { attributes = JSObjectAttributesInternal.Argument };
-                    creator.arguments[i].descriptor.cacheContext = internalContext;
-                    creator.arguments[i].descriptor.cacheRes = new JSObject() { attributes = JSObjectAttributesInternal.Argument };
+                    creator.arguments[i].cacheContext = internalContext;
+                    creator.arguments[i].cacheRes = new JSObject() { attributes = JSObjectAttributesInternal.Argument };
                 }
             }
         }
@@ -944,13 +955,15 @@ namespace NiL.JS.Core.BaseTypes
         {
             if (creator.arguments.Length != 0)
             {
-                var context = creator.arguments[0].descriptor.cacheContext;
+                var context = creator.arguments[0].cacheContext;
+                if (context == null)
+                    return;
                 if (context.fields == null)
                     context.fields = createFields();
                 if (context.fields.ContainsKey(creator.arguments[0].Name))
                     return;
                 for (var i = 0; i < creator.arguments.Length; i++)
-                    context.fields[creator.arguments[i].Name] = creator.arguments[i].descriptor.cacheRes;
+                    context.fields[creator.arguments[i].Name] = creator.arguments[i].cacheRes;
             }
         }
 

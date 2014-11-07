@@ -131,10 +131,21 @@ namespace NiL.JS.Core
             [Hidden]
             set
             {
-                if (value != null && value.valueType < JSObjectType.Object)
+                if (value == null)
+                {
+                    __prototype = null;
                     return;
-                if (value != this)
-                    __prototype = value;
+                }
+                if (value.valueType < JSObjectType.Object)
+                    return;
+                var c = value.oValue as JSObject ?? value;
+                while (c != Null && c.valueType > JSObjectType.Undefined)
+                {
+                    if (c.oValue == this)
+                        throw new JSException(new Error("Try to set cyclic __proto__ value."));
+                    c = c.__proto__.oValue as JSObject ?? c.__proto__;
+                }
+                __prototype = value;
             }
         }
 
