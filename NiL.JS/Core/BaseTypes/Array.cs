@@ -245,9 +245,15 @@ namespace NiL.JS.Core.BaseTypes
 
         [DoNotEnumerate]
         public Array(Arguments args)
-            : this(MethodProxy.argumentsToArray(args))
         {
-
+            if (args == null)
+                throw new NullReferenceException("args is null");
+            oValue = this;
+            valueType = JSObjectType.Object;
+            data = new SparseArray<JSObject>();
+            for (var i = 0; i < args.length; i++)
+                data[i] = args[i].CloneImpl();
+            attributes |= JSObjectAttributesInternal.SystemObject;
         }
 
         [Hidden]
@@ -258,8 +264,6 @@ namespace NiL.JS.Core.BaseTypes
             if (collection == null)
                 throw new ArgumentNullException("collection");
             data = new SparseArray<JSObject>();
-            if (collection.Count > 0)
-                data[(int)collection.Count - 1] = null;
             var index = 0;
             foreach (var e in collection)
                 data[index++] = e is JSObject ? (e as JSObject).CloneImpl() : TypeProxy.Proxy(e);

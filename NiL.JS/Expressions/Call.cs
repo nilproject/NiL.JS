@@ -51,6 +51,7 @@ namespace NiL.JS.Expressions
             bool tail = false;
             func = temp.valueType == JSObjectType.Function ? temp.oValue as Function ?? (temp.oValue as TypeProxy).prototypeInstance as Function : null; // будем надеяться, что только в одном случае в oValue не будет лежать функция
             if (allowTCO
+                && context.caller != null
                 && func == context.caller.oValue
                 && context.caller.oValue != Script.pseudoCaller)
             {
@@ -59,23 +60,7 @@ namespace NiL.JS.Expressions
             }
             Arguments arguments = new Arguments();
             arguments.length = this.arguments.Length;
-            if (arguments.length > 0)
-                arguments.a0 = prepareArg(context, this.arguments[0], tail);
-            if (arguments.length > 1)
-                arguments.a1 = prepareArg(context, this.arguments[1], tail);
-            if (arguments.length > 2)
-                arguments.a2 = prepareArg(context, this.arguments[2], tail);
-            if (arguments.length > 3)
-                arguments.a3 = prepareArg(context, this.arguments[3], tail);
-            if (arguments.length > 4)
-                arguments.a4 = prepareArg(context, this.arguments[4], tail);
-            if (arguments.length > 5)
-                arguments.a5 = prepareArg(context, this.arguments[5], tail);
-            if (arguments.length > 6)
-                arguments.a6 = prepareArg(context, this.arguments[6], tail);
-            if (arguments.length > 7)
-                arguments.a7 = prepareArg(context, this.arguments[7], tail);
-            for (int i = 8; i < arguments.length; i++)
+            for (int i = 0; i < arguments.length; i++)
                 arguments[i] = prepareArg(context, this.arguments[i], tail);
             context.objectSource = null;
             if (tail)
@@ -90,7 +75,7 @@ namespace NiL.JS.Expressions
             }
             // Аргументы должны быть вычислены даже если функция не существует.
             if (func == null)
-                throw new JSException((new NiL.JS.Core.BaseTypes.TypeError(first + " is not callable")));
+                throw new JSException((new NiL.JS.Core.BaseTypes.TypeError(first.ToString() + " is not callable")));
             func.attributes = (func.attributes & ~JSObjectAttributesInternal.Eval) | (temp.attributes & JSObjectAttributesInternal.Eval);
 
             return func.Invoke(newThisBind, arguments);

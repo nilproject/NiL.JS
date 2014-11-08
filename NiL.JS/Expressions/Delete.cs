@@ -8,7 +8,7 @@ namespace NiL.JS.Expressions
     [Serializable]
     public sealed class Delete : Expression
     {
-        public sealed class SafeMemberGetter : CodeNode
+        internal sealed class SafeMemberGetter : CodeNode
         {
             private GetMemberStatement proto;
 

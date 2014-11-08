@@ -59,7 +59,7 @@ namespace NiL.JS.Core.BaseTypes
             var context = Context.CurrentContext;
             while (context != null)
             {
-                res.Append("in ").AppendLine(context.caller.name ?? "<anonymous method>");
+                res.Append("in ").AppendLine(context.caller == null ? "" : (context.caller.name ?? "<anonymous method>"));
                 context = context.oldContext;
             }
             callstack = res.ToString();

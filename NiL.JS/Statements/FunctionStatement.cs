@@ -8,13 +8,14 @@ using NiL.JS.Core.Modules;
 using NiL.JS.Core.TypeProxing;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Collections;
 
 namespace NiL.JS.Statements
 {
     [Serializable]
     public sealed class FunctionStatement : CodeNode
     {
-        public sealed class GeneratorInitializator : Function
+        internal sealed class GeneratorInitializator : Function
         {
             private Function generator;
             [Hidden]
@@ -30,7 +31,7 @@ namespace NiL.JS.Statements
             }
         }
 
-        public sealed class Generator : IDisposable
+        internal sealed class Generator : IDisposable
         {
             private Context generatorContext;
             private Arguments initialArgs;
@@ -191,6 +192,7 @@ namespace NiL.JS.Statements
             }
         }
 
+        internal bool assignToArguments;
         internal bool isClear;
         internal bool containsEval;
         internal bool containsArguments;
@@ -226,12 +228,6 @@ namespace NiL.JS.Statements
             body = new CodeBlock(new CodeNode[0], false);
             body.variables = new VariableDescriptor[0];
             this.name = name;
-        }
-
-        internal static FunctionStatement Parse(string code)
-        {
-            int index = 0;
-            return Parse(new ParsingState(Tools.RemoveComments(code, 0), code), ref index).Statement as FunctionStatement;
         }
 
         internal static ParseResult Parse(ParsingState state, ref int index)
@@ -512,7 +508,7 @@ namespace NiL.JS.Statements
                 if (nvars.TryGetValue(arguments[i].Name, out desc) && desc.Inititalizator == null)
                 {
                     desc.references.AddRange(arguments[i].references);
-                    desc.Defined = true;
+                    desc.defined = true;
                     arguments[i] = desc;
                     arguments[i].owner = this;
                 }
@@ -560,7 +556,7 @@ namespace NiL.JS.Statements
                 return;
             for (var i = 0; i < body.variables.Length; i++)
             {
-                containsArguments |= body.variables[i].name == "arguments";
+                containsArguments |= body.variables[i].name == "arguments" && body.variables[i].Inititalizator == null;
                 containsEval |= body.variables[i].name == "eval";
                 isRecursive |= body.variables[i].name == name;
                 isClear &= !containsEval;
@@ -569,6 +565,8 @@ namespace NiL.JS.Statements
                 for (var i = 0; i < body.localVariables.Length; i++)
                     isClear &= body.localVariables[i].Inititalizator == null;
             isClear &= body.variables.Length == (body.localVariables == null ? 0 : body.localVariables.Length) + arguments.Length;
+            ICollection t = null;
+            assignToArguments = containsArguments && (t = body.variables.First(x => x.name == "arguments").assignations) != null && t.Count != 0;
         }
 
         public override string ToString()

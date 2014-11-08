@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using NiL.JS.Core.BaseTypes;
 using NiL.JS.Core.JIT;
+using NiL.JS.Statements;
 
 namespace NiL.JS.Core
 {

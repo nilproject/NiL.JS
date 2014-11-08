@@ -71,7 +71,7 @@ namespace NiL.JS.Core.TypeProxing
             if (typeProxy.hostedType.IsValueType)
                 ctorsL.Add(new MethodProxy(new StructureDefaultConstructorInfo(proxy.hostedType)));
             ctorsL.Sort((x, y) => x.Parameters.Length == 1 && x.Parameters[0].ParameterType == typeof(Arguments) ? 1 :
-                y.Parameters.Length == 1 && y.Parameters[0].ParameterType == typeof(Arguments) ? -1 : 
+                y.Parameters.Length == 1 && y.Parameters[0].ParameterType == typeof(Arguments) ? -1 :
                 x.Parameters.Length - y.Parameters.Length);
             constructors = ctorsL.ToArray();
         }
@@ -181,17 +181,17 @@ namespace NiL.JS.Core.TypeProxing
             var len = argObj == null ? 0 : argObj.length;
             for (int i = 0; i < constructors.Length; i++)
             {
-                if (constructors[i].Parameters.Length == len
-                    || (constructors[i].Parameters.Length == 1 && (constructors[i].Parameters[0].ParameterType == typeof(Arguments))))
+                if (constructors[i].parameters.Length == len
+                    || (constructors[i].parameters.Length == 1 && (constructors[i].parameters[0].ParameterType == typeof(Arguments))))
                 {
                     if (len == 0)
                         args = _objectA;
-                    else
+                    else if (constructors[i].parameters.Length != 1 || (constructors[i].parameters[0].ParameterType != typeof(Arguments)))
                     {
                         args = constructors[i].ConvertArgs(argObj);
                         for (var j = args.Length; j-- > 0; )
                         {
-                            if (!constructors[i].Parameters[j].ParameterType.IsAssignableFrom(args[j] != null ? args[j].GetType() : typeof(object)))
+                            if (!constructors[i].parameters[j].ParameterType.IsAssignableFrom(args[j] != null ? args[j].GetType() : typeof(object)))
                             {
                                 j = 0;
                                 args = null;

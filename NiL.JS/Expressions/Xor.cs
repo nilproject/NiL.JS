@@ -14,13 +14,9 @@ namespace NiL.JS.Expressions
 
         internal override JSObject Evaluate(Context context)
         {
-            lock (this)
-            {
-                var left = Tools.JSObjectToInt32(first.Evaluate(context));
-                tempContainer.iValue = left ^ Tools.JSObjectToInt32(second.Evaluate(context));
-                tempContainer.valueType = JSObjectType.Int;
-                return tempContainer;
-            }
+            tempContainer.iValue = Tools.JSObjectToInt32(first.Evaluate(context)) ^ Tools.JSObjectToInt32(second.Evaluate(context));
+            tempContainer.valueType = JSObjectType.Int;
+            return tempContainer;
         }
 
         public override string ToString()

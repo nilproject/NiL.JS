@@ -226,7 +226,7 @@ namespace NiL.JS.Statements
                 if (!variables.TryGetValue(names[i], out desc))
                     variables[names[i]] = desc = new VariableDescriptor(names[i], functionDepth);
                 this.variables[i] = desc;
-                this.variables[i].Defined = true;
+                this.variables[i].defined = true;
                 this.variables[i].readOnly = isConst;
             }
             int actualChilds = 0;
@@ -238,6 +238,11 @@ namespace NiL.JS.Statements
             }
             if (this == _this && actualChilds < initializators.Length)
             {
+                if (actualChilds == 0)
+                {
+                    _this = null;
+                    return false;
+                }
                 var newinits = new CodeNode[actualChilds];
                 for (int i = 0, j = 0; i < initializators.Length; i++)
                     if (initializators[i] != null)

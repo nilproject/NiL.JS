@@ -229,32 +229,39 @@ namespace NiL.JS.Statements
                 else
                 {
                     var keys = NiL.JS.Core.Tools._ForcedEnumerator<string>.create(s);
-                    for (; ; )
+                    try
                     {
-                        if (!keys.MoveNext())
-                            break;
-                        var o = keys.Current;
-                        v.valueType = JSObjectType.String;
-                        v.oValue = o;
+                        for (; ; )
+                        {
+                            if (!keys.MoveNext())
+                                break;
+                            var o = keys.Current;
+                            v.valueType = JSObjectType.String;
+                            v.oValue = o;
 #if DEV
                         if (context.debugging && !(body is CodeBlock))
                             context.raiseDebugger(body);
 #endif
-                        res = body.Evaluate(context) ?? res;
-                        if (context.abort != AbortType.None)
-                        {
-
-                            var me = context.abortInfo == null || System.Array.IndexOf(labels, context.abortInfo.oValue as string) != -1;
-                            var _break = (context.abort > AbortType.Continue) || !me;
-                            if (context.abort < AbortType.Return && me)
+                            res = body.Evaluate(context) ?? res;
+                            if (context.abort != AbortType.None)
                             {
-                                context.abort = AbortType.None;
-                                context.abortInfo = JSObject.notExists;
+
+                                var me = context.abortInfo == null || System.Array.IndexOf(labels, context.abortInfo.oValue as string) != -1;
+                                var _break = (context.abort > AbortType.Continue) || !me;
+                                if (context.abort < AbortType.Return && me)
+                                {
+                                    context.abort = AbortType.None;
+                                    context.abortInfo = JSObject.notExists;
+                                }
+                                if (_break)
+                                    return null;
                             }
-                            if (_break)
-                                return null;
+                            index++;
                         }
-                        index++;
+                    }
+                    finally
+                    {
+                        keys.Dispose();
                     }
                 }
                 s = s.__proto__;

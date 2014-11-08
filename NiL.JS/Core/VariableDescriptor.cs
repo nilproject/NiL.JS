@@ -19,7 +19,8 @@ namespace NiL.JS.Core
         internal Context cacheContext;
         internal List<CodeNode> assignations;
 
-        public bool Defined { get; internal set; }
+        internal bool defined;
+        public bool Defined { get { return defined; } }
         public CodeNode Owner
         {
             get { return owner; }
@@ -40,12 +41,14 @@ namespace NiL.JS.Core
 
         internal JSObject Get(Context context, bool create, int depth)
         {
-            context.objectSource = null;
-            if (((defineDepth | depth) & 0x80000000) != 0)
-                return context.GetVariable(name, create);
             TypeProxy tp = null;
             JSObject res = null;
-            if (depth > defineDepth) do
+            context.objectSource = null;
+            if (((defineDepth | depth) & int.MinValue) != 0)
+                return context.GetVariable(name, create);
+            if (cacheRes != null && depth > defineDepth)
+            {
+                do
                 {
                     if (context is WithContext)
                     {
@@ -56,26 +59,27 @@ namespace NiL.JS.Core
                     depth--;
                 }
                 while (depth > defineDepth);
+            }
             if (context != cacheContext)
                 cacheRes = null;
-            if (cacheRes == null)
+            else if (cacheRes != null)
+                return cacheRes;
+            res = context.GetVariable(name, create);
+            if (create
+                && !defined
+                && res.valueType == JSObjectType.NotExists)
+                res.attributes = JSObjectAttributesInternal.None;
+            else
             {
-                res = context.GetVariable(name, create);
-                if (create && !Defined && res.valueType == JSObjectType.NotExists)
-                    res.attributes = JSObjectAttributesInternal.None;
-                else
-                {
-                    tp = res.oValue as TypeProxy;
-                    if (tp != null)
-                        res = tp.prototypeInstance ?? res;
-                }
-                if ((res.attributes & JSObjectAttributesInternal.SystemObject) != 0)
-                    return res;
-                cacheContext = context;
-                cacheRes = res;
-                return res;
+                tp = res.oValue as TypeProxy;
+                if (tp != null)
+                    res = tp.prototypeInstance ?? res;
             }
-            return cacheRes;
+            if ((res.attributes & JSObjectAttributesInternal.SystemObject) != 0)
+                return res;
+            cacheContext = context;
+            cacheRes = res;
+            return res;
         }
 
         internal VariableDescriptor(string name, int defineDepth)
@@ -83,7 +87,7 @@ namespace NiL.JS.Core
             this.defineDepth = defineDepth;
             this.name = name;
             references = new List<VariableReference>();
-            Defined = true;
+            defined = true;
         }
 
         internal VariableDescriptor(VariableReference proto, bool defined, int defineDepth)
@@ -95,7 +99,7 @@ namespace NiL.JS.Core
             references = new List<VariableReference>();
             references.Add(proto);
             proto.descriptor = this;
-            Defined = defined;
+            this.defined = defined;
         }
 
         public override string ToString()

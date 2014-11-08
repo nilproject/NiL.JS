@@ -15,15 +15,18 @@ namespace NiL.JS.Expressions
 
         internal override JSObject Evaluate(Context context)
         {
-            lock (this)
+            tempContainer.Assign(first.Evaluate(context));
+            var source = second.Evaluate(context);
+            if (source.valueType < JSObjectType.Object)
+                throw new JSException(new TypeError("Right-hand value of operator in is not object."));
+            if (tempContainer.valueType == JSObjectType.Int)
             {
-                tempContainer.Assign(first.Evaluate(context));
-                var source = second.Evaluate(context);
-                if (source.valueType < JSObjectType.Object)
-                    throw new JSException(new TypeError("Right-hand value of instanceof is not object."));
-                var t = source.GetMember(tempContainer.ToString());
-                return t.isExist ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+                var array = source.oValue as Core.BaseTypes.Array;
+                if (array != null)
+                    return tempContainer.iValue >= 0 && tempContainer.iValue < array.data.Length && (array.data[tempContainer.iValue] ?? JSObject.notExists).isExist;
             }
+            var t = source.GetMember(tempContainer.ToString());
+            return t.isExist ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
         }
 
         public override string ToString()

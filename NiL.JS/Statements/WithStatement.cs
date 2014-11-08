@@ -7,7 +7,7 @@ using NiL.JS.Core.JIT;
 namespace NiL.JS.Statements
 {
     [Serializable]
-    internal sealed class WithStatement : CodeNode
+    public sealed class WithStatement : CodeNode
     {
         private CodeNode obj;
         private CodeNode body;

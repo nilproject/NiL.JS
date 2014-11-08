@@ -154,6 +154,8 @@
     <Content Include="arraytests.js" />
     <Content Include="coffee-script.js" />
     <Content Include="Draft\generators.js" />
+    <Content Include="handlebars-v2.0.0.js" />
+    <Content Include="jsfunfuzz.js" />
     <Content Include="linq.js" />
     <Content Include="Samples\async.js" />
     <Content Include="Samples\swap.js" />

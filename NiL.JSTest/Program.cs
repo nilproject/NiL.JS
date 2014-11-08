@@ -10,6 +10,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Windows.Forms;
 using System.Threading;
 using NiL.JS.Core.TypeProxing;
+using System.Collections.Generic;
 
 namespace NiL.JSTest
 {
@@ -199,7 +200,7 @@ namespace NiL.JSTest
         {
             Script s = null;
             var sw = new Stopwatch();
-            int @case = 0;
+            int @case = 2;
             switch (@case)
             {
                 case 0:
@@ -232,7 +233,7 @@ function abs(x)
 {
     return x < 0 ? -x : x;
 }
-for (var i = 0; i < 55000000; i++) abs(i * (1 - 2 * (i & 1)));
+for (var i = 0; i < 10000000; i++) abs(i * (1 - 2 * (i & 1)));
 ");
                         break;
                     }
@@ -247,16 +248,16 @@ for (var i = 0; i < 55000000; i++) abs(i * (1 - 2 * (i & 1)));
             sw.Stop();
             Console.WriteLine(sw.Elapsed);
         }
-
+        
         private static void testEx()
         {
             var sw = new Stopwatch();
             var s = new Script(
 @"
-test.f(true);
+test.Add(true);
 ");
             s.Context.DefineVariable("System").Assign(new NamespaceProvider("System"));
-            s.Context.DefineVariable("test").Assign(TypeProxy.Proxy(new { f = new Action<bool>(b => System.Console.WriteLine(b)) }));
+            s.Context.DefineVariable("test").Assign(TypeProxy.Proxy(new List<Arguments>()));
             sw.Start();
             s.Invoke();
             sw.Stop();
@@ -301,7 +302,7 @@ strongFunction(1, 2, 3, 4);
             Context.GlobalContext.DebuggerCallback += (sender, e) => System.Diagnostics.Debugger.Break();
             Context.GlobalContext.DefineVariable("alert").Assign(new ExternalFunction((t, a) => { System.Windows.Forms.MessageBox.Show(a[0].ToString()); return JSObject.Undefined; }));
 
-            int mode = 1
+            int mode = 101
                    ;
             switch (mode)
             {
@@ -389,6 +390,23 @@ strongFunction(1, 2, 3, 4);
                 case 7:
                     {
                         runFile(@"arraytests.js");
+                        break;
+                    }
+                case 8:
+                    {
+                        runFile(@"handlebars-v2.0.0.js");
+                        break;
+                    }
+                case 9:
+                    {
+                        Context.GlobalContext.DefineVariable("print").Assign(new ExternalFunction((t, a) =>
+                        {
+                            for (var i = 0; i < a.Length; i++)
+                                System.Console.WriteLine(a[i]);
+                            return JSObject.Undefined;
+                        }));
+                        Context.GlobalContext.DefineVariable("stderr").Assign(true);
+                        runFile(@"jsfunfuzz.js");
                         break;
                     }
                 case 151:

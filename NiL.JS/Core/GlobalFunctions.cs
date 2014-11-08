@@ -10,11 +10,6 @@ namespace NiL.JS.Core
 {
     internal static class GlobalFunctions
     {
-        internal static JSObject dummy(JSObject thisBind, Arguments x)
-        {
-            throw new NotImplementedException();
-        }
-
         internal static JSObject __swap(JSObject thisBind, Arguments args)
         {
             if ((args[0].attributes & (JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.SystemObject)) == 0

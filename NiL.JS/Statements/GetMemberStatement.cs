@@ -9,6 +9,8 @@ namespace NiL.JS.Statements
     [Serializable]
     public sealed class GetMemberStatement : CodeNode
     {
+        private bool triedToAGO;
+        private bool ago;
         private JSObject cachedMemberName;
         private CodeNode objStatement;
         private CodeNode memberNameStatement;
@@ -37,10 +39,11 @@ namespace NiL.JS.Statements
 
         internal override JSObject EvaluateForAssing(Context context)
         {
+            JSObject res = null;
             var source = objStatement.Evaluate(context);
             var n = cachedMemberName ?? memberNameStatement.Evaluate(context);
             context.objectSource = source;
-            var res = source.GetMember(n, true, false);
+            res = source.GetMember(n, true, false);
             if (res.valueType == JSObjectType.NotExists)
                 res.valueType = JSObjectType.NotExistsInObject;
             return res;
@@ -48,19 +51,48 @@ namespace NiL.JS.Statements
 
         internal override JSObject Evaluate(Context context)
         {
-            var source = objStatement.Evaluate(context);
-            var res = source.GetMember(cachedMemberName ?? memberNameStatement.Evaluate(context), false, false);
+            JSObject res = null;
+            JSObject source = null;
+            if (!triedToAGO)
+            {
+                triedToAGO = true;
+                if (context.caller != null
+                    && context.caller.creator.containsArguments
+                    && !context.caller.creator.containsEval
+                    && !context.caller.creator.containsWith
+                    && context.caller._arguments is Arguments)
+                {
+                    var src = objStatement as VariableReference;
+                    if (src != null
+                        && src.Name == "arguments")
+                    {
+                        ago = true;
+                    }
+                }
+            }
+            if (ago)
+            {
+                source = context.caller._arguments;
+                if (cachedMemberName != null)
+                {
+                    if (cachedMemberName.valueType == JSObjectType.Int)
+                        res = (source as Arguments)[cachedMemberName.iValue];
+                    else
+                        res = source.GetMember(cachedMemberName, false, false);
+                }
+                else
+                    res = source.GetMember(memberNameStatement.Evaluate(context), false, false);
+            }
+            else
+            {
+                source = objStatement.Evaluate(context);
+                res = source.GetMember(cachedMemberName ?? memberNameStatement.Evaluate(context), false, false);
+            }
             context.objectSource = source;
             if (res.valueType == JSObjectType.NotExists)
                 res.valueType = JSObjectType.NotExistsInObject;
             else if (res.valueType == JSObjectType.Property)
-            {
-                var f = (res.oValue as PropertyPair).get;
-                if (f == null)
-                    res = JSObject.notExists;
-                else
-                    res = f.Invoke(source, null);
-            }
+                res = (res.oValue as PropertyPair).get != null ? (res.oValue as PropertyPair).get.Invoke(source, null) : JSObject.notExists;
             return res;
         }
 

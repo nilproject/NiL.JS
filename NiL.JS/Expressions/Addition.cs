@@ -17,17 +17,14 @@ namespace NiL.JS.Expressions
 
         internal override JSObject Evaluate(Context context)
         {
-            lock (this)
-            {
-                var f = first.Evaluate(context);
-                tempContainer.valueType = f.valueType;
-                tempContainer.oValue = f.oValue;
-                tempContainer.iValue = f.iValue;
-                tempContainer.dValue = f.dValue;
-                tempContainer.__prototype = f.__prototype;
-                Impl(tempContainer, tempContainer, second.Evaluate(context));
-                return tempContainer;
-            }
+            var f = first.Evaluate(context);
+            tempContainer.valueType = f.valueType;
+            tempContainer.oValue = f.oValue;
+            tempContainer.iValue = f.iValue;
+            tempContainer.dValue = f.dValue;
+            tempContainer.__prototype = f.__prototype;
+            Impl(tempContainer, tempContainer, second.Evaluate(context));
+            return tempContainer;
         }
 
         private static void Impl(JSObject resultContainer, JSObject first, JSObject second)
@@ -45,7 +42,7 @@ namespace NiL.JS.Expressions
                             case JSObjectType.Bool:
                                 {
                                     if (((first.iValue | second.iValue) & 0x7c000000) == 0
-                                        && (first.iValue & second.iValue & 0x80000000) == 0)
+                                        && (first.iValue & second.iValue & int.MinValue/*0x80000000*/) == 0)
                                     {
                                         resultContainer.valueType = JSObjectType.Int;
                                         resultContainer.iValue = first.iValue + second.iValue;

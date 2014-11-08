@@ -630,7 +630,7 @@ namespace NiL.JS.Core.BaseTypes
                 return _prototype;
             }
         }
-        internal Arguments _arguments;
+        internal JSObject _arguments;
         /// <summary>
         /// Объект, содержащий параметры вызова функции либо null если в данный момент функция не выполняется.
         /// </summary>
@@ -763,7 +763,10 @@ namespace NiL.JS.Core.BaseTypes
 
                 if (args == null)
                     args = new Arguments();
-                _arguments = args;
+                if (creator.assignToArguments || creator.containsEval || creator.containsWith)
+                    _arguments = args.CloneImpl();
+                else
+                    _arguments = args;
                 if (body.strict)
                 {
                     args.attributes |= JSObjectAttributesInternal.ReadOnly;
@@ -778,7 +781,7 @@ namespace NiL.JS.Core.BaseTypes
                     var cc = Context.CurrentContext;
                     if (cc != null)
                     {
-                        if (cc.caller.creator.body.strict)
+                        if (cc.caller != null && cc.caller.creator.body.strict)
                             // контекст может быть строгим, но вызывающая функция нет.
                             // такое возможно только в том случае, когда вызывющий контекст принадлежит строгому eval'у
                             _caller = propertiesDummySM;
@@ -787,7 +790,7 @@ namespace NiL.JS.Core.BaseTypes
                     }
                 }
                 if (creator.containsEval || creator.containsArguments)
-                    internalContext.fields["arguments"] = args;
+                    internalContext.fields["arguments"] = _arguments;
                 if ((creator.containsEval || creator.isRecursive) && this.creator.Reference.descriptor != null)
                 {
                     this.creator.Reference.descriptor.cacheContext = internalContext;
@@ -811,7 +814,7 @@ namespace NiL.JS.Core.BaseTypes
                 do
                 {
                     internalContext.abort = AbortType.None;
-                    initParameters(this._arguments, body, intricate, internalContext);
+                    initParameters(this._arguments as Arguments ?? args, body, intricate, internalContext);
                     body.Evaluate(internalContext);
                     ai = internalContext.abortInfo;
                     intricate = true;
@@ -834,15 +837,19 @@ namespace NiL.JS.Core.BaseTypes
                 }
                 finally
                 {
-                    for (var i = body.localVariables.Length; i-- > 0; )
+                    if (oldargs == null)
                     {
-                        body.localVariables[i].cacheRes = null;
-                        body.localVariables[i].cacheContext = null;
-                    }
-                    for (var i = creator.arguments.Length; i-- > 0; )
-                    {
-                        creator.arguments[i].cacheRes = null;
-                        creator.arguments[i].cacheContext = null;
+                        var i = body.localVariables.Length;
+                        for (; i-- > 0; )
+                        {
+                            body.localVariables[i].cacheRes = null;
+                            body.localVariables[i].cacheContext = null;
+                        }
+                        for (i = creator.arguments.Length; i-- > 0; )
+                        {
+                            creator.arguments[i].cacheRes = null;
+                            creator.arguments[i].cacheContext = null;
+                        }
                     }
                 }
                 _caller = oldcaller;

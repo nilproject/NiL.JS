@@ -15,18 +15,15 @@ namespace NiL.JS.Expressions
 
         internal override JSObject Evaluate(Context context)
         {
-            lock (this)
+            var left = Tools.JSObjectToInt32(first.Evaluate(context));
+            tempContainer.iValue = (int)((uint)left >> Tools.JSObjectToInt32(second.Evaluate(context)));
+            tempContainer.valueType = JSObjectType.Int;
+            if (tempContainer.iValue < 0)
             {
-                var left = Tools.JSObjectToInt32(first.Evaluate(context));
-                tempContainer.iValue = (int)((uint)left >> Tools.JSObjectToInt32(second.Evaluate(context)));
-                tempContainer.valueType = JSObjectType.Int;
-                if (tempContainer.iValue < 0)
-                {
-                    tempContainer.dValue = (double)(uint)tempContainer.iValue;
-                    tempContainer.valueType = JSObjectType.Double;
-                }
-                return tempContainer;
+                tempContainer.dValue = (double)(uint)tempContainer.iValue;
+                tempContainer.valueType = JSObjectType.Double;
             }
+            return tempContainer;
         }
 
         internal override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> vars, bool strict)

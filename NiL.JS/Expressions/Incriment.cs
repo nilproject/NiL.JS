@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using NiL.JS.Core;
 using NiL.JS.Core.BaseTypes;
+using NiL.JS.Statements;
 
 namespace NiL.JS.Expressions
 {
@@ -37,122 +38,119 @@ namespace NiL.JS.Expressions
             // first всегда содержит узел, из которого нужно получать пременную
             // Определяем тип операции по вторичным признакам.
             Function setter = null;
-            JSObject prev = null;
-            lock (this)
+            JSObject res = null;
+            var val = first.EvaluateForAssing(context);
+            if (val.valueType == JSObjectType.Property)
             {
-                var val = first.EvaluateForAssing(context);
-                if (val.valueType == JSObjectType.Property)
-                {
-                    setter = (val.oValue as PropertyPair).set;
-                    if (context.strict && setter == null)
-                        throw new JSException(new TypeError("Can not increment property \"" + (first) + "\" without setter."));
-                    val = (val.oValue as PropertyPair).get.Invoke(context.objectSource, null).CloneImpl();
-                    val.attributes = 0;
-                }
-                else if (context.strict && (val.attributes & JSObjectAttributesInternal.ReadOnly) != 0)
-                    throw new JSException(new TypeError("Can not incriment readonly \"" + (first) + "\""));
-                switch (val.valueType)
-                {
-                    case JSObjectType.Bool:
-                        {
-                            val.valueType = JSObjectType.Int;
-                            break;
-                        }
-                    case JSObjectType.String:
-                        {
-                            double resd;
-                            int i = 0;
-                            if (!Tools.ParseNumber(val.oValue.ToString(), i, out resd, Tools.ParseNumberOptions.Default))
-                                resd = double.NaN;
-                            val.valueType = JSObjectType.Double;
-                            val.dValue = resd;
-                            break;
-                        }
-                    case JSObjectType.Object:
-                    case JSObjectType.Date:
-                    case JSObjectType.Function:
-                        {
-                            val.Assign(val.ToPrimitiveValue_Value_String());
-                            switch (val.valueType)
-                            {
-                                case JSObjectType.Bool:
-                                    {
-                                        val.valueType = JSObjectType.Int;
-                                        break;
-                                    }
-                                case JSObjectType.String:
-                                    {
-                                        double resd;
-                                        int i = 0;
-                                        if (!Tools.ParseNumber(val.oValue.ToString(), i, out resd, Tools.ParseNumberOptions.Default))
-                                            resd = double.NaN;
-                                        val.valueType = JSObjectType.Double;
-                                        val.dValue = resd;
-                                        break;
-                                    }
-                                case JSObjectType.Date:
-                                case JSObjectType.Function:
-                                case JSObjectType.Object: // null
-                                    {
-                                        val.iValue = 0;
-                                        val.valueType = JSObjectType.Int;
-                                        break;
-                                    }
-                            }
-                            break;
-                        }
-                    case JSObjectType.NotExists:
-                        {
-                            Tools.RaiseIfNotExist(val, first);
-                            break;
-                        }
-                }
-                if (second != null && val.isDefinded)
-                {
-                    prev = tempContainer;
-                    prev.Assign(val);
-                }
-                else
-                    prev = val;
-                switch (val.valueType)
-                {
-                    case JSObjectType.Int:
-                        {
-                            if (val.iValue == 0x7FFFFFFF)
-                            {
-                                val.dValue = val.iValue + 1.0;
-                                val.valueType = JSObjectType.Double;
-                            }
-                            else
-                                val.iValue++;
-                            break;
-                        }
-                    case JSObjectType.Double:
-                        {
-                            val.dValue++;
-                            break;
-                        }
-                    case JSObjectType.Undefined:
-                    case JSObjectType.NotExistsInObject:
-                        {
-                            val.valueType = JSObjectType.Double;
-                            val.dValue = double.NaN;
-                            break;
-                        }
-                    default:
-                        throw new NotImplementedException();
-                }
-                if (setter != null)
-                {
-                    var args = new Arguments();
-                    args.length = 1;
-                    args[0] = val;
-                    setter.Invoke(context.objectSource, args);
-                }
-                else if ((val.attributes & JSObjectAttributesInternal.Reassign) != 0)
-                    val.Assign(val);
-                return prev;
+                setter = (val.oValue as PropertyPair).set;
+                if (context.strict && setter == null)
+                    throw new JSException(new TypeError("Can not increment property \"" + (first) + "\" without setter."));
+                val = (val.oValue as PropertyPair).get.Invoke(context.objectSource, null).CloneImpl();
+                val.attributes = 0;
             }
+            else if (context.strict && (val.attributes & JSObjectAttributesInternal.ReadOnly) != 0)
+                throw new JSException(new TypeError("Can not incriment readonly \"" + (first) + "\""));
+            switch (val.valueType)
+            {
+                case JSObjectType.Bool:
+                    {
+                        val.valueType = JSObjectType.Int;
+                        break;
+                    }
+                case JSObjectType.String:
+                    {
+                        double resd;
+                        int i = 0;
+                        if (!Tools.ParseNumber(val.oValue.ToString(), i, out resd, Tools.ParseNumberOptions.Default))
+                            resd = double.NaN;
+                        val.valueType = JSObjectType.Double;
+                        val.dValue = resd;
+                        break;
+                    }
+                case JSObjectType.Object:
+                case JSObjectType.Date:
+                case JSObjectType.Function:
+                    {
+                        val.Assign(val.ToPrimitiveValue_Value_String());
+                        switch (val.valueType)
+                        {
+                            case JSObjectType.Bool:
+                                {
+                                    val.valueType = JSObjectType.Int;
+                                    break;
+                                }
+                            case JSObjectType.String:
+                                {
+                                    double resd;
+                                    int i = 0;
+                                    if (!Tools.ParseNumber(val.oValue.ToString(), i, out resd, Tools.ParseNumberOptions.Default))
+                                        resd = double.NaN;
+                                    val.valueType = JSObjectType.Double;
+                                    val.dValue = resd;
+                                    break;
+                                }
+                            case JSObjectType.Date:
+                            case JSObjectType.Function:
+                            case JSObjectType.Object: // null
+                                {
+                                    val.iValue = 0;
+                                    val.valueType = JSObjectType.Int;
+                                    break;
+                                }
+                        }
+                        break;
+                    }
+                case JSObjectType.NotExists:
+                    {
+                        Tools.RaiseIfNotExist(val, first);
+                        break;
+                    }
+            }
+            if (second != null && val.isDefinded)
+            {
+                res = tempContainer;
+                res.Assign(val);
+            }
+            else
+                res = val;
+            switch (val.valueType)
+            {
+                case JSObjectType.Int:
+                    {
+                        if (val.iValue == 0x7FFFFFFF)
+                        {
+                            val.dValue = val.iValue + 1.0;
+                            val.valueType = JSObjectType.Double;
+                        }
+                        else
+                            val.iValue++;
+                        break;
+                    }
+                case JSObjectType.Double:
+                    {
+                        val.dValue++;
+                        break;
+                    }
+                case JSObjectType.Undefined:
+                case JSObjectType.NotExistsInObject:
+                    {
+                        val.valueType = JSObjectType.Double;
+                        val.dValue = double.NaN;
+                        break;
+                    }
+                default:
+                    throw new NotImplementedException();
+            }
+            if (setter != null)
+            {
+                var args = new Arguments();
+                args.length = 1;
+                args[0] = val;
+                setter.Invoke(context.objectSource, args);
+            }
+            else if ((val.attributes & JSObjectAttributesInternal.Reassign) != 0)
+                val.Assign(val);
+            return res;
         }
 
         internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict)

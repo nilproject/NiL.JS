@@ -7,7 +7,7 @@ using NiL.JS.Core.TypeProxing;
 namespace NiL.JS.Statements
 {
     [Serializable]
-    internal sealed class ThrowStatement : CodeNode
+    public sealed class ThrowStatement : CodeNode
     {
         private CodeNode body;
 

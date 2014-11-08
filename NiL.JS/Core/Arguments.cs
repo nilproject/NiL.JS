@@ -173,6 +173,28 @@ namespace NiL.JS.Core
         protected internal override JSObject GetMember(JSObject name, bool createMember, bool own)
         {
             createMember &= (attributes & JSObjectAttributesInternal.Immutable) == 0;
+            if (name.valueType == JSObjectType.Int)
+            {
+                switch (name.iValue)
+                {
+                    case 0:
+                        return (a0 ?? (!createMember ? notExists : (a0 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
+                    case 1:
+                        return (a1 ?? (!createMember ? notExists : (a1 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
+                    case 2:
+                        return (a2 ?? (!createMember ? notExists : (a2 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
+                    case 3:
+                        return (a3 ?? (!createMember ? notExists : (a3 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
+                    case 4:
+                        return (a4 ?? (!createMember ? notExists : (a4 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
+                    case 5:
+                        return (a5 ?? (!createMember ? notExists : (a5 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
+                    case 6:
+                        return (a6 ?? (!createMember ? notExists : (a6 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
+                    case 7:
+                        return (a7 ?? (!createMember ? notExists : (a7 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
+                }
+            }
             switch (name.ToString())
             {
                 case "0":
