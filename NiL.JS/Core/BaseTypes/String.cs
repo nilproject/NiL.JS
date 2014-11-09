@@ -694,7 +694,8 @@ namespace NiL.JS.Core.BaseTypes
                         }
                 }
             }
-            int len = (oValue.ToString()).Length - pos0;
+            var selfs = (this as JSObject).ToString();
+            int len = selfs.Length - pos0;
             if (args.Length > 1)
             {
                 switch (args[1].valueType)
@@ -722,7 +723,15 @@ namespace NiL.JS.Core.BaseTypes
                         }
                 }
             }
-            return (this as JSObject).ToString().Substring(pos0, len);
+            if (pos0 < 0)
+                pos0 += selfs.Length;
+            if (pos0 < 0)
+                pos0 = 0;
+            if (pos0 >= selfs.Length || len <= 0)
+                return "";
+            if (selfs.Length < pos0 + len)
+                len = selfs.Length - pos0;
+            return selfs.Substring(pos0, len);
         }
 
         [AllowUnsafeCall(typeof(JSObject))]

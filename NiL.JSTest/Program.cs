@@ -248,7 +248,7 @@ for (var i = 0; i < 10000000; i++) abs(i * (1 - 2 * (i & 1)));
             sw.Stop();
             Console.WriteLine(sw.Elapsed);
         }
-        
+
         private static void testEx()
         {
             var sw = new Stopwatch();
@@ -302,7 +302,7 @@ strongFunction(1, 2, 3, 4);
             Context.GlobalContext.DebuggerCallback += (sender, e) => System.Diagnostics.Debugger.Break();
             Context.GlobalContext.DefineVariable("alert").Assign(new ExternalFunction((t, a) => { System.Windows.Forms.MessageBox.Show(a[0].ToString()); return JSObject.Undefined; }));
 
-            int mode = 101
+            int mode = 155
                    ;
             switch (mode)
             {
@@ -409,6 +409,16 @@ strongFunction(1, 2, 3, 4);
                         runFile(@"jsfunfuzz.js");
                         break;
                     }
+                case 10:
+                    {
+                        runFile(@"md5.js");
+                        break;
+                    }
+                case 11:
+                    {
+                        runFile(@"tests\custom\Int8Array.js");
+                        break;
+                    }
                 case 151:
                     {
                         // Global
@@ -507,6 +517,16 @@ strongFunction(1, 2, 3, 4);
                             runFile(@"sunspider-0.9.1\string-base64.js");
                         break;
                     }
+                case 103:
+                    {
+                        kraken();
+                        break;
+                    }
+                case 104:
+                    {
+                        cryptojs();
+                        break;
+                    }
             }
 
             GC.Collect(0);
@@ -528,6 +548,51 @@ strongFunction(1, 2, 3, 4);
             }
             else if (Debugger.IsAttached)
                 Console.ReadKey();
+        }
+
+        private static void cryptojs()
+        {
+            var folderPath = "crypto-js\\3.1.2";
+
+            Action<string> _ = Console.WriteLine;
+            var context = new Context();
+            Action<string> load = path =>
+            {
+                using (var fs = new FileStream(folderPath + "\\" + path, FileMode.Open, FileAccess.Read))
+                using (var sr = new StreamReader(fs))
+                    context.Eval(sr.ReadToEnd());
+            };
+            load("src/core.js");
+            load("src/lib-typedarrays.js");
+            load("src/x64-core.js");
+            load("src/enc-utf16.js");
+            load("src/enc-base64.js");
+            load("src/md5.js");
+            load("src/sha1.js");
+            load("src/sha256.js");
+            load("src/sha224.js");
+            load("src/sha512.js");
+            load("src/sha384.js");
+            load("src/sha3.js");
+            load("src/ripemd160.js");
+            load("src/hmac.js");
+            load("src/pbkdf2.js");
+            load("src/evpkdf.js");
+            load("src/cipher-core.js");
+            load("src/mode-cfb.js");
+            load("src/mode-ctr.js");
+            load("src/mode-ofb.js");
+            load("src/mode-ecb.js");
+            load("src/pad-ansix923.js");
+            load("src/pad-iso10126.js");
+            load("src/pad-zeropadding.js");
+            load("src/pad-iso97971.js");
+            load("src/pad-nopadding.js");
+            load("src/rc4.js");
+            load("src/rabbit.js");
+            load("src/rabbit-legacy.js");
+            load("src/aes.js");
+            load("src/tripledes.js");
         }
 
         private static void runFiles(string folderPath)
@@ -623,6 +688,63 @@ strongFunction(1, 2, 3, 4);
                 _total += total.Ticks;
                 min = System.Math.Min(total.Ticks, min);
                 GC.GetTotalMemory(true);
+            }
+            _("Average: " + new TimeSpan(_total / round));
+            _("Minimum: " + new TimeSpan(min));
+        }
+
+        private static void kraken()
+        {
+            var folderPath = "kraken-1.1";
+
+            Action<string> _ = Console.WriteLine;
+            var sw = new Stopwatch();
+            _("Directory: \"" + Directory.GetParent(folderPath) + "\"");
+            _("Scaning directory...");
+            var fls = Directory.EnumerateFiles(folderPath, "*.js", SearchOption.AllDirectories).ToArray();
+            _("Founded " + fls.Length + " js-files");
+
+            long _total = 0;
+            var round = 0;
+            long min = long.MaxValue;
+            Context.RefreshGlobalContext();
+            for (; round < 1; round++)
+            {
+                TimeSpan total = new TimeSpan();
+
+                for (var i = 0; i < fls.Length; )
+                {
+                    string data, body;
+                    using (var f = new FileStream(fls[i++], FileMode.Open, FileAccess.Read))
+                    using (var sr = new StreamReader(f))
+                        data = sr.ReadToEnd();
+                    _("Process " + fls[i]);
+                    using (var f = new FileStream(fls[i++], FileMode.Open, FileAccess.Read))
+                    using (var sr = new StreamReader(f))
+                        body = sr.ReadToEnd();
+
+                    sw.Restart();
+                    var script = new Script(data);
+                    script.Context.DefineVariable("print").Assign(new ExternalFunction((t, a) =>
+                    {
+                        for (var j = 0; j < a.Length; j++)
+                            System.Console.WriteLine(a[j]);
+                        return JSObject.Undefined;
+                    }));
+                    script.Invoke();
+                    script.Context.Eval(body);
+                    sw.Stop();
+                    total += sw.Elapsed;
+                    _(sw.Elapsed.ToString());
+                    Context.RefreshGlobalContext();
+                    GC.Collect(0);
+                    GC.Collect(1);
+                    GC.Collect(2);
+                    GC.GetTotalMemory(true);
+                }
+                _("Total: " + total);
+                _total += total.Ticks;
+                min = System.Math.Min(total.Ticks, min);
             }
             _("Average: " + new TimeSpan(_total / round));
             _("Minimum: " + new TimeSpan(min));

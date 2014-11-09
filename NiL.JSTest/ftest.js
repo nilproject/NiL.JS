@@ -1,3 +1,1 @@
-﻿
-for (var i = 0; i < 10000000; i++)
-    new Array(1, 2, 3);
+﻿console.log('123'.substr(-2, 2));

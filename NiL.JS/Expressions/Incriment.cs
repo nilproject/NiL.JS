@@ -155,7 +155,7 @@ namespace NiL.JS.Expressions
 
         internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict)
         {
-            base.Build(ref _this, depth, vars, strict);
+            Parser.Build(ref first, depth + 1, vars, strict);
             if (depth <= 1 && second != null)
                 second = null;
             if (first is VariableReference)

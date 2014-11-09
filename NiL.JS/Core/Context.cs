@@ -71,12 +71,13 @@ namespace NiL.JS.Core
                 globalContext.fields["Object"].attributes = JSObjectAttributesInternal.DoNotDelete;
                 JSObject.GlobalPrototype = TypeProxy.GetPrototype(typeof(JSObject));
                 Core.ThisBind.refreshThisBindProto();
-                globalContext.AttachModule(typeof(BaseTypes.Date));
+                globalContext.AttachModule(typeof(Modules.Math));
                 globalContext.AttachModule(typeof(BaseTypes.Array));
-                globalContext.AttachModule(typeof(BaseTypes.ArrayBuffer));
+                globalContext.AttachModule(typeof(Modules.JSON));
                 globalContext.AttachModule(typeof(BaseTypes.String));
-                globalContext.AttachModule(typeof(BaseTypes.Number));
                 globalContext.AttachModule(typeof(BaseTypes.Function));
+                globalContext.AttachModule(typeof(BaseTypes.Date));
+                globalContext.AttachModule(typeof(BaseTypes.Number));
                 globalContext.AttachModule(typeof(BaseTypes.Boolean));
                 globalContext.AttachModule(typeof(BaseTypes.Error));
                 globalContext.AttachModule(typeof(BaseTypes.TypeError));
@@ -86,9 +87,11 @@ namespace NiL.JS.Core
                 globalContext.AttachModule(typeof(BaseTypes.URIError));
                 globalContext.AttachModule(typeof(BaseTypes.SyntaxError));
                 globalContext.AttachModule(typeof(BaseTypes.RegExp));
-                globalContext.AttachModule(typeof(Modules.Math));
-                globalContext.AttachModule(typeof(Modules.JSON));
                 globalContext.AttachModule(typeof(Modules.console));
+
+                globalContext.AttachModule(typeof(BaseTypes.ArrayBuffer));
+                globalContext.AttachModule(typeof(BaseTypes.Int8Array));
+
 
                 #region Base Function
                 globalContext.DefineVariable("eval").Assign(new EvalFunction());
@@ -486,14 +489,11 @@ namespace NiL.JS.Core
                             }
                         }
                 }
-                for (i = body.variables.Length; i-- > 0; )
+                for (i = body.localVariables.Length; i-- > 0; )
                 {
-                    if (body.variables[i].Defined)
-                    {
-                        var f = context.DefineVariable(body.variables[i].name);
-                        if (body.variables[i].Inititalizator != null)
-                            f.Assign(body.variables[i].Inititalizator.Evaluate(context));
-                    }
+                    var f = context.DefineVariable(body.localVariables[i].name);
+                    if (body.localVariables[i].Inititalizator != null)
+                        f.Assign(body.localVariables[i].Inititalizator.Evaluate(context));
                 }
 
                 var run = context.Activate();

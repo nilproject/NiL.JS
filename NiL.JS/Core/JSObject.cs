@@ -629,7 +629,15 @@ namespace NiL.JS.Core
         {
             var res = new JSObject();
             res.Assign(this);
-            res.attributes = this.attributes & ~JSObjectAttributesInternal.SystemObject;
+            res.attributes = this.attributes & ~(JSObjectAttributesInternal.SystemObject | JSObjectAttributesInternal.ReadOnly);
+            return res;
+        }
+
+        internal JSObject CloneImpl(JSObjectAttributesInternal resetMask)
+        {
+            var res = new JSObject();
+            res.Assign(this);
+            res.attributes = this.attributes & ~resetMask;
             return res;
         }
 
@@ -1209,9 +1217,9 @@ namespace NiL.JS.Core
             {
                 var ti = 0;
                 if (target is Arguments && int.TryParse(memberName, NumberStyles.Integer, CultureInfo.InvariantCulture, out ti) && ti >= 0 && ti < 16)
-                    (target as Arguments)[ti] = obj = obj.CloneImpl();
+                    (target as Arguments)[ti] = obj = obj.CloneImpl(JSObjectAttributesInternal.SystemObject);
                 else
-                    target.fields[memberName] = obj = obj.CloneImpl();
+                    target.fields[memberName] = obj = obj.CloneImpl(JSObjectAttributesInternal.SystemObject);
                 obj.attributes &= ~JSObjectAttributesInternal.Argument;
             }
             if ((obj.attributes & JSObjectAttributesInternal.SystemObject) != 0)
@@ -1334,9 +1342,9 @@ namespace NiL.JS.Core
                 {
                     var ti = 0;
                     if (target is Arguments && int.TryParse(memberName, NumberStyles.Integer, CultureInfo.InvariantCulture, out ti) && ti >= 0 && ti < 16)
-                        (target as Arguments)[ti] = obj = obj.CloneImpl();
+                        (target as Arguments)[ti] = obj = obj.CloneImpl(JSObjectAttributesInternal.SystemObject);
                     else
-                        target.fields[memberName] = obj = obj.CloneImpl();
+                        target.fields[memberName] = obj = obj.CloneImpl(JSObjectAttributesInternal.SystemObject);
                     obj.attributes &= ~JSObjectAttributesInternal.Argument;
                 }
             }

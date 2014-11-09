@@ -43,7 +43,6 @@ namespace NiL.JS.Statements
 
         internal static ParseResult Parse(ParsingState state, ref int index)
         {
-            //string code = state.Code;
             if (state.Code[index] != '{')
                 throw new ArgumentException("Invalid JSON definition");
             var flds = new Dictionary<string, CodeNode>();

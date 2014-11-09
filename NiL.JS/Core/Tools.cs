@@ -700,19 +700,24 @@ namespace NiL.JS.Core
                     skiped = true;
                     i++;
                 }
-                if ((radix == 0 || radix == 16) && (code[i] == '0') && (code[i + 1] == 'x' || code[i + 1] == 'X'))
+                if ((i + 1 < code.Length) && (code[i] == '0'))
                 {
-                    i += 2;
-                    radix = 16;
-                }
-                else if (radix == 0 && code[i] == '0' && isDigit(code[i + 1]))
-                {
-                    if (raiseOctal)
-                        throw new JSException((new SyntaxError("Octal literals not allowed in strict mode")));
-                    i += 1;
-                    if (processOctal)
-                        radix = 8;
-                    res = true;
+                    if ((radix == 0 || radix == 16)
+                        && (i == index)
+                        && (code[i + 1] == 'x' || code[i + 1] == 'X'))
+                    {
+                        i += 2;
+                        radix = 16;
+                    }
+                    else if (radix == 0 && isDigit(code[i + 1]))
+                    {
+                        if (raiseOctal)
+                            throw new JSException((new SyntaxError("Octal literals not allowed in strict mode")));
+                        i += 1;
+                        if (processOctal)
+                            radix = 8;
+                        res = true;
+                    }
                 }
             }
             if (allowFloat && radix == 0)
@@ -828,7 +833,7 @@ namespace NiL.JS.Core
                 }
                 else
                     value = temp;
-                if (value == 0 && skiped)
+                if (value == 0 && skiped && raiseOctal)
                     throw new JSException((new SyntaxError("Octal literals not allowed in strict mode")));
                 value *= sig;
                 index = i;

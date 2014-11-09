@@ -211,6 +211,8 @@
     <Compile Include="Core\BaseTypes\Array.cs" />
     <Compile Include="Core\BaseTypes\ArrayBuffer.cs" />
     <Compile Include="Core\BaseTypes\Boolean.cs" />
+    <Compile Include="Core\BaseTypes\Int8Array.cs" />
+    <Compile Include="Core\BaseTypes\TypedArray.cs" />
     <Compile Include="Core\BinaryTree.cs" />
     <Compile Include="Core\BindedFunction.cs" />
     <Compile Include="Core\Modules\CallOverloaded.cs" />

@@ -223,3 +223,5 @@ function mul(a, mul) {
 }
 if (mul(2, 2) != 4)
     console.log("function args link fail")
+
+for (var a = 2; a; (a--, a--));

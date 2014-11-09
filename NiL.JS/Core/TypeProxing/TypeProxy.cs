@@ -89,9 +89,9 @@ namespace NiL.JS.Core.TypeProxing
             else if (value is int)
                 return (int)value;
             else if (value is uint)
-                return (double)(uint)value;
+                return new Number((long)(uint)value);
             else if (value is long)
-                return (double)(long)value;
+                return new Number((long)value);
             else if (value is ulong)
                 return (double)(ulong)value;
             else if (value is float)
@@ -499,7 +499,7 @@ namespace NiL.JS.Core.TypeProxing
             if (m[0].IsDefined(typeof(DoNotEnumerateAttribute), false))
                 r.attributes |= JSObjectAttributesInternal.DoNotEnum;
             lock (fields)
-                fields[name] = create && r.GetType() != typeof(JSObject) ? (r = r.CloneImpl()) : r;
+                fields[name] = create && (r.attributes & (JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.SystemObject)) == JSObjectAttributesInternal.SystemObject ? (r = r.CloneImpl()) : r;
             if (m[0].IsDefined(typeof(ReadOnlyAttribute), false))
                 r.attributes |= JSObjectAttributesInternal.ReadOnly;
             if (m[0].IsDefined(typeof(NotConfigurable), false))

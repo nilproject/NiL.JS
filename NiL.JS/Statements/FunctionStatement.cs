@@ -533,6 +533,11 @@ namespace NiL.JS.Statements
                                 desc.references.Add(r);
                                 r.descriptor = desc;
                             }
+                            if (body.variables[i].assignations != null)
+                                if (desc.assignations == null)
+                                    desc.assignations = body.variables[i].assignations;
+                                else
+                                    desc.assignations.AddRange(body.variables[i].assignations);
                             body.variables[i] = desc;
                         }
                         else

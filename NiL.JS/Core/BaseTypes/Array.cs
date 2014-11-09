@@ -2262,7 +2262,7 @@ namespace NiL.JS.Core.BaseTypes
         [Hidden]
         internal protected override JSObject GetMember(JSObject name, bool forWrite, bool own)
         {
-            if (name.valueType == JSObjectType.String && "length".Equals(name.oValue))
+            if (name.valueType == JSObjectType.String && string.CompareOrdinal("length", name.oValue.ToString()) == 0)
                 return length;
             bool isIndex = false;
             int index = 0;
@@ -2271,9 +2271,6 @@ namespace NiL.JS.Core.BaseTypes
                 tname = tname.ToPrimitiveValue_String_Value();
             switch (tname.valueType)
             {
-                case JSObjectType.Object:
-                case JSObjectType.Bool:
-                    break;
                 case JSObjectType.Int:
                     {
                         isIndex = tname.iValue >= 0;

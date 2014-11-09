@@ -14,12 +14,12 @@ namespace NiL.JS.Core.BaseTypes
             private int index;
             private byte[] data;
 
-            public Element(int index, byte[] data)
+            public Element(int index, ArrayBuffer parent)
             {
                 this.valueType = JSObjectType.Int;
                 this.index = index;
-                this.iValue = data[index];
-                this.data = data;
+                this.iValue = parent.Data[index];
+                this.data = parent.Data;
             }
 
             public override void Assign(JSObject value)
@@ -125,7 +125,7 @@ namespace NiL.JS.Core.BaseTypes
                 {
                     if (index >= Data.Length)
                         return undefined;
-                    return new Element(index, Data);
+                    return new Element(index, this);
                 }
             }
             return base.GetMember(name, forWrite, own);

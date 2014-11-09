@@ -50,7 +50,7 @@ namespace NiL.JS.Core.BaseTypes
             valueType = JSObjectType.Int;
             iValue = 0;
             oValue = this;
-            attributes |= JSObjectAttributesInternal.SystemObject;
+            attributes |= JSObjectAttributesInternal.SystemObject | JSObjectAttributesInternal.ReadOnly;
         }
 
         [Modules.DoNotEnumerate]
@@ -59,7 +59,7 @@ namespace NiL.JS.Core.BaseTypes
             valueType = JSObjectType.Int;
             iValue = value;
             oValue = this;
-            attributes |= JSObjectAttributesInternal.SystemObject;
+            attributes |= JSObjectAttributesInternal.SystemObject | JSObjectAttributesInternal.ReadOnly;
         }
 
         [Modules.Hidden]
@@ -76,7 +76,7 @@ namespace NiL.JS.Core.BaseTypes
                 dValue = value;
             }
             oValue = this;
-            attributes |= JSObjectAttributesInternal.SystemObject;
+            attributes |= JSObjectAttributesInternal.SystemObject | JSObjectAttributesInternal.ReadOnly;
         }
 
         [Modules.DoNotEnumerate]
@@ -85,7 +85,7 @@ namespace NiL.JS.Core.BaseTypes
             valueType = JSObjectType.Double;
             dValue = value;
             oValue = this;
-            attributes |= JSObjectAttributesInternal.SystemObject;
+            attributes |= JSObjectAttributesInternal.SystemObject | JSObjectAttributesInternal.ReadOnly;
         }
 
         [Modules.DoNotEnumerate]
@@ -101,7 +101,7 @@ namespace NiL.JS.Core.BaseTypes
             if (value.Length != 0 && Tools.ParseNumber(value, ref i, out d, 0, Tools.ParseNumberOptions.Default | (Context.CurrentContext.strict ? Tools.ParseNumberOptions.RaiseIfOctal : 0)) && i == value.Length)
                 dValue = d;
             oValue = this;
-            attributes |= JSObjectAttributesInternal.SystemObject;
+            attributes |= JSObjectAttributesInternal.SystemObject | JSObjectAttributesInternal.ReadOnly;
         }
 
         [Modules.DoNotEnumerate]
@@ -110,7 +110,7 @@ namespace NiL.JS.Core.BaseTypes
             valueType = JSObjectType.Double;
             dValue = Tools.JSObjectToDouble(obj[0]);
             oValue = this;
-            attributes |= JSObjectAttributesInternal.SystemObject;
+            attributes |= JSObjectAttributesInternal.SystemObject | JSObjectAttributesInternal.ReadOnly;
         }
 
         [Hidden]

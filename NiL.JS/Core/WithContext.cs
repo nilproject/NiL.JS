@@ -20,7 +20,7 @@ namespace NiL.JS.Core
                 throw new JSException(new TypeError("Can't access to property value of \"undefined\"."));
             if (obj.valueType >= JSObjectType.Object && obj.oValue == null)
                 throw new JSException(new TypeError("Can't access to property value of \"null\"."));
-            @object = obj.CloneImpl();
+            @object = obj.oValue as JSObject ?? obj;
         }
 
         public override JSObject DefineVariable(string name)
