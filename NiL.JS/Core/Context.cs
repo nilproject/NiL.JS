@@ -331,19 +331,14 @@ namespace NiL.JS.Core
             if (name == "this")
                 return thisBind;
             JSObject res = null;
-            //if (fields == null)
-            //    (fields = new Dictionary<string, JSObject>())[name] = res = new JSObject();
-            //else
             if (!fields.TryGetValue(name, out res))
             {
-                fields[name] = res = new JSObject();
-                res.attributes = JSObjectAttributesInternal.DoNotDelete;
+                fields[name] = res = new JSObject()
+                {
+                    attributes = JSObjectAttributesInternal.DoNotDelete
+                };
             }
-            else
-            {
-                if (res.valueType < JSObjectType.Undefined)
-                    res.valueType = JSObjectType.Undefined;
-            }
+            res.valueType |= JSObjectType.Undefined;
             return res;
         }
 
@@ -466,26 +461,34 @@ namespace NiL.JS.Core
                         for (i = context.variables.Length; i-- > 0; )
                         {
                             VariableDescriptor desc = null;
-                            if (vars.TryGetValue(context.variables[i].name, out desc) && desc.Defined)
+                            if (vars.TryGetValue(context.variables[i].name, out desc))
                             {
-                                context.variables[i].defineDepth = -1; // Кеш будет игнорироваться.
-                                // чистить кэш тут не достаточно. 
-                                // Мы не знаем, где объявлена одноимённая переменная 
-                                // и в тех случаях, когда она пришла из функции выше
-                                // или даже глобального контекста, её кэш может быть 
-                                // не сброшен вовремя и значение будет браться из контекста
-                                // eval'а, а не того контекста, в котором её позовут.
-                                /*
-                                 * function a(){
-                                 *  var c = 1;
-                                 *  function b(){
-                                 *      eval("var c = 2");
-                                 *      // переменная объявлена в контексте b, значит и значение должно быть из
-                                 *      // контекста b, но если по выходу из b кэш этой переменной сброшен не будет, 
-                                 *      // то в a её значение будет 2
-                                 *  }
-                                 * }
-                                 */
+                                if (desc.Defined)
+                                {
+                                    context.variables[i].defineDepth = -1; // Кеш будет игнорироваться.
+                                    // чистить кэш тут не достаточно. 
+                                    // Мы не знаем, где объявлена одноимённая переменная 
+                                    // и в тех случаях, когда она пришла из функции выше
+                                    // или даже глобального контекста, её кэш может быть 
+                                    // не сброшен вовремя и значение будет браться из контекста
+                                    // eval'а, а не того контекста, в котором её позовут.
+                                    /*
+                                     * function a(){
+                                     *  var c = 1;
+                                     *  function b(){
+                                     *      eval("var c = 2");
+                                     *      // переменная объявлена в контексте b, значит и значение должно быть из
+                                     *      // контекста b, но если по выходу из b кэш этой переменной сброшен не будет, 
+                                     *      // то в a её значение будет 2
+                                     *  }
+                                     * }
+                                     */
+                                }
+                                else
+                                {
+                                    for (var r = 0; r < desc.references.Count; r++)
+                                        desc.references[r].descriptor = context.variables[i];
+                                }
                             }
                         }
                 }

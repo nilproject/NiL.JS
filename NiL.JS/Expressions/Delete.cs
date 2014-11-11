@@ -114,13 +114,16 @@ namespace NiL.JS.Expressions
             {
                 if (strict)
                     throw new JSException(new SyntaxError("Can not evalute delete on variable in strict mode"));
-                first = new SafeVariableGetter(first as GetVariableStatement);
+                (first as GetVariableStatement).suspendError = true;
             }
             if (first is GetMemberStatement)
                 first = new SafeMemberGetter(first as GetMemberStatement);
-            if (first is VariableReference)
-                ((first as VariableReference).Descriptor.assignations ??
-                    ((first as VariableReference).Descriptor.assignations = new System.Collections.Generic.List<CodeNode>())).Add(this);
+            var f = first as VariableReference ?? ((first is OpAssignCache) ? (first as OpAssignCache).Source as VariableReference : null);
+            if (f != null)
+            {
+                (f.Descriptor.assignations ??
+                    (f.Descriptor.assignations = new System.Collections.Generic.List<CodeNode>())).Add(this);
+            }
             return false;
         }
 

@@ -69,7 +69,7 @@ namespace NiL.JS.Expressions
         {
             base.Build(ref _this, depth, vars, strict);
             if (first is GetVariableStatement)
-                first = new SafeVariableGetter(first as GetVariableStatement);
+                (first as GetVariableStatement).suspendError = true;
             return false;
         }
 

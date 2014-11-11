@@ -142,7 +142,7 @@ namespace NiL.JSTest
             _("Found " + (fls.Length - 2) + " js-files");
             bool skipedShowed = false;
             sw.Start();
-            for (int i = 0; i < fls.Length; i++)
+            for (int i = 39; i < fls.Length; i++)
             {
                 if (i != 0 && !skipedShowed)
                     _("Skiped: " + i);
@@ -168,10 +168,16 @@ namespace NiL.JSTest
                         econtext = s.Context;
                         s.Context.DefineVariable("print").Assign(new ExternalFunction((t, e) =>
                         {
-                            var text = e[0].isDefinded ? e[0].ToString() : "";
-                            //if (text == "FAIL")
-                            //    System.Diagnostics.Debugger.Break();
-                            Console.WriteLine(text);
+                            for (var ti = 0; ti < e.Length; ti++)
+                            {
+                                var text = e[ti].ToString();
+                                if (ti == 0 && text == "FAIL")
+                                    System.Diagnostics.Debugger.Break();
+                                if (ti > 0)
+                                    System.Console.Write(' ');
+                                System.Console.Write(text);
+                            }
+                            System.Console.WriteLine();
                             return JSObject.Undefined;
                         }));
                     }
@@ -302,7 +308,7 @@ strongFunction(1, 2, 3, 4);
             Context.GlobalContext.DebuggerCallback += (sender, e) => System.Diagnostics.Debugger.Break();
             Context.GlobalContext.DefineVariable("alert").Assign(new ExternalFunction((t, a) => { System.Windows.Forms.MessageBox.Show(a[0].ToString()); return JSObject.Undefined; }));
 
-            int mode = 155
+            int mode = 1
                    ;
             switch (mode)
             {

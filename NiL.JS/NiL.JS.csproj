@@ -279,6 +279,7 @@
     <Compile Include="NamespaceProvider.cs" />
     <Compile Include="Statements\LabeledStatement.cs" />
     <Compile Include="Statements\MultilineComment.cs" />
+    <Compile Include="Statements\OpAssignCache.cs" />
     <Compile Include="Statements\SinglelineComment.cs" />
     <Compile Include="Expressions\NotEqual.cs" />
     <Compile Include="Expressions\MoreOrEqual.cs" />

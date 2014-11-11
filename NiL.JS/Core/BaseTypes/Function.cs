@@ -602,6 +602,8 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         #region Runtime
+        private int parametersStored;
+        private int recursiveDepth;
         [Hidden]
         [CLSCompliant(false)]
         internal protected JSObject _prototype;
@@ -752,21 +754,37 @@ namespace NiL.JS.Core.BaseTypes
                 return notExists;
             }
             var oldargs = _arguments;
-            bool intricate = creator.containsWith || creator.containsArguments || creator.containsEval;
-            if (oldargs != null && !intricate) // рекурсивный вызов
+            if (recursiveDepth > parametersStored) // рекурсивный вызов. Из-за With мы можем упустить eval
+            {
                 storeParameters();
-            Context internalContext = new Context(context ?? Context.CurrentContext, intricate, this);
+                parametersStored++;
+            }
+            recursiveDepth++;
             var oldcaller = _caller;
+            //Function oldContextCaller = null;
+            //JSObject oldContextThisBind = null;
+            //bool pseudoInline = false;
+            Context internalContext = null;
+            //if (creator.containsEval || creator.containsWith || creator.containsFunctions || (context ?? Context.CurrentContext).strict != body.strict)
+            internalContext = new Context(context ?? Context.CurrentContext, creator.containsEval || creator.containsWith, this);
+            //else
+            //{
+            //    internalContext = context ?? Context.CurrentContext;
+            //    oldContextCaller = internalContext.caller;
+            //    oldContextThisBind = internalContext.thisBind;
+            //    pseudoInline = true;
+            //    internalContext.caller = this;
+            //}
             try
             {
                 thisBind = correctThisBind(thisBind, body, internalContext);
+                internalContext.thisBind = thisBind;
 
                 if (args == null)
                     args = new Arguments();
-                if (creator.assignToArguments || creator.containsEval || creator.containsWith)
-                    _arguments = args.CloneImpl();
-                else
-                    _arguments = args;
+                _arguments = args;
+                if (creator.containsWith || creator.containsEval)
+                    internalContext.fields["arguments"] = _arguments;
                 if (body.strict)
                 {
                     args.attributes |= JSObjectAttributesInternal.ReadOnly;
@@ -778,35 +796,34 @@ namespace NiL.JS.Core.BaseTypes
                 {
                     args.callee = this;
                     args.caller = notExists;
-                    var cc = Context.CurrentContext;
-                    if (cc != null)
+                    //if (pseudoInline)
+                    //    _caller = oldContextCaller;
+                    //else
                     {
-                        if (cc.caller != null && cc.caller.creator.body.strict)
-                            // контекст может быть строгим, но вызывающая функция нет.
-                            // такое возможно только в том случае, когда вызывющий контекст принадлежит строгому eval'у
-                            _caller = propertiesDummySM;
-                        else
-                            _caller = cc.caller;
+                        var cc = Context.CurrentContext;
+                        if (cc != null)
+                        {
+                            if (cc.caller != null && cc.caller.creator.body.strict)
+                                // контекст может быть строгим, но вызывающая функция нет.
+                                // такое возможно только в том случае, когда вызывющий контекст принадлежит строгому eval'у
+                                _caller = propertiesDummySM;
+                            else
+                                _caller = cc.caller;
+                        }
                     }
                 }
-                if (creator.containsEval || creator.containsArguments)
-                    internalContext.fields["arguments"] = _arguments;
                 if ((creator.containsEval || creator.isRecursive) && this.creator.Reference.descriptor != null)
                 {
                     this.creator.Reference.descriptor.cacheContext = internalContext;
                     this.creator.Reference.descriptor.cacheRes = this;
                 }
 
-                internalContext.thisBind = thisBind;
-                if ((creator.type == FunctionType.Function
-                        || creator.type == FunctionType.Generator)
-                    && !string.IsNullOrEmpty(creator.name)
-                    && (creator.containsEval || creator.containsWith)
-                    )
-                    internalContext.fields[creator.name] = this;
                 internalContext.strict |= body.strict;
-                internalContext.variables = body.variables;
-                internalContext.Activate();
+                //if (!pseudoInline)
+                {
+                    internalContext.variables = body.variables;
+                    internalContext.Activate();
+                }
                 if (creator.type == FunctionType.Generator)
                     Thread.CurrentThread.Suspend();
                 JSObject ai = null;
@@ -814,10 +831,11 @@ namespace NiL.JS.Core.BaseTypes
                 do
                 {
                     internalContext.abort = AbortType.None;
-                    initParameters(this._arguments as Arguments ?? args, body, intricate, internalContext);
+                    initParameters(this._arguments as Arguments ?? args, body, internalContext);
+                    if (recursiveDepth == parametersStored)
+                        storeParameters();
                     body.Evaluate(internalContext);
                     ai = internalContext.abortInfo;
-                    intricate = true;
                 } while (internalContext.abort == AbortType.TailRecursion);
                 if (ai == null)
                 {
@@ -830,10 +848,22 @@ namespace NiL.JS.Core.BaseTypes
             }
             finally
             {
+                recursiveDepth--;
+                if (parametersStored > recursiveDepth)
+                    parametersStored--;
                 try
                 {
-                    internalContext.abort = AbortType.Return;
-                    internalContext.Deactivate();
+                    //if (pseudoInline)
+                    //{
+                    //    internalContext.caller = oldContextCaller;
+                    //    internalContext.thisBind = oldContextThisBind;
+                    //    internalContext.abort = AbortType.None;
+                    //}
+                    //else
+                    {
+                        internalContext.abort = AbortType.Return;
+                        internalContext.Deactivate();
+                    }
                 }
                 finally
                 {
@@ -857,73 +887,99 @@ namespace NiL.JS.Core.BaseTypes
             }
         }
 
-        private void initParameters(Arguments args, CodeBlock body, bool intricate, Context internalContext)
+        private void initParameters(Arguments args, CodeBlock body, Context internalContext)
         {
             int min = System.Math.Min(args.length, creator.arguments.Length);
             int i = 0;
             for (; i < min; i++)
             {
                 JSObject t = args[i];
-                if ((t.attributes & JSObjectAttributesInternal.Cloned) != 0)
+                if (body.strict)
                 {
-                    t.attributes &= ~JSObjectAttributesInternal.Cloned;
-                    t.attributes |= JSObjectAttributesInternal.Argument;
+                    if (creator.containsEval || creator.containsArguments)
+                    {
+                        if ((t.attributes & JSObjectAttributesInternal.Cloned) == 0)
+                            args[i] = t.CloneImpl();
+                        t = t.CloneImpl();
+                    }
+                    else if (creator.containsArguments)
+                    {
+                        args[i] = t.CloneImpl();
+                        if (creator.arguments[i].assignations != null && (t.attributes & JSObjectAttributesInternal.Cloned) == 0)
+                            t = t.CloneImpl();
+                    }
                 }
                 else
                 {
-                    if (intricate || creator.arguments[i].assignations != null)
+                    if (creator.arguments[i].assignations != null
+                        || creator.containsEval
+                        || creator.containsWith
+                        || creator.containsArguments)
                     {
-                        args[i] = t = t.CloneImpl();
+                        if ((t.attributes & JSObjectAttributesInternal.Cloned) == 0)
+                            args[i] = t = t.CloneImpl();
                         t.attributes |= JSObjectAttributesInternal.Argument;
                     }
                 }
-                if (body.strict && (intricate || creator.arguments[i].assignations != null))
-                    t = t.CloneImpl();
-                if (intricate || creator.arguments[i].captured)
+                t.attributes &= ~JSObjectAttributesInternal.Cloned;
+                if (creator.arguments[i].captured || creator.containsEval || creator.containsWith)
                     (internalContext.fields ?? (internalContext.fields = new Dictionary<string, JSObject>()))[creator.arguments[i].Name] = t;
                 creator.arguments[i].cacheContext = internalContext;
                 creator.arguments[i].cacheRes = t;
+                if (string.CompareOrdinal(creator.arguments[i].name, "arguments") == 0)
+                    _arguments = t;
             }
             for (; i < args.length; i++)
             {
                 JSObject t = args[i];
                 if ((t.attributes & JSObjectAttributesInternal.Cloned) != 0)
                     t.attributes &= ~JSObjectAttributesInternal.Cloned;
-                else
+                else if (creator.containsEval || creator.containsWith || creator.containsArguments)
                     args[i] = t = t.CloneImpl();
                 t.attributes |= JSObjectAttributesInternal.Argument;
             }
             for (; i < creator.arguments.Length; i++)
             {
-                if (creator.arguments[i].owner != null) // условный флаг того, что параметр является фиктивным. Такое может произойти, если он нигде не используется либо перебит одноимённой функцией
+                if (creator.containsEval || creator.containsWith || creator.arguments[i].assignations != null)
+                    creator.arguments[i].cacheRes = new JSObject()
+                       {
+                           attributes = JSObjectAttributesInternal.Argument,
+                           valueType = JSObjectType.Undefined
+                       };
+                else
+                    creator.arguments[i].cacheRes = JSObject.undefined;
+                creator.arguments[i].cacheContext = internalContext;
+                if (creator.arguments[i].captured || creator.containsEval || creator.containsWith)
                 {
-                    (internalContext.fields ?? (internalContext.fields = new Dictionary<string, JSObject>()))[creator.arguments[i].Name] = new JSObject() { attributes = JSObjectAttributesInternal.Argument };
-                    creator.arguments[i].cacheContext = internalContext;
-                    creator.arguments[i].cacheRes = new JSObject() { attributes = JSObjectAttributesInternal.Argument };
+                    if (internalContext.fields == null)
+                        internalContext.fields = createFields();
+                    internalContext.fields[creator.arguments[i].Name] = creator.arguments[i].cacheRes;
                 }
+                if (string.CompareOrdinal(creator.arguments[i].name, "arguments") == 0)
+                    _arguments = creator.arguments[i].cacheRes;
             }
         }
 
-        private static void initVariables(CodeBlock body, Context internalContext)
+        private void initVariables(CodeBlock body, Context internalContext)
         {
             if (body.localVariables != null)
                 for (var i = body.localVariables.Length; i-- > 0; )
                 {
-                    JSObject f = null;
                     var v = body.localVariables[i];
-                    if (v.Inititalizator != null
-                        || string.CompareOrdinal(v.name, "arguments") != 0)
-                    {
-                        f = new JSObject() { attributes = JSObjectAttributesInternal.DoNotDelete };
-                        (internalContext.fields ??
-                            (internalContext.fields = createFields()))[v.name] = f;
-                        if (v.Inititalizator != null)
-                            f.Assign(v.Inititalizator.Evaluate(internalContext));
-                        if (v.readOnly)
-                            f.attributes |= JSObjectAttributesInternal.ReadOnly;
-                        v.cacheRes = f;
-                        v.cacheContext = internalContext;
-                    }
+                    if (string.CompareOrdinal(v.name, "arguments") == 0 && v.Inititalizator == null)
+                        continue;
+                    JSObject f = null;
+                    f = new JSObject() { valueType = JSObjectType.Undefined, attributes = JSObjectAttributesInternal.DoNotDelete };
+                    if (v.captured || creator.containsEval || creator.containsWith)
+                        (internalContext.fields ?? (internalContext.fields = createFields()))[v.name] = f;
+                    if (v.Inititalizator != null)
+                        f.Assign(v.Inititalizator.Evaluate(internalContext));
+                    if (v.readOnly)
+                        f.attributes |= JSObjectAttributesInternal.ReadOnly;
+                    v.cacheRes = f;
+                    v.cacheContext = internalContext;
+                    if (string.CompareOrdinal(v.name, "arguments") == 0)
+                        _arguments = f;
                 }
         }
 
@@ -942,7 +998,7 @@ namespace NiL.JS.Core.BaseTypes
                 {
                     if (thisBind.valueType > JSObjectType.Undefined && thisBind.valueType < JSObjectType.Object)
                     {
-                        thisBind = new JSObject(false)
+                        thisBind = new JSObject(true)
                         {
                             valueType = JSObjectType.Object,
                             oValue = thisBind,
@@ -963,14 +1019,18 @@ namespace NiL.JS.Core.BaseTypes
             if (creator.arguments.Length != 0)
             {
                 var context = creator.arguments[0].cacheContext;
-                if (context == null)
-                    return;
                 if (context.fields == null)
                     context.fields = createFields();
-                if (context.fields.ContainsKey(creator.arguments[0].Name))
-                    return;
                 for (var i = 0; i < creator.arguments.Length; i++)
                     context.fields[creator.arguments[i].Name] = creator.arguments[i].cacheRes;
+            }
+            if (creator.body.localVariables != null && creator.body.localVariables.Length > 0)
+            {
+                var context = creator.body.localVariables[0].cacheContext;
+                if (context.fields == null)
+                    context.fields = createFields();
+                for (var i = 0; i < creator.body.localVariables.Length; i++)
+                    context.fields[creator.body.localVariables[i].Name] = creator.body.localVariables[i].cacheRes;
             }
         }
 

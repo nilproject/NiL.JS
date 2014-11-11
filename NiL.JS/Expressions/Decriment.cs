@@ -157,9 +157,12 @@ namespace NiL.JS.Expressions
                 first = second;
                 second = null;
             }
-            if (first is VariableReference)
-                ((first as VariableReference).Descriptor.assignations ??
-                    ((first as VariableReference).Descriptor.assignations = new System.Collections.Generic.List<CodeNode>())).Add(this);
+            var f = first as VariableReference ?? ((first is OpAssignCache) ? (first as OpAssignCache).Source as VariableReference : null);
+            if (f != null)
+            {
+                (f.Descriptor.assignations ??
+                    (f.Descriptor.assignations = new System.Collections.Generic.List<CodeNode>())).Add(this);
+            }
             return false;
         }
 

@@ -81,30 +81,6 @@ namespace NiL.JS.Expressions
             return func.Invoke(newThisBind, arguments);
         }
 
-        /*private static bool isSimple(CodeNode expression)
-        {
-            if (expression == null
-                || expression is ImmidateValueStatement
-                || expression is GetVariableStatement)
-                return true;
-            if (expression is Call)
-            {
-                if ((expression as Call).first is VariableReference
-                    && (expression as Call).first.ToString() == "eval")
-                    return false;
-                var args = (expression as Call).arguments;
-                for (var i = 0; i < args.Length; i++)
-                {
-                    if (!isSimple(args[i]))
-                        return false;
-                }
-                return true;
-            }
-            if (expression is Expression)
-                return isSimple((expression as Expression).FirstOperand) && isSimple((expression as Expression).SecondOperand);
-            return false;
-        }*/
-
         internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict)
         {
             for (var i = 0; i < arguments.Length; i++)
@@ -123,8 +99,7 @@ namespace NiL.JS.Expressions
                         {
                             if (func.body == null
                                 || func.body.body == null
-                                || func.body.body.Length == 0
-                                || (depth >= 0 && depth < 2 && func.isClear && arguments.Length == 0))
+                                || func.body.body.Length == 0)
                             {
                                 if (arguments.Length == 0)
                                     _this = new EmptyStatement();
@@ -135,19 +110,6 @@ namespace NiL.JS.Expressions
                                     return true;
                                 }
                             }
-                            /* // TODO
-                            else if (func.body.body.Length == 1 && func.body.body[0] is ReturnStatement)
-                            {
-                                var ret = func.body.body[0] as ReturnStatement;
-                                if (isSimple(ret.Body))
-                                {
-                                    var prms = func.Parameters;
-                                    for (var i = 0; i < prms.Length; i++)
-                                    {
-                                    }
-                                }
-                            }
-                            */
                         }
                     }
                 }

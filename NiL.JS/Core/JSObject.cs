@@ -160,19 +160,13 @@ namespace NiL.JS.Core
             return TypeProxy.GetPrototype(this.GetType()) ?? Null;
         }
 
-        internal JSObject __prototype;
-        [Hidden]
-        internal IDictionary<string, JSObject> fields;
-
-        [Hidden]
         internal JSObjectType valueType;
-        [Hidden]
         internal int iValue;
-        [Hidden]
         internal double dValue;
-        [Hidden]
         internal object oValue;
-        [Hidden]
+
+        internal IDictionary<string, JSObject> fields;
+        internal JSObject __prototype;
         internal JSObjectAttributesInternal attributes;
 
         /// <summary>
@@ -247,8 +241,7 @@ namespace NiL.JS.Core
         [Hidden]
         public JSObject()
         {
-            valueType = JSObjectType.Undefined;
-            //__proto__ = TypeProxy.GetPrototype(this.GetType(), false) ?? Null;
+            //valueType = JSObjectType.Undefined;
         }
 
         [Hidden]
@@ -984,8 +977,7 @@ namespace NiL.JS.Core
             var proto = args[0];
             if (proto.valueType < JSObjectType.Object)
                 throw new JSException(new TypeError("Prototype may be only Object or null."));
-            if (proto.oValue is JSObject && (proto.oValue as JSObject).valueType >= JSObjectType.Object)
-                proto = proto.oValue as JSObject;
+            proto = proto.oValue as JSObject ?? proto;
             var members = args[1];
             if (members.valueType >= JSObjectType.Object && members.oValue == null)
                 throw new JSException(new TypeError("Properties descriptor may be only Object."));
@@ -1057,7 +1049,7 @@ namespace NiL.JS.Core
                         throw new JSException(new TypeError("Getter mast be a function."));
                     if (set.isDefinded && set.valueType != JSObjectType.Function)
                         throw new JSException(new TypeError("Setter mast be a function."));
-                    JSObject obj = new JSObject();
+                    JSObject obj = new JSObject() { valueType = JSObjectType.Undefined };
                     res.fields[member] = obj;
                     obj.attributes |=
                         JSObjectAttributesInternal.DoNotEnum
@@ -1488,8 +1480,7 @@ namespace NiL.JS.Core
                 throw new JSException(new TypeError("Object.isFrozen called on non-object."));
             if (obj.oValue == null)
                 throw new JSException(new TypeError("Object.isFrozen called on null."));
-            if (obj.oValue is JSObject && (obj.oValue as JSObject).valueType >= JSObjectType.Object)
-                obj = obj.oValue as JSObject;
+            obj = obj.oValue as JSObject ?? obj;
             if ((obj.attributes & JSObjectAttributesInternal.Immutable) == 0)
                 return false;
             if (obj is TypeProxy)

@@ -1746,7 +1746,7 @@ namespace NiL.JS.Core.BaseTypes
             if (args == null)
                 throw new ArgumentNullException("args");
             if (args.Length == 0)
-                return this;
+                return needResult ? new Array() : null;
             if (this.GetType() == typeof(Array)) // Да, Array sealed, но тут и не такое возможно.
             {
                 var _length = data.Length;
@@ -1773,7 +1773,7 @@ namespace NiL.JS.Core.BaseTypes
                 pos1 += pos0;
                 pos1 = (uint)System.Math.Min(pos1, data.Length);
                 var res = needResult ? new Array((int)(pos1 - pos0)) : null;
-                var delta = args.length - (pos1 - pos0) - 2;
+                var delta = System.Math.Max(0, args.length - 2) - (pos1 - pos0);
                 List<KeyValuePair<int, JSObject>> relocated = null;
                 if (delta > 0)
                     relocated = new List<KeyValuePair<int, JSObject>>();
@@ -1783,28 +1783,30 @@ namespace NiL.JS.Core.BaseTypes
                         continue;
                     if (node.Key >= pos1 && delta == 0)
                         break;
+                    var key = node.Key;
                     var value = node.Value;
                     if (value == null || !value.isExist)
                     {
-                        value = __proto__[((uint)node.Key).ToString()];
+                        value = __proto__[((uint)key).ToString()];
                         if (!value.isExist)
                             continue;
                         value = value.CloneImpl();
                     }
                     if (value.valueType == JSObjectType.Property)
                         value = ((value.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(this, null).CloneImpl();
-                    if (node.Key < pos1)
+                    if (key < pos1)
                     {
                         if (needResult)
-                            res.data[(int)(node.Key - pos0)] = value;
+                            res.data[(int)(key - pos0)] = value;
                     }
                     else
                     {
-                        var t = data[(int)(node.Key + delta)];
+                        var t = data[(int)(key + delta)];
                         if (t != null && t.valueType == JSObjectType.Property)
                             ((t.oValue as PropertyPair).set ?? Function.emptyFunction).Invoke(this, new Arguments() { a0 = value, length = 1 });
                         else
-                            data[(int)(node.Key + delta)] = value;
+                            data[(int)(key + delta)] = value;
+                        data[(int)(key)] = null;
                     }
                 }
                 if (delta < 0) do
@@ -2085,7 +2087,7 @@ namespace NiL.JS.Core.BaseTypes
                     data.Clear();
                     foreach (var node in tt.Nodes)
                     {
-                        for (var i = node.value.Count; i-- > 0; )
+                        for (var i = 0; i < node.value.Count; i++)
                             data.Add(node.value[i]);
                     }
                     data[(int)length - 1] = data[(int)length - 1];
@@ -2111,7 +2113,7 @@ namespace NiL.JS.Core.BaseTypes
                     data.Clear();
                     foreach (var node in tt.Nodes)
                     {
-                        for (var i = node.value.Count; i-- > 0; )
+                        for (var i = 0; i < node.value.Count; i++)
                             data.Add(node.value[i]);
                     }
                     data[(int)length - 1] = data[(int)length - 1];

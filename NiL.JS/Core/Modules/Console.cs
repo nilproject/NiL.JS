@@ -5,8 +5,14 @@ namespace NiL.JS.Core.Modules
     {
         public static JSObject log(Arguments args)
         {
-            var r = args[0].ToString();
-            System.Console.WriteLine(r);
+            for (var i = 0; i < args.length; i++)
+            {
+                if (i > 0)
+                    System.Console.Write(" ");
+                var r = args[i].ToString();
+                System.Console.Write(r);
+            }
+            System.Console.WriteLine();
             return JSObject.undefined;
         }
     }

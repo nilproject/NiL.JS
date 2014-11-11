@@ -44,7 +44,7 @@ namespace NiL.JS.Core
         public virtual int EndPosition { get { return Position + Length; } }
 
         private CodeNode[] childs;
-        public virtual CodeNode[] Childs { get { return childs ?? (childs = getChildsImpl() ?? emptyArray); } }
+        public CodeNode[] Childs { get { return childs ?? (childs = getChildsImpl() ?? emptyArray); } }
 
         protected abstract CodeNode[] getChildsImpl();
 

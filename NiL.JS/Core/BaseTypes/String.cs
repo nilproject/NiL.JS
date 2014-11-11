@@ -71,7 +71,7 @@ namespace NiL.JS.Core.BaseTypes
         public String charAt(Arguments pos)
         {
             var strValue = this.ToString();
-            int p = Tools.JSObjectToInt32(pos[0]);
+            int p = Tools.JSObjectToInt32(pos[0], true);
             if ((p < 0) || (p >= strValue.Length))
                 return "";
             return strValue[p].ToString();//Tools.charStrings[strValue[p]];
@@ -81,7 +81,7 @@ namespace NiL.JS.Core.BaseTypes
         [DoNotEnumerate]
         public JSObject charCodeAt(Arguments pos)
         {
-            int p = Tools.JSObjectToInt32(pos.a0 ?? notExists);
+            int p = Tools.JSObjectToInt32(pos.a0 ?? notExists, true);
             var selfStr = this.ToString();
             if ((p < 0) || (p >= selfStr.Length))
                 return Number.NaN;

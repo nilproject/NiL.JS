@@ -63,9 +63,13 @@ namespace NiL.JS.Expressions
                     fs.name = (first as VariableReference).Name;
             }
             var r = base.Build(ref _this, depth, vars, strict);
-            if (first is VariableReference)
-                ((first as VariableReference).Descriptor.assignations ??
-                    ((first as VariableReference).Descriptor.assignations = new System.Collections.Generic.List<CodeNode>())).Add(this);
+
+            var f = first as VariableReference ?? ((first is OpAssignCache) ? (first as OpAssignCache).Source as VariableReference : null);
+            if (f != null)
+            {
+                (f.Descriptor.assignations ??
+                    (f.Descriptor.assignations = new System.Collections.Generic.List<CodeNode>())).Add(this);
+            }
 #if DEBUG
             if (r)
                 System.Diagnostics.Debugger.Break();

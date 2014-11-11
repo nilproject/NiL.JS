@@ -1180,7 +1180,24 @@ namespace NiL.JS.Statements
             if (first == second && first == null)
                 return new ParseResult();
             if (assign)
-                res = new ExpressionStatement() { first = first, second = new None(deicstra(new ExpressionStatement() { first = first, second = second, _type = type, Position = index, Length = i - index }), null), _type = OperationType.Assign, Position = index, Length = i - index };
+            {
+                var opassigncache = new OpAssignCache(first);
+                res = new ExpressionStatement()
+                {
+                    first = opassigncache,
+                    second = new None(deicstra(new ExpressionStatement()
+                    {
+                        first = opassigncache,
+                        second = second is ExpressionStatement ? new None(deicstra(second as ExpressionStatement), null) : second,
+                        _type = type,
+                        Position = index,
+                        Length = i - index
+                    }), null),
+                    _type = OperationType.Assign,
+                    Position = index,
+                    Length = i - index
+                };
+            }
             else
             {
                 if (!root || type != OperationType.None || second != null)

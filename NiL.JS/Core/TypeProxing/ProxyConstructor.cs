@@ -122,6 +122,7 @@ namespace NiL.JS.Core.TypeProxing
                         {
                             _this.oValue = obj;
                             _this.valueType = JSObjectType.Object;
+                            _this.fields = (res.fields ?? (res.fields = createFields()));
                             _this.__proto__ = res.__proto__;
                             res = _this;
                         }
@@ -141,6 +142,8 @@ namespace NiL.JS.Core.TypeProxing
                         res.valueType = JSObjectType.Object;
                         res.__proto__ = TypeProxy.GetPrototype(proxy.hostedType);
                         res.oValue = obj;
+                        if (res.fields == null)
+                            res.fields = createFields();
                         res.attributes = proxy.hostedType.IsDefined(typeof(ImmutableAttribute), false) ? JSObjectAttributesInternal.Immutable : JSObjectAttributesInternal.None;
                         if (obj is BaseTypes.Date)
                             res.valueType = JSObjectType.Date;
@@ -153,16 +156,13 @@ namespace NiL.JS.Core.TypeProxing
                         if (((obj as JSObject).oValue is JSObject) && ((obj as JSObject).oValue as JSObject).valueType >= JSObjectType.Object)
                             return (obj as JSObject).oValue as JSObject;
                     }
-                    if (proxy.hostedType == typeof(Date))
-                        res = (obj as Date).toString();
-                    else
-                        res = obj is JSObject ? obj as JSObject : new JSObject(false)
-                        {
-                            oValue = obj,
-                            valueType = JSObjectType.Object,
-                            __proto__ = TypeProxy.GetPrototype(proxy.hostedType),
-                            attributes = proxy.hostedType.IsDefined(typeof(ImmutableAttribute), false) ? JSObjectAttributesInternal.Immutable : JSObjectAttributesInternal.None
-                        };
+                    res = obj is JSObject ? obj as JSObject : new JSObject(true)
+                    {
+                        oValue = obj,
+                        valueType = JSObjectType.Object,
+                        __proto__ = TypeProxy.GetPrototype(proxy.hostedType),
+                        attributes = proxy.hostedType.IsDefined(typeof(ImmutableAttribute), false) ? JSObjectAttributesInternal.Immutable : JSObjectAttributesInternal.None
+                    };
                 }
                 return res;
             }

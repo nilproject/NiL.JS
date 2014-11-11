@@ -193,7 +193,7 @@ namespace NiL.JS.Statements
         }
 
         internal bool assignToArguments;
-        internal bool isClear;
+        internal bool containsFunctions;
         internal bool containsEval;
         internal bool containsArguments;
         internal bool isRecursive;
@@ -554,7 +554,6 @@ namespace NiL.JS.Statements
 
         private void checkUsings()
         {
-            isClear = true;
             if (body == null
                 || body.body == null
                 || body.body.Length == 0)
@@ -564,12 +563,10 @@ namespace NiL.JS.Statements
                 containsArguments |= body.variables[i].name == "arguments" && body.variables[i].Inititalizator == null;
                 containsEval |= body.variables[i].name == "eval";
                 isRecursive |= body.variables[i].name == name;
-                isClear &= !containsEval;
             }
             if (body.localVariables != null)
-                for (var i = 0; i < body.localVariables.Length; i++)
-                    isClear &= body.localVariables[i].Inititalizator == null;
-            isClear &= body.variables.Length == (body.localVariables == null ? 0 : body.localVariables.Length) + arguments.Length;
+                for (var i = 0; i < body.localVariables.Length && !containsFunctions; i++)
+                    containsFunctions |= body.localVariables[i].Inititalizator != null;
             ICollection t = null;
             assignToArguments = containsArguments && (t = body.variables.First(x => x.name == "arguments").assignations) != null && t.Count != 0;
         }

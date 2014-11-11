@@ -5,9 +5,37 @@ using NiL.JS.Core;
 namespace NiL.JS.Statements
 {
     [Serializable]
-    public sealed class GetVariableStatement : VariableReference
+    public sealed class GetArgumentsStatement : GetVariableStatement
+    {
+        internal GetArgumentsStatement(int functionDepth)
+            : base("arguments", functionDepth)
+        {
+        }
+
+        internal override JSObject EvaluateForAssing(Context context)
+        {
+            var res = context.caller._arguments;
+            if (res is Arguments)
+            {
+                context.caller._arguments = res = res.CloneImpl();
+                if (context.fields != null && context.fields.ContainsKey(Name))
+                    context.fields[Name] = res;
+            }
+            return res;
+        }
+
+        internal sealed override JSObject Evaluate(Context context)
+        {
+            return context.caller._arguments;
+        }
+    }
+
+    [Serializable]
+    public class GetVariableStatement : VariableReference
     {
         private string variableName;
+        internal bool suspendError;
+        internal bool forceThrow;
 
         public override string Name { get { return variableName; } }
 
@@ -22,20 +50,20 @@ namespace NiL.JS.Statements
 
         internal override JSObject EvaluateForAssing(Context context)
         {
-            if (context.strict)
+            if (context.strict || forceThrow)
             {
                 var res = Descriptor.Get(context, false, functionDepth);
-                if (res.valueType < JSObjectType.Undefined)
+                if (res.valueType < JSObjectType.Undefined && (!suspendError || forceThrow))
                     throw new JSException((new NiL.JS.Core.BaseTypes.ReferenceError("Variable \"" + variableName + "\" is not defined.")));
                 return res;
             }
             return descriptor.Get(context, true, functionDepth);
         }
 
-        internal sealed override JSObject Evaluate(Context context)
+        internal override JSObject Evaluate(Context context)
         {
             var res = descriptor.Get(context, false, functionDepth);
-            if (res.valueType == JSObjectType.NotExists)
+            if (res.valueType == JSObjectType.NotExists && !suspendError)
                 throw new JSException(new NiL.JS.Core.BaseTypes.ReferenceError("Variable \"" + variableName + "\" is not defined."));
             if (res.valueType == JSObjectType.Property)
             {
@@ -73,6 +101,9 @@ namespace NiL.JS.Statements
             }
             if (depth >= 0 && depth < 2 && desc.Defined)
                 _this = null;
+            else if (variableName == "arguments"
+                && functionDepth > 0)
+                _this = new GetArgumentsStatement(functionDepth) { descriptor = descriptor };
             return false;
         }
     }

@@ -9,42 +9,6 @@ namespace NiL.JS.Expressions
     [Serializable]
     public abstract class Expression : CodeNode
     {
-        /// <remarks>
-        /// Используется в typeof и delete.
-        /// </remarks>
-        protected sealed class SafeVariableGetter : VariableReference
-        {
-            internal SafeVariableGetter(GetVariableStatement gvs)
-            {
-                functionDepth = gvs.functionDepth;
-                descriptor = gvs.Descriptor;
-                Descriptor.references.Remove(gvs);
-                Descriptor.references.Add(this);
-                Position = gvs.Position;
-                Length = gvs.Length;
-            }
-
-            public override string Name
-            {
-                get { return descriptor.name; }
-            }
-
-            internal override JSObject Evaluate(Context context)
-            {
-                return Descriptor.Get(context, false, functionDepth);
-            }
-
-            internal override JSObject EvaluateForAssing(Context context)
-            {
-                return Descriptor.Get(context, false, functionDepth);
-            }
-
-            public override string ToString()
-            {
-                return Descriptor.name;
-            }
-        }
-
         internal readonly JSObject tempContainer;
 
         protected CodeNode first;

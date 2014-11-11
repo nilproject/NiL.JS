@@ -378,8 +378,8 @@ namespace NiL.JS.Statements
             else
             {
 
-                if (body.Length > 0 && body[0] is Call)
-                    (body[0] as Call).allowTCO = true;
+                //if (body.Length > 0 && body[0] is Call)
+                //    (body[0] as Call).allowTCO = true;
                 if (variables.Count != 0 &&
                     (this.variables == null || this.variables.Length != variables.Count))
                     this.variables = variables.Values.ToArray();
