@@ -11,143 +11,6 @@ namespace NiL.JS.Core.BaseTypes
     [Serializable]
     public sealed class Array : JSObject
     {
-        private static IEnumerable<KeyValuePair<long, string>> iterablyEnum(long length, JSObject src)
-        {
-            var res = new List<KeyValuePair<long, string>>();
-            var @enum = src.GetEnumerator(false);
-            while (@enum.MoveNext())
-            {
-                var i = @enum.Current;
-                var pindex = 0;
-                var dindex = 0.0;
-                long lindex = 0;
-                if (Tools.ParseNumber(i, ref pindex, out dindex)
-                    && (pindex == i.Length)
-                    && dindex < length
-                    && (lindex = (long)dindex) == dindex)
-                {
-                    res.Add(new KeyValuePair<long, string>(lindex, i));
-                }
-            }
-            res.Sort(new Comparison<KeyValuePair<long, string>>((x, y) => System.Math.Sign(x.Key - y.Key)));
-            return res;
-        }
-
-        private static long getLengthOfIterably(JSObject src, bool reassignLen)
-        {
-            var len = src.GetMember("length", true, false); // тут же проверка на null/undefined с падением если надо
-            if (len.valueType == JSObjectType.Property)
-            {
-                if (reassignLen && (len.attributes & JSObjectAttributesInternal.ReadOnly) == 0)
-                {
-                    len.valueType = JSObjectType.Undefined;
-                    len.Assign(((len.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(src, null));
-                }
-                else
-                    len = ((len.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(src, null);
-            }
-            uint res;
-            if (len.valueType >= JSObjectType.Object)
-                res = (uint)Tools.JSObjectToInt64(len.ToPrimitiveValue_Value_String(), 0, false);
-            else
-                res = (uint)Tools.JSObjectToInt64(len, 0, false);
-            if (reassignLen)
-            {
-                if (len.valueType == JSObjectType.Property)
-                    ((len.oValue as PropertyPair).set ?? Function.emptyFunction).Invoke(src, new Arguments() { a0 = res, length = 1 });
-                else
-                    len.Assign(res);
-            }
-            return res;
-        }
-
-        private static Array iterableToArray(JSObject src, bool evalProps, bool clone, bool reassignLen, long _length = -1)
-        {
-            Array temp = new Array();
-            HashSet<string> processedKeys = null;
-            bool goDeep = true;
-            for (; goDeep; )
-            {
-                goDeep = false;
-                if (src.GetType() == typeof(Array))
-                {
-                    if (_length == -1)
-                        _length = (src as Array).data.Length;
-                    long prew = -1;
-                    foreach (var element in ((src as Array).data as IEnumerable<KeyValuePair<int, JSObject>>))
-                    {
-                        if (element.Key >= _length) // эээ...
-                            break;
-                        var value = element.Value;
-                        if (value == null || !value.isExist)
-                            continue;
-                        if (!goDeep && System.Math.Abs(prew - element.Key) > 1)
-                            goDeep = true;
-                        if (evalProps && value.valueType == JSObjectType.Property)
-                            value = (value.oValue as PropertyPair).get == null ? undefined : (value.oValue as PropertyPair).get.Invoke(src, null).CloneImpl();
-                        else if (clone)
-                            value = value.CloneImpl();
-                        if (processedKeys != null)
-                        {
-                            var sk = element.Key.ToString();
-                            if (processedKeys.Contains(sk))
-                                continue;
-                            processedKeys.Add(sk);
-                        }
-                        temp.data[element.Key] = value;
-                    }
-                    goDeep |= System.Math.Abs(prew - _length) > 1;
-                }
-                else
-                {
-                    if (_length == -1)
-                    {
-                        _length = getLengthOfIterably(src, reassignLen);
-                        if (_length == 0)
-                            return temp;
-                    }
-                    long prew = -1;
-                    var tjo = new JSObject() { valueType = JSObjectType.String };
-                    foreach (var index in iterablyEnum(_length, src))
-                    {
-                        tjo.oValue = index.Value;
-                        var value = src.GetMember(tjo, false, false);
-                        if (!value.isExist)
-                            continue;
-                        if (evalProps && value.valueType == JSObjectType.Property)
-                            value = (value.oValue as PropertyPair).get == null ? undefined : (value.oValue as PropertyPair).get.Invoke(src, null).CloneImpl();
-                        else if (clone)
-                            value = value.CloneImpl();
-                        if (!goDeep && System.Math.Abs(prew - index.Key) > 1)
-                            goDeep = true;
-                        if (processedKeys != null)
-                        {
-                            var sk = index.Value;
-                            if (processedKeys.Contains(sk))
-                                continue;
-                            processedKeys.Add(sk);
-                        }
-                        temp.data[(int)(uint)index.Key] = value;
-                    }
-                    goDeep |= System.Math.Abs(prew - _length) > 1;
-                }
-                var crnt = src;
-                if (src.__proto__ == Null)
-                    break;
-                src = src.__proto__.oValue as JSObject ?? src.__proto__;
-                if (src == null || (src.valueType >= JSObjectType.String && src.oValue == null))
-                    break;
-                if (processedKeys == null)
-                {
-                    processedKeys = new HashSet<string>();
-                    for (var @enum = crnt.GetEnumeratorImpl(false); @enum.MoveNext(); )
-                        processedKeys.Add(@enum.Current);
-                }
-            }
-            temp.data[(int)(_length - 1)] = temp.data[(int)(_length - 1)];
-            return temp;
-        }
-
         private sealed class _lengthField : JSObject
         {
             private Array array;
@@ -396,14 +259,14 @@ namespace NiL.JS.Core.BaseTypes
                 res = new Array() { _this };
             }
             else
-                res = iterableToArray(this, true, true, false);
+                res = Tools.iterableToArray(this, true, true, false);
             for (var i = 0; i < args.length; i++)
             {
                 var v = args[i];
                 var varr = v.oValue as Array;
                 if (varr != null)
                 {
-                    varr = iterableToArray(varr, true, false, false);
+                    varr = Tools.iterableToArray(varr, true, false, false);
                     for (var ai = 0; ai < varr.data.Length; ai++)
                     {
                         var item = varr.data[ai];
@@ -427,7 +290,7 @@ namespace NiL.JS.Core.BaseTypes
             if (!src.isDefinded || (src.valueType >= JSObjectType.Object && src.oValue == null))
                 throw new JSException(new TypeError("Can not call Array.prototype.every for null or undefined"));
             if (!nativeMode)
-                src = iterableToArray(src, false, false, false);
+                src = Tools.iterableToArray(src, false, false, false);
             Function f = args[0] == null ? null : args[0].oValue as Function;
             if (f == null)
                 throw new JSException(new TypeError("Callback argument is not a function."));
@@ -463,7 +326,7 @@ namespace NiL.JS.Core.BaseTypes
                 {
                     if (alternativeEnum == null)
                     {
-                        alternativeEnum = (iterableToArray(this.__proto__, false, false, false, _length).data as IEnumerable<KeyValuePair<int, JSObject>>).GetEnumerator();
+                        alternativeEnum = (Tools.iterableToArray(this.__proto__, false, false, false, _length).data as IEnumerable<KeyValuePair<int, JSObject>>).GetEnumerator();
                         alternativeEnum.MoveNext();
                     }
                     alter = true;
@@ -516,7 +379,7 @@ namespace NiL.JS.Core.BaseTypes
             if (!src.isDefinded || (src.valueType >= JSObjectType.Object && src.oValue == null))
                 throw new JSException(new TypeError("Can not call Array.prototype.some for null or undefined"));
             if (!nativeMode)
-                src = iterableToArray(src, false, false, false);
+                src = Tools.iterableToArray(src, false, false, false);
             Function f = args[0] == null ? null : args[0].oValue as Function;
             if (f == null)
                 throw new JSException(new TypeError("Callback argument is not a function."));
@@ -552,7 +415,7 @@ namespace NiL.JS.Core.BaseTypes
                 {
                     if (alternativeEnum == null)
                     {
-                        alternativeEnum = (iterableToArray(this.__proto__, false, false, false, _length).data as IEnumerable<KeyValuePair<int, JSObject>>).GetEnumerator();
+                        alternativeEnum = (Tools.iterableToArray(this.__proto__, false, false, false, _length).data as IEnumerable<KeyValuePair<int, JSObject>>).GetEnumerator();
                         alternativeEnum.MoveNext();
                     }
                     alter = true;
@@ -605,7 +468,7 @@ namespace NiL.JS.Core.BaseTypes
             if (!src.isDefinded || (src.valueType >= JSObjectType.Object && src.oValue == null))
                 throw new JSException(new TypeError("Can not call Array.prototype.filter for null or undefined"));
             if (!nativeMode)
-                src = iterableToArray(src, false, false, false);
+                src = Tools.iterableToArray(src, false, false, false);
             Function f = args[0] == null ? null : args[0].oValue as Function;
             if (f == null)
                 throw new JSException(new TypeError("Callback argument is not a function."));
@@ -642,7 +505,7 @@ namespace NiL.JS.Core.BaseTypes
                 {
                     if (alternativeEnum == null)
                     {
-                        alternativeEnum = (iterableToArray(this.__proto__, false, false, false, _length).data as IEnumerable<KeyValuePair<int, JSObject>>).GetEnumerator();
+                        alternativeEnum = (Tools.iterableToArray(this.__proto__, false, false, false, _length).data as IEnumerable<KeyValuePair<int, JSObject>>).GetEnumerator();
                         alternativeEnum.MoveNext();
                     }
                     alter = true;
@@ -699,7 +562,7 @@ namespace NiL.JS.Core.BaseTypes
             if (!src.isDefinded || (src.valueType >= JSObjectType.Object && src.oValue == null))
                 throw new JSException(new TypeError("Can not call Array.prototype.map for null or undefined"));
             if (!nativeMode)
-                src = iterableToArray(src, false, false, false);
+                src = Tools.iterableToArray(src, false, false, false);
             Function f = args[0] == null ? null : args[0].oValue as Function;
             if (f == null)
                 throw new JSException(new TypeError("Callback argument is not a function."));
@@ -736,7 +599,7 @@ namespace NiL.JS.Core.BaseTypes
                 {
                     if (alternativeEnum == null)
                     {
-                        alternativeEnum = (iterableToArray(this.__proto__, false, false, false, _length).data as IEnumerable<KeyValuePair<int, JSObject>>).GetEnumerator();
+                        alternativeEnum = (Tools.iterableToArray(this.__proto__, false, false, false, _length).data as IEnumerable<KeyValuePair<int, JSObject>>).GetEnumerator();
                         alternativeEnum.MoveNext();
                     }
                     alter = true;
@@ -789,7 +652,7 @@ namespace NiL.JS.Core.BaseTypes
             if (!src.isDefinded || (src.valueType >= JSObjectType.Object && src.oValue == null))
                 throw new JSException(new TypeError("Can not call Array.prototype.forEach for null or undefined"));
             if (!nativeMode)
-                src = iterableToArray(src, false, false, false);
+                src = Tools.iterableToArray(src, false, false, false);
             Function f = args[0] == null ? null : args[0].oValue as Function;
             if (f == null)
                 throw new JSException(new TypeError("Callback argument is not a function."));
@@ -825,7 +688,7 @@ namespace NiL.JS.Core.BaseTypes
                 {
                     if (alternativeEnum == null)
                     {
-                        alternativeEnum = (iterableToArray(this.__proto__, false, false, false, _length).data as IEnumerable<KeyValuePair<int, JSObject>>).GetEnumerator();
+                        alternativeEnum = (Tools.iterableToArray(this.__proto__, false, false, false, _length).data as IEnumerable<KeyValuePair<int, JSObject>>).GetEnumerator();
                         alternativeEnum.MoveNext();
                     }
                     alter = true;
@@ -916,7 +779,7 @@ namespace NiL.JS.Core.BaseTypes
                         return (src["indexOf"].oValue as Function).Invoke(src, args);
                     if (_length == -1)
                     {
-                        _length = getLengthOfIterably(src, false);
+                        _length = Tools.getLengthOfIterably(src, false);
                     }
                     var fromIndex = Tools.JSObjectToInt64(args[1], 0, true);
                     if (fromIndex < 0)
@@ -1014,7 +877,7 @@ namespace NiL.JS.Core.BaseTypes
             }
             else
             {
-                return iterableToArray(this, true, false, false).joinImpl(separator, locale);
+                return Tools.iterableToArray(this, true, false, false).joinImpl(separator, locale);
             }
         }
 
@@ -1150,7 +1013,7 @@ namespace NiL.JS.Core.BaseTypes
             }
             else
             {
-                var length = getLengthOfIterably(this, true);
+                var length = Tools.getLengthOfIterably(this, true);
                 if (length <= 0 || length > uint.MaxValue)
                     return notExists;
                 length--;
@@ -1192,7 +1055,7 @@ namespace NiL.JS.Core.BaseTypes
             }
             else
             {
-                var length = getLengthOfIterably(this, false);
+                var length = Tools.getLengthOfIterably(this, false);
                 var i = length;
                 length += args.length;
                 this["length"] = length;
@@ -1256,7 +1119,7 @@ namespace NiL.JS.Core.BaseTypes
             }
             else
             {
-                var length = getLengthOfIterably(this, false);
+                var length = Tools.getLengthOfIterably(this, false);
                 if (length > 1)
                     for (var i = 0; i < length >> 1; i++)
                     {
@@ -1336,7 +1199,7 @@ namespace NiL.JS.Core.BaseTypes
             //if (this.GetType() != typeof(Array)) // при переборе должны быть получены значения из прототипов. 
             // Если просто запрашивать пропущенные индексы, то может быть большое падение производительности в случаях
             // когда пропуски очень огромны и элементов реально нет ни здесь, ни в прототипе
-            src = iterableToArray(this, false, false, false);
+            src = Tools.iterableToArray(this, false, false, false);
             var func = args[0].oValue as Function;
             var accum = new JSObject() { valueType = JSObjectType.NotExists };
             if (args.length > 1)
@@ -1410,7 +1273,7 @@ namespace NiL.JS.Core.BaseTypes
             }
             var src = this;
             //if (this.GetType() != typeof(Array))
-            src = iterableToArray(this, false, false, false);
+            src = Tools.iterableToArray(this, false, false, false);
             var func = args[0].oValue as Function;
             var accum = new JSObject() { valueType = JSObjectType.NotExists };
             if (args.length > 1)
@@ -1502,7 +1365,7 @@ namespace NiL.JS.Core.BaseTypes
                     prew = (uint)item.Key;
                 }
                 if (len - prew > 1)
-                    source = iterableToArray(this, false, false, false);
+                    source = Tools.iterableToArray(this, false, false, false);
                 JSObject prw = null;
                 foreach (var item in (source.data as IEnumerable<KeyValuePair<int, JSObject>>))
                 {
@@ -1571,7 +1434,7 @@ namespace NiL.JS.Core.BaseTypes
                     this["length"] = lenObj = _length - 1;
                     return res;
                 }
-                var protoSource = iterableToArray(this, false, true, false);
+                var protoSource = Tools.iterableToArray(this, false, true, false);
                 this["length"] = lenObj = _length - 1;
 
                 List<string> keysToRemove = new List<string>();
@@ -1825,7 +1688,7 @@ namespace NiL.JS.Core.BaseTypes
             }
             else // кто-то отправил объект с полем length
             {
-                long _length = getLengthOfIterably(this, false);
+                long _length = Tools.getLengthOfIterably(this, false);
                 var pos0 = (long)System.Math.Min(Tools.JSObjectToDouble(args[0]), _length);
                 long pos1 = 0;
                 if (args.Length > 1)
@@ -1858,7 +1721,7 @@ namespace NiL.JS.Core.BaseTypes
                 var delta = System.Math.Max(0, args.length - 2) - (pos1 - pos0);
                 var res = needResult ? new Array() : null;
                 long prewKey = -1;
-                foreach (var keyS in iterablyEnum(_length, this))
+                foreach (var keyS in Tools.iterablyEnum(_length, this))
                 {
                     if (prewKey == -1)
                         prewKey = (uint)keyS.Key;
@@ -2121,7 +1984,7 @@ namespace NiL.JS.Core.BaseTypes
             }
             else
             {
-                var len = getLengthOfIterably(this, false);
+                var len = Tools.getLengthOfIterably(this, false);
                 if (comparer != null)
                 {
                     var second = new JSObject();
@@ -2132,7 +1995,7 @@ namespace NiL.JS.Core.BaseTypes
 
                     var tt = new BinaryTree<JSObject, List<JSObject>>(new JSComparer(args, first, second, comparer));
                     List<string> keysToRemove = new List<string>();
-                    foreach (var key in iterablyEnum(len, this))
+                    foreach (var key in Tools.iterablyEnum(len, this))
                     {
                         keysToRemove.Add(key.Value);
                         var item = this[key.Value];
@@ -2215,7 +2078,7 @@ namespace NiL.JS.Core.BaseTypes
             args.a0 = 0;
             args.a1 = args.a0;
             spliceImpl(args, false);
-            return getLengthOfIterably(this, false);
+            return Tools.getLengthOfIterably(this, false);
         }
 
         [Hidden]

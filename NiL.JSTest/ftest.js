@@ -1,7 +1,9 @@
-﻿function test() {
-    var s;
-    (s = Number()).p = 1;
-    return s.p;
+﻿function test(x) {
+    (function () {
+        var a = 1;
+        if (x > 0)
+            test(x - 1);
+        return (x, a);
+    })();
 }
-
-console.log(test());
+test(1);

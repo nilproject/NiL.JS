@@ -142,7 +142,7 @@ namespace NiL.JSTest
             _("Found " + (fls.Length - 2) + " js-files");
             bool skipedShowed = false;
             sw.Start();
-            for (int i = 39; i < fls.Length; i++)
+            for (int i = 51; i < fls.Length; i++)
             {
                 if (i != 0 && !skipedShowed)
                     _("Skiped: " + i);
@@ -168,11 +168,15 @@ namespace NiL.JSTest
                         econtext = s.Context;
                         s.Context.DefineVariable("print").Assign(new ExternalFunction((t, e) =>
                         {
+                            bool fail = code.Length == 0; // она всегда не равна нулю, 
+                            // но таким образом мы можем прочитать код без гуляния по стеку
                             for (var ti = 0; ti < e.Length; ti++)
                             {
                                 var text = e[ti].ToString();
-                                if (ti == 0 && text == "FAIL")
+                                if (fail)
                                     System.Diagnostics.Debugger.Break();
+                                if (ti == 0 && text == "FAIL")
+                                    fail = true;
                                 if (ti > 0)
                                     System.Console.Write(' ');
                                 System.Console.Write(text);
@@ -260,10 +264,15 @@ for (var i = 0; i < 10000000; i++) abs(i * (1 - 2 * (i & 1)));
             var sw = new Stopwatch();
             var s = new Script(
 @"
-test.Add(true);
+var array = Uint32Array(10);
+for (var i = 0; i < 10; i++)
+    array[i] = i;
+for (var i = 0; i < 10; i++)
+    array[i]++;
+test.Add(array);
 ");
-            s.Context.DefineVariable("System").Assign(new NamespaceProvider("System"));
-            s.Context.DefineVariable("test").Assign(TypeProxy.Proxy(new List<Arguments>()));
+            var list = new List<uint[]>();
+            s.Context.DefineVariable("test").Assign(TypeProxy.Proxy(list));
             sw.Start();
             s.Invoke();
             sw.Stop();
@@ -298,17 +307,11 @@ strongFunction(1, 2, 3, 4);
         static void Main(string[] args)
         {
             Thread.CurrentThread.Priority = ThreadPriority.AboveNormal;
-            // В текущем процессе часовой пояс будет -8:00:00. 
-            // Создатели sputnik'a не удосужились в своих тестах учитывать временную зону 
-            // и от всех требуют пребывания в указаном часовом поясе.
-            var currentTimeZone = TimeZone.CurrentTimeZone;
-            var offset = currentTimeZone.GetType().GetField("m_ticksOffset", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
-            offset.SetValue(currentTimeZone, new TimeSpan(-8, 0, 0).Ticks);
 
             Context.GlobalContext.DebuggerCallback += (sender, e) => System.Diagnostics.Debugger.Break();
             Context.GlobalContext.DefineVariable("alert").Assign(new ExternalFunction((t, a) => { System.Windows.Forms.MessageBox.Show(a[0].ToString()); return JSObject.Undefined; }));
 
-            int mode = 1
+            int mode = 101
                    ;
             switch (mode)
             {
@@ -342,6 +345,9 @@ strongFunction(1, 2, 3, 4);
                     }
                 case -1:
                     {
+                        var currentTimeZone = TimeZone.CurrentTimeZone;
+                        var offset = currentTimeZone.GetType().GetField("m_ticksOffset", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+                        offset.SetValue(currentTimeZone, new TimeSpan(-8, 0, 0).Ticks);
                         runFiles("tests/custom/");
                         sputnikTests(@"tests\sputnik\ch15\15.1\");
                         sputnikTests(@"tests\sputnik\ch15\15.2\");
@@ -358,6 +364,12 @@ strongFunction(1, 2, 3, 4);
                     }
                 case 0:
                     {
+                        // В текущем процессе часовой пояс будет -8:00:00. 
+                        // Создатели sputnik'a не удосужились в своих тестах учитывать временную зону 
+                        // и от всех требуют пребывания в указаном часовом поясе.
+                        var currentTimeZone = TimeZone.CurrentTimeZone;
+                        var offset = currentTimeZone.GetType().GetField("m_ticksOffset", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+                        offset.SetValue(currentTimeZone, new TimeSpan(-8, 0, 0).Ticks);
                         runFiles("tests/custom/");
                         sputnikTests();
                         break;
@@ -475,6 +487,9 @@ strongFunction(1, 2, 3, 4);
                     }
                 case 159:
                     {
+                        var currentTimeZone = TimeZone.CurrentTimeZone;
+                        var offset = currentTimeZone.GetType().GetField("m_ticksOffset", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+                        offset.SetValue(currentTimeZone, new TimeSpan(-8, 0, 0).Ticks);
                         // Date
                         sputnikTests(@"tests\sputnik\ch15\15.9\");
                         break;
@@ -564,9 +579,14 @@ strongFunction(1, 2, 3, 4);
             var context = new Context();
             Action<string> load = path =>
             {
-                using (var fs = new FileStream(folderPath + "\\" + path, FileMode.Open, FileAccess.Read))
+                path = folderPath + "\\" + path;
+                _("Processing \"" + path + "\"");
+                var sw = Stopwatch.StartNew();
+                using (var fs = new FileStream(path, FileMode.Open, FileAccess.Read))
                 using (var sr = new StreamReader(fs))
                     context.Eval(sr.ReadToEnd());
+                sw.Stop();
+                _("Complite. Time: " + sw.Elapsed);
             };
             load("src/core.js");
             load("src/lib-typedarrays.js");
@@ -599,6 +619,87 @@ strongFunction(1, 2, 3, 4);
             load("src/rabbit-legacy.js");
             load("src/aes.js");
             load("src/tripledes.js");
+
+            load("../../yui.js");
+
+            load("test/md5-profile.js");
+            load("test/sha1-profile.js");
+            load("test/sha256-profile.js");
+            load("test/sha512-profile.js");
+            load("test/sha3-profile.js");
+            load("test/hmac-profile.js");
+            load("test/pbkdf2-profile.js");
+            load("test/evpkdf-profile.js");
+            load("test/rc4-profile.js");
+            load("test/rabbit-profile.js");
+            load("test/aes-profile.js");
+            load("test/des-profile.js");
+            load("test/tripledes-profile.js");
+
+            load("test/lib-base-test.js");
+            load("test/lib-wordarray-test.js");
+            load("test/lib-typedarrays-test.js");
+            load("test/x64-word-test.js");
+            load("test/x64-wordarray-test.js");
+            load("test/enc-hex-test.js");
+            load("test/enc-latin1-test.js");
+            load("test/enc-utf8-test.js");
+            load("test/enc-utf16-test.js");
+            load("test/enc-base64-test.js");
+            load("test/md5-test.js");
+            load("test/sha1-test.js");
+            load("test/sha256-test.js");
+            load("test/sha224-test.js");
+            load("test/sha512-test.js");
+            load("test/sha384-test.js");
+            load("test/sha3-test.js");
+            load("test/ripemd160-test.js");
+            load("test/hmac-test.js");
+            load("test/pbkdf2-test.js");
+            load("test/evpkdf-test.js");
+            load("test/mode-cbc-test.js");
+            load("test/mode-cfb-test.js");
+            load("test/mode-ctr-test.js");
+            load("test/mode-ofb-test.js");
+            load("test/mode-ecb-test.js");
+            load("test/pad-pkcs7-test.js");
+            load("test/pad-ansix923-test.js");
+            load("test/pad-iso10126-test.js");
+            load("test/pad-zeropadding-test.js");
+            load("test/pad-iso97971-test.js");
+            load("test/lib-cipherparams-test.js");
+            load("test/format-openssl-test.js");
+            load("test/lib-serializablecipher-test.js");
+            load("test/kdf-openssl-test.js");
+            load("test/lib-passwordbasedcipher-test.js");
+            load("test/rc4-test.js");
+            load("test/rabbit-test.js");
+            load("test/rabbit-legacy-test.js");
+            load("test/aes-test.js");
+            load("test/des-test.js");
+            load("test/tripledes-test.js");
+
+            context.Eval(@"YUI().use('test', 'console', function (Y) {
+                Y.use('*', function (Y) {
+                    new Y.Console({
+                        style: 'block',
+                        width: '600px',
+                        height: '600px',
+                        entryTemplate:
+                          '<div class=""{entry_class} {cat_class} {src_class}"">' +
+                          '    <p class=""{entry_meta_class}"">' +
+                          '        <span class=""{entry_cat_class}"">{category}</span>' +
+                          '    </p>' +
+                          '    <pre class=""{entry_content_class}"">{message}</pre>' +
+                          '</div>',
+                        newestOnTop: false,
+                        consoleLimit: 500,
+                        render: true
+                    });
+
+                    Y.Test.Runner.run();
+                });
+            });");
         }
 
         private static void runFiles(string folderPath)

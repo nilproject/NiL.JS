@@ -225,3 +225,20 @@ if (mul(2, 2) != 4)
     console.log("function args link fail")
 
 for (var a = 2; a; (a--, a--));
+
+(function () {
+    function selfReferencedFunction() {
+        return selfReferencedFunction.prototype;
+    }
+    return selfReferencedFunction();
+})();
+
+function test(x) {
+    (function () {
+        var a = 1;
+        if (x > 0)
+            test(x - 1);
+        return (x, a);
+    })();
+}
+test(1);

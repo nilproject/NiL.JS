@@ -107,22 +107,16 @@ namespace NiL.JS.Statements
                         fieldName = Tools.Unescape(state.Code.Substring(s, i - s), state.strict.Peek());
                     else if (Parser.ValidateValue(state.Code, ref i))
                     {
-                        string value = state.Code.Substring(s, i - s);
-                        if ((value[0] == '\'') || (value[0] == '"'))
-                            fieldName = Tools.Unescape(value.Substring(1, value.Length - 2), state.strict.Peek());
+                        double d = 0.0;
+                        int n = s;
+                        if (Tools.ParseNumber(state.Code, ref n, out d))
+                            fieldName = Tools.DoubleToString(d);
+                        else if (state.Code[s] == '\'' || state.Code[s] == '"')
+                            fieldName = Tools.Unescape(state.Code.Substring(s + 1, i - s - 2), state.strict.Peek());
+                        else if (flds.Count != 0)
+                            throw new JSException((new SyntaxError("Invalid field name at " + Tools.PositionToTextcord(state.Code, pos))));
                         else
-                        {
-                            int n = 0;
-                            double d = 0.0;
-                            if (int.TryParse(value, out n))
-                                fieldName = n < 16 ? Tools.NumString[n] : n.ToString(CultureInfo.InvariantCulture);
-                            else if (double.TryParse(value, out d))
-                                fieldName = Tools.DoubleToString(d);
-                            else if (flds.Count != 0)
-                                throw new JSException((new SyntaxError("Invalid field name at " + Tools.PositionToTextcord(state.Code, pos))));
-                            else
-                                return new ParseResult();
-                        }
+                            return new ParseResult();
                     }
                     else
                         return new ParseResult();
@@ -161,7 +155,8 @@ namespace NiL.JS.Statements
 
         internal override JSObject Evaluate(Context context)
         {
-            var res = new JSObject(true);
+            var res = new JSObject(false);
+            res.fields = JSObject.createFields(fields.Length);
             res.valueType = JSObjectType.Object;
             res.oValue = res;
             for (int i = 0; i < fields.Length; i++)

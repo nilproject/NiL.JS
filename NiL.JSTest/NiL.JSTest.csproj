@@ -393,6 +393,7 @@
     <Content Include="sunspider-0.9.1\string-unpack-code.js" />
     <Content Include="sunspider-0.9.1\string-validate-input.js" />
     <Content Include="tests\custom\flow control tests.js" />
+    <Content Include="tests\custom\Int16Array.js" />
     <Content Include="tests\custom\Int8Array.js" />
     <Content Include="tests\custom\regression.js" />
     <Content Include="tests\custom\this linking test.js" />
@@ -12506,6 +12507,7 @@
     <Content Include="sta.js" />
     <Content Include="Samples\WinFormsSample.js" />
     <Content Include="ftest.js" />
+    <Content Include="yui.js" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.0">

@@ -19,7 +19,10 @@ namespace NiL.JS.Statements
 #if (NET40 || INLINE) && JIT
         internal Func<Context, JSObject> compiledVersion;
 #endif
-        private bool builded;
+        internal bool builded;
+#if DEBUG
+        internal HashSet<string> directives;
+#endif
         internal VariableDescriptor[] variables;
         internal VariableDescriptor[] localVariables;
         internal CodeNode[] body;
@@ -106,7 +109,7 @@ namespace NiL.JS.Statements
         internal static ParseResult Parse(ParsingState state, ref int index)
         {
             int i = index;
-            bool sroot = i == 0 && state.AllowStrict;
+            bool sroot = i == 0 && state.AllowDirectives;
             if (!sroot)
             {
                 if (state.Code[i] != '{')
@@ -118,11 +121,12 @@ namespace NiL.JS.Statements
             var body = new List<CodeNode>();
             state.LabelCount = 0;
             bool strictSwitch = false;
-            bool allowStrict = state.AllowStrict;
+            bool allowDirectives = state.AllowDirectives;
             HashSet<string> directives = null;
-            state.AllowStrict = false;
-            if (allowStrict)
+            state.AllowDirectives = false;
+            if (allowDirectives)
             {
+                int start = i;
                 do
                 {
                     var s = i;
@@ -151,7 +155,6 @@ namespace NiL.JS.Statements
                             if (directives == null)
                                 directives = new HashSet<string>();
                             directives.Add(str);
-                            body.Add(new Constant(str));
                         }
                         else
                         {
@@ -170,6 +173,7 @@ namespace NiL.JS.Statements
                     else
                         break;
                 } while (true);
+                i = start;
             }
             for (var j = body.Count; j-- > 0; )
                 (body[j] as Constant).value.oValue = Tools.Unescape((body[j] as Constant).value.oValue.ToString(), state.strict.Peek());
@@ -185,7 +189,7 @@ namespace NiL.JS.Statements
                 }
                 if (t is FunctionStatement)
                 {
-                    if (state.strict.Peek() && !allowStrict)
+                    if (state.strict.Peek() && !allowDirectives)
                         throw new JSException((new NiL.JS.Core.BaseTypes.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
                     if (state.InExpression == 0 && string.IsNullOrEmpty((t as FunctionStatement).Name))
                         throw new JSException((new NiL.JS.Core.BaseTypes.SyntaxError("Declarated function must have name.")));
@@ -236,7 +240,10 @@ namespace NiL.JS.Statements
                     variables = vars != null ? vars.Values.ToArray() : emptyVariables,
                     Position = startPos,
                     code = state.SourceCode,
-                    Length = i - startPos
+                    Length = i - startPos,
+#if DEBUG
+                    directives = directives
+#endif
                 }
             };
         }

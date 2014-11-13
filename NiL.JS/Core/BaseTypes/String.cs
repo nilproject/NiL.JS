@@ -871,10 +871,9 @@ namespace NiL.JS.Core.BaseTypes
         [Hidden]
         public override string ToString()
         {
-            if ((this as object) is String)
-                return oValue.ToString();
-            else
+            if (this.valueType != JSObjectType.String)
                 throw new JSException(new TypeError("Try to call String.toString for not string object."));
+            return oValue.ToString();
         }
 
         [Hidden]

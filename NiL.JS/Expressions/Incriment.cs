@@ -48,8 +48,12 @@ namespace NiL.JS.Expressions
                 val = (val.oValue as PropertyPair).get.Invoke(context.objectSource, null).CloneImpl();
                 val.attributes = 0;
             }
-            else if (context.strict && (val.attributes & JSObjectAttributesInternal.ReadOnly) != 0)
-                throw new JSException(new TypeError("Can not incriment readonly \"" + (first) + "\""));
+            else if ((val.attributes & JSObjectAttributesInternal.ReadOnly) != 0)
+            {
+                if (context.strict)
+                    throw new JSException(new TypeError("Can not deccriment readonly \"" + (first) + "\""));
+                val = val.CloneImpl();
+            }
             switch (val.valueType)
             {
                 case JSObjectType.Bool:

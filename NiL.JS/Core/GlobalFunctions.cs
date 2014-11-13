@@ -40,11 +40,11 @@ namespace NiL.JS.Core
         internal static JSObject isNaN(JSObject thisBind, Arguments x)
         {
             var r = x[0];
-            if (r.valueType == JSObjectType.Object && r.oValue is JSObject)
-                r = r.oValue as JSObject;
+            if (r.valueType >= JSObjectType.Object)
+                r = r.ToPrimitiveValue_Value_String();
             if (r.valueType == JSObjectType.Double)
                 return double.IsNaN(r.dValue);
-            if (r.valueType == JSObjectType.Bool || r.valueType == JSObjectType.Int || r.valueType == JSObjectType.Date)
+            if (r.valueType == JSObjectType.Bool || r.valueType == JSObjectType.Int)
                 return false;
             if (r.valueType == JSObjectType.String)
             {

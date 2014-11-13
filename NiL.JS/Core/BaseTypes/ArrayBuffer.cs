@@ -20,6 +20,7 @@ namespace NiL.JS.Core.BaseTypes
                 this.index = index;
                 this.iValue = parent.Data[index];
                 this.data = parent.Data;
+                this.attributes |= JSObjectAttributesInternal.Reassign;
             }
 
             public override void Assign(JSObject value)

@@ -354,7 +354,6 @@ namespace NiL.JS.Statements
 
         private static ParseResult Parse(ParsingState state, ref int index, bool processComma, bool forUnary, bool forNew, bool root, bool forTernary)
         {
-            //string code = state.Code;
             int i = index;
             int position;
             OperationType type = OperationType.None;
@@ -611,14 +610,19 @@ namespace NiL.JS.Statements
             }
             else if (state.Code[i] == '(')
             {
-                do
-                    i++;
-                while (char.IsWhiteSpace(state.Code[i]));
-                first = ExpressionStatement.Parse(state, ref i, true).Statement;
-                while (char.IsWhiteSpace(state.Code[i]))
-                    i++;
-                if (state.Code[i] != ')')
-                    throw new JSException((new Core.BaseTypes.SyntaxError("Expected \")\"")));
+                while (state.Code[i] != ')')
+                {
+                    do i++; while (char.IsWhiteSpace(state.Code[i]));
+                    var temp = ExpressionStatement.Parse(state, ref i, false).Statement;
+                    if (first == null)
+                        first = temp;
+                    else
+                        first = new None(first, temp);
+                    while (char.IsWhiteSpace(state.Code[i]))
+                        i++;
+                    if (state.Code[i] != ')' && state.Code[i] != ',')
+                        throw new JSException((new Core.BaseTypes.SyntaxError("Expected \")\"")));
+                }
                 i++;
                 if ((state.InExpression > 0 && first is FunctionStatement)
                     || (forNew && first is Call))
@@ -1061,26 +1065,16 @@ namespace NiL.JS.Statements
                         }
                     case '[':
                         {
-                            List<CodeNode> args = new List<CodeNode>();
-                            i++;
+                            CodeNode mname = null;
+                            do i++; while (char.IsWhiteSpace(state.Code[i]));
                             int startPos = i;
-                            for (; ; )
-                            {
-                                while (char.IsWhiteSpace(state.Code[i]))
-                                    i++;
-                                if (state.Code[i] == ']')
-                                    break;
-                                else if (state.Code[i] == ',')
-                                    do
-                                        i++;
-                                    while (char.IsWhiteSpace(state.Code[i]));
-                                args.Add(Parser.Parse(state, ref i, 1));
-                                if (args[args.Count - 1] == null)
-                                    throw new JSException((new Core.BaseTypes.SyntaxError("Expected \"]\" at " + Tools.PositionToTextcord(state.Code, startPos))));
-                                if ((args[args.Count - 1] is ExpressionStatement) && (args[args.Count - 1] as ExpressionStatement)._type == OperationType.None)
-                                    args[args.Count - 1] = (args[args.Count - 1] as ExpressionStatement).first;
-                            }
-                            first = new GetMemberStatement(first, args[0]) { Position = first.Position, Length = i + 1 - first.Position };
+                            mname = Parser.Parse(state, ref i, 1);
+                            if (mname == null)
+                                throw new JSException((new Core.BaseTypes.SyntaxError("Unexpected token at " + Tools.PositionToTextcord(state.Code, startPos))));
+                            while (char.IsWhiteSpace(state.Code[i])) i++;
+                            if (state.Code[i] != ']')
+                                throw new JSException((new Core.BaseTypes.SyntaxError("Expected \"]\" at " + Tools.PositionToTextcord(state.Code, startPos))));
+                            first = new GetMemberStatement(first, mname) { Position = first.Position, Length = i + 1 - first.Position };
                             i++;
                             repeat = true;
                             canAsign = true;
@@ -1188,7 +1182,7 @@ namespace NiL.JS.Statements
                     second = new None(deicstra(new ExpressionStatement()
                     {
                         first = opassigncache,
-                        second = second is ExpressionStatement ? new None(deicstra(second as ExpressionStatement), null) : second,
+                        second = second is ExpressionStatement ? (second as ExpressionStatement)._type == OperationType.None ? second : new None(deicstra(second as ExpressionStatement), null) : second,
                         _type = type,
                         Position = index,
                         Length = i - index

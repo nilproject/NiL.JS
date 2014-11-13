@@ -152,14 +152,14 @@ namespace NiL.JS.Core.TypeProxing
 
         internal static void Clear()
         {
-            BaseTypes.Boolean.True.__proto__ = null;
-            BaseTypes.Boolean.False.__proto__ = null;
-            JSObject.nullString.__proto__ = null;
-            Number.NaN.__proto__ = null;
-            Number.POSITIVE_INFINITY.__proto__ = null;
-            Number.NEGATIVE_INFINITY.__proto__ = null;
-            Number.MIN_VALUE.__proto__ = null;
-            Number.MAX_VALUE.__proto__ = null;
+            BaseTypes.Boolean.True.__prototype = null;
+            BaseTypes.Boolean.False.__prototype = null;
+            JSObject.nullString.__prototype = null;
+            Number.NaN.__prototype = null;
+            Number.POSITIVE_INFINITY.__prototype = null;
+            Number.NEGATIVE_INFINITY.__prototype = null;
+            Number.MIN_VALUE.__prototype = null;
+            Number.MAX_VALUE.__prototype = null;
             staticProxies.Clear();
             dynamicProxies.Clear();
         }

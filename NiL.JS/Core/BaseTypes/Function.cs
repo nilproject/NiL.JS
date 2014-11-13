@@ -602,8 +602,6 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         #region Runtime
-        private int parametersStored;
-        private int recursiveDepth;
         [Hidden]
         [CLSCompliant(false)]
         internal protected JSObject _prototype;
@@ -745,6 +743,10 @@ namespace NiL.JS.Core.BaseTypes
         [Hidden]
         public virtual JSObject Invoke(JSObject thisBind, Arguments args)
         {
+#if DEBUG
+            if (creator.trace)
+                System.Console.WriteLine("DEBUG: Run \"" + creator.Reference.Name + "\"");
+#endif
             var body = creator.body;
             if (body == null || body.body.Length == 0)
             {
@@ -754,27 +756,15 @@ namespace NiL.JS.Core.BaseTypes
                 return notExists;
             }
             var oldargs = _arguments;
-            if (recursiveDepth > parametersStored) // рекурсивный вызов. Из-за With мы можем упустить eval
+            if (creator.recursiveDepth > creator.parametersStored) // рекурсивный вызов. Из-за With мы можем упустить eval
             {
                 storeParameters();
-                parametersStored++;
+                creator.parametersStored++;
             }
-            recursiveDepth++;
+            creator.recursiveDepth++;
             var oldcaller = _caller;
-            //Function oldContextCaller = null;
-            //JSObject oldContextThisBind = null;
-            //bool pseudoInline = false;
             Context internalContext = null;
-            //if (creator.containsEval || creator.containsWith || creator.containsFunctions || (context ?? Context.CurrentContext).strict != body.strict)
             internalContext = new Context(context ?? Context.CurrentContext, creator.containsEval || creator.containsWith, this);
-            //else
-            //{
-            //    internalContext = context ?? Context.CurrentContext;
-            //    oldContextCaller = internalContext.caller;
-            //    oldContextThisBind = internalContext.thisBind;
-            //    pseudoInline = true;
-            //    internalContext.caller = this;
-            //}
             try
             {
                 thisBind = correctThisBind(thisBind, body, internalContext);
@@ -796,34 +786,26 @@ namespace NiL.JS.Core.BaseTypes
                 {
                     args.callee = this;
                     args.caller = notExists;
-                    //if (pseudoInline)
-                    //    _caller = oldContextCaller;
-                    //else
+                    var cc = Context.CurrentContext;
+                    if (cc != null)
                     {
-                        var cc = Context.CurrentContext;
-                        if (cc != null)
-                        {
-                            if (cc.caller != null && cc.caller.creator.body.strict)
-                                // контекст может быть строгим, но вызывающая функция нет.
-                                // такое возможно только в том случае, когда вызывющий контекст принадлежит строгому eval'у
-                                _caller = propertiesDummySM;
-                            else
-                                _caller = cc.caller;
-                        }
+                        if (cc.caller != null && cc.caller.creator.body.strict)
+                            // контекст может быть строгим, но вызывающая функция нет.
+                            // такое возможно только в том случае, когда вызывющий контекст принадлежит строгому eval'у
+                            _caller = propertiesDummySM;
+                        else
+                            _caller = cc.caller;
                     }
                 }
                 if ((creator.containsEval || creator.isRecursive) && this.creator.Reference.descriptor != null)
                 {
-                    this.creator.Reference.descriptor.cacheContext = internalContext;
+                    this.creator.Reference.descriptor.cacheContext = internalContext.parent;
                     this.creator.Reference.descriptor.cacheRes = this;
                 }
 
                 internalContext.strict |= body.strict;
-                //if (!pseudoInline)
-                {
-                    internalContext.variables = body.variables;
-                    internalContext.Activate();
-                }
+                internalContext.variables = body.variables;
+                internalContext.Activate();
                 if (creator.type == FunctionType.Generator)
                     Thread.CurrentThread.Suspend();
                 JSObject ai = null;
@@ -832,7 +814,7 @@ namespace NiL.JS.Core.BaseTypes
                 {
                     internalContext.abort = AbortType.None;
                     initParameters(this._arguments as Arguments ?? args, body, internalContext);
-                    if (recursiveDepth == parametersStored)
+                    if (creator.recursiveDepth == creator.parametersStored)
                         storeParameters();
                     body.Evaluate(internalContext);
                     ai = internalContext.abortInfo;
@@ -848,26 +830,21 @@ namespace NiL.JS.Core.BaseTypes
             }
             finally
             {
-                recursiveDepth--;
-                if (parametersStored > recursiveDepth)
-                    parametersStored--;
+#if DEBUG
+                if (creator.trace)
+                    System.Console.WriteLine("DEBUG: Exit \"" + creator.Reference.Name + "\"");
+#endif
+                creator.recursiveDepth--;
+                if (creator.parametersStored > creator.recursiveDepth)
+                    creator.parametersStored--;
                 try
                 {
-                    //if (pseudoInline)
-                    //{
-                    //    internalContext.caller = oldContextCaller;
-                    //    internalContext.thisBind = oldContextThisBind;
-                    //    internalContext.abort = AbortType.None;
-                    //}
-                    //else
-                    {
-                        internalContext.abort = AbortType.Return;
-                        internalContext.Deactivate();
-                    }
+                    internalContext.abort = AbortType.Return;
+                    internalContext.Deactivate();
                 }
                 finally
                 {
-                    if (oldargs == null)
+                    if (creator.recursiveDepth == 0)
                     {
                         var i = body.localVariables.Length;
                         for (; i-- > 0; )
@@ -966,7 +943,8 @@ namespace NiL.JS.Core.BaseTypes
                 for (var i = body.localVariables.Length; i-- > 0; )
                 {
                     var v = body.localVariables[i];
-                    if (string.CompareOrdinal(v.name, "arguments") == 0 && v.Inititalizator == null)
+                    bool isArg = string.CompareOrdinal(v.name, "arguments") == 0;
+                    if (isArg && v.Inititalizator == null)
                         continue;
                     JSObject f = null;
                     f = new JSObject() { valueType = JSObjectType.Undefined, attributes = JSObjectAttributesInternal.DoNotDelete };
@@ -978,7 +956,7 @@ namespace NiL.JS.Core.BaseTypes
                         f.attributes |= JSObjectAttributesInternal.ReadOnly;
                     v.cacheRes = f;
                     v.cacheContext = internalContext;
-                    if (string.CompareOrdinal(v.name, "arguments") == 0)
+                    if (isArg)
                         _arguments = f;
                 }
         }

@@ -116,6 +116,10 @@ namespace NiL.JS.Core
             {
                 if (GlobalPrototype == this)
                     return Null;
+                if (valueType >= JSObjectType.Object
+                    && oValue != this
+                    && (oValue as JSObject) != null)
+                    return (oValue as JSObject).__proto__;
                 if (!this.isDefinded || (this.valueType >= JSObjectType.Object && oValue == null))
                     throw new JSException(new TypeError("Can not get prototype of null or undefined"));
                 if (__prototype != null)
@@ -131,9 +135,18 @@ namespace NiL.JS.Core
             [Hidden]
             set
             {
+                if ((attributes & JSObjectAttributesInternal.Immutable) != 0)
+                    return;
+                if (valueType >= JSObjectType.Object
+                    && oValue != this
+                    && (oValue as JSObject) != null)
+                {
+                    (oValue as JSObject).__proto__ = value;
+                    return;
+                }
                 if (value == null)
                 {
-                    __prototype = null;
+                    __prototype = Null;
                     return;
                 }
                 if (value.valueType < JSObjectType.Object)
@@ -483,12 +496,10 @@ namespace NiL.JS.Core
         {
             string name = nameObj.ToString();
             JSObject res = null;
-            var proto = __proto__;
+            JSObject proto = null;
             bool fromProto =
                 (fields == null || !fields.TryGetValue(name, out res) || res.valueType < JSObjectType.Undefined)
-                && (proto != null)
-                && (proto != this)
-                && (proto.oValue != null)
+                && ((proto = __proto__).oValue != null)
                 && (!own || proto.oValue is TypeProxy);
             if (fromProto)
             {
@@ -502,7 +513,11 @@ namespace NiL.JS.Core
             if (res == null)
             {
                 if (!forWrite || (attributes & JSObjectAttributesInternal.Immutable) != 0)
+                {
+                    if (!own && string.CompareOrdinal(name, "__proto__") == 0)
+                        return proto; // прототип null или undefined. Так можно
                     return notExists;
+                }
                 res = new JSObject()
                 {
                     valueType = JSObjectType.NotExistsInObject
@@ -852,8 +867,12 @@ namespace NiL.JS.Core
 
         internal static IDictionary<string, JSObject> createFields()
         {
-            return new Dictionary<string, JSObject>();
-            //return new BinaryTree<JSObject>();
+            return createFields(0);
+        }
+
+        internal static IDictionary<string, JSObject> createFields(int p)
+        {
+            return new Dictionary<string, JSObject>(p);
         }
 
         [Hidden]
@@ -1392,7 +1411,7 @@ namespace NiL.JS.Core
             if (obj.oValue == null)
                 throw new JSException(new TypeError("Can not prevent extensions for null"));
             obj.attributes |= JSObjectAttributesInternal.Immutable;
-            var res = (obj.oValue as JSObject);
+            var res = obj.oValue as JSObject;
             if (res != null)
                 res.attributes |= JSObjectAttributesInternal.Immutable;
             return res;

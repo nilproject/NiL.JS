@@ -70,11 +70,8 @@ namespace NiL.JS.Expressions
 
         internal override JSObject Evaluate(Context context)
         {
-            lock (this)
-            {
-                tempContainer.Assign(first.Evaluate(context));
-                return Check(tempContainer, second.Evaluate(context), context);
-            }
+            tempContainer.Assign(first.Evaluate(context));
+            return Check(tempContainer, second.Evaluate(context), context);
         }
 
         public override string ToString()

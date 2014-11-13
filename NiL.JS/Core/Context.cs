@@ -91,7 +91,16 @@ namespace NiL.JS.Core
 
                 globalContext.AttachModule(typeof(BaseTypes.ArrayBuffer));
                 globalContext.AttachModule(typeof(BaseTypes.Int8Array));
+                globalContext.AttachModule(typeof(BaseTypes.Uint8Array));
+                globalContext.AttachModule(typeof(BaseTypes.Uint8ClampedArray));
+                globalContext.AttachModule(typeof(BaseTypes.Int16Array));
+                globalContext.AttachModule(typeof(BaseTypes.Uint16Array));
+                globalContext.AttachModule(typeof(BaseTypes.Int32Array));
+                globalContext.AttachModule(typeof(BaseTypes.Uint32Array));
+                globalContext.AttachModule(typeof(BaseTypes.Float32Array));
+                globalContext.AttachModule(typeof(BaseTypes.Float64Array));
 
+                globalContext.AttachModule(typeof(Modules.Debug));
 
                 #region Base Function
                 globalContext.DefineVariable("eval").Assign(new EvalFunction());
@@ -497,6 +506,8 @@ namespace NiL.JS.Core
                     var f = context.DefineVariable(body.localVariables[i].name);
                     if (body.localVariables[i].Inititalizator != null)
                         f.Assign(body.localVariables[i].Inititalizator.Evaluate(context));
+                    if (body.localVariables[i].readOnly)
+                        f.attributes |= JSObjectAttributesInternal.ReadOnly;
                 }
 
                 var run = context.Activate();

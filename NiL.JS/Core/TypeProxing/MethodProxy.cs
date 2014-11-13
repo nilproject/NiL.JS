@@ -312,8 +312,18 @@ namespace NiL.JS.Core.TypeProxing
                 return (v as ProxyConstructor).proxy.hostedType;
             else if (v is Function && targetType.IsSubclassOf(typeof(Delegate)))
                 return (v as Function).MakeDelegate(targetType);
-            else if (v is ArrayBuffer && targetType.IsAssignableFrom(typeof(byte[])))
-                return (v as ArrayBuffer).Data;
+            else if (targetType.IsArray)
+            {
+                var eltype = targetType.GetElementType();
+                if (eltype.IsPrimitive)
+                {
+                    if (eltype == typeof(byte) && v is ArrayBuffer)
+                        return (v as ArrayBuffer).Data;
+                    var ta = v as TypedArray;
+                    if (ta.ElementType == eltype)
+                        return ta.ToNativeArray();
+                }
+            }
             return v;
         }
 

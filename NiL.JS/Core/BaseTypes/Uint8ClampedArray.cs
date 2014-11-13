@@ -8,7 +8,7 @@ using NiL.JS.Core.Modules;
 namespace NiL.JS.Core.BaseTypes
 {
     [Serializable]
-    public sealed class Int8Array : TypedArray
+    public sealed class Uint8ClampedArray : TypedArray
     {
         protected override JSObject this[int index]
         {
@@ -23,13 +23,13 @@ namespace NiL.JS.Core.BaseTypes
             {
                 if (index < 0 || index > length.iValue)
                     throw new JSException(new RangeError());
-                buffer.Data[index + byteOffset] = (byte)Tools.JSObjectToInt32(value, 0, false);
+                buffer.Data[index + byteOffset] = (byte)System.Math.Min(255, System.Math.Max(0, Tools.JSObjectToInt32(value, 0, false)));
             }
         }
 
-        private sbyte getValue(int index)
+        private byte getValue(int index)
         {
-            return (sbyte)buffer.Data[index + byteOffset];
+            return buffer.Data[index + byteOffset];
         }
 
         public override int BYTES_PER_ELEMENT
@@ -37,50 +37,40 @@ namespace NiL.JS.Core.BaseTypes
             get { return 1; }
         }
 
-        public Int8Array()
-            : base()
-        {
-        }
+        public Uint8ClampedArray()
+            : base() { }
 
-        public Int8Array(int length)
-            : base(length)
-        {
-        }
+        public Uint8ClampedArray(int length)
+            : base(length) { }
 
-        public Int8Array(ArrayBuffer buffer)
-            : base(buffer, 0, buffer.byteLength)
-        {
-        }
+        public Uint8ClampedArray(ArrayBuffer buffer)
+            : base(buffer, 0, buffer.byteLength) { }
 
-        public Int8Array(ArrayBuffer buffer, int bytesOffset)
-            : base(buffer, bytesOffset, buffer.byteLength - bytesOffset)
-        {
-        }
+        public Uint8ClampedArray(ArrayBuffer buffer, int bytesOffset)
+            : base(buffer, bytesOffset, buffer.byteLength - bytesOffset) { }
 
-        public Int8Array(ArrayBuffer buffer, int bytesOffset, int length)
-            : base(buffer, bytesOffset, length)
-        {
-        }
+        public Uint8ClampedArray(ArrayBuffer buffer, int bytesOffset, int length)
+            : base(buffer, bytesOffset, length) { }
 
-        public Int8Array(JSObject src)
+        public Uint8ClampedArray(JSObject src)
             : base(src) { }
 
         [ParametersCount(2)]
         public override TypedArray subarray(Arguments args)
         {
-            return subarrayImpl<Int8Array>(args[0], args[1]);
+            return subarrayImpl<Uint8ClampedArray>(args[0], args[1]);
         }
 
         [Hidden]
         public override Type ElementType
         {
             [Hidden]
-            get { return typeof(sbyte); }
+            get { return typeof(byte); }
         }
 
         protected internal override System.Array ToNativeArray()
         {
-            var res = new sbyte[length.iValue];
+            var res = new byte[length.iValue];
             for (var i = 0; i < res.Length; i++)
                 res[i] = getValue(i);
             return res;

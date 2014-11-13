@@ -15,7 +15,7 @@ namespace NiL.JS.Core
         public int LabelCount;
         public string Code;
         public readonly string SourceCode;
-        public bool AllowStrict;
+        public bool AllowDirectives;
         public readonly Stack<bool> containsWith;
         public int breaksCount;
         public int continiesCount;
@@ -27,7 +27,7 @@ namespace NiL.JS.Core
             Labels = new List<string>();
             strict = new Stack<bool>();
             strict.Push(false);
-            AllowStrict = true;
+            AllowDirectives = true;
             containsWith = new Stack<bool>();
             containsWith.Push(false);
             AllowBreak = new Stack<bool>();

@@ -192,6 +192,8 @@ namespace NiL.JS.Statements
             }
         }
 
+        internal int parametersStored;
+        internal int recursiveDepth;
         internal bool assignToArguments;
         internal bool containsFunctions;
         internal bool containsEval;
@@ -202,6 +204,9 @@ namespace NiL.JS.Statements
         internal CodeBlock body;
         internal string name;
         internal FunctionType type;
+#if DEBUG
+        internal bool trace;
+#endif
 
         public CodeBlock Body { get { return body; } }
         public string Name { get { return name; } }
@@ -341,7 +346,7 @@ namespace NiL.JS.Statements
                     state.AllowYield.Push(true);
                 state.AllowBreak.Push(false);
                 state.AllowContinue.Push(false);
-                state.AllowStrict = true;
+                state.AllowDirectives = true;
                 body = CodeBlock.Parse(state, ref i).Statement as CodeBlock;
             }
             finally
@@ -350,7 +355,7 @@ namespace NiL.JS.Statements
                     state.AllowYield.Pop();
                 state.AllowBreak.Pop();
                 state.AllowContinue.Pop();
-                state.AllowStrict = false;
+                state.AllowDirectives = false;
                 state.Labels = labels;
                 state.functionsDepth--;
                 state.AllowReturn--;
@@ -378,7 +383,10 @@ namespace NiL.JS.Statements
                 type = mode,
                 Position = index,
                 Length = i - index,
-                containsWith = state.containsWith.Peek() || (needSwitchCWith && state.containsWith.Pop())
+                containsWith = state.containsWith.Peek() || (needSwitchCWith && state.containsWith.Pop()),
+#if DEBUG
+                trace = body.directives != null ? body.directives.Contains("debug trace") : false
+#endif
             };
             if (inExp == 0 && mode == FunctionType.Function)
             // Позволяет делать вызов сразу при объявлении функции 
@@ -476,7 +484,7 @@ namespace NiL.JS.Statements
 
         internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
-            if (body.localVariables != null)
+            if (body.builded)
                 return false;
             var bodyCode = body as CodeNode;
             var nvars = new Dictionary<string, VariableDescriptor>();
@@ -485,7 +493,7 @@ namespace NiL.JS.Statements
             {
                 VariableDescriptor fdesc = null;
                 if (Reference.Descriptor == null)
-                    Reference.descriptor = new VariableDescriptor(Reference, true, Reference.functionDepth + 1) { owner = this };
+                    Reference.descriptor = new VariableDescriptor(Reference, true, Reference.functionDepth) { owner = this };
                 if (System.Array.FindIndex(arguments, x => x.Name == Reference.descriptor.name) == -1)
                     if (nvars.TryGetValue(name, out fdesc) && !fdesc.Defined)
                     {
@@ -509,6 +517,7 @@ namespace NiL.JS.Statements
                 {
                     desc.references.AddRange(arguments[i].references);
                     desc.defined = true;
+                    desc.defineDepth = arguments[i].defineDepth;
                     arguments[i] = desc;
                     arguments[i].owner = this;
                 }

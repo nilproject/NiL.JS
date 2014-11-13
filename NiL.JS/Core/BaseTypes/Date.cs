@@ -208,6 +208,8 @@ namespace NiL.JS.Core.BaseTypes
             if (args.length == 1)
             {
                 var arg = args[0];
+                if (arg.valueType >= JSObjectType.Object)
+                    arg = arg.ToPrimitiveValue_Value_String();
                 switch (arg.valueType)
                 {
                     case JSObjectType.Int:
@@ -336,7 +338,7 @@ namespace NiL.JS.Core.BaseTypes
                             
                             timeZoneOffset = TimeZone.CurrentTimeZone.GetUtcOffset(new DateTime((((long)time) % _400yearsMilliseconds + _unixTimeBase) * 10000)).Ticks / 10000;*/
                             DateTime dt;
-                            if (DateTime.TryParse(tstr, out dt))
+                            if (DateTime.TryParse(tstr, null, DateTimeStyles.AllowInnerWhite | DateTimeStyles.AllowWhiteSpaces, out dt))
                             {
                                 time = dt.Ticks / 10000;
                                 timeZoneOffset = TimeZone.CurrentTimeZone.GetUtcOffset(dt).Ticks / 10000;
@@ -946,6 +948,8 @@ namespace NiL.JS.Core.BaseTypes
         [Hidden]
         public override string ToString()
         {
+            if (error)
+                return "Invalid date";
             var offset = new TimeSpan(timeZoneOffset * 10000);
             var res =
                 daysOfWeekNames[System.Math.Abs(time) / _dayMilliseconds % 7] + " "

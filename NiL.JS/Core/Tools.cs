@@ -1197,5 +1197,141 @@ namespace NiL.JS.Core
         {
             return ((p % 'a' % 'A' + 10) % ('0' + 10));
         }
+        internal static long getLengthOfIterably(JSObject src, bool reassignLen)
+        {
+            var len = src.GetMember("length", true, false); // тут же проверка на null/undefined с падением если надо
+            if (len.valueType == JSObjectType.Property)
+            {
+                if (reassignLen && (len.attributes & JSObjectAttributesInternal.ReadOnly) == 0)
+                {
+                    len.valueType = JSObjectType.Undefined;
+                    len.Assign(((len.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(src, null));
+                }
+                else
+                    len = ((len.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(src, null);
+            }
+            uint res;
+            if (len.valueType >= JSObjectType.Object)
+                res = (uint)Tools.JSObjectToInt64(len.ToPrimitiveValue_Value_String(), 0, false);
+            else
+                res = (uint)Tools.JSObjectToInt64(len, 0, false);
+            if (reassignLen)
+            {
+                if (len.valueType == JSObjectType.Property)
+                    ((len.oValue as PropertyPair).set ?? Function.emptyFunction).Invoke(src, new Arguments() { a0 = res, length = 1 });
+                else
+                    len.Assign(res);
+            }
+            return res;
+        }
+
+        internal static BaseTypes.Array iterableToArray(JSObject src, bool evalProps, bool clone, bool reassignLen, long _length = -1)
+        {
+            BaseTypes.Array temp = new BaseTypes.Array();
+            HashSet<string> processedKeys = null;
+            bool goDeep = true;
+            for (; goDeep; )
+            {
+                goDeep = false;
+                if (src.GetType() == typeof(BaseTypes.Array))
+                {
+                    if (_length == -1)
+                        _length = (src as BaseTypes.Array).data.Length;
+                    long prew = -1;
+                    foreach (var element in ((src as BaseTypes.Array).data as IEnumerable<KeyValuePair<int, JSObject>>))
+                    {
+                        if (element.Key >= _length) // эээ...
+                            break;
+                        var value = element.Value;
+                        if (value == null || !value.isExist)
+                            continue;
+                        if (!goDeep && System.Math.Abs(prew - element.Key) > 1)
+                            goDeep = true;
+                        if (evalProps && value.valueType == JSObjectType.Property)
+                            value = (value.oValue as PropertyPair).get == null ? JSObject.undefined : (value.oValue as PropertyPair).get.Invoke(src, null).CloneImpl();
+                        else if (clone)
+                            value = value.CloneImpl();
+                        if (processedKeys != null)
+                        {
+                            var sk = element.Key.ToString();
+                            if (processedKeys.Contains(sk))
+                                continue;
+                            processedKeys.Add(sk);
+                        }
+                        temp.data[element.Key] = value;
+                    }
+                    goDeep |= System.Math.Abs(prew - _length) > 1;
+                }
+                else
+                {
+                    if (_length == -1)
+                    {
+                        _length = getLengthOfIterably(src, reassignLen);
+                        if (_length == 0)
+                            return temp;
+                    }
+                    long prew = -1;
+                    var tjo = new JSObject() { valueType = JSObjectType.String };
+                    foreach (var index in iterablyEnum(_length, src))
+                    {
+                        tjo.oValue = index.Value;
+                        var value = src.GetMember(tjo, false, false);
+                        if (!value.isExist)
+                            continue;
+                        if (evalProps && value.valueType == JSObjectType.Property)
+                            value = (value.oValue as PropertyPair).get == null ? JSObject.undefined : (value.oValue as PropertyPair).get.Invoke(src, null).CloneImpl();
+                        else if (clone)
+                            value = value.CloneImpl();
+                        if (!goDeep && System.Math.Abs(prew - index.Key) > 1)
+                            goDeep = true;
+                        if (processedKeys != null)
+                        {
+                            var sk = index.Value;
+                            if (processedKeys.Contains(sk))
+                                continue;
+                            processedKeys.Add(sk);
+                        }
+                        temp.data[(int)(uint)index.Key] = value;
+                    }
+                    goDeep |= System.Math.Abs(prew - _length) > 1;
+                }
+                var crnt = src;
+                if (src.__proto__ == JSObject.Null)
+                    break;
+                src = src.__proto__.oValue as JSObject ?? src.__proto__;
+                if (src == null || (src.valueType >= JSObjectType.String && src.oValue == null))
+                    break;
+                if (processedKeys == null)
+                {
+                    processedKeys = new HashSet<string>();
+                    for (var @enum = crnt.GetEnumeratorImpl(false); @enum.MoveNext(); )
+                        processedKeys.Add(@enum.Current);
+                }
+            }
+            temp.data[(int)(_length - 1)] = temp.data[(int)(_length - 1)];
+            return temp;
+        }
+
+        internal static IEnumerable<KeyValuePair<long, string>> iterablyEnum(long length, JSObject src)
+        {
+            var res = new List<KeyValuePair<long, string>>();
+            var @enum = src.GetEnumerator(false);
+            while (@enum.MoveNext())
+            {
+                var i = @enum.Current;
+                var pindex = 0;
+                var dindex = 0.0;
+                long lindex = 0;
+                if (Tools.ParseNumber(i, ref pindex, out dindex)
+                    && (pindex == i.Length)
+                    && dindex < length
+                    && (lindex = (long)dindex) == dindex)
+                {
+                    res.Add(new KeyValuePair<long, string>(lindex, i));
+                }
+            }
+            res.Sort(new Comparison<KeyValuePair<long, string>>((x, y) => System.Math.Sign(x.Key - y.Key)));
+            return res;
+        }
     }
 }

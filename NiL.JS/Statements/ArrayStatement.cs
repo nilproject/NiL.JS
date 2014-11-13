@@ -33,7 +33,6 @@ namespace NiL.JS.Statements
 
         internal static ParseResult Parse(ParsingState state, ref int index)
         {
-            //string code = state.Code;
             int i = index;
             if (state.Code[index] != '[')
                 throw new ArgumentException("Syntax error. Expected '['");

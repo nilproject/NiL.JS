@@ -18,6 +18,7 @@ namespace NiL.JS.Core.BaseTypes
             {
                 this.owner = owner;
                 this.index = index;
+                attributes |= JSObjectAttributesInternal.Reassign;
             }
 
             public override void Assign(JSObject value)
@@ -72,6 +73,13 @@ namespace NiL.JS.Core.BaseTypes
             get;
         }
 
+        [Hidden]
+        public abstract Type ElementType
+        {
+            [Hidden]
+            get;
+        }
+
         protected TypedArray()
         {
             buffer = new ArrayBuffer();
@@ -79,20 +87,48 @@ namespace NiL.JS.Core.BaseTypes
             oValue = this;
         }
 
+        [DoNotEnumerate]
         protected TypedArray(int length)
         {
             this.length = length;
-            buffer = new ArrayBuffer(length * BYTES_PER_ELEMENT);
-            valueType = JSObjectType.Object;
-            oValue = this;
+            this.buffer = new ArrayBuffer(length * BYTES_PER_ELEMENT);
+            this.byteLength = length * BYTES_PER_ELEMENT;
+            this.byteOffset = 0;
+            this.valueType = JSObjectType.Object;
+            this.oValue = this;
         }
 
-        protected TypedArray(ArrayBuffer buffer, int bytesOffset, int length)
+        [DoNotEnumerate]
+        protected TypedArray(ArrayBuffer buffer, int byteOffset, int length)
         {
-            this.length = System.Math.Min(((buffer.byteLength - byteOffset) / BYTES_PER_ELEMENT) * BYTES_PER_ELEMENT, length);
+            if (byteOffset % BYTES_PER_ELEMENT != 0)
+                throw new JSException(new RangeError("Offset is not alligned"));
+            if (buffer.byteLength % BYTES_PER_ELEMENT != 0)
+                throw new JSException(new RangeError("buffer.byteLength is not alligned"));
+            if (buffer.byteLength < byteOffset)
+                throw new JSException(new RangeError("Invalid offset"));
+            this.byteLength = System.Math.Min(buffer.byteLength - byteOffset, length * BYTES_PER_ELEMENT);
             this.buffer = buffer;
-            valueType = JSObjectType.Object;
-            oValue = this;
+            this.length = byteLength / BYTES_PER_ELEMENT;
+            this.byteOffset = byteOffset;
+            this.valueType = JSObjectType.Object;
+            this.oValue = this;
+        }
+
+        [DoNotEnumerate]
+        protected TypedArray(JSObject iterablyObject)
+        {
+            var src = Tools.iterableToArray(iterablyObject, true, false, false);
+            if (src.data.Length > int.MaxValue)
+                throw new System.OutOfMemoryException();
+            var length = (int)src.data.Length;
+            this.buffer = new ArrayBuffer(length * BYTES_PER_ELEMENT);
+            this.length = length;
+            this.byteLength = length * BYTES_PER_ELEMENT;
+            this.valueType = JSObjectType.Object;
+            this.oValue = this;
+            foreach (var item in src.data.Reversed)
+                this[item.Key] = item.Value;
         }
 
         public void set(Arguments args)
@@ -119,25 +155,28 @@ namespace NiL.JS.Core.BaseTypes
                 if (value.valueType == JSObjectType.Property)
                 {
                     value = ((value.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(src, dummyArgs);
-                    if (dummyArgs.fields != null)
-                        dummyArgs.fields.Clear();
-                    dummyArgs.a0 =
-                        dummyArgs.a1 =
-                        dummyArgs.a2 =
-                        dummyArgs.a3 =
-                        dummyArgs.a4 =
-                        dummyArgs.a5 =
-                        dummyArgs.a6 =
-                        dummyArgs.a7 = null;
-                    dummyArgs.length = 0;
+                    dummyArgs.Reset();
                 }
                 this[(int)(i + offset)] = value;
             }
         }
 
-        public abstract TypedArray subarray();
-        public abstract TypedArray subarray(JSObject begin);
-        public abstract TypedArray subarray(JSObject begin, JSObject end);
+        [ParametersCount(2)]
+        public abstract TypedArray subarray(Arguments args);
+
+        protected T subarrayImpl<T>(JSObject begin, JSObject end) where T : TypedArray, new()
+        {
+            var bi = Tools.JSObjectToInt32(begin, 0, false);
+            var ei = end.isExist ? Tools.JSObjectToInt32(end, 0, false) : Tools.JSObjectToInt32(length);
+            if (bi == 0 && ei >= length.iValue)
+                return (T)this;
+            var r = new T();
+            r.buffer = buffer;
+            r.byteLength = System.Math.Max(0, System.Math.Min(ei, length.iValue) - bi) * BYTES_PER_ELEMENT;
+            r.byteOffset = byteOffset + bi * BYTES_PER_ELEMENT;
+            r.length = r.byteLength / BYTES_PER_ELEMENT;
+            return r;
+        }
 
         protected internal sealed override JSObject GetMember(JSObject name, bool forWrite, bool own)
         {
@@ -196,5 +235,8 @@ namespace NiL.JS.Core.BaseTypes
             }
             return base.GetMember(name, forWrite, own);
         }
+
+        protected internal abstract System.Array ToNativeArray();
+        
     }
 }
