@@ -8,7 +8,7 @@ namespace NiL.JS.Expressions
     [Serializable]
     public sealed class Assign : Expression
     {
-        private Arguments setterArgs = new Arguments() { length = 1 };
+        private Arguments setterArgs;
 
         public override bool IsContextIndependent
         {
@@ -31,6 +31,8 @@ namespace NiL.JS.Expressions
             {
                 lock (this)
                 {
+                    if (setterArgs == null)
+                        setterArgs = new Arguments() { length = 1 };
                     var fieldSource = context.objectSource;
                     temp = second.Evaluate(context);
                     setterArgs.Reset();

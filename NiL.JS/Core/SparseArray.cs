@@ -1,18 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
 namespace NiL.JS.Core
 {
     public sealed class SparseArray<TValue> : IList<TValue>, IEnumerable<TValue>, IEnumerable<KeyValuePair<int, TValue>>
     {
-        private readonly static Random random = new Random(Environment.TickCount);
-        private readonly static byte[] rbarray = new byte[4];
-        private static int rnd()
-        {
-            random.NextBytes(rbarray);
-            return (rbarray[0] << 24) | (rbarray[1] << 16) | (rbarray[2] << 8) | rbarray[3];
-        }
-
+        [StructLayout(LayoutKind.Sequential)]
         private struct _Item
         {
             public uint index;
@@ -23,10 +17,10 @@ namespace NiL.JS.Core
 
         private static readonly _Item[] emptyData = new _Item[0]; // data dummy. In cases where instance of current class was created, but not used
 
+        private uint allocatedCount;
         private _Item[] navyData;
         private TValue[] values;
-        private uint allocatedCount;
-        private uint pseudoLength = 0;
+        private uint pseudoLength;
 
         [CLSCompliant(false)]
         public uint Length
@@ -135,7 +129,7 @@ namespace NiL.JS.Core
             }
             set
             {
-                bool @default = object.Equals(value, default(TValue));
+                bool @default = value == null; // структуры мы будем записывать, иначе пришлось бы вызывать тяжелые операции сравнения.
                 if (navyData.Length <= allocatedCount)
                     ensureCapacity(navyData.Length * 2);
                 if (allocatedCount == 0)
@@ -253,7 +247,7 @@ namespace NiL.JS.Core
 
         public int Count
         {
-            get { return (int)allocatedCount; }
+            get { return (int)pseudoLength; }
         }
 
         bool ICollection<TValue>.IsReadOnly

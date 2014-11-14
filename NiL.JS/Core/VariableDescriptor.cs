@@ -9,14 +9,14 @@ namespace NiL.JS.Core
     [Serializable]
     public sealed class VariableDescriptor
     {
+        internal int defineDepth;
+        internal JSObject cacheRes;
+        internal Context cacheContext;
         internal readonly List<VariableReference> references;
         internal readonly string name;
         internal CodeNode owner;
-        internal int defineDepth;
         internal bool captured;
         internal bool readOnly;
-        internal JSObject cacheRes;
-        internal Context cacheContext;
         internal List<CodeNode> assignations;
 
         internal bool defined;
