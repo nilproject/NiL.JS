@@ -64,7 +64,7 @@ namespace NiL.JS.Expressions
                                     throw new NotImplementedException();
                                 }
                         }
-                        return false;
+                        return NiL.JS.Core.BaseTypes.Boolean.False;
                     }
                 case JSObjectType.Double:
                     {

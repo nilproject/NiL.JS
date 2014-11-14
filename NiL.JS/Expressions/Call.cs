@@ -33,7 +33,7 @@ namespace NiL.JS.Expressions
         {
             context.objectSource = null;
             var a = source.Evaluate(context);
-            if ((a.attributes & JSObjectAttributesInternal.Temporary) != 0 || tail)
+            if (tail || (a.attributes & JSObjectAttributesInternal.Temporary) != 0)
             {
                 a = a.CloneImpl();
                 a.attributes |= JSObjectAttributesInternal.Cloned;
@@ -43,13 +43,11 @@ namespace NiL.JS.Expressions
 
         internal override JSObject Evaluate(Context context)
         {
-            JSObject newThisBind = null;
-            Function func = null;
             var temp = first.Evaluate(context);
-            newThisBind = context.objectSource;
+            JSObject newThisBind = context.objectSource;
 
             bool tail = false;
-            func = temp.valueType == JSObjectType.Function ? temp.oValue as Function ?? (temp.oValue as TypeProxy).prototypeInstance as Function : null; // будем надеяться, что только в одном случае в oValue не будет лежать функция
+            Function func = temp.valueType == JSObjectType.Function ? temp.oValue as Function ?? (temp.oValue as TypeProxy).prototypeInstance as Function : null; // будем надеяться, что только в одном случае в oValue не будет лежать функция
             if (allowTCO
                 && context.caller != null
                 && func == context.caller.oValue

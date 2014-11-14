@@ -611,14 +611,14 @@ namespace NiL.JS.Core
             {
                 this.iValue = value.iValue;
                 this.dValue = value.dValue;
-                this.fields = null;
                 this.oValue = null;
+                this.fields = null;
                 __prototype = null;
             }
             else
             {
-                fields = value.fields;
                 oValue = value.oValue;
+                fields = value.fields;
                 __prototype = value.__prototype;
             }
             this.attributes =
