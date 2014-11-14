@@ -1,9 +1,17 @@
-﻿function test(x) {
-    (function () {
-        var a = 1;
-        if (x > 0)
-            test(x - 1);
-        return (x, a);
-    })();
+﻿var sqrt = Math.sqrt;
+
+// Function Declarations
+function square(x) {
+    square.arguments
+    x = +x;
+    return +(x * x);
 }
-test(1);
+
+function diag(x, y) {
+    x = +x;
+    y = +y;
+    return +sqrt(square(x) + square(y));
+}
+
+for (var i = 0; i < 1000000; i++)
+    diag(2, 3);

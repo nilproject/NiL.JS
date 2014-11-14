@@ -569,7 +569,7 @@ namespace NiL.JS.Statements
                 return;
             for (var i = 0; i < body.variables.Length; i++)
             {
-                containsArguments |= body.variables[i].name == "arguments" && body.variables[i].Inititalizator == null;
+                containsArguments |= body.variables[i].name == "arguments";
                 containsEval |= body.variables[i].name == "eval";
                 isRecursive |= body.variables[i].name == name;
             }

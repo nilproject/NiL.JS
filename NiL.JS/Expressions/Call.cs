@@ -62,6 +62,7 @@ namespace NiL.JS.Expressions
             arguments.length = this.arguments.Length;
             for (int i = 0; i < arguments.length; i++)
                 arguments[i] = prepareArg(context, this.arguments[i], tail);
+            arguments.caller = context.strict && context.caller != null && context.caller.creator.body.strict ? Function.propertiesDummySM : context.caller;
             context.objectSource = null;
             if (tail)
             {
@@ -107,8 +108,8 @@ namespace NiL.JS.Expressions
                                 {
                                     System.Array.Reverse(arguments, 0, arguments.Length);
                                     _this = new CodeBlock(arguments, strict);
-                                    return true;
                                 }
+                                return true;
                             }
                         }
                     }

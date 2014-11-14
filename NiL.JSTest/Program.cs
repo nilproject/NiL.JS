@@ -311,7 +311,7 @@ strongFunction(1, 2, 3, 4);
             Context.GlobalContext.DebuggerCallback += (sender, e) => System.Diagnostics.Debugger.Break();
             Context.GlobalContext.DefineVariable("alert").Assign(new ExternalFunction((t, a) => { System.Windows.Forms.MessageBox.Show(a[0].ToString()); return JSObject.Undefined; }));
 
-            int mode = 101
+            int mode = 2
                    ;
             switch (mode)
             {

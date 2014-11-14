@@ -33,17 +33,25 @@ namespace NiL.JS.Expressions
                     if (s.valueType == JSObjectType.Int
                         || s.valueType == JSObjectType.Bool)
                     {
-                        l = (long)a * s.iValue;
-                        if (l > 2147483647L
-                            || l < -2147483648L)
+                        if (((a | s.iValue) & 0xFFFF0000) == 0)
                         {
-                            tempContainer.dValue = l;
-                            tempContainer.valueType = JSObjectType.Double;
+                            tempContainer.iValue = a * s.iValue;
+                            tempContainer.valueType = JSObjectType.Int;
                         }
                         else
                         {
-                            tempContainer.iValue = (int)l;
-                            tempContainer.valueType = JSObjectType.Int;
+                            l = (long)a * s.iValue;
+                            if (l > 2147483647L
+                                || l < -2147483648L)
+                            {
+                                tempContainer.dValue = l;
+                                tempContainer.valueType = JSObjectType.Double;
+                            }
+                            else
+                            {
+                                tempContainer.iValue = (int)l;
+                                tempContainer.valueType = JSObjectType.Int;
+                            }
                         }
                         return tempContainer;
                     }
@@ -64,6 +72,29 @@ namespace NiL.JS.Expressions
                 return tempResult;
 #endif
             }
+        }
+
+        internal override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> vars, bool strict)
+        {
+            var res = base.Build(ref _this, depth, vars, strict);
+            if (!res)
+            {
+                var exp = first as Constant;
+                if (exp != null
+                    && Tools.JSObjectToDouble(exp.Evaluate(null)) == 1.0)
+                {
+                    _this = new ToDouble(second);
+                    return true;
+                }
+                exp = second as Constant;
+                if (exp != null
+                    && Tools.JSObjectToDouble(exp.Evaluate(null)) == 1.0)
+                {
+                    _this = new ToDouble(first);
+                    return true;
+                }
+            }
+            return res;
         }
 
         public override string ToString()

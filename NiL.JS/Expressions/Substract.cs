@@ -3,6 +3,7 @@
 
 using System;
 using NiL.JS.Core;
+using NiL.JS.Statements;
 
 namespace NiL.JS.Expressions
 {
@@ -64,6 +65,21 @@ namespace NiL.JS.Expressions
                 return tempResult;
 #endif
             }
+        }
+
+        internal override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> vars, bool strict)
+        {
+            var res = base.Build(ref _this, depth, vars, strict);
+            if (!res)
+            {
+                if (first is Constant
+                    && Tools.JSObjectToDouble(first.Evaluate(null)) == 0.0)
+                {
+                    _this = new Neg(second);
+                    return true;
+                }
+            }
+            return res;
         }
 
         public override string ToString()

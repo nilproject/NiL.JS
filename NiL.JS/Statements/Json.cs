@@ -165,7 +165,7 @@ namespace NiL.JS.Statements
                 if (val.valueType == JSObjectType.Property)
                 {
                     var gs = val.oValue as CodeNode[];
-                    var prop = res.GetMember(fields[i], true, true);
+                    var prop = res.fields[fields[i]] = new JSObject();
                     prop.oValue = new PropertyPair
                     {
                         set = gs[0] != null ? gs[0].Evaluate(context) as Function : null,
@@ -178,7 +178,7 @@ namespace NiL.JS.Statements
                     val = val.CloneImpl();
                     val.attributes = JSObjectAttributesInternal.None;
                     if (this.fields[i] == "__proto__")
-                        res.__proto__ = val.CloneImpl();
+                        res.__proto__ = val;
                     else
                         res.fields[this.fields[i]] = val;
                 }

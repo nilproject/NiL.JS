@@ -785,17 +785,7 @@ namespace NiL.JS.Core.BaseTypes
                 else
                 {
                     args.callee = this;
-                    args.caller = notExists;
-                    var cc = Context.CurrentContext;
-                    if (cc != null)
-                    {
-                        if (cc.caller != null && cc.caller.creator.body.strict)
-                            // контекст может быть строгим, но вызывающая функция нет.
-                            // такое возможно только в том случае, когда вызывющий контекст принадлежит строгому eval'у
-                            _caller = propertiesDummySM;
-                        else
-                            _caller = cc.caller;
-                    }
+                    _caller = args.caller;
                 }
                 if ((creator.containsEval || creator.isRecursive) && this.creator.Reference.descriptor != null)
                 {
@@ -998,7 +988,7 @@ namespace NiL.JS.Core.BaseTypes
             {
                 var context = creator.arguments[0].cacheContext;
                 if (context.fields == null)
-                    context.fields = createFields();
+                    context.fields = createFields(creator.arguments.Length);
                 for (var i = 0; i < creator.arguments.Length; i++)
                     context.fields[creator.arguments[i].Name] = creator.arguments[i].cacheRes;
             }
@@ -1006,7 +996,7 @@ namespace NiL.JS.Core.BaseTypes
             {
                 var context = creator.body.localVariables[0].cacheContext;
                 if (context.fields == null)
-                    context.fields = createFields();
+                    context.fields = createFields(creator.body.localVariables.Length);
                 for (var i = 0; i < creator.body.localVariables.Length; i++)
                     context.fields[creator.body.localVariables[i].Name] = creator.body.localVariables[i].cacheRes;
             }
