@@ -7,7 +7,7 @@ namespace NiL.JS.Expressions
     [Serializable]
     public sealed class Or : Expression
     {
-        public Or(CodeNode first, CodeNode second)
+        public Or(Expression first, Expression second)
             : base(first, second, true)
         {
 
@@ -29,13 +29,13 @@ namespace NiL.JS.Expressions
             var res = base.Build(ref _this, depth, vars, strict);
             if (_this != this)
                 return res;
-            if ((second is Constant || (second is Expression && (second as Expression).IsContextIndependent))
+            if ((second is Constant || (second is Expression && ((Expression)second).IsContextIndependent))
                 && Tools.JSObjectToInt32(second.Evaluate(null)) == 0)
             {
                 _this = new ToInt(first);
                 return true;
             }
-            if ((first is Constant || (first is Expression && (first as Expression).IsContextIndependent))
+            if ((first is Constant || (first is Expression && ((Expression)first).IsContextIndependent))
                  && Tools.JSObjectToInt32(first.Evaluate(null)) == 0)
             {
                 _this = new ToInt(second);

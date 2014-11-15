@@ -549,7 +549,7 @@ namespace NiL.JS.Core.BaseTypes
 
         }
 
-        private static readonly FunctionStatement creatorDummy = new FunctionStatement("anonymous");
+        private static readonly FunctionExpression creatorDummy = new FunctionExpression("anonymous");
         internal static readonly Function emptyFunction = new Function();
         private static readonly Function TTEProxy = new MethodProxy(typeof(Function).GetMethod("ThrowTypeError", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic)) { attributes = JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.Immutable | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.ReadOnly };
         protected static void ThrowTypeError()
@@ -563,7 +563,7 @@ namespace NiL.JS.Core.BaseTypes
             attributes = JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.Immutable | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.NotConfigurable
         };
 
-        internal readonly FunctionStatement creator;
+        internal readonly FunctionExpression creator;
         [Hidden]
         [CLSCompliant(false)]
         internal protected readonly Context context;
@@ -641,10 +641,21 @@ namespace NiL.JS.Core.BaseTypes
         {
             [CallOverloaded]
             [Hidden]
-            get { if (creator.body.strict) throw new JSException(new TypeError("Property arguments not allowed in strict mode.")); return _arguments; }
+            get
+            {
+                if (creator.body.strict)
+                    throw new JSException(new TypeError("Property arguments not allowed in strict mode."));
+                //if (_arguments is PooledArguments)
+                //    _arguments = _arguments.CloneImpl();
+                return _arguments;
+            }
             [CallOverloaded]
             [Hidden]
-            set { if (creator.body.strict) throw new JSException(new TypeError("Property arguments not allowed in strict mode.")); }
+            set
+            {
+                if (creator.body.strict)
+                    throw new JSException(new TypeError("Property arguments not allowed in strict mode."));
+            }
         }
 
         [Hidden]
@@ -706,12 +717,12 @@ namespace NiL.JS.Core.BaseTypes
             for (int i = 0; i < len; i++)
                 argn += args[i] + (i + 1 < len ? "," : "");
             string code = "function(" + argn + "){" + (len == -1 ? "undefined" : args[len]) + "}";
-            var fs = NiL.JS.Statements.FunctionStatement.Parse(new ParsingState(code, code), ref index);
+            var fs = FunctionExpression.Parse(new ParsingState(code, code), ref index);
             if (fs.IsParsed)
             {
                 Parser.Build(ref fs.Statement, 0, new Dictionary<string, VariableDescriptor>(), context.strict);
                 var func = fs.Statement.Evaluate(context) as Function;
-                creator = fs.Statement as FunctionStatement;
+                creator = fs.Statement as FunctionExpression;
             }
             else
                 throw new JSException((new SyntaxError("")));
@@ -719,7 +730,7 @@ namespace NiL.JS.Core.BaseTypes
             this.oValue = this;
         }
 
-        internal Function(Context context, FunctionStatement creator)
+        internal Function(Context context, FunctionExpression creator)
         {
             attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.SystemObject;
             this.context = context;
@@ -748,7 +759,7 @@ namespace NiL.JS.Core.BaseTypes
                 System.Console.WriteLine("DEBUG: Run \"" + creator.Reference.Name + "\"");
 #endif
             var body = creator.body;
-            if (body == null || body.body.Length == 0)
+            if (body == null || body.lines.Length == 0)
             {
                 if (thisBind != null)
                     correctThisBind(thisBind, body, null); // на тот случай, когда функция вызвана как конструктор
@@ -1009,14 +1020,30 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [Hidden]
-        internal protected override JSObject GetMember(JSObject nameObj, bool create, bool own)
+        internal protected override JSObject GetMember(JSObject nameObj, bool forWrite, bool own)
         {
             string name = nameObj.ToString();
             if (creator.body.strict && (name == "caller" || name == "arguments"))
                 return propertiesDummySM;
             if (name == "prototype")
                 return prototype;
-            return DefaultFieldGetter(nameObj, create, own);
+            //if (name == "arguments")
+            //{
+            //    if (_arguments == null)
+            //    {
+            //        notExists.valueType = JSObjectType.NotExistsInObject;
+            //        return notExists;
+            //    }
+            //    if (_arguments is PooledArguments)
+            //        _arguments = _arguments.CloneImpl();
+            //    if (forWrite)
+            //    {
+            //        if (_arguments is Arguments)
+            //            _arguments = _arguments.CloneImpl();
+            //    }
+            //    return _arguments;
+            //}
+            return DefaultFieldGetter(nameObj, forWrite, own);
         }
 
         [CLSCompliant(false)]

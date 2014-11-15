@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using NiL.JS.Core;
 using NiL.JS.Core.TypeProxing;
+using NiL.JS.Expressions;
 
 namespace NiL.JS.Statements
 {
@@ -47,7 +48,7 @@ namespace NiL.JS.Statements
 #if !NET35
         internal override System.Linq.Expressions.Expression CompileToIL(Core.JIT.TreeBuildingState state)
         {
-            return System.Linq.Expressions.Expression.Throw(Expression.New(typeof(JSException).GetConstructor(new[] { typeof(JSObject) }), body.CompileToIL(state)));
+            return System.Linq.Expressions.Expression.Throw(System.Linq.Expressions.Expression.New(typeof(JSException).GetConstructor(new[] { typeof(JSObject) }), body.CompileToIL(state)));
         }
 #endif
         internal override JSObject Evaluate(Context context)
@@ -74,6 +75,11 @@ namespace NiL.JS.Statements
         {
             Parser.Build(ref body, 2, variables, strict);
             return false;
+        }
+
+        internal override void Optimize(ref CodeNode _this, FunctionExpression owner)
+        {
+            body.Optimize(ref body, owner);
         }
 
         public override string ToString()

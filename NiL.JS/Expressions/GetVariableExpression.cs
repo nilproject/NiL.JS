@@ -2,12 +2,12 @@ using System;
 using System.Collections.Generic;
 using NiL.JS.Core;
 
-namespace NiL.JS.Statements
+namespace NiL.JS.Expressions
 {
     [Serializable]
-    public sealed class GetArgumentsStatement : GetVariableStatement
+    public sealed class GetArgumentsExpression : GetVariableExpression
     {
-        internal GetArgumentsStatement(int functionDepth)
+        internal GetArgumentsExpression(int functionDepth)
             : base("arguments", functionDepth)
         {
         }
@@ -15,6 +15,8 @@ namespace NiL.JS.Statements
         internal override JSObject EvaluateForAssing(Context context)
         {
             var res = context.caller._arguments;
+            //if (res is PooledArguments)
+            //    context.caller._arguments = res = res.CloneImpl();
             if (res is Arguments)
             {
                 context.caller._arguments = res = res.CloneImpl();
@@ -26,20 +28,31 @@ namespace NiL.JS.Statements
 
         internal sealed override JSObject Evaluate(Context context)
         {
-            return context.caller._arguments;
+            var res = context.caller._arguments;
+            //if (res is PooledArguments)
+            //    context.caller._arguments = res = res.CloneImpl();
+            return res;
         }
     }
 
     [Serializable]
-    public class GetVariableStatement : VariableReference
+    public class GetVariableExpression : VariableReference
     {
         private string variableName;
-        internal bool suspendError;
+        internal bool suspendThrow;
         internal bool forceThrow;
 
         public override string Name { get { return variableName; } }
 
-        internal GetVariableStatement(string name, int functionDepth)
+        public override bool IsContextIndependent
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        internal GetVariableExpression(string name, int functionDepth)
         {
             this.functionDepth = functionDepth;
             int i = 0;
@@ -53,7 +66,7 @@ namespace NiL.JS.Statements
             if (context.strict || forceThrow)
             {
                 var res = Descriptor.Get(context, false, functionDepth);
-                if (res.valueType < JSObjectType.Undefined && (!suspendError || forceThrow))
+                if (res.valueType < JSObjectType.Undefined && (!suspendThrow || forceThrow))
                     throw new JSException((new NiL.JS.Core.BaseTypes.ReferenceError("Variable \"" + variableName + "\" is not defined.")));
                 return res;
             }
@@ -63,7 +76,7 @@ namespace NiL.JS.Statements
         internal override JSObject Evaluate(Context context)
         {
             var res = descriptor.Get(context, false, functionDepth);
-            if (res.valueType == JSObjectType.NotExists && !suspendError)
+            if (res.valueType == JSObjectType.NotExists && !suspendThrow)
                 throw new JSException(new NiL.JS.Core.BaseTypes.ReferenceError("Variable \"" + variableName + "\" is not defined."));
             if (res.valueType == JSObjectType.Property)
             {
@@ -99,11 +112,11 @@ namespace NiL.JS.Statements
                 desc.references.Add(this);
                 descriptor = desc;
             }
-            if (depth >= 0 && depth < 2 && desc.Defined)
+            if (depth >= 0 && depth < 2 && desc.IsDefined)
                 _this = null;
             else if (variableName == "arguments"
                 && functionDepth > 0)
-                _this = new GetArgumentsStatement(functionDepth) { descriptor = descriptor };
+                _this = new GetArgumentsExpression(functionDepth) { descriptor = descriptor };
             return false;
         }
     }

@@ -7,7 +7,15 @@ namespace NiL.JS.Expressions
     [Serializable]
     public class Equal : Expression
     {
-        public Equal(CodeNode first, CodeNode second)
+        protected internal override PredictedType ResultType
+        {
+            get
+            {
+                return PredictedType.Bool;
+            }
+        }
+
+        public Equal(Expression first, Expression second)
             : base(first, second, false)
         {
 

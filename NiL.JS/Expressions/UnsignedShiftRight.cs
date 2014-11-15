@@ -7,7 +7,15 @@ namespace NiL.JS.Expressions
     [Serializable]
     public sealed class UnsignedShiftRight : Expression
     {
-        public UnsignedShiftRight(CodeNode first, CodeNode second)
+        protected internal override PredictedType ResultType
+        {
+            get
+            {
+                return PredictedType.Number;
+            }
+        }
+
+        public UnsignedShiftRight(Expression first, Expression second)
             : base(first, second, true)
         {
 
@@ -34,12 +42,12 @@ namespace NiL.JS.Expressions
                 try
                 {
                     if ((first is Expression)
-                        && (first as Expression).IsContextIndependent
-                        && Tools.JSObjectToInt32((first as Expression).Evaluate(null)) == 0)
+                        && (first).IsContextIndependent
+                        && Tools.JSObjectToInt32((first).Evaluate(null)) == 0)
                         _this = new Constant(0);
                     else if ((second is Expression)
-                            && (second as Expression).IsContextIndependent
-                            && Tools.JSObjectToInt32((second as Expression).Evaluate(null)) == 0)
+                            && (second).IsContextIndependent
+                            && Tools.JSObjectToInt32((second).Evaluate(null)) == 0)
                         _this = new ToInt(first);
                 }
                 catch

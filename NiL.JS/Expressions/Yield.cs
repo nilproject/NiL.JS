@@ -16,7 +16,7 @@ namespace NiL.JS.Expressions
             }
         }
 
-        public Yield(CodeNode first)
+        public Yield(Expression first)
             : base(first, null, true)
         {
 

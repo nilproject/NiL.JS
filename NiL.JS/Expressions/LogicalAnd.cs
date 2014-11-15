@@ -6,7 +6,15 @@ namespace NiL.JS.Expressions
     [Serializable]
     public sealed class LogicalAnd : Expression
     {
-        public LogicalAnd(CodeNode first, CodeNode second)
+        protected internal override PredictedType ResultType
+        {
+            get
+            {
+                return PredictedType.Bool;
+            }
+        }
+
+        public LogicalAnd(Expression first, Expression second)
             : base(first, second, false)
         {
 

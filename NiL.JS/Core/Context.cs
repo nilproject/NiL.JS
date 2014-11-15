@@ -146,7 +146,7 @@ namespace NiL.JS.Core
         /// </summary>
         internal JSObject tempContainer;
         internal readonly Context parent;
-        internal IDictionary<string, JSObject> fields;
+        internal Dictionary<string, JSObject> fields;
         internal AbortType abort;
         internal JSObject objectSource;
         internal JSObject abortInfo;
@@ -472,7 +472,7 @@ namespace NiL.JS.Core
                             VariableDescriptor desc = null;
                             if (vars.TryGetValue(context.variables[i].name, out desc))
                             {
-                                if (desc.Defined)
+                                if (desc.IsDefined)
                                 {
                                     context.variables[i].defineDepth = -1; // Кеш будет игнорироваться.
                                     // чистить кэш тут не достаточно. 

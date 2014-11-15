@@ -6,7 +6,15 @@ namespace NiL.JS.Expressions
     [Serializable]
     public sealed class Mod : Expression
     {
-        public Mod(CodeNode first, CodeNode second)
+        protected internal override PredictedType ResultType
+        {
+            get
+            {
+                return PredictedType.Number;
+            }
+        }
+
+        public Mod(Expression first, Expression second)
             : base(first, second, true)
         {
 

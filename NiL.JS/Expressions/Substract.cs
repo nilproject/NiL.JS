@@ -10,7 +10,15 @@ namespace NiL.JS.Expressions
     [Serializable]
     public sealed class Substract : Expression
     {
-        public Substract(CodeNode first, CodeNode second)
+        protected internal override PredictedType ResultType
+        {
+            get
+            {
+                return PredictedType.Number;
+            }
+        }
+
+        public Substract(Expression first, Expression second)
             : base(first, second, true)
         {
 

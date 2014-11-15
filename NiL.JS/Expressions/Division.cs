@@ -6,7 +6,15 @@ namespace NiL.JS.Expressions
     [Serializable]
     public sealed class Division : Expression
     {
-        public Division(CodeNode first, CodeNode second)
+        protected internal override PredictedType ResultType
+        {
+            get
+            {
+                return PredictedType.Number;
+            }
+        }
+
+        public Division(Expression first, Expression second)
             : base(first, second, true)
         {
 

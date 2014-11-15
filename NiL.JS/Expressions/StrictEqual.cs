@@ -6,7 +6,15 @@ namespace NiL.JS.Expressions
     [Serializable]
     public class StrictEqual : Expression
     {
-        public StrictEqual(CodeNode first, CodeNode second)
+        protected internal override PredictedType ResultType
+        {
+            get
+            {
+                return PredictedType.Bool;
+            }
+        }
+
+        public StrictEqual(Expression first, Expression second)
             : base(first, second, true)
         {
 

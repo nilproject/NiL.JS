@@ -11,12 +11,12 @@ namespace NiL.JS.Statements
     [Serializable]
     public sealed class VariableDefineStatement : CodeNode
     {
-        private sealed class AllowWriteCN : CodeNode
+        private sealed class AllowWriteCN : Expression
         {
-            internal readonly VariableReference variable;
+            internal VariableReference variable;
             internal readonly CodeNode source;
 
-            internal AllowWriteCN(VariableReference variable, CodeNode source)
+            internal AllowWriteCN(VariableReference variable, Expression source)
             {
                 this.variable = variable;
                 this.source = source;
@@ -42,7 +42,10 @@ namespace NiL.JS.Statements
 
             internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
             {
-                return variable.Build(ref _this, depth, variables, strict);
+                var v = variable as CodeNode;
+                var res = variable.Build(ref v, depth, variables, strict);
+                variable = v as VariableReference;
+                return res;
             }
 
             protected override CodeNode[] getChildsImpl()
@@ -116,7 +119,7 @@ namespace NiL.JS.Statements
                     throw new JSException((new Core.BaseTypes.SyntaxError("Expected \";\", \",\", \"=\" or \"}\" at + " + Tools.PositionToTextcord(state.Code, i))));
                 if (i >= state.Code.Length)
                 {
-                    initializator.Add(new GetVariableStatement(name, state.functionsDepth) { Position = s, Length = name.Length, functionDepth = state.functionsDepth });
+                    initializator.Add(new GetVariableExpression(name, state.functionsDepth) { Position = s, Length = name.Length, functionDepth = state.functionsDepth });
                     break;
                 }
                 if (Tools.isLineTerminator(state.Code[i]))
@@ -125,7 +128,7 @@ namespace NiL.JS.Statements
                     do i++; while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]));
                     if (i >= state.Code.Length)
                     {
-                        initializator.Add(new GetVariableStatement(name, state.functionsDepth) { Position = s, Length = name.Length, functionDepth = state.functionsDepth });
+                        initializator.Add(new GetVariableExpression(name, state.functionsDepth) { Position = s, Length = name.Length, functionDepth = state.functionsDepth });
                         break;
                     }
                     if (state.Code[i] != '=')
@@ -136,8 +139,8 @@ namespace NiL.JS.Statements
                     do i++; while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]));
                     if (i == state.Code.Length)
                         throw new JSException((new SyntaxError("Unexpected end of line in variable defenition.")));
-                    VariableReference accm = new GetVariableStatement(name, state.functionsDepth) { Position = s, Length = name.Length, functionDepth = state.functionsDepth };
-                    CodeNode source = ExpressionStatement.Parse(state, ref i, false).Statement;
+                    VariableReference accm = new GetVariableExpression(name, state.functionsDepth) { Position = s, Length = name.Length, functionDepth = state.functionsDepth };
+                    Expression source = ExpressionTree.Parse(state, ref i, false).Statement as Expression;
                     if (isConst)
                         source = new AllowWriteCN(accm, source);
                     initializator.Add(
@@ -153,7 +156,7 @@ namespace NiL.JS.Statements
                 {
                     //if (isConst)
                     //    throw new JSException(new SyntaxError("Constant must contain value at " + Tools.PositionToTextcord(state.Code, i)));
-                    initializator.Add(new GetVariableStatement(name, state.functionsDepth) { Position = s, Length = name.Length, functionDepth = state.functionsDepth });
+                    initializator.Add(new GetVariableExpression(name, state.functionsDepth) { Position = s, Length = name.Length, functionDepth = state.functionsDepth });
                 }
                 if (i >= state.Code.Length)
                     break;
@@ -226,7 +229,7 @@ namespace NiL.JS.Statements
                 if (!variables.TryGetValue(names[i], out desc))
                     variables[names[i]] = desc = new VariableDescriptor(names[i], functionDepth);
                 this.variables[i] = desc;
-                this.variables[i].defined = true;
+                this.variables[i].isDefined = true;
                 this.variables[i].readOnly = isConst;
             }
             int actualChilds = 0;
@@ -250,6 +253,14 @@ namespace NiL.JS.Statements
                 initializators = newinits;
             }
             return false;
+        }
+
+        internal override void Optimize(ref CodeNode _this, FunctionExpression owner)
+        {
+            for (int i = 0; i < initializators.Length; i++)
+            {
+                initializators[i].Optimize(ref initializators[i], owner);
+            }
         }
 
         public override string ToString()

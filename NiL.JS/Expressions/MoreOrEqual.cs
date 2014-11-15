@@ -6,7 +6,15 @@ namespace NiL.JS.Expressions
     [Serializable]
     public sealed class MoreOrEqual : Less
     {
-        public MoreOrEqual(CodeNode first, CodeNode second)
+        protected internal override PredictedType ResultType
+        {
+            get
+            {
+                return PredictedType.Bool;
+            }
+        }
+
+        public MoreOrEqual(Expression first, Expression second)
             : base(first, second)
         {
 

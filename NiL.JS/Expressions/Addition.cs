@@ -9,7 +9,7 @@ namespace NiL.JS.Expressions
     [Serializable]
     public sealed class Addition : Expression
     {
-        public Addition(CodeNode first, CodeNode second)
+        public Addition(Expression first, Expression second)
             : base(first, second, true)
         {
 
@@ -258,11 +258,33 @@ namespace NiL.JS.Expressions
                         || (second is Constant
                         && (second as Constant).value.valueType == JSObjectType.String))
                     {
-                        _this = new StringConcat(new List<CodeNode>() { first, second });
+                        _this = new StringConcat(new List<Expression>() { first, second });
                     }
                 }
             }
             return res;
+        }
+
+        internal override void Optimize(ref CodeNode _this, FunctionExpression owner)
+        {
+            if (first.ResultType == PredictedType.String
+                || second.ResultType == PredictedType.String)
+            {
+                if (first is StringConcat)
+                {
+                    _this = first;
+                    (first as StringConcat).sources.Add(second);
+                }
+                else if (second is StringConcat)
+                {
+                    _this = second;
+                    (second as StringConcat).sources.Insert(0, first);
+                }
+                else
+                {
+                    _this = new StringConcat(new List<Expression>() { first, second });
+                }
+            }
         }
 
         public override string ToString()

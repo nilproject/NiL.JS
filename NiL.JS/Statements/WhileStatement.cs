@@ -43,7 +43,7 @@ namespace NiL.JS.Statements
             int ccs = state.continiesCount;
             int cbs = state.breaksCount;
             var body = Parser.Parse(state, ref i, 0);
-            if (body is FunctionStatement && state.strict.Peek())
+            if (body is FunctionExpression && state.strict.Peek())
                 throw new JSException((new NiL.JS.Core.BaseTypes.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
             state.AllowBreak.Pop();
             state.AllowContinue.Pop();
@@ -162,6 +162,14 @@ namespace NiL.JS.Statements
                 System.Diagnostics.Debugger.Log(10, "Error", e.Message);
             }
             return false;
+        }
+
+        internal override void Optimize(ref CodeNode _this, FunctionExpression owner)
+        {
+            if (condition != null)
+                condition.Optimize(ref condition, owner);
+            if (body != null)
+                body.Optimize(ref body, owner);
         }
 
         public override string ToString()

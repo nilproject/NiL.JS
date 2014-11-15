@@ -8,11 +8,19 @@ namespace NiL.JS.Expressions
     [Serializable]
     public sealed class Delete : Expression
     {
-        internal sealed class SafeMemberGetter : CodeNode
+        internal sealed class SafeMemberGetter : Expression
         {
-            private GetMemberStatement proto;
+            private GetMemberExpression proto;
 
-            internal SafeMemberGetter(GetMemberStatement gms)
+            public override bool IsContextIndependent
+            {
+                get
+                {
+                    return false;
+                }
+            }
+
+            internal SafeMemberGetter(GetMemberExpression gms)
             {
                 proto = gms;
                 Position = gms.Position;
@@ -41,7 +49,15 @@ namespace NiL.JS.Expressions
             }
         }
 
-        public Delete(CodeNode first)
+        protected internal override PredictedType ResultType
+        {
+            get
+            {
+                return PredictedType.Bool;
+            }
+        }
+
+        public Delete(Expression first)
             : base(first, null, true)
         {
 
@@ -110,14 +126,14 @@ namespace NiL.JS.Expressions
         {
             if (base.Build(ref _this, depth, vars, strict))
                 return true;
-            if (first is GetVariableStatement)
+            if (first is GetVariableExpression)
             {
                 if (strict)
                     throw new JSException(new SyntaxError("Can not evalute delete on variable in strict mode"));
-                (first as GetVariableStatement).suspendError = true;
+                (first as GetVariableExpression).suspendThrow = true;
             }
-            if (first is GetMemberStatement)
-                first = new SafeMemberGetter(first as GetMemberStatement);
+            if (first is GetMemberExpression)
+                first = new SafeMemberGetter(first as GetMemberExpression);
             var f = first as VariableReference ?? ((first is OpAssignCache) ? (first as OpAssignCache).Source as VariableReference : null);
             if (f != null)
             {

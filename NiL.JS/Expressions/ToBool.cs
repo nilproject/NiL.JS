@@ -6,7 +6,15 @@ namespace NiL.JS.Expressions
     [Serializable]
     public sealed class ToBool : Expression
     {
-        public ToBool(CodeNode first)
+        protected internal override PredictedType ResultType
+        {
+            get
+            {
+                return PredictedType.Bool;
+            }
+        }
+
+        public ToBool(Expression first)
             : base(first, null, false)
         {
 

@@ -102,13 +102,13 @@ namespace NiL.JS.Statements
             if (!Parser.Validate(state.Code, "if (", ref i) && !Parser.Validate(state.Code, "if(", ref i))
                 return new ParseResult();
             while (char.IsWhiteSpace(state.Code[i])) i++;
-            CodeNode condition = ExpressionStatement.Parse(state, ref i).Statement;
+            CodeNode condition = ExpressionTree.Parse(state, ref i).Statement;
             while (char.IsWhiteSpace(state.Code[i])) i++;
             if (state.Code[i] != ')')
                 throw new ArgumentException("code (" + i + ")");
             do i++; while (char.IsWhiteSpace(state.Code[i]));
             CodeNode body = Parser.Parse(state, ref i, 0);
-            if (body is FunctionStatement && state.strict.Peek())
+            if (body is FunctionExpression && state.strict.Peek())
                 throw new JSException((new NiL.JS.Core.BaseTypes.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
             CodeNode elseBody = null;
             while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i])) i++;
@@ -118,7 +118,7 @@ namespace NiL.JS.Statements
             {
                 while (char.IsWhiteSpace(state.Code[i])) i++;
                 elseBody = Parser.Parse(state, ref i, 0);
-                if (elseBody is FunctionStatement && state.strict.Peek())
+                if (elseBody is FunctionExpression && state.strict.Peek())
                     throw new JSException((new NiL.JS.Core.BaseTypes.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
             }
             var pos = index;
@@ -151,7 +151,7 @@ namespace NiL.JS.Statements
 #endif
                 return body.Evaluate(context);
             }
-            else if (elseBody != null)
+            else
             {
 #if DEV
                 if (context.debugging && !(elseBody is CodeBlock))
@@ -159,7 +159,6 @@ namespace NiL.JS.Statements
 #endif
                 return elseBody.Evaluate(context);
             }
-            return null;
         }
 
         protected override CodeNode[] getChildsImpl()
@@ -181,7 +180,7 @@ namespace NiL.JS.Statements
             Parser.Build(ref elseBody, depth, variables, strict);
             try
             {
-                if (condition is Constant || (condition is Expression && (condition as Expression).IsContextIndependent))
+                if (condition is Constant || (condition is Expression && ((Expression)condition).IsContextIndependent))
                 {
                     if ((bool)condition.Evaluate(null))
                         _this = body;
@@ -196,6 +195,12 @@ namespace NiL.JS.Statements
             if (_this == this && elseBody == null)
                 _this = new IfStatement(this);
             return false;
+        }
+
+        internal override void Optimize(ref CodeNode _this, FunctionExpression owner)
+        {
+            condition.Optimize(ref condition, owner);
+            body.Optimize(ref body, owner);
         }
 
         public override string ToString()

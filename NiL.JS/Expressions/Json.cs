@@ -4,17 +4,34 @@ using System.Globalization;
 using NiL.JS.Core;
 using NiL.JS.Core.BaseTypes;
 using NiL.JS.Core.JIT;
+using NiL.JS.Expressions;
 
 namespace NiL.JS.Statements
 {
     [Serializable]
-    public sealed class Json : CodeNode
+    public sealed class Json : Expression
     {
         private string[] fields;
         private CodeNode[] values;
 
-        public CodeNode[] Body { get { return values; } }
+        public CodeNode[] Initializators { get { return values; } }
         public string[] Fields { get { return fields; } }
+
+        public override bool IsContextIndependent
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        protected internal override PredictedType ResultType
+        {
+            get
+            {
+                return PredictedType.Object;
+            }
+        }
 
 #if !NET35
 
@@ -59,7 +76,7 @@ namespace NiL.JS.Statements
                      && (state.Code[i] == '"' || state.Code[i] == '\'' || !Parser.isIdentificatorTerminator(state.Code[i])))
                 {
                     i = pos;
-                    var setter = FunctionStatement.Parse(state, ref i, FunctionType.Set).Statement as FunctionStatement;
+                    var setter = FunctionExpression.Parse(state, ref i, FunctionType.Set).Statement as FunctionExpression;
                     if (!flds.ContainsKey(setter.Name))
                     {
                         var vle = new Constant(new JSObject() { valueType = JSObjectType.Object, oValue = new CodeNode[2] { setter, null } });
@@ -81,7 +98,7 @@ namespace NiL.JS.Statements
                     && (state.Code[i] == '"' || state.Code[i] == '\'' || !Parser.isIdentificatorTerminator(state.Code[i])))
                 {
                     i = pos;
-                    var getter = FunctionStatement.Parse(state, ref i, FunctionType.Get).Statement as FunctionStatement;
+                    var getter = FunctionExpression.Parse(state, ref i, FunctionType.Get).Statement as FunctionExpression;
                     if (!flds.ContainsKey(getter.Name))
                     {
                         var vle = new Constant(new JSObject() { valueType = JSObjectType.Object, oValue = new CodeNode[2] { null, getter } });
@@ -125,7 +142,7 @@ namespace NiL.JS.Statements
                     if (state.Code[i] != ':')
                         return new ParseResult();
                     do i++; while (char.IsWhiteSpace(state.Code[i]));
-                    var initializator = ExpressionStatement.Parse(state, ref i, false).Statement;
+                    var initializator = ExpressionTree.Parse(state, ref i, false).Statement;
                     CodeNode aei = null;
                     flds.TryGetValue(fieldName, out aei);
                     if (aei != null
@@ -200,6 +217,16 @@ namespace NiL.JS.Statements
                     Parser.Build(ref values[i], 2, vars, strict);
             }
             return false;
+        }
+
+        internal override void Optimize(ref CodeNode _this, FunctionExpression owner)
+        {
+            for (var i = Initializators.Length; i-- > 0; )
+            {
+                var cn = Initializators[i] as CodeNode;
+                cn.Optimize(ref cn, owner);
+                Initializators[i] = cn as Expression;
+            }
         }
 
         protected override CodeNode[] getChildsImpl()

@@ -7,7 +7,15 @@ namespace NiL.JS.Expressions
     [Serializable]
     public sealed class In : Expression
     {
-        public In(CodeNode first, CodeNode second)
+        protected internal override PredictedType ResultType
+        {
+            get
+            {
+                return PredictedType.Bool;
+            }
+        }
+
+        public In(Expression first, Expression second)
             : base(first, second, true)
         {
 

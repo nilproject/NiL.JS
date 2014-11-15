@@ -15,7 +15,15 @@ namespace NiL.JS.Expressions
         private static readonly JSObject functionString = "function";
         private static readonly JSObject objectString = "object";
 
-        public TypeOf(CodeNode first)
+        protected internal override PredictedType ResultType
+        {
+            get
+            {
+                return PredictedType.String;
+            }
+        }
+
+        public TypeOf(Expression first)
             : base(first, null, false)
         {
             if (second != null)
@@ -68,8 +76,8 @@ namespace NiL.JS.Expressions
         internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict)
         {
             base.Build(ref _this, depth, vars, strict);
-            if (first is GetVariableStatement)
-                (first as GetVariableStatement).suspendError = true;
+            if (first is GetVariableExpression)
+                (first as GetVariableExpression).suspendThrow = true;
             return false;
         }
 

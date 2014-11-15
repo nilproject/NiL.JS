@@ -6,7 +6,7 @@ namespace NiL.JS.Expressions
     [Serializable]
     public sealed class And : Expression
     {
-        public And(CodeNode first, CodeNode second)
+        public And(Expression first, Expression second)
             : base(first, second, true)
         {
 

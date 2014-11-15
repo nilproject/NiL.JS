@@ -10,7 +10,15 @@ namespace NiL.JS.Expressions
     [Serializable]
     internal sealed class Mul : Expression
     {
-        public Mul(CodeNode first, CodeNode second)
+        protected internal override PredictedType ResultType
+        {
+            get
+            {
+                return PredictedType.Number;
+            }
+        }
+
+        public Mul(Expression first, Expression second)
             : base(first, second, true)
         {
 
@@ -83,14 +91,14 @@ namespace NiL.JS.Expressions
                 if (exp != null
                     && Tools.JSObjectToDouble(exp.Evaluate(null)) == 1.0)
                 {
-                    _this = new ToDouble(second);
+                    _this = new ToNumber(second);
                     return true;
                 }
                 exp = second as Constant;
                 if (exp != null
                     && Tools.JSObjectToDouble(exp.Evaluate(null)) == 1.0)
                 {
-                    _this = new ToDouble(first);
+                    _this = new ToNumber(first);
                     return true;
                 }
             }

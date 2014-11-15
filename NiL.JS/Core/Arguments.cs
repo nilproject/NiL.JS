@@ -5,7 +5,7 @@ using System.Collections;
 namespace NiL.JS.Core
 {
     [Serializable]
-    public sealed class Arguments : JSObject, IEnumerable
+    public class Arguments : JSObject, IEnumerable
     {
         private sealed class _LengthContainer : JSObject
         {
@@ -286,7 +286,7 @@ namespace NiL.JS.Core
                 yield return be.Current;
         }
 
-        public void Reset()
+        internal void Reset()
         {
             fields = null;
             length = 0;
@@ -298,6 +298,27 @@ namespace NiL.JS.Core
             a5 = null;
             a6 = null;
             a7 = null;
+        }
+    }
+
+    internal sealed class PooledArguments : Arguments
+    {
+        internal override JSObject CloneImpl()
+        {
+            var res = new Arguments()
+            {
+                length = length,
+                a0 = a0,
+                a1 = a1,
+                a2 = a2,
+                a3 = a3,
+                a4 = a4,
+                a5 = a5,
+                a6 = a6,
+                a7 = a7,
+                fields = fields
+            };
+            return res;
         }
     }
 }

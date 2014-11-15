@@ -10,7 +10,7 @@ namespace NiL.JS.Expressions
     [Serializable]
     public sealed class New : Expression
     {
-        private sealed class ThisSetter : CodeNode
+        private sealed class ThisSetter : Expression
         {
             private CodeNode source;
             public JSObject lastThisBind;
@@ -62,7 +62,7 @@ namespace NiL.JS.Expressions
 
         private ThisSetter thisSetter;
 
-        public New(CodeNode first, CodeNode[] arguments)
+        public New(Expression first, Expression[] arguments)
             : base(null, null, false)
         {
             if (first is Call)

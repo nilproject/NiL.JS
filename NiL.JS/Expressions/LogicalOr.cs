@@ -6,7 +6,15 @@ namespace NiL.JS.Expressions
     [Serializable]
     public sealed class LogicalOr : Expression
     {
-        public LogicalOr(CodeNode first, CodeNode second)
+        protected internal override PredictedType ResultType
+        {
+            get
+            {
+                return PredictedType.Bool;
+            }
+        }
+
+        public LogicalOr(Expression first, Expression second)
             : base(first, second, false)
         {
 

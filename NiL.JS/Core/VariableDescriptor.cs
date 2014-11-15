@@ -3,9 +3,22 @@ using System.Collections.Generic;
 using NiL.JS.Statements;
 using System.Collections.ObjectModel;
 using NiL.JS.Core.TypeProxing;
+using NiL.JS.Expressions;
 
 namespace NiL.JS.Core
 {
+    public enum PredictedType
+    {
+        Unknown = 0,
+        Ambiguous,
+        Undefined,
+        Bool,
+        Number,
+        String,
+        Object,
+        Function
+    }
+
     [Serializable]
     public sealed class VariableDescriptor
     {
@@ -18,9 +31,10 @@ namespace NiL.JS.Core
         internal bool captured;
         internal bool readOnly;
         internal List<CodeNode> assignations;
+        internal PredictedType lastPredictedType;
 
-        internal bool defined;
-        public bool Defined { get { return defined; } }
+        internal bool isDefined;
+        public bool IsDefined { get { return isDefined; } }
         public CodeNode Owner
         {
             get { return owner; }
@@ -66,7 +80,7 @@ namespace NiL.JS.Core
                 return cacheRes;
             res = context.GetVariable(name, create);
             if (create
-                && !defined
+                && !isDefined
                 && res.valueType == JSObjectType.NotExists)
                 res.attributes = JSObjectAttributesInternal.None;
             else
@@ -87,19 +101,19 @@ namespace NiL.JS.Core
             this.defineDepth = defineDepth;
             this.name = name;
             references = new List<VariableReference>();
-            defined = true;
+            isDefined = true;
         }
 
         internal VariableDescriptor(VariableReference proto, bool defined, int defineDepth)
         {
             this.defineDepth = defineDepth;
             this.name = proto.Name;
-            if (proto is FunctionStatement.FunctionReference)
-                Inititalizator = (proto as FunctionStatement.FunctionReference).Owner;
+            if (proto is FunctionExpression.FunctionReference)
+                Inititalizator = (proto as FunctionExpression.FunctionReference).Owner;
             references = new List<VariableReference>();
             references.Add(proto);
             proto.descriptor = this;
-            this.defined = defined;
+            this.isDefined = defined;
         }
 
         public override string ToString()

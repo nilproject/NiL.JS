@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using NiL.JS.Core;
+using NiL.JS.Expressions;
 
 namespace NiL.JS.Statements
 {
@@ -18,19 +19,19 @@ namespace NiL.JS.Statements
     [Serializable]
     public sealed class SwitchStatement : CodeNode
     {
-        private FunctionStatement[] functions;
-        private readonly CodeNode[] body;
+        private FunctionExpression[] functions;
+        private readonly CodeNode[] lines;
         private SwitchCase[] cases;
         private CodeNode image;
 
-        public FunctionStatement[] Functions { get { return functions; } }
-        public CodeNode[] Body { get { return body; } }
+        public FunctionExpression[] Functions { get { return functions; } }
+        public CodeNode[] Body { get { return lines; } }
         public SwitchCase[] Cases { get { return cases; } }
         public CodeNode Image { get { return image; } }
 
         internal SwitchStatement(CodeNode[] body)
         {
-            this.body = body;
+            this.lines = body;
         }
 
         internal static ParseResult Parse(ParsingState state, ref int index)
@@ -40,7 +41,7 @@ namespace NiL.JS.Statements
             if (!Parser.Validate(state.Code, "switch (", ref i) && !Parser.Validate(state.Code, "switch(", ref i))
                 return new ParseResult();
             while (char.IsWhiteSpace(state.Code[i])) i++;
-            var image = ExpressionStatement.Parse(state, ref i).Statement;
+            var image = ExpressionTree.Parse(state, ref i).Statement;
             if (state.Code[i] != ')')
                 throw new JSException((new Core.BaseTypes.SyntaxError("Expected \")\" at + " + Tools.PositionToTextcord(state.Code, i))));
             do i++; while (char.IsWhiteSpace(state.Code[i]));
@@ -48,7 +49,7 @@ namespace NiL.JS.Statements
                 throw new JSException((new Core.BaseTypes.SyntaxError("Expected \"{\" at + " + Tools.PositionToTextcord(state.Code, i))));
             do i++; while (char.IsWhiteSpace(state.Code[i]));
             var body = new List<CodeNode>();
-            var funcs = new List<FunctionStatement>();
+            var funcs = new List<FunctionExpression>();
             var cases = new List<SwitchCase>();
             cases.Add(null);
             state.AllowBreak.Push(true);
@@ -60,7 +61,7 @@ namespace NiL.JS.Statements
                     {
                         i += 4;
                         while (char.IsWhiteSpace(state.Code[i])) i++;
-                        var sample = ExpressionStatement.Parse(state, ref i).Statement;
+                        var sample = ExpressionTree.Parse(state, ref i).Statement;
                         if (state.Code[i] != ':')
                             throw new JSException((new Core.BaseTypes.SyntaxError("Expected \":\" at + " + Tools.PositionToTextcord(state.Code, i))));
                         i++;
@@ -84,11 +85,11 @@ namespace NiL.JS.Statements
                 var t = Parser.Parse(state, ref i, 0);
                 if (t == null)
                     continue;
-                if (t is FunctionStatement)
+                if (t is FunctionExpression)
                 {
                     if (state.strict.Peek())
                         throw new JSException((new NiL.JS.Core.BaseTypes.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
-                    funcs.Add(t as FunctionStatement);
+                    funcs.Add(t as FunctionExpression);
                 }
                 else
                     body.Add(t);
@@ -133,7 +134,7 @@ namespace NiL.JS.Statements
             var res = JSObject.undefined;
             while (i-- > 0)
             {
-                res = body[i].Evaluate(context) ?? res;
+                res = lines[i].Evaluate(context) ?? res;
                 if (context.abort != AbortType.None)
                 {
                     if (context.abort == AbortType.Break)
@@ -149,8 +150,8 @@ namespace NiL.JS.Statements
             if (depth < 1)
                 throw new InvalidOperationException();
             Parser.Build(ref image, 2, variables, strict);
-            for (int i = 0; i < body.Length; i++)
-                Parser.Build(ref body[i], 1, variables, strict);
+            for (int i = 0; i < lines.Length; i++)
+                Parser.Build(ref lines[i], 1, variables, strict);
             for (int i = 0; functions != null && i < functions.Length; i++)
             {
                 CodeNode stat = functions[i];
@@ -160,14 +161,14 @@ namespace NiL.JS.Statements
             functions = null;
             for (int i = 1; i < cases.Length; i++)
                 Parser.Build(ref cases[i].statement, 2, variables, strict);
-            for (int i = 0; i < body.Length / 2; i++)
+            for (int i = 0; i < lines.Length / 2; i++)
             {
-                var t = body[i];
-                body[i] = body[body.Length - 1 - i];
-                body[body.Length - 1 - i] = t;
+                var t = lines[i];
+                lines[i] = lines[lines.Length - 1 - i];
+                lines[lines.Length - 1 - i] = t;
             }
             for (int i = cases[0] != null ? 0 : 1; i < cases.Length; i++)
-                cases[i].index = body.Length - cases[i].index;
+                cases[i].index = lines.Length - cases[i].index;
             return false;
         }
 
@@ -177,11 +178,24 @@ namespace NiL.JS.Statements
             {
                 image
             };
-            res.AddRange(body);
+            res.AddRange(lines);
             res.AddRange(functions);
             res.AddRange(from c in cases select c.statement);
             res.RemoveAll(x => x == null);
             return res.ToArray();
+        }
+
+        internal override void Optimize(ref CodeNode _this, Expressions.FunctionExpression owner)
+        {
+            image.Optimize(ref image, owner);
+            for (var i = 1; i < cases.Length; i++)
+                cases[i].statement.Optimize(ref cases[i].statement, owner);
+            for (var i = lines.Length; i-- > 0; )
+            {
+                var cn = lines[i] as CodeNode;
+                cn.Optimize(ref cn, owner);
+                lines[i] = cn;
+            }
         }
 
         public override string ToString()
@@ -189,7 +203,7 @@ namespace NiL.JS.Statements
             string res = "switch (" + image + ") {" + Environment.NewLine;
             var replp = Environment.NewLine;
             var replt = Environment.NewLine + "  ";
-            for (int i = body.Length; i-- > 0; )
+            for (int i = lines.Length; i-- > 0; )
             {
                 for (int j = 0; j < cases.Length; j++)
                 {
@@ -198,7 +212,7 @@ namespace NiL.JS.Statements
                         res += "case " + cases[j].statement + ":" + Environment.NewLine;
                     }
                 }
-                string lc = body[i].ToString().Replace(replp, replt);
+                string lc = lines[i].ToString().Replace(replp, replt);
                 res += "  " + lc + (lc[lc.Length - 1] != '}' ? ";" + Environment.NewLine : Environment.NewLine);
             }
             if (functions != null)

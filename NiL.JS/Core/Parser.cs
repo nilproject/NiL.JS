@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using NiL.JS.Expressions;
 using NiL.JS.Statements;
 
 namespace NiL.JS.Core
@@ -29,7 +30,7 @@ namespace NiL.JS.Core
             // 0
             new _Rule[] // Общий
             {                
-                new _Rule("[", ExpressionStatement.Parse),
+                new _Rule("[", ExpressionTree.Parse),
                 new _Rule("{", CodeBlock.Parse),
                 new _Rule("var ", VariableDefineStatement.Parse),
                 new _Rule("const ", VariableDefineStatement.Parse),
@@ -39,92 +40,92 @@ namespace NiL.JS.Core
                 new _Rule("for", ForStatement.Parse),
                 new _Rule("while", WhileStatement.Parse),
                 new _Rule("return", ReturnStatement.Parse),
-                new _Rule("function", FunctionStatement.Parse),
+                new _Rule("function", FunctionExpression.Parse),
                 new _Rule("switch", SwitchStatement.Parse),
                 new _Rule("with", WithStatement.Parse),
                 new _Rule("do", DoWhileStatement.Parse),
-                new _Rule("(", ExpressionStatement.Parse),
-                new _Rule("+", ExpressionStatement.Parse),
-                new _Rule("-", ExpressionStatement.Parse),
-                new _Rule("!", ExpressionStatement.Parse),
-                new _Rule("~", ExpressionStatement.Parse),
-                new _Rule("true", ExpressionStatement.Parse),
-                new _Rule("false", ExpressionStatement.Parse),
-                new _Rule("null", ExpressionStatement.Parse),
-                new _Rule("this", ExpressionStatement.Parse),
-                new _Rule("typeof", ExpressionStatement.Parse),
+                new _Rule("(", ExpressionTree.Parse),
+                new _Rule("+", ExpressionTree.Parse),
+                new _Rule("-", ExpressionTree.Parse),
+                new _Rule("!", ExpressionTree.Parse),
+                new _Rule("~", ExpressionTree.Parse),
+                new _Rule("true", ExpressionTree.Parse),
+                new _Rule("false", ExpressionTree.Parse),
+                new _Rule("null", ExpressionTree.Parse),
+                new _Rule("this", ExpressionTree.Parse),
+                new _Rule("typeof", ExpressionTree.Parse),
                 new _Rule("try", TryCatchStatement.Parse),
-                new _Rule("new", ExpressionStatement.Parse),
-                new _Rule("delete", ExpressionStatement.Parse),
-                new _Rule("void", ExpressionStatement.Parse),
-                new _Rule("yield", ExpressionStatement.Parse),
+                new _Rule("new", ExpressionTree.Parse),
+                new _Rule("delete", ExpressionTree.Parse),
+                new _Rule("void", ExpressionTree.Parse),
+                new _Rule("yield", ExpressionTree.Parse),
                 new _Rule("break", BreakStatement.Parse),
                 new _Rule("continue", ContinueStatement.Parse),
                 new _Rule("throw", ThrowStatement.Parse),
                 new _Rule(ValidateName, LabeledStatement.Parse),
-                new _Rule(ValidateName, ExpressionStatement.Parse),
-                new _Rule(ValidateValue, ExpressionStatement.Parse),
+                new _Rule(ValidateName, ExpressionTree.Parse),
+                new _Rule(ValidateValue, ExpressionTree.Parse),
                 new _Rule("debugger", DebuggerOperator.Parse)
             },
             // 1
             new _Rule[] // Для операторов
             {
-                new _Rule("[", ExpressionStatement.Parse),
-                new _Rule("{", ExpressionStatement.Parse),
-                new _Rule("function", ExpressionStatement.Parse),
-                new _Rule("(", ExpressionStatement.Parse),
-                new _Rule("+", ExpressionStatement.Parse),
-                new _Rule("-", ExpressionStatement.Parse),
-                new _Rule("!", ExpressionStatement.Parse),
-                new _Rule("~", ExpressionStatement.Parse),
-                new _Rule("(", ExpressionStatement.Parse),
-                new _Rule("true", ExpressionStatement.Parse),
-                new _Rule("false", ExpressionStatement.Parse),
-                new _Rule("null", ExpressionStatement.Parse),
-                new _Rule("this", ExpressionStatement.Parse),
-                new _Rule("typeof", ExpressionStatement.Parse),
-                new _Rule("new", ExpressionStatement.Parse),
-                new _Rule("delete", ExpressionStatement.Parse),
-                new _Rule("void", ExpressionStatement.Parse),
-                new _Rule("yield", ExpressionStatement.Parse),
-                new _Rule(ValidateName, ExpressionStatement.Parse),
-                new _Rule(ValidateValue, ExpressionStatement.Parse),
+                new _Rule("[", ExpressionTree.Parse),
+                new _Rule("{", ExpressionTree.Parse),
+                new _Rule("function", ExpressionTree.Parse),
+                new _Rule("(", ExpressionTree.Parse),
+                new _Rule("+", ExpressionTree.Parse),
+                new _Rule("-", ExpressionTree.Parse),
+                new _Rule("!", ExpressionTree.Parse),
+                new _Rule("~", ExpressionTree.Parse),
+                new _Rule("(", ExpressionTree.Parse),
+                new _Rule("true", ExpressionTree.Parse),
+                new _Rule("false", ExpressionTree.Parse),
+                new _Rule("null", ExpressionTree.Parse),
+                new _Rule("this", ExpressionTree.Parse),
+                new _Rule("typeof", ExpressionTree.Parse),
+                new _Rule("new", ExpressionTree.Parse),
+                new _Rule("delete", ExpressionTree.Parse),
+                new _Rule("void", ExpressionTree.Parse),
+                new _Rule("yield", ExpressionTree.Parse),
+                new _Rule(ValidateName, ExpressionTree.Parse),
+                new _Rule(ValidateValue, ExpressionTree.Parse),
             },
             // 2
             new _Rule[] // Для операторов №2
             {
                 new _Rule("[", ArrayStatement.Parse),
                 new _Rule("{", Json.Parse),
-                new _Rule("function", FunctionStatement.Parse),
+                new _Rule("function", FunctionExpression.Parse),
             },
             // 3
             new _Rule[] // Для for
             {
                 new _Rule("const ", VariableDefineStatement.Parse),
                 new _Rule("var ", VariableDefineStatement.Parse),
-                new _Rule("(", ExpressionStatement.Parse),
-                new _Rule("+", ExpressionStatement.Parse),
-                new _Rule("-", ExpressionStatement.Parse),
-                new _Rule("!", ExpressionStatement.Parse),
-                new _Rule("~", ExpressionStatement.Parse),
-                new _Rule("function", ExpressionStatement.Parse),
-                new _Rule("(", ExpressionStatement.Parse),
-                new _Rule("true", ExpressionStatement.Parse),
-                new _Rule("false", ExpressionStatement.Parse),
-                new _Rule("null", ExpressionStatement.Parse),
-                new _Rule("this", ExpressionStatement.Parse),
-                new _Rule("typeof", ExpressionStatement.Parse),
-                new _Rule("new", ExpressionStatement.Parse),
-                new _Rule("delete", ExpressionStatement.Parse),
-                new _Rule("void", ExpressionStatement.Parse),
-                new _Rule("yield", ExpressionStatement.Parse),
-                new _Rule(ValidateName, ExpressionStatement.Parse),
-                new _Rule(ValidateValue, ExpressionStatement.Parse),
+                new _Rule("(", ExpressionTree.Parse),
+                new _Rule("+", ExpressionTree.Parse),
+                new _Rule("-", ExpressionTree.Parse),
+                new _Rule("!", ExpressionTree.Parse),
+                new _Rule("~", ExpressionTree.Parse),
+                new _Rule("function", ExpressionTree.Parse),
+                new _Rule("(", ExpressionTree.Parse),
+                new _Rule("true", ExpressionTree.Parse),
+                new _Rule("false", ExpressionTree.Parse),
+                new _Rule("null", ExpressionTree.Parse),
+                new _Rule("this", ExpressionTree.Parse),
+                new _Rule("typeof", ExpressionTree.Parse),
+                new _Rule("new", ExpressionTree.Parse),
+                new _Rule("delete", ExpressionTree.Parse),
+                new _Rule("void", ExpressionTree.Parse),
+                new _Rule("yield", ExpressionTree.Parse),
+                new _Rule(ValidateName, ExpressionTree.Parse),
+                new _Rule(ValidateValue, ExpressionTree.Parse),
             },
             // 4
             new _Rule[] // Общий без JSON
             {
-                new _Rule("[", ExpressionStatement.Parse),
+                new _Rule("[", ExpressionTree.Parse),
                 new _Rule("{", CodeBlock.Parse),
                 new _Rule("var ", VariableDefineStatement.Parse),
                 new _Rule("const ", VariableDefineStatement.Parse),
@@ -134,31 +135,31 @@ namespace NiL.JS.Core
                 new _Rule("for", ForStatement.Parse),
                 new _Rule("while", WhileStatement.Parse),
                 new _Rule("return", ReturnStatement.Parse),
-                new _Rule("function", FunctionStatement.Parse),
+                new _Rule("function", FunctionExpression.Parse),
                 new _Rule("switch", SwitchStatement.Parse),
                 new _Rule("with", WithStatement.Parse),
                 new _Rule("do", DoWhileStatement.Parse),
-                new _Rule("(", ExpressionStatement.Parse),
-                new _Rule("+", ExpressionStatement.Parse),
-                new _Rule("-", ExpressionStatement.Parse),
-                new _Rule("!", ExpressionStatement.Parse),
-                new _Rule("~", ExpressionStatement.Parse),
-                new _Rule("true", ExpressionStatement.Parse),
-                new _Rule("false", ExpressionStatement.Parse),
-                new _Rule("null", ExpressionStatement.Parse),
-                new _Rule("this", ExpressionStatement.Parse),
-                new _Rule("typeof", ExpressionStatement.Parse),
+                new _Rule("(", ExpressionTree.Parse),
+                new _Rule("+", ExpressionTree.Parse),
+                new _Rule("-", ExpressionTree.Parse),
+                new _Rule("!", ExpressionTree.Parse),
+                new _Rule("~", ExpressionTree.Parse),
+                new _Rule("true", ExpressionTree.Parse),
+                new _Rule("false", ExpressionTree.Parse),
+                new _Rule("null", ExpressionTree.Parse),
+                new _Rule("this", ExpressionTree.Parse),
+                new _Rule("typeof", ExpressionTree.Parse),
                 new _Rule("try", TryCatchStatement.Parse),
-                new _Rule("new", ExpressionStatement.Parse),
-                new _Rule("delete", ExpressionStatement.Parse),
-                new _Rule("void", ExpressionStatement.Parse),
-                new _Rule("yield", ExpressionStatement.Parse),
+                new _Rule("new", ExpressionTree.Parse),
+                new _Rule("delete", ExpressionTree.Parse),
+                new _Rule("void", ExpressionTree.Parse),
+                new _Rule("yield", ExpressionTree.Parse),
                 new _Rule("break", BreakStatement.Parse),
                 new _Rule("continue", ContinueStatement.Parse),
                 new _Rule("throw", ThrowStatement.Parse),
                 new _Rule(ValidateName, LabeledStatement.Parse),
-                new _Rule(ValidateName, ExpressionStatement.Parse),
-                new _Rule(ValidateValue, ExpressionStatement.Parse),
+                new _Rule(ValidateName, ExpressionTree.Parse),
+                new _Rule(ValidateValue, ExpressionTree.Parse),
                 new _Rule("debugger", DebuggerOperator.Parse)
             }
         };
@@ -532,6 +533,18 @@ namespace NiL.JS.Core
         internal static void Build(ref CodeNode s, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
             while (s != null && s.Build(ref s, depth, variables, strict)) ;
+        }
+
+        internal static void Build(ref Expressions.Expression s, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        {
+            CodeNode t = s;
+            Build(ref t, depth, variables, strict);
+            if (t == null)
+            {
+                s = null;
+                return;
+            }
+            s = t as Expression ?? new ExpressionWrapper(t);
         }
     }
 }

@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq.Expressions;
 using NiL.JS.Core;
 using NiL.JS.Core.JIT;
+using NiL.JS.Expressions;
 
 namespace NiL.JS.Statements
 {
@@ -46,22 +46,22 @@ namespace NiL.JS.Statements
 #if !NET35
         internal override System.Linq.Expressions.Expression CompileToIL(Core.JIT.TreeBuildingState state)
         {
-            var intContext = Expression.Parameter(typeof(WithContext));
-            var tempContainer = Expression.Parameter(typeof(Context));
-            return Expression.Block(new[] { intContext, tempContainer }
-                , Expression.Assign(intContext, Expression.Call(JITHelpers.methodof(initContext), JITHelpers.ContextParameter, obj.CompileToIL(state)))
-                , Expression.TryFinally(
-                    Expression.Block(
-                        Expression.Assign(tempContainer, JITHelpers.ContextParameter)
-                        , Expression.Assign(JITHelpers.ContextParameter, intContext)
-                        , Expression.Call(intContext, typeof(WithContext).GetMethod("Activate", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance))
+            var intContext = System.Linq.Expressions.Expression.Parameter(typeof(WithContext));
+            var tempContainer = System.Linq.Expressions.Expression.Parameter(typeof(Context));
+            return System.Linq.Expressions.Expression.Block(new[] { intContext, tempContainer }
+                , System.Linq.Expressions.Expression.Assign(intContext, System.Linq.Expressions.Expression.Call(JITHelpers.methodof(initContext), JITHelpers.ContextParameter, obj.CompileToIL(state)))
+                , System.Linq.Expressions.Expression.TryFinally(
+                    System.Linq.Expressions.Expression.Block(
+                        System.Linq.Expressions.Expression.Assign(tempContainer, JITHelpers.ContextParameter)
+                        , System.Linq.Expressions.Expression.Assign(JITHelpers.ContextParameter, intContext)
+                        , System.Linq.Expressions.Expression.Call(intContext, typeof(WithContext).GetMethod("Activate", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance))
                         , body.CompileToIL(state)
                     )
-                    , Expression.Block(
-                        Expression.Assign(JITHelpers.ContextParameter, tempContainer)
-                        , Expression.Call(intContext, typeof(WithContext).GetMethod("Deactivate", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance))
-                        , Expression.Assign(Expression.Field(JITHelpers.ContextParameter, "abort"), Expression.Field(intContext, "abort"))
-                        , Expression.Assign(Expression.Field(JITHelpers.ContextParameter, "abortInfo"), Expression.Field(intContext, "abortInfo"))
+                    , System.Linq.Expressions.Expression.Block(
+                        System.Linq.Expressions.Expression.Assign(JITHelpers.ContextParameter, tempContainer)
+                        , System.Linq.Expressions.Expression.Call(intContext, typeof(WithContext).GetMethod("Deactivate", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance))
+                        , System.Linq.Expressions.Expression.Assign(System.Linq.Expressions.Expression.Field(JITHelpers.ContextParameter, "abort"), System.Linq.Expressions.Expression.Field(intContext, "abort"))
+                        , System.Linq.Expressions.Expression.Assign(System.Linq.Expressions.Expression.Field(JITHelpers.ContextParameter, "abortInfo"), System.Linq.Expressions.Expression.Field(intContext, "abortInfo"))
                     )
                 ));
         }
@@ -112,6 +112,14 @@ namespace NiL.JS.Statements
             Parser.Build(ref obj, depth + 1, variables, strict);
             Parser.Build(ref body, depth, variables, strict);
             return false;
+        }
+
+        internal override void Optimize(ref CodeNode _this, FunctionExpression owner)
+        {
+            if (obj != null)
+                obj.Optimize(ref obj, owner);
+            if (body != null)
+                body.Optimize(ref body, owner);
         }
 
         public override string ToString()

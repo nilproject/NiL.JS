@@ -80,6 +80,11 @@ namespace NiL.JS.Statements
             return false;
         }
 
+        internal override void Optimize(ref CodeNode _this, Expressions.FunctionExpression owner)
+        {
+            statement.Optimize(ref statement, owner);
+        }
+
         public override string ToString()
         {
             return label + ": " + statement;

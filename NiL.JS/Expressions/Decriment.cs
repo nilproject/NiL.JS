@@ -22,7 +22,7 @@ namespace NiL.JS.Expressions
             }
         }
 
-        public Decriment(CodeNode op, Type type)
+        public Decriment(Expression op, Type type)
             : base(op, type == Type.Postdecriment ? op : null, type == Type.Postdecriment)
         {
             if (type > Type.Postdecriment)
@@ -168,6 +168,18 @@ namespace NiL.JS.Expressions
                     (f.Descriptor.assignations = new System.Collections.Generic.List<CodeNode>())).Add(this);
             }
             return false;
+        }
+
+        internal override void Optimize(ref CodeNode _this, FunctionExpression owner)
+        {
+            var vr = first as VariableReference;
+            if (vr != null && vr.descriptor.isDefined)
+            {
+                if (vr.descriptor.lastPredictedType == PredictedType.Unknown)
+                    vr.descriptor.lastPredictedType = PredictedType.Number;
+                else
+                    vr.descriptor.lastPredictedType = PredictedType.Ambiguous;
+            }
         }
 
         public override string ToString()

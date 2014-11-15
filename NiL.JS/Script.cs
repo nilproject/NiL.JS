@@ -64,6 +64,8 @@ namespace NiL.JS
                 if (body.localVariables[i].readOnly)
                     body.localVariables[i].cacheRes.attributes |= JSObjectAttributesInternal.ReadOnly;
             }
+            var bd = body as CodeNode;
+            body.Optimize(ref bd, null);
         }
 
         /// <summary>

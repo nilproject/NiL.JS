@@ -4,10 +4,10 @@ using NiL.JS.Core;
 using NiL.JS.Core.BaseTypes;
 using NiL.JS.Core.JIT;
 
-namespace NiL.JS.Statements
+namespace NiL.JS.Expressions
 {
     [Serializable]
-    public sealed class GetMemberStatement : CodeNode
+    public sealed class GetMemberExpression : Expression
     {
         private JSObject cachedMemberName;
         private CodeNode objStatement;
@@ -15,6 +15,14 @@ namespace NiL.JS.Statements
 
         public CodeNode Source { get { return objStatement; } }
         public CodeNode FieldName { get { return memberNameStatement; } }
+
+        public override bool IsContextIndependent
+        {
+            get
+            {
+                return false;
+            }
+        }
 
 #if !NET35
 
@@ -29,7 +37,7 @@ namespace NiL.JS.Statements
 
 #endif
 
-        internal GetMemberStatement(CodeNode obj, CodeNode fieldName)
+        internal GetMemberExpression(CodeNode obj, CodeNode fieldName)
         {
             objStatement = obj;
             memberNameStatement = fieldName;

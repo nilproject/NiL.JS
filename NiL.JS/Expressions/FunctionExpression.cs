@@ -9,11 +9,12 @@ using NiL.JS.Core.TypeProxing;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Collections;
+using NiL.JS.Statements;
 
-namespace NiL.JS.Statements
+namespace NiL.JS.Expressions
 {
     [Serializable]
-    public sealed class FunctionStatement : CodeNode
+    public sealed class FunctionExpression : Expression
     {
         internal sealed class GeneratorInitializator : Function
         {
@@ -138,9 +139,9 @@ namespace NiL.JS.Statements
         [Serializable]
         internal sealed class FunctionReference : VariableReference
         {
-            private FunctionStatement owner;
+            private FunctionExpression owner;
 
-            public FunctionStatement Owner { get { return owner; } }
+            public FunctionExpression Owner { get { return owner; } }
 
             public override string Name
             {
@@ -152,7 +153,7 @@ namespace NiL.JS.Statements
                 return owner.Evaluate(context);
             }
 
-            public FunctionReference(FunctionStatement owner)
+            public FunctionReference(FunctionExpression owner)
             {
                 functionDepth = -1;
                 this.owner = owner;
@@ -226,7 +227,23 @@ namespace NiL.JS.Statements
 
 #endif
 
-        internal FunctionStatement(string name)
+        public override bool IsContextIndependent
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        protected internal override PredictedType ResultType
+        {
+            get
+            {
+                return PredictedType.Function;
+            }
+        }
+
+        internal FunctionExpression(string name)
         {
             Reference = new FunctionReference(this);
             arguments = new VariableDescriptor[0];
@@ -376,7 +393,7 @@ namespace NiL.JS.Statements
             }
             if (mode == FunctionType.Function && string.IsNullOrEmpty(name))
                 mode = FunctionType.AnonymousFunction;
-            FunctionStatement func = new FunctionStatement(name)
+            FunctionExpression func = new FunctionExpression(name)
             {
                 arguments = (from prm in parameters select prm.descriptor).ToArray(),
                 body = body,
@@ -404,7 +421,7 @@ namespace NiL.JS.Statements
                 while (i < code.Length && char.IsWhiteSpace(code[i]) && !Tools.isLineTerminator(code[i])) i++;
                 if (i < code.Length && code[i] == '(')
                 {
-                    List<CodeNode> args = new List<CodeNode>();
+                    var args = new List<Expression>();
                     i++;
                     for (; ; )
                     {
@@ -413,7 +430,7 @@ namespace NiL.JS.Statements
                             break;
                         else if (code[i] == ',')
                             do i++; while (char.IsWhiteSpace(code[i]));
-                        args.Add(ExpressionStatement.Parse(state, ref i, false).Statement);
+                        args.Add((Expression)ExpressionTree.Parse(state, ref i, false).Statement);
                     }
                     i++;
                     index = i;
@@ -495,7 +512,7 @@ namespace NiL.JS.Statements
                 if (Reference.Descriptor == null)
                     Reference.descriptor = new VariableDescriptor(Reference, true, Reference.functionDepth) { owner = this };
                 if (System.Array.FindIndex(arguments, x => x.Name == Reference.descriptor.name) == -1)
-                    if (nvars.TryGetValue(name, out fdesc) && !fdesc.Defined)
+                    if (nvars.TryGetValue(name, out fdesc) && !fdesc.IsDefined)
                     {
                         foreach (var r in fdesc.references)
                             r.descriptor = Reference.Descriptor;
@@ -516,7 +533,7 @@ namespace NiL.JS.Statements
                 if (nvars.TryGetValue(arguments[i].Name, out desc) && desc.Inititalizator == null)
                 {
                     desc.references.AddRange(arguments[i].references);
-                    desc.defined = true;
+                    desc.isDefined = true;
                     desc.defineDepth = arguments[i].defineDepth;
                     arguments[i] = desc;
                     arguments[i].owner = this;
@@ -527,7 +544,7 @@ namespace NiL.JS.Statements
             {
                 for (var i = body.variables.Length; i-- > 0; )
                 {
-                    if (!body.variables[i].Defined
+                    if (!body.variables[i].IsDefined
                         && body.variables[i].name != "this"
                         && body.variables[i].name != "arguments")
                     // все необъявленные переменные нужно прокинуть вниз для того,
@@ -561,11 +578,17 @@ namespace NiL.JS.Statements
             return false;
         }
 
+        internal override void Optimize(ref CodeNode _this, FunctionExpression owner)
+        {
+            var bd = body as CodeNode;
+            body.Optimize(ref bd, this);
+        }
+
         private void checkUsings()
         {
             if (body == null
-                || body.body == null
-                || body.body.Length == 0)
+                || body.lines == null
+                || body.lines.Length == 0)
                 return;
             for (var i = 0; i < body.variables.Length; i++)
             {

@@ -348,11 +348,25 @@ namespace NiL.JS.Core
 #endif
         public static JSObject JSObjectToNumber(JSObject arg)
         {
+            return JSObjectToNumber(arg, new JSObject());
+        }
+
+        internal static JSObject JSObjectToNumber(JSObject arg, JSObject result)
+        {
             if (arg == null)
-                return 0;
+            {
+                result.valueType = JSObjectType.Int;
+                result.iValue = 0;
+                return result;
+            }
             switch (arg.valueType)
             {
                 case JSObjectType.Bool:
+                    {
+                        result.valueType = JSObjectType.Int;
+                        result.iValue = arg.iValue;
+                        return result;
+                    }
                 case JSObjectType.Int:
                 case JSObjectType.Double:
                     return arg;
@@ -360,23 +374,33 @@ namespace NiL.JS.Core
                     {
                         double x = 0;
                         int ix = 0;
-                        string s = (arg.oValue.ToString()).Trim();
+                        string s = (arg.oValue.ToString()).Trim(TrimChars);
                         if (!Tools.ParseNumber(s, ref ix, out x) || ix < s.Length)
                             return Number.NaN;
-                        return x;
+                        result.valueType = JSObjectType.Double;
+                        result.dValue = x;
+                        return result;
                     }
                 case JSObjectType.Date:
                 case JSObjectType.Function:
                 case JSObjectType.Object:
                     {
                         if (arg.oValue == null)
-                            return 0;
+                        {
+                            result.valueType = JSObjectType.Int;
+                            result.iValue = 0;
+                            return result;
+                        }
                         arg = arg.ToPrimitiveValue_Value_String();
                         return JSObjectToNumber(arg);
                     }
                 case JSObjectType.Undefined:
                 case JSObjectType.NotExistsInObject:
-                    return 0;
+                    {
+                        result.valueType = JSObjectType.Double;
+                        result.dValue = double.NaN;
+                        return result;
+                    }
                 case JSObjectType.NotExists:
                     throw new JSException(new ReferenceError("Variable not defined."));
                 default:

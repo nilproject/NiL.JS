@@ -6,7 +6,7 @@ namespace NiL.JS.Expressions
     [Serializable]
     public sealed class StrictNotEqual : StrictEqual
     {
-        public StrictNotEqual(CodeNode first, CodeNode second)
+        public StrictNotEqual(Expression first, Expression second)
             : base(first, second)
         {
 

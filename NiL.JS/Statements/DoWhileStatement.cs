@@ -5,6 +5,7 @@ using System.Linq.Expressions;
 using NiL.JS.Core;
 using NiL.JS.Core.BaseTypes;
 using NiL.JS.Core.JIT;
+using NiL.JS.Expressions;
 
 namespace NiL.JS.Statements
 {
@@ -40,7 +41,7 @@ namespace NiL.JS.Statements
             int ccs = state.continiesCount;
             int cbs = state.breaksCount;
             var body = Parser.Parse(state, ref i, 4);
-            if (body is FunctionStatement && state.strict.Peek())
+            if (body is FunctionExpression && state.strict.Peek())
                 throw new JSException((new NiL.JS.Core.BaseTypes.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
             state.AllowBreak.Pop();
             state.AllowContinue.Pop();
@@ -81,8 +82,8 @@ namespace NiL.JS.Statements
 
         internal override System.Linq.Expressions.Expression CompileToIL(NiL.JS.Core.JIT.TreeBuildingState state)
         {
-            var continueTarget = Expression.Label("continue" + (DateTime.Now.Ticks % 1000));
-            var breakTarget = Expression.Label("break" + (DateTime.Now.Ticks % 1000));
+            var continueTarget = System.Linq.Expressions.Expression.Label("continue" + (DateTime.Now.Ticks % 1000));
+            var breakTarget = System.Linq.Expressions.Expression.Label("break" + (DateTime.Now.Ticks % 1000));
             for (var i = 0; i < labels.Length; i++)
                 state.NamedContinueLabels[labels[i]] = continueTarget;
             state.BreakLabels.Push(breakTarget);
@@ -178,6 +179,12 @@ namespace NiL.JS.Statements
             if (_this == this && body == null)
                 body = new EmptyStatement();
             return false;
+        }
+
+        internal override void Optimize(ref CodeNode _this, FunctionExpression owner)
+        {
+            condition.Optimize(ref condition, owner);
+            body.Optimize(ref body, owner);
         }
 
         public override string ToString()

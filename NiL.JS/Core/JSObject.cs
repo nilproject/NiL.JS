@@ -178,7 +178,7 @@ namespace NiL.JS.Core
         internal double dValue;
         internal object oValue;
 
-        internal IDictionary<string, JSObject> fields;
+        internal Dictionary<string, JSObject> fields;
         internal JSObject __prototype;
         internal JSObjectAttributesInternal attributes;
 
@@ -499,8 +499,7 @@ namespace NiL.JS.Core
             JSObject proto = null;
             bool fromProto =
                 (fields == null || !fields.TryGetValue(name, out res) || res.valueType < JSObjectType.Undefined)
-                && ((proto = __proto__).oValue != null)
-                && (!own || proto.oValue is TypeProxy);
+                && ((proto = __proto__).oValue != null);
             if (fromProto)
             {
                 res = proto.GetMember(nameObj, false, own);
@@ -595,7 +594,7 @@ namespace NiL.JS.Core
             return this;
         }
 
-        private static readonly Func<object, IntPtr> getPtr = Activator.CreateInstance(typeof(Func<object, IntPtr>), null, (new Func<IntPtr, IntPtr>(x => x)).Method.MethodHandle.GetFunctionPointer()) as Func<object, IntPtr>;
+        //private static readonly Func<object, IntPtr> getPtr = Activator.CreateInstance(typeof(Func<object, IntPtr>), null, (new Func<IntPtr, IntPtr>(x => x)).Method.MethodHandle.GetFunctionPointer()) as Func<object, IntPtr>;
 
         [Hidden]
         public virtual void Assign(JSObject value)
@@ -628,12 +627,12 @@ namespace NiL.JS.Core
         }
 
         [Hidden]
-        public virtual object Clone()
+        public object Clone()
         {
             return CloneImpl();
         }
 
-        internal JSObject CloneImpl()
+        internal virtual JSObject CloneImpl()
         {
             var res = new JSObject();
             res.Assign(this);
@@ -641,7 +640,7 @@ namespace NiL.JS.Core
             return res;
         }
 
-        internal JSObject CloneImpl(JSObjectAttributesInternal resetMask)
+        internal virtual JSObject CloneImpl(JSObjectAttributesInternal resetMask)
         {
             var res = new JSObject();
             res.Assign(this);
@@ -865,12 +864,12 @@ namespace NiL.JS.Core
             return res.isExist;
         }
 
-        internal static IDictionary<string, JSObject> createFields()
+        internal static Dictionary<string, JSObject> createFields()
         {
             return createFields(0);
         }
 
-        internal static IDictionary<string, JSObject> createFields(int p)
+        internal static Dictionary<string, JSObject> createFields(int p)
         {
             return new Dictionary<string, JSObject>(p);
         }

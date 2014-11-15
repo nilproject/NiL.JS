@@ -9,7 +9,7 @@ namespace NiL.JS.Expressions
     [Serializable]
     public sealed class StringConcat : Expression
     {
-        internal IList<CodeNode> sources;
+        internal IList<Expression> sources;
 
         public override bool IsContextIndependent
         {
@@ -25,7 +25,15 @@ namespace NiL.JS.Expressions
             }
         }
 
-        public StringConcat(IList<CodeNode> sources)
+        protected internal override PredictedType ResultType
+        {
+            get
+            {
+                return PredictedType.String;
+            }
+        }
+
+        public StringConcat(IList<Expression> sources)
             : base(null, null, true)
         {
             if (sources.Count < 2)

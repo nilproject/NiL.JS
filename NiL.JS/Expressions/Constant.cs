@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using NiL.JS.Core;
 using NiL.JS.Core.JIT;
 
-namespace NiL.JS.Statements
+namespace NiL.JS.Expressions
 {
     [Serializable]
-    public sealed class Constant : CodeNode
+    public sealed class Constant : Expression
     {
 #if !NET35
 
@@ -16,12 +16,35 @@ namespace NiL.JS.Statements
         }
 
 #endif
-
         internal JSObject value;
 
         public JSObject Value { get { return value; } }
 
+        protected internal override PredictedType ResultType
+        {
+            get
+            {
+                switch(value.valueType)
+                {
+                    case JSObjectType.Undefined:
+                    case JSObjectType.NotExists:
+                    case JSObjectType.NotExistsInObject:
+                        return PredictedType.Undefined;
+                    case JSObjectType.Bool:
+                        return PredictedType.Bool;
+                    case JSObjectType.Int:
+                    case JSObjectType.Double:
+                        return PredictedType.Number;
+                    case JSObjectType.String:
+                        return PredictedType.String;
+                    default:
+                        return PredictedType.Object;                        
+                }
+            }
+        }
+
         public Constant(JSObject value)
+            : base(null, null, false)
         {
             this.value = value;
         }
@@ -49,11 +72,7 @@ namespace NiL.JS.Statements
         {
             var vss = value.oValue as CodeNode[];
             if (vss != null)
-            {
                 throw new InvalidOperationException("It behaviour is deprecated");
-                //for (int i = 0; i < vss.Length; i++)
-                //    Parser.Optimize(ref vss[i], depth + 1, variables, strict);
-            }
             if (depth <= 1)
                 _this = null;
             return false;

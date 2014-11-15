@@ -78,7 +78,7 @@ namespace NiL.JS.Statements
     }
 
     [Serializable]
-    internal sealed class ExpressionStatement : CodeNode
+    internal sealed class ExpressionTree : Expression
     {
         private Expression fastImpl;
 
@@ -238,11 +238,11 @@ namespace NiL.JS.Statements
                         }
                     case OperationType.Ternary:
                         {
-                            while ((second is ExpressionStatement)
-                                && (second as ExpressionStatement)._type == OperationType.None
-                                && (second as ExpressionStatement).second == null)
-                                second = (second as ExpressionStatement).first;
-                            fastImpl = new Expressions.Ternary(first, second.Evaluate(null).oValue as CodeNode[]);
+                            while ((second is ExpressionTree)
+                                && (second as ExpressionTree)._type == OperationType.None
+                                && (second as ExpressionTree).second == null)
+                                second = (second as ExpressionTree).first;
+                            fastImpl = new Expressions.Ternary(first, (Expression[])second.Evaluate(null).oValue);
                             break;
                         }
                     case OperationType.TypeOf:
@@ -282,22 +282,20 @@ namespace NiL.JS.Statements
                 _type = value;
             }
         }
-        private CodeNode first;
-        private CodeNode second;
 
-        public ExpressionStatement()
+        public ExpressionTree()
         {
         }
 
-        private static CodeNode deicstra(ExpressionStatement statement)
+        private static Expression deicstra(ExpressionTree statement)
         {
             if (statement == null)
                 return null;
-            ExpressionStatement cur = statement.second as ExpressionStatement;
+            ExpressionTree cur = statement.second as ExpressionTree;
             if (cur == null)
                 return statement;
-            Stack<CodeNode> stats = new Stack<CodeNode>();
-            Stack<CodeNode> types = new Stack<CodeNode>();
+            Stack<Expression> stats = new Stack<Expression>();
+            Stack<Expression> types = new Stack<Expression>();
             types.Push(statement);
             stats.Push(statement.first);
             while (cur != null)
@@ -305,12 +303,12 @@ namespace NiL.JS.Statements
                 stats.Push(cur.first);
                 for (; types.Count > 0; )
                 {
-                    var topType = (int)(types.Peek() as ExpressionStatement)._type;
+                    var topType = (int)(types.Peek() as ExpressionTree)._type;
                     if (((topType & (int)OperationTypeGroups.Special) > ((int)cur._type & (int)OperationTypeGroups.Special))
                         || (((topType & (int)OperationTypeGroups.Special) == ((int)cur._type & (int)OperationTypeGroups.Special))
                             && (((int)cur._type & (int)OperationTypeGroups.Special) > (int)OperationTypeGroups.Choice)))
                     {
-                        var stat = types.Pop() as ExpressionStatement;
+                        var stat = types.Pop() as ExpressionTree;
                         stat.second = stats.Pop();
                         stat.first = stats.Pop();
                         stat.Position = (stat.first ?? stat).Position;
@@ -321,13 +319,13 @@ namespace NiL.JS.Statements
                         break;
                 }
                 types.Push(cur);
-                if (!(cur.second is ExpressionStatement))
+                if (!(cur.second is ExpressionTree))
                     stats.Push(cur.second);
-                cur = cur.second as ExpressionStatement;
+                cur = cur.second as ExpressionTree;
             }
             while (stats.Count > 1)
             {
-                var stat = types.Pop() as ExpressionStatement;
+                var stat = types.Pop() as Expression;
                 stat.second = stats.Pop();
                 stat.first = stats.Pop();
                 stat.Position = (stat.first ?? stat).Position;
@@ -357,16 +355,16 @@ namespace NiL.JS.Statements
             int i = index;
             int position;
             OperationType type = OperationType.None;
-            CodeNode first = null;
-            CodeNode second = null;
+            Expression first = null;
+            Expression second = null;
             int s = i;
             state.InExpression++;
             if (forTernary)
             {
                 position = i;
-                var threads = new CodeNode[]
+                var threads = new Expression[]
                     {
-                        ExpressionStatement.Parse(state, ref i, true, false, false, false, false).Statement,
+                        (Expression)ExpressionTree.Parse(state, ref i, true, false, false, false, false).Statement,
                         null
                     };
                 if (state.Code[i] != ':')
@@ -375,7 +373,7 @@ namespace NiL.JS.Statements
                     i++;
                 while (char.IsWhiteSpace(state.Code[i]));
                 first = new Constant(new JSObject() { valueType = JSObjectType.Object, oValue = threads }) { Position = position };
-                threads[1] = ExpressionStatement.Parse(state, ref i, false, false, false, false, false).Statement;
+                threads[1] = (Expression)ExpressionTree.Parse(state, ref i, false, false, false, false, false).Statement;
                 first.Length = i - first.Position;
             }
             else if (Parser.ValidateName(state.Code, ref i, state.strict.Peek()) || Parser.Validate(state.Code, "this", ref i))
@@ -384,7 +382,7 @@ namespace NiL.JS.Statements
                 if (name == "undefined")
                     first = new Constant(JSObject.undefined) { Position = index, Length = i - index };
                 else
-                    first = new GetVariableStatement(name, state.functionsDepth) { Position = index, Length = i - index, functionDepth = state.functionsDepth };
+                    first = new GetVariableExpression(name, state.functionsDepth) { Position = index, Length = i - index, functionDepth = state.functionsDepth };
             }
             else if (Parser.ValidateValue(state.Code, ref i))
             {
@@ -416,11 +414,11 @@ namespace NiL.JS.Statements
                             string flags = value.Substring(s);
                             try
                             {
-                                first = new RegExpStatement(value.Substring(1, s - 2), flags); // объекты должны быть каждый раз разные
+                                first = new RegExpExpression(value.Substring(1, s - 2), flags); // объекты должны быть каждый раз разные
                             }
                             catch (Exception e)
                             {
-                                first = new ThrowStatement(e);
+                                first = new ExpressionWrapper(new ThrowStatement(e));
                             }
                         }
                         else
@@ -451,23 +449,23 @@ namespace NiL.JS.Statements
                                 while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]));
                                 if (i >= state.Code.Length)
                                     throw new JSException(new SyntaxError("Unexpected end of source."));
-                                first = Parse(state, ref i, true, true, false, true, false).Statement;
-                                if (((first as GetMemberStatement) as object ?? (first as GetVariableStatement)) == null)
+                                first = (Expression)Parse(state, ref i, true, true, false, true, false).Statement;
+                                if (((first as GetMemberExpression) as object ?? (first as GetVariableExpression)) == null)
                                 {
                                     var cord = Tools.PositionToTextcord(state.Code, i);
                                     throw new JSException((new Core.BaseTypes.SyntaxError("Invalid prefix operation. " + cord)));
                                 }
                                 if (state.strict.Peek()
-                                    && (first is GetVariableStatement) && ((first as GetVariableStatement).Name == "arguments" || (first as GetVariableStatement).Name == "eval"))
-                                    throw new JSException(new SyntaxError("Can not incriment \"" + (first as GetVariableStatement).Name + "\" in strict mode."));
+                                    && (first is GetVariableExpression) && ((first as GetVariableExpression).Name == "arguments" || (first as GetVariableExpression).Name == "eval"))
+                                    throw new JSException(new SyntaxError("Can not incriment \"" + (first as GetVariableExpression).Name + "\" in strict mode."));
                                 first = new Expressions.Incriment(first, Expressions.Incriment.Type.Preincriment);
                             }
                             else
                             {
                                 while (char.IsWhiteSpace(state.Code[i]))
                                     i++;
-                                var f = Parse(state, ref i, true, true, false, true, false).Statement;
-                                first = new Expressions.Mul(new Constant(1), f) { Position = index, Length = i - index };
+                                var f = (Expression)Parse(state, ref i, true, true, false, true, false).Statement;
+                                first = new Expressions.ToNumber(f) { Position = index, Length = i - index };
                             }
                             break;
                         }
@@ -481,22 +479,22 @@ namespace NiL.JS.Statements
                                 while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]));
                                 if (i >= state.Code.Length)
                                     throw new JSException(new SyntaxError("Unexpected end of source."));
-                                first = Parse(state, ref i, true, true, false, true, false).Statement;
-                                if (((first as GetMemberStatement) as object ?? (first as GetVariableStatement)) == null)
+                                first = (Expression)Parse(state, ref i, true, true, false, true, false).Statement;
+                                if (((first as GetMemberExpression) as object ?? (first as GetVariableExpression)) == null)
                                 {
                                     var cord = Tools.PositionToTextcord(state.Code, i);
                                     throw new JSException((new Core.BaseTypes.SyntaxError("Invalid prefix operation. " + cord)));
                                 }
                                 if (state.strict.Peek()
-                                    && (first is GetVariableStatement) && ((first as GetVariableStatement).Name == "arguments" || (first as GetVariableStatement).Name == "eval"))
-                                    throw new JSException(new SyntaxError("Can not decriment \"" + (first as GetVariableStatement).Name + "\" in strict mode."));
+                                    && (first is GetVariableExpression) && ((first as GetVariableExpression).Name == "arguments" || (first as GetVariableExpression).Name == "eval"))
+                                    throw new JSException(new SyntaxError("Can not decriment \"" + (first as GetVariableExpression).Name + "\" in strict mode."));
                                 first = new Expressions.Decriment(first, Expressions.Decriment.Type.Predecriment) { Position = index, Length = i - index };
                             }
                             else
                             {
                                 while (char.IsWhiteSpace(state.Code[i]))
                                     i++;
-                                var f = Parse(state, ref i, true, true, false, true, false).Statement;
+                                var f = (Expression)Parse(state, ref i, true, true, false, true, false).Statement;
                                 first = new Expressions.Neg(f) { Position = index, Length = i - index };
                             }
                             break;
@@ -506,7 +504,7 @@ namespace NiL.JS.Statements
                             do
                                 i++;
                             while (char.IsWhiteSpace(state.Code[i]));
-                            first = new Expressions.LogicalNot(Parse(state, ref i, true, true, false, true, false).Statement) { Position = index, Length = i - index };
+                            first = new Expressions.LogicalNot((Expression)Parse(state, ref i, true, true, false, true, false).Statement) { Position = index, Length = i - index };
                             if (first == null)
                             {
                                 var cord = Tools.PositionToTextcord(state.Code, i);
@@ -519,7 +517,7 @@ namespace NiL.JS.Statements
                             do
                                 i++;
                             while (char.IsWhiteSpace(state.Code[i]));
-                            first = Parse(state, ref i, true, true, false, true, false).Statement;
+                            first = (Expression)Parse(state, ref i, true, true, false, true, false).Statement;
                             if (first == null)
                             {
                                 var cord = Tools.PositionToTextcord(state.Code, i);
@@ -534,7 +532,7 @@ namespace NiL.JS.Statements
                             do
                                 i++;
                             while (char.IsWhiteSpace(state.Code[i]));
-                            first = Parse(state, ref i, false, true, false, true, false).Statement;
+                            first = (Expression)Parse(state, ref i, false, true, false, true, false).Statement;
                             if (first == null)
                             {
                                 var cord = Tools.PositionToTextcord(state.Code, i);
@@ -549,7 +547,7 @@ namespace NiL.JS.Statements
                             do
                                 i++;
                             while (char.IsWhiteSpace(state.Code[i]));
-                            first = new Expressions.None(Parse(state, ref i, false, true, false, true, false).Statement, new Constant(JSObject.undefined)) { Position = index, Length = i - index };
+                            first = new Expressions.None((Expression)Parse(state, ref i, false, true, false, true, false).Statement, new Constant(JSObject.undefined)) { Position = index, Length = i - index };
                             if (first == null)
                             {
                                 var cord = Tools.PositionToTextcord(state.Code, i);
@@ -563,13 +561,13 @@ namespace NiL.JS.Statements
                             do
                                 i++;
                             while (char.IsWhiteSpace(state.Code[i]));
-                            first = Parse(state, ref i, false, true, true, true, false).Statement;
+                            first = (Expression)Parse(state, ref i, false, true, true, true, false).Statement;
                             if (first == null)
                             {
                                 var cord = Tools.PositionToTextcord(state.Code, i);
                                 throw new JSException((new Core.BaseTypes.SyntaxError("Invalid prefix operation. " + cord)));
                             }
-                            first = new Expressions.New(first, new CodeNode[0]) { Position = index, Length = i - index };
+                            first = new Expressions.New(first, new Expression[0]) { Position = index, Length = i - index };
                             break;
                         }
                     case 'd':
@@ -578,7 +576,7 @@ namespace NiL.JS.Statements
                             do
                                 i++;
                             while (char.IsWhiteSpace(state.Code[i]));
-                            first = Parse(state, ref i, false, true, false, true, false).Statement;
+                            first = (Expression)Parse(state, ref i, false, true, false, true, false).Statement;
                             if (first == null)
                             {
                                 var cord = Tools.PositionToTextcord(state.Code, i);
@@ -595,7 +593,7 @@ namespace NiL.JS.Statements
                             do
                                 i++;
                             while (char.IsWhiteSpace(state.Code[i]));
-                            first = Parse(state, ref i, false, true, false, true, false).Statement;
+                            first = (Expression)Parse(state, ref i, false, true, false, true, false).Statement;
                             if (first == null)
                             {
                                 var cord = Tools.PositionToTextcord(state.Code, i);
@@ -613,7 +611,7 @@ namespace NiL.JS.Statements
                 while (state.Code[i] != ')')
                 {
                     do i++; while (char.IsWhiteSpace(state.Code[i]));
-                    var temp = ExpressionStatement.Parse(state, ref i, false).Statement;
+                    var temp = (Expression)ExpressionTree.Parse(state, ref i, false).Statement;
                     if (first == null)
                         first = temp;
                     else
@@ -624,12 +622,12 @@ namespace NiL.JS.Statements
                         throw new JSException((new Core.BaseTypes.SyntaxError("Expected \")\"")));
                 }
                 i++;
-                if ((state.InExpression > 0 && first is FunctionStatement)
+                if ((state.InExpression > 0 && first is FunctionExpression)
                     || (forNew && first is Call))
                     first = new Expressions.None(first, null) { Position = index, Length = i - index };
             }
             else
-                first = Parser.Parse(state, ref i, 2);
+                first = (Expression)Parser.Parse(state, ref i, 2);
             if (first is EmptyStatement)
                 throw new JSException((new Core.BaseTypes.SyntaxError("Invalid operator argument at " + Tools.PositionToTextcord(state.Code, i))));
             bool canAsign = true && !forUnary; // на случай f() = x
@@ -773,9 +771,9 @@ namespace NiL.JS.Statements
                                     goto default;
                                 if (state.strict.Peek())
                                 {
-                                    if ((first is GetVariableStatement)
-                                        && ((first as GetVariableStatement).Name == "arguments" || (first as GetVariableStatement).Name == "eval"))
-                                        throw new JSException(new SyntaxError("Can not incriment \"" + (first as GetVariableStatement).Name + "\" in strict mode."));
+                                    if ((first is GetVariableExpression)
+                                        && ((first as GetVariableExpression).Name == "arguments" || (first as GetVariableExpression).Name == "eval"))
+                                        throw new JSException(new SyntaxError("Can not incriment \"" + (first as GetVariableExpression).Name + "\" in strict mode."));
                                 }
                                 first = new Expressions.Incriment(first, Expressions.Incriment.Type.Postincriment) { Position = first.Position, Length = i + 2 - first.Position };
                                 //first = new OperatorStatement() { second = first, _type = OperationType.Incriment, Position = first.Position, Length = i + 2 - first.Position };
@@ -810,9 +808,9 @@ namespace NiL.JS.Statements
                                     goto default;
                                 if (state.strict.Peek())
                                 {
-                                    if ((first is GetVariableStatement)
-                                        && ((first as GetVariableStatement).Name == "arguments" || (first as GetVariableStatement).Name == "eval"))
-                                        throw new JSException(new SyntaxError("Can not decriment \"" + (first as GetVariableStatement).Name + "\" in strict mode."));
+                                    if ((first is GetVariableExpression)
+                                        && ((first as GetVariableExpression).Name == "arguments" || (first as GetVariableExpression).Name == "eval"))
+                                        throw new JSException(new SyntaxError("Can not decriment \"" + (first as GetVariableExpression).Name + "\" in strict mode."));
                                 }
                                 first = new Expressions.Decriment(first, Expressions.Decriment.Type.Postdecriment) { Position = first.Position, Length = i + 2 - first.Position };
                                 //first = new OperatorStatement() { second = first, _type = OperationType.Decriment, Position = first.Position, Length = i + 2 - first.Position };
@@ -1050,7 +1048,7 @@ namespace NiL.JS.Statements
                             if (!Parser.ValidateName(state.Code, ref i, false, true, state.strict.Peek()))
                                 throw new ArgumentException("code (" + i + ")");
                             string name = state.Code.Substring(s, i - s);
-                            first = new GetMemberStatement(first, new Constant(name)
+                            first = new GetMemberExpression(first, new Constant(name)
                                                                      {
                                                                          Position = s,
                                                                          Length = i - s
@@ -1074,7 +1072,7 @@ namespace NiL.JS.Statements
                             while (char.IsWhiteSpace(state.Code[i])) i++;
                             if (state.Code[i] != ']')
                                 throw new JSException((new Core.BaseTypes.SyntaxError("Expected \"]\" at " + Tools.PositionToTextcord(state.Code, startPos))));
-                            first = new GetMemberStatement(first, mname) { Position = first.Position, Length = i + 1 - first.Position };
+                            first = new GetMemberExpression(first, mname) { Position = first.Position, Length = i + 1 - first.Position };
                             i++;
                             repeat = true;
                             canAsign = true;
@@ -1082,7 +1080,7 @@ namespace NiL.JS.Statements
                         }
                     case '(':
                         {
-                            List<CodeNode> args = new List<CodeNode>();
+                            var args = new List<Expression>();
                             i++;
                             int startPos = i;
                             for (; ; )
@@ -1101,7 +1099,7 @@ namespace NiL.JS.Statements
                                 }
                                 if (i + 1 == state.Code.Length)
                                     throw new JSException((new Core.BaseTypes.SyntaxError("Unexpected end of line")));
-                                args.Add(ExpressionStatement.Parse(state, ref i, false).Statement);
+                                args.Add((Expression)ExpressionTree.Parse(state, ref i, false).Statement);
                                 if (args[args.Count - 1] == null)
                                     throw new JSException((new Core.BaseTypes.SyntaxError("Expected \")\" at " + Tools.PositionToTextcord(state.Code, startPos))));
                             }
@@ -1153,7 +1151,7 @@ namespace NiL.JS.Statements
                 }
             } while (repeat);
             if (state.strict.Peek()
-                && (first is GetVariableStatement) && ((first as GetVariableStatement).Name == "arguments" || (first as GetVariableStatement).Name == "eval"))
+                && (first is GetVariableExpression) && ((first as GetVariableExpression).Name == "arguments" || (first as GetVariableExpression).Name == "eval"))
             {
                 if (assign || type == OperationType.Assign)
                     throw new JSException((new SyntaxError("Assignment to eval or arguments is not allowed in strict mode")));
@@ -1168,7 +1166,7 @@ namespace NiL.JS.Statements
                     i++;
                 while (state.Code.Length > i && char.IsWhiteSpace(state.Code[i]));
                 if (state.Code.Length > i)
-                    second = ExpressionStatement.Parse(state, ref i, processComma, false, false, false, type == OperationType.Ternary).Statement;
+                    second = (Expression)ExpressionTree.Parse(state, ref i, processComma, false, false, false, type == OperationType.Ternary).Statement;
             }
             CodeNode res = null;
             if (first == second && first == null)
@@ -1176,13 +1174,13 @@ namespace NiL.JS.Statements
             if (assign)
             {
                 var opassigncache = new OpAssignCache(first);
-                res = new ExpressionStatement()
+                res = new ExpressionTree()
                 {
                     first = opassigncache,
-                    second = new None(deicstra(new ExpressionStatement()
+                    second = new None(deicstra(new ExpressionTree()
                     {
                         first = opassigncache,
-                        second = second is ExpressionStatement ? (second as ExpressionStatement)._type == OperationType.None ? second : new None(deicstra(second as ExpressionStatement), null) : second,
+                        second = second is ExpressionTree ? (second as ExpressionTree)._type == OperationType.None ? second : new None(deicstra(second as ExpressionTree), null) : second,
                         _type = type,
                         Position = index,
                         Length = i - index
@@ -1196,16 +1194,16 @@ namespace NiL.JS.Statements
             {
                 if (!root || type != OperationType.None || second != null)
                 {
-                    if (forUnary && (type == OperationType.None) && (first is ExpressionStatement))
-                        res = first as ExpressionStatement;
+                    if (forUnary && (type == OperationType.None) && (first is ExpressionTree))
+                        res = first as Expression;
                     else
-                        res = new ExpressionStatement() { first = first, second = second, _type = type, Position = index, Length = i - index };
+                        res = new ExpressionTree() { first = first, second = second, _type = type, Position = index, Length = i - index };
                 }
                 else
                     res = first;
             }
             if (root)
-                res = deicstra(res as ExpressionStatement) ?? res;
+                res = deicstra(res as ExpressionTree) ?? res;
             index = i;
             state.InExpression--;
             return new ParseResult()

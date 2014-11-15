@@ -6,7 +6,15 @@ namespace NiL.JS.Expressions
     [Serializable]
     public sealed class Neg : Expression
     {
-        public Neg(CodeNode first)
+        protected internal override PredictedType ResultType
+        {
+            get
+            {
+                return PredictedType.Number;
+            }
+        }
+
+        public Neg(Expression first)
             : base(first, null, true)
         {
 

@@ -25,12 +25,12 @@ namespace NiL.JS.Statements
 #endif
         internal VariableDescriptor[] variables;
         internal VariableDescriptor[] localVariables;
-        internal CodeNode[] body;
+        internal CodeNode[] lines;
         internal readonly bool strict;
 
         public VariableDescriptor[] Variables { get { return variables; } }
         public VariableDescriptor[] LocalVariables { get { return localVariables; } }
-        public CodeNode[] Body { get { return body; } }
+        public CodeNode[] Body { get { return lines; } }
         public bool Strict { get { return strict; } }
         public string Code
         {
@@ -69,27 +69,27 @@ namespace NiL.JS.Statements
 
         internal override System.Linq.Expressions.Expression CompileToIL(NiL.JS.Core.JIT.TreeBuildingState state)
         {
-            for (int i = body.Length >> 1; i-- > 0; )
+            for (int i = lines.Length >> 1; i-- > 0; )
             {
-                var t = body[i];
-                body[i] = body[body.Length - i - 1];
-                body[body.Length - i - 1] = t;
+                var t = lines[i];
+                lines[i] = lines[lines.Length - i - 1];
+                lines[lines.Length - i - 1] = t;
             }
             try
             {
-                if (body.Length == 1)
-                    return body[0].CompileToIL(state);
-                if (body.Length == 0)
+                if (lines.Length == 1)
+                    return lines[0].CompileToIL(state);
+                if (lines.Length == 0)
                     return JITHelpers.UndefinedConstant;
-                return System.Linq.Expressions.Expression.Block(from x in body where x != null select x.CompileToIL(state));
+                return System.Linq.Expressions.Expression.Block(from x in lines where x != null select x.CompileToIL(state));
             }
             finally
             {
-                for (int i = body.Length >> 1; i-- > 0; )
+                for (int i = lines.Length >> 1; i-- > 0; )
                 {
-                    var t = body[i];
-                    body[i] = body[body.Length - i - 1];
-                    body[body.Length - i - 1] = t;
+                    var t = lines[i];
+                    lines[i] = lines[lines.Length - i - 1];
+                    lines[lines.Length - i - 1] = t;
                 }
             }
         }
@@ -101,7 +101,7 @@ namespace NiL.JS.Statements
             if (body == null)
                 throw new ArgumentNullException("body");
             code = "";
-            this.body = body;
+            this.lines = body;
             variables = null;
             this.strict = strict;
         }
@@ -187,16 +187,16 @@ namespace NiL.JS.Statements
                         throw new JSException(new SyntaxError("Unexpected symbol \"}\" at " + Tools.PositionToTextcord(state.Code, i)));
                     continue;
                 }
-                if (t is FunctionStatement)
+                if (t is FunctionExpression)
                 {
                     if (state.strict.Peek() && !allowDirectives)
                         throw new JSException((new NiL.JS.Core.BaseTypes.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
-                    if (state.InExpression == 0 && string.IsNullOrEmpty((t as FunctionStatement).Name))
+                    if (state.InExpression == 0 && string.IsNullOrEmpty((t as FunctionExpression).Name))
                         throw new JSException((new NiL.JS.Core.BaseTypes.SyntaxError("Declarated function must have name.")));
                     if (vars == null)
                         vars = new Dictionary<string, VariableDescriptor>();
                     VariableDescriptor vd = null;
-                    var f = (t as FunctionStatement);
+                    var f = (t as FunctionExpression);
                     if (!vars.TryGetValue(f.Name, out vd))
                         vars[f.Name] = new VariableDescriptor(f.Reference, true, state.functionsDepth);
                     else
@@ -259,13 +259,13 @@ namespace NiL.JS.Statements
             }
 #endif
             JSObject res = JSObject.notExists;
-            for (int i = body.Length; i-- > 0; )
+            for (int i = lines.Length; i-- > 0; )
             {
 #if DEV
                 if (context.debugging)
-                    context.raiseDebugger(body[i]);
+                    context.raiseDebugger(lines[i]);
 #endif
-                res = body[i].Evaluate(context) ?? res;
+                res = lines[i].Evaluate(context) ?? res;
 #if DEBUG
                 if (!context.IsExcecuting)
                     if (System.Diagnostics.Debugger.IsAttached)
@@ -309,15 +309,15 @@ namespace NiL.JS.Statements
         protected override CodeNode[] getChildsImpl()
         {
             var res = new List<CodeNode>();
-            for (int i = body.Length; i-- > 0; )
+            for (int i = lines.Length; i-- > 0; )
             {
-                var node = body[i];
+                var node = lines[i];
                 if (node == null)
                     break;
                 res.Add(node);
             }
             if (variables != null)
-                res.AddRange(from v in variables where v.Inititalizator != null && (!(v.Inititalizator is FunctionStatement) || (v.Inititalizator as FunctionStatement).body != this) select v.Inititalizator);
+                res.AddRange(from v in variables where v.Inititalizator != null && (!(v.Inititalizator is FunctionExpression) || (v.Inititalizator as FunctionExpression).body != this) select v.Inititalizator);
             return res.ToArray();
         }
 
@@ -344,42 +344,46 @@ namespace NiL.JS.Statements
                 }
             }
 
-            for (int i = body.Length; i-- > 0; )
-                if (body[i] is FunctionStatement)
+            for (int i = lines.Length; i-- > 0; )
+                if (lines[i] is FunctionExpression)
                 {
-                    Parser.Build(ref body[i], depth < 0 ? 2 : Math.Max(1, depth), variables, this.strict);
-                    body[i] = null;
+                    Parser.Build(ref lines[i], depth < 0 ? 2 : Math.Max(1, depth), variables, this.strict);
+                    lines[i] = null;
                 }
 
-            for (int i = body.Length; i-- > 0; )
+            for (int i = lines.Length; i-- > 0; )
             {
-                if (body[i] != null)
+                if (lines[i] != null)
                 {
-                    if (body[i] is EmptyStatement)
-                        body[i] = null;
+                    if (lines[i] is EmptyStatement)
+                        lines[i] = null;
                     else
-                        Parser.Build(ref body[i], depth < 0 ? 2 : Math.Max(1, depth), variables, this.strict);
+                    {
+                        var cn = lines[i];
+                        Parser.Build(ref cn, depth < 0 ? 2 : Math.Max(1, depth), variables, this.strict);
+                        lines[i] = cn;
+                    }
                 }
             }
 
-            int f = body.Length, t = body.Length - 1;
+            int f = lines.Length, t = lines.Length - 1;
             for (; f-- > 0; )
             {
-                if (body[f] != null && body[t] == null)
+                if (lines[f] != null && lines[t] == null)
                 {
-                    body[t] = body[f];
-                    body[f] = null;
+                    lines[t] = lines[f];
+                    lines[f] = null;
                 }
-                if (body[t] != null)
+                if (lines[t] != null)
                     t--;
             }
 
             if (depth > 0)
             {
                 variables = null;
-                if (body.Length == 1 || (t >= 0 && (body.Length - t - 1) == 1))
-                    _this = body[body.Length - 1] ?? EmptyStatement.Instance; // блок не должен быть null, так как он может быть вложен в выражение
-                else if (body.Length == 0)
+                if (lines.Length == 1 || (t >= 0 && (lines.Length - t - 1) == 1))
+                    _this = lines[lines.Length - 1] ?? EmptyStatement.Instance; // блок не должен быть null, так как он может быть вложен в выражение
+                else if (lines.Length == 0)
                     _this = EmptyStatement.Instance;
             }
             else
@@ -395,7 +399,7 @@ namespace NiL.JS.Statements
                     int localVariablesCount = 0;
                     for (var i = this.variables.Length; i-- > 0; )
                     {
-                        if (this.variables[i].Defined && this.variables[i].Owner == null) // все объявленные переменные без хозяина наши
+                        if (this.variables[i].IsDefined && this.variables[i].Owner == null) // все объявленные переменные без хозяина наши
                             this.variables[i].owner = this;
                         if (this.variables[i].owner == this)
                             localVariablesCount++;
@@ -413,14 +417,24 @@ namespace NiL.JS.Statements
             }
             if (t >= 0 && this == _this)
             {
-                var newBody = new CodeNode[body.Length - t - 1];
+                var newBody = new CodeNode[lines.Length - t - 1];
                 f = 0;
-                while (++t < body.Length)
-                    newBody[f++] = body[t];
-                body = newBody;
+                while (++t < lines.Length)
+                    newBody[f++] = lines[t];
+                lines = newBody;
             }
             builded = true;
             return false;
+        }
+
+        internal override void Optimize(ref CodeNode _this, FunctionExpression owner)
+        {
+            for (var i = lines.Length; i-- > 0; )
+            {
+                var cn = lines[i] as CodeNode;
+                cn.Optimize(ref cn, owner);
+                lines[i] = cn;
+            }
         }
 
         public override string ToString()
@@ -432,14 +446,14 @@ namespace NiL.JS.Statements
         {
             if (parsed)
             {
-                if (body == null || body.Length == 0)
+                if (lines == null || lines.Length == 0)
                     return "{ }";
                 string res = " {" + Environment.NewLine;
                 var replp = Environment.NewLine;
                 var replt = Environment.NewLine + "  ";
-                for (int i = body.Length; i-- > 0; )
+                for (int i = lines.Length; i-- > 0; )
                 {
-                    string lc = body[i].ToString();
+                    string lc = lines[i].ToString();
                     if (lc[0] == '(')
                         lc = lc.Substring(1, lc.Length - 2);
                     lc = lc.Replace(replp, replt);

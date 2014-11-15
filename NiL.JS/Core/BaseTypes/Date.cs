@@ -393,7 +393,7 @@ namespace NiL.JS.Core.BaseTypes
                                     || parseByFormat("MM/DD/YY", tstr, out time, out tzo))
                             {
                                 timeZoneOffset = TimeZone.CurrentTimeZone.GetUtcOffset(new DateTime((((long)time) % _400yearsMilliseconds + _unixTimeBase) * 10000)).Ticks / 10000;
-                                time += timeZoneOffset;
+                                time = time + timeZoneOffset;
                             }
                             else
                                 error = true;
@@ -403,7 +403,7 @@ namespace NiL.JS.Core.BaseTypes
             }
             else
             {
-                for (var i = 0; i < 7 && !error; i++)
+                for (var i = 0; i < 9 && !error; i++)
                 {
                     if (args[i].isExist && !args[i].isDefinded)
                     {
@@ -412,19 +412,73 @@ namespace NiL.JS.Core.BaseTypes
                     }
                 }
                 long y = Tools.JSObjectToInt64(args[0], 1, true);
-                if (y == long.MinValue)
-                    y >>= 6;
-                if (y == long.MaxValue)
-                    y >>= 6;
-                long m = Tools.JSObjectToInt64(args[1]);
-                long d = Tools.JSObjectToInt64(args[2], 1);
-                long h = Tools.JSObjectToInt64(args[3]);
-                long n = Tools.JSObjectToInt64(args[4]);
-                long s = Tools.JSObjectToInt64(args[5]);
-                long ms = Tools.JSObjectToInt64(args[6]);
+                //if (y == long.MinValue)
+                //    y >>= 6;
+                //if (y == long.MaxValue)
+                //    y >>= 6;
+                long m = Tools.JSObjectToInt64(args[1], 0, true);
+                long d = Tools.JSObjectToInt64(args[2], 1, true);
+                long h = Tools.JSObjectToInt64(args[3], 0, true);
+                long n = Tools.JSObjectToInt64(args[4], 0, true);
+                long s = Tools.JSObjectToInt64(args[5], 0, true);
+                long ms = Tools.JSObjectToInt64(args[6], 0, true);
+                if (y == long.MaxValue
+                    || y == long.MinValue)
+                {
+                    error = true;
+                    return;
+                }
+                if (m == long.MaxValue
+                    || m == long.MinValue)
+                {
+                    error = true;
+                    return;
+                }
+                if (d == long.MaxValue
+                    || d == long.MinValue)
+                {
+                    error = true;
+                    return;
+                }
+                if (h == long.MaxValue
+                    || h == long.MinValue)
+                {
+                    error = true;
+                    return;
+                }
+                if (n == long.MaxValue
+                    || n == long.MinValue)
+                {
+                    error = true;
+                    return;
+                }
+                if (s == long.MaxValue
+                    || s == long.MinValue)
+                {
+                    error = true;
+                    return;
+                }
+                if (ms == long.MaxValue
+                    || ms == long.MinValue)
+                {
+                    error = true;
+                    return;
+                }
+                for (var i = 7; i < System.Math.Min(8, args.length); i++)
+                {
+                    var t = Tools.JSObjectToInt64(args[i], 0, true);
+                    if (t == long.MaxValue
+                    || t == long.MinValue)
+                    {
+                        error = true;
+                        return;
+                    }
+                }
+                if (y < 100)
+                    y += 1900;
                 time = dateToMilliseconds(y, m, d, h, n, s, ms);
                 timeZoneOffset = TimeZone.CurrentTimeZone.GetUtcOffset(new DateTime((((long)time) % _400yearsMilliseconds + _unixTimeBase) * 10000)).Ticks / 10000;
-                //time -= timeZoneOffset;
+                //time += timeZoneOffset;
             }
         }
 
@@ -439,13 +493,16 @@ namespace NiL.JS.Core.BaseTypes
         {
             if (error)
                 return double.NaN;
-            return time - _unixTimeBase - timeZoneOffset;
+            return time - timeZoneOffset - _unixTimeBase;
         }
 
         [DoNotEnumerate]
         public static JSObject now()
         {
-            return DateTime.Now.Ticks / 10000 - _unixTimeBase;
+            var time = DateTime.Now.Ticks / 10000;
+            var timeZoneOffset = TimeZone.CurrentTimeZone.GetUtcOffset(new DateTime((((long)DateTime.Now.Ticks) % _400yearsMilliseconds + _unixTimeBase) * 10000)).Ticks / 10000;
+
+            return time - timeZoneOffset - _unixTimeBase;
         }
 
         [DoNotEnumerate]
@@ -861,11 +918,11 @@ namespace NiL.JS.Core.BaseTypes
         [DoNotEnumerate]
         public JSObject toISOString()
         {
-            if (time > 8702135596800000 || time < -8577864432000000 || error)// - 8577864435600000)
-                throw new JSException(new RangeError("Invalid time value"));
             try
             {
                 time -= timeZoneOffset;
+                if (time > 8702135600400000 || time < -8577864399600000 || error)
+                    throw new JSException(new RangeError("Invalid time value"));
                 var y = getYearImpl();
 
                 return y +

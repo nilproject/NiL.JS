@@ -1,4 +1,6 @@
-﻿using System;
+﻿//#define USEARGPOOL
+
+using System;
 using System.Collections.Generic;
 using NiL.JS.Core;
 using NiL.JS.Core.BaseTypes;
@@ -10,6 +12,9 @@ namespace NiL.JS.Expressions
     [Serializable]
     public sealed class Call : Expression
     {
+#if USEARGPOOL
+        private static Stack<Arguments> argumentsPool = new Stack<Arguments>();
+#endif
         public override bool IsContextIndependent
         {
             get
@@ -18,12 +23,12 @@ namespace NiL.JS.Expressions
             }
         }
 
-        private CodeNode[] arguments;
-        public CodeNode[] Arguments { get { return arguments; } }
+        private Expression[] arguments;
+        public Expression[] Arguments { get { return arguments; } }
         internal bool allowTCO;
         public bool AllowTCO { get { return allowTCO; } }
 
-        internal Call(CodeNode first, CodeNode[] arguments)
+        internal Call(Expression first, Expression[] arguments)
             : base(first, null, false)
         {
             this.arguments = arguments;
@@ -48,36 +53,94 @@ namespace NiL.JS.Expressions
 
             bool tail = false;
             Function func = temp.valueType == JSObjectType.Function ? temp.oValue as Function ?? (temp.oValue as TypeProxy).prototypeInstance as Function : null; // будем надеяться, что только в одном случае в oValue не будет лежать функция
-            if (allowTCO
-                && context.caller != null
-                && func == context.caller.oValue
-                && context.caller.oValue != Script.pseudoCaller)
-            {
-                context.abort = AbortType.TailRecursion;
-                tail = true;
-            }
-            Arguments arguments = new Arguments();
-            arguments.length = this.arguments.Length;
-            for (int i = 0; i < arguments.length; i++)
-                arguments[i] = prepareArg(context, this.arguments[i], tail);
-            arguments.caller = context.strict && context.caller != null && context.caller.creator.body.strict ? Function.propertiesDummySM : context.caller;
-            context.objectSource = null;
-            if (tail)
-            {
-                for (var i = func.creator.body.localVariables.Length; i-- > 0; )
-                {
-                    if (func.creator.body.localVariables[i].Inititalizator == null)
-                        func.creator.body.localVariables[i].cacheRes.Assign(JSObject.undefined);
-                }
-                func._arguments = arguments;
-                return JSObject.undefined;
-            }
-            // Аргументы должны быть вычислены даже если функция не существует.
+#if USEARGPOOL
+            bool pool = false;
+#endif
+            Arguments arguments = null;
             if (func == null)
+            {
+                for (int i = 0; i < this.arguments.Length; i++)
+                    prepareArg(context, this.arguments[i], tail);
+                context.objectSource = null;
+                // Аргументы должны быть вычислены даже если функция не существует.
                 throw new JSException((new NiL.JS.Core.BaseTypes.TypeError(first.ToString() + " is not callable")));
+            }
+            else
+            {
+                if (allowTCO
+                    && context.caller != null
+                    && func == context.caller.oValue
+                    && context.caller.oValue != Script.pseudoCaller)
+                {
+                    context.abort = AbortType.TailRecursion;
+                    tail = true;
+#if USEARGPOOL
+                    if (func._arguments is PooledArguments)
+                    {
+                        arguments = func._arguments as Arguments;
+                        arguments.Reset();
+                    }
+                    else
+#endif
+                    arguments = new Arguments();
+                }
+                else
+                {
+#if USEARGPOOL
+                    if (argumentsPool.Count == 0)
+                        arguments = new PooledArguments();
+                    else
+                    {
+                        arguments = argumentsPool.Pop();
+                        arguments.Reset();
+                    }
+                    pool = true;
+#else
+                    arguments = new Arguments();
+#endif
+                }
+#if USEARGPOOL
+                try
+                {
+#endif
+                arguments.length = this.arguments.Length;
+                for (int i = 0; i < this.arguments.Length; i++)
+                    arguments[i] = prepareArg(context, this.arguments[i], tail);
+                arguments.caller = context.strict && context.caller != null && context.caller.creator.body.strict ? Function.propertiesDummySM : context.caller;
+                context.objectSource = null;
+                if (tail)
+                {
+                    for (var i = func.creator.body.localVariables.Length; i-- > 0; )
+                    {
+                        if (func.creator.body.localVariables[i].Inititalizator == null)
+                            func.creator.body.localVariables[i].cacheRes.Assign(JSObject.undefined);
+                    }
+                    func._arguments = arguments;
+                    return JSObject.undefined;
+                }
+#if USEARGPOOL
+                }
+                catch
+                {
+                    if (pool)
+                        argumentsPool.Push(arguments);
+                }
+#endif
+            }
             func.attributes = (func.attributes & ~JSObjectAttributesInternal.Eval) | (temp.attributes & JSObjectAttributesInternal.Eval);
-
+#if USEARGPOOL
+            try
+            {
+                return func.Invoke(newThisBind, arguments);
+            }
+            finally
+            {
+                if (pool)
+                    argumentsPool.Push(arguments);
+            }
+#else
             return func.Invoke(newThisBind, arguments);
+#endif
         }
 
         internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict)
@@ -85,7 +148,7 @@ namespace NiL.JS.Expressions
             for (var i = 0; i < arguments.Length; i++)
                 Parser.Build(ref arguments[i], depth + 1, vars, strict);
             base.Build(ref _this, depth, vars, strict);
-            if (first is GetVariableStatement)
+            if (first is GetVariableExpression)
             {
                 var name = first.ToString();
                 VariableDescriptor f = null;
@@ -93,27 +156,49 @@ namespace NiL.JS.Expressions
                 {
                     if (f.Inititalizator != null) // Defined function
                     {
-                        var func = f.Inititalizator as FunctionStatement;
+                        var func = f.Inititalizator as FunctionExpression;
                         if (func != null)
                         {
                             if (func.body == null
-                                || func.body.body == null
-                                || func.body.body.Length == 0)
+                                || func.body.lines == null
+                                || func.body.lines.Length == 0)
                             {
                                 if (arguments.Length == 0)
                                     _this = new EmptyStatement();
                                 else
                                 {
-                                    System.Array.Reverse(arguments, 0, arguments.Length);
-                                    _this = new CodeBlock(arguments, strict);
+                                    if (depth > 1)
+                                    {
+                                        var b = new CodeNode[arguments.Length + 1];
+                                        for (int i = arguments.Length, j = 0; i > 0; i--, j++)
+                                            b[i] = arguments[j];
+                                        b[0] = new Constant(JSObject.notExists);
+                                        _this = new CodeBlock(b, strict);
+                                    }
+                                    else
+                                    {
+                                        System.Array.Reverse(arguments, 0, arguments.Length);
+                                        _this = new CodeBlock(arguments, strict);
+                                    }
                                 }
-                                    return true;
-                                }
+                                return true;
                             }
                         }
                     }
                 }
+            }
             return false;
+        }
+
+        internal override void Optimize(ref CodeNode _this, FunctionExpression owner)
+        {
+            base.Optimize(ref _this, owner);
+            for (var i = arguments.Length; i-- > 0; )
+            {
+                var cn = arguments[i] as CodeNode;
+                cn.Optimize(ref cn, owner);
+                arguments[i] = cn as Expression;
+            }
         }
 
         public override string ToString()

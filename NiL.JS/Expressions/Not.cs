@@ -6,7 +6,15 @@ namespace NiL.JS.Expressions
     [Serializable]
     public sealed class Not : Expression
     {
-        public Not(CodeNode first)
+        protected internal override PredictedType ResultType
+        {
+            get
+            {
+                return PredictedType.Number;
+            }
+        }
+
+        public Not(Expression first)
             : base(first, null, true)
         {
 

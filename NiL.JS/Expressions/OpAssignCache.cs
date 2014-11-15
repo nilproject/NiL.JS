@@ -5,15 +5,31 @@ using System.Text;
 using System.Threading.Tasks;
 using NiL.JS.Core;
 
-namespace NiL.JS.Statements
+namespace NiL.JS.Expressions
 {
     [Serializable]
-    public sealed class OpAssignCache : CodeNode
+    public sealed class OpAssignCache : Expression
     {
         private JSObject result;
         private CodeNode source;
 
         public CodeNode Source { get { return source; } }
+
+        public override bool IsContextIndependent
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        protected internal override PredictedType ResultType
+        {
+            get
+            {
+                return PredictedType.Bool;
+            }
+        }
 
         internal OpAssignCache(CodeNode source)
         {
@@ -82,8 +98,8 @@ namespace NiL.JS.Statements
         internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
             var res = source.Build(ref _this, depth, variables, strict);
-            if (!res && source is GetVariableStatement)
-                (source as GetVariableStatement).forceThrow = true;
+            if (!res && source is GetVariableExpression)
+                (source as GetVariableExpression).forceThrow = true;
             return res;
         }
     }

@@ -7,7 +7,15 @@ namespace NiL.JS.Expressions
     [Serializable]
     public sealed class LogicalNot : Expression
     {
-        public LogicalNot(CodeNode first)
+        protected internal override PredictedType ResultType
+        {
+            get
+            {
+                return PredictedType.Bool;
+            }
+        }
+
+        public LogicalNot(Expression first)
             : base(first, null, false)
         {
 
@@ -25,7 +33,7 @@ namespace NiL.JS.Expressions
             {
                 if (first.GetType() == typeof(LogicalNot))
                 {
-                    _this = new ToBool((first as Expression).FirstOperand);
+                    _this = new ToBool((first).FirstOperand);
                     return true;
                 }
                 if (first.GetType() == typeof(Json))
@@ -40,27 +48,27 @@ namespace NiL.JS.Expressions
                 }
                 if (first.GetType() == typeof(Equal))
                 {
-                    _this = new NotEqual((first as Expression).FirstOperand, (first as Expression).SecondOperand);
+                    _this = new NotEqual((first).FirstOperand, (first).SecondOperand);
                     return true;
                 }
                 if (first.GetType() == typeof(More))
                 {
-                    _this = new LessOrEqual((first as Expression).FirstOperand, (first as Expression).SecondOperand);
+                    _this = new LessOrEqual((first).FirstOperand, (first).SecondOperand);
                     return true;
                 }
                 if (first.GetType() == typeof(Less))
                 {
-                    _this = new MoreOrEqual((first as Expression).FirstOperand, (first as Expression).SecondOperand);
+                    _this = new MoreOrEqual((first).FirstOperand, (first).SecondOperand);
                     return true;
                 }
                 if (first.GetType() == typeof(MoreOrEqual))
                 {
-                    _this = new Less((first as Expression).FirstOperand, (first as Expression).SecondOperand);
+                    _this = new Less((first).FirstOperand, (first).SecondOperand);
                     return true;
                 }
                 if (first.GetType() == typeof(LessOrEqual))
                 {
-                    _this = new More((first as Expression).FirstOperand, (first as Expression).SecondOperand);
+                    _this = new More((first).FirstOperand, (first).SecondOperand);
                     return true;
                 }
             }

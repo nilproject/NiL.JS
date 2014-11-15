@@ -6,7 +6,15 @@ namespace NiL.JS.Expressions
     [Serializable]
     public class More : Expression
     {
-        public More(CodeNode first, CodeNode second)
+        protected internal override PredictedType ResultType
+        {
+            get
+            {
+                return PredictedType.Bool;
+            }
+        }
+
+        public More(Expression first, Expression second)
             : base(first, second, true)
         {
 

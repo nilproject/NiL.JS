@@ -3,15 +3,16 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using NiL.JS.Core;
 using NiL.JS.Core.JIT;
+using NiL.JS.Statements;
 
-namespace NiL.JS.Statements
+namespace NiL.JS.Expressions
 {
     [Serializable]
-    public sealed class ArrayStatement : CodeNode
+    public sealed class ArrayStatement : Expression
     {
-        private CodeNode[] elements;
+        private Expression[] elements;
 
-        public ICollection<CodeNode> Elements { get { return elements; } }
+        public ICollection<Expression> Elements { get { return elements; } }
 
 #if !NET35
 
@@ -26,6 +27,14 @@ namespace NiL.JS.Statements
 
 #endif
 
+        public override bool IsContextIndependent
+        {
+            get
+            {
+                return false;
+            }
+        }
+
         private ArrayStatement()
         {
 
@@ -39,13 +48,13 @@ namespace NiL.JS.Statements
             do
                 i++;
             while (char.IsWhiteSpace(state.Code[i]));
-            var elms = new List<CodeNode>();
+            var elms = new List<Expression>();
             while (state.Code[i] != ']')
             {
                 if (state.Code[i] == ',')
                     elms.Add(null);
                 else
-                    elms.Add(ExpressionStatement.Parse(state, ref i, false).Statement);
+                    elms.Add((Expression)ExpressionTree.Parse(state, ref i, false).Statement);
                 while (char.IsWhiteSpace(state.Code[i]))
                     i++;
                 if (state.Code[i] == ',')
@@ -109,6 +118,19 @@ namespace NiL.JS.Statements
             for (int i = 0; i < elements.Length; i++)
                 Parser.Build(ref elements[i], 2, vars, strict);
             return false;
+        }
+
+        internal override void Optimize(ref CodeNode _this, FunctionExpression owner)
+        {
+            for (var i = elements.Length; i-- > 0; )
+            {
+                var cn = elements[i] as CodeNode;
+                if (cn != null)
+                {
+                    cn.Optimize(ref cn, owner);
+                    elements[i] = cn as Expression;
+                }
+            }
         }
 
         public override string ToString()

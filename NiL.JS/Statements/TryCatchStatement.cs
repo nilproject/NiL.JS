@@ -360,6 +360,15 @@ namespace NiL.JS.Statements
             return false;
         }
 
+        internal override void Optimize(ref CodeNode _this, Expressions.FunctionExpression owner)
+        {
+            body.Optimize(ref body, owner);
+            if (catchBody != null)
+                catchBody.Optimize(ref catchBody, owner);
+            if (finallyBody != null)
+                finallyBody.Optimize(ref finallyBody, owner);
+        }
+
         protected override CodeNode[] getChildsImpl()
         {
             var res = new List<CodeNode>()

@@ -6,7 +6,15 @@ namespace NiL.JS.Expressions
     [Serializable]
     public sealed class NotEqual : Equal
     {
-        public NotEqual(CodeNode first, CodeNode second)
+        protected internal override PredictedType ResultType
+        {
+            get
+            {
+                return PredictedType.Bool;
+            }
+        }
+
+        public NotEqual(Expression first, Expression second)
             : base(first, second)
         {
 

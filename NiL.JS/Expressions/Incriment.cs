@@ -22,8 +22,18 @@ namespace NiL.JS.Expressions
                 return false;
             }
         }
+        
+        protected internal override PredictedType ResultType
+        {
+            get
+            {
+                if (tempContainer == null)
+                    return PredictedType.Number;
+                return PredictedType.Unknown;
+            }
+        }
 
-        public Incriment(CodeNode op, Type type)
+        public Incriment(Expression op, Type type)
             : base(op, type == Type.Postincriment ? op : null, type == Type.Postincriment)
         {
             if (type > Type.Postincriment)
@@ -169,6 +179,18 @@ namespace NiL.JS.Expressions
                     (f.Descriptor.assignations = new System.Collections.Generic.List<CodeNode>())).Add(this);
             }
             return false;
+        }
+
+        internal override void Optimize(ref CodeNode _this, FunctionExpression owner)
+        {
+            var vr = first as VariableReference;
+            if (vr != null && vr.descriptor.isDefined)
+            {
+                if (vr.descriptor.lastPredictedType == PredictedType.Unknown)
+                    vr.descriptor.lastPredictedType = PredictedType.Number;
+                else
+                    vr.descriptor.lastPredictedType = PredictedType.Ambiguous;
+            }
         }
 
         public override string ToString()

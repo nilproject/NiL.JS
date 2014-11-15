@@ -11,18 +11,26 @@ namespace NiL.JS.Expressions
     {
         internal readonly JSObject tempContainer;
 
-        protected CodeNode first;
-        protected CodeNode second;
+        internal protected virtual PredictedType ResultType
+        {
+            get
+            {
+                return PredictedType.Unknown;
+            }
+        }
 
-        public CodeNode FirstOperand { get { return first; } }
-        public CodeNode SecondOperand { get { return second; } }
+        protected internal Expression first;
+        protected internal Expression second;
+
+        public Expression FirstOperand { get { return first; } }
+        public Expression SecondOperand { get { return second; } }
 
         public virtual bool IsContextIndependent
         {
             get
             {
-                return (first == null || first is Constant || (first is Expression && (first as Expression).IsContextIndependent))
-                    && (second == null || second is Constant || (second is Expression && (second as Expression).IsContextIndependent));
+                return (first == null || first is Constant || (first is Expression && ((Expression)first).IsContextIndependent))
+                    && (second == null || second is Constant || (second is Expression && ((Expression)second).IsContextIndependent));
             }
         }
 
@@ -39,7 +47,12 @@ namespace NiL.JS.Expressions
 
 #endif
 
-        protected Expression(CodeNode first, CodeNode second, bool createTempContainer)
+        protected Expression()
+        {
+
+        }
+
+        protected Expression(Expression first, Expression second, bool createTempContainer)
         {
             if (createTempContainer)
                 tempContainer = new JSObject() { attributes = JSObjectAttributesInternal.Temporary };
@@ -49,10 +62,6 @@ namespace NiL.JS.Expressions
 
         internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict)
         {
-            //while (first is None && (first as None).second == null)
-            //    first = (first as None).first;
-            //while (second is None && (second as None).second == null)
-            //    second = (second as None).first;
             Parser.Build(ref first, depth + 1, vars, strict);
             Parser.Build(ref second, depth + 1, vars, strict);
             try
@@ -74,6 +83,16 @@ namespace NiL.JS.Expressions
             catch
             { }
             return false;
+        }
+
+        internal override void Optimize(ref CodeNode _this, FunctionExpression owner)
+        {
+            var f = first as CodeNode;
+            var s = second as CodeNode;
+            if (f != null)
+                f.Optimize(ref f, owner);
+            if (s != null)
+                s.Optimize(ref s, owner);
         }
 
         protected override CodeNode[] getChildsImpl()

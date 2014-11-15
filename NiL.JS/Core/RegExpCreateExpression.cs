@@ -1,16 +1,17 @@
 ﻿using System;
 using NiL.JS.Core.BaseTypes;
 using NiL.JS.Core.JIT;
+using NiL.JS.Expressions;
 
 namespace NiL.JS.Core
 {
     [Serializable]
-    internal sealed class RegExpStatement : CodeNode
+    internal sealed class RegExpExpression : Expression
     {
         private string pattern;
         private string flags;
 
-        public RegExpStatement(string pattern, string flags)
+        public RegExpExpression(string pattern, string flags)
         {
             this.pattern = pattern;
             this.flags = flags;

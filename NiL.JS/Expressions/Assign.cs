@@ -18,7 +18,7 @@ namespace NiL.JS.Expressions
             }
         }
 
-        public Assign(CodeNode first, CodeNode second)
+        public Assign(Expression first, Expression second)
             : base(first, second, false)
         {
         }
@@ -58,9 +58,9 @@ namespace NiL.JS.Expressions
 
         internal override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> vars, bool strict)
         {
-            if (first is VariableReference && second is Statements.FunctionStatement)
+            if (first is VariableReference && second is FunctionExpression)
             {
-                var fs = second as Statements.FunctionStatement;
+                var fs = second as FunctionExpression;
                 if (fs.name == null)
                     fs.name = (first as VariableReference).Name;
             }
@@ -77,6 +77,18 @@ namespace NiL.JS.Expressions
                 System.Diagnostics.Debugger.Break();
 #endif
             return r;
+        }
+
+        internal override void Optimize(ref CodeNode _this, FunctionExpression owner)
+        {
+            var vr = first as VariableReference;
+            if (vr != null && vr.descriptor.isDefined)
+            {
+                if (vr.descriptor.lastPredictedType == PredictedType.Unknown)
+                    vr.descriptor.lastPredictedType = second.ResultType;
+                else
+                    vr.descriptor.lastPredictedType = PredictedType.Ambiguous;
+            }
         }
 
         public override string ToString()

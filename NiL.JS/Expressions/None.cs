@@ -8,7 +8,15 @@ namespace NiL.JS.Expressions
     [Serializable]
     public sealed class None : Expression
     {
-        public None(CodeNode first, CodeNode second)
+        protected internal override PredictedType ResultType
+        {
+            get
+            {
+                return (second ?? first).ResultType;
+            }
+        }
+
+        public None(Expression first, Expression second)
             : base(first, second, false)
         {
 
@@ -31,7 +39,7 @@ namespace NiL.JS.Expressions
 
         internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict)
         {
-            if (second == null && (depth > 2 || first is Expression || first is ExpressionStatement))
+            if (second == null && (depth > 2 || first is Expression))
             {
                 _this = first;
                 return true;

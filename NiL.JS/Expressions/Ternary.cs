@@ -9,21 +9,21 @@ namespace NiL.JS.Expressions
     [Serializable]
     public sealed class Ternary : Expression
     {
-        private CodeNode[] threads;
+        private Expression[] threads;
 
         public override bool IsContextIndependent
         {
             get
             {
                 return base.IsContextIndependent
-                    && (threads[0] is Constant || (threads[0] is Expression && (threads[0] as Expression).IsContextIndependent))
-                    && (threads[1] is Constant || (threads[1] is Expression && (threads[1] as Expression).IsContextIndependent));
+                    && (threads[0] is Constant || (threads[0] is Expression && threads[0].IsContextIndependent))
+                    && (threads[1] is Constant || (threads[1] is Expression && threads[1].IsContextIndependent));
             }
         }
 
         public IList<CodeNode> Threads { get { return new ReadOnlyCollection<CodeNode>(threads); } }
 
-        public Ternary(CodeNode first, CodeNode[] threads)
+        public Ternary(Expression first, Expression[] threads)
             : base(first, null, false)
         {
             this.threads = threads;
@@ -42,6 +42,17 @@ namespace NiL.JS.Expressions
             Parser.Build(ref threads[1], depth, vars, strict);
             base.Build(ref _this, depth, vars, strict);
             return false;
+        }
+
+        internal override void Optimize(ref CodeNode _this, FunctionExpression owner)
+        {
+            base.Optimize(ref _this, owner);
+            for (var i = threads.Length; i-- > 0; )
+            {
+                var cn = threads[i] as CodeNode;
+                cn.Optimize(ref cn, owner);
+                threads[i] = cn as Expression;
+            }
         }
 
         public override string ToString()

@@ -264,40 +264,15 @@ for (var i = 0; i < 10000000; i++) abs(i * (1 - 2 * (i & 1)));
             var sw = new Stopwatch();
             var s = new Script(
 @"
-var array = Uint32Array(10);
-for (var i = 0; i < 10; i++)
-    array[i] = i;
-for (var i = 0; i < 10; i++)
-    array[i]++;
-test.Add(array);
+console.log(new Date(0));
+console.log(+new Date(0));
+console.log(new Date(1,1,1,1,1,1,1,1,1));
+console.log(+new Date(1,1,1,1,1,1,1,1,1));
+console.log(new Date('1980'));
+console.log(+new Date('1980'));
 ");
             var list = new List<uint[]>();
             s.Context.DefineVariable("test").Assign(TypeProxy.Proxy(list));
-            sw.Start();
-            s.Invoke();
-            sw.Stop();
-            Console.WriteLine(sw.Elapsed);
-        }
-
-        private static void strongTests()
-        {
-            var sw = new Stopwatch();
-            var s = new Script(
-@"
-function strongFunction(i, d, s, o)
-{
-    'use strong';
-    i = i | 0;
-    d = +d;
-    s += '';
-    o = Object(o);
-    console.log(typeof i);
-    console.log(typeof d);
-    console.log(typeof s);
-    console.log(typeof o);
-}
-strongFunction(1, 2, 3, 4);
-");
             sw.Start();
             s.Invoke();
             sw.Stop();
@@ -311,15 +286,10 @@ strongFunction(1, 2, 3, 4);
             Context.GlobalContext.DebuggerCallback += (sender, e) => System.Diagnostics.Debugger.Break();
             Context.GlobalContext.DefineVariable("alert").Assign(new ExternalFunction((t, a) => { System.Windows.Forms.MessageBox.Show(a[0].ToString()); return JSObject.Undefined; }));
 
-            int mode = 2
+            int mode = 101
                    ;
             switch (mode)
             {
-                case -5:
-                    {
-                        strongTests();
-                        break;
-                    }
                 case -4:
                     {
                         runFile(@"samples/async.js");
@@ -382,11 +352,15 @@ strongFunction(1, 2, 3, 4);
                     }
                 case 2:
                     {
+                        var currentTimeZone = TimeZone.CurrentTimeZone;
+                        var offset = currentTimeZone.GetType().GetField("m_ticksOffset", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+                        offset.SetValue(currentTimeZone, new TimeSpan(-8, 0, 0).Ticks);
                         runFile(@"ftest.js");
                         break;
                     }
                 case 3:
                     {
+
                         testEx();
                         break;
                     }

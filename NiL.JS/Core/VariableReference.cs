@@ -1,10 +1,11 @@
 ﻿using System;
 using NiL.JS.Core.JIT;
+using NiL.JS.Expressions;
 
 namespace NiL.JS.Core
 {
     [Serializable]
-    public abstract class VariableReference : CodeNode
+    public abstract class VariableReference : Expression
     {
         internal int functionDepth;
         public virtual int FunctionDepth { get { return functionDepth; } }
@@ -24,6 +25,22 @@ namespace NiL.JS.Core
         }
 
 #endif
+
+        public override bool IsContextIndependent
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        protected internal override PredictedType ResultType
+        {
+            get
+            {
+                return descriptor.lastPredictedType;
+            }
+        }
 
         protected VariableReference()
         {

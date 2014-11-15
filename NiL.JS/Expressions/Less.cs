@@ -6,10 +6,18 @@ namespace NiL.JS.Expressions
     [Serializable]
     public class Less : Expression
     {
-        internal Less(CodeNode first, CodeNode second)
+        internal Less(Expression first, Expression second)
             : base(first, second, true)
         {
 
+        }
+
+        protected internal override PredictedType ResultType
+        {
+            get
+            {
+                return PredictedType.Bool;
+            }
         }
 
         internal static bool Check(JSObject first, JSObject second)

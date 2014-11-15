@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq.Expressions;
 using NiL.JS.Core.BaseTypes;
 using NiL.JS.Core.JIT;
+using NiL.JS.Expressions;
 using NiL.JS.Statements;
 
 namespace NiL.JS.Core
@@ -14,7 +14,7 @@ namespace NiL.JS.Core
 
 #if !NET35
 
-        internal virtual Expression CompileToIL(TreeBuildingState state)
+        internal virtual System.Linq.Expressions.Expression CompileToIL(TreeBuildingState state)
         {
 #if DEBUG
             System.Diagnostics.Debug.Print("JIT for " + this.GetType() + " not implemented");
@@ -31,8 +31,8 @@ namespace NiL.JS.Core
                 );
             return System.Linq.Expressions.Expression.Block(
                     wraper,
-                    Expression.IfThen(Expression.Equal(JITHelpers.wrap(AbortType.Return), Expression.Field(JITHelpers.ContextParameter, "abort")),
-                                        Expression.Return(state.ReturnTarget, Expression.Field(JITHelpers.ContextParameter, "abortInfo"))),
+                    System.Linq.Expressions.Expression.IfThen(System.Linq.Expressions.Expression.Equal(JITHelpers.wrap(AbortType.Return), System.Linq.Expressions.Expression.Field(JITHelpers.ContextParameter, "abort")),
+                                        System.Linq.Expressions.Expression.Return(state.ReturnTarget, System.Linq.Expressions.Expression.Field(JITHelpers.ContextParameter, "abortInfo"))),
                     JITHelpers.UndefinedConstant
                    );
         }
@@ -70,6 +70,11 @@ namespace NiL.JS.Core
         internal virtual bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
             return false;
+        }
+
+        internal virtual void Optimize(ref CodeNode _this, FunctionExpression owner)
+        {
+            
         }
     }
 }

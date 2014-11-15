@@ -84,6 +84,11 @@ namespace NiL.JS.Statements
             return false;
         }
 
+        internal override void Optimize(ref CodeNode _this, Expressions.FunctionExpression owner)
+        {
+            body.Optimize(ref body, owner);
+        }
+
         public override string ToString()
         {
             return "for (;;)" + (body is CodeBlock ? "" : Environment.NewLine + "  ") + body;

@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq.Expressions;
 using NiL.JS.Core;
 using NiL.JS.Core.JIT;
+using NiL.JS.Expressions;
 
 namespace NiL.JS.Statements
 {
@@ -14,39 +14,39 @@ namespace NiL.JS.Statements
 
         internal override System.Linq.Expressions.Expression CompileToIL(NiL.JS.Core.JIT.TreeBuildingState state)
         {
-            var continueLabel = Expression.Label("continue" + (DateTime.Now.Ticks % 1000));
-            var breakLabel = Expression.Label("break" + (DateTime.Now.Ticks % 1000));
+            var continueLabel = System.Linq.Expressions.Expression.Label("continue" + (DateTime.Now.Ticks % 1000));
+            var breakLabel = System.Linq.Expressions.Expression.Label("break" + (DateTime.Now.Ticks % 1000));
             for (var i = 0; i < labels.Length; i++)
                 state.NamedContinueLabels[labels[i]] = continueLabel;
             state.ContinueLabels.Push(continueLabel);
             state.BreakLabels.Push(breakLabel);
-            Expression res = null;
+            System.Linq.Expressions.Expression res = null;
             try
             {
-                Expression loopBody = null;
+                System.Linq.Expressions.Expression loopBody = null;
                 if (body == null)
                 {
                     if (post == null)
-                        loopBody = Expression.Label(continueLabel);
+                        loopBody = System.Linq.Expressions.Expression.Label(continueLabel);
                     else
-                        loopBody = Expression.Block(Expression.Label(continueLabel), post.CompileToIL(state));
+                        loopBody = System.Linq.Expressions.Expression.Block(System.Linq.Expressions.Expression.Label(continueLabel), post.CompileToIL(state));
                 }
                 else
                 {
                     if (post == null)
-                        loopBody = Expression.Block(body.CompileToIL(state), Expression.Label(continueLabel));
+                        loopBody = System.Linq.Expressions.Expression.Block(body.CompileToIL(state), System.Linq.Expressions.Expression.Label(continueLabel));
                     else
-                        loopBody = Expression.Block(body.CompileToIL(state), Expression.Label(continueLabel), post.CompileToIL(state));
+                        loopBody = System.Linq.Expressions.Expression.Block(body.CompileToIL(state), System.Linq.Expressions.Expression.Label(continueLabel), post.CompileToIL(state));
                 }
-                Expression loop = condition == null ? Expression.Loop(loopBody, breakLabel) :
-                    Expression.Loop(
-                    Expression.IfThenElse(Expression.Call(JITHelpers.JSObjectToBooleanMethod, condition.CompileToIL(state)) as Expression,
+                System.Linq.Expressions.Expression loop = condition == null ? System.Linq.Expressions.Expression.Loop(loopBody, breakLabel) :
+                    System.Linq.Expressions.Expression.Loop(
+                    System.Linq.Expressions.Expression.IfThenElse(System.Linq.Expressions.Expression.Call(JITHelpers.JSObjectToBooleanMethod, condition.CompileToIL(state)) as System.Linq.Expressions.Expression,
                         loopBody
                     ,// else
-                        Expression.Break(breakLabel)).Reduce()
+                        System.Linq.Expressions.Expression.Break(breakLabel)).Reduce()
                     , breakLabel);
                 if (init != null)
-                    res = Expression.Block(init.CompileToIL(state), loop);
+                    res = System.Linq.Expressions.Expression.Block(init.CompileToIL(state), loop);
                 else
                     res = loop;
                 return res;
@@ -96,11 +96,11 @@ namespace NiL.JS.Statements
             if (state.Code[i] != ';')
                 throw new JSException((new Core.BaseTypes.SyntaxError("Expected \";\" at + " + Tools.PositionToTextcord(state.Code, i))));
             do i++; while (char.IsWhiteSpace(state.Code[i]));
-            var condition = state.Code[i] == ';' ? null as CodeNode : ExpressionStatement.Parse(state, ref i).Statement;
+            var condition = state.Code[i] == ';' ? null as CodeNode : ExpressionTree.Parse(state, ref i).Statement;
             if (state.Code[i] != ';')
                 throw new JSException((new Core.BaseTypes.SyntaxError("Expected \";\" at + " + Tools.PositionToTextcord(state.Code, i))));
             do i++; while (char.IsWhiteSpace(state.Code[i]));
-            var post = state.Code[i] == ')' ? null as CodeNode : ExpressionStatement.Parse(state, ref i).Statement;
+            var post = state.Code[i] == ')' ? null as CodeNode : ExpressionTree.Parse(state, ref i).Statement;
             while (char.IsWhiteSpace(state.Code[i])) i++;
             if (state.Code[i] != ')')
                 throw new JSException((new Core.BaseTypes.SyntaxError("Expected \";\" at + " + Tools.PositionToTextcord(state.Code, i))));
@@ -110,7 +110,7 @@ namespace NiL.JS.Statements
             int ccs = state.continiesCount;
             int cbs = state.breaksCount;
             var body = Parser.Parse(state, ref i, 0);
-            if (body is FunctionStatement && state.strict.Peek())
+            if (body is FunctionExpression && state.strict.Peek())
                 throw new JSException((new NiL.JS.Core.BaseTypes.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
             state.AllowBreak.Pop();
             state.AllowContinue.Pop();
@@ -252,8 +252,8 @@ namespace NiL.JS.Statements
                     if (variable.functionDepth >= 0 && variable.descriptor.defineDepth >= 0)
                     {
                         if (init is NiL.JS.Expressions.Assign
-                            && (init as NiL.JS.Expressions.Assign).FirstOperand is GetVariableStatement
-                            && ((init as NiL.JS.Expressions.Assign).FirstOperand as GetVariableStatement).descriptor == variable.descriptor)
+                            && (init as NiL.JS.Expressions.Assign).FirstOperand is GetVariableExpression
+                            && ((init as NiL.JS.Expressions.Assign).FirstOperand as GetVariableExpression).descriptor == variable.descriptor)
                         {
                             var value = (init as NiL.JS.Expressions.Assign).SecondOperand;
                             if (value is Constant)
@@ -281,6 +281,18 @@ namespace NiL.JS.Statements
                 }
             }
             return false;
+        }
+
+        internal override void Optimize(ref CodeNode _this, FunctionExpression owner)
+        {
+            if (init != null)
+                init.Optimize(ref init, owner);
+            if (condition != null)
+                condition.Optimize(ref condition, owner);
+            if (post != null)
+                post.Optimize(ref post, owner);
+            if (body != null)
+                body.Optimize(ref body, owner);
         }
 
         public override string ToString()
