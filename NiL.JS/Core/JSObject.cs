@@ -447,6 +447,8 @@ namespace NiL.JS.Core
                 case JSObjectType.Date:
                 case JSObjectType.Object:
                     {
+                        if (oValue == null)
+                            throw new JSException(new TypeError("Can't get property \"" + name + "\" of \"null\""));
                         if (oValue == this)
                             return DefaultFieldGetter(name, createMember, own);
                         var inObj = oValue as JSObject;
@@ -465,8 +467,6 @@ namespace NiL.JS.Core
                                     fields = inObj.fields;
                             }
                         }
-                        if (oValue == null)
-                            throw new JSException(new TypeError("Can't get property \"" + name + "\" of \"null\""));
                         break;
                     }
                 case JSObjectType.Function:

@@ -25,6 +25,12 @@ namespace NiL.JS.Expressions
             return (bool)first.Evaluate(context);
         }
 
+        internal override void Optimize(ref CodeNode _this, FunctionExpression owner)
+        {
+            if (first.ResultType == PredictedType.Bool)
+                _this = first;
+        }
+
         public override string ToString()
         {
             return "!!" + first;

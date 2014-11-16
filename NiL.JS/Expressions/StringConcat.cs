@@ -41,15 +41,15 @@ namespace NiL.JS.Expressions
             this.sources = sources;
         }
 
-        private static object prep(JSObject x)
+        private static object prep(JSObject x, ref bool metString)
         {
-            if (x.valueType == JSObjectType.String)
+            if (x.valueType == JSObjectType.String && (metString |= true))
                 return x.oValue;
             if (x.valueType == JSObjectType.Date)
                 x = x.ToPrimitiveValue_String_Value();
             else
                 x = x.ToPrimitiveValue_Value_String();
-            if (x.valueType == JSObjectType.String)
+            if (x.valueType == JSObjectType.String && (metString |= true))
                 return x.oValue;
             return x.ToString();
         }
@@ -58,10 +58,13 @@ namespace NiL.JS.Expressions
         {
             lock (this)
             {
+                bool metString = false;
                 tempContainer.valueType = JSObjectType.String;
-                tempContainer.oValue = prep(sources[0].Evaluate(context));
+                tempContainer.oValue = prep(sources[0].Evaluate(context), ref metString);
                 for (var i = 1; i < sources.Count; i++)
-                    tempContainer.oValue = new RopeString(tempContainer.oValue, prep(sources[i].Evaluate(context)));
+                    tempContainer.oValue = new RopeString(tempContainer.oValue, prep(sources[i].Evaluate(context), ref metString));
+                if (!metString)
+                    throw new InvalidOperationException("metString == false");
                 return tempContainer;
             }
         }

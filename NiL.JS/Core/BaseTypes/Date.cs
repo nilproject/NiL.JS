@@ -412,10 +412,6 @@ namespace NiL.JS.Core.BaseTypes
                     }
                 }
                 long y = Tools.JSObjectToInt64(args[0], 1, true);
-                //if (y == long.MinValue)
-                //    y >>= 6;
-                //if (y == long.MaxValue)
-                //    y >>= 6;
                 long m = Tools.JSObjectToInt64(args[1], 0, true);
                 long d = Tools.JSObjectToInt64(args[2], 1, true);
                 long h = Tools.JSObjectToInt64(args[3], 0, true);
@@ -424,6 +420,12 @@ namespace NiL.JS.Core.BaseTypes
                 long ms = Tools.JSObjectToInt64(args[6], 0, true);
                 if (y == long.MaxValue
                     || y == long.MinValue)
+                {
+                    error = true;
+                    return;
+                }
+                if (y > 9999999
+                    || y < -9999999)
                 {
                     error = true;
                     return;

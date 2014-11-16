@@ -25,7 +25,7 @@ namespace NiL.JS.Expressions
             return Check(first, second, false);
         }
 
-        protected static bool Check(JSObject first, JSObject second, bool moreOrEqual)
+        internal static bool Check(JSObject first, JSObject second, bool moreOrEqual)
         {
             switch (first.valueType)
             {
@@ -237,6 +237,17 @@ namespace NiL.JS.Expressions
                     && tempContainer.valueType == JSObjectType.Int)
                     return tempContainer.iValue < s.iValue;
                 return Check(tempContainer, s, this is MoreOrEqual);
+            }
+        }
+
+        internal override void Optimize(ref CodeNode _this, FunctionExpression owner)
+        {
+            baseOptimize(owner);
+            if (first.ResultType == PredictedType.Number
+                && second.ResultType == PredictedType.Number)
+            {
+                _this = new NumberLess(first, second);
+                return;
             }
         }
 

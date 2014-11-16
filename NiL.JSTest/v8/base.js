@@ -219,6 +219,7 @@ BenchmarkSuite.prototype.RunSingleBenchmark = function (benchmark, data) {
         return { runs: 0, elapsed: 0 };
     } else {
         Measure(data);
+        console.log("runs: ", data.runs, " elapsed: ", data.elapsed);
         // If we've run too few iterations, we continue for another second.
         if (data.runs < 32) return data;
         var usec = (data.elapsed * 1000) / data.runs;

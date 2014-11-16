@@ -239,6 +239,17 @@ namespace NiL.JS.Expressions
             }
         }
 
+        internal override void Optimize(ref CodeNode _this, FunctionExpression owner)
+        {
+            baseOptimize(owner);
+            if (first.ResultType == PredictedType.Number
+                && second.ResultType == PredictedType.Number)
+            {
+                _this = new NumberMore(first, second);
+                return;
+            }
+        }
+
         public override string ToString()
         {
             return "(" + first + " > " + second + ")";

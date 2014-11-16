@@ -87,12 +87,23 @@ namespace NiL.JS.Expressions
 
         internal override void Optimize(ref CodeNode _this, FunctionExpression owner)
         {
+            baseOptimize(owner);
+        }
+
+        protected void baseOptimize(FunctionExpression owner)
+        {
             var f = first as CodeNode;
             var s = second as CodeNode;
             if (f != null)
+            {
                 f.Optimize(ref f, owner);
+                first = f as Expression;
+            }
             if (s != null)
+            {
                 s.Optimize(ref s, owner);
+                second = s as Expression;
+            }
         }
 
         protected override CodeNode[] getChildsImpl()

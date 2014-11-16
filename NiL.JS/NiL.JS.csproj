@@ -281,6 +281,11 @@
     <Compile Include="Core\TypeProxing\ProxyConstructor.cs" />
     <Compile Include="Core\WithContext.cs" />
     <Compile Include="Expressions\ExpressionWrapper.cs" />
+    <Compile Include="Expressions\NumberLessOrEqual.cs" />
+    <Compile Include="Expressions\NumberMoreOrEqual.cs" />
+    <Compile Include="Expressions\NumberMore.cs" />
+    <Compile Include="Expressions\NumberLess.cs" />
+    <Compile Include="Expressions\NumberAddition.cs" />
     <Compile Include="Expressions\StringConcat.cs" />
     <Compile Include="Expressions\Neg.cs" />
     <Compile Include="Expressions\ToBool.cs" />

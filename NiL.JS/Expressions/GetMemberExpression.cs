@@ -10,11 +10,9 @@ namespace NiL.JS.Expressions
     public sealed class GetMemberExpression : Expression
     {
         private JSObject cachedMemberName;
-        private CodeNode objStatement;
-        private CodeNode memberNameStatement;
 
-        public CodeNode Source { get { return objStatement; } }
-        public CodeNode FieldName { get { return memberNameStatement; } }
+        public CodeNode Source { get { return first; } }
+        public CodeNode FieldName { get { return second; } }
 
         public override bool IsContextIndependent
         {
@@ -37,26 +35,44 @@ namespace NiL.JS.Expressions
 
 #endif
 
-        internal GetMemberExpression(CodeNode obj, CodeNode fieldName)
+        internal GetMemberExpression(Expression obj, Expression fieldName)
+            : base(obj, fieldName, true)
         {
-            objStatement = obj;
-            memberNameStatement = fieldName;
         }
 
         internal override JSObject EvaluateForAssing(Context context)
         {
+            JSObject sjso = null;
             JSObject res = null;
             JSObject source = null;
-            source = objStatement.Evaluate(context);
+            source = first.Evaluate(context);
             if (source.valueType >= JSObjectType.Object
                 && source.oValue != null
                 && source.oValue != source
-                && source.oValue is JSObject
-                && (source.oValue as JSObject).valueType >= JSObjectType.Object)
-                source = source.oValue as JSObject;
+                && (sjso = source.oValue as JSObject) != null
+                && sjso.valueType >= JSObjectType.Object)
+            {
+                source = sjso;
+                sjso = null;
+            }
             else
-                source = source.CloneImpl();
-            res = source.GetMember(cachedMemberName ?? memberNameStatement.Evaluate(context), true, false);
+            {
+                if ((sjso ?? source).fields == null)
+                    (sjso ?? source).fields = JSObject.createFields();
+                sjso = source;
+                tempContainer.Assign(source);
+                source = tempContainer;
+            }
+            res = source.GetMember(cachedMemberName ?? second.Evaluate(context), true, false);
+            if (sjso != null)
+            {
+                if (sjso.oValue == tempContainer.oValue)
+                    source = sjso;
+                else
+                    source = tempContainer.CloneImpl();
+                tempContainer.fields = null;
+                tempContainer.oValue = null;
+            }
             context.objectSource = source;
             if (res.valueType == JSObjectType.NotExists)
                 res.valueType = JSObjectType.NotExistsInObject;
@@ -65,18 +81,37 @@ namespace NiL.JS.Expressions
 
         internal override JSObject Evaluate(Context context)
         {
+            JSObject sjso = null;
             JSObject res = null;
             JSObject source = null;
-            source = objStatement.Evaluate(context);
+            source = first.Evaluate(context);
             if (source.valueType >= JSObjectType.Object
                 && source.oValue != null
                 && source.oValue != source
-                && source.oValue is JSObject
-                && (source.oValue as JSObject).valueType >= JSObjectType.Object)
-                source = source.oValue as JSObject;
+                && (sjso = source.oValue as JSObject) != null
+                && sjso.valueType >= JSObjectType.Object)
+            {
+                source = sjso;
+                sjso = null;
+            }
             else
-                source = source.CloneImpl();
-            res = source.GetMember(cachedMemberName ?? memberNameStatement.Evaluate(context), false, false);
+            {
+                if ((sjso ?? source).fields == null)
+                    (sjso ?? source).fields = JSObject.createFields();
+                sjso = source;
+                tempContainer.Assign(source);
+                source = tempContainer;
+            }
+            res = source.GetMember(cachedMemberName ?? second.Evaluate(context), false, false);
+            if (sjso != null)
+            {
+                if (sjso.oValue == tempContainer.oValue)
+                    source = sjso;
+                else
+                    source = tempContainer.CloneImpl();
+                tempContainer.fields = null;
+                tempContainer.oValue = null;
+            }
             context.objectSource = source;
             if (res.valueType == JSObjectType.NotExists)
                 res.valueType = JSObjectType.NotExistsInObject;
@@ -85,36 +120,24 @@ namespace NiL.JS.Expressions
             return res;
         }
 
-        protected override CodeNode[] getChildsImpl()
-        {
-            var res = new List<CodeNode>()
-            {
-                objStatement,
-                memberNameStatement
-            };
-            res.RemoveAll(x => x == null);
-            return res.ToArray();
-        }
-
         internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
-            Parser.Build(ref objStatement, depth + 1, variables, strict);
-            Parser.Build(ref memberNameStatement, depth + 1, variables, strict);
-            if (memberNameStatement is Constant)
-                cachedMemberName = memberNameStatement.Evaluate(null);
+            base.Build(ref _this, depth, variables, strict);
+            if (second is Constant)
+                cachedMemberName = second.Evaluate(null);
             return false;
         }
 
         public override string ToString()
         {
-            var res = objStatement.ToString();
+            var res = first.ToString();
             int i = 0;
-            if (memberNameStatement is Constant
-                && (memberNameStatement as Constant).value.ToString().Length > 0
-                && (Parser.ValidateName((memberNameStatement as Constant).value.ToString(), ref i, true)))
-                res += "." + (memberNameStatement as Constant).value;
+            if (second is Constant
+                && (second as Constant).value.ToString().Length > 0
+                && (Parser.ValidateName((second as Constant).value.ToString(), ref i, true)))
+                res += "." + (second as Constant).value;
             else
-                res += "[" + memberNameStatement.ToString() + "]";
+                res += "[" + second.ToString() + "]";
             return res;
         }
     }

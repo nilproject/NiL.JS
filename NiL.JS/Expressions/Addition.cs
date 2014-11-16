@@ -27,7 +27,7 @@ namespace NiL.JS.Expressions
             return tempContainer;
         }
 
-        private static void Impl(JSObject resultContainer, JSObject first, JSObject second)
+        internal static void Impl(JSObject resultContainer, JSObject first, JSObject second)
         {
             switch (first.valueType)
             {
@@ -267,23 +267,31 @@ namespace NiL.JS.Expressions
 
         internal override void Optimize(ref CodeNode _this, FunctionExpression owner)
         {
-            if (first.ResultType == PredictedType.String
-                || second.ResultType == PredictedType.String)
+            base.Optimize(ref _this, owner);
+            //if (first.ResultType == PredictedType.String
+            //    || second.ResultType == PredictedType.String)
+            //{
+            //    if (first is StringConcat)
+            //    {
+            //        _this = first;
+            //        (first as StringConcat).sources.Add(second);
+            //    }
+            //    else if (second is StringConcat)
+            //    {
+            //        _this = second;
+            //        (second as StringConcat).sources.Insert(0, first);
+            //    }
+            //    else
+            //    {
+            //        _this = new StringConcat(new List<Expression>() { first, second });
+            //    }
+            //    return;
+            //}
+            if (first.ResultType == PredictedType.Number
+                && second.ResultType == PredictedType.Number)
             {
-                if (first is StringConcat)
-                {
-                    _this = first;
-                    (first as StringConcat).sources.Add(second);
-                }
-                else if (second is StringConcat)
-                {
-                    _this = second;
-                    (second as StringConcat).sources.Insert(0, first);
-                }
-                else
-                {
-                    _this = new StringConcat(new List<Expression>() { first, second });
-                }
+                _this = new NumberAddition(first, second);
+                return;
             }
         }
 

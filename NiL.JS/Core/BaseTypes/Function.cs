@@ -968,7 +968,7 @@ namespace NiL.JS.Core.BaseTypes
                 thisBind = body.strict ? undefined : internalContext.Root.thisBind;
             else if (thisBind.oValue == typeof(New) as object)
             {
-                thisBind.__proto__ = prototype.CloneImpl();
+                thisBind.__proto__ = prototype.oValue as JSObject ?? prototype;
                 thisBind.oValue = thisBind;
             }
             else if (internalContext != null)

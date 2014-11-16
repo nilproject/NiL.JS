@@ -122,7 +122,8 @@ namespace NiL.JS.Core.TypeProxing
                         {
                             _this.oValue = obj;
                             _this.valueType = JSObjectType.Object;
-                            _this.fields = (res.fields ?? (res.fields = createFields()));
+                            //_this.fields = (res.fields ?? (res.fields = createFields()));
+                            // из-за того, что GetMember сам дотягивается до объекта, можно попробовать убрать создание филдов
                             _this.__proto__ = res.__proto__;
                             res = _this;
                         }
@@ -142,8 +143,9 @@ namespace NiL.JS.Core.TypeProxing
                         res.valueType = JSObjectType.Object;
                         res.__proto__ = TypeProxy.GetPrototype(proxy.hostedType);
                         res.oValue = obj;
-                        if (res.fields == null)
-                            res.fields = createFields();
+                        //if (res.fields == null)
+                        //    res.fields = createFields();
+                        // из-за того, что GetMember сам дотягивается до объекта, можно попробовать убрать создание филдов
                         res.attributes = proxy.hostedType.IsDefined(typeof(ImmutableAttribute), false) ? JSObjectAttributesInternal.Immutable : JSObjectAttributesInternal.None;
                         if (obj is BaseTypes.Date)
                             res.valueType = JSObjectType.Date;

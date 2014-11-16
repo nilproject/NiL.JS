@@ -1063,10 +1063,10 @@ namespace NiL.JS.Statements
                         }
                     case '[':
                         {
-                            CodeNode mname = null;
+                            Expression mname = null;
                             do i++; while (char.IsWhiteSpace(state.Code[i]));
                             int startPos = i;
-                            mname = Parser.Parse(state, ref i, 1);
+                            mname = (Expression)Parser.Parse(state, ref i, 1);
                             if (mname == null)
                                 throw new JSException((new Core.BaseTypes.SyntaxError("Unexpected token at " + Tools.PositionToTextcord(state.Code, startPos))));
                             while (char.IsWhiteSpace(state.Code[i])) i++;
