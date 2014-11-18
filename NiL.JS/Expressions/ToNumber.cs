@@ -25,12 +25,6 @@ namespace NiL.JS.Expressions
             return Tools.JSObjectToNumber(first.Evaluate(context), tempContainer);
         }
 
-        internal override void Optimize(ref CodeNode _this, FunctionExpression owner)
-        {
-            if (first.ResultType == PredictedType.Number)
-                _this = first;
-        }
-
         public override string ToString()
         {
             return "+" + first;

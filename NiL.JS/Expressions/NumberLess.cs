@@ -52,6 +52,7 @@ namespace NiL.JS.Expressions
             else if (op.valueType == Core.JSObjectType.Double)
             {
                 dtemp = op.dValue;
+                op = second.Evaluate(context);
                 if (op.valueType == Core.JSObjectType.Int
                 || op.valueType == Core.JSObjectType.Bool)
                 {
@@ -69,7 +70,10 @@ namespace NiL.JS.Expressions
                 }
             }
             else
+            {
+                tempContainer.Assign(op);
                 return Less.Check(op, second.Evaluate(context));
+            }
         }
 
         public override string ToString()

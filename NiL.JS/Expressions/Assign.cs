@@ -81,6 +81,7 @@ namespace NiL.JS.Expressions
 
         internal override void Optimize(ref CodeNode _this, FunctionExpression owner)
         {
+            baseOptimize(owner);
             var vr = first as VariableReference;
             if (vr != null && vr.descriptor.isDefined)
             {

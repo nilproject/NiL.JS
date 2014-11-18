@@ -29,12 +29,12 @@ namespace NiL.JS.Expressions
             double dtemp;
             var op = first.Evaluate(context);
             if (op.valueType == Core.JSObjectType.Int
-            || op.valueType == Core.JSObjectType.Bool)
+                || op.valueType == Core.JSObjectType.Bool)
             {
                 itemp = op.iValue;
                 op = second.Evaluate(context);
                 if (op.valueType == Core.JSObjectType.Int
-                || op.valueType == Core.JSObjectType.Bool)
+                    || op.valueType == Core.JSObjectType.Bool)
                 {
                     return itemp > op.iValue;
                 }
@@ -52,8 +52,9 @@ namespace NiL.JS.Expressions
             else if (op.valueType == Core.JSObjectType.Double)
             {
                 dtemp = op.dValue;
+                op = second.Evaluate(context);
                 if (op.valueType == Core.JSObjectType.Int
-                || op.valueType == Core.JSObjectType.Bool)
+                    || op.valueType == Core.JSObjectType.Bool)
                 {
                     return dtemp > op.iValue;
                 }
@@ -69,7 +70,10 @@ namespace NiL.JS.Expressions
                 }
             }
             else
+            {
+                tempContainer.Assign(op);
                 return More.Check(op, second.Evaluate(context), false);
+            }
         }
 
         public override string ToString()
