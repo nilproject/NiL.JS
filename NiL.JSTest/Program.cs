@@ -264,16 +264,14 @@ for (var i = 0; i < 10000000; i++) abs(i * (1 - 2 * (i & 1)));
             var sw = new Stopwatch();
             var s = new Script(
 @"
-console.log(new Date(0));
-console.log(+new Date(0));
-console.log(new Date(1,1,1,1,1,1,1,1,1));
-console.log(+new Date(1,1,1,1,1,1,1,1,1));
-console.log(new Date('1980'));
-console.log(+new Date('1980'));
-console.log(Date.parse('Dec ((27) 26 (24)) 25 1995 1:30 PM UTC'));
+console.log(list.length);
+console.log(list[0]);
+console.log(list[1]);
+console.log(list[2]);
+console.log(list[3]);
 ");
-            var list = new List<uint[]>();
-            s.Context.DefineVariable("test").Assign(TypeProxy.Proxy(list));
+            var list = new List<int> { 1, 2, 3, 4, 5 };
+            s.Context.DefineVariable("list").Assign(new NativeList(list));
             sw.Start();
             s.Invoke();
             sw.Stop();
@@ -287,7 +285,7 @@ console.log(Date.parse('Dec ((27) 26 (24)) 25 1995 1:30 PM UTC'));
             Context.GlobalContext.DebuggerCallback += (sender, e) => System.Diagnostics.Debugger.Break();
             Context.GlobalContext.DefineVariable("alert").Assign(new ExternalFunction((t, a) => { System.Windows.Forms.MessageBox.Show(a[0].ToString()); return JSObject.Undefined; }));
 
-            int mode = 0
+            int mode = 3
                    ;
             switch (mode)
             {

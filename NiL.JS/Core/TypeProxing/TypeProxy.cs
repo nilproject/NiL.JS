@@ -72,6 +72,7 @@ namespace NiL.JS.Core.TypeProxing
         /// </summary>
         /// <param name="value">Объект, который необходимо представить.</param>
         /// <returns>Объект-прослойка, представляющий переданный объект.</returns>
+        /// <remarks>При изменении измени аналогичный блок в NativeList</remarks>
         public static JSObject Proxy(object value)
         {
             if (value == null)

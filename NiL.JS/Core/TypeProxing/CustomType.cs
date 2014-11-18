@@ -36,9 +36,9 @@ namespace NiL.JS.Core.TypeProxing
                 return GetType().ToString();
         }
 
-        internal protected override JSObject GetMember(JSObject name, bool fast, bool own)
+        internal protected override JSObject GetMember(JSObject name, bool forWrite, bool own)
         {
-            return DefaultFieldGetter(name, fast, own);
+            return DefaultFieldGetter(name, forWrite, own);
         }
 
         [Hidden]

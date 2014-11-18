@@ -253,6 +253,7 @@
     <Compile Include="Core\Modules\NotConfigurable.cs" />
     <Compile Include="Core\RegExpCreateExpression.cs" />
     <Compile Include="Core\StructureDefaultConstructorInfo.cs" />
+    <Compile Include="Core\TypeProxing\NativeList.cs" />
     <Compile Include="Core\VariableDescriptor.cs" />
     <Compile Include="Core\TypeProxing\GenericType.cs" />
     <Compile Include="Core\VariableReference.cs" />
