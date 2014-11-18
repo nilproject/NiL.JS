@@ -21,6 +21,8 @@
         <li>Support generators (Experimental. With some issues).</li>
         <li>99% of Sputnik tests passed.</li>
     </ul>
+    <a href="https://github.com/nilproject/NiL.JS/wiki/Samples">Samples</a>
+    <br/>
     <a href="https://www.nuget.org/packages/NiL.JS">Available in NuGet</a>
 </body>
 </html>
