@@ -320,7 +320,7 @@ namespace NiL.JS.Core.TypeProxing
                     if (eltype == typeof(byte) && v is ArrayBuffer)
                         return (v as ArrayBuffer).Data;
                     var ta = v as TypedArray;
-                    if (ta.ElementType == eltype)
+                    if (ta != null && ta.ElementType == eltype)
                         return ta.ToNativeArray();
                 }
             }

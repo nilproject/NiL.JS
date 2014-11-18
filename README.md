@@ -21,6 +21,22 @@
         <li>Support generators (Experimental. With some issues).</li>
         <li>99% of Sputnik tests passed.</li>
     </ul>
+    <p><strong>C#</strong></p>
+    <blockquote>
+<p>NiL.JS.Core.Context.GlobalContext.DefineVariable("alert").Assign(new ExternalFunction((thisBind, arguments) =&gt; {</p>
+
+<p>System.Windows.Forms.MessageBox.Show(arguments[0].ToString()); </p>
+
+<p>return JSObject.Undefined; // or null</p>
+
+<p>}));</p>
+</blockquote>
+    <p><strong>JavaScript</strong></p>
+    <blockquote>
+<p>alert("Hello!");</p>
+</blockquote>
+    <a href="https://github.com/nilproject/NiL.JS/wiki/Samples">Samples</a>
+    <br/><br/>
     <a href="https://www.nuget.org/packages/NiL.JS">Available in NuGet</a>
 </body>
 </html>
