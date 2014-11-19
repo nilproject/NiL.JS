@@ -155,7 +155,10 @@ namespace NiL.JS.Core.TypeProxing
         protected internal override JSObject GetMember(JSObject name, bool forWrite, bool own)
         {
             if (name.valueType == JSObjectType.String && string.CompareOrdinal("length", name.oValue.ToString()) == 0)
+            {
+                lenObj.iValue = data.Count;
                 return lenObj;
+            }
             bool isIndex = false;
             int index = 0;
             JSObject tname = name;
