@@ -23,12 +23,10 @@
     </ul>
     <p><strong>C#</strong></p>
     <blockquote>
-<p>NiL.JS.Core.Context.GlobalContext.DefineVariable("alert").Assign(new ExternalFunction((thisBind, arguments) =&gt; {</p>
-
+<p>NiL.JS.Core.Context.GlobalContext.DefineVariable("alert")
+<br/>           .Assign(new ExternalFunction((thisBind, arguments) =&gt; {</p>
 <p>System.Windows.Forms.MessageBox.Show(arguments[0].ToString()); </p>
-
 <p>return JSObject.Undefined; // or null</p>
-
 <p>}));</p>
 </blockquote>
     <p><strong>JavaScript</strong></p>
