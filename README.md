@@ -24,7 +24,7 @@
     <p><strong>C#</strong></p>
     <blockquote>
 NiL.JS.Core.Context.GlobalContext.DefineVariable("alert")
-<br/>&nbsp;.Assign(new ExternalFunction((thisBind, arguments) =&gt; {
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.Assign(new ExternalFunction((thisBind, arguments) =&gt; {
 System.Windows.Forms.MessageBox.Show(arguments[0].ToString());<br/>
 return JSObject.Undefined; // or null<br/>
 }));<br/>
