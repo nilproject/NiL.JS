@@ -49,6 +49,8 @@ namespace NiL.JS.Core
         {
             if (_length == null)
                 _length = 0;
+            if (args is PooledArguments)
+                args = (Arguments)args.CloneImpl();
             _length.iValue = proto.length.iValue;
             this.proto = proto;
             this.thisBind = args[0];

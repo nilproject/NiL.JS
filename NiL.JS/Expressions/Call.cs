@@ -1,4 +1,4 @@
-﻿//#define USEARGPOOL
+﻿#define USEARGPOOL
 
 using System;
 using System.Collections.Generic;
@@ -77,23 +77,25 @@ namespace NiL.JS.Expressions
 #if USEARGPOOL
                     if (func._arguments is PooledArguments)
                     {
-                        arguments = func._arguments as Arguments;
-                        arguments.Reset();
+                        lock (argumentsPool)
+                            if (argumentsPool.Count == 0)
+                                arguments = new PooledArguments();
+                            else
+                                arguments = argumentsPool.Pop();
+                        pool = true;
                     }
                     else
 #endif
-                    arguments = new Arguments();
+                        arguments = new Arguments();
                 }
                 else
                 {
 #if USEARGPOOL
-                    if (argumentsPool.Count == 0)
-                        arguments = new PooledArguments();
-                    else
-                    {
-                        arguments = argumentsPool.Pop();
-                        arguments.Reset();
-                    }
+                    lock (argumentsPool)
+                        if (argumentsPool.Count == 0)
+                            arguments = new PooledArguments();
+                        else
+                            arguments = argumentsPool.Pop();
                     pool = true;
 #else
                     arguments = new Arguments();
@@ -103,27 +105,44 @@ namespace NiL.JS.Expressions
                 try
                 {
 #endif
-                arguments.length = this.arguments.Length;
-                for (int i = 0; i < this.arguments.Length; i++)
-                    arguments[i] = prepareArg(context, this.arguments[i], tail);
-                arguments.caller = context.strict && context.caller != null && context.caller.creator.body.strict ? Function.propertiesDummySM : context.caller;
-                context.objectSource = null;
-                if (tail)
-                {
-                    for (var i = func.creator.body.localVariables.Length; i-- > 0; )
+                    arguments.length = this.arguments.Length;
+                    for (int i = 0; i < this.arguments.Length; i++)
+                        arguments[i] = prepareArg(context, this.arguments[i], tail);
+                    arguments.caller = context.strict && context.caller != null && context.caller.creator.body.strict ? Function.propertiesDummySM : context.caller;
+                    context.objectSource = null;
+                    if (tail)
                     {
-                        if (func.creator.body.localVariables[i].Inititalizator == null)
-                            func.creator.body.localVariables[i].cacheRes.Assign(JSObject.undefined);
+                        arguments.callee = func;
+                        for (var i = func.creator.body.localVariables.Length; i-- > 0; )
+                        {
+                            if (func.creator.body.localVariables[i].Inititalizator == null)
+                                func.creator.body.localVariables[i].cacheRes.Assign(JSObject.undefined);
+                        }
+                        if (pool)
+                        {
+                            (arguments as PooledArguments).CloneTo(func._arguments as Arguments);
+                            arguments.Reset();
+                            argumentsPool.Push(arguments);
+                        }
+                        else
+                        {
+                            func._arguments = arguments;
+                            if (context.fields != null && context.fields.ContainsKey("arguments"))
+                                context.fields["arguments"] = arguments;
+                        }
+                        return JSObject.undefined;
                     }
-                    func._arguments = arguments;
-                    return JSObject.undefined;
-                }
 #if USEARGPOOL
                 }
                 catch
                 {
-                    if (pool)
-                        argumentsPool.Push(arguments);
+                    lock (argumentsPool)
+                        if (pool)
+                        {
+                            arguments.Reset();
+                            argumentsPool.Push(arguments);
+                        }
+                    throw;
                 }
 #endif
             }
@@ -135,8 +154,12 @@ namespace NiL.JS.Expressions
             }
             finally
             {
-                if (pool)
-                    argumentsPool.Push(arguments);
+                lock (argumentsPool)
+                    if (pool)
+                    {
+                        arguments.Reset();
+                        argumentsPool.Push(arguments);
+                    }
             }
 #else
             return func.Invoke(newThisBind, arguments);

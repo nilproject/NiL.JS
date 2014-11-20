@@ -1306,7 +1306,7 @@ namespace NiL.JS.Core
                     throw new JSException(new TypeError("Cannot change value of not configurable not writable peoperty."));
                 //if ((obj.attributes & JSObjectAttributesInternal.ReadOnly) == 0 || obj.valueType == JSObjectType.Property)
                 {
-                    obj.valueType = JSObjectType.Undefined; // там могло быть Property, на которое мы ругаемся
+                    obj.valueType = JSObjectType.Undefined;
                     var atrbts = obj.attributes;
                     obj.attributes = 0;
                     obj.Assign(value);

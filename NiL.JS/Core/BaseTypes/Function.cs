@@ -645,8 +645,8 @@ namespace NiL.JS.Core.BaseTypes
             {
                 if (creator.body.strict)
                     throw new JSException(new TypeError("Property arguments not allowed in strict mode."));
-                //if (_arguments is PooledArguments)
-                //    _arguments = _arguments.CloneImpl();
+                if (_arguments is PooledArguments)
+                    _arguments = _arguments.CloneImpl();
                 return _arguments;
             }
             [CallOverloaded]
@@ -655,6 +655,7 @@ namespace NiL.JS.Core.BaseTypes
             {
                 if (creator.body.strict)
                     throw new JSException(new TypeError("Property arguments not allowed in strict mode."));
+                _arguments = value;
             }
         }
 

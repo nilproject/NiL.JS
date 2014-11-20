@@ -15,22 +15,24 @@ namespace NiL.JS.Expressions
         internal override JSObject EvaluateForAssing(Context context)
         {
             var res = context.caller._arguments;
-            //if (res is PooledArguments)
-            //    context.caller._arguments = res = res.CloneImpl();
-            if (res is Arguments)
+            if (res is PooledArguments)
             {
-                context.caller._arguments = res = res.CloneImpl();
-                if (context.fields != null && context.fields.ContainsKey(Name))
-                    context.fields[Name] = res;
+                context.caller._arguments = new JSObject();
+                context.caller._arguments.Assign(res);
+                res = context.caller._arguments;
             }
+            else if (res is Arguments)
+                context.caller._arguments = res = res.CloneImpl();
+            if (context.fields != null && context.fields.ContainsKey(Name))
+                context.fields[Name] = res;
             return res;
         }
 
         internal sealed override JSObject Evaluate(Context context)
         {
             var res = context.caller._arguments;
-            //if (res is PooledArguments)
-            //    context.caller._arguments = res = res.CloneImpl();
+            if (res is PooledArguments)
+                context.caller._arguments = res = res.CloneImpl();
             return res;
         }
     }

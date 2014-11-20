@@ -1,5 +1,8 @@
-﻿var a = 1;
-var b = 2;
-eval("a='1'");
-var c = a + b;
-console.log(c);
+﻿console.log((function () {
+    (function (x) {
+        if (x >= 0) return; return arguments.callee(x + 1);
+    })(-5);
+    function foo() { }
+    var obj = foo.bind({});
+    return obj.hasOwnProperty("arguments");
+})());
