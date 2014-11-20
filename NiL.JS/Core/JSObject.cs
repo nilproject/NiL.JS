@@ -105,7 +105,7 @@ namespace NiL.JS.Core
         [Hidden]
         public static JSObject Undefined { [Hidden] get { return undefined; } }
 
-        [Field]
+        [DoNotDelete]
         [DoNotEnumerate]
         [NotConfigurable]
         [CLSCompliant(false)]
