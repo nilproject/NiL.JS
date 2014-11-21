@@ -871,7 +871,7 @@ namespace NiL.JS.Core
 
         internal static Dictionary<string, JSObject> createFields(int p)
         {
-            return new Dictionary<string, JSObject>(p);
+            return new Dictionary<string, JSObject>(p, System.StringComparer.Ordinal);
         }
 
         [Hidden]
