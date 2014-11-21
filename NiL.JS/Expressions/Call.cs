@@ -227,6 +227,14 @@ namespace NiL.JS.Expressions
             }
         }
 
+        protected override CodeNode[] getChildsImpl()
+        {
+            var result = new CodeNode[arguments.Length + 1];
+            result[0] = first;
+            arguments.CopyTo(result, 1);
+            return result;
+        }
+
         public override string ToString()
         {
             string res = first + "(";
