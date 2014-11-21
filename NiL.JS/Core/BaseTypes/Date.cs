@@ -923,7 +923,7 @@ namespace NiL.JS.Core.BaseTypes
             try
             {
                 time -= timeZoneOffset;
-                if (time > 8702135600400000 || time < -8577864399600000 || error)
+                if (time > 8702135600400000 || time < -8577864410400000 || error)
                     throw new JSException(new RangeError("Invalid time value"));
                 var y = getYearImpl();
 
