@@ -1110,7 +1110,7 @@ namespace NiL.JS.Core.BaseTypes
         {
             var nargs = new Arguments();
             var argsSource = args[1];
-            if (argsSource.isDefinded)
+            if (argsSource.IsDefinded)
             {
                 if (argsSource.valueType < JSObjectType.Object)
                     throw new JSException(new TypeError("Argument list has wrong type."));

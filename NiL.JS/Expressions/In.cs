@@ -31,10 +31,10 @@ namespace NiL.JS.Expressions
             {
                 var array = source.oValue as Core.BaseTypes.Array;
                 if (array != null)
-                    return tempContainer.iValue >= 0 && tempContainer.iValue < array.data.Length && (array.data[tempContainer.iValue] ?? JSObject.notExists).isExist;
+                    return tempContainer.iValue >= 0 && tempContainer.iValue < array.data.Length && (array.data[tempContainer.iValue] ?? JSObject.notExists).IsExist;
             }
             var t = source.GetMember(tempContainer.ToString());
-            return t.isExist ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+            return t.IsExist ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
         }
 
         public override string ToString()

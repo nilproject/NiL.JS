@@ -1,8 +1,13 @@
 ﻿console.log((function () {
-    (function (x) {
-        if (x >= 0) return; return arguments.callee(x + 1);
-    })(-5);
-    function foo() { }
-    var obj = foo.bind({});
-    return obj.hasOwnProperty("arguments");
+    var arr = { length: 30 };
+    var targetObj = function () { };
+
+    var fromIndex = {
+        valueOf: function () {
+            arr[4] = targetObj;
+            return 3;
+        }
+    };
+
+    return 4 === Array.prototype.indexOf.call(arr, targetObj, fromIndex);
 })());

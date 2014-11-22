@@ -1267,7 +1267,7 @@ namespace NiL.JS.Core
                         if (element.Key >= _length) // эээ...
                             break;
                         var value = element.Value;
-                        if (value == null || !value.isExist)
+                        if (value == null || !value.IsExist)
                             continue;
                         if (!goDeep && System.Math.Abs(prew - element.Key) > 1)
                             goDeep = true;
@@ -1300,7 +1300,7 @@ namespace NiL.JS.Core
                     {
                         tjo.oValue = index.Value;
                         var value = src.GetMember(tjo, false, false);
-                        if (!value.isExist)
+                        if (!value.IsExist)
                             continue;
                         if (evalProps && value.valueType == JSObjectType.Property)
                             value = (value.oValue as PropertyPair).get == null ? JSObject.undefined : (value.oValue as PropertyPair).get.Invoke(src, null).CloneImpl();

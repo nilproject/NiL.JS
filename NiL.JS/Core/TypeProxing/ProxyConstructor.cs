@@ -80,7 +80,7 @@ namespace NiL.JS.Core.TypeProxing
         internal protected override JSObject GetMember(JSObject name, bool forWrite, bool own)
         {
             var res = proxy.GetMember(name, forWrite && own, own);
-            if (res.isExist || (own && forWrite))
+            if (res.IsExist || (own && forWrite))
             {
                 if (forWrite && res.isNeedClone)
                     res = proxy.GetMember(name, true, own);
@@ -91,6 +91,11 @@ namespace NiL.JS.Core.TypeProxing
                 && (res.valueType != JSObjectType.Property || (res.attributes & JSObjectAttributesInternal.Field) == 0))
                 return notExists; // если для записи, то первая ветка всё разрулит и сюда выполнение не придёт
             return res;
+        }
+
+        internal override bool DeleteMember(JSObject name)
+        {
+            return proxy.DeleteMember(name) && __proto__.DeleteMember(name);
         }
 
         [Hidden]

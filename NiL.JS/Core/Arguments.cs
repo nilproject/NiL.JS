@@ -216,7 +216,7 @@ namespace NiL.JS.Core
                 case "length":
                     {
                         if (_length == null)
-                            _length = new _LengthContainer(this) { valueType = JSObjectType.Int, iValue = length, attributes = JSObjectAttributesInternal.DoNotEnum };
+                            _length = new _LengthContainer(this) { valueType = JSObjectType.Int, iValue = length, attributes = JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.Reassign };
                         return _length;
                     }
                 case "callee":
@@ -243,21 +243,21 @@ namespace NiL.JS.Core
 
         protected internal override IEnumerator<string> GetEnumeratorImpl(bool hideNonEnum)
         {
-            if (a0 != null && a0.isExist && (!hideNonEnum || (a0.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+            if (a0 != null && a0.IsExist && (!hideNonEnum || (a0.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
                 yield return "0";
-            if (a1 != null && a1.isExist && (!hideNonEnum || (a1.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+            if (a1 != null && a1.IsExist && (!hideNonEnum || (a1.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
                 yield return "1";
-            if (a2 != null && a2.isExist && (!hideNonEnum || (a2.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+            if (a2 != null && a2.IsExist && (!hideNonEnum || (a2.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
                 yield return "2";
-            if (a3 != null && a3.isExist && (!hideNonEnum || (a3.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+            if (a3 != null && a3.IsExist && (!hideNonEnum || (a3.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
                 yield return "3";
-            if (a4 != null && a4.isExist && (!hideNonEnum || (a4.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+            if (a4 != null && a4.IsExist && (!hideNonEnum || (a4.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
                 yield return "4";
-            if (a5 != null && a5.isExist && (!hideNonEnum || (a5.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+            if (a5 != null && a5.IsExist && (!hideNonEnum || (a5.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
                 yield return "5";
-            if (a6 != null && a6.isExist && (!hideNonEnum || (a6.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+            if (a6 != null && a6.IsExist && (!hideNonEnum || (a6.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
                 yield return "6";
-            if (a7 != null && a7.isExist && (!hideNonEnum || (a7.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+            if (a7 != null && a7.IsExist && (!hideNonEnum || (a7.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
                 yield return "7";
             //if (a8 != null && a8.isExist && (!hideNonEnum || (a8.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
             //    yield return "8";
@@ -275,15 +275,61 @@ namespace NiL.JS.Core
             //    yield return "14";
             //if (a15 != null && a15.isExist && (!hideNonEnum || (a15.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
             //    yield return "15";
-            if (callee != null && callee.isExist && (!hideNonEnum || (callee.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+            if (callee != null && callee.IsExist && (!hideNonEnum || (callee.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
                 yield return "callee";
-            if (caller != null && callee.isExist && (!hideNonEnum || (caller.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+            if (caller != null && callee.IsExist && (!hideNonEnum || (caller.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
                 yield return "caller";
-            if (_length != null && _length.isExist && (!hideNonEnum || (_length.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+            if (_length != null && _length.IsExist && (!hideNonEnum || (_length.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
                 yield return "length";
             var be = base.GetEnumeratorImpl(hideNonEnum);
             while (be.MoveNext())
                 yield return be.Current;
+        }
+
+        internal override bool DeleteMember(JSObject name)
+        {
+            if (name.valueType == JSObjectType.Int)
+            {
+                switch (name.iValue)
+                {
+                    case 0:
+                        return a0 == null || ((a0.attributes & JSObjectAttributesInternal.DoNotDelete) == 0) && (a0 = null) == null;
+                    case 1:
+                        return a1 == null || ((a1.attributes & JSObjectAttributesInternal.DoNotDelete) == 0) && (a1 = null) == null;
+                    case 2:
+                        return a2 == null || ((a2.attributes & JSObjectAttributesInternal.DoNotDelete) == 0) && (a2 = null) == null;
+                    case 3:
+                        return a3 == null || ((a3.attributes & JSObjectAttributesInternal.DoNotDelete) == 0) && (a3 = null) == null;
+                    case 4:
+                        return a4 == null || ((a4.attributes & JSObjectAttributesInternal.DoNotDelete) == 0) && (a4 = null) == null;
+                    case 5:
+                        return a5 == null || ((a5.attributes & JSObjectAttributesInternal.DoNotDelete) == 0) && (a5 = null) == null;
+                    case 6:
+                        return a6 == null || ((a6.attributes & JSObjectAttributesInternal.DoNotDelete) == 0) && (a6 = null) == null;
+                    case 7:
+                        return a7 == null || ((a7.attributes & JSObjectAttributesInternal.DoNotDelete) == 0) && (a7 = null) == null;
+                }
+            }
+            switch (name.ToString())
+            {
+                case "0":
+                    return a0 == null || ((a0.attributes & JSObjectAttributesInternal.DoNotDelete) == 0) && (a0 = null) == null;
+                case "1":
+                    return a1 == null || ((a1.attributes & JSObjectAttributesInternal.DoNotDelete) == 0) && (a1 = null) == null;
+                case "2":
+                    return a2 == null || ((a2.attributes & JSObjectAttributesInternal.DoNotDelete) == 0) && (a2 = null) == null;
+                case "3":
+                    return a3 == null || ((a3.attributes & JSObjectAttributesInternal.DoNotDelete) == 0) && (a3 = null) == null;
+                case "4":
+                    return a4 == null || ((a4.attributes & JSObjectAttributesInternal.DoNotDelete) == 0) && (a4 = null) == null;
+                case "5":
+                    return a5 == null || ((a5.attributes & JSObjectAttributesInternal.DoNotDelete) == 0) && (a5 = null) == null;
+                case "6":
+                    return a6 == null || ((a6.attributes & JSObjectAttributesInternal.DoNotDelete) == 0) && (a6 = null) == null;
+                case "7":
+                    return a7 == null || ((a7.attributes & JSObjectAttributesInternal.DoNotDelete) == 0) && (a7 = null) == null;
+            }
+            return base.DeleteMember(name);
         }
 
         internal void Reset()

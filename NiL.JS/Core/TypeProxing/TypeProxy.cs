@@ -67,12 +67,6 @@ namespace NiL.JS.Core.TypeProxing
         }
         internal BindingFlags bindFlags = BindingFlags.Public;
 
-        /// <summary>
-        /// —оздаЄт объект-прослойку указанного объекта дл€ доступа к этому объекту из скрипта. 
-        /// </summary>
-        /// <param name="value">ќбъект, который необходимо представить.</param>
-        /// <returns>ќбъект-прослойка, представл€ющий переданный объект.</returns>
-        /// <remarks>ѕри изменении измени аналогичный блок в NativeList</remarks>
         public static JSObject Proxy(object value)
         {
             if (value == null)
@@ -252,8 +246,6 @@ namespace NiL.JS.Core.TypeProxing
                         {
                             if (temp != null && temp.Count > 1)
                             {
-                                // выбираетс€ последний наследник, 
-                                // объ€вивший член и удал€ютс€ все одноимЄнные члены предков.
                                 var type = temp[0].DeclaringType;
                                 for (var j = 1; j < temp.Count; j++)
                                 {
@@ -304,7 +296,7 @@ namespace NiL.JS.Core.TypeProxing
                     if (!create)
                     {
                         var t = DefaultFieldGetter(nameObj, false, own);
-                        if (t.isExist)
+                        if (t.IsExist)
                             r.Assign(t);
                     }
                 }
@@ -315,9 +307,9 @@ namespace NiL.JS.Core.TypeProxing
                     fields[name] = r = r.CloneImpl();
                 return r;
             }
-            IList<MemberInfo> m = null;
             if (members == null)
                 fillMembers();
+            IList<MemberInfo> m = null;
             members.TryGetValue(name, out m);
             if (m == null || m.Count == 0)
             {
@@ -501,12 +493,7 @@ namespace NiL.JS.Core.TypeProxing
                 r.attributes |= JSObjectAttributesInternal.DoNotEnum;
             lock (fields)
                 fields[name] = create && (r.attributes & (JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.SystemObject)) == JSObjectAttributesInternal.SystemObject ? (r = r.CloneImpl()) : r;
-            if (m[0].IsDefined(typeof(ReadOnlyAttribute), false))
-                r.attributes |= JSObjectAttributesInternal.ReadOnly;
-            if (m[0].IsDefined(typeof(NotConfigurable), false))
-                r.attributes |= JSObjectAttributesInternal.NotConfigurable;
-            if (m[0].IsDefined(typeof(DoNotDeleteAttribute), false))
-                r.attributes |= JSObjectAttributesInternal.DoNotDelete;
+
             for (var i = m.Count; i-- > 0; )
             {
                 if (!m[i].IsDefined(typeof(DoNotEnumerateAttribute), false))
@@ -514,8 +501,45 @@ namespace NiL.JS.Core.TypeProxing
                     r.attributes &= ~JSObjectAttributesInternal.DoNotEnum;
                     break;
                 }
+                if (m[i].IsDefined(typeof(ReadOnlyAttribute), false))
+                    r.attributes |= JSObjectAttributesInternal.ReadOnly;
+                if (m[i].IsDefined(typeof(NotConfigurable), false))
+                    r.attributes |= JSObjectAttributesInternal.NotConfigurable;
+                if (m[i].IsDefined(typeof(DoNotDeleteAttribute), false))
+                    r.attributes |= JSObjectAttributesInternal.DoNotDelete;
             }
             return r;
+        }
+
+        internal override bool DeleteMember(JSObject name)
+        {
+            if (members == null)
+                fillMembers();
+            string tname = null;
+            JSObject field = null;
+            if (fields != null
+                && fields.TryGetValue(tname = name.ToString(), out field)
+                && (!field.IsExist || (field.attributes & JSObjectAttributesInternal.DoNotDelete) == 0))
+            {
+                if ((field.attributes & JSObjectAttributesInternal.SystemObject) == 0)
+                    field.valueType = JSObjectType.NotExistsInObject;
+                return fields.Remove(tname) | members.Remove(tname); // it's not mistake
+            }
+            else
+            {
+                IList<MemberInfo> m = null;
+                if (members.TryGetValue(tname.ToString(), out m))
+                {
+                    for (var i = m.Count; i-- > 0; )
+                    {
+                        if (m[i].IsDefined(typeof(DoNotDeleteAttribute), false))
+                            return false;
+                    }
+                }
+                if (!members.Remove(tname) && prototypeInstance != null)
+                    return _prototypeInstance.DeleteMember(tname);
+            }
+            return true;
         }
 
         public override JSObject propertyIsEnumerable(Arguments args)
@@ -525,7 +549,7 @@ namespace NiL.JS.Core.TypeProxing
             var name = args[0].ToString();
             JSObject temp;
             if (fields != null && fields.TryGetValue(name, out temp))
-                return temp.isExist && (temp.attributes & JSObjectAttributesInternal.DoNotEnum) == 0;
+                return temp.IsExist && (temp.attributes & JSObjectAttributesInternal.DoNotEnum) == 0;
             IList<MemberInfo> m = null;
             if (members.TryGetValue(name, out m))
             {

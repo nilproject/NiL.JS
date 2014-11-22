@@ -285,7 +285,7 @@ namespace NiL.JS.Core.TypeProxing
             for (int i = len; i-- > 0; )
             {
                 var obj = source[i];
-                if (obj.isExist)
+                if (obj.IsExist)
                 {
                     res[i] = marshal(obj, parameters[i].ParameterType);
                     if (paramsConverters != null && paramsConverters[i] != null)

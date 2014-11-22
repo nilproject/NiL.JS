@@ -68,7 +68,7 @@ namespace NiL.JS.Core
         {
             double result = double.NaN;
             var radixo = args[1];
-            double dradix = radixo.isExist ? Tools.JSObjectToDouble(radixo) : 0;
+            double dradix = radixo.IsExist ? Tools.JSObjectToDouble(radixo) : 0;
             int radix;
             if (double.IsNaN(dradix) || double.IsInfinity(dradix))
                 radix = 0;

@@ -38,8 +38,8 @@ namespace NiL.JS.Expressions
                 var memberName = proto.FieldName.Evaluate(context);
                 context.objectSource = source;
                 var res = context.objectSource.GetMember(memberName, false, true);
-                if (res.isExist && (res.attributes & JSObjectAttributesInternal.SystemObject) != 0)
-                    return context.objectSource.GetMember(memberName, true, true);
+                if (res.IsExist && (res.attributes & JSObjectAttributesInternal.SystemObject) != 0)
+                    res = context.objectSource.GetMember(memberName, true, true);
                 return res;
             }
 
@@ -132,8 +132,13 @@ namespace NiL.JS.Expressions
                     throw new JSException(new SyntaxError("Can not evalute delete on variable in strict mode"));
                 (first as GetVariableExpression).suspendThrow = true;
             }
-            if (first is GetMemberExpression)
-                first = new SafeMemberGetter(first as GetMemberExpression);
+            var gme = first as GetMemberExpression;
+            if (gme != null)
+            {
+                //first = new SafeMemberGetter(gme);
+                _this = new DeleteMemberExpression(gme.first, gme.second);
+                return false;
+            }
             var f = first as VariableReference ?? ((first is OpAssignCache) ? (first as OpAssignCache).Source as VariableReference : null);
             if (f != null)
             {

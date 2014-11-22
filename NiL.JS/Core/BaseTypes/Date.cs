@@ -405,7 +405,7 @@ namespace NiL.JS.Core.BaseTypes
             {
                 for (var i = 0; i < 9 && !error; i++)
                 {
-                    if (args[i].isExist && !args[i].isDefinded)
+                    if (args[i].IsExist && !args[i].IsDefinded)
                     {
                         error = true;
                         return;
@@ -725,9 +725,9 @@ namespace NiL.JS.Core.BaseTypes
         [DoNotEnumerate]
         public JSObject setSeconds(JSObject seconds, JSObject milliseconds)
         {
-            if (seconds != null && seconds.isExist)
+            if (seconds != null && seconds.IsExist)
                 this.time = this.time + (-getSecondsImpl() + Tools.JSObjectToInt64(seconds)) * 1000;
-            if (milliseconds != null && milliseconds.isExist)
+            if (milliseconds != null && milliseconds.IsExist)
                 time = (time % 1000) + (Tools.JSObjectToInt64(milliseconds) % 1000);
             return seconds;
         }
@@ -735,9 +735,9 @@ namespace NiL.JS.Core.BaseTypes
         [DoNotEnumerate]
         public JSObject setUTCSeconds(JSObject seconds, JSObject milliseconds)
         {
-            if (seconds != null && seconds.isExist)
+            if (seconds != null && seconds.IsExist)
                 this.time = this.time + (-getSecondsImpl() + Tools.JSObjectToInt64(seconds)) * 1000;
-            if (milliseconds != null && milliseconds.isExist)
+            if (milliseconds != null && milliseconds.IsExist)
                 time = (time % 1000) + (Tools.JSObjectToInt64(milliseconds) % 1000);
             return seconds;
         }
@@ -745,7 +745,7 @@ namespace NiL.JS.Core.BaseTypes
         [DoNotEnumerate]
         public JSObject setMinutes(JSObject minutes, JSObject seconds, JSObject milliseconds)
         {
-            if (minutes != null && minutes.isExist)
+            if (minutes != null && minutes.IsExist)
                 this.time = this.time + (-getMinutesImpl() + Tools.JSObjectToInt64(minutes)) * _minuteMillisecond;
             setSeconds(seconds, milliseconds);
             return minutes;
@@ -754,7 +754,7 @@ namespace NiL.JS.Core.BaseTypes
         [DoNotEnumerate]
         public JSObject setUTCMinutes(JSObject minutes, JSObject seconds, JSObject milliseconds)
         {
-            if (minutes != null && minutes.isExist)
+            if (minutes != null && minutes.IsExist)
                 this.time = this.time + (-getMinutesImpl() + Tools.JSObjectToInt64(minutes)) * _minuteMillisecond;
             setSeconds(seconds, milliseconds);
             return minutes;
@@ -763,7 +763,7 @@ namespace NiL.JS.Core.BaseTypes
         [DoNotEnumerate]
         public JSObject setHours(JSObject hours, JSObject minutes, JSObject seconds, JSObject milliseconds)
         {
-            if (hours != null && hours.isExist)
+            if (hours != null && hours.IsExist)
                 this.time = this.time + (-getHoursImpl() + Tools.JSObjectToInt64(hours)) * _hourMilliseconds;
             setMinutes(minutes, seconds, milliseconds);
             return hours;
@@ -772,7 +772,7 @@ namespace NiL.JS.Core.BaseTypes
         [DoNotEnumerate]
         public JSObject setUTCHours(JSObject hours, JSObject minutes, JSObject seconds, JSObject milliseconds)
         {
-            if (hours != null && hours.isExist)
+            if (hours != null && hours.IsExist)
                 this.time = this.time + (-getHoursImpl() + Tools.JSObjectToInt64(hours)) * _hourMilliseconds;
             setMinutes(minutes, seconds, milliseconds);
             return hours;
@@ -781,7 +781,7 @@ namespace NiL.JS.Core.BaseTypes
         [DoNotEnumerate]
         public JSObject setDate(JSObject days)
         {
-            if (days != null && days.isExist)
+            if (days != null && days.IsExist)
                 this.time = this.time + (-getDateImpl() + Tools.JSObjectToInt64(days)) * _dayMilliseconds;
             return days;
         }
@@ -923,7 +923,7 @@ namespace NiL.JS.Core.BaseTypes
             try
             {
                 time -= timeZoneOffset;
-                if (time > 8702135600400000 || time < -8577864410400000 || error)
+                if (time > 8702135600400000 || time < -8577864406800000 || error)
                     throw new JSException(new RangeError("Invalid time value"));
                 var y = getYearImpl();
 

@@ -32,7 +32,7 @@ namespace NiL.JS.Expressions
                 lock (this)
                 {
                     if (setterArgs == null)
-                        setterArgs = new Arguments() { length = 1 };
+                        setterArgs = new Arguments();
                     var fieldSource = context.objectSource;
                     temp = second.Evaluate(context);
                     setterArgs.Reset();
@@ -90,6 +90,9 @@ namespace NiL.JS.Expressions
                 else
                     vr.descriptor.lastPredictedType = PredictedType.Ambiguous;
             }
+            var gme = first as GetMemberExpression;
+            if (gme != null)
+                _this = new SetMemberExpression(gme.first, gme.second, second);
         }
 
         public override string ToString()

@@ -1,4 +1,4 @@
-using System;
+п»їusing System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
@@ -214,7 +214,7 @@ namespace NiL.JS.Core.BaseTypes
                     if ((uint)element.Key < nlen)
                         break;
                     if (element.Value != null
-                        && element.Value.isExist
+                        && element.Value.IsExist
                         && (element.Value.attributes & JSObjectAttributesInternal.DoNotDelete) != 0)
                     {
                         nlen = element.Key;
@@ -223,7 +223,7 @@ namespace NiL.JS.Core.BaseTypes
                 }
                 if (!res)
                 {
-                    setLength(nlen + 1); // бесконечной рекурсии не может быть.
+                    setLength(nlen + 1); // ГЎГҐГ±ГЄГ®Г­ГҐГ·Г­Г®Г© Г°ГҐГЄГіГ°Г±ГЁГЁ Г­ГҐ Г¬Г®Г¦ГҐГІ ГЎГ»ГІГј.
                     return false;
                 }
             }
@@ -244,7 +244,7 @@ namespace NiL.JS.Core.BaseTypes
         {
             Array res = null;
             var lenObj = this.GetMember("length", true);
-            if (!lenObj.isDefinded)
+            if (!lenObj.IsDefinded)
             {
                 JSObject _this = this;
                 if (_this.valueType < JSObjectType.Object)
@@ -287,7 +287,7 @@ namespace NiL.JS.Core.BaseTypes
         {
             bool nativeMode = this.GetType() == typeof(Array);
             Array src = this;
-            if (!src.isDefinded || (src.valueType >= JSObjectType.Object && src.oValue == null))
+            if (!src.IsDefinded || (src.valueType >= JSObjectType.Object && src.oValue == null))
                 throw new JSException(new TypeError("Can not call Array.prototype.every for null or undefined"));
             if (!nativeMode)
                 src = Tools.iterableToArray(src, false, false, false);
@@ -314,11 +314,11 @@ namespace NiL.JS.Core.BaseTypes
             while (moved)
             {
                 moved = mainEnum.MoveNext();
-                while (moved && (mainEnum.Current.Value == null || !mainEnum.Current.Value.isExist))
+                while (moved && (mainEnum.Current.Value == null || !mainEnum.Current.Value.IsExist))
                     moved = mainEnum.MoveNext();
                 var element = mainEnum.Current;
                 uint key = (uint)element.Key;
-                if (!moved && (mainEnum.Current.Value == null || !mainEnum.Current.Value.isExist))
+                if (!moved && (mainEnum.Current.Value == null || !mainEnum.Current.Value.IsExist))
                     key = _length;
                 bool alter = false;
                 var value = element.Value;
@@ -335,7 +335,7 @@ namespace NiL.JS.Core.BaseTypes
                 {
                     if (alter)
                     {
-                        bool amoved = alternativeEnum.Current.Key > prew || alternativeEnum.MoveNext();
+                        bool amoved = (uint)alternativeEnum.Current.Key > prew || alternativeEnum.MoveNext();
                         while ((uint)alternativeEnum.Current.Key <= prew && amoved)
                             amoved = alternativeEnum.MoveNext();
                         if (amoved && (uint)alternativeEnum.Current.Key > prew
@@ -356,7 +356,7 @@ namespace NiL.JS.Core.BaseTypes
                         || (!alter && !moved))
                         break;
                     prew = key;
-                    if (value == null || !value.isExist)
+                    if (value == null || !value.IsExist)
                         continue;
                     if (value.valueType == JSObjectType.Property)
                         value = (value.oValue as PropertyPair).get == null ? undefined : (value.oValue as PropertyPair).get.Invoke(this, null);
@@ -376,7 +376,7 @@ namespace NiL.JS.Core.BaseTypes
         {
             bool nativeMode = this.GetType() == typeof(Array);
             Array src = this;
-            if (!src.isDefinded || (src.valueType >= JSObjectType.Object && src.oValue == null))
+            if (!src.IsDefinded || (src.valueType >= JSObjectType.Object && src.oValue == null))
                 throw new JSException(new TypeError("Can not call Array.prototype.some for null or undefined"));
             if (!nativeMode)
                 src = Tools.iterableToArray(src, false, false, false);
@@ -403,11 +403,11 @@ namespace NiL.JS.Core.BaseTypes
             while (moved)
             {
                 moved = mainEnum.MoveNext();
-                while (moved && (mainEnum.Current.Value == null || !mainEnum.Current.Value.isExist))
+                while (moved && (mainEnum.Current.Value == null || !mainEnum.Current.Value.IsExist))
                     moved = mainEnum.MoveNext();
                 var element = mainEnum.Current;
                 uint key = (uint)element.Key;
-                if (!moved && (mainEnum.Current.Value == null || !mainEnum.Current.Value.isExist))
+                if (!moved && (mainEnum.Current.Value == null || !mainEnum.Current.Value.IsExist))
                     key = _length;
                 bool alter = false;
                 var value = element.Value;
@@ -424,7 +424,7 @@ namespace NiL.JS.Core.BaseTypes
                 {
                     if (alter)
                     {
-                        bool amoved = alternativeEnum.Current.Key > prew || alternativeEnum.MoveNext();
+                        bool amoved = (uint)alternativeEnum.Current.Key > prew || alternativeEnum.MoveNext();
                         while ((uint)alternativeEnum.Current.Key <= prew && amoved)
                             amoved = alternativeEnum.MoveNext();
                         if (amoved && (uint)alternativeEnum.Current.Key > prew
@@ -445,7 +445,7 @@ namespace NiL.JS.Core.BaseTypes
                         || (!alter && !moved))
                         break;
                     prew = key;
-                    if (value == null || !value.isExist)
+                    if (value == null || !value.IsExist)
                         continue;
                     if (value.valueType == JSObjectType.Property)
                         value = (value.oValue as PropertyPair).get == null ? undefined : (value.oValue as PropertyPair).get.Invoke(this, null);
@@ -465,7 +465,7 @@ namespace NiL.JS.Core.BaseTypes
         {
             bool nativeMode = this.GetType() == typeof(Array);
             Array src = this;
-            if (!src.isDefinded || (src.valueType >= JSObjectType.Object && src.oValue == null))
+            if (!src.IsDefinded || (src.valueType >= JSObjectType.Object && src.oValue == null))
                 throw new JSException(new TypeError("Can not call Array.prototype.filter for null or undefined"));
             if (!nativeMode)
                 src = Tools.iterableToArray(src, false, false, false);
@@ -493,11 +493,11 @@ namespace NiL.JS.Core.BaseTypes
             while (moved)
             {
                 moved = mainEnum.MoveNext();
-                while (moved && (mainEnum.Current.Value == null || !mainEnum.Current.Value.isExist))
+                while (moved && (mainEnum.Current.Value == null || !mainEnum.Current.Value.IsExist))
                     moved = mainEnum.MoveNext();
                 var element = mainEnum.Current;
                 uint key = (uint)element.Key;
-                if (!moved && (mainEnum.Current.Value == null || !mainEnum.Current.Value.isExist))
+                if (!moved && (mainEnum.Current.Value == null || !mainEnum.Current.Value.IsExist))
                     key = _length;
                 bool alter = false;
                 var value = element.Value;
@@ -514,7 +514,7 @@ namespace NiL.JS.Core.BaseTypes
                 {
                     if (alter)
                     {
-                        bool amoved = alternativeEnum.Current.Key > prew || alternativeEnum.MoveNext();
+                        bool amoved = (uint)alternativeEnum.Current.Key > prew || alternativeEnum.MoveNext();
                         while ((uint)alternativeEnum.Current.Key <= prew && amoved)
                             amoved = alternativeEnum.MoveNext();
                         if (amoved && (uint)alternativeEnum.Current.Key > prew
@@ -535,7 +535,7 @@ namespace NiL.JS.Core.BaseTypes
                         || (!alter && !moved))
                         break;
                     prew = key;
-                    if (value == null || !value.isExist)
+                    if (value == null || !value.IsExist)
                         continue;
                     if (value.valueType == JSObjectType.Property)
                         value = (value.oValue as PropertyPair).get == null ? undefined : (value.oValue as PropertyPair).get.Invoke(this, null);
@@ -559,7 +559,7 @@ namespace NiL.JS.Core.BaseTypes
         {
             bool nativeMode = this.GetType() == typeof(Array);
             Array src = this;
-            if (!src.isDefinded || (src.valueType >= JSObjectType.Object && src.oValue == null))
+            if (!src.IsDefinded || (src.valueType >= JSObjectType.Object && src.oValue == null))
                 throw new JSException(new TypeError("Can not call Array.prototype.map for null or undefined"));
             if (!nativeMode)
                 src = Tools.iterableToArray(src, false, false, false);
@@ -587,11 +587,11 @@ namespace NiL.JS.Core.BaseTypes
             while (moved)
             {
                 moved = mainEnum.MoveNext();
-                while (moved && (mainEnum.Current.Value == null || !mainEnum.Current.Value.isExist))
+                while (moved && (mainEnum.Current.Value == null || !mainEnum.Current.Value.IsExist))
                     moved = mainEnum.MoveNext();
                 var element = mainEnum.Current;
                 uint key = (uint)element.Key;
-                if (!moved && (mainEnum.Current.Value == null || !mainEnum.Current.Value.isExist))
+                if (!moved && (mainEnum.Current.Value == null || !mainEnum.Current.Value.IsExist))
                     key = _length;
                 bool alter = false;
                 var value = element.Value;
@@ -608,7 +608,7 @@ namespace NiL.JS.Core.BaseTypes
                 {
                     if (alter)
                     {
-                        bool amoved = alternativeEnum.Current.Key > prew || alternativeEnum.MoveNext();
+                        bool amoved = (uint)alternativeEnum.Current.Key > prew || alternativeEnum.MoveNext();
                         while ((uint)alternativeEnum.Current.Key <= prew && amoved)
                             amoved = alternativeEnum.MoveNext();
                         if (amoved && (uint)alternativeEnum.Current.Key > prew
@@ -629,7 +629,7 @@ namespace NiL.JS.Core.BaseTypes
                         || (!alter && !moved))
                         break;
                     prew = key;
-                    if (value == null || !value.isExist)
+                    if (value == null || !value.IsExist)
                         continue;
                     if (value.valueType == JSObjectType.Property)
                         value = (value.oValue as PropertyPair).get == null ? undefined : (value.oValue as PropertyPair).get.Invoke(this, null);
@@ -649,7 +649,7 @@ namespace NiL.JS.Core.BaseTypes
         {
             bool nativeMode = this.GetType() == typeof(Array);
             Array src = this;
-            if (!src.isDefinded || (src.valueType >= JSObjectType.Object && src.oValue == null))
+            if (!src.IsDefinded || (src.valueType >= JSObjectType.Object && src.oValue == null))
                 throw new JSException(new TypeError("Can not call Array.prototype.forEach for null or undefined"));
             if (!nativeMode)
                 src = Tools.iterableToArray(src, false, false, false);
@@ -676,11 +676,11 @@ namespace NiL.JS.Core.BaseTypes
             while (moved)
             {
                 moved = mainEnum.MoveNext();
-                while (moved && (mainEnum.Current.Value == null || !mainEnum.Current.Value.isExist))
+                while (moved && (mainEnum.Current.Value == null || !mainEnum.Current.Value.IsExist))
                     moved = mainEnum.MoveNext();
                 var element = mainEnum.Current;
                 uint key = (uint)element.Key;
-                if (!moved && (mainEnum.Current.Value == null || !mainEnum.Current.Value.isExist))
+                if (!moved && (mainEnum.Current.Value == null || !mainEnum.Current.Value.IsExist))
                     key = _length;
                 bool alter = false;
                 var value = element.Value;
@@ -697,7 +697,7 @@ namespace NiL.JS.Core.BaseTypes
                 {
                     if (alter)
                     {
-                        bool amoved = alternativeEnum.Current.Key > prew || alternativeEnum.MoveNext();
+                        bool amoved = (uint)alternativeEnum.Current.Key > prew || alternativeEnum.MoveNext();
                         while ((uint)alternativeEnum.Current.Key <= prew && amoved)
                             amoved = alternativeEnum.MoveNext();
                         if (amoved && (uint)alternativeEnum.Current.Key > prew
@@ -718,7 +718,7 @@ namespace NiL.JS.Core.BaseTypes
                         || (!alter && !moved))
                         break;
                     prew = key;
-                    if (value == null || !value.isExist)
+                    if (value == null || !value.IsExist)
                         continue;
                     if (value.valueType == JSObjectType.Property)
                         value = (value.oValue as PropertyPair).get == null ? undefined : (value.oValue as PropertyPair).get.Invoke(this, null);
@@ -735,94 +735,77 @@ namespace NiL.JS.Core.BaseTypes
         [AllowUnsafeCall(typeof(JSObject))]
         public JSObject indexOf(Arguments args)
         {
-            if (args == null)
-                throw new ArgumentNullException("args");
-            var el = args[0];
-            JSObject src = this;
-            if (!src.isDefinded || (src.valueType >= JSObjectType.Object && src.oValue == null))
-                throw new JSException(new TypeError("Can not call Array.prototype.indexOf for null or undefined"));
-            long _length = -1;
-            HashSet<string> processedKeys = null;
-            for (; ; )
+            bool nativeMode = this.GetType() == typeof(Array);
+            Array src = this;
+            if (!src.IsDefinded || (src.valueType >= JSObjectType.Object && src.oValue == null))
+                throw new JSException(new TypeError("Can not call Array.prototype.every for null or undefined"));
+
+            var _length = nativeMode ? (src as Array).data.Length : Tools.getLengthOfIterably(src, false);
+            var fromIndex = args.length > 1 ? Tools.JSObjectToInt64(args[1], 0, true) : 0;
+            if (fromIndex < 0)
+                fromIndex += _length;
+
+            if (!nativeMode)
+                src = Tools.iterableToArray(src, false, false, false, _length);
+
+            JSObject image = args[0];
+            IEnumerator<KeyValuePair<int, JSObject>> alternativeEnum = null;
+            long prew = fromIndex - 1;
+            var mainEnum = ((src as Array).data as IEnumerable<KeyValuePair<int, JSObject>>).GetEnumerator();
+            bool moved = true;
+            while (moved)
             {
-                if (src.GetType() == typeof(Array))
+                moved = mainEnum.MoveNext();
+                while (moved && ((uint)mainEnum.Current.Key < fromIndex || mainEnum.Current.Value == null || !mainEnum.Current.Value.IsExist))
+                    moved = mainEnum.MoveNext();
+                var element = mainEnum.Current;
+                uint key = (uint)element.Key;
+                if (!moved && (mainEnum.Current.Value == null || !mainEnum.Current.Value.IsExist))
+                    key = (uint)_length;
+                bool alter = false;
+                var value = element.Value;
+                if (key - prew > 1 || (!moved && key < _length))
                 {
-                    if (_length == -1)
-                        _length = (src as Array).data.Length;
-                    var fromIndex = Tools.JSObjectToInt64(args[1], 0, true);
-                    if (fromIndex < 0)
-                        fromIndex += _length;
-                    var len = _length;
-                    foreach (var element in ((src as Array).data as IEnumerable<KeyValuePair<int, JSObject>>))
+                    if (alternativeEnum == null)
                     {
-                        if (element.Key >= len) // эээ...
-                            break;
-                        var value = element.Value;
-                        if (value == null || !value.isExist)
-                            continue;
-                        if (value.valueType == JSObjectType.Property)
-                            value = (value.oValue as PropertyPair).get == null ? undefined : (value.oValue as PropertyPair).get.Invoke(src, null);
-                        if (processedKeys != null)
-                        {
-                            var sk = element.Key.ToString();
-                            if (processedKeys.Contains(sk))
-                                continue;
-                            processedKeys.Add(sk);
-                        }
-                        if ((uint)element.Key >= fromIndex && Expressions.StrictEqual.Check(value, el, null))
-                            return Context.CurrentContext.wrap((uint)element.Key);
+                        alternativeEnum = (Tools.iterableToArray(this.__proto__, false, false, false, _length).data as IEnumerable<KeyValuePair<int, JSObject>>).GetEnumerator();
+                        alternativeEnum.MoveNext();
                     }
+                    alter = true;
                 }
-                else
+                do
                 {
-                    if (src.valueType == JSObjectType.String)
-                        return (src["indexOf"].oValue as Function).Invoke(src, args);
-                    if (_length == -1)
+                    if (alter)
                     {
-                        _length = Tools.getLengthOfIterably(src, false);
-                    }
-                    var fromIndex = Tools.JSObjectToInt64(args[1], 0, true);
-                    if (fromIndex < 0)
-                        fromIndex += _length;
-                    var @enum = src.GetEnumeratorImpl(false);
-                    while (@enum.MoveNext())
-                    {
-                        var i = @enum.Current;
-                        var pindex = 0;
-                        var dindex = 0.0;
-                        long lindex = 0;
-                        if (Tools.ParseNumber(i, ref pindex, out dindex)
-                            && (pindex == i.Length)
-                            && dindex < _length
-                            && (lindex = (long)dindex) == dindex)
+                        bool amoved = (uint)alternativeEnum.Current.Key > prew || alternativeEnum.MoveNext();
+                        while ((uint)alternativeEnum.Current.Key <= prew && amoved)
+                            amoved = alternativeEnum.MoveNext();
+                        if (amoved && (uint)alternativeEnum.Current.Key > prew
+                                   && ((uint)alternativeEnum.Current.Key < (uint)element.Key
+                                        || !moved && (uint)alternativeEnum.Current.Key < _length))
                         {
-                            var temp = src[i];
-                            if (temp.valueType == JSObjectType.Property)
-                                temp = (temp.oValue as PropertyPair).get == null ? undefined : (temp.oValue as PropertyPair).get.Invoke(src, null);
-                            if (!temp.isExist)
-                                continue;
-                            if (processedKeys != null)
-                            {
-                                var sk = lindex.ToString();
-                                if (processedKeys.Contains(sk))
-                                    continue;
-                                processedKeys.Add(sk);
-                            }
-                            if (lindex >= fromIndex && Expressions.StrictEqual.Check(temp, el, null))
-                            {
-                                return lindex;
-                            }
+                            key = (uint)alternativeEnum.Current.Key;
+                            value = alternativeEnum.Current.Value;
+                        }
+                        else
+                        {
+                            alter = false;
+                            value = element.Value;
+                            key = (uint)element.Key;
                         }
                     }
+                    if (key >= _length
+                        || (!alter && !moved))
+                        break;
+                    prew = key;
+                    if (value == null || !value.IsExist)
+                        continue;
+                    if (value.valueType == JSObjectType.Property)
+                        value = (value.oValue as PropertyPair).get == null ? undefined : (value.oValue as PropertyPair).get.Invoke(this, null);
+                    if (Expressions.StrictEqual.Check(value, image, null))
+                        return key;
                 }
-                var crnt = src;
-                if (src.__proto__ == Null)
-                    break;
-                src = src.__proto__;
-                if (src == null || (src.valueType >= JSObjectType.String && src.oValue == null))
-                    break;
-                if (processedKeys == null)
-                    processedKeys = new HashSet<string>(crnt);
+                while (alter);
             }
             return -1;
         }
@@ -839,7 +822,7 @@ namespace NiL.JS.Core.BaseTypes
         [AllowUnsafeCall(typeof(JSObject))]
         public JSObject join(Arguments separator)
         {
-            return joinImpl(separator == null || separator.length == 0 || !separator[0].isDefinded ? "," : separator[0].ToString(), false);
+            return joinImpl(separator == null || separator.length == 0 || !separator[0].IsDefinded ? "," : separator[0].ToString(), false);
         }
 
         private string joinImpl(string separator, bool locale)
@@ -859,8 +842,8 @@ namespace NiL.JS.Core.BaseTypes
                     for (var i = 0L; i < (long)_data.Length; i++)
                     {
                         t = _data[(int)i];
-                        if (((t != null && t.isExist) || null != (t = this.GetMember(i.ToString(), false, false)))
-                            && t.isDefinded)
+                        if (((t != null && t.IsExist) || null != (t = this.GetMember(i.ToString(), false, false)))
+                            && t.IsDefinded)
                         {
                             if (t.valueType < JSObjectType.String || t.oValue != null)
                                 sb.Append(locale ? t.ToPrimitiveValue_LocaleString_Value() : t.ToPrimitiveValue_String_Value());
@@ -885,111 +868,77 @@ namespace NiL.JS.Core.BaseTypes
         [AllowUnsafeCall(typeof(JSObject))]
         public JSObject lastIndexOf(Arguments args)
         {
-            if (args == null)
-                throw new ArgumentNullException("args");
-            var el = args[0];
-            JSObject src = this;
-            if (!src.isDefinded || (src.valueType >= JSObjectType.Object && src.oValue == null))
-                throw new JSException(new TypeError("Can not call Array.prototype.indexOf for null or undefined"));
-            HashSet<string> processedKeys = null;
-            long _length = -1;
-            for (; ; )
+            bool nativeMode = this.GetType() == typeof(Array);
+            Array src = this;
+            if (!src.IsDefinded || (src.valueType >= JSObjectType.Object && src.oValue == null))
+                throw new JSException(new TypeError("Can not call Array.prototype.every for null or undefined"));
+
+            var _length = nativeMode ? (src as Array).data.Length : Tools.getLengthOfIterably(src, false);
+            var fromIndex = args.length > 1 ? Tools.JSObjectToInt64(args[1], 0, true) : _length;
+            if (fromIndex < 0)
+                fromIndex += _length;
+
+            if (!nativeMode)
+                src = Tools.iterableToArray(src, false, false, false, _length);
+
+            JSObject image = args[0];
+            IEnumerator<KeyValuePair<int, JSObject>> alternativeEnum = null;
+            long prew = fromIndex + 1;
+            var mainEnum = (src as Array).data.Reversed.GetEnumerator();
+            bool moved = true;
+            while (moved)
             {
-                if (src.GetType() == typeof(Array))
+                moved = mainEnum.MoveNext();
+                while (moved && ((uint)mainEnum.Current.Key > fromIndex || mainEnum.Current.Value == null || !mainEnum.Current.Value.IsExist))
+                    moved = mainEnum.MoveNext();
+                var element = mainEnum.Current;
+                uint key = (uint)element.Key;
+                if (!moved && (mainEnum.Current.Value == null || !mainEnum.Current.Value.IsExist))
+                    key = 0;
+                bool alter = false;
+                var value = element.Value;
+                if (prew - key > 1 || !moved)
                 {
-                    if (_length == -1)
+                    if (alternativeEnum == null)
                     {
-                        _length = (src as Array).data.Length;
-                        long pos = long.MaxValue;
-                        if (args.Length > 1)
-                            pos = Tools.JSObjectToInt64(args[1], 0, true);
-                        if (pos < 0)
-                            _length = pos + _length + 1;
-                        else if (pos < _length)
-                            _length = pos + 1;
+                        alternativeEnum = Tools.iterableToArray(this.__proto__, false, false, false, _length).data.Reversed.GetEnumerator();
+                        alternativeEnum.MoveNext();
                     }
-                    foreach (var element in (src as Array).data.Reversed)
-                    {
-                        if ((uint)element.Key >= _length
-                               || element.Value == null
-                               || !element.Value.isExist)
-                            continue;
-                        var item = element.Value;
-                        if (item.valueType == JSObjectType.Property)
-                            item = (item.oValue as PropertyPair).get == null ? undefined : (item.oValue as PropertyPair).get.Invoke(src, null);
-                        if (processedKeys != null)
-                        {
-                            var sk = element.Key.ToString();
-                            if (processedKeys.Contains(sk))
-                                continue;
-                            processedKeys.Add(sk);
-                        }
-                        if (Expressions.StrictEqual.Check(item, el, null))
-                            return Context.CurrentContext.wrap((uint)element.Key);
-                    }
+                    alter = true;
                 }
-                else
+                do
                 {
-                    if (src.valueType == JSObjectType.String)
-                        return (src["lastIndexOf"].oValue as Function).Invoke(src, args);
-                    if (_length == -1)
+                    if (alter)
                     {
-                        var len = src["length"]; // тут же проверка на null/undefined с падением если надо
-                        if (!len.isDefinded)
-                            return -1;
-                        if (len.valueType == JSObjectType.Property)
-                            len = ((len.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(src, null);
-                        if (len.valueType >= JSObjectType.Object)
-                            len = len.ToPrimitiveValue_Value_String();
-                        _length = (uint)Tools.JSObjectToInt64(len);
-                        long pos = long.MaxValue;
-                        if (args.Length > 1)
-                            pos = Tools.JSObjectToInt64(args[1], 0, true);
-                        if (pos < 0)
-                            _length = pos + _length + 1;
-                        else if (pos < _length)
-                            _length = pos + 1;
-                    }
-                    long result = -1;
-                    var @enum = src.GetEnumeratorImpl(false);
-                    while (@enum.MoveNext())
-                    {
-                        var i = @enum.Current;
-                        var pindex = 0;
-                        var dindex = 0.0;
-                        long lindex = 0;
-                        if (Tools.ParseNumber(i, ref pindex, out dindex)
-                            && (pindex == i.Length)
-                            && dindex < _length
-                            && (lindex = (long)dindex) == dindex)
+                        bool amoved = (uint)alternativeEnum.Current.Key < prew || alternativeEnum.MoveNext();
+                        while ((uint)alternativeEnum.Current.Key >= prew && amoved)
+                            amoved = alternativeEnum.MoveNext();
+                        if (amoved && (uint)alternativeEnum.Current.Key < prew
+                                   && ((uint)alternativeEnum.Current.Key > (uint)element.Key
+                                        || !moved))
                         {
-                            if (processedKeys != null)
-                            {
-                                var sk = lindex.ToString();
-                                if (processedKeys.Contains(sk))
-                                    continue;
-                                processedKeys.Add(sk);
-                            }
-                            var item = this[i];
-                            if (item.valueType == JSObjectType.Property)
-                                item = (item.oValue as PropertyPair).get == null ? undefined : (item.oValue as PropertyPair).get.Invoke(src, null);
-                            if (item.isExist && Expressions.StrictEqual.Check(item, el, null))
-                            {
-                                result = lindex;
-                            }
+                            key = (uint)alternativeEnum.Current.Key;
+                            value = alternativeEnum.Current.Value;
+                        }
+                        else
+                        {
+                            alter = false;
+                            value = element.Value;
+                            key = (uint)element.Key;
                         }
                     }
-                    if (result != -1)
-                        return result;
+                    if (key >= _length
+                        || (!alter && !moved))
+                        break;
+                    prew = key;
+                    if (value == null || !value.IsExist)
+                        continue;
+                    if (value.valueType == JSObjectType.Property)
+                        value = (value.oValue as PropertyPair).get == null ? undefined : (value.oValue as PropertyPair).get.Invoke(this, null);
+                    if (Expressions.StrictEqual.Check(value, image, null))
+                        return key;
                 }
-                var crnt = src;
-                if (src.__proto__ == Null)
-                    break;
-                src = src.__proto__;
-                if (src == null || (src.valueType >= JSObjectType.String && src.oValue == null))
-                    break;
-                if (processedKeys == null)
-                    processedKeys = new HashSet<string>(crnt);
+                while (alter);
             }
             return -1;
         }
@@ -1077,13 +1026,13 @@ namespace NiL.JS.Core.BaseTypes
                     var item0 = data[(int)(data.Length - 1 - i)];
                     var item1 = data[(int)(i)];
                     JSObject value0, value1;
-                    if (item0 == null || !item0.isExist)
+                    if (item0 == null || !item0.IsExist)
                         item0 = __proto__[(data.Length - 1 - i).ToString()];
                     if (item0.valueType == JSObjectType.Property)
                         value0 = ((item0.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(this, null).CloneImpl();
                     else
                         value0 = item0;
-                    if (item1 == null || !item1.isExist)
+                    if (item1 == null || !item1.IsExist)
                         item1 = __proto__[i.ToString()];
                     if (item1.valueType == JSObjectType.Property)
                         value1 = ((item1.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(this, null).CloneImpl();
@@ -1097,7 +1046,7 @@ namespace NiL.JS.Core.BaseTypes
                         args.a0 = item1;
                         ((item0.oValue as PropertyPair).set ?? Function.emptyFunction).Invoke(this, args);
                     }
-                    else if (value1.isExist)
+                    else if (value1.IsExist)
                         data[(int)(data.Length - 1 - i)] = value1;
                     else if (item0 != null)
                         data[(int)(data.Length - 1 - i)] = null;
@@ -1110,7 +1059,7 @@ namespace NiL.JS.Core.BaseTypes
                         args.a0 = item0;
                         ((item1.oValue as PropertyPair).set ?? Function.emptyFunction).Invoke(this, args);
                     }
-                    else if (value0.isExist)
+                    else if (value0.IsExist)
                         data[(int)i] = value0;
                     else if (item1 != null)
                         data[(int)i] = null;
@@ -1146,7 +1095,7 @@ namespace NiL.JS.Core.BaseTypes
                             args.a0 = value1;
                             ((item0.oValue as PropertyPair).set ?? Function.emptyFunction).Invoke(this, args);
                         }
-                        else if (value1.isExist)
+                        else if (value1.IsExist)
                             this.GetMember(i0, true, true).Assign(value1);
                         else
                         {
@@ -1165,7 +1114,7 @@ namespace NiL.JS.Core.BaseTypes
                             args.a0 = value0;
                             ((item1.oValue as PropertyPair).set ?? Function.emptyFunction).Invoke(this, args);
                         }
-                        else if (value0.isExist)
+                        else if (value0.IsExist)
                             this.GetMember(i1, true, true).Assign(value0);
                         else
                         {
@@ -1196,9 +1145,9 @@ namespace NiL.JS.Core.BaseTypes
                 };
             }
             var src = this;
-            //if (this.GetType() != typeof(Array)) // при переборе должны быть получены значения из прототипов. 
-            // Если просто запрашивать пропущенные индексы, то может быть большое падение производительности в случаях
-            // когда пропуски очень огромны и элементов реально нет ни здесь, ни в прототипе
+            //if (this.GetType() != typeof(Array)) // РїСЂРё РїРµСЂРµР±РѕСЂРµ РґРѕР»Р¶РЅС‹ Р±С‹С‚СЊ РїРѕР»СѓС‡РµРЅС‹ Р·РЅР°С‡РµРЅРёСЏ РёР· РїСЂРѕС‚РѕС‚РёРїРѕРІ. 
+            // Р•СЃР»Рё РїСЂРѕСЃС‚Рѕ Р·Р°РїСЂР°С€РёРІР°С‚СЊ РїСЂРѕРїСѓС‰РµРЅРЅС‹Рµ РёРЅРґРµРєСЃС‹, С‚Рѕ РјРѕР¶РµС‚ Р±С‹С‚СЊ Р±РѕР»СЊС€РѕРµ РїР°РґРµРЅРёРµ РїСЂРѕРёР·РІРѕРґРёС‚РµР»СЊРЅРѕСЃС‚Рё РІ СЃР»СѓС‡Р°СЏС…
+            // РєРѕРіРґР° РїСЂРѕРїСѓСЃРєРё РѕС‡РµРЅСЊ РѕРіСЂРѕРјРЅС‹ Рё СЌР»РµРјРµРЅС‚РѕРІ СЂРµР°Р»СЊРЅРѕ РЅРµС‚ РЅРё Р·РґРµСЃСЊ, РЅРё РІ РїСЂРѕС‚РѕС‚РёРїРµ
             src = Tools.iterableToArray(this, false, false, false);
             var func = args[0].oValue as Function;
             var accum = new JSObject() { valueType = JSObjectType.NotExists };
@@ -1225,7 +1174,7 @@ namespace NiL.JS.Core.BaseTypes
             {
                 if (this.GetType() == typeof(Array) && this.data.Length <= (uint)element.Key)
                     break;
-                if (element.Value == null || !element.Value.isExist)
+                if (element.Value == null || !element.Value.IsExist)
                     continue;
                 args[0] = accum;
                 if (element.Value.valueType == JSObjectType.Property)
@@ -1300,7 +1249,7 @@ namespace NiL.JS.Core.BaseTypes
             {
                 if (this.GetType() == typeof(Array) && this.data.Length <= (uint)element.Key)
                     continue;
-                if (element.Value == null || !element.Value.isExist)
+                if (element.Value == null || !element.Value.IsExist)
                     continue;
                 args[0] = accum;
                 if (element.Value.valueType == JSObjectType.Property)
@@ -1345,7 +1294,7 @@ namespace NiL.JS.Core.BaseTypes
                 var res = data[0];
                 try
                 {
-                    if (res == null || !res.isExist)
+                    if (res == null || !res.IsExist)
                         res = __proto__["0"];
                 }
                 catch
@@ -1385,7 +1334,7 @@ namespace NiL.JS.Core.BaseTypes
                     {
                         if (item.Value != null)
                         {
-                            if (item.Value.isExist)
+                            if (item.Value.IsExist)
                                 data[item.Key - 1] = value;
                             if (item.Value.valueType != JSObjectType.Property)
                                 data[item.Key] = null;
@@ -1449,7 +1398,7 @@ namespace NiL.JS.Core.BaseTypes
                         && lindex < _length)
                     {
                         var temp = this[key];
-                        if (!temp.isExist)
+                        if (!temp.IsExist)
                             continue;
                         if (temp.valueType != JSObjectType.Property)
                             keysToRemove.Add(key);
@@ -1476,7 +1425,7 @@ namespace NiL.JS.Core.BaseTypes
                     }
                     else
                         tjo.iValue = (item.Key - 1);
-                    if (item.Value != null && item.Value.isExist)
+                    if (item.Value != null && item.Value.IsExist)
                     {
                         var temp = this.GetMember(tjo, true, false);
                         if (temp.valueType == JSObjectType.Property)
@@ -1497,7 +1446,7 @@ namespace NiL.JS.Core.BaseTypes
             if (args == null)
                 throw new ArgumentNullException("args");
             JSObject src = this;
-            if (!src.isDefinded || (src.valueType >= JSObjectType.Object && src.oValue == null))
+            if (!src.IsDefinded || (src.valueType >= JSObjectType.Object && src.oValue == null))
                 throw new JSException(new TypeError("Can not call Array.prototype.slice for null or undefined"));
             HashSet<string> processedKeys = null;
             Array res = new Array();
@@ -1516,10 +1465,10 @@ namespace NiL.JS.Core.BaseTypes
                     var len = data.Length;
                     foreach (var element in ((src as Array).data as IEnumerable<KeyValuePair<int, JSObject>>))
                     {
-                        if (element.Key >= len) // эээ...
+                        if (element.Key >= len) // ГЅГЅГЅ...
                             break;
                         var value = element.Value;
-                        if (value == null || !value.isExist)
+                        if (value == null || !value.IsExist)
                             continue;
                         if (value.valueType == JSObjectType.Property)
                             value = (value.oValue as PropertyPair).get == null ? undefined : (value.oValue as PropertyPair).get.Invoke(src, null);
@@ -1536,14 +1485,14 @@ namespace NiL.JS.Core.BaseTypes
                 }
                 else
                 {
-                    var lenObj = this["length"]; // тут же проверка на null/undefined с падением если надо
-                    if (!lenObj.isDefinded)
+                    var lenObj = this["length"]; // ГІГіГІ Г¦ГҐ ГЇГ°Г®ГўГҐГ°ГЄГ  Г­Г  null/undefined Г± ГЇГ Г¤ГҐГ­ГЁГҐГ¬ ГҐГ±Г«ГЁ Г­Г Г¤Г®
+                    if (!lenObj.IsDefinded)
                         return new Array();
                     if (lenObj.valueType == JSObjectType.Property)
                         lenObj = ((lenObj.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(this, null);
                     if (lenObj.valueType >= JSObjectType.Object)
                         lenObj = lenObj.ToPrimitiveValue_Value_String();
-                    if (!lenObj.isDefinded)
+                    if (!lenObj.IsDefinded)
                         return new Array();
                     long _length = (uint)Tools.JSObjectToInt64(lenObj);
                     var startIndex = Tools.JSObjectToInt64(args[0], 0, true);
@@ -1569,7 +1518,7 @@ namespace NiL.JS.Core.BaseTypes
                             var temp = src[i];
                             if (temp.valueType == JSObjectType.Property)
                                 temp = ((temp.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(src, null);
-                            if (!temp.isExist)
+                            if (!temp.IsExist)
                                 continue;
                             if (processedKeys != null)
                             {
@@ -1610,7 +1559,7 @@ namespace NiL.JS.Core.BaseTypes
                 throw new ArgumentNullException("args");
             if (args.Length == 0)
                 return needResult ? new Array() : null;
-            if (this.GetType() == typeof(Array)) // Да, Array sealed, но тут и не такое возможно.
+            if (this.GetType() == typeof(Array)) // Г„Г , Array sealed, Г­Г® ГІГіГІ ГЁ Г­ГҐ ГІГ ГЄГ®ГҐ ГўГ®Г§Г¬Г®Г¦Г­Г®.
             {
                 var _length = data.Length;
                 long pos0 = (long)System.Math.Min(Tools.JSObjectToDouble(args[0]), data.Length);
@@ -1648,10 +1597,10 @@ namespace NiL.JS.Core.BaseTypes
                         break;
                     var key = node.Key;
                     var value = node.Value;
-                    if (value == null || !value.isExist)
+                    if (value == null || !value.IsExist)
                     {
                         value = __proto__[((uint)key).ToString()];
-                        if (!value.isExist)
+                        if (!value.IsExist)
                             continue;
                         value = value.CloneImpl();
                     }
@@ -1676,7 +1625,7 @@ namespace NiL.JS.Core.BaseTypes
                         data.RemoveAt((int)(data.Length - 1));
                     while (++delta < 0);
                 for (var i = 2; i < args.length; i++)
-                    if (args[i].isExist)
+                    if (args[i].IsExist)
                     {
                         var t = data[(int)(pos0 + i - 2)];
                         if (t != null && t.valueType == JSObjectType.Property)
@@ -1686,7 +1635,7 @@ namespace NiL.JS.Core.BaseTypes
                     }
                 return res;
             }
-            else // кто-то отправил объект с полем length
+            else // ГЄГІГ®-ГІГ® Г®ГІГЇГ°Г ГўГЁГ« Г®ГЎГєГҐГЄГІ Г± ГЇГ®Г«ГҐГ¬ length
             {
                 long _length = Tools.getLengthOfIterably(this, false);
                 var pos0 = (long)System.Math.Min(Tools.JSObjectToDouble(args[0]), _length);
@@ -1937,7 +1886,7 @@ namespace NiL.JS.Core.BaseTypes
                     var source = this;
                     foreach (var item in (source.data as IEnumerable<KeyValuePair<int, JSObject>>))
                     {
-                        if (item.Value == null || !item.Value.isDefinded)
+                        if (item.Value == null || !item.Value.IsDefinded)
                             continue;
                         var v = item.Value;
                         if (v.valueType == JSObjectType.Property)
@@ -1962,7 +1911,7 @@ namespace NiL.JS.Core.BaseTypes
                     var source = this;
                     foreach (var item in (source.data as IEnumerable<KeyValuePair<int, JSObject>>))
                     {
-                        if (item.Value == null || !item.Value.isExist)
+                        if (item.Value == null || !item.Value.IsExist)
                             continue;
                         var v = item.Value;
                         if (v.valueType == JSObjectType.Property)
@@ -1999,7 +1948,7 @@ namespace NiL.JS.Core.BaseTypes
                     {
                         keysToRemove.Add(key.Value);
                         var item = this[key.Value];
-                        if (item.isDefinded)
+                        if (item.IsDefinded)
                         {
                             item = item.CloneImpl();
                             JSObject value;
@@ -2044,7 +1993,7 @@ namespace NiL.JS.Core.BaseTypes
                         {
                             keysToRemove.Add(key);
                             var value = this[key];
-                            if (value.isDefinded)
+                            if (value.IsDefinded)
                             {
                                 value = value.CloneImpl();
                                 List<JSObject> els = null;
@@ -2108,7 +2057,7 @@ namespace NiL.JS.Core.BaseTypes
             foreach (var node in (data as IEnumerable<KeyValuePair<int, JSObject>>))
             {
                 if (node.Value != null
-                    && node.Value.isExist
+                    && node.Value.IsExist
                     && (!hideNonEnum || (node.Value.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
                     yield return ((uint)node.Key).ToString();
             }
@@ -2118,7 +2067,7 @@ namespace NiL.JS.Core.BaseTypes
             {
                 foreach (var f in fields)
                 {
-                    if (f.Value.isExist && (!hideNonEnum || (f.Value.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+                    if (f.Value.IsExist && (!hideNonEnum || (f.Value.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
                         yield return f.Key;
                 }
             }
@@ -2194,7 +2143,7 @@ namespace NiL.JS.Core.BaseTypes
                 {
                     notExists.valueType = JSObjectType.NotExistsInObject;
                     var res = data[(int)index] ?? notExists;
-                    if (!res.isExist && !own)
+                    if (!res.IsExist && !own)
                         return __proto__.GetMember(name, forWrite, own);
                     return res;
                 }

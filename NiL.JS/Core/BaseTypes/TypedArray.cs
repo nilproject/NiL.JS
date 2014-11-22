@@ -167,7 +167,7 @@ namespace NiL.JS.Core.BaseTypes
         protected T subarrayImpl<T>(JSObject begin, JSObject end) where T : TypedArray, new()
         {
             var bi = Tools.JSObjectToInt32(begin, 0, false);
-            var ei = end.isExist ? Tools.JSObjectToInt32(end, 0, false) : Tools.JSObjectToInt32(length);
+            var ei = end.IsExist ? Tools.JSObjectToInt32(end, 0, false) : Tools.JSObjectToInt32(length);
             if (bi == 0 && ei >= length.iValue)
                 return (T)this;
             var r = new T();

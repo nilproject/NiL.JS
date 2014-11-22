@@ -152,7 +152,7 @@ namespace NiL.JS.Statements
         {
             JSObject res = JSObject.undefined;
             var s = source.Evaluate(context);
-            if (!s.isDefinded || (s.valueType >= JSObjectType.Object && s.oValue == null))
+            if (!s.IsDefinded || (s.valueType >= JSObjectType.Object && s.oValue == null))
                 return JSObject.undefined;
             var v = variable.EvaluateForAssing(context);
             int index = 0;
@@ -164,7 +164,7 @@ namespace NiL.JS.Statements
                     foreach (var item in (src.data as IEnumerable<KeyValuePair<int, JSObject>>))
                     {
                         if (item.Value == null
-                            || !item.Value.isExist
+                            || !item.Value.IsExist
                             || (item.Value.attributes & JSObjectAttributesInternal.DoNotEnum) != 0)
                             continue;
                         if (item.Key >= 0)
@@ -202,7 +202,7 @@ namespace NiL.JS.Statements
                         foreach (var item in src.fields)
                         {
                             if (item.Value == null
-                                || !item.Value.isExist
+                                || !item.Value.IsExist
                                 || (item.Value.attributes & JSObjectAttributesInternal.DoNotEnum) != 0)
                                 continue;
                             v.valueType = JSObjectType.String;
@@ -266,7 +266,7 @@ namespace NiL.JS.Statements
                     }
                 }
                 s = s.__proto__;
-                if (s == JSObject.Null || !s.isDefinded || (s.valueType >= JSObjectType.Object && s.oValue == null))
+                if (s == JSObject.Null || !s.IsDefinded || (s.valueType >= JSObjectType.Object && s.oValue == null))
                     break;
             }
             return res;

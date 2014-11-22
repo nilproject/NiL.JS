@@ -120,7 +120,7 @@ namespace NiL.JS.Expressions
                         break;
                     }
             }
-            if (second != null && val.isDefinded)
+            if (second != null && val.IsDefinded)
             {
                 res = tempContainer;
                 res.Assign(val);

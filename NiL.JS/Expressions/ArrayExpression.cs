@@ -10,6 +10,7 @@ namespace NiL.JS.Expressions
     [Serializable]
     public sealed class ArrayStatement : Expression
     {
+        private static JSObject writableNotExist = null;
         private Expression[] elements;
 
         public ICollection<Expression> Elements { get { return elements; } }
@@ -97,6 +98,8 @@ namespace NiL.JS.Expressions
                         e.attributes = 0;
                         res.data[i] = e;
                     }
+                    else
+                        res.data[i] = (writableNotExist ?? (writableNotExist = new JSObject() { valueType = JSObjectType.NotExistsInObject, attributes = JSObjectAttributesInternal.SystemObject }));
                 }
                 res.data[elements.Length - 1] = res.data[elements.Length - 1];
             }

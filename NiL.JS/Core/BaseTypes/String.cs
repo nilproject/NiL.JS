@@ -472,7 +472,7 @@ namespace NiL.JS.Core.BaseTypes
         [AllowUnsafeCall(typeof(JSObject))]
         public JSObject split(Arguments args)
         {
-            if (args.Length == 0 || !args[0].isDefinded)
+            if (args.Length == 0 || !args[0].IsDefinded)
                 return new Array(new object[] { this.ToString() });
             int limit = int.MaxValue;
             if (args.Length > 1)
