@@ -231,7 +231,7 @@ namespace NiL.JS.Statements
             Exception except = null;
             try
             {
-                body.Evaluate(context);
+                return body.Evaluate(context);
             }
             catch (Exception e)
             {

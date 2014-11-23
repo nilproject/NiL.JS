@@ -9,7 +9,7 @@ namespace NiL.JS.Expressions
     [Serializable]
     public abstract class Expression : CodeNode
     {
-        internal readonly JSObject tempContainer;
+        internal JSObject tempContainer;
 
         internal protected virtual PredictedType ResultType
         {

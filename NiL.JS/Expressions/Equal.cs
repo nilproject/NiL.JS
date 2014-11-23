@@ -111,8 +111,7 @@ namespace NiL.JS.Expressions
                                         goto case JSObjectType.String;
                                     if (tjso.valueType >= JSObjectType.Object) // null
                                     {
-                                        tjso.iValue = 0;
-                                        goto case JSObjectType.Int;
+                                        return tdouble == 0 && double.IsPositiveInfinity(1.0 / tdouble);
                                     }
                                     throw new NotImplementedException();
                                 }
@@ -179,6 +178,11 @@ namespace NiL.JS.Expressions
                 case JSObjectType.Date:
                 case JSObjectType.Object:
                     {
+                        if (tempContainer == null)
+                            tempContainer = new JSObject() { attributes = JSObjectAttributesInternal.Temporary };
+                        tempContainer.Assign(temp);
+                        temp = tempContainer;
+
                         tjso = second.Evaluate(context);
                         switch (tjso.valueType)
                         {

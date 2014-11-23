@@ -242,3 +242,14 @@ function test(x) {
     })();
 }
 test(1);
+
+(function (x, zero) {
+    if ((x != -1 >>> 0)
+        || (x != -1 >>> zero))
+        console.log("-1 >>> 0 fail");
+})((1 << 30) * 4 - 1, 0);
+
+var a = {};
+var b = {};
+if (a == (a = b, b))
+    console.log("(a == (a = b, b)) fail");

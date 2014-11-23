@@ -1078,7 +1078,7 @@ namespace NiL.JS.Core.BaseTypes
             if (creator != null && creator.arguments != null)
                 for (int i = 0; i < creator.arguments.Length; )
                     res.Append(creator.arguments[i].Name).Append(++i < creator.arguments.Length ? "," : "");
-            res.Append(")").Append(creator != creatorDummy ? creator.body as object : "{ [native code] }");
+            res.Append(") ").Append(creator != creatorDummy ? creator.body as object : "{ [native code] }");
             return res.ToString();
         }
 

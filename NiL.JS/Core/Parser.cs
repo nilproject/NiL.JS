@@ -309,7 +309,7 @@ namespace NiL.JS.Core
         internal static bool ValidateNumber(string code, ref int index)
         {
             double fictive = 0.0;
-            return Tools.ParseNumber(code, ref index, out fictive);
+            return Tools.ParseNumber(code, ref index, out fictive, 0, Tools.ParseNumberOptions.AllowFloat | Tools.ParseNumberOptions.AllowAutoRadix);
         }
 
         internal static bool ValidateRegex(string code, ref int index, bool except)

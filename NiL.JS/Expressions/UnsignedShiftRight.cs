@@ -23,12 +23,16 @@ namespace NiL.JS.Expressions
 
         internal override JSObject Evaluate(Context context)
         {
-            var left = Tools.JSObjectToInt32(first.Evaluate(context));
-            tempContainer.iValue = (int)((uint)left >> Tools.JSObjectToInt32(second.Evaluate(context)));
-            tempContainer.valueType = JSObjectType.Int;
-            if (tempContainer.iValue < 0)
+            var left = (uint)Tools.JSObjectToInt32(first.Evaluate(context));
+            var t = left >> Tools.JSObjectToInt32(second.Evaluate(context));
+            if (t <= int.MaxValue)
             {
-                tempContainer.dValue = (double)(uint)tempContainer.iValue;
+                tempContainer.iValue = (int)t;
+                tempContainer.valueType = JSObjectType.Int;
+            }
+            else
+            {
+                tempContainer.dValue = (double)t;
                 tempContainer.valueType = JSObjectType.Double;
             }
             return tempContainer;
@@ -48,7 +52,7 @@ namespace NiL.JS.Expressions
                     else if ((second is Expression)
                             && (second).IsContextIndependent
                             && Tools.JSObjectToInt32((second).Evaluate(null)) == 0)
-                        _this = new ToInt(first);
+                        _this = new ToUInt(first);
                 }
                 catch
                 {
