@@ -225,18 +225,19 @@ namespace NiL.JS.Expressions
 
         internal override JSObject Evaluate(Context context)
         {
-            lock (this)
-            {
-                var f = first.Evaluate(context);
-                tempContainer.valueType = f.valueType;
-                tempContainer.iValue = f.iValue;
-                tempContainer.dValue = f.dValue;
-                tempContainer.oValue = f.oValue;
-                var s = second.Evaluate(context);
-                if (tempContainer.valueType == s.valueType && tempContainer.valueType == JSObjectType.Int)
-                    return tempContainer.iValue > s.iValue;
-                return Check(tempContainer, s, this is LessOrEqual);
-            }
+            var f = first.Evaluate(context);
+            var temp = tempContainer ?? new JSObject { attributes = JSObjectAttributesInternal.Temporary };
+            temp.valueType = f.valueType;
+            temp.iValue = f.iValue;
+            temp.dValue = f.dValue;
+            temp.oValue = f.oValue;
+            tempContainer = null;
+            var s = second.Evaluate(context);
+            tempContainer = temp;
+            if (tempContainer.valueType == s.valueType
+                && tempContainer.valueType == JSObjectType.Int)
+                return tempContainer.iValue > s.iValue;
+            return Check(tempContainer, s, this is LessOrEqual);
         }
 
         internal override void Optimize(ref CodeNode _this, FunctionExpression owner)

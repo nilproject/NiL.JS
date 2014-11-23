@@ -18,13 +18,16 @@ namespace NiL.JS.Expressions
         internal override JSObject Evaluate(Context context)
         {
             var f = first.Evaluate(context);
-            tempContainer.valueType = f.valueType;
-            tempContainer.oValue = f.oValue;
-            tempContainer.iValue = f.iValue;
-            tempContainer.dValue = f.dValue;
-            tempContainer.__prototype = f.__prototype;
-            Impl(tempContainer, tempContainer, second.Evaluate(context));
-            return tempContainer;
+            var temp = tempContainer ?? (tempContainer = new JSObject() { attributes = JSObjectAttributesInternal.Temporary });
+            temp.valueType = f.valueType;
+            temp.oValue = f.oValue;
+            temp.iValue = f.iValue;
+            temp.dValue = f.dValue;
+            temp.__prototype = f.__prototype;
+            tempContainer = null;
+            Impl(temp, temp, second.Evaluate(context));
+            tempContainer = temp;
+            return temp;
         }
 
         internal static void Impl(JSObject resultContainer, JSObject first, JSObject second)

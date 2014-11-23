@@ -84,8 +84,7 @@ namespace NiL.JS.Expressions
             }
             else
             {
-                tempContainer.Assign(op);
-                Addition.Impl(tempContainer, tempContainer, second.Evaluate(context));
+                Addition.Impl(tempContainer, op.CloneImpl(), second.Evaluate(context));
             }
             return tempContainer;
         }

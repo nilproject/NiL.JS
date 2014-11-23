@@ -59,12 +59,13 @@ namespace NiL.JS.Expressions
             lock (this)
             {
                 bool metString = false;
-                tempContainer.valueType = JSObjectType.String;
-                tempContainer.oValue = prep(sources[0].Evaluate(context), ref metString);
+                object res = prep(sources[0].Evaluate(context), ref metString);
                 for (var i = 1; i < sources.Count; i++)
-                    tempContainer.oValue = new RopeString(tempContainer.oValue, prep(sources[i].Evaluate(context), ref metString));
+                    res = new RopeString(res, prep(sources[i].Evaluate(context), ref metString));
                 if (!metString)
                     throw new InvalidOperationException("metString == false");
+                tempContainer.valueType = JSObjectType.String;
+                tempContainer.oValue = res;
                 return tempContainer;
             }
         }

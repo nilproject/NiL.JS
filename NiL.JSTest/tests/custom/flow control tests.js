@@ -255,3 +255,14 @@ if (a == (a = b, b))
     console.log("(a == (a = b, b)) fail");
 
 1[0]
+
+function f(char, count) {
+    console.log(char);
+    var r = "";
+    while (count-- > 0)
+        r += char;
+    return r + (char < 10 ? f(++char, 3) : "");
+}
+
+if (f(1, 3) != "111222333444555666777888999101010")
+    throw "Reqursive fail";

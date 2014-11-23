@@ -24,9 +24,11 @@ namespace NiL.JS.Expressions
         {
             lock (this)
             {
-                var a = tempContainer;
+                var a = tempContainer ?? new JSObject { attributes = JSObjectAttributesInternal.Temporary };
                 a.Assign(first.Evaluate(context));
+                tempContainer = null;
                 var c = second.Evaluate(context);
+                tempContainer = a;
                 if (c.valueType != JSObjectType.Function)
                     throw new JSException(new NiL.JS.Core.BaseTypes.TypeError("Right-hand value of instanceof is not function."));
                 var p = c.GetMember("prototype");

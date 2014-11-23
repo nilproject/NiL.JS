@@ -44,6 +44,8 @@ namespace NiL.JS.Expressions
                 }
                 else
                 {
+                    if (tempContainer == null)
+                        tempContainer = new JSObject() { attributes = JSObjectAttributesInternal.Temporary };
                     tempContainer.valueType = JSObjectType.Int;
                     tempContainer.iValue = itemp;
                     return !More.Check(tempContainer, op, true);
@@ -64,6 +66,8 @@ namespace NiL.JS.Expressions
                 }
                 else
                 {
+                    if (tempContainer == null)
+                        tempContainer = new JSObject() { attributes = JSObjectAttributesInternal.Temporary };
                     tempContainer.valueType = JSObjectType.Double;
                     tempContainer.dValue = dtemp;
                     return !More.Check(tempContainer, op, true);
@@ -71,8 +75,14 @@ namespace NiL.JS.Expressions
             }
             else
             {
-                tempContainer.Assign(op);
-                return !More.Check(op, second.Evaluate(context), true);
+                if (tempContainer == null)
+                    tempContainer = new JSObject() { attributes = JSObjectAttributesInternal.Temporary };
+                var temp = tempContainer;
+                temp.Assign(op);
+                tempContainer = null;
+                var res = !More.Check(temp, second.Evaluate(context), true);
+                tempContainer = temp;
+                return res;
             }
         }
 

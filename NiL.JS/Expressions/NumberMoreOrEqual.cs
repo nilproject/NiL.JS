@@ -36,14 +36,16 @@ namespace NiL.JS.Expressions
                 if (op.valueType == Core.JSObjectType.Int
                 || op.valueType == Core.JSObjectType.Bool)
                 {
-                    return itemp >= op.iValue;
+                    return itemp > op.iValue;
                 }
                 else if (op.valueType == Core.JSObjectType.Double)
                 {
-                    return itemp >= op.dValue;
+                    return itemp > op.dValue;
                 }
                 else
                 {
+                    if (tempContainer == null)
+                        tempContainer = new JSObject() { attributes = JSObjectAttributesInternal.Temporary };
                     tempContainer.valueType = JSObjectType.Int;
                     tempContainer.iValue = itemp;
                     return !Less.Check(tempContainer, op, true);
@@ -56,14 +58,16 @@ namespace NiL.JS.Expressions
                 if (op.valueType == Core.JSObjectType.Int
                 || op.valueType == Core.JSObjectType.Bool)
                 {
-                    return dtemp >= op.iValue;
+                    return dtemp > op.iValue;
                 }
                 else if (op.valueType == Core.JSObjectType.Double)
                 {
-                    return dtemp >= op.dValue;
+                    return dtemp > op.dValue;
                 }
                 else
                 {
+                    if (tempContainer == null)
+                        tempContainer = new JSObject() { attributes = JSObjectAttributesInternal.Temporary };
                     tempContainer.valueType = JSObjectType.Double;
                     tempContainer.dValue = dtemp;
                     return !Less.Check(tempContainer, op, true);
@@ -71,8 +75,14 @@ namespace NiL.JS.Expressions
             }
             else
             {
-                tempContainer.Assign(op);
-                return !Less.Check(op, second.Evaluate(context), true);
+                if (tempContainer == null)
+                    tempContainer = new JSObject() { attributes = JSObjectAttributesInternal.Temporary };
+                var temp = tempContainer;
+                temp.Assign(op);
+                tempContainer = null;
+                var res = !Less.Check(temp, second.Evaluate(context), true);
+                tempContainer = temp;
+                return res;
             }
         }
 

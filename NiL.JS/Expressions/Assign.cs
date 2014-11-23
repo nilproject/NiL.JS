@@ -9,6 +9,7 @@ namespace NiL.JS.Expressions
     public sealed class Assign : Expression
     {
         private Arguments setterArgs;
+        private bool saveResult;
 
         public override bool IsContextIndependent
         {
@@ -35,8 +36,14 @@ namespace NiL.JS.Expressions
                         setterArgs = new Arguments();
                     var fieldSource = context.objectSource;
                     temp = second.Evaluate(context);
-                    if (tempContainer != null)
+                    if (saveResult)
+                    {
+                        if (tempContainer == null)
+                            tempContainer = new JSObject();
                         tempContainer.Assign(temp);
+                        temp = tempContainer;
+                        tempContainer = null;
+                    }
                     setterArgs.Reset();
                     setterArgs.length = 1;
                     setterArgs[0] = temp;
@@ -45,7 +52,9 @@ namespace NiL.JS.Expressions
                         setter.Invoke(fieldSource, setterArgs);
                     else if (context.strict)
                         throw new JSException(new TypeError("Can not assign to readonly property \"" + first + "\""));
-                    return tempContainer ?? temp;
+                    if (saveResult)
+                        tempContainer = temp;
+                    return temp;
                 }
             }
             else
@@ -81,7 +90,7 @@ namespace NiL.JS.Expressions
                 System.Diagnostics.Debugger.Break();
 #endif
             if (depth > 1)
-                tempContainer = new JSObject() { attributes = JSObjectAttributesInternal.Temporary };
+                saveResult = true;
             return r;
         }
 
