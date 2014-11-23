@@ -152,12 +152,12 @@ namespace NiL.JS.Statements
 
         internal override JSObject Evaluate(Context context)
         {
-            JSObject res = JSObject.undefined;
             var s = source.Evaluate(context);
             var v = variable.EvaluateForAssing(context);
             int index = 0;
             if (!s.IsDefinded || (s.valueType >= JSObjectType.Object && s.oValue == null))
                 return JSObject.undefined;
+            HashSet<string> processedKeys = new HashSet<string>(StringComparer.Ordinal);
             while (s != null)
             {
                 if (s.oValue is Core.BaseTypes.Array)
@@ -174,7 +174,7 @@ namespace NiL.JS.Statements
                         if (context.debugging && !(body is CodeBlock))
                             context.raiseDebugger(body);
 #endif
-                        res = body.Evaluate(context) ?? res;
+                        context.lastResult = body.Evaluate(context) ?? context.lastResult;
                         if (context.abort != AbortType.None)
                         {
 
@@ -196,12 +196,15 @@ namespace NiL.JS.Statements
                                 || !item.Value.IsExist
                                 || (item.Value.attributes & JSObjectAttributesInternal.DoNotEnum) != 0)
                                 continue;
+                            if (processedKeys.Contains(item.Key))
+                                continue;
+                            processedKeys.Add(item.Key);
                             v.Assign(item.Value);
 #if DEV
                             if (context.debugging && !(body is CodeBlock))
                                 context.raiseDebugger(body);
 #endif
-                            res = body.Evaluate(context) ?? res;
+                            context.lastResult = body.Evaluate(context) ?? context.lastResult;
                             if (context.abort != AbortType.None)
                             {
 
@@ -232,15 +235,17 @@ namespace NiL.JS.Statements
                             keys = s.GetEnumerator();
                             for (int i = 0; i < index && keys.MoveNext(); i++) ;
                         }
-                        var o = keys.Current;
+                        if (processedKeys.Contains(keys.Current))
+                            continue;
+                        processedKeys.Add(keys.Current);
                         v.valueType = JSObjectType.String;
-                        v.oValue = o;
+                        v.oValue = keys.Current;
                         v.Assign(s.GetMember(v, false, true));
 #if DEV
                         if (context.debugging && !(body is CodeBlock))
                             context.raiseDebugger(body);
 #endif
-                        res = body.Evaluate(context) ?? res;
+                        context.lastResult = body.Evaluate(context) ?? context.lastResult;
                         if (context.abort != AbortType.None)
                         {
                             var me = context.abortInfo == null || System.Array.IndexOf(labels, context.abortInfo.oValue as string) != -1;
@@ -260,7 +265,7 @@ namespace NiL.JS.Statements
                 if (s == JSObject.Null || !s.IsDefinded || (s.valueType >= JSObjectType.Object && s.oValue == null))
                     break;
             }
-            return res;
+            return null;
         }
 
         protected override CodeNode[] getChildsImpl()

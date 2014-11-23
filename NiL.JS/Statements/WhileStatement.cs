@@ -99,7 +99,6 @@ namespace NiL.JS.Statements
 #endif
         internal override JSObject Evaluate(Context context)
         {
-            JSObject res = JSObject.undefined;
 #if DEV
             if (context.debugging)
                 context.raiseDebugger(condition);
@@ -110,7 +109,7 @@ namespace NiL.JS.Statements
                 if (context.debugging && !(body is CodeBlock))
                     context.raiseDebugger(body);
 #endif
-                res = body.Evaluate(context);
+                context.lastResult = body.Evaluate(context) ?? context.lastResult;
                 if (context.abort != AbortType.None)
                 {
                     var me = context.abortInfo == null || System.Array.IndexOf(labels, context.abortInfo.oValue as string) != -1;
@@ -121,14 +120,14 @@ namespace NiL.JS.Statements
                         context.abortInfo = null;
                     }
                     if (_break)
-                        return res;
+                        return null;
                 }
 #if DEV
                 if (context.debugging)
                     context.raiseDebugger(condition);
 #endif
             }
-            return res;
+            return null;
         }
 
         protected override CodeNode[] getChildsImpl()

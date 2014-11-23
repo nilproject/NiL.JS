@@ -150,6 +150,7 @@ namespace NiL.JS.Core
         internal AbortType abort;
         internal JSObject objectSource;
         internal JSObject abortInfo;
+        internal JSObject lastResult;
         internal JSObject thisBind;
         internal Function caller;
         internal bool strict;
@@ -437,9 +438,10 @@ namespace NiL.JS.Core
         /// Ожидается один аргумент.
         /// Выполняет переданный код скрипта в указанном контексте.
         /// </summary>
-        /// <param name="args">Код скрипта на языке JavaScript</param>
+        /// <param name="code">Код скрипта на языке JavaScript</param>
+        /// <param name="inplace">Если истина, переменные объявленные в ходе выполнения, не будут доступны для удаления</param>
         /// <returns>Результат выполнения кода (аргумент оператора "return" либо результат выполнения последней выполненной строки кода).</returns>
-        public JSObject Eval(string code)
+        public JSObject Eval(string code, bool inplace)
         {
 #if DEV
             var debugging = this.debugging;
@@ -504,6 +506,8 @@ namespace NiL.JS.Core
                 for (i = body.localVariables.Length; i-- > 0; )
                 {
                     var f = context.DefineVariable(body.localVariables[i].name);
+                    if (!inplace)
+                        f.attributes = JSObjectAttributesInternal.None;
                     if (body.localVariables[i].Inititalizator != null)
                         f.Assign(body.localVariables[i].Inititalizator.Evaluate(context));
                     if (body.localVariables[i].readOnly)
@@ -513,7 +517,7 @@ namespace NiL.JS.Core
                 var run = context.Activate();
                 try
                 {
-                    return cb.Evaluate(context);
+                    return cb.Evaluate(context) ?? context.lastResult ?? JSObject.notExists;
                 }
                 finally
                 {

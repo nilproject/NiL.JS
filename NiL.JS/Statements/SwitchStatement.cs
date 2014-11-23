@@ -36,7 +36,6 @@ namespace NiL.JS.Statements
 
         internal static ParseResult Parse(ParsingState state, ref int index)
         {
-            //string code = state.Code;
             int i = index;
             if (!Parser.Validate(state.Code, "switch (", ref i) && !Parser.Validate(state.Code, "switch(", ref i))
                 return new ParseResult();
@@ -131,10 +130,9 @@ namespace NiL.JS.Statements
                     break;
                 }
             }
-            var res = JSObject.undefined;
             while (i-- > 0)
             {
-                res = lines[i].Evaluate(context) ?? res;
+                context.lastResult = lines[i].Evaluate(context) ?? context.lastResult;
                 if (context.abort != AbortType.None)
                 {
                     if (context.abort == AbortType.Break)
@@ -142,7 +140,7 @@ namespace NiL.JS.Statements
                     return context.abortInfo;
                 }
             }
-            return res;
+            return null;
         }
 
         internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)

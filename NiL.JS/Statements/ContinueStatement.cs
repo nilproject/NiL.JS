@@ -13,7 +13,6 @@ namespace NiL.JS.Statements
 
         internal static ParseResult Parse(ParsingState state, ref int index)
         {
-            //string code = state.Code;
             int i = index;
             if (!Parser.Validate(state.Code, "continue", ref i) || !Parser.isIdentificatorTerminator(state.Code[i]))
                 return new ParseResult();

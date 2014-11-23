@@ -42,7 +42,7 @@ namespace NiL.JS.Statements
                 if (context.debugging && !(body is CodeBlock))
                     context.raiseDebugger(body);
 #endif
-                return body.Evaluate(context);
+                context.lastResult = body.Evaluate(context) ?? context.lastResult;
             }
             return null;
         }

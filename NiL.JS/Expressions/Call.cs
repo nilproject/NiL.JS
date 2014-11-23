@@ -190,7 +190,7 @@ namespace NiL.JS.Expressions
                                 || func.body.lines.Length == 0)
                             {
                                 if (arguments.Length == 0)
-                                    _this = new EmptyStatement();
+                                    _this = new Constant(JSObject.notExists);
                                 else
                                 {
                                     if (depth > 1)

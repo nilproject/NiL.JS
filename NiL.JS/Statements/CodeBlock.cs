@@ -258,14 +258,13 @@ namespace NiL.JS.Statements
                 return context.abortInfo;
             }
 #endif
-            JSObject res = JSObject.notExists;
             for (int i = lines.Length; i-- > 0; )
             {
 #if DEV
                 if (context.debugging)
                     context.raiseDebugger(lines[i]);
 #endif
-                res = lines[i].Evaluate(context) ?? res;
+                context.lastResult = lines[i].Evaluate(context) ?? context.lastResult;
 #if DEBUG
                 if (!context.IsExcecuting)
                     if (System.Diagnostics.Debugger.IsAttached)
@@ -301,9 +300,9 @@ namespace NiL.JS.Statements
                         throw new ApplicationException("Boolean.True was rewrite");
 #endif
                 if (context.abort != AbortType.None)
-                    return context.abort == AbortType.Return ? context.abortInfo : res;
+                    return context.abort == AbortType.Return ? context.abortInfo : null;
             }
-            return res;
+            return null;
         }
 
         protected override CodeNode[] getChildsImpl()

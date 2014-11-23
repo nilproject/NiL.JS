@@ -28,7 +28,6 @@ namespace NiL.JS.Statements
 
         internal static ParseResult Parse(ParsingState state, ref int index)
         {
-            //string code = state.Code;
             int i = index;
             while (char.IsWhiteSpace(state.Code[i])) i++;
             if (!Parser.Validate(state.Code, "do", ref i) || !Parser.isIdentificatorTerminator(state.Code[i]))
@@ -117,14 +116,13 @@ namespace NiL.JS.Statements
 
         internal override JSObject Evaluate(Context context)
         {
-            JSObject res = null;
             do
             {
 #if DEV
                 if (context.debugging && !(body is CodeBlock))
                     context.raiseDebugger(body);
 #endif
-                res = body.Evaluate(context);
+                context.lastResult = body.Evaluate(context) ?? context.lastResult;
                 if (context.abort != AbortType.None)
                 {
                     var me = context.abortInfo == null || System.Array.IndexOf(labels, context.abortInfo.oValue as string) != -1;
@@ -135,7 +133,7 @@ namespace NiL.JS.Statements
                         context.abortInfo = JSObject.notExists;
                     }
                     if (_break)
-                        return res;
+                        return null;
                 }
 #if DEV
                 if (context.debugging)
@@ -143,7 +141,7 @@ namespace NiL.JS.Statements
 #endif
             }
             while ((bool)condition.Evaluate(context));
-            return res;
+            return null;
         }
 
         protected override CodeNode[] getChildsImpl()

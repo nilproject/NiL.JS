@@ -69,7 +69,7 @@ namespace NiL.JSTest
                         econtext = new Context(s.Context);
                     try
                     {
-                        econtext.Eval(code);
+                        econtext.Eval(code, true);
                     }
                     finally
                     {
@@ -142,7 +142,7 @@ namespace NiL.JSTest
             _("Found " + (fls.Length - 2) + " js-files");
             bool skipedShowed = false;
             sw.Start();
-            for (int i = 196; i < fls.Length; i++)
+            for (int i = 57; i < fls.Length; i++)
             {
                 if (i != 0 && !skipedShowed)
                     _("Skiped: " + i);
@@ -189,7 +189,7 @@ namespace NiL.JSTest
                         econtext = new Context(s.Context);
                     try
                     {
-                        econtext.Eval(code);
+                        econtext.Eval(code, true);
                     }
                     finally
                     {
@@ -285,7 +285,7 @@ console.log(list[3]);
             Context.GlobalContext.DebuggerCallback += (sender, e) => System.Diagnostics.Debugger.Break();
             Context.GlobalContext.DefineVariable("alert").Assign(new ExternalFunction((t, a) => { System.Windows.Forms.MessageBox.Show(a[0].ToString()); return JSObject.Undefined; }));
 
-            int mode = 2//1
+            int mode = 101
                    ;
             switch (mode)
             {
@@ -492,7 +492,7 @@ console.log(list[3]);
                             using (var f = new FileStream("v8\\" + e["0"], FileMode.Open, FileAccess.Read))
                             {
                                 using (var sr = new StreamReader(f))
-                                    Context.CurrentContext.Eval(sr.ReadToEnd());
+                                    Context.CurrentContext.Eval(sr.ReadToEnd(), true);
                             }
                             return null;
                         }));
@@ -557,7 +557,7 @@ console.log(list[3]);
                 var sw = Stopwatch.StartNew();
                 using (var fs = new FileStream(path, FileMode.Open, FileAccess.Read))
                 using (var sr = new StreamReader(fs))
-                    context.Eval(sr.ReadToEnd());
+                    context.Eval(sr.ReadToEnd(), true);
                 sw.Stop();
                 _("Complite. Time: " + sw.Elapsed);
             };
@@ -672,7 +672,7 @@ console.log(list[3]);
 
                     Y.Test.Runner.run();
                 });
-            });");
+            });", true);
         }
 
         private static void runFiles(string folderPath)
@@ -724,7 +724,7 @@ console.log(list[3]);
             sw.Stop();
             Console.WriteLine("Init time: " + sw.Elapsed);
             Console.WriteLine("-------------------------------------");
-            s.Context.Eval(sr.ReadToEnd());
+            s.Context.Eval(sr.ReadToEnd(), true);
             Console.WriteLine("-------------------------------------");
             Console.WriteLine("Complite.");
             sr.Dispose();
@@ -812,7 +812,7 @@ console.log(list[3]);
                         return JSObject.Undefined;
                     }));
                     script.Invoke();
-                    script.Context.Eval(body);
+                    script.Context.Eval(body, true);
                     sw.Stop();
                     total += sw.Elapsed;
                     _(sw.Elapsed.ToString());

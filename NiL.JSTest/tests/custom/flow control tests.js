@@ -253,3 +253,5 @@ var a = {};
 var b = {};
 if (a == (a = b, b))
     console.log("(a == (a = b, b)) fail");
+
+1[0]

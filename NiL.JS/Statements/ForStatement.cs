@@ -142,13 +142,12 @@ namespace NiL.JS.Statements
 #endif
                 init.Evaluate(context);
             }
-            JSObject res = JSObject.undefined;
 #if DEV
             if (context.debugging)
                 context.raiseDebugger(condition);
 #endif
             if (!(bool)condition.Evaluate(context))
-                return res;
+                return null;
             do
             {
 #if DEV
@@ -157,7 +156,7 @@ namespace NiL.JS.Statements
 #endif
                 if (body != null)
                 {
-                    res = body.Evaluate(context) ?? res;
+                    context.lastResult = body.Evaluate(context) ?? context.lastResult;
                     if (context.abort != AbortType.None)
                     {
                         var me = context.abortInfo == null || System.Array.IndexOf(labels, context.abortInfo.oValue as string) != -1;
@@ -168,7 +167,7 @@ namespace NiL.JS.Statements
                             context.abortInfo = null;
                         }
                         if (_break)
-                            return res;
+                            return null;
                     }
                 }
                 if (post == null)
@@ -186,7 +185,7 @@ namespace NiL.JS.Statements
                 post.Evaluate(context);
 #endif
             } while ((bool)condition.Evaluate(context));
-            return res;
+            return null;
         }
 
         protected override CodeNode[] getChildsImpl()

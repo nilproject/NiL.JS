@@ -115,8 +115,9 @@ namespace NiL.JS.Core
             {
                 if ((attributes & JSObjectAttributesInternal.Immutable) != 0)
                     return;
-                if (valueType >= JSObjectType.Object
-                    && oValue != this
+                if (valueType < JSObjectType.Object)
+                    return;
+                if (oValue != this
                     && (oValue as JSObject) != null)
                 {
                     (oValue as JSObject).__proto__ = value;
@@ -129,6 +130,11 @@ namespace NiL.JS.Core
                 }
                 if (value.valueType < JSObjectType.Object)
                     return;
+                if (value.oValue == null)
+                {
+                    __prototype = Null;
+                    return;
+                }
                 var c = value.oValue as JSObject ?? value;
                 while (c != Null && c.valueType > JSObjectType.Undefined)
                 {
@@ -1386,6 +1392,76 @@ namespace NiL.JS.Core
                     obj.attributes &= ~JSObjectAttributesInternal.ReadOnly;
             }
             return target;
+        }
+
+        [DoNotEnumerate]
+        [CLSCompliant(false)]
+        public void __defineGetter__(Arguments args)
+        {
+            if (args.length < 2)
+                throw new JSException(new TypeError("Missed parameters"));
+            if (args[1].valueType != JSObjectType.Function)
+                throw new JSException(new TypeError("Expecting function as second parameter"));
+            var field = GetMember(args[0], true, true);
+            if ((field.attributes & JSObjectAttributesInternal.NotConfigurable) != 0)
+                throw new JSException(new TypeError("Cannot change value of not configurable peoperty."));
+            if ((field.attributes & JSObjectAttributesInternal.ReadOnly) != 0)
+                throw new JSException(new TypeError("Cannot change value of readonly peoperty."));
+            if (field.valueType == JSObjectType.Property)
+                (field.oValue as PropertyPair).get = args.a1.oValue as Function;
+            else
+            {
+                field.valueType = JSObjectType.Property;
+                field.oValue = new PropertyPair
+                {
+                    get = args.a1.oValue as Function
+                };
+            }
+        }
+
+        [DoNotEnumerate]
+        [CLSCompliant(false)]
+        public void __defineSetter__(Arguments args)
+        {
+            if (args.length < 2)
+                throw new JSException(new TypeError("Missed parameters"));
+            if (args[1].valueType != JSObjectType.Function)
+                throw new JSException(new TypeError("Expecting function as second parameter"));
+            var field = GetMember(args[0], true, true);
+            if ((field.attributes & JSObjectAttributesInternal.NotConfigurable) != 0)
+                throw new JSException(new TypeError("Cannot change value of not configurable peoperty."));
+            if ((field.attributes & JSObjectAttributesInternal.ReadOnly) != 0)
+                throw new JSException(new TypeError("Cannot change value of readonly peoperty."));
+            if (field.valueType == JSObjectType.Property)
+                (field.oValue as PropertyPair).set = args.a1.oValue as Function;
+            else
+            {
+                field.valueType = JSObjectType.Property;
+                field.oValue = new PropertyPair
+                {
+                    set = args.a1.oValue as Function
+                };
+            }
+        }
+
+        [DoNotEnumerate]
+        [CLSCompliant(false)]
+        public JSObject __lookupGetter(Arguments args)
+        {
+            var field = GetMember(args[0], false, false);
+            if (field.valueType == JSObjectType.Property)
+                return (field.oValue as PropertyPair).get;
+            return null;
+        }
+
+        [DoNotEnumerate]
+        [CLSCompliant(false)]
+        public JSObject __lookupSetter(Arguments args)
+        {
+            var field = GetMember(args[0], false, false);
+            if (field.valueType == JSObjectType.Property)
+                return (field.oValue as PropertyPair).get;
+            return null;
         }
 
         [DoNotEnumerate]

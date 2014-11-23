@@ -150,12 +150,12 @@ namespace NiL.JS.Statements
 
         internal override JSObject Evaluate(Context context)
         {
-            JSObject res = JSObject.undefined;
             var s = source.Evaluate(context);
             if (!s.IsDefinded || (s.valueType >= JSObjectType.Object && s.oValue == null))
                 return JSObject.undefined;
             var v = variable.EvaluateForAssing(context);
             int index = 0;
+            HashSet<string> processedKeys = new HashSet<string>(StringComparer.Ordinal);
             while (s != null)
             {
                 if (s.oValue is Core.BaseTypes.Array)
@@ -170,21 +170,22 @@ namespace NiL.JS.Statements
                         if (item.Key >= 0)
                         {
                             v.attributes = (v.attributes & ~JSObjectAttributesInternal.ContainsParsedDouble) | JSObjectAttributesInternal.ContainsParsedInt;
-                            v.iValue = item.Key;
                             v.oValue = item.Key.ToString();
                         }
                         else
                         {
                             v.attributes = (v.attributes & ~JSObjectAttributesInternal.ContainsParsedInt) | JSObjectAttributesInternal.ContainsParsedDouble;
-                            v.dValue = (uint)item.Key;
                             v.oValue = ((uint)item.Key).ToString();
                         }
+                        if (processedKeys.Contains(v.oValue.ToString()))
+                            continue;
+                        processedKeys.Add(v.oValue.ToString());
                         v.valueType = JSObjectType.String;
 #if DEV
                         if (context.debugging && !(body is CodeBlock))
                             context.raiseDebugger(body);
 #endif
-                        res = body.Evaluate(context) ?? res;
+                        context.lastResult = body.Evaluate(context) ?? context.lastResult;
                         if (context.abort != AbortType.None)
                         {
                             var me = context.abortInfo == null || System.Array.IndexOf(labels, context.abortInfo.oValue as string) != -1;
@@ -207,11 +208,14 @@ namespace NiL.JS.Statements
                                 continue;
                             v.valueType = JSObjectType.String;
                             v.oValue = item.Key;
+                            if (processedKeys.Contains(v.oValue.ToString()))
+                                continue;
+                            processedKeys.Add(v.oValue.ToString());
 #if DEV
                             if (context.debugging && !(body is CodeBlock))
                                 context.raiseDebugger(body);
 #endif
-                            res = body.Evaluate(context) ?? res;
+                            context.lastResult = body.Evaluate(context) ?? context.lastResult;
                             if (context.abort != AbortType.None)
                             {
 
@@ -239,11 +243,14 @@ namespace NiL.JS.Statements
                             var o = keys.Current;
                             v.valueType = JSObjectType.String;
                             v.oValue = o;
+                            if (processedKeys.Contains(v.oValue.ToString()))
+                                continue;
+                            processedKeys.Add(v.oValue.ToString());
 #if DEV
-                        if (context.debugging && !(body is CodeBlock))
-                            context.raiseDebugger(body);
+                            if (context.debugging && !(body is CodeBlock))
+                                context.raiseDebugger(body);
 #endif
-                            res = body.Evaluate(context) ?? res;
+                            context.lastResult = body.Evaluate(context) ?? context.lastResult;
                             if (context.abort != AbortType.None)
                             {
 
@@ -269,7 +276,7 @@ namespace NiL.JS.Statements
                 if (s == JSObject.Null || !s.IsDefinded || (s.valueType >= JSObjectType.Object && s.oValue == null))
                     break;
             }
-            return res;
+            return null;
         }
 
         protected override CodeNode[] getChildsImpl()

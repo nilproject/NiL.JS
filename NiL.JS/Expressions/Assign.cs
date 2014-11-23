@@ -35,6 +35,8 @@ namespace NiL.JS.Expressions
                         setterArgs = new Arguments();
                     var fieldSource = context.objectSource;
                     temp = second.Evaluate(context);
+                    if (tempContainer != null)
+                        tempContainer.Assign(temp);
                     setterArgs.Reset();
                     setterArgs.length = 1;
                     setterArgs[0] = temp;
@@ -43,7 +45,7 @@ namespace NiL.JS.Expressions
                         setter.Invoke(fieldSource, setterArgs);
                     else if (context.strict)
                         throw new JSException(new TypeError("Can not assign to readonly property \"" + first + "\""));
-                    return temp;
+                    return tempContainer ?? temp;
                 }
             }
             else
@@ -78,6 +80,8 @@ namespace NiL.JS.Expressions
             if (r)
                 System.Diagnostics.Debugger.Break();
 #endif
+            if (depth > 1)
+                tempContainer = new JSObject() { attributes = JSObjectAttributesInternal.Temporary };
             return r;
         }
 

@@ -13,7 +13,7 @@ namespace NiL.JS.Statements
     public sealed class TryCatchStatement : CodeNode
     {
         private CodeNode body;
-        private CodeNode catchBody;
+        private CodeBlock catchBody;
         private CodeNode finallyBody;
         private VariableDescriptor catchVariableDesc;
 
@@ -83,9 +83,9 @@ namespace NiL.JS.Statements
                 IsParsed = true,
                 Statement = new TryCatchStatement()
                 {
-                    body = b,
-                    catchBody = cb,
-                    finallyBody = f,
+                    body = (CodeBlock)b,
+                    catchBody = (CodeBlock)cb,
+                    finallyBody = (CodeBlock)f,
                     catchVariableDesc = new VariableDescriptor(exptn, state.functionsDepth + 1),
                     Position = pos,
                     Length = index - pos
@@ -93,7 +93,7 @@ namespace NiL.JS.Statements
             };
         }
 #if !NET35
-        internal override System.Linq.Expressions.Expression CompileToIL(Core.JIT.TreeBuildingState state)
+        /*internal override System.Linq.Expressions.Expression CompileToIL(Core.JIT.TreeBuildingState state)
         {
             var except = Expression.Parameter(typeof(object));
             Expression impl = null;
@@ -224,14 +224,14 @@ namespace NiL.JS.Statements
                     implList);
             }
             return Expression.Block(new[] { except }, impl);
-        }
+        }*/
 #endif
         internal override JSObject Evaluate(Context context)
         {
             Exception except = null;
             try
             {
-                return body.Evaluate(context);
+                body.Evaluate(context);
             }
             catch (Exception e)
             {
@@ -258,6 +258,13 @@ namespace NiL.JS.Statements
 #endif
             var abort = context.abort;
             var ainfo = context.abortInfo;
+            if (abort == AbortType.Return && ainfo != null)
+            {
+                if (ainfo.IsDefinded)
+                    ainfo = ainfo.CloneImpl();
+                else
+                    ainfo = JSObject.Undefined;
+            }
             context.abort = AbortType.None;
             context.abortInfo = JSObject.undefined;
             finallyBody.Evaluate(context);
@@ -271,7 +278,7 @@ namespace NiL.JS.Statements
             return false;
         }
 #if !NET35
-        private Expression makeCatch(ParameterExpression except, Core.JIT.TreeBuildingState state)
+        /*private Expression makeCatch(ParameterExpression except, Core.JIT.TreeBuildingState state)
         {
             if (catchBody == null)
                 return JITHelpers.UndefinedConstant;
@@ -297,7 +304,7 @@ namespace NiL.JS.Statements
                         , Expression.Assign(Expression.Field(JITHelpers.ContextParameter, "abortInfo"), Expression.Field(catchContext, "abortInfo"))
                     ))
                 );
-        }
+        }*/
 #endif
         private void catchHandler(Context context, Exception e)
         {
@@ -306,49 +313,49 @@ namespace NiL.JS.Statements
             if (context.debugging)
                 context.raiseDebugger(catchBody);
 #endif
-            var catchContext = createCatchContext(context);
+            if (catchBody.lines == null || catchBody.lines.Length == 0)
+                return;
+            JSObject cvar = null;
+            if (e is RuntimeWrappedException)
+            {
+                cvar = new JSObject();
+                cvar.Assign((e as RuntimeWrappedException).WrappedException as JSObject);
+            }
+            else
+                cvar = e is JSException ? (e as JSException).Avatar.CloneImpl() : TypeProxy.Proxy(e);
+            cvar.attributes |= JSObjectAttributesInternal.DoNotDelete;
+            var catchContext = new CatchContext(cvar, context, catchVariableDesc.name);
 #if DEBUG
             if (!(e is JSException) && !(e is RuntimeWrappedException))
                 System.Diagnostics.Debugger.Break();
 #endif
-            prepareCatchVar(catchVariableDesc.name, e, catchContext);
             try
             {
                 catchContext.Activate();
-                catchBody.Evaluate(catchContext);
+                catchContext.lastResult = catchBody.Evaluate(catchContext) ?? catchContext.lastResult;
             }
             finally
             {
+                context.lastResult = catchContext.lastResult ?? context.lastResult;
                 catchContext.Deactivate();
             }
             context.abort = catchContext.abort;
             context.abortInfo = catchContext.abortInfo;
         }
 
-        private static void prepareCatchVar(string varName, object e, Context catchContext)
-        {
-            var cvar = catchContext.DefineVariable(varName);
-            if (e is RuntimeWrappedException)
-                cvar.Assign((e as RuntimeWrappedException).WrappedException as JSObject);
-            else
-                cvar.Assign(e is JSException ? (e as JSException).Avatar : TypeProxy.Proxy(e));
-        }
-
-        private static Context createCatchContext(Context context)
-        {
-            return new Context(context, true, context.caller) { strict = context.strict, variables = context.variables };
-        }
-
         internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
         {
-            Parser.Build(ref body, 1, variables, strict);
+            CodeNode b = null;
+            Parser.Build(ref body, depth, variables, strict);
             if (catchBody != null)
             {
                 catchVariableDesc.owner = this;
                 VariableDescriptor oldVarDesc = null;
                 variables.TryGetValue(catchVariableDesc.name, out oldVarDesc);
                 variables[catchVariableDesc.name] = catchVariableDesc;
-                Parser.Build(ref catchBody, 1 + 1, variables, strict);
+                b = catchBody as CodeNode;
+                Parser.Build(ref b, depth, variables, strict);
+                catchBody = b as CodeBlock ?? new CodeBlock(b is EmptyStatement || b == null ? new CodeNode[0] : new[] { b }, strict);
                 if (oldVarDesc != null)
                     variables[catchVariableDesc.name] = oldVarDesc;
                 else
@@ -356,17 +363,28 @@ namespace NiL.JS.Statements
                 foreach (var v in variables)
                     v.Value.captured = true;
             }
-            Parser.Build(ref finallyBody, 1, variables, strict);
+            b = finallyBody as CodeNode;
+            Parser.Build(ref b, depth, variables, strict);
+            finallyBody = b as CodeBlock ?? new CodeBlock(b is EmptyStatement || b == null ? new CodeNode[0] : new[] { b }, strict);
             return false;
         }
 
         internal override void Optimize(ref CodeNode _this, Expressions.FunctionExpression owner)
         {
+            CodeNode b = null;
             body.Optimize(ref body, owner);
             if (catchBody != null)
-                catchBody.Optimize(ref catchBody, owner);
+            {
+                b = catchBody as CodeNode;
+                catchBody.Optimize(ref b, owner);
+                catchBody = b as CodeBlock ?? new CodeBlock(new[] { b }, owner.body.strict);
+            }
             if (finallyBody != null)
-                finallyBody.Optimize(ref finallyBody, owner);
+            {
+                b = finallyBody as CodeNode;
+                finallyBody.Optimize(ref b, owner);
+                finallyBody = b as CodeBlock ?? new CodeBlock(new[] { b }, owner.body.strict);
+            }
         }
 
         protected override CodeNode[] getChildsImpl()

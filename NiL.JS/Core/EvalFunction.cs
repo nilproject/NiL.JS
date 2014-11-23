@@ -39,7 +39,7 @@ namespace NiL.JS.Core
             if (arg.valueType != JSObjectType.String)
                 return arg;
             if ((this.attributes & JSObjectAttributesInternal.Eval) != 0)
-                return Context.CurrentContext.Eval(arg.ToString());
+                return Context.CurrentContext.Eval(arg.ToString(), false);
             Stack<Context> stack = new Stack<Context>();
             try
             {
@@ -55,7 +55,7 @@ namespace NiL.JS.Core
                     root.Activate();
                     try
                     {
-                        return root.Eval(args[0].ToString());
+                        return root.Eval(args[0].ToString(), false);
                     }
                     finally
                     {
@@ -63,7 +63,7 @@ namespace NiL.JS.Core
                     }
                 }
                 else
-                    return ccontext.Eval(args[0].ToString());
+                    return ccontext.Eval(args[0].ToString(), false);
             }
             finally
             {

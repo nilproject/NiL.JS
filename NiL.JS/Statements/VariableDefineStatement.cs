@@ -209,7 +209,7 @@ namespace NiL.JS.Statements
                 if (isConst)
                     this.variables[i].cacheRes.attributes |= JSObjectAttributesInternal.ReadOnly;
             }
-            return JSObject.undefined;
+            return JSObject.notExists;
         }
 
         protected override CodeNode[] getChildsImpl()

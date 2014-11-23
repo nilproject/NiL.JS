@@ -33,7 +33,7 @@ namespace NiL.JS.Statements
 
         internal override JSObject Evaluate(Context context)
         {
-            return JSObject.undefined;
+            return null;
         }
 
         protected override CodeNode[] getChildsImpl()

@@ -32,14 +32,14 @@ namespace NiL.JS.Core.TypeProxing
                             if (hostedType == typeof(JSObject))
                             {
                                 _prototypeInstance = CreateObject();
-                                (_prototypeInstance as JSObject).__proto__ = Null;
+                                (_prototypeInstance as JSObject).__prototype = Null;
                                 (_prototypeInstance as JSObject).fields = fields;
                                 (_prototypeInstance as JSObject).attributes |= JSObjectAttributesInternal.ProxyPrototype;
                             }
                             else if (typeof(JSObject).IsAssignableFrom(hostedType))
                             {
                                 _prototypeInstance = ictor.Invoke(null) as JSObject;
-                                _prototypeInstance.__proto__ = __proto__;
+                                _prototypeInstance.__prototype = __proto__;
                                 _prototypeInstance.attributes |= JSObjectAttributesInternal.ProxyPrototype;
                                 _prototypeInstance.fields = fields;
                                 _prototypeInstance.valueType = (JSObjectType)System.Math.Max((int)JSObjectType.Object, (int)_prototypeInstance.valueType);
@@ -180,7 +180,7 @@ namespace NiL.JS.Core.TypeProxing
                 oValue = this;
                 var pa = type.GetCustomAttributes(typeof(PrototypeAttribute), false);
                 if (pa.Length != 0 && (pa[0] as PrototypeAttribute).PrototypeType != hostedType)
-                    __proto__ = GetPrototype((pa[0] as PrototypeAttribute).PrototypeType).CloneImpl();
+                    __prototype = GetPrototype((pa[0] as PrototypeAttribute).PrototypeType);
                 ictor = hostedType.GetConstructor(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy, null, System.Type.EmptyTypes, null);
 
                 attributes |= JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.SystemObject;

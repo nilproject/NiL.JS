@@ -96,7 +96,9 @@ namespace NiL.JS.Expressions
             }
             else
             {
-                if ((sjso ?? source).fields == null)
+                if ((sjso ?? source).valueType >= JSObjectType.Object
+                    && (((sjso ?? source).attributes & JSObjectAttributesInternal.Immutable) == 0)
+                    && (sjso ?? source).fields == null)
                     (sjso ?? source).fields = JSObject.createFields();
                 sjso = source;
                 tempContainer.Assign(source);

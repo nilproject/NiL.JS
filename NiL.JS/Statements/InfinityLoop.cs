@@ -22,14 +22,13 @@ namespace NiL.JS.Statements
 
         internal override JSObject Evaluate(Context context)
         {
-            JSObject res = JSObject.undefined;
             for (; ; )
             {
 #if DEV
                 if (context.debugging && !(body is CodeBlock))
                     context.raiseDebugger(body);
 #endif
-                res = body.Evaluate(context);
+                context.lastResult = body.Evaluate(context) ?? context.lastResult;
                 if (context.abort != AbortType.None)
                 {
                     var me = context.abortInfo == null || System.Array.IndexOf(labels, context.abortInfo.oValue as string) != -1;
@@ -40,7 +39,7 @@ namespace NiL.JS.Statements
                         context.abortInfo = null;
                     }
                     if (_break)
-                        return res;
+                        return null;
                 }
             }
         }

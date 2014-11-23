@@ -85,7 +85,7 @@ namespace NiL.JS.Statements
             try
             {
                 intcontext.Activate();
-                body.Evaluate(intcontext);
+                context.lastResult = body.Evaluate(intcontext) ?? intcontext.lastResult ?? context.lastResult;
                 context.abort = intcontext.abort;
                 context.abortInfo = intcontext.abortInfo;
             }
@@ -93,7 +93,7 @@ namespace NiL.JS.Statements
             {
                 intcontext.Deactivate();
             }
-            return JSObject.undefined;
+            return null;
         }
 
         protected override CodeNode[] getChildsImpl()
