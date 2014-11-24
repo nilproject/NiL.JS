@@ -53,7 +53,7 @@ namespace NiL.JS.Expressions
                 tempContainer.Assign(source);
                 source = tempContainer;
             }
-            source.SetMember(cachedMemberName ?? second.Evaluate(context), value.Evaluate(context), context.strict);
+            source.SetMember(cachedMemberName ?? second.Evaluate(context), res = value.Evaluate(context), context.strict);
             context.objectSource = null;
             return res;
         }

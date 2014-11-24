@@ -257,7 +257,6 @@ if (a == (a = b, b))
 1[0]
 
 function f(char, count) {
-    console.log(char);
     var r = "";
     while (count-- > 0)
         r += char;
@@ -266,3 +265,5 @@ function f(char, count) {
 
 if (f(1, 3) != "111222333444555666777888999101010")
     throw "Reqursive fail";
+
+a[0] = b[1] = "";
