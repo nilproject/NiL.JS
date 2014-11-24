@@ -154,6 +154,7 @@ namespace NiL.JS.Core.TypeProxing
 
         protected internal override JSObject GetMember(JSObject name, bool forWrite, bool own)
         {
+            forWrite &= (attributes & JSObjectAttributesInternal.Immutable) == 0;
             if (name.valueType == JSObjectType.String && string.CompareOrdinal("length", name.oValue.ToString()) == 0)
             {
                 lenObj.iValue = data.Count;
@@ -201,14 +202,67 @@ namespace NiL.JS.Core.TypeProxing
             }
             if (isIndex)
             {
-                forWrite &= (attributes & JSObjectAttributesInternal.Immutable) == 0;
                 notExists.valueType = JSObjectType.NotExistsInObject;
                 if (index < 0 || index > data.Count)
                     return notExists;
                 return new Element(this, index);
             }
-
             return DefaultFieldGetter(name, forWrite, own);
+        }
+
+        internal override void SetMember(JSObject name, JSObject value, bool strict)
+        {
+            if (name.valueType == JSObjectType.String && string.CompareOrdinal("length", name.oValue.ToString()) == 0)
+                return;
+            bool isIndex = false;
+            int index = 0;
+            JSObject tname = name;
+            if (tname.valueType >= JSObjectType.Object)
+                tname = tname.ToPrimitiveValue_String_Value();
+            switch (tname.valueType)
+            {
+                case JSObjectType.Int:
+                    {
+                        isIndex = tname.iValue >= 0;
+                        index = tname.iValue;
+                        break;
+                    }
+                case JSObjectType.Double:
+                    {
+                        isIndex = tname.dValue >= 0 && tname.dValue < uint.MaxValue && (long)tname.dValue == tname.dValue;
+                        if (isIndex)
+                            index = (int)(uint)tname.dValue;
+                        break;
+                    }
+                case JSObjectType.String:
+                    {
+                        var fc = tname.oValue.ToString()[0];
+                        if ('0' <= fc && '9' >= fc)
+                        {
+                            var dindex = 0.0;
+                            int si = 0;
+                            if (Tools.ParseNumber(tname.oValue.ToString(), ref si, out dindex)
+                                && (si == tname.oValue.ToString().Length)
+                                && dindex >= 0
+                                && dindex < uint.MaxValue
+                                && (long)dindex == dindex)
+                            {
+                                isIndex = true;
+                                index = (int)(uint)dindex;
+                            }
+                        }
+                        break;
+                    }
+            }
+            if (isIndex)
+            {
+                notExists.valueType = JSObjectType.NotExistsInObject;
+                if (index < 0 || index > data.Count)
+                    return;
+                data[index] = value.Value;
+                return;
+            }
+            base.SetMember(name, value, strict);
         }
     }
 }

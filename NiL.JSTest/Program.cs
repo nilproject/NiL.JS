@@ -269,6 +269,8 @@ console.log(list[0]);
 console.log(list[1]);
 console.log(list[2]);
 console.log(list[3]);
+list[3] = 10000;
+console.log(list[3]);
 ");
             var list = new List<int> { 1, 2, 3, 4, 5 };
             s.Context.DefineVariable("list").Assign(new NativeList(list));
@@ -285,7 +287,7 @@ console.log(list[3]);
             Context.GlobalContext.DebuggerCallback += (sender, e) => System.Diagnostics.Debugger.Break();
             Context.GlobalContext.DefineVariable("alert").Assign(new ExternalFunction((t, a) => { System.Windows.Forms.MessageBox.Show(a[0].ToString()); return JSObject.Undefined; }));
 
-            int mode = 104
+            int mode = 0
                    ;
             switch (mode)
             {

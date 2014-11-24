@@ -236,6 +236,65 @@ namespace NiL.JS.Core.BaseTypes
             return base.GetMember(name, forWrite, own);
         }
 
+        internal override void SetMember(JSObject name, JSObject value, bool strict)
+        {
+            if (name.valueType == JSObjectType.String && "length".Equals(name.oValue))
+                return;
+            bool isIndex = false;
+            int index = 0;
+            JSObject tname = name;
+            if (tname.valueType >= JSObjectType.Object)
+                tname = tname.ToPrimitiveValue_String_Value();
+            switch (tname.valueType)
+            {
+                case JSObjectType.Object:
+                case JSObjectType.Bool:
+                    break;
+                case JSObjectType.Int:
+                    {
+                        isIndex = tname.iValue >= 0;
+                        index = tname.iValue;
+                        break;
+                    }
+                case JSObjectType.Double:
+                    {
+                        isIndex = tname.dValue >= 0 && tname.dValue < uint.MaxValue && (long)tname.dValue == tname.dValue;
+                        if (isIndex)
+                            index = (int)(uint)tname.dValue;
+                        break;
+                    }
+                case JSObjectType.String:
+                    {
+                        var fc = tname.oValue.ToString()[0];
+                        if ('0' <= fc && '9' >= fc)
+                        {
+                            var dindex = 0.0;
+                            int si = 0;
+                            if (Tools.ParseNumber(tname.oValue.ToString(), ref si, out dindex)
+                                && (si == tname.oValue.ToString().Length)
+                                && dindex >= 0
+                                && dindex < uint.MaxValue
+                                && (long)dindex == dindex)
+                            {
+                                isIndex = true;
+                                index = (int)(uint)dindex;
+                            }
+                        }
+                        break;
+                    }
+            }
+            if (isIndex)
+            {
+                if (index > 0x7fffffff || index < 0)
+                    throw new JSException(new RangeError("Invalid array index"));
+                if (index >= length.iValue)
+                    return;
+                this[index] = value;
+                return;
+            }
+            base.SetMember(name, value, strict);
+        }
+
         protected internal abstract System.Array ToNativeArray();
         
     }
