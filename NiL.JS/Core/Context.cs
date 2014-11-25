@@ -439,6 +439,17 @@ namespace NiL.JS.Core
         /// Выполняет переданный код скрипта в указанном контексте.
         /// </summary>
         /// <param name="code">Код скрипта на языке JavaScript</param>
+        /// <returns>Результат выполнения кода (аргумент оператора "return" либо результат выполнения последней выполненной строки кода).</returns>
+        public JSObject Eval(string code)
+        {
+            return Eval(code, false);
+        }
+
+        /// <summary>
+        /// Ожидается один аргумент.
+        /// Выполняет переданный код скрипта в указанном контексте.
+        /// </summary>
+        /// <param name="code">Код скрипта на языке JavaScript</param>
         /// <param name="inplace">Если истина, переменные объявленные в ходе выполнения, не будут доступны для удаления</param>
         /// <returns>Результат выполнения кода (аргумент оператора "return" либо результат выполнения последней выполненной строки кода).</returns>
         public JSObject Eval(string code, bool inplace)

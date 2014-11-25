@@ -118,7 +118,7 @@ namespace NiL.JS.Core.BaseTypes
         [DoNotEnumerate]
         protected TypedArray(JSObject iterablyObject)
         {
-            var src = Tools.iterableToArray(iterablyObject, true, false, false);
+            var src = Tools.iterableToArray(iterablyObject, true, false, false, -1);
             if (src.data.Length > int.MaxValue)
                 throw new System.OutOfMemoryException();
             var length = (int)src.data.Length;

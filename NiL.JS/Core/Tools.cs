@@ -1249,7 +1249,7 @@ namespace NiL.JS.Core
             return res;
         }
 
-        internal static BaseTypes.Array iterableToArray(JSObject src, bool evalProps, bool clone, bool reassignLen, long _length = -1)
+        internal static BaseTypes.Array iterableToArray(JSObject src, bool evalProps, bool clone, bool reassignLen, long _length)
         {
             BaseTypes.Array temp = new BaseTypes.Array();
             HashSet<string> processedKeys = null;

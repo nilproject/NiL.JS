@@ -259,14 +259,14 @@ namespace NiL.JS.Core.BaseTypes
                 res = new Array() { _this };
             }
             else
-                res = Tools.iterableToArray(this, true, true, false);
+                res = Tools.iterableToArray(this, true, true, false, -1);
             for (var i = 0; i < args.length; i++)
             {
                 var v = args[i];
                 var varr = v.oValue as Array;
                 if (varr != null)
                 {
-                    varr = Tools.iterableToArray(varr, true, false, false);
+                    varr = Tools.iterableToArray(varr, true, false, false, -1);
                     for (var ai = 0; ai < varr.data.Length; ai++)
                     {
                         var item = varr.data[ai];
@@ -290,7 +290,7 @@ namespace NiL.JS.Core.BaseTypes
             if (!src.IsDefinded || (src.valueType >= JSObjectType.Object && src.oValue == null))
                 throw new JSException(new TypeError("Can not call Array.prototype.every for null or undefined"));
             if (!nativeMode)
-                src = Tools.iterableToArray(src, false, false, false);
+                src = Tools.iterableToArray(src, false, false, false, -1);
             Function f = args[0] == null ? null : args[0].oValue as Function;
             if (f == null)
                 throw new JSException(new TypeError("Callback argument is not a function."));
@@ -379,7 +379,7 @@ namespace NiL.JS.Core.BaseTypes
             if (!src.IsDefinded || (src.valueType >= JSObjectType.Object && src.oValue == null))
                 throw new JSException(new TypeError("Can not call Array.prototype.some for null or undefined"));
             if (!nativeMode)
-                src = Tools.iterableToArray(src, false, false, false);
+                src = Tools.iterableToArray(src, false, false, false, -1);
             Function f = args[0] == null ? null : args[0].oValue as Function;
             if (f == null)
                 throw new JSException(new TypeError("Callback argument is not a function."));
@@ -468,7 +468,7 @@ namespace NiL.JS.Core.BaseTypes
             if (!src.IsDefinded || (src.valueType >= JSObjectType.Object && src.oValue == null))
                 throw new JSException(new TypeError("Can not call Array.prototype.filter for null or undefined"));
             if (!nativeMode)
-                src = Tools.iterableToArray(src, false, false, false);
+                src = Tools.iterableToArray(src, false, false, false, -1);
             Function f = args[0] == null ? null : args[0].oValue as Function;
             if (f == null)
                 throw new JSException(new TypeError("Callback argument is not a function."));
@@ -562,7 +562,7 @@ namespace NiL.JS.Core.BaseTypes
             if (!src.IsDefinded || (src.valueType >= JSObjectType.Object && src.oValue == null))
                 throw new JSException(new TypeError("Can not call Array.prototype.map for null or undefined"));
             if (!nativeMode)
-                src = Tools.iterableToArray(src, false, false, false);
+                src = Tools.iterableToArray(src, false, false, false, -1);
             Function f = args[0] == null ? null : args[0].oValue as Function;
             if (f == null)
                 throw new JSException(new TypeError("Callback argument is not a function."));
@@ -652,7 +652,7 @@ namespace NiL.JS.Core.BaseTypes
             if (!src.IsDefinded || (src.valueType >= JSObjectType.Object && src.oValue == null))
                 throw new JSException(new TypeError("Can not call Array.prototype.forEach for null or undefined"));
             if (!nativeMode)
-                src = Tools.iterableToArray(src, false, false, false);
+                src = Tools.iterableToArray(src, false, false, false, -1);
             Function f = args[0] == null ? null : args[0].oValue as Function;
             if (f == null)
                 throw new JSException(new TypeError("Callback argument is not a function."));
@@ -860,7 +860,7 @@ namespace NiL.JS.Core.BaseTypes
             }
             else
             {
-                return Tools.iterableToArray(this, true, false, false).joinImpl(separator, locale);
+                return Tools.iterableToArray(this, true, false, false, -1).joinImpl(separator, locale);
             }
         }
 
@@ -1148,7 +1148,7 @@ namespace NiL.JS.Core.BaseTypes
             //if (this.GetType() != typeof(Array)) // при переборе должны быть получены значения из прототипов. 
             // Если просто запрашивать пропущенные индексы, то может быть большое падение производительности в случаях
             // когда пропуски очень огромны и элементов реально нет ни здесь, ни в прототипе
-            src = Tools.iterableToArray(this, false, false, false);
+            src = Tools.iterableToArray(this, false, false, false, -1);
             var func = args[0].oValue as Function;
             var accum = new JSObject() { valueType = JSObjectType.NotExists };
             if (args.length > 1)
@@ -1222,7 +1222,7 @@ namespace NiL.JS.Core.BaseTypes
             }
             var src = this;
             //if (this.GetType() != typeof(Array))
-            src = Tools.iterableToArray(this, false, false, false);
+            src = Tools.iterableToArray(this, false, false, false, -1);
             var func = args[0].oValue as Function;
             var accum = new JSObject() { valueType = JSObjectType.NotExists };
             if (args.length > 1)
@@ -1314,7 +1314,7 @@ namespace NiL.JS.Core.BaseTypes
                     prew = (uint)item.Key;
                 }
                 if (len - prew > 1)
-                    source = Tools.iterableToArray(this, false, false, false);
+                    source = Tools.iterableToArray(this, false, false, false, -1);
                 JSObject prw = null;
                 foreach (var item in (source.data as IEnumerable<KeyValuePair<int, JSObject>>))
                 {
@@ -1383,7 +1383,7 @@ namespace NiL.JS.Core.BaseTypes
                     this["length"] = lenObj = _length - 1;
                     return res;
                 }
-                var protoSource = Tools.iterableToArray(this, false, true, false);
+                var protoSource = Tools.iterableToArray(this, false, true, false, -1);
                 this["length"] = lenObj = _length - 1;
 
                 List<string> keysToRemove = new List<string>();
