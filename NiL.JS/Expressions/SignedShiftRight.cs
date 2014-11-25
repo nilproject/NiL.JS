@@ -1,6 +1,5 @@
 ﻿using System;
 using NiL.JS.Core;
-using NiL.JS.Statements;
 
 namespace NiL.JS.Expressions
 {
