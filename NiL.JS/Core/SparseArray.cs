@@ -96,7 +96,9 @@ namespace NiL.JS.Core
                 uint i = 0;
                 if (_index < allocatedCount)
                 {
-                    bi = navyData[(int)_index].bitIndex;
+                    if (navyData[index].index == _index)
+                        return values[index];
+                    bi = navyData[index].bitIndex;
                     i = (uint)(-1 ^ ((1 << bi) - 1));
                     if ((navyData[_index].index & i) != (_index & i))
                     {
@@ -138,6 +140,11 @@ namespace NiL.JS.Core
                     pseudoLength = 1;
                 }
                 uint _index = (uint)index;
+                if (_index < allocatedCount)
+                {
+                    if (navyData[index].index == _index)
+                        values[index] = value;
+                }
                 int bi = 31;
                 for (uint i = 0, ni = 0; ; bi--)
                 {
