@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using NiL.JS.Core.Modules;
 
@@ -46,9 +47,9 @@ namespace NiL.JS.Core.BaseTypes
                                                 new[]{ 334 * _dayMilliseconds, 335 * _dayMilliseconds },
                                                 new[]{ 365 * _dayMilliseconds, 366 * _dayMilliseconds } };
 
-        private static readonly string[] daysOfWeekNames = { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun", };
+        private static readonly string[] daysOfWeek = { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun", };
 
-        private readonly static string[] month = new[] { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+        private readonly static string[] months = new[] { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
 
         private static long dateToMilliseconds(long year, long month, long day, long hour, long minute, long second, long millisecond)
         {
@@ -77,6 +78,224 @@ namespace NiL.JS.Core.BaseTypes
             time += second * 1000;
             time += millisecond;
             return time;
+        }
+
+        private static IEnumerable<string> tokensOf(string source)
+        {
+            int position = 0;
+            int prewPos = 0;
+            while (position < source.Length)
+            {
+                if (source[position] == '(' && (prewPos == position || source.IndexOf(':', prewPos, position - prewPos) == -1))
+                {
+                    if (prewPos != position)
+                    {
+                        yield return source.Substring(prewPos, position - prewPos);
+                        prewPos = position;
+                    }
+                    int depth = 1;
+                    position++;
+                    while (depth > 0 && position < source.Length)
+                    {
+                        switch (source[position++])
+                        {
+                            case '(':
+                                depth++;
+                                break;
+                            case ')':
+                                depth--;
+                                break;
+                        }
+                    }
+                    prewPos = position;
+                    continue;
+                }
+                if (!char.IsWhiteSpace(source[position]))
+                {
+                    position++;
+                    continue;
+                }
+                if (prewPos != position)
+                {
+                    yield return source.Substring(prewPos, position - prewPos);
+                    prewPos = position;
+                }
+                else
+                    prewPos = ++position;
+            }
+            if (prewPos != position)
+                yield return source.Substring(prewPos);
+        }
+
+        private static int indexOf(IList<string> list, string value, bool ignoreCase)
+        {
+            for (var i = 0; i < list.Count; i++)
+                if (string.Compare(list[i], value, ignoreCase ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal) == 0)
+                    return i;
+            return -1;
+        }
+
+        private static bool parseSelf(string timeStr, out long time, out long timeZoneOffset)
+        {
+            timeStr = timeStr.Trim(Tools.TrimChars);
+            if (string.IsNullOrEmpty(timeStr))
+            {
+                time = 0;
+                timeZoneOffset = 0;
+                return false;
+            }
+            time = 0;
+            timeZoneOffset = 0;
+            bool wasForceMonth = false;
+            bool wasMonth = false;
+            bool wasDay = false;
+            bool wasYear = false;
+            bool wasTZ = false;
+            bool wasTzo = false;
+            int month = 0;
+            int year = 0;
+            int day = 1;
+            string[] timeTokens = null;
+            int tzoH = 0;
+            int tzoM = 0;
+            int temp = 0;
+            bool pm = false;
+            foreach (var token in tokensOf(timeStr))
+            {
+                if (indexOf(daysOfWeek, token, true) != -1)
+                    continue;
+                var index = indexOf(months, token, true);
+                if (index != -1)
+                {
+                    if (wasMonth)
+                    {
+                        if (wasForceMonth
+                            || (wasDay && wasYear))
+                            return false;
+                        if (!wasDay)
+                        {
+                            day = month;
+                            wasDay = true;
+                        }
+                        else if (!wasYear)
+                        {
+                            year = month;
+                            wasYear = true;
+                        }
+                        else return false;
+                    }
+                    wasForceMonth = true;
+                    wasMonth = true;
+                    month = index + 1;
+                    continue;
+                }
+                if (int.TryParse(token, out index))
+                {
+                    if (!wasMonth && index <= 12 && index > 0)
+                    {
+                        month = index;
+                        wasMonth = true;
+                        continue;
+                    }
+                    if (!wasDay && index > 0 && index <= 31)
+                    {
+                        day = index;
+                        wasDay = true;
+                        continue;
+                    }
+                    if (!wasYear)
+                    {
+                        if ((wasDay || wasMonth)
+                            && (!wasDay || !wasMonth))
+                            return false;
+                        year = index;
+                        wasYear = true;
+                        continue;
+                    }
+                    return false;
+                }
+                if (token.IndexOf(':') != -1)
+                {
+                    if (timeTokens != null)
+                        return false;
+                    timeTokens = token.Split(':');
+                    continue;
+                }
+                if (token.StartsWith("gmt", StringComparison.OrdinalIgnoreCase)
+                    || (token.StartsWith("ut", StringComparison.OrdinalIgnoreCase) && (token.Length == 2 || token[2] == 'c' || token[2] == 'C'))
+                    || token.StartsWith("pst", StringComparison.OrdinalIgnoreCase)
+                    || token.StartsWith("pdt", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (wasTZ)
+                        return false;
+                    if (token.Length <= 3)
+                    {
+                        //var tzo = TimeZone.CurrentTimeZone.GetUtcOffset(DateTime.Now);
+                        //tzoH += tzo.Hours;
+                        //tzoM += tzo.Minutes;
+                    }
+                    else
+                    {
+                        if (wasTzo)
+                            return false;
+                        if (!int.TryParse(token.Substring(3), out temp))
+                            return false;
+                        tzoM += temp % 100;
+                        tzoH += temp / 100;
+                    }
+                    if (token.StartsWith("pst", StringComparison.OrdinalIgnoreCase))
+                        tzoH -= 8;
+                    if (token.StartsWith("pdt", StringComparison.OrdinalIgnoreCase))
+                        tzoH -= 7;
+                    wasTZ = true;
+                    continue;
+                }
+                if (!wasTzo && (token[0] == '+' || token[0] == '-') && int.TryParse(token.Substring(3), out temp))
+                {
+                    tzoM += temp % 100;
+                    tzoH += temp / 100;
+                    wasTzo = true;
+                    wasTZ = true;
+                    continue;
+                }
+                if (string.Compare("am", token, StringComparison.OrdinalIgnoreCase) == 0)
+                {
+                    continue;
+                }
+                if (string.Compare("pm", token, StringComparison.OrdinalIgnoreCase) == 0)
+                {
+                    pm = true;
+                    continue;
+                }
+                if (wasDay)
+                    return false;
+            }
+            try
+            {
+                if ((wasDay || wasMonth || wasYear)
+                    && (!wasDay || !wasMonth || !wasYear))
+                    return false;
+                if (year < 100)
+                    year += (DateTime.Now.Year / 100) * 100;
+                time = dateToMilliseconds(year, month - 1, day,
+                    timeTokens != null && timeTokens.Length > 0 ? (long)double.Parse(timeTokens[0]) - tzoH : -tzoH,
+                    timeTokens != null && timeTokens.Length > 1 ? (long)double.Parse(timeTokens[1]) - tzoM : -tzoM,
+                    timeTokens != null && timeTokens.Length > 2 ? (long)double.Parse(timeTokens[2]) : 0,
+                    timeTokens != null && timeTokens.Length > 3 ? (long)double.Parse(timeTokens[3]) : 0
+                    );
+                if (pm)
+                    time += _hourMilliseconds * 12;
+                timeZoneOffset = TimeZone.CurrentTimeZone.GetUtcOffset(DateTime.Now).Ticks / 10000;
+                if (wasTZ)
+                {
+                    time += timeZoneOffset;
+                }
+            }
+            catch
+            {
+                return false;
+            }
+            return true;
         }
 
         private static bool parseByFormat(string format, string timeStr, out long time, out long timeZoneOffset)
@@ -184,6 +403,18 @@ namespace NiL.JS.Core.BaseTypes
             return true;
         }
 
+        private static bool tryParse(string timeString, out long time, out long tzo)
+        {
+            return (parseByFormat("YYYY-MM-DDTHH:MM:SS.SSS", timeString, out time, out tzo)
+             || parseByFormat("YYYY-MM-DDTHH:MM:SS", timeString, out time, out tzo)
+             || parseByFormat("YYYY-MM-DDTHH:MM", timeString, out time, out tzo)
+             || parseByFormat("YYYY-MM-DDTHH", timeString, out time, out tzo)
+             || parseByFormat("YYYY-MM-DD", timeString, out time, out tzo)
+             || parseByFormat("YYYY-MM", timeString, out time, out tzo)
+             || parseByFormat("YYYY", timeString, out time, out tzo)
+             || parseSelf(timeString, out time, out tzo));
+        }
+
         private static bool isLeap(int year)
         {
             return (year % 4 == 0 && year % 100 != 0) || year % 400 == 0;
@@ -222,181 +453,14 @@ namespace NiL.JS.Core.BaseTypes
                                 error = true;
                                 break;
                             }
-                            timeZoneOffset = TimeZone.CurrentTimeZone.GetUtcOffset(new DateTime((((long)timeValue) % _400yearsMilliseconds + _unixTimeBase) * 10000)).Ticks / 10000;
-                            time = (long)timeValue + _unixTimeBase + timeZoneOffset;
+                            time = (long)timeValue + _unixTimeBase;
+                            timeZoneOffset = TimeZone.CurrentTimeZone.GetUtcOffset(DateTime.Now).Ticks / 10000;
+                            time += timeZoneOffset;
                             break;
                         }
                     case JSObjectType.String:
                         {
-                            long tzo = 0;
-                            var tstr = arg.ToString();
-                            /*if (!parseByFormat("YYYY-MM-DDTHH:MM:SS.SSS", tstr, out time, out tzo)
-                                //&& !parseByFormat("YYYY-MM-DDTHH:MM:SS", tstr, out time, out tzo)
-                                //&& !parseByFormat("YYYY-MM-DDTHH:MM", tstr, out time, out tzo)
-                                //&& !parseByFormat("YYYY-MM-DDTHH", tstr, out time, out tzo)
-                                //&& !parseByFormat("YYYY-MM-DD", tstr, out time, out tzo)
-                                //&& !parseByFormat("YYYY-MM", tstr, out time, out tzo)
-                                && !parseByFormat("YYYY", tstr, out time, out tzo))
-                            {
-                                if (!parseByFormat("YYYY MM DD HH:MM:SS +OOOO", tstr, out time, out tzo)
-                                    && !parseByFormat("YYYY MM DD HH:MM +OOOO", tstr, out time, out tzo)
-                                    && !parseByFormat("YYYY MM DD HH: +OOOO", tstr, out time, out tzo)
-                                    && !parseByFormat("YYYY MM DD +OOOO", tstr, out time, out tzo)
-
-                                    && !parseByFormat("YYYY MM HH:MM:SS +OOOO", tstr, out time, out tzo)
-                                    && !parseByFormat("YYYY MM HH:MM +OOOO", tstr, out time, out tzo)
-                                    && !parseByFormat("YYYY MM HH: +OOOO", tstr, out time, out tzo)
-                                    && !parseByFormat("YYYY MM +OOOO", tstr, out time, out tzo)
-
-                                    && !parseByFormat("YYYY HH:MM:SS +OOOO", tstr, out time, out tzo)
-                                    && !parseByFormat("YYYY HH:MM +OOOO", tstr, out time, out tzo)
-                                    && !parseByFormat("YYYY HH: +OOOO", tstr, out time, out tzo)
-
-                                    && !parseByFormat("MM DD YYYY HH:MM:SS +OOOO", tstr, out time, out tzo)
-                                    && !parseByFormat("MM DD YYYY HH:MM +OOOO", tstr, out time, out tzo)
-                                    && !parseByFormat("MM DD YYYY HH: +OOOO", tstr, out time, out tzo)
-                                    && !parseByFormat("MM DD YYYY +OOOO", tstr, out time, out tzo)
-
-                                    && !parseByFormat("MM DD YY HH:MM:SS +OOOO", tstr, out time, out tzo)
-                                    && !parseByFormat("MM DD YY HH:MM +OOOO", tstr, out time, out tzo)
-                                    && !parseByFormat("MM DD YY HH: +OOOO", tstr, out time, out tzo)
-                                    && !parseByFormat("MM DD YY +OOOO", tstr, out time, out tzo)
-
-                                    && !parseByFormat("YYYY/MM/DD HH:MM:SS +OOOO", tstr, out time, out tzo)
-                                    && !parseByFormat("YYYY/MM/DD HH:MM +OOOO", tstr, out time, out tzo)
-                                    && !parseByFormat("YYYY/MM/DD HH: +OOOO", tstr, out time, out tzo)
-                                    && !parseByFormat("YYYY/MM/DD +OOOO", tstr, out time, out tzo)
-
-                                    && !parseByFormat("YYYY/MM HH:MM:SS +OOOO", tstr, out time, out tzo)
-                                    && !parseByFormat("YYYY/MM HH:MM +OOOO", tstr, out time, out tzo)
-                                    && !parseByFormat("YYYY/MM HH: +OOOO", tstr, out time, out tzo)
-                                    && !parseByFormat("YYYY/MM +OOOO", tstr, out time, out tzo)
-
-                                    && !parseByFormat("YYYY HH:MM:SS +OOOO", tstr, out time, out tzo)
-                                    && !parseByFormat("YYYY HH:MM +OOOO", tstr, out time, out tzo)
-                                    && !parseByFormat("YYYY HH: +OOOO", tstr, out time, out tzo)
-
-                                    && !parseByFormat("MM/DD/YYYY HH:MM:SS  +OOOO", tstr, out time, out tzo)
-                                    && !parseByFormat("MM/DD/YYYY HH:MM  +OOOO", tstr, out time, out tzo)
-                                    && !parseByFormat("MM/DD/YYYY HH:  +OOOO", tstr, out time, out tzo)
-                                    && !parseByFormat("MM/DD/YYYY  +OOOO", tstr, out time, out tzo)
-
-                                    && !parseByFormat("MM/DD/YY HH:MM:SS +OOOO", tstr, out time, out tzo)
-                                    && !parseByFormat("MM/DD/YY HH:MM +OOOO", tstr, out time, out tzo)
-                                    && !parseByFormat("MM/DD/YY HH: +OOOO", tstr, out time, out tzo)
-                                    && !parseByFormat("MM/DD/YY +OOOO", tstr, out time, out tzo)
-
-                                    && !parseByFormat("YYYY MM DD HH:MM:SS", tstr, out time, out tzo)
-                                    && !parseByFormat("YYYY MM DD HH:MM", tstr, out time, out tzo)
-                                    && !parseByFormat("YYYY MM DD HH:", tstr, out time, out tzo)
-                                    && !parseByFormat("YYYY MM DD", tstr, out time, out tzo)
-
-                                    && !parseByFormat("YYYY MM HH:MM:SS", tstr, out time, out tzo)
-                                    && !parseByFormat("YYYY MM HH:MM", tstr, out time, out tzo)
-                                    && !parseByFormat("YYYY MM HH:", tstr, out time, out tzo)
-                                    && !parseByFormat("YYYY MM", tstr, out time, out tzo)
-
-                                    && !parseByFormat("YYYY HH:MM:SS", tstr, out time, out tzo)
-                                    && !parseByFormat("YYYY HH:MM", tstr, out time, out tzo)
-                                    && !parseByFormat("YYYY HH:", tstr, out time, out tzo)
-
-                                    && !parseByFormat("MM DD YYYY HH:MM:SS", tstr, out time, out tzo)
-                                    && !parseByFormat("MM DD YYYY HH:MM", tstr, out time, out tzo)
-                                    && !parseByFormat("MM DD YYYY HH:", tstr, out time, out tzo)
-                                    && !parseByFormat("MM DD YYYY", tstr, out time, out tzo)
-
-                                    && !parseByFormat("MM DD YY HH:MM:SS", tstr, out time, out tzo)
-                                    && !parseByFormat("MM DD YY HH:MM", tstr, out time, out tzo)
-                                    && !parseByFormat("MM DD YY HH:", tstr, out time, out tzo)
-                                    && !parseByFormat("MM DD YY", tstr, out time, out tzo)
-
-                                    && !parseByFormat("YYYY/MM/DD HH:MM:SS", tstr, out time, out tzo)
-                                    && !parseByFormat("YYYY/MM/DD HH:MM", tstr, out time, out tzo)
-                                    && !parseByFormat("YYYY/MM/DD HH:", tstr, out time, out tzo)
-                                    && !parseByFormat("YYYY/MM/DD", tstr, out time, out tzo)
-
-                                    && !parseByFormat("YYYY/MM HH:MM:SS", tstr, out time, out tzo)
-                                    && !parseByFormat("YYYY/MM HH:MM", tstr, out time, out tzo)
-                                    && !parseByFormat("YYYY/MM HH:", tstr, out time, out tzo)
-                                    && !parseByFormat("YYYY/MM", tstr, out time, out tzo)
-
-                                    && !parseByFormat("YYYY HH:MM:SS", tstr, out time, out tzo)
-                                    && !parseByFormat("YYYY HH:MM", tstr, out time, out tzo)
-                                    && !parseByFormat("YYYY HH:", tstr, out time, out tzo)
-
-                                    && !parseByFormat("MM/DD/YYYY HH:MM:SS", tstr, out time, out tzo)
-                                    && !parseByFormat("MM/DD/YYYY HH:MM", tstr, out time, out tzo)
-                                    && !parseByFormat("MM/DD/YYYY HH:", tstr, out time, out tzo)
-                                    && !parseByFormat("MM/DD/YYYY", tstr, out time, out tzo)
-
-                                    && !parseByFormat("MM/DD/YY HH:MM:SS", tstr, out time, out tzo)
-                                    && !parseByFormat("MM/DD/YY HH:MM", tstr, out time, out tzo)
-                                    && !parseByFormat("MM/DD/YY HH:", tstr, out time, out tzo)
-                                    && !parseByFormat("MM/DD/YY", tstr, out time, out tzo))
-                                    error = true;
-                            }
-                            
-                            timeZoneOffset = TimeZone.CurrentTimeZone.GetUtcOffset(new DateTime((((long)time) % _400yearsMilliseconds + _unixTimeBase) * 10000)).Ticks / 10000;*/
-                            DateTime dt;
-                            if (DateTime.TryParse(tstr, null, DateTimeStyles.AllowInnerWhite | DateTimeStyles.AllowWhiteSpaces, out dt))
-                            {
-                                time = dt.Ticks / 10000;
-                                timeZoneOffset = TimeZone.CurrentTimeZone.GetUtcOffset(dt).Ticks / 10000;
-                            }
-                            else if (parseByFormat("YYYY MM DD HH:MM:SS", tstr, out time, out tzo)
-                                    || parseByFormat("YYYY MM DD HH:MM", tstr, out time, out tzo)
-                                    || parseByFormat("YYYY MM DD HH:", tstr, out time, out tzo)
-                                    || parseByFormat("YYYY MM DD", tstr, out time, out tzo)
-
-                                    || parseByFormat("YYYY MM HH:MM:SS", tstr, out time, out tzo)
-                                    || parseByFormat("YYYY MM HH:MM", tstr, out time, out tzo)
-                                    || parseByFormat("YYYY MM HH:", tstr, out time, out tzo)
-                                    || parseByFormat("YYYY MM", tstr, out time, out tzo)
-
-                                    || parseByFormat("YYYY HH:MM:SS", tstr, out time, out tzo)
-                                    || parseByFormat("YYYY HH:MM", tstr, out time, out tzo)
-                                    || parseByFormat("YYYY HH:", tstr, out time, out tzo)
-
-                                    || parseByFormat("MM DD YYYY HH:MM:SS", tstr, out time, out tzo)
-                                    || parseByFormat("MM DD YYYY HH:MM", tstr, out time, out tzo)
-                                    || parseByFormat("MM DD YYYY HH:", tstr, out time, out tzo)
-                                    || parseByFormat("MM DD YYYY", tstr, out time, out tzo)
-
-                                    || parseByFormat("MM DD YY HH:MM:SS", tstr, out time, out tzo)
-                                    || parseByFormat("MM DD YY HH:MM", tstr, out time, out tzo)
-                                    || parseByFormat("MM DD YY HH:", tstr, out time, out tzo)
-                                    || parseByFormat("MM DD YY", tstr, out time, out tzo)
-
-                                    || parseByFormat("YYYY/MM/DD HH:MM:SS", tstr, out time, out tzo)
-                                    || parseByFormat("YYYY/MM/DD HH:MM", tstr, out time, out tzo)
-                                    || parseByFormat("YYYY/MM/DD HH:", tstr, out time, out tzo)
-                                    || parseByFormat("YYYY/MM/DD", tstr, out time, out tzo)
-
-                                    || parseByFormat("YYYY/MM HH:MM:SS", tstr, out time, out tzo)
-                                    || parseByFormat("YYYY/MM HH:MM", tstr, out time, out tzo)
-                                    || parseByFormat("YYYY/MM HH:", tstr, out time, out tzo)
-                                    || parseByFormat("YYYY/MM", tstr, out time, out tzo)
-
-                                    || parseByFormat("YYYY HH:MM:SS", tstr, out time, out tzo)
-                                    || parseByFormat("YYYY HH:MM", tstr, out time, out tzo)
-                                    || parseByFormat("YYYY HH:", tstr, out time, out tzo)
-                                    || parseByFormat("YYYY", tstr, out time, out tzo)
-
-                                    || parseByFormat("MM/DD/YYYY HH:MM:SS", tstr, out time, out tzo)
-                                    || parseByFormat("MM/DD/YYYY HH:MM", tstr, out time, out tzo)
-                                    || parseByFormat("MM/DD/YYYY HH:", tstr, out time, out tzo)
-                                    || parseByFormat("MM/DD/YYYY", tstr, out time, out tzo)
-
-                                    || parseByFormat("MM/DD/YY HH:MM:SS", tstr, out time, out tzo)
-                                    || parseByFormat("MM/DD/YY HH:MM", tstr, out time, out tzo)
-                                    || parseByFormat("MM/DD/YY HH:", tstr, out time, out tzo)
-                                    || parseByFormat("MM/DD/YY", tstr, out time, out tzo))
-                            {
-                                timeZoneOffset = TimeZone.CurrentTimeZone.GetUtcOffset(new DateTime((((long)time) % _400yearsMilliseconds + _unixTimeBase) * 10000)).Ticks / 10000;
-                                time = time + timeZoneOffset;
-                            }
-                            else
-                                error = true;
+                            error = !tryParse(args.a0.ToString(), out time, out timeZoneOffset);
                             break;
                         }
                 }
@@ -479,8 +543,25 @@ namespace NiL.JS.Core.BaseTypes
                 if (y < 100)
                     y += 1900;
                 time = dateToMilliseconds(y, m, d, h, n, s, ms);
-                timeZoneOffset = TimeZone.CurrentTimeZone.GetUtcOffset(new DateTime((((long)time) % _400yearsMilliseconds + _unixTimeBase) * 10000)).Ticks / 10000;
+                timeZoneOffset = TimeZone.CurrentTimeZone.GetUtcOffset(DateTime.Now).Ticks / 10000;
                 //time += timeZoneOffset;
+            }
+        }
+
+        private void offsetTimeValue(JSObject value, long amort, long mul)
+        {
+            if (value == null
+               || !value.IsDefinded
+               || (value.valueType == JSObjectType.Double && (double.IsNaN(value.dValue) || double.IsInfinity(value.dValue))))
+            {
+                error = true;
+                time = 0;
+            }
+            else
+            {
+                this.time = this.time + (-amort + Tools.JSObjectToInt64(value)) * mul;
+                if (this.time < 5992660800000)
+                    error = true;
             }
         }
 
@@ -503,8 +584,7 @@ namespace NiL.JS.Core.BaseTypes
         {
             var time = DateTime.Now.Ticks / 10000;
             var timeZoneOffset = TimeZone.CurrentTimeZone.GetUtcOffset(new DateTime((((long)DateTime.Now.Ticks) % _400yearsMilliseconds + _unixTimeBase) * 10000)).Ticks / 10000;
-
-            return time - timeZoneOffset - _unixTimeBase;
+            return time + timeZoneOffset - _unixTimeBase;
         }
 
         [DoNotEnumerate]
@@ -519,14 +599,14 @@ namespace NiL.JS.Core.BaseTypes
         [DoNotEnumerate]
         public JSObject getYear()
         {
-            var t = getFullYear();
-            t.iValue -= 1900;
-            return t;
+            return getFullYear();
         }
 
         [DoNotEnumerate]
         public JSObject getFullYear()
         {
+            if (error)
+                return Number.NaN;
             return getYearImpl();
         }
 
@@ -552,6 +632,8 @@ namespace NiL.JS.Core.BaseTypes
         [DoNotEnumerate]
         public JSObject getMonth()
         {
+            if (error)
+                return Number.NaN;
             return getMonthImpl();
         }
 
@@ -584,6 +666,8 @@ namespace NiL.JS.Core.BaseTypes
         [DoNotEnumerate]
         public JSObject getDate()
         {
+            if (error)
+                return Number.NaN;
             return getDateImpl();
         }
 
@@ -630,6 +714,8 @@ namespace NiL.JS.Core.BaseTypes
         [DoNotEnumerate]
         public JSObject getHours()
         {
+            if (error)
+                return Number.NaN;
             return getHoursImpl();
         }
 
@@ -648,6 +734,8 @@ namespace NiL.JS.Core.BaseTypes
         [DoNotEnumerate]
         public JSObject getMinutes()
         {
+            if (error)
+                return Number.NaN;
             return getMinutesImpl();
         }
 
@@ -660,12 +748,16 @@ namespace NiL.JS.Core.BaseTypes
         [DoNotEnumerate]
         public JSObject getUTCMinutes()
         {
+            if (error)
+                return Number.NaN;
             return getMinutes();
         }
 
         [DoNotEnumerate]
         public JSObject getSeconds()
         {
+            if (error)
+                return Number.NaN;
             return getSecondsImpl();
         }
 
@@ -685,6 +777,8 @@ namespace NiL.JS.Core.BaseTypes
         [DoNotEnumerate]
         public JSObject getMilliseconds()
         {
+            if (error)
+                return Number.NaN;
             return getMillisecondsImpl();
         }
 
@@ -704,141 +798,125 @@ namespace NiL.JS.Core.BaseTypes
         [DoNotEnumerate]
         public JSObject setTime(JSObject time)
         {
-            this.time = Tools.JSObjectToInt64(time);
-            return time;
+            if (time == null
+                || !time.IsDefinded
+                || (time.valueType == JSObjectType.Double && (double.IsNaN(time.dValue) || double.IsInfinity(time.dValue))))
+            {
+                error = true;
+                time = 0;
+            }
+            else
+            {
+                this.time = Tools.JSObjectToInt64(time) + _unixTimeBase + timeZoneOffset;
+                error = this.time < 5992660800000;
+            }
+            return getTime();
         }
 
         [DoNotEnumerate]
         public JSObject setMilliseconds(JSObject milliseconds)
         {
-            this.time = this.time - getMillisecondsImpl() + Tools.JSObjectToInt64(milliseconds);
-            return milliseconds;
+            offsetTimeValue(milliseconds, getMillisecondsImpl(), 1);
+            return getMilliseconds();
         }
 
         [DoNotEnumerate]
         public JSObject setUTCMilliseconds(JSObject milliseconds)
         {
-            this.time = this.time - getMillisecondsImpl() + Tools.JSObjectToInt64(milliseconds);
-            return milliseconds;
+            return setMilliseconds(milliseconds);
         }
 
         [DoNotEnumerate]
         public JSObject setSeconds(JSObject seconds, JSObject milliseconds)
         {
             if (seconds != null && seconds.IsExist)
-                this.time = this.time + (-getSecondsImpl() + Tools.JSObjectToInt64(seconds)) * 1000;
-            if (milliseconds != null && milliseconds.IsExist)
-                time = (time % 1000) + (Tools.JSObjectToInt64(milliseconds) % 1000);
-            return seconds;
+                offsetTimeValue(seconds, getSecondsImpl(), 1000);
+            if (!error && milliseconds != null && milliseconds.IsExist)
+                setMilliseconds(milliseconds);
+            return getSeconds();
         }
 
         [DoNotEnumerate]
         public JSObject setUTCSeconds(JSObject seconds, JSObject milliseconds)
         {
-            if (seconds != null && seconds.IsExist)
-                this.time = this.time + (-getSecondsImpl() + Tools.JSObjectToInt64(seconds)) * 1000;
-            if (milliseconds != null && milliseconds.IsExist)
-                time = (time % 1000) + (Tools.JSObjectToInt64(milliseconds) % 1000);
-            return seconds;
+            return setSeconds(seconds, milliseconds);
         }
 
         [DoNotEnumerate]
         public JSObject setMinutes(JSObject minutes, JSObject seconds, JSObject milliseconds)
         {
             if (minutes != null && minutes.IsExist)
-                this.time = this.time + (-getMinutesImpl() + Tools.JSObjectToInt64(minutes)) * _minuteMillisecond;
-            setSeconds(seconds, milliseconds);
-            return minutes;
+                offsetTimeValue(minutes, getMinutesImpl(), _minuteMillisecond);
+            if (!error)
+                setSeconds(seconds, milliseconds);
+            return getMinutes();
         }
 
         [DoNotEnumerate]
         public JSObject setUTCMinutes(JSObject minutes, JSObject seconds, JSObject milliseconds)
         {
-            if (minutes != null && minutes.IsExist)
-                this.time = this.time + (-getMinutesImpl() + Tools.JSObjectToInt64(minutes)) * _minuteMillisecond;
-            setSeconds(seconds, milliseconds);
-            return minutes;
+            return setMinutes(minutes, seconds, milliseconds);
         }
 
         [DoNotEnumerate]
         public JSObject setHours(JSObject hours, JSObject minutes, JSObject seconds, JSObject milliseconds)
         {
             if (hours != null && hours.IsExist)
-                this.time = this.time + (-getHoursImpl() + Tools.JSObjectToInt64(hours)) * _hourMilliseconds;
+                offsetTimeValue(hours, getHoursImpl(), _hourMilliseconds);
             setMinutes(minutes, seconds, milliseconds);
-            return hours;
+            return getHours();
         }
 
         [DoNotEnumerate]
         public JSObject setUTCHours(JSObject hours, JSObject minutes, JSObject seconds, JSObject milliseconds)
         {
-            if (hours != null && hours.IsExist)
-                this.time = this.time + (-getHoursImpl() + Tools.JSObjectToInt64(hours)) * _hourMilliseconds;
-            setMinutes(minutes, seconds, milliseconds);
-            return hours;
+            return setHours(hours, minutes, seconds, milliseconds);
         }
 
         [DoNotEnumerate]
         public JSObject setDate(JSObject days)
         {
             if (days != null && days.IsExist)
-                this.time = this.time + (-getDateImpl() + Tools.JSObjectToInt64(days)) * _dayMilliseconds;
-            return days;
+                offsetTimeValue(days, getDateImpl(), _dayMilliseconds);
+            return getDate();
         }
 
         [DoNotEnumerate]
         public JSObject setUTCDate(JSObject days)
         {
-            this.time = this.time + (-getDateImpl() + Tools.JSObjectToInt64(days)) * _dayMilliseconds;
-            return days;
+            return setDate(days);
         }
 
         [DoNotEnumerate]
         public JSObject setMonth(JSObject monthO, JSObject day)
         {
-            try
+            if (monthO != null)
             {
+                if (!monthO.IsDefinded
+                || (monthO.valueType == JSObjectType.Double && (double.IsNaN(monthO.dValue) || double.IsInfinity(monthO.dValue))))
+                {
+                    error = true;
+                    time = 0;
+                    return Number.NaN;
+                }
                 var month = Tools.JSObjectToInt64(monthO);
                 if (month < 0 || month > 12)
                 {
                     this.time = this.time - timeToMonthLengths[getMonthImpl()][isLeap(getYearImpl()) ? 1 : 0];
                     time = dateToMilliseconds(getYearImpl(), month, getDateImpl(), getHoursImpl(), getMinutesImpl(), getSecondsImpl(), getMillisecondsImpl());
-                    return getMonthImpl();
                 }
                 else
-                {
                     this.time = this.time - timeToMonthLengths[getMonthImpl()][isLeap(getYearImpl()) ? 1 : 0] + timeToMonthLengths[month][isLeap(getYearImpl()) ? 1 : 0];
-                    return monthO;
-                }
             }
-            finally
-            {
+            if (day != null)
                 setDate(day);
-            }
+            return getMonth();
         }
 
         [DoNotEnumerate]
         public JSObject setUTCMonth(JSObject monthO, JSObject day)
         {
-            try
-            {
-                var month = Tools.JSObjectToInt64(monthO);
-                if (month < 0 || month > 12)
-                {
-                    this.time = this.time - timeToMonthLengths[getMonthImpl()][isLeap(getYearImpl()) ? 1 : 0];
-                    time = dateToMilliseconds(getYearImpl(), month, getDateImpl(), getHoursImpl(), getMinutesImpl(), getSecondsImpl(), getMillisecondsImpl());
-                    return getMonthImpl();
-                }
-                else
-                {
-                    this.time = this.time - timeToMonthLengths[getMonthImpl()][isLeap(getYearImpl()) ? 1 : 0] + timeToMonthLengths[month][isLeap(getYearImpl()) ? 1 : 0];
-                    return monthO;
-                }
-            }
-            finally
-            {
-                setDate(day);
-            }
+            return setMonth(monthO, day);
         }
 
         [DoNotEnumerate]
@@ -858,17 +936,27 @@ namespace NiL.JS.Core.BaseTypes
         [DoNotEnumerate]
         public JSObject setFullYear(JSObject year, JSObject month, JSObject day)
         {
-            time = dateToMilliseconds(Tools.JSObjectToInt64(year), getMonthImpl(), getDateImpl(), getHoursImpl(), getMinutesImpl(), getSecondsImpl(), getMillisecondsImpl());
-            setMonth(month, day);
-            return year;
+            if (year != null && year.IsExist)
+            {
+                if (!year.IsDefinded
+                   || (year.valueType == JSObjectType.Double && (double.IsNaN(year.dValue) || double.IsInfinity(year.dValue))))
+                {
+                    error = true;
+                    time = 0;
+                    return Number.NaN;
+                }
+                time = dateToMilliseconds(Tools.JSObjectToInt64(year), getMonthImpl(), getDateImpl(), getHoursImpl(), getMinutesImpl(), getSecondsImpl(), getMillisecondsImpl());
+                error = this.time < 5992660800000;
+            }
+            if (!error)
+                setMonth(month, day);
+            return getFullYear();
         }
 
         [DoNotEnumerate]
         public JSObject setUTCFullYear(JSObject year, JSObject month, JSObject day)
         {
-            time = dateToMilliseconds(Tools.JSObjectToInt64(year), getMonthImpl(), getDateImpl(), getHoursImpl(), getMinutesImpl(), getSecondsImpl(), getMillisecondsImpl());
-            setMonth(month, day);
-            return year;
+            return setFullYear(year, month, day);
         }
 
         [DoNotEnumerate]
@@ -923,7 +1011,7 @@ namespace NiL.JS.Core.BaseTypes
             try
             {
                 time -= timeZoneOffset;
-                if (time > 8702135600400000 || time < -8577864406800000 || error)
+                if (time > 8702135600400000 || time < -8577864403200000 || error)
                     throw new JSException(new RangeError("Invalid time value"));
                 var y = getYearImpl();
 
@@ -977,8 +1065,8 @@ namespace NiL.JS.Core.BaseTypes
         {
             var offset = TimeZone.CurrentTimeZone.GetUtcOffset(DateTime.Now);
             var res =
-                daysOfWeekNames[(System.Math.Abs(time) % _weekMilliseconds) / _dayMilliseconds] + " "
-                + month[getMonthImpl()]
+                daysOfWeek[(System.Math.Abs(time) % _weekMilliseconds) / _dayMilliseconds] + " "
+                + months[getMonthImpl()]
                 + " " + getDateImpl() + " "
                 + getYearImpl();
             return res;
@@ -1011,8 +1099,8 @@ namespace NiL.JS.Core.BaseTypes
                 return "Invalid date";
             var offset = new TimeSpan(timeZoneOffset * 10000);
             var res =
-                daysOfWeekNames[System.Math.Abs(time) / _dayMilliseconds % 7] + " "
-                + month[getMonthImpl()]
+                daysOfWeek[System.Math.Abs(time) / _dayMilliseconds % 7] + " "
+                + months[getMonthImpl()]
                 + " " + getDateImpl() + " "
                 + getYearImpl() + " "
                 + getHoursImpl().ToString("00:")
@@ -1025,9 +1113,10 @@ namespace NiL.JS.Core.BaseTypes
         [DoNotEnumerate]
         public static JSObject parse(string dateTime)
         {
-            System.DateTime res;
-            if (System.DateTime.TryParse(dateTime, CultureInfo.CurrentCulture, DateTimeStyles.None, out res))
-                return res.Ticks / 10000 - _unixTimeBase;
+            var time = 0L;
+            var tzo = 0L;
+            if (tryParse(dateTime, out time, out tzo))
+                return time - tzo - _unixTimeBase;
             return double.NaN;
         }
 

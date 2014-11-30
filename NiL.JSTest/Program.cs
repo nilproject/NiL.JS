@@ -142,7 +142,7 @@ namespace NiL.JSTest
             _("Found " + (fls.Length - 2) + " js-files");
             bool skipedShowed = false;
             sw.Start();
-            for (int i = 57; i < fls.Length; i++)
+            for (int i = 55; i < fls.Length; i++)
             {
                 if (i != 0 && !skipedShowed)
                     _("Skiped: " + i);
@@ -287,7 +287,7 @@ console.log(list[3]);
             Context.GlobalContext.DebuggerCallback += (sender, e) => System.Diagnostics.Debugger.Break();
             Context.GlobalContext.DefineVariable("alert").Assign(new ExternalFunction((t, a) => { System.Windows.Forms.MessageBox.Show(a[0].ToString()); return JSObject.Undefined; }));
 
-            int mode = 0
+            int mode = 159
                    ;
             switch (mode)
             {
@@ -353,9 +353,9 @@ console.log(list[3]);
                     }
                 case 2:
                     {
-                        var currentTimeZone = TimeZone.CurrentTimeZone;
-                        var offset = currentTimeZone.GetType().GetField("m_ticksOffset", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
-                        offset.SetValue(currentTimeZone, new TimeSpan(-8, 0, 0).Ticks);
+                        //var currentTimeZone = TimeZone.CurrentTimeZone;
+                        //var offset = currentTimeZone.GetType().GetField("m_ticksOffset", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+                        //offset.SetValue(currentTimeZone, new TimeSpan(-8, 0, 0).Ticks);
                         runFile(@"ftest.js");
                         break;
                     }

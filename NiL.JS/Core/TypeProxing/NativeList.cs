@@ -8,7 +8,7 @@ namespace NiL.JS.Core.TypeProxing
 {
     public sealed class NativeList : CustomType
     {
-        protected sealed class Element : JSObject
+        private sealed class Element : JSObject
         {
             private readonly NativeList owner;
             private int index;

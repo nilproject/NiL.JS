@@ -1,31 +1,17 @@
-﻿
-
-/////////////////////////////////////////////////////////////////////
-function shouldBe(x, y) {
-    var rx = eval(x);
-    var ry = eval(y);
-    if (rx !== ry) {
-        //console.log(x + " !== " + y);
-        //console.log(rx);
-        //console.log();
-        //console.log(ry);
-    }
-}
-
-function shouldBeTrue(x) {
-    return shouldBe(x, true);
-}
-
-function shouldBeFalse(x) {
-    return shouldBe(x, false);
-}
-
-function shouldThrow(x) {
+﻿console.log(function () {
+    var timeZoneMinutes = new Date().getTimezoneOffset() * (-1);
+    var date, dateStr;
     try {
-        eval(x);
+        if (timeZoneMinutes > 0) {
+            date = new Date(1970, 0, -99999999, 0, 0, 0, -1);
+        } else {
+            date = new Date(1970, 0, -99999999, 0, 0 + timeZoneMinutes - 60, 0, -1);
+        }
+
+        dateStr = date.toISOString();
+
         return false;
+    } catch (e) {
+        return e instanceof RangeError;
     }
-    catch (e) {
-        return true;
-    }
-}
+}());

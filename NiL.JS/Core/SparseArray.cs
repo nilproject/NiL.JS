@@ -106,7 +106,9 @@ namespace NiL.JS.Core
                         i = 0;
                     }
                     else
+                    {
                         i = _index;
+                    }
                 }
                 for (; ; bi--)
                 {
@@ -126,7 +128,9 @@ namespace NiL.JS.Core
                         }
                     }
                     else
+                    {
                         return values[i];
+                    }
                 }
             }
             set
