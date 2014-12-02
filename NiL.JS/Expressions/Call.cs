@@ -70,7 +70,10 @@ namespace NiL.JS.Expressions
             if (func == null)
             {
                 for (int i = 0; i < this.arguments.Length; i++)
-                    prepareArg(context, this.arguments[i], tail);
+                {
+                    context.objectSource = null;
+                    this.arguments[i].Evaluate(context);
+                }
                 context.objectSource = null;
                 // Аргументы должны быть вычислены даже если функция не существует.
                 throw new JSException((new NiL.JS.Core.BaseTypes.TypeError(first.ToString() + " is not callable")));

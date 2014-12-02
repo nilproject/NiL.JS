@@ -12494,6 +12494,7 @@
     <Content Include="v8\crypto.js" />
     <Content Include="v8\deltablue.js" />
     <Content Include="v8\earley-boyer.js" />
+    <Content Include="v8\navier-stokes.js" />
     <Content Include="v8\raytrace.js" />
     <Content Include="v8\README.txt" />
     <Content Include="v8\regexp.js" />

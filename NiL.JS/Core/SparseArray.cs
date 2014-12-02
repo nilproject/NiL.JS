@@ -140,6 +140,7 @@ namespace NiL.JS.Core
                     ensureCapacity(navyData.Length * 2);
                 if (allocatedCount == 0)
                 {
+                    navyData[0].bitIndex = 31;
                     allocatedCount = 1;
                     pseudoLength = 1;
                 }
@@ -147,7 +148,12 @@ namespace NiL.JS.Core
                 if (_index < allocatedCount)
                 {
                     if (navyData[index].index == _index)
+                    {
                         values[index] = value;
+                        if (pseudoLength <= index)
+                            pseudoLength = _index + 1;
+                        return;
+                    }
                 }
                 int bi = 31;
                 for (uint i = 0, ni = 0; ; bi--)

@@ -264,16 +264,9 @@ for (var i = 0; i < 10000000; i++) abs(i * (1 - 2 * (i & 1)));
             var sw = new Stopwatch();
             var s = new Script(
 @"
-console.log(list.length);
-console.log(list[0]);
-console.log(list[1]);
-console.log(list[2]);
-console.log(list[3]);
-list[3] = 10000;
-console.log(list[3]);
+var a = [];
+a[0] = '1'.charCodeAt(0);
 ");
-            var list = new List<int> { 1, 2, 3, 4, 5 };
-            s.Context.DefineVariable("list").Assign(new NativeList(list));
             sw.Start();
             s.Invoke();
             sw.Stop();
@@ -286,8 +279,14 @@ console.log(list[3]);
 
             Context.GlobalContext.DebuggerCallback += (sender, e) => System.Diagnostics.Debugger.Break();
             Context.GlobalContext.DefineVariable("alert").Assign(new ExternalFunction((t, a) => { System.Windows.Forms.MessageBox.Show(a[0].ToString()); return JSObject.Undefined; }));
+            Context.GlobalContext.DefineVariable("print").Assign(new ExternalFunction((t, a) =>
+            {
+                for (var i = 0; i < a.Length; i++)
+                    System.Console.WriteLine(a[i]);
+                return JSObject.Undefined;
+            }));
 
-            int mode = 159
+            int mode = 100
                    ;
             switch (mode)
             {
@@ -361,7 +360,6 @@ console.log(list[3]);
                     }
                 case 3:
                     {
-
                         testEx();
                         break;
                     }
@@ -392,12 +390,6 @@ console.log(list[3]);
                     }
                 case 9:
                     {
-                        Context.GlobalContext.DefineVariable("print").Assign(new ExternalFunction((t, a) =>
-                        {
-                            for (var i = 0; i < a.Length; i++)
-                                System.Console.WriteLine(a[i]);
-                            return JSObject.Undefined;
-                        }));
                         Context.GlobalContext.DefineVariable("stderr").Assign(true);
                         runFile(@"jsfunfuzz.js");
                         break;

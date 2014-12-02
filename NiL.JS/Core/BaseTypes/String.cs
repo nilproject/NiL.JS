@@ -87,8 +87,8 @@ namespace NiL.JS.Core.BaseTypes
                 return Number.NaN;
             var res = new JSObject()
             {
+                valueType = JSObjectType.Int,
                 iValue = selfStr[p],
-                valueType = JSObjectType.Int
             };
             return res;
         }

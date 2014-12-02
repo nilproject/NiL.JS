@@ -85,24 +85,27 @@ namespace NiL.JS.Expressions
             JSObject res = null;
             JSObject source = null;
             source = first.Evaluate(context);
-            if (source.valueType >= JSObjectType.Object
-                && source.oValue != null
-                && source.oValue != source
-                && (sjso = source.oValue as JSObject) != null
-                && sjso.valueType >= JSObjectType.Object)
+            if ((source.attributes & JSObjectAttributesInternal.SystemObject) == 0)
             {
-                source = sjso;
-                sjso = null;
-            }
-            else
-            {
-                if ((sjso ?? source).valueType >= JSObjectType.Object
-                    && (((sjso ?? source).attributes & JSObjectAttributesInternal.Immutable) == 0)
-                    && (sjso ?? source).fields == null)
-                    (sjso ?? source).fields = JSObject.createFields();
-                sjso = source;
-                tempContainer.Assign(source);
-                source = tempContainer;
+                if (source.valueType >= JSObjectType.Object
+                    && source.oValue != null
+                    && source.oValue != source
+                    && (sjso = source.oValue as JSObject) != null
+                    && sjso.valueType >= JSObjectType.Object)
+                {
+                    source = sjso;
+                    sjso = null;
+                }
+                else
+                {
+                    if ((sjso ?? source).valueType >= JSObjectType.Object
+                        && (((sjso ?? source).attributes & JSObjectAttributesInternal.Immutable) == 0)
+                        && (sjso ?? source).fields == null)
+                        (sjso ?? source).fields = JSObject.createFields();
+                    sjso = source;
+                    tempContainer.Assign(source);
+                    source = tempContainer;
+                }
             }
             res = source.GetMember(cachedMemberName ?? second.Evaluate(context), false, false);
             if (sjso != null)

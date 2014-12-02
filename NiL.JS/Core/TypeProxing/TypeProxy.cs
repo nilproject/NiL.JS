@@ -69,45 +69,46 @@ namespace NiL.JS.Core.TypeProxing
 
         public static JSObject Proxy(object value)
         {
+            JSObject res;
             if (value == null)
                 return JSObject.undefined;
-            else if (value is JSObject)
-                return value as JSObject;
-            else if (value is sbyte)
-                return (int)(sbyte)value;
-            else if (value is byte)
-                return (int)(byte)value;
-            else if (value is short)
-                return (int)(short)value;
-            else if (value is ushort)
-                return (int)(ushort)value;
-            else if (value is int)
-                return (int)value;
-            else if (value is uint)
-                return new Number((long)(uint)value);
-            else if (value is long)
-                return new Number((long)value);
-            else if (value is ulong)
-                return (double)(ulong)value;
-            else if (value is float)
-                return (double)(float)value;
-            else if (value is double)
-                return (double)value;
-            else if (value is string)
-                return value.ToString();
-            else if (value is char)
-                return value.ToString();
-            else if (value is bool)
-                return (bool)value;
-            else if (value is Delegate)
-                return new MethodProxy(((Delegate)value).Method, ((Delegate)value).Target);
             else
             {
-                var type = value.GetType();
-                var res = new JSObject() { oValue = value, valueType = JSObjectType.Object, __proto__ = GetPrototype(type) };
-                res.attributes |= res.__proto__.attributes & JSObjectAttributesInternal.Immutable;
-                return res;
+                res = value as JSObject;
+                if (res != null)
+                    return res;
             }
+            if (value is sbyte)
+                return (int)(sbyte)value;
+            if (value is byte)
+                return (int)(byte)value;
+            if (value is short)
+                return (int)(short)value;
+            if (value is ushort)
+                return (int)(ushort)value;
+            if (value is int)
+                return (int)value;
+            if (value is uint)
+                return new Number((long)(uint)value);
+            if (value is long)
+                return new Number((long)value);
+            if (value is ulong)
+                return (double)(ulong)value;
+            if (value is float)
+                return (double)(float)value;
+            if (value is double)
+                return (double)value;
+            if (value is string)
+                return value.ToString();
+            if (value is char)
+                return value.ToString();
+            if (value is bool)
+                return (bool)value;
+            if (value is Delegate)
+                return new MethodProxy(((Delegate)value).Method, ((Delegate)value).Target);
+            res = new JSObject() { oValue = value, valueType = JSObjectType.Object, __proto__ = GetPrototype(value.GetType()) };
+            res.attributes |= res.__proto__.attributes & JSObjectAttributesInternal.Immutable;
+            return res;
         }
 
         public static TypeProxy GetPrototype(Type type)
