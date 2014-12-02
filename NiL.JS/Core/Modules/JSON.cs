@@ -255,7 +255,7 @@ namespace NiL.JS.Core.Modules
             if (args.length > 2)
             {
                 var sa = args[2];
-                sa = sa.oValue as JSObject ?? sa;
+                sa = sa.Value as JSObject ?? sa;
                 if (sa.valueType == JSObjectType.Int
                     || sa.valueType == JSObjectType.Double
                     || sa.valueType == JSObjectType.String)
@@ -273,7 +273,7 @@ namespace NiL.JS.Core.Modules
                 }
             }
             var target = args[0];
-            return stringify(target.oValue as JSObject ?? target, replacer, space) ?? JSObject.undefined;
+            return stringify(target.Value as JSObject ?? target, replacer, space) ?? JSObject.undefined;
         }
 
         [Hidden]
@@ -305,7 +305,7 @@ namespace NiL.JS.Core.Modules
                 if (obj.valueType <= JSObjectType.Undefined
                     || obj.valueType == JSObjectType.Function)
                     return null;
-                obj = obj.oValue as JSObject ?? obj;
+                obj = obj.Value as JSObject ?? obj;
                 if (obj.valueType < JSObjectType.Object)
                 {
                     if (obj.valueType == JSObjectType.String)
@@ -318,10 +318,10 @@ namespace NiL.JS.Core.Modules
                             .Replace("\r\\\n", "\r\n") + '"';
                     return obj.ToString();
                 }
-                if (obj.oValue == null)
+                if (obj.Value == null)
                     return "null";
                 var toJSONmemb = obj["toJSON"];
-                toJSONmemb = toJSONmemb.oValue as JSObject ?? toJSONmemb;
+                toJSONmemb = toJSONmemb.Value as JSObject ?? toJSONmemb;
                 if (toJSONmemb.valueType == JSObjectType.Function)
                     return stringifyImpl("", (toJSONmemb.oValue as Function).Invoke(obj, null), null, space, processed, null);
                 StringBuilder res = new StringBuilder(obj is Array ? "[" : "{");
@@ -329,7 +329,7 @@ namespace NiL.JS.Core.Modules
                 foreach (var member in obj)
                 {
                     var value = obj[member];
-                    value = value.oValue as JSObject ?? value;
+                    value = value.Value as JSObject ?? value;
                     if (value.valueType < JSObjectType.Undefined)
                         continue;
                     if (value.valueType == JSObjectType.Property)

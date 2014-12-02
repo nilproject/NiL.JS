@@ -267,3 +267,6 @@ if (f(1, 3) != "111222333444555666777888999101010")
     throw "Reqursive fail";
 
 a[0] = b[1] = "";
+
+a = 1;
+(function (x) { if (x != 1) throw "Parameter not saved"; })(a, a = 2);

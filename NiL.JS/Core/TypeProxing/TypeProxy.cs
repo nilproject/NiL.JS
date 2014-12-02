@@ -47,12 +47,11 @@ namespace NiL.JS.Core.TypeProxing
                             }
                             else
                             {
-                                _prototypeInstance = new JSObject()
+                                _prototypeInstance = new ProxyContainer(ictor.Invoke(null))
                                 {
-                                    oValue = ictor.Invoke(null),
-                                    valueType = JSObjectType.Object,
                                     attributes = attributes | JSObjectAttributesInternal.ProxyPrototype,
-                                    fields = fields
+                                    fields = fields,
+                                    __prototype = JSObject.GlobalPrototype
                                 };
                             }
                         }
@@ -106,7 +105,7 @@ namespace NiL.JS.Core.TypeProxing
                 return (bool)value;
             if (value is Delegate)
                 return new MethodProxy(((Delegate)value).Method, ((Delegate)value).Target);
-            res = new JSObject() { oValue = value, valueType = JSObjectType.Object, __proto__ = GetPrototype(value.GetType()) };
+            res = new ProxyContainer(value);
             res.attributes |= res.__proto__.attributes & JSObjectAttributesInternal.Immutable;
             return res;
         }

@@ -48,7 +48,7 @@ namespace NiL.JS.Expressions
         {
             context.objectSource = null;
             var a = source.Evaluate(context);
-            if (tail || (a.attributes & JSObjectAttributesInternal.Temporary) != 0)
+            if ((a.attributes & (JSObjectAttributesInternal.SystemObject | JSObjectAttributesInternal.ReadOnly)) == 0)
             {
                 a = a.CloneImpl();
                 a.attributes |= JSObjectAttributesInternal.Cloned;

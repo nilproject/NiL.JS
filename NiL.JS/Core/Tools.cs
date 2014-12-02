@@ -422,7 +422,7 @@ namespace NiL.JS.Core
                 return value;
             var tpres = value as TypeProxy;
             if (tpres != null && targetType.IsAssignableFrom(tpres.hostedType))
-                return tpres.hostedType == typeof(BaseTypes.String) ? tpres.prototypeInstance : tpres.prototypeInstance.oValue;
+                return tpres.hostedType == typeof(BaseTypes.String) ? tpres.prototypeInstance : tpres.prototypeInstance.Value;
             if (targetType.IsEnum && Enum.IsDefined(targetType, value))
                 return value;
             return null;

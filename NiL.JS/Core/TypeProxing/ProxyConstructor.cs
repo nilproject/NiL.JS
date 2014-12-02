@@ -123,16 +123,11 @@ namespace NiL.JS.Core.TypeProxing
                     res = obj as JSObject;
                     if (res != null)
                     {
+                        // Для Number, Boolean и String
                         if (res.valueType < JSObjectType.Object)
                         {
-                            _this.oValue = obj;
-                            _this.valueType = JSObjectType.Object;
-                            //_this.fields = (res.fields ?? (res.fields = createFields()));
-                            // из-за того, что GetMember сам дотягивается до объекта, можно попробовать убрать создание филдов
-                            _this.__proto__ = res.__proto__;
-                            res = _this;
+                            res = new ProxyContainer(obj, res.__proto__);
                         }
-                        // Для Number, Boolean и String
                         else if (res.oValue is JSObject)
                         {
                             res.oValue = res;
@@ -144,14 +139,11 @@ namespace NiL.JS.Core.TypeProxing
                     }
                     else
                     {
-                        res = _this;
-                        res.valueType = JSObjectType.Object;
-                        res.__proto__ = TypeProxy.GetPrototype(proxy.hostedType);
-                        res.oValue = obj;
+                        res = new ProxyContainer(obj, TypeProxy.GetPrototype(proxy.hostedType));
                         //if (res.fields == null)
                         //    res.fields = createFields();
                         // из-за того, что GetMember сам дотягивается до объекта, можно попробовать убрать создание филдов
-                        res.attributes = proxy.hostedType.IsDefined(typeof(ImmutableAttribute), false) ? JSObjectAttributesInternal.Immutable : JSObjectAttributesInternal.None;
+                        res.attributes |= proxy.hostedType.IsDefined(typeof(ImmutableAttribute), false) ? JSObjectAttributesInternal.Immutable : JSObjectAttributesInternal.None;
                         if (obj is BaseTypes.Date)
                             res.valueType = JSObjectType.Date;
                     }
@@ -163,12 +155,9 @@ namespace NiL.JS.Core.TypeProxing
                         if (((obj as JSObject).oValue is JSObject) && ((obj as JSObject).oValue as JSObject).valueType >= JSObjectType.Object)
                             return (obj as JSObject).oValue as JSObject;
                     }
-                    res = obj is JSObject ? obj as JSObject : new JSObject(true)
+                    res = obj as JSObject ?? new ProxyContainer(obj)
                     {
-                        oValue = obj,
-                        valueType = JSObjectType.Object,
-                        __proto__ = TypeProxy.GetPrototype(proxy.hostedType),
-                        attributes = proxy.hostedType.IsDefined(typeof(ImmutableAttribute), false) ? JSObjectAttributesInternal.Immutable : JSObjectAttributesInternal.None
+                        attributes = JSObjectAttributesInternal.SystemObject | (proxy.hostedType.IsDefined(typeof(ImmutableAttribute), false) ? JSObjectAttributesInternal.Immutable : JSObjectAttributesInternal.None)
                     };
                 }
                 return res;

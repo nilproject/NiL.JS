@@ -1067,7 +1067,7 @@ namespace NiL.JS.Core.BaseTypes
             var res =
                 daysOfWeek[(System.Math.Abs(time) % _weekMilliseconds) / _dayMilliseconds] + " "
                 + months[getMonthImpl()]
-                + " " + getDateImpl() + " "
+                + " " + getDateImpl().ToString("00") + " "
                 + getYearImpl();
             return res;
         }
@@ -1101,7 +1101,7 @@ namespace NiL.JS.Core.BaseTypes
             var res =
                 daysOfWeek[System.Math.Abs(time) / _dayMilliseconds % 7] + " "
                 + months[getMonthImpl()]
-                + " " + getDateImpl() + " "
+                + " " + getDateImpl().ToString("00") + " "
                 + getYearImpl() + " "
                 + getHoursImpl().ToString("00:")
                 + getMinutesImpl().ToString("00:")

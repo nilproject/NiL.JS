@@ -210,7 +210,7 @@ namespace NiL.JSTest
         {
             Script s = null;
             var sw = new Stopwatch();
-            int @case = 2;
+            int @case = 0;
             switch (@case)
             {
                 case 0:

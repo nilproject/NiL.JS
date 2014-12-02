@@ -182,7 +182,7 @@ namespace NiL.JS.Core
         }
 
         [Hidden]
-        public object Value
+        public virtual object Value
         {
             [Hidden]
             get
@@ -799,7 +799,7 @@ namespace NiL.JS.Core
                             return "[object " + (ht == typeof(JSObject) ? typeof(System.Object) : ht).Name + "]";
                         }
                         if (self.oValue != null)
-                            return "[object " + (self.oValue.GetType() == typeof(JSObject) ? typeof(System.Object) : self.oValue.GetType()).Name + "]";
+                            return "[object " + (self.Value.GetType() == typeof(JSObject) ? typeof(System.Object) : self.Value.GetType()).Name + "]";
                         else
                             return "[object Null]";
                     }
