@@ -286,7 +286,7 @@ a[0] = '1'.charCodeAt(0);
                 return JSObject.Undefined;
             }));
 
-            int mode = 100
+            int mode = 0
                    ;
             switch (mode)
             {

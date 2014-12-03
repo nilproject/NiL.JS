@@ -839,10 +839,18 @@ namespace NiL.JS.Core.BaseTypes
                     this.data = emptyData;
                     System.Text.StringBuilder sb = new System.Text.StringBuilder();
                     JSObject t;
+                    JSObject temp = 0;
                     for (var i = 0L; i < (long)_data.Length; i++)
                     {
                         t = _data[(int)i];
-                        if (((t != null && t.IsExist) || null != (t = this.GetMember(i.ToString(), false, false)))
+                        if (i <= int.MaxValue)
+                            temp.iValue = (int)i;
+                        else
+                        {
+                            temp.dValue = i;
+                            temp.valueType = JSObjectType.Double;
+                        }
+                        if (((t != null && t.IsExist) || null != (t = this.GetMember(temp, false, false)))
                             && t.IsDefinded)
                         {
                             if (t.valueType < JSObjectType.String || t.oValue != null)
@@ -2153,6 +2161,64 @@ namespace NiL.JS.Core.BaseTypes
             //    return __proto__.GetMember(name, create, own);
             return DefaultFieldGetter(name, forWrite, own);
         }
+
+        /*internal override bool DeleteMember(JSObject name)
+        {
+            if (name.valueType == JSObjectType.String && string.CompareOrdinal("length", name.oValue.ToString()) == 0)
+                return false;
+            bool isIndex = false;
+            int index = 0;
+            JSObject tname = name;
+            if (tname.valueType >= JSObjectType.Object)
+                tname = tname.ToPrimitiveValue_String_Value();
+            switch (tname.valueType)
+            {
+                case JSObjectType.Int:
+                    {
+                        isIndex = tname.iValue >= 0;
+                        index = tname.iValue;
+                        break;
+                    }
+                case JSObjectType.Double:
+                    {
+                        isIndex = tname.dValue >= 0 && tname.dValue < uint.MaxValue && (long)tname.dValue == tname.dValue;
+                        if (isIndex)
+                            index = (int)(uint)tname.dValue;
+                        break;
+                    }
+                case JSObjectType.String:
+                    {
+                        var fc = tname.oValue.ToString()[0];
+                        if ('0' <= fc && '9' >= fc)
+                        {
+                            var dindex = 0.0;
+                            int si = 0;
+                            if (Tools.ParseNumber(tname.oValue.ToString(), ref si, out dindex)
+                                && (si == tname.oValue.ToString().Length)
+                                && dindex >= 0
+                                && dindex < uint.MaxValue
+                                && (long)dindex == dindex)
+                            {
+                                isIndex = true;
+                                index = (int)(uint)dindex;
+                            }
+                        }
+                        break;
+                    }
+            }
+            if (isIndex)
+            {
+                var t = data[index];
+                if (t == null)
+                    return true;
+                if (t.IsExist
+                    && (t.attributes & JSObjectAttributesInternal.DoNotDelete) != 0)
+                    return false;
+                data[index] = null;
+                return true;
+            }
+            return base.DeleteMember(name);
+        }*/
 
         [Hidden]
         public override JSObject valueOf()

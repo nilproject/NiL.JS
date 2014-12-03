@@ -44,16 +44,16 @@ namespace NiL.JS.Expressions
                             case JSObjectType.Int:
                             case JSObjectType.Bool:
                                 {
-                                    if (((first.iValue | second.iValue) & 0x7c000000) == 0
-                                        && (first.iValue & second.iValue & int.MinValue/*0x80000000*/) == 0)
+                                    long tl = (long)first.iValue + second.iValue;
+                                    if ((int)tl == tl)
                                     {
                                         resultContainer.valueType = JSObjectType.Int;
-                                        resultContainer.iValue = first.iValue + second.iValue;
+                                        resultContainer.iValue = (int)tl;
                                     }
                                     else
                                     {
                                         resultContainer.valueType = JSObjectType.Double;
-                                        resultContainer.dValue = (long)first.iValue + second.iValue;
+                                        resultContainer.dValue = (double)tl;
                                     }
                                     return;
                                 }
@@ -79,8 +79,8 @@ namespace NiL.JS.Expressions
                                 }
                             case JSObjectType.Object: // x+null
                                 {
-                                    resultContainer.dValue = first.iValue;
-                                    resultContainer.valueType = JSObjectType.Double;
+                                    resultContainer.iValue = first.iValue;
+                                    resultContainer.valueType = JSObjectType.Int;
                                     return;
                                 }
                         }
