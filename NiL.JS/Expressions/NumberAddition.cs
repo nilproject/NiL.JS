@@ -21,26 +21,25 @@ namespace NiL.JS.Expressions
         internal override Core.JSObject Evaluate(Core.Context context)
         {
             int itemp;
+            long ltemp;
             double dtemp;
             var op = first.Evaluate(context);
-            if (op.valueType == Core.JSObjectType.Int
-            || op.valueType == Core.JSObjectType.Bool)
+            if (op.valueType == Core.JSObjectType.Int)
             {
                 itemp = op.iValue;
                 op = second.Evaluate(context);
-                if (op.valueType == Core.JSObjectType.Int
-                || op.valueType == Core.JSObjectType.Bool)
+                if (op.valueType == Core.JSObjectType.Int)
                 {
-                    if (((itemp | op.iValue) & 0x7c000000) == 0
-                    && (itemp & op.iValue & int.MinValue/*0x80000000*/) == 0)
+                    ltemp = (long)itemp + op.iValue;
+                    if ((int)ltemp == ltemp)
                     {
                         tempContainer.valueType = JSObjectType.Int;
-                        tempContainer.iValue = itemp + op.iValue;
+                        tempContainer.iValue = (int)ltemp;
                     }
                     else
                     {
                         tempContainer.valueType = JSObjectType.Double;
-                        tempContainer.dValue = (long)itemp + op.iValue;
+                        tempContainer.dValue = (double)ltemp;
                     }
                 }
                 else if (op.valueType == Core.JSObjectType.Double)
@@ -59,8 +58,7 @@ namespace NiL.JS.Expressions
             {
                 dtemp = op.dValue;
                 op = second.Evaluate(context);
-                if (op.valueType == Core.JSObjectType.Int
-                || op.valueType == Core.JSObjectType.Bool)
+                if (op.valueType == Core.JSObjectType.Int)
                 {
                     tempContainer.valueType = JSObjectType.Double;
                     tempContainer.dValue = dtemp + op.iValue;

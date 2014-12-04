@@ -223,7 +223,7 @@ namespace NiL.JS.Core
                             return 0;
                         if (double.IsInfinity(r.dValue))
                             return alternateInfinity ? double.IsPositiveInfinity(r.dValue) ? int.MaxValue : int.MinValue : 0;
-                        return (int)((long)r.dValue & 0xFFFFFFFF);
+                        return (int)(long)r.dValue;
                     }
                 case JSObjectType.String:
                     {
@@ -412,19 +412,23 @@ namespace NiL.JS.Core
         {
             if (jsobj == null)
                 return null;
-            if (typeof(JSObject).IsAssignableFrom(targetType)
-                && targetType.IsAssignableFrom(jsobj.GetType()))
+            if (targetType.IsAssignableFrom(jsobj.GetType()))
                 return jsobj;
             var value = jsobj.Value;
             if (value == null)
-                return value;
+                return null;
             if (targetType.IsAssignableFrom(value.GetType()))
+                return value;
+            if (targetType.IsEnum && Enum.IsDefined(targetType, value))
                 return value;
             var tpres = value as TypeProxy;
             if (tpres != null && targetType.IsAssignableFrom(tpres.hostedType))
-                return tpres.hostedType == typeof(BaseTypes.String) ? tpres.prototypeInstance : tpres.prototypeInstance.Value;
-            if (targetType.IsEnum && Enum.IsDefined(targetType, value))
-                return value;
+            {
+                jsobj = tpres.prototypeInstance;
+                if (jsobj != null && jsobj.GetType() == typeof(ObjectContainer))
+                    return jsobj.Value;
+                return jsobj;
+            }
             return null;
         }
 

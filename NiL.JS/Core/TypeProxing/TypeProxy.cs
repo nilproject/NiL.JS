@@ -42,12 +42,12 @@ namespace NiL.JS.Core.TypeProxing
                                 _prototypeInstance.__prototype = __proto__;
                                 _prototypeInstance.attributes |= JSObjectAttributesInternal.ProxyPrototype;
                                 _prototypeInstance.fields = fields;
-                                _prototypeInstance.valueType = (JSObjectType)System.Math.Max((int)JSObjectType.Object, (int)_prototypeInstance.valueType);
+                                //_prototypeInstance.valueType = (JSObjectType)System.Math.Max((int)JSObjectType.Object, (int)_prototypeInstance.valueType);
                                 valueType = (JSObjectType)System.Math.Max((int)JSObjectType.Object, (int)_prototypeInstance.valueType);
                             }
                             else
                             {
-                                _prototypeInstance = new ProxyContainer(ictor.Invoke(null))
+                                _prototypeInstance = new ObjectContainer(ictor.Invoke(null))
                                 {
                                     attributes = attributes | JSObjectAttributesInternal.ProxyPrototype,
                                     fields = fields,
@@ -105,7 +105,7 @@ namespace NiL.JS.Core.TypeProxing
                 return (bool)value;
             if (value is Delegate)
                 return new MethodProxy(((Delegate)value).Method, ((Delegate)value).Target);
-            res = new ProxyContainer(value);
+            res = new ObjectContainer(value);
             res.attributes |= res.__proto__.attributes & JSObjectAttributesInternal.Immutable;
             return res;
         }

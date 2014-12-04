@@ -893,7 +893,8 @@ namespace NiL.JS.Core.BaseTypes
                     if (creator.arguments[i].assignations != null
                         || creator.containsEval
                         || creator.containsWith
-                        || creator.containsArguments)
+                        || creator.containsArguments
+                        || (t.attributes & JSObjectAttributesInternal.Temporary) != 0)
                     {
                         if ((t.attributes & JSObjectAttributesInternal.Cloned) == 0)
                             args[i] = t = t.CloneImpl();
@@ -977,14 +978,7 @@ namespace NiL.JS.Core.BaseTypes
                 if (!body.strict) // Поправляем this
                 {
                     if (thisBind.valueType > JSObjectType.Undefined && thisBind.valueType < JSObjectType.Object)
-                    {
-                        thisBind = new JSObject(true)
-                        {
-                            valueType = JSObjectType.Object,
-                            oValue = thisBind,
-                            attributes = JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.DoNotDelete
-                        };
-                    }
+                        thisBind = thisBind.ToObject();
                     else if (thisBind.valueType <= JSObjectType.Undefined || thisBind.oValue == null)
                         thisBind = internalContext.Root.thisBind;
                 }
@@ -1163,7 +1157,7 @@ namespace NiL.JS.Core.BaseTypes
                 }
             }
             else
-                throw new ArgumentException("Parameters count must be no more 16.");
+                throw new ArgumentException("Parameters count must be less or equal 16.");
         }
     }
 }

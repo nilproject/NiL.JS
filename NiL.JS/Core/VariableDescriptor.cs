@@ -55,11 +55,18 @@ namespace NiL.JS.Core
 
         internal JSObject Get(Context context, bool create, int depth)
         {
-            TypeProxy tp = null;
-            JSObject res = null;
             context.objectSource = null;
             if (((defineDepth | depth) & int.MinValue) != 0)
                 return context.GetVariable(name, create);
+            if (context == cacheContext)
+                return cacheRes;
+            return deepGet(context, create, depth);
+        }
+
+        private JSObject deepGet(Context context, bool create, int depth)
+        {
+            TypeProxy tp = null;
+            JSObject res = null;
             if (cacheRes != null && depth > defineDepth)
             {
                 do

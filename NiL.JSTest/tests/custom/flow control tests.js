@@ -270,3 +270,14 @@ a[0] = b[1] = "";
 
 a = 1;
 (function (x) { if (x != 1) throw "Parameter not saved"; })(a, a = 2);
+
+var __func = function __exp__func(arg) {
+    if (arg === 1) {
+        return arg;
+    } else {
+        return __exp__func(arg - 1) * arg;
+    }
+};
+
+if (__func(3) != 6)
+    throw "fact";

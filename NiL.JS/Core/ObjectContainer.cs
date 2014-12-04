@@ -4,8 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using NiL.JS.Core.Modules;
+using NiL.JS.Core.TypeProxing;
 
-namespace NiL.JS.Core.TypeProxing
+namespace NiL.JS.Core
 {
     /// <summary>
     /// Создаёт объект-контейнер для внешнего объекта. 
@@ -14,7 +15,7 @@ namespace NiL.JS.Core.TypeProxing
     /// Был создан так как вместе с объектом требуется ещё хранить его аттрибуты, 
     /// которые могли разъехаться при переприсваиваниях
     /// </summary>
-    internal sealed class ProxyContainer : JSObject
+    internal sealed class ObjectContainer : JSObject
     {
         private object instance;
 
@@ -28,7 +29,7 @@ namespace NiL.JS.Core.TypeProxing
         }
 
         [Hidden]
-        public ProxyContainer(object instance, JSObject proto)
+        public ObjectContainer(object instance, JSObject proto)
         {
             __prototype = proto;
             this.instance = instance;
@@ -38,7 +39,7 @@ namespace NiL.JS.Core.TypeProxing
         }
 
         [Hidden]
-        public ProxyContainer(object instance)
+        public ObjectContainer(object instance)
             : this(instance, TypeProxy.GetPrototype(instance.GetType()))
         {
         }

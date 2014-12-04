@@ -264,8 +264,16 @@ for (var i = 0; i < 10000000; i++) abs(i * (1 - 2 * (i & 1)));
             var sw = new Stopwatch();
             var s = new Script(
 @"
-var a = [];
-a[0] = '1'.charCodeAt(0);
+var __func = function __exp__func(arg){
+    if (arg === 1) {
+    	return arg;
+    } else {
+    	return __exp__func(arg-1)*arg;
+    }
+};
+
+var fact_of_3 =  __func(3);
+console.log(fact_of_3);
 ");
             sw.Start();
             s.Invoke();
@@ -286,7 +294,7 @@ a[0] = '1'.charCodeAt(0);
                 return JSObject.Undefined;
             }));
 
-            int mode = 100
+            int mode = 101
                    ;
             switch (mode)
             {

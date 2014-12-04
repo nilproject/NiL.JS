@@ -173,9 +173,11 @@ namespace NiL.JS.Statements
         internal override JSObject Evaluate(Context context)
         {
             var res = new JSObject(false);
-            res.fields = JSObject.createFields(fields.Length);
             res.valueType = JSObjectType.Object;
             res.oValue = res;
+            if (fields.Length == 0)
+                return res;
+            res.fields = JSObject.createFields(fields.Length);
             for (int i = 0; i < fields.Length; i++)
             {
                 var val = values[i].Evaluate(context);

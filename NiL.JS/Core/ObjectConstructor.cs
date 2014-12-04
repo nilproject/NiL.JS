@@ -24,22 +24,17 @@ namespace NiL.JS.Core
 
         public override NiL.JS.Core.JSObject Invoke(JSObject thisBind, Arguments args)
         {
-            object oVal = null;
+            JSObject oVal = null;
             if (args != null && args.length > 0)
                 oVal = args[0];
-            JSObject res = null;
             if ((oVal == null) ||
-                (oVal is JSObject && (((oVal as JSObject).valueType >= JSObjectType.Object && (oVal as JSObject).oValue == null)
-                                        || (oVal as JSObject).valueType <= JSObjectType.Undefined)))
+                (((oVal.valueType >= JSObjectType.Object && oVal.oValue == null)
+                                        || oVal.valueType <= JSObjectType.Undefined)))
                 return CreateObject();
-            else if ((oVal as JSObject).valueType >= JSObjectType.Object && (oVal as JSObject).oValue != null)
-                return oVal as JSObject;
+            else if (oVal.valueType >= JSObjectType.Object && oVal.oValue != null)
+                return oVal;
 
-            res = CreateObject();
-
-            res.valueType = JSObjectType.Object;
-            res.oValue = (oVal is JSObject && ((oVal as JSObject).attributes & JSObjectAttributesInternal.SystemObject) != 0) ? (oVal as JSObject).Clone() : oVal;
-            return res;
+            return oVal.ToObject();
         }
 
         protected override JSObject getDefaultPrototype()

@@ -44,14 +44,25 @@ namespace NiL.JS.Expressions
             this.arguments = arguments;
         }
 
-        private static JSObject prepareArg(Context context, CodeNode source, bool tail)
+        private static JSObject prepareArg(Context context, CodeNode source, bool tail, bool clone)
         {
             context.objectSource = null;
             var a = source.Evaluate(context);
             if ((a.attributes & (JSObjectAttributesInternal.SystemObject | JSObjectAttributesInternal.ReadOnly)) == 0)
             {
-                a = a.CloneImpl();
-                a.attributes |= JSObjectAttributesInternal.Cloned;
+                // Предполагается, что тут мы отдаём не контейнер, а сам объект. 
+                // В частности, preventExtensions ожидает именно такое поведение
+                if (a.valueType >= JSObjectType.Object)
+                {
+                    var intObj = a.oValue as JSObject;
+                    if (intObj != null && intObj != a && intObj.valueType >= JSObjectType.Object)
+                        return intObj;
+                }
+                if (clone)
+                {
+                    a = a.CloneImpl();
+                    a.attributes |= JSObjectAttributesInternal.Cloned;
+                }
             }
             return a;
         }
@@ -100,7 +111,7 @@ namespace NiL.JS.Expressions
                     }
                     else
 #endif
-                        arguments = new Arguments();
+                    arguments = new Arguments();
                 }
                 else
                 {
@@ -120,19 +131,19 @@ namespace NiL.JS.Expressions
                 try
                 {
 #endif
-                    arguments.length = this.arguments.Length;
-                    for (int i = 0; i < this.arguments.Length; i++)
-                        arguments[i] = prepareArg(context, this.arguments[i], tail);
-                    arguments.caller = context.strict && context.caller != null && context.caller.creator.body.strict ? Function.propertiesDummySM : context.caller;
-                    context.objectSource = null;
-                    if (tail)
+                arguments.length = this.arguments.Length;
+                for (int i = 0; i < this.arguments.Length; i++)
+                    arguments[i] = prepareArg(context, this.arguments[i], tail, this.arguments.Length > 1);
+                arguments.caller = context.strict && context.caller != null && context.caller.creator.body.strict ? Function.propertiesDummySM : context.caller;
+                context.objectSource = null;
+                if (tail)
+                {
+                    arguments.callee = func;
+                    for (var i = func.creator.body.localVariables.Length; i-- > 0; )
                     {
-                        arguments.callee = func;
-                        for (var i = func.creator.body.localVariables.Length; i-- > 0; )
-                        {
-                            if (func.creator.body.localVariables[i].Inititalizator == null)
-                                func.creator.body.localVariables[i].cacheRes.Assign(JSObject.undefined);
-                        }
+                        if (func.creator.body.localVariables[i].Inititalizator == null)
+                            func.creator.body.localVariables[i].cacheRes.Assign(JSObject.undefined);
+                    }
 #if USEARGPOOL
                         if (pool)
                         {
@@ -141,13 +152,13 @@ namespace NiL.JS.Expressions
                         }
                         else
 #endif
-                        {
-                            func._arguments = arguments;
-                            if (context.fields != null && context.fields.ContainsKey("arguments"))
-                                context.fields["arguments"] = arguments;
-                        }
-                        return JSObject.undefined;
+                    {
+                        func._arguments = arguments;
+                        if (context.fields != null && context.fields.ContainsKey("arguments"))
+                            context.fields["arguments"] = arguments;
                     }
+                    return JSObject.undefined;
+                }
 #if USEARGPOOL
                 }
                 catch

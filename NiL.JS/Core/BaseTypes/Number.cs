@@ -49,7 +49,6 @@ namespace NiL.JS.Core.BaseTypes
         {
             valueType = JSObjectType.Int;
             iValue = 0;
-            oValue = this;
             attributes |= JSObjectAttributesInternal.SystemObject | JSObjectAttributesInternal.ReadOnly;
         }
 
@@ -58,7 +57,6 @@ namespace NiL.JS.Core.BaseTypes
         {
             valueType = JSObjectType.Int;
             iValue = value;
-            oValue = this;
             attributes |= JSObjectAttributesInternal.SystemObject | JSObjectAttributesInternal.ReadOnly;
         }
 
@@ -75,7 +73,6 @@ namespace NiL.JS.Core.BaseTypes
                 valueType = JSObjectType.Double;
                 dValue = value;
             }
-            oValue = this;
             attributes |= JSObjectAttributesInternal.SystemObject | JSObjectAttributesInternal.ReadOnly;
         }
 
@@ -84,7 +81,6 @@ namespace NiL.JS.Core.BaseTypes
         {
             valueType = JSObjectType.Double;
             dValue = value;
-            oValue = this;
             attributes |= JSObjectAttributesInternal.SystemObject | JSObjectAttributesInternal.ReadOnly;
         }
 
@@ -100,7 +96,6 @@ namespace NiL.JS.Core.BaseTypes
             int i = 0;
             if (value.Length != 0 && Tools.ParseNumber(value, ref i, out d, 0, Tools.ParseNumberOptions.Default | (Context.CurrentContext.strict ? Tools.ParseNumberOptions.RaiseIfOctal : 0)) && i == value.Length)
                 dValue = d;
-            oValue = this;
             attributes |= JSObjectAttributesInternal.SystemObject | JSObjectAttributesInternal.ReadOnly;
         }
 
@@ -109,7 +104,6 @@ namespace NiL.JS.Core.BaseTypes
         {
             valueType = JSObjectType.Double;
             dValue = Tools.JSObjectToDouble(obj[0]);
-            oValue = this;
             attributes |= JSObjectAttributesInternal.SystemObject | JSObjectAttributesInternal.ReadOnly;
         }
 
@@ -256,7 +250,7 @@ namespace NiL.JS.Core.BaseTypes
         public new JSObject toString(Arguments radix)
         {
             var ovt = valueType;
-            if (this.GetType() == typeof(Number))
+            if (valueType > JSObjectType.Double && this.GetType() == typeof(Number))
                 valueType = dValue == 0.0 ? JSObjectType.Int : JSObjectType.Double;
             try
             {

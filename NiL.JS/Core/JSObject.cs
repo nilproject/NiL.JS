@@ -148,6 +148,16 @@ namespace NiL.JS.Core
 
         protected virtual JSObject getDefaultPrototype()
         {
+            switch (valueType)
+            {
+                case JSObjectType.Bool:
+                    return TypeProxy.GetPrototype(typeof(BaseTypes.Boolean));
+                case JSObjectType.Double:
+                case JSObjectType.Int:
+                    return TypeProxy.GetPrototype(typeof(BaseTypes.Number));
+                case JSObjectType.String:
+                    return TypeProxy.GetPrototype(typeof(BaseTypes.String));
+            }
             if (valueType >= JSObjectType.Object && oValue != this)
             {
                 var rojso = oValue as JSObject;
@@ -359,13 +369,13 @@ namespace NiL.JS.Core
         [Hidden]
         internal protected virtual JSObject GetMember(JSObject name, bool forWrite, bool own)
         {
-            if (valueType <= JSObjectType.Undefined)
-                throw new JSException(new TypeError("Can't get property \"" + name + "\" of \"undefined\"."));
             switch (valueType)
             {
                 case JSObjectType.Int:
                 case JSObjectType.Double:
                     {
+                        if (own)
+                            return notExists;
                         forWrite = false;
                         if (__prototype == null)
                             __prototype = TypeProxy.GetPrototype(typeof(BaseTypes.Number));
@@ -373,12 +383,13 @@ namespace NiL.JS.Core
                         else if (__prototype.oValue != TypeProxy.GetPrototype(typeof(BaseTypes.Number)).oValue)
                             System.Diagnostics.Debugger.Break();
 #endif
-                        break;
+                        return __prototype.GetMember(name, false, false);
                     }
                 case JSObjectType.String:
                     {
+                        if (own)
+                            return notExists;
                         forWrite = false;
-
                         double dindex = 0.0;
                         int index = 0;
                         dindex = Tools.JSObjectToDouble(name as JSObject);
@@ -394,10 +405,12 @@ namespace NiL.JS.Core
                         else if (__prototype.oValue != TypeProxy.GetPrototype(typeof(BaseTypes.String)).oValue)
                             System.Diagnostics.Debugger.Break();
 #endif
-                        break;
+                        return __prototype.GetMember(name, false, false);
                     }
                 case JSObjectType.Bool:
                     {
+                        if (own)
+                            return notExists;
                         forWrite = false;
                         if (__prototype == null)
                             __prototype = TypeProxy.GetPrototype(typeof(BaseTypes.Boolean));
@@ -405,7 +418,7 @@ namespace NiL.JS.Core
                         else if (__prototype.oValue != TypeProxy.GetPrototype(typeof(BaseTypes.Boolean)).oValue)
                             System.Diagnostics.Debugger.Break();
 #endif
-                        break;
+                        return __prototype.GetMember(name, false, false);
                     }
                 case JSObjectType.Date:
                 case JSObjectType.Object:
@@ -416,20 +429,7 @@ namespace NiL.JS.Core
                             throw new JSException(new TypeError("Can't get property \"" + name + "\" of \"null\""));
                         var inObj = oValue as JSObject;
                         if (inObj != null)
-                        {
-                            try
-                            {
-                                var res = inObj.GetMember(name, forWrite, own);
-                                if (inObj.valueType < JSObjectType.Object && res.valueType < JSObjectType.Undefined)
-                                    break;
-                                return res;
-                            }
-                            finally
-                            {
-                                if (fields == null)
-                                    fields = inObj.fields;
-                            }
-                        }
+                            return inObj.GetMember(name, forWrite, own);
                         break;
                     }
                 case JSObjectType.Function:
@@ -443,13 +443,12 @@ namespace NiL.JS.Core
 #endif
                             break;
                         }
-                        var res = (oValue as JSObject).GetMember(name, forWrite, own);
-                        if (fields == null)
-                            fields = (oValue as JSObject).fields;
-                        return res;
+                        return (oValue as JSObject).GetMember(name, forWrite, own);
                     }
                 case JSObjectType.Property:
                     throw new InvalidOperationException("Try to get member of property");
+                default:
+                    throw new JSException(new TypeError("Can't get property \"" + name + "\" of \"undefined\"."));
             }
             return DefaultFieldGetter(name, forWrite, own);
         }
@@ -632,20 +631,11 @@ namespace NiL.JS.Core
             if (this == value || (attributes & (JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.SystemObject)) != 0)
                 return;
             this.valueType = value.valueType | JSObjectType.Undefined;
-            if (valueType < JSObjectType.String)
-            {
-                this.iValue = value.iValue;
-                this.dValue = value.dValue;
-                this.oValue = null;
-                this.fields = null;
-                __prototype = null;
-            }
-            else
-            {
-                oValue = value.oValue;
-                fields = value.fields;
-                __prototype = value.__prototype;
-            }
+            __prototype = value.__prototype;
+            this.iValue = value.iValue;
+            this.dValue = value.dValue;
+            this.oValue = value.oValue;
+            this.fields = null;
             this.attributes =
                 (this.attributes & ~JSObjectAttributesInternal.PrivateAttributes)
                 | (value.attributes & JSObjectAttributesInternal.PrivateAttributes);
@@ -707,6 +697,25 @@ namespace NiL.JS.Core
                 default:
                     return (res.oValue ?? "null").ToString();
             }
+        }
+
+        [Hidden]
+        public JSObject ToObject()
+        {
+            if (valueType >= JSObjectType.Object)
+                return this;
+            switch (valueType)
+            {
+                case JSObjectType.Bool:
+                    return new ObjectContainer(new BaseTypes.Boolean(iValue != 0));
+                case JSObjectType.Int:
+                    return new ObjectContainer(new BaseTypes.Number(iValue));
+                case JSObjectType.Double:
+                    return new ObjectContainer(new BaseTypes.Number(dValue));
+                case JSObjectType.String:
+                    return new ObjectContainer(new BaseTypes.String(oValue.ToString()));
+            }
+            return new JSObject() { valueType = JSObjectType.Object };
         }
 
         [Hidden]
@@ -1473,7 +1482,7 @@ namespace NiL.JS.Core
             if (obj.oValue == null)
                 throw new JSException(new TypeError("Object.freeze called on null."));
             obj.attributes |= JSObjectAttributesInternal.Immutable;
-            obj = obj.oValue as JSObject ?? obj;
+            obj = obj.Value as JSObject ?? obj;
             obj.attributes |= JSObjectAttributesInternal.Immutable;
             if (obj is BaseTypes.Array)
             {
@@ -1503,7 +1512,7 @@ namespace NiL.JS.Core
             if (obj.oValue == null)
                 throw new JSException(new TypeError("Can not prevent extensions for null"));
             obj.attributes |= JSObjectAttributesInternal.Immutable;
-            var res = obj.oValue as JSObject;
+            var res = obj.Value as JSObject;
             if (res != null)
                 res.attributes |= JSObjectAttributesInternal.Immutable;
             return res;
@@ -1517,7 +1526,7 @@ namespace NiL.JS.Core
                 throw new JSException(new TypeError("Object.isExtensible called on non-object."));
             if (obj.oValue == null)
                 throw new JSException(new TypeError("Object.isExtensible called on null."));
-            return ((obj.oValue as JSObject ?? obj).attributes & JSObjectAttributesInternal.Immutable) == 0;
+            return ((obj.Value as JSObject ?? obj).attributes & JSObjectAttributesInternal.Immutable) == 0;
         }
 
         [DoNotEnumerate]
@@ -1528,7 +1537,7 @@ namespace NiL.JS.Core
                 throw new JSException(new TypeError("Object.isSealed called on non-object."));
             if (obj.oValue == null)
                 throw new JSException(new TypeError("Object.isSealed called on null."));
-            if (((obj = obj.oValue as JSObject ?? obj).attributes & JSObjectAttributesInternal.Immutable) == 0)
+            if (((obj = obj.Value as JSObject ?? obj).attributes & JSObjectAttributesInternal.Immutable) == 0)
                 return false;
             if (obj is TypeProxy)
                 return true;
@@ -1561,9 +1570,9 @@ namespace NiL.JS.Core
                 throw new JSException(new TypeError("Object.seal called on non-object."));
             if (obj.oValue == null)
                 throw new JSException(new TypeError("Object.seal called on null."));
-            obj = obj.oValue as JSObject ?? obj;
+            obj = obj.Value as JSObject ?? obj;
             obj.attributes |= JSObjectAttributesInternal.Immutable;
-            (obj.oValue as JSObject ?? obj).attributes |= JSObjectAttributesInternal.Immutable;
+            (obj.Value as JSObject ?? obj).attributes |= JSObjectAttributesInternal.Immutable;
             if (obj is BaseTypes.Array)
             {
                 var arr = obj as BaseTypes.Array;
@@ -1591,7 +1600,7 @@ namespace NiL.JS.Core
                 throw new JSException(new TypeError("Object.isFrozen called on non-object."));
             if (obj.oValue == null)
                 throw new JSException(new TypeError("Object.isFrozen called on null."));
-            obj = obj.oValue as JSObject ?? obj;
+            obj = obj.Value as JSObject ?? obj;
             if ((obj.attributes & JSObjectAttributesInternal.Immutable) == 0)
                 return false;
             if (obj is TypeProxy)
@@ -1690,7 +1699,7 @@ namespace NiL.JS.Core
                 throw new JSException(new TypeError("Object.keys called on non-object value."));
             if (obj.oValue == null)
                 throw new JSException(new TypeError("Cannot get property names of null"));
-            return new BaseTypes.Array((obj.oValue as JSObject ?? obj).GetEnumeratorImpl(true));
+            return new BaseTypes.Array((obj.Value as JSObject ?? obj).GetEnumeratorImpl(true));
         }
 
         internal bool isNeedClone { get { return (attributes & (JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.SystemObject)) == JSObjectAttributesInternal.SystemObject; } }

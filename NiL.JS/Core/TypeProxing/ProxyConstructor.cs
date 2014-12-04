@@ -103,10 +103,9 @@ namespace NiL.JS.Core.TypeProxing
         {
             if (proxy.hostedType.ContainsGenericParameters)
                 throw new JSException((new BaseTypes.TypeError(proxy.hostedType.Name + " can't be created because it's generic type.")));
-            var _this = thisOverride;
             bool bynew = false;
-            if (_this != null)
-                bynew = _this.oValue == typeof(Expressions.New) as object;
+            if (thisOverride != null)
+                bynew = thisOverride.oValue == typeof(Expressions.New) as object;
             try
             {
                 if (!bynew && proxy.hostedType == typeof(Date))
@@ -126,7 +125,7 @@ namespace NiL.JS.Core.TypeProxing
                         // Для Number, Boolean и String
                         if (res.valueType < JSObjectType.Object)
                         {
-                            res = new ProxyContainer(obj, res.__proto__);
+                            res = new ObjectContainer(obj, res.__proto__);
                         }
                         else if (res.oValue is JSObject)
                         {
@@ -139,7 +138,7 @@ namespace NiL.JS.Core.TypeProxing
                     }
                     else
                     {
-                        res = new ProxyContainer(obj, TypeProxy.GetPrototype(proxy.hostedType));
+                        res = new ObjectContainer(obj, TypeProxy.GetPrototype(proxy.hostedType));
                         //if (res.fields == null)
                         //    res.fields = createFields();
                         // из-за того, что GetMember сам дотягивается до объекта, можно попробовать убрать создание филдов
@@ -155,7 +154,7 @@ namespace NiL.JS.Core.TypeProxing
                         if (((obj as JSObject).oValue is JSObject) && ((obj as JSObject).oValue as JSObject).valueType >= JSObjectType.Object)
                             return (obj as JSObject).oValue as JSObject;
                     }
-                    res = obj as JSObject ?? new ProxyContainer(obj)
+                    res = obj as JSObject ?? new ObjectContainer(obj)
                     {
                         attributes = JSObjectAttributesInternal.SystemObject | (proxy.hostedType.IsDefined(typeof(ImmutableAttribute), false) ? JSObjectAttributesInternal.Immutable : JSObjectAttributesInternal.None)
                     };

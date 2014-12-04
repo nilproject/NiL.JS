@@ -118,9 +118,19 @@ namespace NiL.JS.Core.Modules
         [DoNotEnumerate]
         public static JSObject floor(Arguments args)
         {
+            if (args[0].valueType == JSObjectType.Int)
+                return args[0];
             var a = args.Length > 0 ? Tools.JSObjectToDouble(args[0]) : double.NaN;
             if (a == 0.0)
+            {
+                if ((args[0].attributes & JSObjectAttributesInternal.Cloned) != 0)
+                {
+                    args.a0.valueType = JSObjectType.Int;
+                    args.a0.iValue = 0;
+                    return args.a0;
+                }
                 return a;
+            }
             var b = BitConverter.DoubleToInt64Bits(a);
             ulong m = ((ulong)b & ((1UL << 52) - 1)) | (1UL << 52);
             int e = 0;
@@ -136,10 +146,25 @@ namespace NiL.JS.Core.Modules
                         return -(long)shl(m, e) - 1;
                     return -(long)shl(m, e);
                 }
-                return (long)shl(m, e) * s;
+                var r = (long)shl(m, e) * s;
+                if ((args[0].attributes & JSObjectAttributesInternal.Cloned) != 0)
+                {
+                    if (r <= int.MaxValue)
+                    {
+                        args.a0.valueType = JSObjectType.Int;
+                        args.a0.iValue = (int)r;
+                    }
+                    else
+                    {
+                        args.a0.valueType = JSObjectType.Double;
+                        args.a0.dValue = r;
+                    }
+                    return args.a0;
+                }
+                return r;
             }
             else
-                return a;
+                return double.IsNaN(a) ? BaseTypes.Number.NaN : a;
         }
 
         [DoNotDelete]
@@ -154,13 +179,22 @@ namespace NiL.JS.Core.Modules
         [ParametersCount(2)]
         public static JSObject max(Arguments args)
         {
+            JSObject reso = null;
             double res = double.NegativeInfinity;
             for (int i = 0; i < args.Length; i++)
             {
+                if (reso == null && (args[i].attributes & JSObjectAttributesInternal.Cloned) != 0)
+                    reso = args[i];
                 var t = Tools.JSObjectToDouble(args[i]);
                 if (double.IsNaN(t))
-                    return double.NaN;
+                    return BaseTypes.Number.NaN;
                 res = System.Math.Max(res, t);
+            }
+            if (reso != null)
+            {
+                reso.valueType = JSObjectType.Double;
+                reso.dValue = res;
+                return reso;
             }
             return res;
         }
@@ -215,7 +249,19 @@ namespace NiL.JS.Core.Modules
         [DoNotDelete]
         public static JSObject round(Arguments args)
         {
+            if (args[0].valueType == JSObjectType.Int)
+                return args[0];
             var a = args.Length > 0 ? Tools.JSObjectToDouble(args[0]) : double.NaN;
+            if (a == 0.0)
+            {
+                if ((args[0].attributes & JSObjectAttributesInternal.Cloned) != 0)
+                {
+                    args.a0.valueType = JSObjectType.Int;
+                    args.a0.iValue = 0;
+                    return args.a0;
+                }
+                return a;
+            }
             var b = BitConverter.DoubleToInt64Bits(a);
             ulong m = ((ulong)b & ((1UL << 52) - 1)) | (1UL << 52);
             int e = 0;
@@ -234,10 +280,25 @@ namespace NiL.JS.Core.Modules
                         return -(long)shl(m, e);
                     }
                 }
-                return ((long)shl(m, e) + ((long)shl(m, (e - 1)) & 1) * s) * s;
+                var r = ((long)shl(m, e) + ((long)shl(m, (e - 1)) & 1) * s) * s;
+                if ((args[0].attributes & JSObjectAttributesInternal.Cloned) != 0)
+                {
+                    if (r <= int.MaxValue)
+                    {
+                        args.a0.valueType = JSObjectType.Int;
+                        args.a0.iValue = (int)r;
+                    }
+                    else
+                    {
+                        args.a0.valueType = JSObjectType.Double;
+                        args.a0.dValue = r;
+                    }
+                    return args.a0;
+                }
+                return r;
             }
             else
-                return a;
+                return double.IsNaN(a) ? BaseTypes.Number.NaN : a;
         }
 
         [DoNotEnumerate]

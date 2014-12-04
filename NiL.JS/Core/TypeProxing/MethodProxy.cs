@@ -303,11 +303,6 @@ namespace NiL.JS.Core.TypeProxing
             v = obj.Value;
             if (v is Core.BaseTypes.Array)
                 return convertArray(v as Core.BaseTypes.Array);
-            else if (v is TypeProxy)
-            {
-                var tp = v as TypeProxy;
-                return (tp.bindFlags & BindingFlags.Static) != 0 ? tp.hostedType : tp.prototypeInstance.oValue;
-            }
             else if (v is ProxyConstructor)
                 return (v as ProxyConstructor).proxy.hostedType;
             else if (v is Function && targetType.IsSubclassOf(typeof(Delegate)))

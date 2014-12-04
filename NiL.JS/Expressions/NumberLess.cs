@@ -23,13 +23,11 @@ namespace NiL.JS.Expressions
             int itemp;
             double dtemp;
             var op = first.Evaluate(context);
-            if (op.valueType == Core.JSObjectType.Int
-            || op.valueType == Core.JSObjectType.Bool)
+            if (op.valueType == Core.JSObjectType.Int)
             {
                 itemp = op.iValue;
                 op = second.Evaluate(context);
-                if (op.valueType == Core.JSObjectType.Int
-                || op.valueType == Core.JSObjectType.Bool)
+                if (op.valueType == Core.JSObjectType.Int)
                 {
                     return itemp < op.iValue;
                 }
@@ -50,8 +48,7 @@ namespace NiL.JS.Expressions
             {
                 dtemp = op.dValue;
                 op = second.Evaluate(context);
-                if (op.valueType == Core.JSObjectType.Int
-                || op.valueType == Core.JSObjectType.Bool)
+                if (op.valueType == Core.JSObjectType.Int)
                 {
                     return dtemp < op.iValue;
                 }
