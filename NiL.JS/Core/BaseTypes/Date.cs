@@ -966,8 +966,8 @@ namespace NiL.JS.Core.BaseTypes
             return ToString();
         }
 
-        [DoNotEnumerate]
-        public JSObject toLocaleString()
+        [Hidden]
+        public DateTime ToDateTime()
         {
             var offset = new TimeSpan(timeZoneOffset * 10000);
             var y = getYearImpl();
@@ -983,6 +983,13 @@ namespace NiL.JS.Core.BaseTypes
             dt = dt.AddMinutes(getMinutesImpl());
             dt = dt.AddSeconds(getSecondsImpl());
             dt = dt.AddMilliseconds(getMillisecondsImpl());
+            return dt;
+        }
+
+        [DoNotEnumerate]
+        public JSObject toLocaleString()
+        {
+            var dt = ToDateTime();
             return dt.ToLongDateString() + " " + dt.ToLongTimeString();
             //var res =
             //    dt.ToString("dddd MMMM")

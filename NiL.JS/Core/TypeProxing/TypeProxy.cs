@@ -215,7 +215,9 @@ namespace NiL.JS.Core.TypeProxing
 
         protected override JSObject getDefaultPrototype()
         {
-            return GlobalPrototype;
+            if (Context.runnedContexts.Length != 0) // always true, but it protects from uninitialized global context
+                return GlobalPrototype;
+            return null;
         }
 
         private void fillMembers()
@@ -511,7 +513,7 @@ namespace NiL.JS.Core.TypeProxing
             return r;
         }
 
-        internal override bool DeleteMember(JSObject name)
+        protected internal override bool DeleteMember(JSObject name)
         {
             if (members == null)
                 fillMembers();

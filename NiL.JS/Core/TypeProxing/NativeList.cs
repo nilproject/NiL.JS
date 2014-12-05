@@ -207,7 +207,7 @@ namespace NiL.JS.Core.TypeProxing
             return DefaultFieldGetter(name, forWrite, own);
         }
 
-        internal override void SetMember(JSObject name, JSObject value, bool strict)
+        protected internal override void SetMember(JSObject name, JSObject value, bool strict)
         {
             if (name.valueType == JSObjectType.String && string.CompareOrdinal("length", name.oValue.ToString()) == 0)
                 return;

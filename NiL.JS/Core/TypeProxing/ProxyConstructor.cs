@@ -93,7 +93,7 @@ namespace NiL.JS.Core.TypeProxing
             return res;
         }
 
-        internal override bool DeleteMember(JSObject name)
+        protected internal override bool DeleteMember(JSObject name)
         {
             return proxy.DeleteMember(name) && __proto__.DeleteMember(name);
         }

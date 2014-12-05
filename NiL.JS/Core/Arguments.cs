@@ -286,7 +286,7 @@ namespace NiL.JS.Core
                 yield return be.Current;
         }
 
-        internal override bool DeleteMember(JSObject name)
+        protected internal override bool DeleteMember(JSObject name)
         {
             if (name.valueType == JSObjectType.Int)
             {

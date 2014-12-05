@@ -434,6 +434,15 @@ namespace NiL.JS.Statements
                 cn.Optimize(ref cn, owner);
                 lines[i] = cn;
             }
+            if (localVariables != null)
+                for (var i = 0; i < localVariables.Length; i++)
+                {
+                    if (localVariables[i].Inititalizator != null)
+                    {
+                        var cn = localVariables[i].Inititalizator as CodeNode;
+                        cn.Optimize(ref cn, owner);
+                    }
+                }
         }
 
         public override string ToString()

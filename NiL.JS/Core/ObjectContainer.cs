@@ -69,7 +69,7 @@ namespace NiL.JS.Core
             }
         }
 
-        internal override void SetMember(JSObject name, JSObject value, bool strict)
+        protected internal override void SetMember(JSObject name, JSObject value, bool strict)
         {
             oValue = instance as JSObject ?? this;
             try
@@ -82,7 +82,7 @@ namespace NiL.JS.Core
             }
         }
 
-        internal override bool DeleteMember(JSObject name)
+        protected internal override bool DeleteMember(JSObject name)
         {
             oValue = instance as JSObject ?? this;
             try

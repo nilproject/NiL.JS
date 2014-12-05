@@ -41,6 +41,13 @@ namespace NiL.JS.Expressions
             Parser.Build(ref threads[0], depth, vars, strict);
             Parser.Build(ref threads[1], depth, vars, strict);
             base.Build(ref _this, depth, vars, strict);
+            if (threads[0] == null
+                && threads[1] == null)
+                _this = first;
+            else if (threads[0] == null)
+                _this = new LogicalOr(first, threads[1]) { Position = Position, Length = Length };
+            else if (threads[1] == null)
+                _this = new LogicalAnd(first, threads[0]) { Position = Position, Length = Length };
             return false;
         }
 

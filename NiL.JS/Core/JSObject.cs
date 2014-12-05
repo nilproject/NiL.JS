@@ -65,7 +65,7 @@ namespace NiL.JS.Core
 
     [StructLayout(LayoutKind.Sequential)]
     [Serializable]
-    public class JSObject : IEnumerable<string>, IEnumerable, ICloneable, IComparable<JSObject>
+    public class JSObject : IEnumerable<string>, IEnumerable, ICloneable, IComparable<JSObject>, IConvertible
     {
         [Hidden]
         internal static readonly IEnumerator<string> EmptyEnumerator = ((IEnumerable<string>)(new string[0])).GetEnumerator();
@@ -227,6 +227,10 @@ namespace NiL.JS.Core
             get
             {
                 return valueType;
+            }
+            protected set
+            {
+                valueType = value;
             }
         }
 
@@ -503,7 +507,7 @@ namespace NiL.JS.Core
             return res;
         }
 
-        internal virtual void SetMember(JSObject name, JSObject value, bool strict)
+        internal protected virtual void SetMember(JSObject name, JSObject value, bool strict)
         {
             JSObject field;
             if (valueType >= JSObjectType.Object && oValue != this)
@@ -533,7 +537,7 @@ namespace NiL.JS.Core
             field.Assign(value);
         }
 
-        internal virtual bool DeleteMember(JSObject name)
+        internal protected virtual bool DeleteMember(JSObject name)
         {
             JSObject field;
             if (valueType >= JSObjectType.Object && oValue != this)
@@ -1703,5 +1707,97 @@ namespace NiL.JS.Core
         }
 
         internal bool isNeedClone { get { return (attributes & (JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.SystemObject)) == JSObjectAttributesInternal.SystemObject; } }
+
+        #region „лены IConvertible
+
+        TypeCode IConvertible.GetTypeCode()
+        {
+            return TypeCode.Object;
+        }
+
+        bool IConvertible.ToBoolean(IFormatProvider provider)
+        {
+            return (bool)this;
+        }
+
+        byte IConvertible.ToByte(IFormatProvider provider)
+        {
+            return (byte)Tools.JSObjectToInt32(this);
+        }
+
+        char IConvertible.ToChar(IFormatProvider provider)
+        {
+            var s = this.ToString();
+            return s.Length > 0 ? s[0] : '\0';
+        }
+
+        DateTime IConvertible.ToDateTime(IFormatProvider provider)
+        {
+            if (valueType == JSObjectType.Date)
+                return (oValue as Date).ToDateTime();
+            throw new InvalidCastException();
+        }
+
+        decimal IConvertible.ToDecimal(IFormatProvider provider)
+        {
+            return (decimal)Tools.JSObjectToDouble(this);
+        }
+
+        double IConvertible.ToDouble(IFormatProvider provider)
+        {
+            return Tools.JSObjectToDouble(this);
+        }
+
+        short IConvertible.ToInt16(IFormatProvider provider)
+        {
+            return (short)Tools.JSObjectToInt32(this);
+        }
+
+        int IConvertible.ToInt32(IFormatProvider provider)
+        {
+            return Tools.JSObjectToInt32(this);
+        }
+
+        long IConvertible.ToInt64(IFormatProvider provider)
+        {
+            return (byte)Tools.JSObjectToInt64(this);
+        }
+
+        sbyte IConvertible.ToSByte(IFormatProvider provider)
+        {
+            return (sbyte)Tools.JSObjectToInt32(this);
+        }
+
+        float IConvertible.ToSingle(IFormatProvider provider)
+        {
+            return (float)Tools.JSObjectToDouble(this);
+        }
+
+        string IConvertible.ToString(IFormatProvider provider)
+        {
+            return this.ToString();
+        }
+
+        object IConvertible.ToType(Type conversionType, IFormatProvider provider)
+        {
+            return Tools.convertJStoObj(this, conversionType);
+        }
+
+        ushort IConvertible.ToUInt16(IFormatProvider provider)
+        {
+            return (ushort)Tools.JSObjectToInt32(this);
+        }
+
+        uint IConvertible.ToUInt32(IFormatProvider provider)
+        {
+            return (uint)Tools.JSObjectToInt32(this);
+        }
+
+        ulong IConvertible.ToUInt64(IFormatProvider provider)
+        {
+            return (ulong)Tools.JSObjectToInt64(this);
+        }
+
+        #endregion
     }
 }

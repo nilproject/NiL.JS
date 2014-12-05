@@ -232,7 +232,7 @@ namespace NiL.JS.Core.BaseTypes
             return base.GetMember(name, forWrite, own);
         }
 
-        internal override void SetMember(JSObject name, JSObject value, bool strict)
+        protected internal override void SetMember(JSObject name, JSObject value, bool strict)
         {
             if (name.valueType == JSObjectType.String && "length".Equals(name.oValue))
                 return;
