@@ -12,7 +12,6 @@ namespace NiL.JS.Core.JIT
         public Dictionary<string, LabelTarget> NamedBreakLabels;
         public Dictionary<string, LabelTarget> NamedContinueLabels;
         public LabelTarget ReturnTarget;
-        public int TryFinally;
         public LabelExpression ReturnLabel { get { return Expression.Label(ReturnTarget, Expression.Constant(JSObject.notExists)); } }
 
         public TreeBuildingState()

@@ -25,6 +25,8 @@ namespace NiL.JS.Expressions
         internal DeleteMemberExpression(Expression obj, Expression fieldName)
             : base(obj, fieldName, true)
         {
+            if (fieldName is Constant)
+                cachedMemberName = fieldName.Evaluate(null);
         }
 
         internal override JSObject Evaluate(Context context)

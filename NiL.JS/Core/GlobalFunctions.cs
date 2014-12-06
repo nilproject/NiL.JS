@@ -179,7 +179,6 @@ namespace NiL.JS.Core
                                 res.Append((char)cc);
                             else
                             {
-                                var start = k - 2;
                                 var n = 1;
                                 while (((cc << n) & 0x80) != 0)
                                     n++;

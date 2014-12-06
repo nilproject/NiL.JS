@@ -42,9 +42,9 @@ namespace NiL.JS.Expressions
                     return res;
                 }
             }
-            var t = source.GetMember(temp.ToString());
+            var t = source.GetMember(temp, false, false);
             tempContainer = temp;
-            return t.IsExist ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+            return t.IsExist;
         }
 
         public override string ToString()

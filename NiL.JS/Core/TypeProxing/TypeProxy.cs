@@ -198,7 +198,6 @@ namespace NiL.JS.Core.TypeProxing
                 }
                 else
                 {
-                    var prot = staticProxy.fields["prototype"] = this;
                     Function ctor = null;
                     if (type == typeof(JSObject))
                         ctor = new ObjectConstructor(staticProxy);

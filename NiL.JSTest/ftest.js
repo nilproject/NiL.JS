@@ -1,9 +1,8 @@
 ﻿console.log(function () {
-    var strObj = new String("bbq");
-    var preCheck = Object.isExtensible(strObj);
-    Object.preventExtensions(strObj);
-
-    strObj.exName = 2;
-    console.log(preCheck);
-    return preCheck && !strObj.hasOwnProperty("exName");
+    var desc = Object.getOwnPropertyDescriptor(Object, 'prototype');
+    if (desc.writable === false &&
+        desc.enumerable === false &&
+        desc.configurable === false) {
+        return true;
+    }
 }());

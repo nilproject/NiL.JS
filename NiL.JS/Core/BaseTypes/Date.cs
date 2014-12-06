@@ -969,7 +969,6 @@ namespace NiL.JS.Core.BaseTypes
         [Hidden]
         public DateTime ToDateTime()
         {
-            var offset = new TimeSpan(timeZoneOffset * 10000);
             var y = getYearImpl();
             while (y > 2800)
                 y -= 2800;
@@ -1070,7 +1069,6 @@ namespace NiL.JS.Core.BaseTypes
         [DoNotEnumerate]
         public JSObject toDateString()
         {
-            var offset = TimeZone.CurrentTimeZone.GetUtcOffset(DateTime.Now);
             var res =
                 daysOfWeek[(System.Math.Abs(time) % _weekMilliseconds) / _dayMilliseconds] + " "
                 + months[getMonthImpl()]

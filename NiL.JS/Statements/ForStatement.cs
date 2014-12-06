@@ -107,8 +107,6 @@ namespace NiL.JS.Statements
             do i++; while (char.IsWhiteSpace(state.Code[i]));
             state.AllowBreak.Push(true);
             state.AllowContinue.Push(true);
-            int ccs = state.continiesCount;
-            int cbs = state.breaksCount;
             var body = Parser.Parse(state, ref i, 0);
             if (body is FunctionExpression && state.strict.Peek())
                 throw new JSException((new NiL.JS.Core.BaseTypes.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));

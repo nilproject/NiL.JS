@@ -25,6 +25,8 @@ namespace NiL.JS.Expressions
         internal SetMemberExpression(Expression obj, Expression fieldName, Expression value)
             : base(obj, fieldName, true)
         {
+            if (fieldName is Constant)
+                cachedMemberName = fieldName.Evaluate(null);
             this.value = value;
         }
 

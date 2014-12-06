@@ -110,11 +110,43 @@ namespace NiL.JS.Core.TypeProxing
             {
                 if (!bynew && proxy.hostedType == typeof(Date))
                     return new Date().toString();
-                object[] args = null;
-                MethodProxy constructor = findConstructor(argsObj, ref args);
-                if (constructor == null)
-                    throw new JSException((new BaseTypes.TypeError(proxy.hostedType.Name + " can't be created.")));
-                var obj = constructor.InvokeImpl(null, args, argsObj);
+                object obj;
+                if (proxy.hostedType == typeof(BaseTypes.Array))
+                {
+                    switch (argsObj.length)
+                    {
+                        case 0:
+                            obj = new BaseTypes.Array();
+                            break;
+                        case 1:
+                            {
+                                switch (argsObj.a0.valueType)
+                                {
+                                    case JSObjectType.Int:
+                                        obj = new BaseTypes.Array(argsObj.a0.iValue);
+                                        break;
+                                    case JSObjectType.Double:
+                                        obj = new BaseTypes.Array(argsObj.a0.dValue);
+                                        break;
+                                    default:
+                                        obj = new BaseTypes.Array(argsObj);
+                                        break;
+                                }
+                                break;
+                            }
+                        default:
+                            obj = new BaseTypes.Array(argsObj);
+                            break;
+                    }
+                }
+                else
+                {
+                    object[] args = null;
+                    MethodProxy constructor = findConstructor(argsObj, ref args);
+                    if (constructor == null)
+                        throw new JSException((new BaseTypes.TypeError(proxy.hostedType.Name + " can't be created.")));
+                    obj = constructor.InvokeImpl(null, args, argsObj);
+                }
                 JSObject res = null;
                 if (bynew)
                 {

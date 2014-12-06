@@ -62,7 +62,6 @@ namespace NiL.JS.Expressions
                         generator.Invoke(self, initialArgs);
                         GC.SuppressFinalize(this);
                     });
-                    thread.TrySetApartmentState(ApartmentState.STA);
                     thread.Start();
                     do
                     {
@@ -78,34 +77,31 @@ namespace NiL.JS.Expressions
                         }
                     }
                     while (generatorContext == null);
-                    while (thread.ThreadState != ThreadState.Suspended)
-                        Thread.Sleep(0);
-                    thread.Resume();
                     while (generatorContext.abort == AbortType.None)
-                        Thread.Sleep(0);
+                        Thread.Yield();
                     var res = JSObject.CreateObject();
-                    res["value"] = generatorContext.abortInfo;
-                    res["done"] = generatorContext.abort == AbortType.Return;
+                    res.fields["value"] = generatorContext.abortInfo;
+                    res.fields["done"] = generatorContext.abort == AbortType.Return;
                     return res;
                 }
                 else
                 {
-                    if (thread.ThreadState == ThreadState.Suspended)
+                    if (thread.ThreadState == ThreadState.Running
+                        || thread.ThreadState == ThreadState.WaitSleepJoin)
                     {
                         generatorContext.abortInfo = args[0];
                         generatorContext.abort = AbortType.None;
-                        thread.Resume();
                         while (generatorContext.abort == AbortType.None)
-                            Thread.Sleep(0);
+                            Thread.Yield();
                         var res = JSObject.CreateObject();
-                        res["value"] = generatorContext.abortInfo;
-                        res["done"] = generatorContext.abort == AbortType.Return;
+                        res.fields["value"] = generatorContext.abortInfo;
+                        res.fields["done"] = generatorContext.abort == AbortType.Return;
                         return res;
                     }
                     else
                     {
                         var res = JSObject.CreateObject();
-                        res["done"] = true;
+                        res.fields["done"] = true;
                         return res;
                     }
                 }
@@ -118,7 +114,6 @@ namespace NiL.JS.Expressions
                     if (thread.ThreadState == ThreadState.Suspended)
                     {
                         generatorContext.abort = AbortType.Exception;
-                        thread.Resume();
                     }
                 }
             }

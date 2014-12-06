@@ -1592,9 +1592,6 @@ namespace NiL.JS.Core.BaseTypes
                 pos1 = (uint)System.Math.Min(pos1, data.Length);
                 var res = needResult ? new Array((int)(pos1 - pos0)) : null;
                 var delta = System.Math.Max(0, args.length - 2) - (pos1 - pos0);
-                List<KeyValuePair<int, JSObject>> relocated = null;
-                if (delta > 0)
-                    relocated = new List<KeyValuePair<int, JSObject>>();
                 foreach (var node in (delta > 0 ? data.Reversed : (data as IEnumerable<KeyValuePair<int, JSObject>>)))
                 {
                     if (node.Key < pos0)

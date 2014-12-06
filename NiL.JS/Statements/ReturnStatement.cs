@@ -14,9 +14,9 @@ namespace NiL.JS.Statements
 
         internal override System.Linq.Expressions.Expression CompileToIL(NiL.JS.Core.JIT.TreeBuildingState state)
         {
-            if (state.TryFinally <= 0)
-                return Expression.Goto(state.ReturnTarget, body != null ? body.CompileToIL(state) : JITHelpers.NotExistsConstant);
-            else
+            //if (state.TryFinally <= 0)
+            //    return Expression.Goto(state.ReturnTarget, body != null ? body.CompileToIL(state) : JITHelpers.NotExistsConstant);
+            //else
                 return Expression.Goto(state.ReturnTarget, Expression.Assign(Expression.Field(JITHelpers.ContextParameter, "abortInfo"), body != null ? body.CompileToIL(state) : JITHelpers.NotExistsConstant));
         }
 

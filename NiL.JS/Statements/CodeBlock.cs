@@ -300,7 +300,7 @@ namespace NiL.JS.Statements
                         throw new ApplicationException("Boolean.True was rewrite");
 #endif
                 if (context.abort != AbortType.None)
-                    return context.abort == AbortType.Return ? context.abortInfo : null;
+                    return null;
             }
             return null;
         }

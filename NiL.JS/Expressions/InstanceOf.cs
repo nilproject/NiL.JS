@@ -7,6 +7,8 @@ namespace NiL.JS.Expressions
     [Serializable]
     public sealed class InstanceOf : Expression
     {
+        private static readonly JSObject prototype = "prototype";
+
         protected internal override PredictedType ResultType
         {
             get
@@ -31,7 +33,7 @@ namespace NiL.JS.Expressions
                 tempContainer = a;
                 if (c.valueType != JSObjectType.Function)
                     throw new JSException(new NiL.JS.Core.BaseTypes.TypeError("Right-hand value of instanceof is not function."));
-                var p = c.GetMember("prototype");
+                var p = c.GetMember(prototype, false, false);
                 if (p.valueType == JSObjectType.Property)
                     p = ((p.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(c, null);
                 if (p.valueType < JSObjectType.Object)

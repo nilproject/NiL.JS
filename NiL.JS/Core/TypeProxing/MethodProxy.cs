@@ -456,6 +456,20 @@ namespace NiL.JS.Core.TypeProxing
                             }
                             break;
                         }
+                    case CallMode.ActionDynamicZero:
+                        {
+                            if (constructorMode)
+                            {
+                                res = FormatterServices.GetUninitializedObject(info.ReflectedType);
+                                delegateA1(res);
+                            }
+                            else
+                            {
+                                delegateA1(target);
+                                res = null;
+                            }
+                            break;
+                        }
                     default:
                         {
                             if (args == null)

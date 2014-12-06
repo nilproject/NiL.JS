@@ -409,7 +409,7 @@ namespace NiL.JS.Statements
                         }
                         else if (Parser.ValidateRegex(state.Code, ref s, true))
                         {
-                            state.Code = state.Code = Tools.RemoveComments(state.SourceCode, i);
+                            state.Code = Tools.RemoveComments(state.SourceCode, i);
                             s = value.LastIndexOf('/') + 1;
                             string flags = value.Substring(s);
                             try

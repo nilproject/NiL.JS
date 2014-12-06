@@ -875,7 +875,6 @@ namespace NiL.JS.Core
                 bool extended = false;
                 double doubleTemp = 0.0;
                 ulong temp = 0;
-                int starti = i;
                 while (i < code.Length)
                 {
                     var sign = anum(code[i]);

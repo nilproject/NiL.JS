@@ -87,7 +87,6 @@ namespace NiL.JS.Core.BaseTypes
         [Modules.DoNotEnumerate]
         public Number(string value)
         {
-            var sb = new StringBuilder(value);
             value = value.Trim(Tools.TrimChars);
             valueType = JSObjectType.Int;
             dValue = value.Length != 0 ? double.NaN : 0;

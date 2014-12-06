@@ -608,6 +608,7 @@ namespace NiL.JS.Core.BaseTypes
         [Field]
         [DoNotDelete]
         [DoNotEnumerate]
+        [NotConfigurable]
         public virtual JSObject prototype
         {
             [CallOverloaded]
@@ -722,7 +723,6 @@ namespace NiL.JS.Core.BaseTypes
             if (fs.IsParsed)
             {
                 Parser.Build(ref fs.Statement, 0, new Dictionary<string, VariableDescriptor>(), context.strict);
-                var func = fs.Statement.Evaluate(context) as Function;
                 creator = fs.Statement as FunctionExpression;
             }
             else
@@ -808,8 +808,6 @@ namespace NiL.JS.Core.BaseTypes
                 internalContext.strict |= body.strict;
                 internalContext.variables = body.variables;
                 internalContext.Activate();
-                if (creator.type == FunctionType.Generator)
-                    Thread.CurrentThread.Suspend();
                 JSObject ai = null;
                 initVariables(body, internalContext);
                 do
