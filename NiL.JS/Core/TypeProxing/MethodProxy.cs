@@ -11,8 +11,12 @@ namespace NiL.JS.Core.TypeProxing
     {
 #if !NET35
         private delegate void SetValueDelegate(FieldInfo field, Object obj, Object value, Type fieldType, FieldAttributes fieldAttr, Type declaringType, ref bool domainInitialized);
+#if !__MonoCS__
         private static readonly SetValueDelegate SetFieldValue = Activator.CreateInstance(typeof(SetValueDelegate), null, typeof(RuntimeFieldHandle).GetMethod("SetValue", BindingFlags.Static | BindingFlags.NonPublic).MethodHandle.GetFunctionPointer()) as SetValueDelegate;
         private static readonly FieldInfo _targetInfo = typeof(Action).GetMember("_target", BindingFlags.NonPublic | BindingFlags.Instance)[0] as FieldInfo;
+#else
+		private static readonly FieldInfo _targetInfo = typeof(Delegate).GetMember("m_target", BindingFlags.NonPublic | BindingFlags.Instance)[0] as FieldInfo;
+#endif
 #endif
         private enum CallMode
         {
@@ -364,7 +368,11 @@ namespace NiL.JS.Core.TypeProxing
 #if !NET35
                             {
                                 bool di = true;
+#if !__MonoCS__
                                 SetFieldValue(_targetInfo, delegateF1, target, typeof(object), _targetInfo.Attributes, typeof(Action), ref di);
+#else
+								_targetInfo.SetValue(delegateF1, target);
+#endif
                                 res = delegateF1(argsSource);
                             }
                             else
@@ -380,7 +388,11 @@ namespace NiL.JS.Core.TypeProxing
 #if !NET35
                             {
                                 bool di = true;
+#if !__MonoCS__
                                 SetFieldValue(_targetInfo, delegateF0, target, typeof(object), _targetInfo.Attributes, typeof(Action), ref di);
+#else
+								_targetInfo.SetValue(delegateF0, target);
+#endif
                                 res = delegateF0();
                             }
                             else
@@ -396,7 +408,11 @@ namespace NiL.JS.Core.TypeProxing
 #if !NET35
                             {
                                 bool di = true;
+#if !__MonoCS__
                                 SetFieldValue(_targetInfo, delegateF1, target, typeof(object), _targetInfo.Attributes, typeof(Action), ref di);
+#else
+								_targetInfo.SetValue(delegateF1, target);
+#endif
                                 res = delegateF1(args != null ? args[0] : argumentsToArray(argsSource));
                             }
                             else
@@ -412,7 +428,11 @@ namespace NiL.JS.Core.TypeProxing
 #if !NET35
                             {
                                 bool di = true;
+#if !__MonoCS__
                                 SetFieldValue(_targetInfo, delegateF1, target, typeof(object), _targetInfo.Attributes, typeof(Action), ref di);
+#else
+								_targetInfo.SetValue(delegateF1, target);
+#endif
                                 res = delegateF1(args == null ? marshal(argsSource[0], parameters[0].ParameterType) : args[0]);
                             }
                             else
