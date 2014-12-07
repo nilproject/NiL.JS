@@ -88,9 +88,9 @@ namespace NiL.JS.Statements
                         var vle = flds[setter.Name];
                         if (!(vle is Constant)
                             || (vle as Constant).value.valueType != JSObjectType.Property)
-                            throw new JSException((new SyntaxError("Try to define setter for defined field at " + Tools.PositionToTextcord(state.Code, pos))));
+                            throw new JSException((new SyntaxError("Try to define setter for defined field at " + CodeCoordinates.FromTextPosition(state.Code, pos))));
                         if (((vle as Constant).value.oValue as CodeNode[])[0] != null)
-                            throw new JSException((new SyntaxError("Try to redefine setter " + setter.Name + " at " + Tools.PositionToTextcord(state.Code, pos))));
+                            throw new JSException((new SyntaxError("Try to redefine setter " + setter.Name + " at " + CodeCoordinates.FromTextPosition(state.Code, pos))));
                         ((vle as Constant).value.oValue as CodeNode[])[0] = setter;
                     }
                 }
@@ -110,9 +110,9 @@ namespace NiL.JS.Statements
                         var vle = flds[getter.Name];
                         if (!(vle is Constant)
                             || (vle as Constant).value.valueType != JSObjectType.Property)
-                            throw new JSException((new SyntaxError("Try to define getter for defined field at " + Tools.PositionToTextcord(state.Code, pos))));
+                            throw new JSException((new SyntaxError("Try to define getter for defined field at " + CodeCoordinates.FromTextPosition(state.Code, pos))));
                         if (((vle as Constant).value.oValue as CodeNode[])[1] != null)
-                            throw new JSException((new SyntaxError("Try to redefine getter " + getter.Name + " at " + Tools.PositionToTextcord(state.Code, pos))));
+                            throw new JSException((new SyntaxError("Try to redefine getter " + getter.Name + " at " + CodeCoordinates.FromTextPosition(state.Code, pos))));
                         ((vle as Constant).value.oValue as CodeNode[])[1] = getter;
                     }
                 }
@@ -131,7 +131,7 @@ namespace NiL.JS.Statements
                         else if (state.Code[s] == '\'' || state.Code[s] == '"')
                             fieldName = Tools.Unescape(state.Code.Substring(s + 1, i - s - 2), state.strict.Peek());
                         else if (flds.Count != 0)
-                            throw new JSException((new SyntaxError("Invalid field name at " + Tools.PositionToTextcord(state.Code, pos))));
+                            throw new JSException((new SyntaxError("Invalid field name at " + CodeCoordinates.FromTextPosition(state.Code, pos))));
                         else
                             return new ParseResult();
                     }
@@ -148,7 +148,7 @@ namespace NiL.JS.Statements
                     if (aei != null
                         && ((state.strict.Peek() && (!(aei is Constant) || (aei as Constant).value != JSObject.undefined))
                             || (aei is Constant && ((aei as Constant).value.valueType == JSObjectType.Property))))
-                        throw new JSException(new SyntaxError("Try to redefine field \"" + fieldName + "\" at " + Tools.PositionToTextcord(state.Code, pos)));
+                        throw new JSException(new SyntaxError("Try to redefine field \"" + fieldName + "\" at " + CodeCoordinates.FromTextPosition(state.Code, pos)));
                     flds[fieldName] = initializator;
                 }
                 while (char.IsWhiteSpace(state.Code[i]))
@@ -205,28 +205,28 @@ namespace NiL.JS.Statements
             return res;
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict, CompilerMessageCallback message)
         {
             for (int i = 0; i < values.Length; i++)
             {
                 if ((values[i] is Constant) && ((values[i] as Constant).value.valueType == JSObjectType.Property))
                 {
                     var gs = (values[i] as Constant).value.oValue as CodeNode[];
-                    Parser.Build(ref gs[0], 1, vars, strict);
-                    Parser.Build(ref gs[1], 1, vars, strict);
+                    Parser.Build(ref gs[0], 1, vars, strict, message);
+                    Parser.Build(ref gs[1], 1, vars, strict, message);
                 }
                 else
-                    Parser.Build(ref values[i], 2, vars, strict);
+                    Parser.Build(ref values[i], 2, vars, strict, message);
             }
             return false;
         }
 
-        internal override void Optimize(ref CodeNode _this, FunctionExpression owner)
+        internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message)
         {
             for (var i = Initializators.Length; i-- > 0; )
             {
                 var cn = Initializators[i] as CodeNode;
-                cn.Optimize(ref cn, owner);
+                cn.Optimize(ref cn, owner, message);
                 Initializators[i] = cn as Expression;
             }
         }

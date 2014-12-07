@@ -183,11 +183,11 @@ namespace NiL.JS.Expressions
 #endif
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict, CompilerMessageCallback message)
         {
             for (var i = 0; i < arguments.Length; i++)
-                Parser.Build(ref arguments[i], depth + 1, vars, strict);
-            base.Build(ref _this, depth, vars, strict);
+                Parser.Build(ref arguments[i], depth + 1, vars, strict, message);
+            base.Build(ref _this, depth, vars, strict, message);
             if (first is GetVariableExpression)
             {
                 var name = first.ToString();
@@ -230,13 +230,13 @@ namespace NiL.JS.Expressions
             return false;
         }
 
-        internal override void Optimize(ref CodeNode _this, FunctionExpression owner)
+        internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message)
         {
-            base.Optimize(ref _this, owner);
+            base.Optimize(ref _this, owner, message);
             for (var i = arguments.Length; i-- > 0; )
             {
                 var cn = arguments[i] as CodeNode;
-                cn.Optimize(ref cn, owner);
+                cn.Optimize(ref cn, owner, message);
                 arguments[i] = cn as Expression;
             }
         }

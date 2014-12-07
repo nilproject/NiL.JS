@@ -67,7 +67,7 @@ namespace NiL.JS.Expressions
             return temp;
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> vars, bool strict)
+        internal override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> vars, bool strict, CompilerMessageCallback message)
         {
 #if GIVENAMEFUNCTION
             if (first is VariableReference && second is FunctionExpression)
@@ -77,7 +77,7 @@ namespace NiL.JS.Expressions
                     fs.name = (first as VariableReference).Name;
             }
 #endif
-            var r = base.Build(ref _this, depth, vars, strict);
+            var r = base.Build(ref _this, depth, vars, strict, message);
 
             var f = first as VariableReference ?? ((first is OpAssignCache) ? (first as OpAssignCache).Source as VariableReference : null);
             if (f != null)
@@ -94,16 +94,22 @@ namespace NiL.JS.Expressions
             return r;
         }
 
-        internal override void Optimize(ref CodeNode _this, FunctionExpression owner)
+        internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message)
         {
-            baseOptimize(owner);
+            baseOptimize(owner, message);
             var vr = first as VariableReference;
             if (vr != null && vr.descriptor.isDefined)
             {
-                if (vr.descriptor.lastPredictedType == PredictedType.Unknown)
-                    vr.descriptor.lastPredictedType = second.ResultType;
+                var stype = second.ResultType;
+                if (vr.descriptor.lastPredictedType == PredictedType.Unknown
+                    || vr.descriptor.lastPredictedType == stype)
+                    vr.descriptor.lastPredictedType = stype;
                 else
+                {
+                    if (message != null)
+                        message(MessageLevel.Warning, new CodeCoordinates(0, Position), "Variable \"" + vr.Name + "\" has ambiguous type. It can be make impossible some optimizations and cause errors.");
                     vr.descriptor.lastPredictedType = PredictedType.Ambiguous;
+                }
             }
             var gme = first as GetMemberExpression;
             if (gme != null)

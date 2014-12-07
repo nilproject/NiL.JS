@@ -50,15 +50,15 @@ namespace NiL.JS.Statements
             if (i >= state.Code.Length)
                 throw new JSException(new SyntaxError("Unexpected end of source."));
             if (!Parser.Validate(state.Code, "while", ref i))
-                throw new JSException((new Core.BaseTypes.SyntaxError("Expected \"while\" at + " + Tools.PositionToTextcord(state.Code, i))));
+                throw new JSException((new Core.BaseTypes.SyntaxError("Expected \"while\" at + " + CodeCoordinates.FromTextPosition(state.Code, i))));
             while (char.IsWhiteSpace(state.Code[i])) i++;
             if (state.Code[i] != '(')
-                throw new JSException((new Core.BaseTypes.SyntaxError("Expected \"(\" at + " + Tools.PositionToTextcord(state.Code, i))));
+                throw new JSException((new Core.BaseTypes.SyntaxError("Expected \"(\" at + " + CodeCoordinates.FromTextPosition(state.Code, i))));
             do i++; while (char.IsWhiteSpace(state.Code[i]));
             var condition = Parser.Parse(state, ref i, 1);
             while (char.IsWhiteSpace(state.Code[i])) i++;
             if (state.Code[i] != ')')
-                throw new JSException((new Core.BaseTypes.SyntaxError("Expected \")\" at + " + Tools.PositionToTextcord(state.Code, i))));
+                throw new JSException((new Core.BaseTypes.SyntaxError("Expected \")\" at + " + CodeCoordinates.FromTextPosition(state.Code, i))));
             i++;
             var pos = index;
             index = i;
@@ -155,11 +155,11 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message)
         {
             depth = System.Math.Max(1, depth);
-            Parser.Build(ref body, depth, variables, strict);
-            Parser.Build(ref condition, 2, variables, strict);
+            Parser.Build(ref body, depth, variables, strict, message);
+            Parser.Build(ref condition, 2, variables, strict, message);
             try
             {
                 if (allowRemove && (condition is Constant || (condition as Expressions.Expression).IsContextIndependent))
@@ -179,10 +179,10 @@ namespace NiL.JS.Statements
             return false;
         }
 
-        internal override void Optimize(ref CodeNode _this, FunctionExpression owner)
+        internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message)
         {
-            condition.Optimize(ref condition, owner);
-            body.Optimize(ref body, owner);
+            condition.Optimize(ref condition, owner, message);
+            body.Optimize(ref body, owner, message);
         }
 
         public override string ToString()

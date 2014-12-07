@@ -303,23 +303,23 @@ namespace NiL.JS.Expressions
                     name = Tools.Unescape(code.Substring(nameStartPos + 1, i - nameStartPos - 2), state.strict.Peek());
                 else if ((mode == FunctionType.Get || mode == FunctionType.Set) && Parser.ValidateNumber(code, ref i))
                     name = Tools.Unescape(code.Substring(nameStartPos, i - nameStartPos), state.strict.Peek());
-                else throw new JSException((new SyntaxError("Invalid function name at " + Tools.PositionToTextcord(code, nameStartPos))));
+                else throw new JSException((new SyntaxError("Invalid function name at " + CodeCoordinates.FromTextPosition(code, nameStartPos))));
                 while (char.IsWhiteSpace(code[i])) i++;
                 if (code[i] != '(')
-                    throw new JSException(new SyntaxError("Unexpected char at " + Tools.PositionToTextcord(code, i)));
+                    throw new JSException(new SyntaxError("Unexpected char at " + CodeCoordinates.FromTextPosition(code, i)));
             }
             else if (mode == FunctionType.Get || mode == FunctionType.Set)
                 throw new JSException(new SyntaxError("Getters and Setters must have name"));
             do i++; while (char.IsWhiteSpace(code[i]));
             if (code[i] == ',')
-                throw new JSException(new SyntaxError("Unexpected char at " + Tools.PositionToTextcord(code, i)));
+                throw new JSException(new SyntaxError("Unexpected char at " + CodeCoordinates.FromTextPosition(code, i)));
             while (code[i] != ')')
             {
                 if (code[i] == ',')
                     do i++; while (char.IsWhiteSpace(code[i]));
                 int n = i;
                 if (!Parser.ValidateName(code, ref i, state.strict.Peek()))
-                    throw new JSException((new SyntaxError("Invalid description of function arguments at " + Tools.PositionToTextcord(code, nameStartPos))));
+                    throw new JSException((new SyntaxError("Invalid description of function arguments at " + CodeCoordinates.FromTextPosition(code, nameStartPos))));
                 var pname = Tools.Unescape(code.Substring(n, i - n), state.strict.Peek());
                 parameters.Add(new ParameterReference(pname, state.functionsDepth + 1) { Position = n, Length = i - n });
                 while (char.IsWhiteSpace(code[i])) i++;
@@ -343,7 +343,7 @@ namespace NiL.JS.Expressions
                 i++;
             while (char.IsWhiteSpace(code[i]));
             if (code[i] != '{')
-                throw new JSException(new SyntaxError("Unexpected char at " + Tools.PositionToTextcord(code, i)));
+                throw new JSException(new SyntaxError("Unexpected char at " + CodeCoordinates.FromTextPosition(code, i)));
             bool needSwitchCWith = state.containsWith.Peek();
             if (needSwitchCWith)
                 state.containsWith.Push(false);
@@ -379,11 +379,11 @@ namespace NiL.JS.Expressions
                         if (parameters[j].Name == parameters[k].Name)
                             throw new JSException(new SyntaxError("Duplicate names of function parameters not allowed in strict mode."));
                 if (name == "arguments" || name == "eval")
-                    throw new JSException((new Core.BaseTypes.SyntaxError("Functions name may not be \"arguments\" or \"eval\" in strict mode at " + Tools.PositionToTextcord(code, index))));
+                    throw new JSException((new Core.BaseTypes.SyntaxError("Functions name may not be \"arguments\" or \"eval\" in strict mode at " + CodeCoordinates.FromTextPosition(code, index))));
                 for (int j = parameters.Count; j-- > 0; )
                 {
                     if (parameters[j].Name == "arguments" || parameters[j].Name == "eval")
-                        throw new JSException((new Core.BaseTypes.SyntaxError("Parameters name may not be \"arguments\" or \"eval\" in strict mode at " + Tools.PositionToTextcord(code, index))));
+                        throw new JSException((new Core.BaseTypes.SyntaxError("Parameters name may not be \"arguments\" or \"eval\" in strict mode at " + CodeCoordinates.FromTextPosition(code, index))));
                 }
             }
             if (mode == FunctionType.Function && string.IsNullOrEmpty(name))
@@ -494,13 +494,13 @@ namespace NiL.JS.Expressions
             return new Function(context, this);
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message)
         {
             if (body.builded)
                 return false;
             var bodyCode = body as CodeNode;
             var nvars = new Dictionary<string, VariableDescriptor>();
-            bodyCode.Build(ref bodyCode, 0, nvars, strict);
+            bodyCode.Build(ref bodyCode, 0, nvars, strict, message);
             if (type == FunctionType.Function && !string.IsNullOrEmpty(name))
             {
                 VariableDescriptor fdesc = null;
@@ -573,10 +573,10 @@ namespace NiL.JS.Expressions
             return false;
         }
 
-        internal override void Optimize(ref CodeNode _this, FunctionExpression owner)
+        internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message)
         {
             var bd = body as CodeNode;
-            body.Optimize(ref bd, this);
+            body.Optimize(ref bd, this, message);
         }
 
         private void checkUsings()

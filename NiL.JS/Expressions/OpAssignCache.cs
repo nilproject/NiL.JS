@@ -92,9 +92,9 @@ namespace NiL.JS.Expressions
             return source.Childs;
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message)
         {
-            var res = source.Build(ref _this, depth, variables, strict);
+            var res = source.Build(ref _this, depth, variables, strict, message);
             if (!res && source is GetVariableExpression)
                 (source as GetVariableExpression).forceThrow = true;
             return res;

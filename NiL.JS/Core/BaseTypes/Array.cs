@@ -127,7 +127,7 @@ namespace NiL.JS.Core.BaseTypes
             data = new SparseArray<JSObject>();
             var index = 0;
             foreach (var e in collection)
-                data[index++] = e is JSObject ? (e as JSObject).CloneImpl() : TypeProxy.Proxy(e);
+                data[index++] = (e as JSObject ?? TypeProxy.Proxy(e)).CloneImpl();
             attributes |= JSObjectAttributesInternal.SystemObject;
         }
 
@@ -141,7 +141,7 @@ namespace NiL.JS.Core.BaseTypes
             data = new SparseArray<JSObject>();
             var index = 0;
             foreach (var e in enumerable)
-                data[index++] = e is JSObject ? (e as JSObject).CloneImpl() : TypeProxy.Proxy(e);
+                data[index++] = (e as JSObject ?? TypeProxy.Proxy(e)).CloneImpl();
             attributes |= JSObjectAttributesInternal.SystemObject;
         }
 
@@ -157,7 +157,7 @@ namespace NiL.JS.Core.BaseTypes
             while (enumerator.MoveNext())
             {
                 var e = enumerator.Current;
-                data[index++] = e is JSObject ? (e as JSObject).CloneImpl() : TypeProxy.Proxy(e);
+                data[index++] = (e as JSObject ?? TypeProxy.Proxy(e)).CloneImpl();
             }
             attributes |= JSObjectAttributesInternal.SystemObject;
         }
@@ -1565,7 +1565,7 @@ namespace NiL.JS.Core.BaseTypes
                 throw new ArgumentNullException("args");
             if (args.Length == 0)
                 return needResult ? new Array() : null;
-            if (this.GetType() == typeof(Array)) // Äà, Array sealed, íî òóò è íå òàêîå âîçìîæíî.
+            if (this.GetType() == typeof(Array))
             {
                 var _length = data.Length;
                 long pos0 = (long)System.Math.Min(Tools.JSObjectToDouble(args[0]), data.Length);

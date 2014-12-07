@@ -122,9 +122,9 @@ namespace NiL.JS.Expressions
             }
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> vars, bool strict)
+        internal override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> vars, bool strict, CompilerMessageCallback message)
         {
-            if (base.Build(ref _this, depth, vars, strict))
+            if (base.Build(ref _this, depth, vars, strict, message))
                 return true;
             if (first is GetVariableExpression)
             {
@@ -142,6 +142,8 @@ namespace NiL.JS.Expressions
             var f = first as VariableReference ?? ((first is OpAssignCache) ? (first as OpAssignCache).Source as VariableReference : null);
             if (f != null)
             {
+                if (f.Descriptor.isDefined && message != null)
+                    message(MessageLevel.Warning, new CodeCoordinates(0, Position), "Try to delete defined variable." + (strict ? " In strict mode it cause exception." : " This is not allowed"));
                 (f.Descriptor.assignations ??
                     (f.Descriptor.assignations = new System.Collections.Generic.List<CodeNode>())).Add(this);
             }

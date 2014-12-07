@@ -46,9 +46,9 @@ namespace NiL.JS.Expressions
                 return source.ToString();
             }
 
-            internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
+            internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message)
             {
-                return source.Build(ref source, depth, variables, strict);
+                return source.Build(ref source, depth, variables, strict, message);
             }
         }
 

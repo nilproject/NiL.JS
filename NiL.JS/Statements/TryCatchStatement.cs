@@ -32,7 +32,7 @@ namespace NiL.JS.Statements
             if (i >= state.Code.Length)
                 throw new JSException(new SyntaxError("Unexpected end of line."));
             if (state.Code[i] != '{')
-                throw new JSException((new Core.BaseTypes.SyntaxError("Invalid try statement definition at " + Tools.PositionToTextcord(state.Code, i))));
+                throw new JSException((new Core.BaseTypes.SyntaxError("Invalid try statement definition at " + CodeCoordinates.FromTextPosition(state.Code, i))));
             var b = CodeBlock.Parse(state, ref i).Statement;
             while (char.IsWhiteSpace(state.Code[i])) i++;
             CodeNode cb = null;
@@ -41,19 +41,19 @@ namespace NiL.JS.Statements
             {
                 int s = i;
                 if (!Parser.ValidateName(state.Code, ref i, state.strict.Peek()))
-                    throw new JSException((new Core.BaseTypes.SyntaxError("Catch block must contain variable name " + Tools.PositionToTextcord(state.Code, i))));
+                    throw new JSException((new Core.BaseTypes.SyntaxError("Catch block must contain variable name " + CodeCoordinates.FromTextPosition(state.Code, i))));
                 exptn = Tools.Unescape(state.Code.Substring(s, i - s), state.strict.Peek());
                 if (state.strict.Peek())
                 {
                     if (exptn == "arguments" || exptn == "eval")
-                        throw new JSException((new Core.BaseTypes.SyntaxError("Varible name may not be \"arguments\" or \"eval\" in strict mode at " + Tools.PositionToTextcord(state.Code, s))));
+                        throw new JSException((new Core.BaseTypes.SyntaxError("Varible name may not be \"arguments\" or \"eval\" in strict mode at " + CodeCoordinates.FromTextPosition(state.Code, s))));
                 }
                 while (char.IsWhiteSpace(state.Code[i])) i++;
                 if (!Parser.Validate(state.Code, ")", ref i))
-                    throw new JSException((new Core.BaseTypes.SyntaxError("Expected \")\" at + " + Tools.PositionToTextcord(state.Code, i))));
+                    throw new JSException((new Core.BaseTypes.SyntaxError("Expected \")\" at + " + CodeCoordinates.FromTextPosition(state.Code, i))));
                 while (char.IsWhiteSpace(state.Code[i])) i++;
                 if (state.Code[i] != '{')
-                    throw new JSException((new Core.BaseTypes.SyntaxError("Invalid catch block statement definition at " + Tools.PositionToTextcord(state.Code, i))));
+                    throw new JSException((new Core.BaseTypes.SyntaxError("Invalid catch block statement definition at " + CodeCoordinates.FromTextPosition(state.Code, i))));
                 state.functionsDepth++;
                 try
                 {
@@ -71,7 +71,7 @@ namespace NiL.JS.Statements
                 i += 7;
                 while (char.IsWhiteSpace(state.Code[i])) i++;
                 if (state.Code[i] != '{')
-                    throw new JSException((new Core.BaseTypes.SyntaxError("Invalid finally block statement definition at " + Tools.PositionToTextcord(state.Code, i))));
+                    throw new JSException((new Core.BaseTypes.SyntaxError("Invalid finally block statement definition at " + CodeCoordinates.FromTextPosition(state.Code, i))));
                 f = CodeBlock.Parse(state, ref i).Statement;
             }
             if (cb == null && f == null)
@@ -343,10 +343,10 @@ namespace NiL.JS.Statements
             context.abortInfo = catchContext.abortInfo;
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message)
         {
             CodeNode b = null;
-            Parser.Build(ref body, depth, variables, strict);
+            Parser.Build(ref body, depth, variables, strict, message);
             if (catchBody != null)
             {
                 catchVariableDesc.owner = this;
@@ -354,7 +354,7 @@ namespace NiL.JS.Statements
                 variables.TryGetValue(catchVariableDesc.name, out oldVarDesc);
                 variables[catchVariableDesc.name] = catchVariableDesc;
                 b = catchBody as CodeNode;
-                Parser.Build(ref b, depth, variables, strict);
+                Parser.Build(ref b, depth, variables, strict, message);
                 catchBody = b as CodeBlock ?? new CodeBlock(b is EmptyStatement || b == null ? new CodeNode[0] : new[] { b }, strict);
                 if (oldVarDesc != null)
                     variables[catchVariableDesc.name] = oldVarDesc;
@@ -364,25 +364,25 @@ namespace NiL.JS.Statements
                     v.Value.captured = true;
             }
             b = finallyBody as CodeNode;
-            Parser.Build(ref b, depth, variables, strict);
+            Parser.Build(ref b, depth, variables, strict, message);
             finallyBody = b as CodeBlock ?? new CodeBlock(b is EmptyStatement || b == null ? new CodeNode[0] : new[] { b }, strict);
             return false;
         }
 
-        internal override void Optimize(ref CodeNode _this, Expressions.FunctionExpression owner)
+        internal override void Optimize(ref CodeNode _this, Expressions.FunctionExpression owner, CompilerMessageCallback message)
         {
             CodeNode b = null;
-            body.Optimize(ref body, owner);
+            body.Optimize(ref body, owner, message);
             if (catchBody != null)
             {
                 b = catchBody as CodeNode;
-                catchBody.Optimize(ref b, owner);
+                catchBody.Optimize(ref b, owner, message);
                 catchBody = b as CodeBlock ?? new CodeBlock(new[] { b }, owner.body.strict);
             }
             if (finallyBody != null)
             {
                 b = finallyBody as CodeNode;
-                finallyBody.Optimize(ref b, owner);
+                finallyBody.Optimize(ref b, owner, message);
                 finallyBody = b as CodeBlock ?? new CodeBlock(new[] { b }, owner.body.strict);
             }
         }

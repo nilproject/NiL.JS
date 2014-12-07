@@ -29,7 +29,18 @@ namespace NiL.JS
         /// </summary>
         /// <param name="code">Код скрипта на языке JavaScript.</param>
         public Script(string code)
-            : this(code, null)
+            : this(code, null, null)
+        {
+
+        }
+
+        /// <summary>
+        /// Инициализирует объект типа Script и преобрзует код сценария во внутреннее представление.
+        /// </summary>
+        /// <param name="code">Код скрипта на языке JavaScript.</param>
+        /// <param name="messageCallback">Делегат обратного вызова, используемый для вывода сообщений компилятора</param>
+        public Script(string code, CompilerMessageCallback messageCallback)
+            : this(code, null, messageCallback)
         {
 
         }
@@ -39,16 +50,31 @@ namespace NiL.JS
         /// </summary>
         /// <param name="code">Код скрипта на языке JavaScript.</param>
         /// <param name="parentContext">Родительский контекст для контекста выполнения сценария.</param>
+        /// <param name="messageCallback">Делегат обратного вызова, используемый для вывода сообщений компилятора</param>
         public Script(string code, Context parentContext)
+            : this(code, parentContext, null)
+        { }
+
+        /// <summary>
+        /// Инициализирует объект типа Script и преобрзует код сценария во внутреннее представление.
+        /// </summary>
+        /// <param name="code">Код скрипта на языке JavaScript.</param>
+        /// <param name="parentContext">Родительский контекст для контекста выполнения сценария.</param>
+        /// <param name="messageCallback">Делегат обратного вызова, используемый для вывода сообщений компилятора</param>
+        public Script(string code, Context parentContext, CompilerMessageCallback messageCallback)
         {
             if (code == null)
                 throw new ArgumentNullException();
             Code = code;
             int i = 0;
-            root = CodeBlock.Parse(new ParsingState(Tools.RemoveComments(code, 0), Code), ref i).Statement;
+            root = CodeBlock.Parse(new ParsingState(Tools.RemoveComments(code, 0), Code, messageCallback), ref i).Statement;
             if (i < code.Length)
                 throw new System.ArgumentException("Invalid char");
-            Parser.Build(ref root, 0, new System.Collections.Generic.Dictionary<string, VariableDescriptor>(), false);
+            CompilerMessageCallback icallback = messageCallback != null ? (level, cord, message) =>
+                {
+                    messageCallback(level, CodeCoordinates.FromTextPosition(code, cord.Column), message);
+                } : null as CompilerMessageCallback;
+            Parser.Build(ref root, 0, new System.Collections.Generic.Dictionary<string, VariableDescriptor>(), false, icallback);
             var body = root as CodeBlock;
             Context = new Context(parentContext ?? NiL.JS.Core.Context.globalContext, true, pseudoCaller);
             Context.thisBind = new ThisBind(Context);
@@ -65,7 +91,7 @@ namespace NiL.JS
                     body.localVariables[i].cacheRes.attributes |= JSObjectAttributesInternal.ReadOnly;
             }
             var bd = body as CodeNode;
-            body.Optimize(ref bd, null);
+            body.Optimize(ref bd, null, icallback);
         }
 
         /// <summary>

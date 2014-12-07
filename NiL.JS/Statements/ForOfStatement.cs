@@ -50,7 +50,7 @@ namespace NiL.JS.Statements
                 if (state.strict.Peek())
                 {
                     if (varName == "arguments" || varName == "eval")
-                        throw new JSException((new Core.BaseTypes.SyntaxError("Parameters name may not be \"arguments\" or \"eval\" in strict mode at " + Tools.PositionToTextcord(state.Code, start))));
+                        throw new JSException((new Core.BaseTypes.SyntaxError("Parameters name may not be \"arguments\" or \"eval\" in strict mode at " + CodeCoordinates.FromTextPosition(state.Code, start))));
                 }
                 res.variable = new VariableDefineStatement(varName, new GetVariableExpression(varName, state.functionsDepth) { Position = start, Length = i - start, functionDepth = state.functionsDepth }, false, state.functionsDepth) { Position = vStart, Length = i - vStart };
             }
@@ -67,7 +67,7 @@ namespace NiL.JS.Statements
             res.source = Parser.Parse(state, ref i, 1);
             while (char.IsWhiteSpace(state.Code[i])) i++;
             if (state.Code[i] != ')')
-                throw new JSException((new Core.BaseTypes.SyntaxError("Expected \")\" at + " + Tools.PositionToTextcord(state.Code, i))));
+                throw new JSException((new Core.BaseTypes.SyntaxError("Expected \")\" at + " + CodeCoordinates.FromTextPosition(state.Code, i))));
             i++;
             state.AllowBreak.Push(true);
             state.AllowContinue.Push(true);
@@ -280,14 +280,14 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message)
         {
             var tvar = variable;
             if (tvar is VariableDefineStatement)
                 variable = (tvar as VariableDefineStatement).initializators[0];
-            Parser.Build(ref tvar, 1, variables, strict);
-            Parser.Build(ref source, 2, variables, strict);
-            Parser.Build(ref body, System.Math.Max(1, depth), variables, strict);
+            Parser.Build(ref tvar, 1, variables, strict, message);
+            Parser.Build(ref source, 2, variables, strict, message);
+            Parser.Build(ref body, System.Math.Max(1, depth), variables, strict, message);
             if (variable is Expressions.None)
             {
                 if ((variable as Expressions.None).SecondOperand != null)
@@ -297,10 +297,10 @@ namespace NiL.JS.Statements
             return false;
         }
 
-        internal override void Optimize(ref CodeNode _this, FunctionExpression owner)
+        internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message)
         {
-            source.Optimize(ref source, owner);
-            body.Optimize(ref body, owner);
+            source.Optimize(ref source, owner, message);
+            body.Optimize(ref body, owner, message);
         }
 
         public override string ToString()

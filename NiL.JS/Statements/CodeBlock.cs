@@ -184,7 +184,7 @@ namespace NiL.JS.Statements
                 if (t == null || t is EmptyStatement)
                 {
                     if (sroot && i < state.Code.Length && state.Code[i] == '}')
-                        throw new JSException(new SyntaxError("Unexpected symbol \"}\" at " + Tools.PositionToTextcord(state.Code, i)));
+                        throw new JSException(new SyntaxError("Unexpected symbol \"}\" at " + CodeCoordinates.FromTextPosition(state.Code, i)));
                     continue;
                 }
                 if (t is FunctionExpression)
@@ -320,7 +320,7 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message)
         {
             if (builded)
                 return false;
@@ -346,7 +346,7 @@ namespace NiL.JS.Statements
             for (int i = lines.Length; i-- > 0; )
                 if (lines[i] is FunctionExpression)
                 {
-                    Parser.Build(ref lines[i], depth < 0 ? 2 : Math.Max(1, depth), variables, this.strict);
+                    Parser.Build(ref lines[i], depth < 0 ? 2 : Math.Max(1, depth), variables, this.strict, message);
                     lines[i] = null;
                 }
 
@@ -359,7 +359,7 @@ namespace NiL.JS.Statements
                     else
                     {
                         var cn = lines[i];
-                        Parser.Build(ref cn, depth < 0 ? 2 : Math.Max(1, depth), variables, this.strict);
+                        Parser.Build(ref cn, depth < 0 ? 2 : Math.Max(1, depth), variables, this.strict, message);
                         lines[i] = cn;
                     }
                 }
@@ -426,12 +426,12 @@ namespace NiL.JS.Statements
             return false;
         }
 
-        internal override void Optimize(ref CodeNode _this, FunctionExpression owner)
+        internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message)
         {
             for (var i = lines.Length; i-- > 0; )
             {
                 var cn = lines[i] as CodeNode;
-                cn.Optimize(ref cn, owner);
+                cn.Optimize(ref cn, owner, message);
                 lines[i] = cn;
             }
             if (localVariables != null)
@@ -440,7 +440,7 @@ namespace NiL.JS.Statements
                     if (localVariables[i].Inititalizator != null)
                     {
                         var cn = localVariables[i].Inititalizator as CodeNode;
-                        cn.Optimize(ref cn, owner);
+                        cn.Optimize(ref cn, owner, message);
                     }
                 }
         }

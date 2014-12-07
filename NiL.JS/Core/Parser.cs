@@ -525,20 +525,20 @@ namespace NiL.JS.Core
                         return pr.Statement;
                 }
             }
-            var cord = Tools.PositionToTextcord(state.Code, sindex);
+            var cord = CodeCoordinates.FromTextPosition(state.Code, sindex);
             throw new JSException((new NiL.JS.Core.BaseTypes.SyntaxError("Unexpected token at " + cord + " : "
                 + state.Code.Substring(index, Math.Min(20, state.Code.Length - index)).Split(new[] { ' ', '\n', '\r' })[0])));
         }
 
-        internal static void Build(ref CodeNode s, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        internal static void Build(ref CodeNode s, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message)
         {
-            while (s != null && s.Build(ref s, depth, variables, strict)) ;
+            while (s != null && s.Build(ref s, depth, variables, strict, message)) ;
         }
 
-        internal static void Build(ref Expressions.Expression s, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        internal static void Build(ref Expressions.Expression s, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message)
         {
             CodeNode t = s;
-            Build(ref t, depth, variables, strict);
+            Build(ref t, depth, variables, strict, message);
             if (t == null)
             {
                 s = null;

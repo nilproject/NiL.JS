@@ -461,7 +461,7 @@ namespace NiL.JS.Core
             {
                 int i = 0;
                 string c = Tools.RemoveComments(code, 0);
-                var ps = new ParsingState(c, code);
+                var ps = new ParsingState(c, code, null);
                 ps.strict.Clear();
                 ps.strict.Push(strict);
                 var cb = CodeBlock.Parse(ps, ref i).Statement;
@@ -469,7 +469,7 @@ namespace NiL.JS.Core
                 if (i < c.Length)
                     throw new System.ArgumentException("Invalid char");
                 var vars = new Dictionary<string, VariableDescriptor>();
-                Parser.Build(ref cb, leak ? -1 : -2, vars, strict);
+                Parser.Build(ref cb, leak ? -1 : -2, vars, strict, null);
                 Context context = null;
                 var body = cb as CodeBlock;
                 if (leak)

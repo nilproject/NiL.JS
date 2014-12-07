@@ -719,10 +719,10 @@ namespace NiL.JS.Core.BaseTypes
             for (int i = 0; i < len; i++)
                 argn += args[i] + (i + 1 < len ? "," : "");
             string code = "function(" + argn + "){" + (len == -1 ? "undefined" : args[len]) + "}";
-            var fs = FunctionExpression.Parse(new ParsingState(code, code), ref index);
+            var fs = FunctionExpression.Parse(new ParsingState(code, code, null), ref index);
             if (fs.IsParsed)
             {
-                Parser.Build(ref fs.Statement, 0, new Dictionary<string, VariableDescriptor>(), context.strict);
+                Parser.Build(ref fs.Statement, 0, new Dictionary<string, VariableDescriptor>(), context.strict, null);
                 creator = fs.Statement as FunctionExpression;
             }
             else

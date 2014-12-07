@@ -37,15 +37,15 @@ namespace NiL.JS.Expressions
             return temp;
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict, CompilerMessageCallback message)
         {
             if (second == null && (depth > 2 || first is Expression))
             {
                 _this = first;
                 return true;
             }
-            Parser.Build(ref first, depth + 1, vars, strict);
-            Parser.Build(ref second, depth + 1, vars, strict);
+            Parser.Build(ref first, depth + 1, vars, strict, message);
+            Parser.Build(ref second, depth + 1, vars, strict, message);
             return false;
         }
 

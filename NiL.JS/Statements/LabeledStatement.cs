@@ -74,15 +74,15 @@ namespace NiL.JS.Statements
             return null;
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message)
         {
-            Parser.Build(ref statement, depth, variables, strict);
+            Parser.Build(ref statement, depth, variables, strict, message);
             return false;
         }
 
-        internal override void Optimize(ref CodeNode _this, Expressions.FunctionExpression owner)
+        internal override void Optimize(ref CodeNode _this, Expressions.FunctionExpression owner, CompilerMessageCallback message)
         {
-            statement.Optimize(ref statement, owner);
+            statement.Optimize(ref statement, owner, message);
         }
 
         public override string ToString()

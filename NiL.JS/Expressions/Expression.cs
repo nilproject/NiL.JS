@@ -60,14 +60,16 @@ namespace NiL.JS.Expressions
             this.second = second;
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict, CompilerMessageCallback message)
         {
-            Parser.Build(ref first, depth + 1, vars, strict);
-            Parser.Build(ref second, depth + 1, vars, strict);
+            Parser.Build(ref first, depth + 1, vars, strict, message);
+            Parser.Build(ref second, depth + 1, vars, strict, message);
             try
             {
                 if (this.IsContextIndependent)
                 {
+                    if (message != null && !(this is RegExpExpression))
+                        message(MessageLevel.Warning, new CodeCoordinates(0, Position), "Constant expression. Maybe, it's mistake.");
                     var res = this.Evaluate(null);
                     if (res.valueType == JSObjectType.Double
                         && !double.IsNegativeInfinity(1.0 / res.dValue)
@@ -85,23 +87,23 @@ namespace NiL.JS.Expressions
             return false;
         }
 
-        internal override void Optimize(ref CodeNode _this, FunctionExpression owner)
+        internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message)
         {
-            baseOptimize(owner);
+            baseOptimize(owner, message);
         }
 
-        protected void baseOptimize(FunctionExpression owner)
+        protected void baseOptimize(FunctionExpression owner, CompilerMessageCallback message)
         {
             var f = first as CodeNode;
             var s = second as CodeNode;
             if (f != null)
             {
-                f.Optimize(ref f, owner);
+                f.Optimize(ref f, owner, message);
                 first = f as Expression;
             }
             if (s != null)
             {
-                s.Optimize(ref s, owner);
+                s.Optimize(ref s, owner, message);
                 second = s as Expression;
             }
         }

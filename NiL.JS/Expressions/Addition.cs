@@ -239,9 +239,9 @@ namespace NiL.JS.Expressions
             throw new NotImplementedException();
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict, CompilerMessageCallback message)
         {
-            var res = base.Build(ref _this, depth, vars, strict);
+            var res = base.Build(ref _this, depth, vars, strict, message);
             if (!res && _this == this)
             {
                 if (first is StringConcat)
@@ -268,9 +268,9 @@ namespace NiL.JS.Expressions
             return res;
         }
 
-        internal override void Optimize(ref CodeNode _this, FunctionExpression owner)
+        internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message)
         {
-            base.Optimize(ref _this, owner);
+            base.Optimize(ref _this, owner, message);
             //if (first.ResultType == PredictedType.String
             //    || second.ResultType == PredictedType.String)
             //{

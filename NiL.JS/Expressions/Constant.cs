@@ -68,13 +68,17 @@ namespace NiL.JS.Expressions
             return null;
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message)
         {
             var vss = value.oValue as CodeNode[];
             if (vss != null)
                 throw new InvalidOperationException("It behaviour is deprecated");
             if (depth <= 1)
+            {
                 _this = null;
+                if (message != null)
+                    message(MessageLevel.Warning, new CodeCoordinates(0, Position), "Unused constant was removed. Maybe, something missing.");
+            }
             return false;
         }
 

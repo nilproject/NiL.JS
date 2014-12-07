@@ -116,21 +116,21 @@ namespace NiL.JS.Expressions
             return elements;
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict, CompilerMessageCallback message)
         {
             for (int i = 0; i < elements.Length; i++)
-                Parser.Build(ref elements[i], 2, vars, strict);
+                Parser.Build(ref elements[i], 2, vars, strict, message);
             return false;
         }
 
-        internal override void Optimize(ref CodeNode _this, FunctionExpression owner)
+        internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message)
         {
             for (var i = elements.Length; i-- > 0; )
             {
                 var cn = elements[i] as CodeNode;
                 if (cn != null)
                 {
-                    cn.Optimize(ref cn, owner);
+                    cn.Optimize(ref cn, owner, message);
                     elements[i] = cn as Expression;
                 }
             }

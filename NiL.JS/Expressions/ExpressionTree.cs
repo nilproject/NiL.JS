@@ -452,7 +452,7 @@ namespace NiL.JS.Statements
                                 first = (Expression)Parse(state, ref i, true, true, false, true, false).Statement;
                                 if (((first as GetMemberExpression) as object ?? (first as GetVariableExpression)) == null)
                                 {
-                                    var cord = Tools.PositionToTextcord(state.Code, i);
+                                    var cord = CodeCoordinates.FromTextPosition(state.Code, i);
                                     throw new JSException((new Core.BaseTypes.SyntaxError("Invalid prefix operation. " + cord)));
                                 }
                                 if (state.strict.Peek()
@@ -482,7 +482,7 @@ namespace NiL.JS.Statements
                                 first = (Expression)Parse(state, ref i, true, true, false, true, false).Statement;
                                 if (((first as GetMemberExpression) as object ?? (first as GetVariableExpression)) == null)
                                 {
-                                    var cord = Tools.PositionToTextcord(state.Code, i);
+                                    var cord = CodeCoordinates.FromTextPosition(state.Code, i);
                                     throw new JSException((new Core.BaseTypes.SyntaxError("Invalid prefix operation. " + cord)));
                                 }
                                 if (state.strict.Peek()
@@ -507,7 +507,7 @@ namespace NiL.JS.Statements
                             first = new Expressions.LogicalNot((Expression)Parse(state, ref i, true, true, false, true, false).Statement) { Position = index, Length = i - index };
                             if (first == null)
                             {
-                                var cord = Tools.PositionToTextcord(state.Code, i);
+                                var cord = CodeCoordinates.FromTextPosition(state.Code, i);
                                 throw new JSException((new Core.BaseTypes.SyntaxError("Invalid prefix operation. " + cord)));
                             }
                             break;
@@ -520,7 +520,7 @@ namespace NiL.JS.Statements
                             first = (Expression)Parse(state, ref i, true, true, false, true, false).Statement;
                             if (first == null)
                             {
-                                var cord = Tools.PositionToTextcord(state.Code, i);
+                                var cord = CodeCoordinates.FromTextPosition(state.Code, i);
                                 throw new JSException((new Core.BaseTypes.SyntaxError("Invalid prefix operation. " + cord)));
                             }
                             first = new Expressions.Not(first) { Position = index, Length = i - index };
@@ -535,7 +535,7 @@ namespace NiL.JS.Statements
                             first = (Expression)Parse(state, ref i, false, true, false, true, false).Statement;
                             if (first == null)
                             {
-                                var cord = Tools.PositionToTextcord(state.Code, i);
+                                var cord = CodeCoordinates.FromTextPosition(state.Code, i);
                                 throw new JSException((new Core.BaseTypes.SyntaxError("Invalid prefix operation. " + cord)));
                             }
                             first = new Expressions.TypeOf(first) { Position = index, Length = i - index };
@@ -550,7 +550,7 @@ namespace NiL.JS.Statements
                             first = new Expressions.None((Expression)Parse(state, ref i, false, true, false, true, false).Statement, new Constant(JSObject.undefined)) { Position = index, Length = i - index };
                             if (first == null)
                             {
-                                var cord = Tools.PositionToTextcord(state.Code, i);
+                                var cord = CodeCoordinates.FromTextPosition(state.Code, i);
                                 throw new JSException((new Core.BaseTypes.SyntaxError("Invalid prefix operation. " + cord)));
                             }
                             break;
@@ -564,7 +564,7 @@ namespace NiL.JS.Statements
                             first = (Expression)Parse(state, ref i, false, true, true, true, false).Statement;
                             if (first == null)
                             {
-                                var cord = Tools.PositionToTextcord(state.Code, i);
+                                var cord = CodeCoordinates.FromTextPosition(state.Code, i);
                                 throw new JSException((new Core.BaseTypes.SyntaxError("Invalid prefix operation. " + cord)));
                             }
                             first = new Expressions.New(first, new Expression[0]) { Position = index, Length = i - index };
@@ -579,7 +579,7 @@ namespace NiL.JS.Statements
                             first = (Expression)Parse(state, ref i, false, true, false, true, false).Statement;
                             if (first == null)
                             {
-                                var cord = Tools.PositionToTextcord(state.Code, i);
+                                var cord = CodeCoordinates.FromTextPosition(state.Code, i);
                                 throw new JSException((new Core.BaseTypes.SyntaxError("Invalid prefix operation. " + cord)));
                             }
                             first = new Expressions.Delete(first) { Position = index, Length = i - index };
@@ -596,7 +596,7 @@ namespace NiL.JS.Statements
                             first = (Expression)Parse(state, ref i, false, true, false, true, false).Statement;
                             if (first == null)
                             {
-                                var cord = Tools.PositionToTextcord(state.Code, i);
+                                var cord = CodeCoordinates.FromTextPosition(state.Code, i);
                                 throw new JSException((new Core.BaseTypes.SyntaxError("Invalid prefix operation. " + cord)));
                             }
                             first = new Expressions.Yield(first) { Position = index, Length = i - index };
@@ -629,7 +629,7 @@ namespace NiL.JS.Statements
             else
                 first = (Expression)Parser.Parse(state, ref i, 2);
             if (first is EmptyStatement)
-                throw new JSException((new Core.BaseTypes.SyntaxError("Invalid operator argument at " + Tools.PositionToTextcord(state.Code, i))));
+                throw new JSException((new Core.BaseTypes.SyntaxError("Invalid operator argument at " + CodeCoordinates.FromTextPosition(state.Code, i))));
             bool canAsign = true && !forUnary; // на случай f() = x
             bool assign = false; // на случай операторов 'x='
             bool binary = false;
@@ -1068,10 +1068,18 @@ namespace NiL.JS.Statements
                             int startPos = i;
                             mname = (Expression)Parser.Parse(state, ref i, 1);
                             if (mname == null)
-                                throw new JSException((new Core.BaseTypes.SyntaxError("Unexpected token at " + Tools.PositionToTextcord(state.Code, startPos))));
+                                throw new JSException((new Core.BaseTypes.SyntaxError("Unexpected token at " + CodeCoordinates.FromTextPosition(state.Code, startPos))));
                             while (char.IsWhiteSpace(state.Code[i])) i++;
                             if (state.Code[i] != ']')
-                                throw new JSException((new Core.BaseTypes.SyntaxError("Expected \"]\" at " + Tools.PositionToTextcord(state.Code, startPos))));
+                                throw new JSException((new Core.BaseTypes.SyntaxError("Expected \"]\" at " + CodeCoordinates.FromTextPosition(state.Code, startPos))));
+                            if (state.message != null)
+                            {
+                                var cname = mname as Constant;
+                                if (cname != null
+                                    && cname.value.valueType == JSObjectType.String
+                                    && Parser.ValidateName(cname.value.oValue.ToString(), 0))
+                                    state.message(MessageLevel.Recomendation, CodeCoordinates.FromTextPosition(state.Code, mname.Position), "[\"" + cname.value.oValue + "\"] is better written in dot notation.");
+                            }
                             first = new GetMemberExpression(first, mname) { Position = first.Position, Length = i + 1 - first.Position };
                             i++;
                             repeat = true;
@@ -1101,7 +1109,7 @@ namespace NiL.JS.Statements
                                     throw new JSException((new Core.BaseTypes.SyntaxError("Unexpected end of line")));
                                 args.Add((Expression)ExpressionTree.Parse(state, ref i, false).Statement);
                                 if (args[args.Count - 1] == null)
-                                    throw new JSException((new Core.BaseTypes.SyntaxError("Expected \")\" at " + Tools.PositionToTextcord(state.Code, startPos))));
+                                    throw new JSException((new Core.BaseTypes.SyntaxError("Expected \")\" at " + CodeCoordinates.FromTextPosition(state.Code, startPos))));
                             }
                             first = new Call(first, args.ToArray())
                             {
@@ -1146,7 +1154,7 @@ namespace NiL.JS.Statements
                                 i = rollbackPos;
                                 goto case '\n';
                             }
-                            throw new JSException((new Core.BaseTypes.SyntaxError("Invalid operator '" + state.Code[i] + "' at " + Tools.PositionToTextcord(state.Code, i))));
+                            throw new JSException((new Core.BaseTypes.SyntaxError("Invalid operator '" + state.Code[i] + "' at " + CodeCoordinates.FromTextPosition(state.Code, i))));
                         }
                 }
             } while (repeat);
@@ -1223,7 +1231,7 @@ namespace NiL.JS.Statements
             throw new InvalidOperationException();
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict, CompilerMessageCallback message)
         {
             Type = Type;
             _this = fastImpl;

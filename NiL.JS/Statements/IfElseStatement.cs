@@ -173,11 +173,18 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message)
         {
-            Parser.Build(ref condition, 2, variables, strict);
-            Parser.Build(ref body, depth, variables, strict);
-            Parser.Build(ref elseBody, depth, variables, strict);
+            Parser.Build(ref condition, 2, variables, strict, message);
+            Parser.Build(ref body, depth, variables, strict, message);
+            Parser.Build(ref elseBody, depth, variables, strict, message);
+
+            if (condition is ToBool)
+            {
+                if (message == null)
+                    message(MessageLevel.Warning, new CodeCoordinates(0, condition.Position), "Useless conversion. Remove double negation in condition");
+                condition = (condition as Expression).first;
+            }
             try
             {
                 if (condition is Constant || (condition is Expression && ((Expression)condition).IsContextIndependent))
@@ -197,10 +204,10 @@ namespace NiL.JS.Statements
             return false;
         }
 
-        internal override void Optimize(ref CodeNode _this, FunctionExpression owner)
+        internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message)
         {
-            condition.Optimize(ref condition, owner);
-            body.Optimize(ref body, owner);
+            condition.Optimize(ref condition, owner, message);
+            body.Optimize(ref body, owner, message);
         }
 
         public override string ToString()

@@ -40,10 +40,10 @@ namespace NiL.JS.Statements
                 return res;
             }
 
-            internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
+            internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message)
             {
                 var v = variable as CodeNode;
-                var res = variable.Build(ref v, depth, variables, strict);
+                var res = variable.Build(ref v, depth, variables, strict, message);
                 variable = v as VariableReference;
                 return res;
             }
@@ -103,20 +103,20 @@ namespace NiL.JS.Statements
                 if (!Parser.ValidateName(state.Code, ref i, state.strict.Peek()))
                 {
                     if (Parser.ValidateName(state.Code, ref i, false, true, state.strict.Peek()))
-                        throw new JSException((new Core.BaseTypes.SyntaxError('\"' + Tools.Unescape(state.Code.Substring(s, i - s), state.strict.Peek()) + "\" is a reserved word at " + Tools.PositionToTextcord(state.Code, s))));
-                    throw new JSException((new Core.BaseTypes.SyntaxError("Invalid variable definition at " + Tools.PositionToTextcord(state.Code, s))));
+                        throw new JSException((new Core.BaseTypes.SyntaxError('\"' + Tools.Unescape(state.Code.Substring(s, i - s), state.strict.Peek()) + "\" is a reserved word at " + CodeCoordinates.FromTextPosition(state.Code, s))));
+                    throw new JSException((new Core.BaseTypes.SyntaxError("Invalid variable definition at " + CodeCoordinates.FromTextPosition(state.Code, s))));
                 }
                 string name = Tools.Unescape(state.Code.Substring(s, i - s), state.strict.Peek());
                 if (state.strict.Peek())
                 {
                     if (name == "arguments" || name == "eval")
-                        throw new JSException((new Core.BaseTypes.SyntaxError("Varible name may not be \"arguments\" or \"eval\" in strict mode at " + Tools.PositionToTextcord(state.Code, s))));
+                        throw new JSException((new Core.BaseTypes.SyntaxError("Varible name may not be \"arguments\" or \"eval\" in strict mode at " + CodeCoordinates.FromTextPosition(state.Code, s))));
                 }
                 names.Add(name);
                 isDef = true;
                 while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]) && !Tools.isLineTerminator(state.Code[i])) i++;
                 if (i < state.Code.Length && (state.Code[i] != ',') && (state.Code[i] != ';') && (state.Code[i] != '=') && (state.Code[i] != '}') && (!Tools.isLineTerminator(state.Code[i])))
-                    throw new JSException((new Core.BaseTypes.SyntaxError("Expected \";\", \",\", \"=\" or \"}\" at + " + Tools.PositionToTextcord(state.Code, i))));
+                    throw new JSException((new Core.BaseTypes.SyntaxError("Expected \";\", \",\", \"=\" or \"}\" at + " + CodeCoordinates.FromTextPosition(state.Code, i))));
                 if (i >= state.Code.Length)
                 {
                     initializator.Add(new GetVariableExpression(name, state.functionsDepth) { Position = s, Length = name.Length, functionDepth = state.functionsDepth });
@@ -155,14 +155,14 @@ namespace NiL.JS.Statements
                 else
                 {
                     //if (isConst)
-                    //    throw new JSException(new SyntaxError("Constant must contain value at " + Tools.PositionToTextcord(state.Code, i)));
+                    //    throw new JSException(new SyntaxError("Constant must contain value at " + CodeCoordinates.FromTextPosition(state.Code, i)));
                     initializator.Add(new GetVariableExpression(name, state.functionsDepth) { Position = s, Length = name.Length, functionDepth = state.functionsDepth });
                 }
                 if (i >= state.Code.Length)
                     break;
                 s = i;
                 if ((state.Code[i] != ',') && (state.Code[i] != ';') && (state.Code[i] != '=') && (state.Code[i] != '}') && (!Tools.isLineTerminator(state.Code[i])))
-                    throw new JSException(new SyntaxError("Unexpected token at " + Tools.PositionToTextcord(state.Code, i)));
+                    throw new JSException(new SyntaxError("Unexpected token at " + CodeCoordinates.FromTextPosition(state.Code, i)));
                 while (s < state.Code.Length && char.IsWhiteSpace(state.Code[s])) s++;
                 if (s >= state.Code.Length)
                     break;
@@ -220,7 +220,7 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message)
         {
             this.variables = new VariableDescriptor[names.Length];
             for (var i = 0; i < names.Length; i++)
@@ -235,7 +235,7 @@ namespace NiL.JS.Statements
             int actualChilds = 0;
             for (int i = 0; i < initializators.Length; i++)
             {
-                Parser.Build(ref initializators[i], 1, variables, strict);
+                Parser.Build(ref initializators[i], (message != null ? 2 : 1), variables, strict, message);
                 if (initializators[i] != null)
                     actualChilds++;
             }
@@ -255,11 +255,11 @@ namespace NiL.JS.Statements
             return false;
         }
 
-        internal override void Optimize(ref CodeNode _this, FunctionExpression owner)
+        internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message)
         {
             for (int i = 0; i < initializators.Length; i++)
             {
-                initializators[i].Optimize(ref initializators[i], owner);
+                initializators[i].Optimize(ref initializators[i], owner, message);
             }
         }
 

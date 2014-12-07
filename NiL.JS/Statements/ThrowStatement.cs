@@ -31,7 +31,7 @@ namespace NiL.JS.Statements
                 return new ParseResult();
             var b = Parser.Parse(state, ref i, 1, true);
             if (b is EmptyStatement)
-                throw new JSException((new Core.BaseTypes.SyntaxError("Can't throw result of EmptyStatement " + Tools.PositionToTextcord(state.Code, i - 1))));
+                throw new JSException((new Core.BaseTypes.SyntaxError("Can't throw result of EmptyStatement " + CodeCoordinates.FromTextPosition(state.Code, i - 1))));
             var pos = index;
             index = i;
             return new ParseResult()
@@ -70,15 +70,15 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message)
         {
-            Parser.Build(ref body, 2, variables, strict);
+            Parser.Build(ref body, 2, variables, strict, message);
             return false;
         }
 
-        internal override void Optimize(ref CodeNode _this, FunctionExpression owner)
+        internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message)
         {
-            body.Optimize(ref body, owner);
+            body.Optimize(ref body, owner, message);
         }
 
         public override string ToString()

@@ -31,33 +31,38 @@ namespace NiL.JS.Expressions
 
         internal override JSObject Evaluate(Context context)
         {
-            if ((bool)first.Evaluate(context))
-                return threads[0].Evaluate(context);
-            return threads[1].Evaluate(context);
+            return (bool)first.Evaluate(context) ? threads[0].Evaluate(context) : threads[1].Evaluate(context);
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict, CompilerMessageCallback message)
         {
-            Parser.Build(ref threads[0], depth, vars, strict);
-            Parser.Build(ref threads[1], depth, vars, strict);
-            base.Build(ref _this, depth, vars, strict);
-            if (threads[0] == null
-                && threads[1] == null)
-                _this = first;
-            else if (threads[0] == null)
-                _this = new LogicalOr(first, threads[1]) { Position = Position, Length = Length };
-            else if (threads[1] == null)
-                _this = new LogicalAnd(first, threads[0]) { Position = Position, Length = Length };
+            Parser.Build(ref threads[0], depth, vars, strict, message);
+            Parser.Build(ref threads[1], depth, vars, strict, message);
+            base.Build(ref _this, depth, vars, strict, message);
+            if (first is Constant)
+            {
+                _this = (bool)first.Evaluate(null) ? threads[0] : threads[1];
+            }
+            else
+            {
+                if (threads[0] == null
+                    && threads[1] == null)
+                    _this = first;
+                else if (threads[0] == null)
+                    _this = new LogicalOr(first, threads[1]) { Position = Position, Length = Length };
+                else if (threads[1] == null)
+                    _this = new LogicalAnd(first, threads[0]) { Position = Position, Length = Length };
+            }
             return false;
         }
 
-        internal override void Optimize(ref CodeNode _this, FunctionExpression owner)
+        internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message)
         {
-            base.Optimize(ref _this, owner);
+            base.Optimize(ref _this, owner, message);
             for (var i = threads.Length; i-- > 0; )
             {
                 var cn = threads[i] as CodeNode;
-                cn.Optimize(ref cn, owner);
+                cn.Optimize(ref cn, owner, message);
                 threads[i] = cn as Expression;
             }
         }

@@ -94,16 +94,16 @@ namespace NiL.JS.Statements
             state.LabelCount = 0;
             init = state.Code[i] == ';' ? null as CodeNode : Parser.Parse(state, ref i, 3);
             if (state.Code[i] != ';')
-                throw new JSException((new Core.BaseTypes.SyntaxError("Expected \";\" at + " + Tools.PositionToTextcord(state.Code, i))));
+                throw new JSException((new Core.BaseTypes.SyntaxError("Expected \";\" at + " + CodeCoordinates.FromTextPosition(state.Code, i))));
             do i++; while (char.IsWhiteSpace(state.Code[i]));
             var condition = state.Code[i] == ';' ? null as CodeNode : ExpressionTree.Parse(state, ref i).Statement;
             if (state.Code[i] != ';')
-                throw new JSException((new Core.BaseTypes.SyntaxError("Expected \";\" at + " + Tools.PositionToTextcord(state.Code, i))));
+                throw new JSException((new Core.BaseTypes.SyntaxError("Expected \";\" at + " + CodeCoordinates.FromTextPosition(state.Code, i))));
             do i++; while (char.IsWhiteSpace(state.Code[i]));
             var post = state.Code[i] == ')' ? null as CodeNode : ExpressionTree.Parse(state, ref i).Statement;
             while (char.IsWhiteSpace(state.Code[i])) i++;
             if (state.Code[i] != ')')
-                throw new JSException((new Core.BaseTypes.SyntaxError("Expected \";\" at + " + Tools.PositionToTextcord(state.Code, i))));
+                throw new JSException((new Core.BaseTypes.SyntaxError("Expected \";\" at + " + CodeCoordinates.FromTextPosition(state.Code, i))));
             do i++; while (char.IsWhiteSpace(state.Code[i]));
             state.AllowBreak.Push(true);
             state.AllowContinue.Push(true);
@@ -199,15 +199,20 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message)
         {
-            Parser.Build(ref init, 1, variables, strict);
+            Parser.Build(ref init, 1, variables, strict, message);
             if (init is VariableDefineStatement
                 && (init as VariableDefineStatement).initializators.Length == 1)
                 init = (init as VariableDefineStatement).initializators[0];
-            Parser.Build(ref condition, 2, variables, strict);
-            Parser.Build(ref post, 1, variables, strict);
-            Parser.Build(ref body, System.Math.Max(1, depth), variables, strict);
+            Parser.Build(ref condition, 2, variables, strict, message);
+            if (post != null)
+            {
+                Parser.Build(ref post, 1, variables, strict, message);
+                if (post == null && message != null)
+                    message(MessageLevel.Warning, new CodeCoordinates(0, Position), "Last expression of for-loop was removed. Maybe, it's mistake.");
+            }
+            Parser.Build(ref body, System.Math.Max(1, depth), variables, strict, message);
             if (condition == null)
                 condition = new Constant(Core.BaseTypes.Boolean.True);
             else if ((condition is Expressions.Expression)
@@ -280,16 +285,16 @@ namespace NiL.JS.Statements
             return false;
         }
 
-        internal override void Optimize(ref CodeNode _this, FunctionExpression owner)
+        internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message)
         {
             if (init != null)
-                init.Optimize(ref init, owner);
+                init.Optimize(ref init, owner, message);
             if (condition != null)
-                condition.Optimize(ref condition, owner);
+                condition.Optimize(ref condition, owner, message);
             if (post != null)
-                post.Optimize(ref post, owner);
+                post.Optimize(ref post, owner, message);
             if (body != null)
-                body.Optimize(ref body, owner);
+                body.Optimize(ref body, owner, message);
         }
 
         public override string ToString()

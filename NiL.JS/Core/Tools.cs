@@ -8,6 +8,51 @@ using NiL.JS.Core.TypeProxing;
 
 namespace NiL.JS.Core
 {
+    public sealed class CodeCoordinates
+    {
+        public int Line { get; private set; }
+        public int Column { get; private set; }
+
+        public CodeCoordinates(int line, int column)
+        {
+            Line = line;
+            Column = column;
+        }
+
+        public override string ToString()
+        {
+            return "(" + Line + ": " + Column + ")";
+        }
+
+        public static CodeCoordinates FromTextPosition(string text, int position)
+        {
+            if (text == null)
+                throw new ArgumentNullException("text");
+            if (position < 0)
+                throw new ArgumentOutOfRangeException("position");
+            int line = 1;
+            int column = 1;
+            for (int i = 0; i < position; i++)
+            {
+                if (text[i] == '\n')
+                {
+                    column = 0;
+                    line++;
+                    if (text[i + 1] == '\r')
+                        i++;
+                }
+                else if (text[i] == '\r')
+                {
+                    column = 0;
+                    line++;
+                    if (text[i + 1] == '\n')
+                        i++;
+                }
+                column++;
+            }
+            return new CodeCoordinates(line, column);
+        }
+    }
     /// <summary>
     /// Содержит функции, используемые на разных этапах выполнения скрипта.
     /// </summary>
@@ -731,7 +776,7 @@ namespace NiL.JS.Core
                 if ((i + 1 < code.Length) && (code[i] == '0'))
                 {
                     if ((radix == 0 || radix == 16)
-                        && (i == index)
+                        && !skiped
                         && (code[i + 1] == 'x' || code[i + 1] == 'X'))
                     {
                         i += 2;
@@ -1117,7 +1162,12 @@ namespace NiL.JS.Core
                         res.Append(code[j]);
                 }
                 for (; s < i; s++)
-                    res.Append(' ');
+                {
+                    if (char.IsWhiteSpace(code[s]))
+                        res.Append(code[s]);
+                    else
+                        res.Append(' ');
+                }
                 if (i >= code.Length)
                     continue;
 
@@ -1156,52 +1206,6 @@ namespace NiL.JS.Core
             if (obj.valueType == JSObjectType.NotExists)
                 throw new JSException((new NiL.JS.Core.BaseTypes.ReferenceError("Variable \"" + name + "\" is not defined.")));
             return obj;
-        }
-
-        public sealed class TextCord
-        {
-            public int Line { get; private set; }
-            public int Column { get; private set; }
-
-            public TextCord(int line, int column)
-            {
-                Line = line;
-                Column = column;
-            }
-
-            public override string ToString()
-            {
-                return "(" + Line + ": " + Column + ")";
-            }
-        }
-
-        public static TextCord PositionToTextcord(string text, int position)
-        {
-            if (text == null)
-                throw new ArgumentNullException("text");
-            if (position < 0)
-                throw new ArgumentOutOfRangeException("position");
-            int line = 1;
-            int column = 1;
-            for (int i = 0; i < position; i++)
-            {
-                if (text[i] == '\n')
-                {
-                    column = 0;
-                    line++;
-                    if (text[i + 1] == '\r')
-                        i++;
-                }
-                else if (text[i] == '\r')
-                {
-                    column = 0;
-                    line++;
-                    if (text[i + 1] == '\n')
-                        i++;
-                }
-                column++;
-            }
-            return new TextCord(line, column);
         }
 
 #if INLINE

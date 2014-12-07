@@ -100,7 +100,7 @@ namespace NiL.JS.Expressions
             return variableName;
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message)
         {
             VariableDescriptor desc = null;
             if (!variables.TryGetValue(variableName, out desc) || desc == null)
@@ -115,7 +115,11 @@ namespace NiL.JS.Expressions
                 descriptor = desc;
             }
             if (depth >= 0 && depth < 2 && desc.IsDefined)
+            {
                 _this = null;
+                if (message != null)
+                    message(MessageLevel.Warning, new CodeCoordinates(0, Position), "Unused get of defined variable was removed. Maybe, something missing.");
+            }
             else if (variableName == "arguments"
                 && functionDepth > 0)
                 _this = new GetArgumentsExpression(functionDepth) { descriptor = descriptor };

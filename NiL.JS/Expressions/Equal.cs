@@ -265,6 +265,29 @@ namespace NiL.JS.Expressions
             return false;
         }
 
+        internal override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> vars, bool strict, CompilerMessageCallback message)
+        {
+            var res = base.Build(ref _this, depth, vars, strict, message);
+            if (!res && message != null)
+            {
+                var fc = first as Constant ?? second as Constant;
+                if (fc != null)
+                {
+                    switch (fc.value.valueType)
+                    {
+                        case JSObjectType.Undefined:
+                            message(MessageLevel.Warning, new CodeCoordinates(0, Position), "To compare with undefined use '===' or '!==' instead of '==' or '!='.");
+                            break;
+                        case JSObjectType.Object:
+                            if (fc.value.oValue == null)
+                                message(MessageLevel.Warning, new CodeCoordinates(0, Position), "To compare with null use '===' or '!==' instead of '==' or '!='.");
+                            break;
+                    }
+                }
+            }
+            return res;
+        }
+
         public override string ToString()
         {
             return "(" + first + " == " + second + ")";

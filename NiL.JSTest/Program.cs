@@ -293,11 +293,21 @@ console.log(fact_of_3);
                     System.Console.WriteLine(a[i]);
                 return JSObject.Undefined;
             }));
-            
-            int mode = 101
+
+            int mode = 100//-5
                    ;
             switch (mode)
             {
+                case -5:
+                    {
+                        var f = new FileStream("ftest.js", FileMode.Open, FileAccess.Read);
+                        var sr = new StreamReader(f);
+                        new Script(sr.ReadToEnd(), (level, pos, message) =>
+                        {
+                            Console.WriteLine(level + " " + pos + ": " + message);
+                        });
+                        break;
+                    }
                 case -4:
                     {
                         runFile(@"samples/async.js");

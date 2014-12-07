@@ -70,9 +70,9 @@ namespace NiL.JS.Expressions
             }
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict, CompilerMessageCallback message)
         {
-            var res = base.Build(ref _this, depth, vars, strict);
+            var res = base.Build(ref _this, depth, vars, strict, message);
             if (!res)
                 second = sources[sources.Count - 1];
             return res;

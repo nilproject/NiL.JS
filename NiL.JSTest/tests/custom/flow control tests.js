@@ -281,3 +281,5 @@ var __func = function __exp__func(arg) {
 
 if (__func(3) != 6)
     throw "fact";
+
+-0x1

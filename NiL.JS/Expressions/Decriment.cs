@@ -153,9 +153,9 @@ namespace NiL.JS.Expressions
             return res;
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> vars, bool strict)
+        internal override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> vars, bool strict, CompilerMessageCallback message)
         {
-            Parser.Build(ref first, depth + 1, vars, strict);
+            Parser.Build(ref first, depth + 1, vars, strict, message);
             if (depth <= 1 && second != null)
             {
                 first = second;
@@ -170,7 +170,7 @@ namespace NiL.JS.Expressions
             return false;
         }
 
-        internal override void Optimize(ref CodeNode _this, FunctionExpression owner)
+        internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message)
         {
             var vr = first as VariableReference;
             if (vr != null && vr.descriptor.isDefined)

@@ -20,7 +20,9 @@ namespace NiL.JS.Core
         public int breaksCount;
         public int continiesCount;
 
-        public ParsingState(string code, string sourceCode)
+        public readonly CompilerMessageCallback message;
+
+        public ParsingState(string code, string sourceCode, CompilerMessageCallback message)
         {
             Code = code;
             SourceCode = sourceCode;
@@ -36,6 +38,7 @@ namespace NiL.JS.Core
             AllowContinue.Push(false);
             AllowYield = new Stack<bool>();
             AllowYield.Push(false);
+            this.message = message;
         }
     }
 }

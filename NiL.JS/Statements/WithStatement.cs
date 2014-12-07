@@ -21,6 +21,8 @@ namespace NiL.JS.Statements
             int i = index;
             if (!Parser.Validate(state.Code, "with (", ref i) && !Parser.Validate(state.Code, "with(", ref i))
                 return new ParseResult();
+            if (state.message != null)
+                state.message(MessageLevel.CriticalWarning, CodeCoordinates.FromTextPosition(state.Code, index), "Do not use \"with\".");
             if (state.strict.Peek())
                 throw new JSException((new NiL.JS.Core.BaseTypes.SyntaxError("WithStatement is not allowed in strict mode.")));
             var obj = Parser.Parse(state, ref i, 1);
@@ -107,19 +109,19 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message)
         {
-            Parser.Build(ref obj, depth + 1, variables, strict);
-            Parser.Build(ref body, depth, variables, strict);
+            Parser.Build(ref obj, depth + 1, variables, strict, message);
+            Parser.Build(ref body, depth, variables, strict, message);
             return false;
         }
 
-        internal override void Optimize(ref CodeNode _this, FunctionExpression owner)
+        internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message)
         {
             if (obj != null)
-                obj.Optimize(ref obj, owner);
+                obj.Optimize(ref obj, owner, message);
             if (body != null)
-                body.Optimize(ref body, owner);
+                body.Optimize(ref body, owner, message);
         }
 
         public override string ToString()
