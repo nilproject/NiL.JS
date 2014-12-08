@@ -8,24 +8,21 @@
     Open source ECMAScript 5.1 (JavaScript) engine.
     <ul>
         <li><span style="font-weight:bold">No</span> native dependence.</li>
-        <li>Optional generation of <span style="font-weight:bold">IL</span> (Experimental).</li>
         <li><span style="font-weight:bold">One</span> assembly.</li>
         <li><span style="font-weight:bold">Automatically</span> wrapping .NET objects. No changes are required.</li>
-        <li>Runs on <span style="font-weight:bold">all</span> platforms supported .NET.</li>
-        <li><span style="font-weight:bold">Translator as a service.</span></li>
+        <li><span style="font-weight:bold">Access to AST and result code analysis.</span></li>
         <li>Compatible with <span style="font-weight:bold">ASP.NET</span>.</li>
         <li>High performance.</li>
         <li>Integrated debugger (In "For developers" version).</li>
         <li>Support for..of.</li>
         <li>Support consts.</li>
-        <li>Support generators (Experimental. With some issues).</li>
+        <li>Support generators.</li>
         <li>99% of Sputnik tests passed.</li>
     </ul>
     <p><strong>C#</strong></p>
     <blockquote>
-NiL.JS.Core.Context.GlobalContext.DefineVariable("alert")
-<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.Assign(new ExternalFunction((thisBind, arguments) =&gt; {
-System.Windows.Forms.MessageBox.Show(arguments[0].ToString());<br/>
+Context.GlobalContext.DefineVariable("alert").Assign(new ExternalFunction((thisBind, arguments) =&gt; {
+MessageBox.Show(arguments[0].ToString());<br/>
 return JSObject.Undefined; // or null<br/>
 }));<br/>
 </blockquote>
