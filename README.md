@@ -21,9 +21,10 @@
     </ul>
     <p><strong>C#</strong></p>
     <blockquote>
-Context.GlobalContext.DefineVariable("alert").Assign(new ExternalFunction((thisBind, arguments) =&gt; {
-MessageBox.Show(arguments[0].ToString());<br/>
-return JSObject.Undefined; // or null<br/>
+Context.GlobalContext.DefineVariable("alert").Assign(new ExternalFunction((thisBind, arguments) =&gt; <br/>
+{<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;MessageBox.Show(arguments[0].ToString());<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;return JSObject.Undefined; // or null<br/>
 }));<br/>
 </blockquote>
     <p><strong>JavaScript</strong></p>
