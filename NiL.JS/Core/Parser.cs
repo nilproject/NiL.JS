@@ -509,7 +509,9 @@ namespace NiL.JS.Core
             if (index >= state.Code.Length || state.Code[index] == '}')
                 return null;
             int sindex = index;
-            if (state.Code[index] == ',' || state.Code[index] == ';' || (lineAutoComplite && Tools.isLineTerminator(state.Code[index])))
+            if (state.Code[index] == ','
+                || state.Code[index] == ';'
+                || (lineAutoComplite && Tools.isLineTerminator(state.Code[index])))
             {
                 index++;
                 return EmptyStatement.Instance;

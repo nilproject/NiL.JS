@@ -111,6 +111,7 @@ namespace NiL.JS.Statements
             if (body is FunctionExpression && state.strict.Peek())
                 throw new JSException((new NiL.JS.Core.BaseTypes.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
             CodeNode elseBody = null;
+            var pos = i;
             while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i])) i++;
             if (i < state.Code.Length && !(body is CodeBlock) && (state.Code[i] == ';'))
                 do i++; while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]));
@@ -121,7 +122,9 @@ namespace NiL.JS.Statements
                 if (elseBody is FunctionExpression && state.strict.Peek())
                     throw new JSException((new NiL.JS.Core.BaseTypes.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
             }
-            var pos = index;
+            else
+                i = pos;
+            pos = index;
             index = i;
             return new ParseResult()
             {

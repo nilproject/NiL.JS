@@ -178,6 +178,7 @@ namespace NiL.JS.Statements
             for (var j = body.Count; j-- > 0; )
                 (body[j] as Constant).value.oValue = Tools.Unescape((body[j] as Constant).value.oValue.ToString(), state.strict.Peek());
             Dictionary<string, VariableDescriptor> vars = null;
+            bool expectSemicolon = false;
             while ((sroot && i < state.Code.Length) || (!sroot && state.Code[i] != '}'))
             {
                 var t = Parser.Parse(state, ref i, 0);
@@ -185,6 +186,11 @@ namespace NiL.JS.Statements
                 {
                     if (sroot && i < state.Code.Length && state.Code[i] == '}')
                         throw new JSException(new SyntaxError("Unexpected symbol \"}\" at " + CodeCoordinates.FromTextPosition(state.Code, i)));
+                    if (state.message != null
+                        && !expectSemicolon
+                        && (state.Code[i - 1] == ';' || state.Code[i - 1] == ','))
+                        state.message(MessageLevel.Warning, CodeCoordinates.FromTextPosition(state.Code, i), "Unnecessary semicolon.");
+                    expectSemicolon = false;
                     continue;
                 }
                 if (t is FunctionExpression)
@@ -206,24 +212,31 @@ namespace NiL.JS.Statements
                         f.Reference.descriptor = vd;
                         vd.Inititalizator = f.Reference;
                     }
+                    expectSemicolon = false;
                 }
-                else if (t is VariableDefineStatement)
+                else
                 {
-                    var inits = (t as VariableDefineStatement).initializators;
-                    if (vars == null)
-                        vars = new Dictionary<string, VariableDescriptor>();
-                    for (var j = inits.Length; j-- > 0; )
+                    //if (state.message != null && expectSemicolon)
+                    //    state.message(MessageLevel.Warning, CodeCoordinates.FromTextPosition(state.Code, body.Count > 0 ? body[body.Count - 1].EndPosition : i), "Missing semicolon.");
+                    if (t is VariableDefineStatement)
                     {
-                        VariableDescriptor desc = null;
-                        var gvs = (inits[j] as VariableReference) ?? ((inits[j] as Assign).FirstOperand as VariableReference);
-                        if (!vars.TryGetValue(gvs.Name, out desc))
-                            vars[gvs.Name] = new VariableDescriptor(gvs, true, state.functionsDepth);
-                        else
+                        var inits = (t as VariableDefineStatement).initializators;
+                        if (vars == null)
+                            vars = new Dictionary<string, VariableDescriptor>();
+                        for (var j = inits.Length; j-- > 0; )
                         {
-                            desc.references.Add(gvs);
-                            gvs.descriptor = desc;
+                            VariableDescriptor desc = null;
+                            var gvs = (inits[j] as VariableReference) ?? ((inits[j] as Assign).FirstOperand as VariableReference);
+                            if (!vars.TryGetValue(gvs.Name, out desc))
+                                vars[gvs.Name] = new VariableDescriptor(gvs, true, state.functionsDepth);
+                            else
+                            {
+                                desc.references.Add(gvs);
+                                gvs.descriptor = desc;
+                            }
                         }
                     }
+                    expectSemicolon = true;
                 }
                 body.Add(t);
             }

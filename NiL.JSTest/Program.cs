@@ -294,7 +294,7 @@ console.log(fact_of_3);
                 return JSObject.Undefined;
             }));
 
-            int mode = 100//-5
+            int mode = -5
                    ;
             switch (mode)
             {

@@ -355,7 +355,7 @@ namespace NiL.JS.Statements
                 variables[catchVariableDesc.name] = catchVariableDesc;
                 b = catchBody as CodeNode;
                 Parser.Build(ref b, depth, variables, strict, message);
-                catchBody = b as CodeBlock ?? new CodeBlock(b is EmptyStatement || b == null ? new CodeNode[0] : new[] { b }, strict);
+                catchBody = b != null ? b as CodeBlock ?? ((b is EmptyStatement || b == null) ? null : new CodeBlock(new[] { b }, strict)) : null;
                 if (oldVarDesc != null)
                     variables[catchVariableDesc.name] = oldVarDesc;
                 else
@@ -365,7 +365,15 @@ namespace NiL.JS.Statements
             }
             b = finallyBody as CodeNode;
             Parser.Build(ref b, depth, variables, strict, message);
-            finallyBody = b as CodeBlock ?? new CodeBlock(b is EmptyStatement || b == null ? new CodeNode[0] : new[] { b }, strict);
+            finallyBody = b != null ? b as CodeBlock ?? ((b is EmptyStatement || b == null) ? null : new CodeBlock(new[] { b }, strict)) : null;
+            if (body == null
+                || body is EmptyStatement
+                || (body is CodeBlock && (body as CodeBlock).lines.Length == 0))
+            {
+                if (message != null)
+                    message(MessageLevel.Warning, new CodeCoordinates(0, Position), "Empty (or reduced to empty) try" + (catchBody != null || finallyBody == null ? "..catch" : "") + (finallyBody != null ? "..finally" : "") + " block. Maybe, something missing.");
+                _this = finallyBody;
+            }
             return false;
         }
 
