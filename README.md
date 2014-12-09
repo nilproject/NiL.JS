@@ -5,7 +5,8 @@
 </head>
 <body style="font-family: 'Duru Sans', sans-serif;">
     <div style="font-weight: 500; font-size: 100px; position: relative; top: -10px;">NiL.JS</div>
-    Open source ECMAScript 5.1 (JavaScript) engine.
+    Open source ECMAScript 5.1 (JavaScript) engine.<br/>
+    Licensed under BSD 3-Clause License.
     <ul>
         <li><span style="font-weight:bold">No</span> native dependence.</li>
         <li><span style="font-weight:bold">One</span> assembly.</li>
