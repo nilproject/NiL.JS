@@ -282,4 +282,24 @@ var __func = function __exp__func(arg) {
 if (__func(3) != 6)
     throw "fact";
 
--0x1
+-0x1;
+
+(function () {
+    var a = 1;
+
+    var o = { a: 2 };
+    try {
+        with (o) {
+            a = 3;
+            throw 1;
+            a = 4;
+        }
+    }
+    catch (e)
+    { }
+
+    if (a === 1 && o.a === 3) {
+        return true;
+    }
+
+}())

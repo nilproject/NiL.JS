@@ -76,14 +76,15 @@ namespace NiL.JS.Statements
         internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message)
         {
             Parser.Build(ref body, 2, variables, strict, message);
-            if (body is NiL.JS.Expressions.Ternary)
+            // Улучшает работу оптимизатора хвостовой рекурсии
+            if (message == null && body is NiL.JS.Expressions.Ternary)
             {
                 var bat = body as NiL.JS.Expressions.Ternary;
                 var bts = bat.Threads;
                 _this = new IfElseStatement(bat.FirstOperand, new ReturnStatement(bts[0]), new ReturnStatement(bts[1]));
                 return false;
             }
-            if (body is NiL.JS.Expressions.Call)
+            else if (body is NiL.JS.Expressions.Call)
                 (body as NiL.JS.Expressions.Call).allowTCO = true;
             return false;
         }

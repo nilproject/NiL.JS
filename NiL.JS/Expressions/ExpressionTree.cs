@@ -567,7 +567,14 @@ namespace NiL.JS.Statements
                                 var cord = CodeCoordinates.FromTextPosition(state.Code, i);
                                 throw new JSException((new Core.BaseTypes.SyntaxError("Invalid prefix operation. " + cord)));
                             }
-                            first = new Expressions.New(first, new Expression[0]) { Position = index, Length = i - index };
+                            if (first is Call)
+                                first = new New((first as Expression).FirstOperand, (first as Call).Arguments) { Position = index, Length = i - index };
+                            else
+                            {
+                                if (state.message != null)
+                                    state.message(MessageLevel.Warning, CodeCoordinates.FromTextPosition(state.Code, index), "Missing brackets in a constructor invocation.");
+                                first = new Expressions.New(first, new Expression[0]) { Position = index, Length = i - index };
+                            }
                             break;
                         }
                     case 'd':

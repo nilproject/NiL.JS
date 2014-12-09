@@ -124,6 +124,8 @@ namespace NiL.JSTest
 
             Action<string> _ = Console.WriteLine;
             var sw = new Stopwatch();
+            int passed = 0;
+            int failed = 0;
             string code;
             string preCode = "";
             string postCode = "";
@@ -142,7 +144,7 @@ namespace NiL.JSTest
             _("Found " + (fls.Length - 2) + " js-files");
             bool skipedShowed = false;
             sw.Start();
-            for (int i = 55; i < fls.Length; i++)
+            for (int i = 0; i < fls.Length; i++)
             {
                 if (i != 0 && !skipedShowed)
                     _("Skiped: " + i);
@@ -173,14 +175,19 @@ namespace NiL.JSTest
                             for (var ti = 0; ti < e.Length; ti++)
                             {
                                 var text = e[ti].ToString();
-                                if (fail)
-                                    System.Diagnostics.Debugger.Break();
                                 if (ti == 0 && text == "FAIL")
                                     fail = true;
                                 if (ti > 0)
                                     System.Console.Write(' ');
                                 System.Console.Write(text);
                             }
+                            if (fail)
+                            {
+                                failed++;
+                                System.Diagnostics.Debugger.Break();
+                            }
+                            else
+                                passed++;
                             System.Console.WriteLine();
                             return JSObject.Undefined;
                         }));
@@ -199,6 +206,11 @@ namespace NiL.JSTest
                 {
                     System.Diagnostics.Debugger.Break();
                     Console.WriteLine(e);
+                }
+                if (Environment.TickCount - lastUpdate > 100)
+                {
+                    Console.Title = "passed: " + passed + ". failed: " + failed;
+                    lastUpdate = Environment.TickCount;
                 }
             }
             sw.Stop();
@@ -294,7 +306,7 @@ console.log(fact_of_3);
                 return JSObject.Undefined;
             }));
 
-            int mode = 2
+            int mode = 1
                    ;
             switch (mode)
             {

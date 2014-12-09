@@ -218,7 +218,7 @@ namespace NiL.JS.Statements
                 {
                     //if (state.message != null && expectSemicolon)
                     //    state.message(MessageLevel.Warning, CodeCoordinates.FromTextPosition(state.Code, body.Count > 0 ? body[body.Count - 1].EndPosition : i), "Missing semicolon.");
-                    if (t is VariableDefineStatement)
+                    /*if (t is VariableDefineStatement)
                     {
                         var inits = (t as VariableDefineStatement).initializators;
                         if (vars == null)
@@ -235,7 +235,7 @@ namespace NiL.JS.Statements
                                 gvs.descriptor = desc;
                             }
                         }
-                    }
+                    }*/
                     expectSemicolon = true;
                 }
                 body.Add(t);
@@ -362,7 +362,7 @@ namespace NiL.JS.Statements
                     Parser.Build(ref lines[i], depth < 0 ? 2 : Math.Max(1, depth), variables, this.strict, message);
                     lines[i] = null;
                 }
-
+            bool unreachable = false;
             for (int i = lines.Length; i-- > 0; )
             {
                 if (lines[i] != null)
@@ -371,9 +371,12 @@ namespace NiL.JS.Statements
                         lines[i] = null;
                     else
                     {
+                        if (unreachable && message != null)
+                            message(MessageLevel.CriticalWarning, new CodeCoordinates(0, lines[i].Position), "Unreachable code detected.");
                         var cn = lines[i];
                         Parser.Build(ref cn, depth < 0 ? 2 : Math.Max(1, depth), variables, this.strict, message);
                         lines[i] = cn;
+                        unreachable |= cn is ReturnStatement || cn is BreakStatement || cn is ContinueStatement;
                     }
                 }
             }

@@ -210,7 +210,7 @@ namespace NiL.JS.Statements
             {
                 Parser.Build(ref post, 1, variables, strict, message);
                 if (post == null && message != null)
-                    message(MessageLevel.Warning, new CodeCoordinates(0, Position), "Last expression of for-loop was removed. Maybe, it's mistake.");
+                    message(MessageLevel.Warning, new CodeCoordinates(0, Position), "Last expression of for-loop was removed. Maybe, it's a mistake.");
             }
             Parser.Build(ref body, System.Math.Max(1, depth), variables, strict, message);
             if (condition == null)

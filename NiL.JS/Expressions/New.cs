@@ -65,10 +65,10 @@ namespace NiL.JS.Expressions
         public New(Expression first, Expression[] arguments)
             : base(null, null, false)
         {
-            if (first is Call)
-                this.first = new Call(thisSetter = new ThisSetter((first as Call).FirstOperand), (first as Call).Arguments);
-            else
-                this.first = new Call(thisSetter = new ThisSetter(first), arguments);
+            //if (first is Call)
+            //    this.first = new Call(thisSetter = new ThisSetter((first as Call).FirstOperand), (first as Call).Arguments);
+            //else
+            this.first = new Call(thisSetter = new ThisSetter(first), arguments);
         }
 
         internal override NiL.JS.Core.JSObject Evaluate(NiL.JS.Core.Context context)

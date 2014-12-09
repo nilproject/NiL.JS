@@ -59,6 +59,12 @@ namespace NiL.JS.Statements
             var sbody = body.ToString();
             return "if (" + condition + ")" + (body is CodeBlock ? sbody : Environment.NewLine + "  " + sbody.Replace(rp, rs));
         }
+
+        internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message)
+        {
+            condition.Optimize(ref condition, owner, message);
+            body.Optimize(ref body, owner, message);
+        }
     }
 
     [Serializable]
@@ -184,7 +190,7 @@ namespace NiL.JS.Statements
 
             if (condition is ToBool)
             {
-                if (message == null)
+                if (message != null)
                     message(MessageLevel.Warning, new CodeCoordinates(0, condition.Position), "Useless conversion. Remove double negation in condition");
                 condition = (condition as Expression).first;
             }
@@ -211,6 +217,7 @@ namespace NiL.JS.Statements
         {
             condition.Optimize(ref condition, owner, message);
             body.Optimize(ref body, owner, message);
+            elseBody.Optimize(ref elseBody, owner, message);
         }
 
         public override string ToString()

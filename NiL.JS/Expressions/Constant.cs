@@ -76,7 +76,7 @@ namespace NiL.JS.Expressions
             if (depth <= 1)
             {
                 _this = null;
-                if (message != null)
+                if (message != null && (value.valueType != JSObjectType.String || value.oValue.ToString() != "use strict"))
                     message(MessageLevel.Warning, new CodeCoordinates(0, Position), "Unused constant was removed. Maybe, something missing.");
             }
             return false;

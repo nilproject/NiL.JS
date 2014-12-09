@@ -228,6 +228,26 @@ namespace NiL.JS.Statements
                 VariableDescriptor desc = null;
                 if (!variables.TryGetValue(names[i], out desc))
                     variables[names[i]] = desc = new VariableDescriptor(names[i], functionDepth);
+                else
+                {
+                    if (message != null)
+                    {
+                        if (desc.isDefined)
+                            message(MessageLevel.Warning, new CodeCoordinates(0, Position), "Redefinition of the variable \"" + names[i] + "\". It's already defined.");
+                        else
+                        {
+                            if (desc.references != null && desc.references.Count > 0)
+                            {
+                                var use = desc.references[0];
+                                for (var j = desc.references.Count; j-- > 1; )
+                                    if (desc.references[j].Position < use.Position)
+                                        use = desc.references[j];
+                                if (use.Position < Position)
+                                    message(MessageLevel.Warning, new CodeCoordinates(0, use.Position), "Variable \"" + use.Name + "\" used before definition.");
+                            }
+                        }
+                    }
+                }
                 this.variables[i] = desc;
                 this.variables[i].isDefined = true;
                 this.variables[i].readOnly = isConst;

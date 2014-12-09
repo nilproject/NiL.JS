@@ -161,6 +161,11 @@ namespace NiL.JS.Statements
                     else
                         _this = null;
                 }
+                else if ((condition is Json && (condition as Json).Fields.Length == 0) 
+                    || (condition is ArrayStatement && (condition as ArrayStatement).Elements.Count == 0))
+                {
+                    _this = new InfinityLoop(body, labels);
+                }
             }
             catch (Exception e)
             {

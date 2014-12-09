@@ -21,6 +21,18 @@ namespace NiL.JS.Expressions
             }
         }
 
+        protected internal override PredictedType ResultType
+        {
+            get
+            {
+                var ftt = threads[0].ResultType;
+                var stt = threads[1].ResultType;
+                if (ftt != stt)
+                    return PredictedType.Ambiguous;
+                return ftt;
+            }
+        }
+
         public IList<CodeNode> Threads { get { return new ReadOnlyCollection<CodeNode>(threads); } }
 
         public Ternary(Expression first, Expression[] threads)
@@ -65,6 +77,8 @@ namespace NiL.JS.Expressions
                 cn.Optimize(ref cn, owner, message);
                 threads[i] = cn as Expression;
             }
+            if (message != null && ResultType == PredictedType.Ambiguous)
+                message(MessageLevel.Warning, new CodeCoordinates(0, Position), "Type of a expression is ambiguous");
         }
 
         public override string ToString()

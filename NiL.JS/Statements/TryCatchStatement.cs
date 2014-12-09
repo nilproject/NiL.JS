@@ -355,7 +355,7 @@ namespace NiL.JS.Statements
                 variables[catchVariableDesc.name] = catchVariableDesc;
                 b = catchBody as CodeNode;
                 Parser.Build(ref b, depth, variables, strict, message);
-                catchBody = b != null ? b as CodeBlock ?? ((b is EmptyStatement || b == null) ? null : new CodeBlock(new[] { b }, strict)) : null;
+                catchBody = b != null ? b as CodeBlock ?? ((b is EmptyStatement || b == null) ? new CodeBlock(new CodeNode[0], false) : new CodeBlock(new[] { b }, strict)) : new CodeBlock(new CodeNode[0], false);
                 if (oldVarDesc != null)
                     variables[catchVariableDesc.name] = oldVarDesc;
                 else

@@ -31,11 +31,11 @@ namespace NiL.JS.Expressions
                 if (op.valueType == Core.JSObjectType.Int
                 || op.valueType == Core.JSObjectType.Bool)
                 {
-                    return itemp > op.iValue;
+                    return itemp >= op.iValue;
                 }
                 else if (op.valueType == Core.JSObjectType.Double)
                 {
-                    return itemp > op.dValue;
+                    return itemp >= op.dValue;
                 }
                 else
                 {
@@ -53,11 +53,11 @@ namespace NiL.JS.Expressions
                 if (op.valueType == Core.JSObjectType.Int
                 || op.valueType == Core.JSObjectType.Bool)
                 {
-                    return dtemp > op.iValue;
+                    return dtemp >= op.iValue;
                 }
                 else if (op.valueType == Core.JSObjectType.Double)
                 {
-                    return dtemp > op.dValue;
+                    return dtemp >= op.dValue;
                 }
                 else
                 {

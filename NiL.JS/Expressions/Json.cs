@@ -144,11 +144,14 @@ namespace NiL.JS.Statements
                     do i++; while (char.IsWhiteSpace(state.Code[i]));
                     var initializator = ExpressionTree.Parse(state, ref i, false).Statement;
                     CodeNode aei = null;
-                    flds.TryGetValue(fieldName, out aei);
-                    if (aei != null
-                        && ((state.strict.Peek() && (!(aei is Constant) || (aei as Constant).value != JSObject.undefined))
+                    if (flds.TryGetValue(fieldName, out aei))
+                    {
+                        if (((state.strict.Peek() && (!(aei is Constant) || (aei as Constant).value != JSObject.undefined))
                             || (aei is Constant && ((aei as Constant).value.valueType == JSObjectType.Property))))
-                        throw new JSException(new SyntaxError("Try to redefine field \"" + fieldName + "\" at " + CodeCoordinates.FromTextPosition(state.Code, pos)));
+                            throw new JSException(new SyntaxError("Try to redefine field \"" + fieldName + "\" at " + CodeCoordinates.FromTextPosition(state.Code, pos)));
+                        if (state.message != null)
+                            state.message(MessageLevel.Warning, CodeCoordinates.FromTextPosition(state.Code, initializator.Position), "Duplicate key \"" + fieldName + "\"");
+                    }
                     flds[fieldName] = initializator;
                 }
                 while (char.IsWhiteSpace(state.Code[i]))
