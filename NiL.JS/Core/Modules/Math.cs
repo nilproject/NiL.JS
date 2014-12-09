@@ -174,8 +174,8 @@ namespace NiL.JS.Core.Modules
             return System.Math.Log(Tools.JSObjectToDouble(args.Length > 0 ? args[0] : null));
         }
 
-        [DoNotEnumerate]
         [DoNotDelete]
+        [DoNotEnumerate]
         [ParametersCount(2)]
         public static JSObject max(Arguments args)
         {

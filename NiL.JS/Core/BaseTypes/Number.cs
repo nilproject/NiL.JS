@@ -371,5 +371,17 @@ namespace NiL.JS.Core.BaseTypes
         {
             return value == null ? 0 : value.valueType == JSObjectType.Int ? value.iValue : (int)value.dValue;
         }
+
+        [DoNotEnumerate]
+        public static JSObject isNaN(Arguments a)
+        {
+            switch (a[0].valueType)
+            {
+                case JSObjectType.Double:
+                    return double.IsNaN(a[0].dValue);
+                default:
+                    return Boolean.False;
+            }
+        }
     }
 }
