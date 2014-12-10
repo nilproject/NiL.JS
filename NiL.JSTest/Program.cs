@@ -276,17 +276,18 @@ for (var i = 0; i < 10000000; i++) abs(i * (1 - 2 * (i & 1)));
             var sw = new Stopwatch();
             var s = new Script(
 @"
-var __func = function __exp__func(arg){
-    if (arg === 1) {
-    	return arg;
-    } else {
-    	return __exp__func(arg-1)*arg;
-    }
-};
+function isum(a, b)
+{
+    return (a | 0) + (b | 2);
+}
 
-var fact_of_3 =  __func(3);
-console.log(fact_of_3);
+console.log(isum(1, 2));
 ");
+
+            sw.Start();
+            s.TryCompile();
+            sw.Stop();
+            Console.WriteLine(sw.Elapsed);
             sw.Start();
             s.Invoke();
             sw.Stop();
@@ -306,7 +307,7 @@ console.log(fact_of_3);
                 return JSObject.Undefined;
             }));
 
-            int mode = 100
+            int mode = 3
                    ;
             switch (mode)
             {
@@ -318,11 +319,6 @@ console.log(fact_of_3);
                         {
                             Console.WriteLine(level + " " + pos + ": " + message);
                         });
-                        break;
-                    }
-                case -4:
-                    {
-                        runFile(@"samples/async.js");
                         break;
                     }
                 case -3:

@@ -31,9 +31,7 @@ namespace NiL.JS.Expressions
             tempContainer = a;
             if (c.valueType != JSObjectType.Function)
                 throw new JSException(new NiL.JS.Core.BaseTypes.TypeError("Right-hand value of instanceof is not function."));
-            var p = c.GetMember(prototype, false, false);
-            if (p.valueType == JSObjectType.Property)
-                p = ((p.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(c, null);
+            var p = (c.oValue as Function).prototype;
             if (p.valueType < JSObjectType.Object)
                 throw new JSException(new TypeError("Property \"prototype\" of function not represent object."));
             if (p.oValue != null)

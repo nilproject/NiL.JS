@@ -457,6 +457,12 @@ namespace NiL.JS.Statements
                 }
         }
 
+        internal override void TryCompile(ref CodeNode root)
+        {
+            for (int i = lines.Length; i-- > 0; )
+                lines[i].TryCompile(ref lines[i]);
+        }
+
         public override string ToString()
         {
             return ToString(false);

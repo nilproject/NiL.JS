@@ -353,31 +353,4 @@ namespace NiL.JS.Core
             attributes = JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.SystemObject;
         }
     }
-
-    internal sealed class PooledArguments : Arguments
-    {
-        internal void CloneTo(Arguments dest)
-        {
-            dest.length = length;
-            dest.a0 = a0;
-            dest.a1 = a1;
-            dest.a2 = a2;
-            dest.a3 = a3;
-            dest.a4 = a4;
-            dest.a5 = a5;
-            dest.a6 = a6;
-            dest.a7 = a7;
-            dest.fields = fields;
-            dest.caller = caller;
-            dest.callee = callee;
-            dest.__prototype = __prototype;
-        }
-
-        internal override JSObject CloneImpl()
-        {
-            var res = new Arguments();
-            CloneTo(res);
-            return res;
-        }
-    }
 }

@@ -1,6 +1,4 @@
-﻿//#define USEARGPOOL
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using NiL.JS.Core;
 using NiL.JS.Core.BaseTypes;
@@ -12,19 +10,6 @@ namespace NiL.JS.Expressions
     [Serializable]
     public sealed class Call : Expression
     {
-#if USEARGPOOL
-        private static Arguments[] argumentsPool = new Arguments[2] { new PooledArguments(), new PooledArguments() };
-        private static int poolIndex = 0;
-        private static void resizePool(int newSize)
-        {
-            if (newSize <= argumentsPool.Length)
-                return;
-            var newPool = new Arguments[newSize];
-            for (var i = argumentsPool.Length; i-- > 0; )
-                newPool[i] = argumentsPool[i];
-            argumentsPool = newPool;
-        }
-#endif
         public override bool IsContextIndependent
         {
             get
@@ -74,9 +59,6 @@ namespace NiL.JS.Expressions
 
             bool tail = false;
             Function func = temp.valueType == JSObjectType.Function ? temp.oValue as Function ?? (temp.oValue as TypeProxy).prototypeInstance as Function : null; // будем надеяться, что только в одном случае в oValue не будет лежать функция
-#if USEARGPOOL
-            bool pool = false;
-#endif
             Arguments arguments = null;
             if (func == null)
             {
@@ -98,44 +80,17 @@ namespace NiL.JS.Expressions
                 {
                     context.abort = AbortType.TailRecursion;
                     tail = true;
-#if USEARGPOOL
-                    if (func._arguments is PooledArguments)
-                    {
-                        if (poolIndex >= argumentsPool.Length)
-                            resizePool(argumentsPool.Length * 2);
-                        int pindex = poolIndex++;
-                        arguments = argumentsPool[pindex];
-                        if (arguments == null)
-                            arguments = argumentsPool[pindex] = new PooledArguments();
-                        pool = true;
-                    }
-                    else
-#endif
-                    arguments = new Arguments();
                 }
-                else
+
+                arguments = new Core.Arguments()
                 {
-#if USEARGPOOL
-                    if (poolIndex >= argumentsPool.Length)
-                        resizePool(argumentsPool.Length * 2);
-                    int pindex = poolIndex++;
-                    arguments = argumentsPool[pindex];
-                    if (arguments == null)
-                        arguments = argumentsPool[pindex] = new PooledArguments();
-                    pool = true;
-#else
-                    arguments = new Arguments();
-#endif
-                }
-#if USEARGPOOL
-                try
-                {
-#endif
-                arguments.length = this.arguments.Length;
+                    caller = context.strict && context.caller != null && context.caller.creator.body.strict ? Function.propertiesDummySM : context.caller,
+                    length = this.arguments.Length
+                };
                 for (int i = 0; i < this.arguments.Length; i++)
                     arguments[i] = prepareArg(context, this.arguments[i], tail, this.arguments.Length > 1);
-                arguments.caller = context.strict && context.caller != null && context.caller.creator.body.strict ? Function.propertiesDummySM : context.caller;
                 context.objectSource = null;
+
                 if (tail)
                 {
                     arguments.callee = func;
@@ -144,44 +99,16 @@ namespace NiL.JS.Expressions
                         if (func.creator.body.localVariables[i].Inititalizator == null)
                             func.creator.body.localVariables[i].cacheRes.Assign(JSObject.undefined);
                     }
-#if USEARGPOOL
-                        if (pool)
-                        {
-                            (arguments as PooledArguments).CloneTo(func._arguments as Arguments);
-                            argumentsPool[--poolIndex].Reset();
-                        }
-                        else
-#endif
-                    {
-                        func._arguments = arguments;
-                        if (context.fields != null && context.fields.ContainsKey("arguments"))
-                            context.fields["arguments"] = arguments;
-                    }
+                    func._arguments = arguments;
+                    if (context.fields != null && context.fields.ContainsKey("arguments"))
+                        context.fields["arguments"] = arguments;
                     return JSObject.undefined;
                 }
-#if USEARGPOOL
-                }
-                catch
-                {
-                    argumentsPool[--poolIndex].Reset();
-                    throw;
-                }
-#endif
             }
             func.attributes = (func.attributes & ~JSObjectAttributesInternal.Eval) | (temp.attributes & JSObjectAttributesInternal.Eval);
-#if USEARGPOOL
-            try
-            {
-                return func.Invoke(newThisBind, arguments);
-            }
-            finally
-            {
-                argumentsPool[--poolIndex].Reset();
-            }
-#else
+
             checkStack();
             return func.Invoke(newThisBind, arguments);
-#endif
         }
 
         private void checkStack()

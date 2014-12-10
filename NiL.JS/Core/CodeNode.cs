@@ -76,5 +76,10 @@ namespace NiL.JS.Core
         {
             
         }
+
+        internal virtual void TryCompile(ref CodeNode root)
+        {
+
+        }
     }
 }
