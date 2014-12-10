@@ -8,19 +8,19 @@ namespace NiL.JS.Statements
     {
         internal static ParseResult Parse(ParsingState state, ref int index)
         {
-            //string code = state.Code;
             int i = index;
             if (!Parser.Validate(state.Code, "debugger", ref i) || !Parser.isIdentificatorTerminator(state.Code[i]))
                 return new ParseResult();
-            int pos = index;
-            index = i;
+            i ^= index;
+            index ^= i;
+            i ^= index;
             return new ParseResult()
             {
                 IsParsed = true,
                 Statement = new DebuggerOperator()
                 {
-                    Position = pos,
-                    Length = index - pos
+                    Position = i,
+                    Length = index - i
                 }
             };
         }

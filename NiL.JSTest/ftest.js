@@ -1,4 +1,15 @@
-﻿
+﻿/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
+
+/*
+ * AES Cipher function: encrypt 'input' with Rijndael algorithm
+ *
+ *   takes   byte-array 'input' (16 bytes)
+ *           2D byte-array key schedule 'w' (Nr+1 x Nb bytes)
+ *
+ *   applies Nr rounds (10/12/14) using key schedule w for 'add round key' stage
+ *
+ *   returns byte-array encrypted value (16 bytes)
+ */
 function Cipher(input, w) {    // main Cipher function [§5.1]
     var Nb = 4;               // block size (in words): no of columns in state (fixed at 4 for AES)
     var Nr = w.length / Nb - 1; // no of rounds: 10/12/14 for 128/192/256-bit keys
@@ -12,8 +23,6 @@ function Cipher(input, w) {    // main Cipher function [§5.1]
         state = SubBytes(state, Nb);
         state = ShiftRows(state, Nb);
         state = MixColumns(state, Nb);
-        if (round == 9)
-            debugger;
         state = AddRoundKey(state, w, round, Nb);
     }
 
@@ -64,7 +73,6 @@ function MixColumns(s, Nb) {   // combine bytes of each col of state S [§5.1.3]
 
 
 function AddRoundKey(state, w, rnd, Nb) {  // xor Round Key into state S [§5.1.4]
-    "debug trace";
     for (var r = 0; r < 4; r++) {
         for (var c = 0; c < Nb; c++) state[r][c] ^= w[rnd * 4 + c][r];
     }
@@ -76,7 +84,6 @@ function KeyExpansion(key) {  // generate Key Schedule (byte-array Nr+1 x Nb) fr
     var Nb = 4;            // block size (in words): no of columns in state (fixed at 4 for AES)
     var Nk = key.length / 4  // key length (in words): 4/6/8 for 128/192/256-bit keys
     var Nr = Nk + 6;       // no of rounds: 10/12/14 for 128/192/256-bit keys
-
     var w = new Array(Nb * (Nr + 1));
     var temp = new Array(4);
 

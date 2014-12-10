@@ -1077,7 +1077,7 @@ namespace NiL.JS.Statements
                             Expression mname = null;
                             do i++; while (char.IsWhiteSpace(state.Code[i]));
                             int startPos = i;
-                            mname = (Expression)ExpressionTree.Parse(state, ref i, true, false, false, false, false, false).Statement;
+                            mname = (Expression)ExpressionTree.Parse(state, ref i, true, false, false, true, false, false).Statement;
                             if (forEnumeration)
                                 return new ParseResult();
                             if (mname == null)
