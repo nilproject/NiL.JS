@@ -179,8 +179,21 @@ namespace NiL.JS.Expressions
                 argumentsPool[--poolIndex].Reset();
             }
 #else
+            checkStack();
             return func.Invoke(newThisBind, arguments);
 #endif
+        }
+
+        private void checkStack()
+        {
+            try
+            {
+                System.Runtime.CompilerServices.RuntimeHelpers.EnsureSufficientExecutionStack();
+            }
+            catch
+            {
+                throw new JSException(new RangeError("Stack overflow."));
+            }
         }
 
         internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict, CompilerMessageCallback message)

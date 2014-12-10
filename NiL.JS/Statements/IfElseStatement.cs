@@ -114,8 +114,15 @@ namespace NiL.JS.Statements
                 throw new ArgumentException("code (" + i + ")");
             do i++; while (char.IsWhiteSpace(state.Code[i]));
             CodeNode body = Parser.Parse(state, ref i, 0);
-            if (body is FunctionExpression && state.strict.Peek())
-                throw new JSException((new NiL.JS.Core.BaseTypes.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
+            if (body is FunctionExpression)
+            {
+                if (state.strict.Peek())
+                    throw new JSException((new NiL.JS.Core.BaseTypes.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
+                if (state.message != null)
+                    state.message(MessageLevel.CriticalWarning, CodeCoordinates.FromTextPosition(state.Code, body.Position), "Do not declare function in nested blocks.");
+                body = new CodeBlock(new[] { body }, state.strict.Peek()); // для того, чтобы не дублировать код по декларации функции, 
+                // она оборачивается в блок, который сделает самовыпил на втором этапе, но перед этим корректно объявит функцию.
+            }
             CodeNode elseBody = null;
             var pos = i;
             while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i])) i++;
@@ -125,8 +132,15 @@ namespace NiL.JS.Statements
             {
                 while (char.IsWhiteSpace(state.Code[i])) i++;
                 elseBody = Parser.Parse(state, ref i, 0);
-                if (elseBody is FunctionExpression && state.strict.Peek())
-                    throw new JSException((new NiL.JS.Core.BaseTypes.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
+                if (elseBody is FunctionExpression)
+                {
+                    if (state.strict.Peek())
+                        throw new JSException((new NiL.JS.Core.BaseTypes.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
+                    if (state.message != null)
+                        state.message(MessageLevel.CriticalWarning, CodeCoordinates.FromTextPosition(state.Code, elseBody.Position), "Do not declare function in nested blocks.");
+                    elseBody = new CodeBlock(new[] { elseBody }, state.strict.Peek()); // для того, чтобы не дублировать код по декларации функции, 
+                    // она оборачивается в блок, который сделает самовыпил на втором этапе, но перед этим корректно объявит функцию.
+                }
             }
             else
                 i = pos;
@@ -216,8 +230,10 @@ namespace NiL.JS.Statements
         internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message)
         {
             condition.Optimize(ref condition, owner, message);
-            body.Optimize(ref body, owner, message);
-            elseBody.Optimize(ref elseBody, owner, message);
+            if (body != null)
+                body.Optimize(ref body, owner, message);
+            if (elseBody != null)
+                elseBody.Optimize(ref elseBody, owner, message);
         }
 
         public override string ToString()

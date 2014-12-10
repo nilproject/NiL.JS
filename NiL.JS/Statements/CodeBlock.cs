@@ -177,7 +177,7 @@ namespace NiL.JS.Statements
             }
             for (var j = body.Count; j-- > 0; )
                 (body[j] as Constant).value.oValue = Tools.Unescape((body[j] as Constant).value.oValue.ToString(), state.strict.Peek());
-            Dictionary<string, VariableDescriptor> vars = null;
+            //Dictionary<string, VariableDescriptor> vars = null;
             bool expectSemicolon = false;
             while ((sroot && i < state.Code.Length) || (!sroot && state.Code[i] != '}'))
             {
@@ -199,19 +199,19 @@ namespace NiL.JS.Statements
                         throw new JSException((new NiL.JS.Core.BaseTypes.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
                     if (state.InExpression == 0 && string.IsNullOrEmpty((t as FunctionExpression).Name))
                         throw new JSException((new NiL.JS.Core.BaseTypes.SyntaxError("Declarated function must have name.")));
-                    if (vars == null)
-                        vars = new Dictionary<string, VariableDescriptor>();
-                    VariableDescriptor vd = null;
-                    var f = (t as FunctionExpression);
-                    if (!vars.TryGetValue(f.Name, out vd))
-                        vars[f.Name] = new VariableDescriptor(f.Reference, true, state.functionsDepth);
-                    else
-                    {
-                        f.Reference.functionDepth = state.functionsDepth;
-                        vd.references.Add(f.Reference);
-                        f.Reference.descriptor = vd;
-                        vd.Inititalizator = f.Reference;
-                    }
+                    //if (vars == null)
+                    //    vars = new Dictionary<string, VariableDescriptor>();
+                    //VariableDescriptor vd = null;
+                    //var f = (t as FunctionExpression);
+                    //if (!vars.TryGetValue(f.Name, out vd))
+                    //    vars[f.Name] = new VariableDescriptor(f.Reference, true, state.functionsDepth);
+                    //else
+                    //{
+                    //    f.Reference.functionDepth = state.functionsDepth;
+                    //    vd.references.Add(f.Reference);
+                    //    f.Reference.descriptor = vd;
+                    //    vd.Inititalizator = f.Reference;
+                    //}
                     expectSemicolon = false;
                 }
                 else
@@ -250,7 +250,7 @@ namespace NiL.JS.Statements
                 IsParsed = true,
                 Statement = new CodeBlock(body.ToArray(), strictSwitch ? state.strict.Pop() : state.strict.Peek())
                 {
-                    variables = vars != null ? vars.Values.ToArray() : emptyVariables,
+                    variables = emptyVariables,
                     Position = startPos,
                     code = state.SourceCode,
                     Length = i - startPos,
@@ -337,31 +337,27 @@ namespace NiL.JS.Statements
         {
             if (builded)
                 return false;
-            if (this.variables != null)
-            {
-                for (var i = this.variables.Length; i-- > 0; )
-                {
-                    VariableDescriptor desc = null;
-                    if (depth == 0 || !variables.TryGetValue(this.variables[i].name, out desc) || desc == null)
-                        variables[this.variables[i].name] = this.variables[i];
-                    else
-                    {
-                        foreach (var r in this.variables[i].References)
-                        {
-                            desc.references.Add(r);
-                            r.descriptor = desc;
-                        }
-                        this.variables[i] = desc;
-                    }
-                }
-            }
 
             for (int i = lines.Length; i-- > 0; )
-                if (lines[i] is FunctionExpression)
+            {
+                var fe = lines[i] as FunctionExpression;
+                if (fe != null)
                 {
                     Parser.Build(ref lines[i], depth < 0 ? 2 : Math.Max(1, depth), variables, this.strict, message);
+                    VariableDescriptor desc = null;
+                    if (!variables.TryGetValue(fe.name, out desc) || desc == null)
+                        variables[fe.name] = fe.Reference.descriptor;
+                    else
+                    {
+                        variables[fe.name] = fe.Reference.descriptor;
+                        for (var j = 0; j < desc.references.Count; j++)
+                            desc.references[j].descriptor = fe.Reference.descriptor;
+                        fe.Reference.descriptor.references.AddRange(desc.references);
+                        fe.Reference.descriptor.captured = fe.Reference.descriptor.captured || fe.Reference.descriptor.references.FindIndex(x => x.functionDepth > x.descriptor.defineDepth) != -1;
+                    }
                     lines[i] = null;
                 }
+            }
             bool unreachable = false;
             for (int i = lines.Length; i-- > 0; )
             {

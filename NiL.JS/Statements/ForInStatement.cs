@@ -49,7 +49,7 @@ namespace NiL.JS.Statements
                 if (state.strict.Peek())
                 {
                     if (varName == "arguments" || varName == "eval")
-                        throw new JSException((new Core.BaseTypes.SyntaxError("Parameters name may not be \"arguments\" or \"eval\" in strict mode at " + CodeCoordinates.FromTextPosition(state.Code, start))));
+                        throw new JSException(new Core.BaseTypes.SyntaxError("Parameters name may not be \"arguments\" or \"eval\" in strict mode at " + CodeCoordinates.FromTextPosition(state.Code, start)));
                 }
                 res.variable = new VariableDefineStatement(varName, new GetVariableExpression(varName, state.functionsDepth) { Position = start, Length = i - start, functionDepth = state.functionsDepth }, false, state.functionsDepth) { Position = vStart, Length = i - vStart };
             }
@@ -57,9 +57,40 @@ namespace NiL.JS.Statements
             {
                 if (state.Code[i] == ';')
                     return new ParseResult();
-                res.variable = ExpressionTree.Parse(state, ref i, true, true).Statement;
+                while (char.IsWhiteSpace(state.Code[i])) i++;
+                int start = i;
+                string varName;
+                if (!Parser.ValidateName(state.Code, ref i, state.strict.Peek()))
+                    return new ParseResult();
+                varName = Tools.Unescape(state.Code.Substring(start, i - start), state.strict.Peek());
+                if (state.strict.Peek())
+                {
+                    if (varName == "arguments" || varName == "eval")
+                        throw new JSException((new Core.BaseTypes.SyntaxError("Parameters name may not be \"arguments\" or \"eval\" in strict mode at " + CodeCoordinates.FromTextPosition(state.Code, start))));
+                }
+                res.variable = new GetVariableExpression(varName, state.functionsDepth) { Position = start, Length = i - start, functionDepth = state.functionsDepth };
             }
             while (char.IsWhiteSpace(state.Code[i])) i++;
+            if (state.Code[i] == '=')
+            {
+                do i++; while (char.IsWhiteSpace(state.Code[i]));
+                var defVal = ExpressionTree.Parse(state, ref i, true, false, false, true, false, true);
+                if (!defVal.IsParsed)
+                    return defVal;
+                NiL.JS.Expressions.Expression exp = new OpAssignCache(res.variable as GetVariableExpression ?? (res.variable as VariableDefineStatement).initializators[0] as GetVariableExpression);
+                exp = new Assign(
+                    exp,
+                    (NiL.JS.Expressions.Expression)defVal.Statement)
+                    {
+                        Position = res.variable.Position,
+                        Length = defVal.Statement.EndPosition - res.variable.Position
+                    };
+                if (res.variable == exp.first.first)
+                    res.variable = exp;
+                else
+                    (res.variable as VariableDefineStatement).initializators[0] = exp;
+                while (char.IsWhiteSpace(state.Code[i])) i++;
+            }
             if (!Parser.Validate(state.Code, "in", ref i))
                 return new ParseResult();
             while (char.IsWhiteSpace(state.Code[i])) i++;
@@ -71,8 +102,15 @@ namespace NiL.JS.Statements
             state.AllowBreak.Push(true);
             state.AllowContinue.Push(true);
             res.body = Parser.Parse(state, ref i, 0);
-            if (res.body is FunctionExpression && state.strict.Peek())
-                throw new JSException((new NiL.JS.Core.BaseTypes.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
+            if (res.body is FunctionExpression)
+            {
+                if (state.strict.Peek())
+                    throw new JSException((new NiL.JS.Core.BaseTypes.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
+                if (state.message != null)
+                    state.message(MessageLevel.CriticalWarning, CodeCoordinates.FromTextPosition(state.Code, res.body.Position), "Do not declare function in nested blocks.");
+                res.body = new CodeBlock(new[] { res.body }, state.strict.Peek()); // для того, чтобы не дублировать код по декларации функции, 
+                // она оборачивается в блок, который сделает самовыпил на втором этапе, но перед этим корректно объявит функцию.
+            }
             state.AllowBreak.Pop();
             state.AllowContinue.Pop();
             res.Position = index;
@@ -151,9 +189,16 @@ namespace NiL.JS.Statements
         internal override JSObject Evaluate(Context context)
         {
             var s = source.Evaluate(context);
+            JSObject v = null;
+            if (variable is Assign)
+            {
+                variable.Evaluate(context);
+                v = (variable as Assign).first.Evaluate(context);
+            }
+            else
+                v = variable.EvaluateForAssing(context);
             if (!s.IsDefinded || (s.valueType >= JSObjectType.Object && s.oValue == null))
                 return JSObject.undefined;
-            var v = variable.EvaluateForAssing(context);
             int index = 0;
             HashSet<string> processedKeys = new HashSet<string>(StringComparer.Ordinal);
             while (s != null)
@@ -240,12 +285,12 @@ namespace NiL.JS.Statements
                         {
                             if (!keys.MoveNext())
                                 break;
-                            var o = keys.Current;
+                            var key = keys.Current;
                             v.valueType = JSObjectType.String;
-                            v.oValue = o;
-                            if (processedKeys.Contains(v.oValue.ToString()))
+                            v.oValue = key;
+                            if (processedKeys.Contains(key))
                                 continue;
-                            processedKeys.Add(v.oValue.ToString());
+                            processedKeys.Add(key);
 #if DEV
                             if (context.debugging && !(body is CodeBlock))
                                 context.raiseDebugger(body);
@@ -293,11 +338,12 @@ namespace NiL.JS.Statements
 
         internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message)
         {
-            var tvar = variable;
-            if (tvar is VariableDefineStatement)
-                variable = (tvar as VariableDefineStatement).initializators[0];
-            Parser.Build(ref tvar, message == null ? 1 : 2, variables, strict, message);
-            variable = (GetVariableExpression)variable;
+            Parser.Build(ref variable, 2, variables, strict, message);
+            var tvar = variable as VariableDefineStatement;
+            if (tvar != null)
+                variable = tvar.initializators[0];
+            if (variable is Assign)
+                ((variable as Assign).first.first as GetVariableExpression).forceThrow = false;
             Parser.Build(ref source, 2, variables, strict, message);
             Parser.Build(ref body, System.Math.Max(1, depth), variables, strict, message);
             if (variable is Expressions.None)
@@ -317,7 +363,8 @@ namespace NiL.JS.Statements
         internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message)
         {
             source.Optimize(ref source, owner, message);
-            body.Optimize(ref body, owner, message);
+            if (body != null)
+                body.Optimize(ref body, owner, message);
         }
 
         public override string ToString()

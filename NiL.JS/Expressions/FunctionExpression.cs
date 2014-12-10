@@ -18,6 +18,18 @@ namespace NiL.JS.Expressions
     {
         internal sealed class GeneratorInitializator : Function
         {
+            public override JSObject prototype
+            {
+                get
+                {
+                    return null;
+                }
+                set
+                {
+
+                }
+            }
+
             private Function generator;
             [Hidden]
             public GeneratorInitializator(Function generator)
@@ -29,6 +41,11 @@ namespace NiL.JS.Expressions
             public override JSObject Invoke(JSObject thisBind, Arguments args)
             {
                 return TypeProxy.Proxy(new Generator(generator, thisBind, args));
+            }
+
+            protected override JSObject getDefaultPrototype()
+            {
+                return TypeProxy.GetPrototype(typeof(Function));
             }
         }
 
@@ -505,7 +522,7 @@ namespace NiL.JS.Expressions
             {
                 VariableDescriptor fdesc = null;
                 if (Reference.Descriptor == null)
-                    Reference.descriptor = new VariableDescriptor(Reference, true, Reference.functionDepth) { owner = this };
+                    Reference.descriptor = new VariableDescriptor(Reference, true, Reference.functionDepth);// { owner = this };
                 if (System.Array.FindIndex(arguments, x => x.Name == Reference.descriptor.name) == -1)
                     if (nvars.TryGetValue(name, out fdesc) && !fdesc.IsDefined)
                     {

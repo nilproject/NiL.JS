@@ -8,14 +8,6 @@ namespace NiL.JS.Core
     [Serializable]
     internal class ObjectConstructor : ProxyConstructor
     {
-        public override JSObject prototype
-        {
-            get
-            {
-                return TypeProxy.GetPrototype(proxy.hostedType);
-            }
-        }
-
         public ObjectConstructor(TypeProxy proxy)
             : base(proxy)
         {
@@ -35,11 +27,6 @@ namespace NiL.JS.Core
                 return oVal;
 
             return oVal.ToObject();
-        }
-
-        protected override JSObject getDefaultPrototype()
-        {
-            return TypeProxy.GetPrototype(typeof(Function));
         }
 
         protected internal override System.Collections.Generic.IEnumerator<string> GetEnumeratorImpl(bool hideNonEnum)

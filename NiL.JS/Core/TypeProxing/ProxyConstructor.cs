@@ -38,6 +38,7 @@ namespace NiL.JS.Core.TypeProxing
         }
 
         [Field]
+        [ReadOnly]
         [DoNotDelete]
         [DoNotEnumerate]
         [NotConfigurable]
@@ -46,7 +47,12 @@ namespace NiL.JS.Core.TypeProxing
             [Hidden]
             get
             {
-                return TypeProxy.GetPrototype(proxy.hostedType);
+                return _prototype ?? (_prototype = TypeProxy.GetPrototype(proxy.hostedType));
+            }
+            [Hidden]
+            set
+            {
+                _prototype = value;
             }
         }
 
@@ -79,6 +85,8 @@ namespace NiL.JS.Core.TypeProxing
         [Hidden]
         internal protected override JSObject GetMember(JSObject name, bool forWrite, bool own)
         {
+            if (name.ToString() == "prototype")
+                return prototype;
             var res = proxy.GetMember(name, forWrite && own, own);
             if (res.IsExist || (own && forWrite))
             {

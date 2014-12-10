@@ -623,12 +623,15 @@ namespace NiL.JS.Core.BaseTypes
                         attributes = JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.DoNotDelete
                     };
                     _prototype.oValue = _prototype;
-                    var ctor = _prototype.DefineMember("constructor");
-                    ctor.attributes = JSObjectAttributesInternal.DoNotEnum;
-                    ctor.Assign(this);
-                    _prototype = _prototype.Clone() as JSObject;
+                    (_prototype.fields["constructor"] = this.CloneImpl()).attributes = JSObjectAttributesInternal.DoNotEnum;
                 }
                 return _prototype;
+            }
+            [CallOverloaded]
+            [Hidden]
+            set
+            {
+                _prototype = value;
             }
         }
         internal JSObject _arguments;
@@ -669,10 +672,13 @@ namespace NiL.JS.Core.BaseTypes
         [NotConfigurable]
         public virtual JSObject length
         {
+            [AllowUnsafeCall(typeof(JSObject))]
             [CallOverloaded]
             [Hidden]
             get
             {
+                if (this == null || !typeof(Function).IsAssignableFrom(this.GetType()))
+                    return 0;
                 if (_length == null)
                 {
                     _length = new Number(0) { attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum };
@@ -718,8 +724,8 @@ namespace NiL.JS.Core.BaseTypes
             var argn = "";
             for (int i = 0; i < len; i++)
                 argn += args[i] + (i + 1 < len ? "," : "");
-            string code = "function(" + argn + "){" + (len == -1 ? "undefined" : args[len]) + "}";
-            var fs = FunctionExpression.Parse(new ParsingState(code, code, null), ref index);
+            string code = "function(" + argn + "){" + Environment.NewLine + (len == -1 ? "undefined" : args[len]) + Environment.NewLine + "}";
+            var fs = FunctionExpression.Parse(new ParsingState(Tools.RemoveComments(code, 0), code, null), ref index);
             if (fs.IsParsed)
             {
                 Parser.Build(ref fs.Statement, 0, new Dictionary<string, VariableDescriptor>(), context.strict, null);
@@ -1018,7 +1024,7 @@ namespace NiL.JS.Core.BaseTypes
             string name = nameObj.ToString();
             if (creator.body.strict && (name == "caller" || name == "arguments"))
                 return propertiesDummySM;
-            if (name == "prototype")
+            if ((attributes & JSObjectAttributesInternal.ProxyPrototype) != 0 && name == "prototype")
                 return prototype;
             //if (name == "arguments")
             //{
@@ -1110,6 +1116,8 @@ namespace NiL.JS.Core.BaseTypes
                 if (len.valueType == JSObjectType.Property)
                     len = (len.oValue as PropertyPair).get.Invoke(argsSource, null);
                 nargs.length = Tools.JSObjectToInt32(len);
+                if (nargs.length >= 500000)
+                    throw new JSException(new RangeError("Too many arguments."));
                 for (var i = nargs.length; i-- > 0; )
                     nargs[i] = argsSource[i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture)];
             }

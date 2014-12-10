@@ -302,4 +302,26 @@ if (__func(3) != 6)
         return true;
     }
 
-}())
+}());
+
+(function () {
+    a;
+    a = 1;
+    for (var a = false in {});
+    if (a !== false)
+        throw "for..in with default value";
+})();
+
+(function () {
+    a;
+    a = 1;
+    for (var a = false of {});
+    if (a !== false)
+        throw "for..of with default value";
+})();
+
+for ( a = 1 ; false;);
+
+for ( a == 1 ; false;);
+
+for(undefinedVariable in {});

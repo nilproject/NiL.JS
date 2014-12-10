@@ -57,6 +57,23 @@ namespace NiL.JS.Core.TypeProxing
         private Action<object, object> delegateA2 = null;
 
         internal readonly ParameterInfo[] parameters;
+        [Field]
+        [DoNotDelete]
+        [DoNotEnumerate]
+        [NotConfigurable]
+        public override JSObject prototype
+        {
+            [Hidden]
+            get
+            {
+                return null;
+            }
+            [Hidden]
+            set
+            {
+
+            }
+        }
 
         [Hidden]
         public override FunctionType Type
@@ -384,7 +401,7 @@ namespace NiL.JS.Core.TypeProxing
                         }
                     case CallMode.FuncDynamicZero:
                         {
-                            if (!callOverload && target != null && info.IsVirtual && target.GetType() != info.ReflectedType) // your bunny wrote
+                            if (target != null && info.IsVirtual && target.GetType() != info.ReflectedType && (!callOverload || !info.ReflectedType.IsAssignableFrom(target.GetType()))) // your bunny wrote
 #if !NET35
                             {
                                 bool di = true;

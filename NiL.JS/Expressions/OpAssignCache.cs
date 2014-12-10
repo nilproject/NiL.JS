@@ -8,9 +8,8 @@ namespace NiL.JS.Expressions
     public sealed class OpAssignCache : Expression
     {
         private JSObject result;
-        private CodeNode source;
 
-        public CodeNode Source { get { return source; } }
+        public CodeNode Source { get { return first; } }
 
         public override bool IsContextIndependent
         {
@@ -28,14 +27,14 @@ namespace NiL.JS.Expressions
             }
         }
 
-        internal OpAssignCache(CodeNode source)
+        internal OpAssignCache(Expression source)
+            : base(source, null, false)
         {
-            this.source = source;
         }
 
         internal override JSObject EvaluateForAssing(Context context)
         {
-            var res = source.EvaluateForAssing(context);
+            var res = first.EvaluateForAssing(context);
             if (res.valueType == JSObjectType.Property)
                 result = (res.oValue as PropertyPair).get != null ? (res.oValue as PropertyPair).get.Invoke(context.objectSource, null) : JSObject.notExists;
             else
@@ -52,14 +51,14 @@ namespace NiL.JS.Expressions
 
         public override string ToString()
         {
-            return source.ToString();
+            return first.ToString();
         }
 
         public override int EndPosition
         {
             get
             {
-                return source.EndPosition;
+                return first.EndPosition;
             }
         }
 
@@ -67,11 +66,11 @@ namespace NiL.JS.Expressions
         {
             get
             {
-                return source.Length;
+                return first.Length;
             }
             internal set
             {
-                source.Length = value;
+                first.Length = value;
             }
         }
 
@@ -79,24 +78,24 @@ namespace NiL.JS.Expressions
         {
             get
             {
-                return source.Position;
+                return first.Position;
             }
             internal set
             {
-                source.Position = value;
+                first.Position = value;
             }
         }
 
         protected override CodeNode[] getChildsImpl()
         {
-            return source.Childs;
+            return first.Childs;
         }
 
         internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message)
         {
-            var res = source.Build(ref _this, depth, variables, strict, message);
-            if (!res && source is GetVariableExpression)
-                (source as GetVariableExpression).forceThrow = true;
+            var res = first.Build(ref _this, depth, variables, strict, message);
+            if (!res && first is GetVariableExpression)
+                (first as GetVariableExpression).forceThrow = true;
             return res;
         }
     }

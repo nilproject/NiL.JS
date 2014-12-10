@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using NiL.JS.Core;
+using NiL.JS.Expressions;
 
 namespace NiL.JS.Statements
 {
@@ -32,6 +33,13 @@ namespace NiL.JS.Statements
             state.AllowBreak.Pop();
             state.Labels.Remove(label);
             state.LabelCount = oldlc;
+            if (stat is FunctionExpression)
+            {
+                if (state.message != null)
+                    state.message(MessageLevel.CriticalWarning, CodeCoordinates.FromTextPosition(state.Code, stat.Position), "Labeled function. Are you sure?.");
+                stat = new CodeBlock(new[] { stat }, state.strict.Peek()); // для того, чтобы не дублировать код по декларации функции, 
+                // она оборачивается в блок, который сделает самовыпил на втором этапе, но перед этим корректно объявит функцию.
+            }
             var pos = index;
             index = i;
             return new ParseResult()
@@ -51,9 +59,9 @@ namespace NiL.JS.Statements
 
         internal override System.Linq.Expressions.Expression CompileToIL(Core.JIT.TreeBuildingState state)
         {
-            var labelTarget = Expression.Label(label);
+            var labelTarget = System.Linq.Expressions.Expression.Label(label);
             state.NamedBreakLabels[label] = labelTarget;
-            return Expression.Block(statement.CompileToIL(state), Expression.Label(labelTarget));
+            return System.Linq.Expressions.Expression.Block(statement.CompileToIL(state), System.Linq.Expressions.Expression.Label(labelTarget));
         }
 
 #endif

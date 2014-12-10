@@ -337,20 +337,20 @@ namespace NiL.JS.Statements
 
         internal static ParseResult Parse(ParsingState state, ref int index)
         {
-            return Parse(state, ref index, true, false, false, true, false);
+            return Parse(state, ref index, true, false, false, true, false, false);
         }
 
         internal static ParseResult Parse(ParsingState state, ref int index, bool processComma)
         {
-            return Parse(state, ref index, processComma, false, false, true, false);
+            return Parse(state, ref index, processComma, false, false, true, false, false);
         }
 
         internal static ParseResult Parse(ParsingState state, ref int index, bool processComma, bool forUnary)
         {
-            return Parse(state, ref index, processComma, forUnary, false, true, false);
+            return Parse(state, ref index, processComma, forUnary, false, true, false, false);
         }
 
-        private static ParseResult Parse(ParsingState state, ref int index, bool processComma, bool forUnary, bool forNew, bool root, bool forTernary)
+        internal static ParseResult Parse(ParsingState state, ref int index, bool processComma, bool forUnary, bool forNew, bool root, bool forTernary, bool forEnumeration)
         {
             int i = index;
             int position;
@@ -364,7 +364,7 @@ namespace NiL.JS.Statements
                 position = i;
                 var threads = new Expression[]
                     {
-                        (Expression)ExpressionTree.Parse(state, ref i, true, false, false, false, false).Statement,
+                        (Expression)ExpressionTree.Parse(state, ref i, true, false, false, false, false, forEnumeration).Statement,
                         null
                     };
                 if (state.Code[i] != ':')
@@ -373,7 +373,7 @@ namespace NiL.JS.Statements
                     i++;
                 while (char.IsWhiteSpace(state.Code[i]));
                 first = new Constant(new JSObject() { valueType = JSObjectType.Object, oValue = threads }) { Position = position };
-                threads[1] = (Expression)ExpressionTree.Parse(state, ref i, false, false, false, false, false).Statement;
+                threads[1] = (Expression)ExpressionTree.Parse(state, ref i, false, false, false, false, false, forEnumeration).Statement;
                 first.Length = i - first.Position;
             }
             else if (Parser.ValidateName(state.Code, ref i, state.strict.Peek()) || Parser.Validate(state.Code, "this", ref i))
@@ -449,7 +449,7 @@ namespace NiL.JS.Statements
                                 while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]));
                                 if (i >= state.Code.Length)
                                     throw new JSException(new SyntaxError("Unexpected end of source."));
-                                first = (Expression)Parse(state, ref i, true, true, false, true, false).Statement;
+                                first = (Expression)Parse(state, ref i, true, true, false, true, false, forEnumeration).Statement;
                                 if (((first as GetMemberExpression) as object ?? (first as GetVariableExpression)) == null)
                                 {
                                     var cord = CodeCoordinates.FromTextPosition(state.Code, i);
@@ -464,7 +464,7 @@ namespace NiL.JS.Statements
                             {
                                 while (char.IsWhiteSpace(state.Code[i]))
                                     i++;
-                                var f = (Expression)Parse(state, ref i, true, true, false, true, false).Statement;
+                                var f = (Expression)Parse(state, ref i, true, true, false, true, false, forEnumeration).Statement;
                                 first = new Expressions.ToNumber(f) { Position = index, Length = i - index };
                             }
                             break;
@@ -479,7 +479,7 @@ namespace NiL.JS.Statements
                                 while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]));
                                 if (i >= state.Code.Length)
                                     throw new JSException(new SyntaxError("Unexpected end of source."));
-                                first = (Expression)Parse(state, ref i, true, true, false, true, false).Statement;
+                                first = (Expression)Parse(state, ref i, true, true, false, true, false, forEnumeration).Statement;
                                 if (((first as GetMemberExpression) as object ?? (first as GetVariableExpression)) == null)
                                 {
                                     var cord = CodeCoordinates.FromTextPosition(state.Code, i);
@@ -494,7 +494,7 @@ namespace NiL.JS.Statements
                             {
                                 while (char.IsWhiteSpace(state.Code[i]))
                                     i++;
-                                var f = (Expression)Parse(state, ref i, true, true, false, true, false).Statement;
+                                var f = (Expression)Parse(state, ref i, true, true, false, true, false, forEnumeration).Statement;
                                 first = new Expressions.Neg(f) { Position = index, Length = i - index };
                             }
                             break;
@@ -504,7 +504,7 @@ namespace NiL.JS.Statements
                             do
                                 i++;
                             while (char.IsWhiteSpace(state.Code[i]));
-                            first = new Expressions.LogicalNot((Expression)Parse(state, ref i, true, true, false, true, false).Statement) { Position = index, Length = i - index };
+                            first = new Expressions.LogicalNot((Expression)Parse(state, ref i, true, true, false, true, false, forEnumeration).Statement) { Position = index, Length = i - index };
                             if (first == null)
                             {
                                 var cord = CodeCoordinates.FromTextPosition(state.Code, i);
@@ -517,7 +517,7 @@ namespace NiL.JS.Statements
                             do
                                 i++;
                             while (char.IsWhiteSpace(state.Code[i]));
-                            first = (Expression)Parse(state, ref i, true, true, false, true, false).Statement;
+                            first = (Expression)Parse(state, ref i, true, true, false, true, false, forEnumeration).Statement;
                             if (first == null)
                             {
                                 var cord = CodeCoordinates.FromTextPosition(state.Code, i);
@@ -532,7 +532,7 @@ namespace NiL.JS.Statements
                             do
                                 i++;
                             while (char.IsWhiteSpace(state.Code[i]));
-                            first = (Expression)Parse(state, ref i, false, true, false, true, false).Statement;
+                            first = (Expression)Parse(state, ref i, false, true, false, true, false, forEnumeration).Statement;
                             if (first == null)
                             {
                                 var cord = CodeCoordinates.FromTextPosition(state.Code, i);
@@ -547,7 +547,7 @@ namespace NiL.JS.Statements
                             do
                                 i++;
                             while (char.IsWhiteSpace(state.Code[i]));
-                            first = new Expressions.None((Expression)Parse(state, ref i, false, true, false, true, false).Statement, new Constant(JSObject.undefined)) { Position = index, Length = i - index };
+                            first = new Expressions.None((Expression)Parse(state, ref i, false, true, false, true, false, forEnumeration).Statement, new Constant(JSObject.undefined)) { Position = index, Length = i - index };
                             if (first == null)
                             {
                                 var cord = CodeCoordinates.FromTextPosition(state.Code, i);
@@ -561,7 +561,7 @@ namespace NiL.JS.Statements
                             do
                                 i++;
                             while (char.IsWhiteSpace(state.Code[i]));
-                            first = (Expression)Parse(state, ref i, false, true, true, true, false).Statement;
+                            first = (Expression)Parse(state, ref i, false, true, true, true, false, forEnumeration).Statement;
                             if (first == null)
                             {
                                 var cord = CodeCoordinates.FromTextPosition(state.Code, i);
@@ -583,7 +583,7 @@ namespace NiL.JS.Statements
                             do
                                 i++;
                             while (char.IsWhiteSpace(state.Code[i]));
-                            first = (Expression)Parse(state, ref i, false, true, false, true, false).Statement;
+                            first = (Expression)Parse(state, ref i, false, true, false, true, false, forEnumeration).Statement;
                             if (first == null)
                             {
                                 var cord = CodeCoordinates.FromTextPosition(state.Code, i);
@@ -600,7 +600,7 @@ namespace NiL.JS.Statements
                             do
                                 i++;
                             while (char.IsWhiteSpace(state.Code[i]));
-                            first = (Expression)Parse(state, ref i, false, true, false, true, false).Statement;
+                            first = (Expression)Parse(state, ref i, false, true, false, true, false, forEnumeration).Statement;
                             if (first == null)
                             {
                                 var cord = CodeCoordinates.FromTextPosition(state.Code, i);
@@ -634,7 +634,11 @@ namespace NiL.JS.Statements
                     first = new Expressions.None(first, null) { Position = index, Length = i - index };
             }
             else
+            {
+                if (forEnumeration)
+                    return default(ParseResult);
                 first = (Expression)Parser.Parse(state, ref i, 2);
+            }
             if (first is EmptyStatement)
                 throw new JSException((new Core.BaseTypes.SyntaxError("Invalid operator argument at " + CodeCoordinates.FromTextPosition(state.Code, i))));
             bool canAsign = true && !forUnary; // на случай f() = x
@@ -1073,7 +1077,9 @@ namespace NiL.JS.Statements
                             Expression mname = null;
                             do i++; while (char.IsWhiteSpace(state.Code[i]));
                             int startPos = i;
-                            mname = (Expression)Parser.Parse(state, ref i, 1);
+                            mname = (Expression)ExpressionTree.Parse(state, ref i, true, false, false, false, false, false).Statement;
+                            if (forEnumeration)
+                                return new ParseResult();
                             if (mname == null)
                                 throw new JSException((new Core.BaseTypes.SyntaxError("Unexpected token at " + CodeCoordinates.FromTextPosition(state.Code, startPos))));
                             while (char.IsWhiteSpace(state.Code[i])) i++;
@@ -1146,6 +1152,11 @@ namespace NiL.JS.Statements
                             }
                             else if (Parser.Validate(state.Code, "in", ref i))
                             {
+                                if (forEnumeration)
+                                {
+                                    i = rollbackPos;
+                                    goto case ';';
+                                }
                                 type = OperationType.In;
                                 binary = true;
                                 break;
@@ -1160,6 +1171,11 @@ namespace NiL.JS.Statements
                             {
                                 i = rollbackPos;
                                 goto case '\n';
+                            }
+                            if (state.Code[i] == 'o' && state.Code[i + 1] == 'f')
+                            {
+                                i = rollbackPos;
+                                goto case ';';
                             }
                             throw new JSException((new Core.BaseTypes.SyntaxError("Invalid operator '" + state.Code[i] + "' at " + CodeCoordinates.FromTextPosition(state.Code, i))));
                         }
@@ -1181,7 +1197,7 @@ namespace NiL.JS.Statements
                     i++;
                 while (state.Code.Length > i && char.IsWhiteSpace(state.Code[i]));
                 if (state.Code.Length > i)
-                    second = (Expression)ExpressionTree.Parse(state, ref i, processComma, false, false, false, type == OperationType.Ternary).Statement;
+                    second = (Expression)ExpressionTree.Parse(state, ref i, processComma, false, false, false, type == OperationType.Ternary, forEnumeration).Statement;
             }
             CodeNode res = null;
             if (first == second && first == null)

@@ -44,6 +44,18 @@ namespace NiL.JS.Core
             }
         }
 
+        public override JSObject prototype
+        {
+            get
+            {
+                return null;
+            }
+            set
+            {
+
+            }
+        }
+
         public BindedFunction(Function proto, Arguments args)
             : base(null, proto.creator)
         {

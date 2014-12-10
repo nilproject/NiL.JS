@@ -25,6 +25,22 @@ namespace NiL.JS.Core
                 return FunctionType.Function;
             }
         }
+        [Field]
+        [DoNotDelete]
+        [DoNotEnumerate]
+        [NotConfigurable]
+        public override JSObject prototype
+        {
+            [Hidden]
+            get
+            {
+                return null;
+            }
+            [Hidden]
+            set
+            {
+            }
+        }
 
         [Hidden]
         public EvalFunction()
