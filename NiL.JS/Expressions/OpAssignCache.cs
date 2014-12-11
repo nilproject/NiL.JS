@@ -23,7 +23,7 @@ namespace NiL.JS.Expressions
         {
             get
             {
-                return PredictedType.Bool;
+                return first.ResultType;
             }
         }
 

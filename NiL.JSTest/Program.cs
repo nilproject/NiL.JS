@@ -307,7 +307,7 @@ console.log(isum(1, 2));
                 return JSObject.Undefined;
             }));
 
-            int mode = 3
+            int mode = 101
                    ;
             switch (mode)
             {

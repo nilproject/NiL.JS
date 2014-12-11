@@ -10,7 +10,7 @@ namespace NiL.JS.Expressions
         {
             get
             {
-                return PredictedType.Number;
+                return first.ResultType;
             }
         }
 
@@ -35,8 +35,16 @@ namespace NiL.JS.Expressions
                     }
                     else
                     {
-                        tempContainer.valueType = JSObjectType.Int;
-                        tempContainer.iValue = -val.iValue;
+                        if (val.iValue == int.MinValue)
+                        {
+                            tempContainer.valueType = JSObjectType.Double;
+                            tempContainer.dValue = -val.iValue;
+                        }
+                        else
+                        {
+                            tempContainer.valueType = JSObjectType.Int;
+                            tempContainer.iValue = -val.iValue;
+                        }
                     }
                 }
                 else

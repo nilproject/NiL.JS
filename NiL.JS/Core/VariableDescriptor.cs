@@ -7,16 +7,20 @@ using NiL.JS.Expressions;
 
 namespace NiL.JS.Core
 {
-    public enum PredictedType
+    public enum PredictedType : int
     {
-        Unknown = 0,
-        Ambiguous,
-        Undefined,
-        Bool,
-        Number,
-        String,
-        Object,
-        Function
+        Unknown = 0x0,
+        Ambiguous = 0x10,
+        Undefined = 0x20,
+        Bool = 0x30,
+        Number = 0x40,
+        Int = 0x41,
+        Double = 0x42,
+        String = 0x50,
+        Object = 0x60,
+        Function = 0x70,
+        Group = 0xF0,
+        Full = 0xFF
     }
 
     [Serializable]

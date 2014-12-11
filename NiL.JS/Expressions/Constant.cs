@@ -33,8 +33,9 @@ namespace NiL.JS.Expressions
                     case JSObjectType.Bool:
                         return PredictedType.Bool;
                     case JSObjectType.Int:
+                        return PredictedType.Int;
                     case JSObjectType.Double:
-                        return PredictedType.Number;
+                        return PredictedType.Double;
                     case JSObjectType.String:
                         return PredictedType.String;
                     default:

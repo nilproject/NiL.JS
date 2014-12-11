@@ -10,6 +10,10 @@ namespace NiL.JS.Expressions
         {
             get
             {
+                var ft = first.ResultType;
+                var st = second.ResultType;
+                if (ft == st)
+                    return st;
                 return PredictedType.Number;
             }
         }

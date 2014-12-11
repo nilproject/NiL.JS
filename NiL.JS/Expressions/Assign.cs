@@ -103,14 +103,16 @@ namespace NiL.JS.Expressions
                 if (vr.descriptor.isDefined)
                 {
                     var stype = second.ResultType;
-                    if (vr.descriptor.lastPredictedType == PredictedType.Unknown
-                        || vr.descriptor.lastPredictedType == stype)
-                        vr.descriptor.lastPredictedType = stype;
-                    else
+                    if (vr.descriptor.lastPredictedType != stype)
                     {
-                        if (message != null)
-                            message(MessageLevel.Warning, new CodeCoordinates(0, Position), "Variable \"" + vr.Name + "\" has ambiguous type. It can be make impossible some optimizations and cause errors.");
-                        vr.descriptor.lastPredictedType = PredictedType.Ambiguous;
+                        if (Tools.IsEqual(vr.descriptor.lastPredictedType, stype, PredictedType.Group))
+                            vr.descriptor.lastPredictedType = stype & PredictedType.Group;
+                        else
+                        {
+                            if (message != null)
+                                message(MessageLevel.Warning, new CodeCoordinates(0, Position), "Variable \"" + vr.Name + "\" has ambiguous type. It can be make impossible some optimizations and cause errors.");
+                            vr.descriptor.lastPredictedType = PredictedType.Ambiguous;
+                        }
                     }
                 }
                 else if (message != null)

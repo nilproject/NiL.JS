@@ -10,7 +10,7 @@ namespace NiL.JS.Expressions
         {
             get
             {
-                return PredictedType.Number;
+                return PredictedType.Int;
             }
         }
 

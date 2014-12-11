@@ -1364,5 +1364,15 @@ namespace NiL.JS.Core
             res.Sort(new Comparison<KeyValuePair<long, string>>((x, y) => System.Math.Sign(x.Key - y.Key)));
             return res;
         }
+
+        public static int CompareWithMask(Enum x, Enum y, Enum mask)
+        {
+            return ((int)(ValueType)x & (int)(ValueType)mask) - ((int)(ValueType)y & (int)(ValueType)mask);
+        }
+
+        public static bool IsEqual(Enum x, Enum y, Enum mask)
+        {
+            return ((int)(ValueType)x & (int)(ValueType)mask) == ((int)(ValueType)y & (int)(ValueType)mask);
+        }
     }
 }

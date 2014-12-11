@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq.Expressions;
 using NiL.JS.Core;
+using NiL.JS.Core.BaseTypes;
 using NiL.JS.Core.JIT;
 using NiL.JS.Expressions;
 
@@ -19,7 +20,7 @@ namespace NiL.JS.Statements
         public CodeNode Variable { get { return variable; } }
         public CodeNode Source { get { return source; } }
         public CodeNode Body { get { return body; } }
-        public ReadOnlyCollection<string> Labels { get { return Array.AsReadOnly<string>(labels); } }
+        public ReadOnlyCollection<string> Labels { get { return System.Array.AsReadOnly<string>(labels); } }
 
         private ForInStatement()
         {
@@ -61,7 +62,21 @@ namespace NiL.JS.Statements
                 int start = i;
                 string varName;
                 if (!Parser.ValidateName(state.Code, ref i, state.strict.Peek()))
-                    return new ParseResult();
+                {
+                    if (Parser.ValidateValue(state.Code, ref i))
+                    {
+                        while (char.IsWhiteSpace(state.Code[i])) i++;
+                        if (Parser.Validate(state.Code, "in", ref i))
+                            throw new JSException(new SyntaxError("Invalid accumulator name at " + CodeCoordinates.FromTextPosition(state.Code, start)));
+                        else
+                            return new ParseResult();
+                    }
+                    else
+                        return new ParseResult();
+                        //throw new JSException(new SyntaxError("Unexpected token at " + CodeCoordinates.FromTextPosition(state.Code, start)));
+                }
+                //if (!Parser.ValidateName(state.Code, ref i, state.strict.Peek()))
+                //    return new ParseResult(); // for (1 in {};;); должен вызвать синтаксическую ошибку, но это проверка заставляет перейти в обычный for, для которого такое выражение допустимо
                 varName = Tools.Unescape(state.Code.Substring(start, i - start), state.strict.Peek());
                 if (state.strict.Peek())
                 {

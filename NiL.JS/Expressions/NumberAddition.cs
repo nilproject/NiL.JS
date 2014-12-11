@@ -8,7 +8,18 @@ namespace NiL.JS.Expressions
         {
             get
             {
-                return Core.PredictedType.Number;
+                var pd = first.ResultType;
+                switch (pd)
+                {
+                    case PredictedType.Double:
+                        {
+                            return PredictedType.Double;
+                        }
+                    default:
+                        {
+                            return PredictedType.Number;
+                        }
+                }
             }
         }
 

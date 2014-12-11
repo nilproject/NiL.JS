@@ -27,9 +27,11 @@ namespace NiL.JS.Expressions
             {
                 var ftt = threads[0].ResultType;
                 var stt = threads[1].ResultType;
-                if (ftt != stt)
-                    return PredictedType.Ambiguous;
-                return ftt;
+                if (ftt == stt)
+                    return ftt;
+                if (Tools.IsEqual(ftt, stt, PredictedType.Group))
+                    return ftt & PredictedType.Group;
+                return PredictedType.Ambiguous;
             }
         }
 

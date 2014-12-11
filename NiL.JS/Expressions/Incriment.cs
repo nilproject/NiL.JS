@@ -22,14 +22,27 @@ namespace NiL.JS.Expressions
                 return false;
             }
         }
-        
+
         protected internal override PredictedType ResultType
         {
             get
             {
+                var pd = first.ResultType;
                 if (tempContainer == null)
-                    return PredictedType.Number;
-                return PredictedType.Unknown;
+                {
+                    switch (pd)
+                    {
+                        case PredictedType.Double:
+                            {
+                                return PredictedType.Double;
+                            }
+                        default:
+                            {
+                                return PredictedType.Number;
+                            }
+                    }
+                }
+                return pd;
             }
         }
 
@@ -186,10 +199,26 @@ namespace NiL.JS.Expressions
             var vr = first as VariableReference;
             if (vr != null && vr.descriptor.isDefined)
             {
-                if (vr.descriptor.lastPredictedType == PredictedType.Unknown)
-                    vr.descriptor.lastPredictedType = PredictedType.Number;
-                else
-                    vr.descriptor.lastPredictedType = PredictedType.Ambiguous;
+                var pd = vr.descriptor.lastPredictedType;
+                switch (pd)
+                {
+                    case PredictedType.Int:
+                    case PredictedType.Unknown:
+                        {
+                            vr.descriptor.lastPredictedType = PredictedType.Number;
+                            break;
+                        }
+                    case PredictedType.Double:
+                        {
+                            // кроме как double он ничем больше оказаться не может. Даже NaN это double
+                            break;
+                        }
+                    default:
+                        {
+                            vr.descriptor.lastPredictedType = PredictedType.Ambiguous;
+                            break;
+                        }
+                }
             }
         }
 

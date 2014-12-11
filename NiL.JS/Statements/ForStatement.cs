@@ -83,7 +83,6 @@ namespace NiL.JS.Statements
 
         internal static ParseResult Parse(ParsingState state, ref int index)
         {
-            //string code = state.Code;
             int i = index;
             while (char.IsWhiteSpace(state.Code[i])) i++;
             if (!Parser.Validate(state.Code, "for(", ref i) && (!Parser.Validate(state.Code, "for (", ref i)))
@@ -93,6 +92,10 @@ namespace NiL.JS.Statements
             int labelsCount = state.LabelCount;
             state.LabelCount = 0;
             init = state.Code[i] == ';' ? null as CodeNode : Parser.Parse(state, ref i, 3);
+            if ((init is ExpressionTree)
+                && (init as ExpressionTree).Type == OperationType.None
+                && (init as ExpressionTree).second == null)
+                init = (init as ExpressionTree).first;
             if (state.Code[i] != ';')
                 throw new JSException((new Core.BaseTypes.SyntaxError("Expected \";\" at + " + CodeCoordinates.FromTextPosition(state.Code, i))));
             do i++; while (char.IsWhiteSpace(state.Code[i]));
@@ -116,7 +119,7 @@ namespace NiL.JS.Statements
                     state.message(MessageLevel.CriticalWarning, CodeCoordinates.FromTextPosition(state.Code, body.Position), "Do not declare function in nested blocks.");
                 body = new CodeBlock(new[] { body }, state.strict.Peek()); // для того, чтобы не дублировать код по декларации функции, 
                 // она оборачивается в блок, который сделает самовыпил на втором этапе, но перед этим корректно объявит функцию.
-            } 
+            }
             state.AllowBreak.Pop();
             state.AllowContinue.Pop();
             int startPos = index;
