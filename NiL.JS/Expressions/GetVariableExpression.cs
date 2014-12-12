@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Security;
 using NiL.JS.Core;
 using NiL.JS.Core.JIT;
+using System.Reflection;
 
 namespace NiL.JS.Expressions
 {
@@ -97,11 +98,14 @@ namespace NiL.JS.Expressions
         internal override System.Linq.Expressions.Expression TryCompile(bool selfCompile, bool forAssign, Type expectedType, List<CodeNode> dynamicValues)
         {
             dynamicValues.Add(this);
-            return System.Linq.Expressions.Expression.Call(
-                System.Linq.Expressions.Expression.Convert(System.Linq.Expressions.Expression.ArrayIndex(JITHelpers.DynamicValuesParameter, JITHelpers.@const(dynamicValues.Count - 1)), this.GetType()),
-                this.GetType().GetMethod(forAssign ? "EvaluateForAssing" : "Evaluate", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic, null, new[] { typeof(Context) }, null),
+            var res = System.Linq.Expressions.Expression.Call(
+                System.Linq.Expressions.Expression.ArrayIndex(JITHelpers.DynamicValuesParameter, JITHelpers.cnst(dynamicValues.Count - 1)),
+                forAssign ? EvaluateForAssignMethod : EvaluateMethod,
                 JITHelpers.ContextParameter
                 );
+            if (expectedType == typeof(int))
+                res = System.Linq.Expressions.Expression.Call(JITHelpers.JSObjectToInt32Method, res);
+            return res;
         }
 
         internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message)

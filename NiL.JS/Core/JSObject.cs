@@ -1755,6 +1755,8 @@ namespace NiL.JS.Core
 
         int IConvertible.ToInt32(IFormatProvider provider)
         {
+            if (valueType == JSObjectType.Int)
+                return iValue;
             return Tools.JSObjectToInt32(this);
         }
 

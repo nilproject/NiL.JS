@@ -11,14 +11,15 @@ namespace NiL.JS.Core.JIT
     internal static class JITHelpers
     {
         public static readonly FieldInfo _items = typeof(List<CodeNode>).GetField("_items", BindingFlags.Instance | BindingFlags.NonPublic);
-        public static readonly ParameterExpression DynamicValuesParameter = Expression.Parameter(typeof(CodeNode[]), "$");
+        public static readonly ParameterExpression DynamicValuesParameter = Expression.Parameter(typeof(CodeNode[]), "dv");
         public static readonly ParameterExpression ContextParameter = Expression.Parameter(typeof(Context), "context");
         public static readonly Expression UndefinedConstant = Expression.Field(null, typeof(JSObject).GetField("undefined", BindingFlags.Static | BindingFlags.NonPublic));
         public static readonly Expression NotExistsConstant = Expression.Field(null, typeof(JSObject).GetField("notExists", BindingFlags.Static | BindingFlags.NonPublic));
 
         public static readonly MethodInfo JSObjectToBooleanMethod = typeof(JSObject).GetMethod("op_Explicit");
+        public static readonly MethodInfo JSObjectToInt32Method = typeof(Tools).GetMethod("JSObjectToInt32", BindingFlags.Public | BindingFlags.Static, null, new[] { typeof(JSObject) }, null);
 
-        internal static Expression @const(object obj)
+        internal static Expression cnst(object obj)
         {
             return Expression.Constant(obj);
         }

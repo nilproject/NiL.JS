@@ -4,13 +4,17 @@ using NiL.JS.Core.BaseTypes;
 using NiL.JS.Core.JIT;
 using NiL.JS.Expressions;
 using NiL.JS.Statements;
+using System.Reflection;
 
 namespace NiL.JS.Core
 {
     [Serializable]
     public abstract class CodeNode
     {
-        private static readonly CodeNode[] emptyArray = new CodeNode[0];
+        internal static readonly MethodInfo EvaluateForAssignMethod = typeof(CodeNode).GetMethod("EvaluateForAssing", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic, null, new[] { typeof(Context) }, null);
+        internal static readonly MethodInfo EvaluateMethod = typeof(CodeNode).GetMethod("Evaluate", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic, null, new[] { typeof(Context) }, null);
+
+        internal static readonly CodeNode[] emptyCodeNodeArray = new CodeNode[0];
 
 #if !NET35
 
@@ -36,7 +40,7 @@ namespace NiL.JS.Core
             var wraper = JitOverCall(false);
             return System.Linq.Expressions.Expression.Block(
                     wraper,
-                    System.Linq.Expressions.Expression.IfThen(System.Linq.Expressions.Expression.Equal(JITHelpers.@const(AbortType.Return), System.Linq.Expressions.Expression.Field(JITHelpers.ContextParameter, "abort")),
+                    System.Linq.Expressions.Expression.IfThen(System.Linq.Expressions.Expression.Equal(JITHelpers.cnst(AbortType.Return), System.Linq.Expressions.Expression.Field(JITHelpers.ContextParameter, "abort")),
                                         System.Linq.Expressions.Expression.Return(state.ReturnTarget, System.Linq.Expressions.Expression.Field(JITHelpers.ContextParameter, "abortInfo"))),
                     JITHelpers.UndefinedConstant
                    );
@@ -49,7 +53,7 @@ namespace NiL.JS.Core
         public virtual int EndPosition { get { return Position + Length; } }
 
         private CodeNode[] childs;
-        public CodeNode[] Childs { get { return childs ?? (childs = getChildsImpl() ?? emptyArray); } }
+        public CodeNode[] Childs { get { return childs ?? (childs = getChildsImpl() ?? emptyCodeNodeArray); } }
 
         protected abstract CodeNode[] getChildsImpl();
 

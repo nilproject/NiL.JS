@@ -112,6 +112,7 @@ namespace NiL.JS.Core
             if (compiledTree == null)
             {
                 Expression tree;
+                this.tree = this.tree.Reduce();
                 if (original is Expressions.Expression)
                 {
                     if (typeof(JSObject).IsAssignableFrom(this.tree.Type))
@@ -123,17 +124,12 @@ namespace NiL.JS.Core
                 {
                     tree = Expression.Block(this.tree, JITHelpers.UndefinedConstant);
                 }
-                //var evidence = new System.Security.Policy.Evidence();
-                //evidence.
-                //evidence.AddHostEvidence(new System.Security.Policy.Zone(SecurityZone.MyComputer));
                 //var ps = new PermissionSet(System.Security.Permissions.PermissionState.Unrestricted);
                 //ps.Assert();
                 //ps.AddPermission(new System.Security.Permissions.ZoneIdentityPermission(SecurityZone.MyComputer));
-                //evidence.AddHostEvidence(new System.Security.Policy.Zone(SecurityZone.Trusted));
                 //var assm = AppDomain.CurrentDomain.DefineDynamicAssembly(
-                //    new AssemblyName("<>DynamicAssm" + Environment.TickCount),
+                //    new AssemblyName("DynamicAssm" + Environment.TickCount),
                 //    AssemblyBuilderAccess.RunAndCollect,
-                //    evidence,
                 //    ps,
                 //    null,
                 //    null);
@@ -148,9 +144,7 @@ namespace NiL.JS.Core
                 //Expression.Lambda(tree, lambdaArgs).CompileToMethod(method);
                 //compiledTree = (Func<Context, CodeNode[], JSObject, JSObject>)type.CreateType().GetMethods()[0].CreateDelegate(typeof(Func<Context, CodeNode[], JSObject, JSObject>));
 
-                //compiledTree = method.CreateDelegate(typeof(Func<Context, CodeNode[], JSObject, JSObject>)) as Func<Context, CodeNode[], JSObject, JSObject>;
-
-                compiledTree = Expression.Lambda<Func<Context, CodeNode[], JSObject, JSObject>>(tree, lambdaArgs).Compile();
+                compiledTree = (Func<Context, CodeNode[], JSObject, JSObject>)Expression.Lambda(tree, lambdaArgs).Compile();
             }
             var result = compiledTree(context, dynamicValues, tempContainer);
             return result;

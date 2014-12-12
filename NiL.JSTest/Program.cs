@@ -11,6 +11,7 @@ using System.Windows.Forms;
 using System.Threading;
 using NiL.JS.Core.TypeProxing;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 
 namespace NiL.JSTest
 {
@@ -278,18 +279,27 @@ for (var i = 0; i < 10000000; i++) abs(i * (1 - 2 * (i & 1)));
 @"
 function isum(a, b)
 {
-    return ((a | 0) + (b | 0)) | 0;
+    a;//a;a;a;
+    //b;b;b;b;
+    //return (((((a | 0) + (b | 0)) | 0) + (((a | 0) + (b | 0)) | 0) | 0) + ((((a | 0) + (b | 0)) | 0) + (((a | 0) + (b | 0)) | 0) | 0)) | 0;
 }
-console.log(isum(1, 2));
 for (var i = 0; i < 20000000; i++)
     isum(2, 3);
 ");
-
+            Expression<Func<object, object, int>> nativeTest = (a, b) => (((((Convert.ToInt32(a) | 0) + (Convert.ToInt32(b) | 0)) | 0) + (((Convert.ToInt32(a) | 0) + (Convert.ToInt32(b) | 0)) | 0) | 0) + ((((Convert.ToInt32(a) | 0) + (Convert.ToInt32(b) | 0)) | 0) + (((Convert.ToInt32(a) | 0) + (Convert.ToInt32(b) | 0)) | 0) | 0)) | 0;
+            var cme = nativeTest.Compile();
             sw.Start();
-            s.TryCompile();
+            int sum = 0;
+            for (int i = 0; i < 20000000; i++)
+                sum += cme(2, 3);
+            sw.Stop();
+            Console.WriteLine(sum);
+            Console.WriteLine(sw.Elapsed);
+            sw.Restart();
+            //s.TryCompile();
             sw.Stop();
             Console.WriteLine(sw.Elapsed);
-            sw.Start();
+            sw.Restart();
             s.Invoke();
             sw.Stop();
             Console.WriteLine(sw.Elapsed);
@@ -308,7 +318,7 @@ for (var i = 0; i < 20000000; i++)
                 return JSObject.Undefined;
             }));
 
-            int mode = 100
+            int mode = 3
                    ;
             switch (mode)
             {

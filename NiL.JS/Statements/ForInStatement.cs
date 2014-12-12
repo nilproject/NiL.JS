@@ -156,29 +156,29 @@ namespace NiL.JS.Statements
                 var source = System.Linq.Expressions.Expression.Parameter(typeof(JSObject));
                 var res = System.Linq.Expressions.Expression.Block(new[] { val, @enum, source },
                     System.Linq.Expressions.Expression.Assign(source, this.source.CompileToIL(state)),
-                    System.Linq.Expressions.Expression.Assign(val, System.Linq.Expressions.Expression.Call(JITHelpers.ContextParameter, typeof(Context).GetMethod("GetVariable", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic, null, new[] { typeof(string), typeof(bool) }, null), JITHelpers.@const(variable.ToString()), JITHelpers.@const(true))),
+                    System.Linq.Expressions.Expression.Assign(val, System.Linq.Expressions.Expression.Call(JITHelpers.ContextParameter, typeof(Context).GetMethod("GetVariable", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic, null, new[] { typeof(string), typeof(bool) }, null), JITHelpers.cnst(variable.ToString()), JITHelpers.cnst(true))),
                     System.Linq.Expressions.Expression.Loop(
                             System.Linq.Expressions.Expression.IfThenElse(
-                                    System.Linq.Expressions.Expression.AndAlso(System.Linq.Expressions.Expression.ReferenceNotEqual(source, JITHelpers.@const(null)),
+                                    System.Linq.Expressions.Expression.AndAlso(System.Linq.Expressions.Expression.ReferenceNotEqual(source, JITHelpers.cnst(null)),
                                         System.Linq.Expressions.Expression.AndAlso(System.Linq.Expressions.Expression.Property(source, "isDefinded"),
-                                                        System.Linq.Expressions.Expression.OrElse(System.Linq.Expressions.Expression.LessThan(System.Linq.Expressions.Expression.Convert(System.Linq.Expressions.Expression.Field(source, "valueType"), typeof(int)), JITHelpers.@const((int)JSObjectType.Object)),
-                                                                       System.Linq.Expressions.Expression.ReferenceNotEqual(System.Linq.Expressions.Expression.Field(source, "oValue"), JITHelpers.@const(null))))),
+                                                        System.Linq.Expressions.Expression.OrElse(System.Linq.Expressions.Expression.LessThan(System.Linq.Expressions.Expression.Convert(System.Linq.Expressions.Expression.Field(source, "valueType"), typeof(int)), JITHelpers.cnst((int)JSObjectType.Object)),
+                                                                       System.Linq.Expressions.Expression.ReferenceNotEqual(System.Linq.Expressions.Expression.Field(source, "oValue"), JITHelpers.cnst(null))))),
                                       System.Linq.Expressions.Expression.Block(
                                                 System.Linq.Expressions.Expression.Assign(@enum, System.Linq.Expressions.Expression.Call(JITHelpers.methodof(new Func<JSObject, object>(NiL.JS.Core.Tools._ForcedEnumerator<string>.create)), source))
                                                 , System.Linq.Expressions.Expression.Loop(
                                                     System.Linq.Expressions.Expression.IfThenElse(System.Linq.Expressions.Expression.Call(@enum, typeof(NiL.JS.Core.Tools._ForcedEnumerator<string>).GetMethod("MoveNext")), System.Linq.Expressions.Expression.Block(
-                                                        System.Linq.Expressions.Expression.Assign(System.Linq.Expressions.Expression.Field(val, "valueType"), JITHelpers.@const(JSObjectType.String))
+                                                        System.Linq.Expressions.Expression.Assign(System.Linq.Expressions.Expression.Field(val, "valueType"), JITHelpers.cnst(JSObjectType.String))
                                                         , System.Linq.Expressions.Expression.Assign(System.Linq.Expressions.Expression.Field(val, "oValue"), System.Linq.Expressions.Expression.Property(@enum, "Current"))
                                                         , this.body.CompileToIL(state)
                                                         , System.Linq.Expressions.Expression.Label(continueTarget)
                                                     ), System.Linq.Expressions.Expression.Goto(nextProto)))
                                                 , System.Linq.Expressions.Expression.Label(nextProto)
-                                                , System.Linq.Expressions.Expression.IfThenElse(System.Linq.Expressions.Expression.ReferenceNotEqual(System.Linq.Expressions.Expression.Field(source, "__proto__"), JITHelpers.@const(null)),
+                                                , System.Linq.Expressions.Expression.IfThenElse(System.Linq.Expressions.Expression.ReferenceNotEqual(System.Linq.Expressions.Expression.Field(source, "__proto__"), JITHelpers.cnst(null)),
                                                     System.Linq.Expressions.Expression.Assign(source, System.Linq.Expressions.Expression.Field(source, "__proto__"))
                                                 , System.Linq.Expressions.Expression.Block(
-                                                    System.Linq.Expressions.Expression.Assign(System.Linq.Expressions.Expression.Field(val, "valueType"), JITHelpers.@const(JSObjectType.String))
-                                                    , System.Linq.Expressions.Expression.Assign(System.Linq.Expressions.Expression.Field(val, "oValue"), JITHelpers.@const("__proto__"))
-                                                    , System.Linq.Expressions.Expression.Assign(source, System.Linq.Expressions.Expression.Call(source, typeof(JSObject).GetMethod("GetMember", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance, null, new Type[] { typeof(JSObject), typeof(bool), typeof(bool) }, null), val, JITHelpers.@const(false), JITHelpers.@const(false)))
+                                                    System.Linq.Expressions.Expression.Assign(System.Linq.Expressions.Expression.Field(val, "valueType"), JITHelpers.cnst(JSObjectType.String))
+                                                    , System.Linq.Expressions.Expression.Assign(System.Linq.Expressions.Expression.Field(val, "oValue"), JITHelpers.cnst("__proto__"))
+                                                    , System.Linq.Expressions.Expression.Assign(source, System.Linq.Expressions.Expression.Call(source, typeof(JSObject).GetMethod("GetMember", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance, null, new Type[] { typeof(JSObject), typeof(bool), typeof(bool) }, null), val, JITHelpers.cnst(false), JITHelpers.cnst(false)))
                                                 ))
                                             )
                                       , System.Linq.Expressions.Expression.Goto(breakTarget)))
