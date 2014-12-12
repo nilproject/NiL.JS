@@ -281,7 +281,7 @@ function isum(a, b)
     return ((a | 0) + (b | 0)) | 0;
 }
 console.log(isum(1, 2));
-for (var i = 0; i < 100000000; i++)
+for (var i = 0; i < 20000000; i++)
     isum(2, 3);
 ");
 
@@ -308,7 +308,7 @@ for (var i = 0; i < 100000000; i++)
                 return JSObject.Undefined;
             }));
 
-            int mode = 10
+            int mode = 100
                    ;
             switch (mode)
             {
@@ -349,12 +349,13 @@ for (var i = 0; i < 100000000; i++)
                         sputnikTests(@"tests\sputnik\ch15\15.1\");
                         sputnikTests(@"tests\sputnik\ch15\15.2\");
                         sputnikTests(@"tests\sputnik\ch15\15.3\");
-                        sputnikTests(@"tests\sputnik\ch15\15.4\"); // with 43 asserts
+                        sputnikTests(@"tests\sputnik\ch15\15.4\"); // with 42 asserts
                         sputnikTests(@"tests\sputnik\ch15\15.5\"); // with some errors due double.toString()
                         sputnikTests(@"tests\sputnik\ch15\15.6\");
                         sputnikTests(@"tests\sputnik\ch15\15.7\");
                         sputnikTests(@"tests\sputnik\ch15\15.8\"); // with some errors due accuracy comparison
                         sputnikTests(@"tests\sputnik\ch15\15.9\");
+                        sputnikTests(@"tests\sputnik\ch15\15.10\"); // with 30 asserts
                         sputnikTests(@"tests\sputnik\ch15\15.11\");
                         sputnikTests(@"tests\sputnik\ch15\15.12\");
                         break;

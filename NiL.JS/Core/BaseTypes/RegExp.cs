@@ -220,7 +220,7 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [DoNotEnumerate]
-        public bool test(Arguments args)
+        public JSObject test(Arguments args)
         {
             string input = args[0].ToString();
             lIndex = Tools.JSObjectToNumber(lIndex);

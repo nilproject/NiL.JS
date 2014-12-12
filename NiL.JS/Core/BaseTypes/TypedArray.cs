@@ -1,5 +1,6 @@
 ﻿using System;
 using NiL.JS.Core.Modules;
+using NiL.JS.Core.TypeProxing;
 
 namespace NiL.JS.Core.BaseTypes
 {
@@ -127,8 +128,12 @@ namespace NiL.JS.Core.BaseTypes
                 this[item.Key] = item.Value;
         }
 
+        [AllowNullArguments]
+        [ParametersCount(2)]
         public void set(Arguments args)
         {
+            if (args == null)
+                return;
             var offset = Tools.JSObjectToInt64(args.a1 ?? undefined, 0, false);
             var src = args.a0 ?? undefined;
             if (src.valueType < JSObjectType.String)

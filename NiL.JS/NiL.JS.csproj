@@ -229,6 +229,7 @@
     <Compile Include="Core\PropertyPair.cs" />
     <Compile Include="Core\RopeString.cs" />
     <Compile Include="Core\SparseArray.cs" />
+    <Compile Include="Core\TypeProxing\AllowNullArgumentsAttribute.cs" />
     <Compile Include="Core\TypeProxing\CustomType.cs" />
     <Compile Include="Core\BaseTypes\Date.cs" />
     <Compile Include="Core\BaseTypes\RegExp.cs" />

@@ -787,7 +787,13 @@ namespace NiL.JS.Core.BaseTypes
                 internalContext.thisBind = thisBind;
 
                 if (args == null)
-                    args = new Arguments();
+                {
+                    var cc = Context.CurrentContext;
+                    args = new Arguments()
+                    {
+                        caller = cc == null ? null : cc.strict && cc.caller != null && cc.caller.creator.body.strict ? Function.propertiesDummySM : cc.caller
+                    };
+                }
                 _arguments = args;
                 if (creator.containsWith || creator.containsEval)
                     internalContext.fields["arguments"] = _arguments;
@@ -1100,12 +1106,13 @@ namespace NiL.JS.Core.BaseTypes
             return Invoke(newThis, args);
         }
 
-        [ParametersCount(2)]
         [DoNotEnumerate]
+        [ParametersCount(2)]
+        [AllowNullArguments]
         public JSObject apply(Arguments args)
         {
             var nargs = new Arguments();
-            var argsSource = args[1];
+            var argsSource = args != null ? args[1] : notExists;
             if (argsSource.IsDefinded)
             {
                 if (argsSource.valueType < JSObjectType.Object)
@@ -1119,7 +1126,7 @@ namespace NiL.JS.Core.BaseTypes
                 for (var i = nargs.length; i-- > 0; )
                     nargs[i] = argsSource[i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture)];
             }
-            return Invoke(args[0], nargs);
+            return Invoke(args != null ? args[0] : null, nargs);
         }
 
         [DoNotEnumerate]

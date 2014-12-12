@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Text;
 using NiL.JS.Core.Modules;
+using NiL.JS.Core.TypeProxing;
 
 namespace NiL.JS.Core.BaseTypes
 {
@@ -302,10 +303,11 @@ namespace NiL.JS.Core.BaseTypes
 
         [DoNotEnumerate]
         [ParametersCount(2)]
+        [AllowNullArguments]
         [AllowUnsafeCall(typeof(JSObject))]
         public JSObject replace(Arguments args)
         {
-            if (args.length == 0)
+            if (args == null || args.length == 0)
                 return this;
             if ((args[0] ?? Null).valueType == JSObjectType.Object
                 && (args[0] ?? Null).oValue != null

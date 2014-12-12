@@ -85,13 +85,15 @@ namespace NiL.JS.Core
         {
             if (bindedArguments != null)
             {
+                if (args == null)
+                    args = new Arguments();
                 args.length += bindedArguments.length;
                 for (var i = args.length; i-- > bindedArguments.length; )
                     args[i] = args[i - bindedArguments.length];
                 for (var i = bindedArguments.length; i-- > 0; )
                     args[i] = bindedArguments[i];
             }
-            if (thisBind != null && thisBind.oValue != null && thisBind.oValue == typeof(New) as object)
+            if (thisBind != null && thisBind.oValue == typeof(New) as object)
                 return proto.Invoke(thisBind, args);
             return proto.Invoke(this.thisBind, args);
         }

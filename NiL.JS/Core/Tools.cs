@@ -219,20 +219,6 @@ namespace NiL.JS.Core
         /// Преобразует JSObject в значение типа integer.
         /// </summary>
         /// <param name="arg">JSObject, значение которого нужно преобразовать.</param>
-        /// <param name="alternateInfinity">Если истина, для значений +Infinity и -Infinity будут возвращены значения int.MaxValue и int.MinValue соответственно.</param>
-        /// <returns>Целочисленное значение, представленное в объекте arg.</returns>
-#if INLINE
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-#endif
-        public static int JSObjectToInt32(JSObject arg, bool alternateInfinity)
-        {
-            return JSObjectToInt32(arg, 0, alternateInfinity);
-        }
-
-        /// <summary>
-        /// Преобразует JSObject в значение типа integer.
-        /// </summary>
-        /// <param name="arg">JSObject, значение которого нужно преобразовать.</param>
         /// <param name="nullOrUndef">Значение, которое будет возвращено, если значение arg null или undefined.</param>
         /// <returns>Целочисленное значение, представленное в объекте arg.</returns>
 #if INLINE
@@ -241,6 +227,20 @@ namespace NiL.JS.Core
         public static int JSObjectToInt32(JSObject arg, int nullOrUndef)
         {
             return JSObjectToInt32(arg, nullOrUndef, false);
+        }
+
+        /// <summary>
+        /// Преобразует JSObject в значение типа integer.
+        /// </summary>
+        /// <param name="arg">JSObject, значение которого нужно преобразовать.</param>
+        /// <param name="alternateInfinity">Если истина, для значений +Infinity и -Infinity будут возвращены значения int.MaxValue и int.MinValue соответственно.</param>
+        /// <returns>Целочисленное значение, представленное в объекте arg.</returns>
+#if INLINE
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+#endif
+        public static int JSObjectToInt32(JSObject arg, bool alternateInfinity)
+        {
+            return JSObjectToInt32(arg, 0, alternateInfinity);
         }
 
         /// <summary>

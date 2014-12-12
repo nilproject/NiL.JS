@@ -121,31 +121,33 @@ namespace NiL.JS.Core.TypeProxing
                 object obj;
                 if (proxy.hostedType == typeof(BaseTypes.Array))
                 {
-                    switch (argsObj.length)
-                    {
-                        case 0:
-                            obj = new BaseTypes.Array();
-                            break;
-                        case 1:
-                            {
-                                switch (argsObj.a0.valueType)
-                                {
-                                    case JSObjectType.Int:
-                                        obj = new BaseTypes.Array(argsObj.a0.iValue);
-                                        break;
-                                    case JSObjectType.Double:
-                                        obj = new BaseTypes.Array(argsObj.a0.dValue);
-                                        break;
-                                    default:
-                                        obj = new BaseTypes.Array(argsObj);
-                                        break;
-                                }
+                    if (argsObj == null)
+                        obj = new BaseTypes.Array();
+                    else switch (argsObj.length)
+                        {
+                            case 0:
+                                obj = new BaseTypes.Array();
                                 break;
-                            }
-                        default:
-                            obj = new BaseTypes.Array(argsObj);
-                            break;
-                    }
+                            case 1:
+                                {
+                                    switch (argsObj.a0.valueType)
+                                    {
+                                        case JSObjectType.Int:
+                                            obj = new BaseTypes.Array(argsObj.a0.iValue);
+                                            break;
+                                        case JSObjectType.Double:
+                                            obj = new BaseTypes.Array(argsObj.a0.dValue);
+                                            break;
+                                        default:
+                                            obj = new BaseTypes.Array(argsObj);
+                                            break;
+                                    }
+                                    break;
+                                }
+                            default:
+                                obj = new BaseTypes.Array(argsObj);
+                                break;
+                        }
                 }
                 else
                 {
@@ -153,7 +155,7 @@ namespace NiL.JS.Core.TypeProxing
                     MethodProxy constructor = findConstructor(argsObj, ref args);
                     if (constructor == null)
                         throw new JSException((new BaseTypes.TypeError(proxy.hostedType.Name + " can't be created.")));
-                    obj = constructor.InvokeImpl(null, args, argsObj);
+                    obj = constructor.InvokeImpl(null, args, argsObj == null ? constructor.parameters.Length != 0 ? new Arguments() : null : argsObj);
                 }
                 JSObject res = null;
                 if (bynew)

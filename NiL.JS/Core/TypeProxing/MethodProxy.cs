@@ -48,6 +48,7 @@ namespace NiL.JS.Core.TypeProxing
         private Modules.ConvertValueAttribute[] paramsConverters;
         private bool constructorMode;
         private bool callOverload;
+        private bool allowNull;
 
         private Func<object> delegateF0 = null;
         private Func<object, object> delegateF1 = null;
@@ -130,6 +131,7 @@ namespace NiL.JS.Core.TypeProxing
             Type retType = null;
             constructorMode = methodinfo is ConstructorInfo;
             alternedTypes = (AllowUnsafeCallAttribute[])methodinfo.GetCustomAttributes(typeof(AllowUnsafeCallAttribute), false);
+            allowNull = methodinfo.IsDefined(typeof(AllowNullArgumentsAttribute));
 
             var methodInfo = info as MethodInfo;
             retType = constructorMode ? typeof(void) : methodInfo.ReturnType;
@@ -390,13 +392,13 @@ namespace NiL.JS.Core.TypeProxing
 #else
 								_targetInfo.SetValue(delegateF1, target);
 #endif
-                                res = delegateF1(argsSource);
+                                res = delegateF1(argsSource == null ? allowNull ? null : new Arguments() : argsSource);
                             }
                             else
 #else
                                 goto default;
 #endif
-                                res = delegateF2(target, argsSource);
+                                res = delegateF2(target, argsSource == null ? allowNull ? null : new Arguments() : argsSource);
                             break;
                         }
                     case CallMode.FuncDynamicZero:
@@ -430,13 +432,13 @@ namespace NiL.JS.Core.TypeProxing
 #else
 								_targetInfo.SetValue(delegateF1, target);
 #endif
-                                res = delegateF1(args != null ? args[0] : argumentsToArray(argsSource));
+                                res = delegateF1(args != null ? args[0] : argsSource == null ? new object[0] : argumentsToArray(argsSource));
                             }
                             else
 #else
                                 goto default;
 #endif
-                                res = delegateF2(target, args ?? argumentsToArray(argsSource));
+                                res = delegateF2(target, args ?? (argsSource == null ? new object[0] : argumentsToArray(argsSource)));
                             break;
                         }
                     case CallMode.FuncDynamicOne:
@@ -450,13 +452,13 @@ namespace NiL.JS.Core.TypeProxing
 #else
 								_targetInfo.SetValue(delegateF1, target);
 #endif
-                                res = delegateF1(args == null ? marshal(argsSource[0], parameters[0].ParameterType) : args[0]);
+                                res = delegateF1(args == null ? marshal(argsSource == null ? undefined : argsSource[0], parameters[0].ParameterType) : args[0]);
                             }
                             else
 #else
                                 goto default;
 #endif
-                                res = delegateF2(target, args == null ? marshal(argsSource[0], parameters[0].ParameterType) : args[0]);
+                                res = delegateF2(target, args == null ? marshal(argsSource == null ? undefined : argsSource[0], parameters[0].ParameterType) : args[0]);
                             break;
                         }
                     case CallMode.FuncStaticZero:
@@ -466,17 +468,17 @@ namespace NiL.JS.Core.TypeProxing
                         }
                     case CallMode.FuncStaticOneArray:
                         {
-                            res = delegateF1(args != null ? args[0] : argumentsToArray(argsSource));
+                            res = delegateF1(args != null ? args[0] : argsSource == null ? new object[0] : argumentsToArray(argsSource));
                             break;
                         }
                     case CallMode.FuncStaticOneRaw:
                         {
-                            res = delegateF1(argsSource);
+                            res = delegateF1(argsSource == null ? allowNull ? null : new Arguments() : argsSource);
                             break;
                         }
                     case CallMode.FuncStaticOne:
                         {
-                            res = delegateF1(args == null ? marshal(argsSource[0], parameters[0].ParameterType) : args[0]);
+                            res = delegateF1(args == null ? marshal(argsSource == null ? undefined : argsSource[0], parameters[0].ParameterType) : args[0]);
                             break;
                         }
                     case CallMode.ActionDynamicOneRaw:
@@ -484,11 +486,26 @@ namespace NiL.JS.Core.TypeProxing
                             if (constructorMode)
                             {
                                 res = FormatterServices.GetUninitializedObject(info.ReflectedType);
-                                delegateA2(res, argsSource);
+                                delegateA2(res, argsSource == null ? allowNull ? null : new Arguments() : argsSource);
                             }
                             else
                             {
-                                delegateA2(target, argsSource);
+                                if (!callOverload && target != null && info.IsVirtual && target.GetType() != info.ReflectedType) // your bunny wrote
+#if !NET35
+                                {
+                                    bool di = true;
+#if !__MonoCS__
+                                    SetFieldValue(_targetInfo, delegateA1, target, typeof(object), _targetInfo.Attributes, typeof(Action), ref di);
+#else
+								    _targetInfo.SetValue(delegateF1, target);
+#endif
+                                    delegateA1(argsSource == null ? allowNull ? null : new Arguments() : argsSource);
+                                }
+                                else
+#else
+                                goto default;
+#endif
+                                    delegateA2(target, argsSource == null ? allowNull ? null : new Arguments() : argsSource);
                                 res = null;
                             }
                             break;
@@ -502,7 +519,51 @@ namespace NiL.JS.Core.TypeProxing
                             }
                             else
                             {
-                                delegateA1(target);
+                                if (!callOverload && target != null && info.IsVirtual && target.GetType() != info.ReflectedType) // your bunny wrote
+#if !NET35
+                                {
+                                    bool di = true;
+#if !__MonoCS__
+                                    SetFieldValue(_targetInfo, delegateA1, target, typeof(object), _targetInfo.Attributes, typeof(Action), ref di);
+#else
+								    _targetInfo.SetValue(delegateF1, target);
+#endif
+                                    delegateA0();
+                                }
+                                else
+#else
+                                goto default;
+#endif
+                                    delegateA1(target);
+                                res = null;
+                            }
+                            break;
+                        }
+                    case CallMode.ActionDynamicOne:
+                        {
+                            if (constructorMode)
+                            {
+                                res = FormatterServices.GetUninitializedObject(info.ReflectedType);
+                                delegateA2(res, args == null ? marshal(argsSource == null ? undefined : argsSource[0], parameters[0].ParameterType) : args[0]);
+                            }
+                            else
+                            {
+                                if (!callOverload && target != null && info.IsVirtual && target.GetType() != info.ReflectedType) // your bunny wrote
+#if !NET35
+                                {
+                                    bool di = true;
+#if !__MonoCS__
+                                    SetFieldValue(_targetInfo, delegateA1, target, typeof(object), _targetInfo.Attributes, typeof(Action), ref di);
+#else
+								    _targetInfo.SetValue(delegateF1, target);
+#endif
+                                    delegateA1(args == null ? marshal(argsSource == null ? undefined : argsSource[0], parameters[0].ParameterType) : args[0]);
+                                }
+                                else
+#else
+                                goto default;
+#endif
+                                    delegateA2(target, args == null ? marshal(argsSource == null ? undefined : argsSource[0], parameters[0].ParameterType) : args[0]);
                                 res = null;
                             }
                             break;
@@ -510,7 +571,7 @@ namespace NiL.JS.Core.TypeProxing
                     default:
                         {
                             if (args == null)
-                                args = ConvertArgs(argsSource);
+                                args = ConvertArgs(argsSource ?? new Arguments());
                             if (constructorMode)
                                 res = (info as ConstructorInfo).Invoke(args);
                             else
