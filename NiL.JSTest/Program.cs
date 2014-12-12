@@ -278,10 +278,11 @@ for (var i = 0; i < 10000000; i++) abs(i * (1 - 2 * (i & 1)));
 @"
 function isum(a, b)
 {
-    return (a | 0) + (b | 2);
+    return ((a | 0) + (b | 0)) | 0;
 }
-
 console.log(isum(1, 2));
+for (var i = 0; i < 100000000; i++)
+    isum(2, 3);
 ");
 
             sw.Start();
@@ -307,7 +308,7 @@ console.log(isum(1, 2));
                 return JSObject.Undefined;
             }));
 
-            int mode = 101
+            int mode = 10
                    ;
             switch (mode)
             {

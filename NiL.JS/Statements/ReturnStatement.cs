@@ -94,6 +94,14 @@ namespace NiL.JS.Statements
             body.Optimize(ref body, owner, message);
         }
 
+        internal override System.Linq.Expressions.Expression TryCompile(bool selfCompile, bool forAssign, Type expectedType, List<CodeNode> dynamicValues)
+        {
+            var b = body.TryCompile(false, false, null, dynamicValues);
+            if (b != null)
+                body = new CompiledNode(body, b, JITHelpers._items.GetValue(dynamicValues) as CodeNode[]);
+            return null;
+        }
+
         public override string ToString()
         {
             return "return" + (body != null ? " " + body : "");

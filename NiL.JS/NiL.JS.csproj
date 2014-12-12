@@ -222,6 +222,7 @@
     <Compile Include="Core\BinaryTree.cs" />
     <Compile Include="Core\BindedFunction.cs" />
     <Compile Include="Core\CatchContext.cs" />
+    <Compile Include="Core\CompiledNode.cs" />
     <Compile Include="Core\Modules\CallOverloaded.cs" />
     <Compile Include="Core\Modules\Debug.cs" />
     <Compile Include="Core\Modules\ImmutablePrototypeAttribute.cs" />
@@ -292,6 +293,7 @@
     <Compile Include="Expressions\StringConcat.cs" />
     <Compile Include="Expressions\Neg.cs" />
     <Compile Include="Expressions\ToBool.cs" />
+    <Compile Include="Expressions\ToStr.cs" />
     <Compile Include="Expressions\ToUInt.cs" />
     <Compile Include="Expressions\ToNumber.cs" />
     <Compile Include="Expressions\ToInt.cs" />

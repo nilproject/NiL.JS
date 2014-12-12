@@ -22,16 +22,21 @@ namespace NiL.JS.Core
             return defaultJit(state);
         }
 
-        internal System.Linq.Expressions.Expression defaultJit(TreeBuildingState state)
+        internal System.Linq.Expressions.Expression JitOverCall(bool forAssign)
         {
-            var wraper = System.Linq.Expressions.Expression.Call(
+            return System.Linq.Expressions.Expression.Call(
                 System.Linq.Expressions.Expression.Constant(this),
-                this.GetType().GetMethod("Evaluate", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic, null, new[] { typeof(Context) }, null),
+                this.GetType().GetMethod(forAssign ? "EvaluateForAssing" : "Evaluate", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic, null, new[] { typeof(Context) }, null),
                 JITHelpers.ContextParameter
                 );
+        }
+
+        internal System.Linq.Expressions.Expression defaultJit(TreeBuildingState state)
+        {
+            var wraper = JitOverCall(false);
             return System.Linq.Expressions.Expression.Block(
                     wraper,
-                    System.Linq.Expressions.Expression.IfThen(System.Linq.Expressions.Expression.Equal(JITHelpers.wrap(AbortType.Return), System.Linq.Expressions.Expression.Field(JITHelpers.ContextParameter, "abort")),
+                    System.Linq.Expressions.Expression.IfThen(System.Linq.Expressions.Expression.Equal(JITHelpers.@const(AbortType.Return), System.Linq.Expressions.Expression.Field(JITHelpers.ContextParameter, "abort")),
                                         System.Linq.Expressions.Expression.Return(state.ReturnTarget, System.Linq.Expressions.Expression.Field(JITHelpers.ContextParameter, "abortInfo"))),
                     JITHelpers.UndefinedConstant
                    );
@@ -74,12 +79,12 @@ namespace NiL.JS.Core
 
         internal virtual void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message)
         {
-            
+
         }
 
-        internal virtual void TryCompile(ref CodeNode root)
+        internal virtual System.Linq.Expressions.Expression TryCompile(bool selfCompile, bool forAssign, Type expectedType, List<CodeNode> dynamicValues)
         {
-
+            return null;
         }
     }
 }

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq.Expressions;
 using NiL.JS.Core;
 using NiL.JS.Core.BaseTypes;
 using NiL.JS.Statements;
@@ -121,7 +123,7 @@ namespace NiL.JS
         /// </summary>
         public void TryCompile()
         {
-            root.TryCompile(ref root);
+            root.TryCompile(true, false, null, new List<CodeNode>());
         }
     }
 }

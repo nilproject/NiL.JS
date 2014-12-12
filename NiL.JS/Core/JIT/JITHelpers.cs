@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
 using NiL.JS.Statements;
@@ -9,15 +10,142 @@ namespace NiL.JS.Core.JIT
 
     internal static class JITHelpers
     {
+        public static readonly FieldInfo _items = typeof(List<CodeNode>).GetField("_items", BindingFlags.Instance | BindingFlags.NonPublic);
+        public static readonly ParameterExpression DynamicValuesParameter = Expression.Parameter(typeof(CodeNode[]), "$");
         public static readonly ParameterExpression ContextParameter = Expression.Parameter(typeof(Context), "context");
-        public static readonly ConstantExpression UndefinedConstant = Expression.Constant(JSObject.undefined);
-        public static readonly ConstantExpression NotExistsConstant = Expression.Constant(JSObject.notExists);
+        public static readonly Expression UndefinedConstant = Expression.Field(null, typeof(JSObject).GetField("undefined", BindingFlags.Static | BindingFlags.NonPublic));
+        public static readonly Expression NotExistsConstant = Expression.Field(null, typeof(JSObject).GetField("notExists", BindingFlags.Static | BindingFlags.NonPublic));
 
         public static readonly MethodInfo JSObjectToBooleanMethod = typeof(JSObject).GetMethod("op_Explicit");
 
-        public static Expression wrap(object obj)
+        internal static Expression @const(object obj)
         {
             return Expression.Constant(obj);
+        }
+
+        internal static JSObject wrap<T>(T source, JSObject dest)
+        {
+            switch (Type.GetTypeCode(typeof(T)))
+            {
+                case TypeCode.Boolean:
+                    {
+                        dest.iValue = (bool)(object)source ? 1 : 0;
+                        dest.valueType = JSObjectType.Bool;
+                        break;
+                    }
+                case TypeCode.Byte:
+                    {
+                        dest.iValue = (byte)(object)source;
+                        dest.valueType = JSObjectType.Int;
+                        break;
+                    }
+                case TypeCode.Char:
+                    {
+                        dest.oValue = source.ToString();
+                        dest.valueType = JSObjectType.String;
+                        break;
+                    }
+                case TypeCode.Decimal:
+                    {
+                        dest.dValue = (double)(decimal)(object)source;
+                        dest.valueType = JSObjectType.Double;
+                        break;
+                    }
+                case TypeCode.Double:
+                    {
+                        dest.dValue = (double)(object)source;
+                        dest.valueType = JSObjectType.Double;
+                        break;
+                    }
+                case TypeCode.Int16:
+                    {
+                        dest.iValue = (short)(object)source;
+                        dest.valueType = JSObjectType.Int;
+                        break;
+                    }
+                case TypeCode.Int32:
+                    {
+                        dest.iValue = (int)(object)source;
+                        dest.valueType = JSObjectType.Int;
+                        break;
+                    }
+                case TypeCode.Int64:
+                    {
+                        var t = (long)(object)source;
+                        if (t > int.MaxValue || t < int.MinValue)
+                        {
+                            dest.dValue = t;
+                            dest.valueType = JSObjectType.Double;
+                        }
+                        else
+                        {
+                            dest.iValue = (int)t;
+                            dest.valueType = JSObjectType.Int;
+                        }
+                        break;
+                    }
+                case TypeCode.SByte:
+                    {
+                        dest.iValue = (sbyte)(object)source;
+                        dest.valueType = JSObjectType.Int;
+                        break;
+                    }
+                case TypeCode.Single:
+                    {
+                        dest.dValue = (float)(object)source;
+                        dest.valueType = JSObjectType.Double;
+                        break;
+                    }
+                case TypeCode.String:
+                    {
+                        dest.oValue = source.ToString();
+                        dest.valueType = JSObjectType.String;
+                        break;
+                    }
+                case TypeCode.UInt16:
+                    {
+                        dest.iValue = (ushort)(object)source;
+                        dest.valueType = JSObjectType.Int;
+                        break;
+                    }
+                case TypeCode.UInt32:
+                    {
+                        var t = (uint)(object)source;
+                        if (t > int.MaxValue)
+                        {
+                            dest.dValue = t;
+                            dest.valueType = JSObjectType.Double;
+                        }
+                        else
+                        {
+                            dest.iValue = (int)t;
+                            dest.valueType = JSObjectType.Int;
+                        }
+                        break;
+                    }
+                case TypeCode.UInt64:
+                    {
+                        var t = (ulong)(object)source;
+                        if (t > int.MaxValue)
+                        {
+                            dest.dValue = t;
+                            dest.valueType = JSObjectType.Double;
+                        }
+                        else
+                        {
+                            dest.iValue = (int)t;
+                            dest.valueType = JSObjectType.Int;
+                        }
+                        break;
+                    }
+                default:
+                    {
+                        dest.oValue = new ObjectContainer(source);
+                        dest.valueType = JSObjectType.Object;
+                        break;
+                    }
+            }
+            return dest;
         }
 
         public static Func<Context, JSObject> compile(CodeBlock node, bool defaultReturn)

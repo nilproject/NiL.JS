@@ -10,7 +10,7 @@ namespace NiL.JS.Expressions
         {
             get
             {
-                return first.ResultType;
+                return PredictedType.Number; // -int.MinValue == int.MinValue, но должно быть -int.MinValue == -(double)int.MinValue;
             }
         }
 
@@ -22,38 +22,35 @@ namespace NiL.JS.Expressions
 
         internal override JSObject Evaluate(Context context)
         {
-            lock (this)
+            var val = first.Evaluate(context);
+            if (val.valueType == JSObjectType.Int
+                || val.ValueType == JSObjectType.Bool)
             {
-                var val = first.Evaluate(context);
-                if (val.valueType == JSObjectType.Int
-                    || val.ValueType == JSObjectType.Bool)
+                if (val.iValue == 0)
                 {
-                    if (val.iValue == 0)
-                    {
-                        tempContainer.valueType = JSObjectType.Double;
-                        tempContainer.dValue = -0.0;
-                    }
-                    else
-                    {
-                        if (val.iValue == int.MinValue)
-                        {
-                            tempContainer.valueType = JSObjectType.Double;
-                            tempContainer.dValue = -val.iValue;
-                        }
-                        else
-                        {
-                            tempContainer.valueType = JSObjectType.Int;
-                            tempContainer.iValue = -val.iValue;
-                        }
-                    }
+                    tempContainer.valueType = JSObjectType.Double;
+                    tempContainer.dValue = -0.0;
                 }
                 else
                 {
-                    tempContainer.dValue = -Tools.JSObjectToDouble(val);
-                    tempContainer.valueType = JSObjectType.Double;
+                    if (val.iValue == int.MinValue)
+                    {
+                        tempContainer.valueType = JSObjectType.Double;
+                        tempContainer.dValue = -val.iValue;
+                    }
+                    else
+                    {
+                        tempContainer.valueType = JSObjectType.Int;
+                        tempContainer.iValue = -val.iValue;
+                    }
                 }
-                return tempContainer;
             }
+            else
+            {
+                tempContainer.dValue = -Tools.JSObjectToDouble(val);
+                tempContainer.valueType = JSObjectType.Double;
+            }
+            return tempContainer;
         }
 
         public override string ToString()

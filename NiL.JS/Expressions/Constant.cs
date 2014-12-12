@@ -12,7 +12,7 @@ namespace NiL.JS.Expressions
 
         internal override System.Linq.Expressions.Expression CompileToIL(NiL.JS.Core.JIT.TreeBuildingState state)
         {
-            return JITHelpers.wrap(value);
+            return JITHelpers.@const(value);
         }
 
 #endif

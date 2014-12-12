@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using NiL.JS.Core;
+using NiL.JS.Core.JIT;
 using NiL.JS.Statements;
 
 namespace NiL.JS.Expressions
@@ -9,6 +10,43 @@ namespace NiL.JS.Expressions
     [Serializable]
     public sealed class Addition : Expression
     {
+        protected internal override PredictedType ResultType
+        {
+            get
+            {
+                var frt = first.ResultType;
+                var srt = second.ResultType;
+                if (frt == PredictedType.String || srt == PredictedType.String)
+                    return PredictedType.String;
+                if (frt == srt)
+                {
+                    switch (frt)
+                    {
+                        case PredictedType.Bool:
+                        case PredictedType.Int:
+                            return PredictedType.Number;
+                        case PredictedType.Double:
+                            return PredictedType.Double;
+                    }
+                }
+                if (frt == PredictedType.Bool)
+                {
+                    if (srt == PredictedType.Double)
+                        return PredictedType.Double;
+                    if (Tools.IsEqual(srt, PredictedType.Number, PredictedType.Group))
+                        return PredictedType.Number;
+                }
+                if (srt == PredictedType.Bool)
+                {
+                    if (frt == PredictedType.Double)
+                        return PredictedType.Double;
+                    if (Tools.IsEqual(frt, PredictedType.Number, PredictedType.Group))
+                        return PredictedType.Number;
+                }
+                return PredictedType.Unknown;
+            }
+        }
+
         public Addition(Expression first, Expression second)
             : base(first, second, true)
         {
@@ -256,12 +294,19 @@ namespace NiL.JS.Expressions
                 }
                 else
                 {
-                    if ((first is Constant
-                        && (first as Constant).value.valueType == JSObjectType.String)
-                        || (second is Constant
-                        && (second as Constant).value.valueType == JSObjectType.String))
+                    if (first is Constant && (first as Constant).value.valueType == JSObjectType.String)
                     {
-                        _this = new StringConcat(new List<Expression>() { first, second });
+                        if ((first as Constant).value.oValue.ToString() == "")
+                            _this = new ToStr(second);
+                        else
+                            _this = new StringConcat(new List<Expression>() { first, second });
+                    }
+                    else if (second is Constant && (second as Constant).value.valueType == JSObjectType.String)
+                    {
+                        if ((second as Constant).value.oValue.ToString() == "")
+                            _this = new ToStr(first);
+                        else
+                            _this = new StringConcat(new List<Expression>() { first, second });
                     }
                 }
             }
@@ -290,12 +335,33 @@ namespace NiL.JS.Expressions
             //    }
             //    return;
             //}
-            if (first.ResultType == PredictedType.Number
-                && second.ResultType == PredictedType.Number)
+            if (Tools.IsEqual(first.ResultType, PredictedType.Number, PredictedType.Group)
+                && Tools.IsEqual(second.ResultType, PredictedType.Number, PredictedType.Group))
             {
                 _this = new NumberAddition(first, second);
                 return;
             }
+        }
+
+        internal override System.Linq.Expressions.Expression TryCompile(bool selfCompile, bool forAssign, Type expectedType, List<CodeNode> dynamicValues)
+        {
+            var ft = first.TryCompile(false, false, null, dynamicValues);
+            var st = second.TryCompile(false, false, null, dynamicValues);
+            if (ft == st) // null == null
+                return null;
+            if (ft == null && st != null)
+            {
+                second = new CompiledNode(second, st, JITHelpers._items.GetValue(dynamicValues) as CodeNode[]);
+                return null;
+            }
+            if (ft != null && st == null)
+            {
+                first = new CompiledNode(first, ft, JITHelpers._items.GetValue(dynamicValues) as CodeNode[]);
+                return null;
+            }
+            if (ft.Type == st.Type)
+                return System.Linq.Expressions.Expression.Add(ft, st);
+            return null;
         }
 
         public override string ToString()

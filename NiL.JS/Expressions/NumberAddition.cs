@@ -1,4 +1,7 @@
-﻿using NiL.JS.Core;
+﻿using System;
+using System.Collections.Generic;
+using NiL.JS.Core;
+using NiL.JS.Core.JIT;
 
 namespace NiL.JS.Expressions
 {
@@ -91,6 +94,29 @@ namespace NiL.JS.Expressions
                 Addition.Impl(tempContainer, op.CloneImpl(), second.Evaluate(context));
             }
             return tempContainer;
+        }
+
+        internal override System.Linq.Expressions.Expression TryCompile(bool selfCompile, bool forAssign, Type expectedType, List<CodeNode> dynamicValues)
+        {
+            var ft = first.TryCompile(false, false, null, dynamicValues);
+            var st = second.TryCompile(false, false, null, dynamicValues);
+            if (ft == st) // null == null
+                return null;
+            if (ft == null && st != null)
+            {
+                second = new CompiledNode(second, st, JITHelpers._items.GetValue(dynamicValues) as CodeNode[]);
+                return null;
+            }
+            if (ft != null && st == null)
+            {
+                first = new CompiledNode(first, ft, JITHelpers._items.GetValue(dynamicValues) as CodeNode[]);
+                return null;
+            }
+            if (ft.Type == st.Type && (ft.Type == typeof(double) || ft.Type == expectedType))
+                return System.Linq.Expressions.Expression.Add(ft, st);
+            return System.Linq.Expressions.Expression.Add(
+                System.Linq.Expressions.Expression.Convert(ft, typeof(double)),
+                System.Linq.Expressions.Expression.Convert(st, typeof(double)));
         }
 
         public override string ToString()

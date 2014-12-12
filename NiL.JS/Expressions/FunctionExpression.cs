@@ -615,6 +615,12 @@ namespace NiL.JS.Expressions
             assignToArguments = containsArguments && (t = body.variables.First(x => x.name == "arguments").assignations) != null && t.Count != 0;
         }
 
+        internal override System.Linq.Expressions.Expression TryCompile(bool selfCompile, bool forAssign, Type expectedType, List<CodeNode> dynamicValues)
+        {
+            body.TryCompile(true, false, null, new List<CodeNode>());
+            return null;
+        }
+
         public override string ToString()
         {
             var res = ((FunctionType)((int)type & 3)).ToString().ToLowerInvariant() + " " + name + "(";
