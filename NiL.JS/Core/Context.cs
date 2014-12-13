@@ -275,29 +275,24 @@ namespace NiL.JS.Core
         internal bool Activate()
         {
             int threadId = Thread.CurrentThread.ManagedThreadId;
-            //lock (runnedContexts)
+            var i = 0;
+            do
             {
-                var i = 0;
-                do
+                var c = runnedContexts[i];
+                if (c == null || c.threadId == threadId)
                 {
-                    var c = runnedContexts[i];
-                    if (c == null || c.threadId == threadId)
-                    {
-                        if (c == this)
-                            return false;
-                        if (oldContext != null)
-                        {
-                            throw new ApplicationException("Try to reactivate context");
-                        }
-                        this.oldContext = c;
-                        runnedContexts[i] = this;
-                        this.threadId = threadId;
-                        return true;
-                    }
-                    i++;
+                    if (c == this)
+                        return false;
+                    if (oldContext != null)
+                        throw new ApplicationException("Try to reactivate context");
+                    this.oldContext = c;
+                    runnedContexts[i] = this;
+                    this.threadId = threadId;
+                    return true;
                 }
-                while (i < MaxConcurentContexts);
+                i++;
             }
+            while (i < MaxConcurentContexts);
             throw new InvalidOperationException("Too many concurrent contexts.");
         }
 
@@ -310,18 +305,15 @@ namespace NiL.JS.Core
         {
             Context c = null;
             var i = 0;
-            //lock (runnedContexts)
+            for (; i < runnedContexts.Length; i++)
             {
-                for (; i < runnedContexts.Length; i++)
+                c = runnedContexts[i];
+                if (c != null && c.threadId == threadId)
                 {
-                    c = runnedContexts[i];
-                    if (c != null && c.threadId == threadId)
-                    {
-                        if (c != this)
-                            throw new InvalidOperationException("Context not runned");
-                        runnedContexts[i] = c = oldContext;
-                        break;
-                    }
+                    if (c != this)
+                        throw new InvalidOperationException("Context not runned");
+                    runnedContexts[i] = c = oldContext;
+                    break;
                 }
             }
             if (i == -1)
@@ -453,6 +445,8 @@ namespace NiL.JS.Core
         /// <returns>Результат выполнения кода (аргумент оператора "return" либо результат выполнения последней выполненной строки кода).</returns>
         public JSObject Eval(string code, bool inplace)
         {
+            if (string.IsNullOrEmpty(code))
+                return JSObject.undefined;
 #if DEV
             var debugging = this.debugging;
             this.debugging = false;

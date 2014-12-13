@@ -278,13 +278,15 @@ for (var i = 0; i < 10000000; i++) abs(i * (1 - 2 * (i & 1)));
             var s = new Script(
 @"
 function isum(a, b)
-{
-    a;//a;a;a;
+{    
+    return undefined;
+    //a;a;a;a;
     //b;b;b;b;
     //return (((((a | 0) + (b | 0)) | 0) + (((a | 0) + (b | 0)) | 0) | 0) + ((((a | 0) + (b | 0)) | 0) + (((a | 0) + (b | 0)) | 0) | 0)) | 0;
 }
+var isum2 = isum;
 for (var i = 0; i < 20000000; i++)
-    isum(2, 3);
+    isum2(2, 3);
 ");
             Expression<Func<object, object, int>> nativeTest = (a, b) => (((((Convert.ToInt32(a) | 0) + (Convert.ToInt32(b) | 0)) | 0) + (((Convert.ToInt32(a) | 0) + (Convert.ToInt32(b) | 0)) | 0) | 0) + ((((Convert.ToInt32(a) | 0) + (Convert.ToInt32(b) | 0)) | 0) + (((Convert.ToInt32(a) | 0) + (Convert.ToInt32(b) | 0)) | 0) | 0)) | 0;
             var cme = nativeTest.Compile();
@@ -318,7 +320,7 @@ for (var i = 0; i < 20000000; i++)
                 return JSObject.Undefined;
             }));
 
-            int mode = 3
+            int mode = 0
                    ;
             switch (mode)
             {

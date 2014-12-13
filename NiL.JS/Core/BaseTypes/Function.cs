@@ -764,10 +764,9 @@ namespace NiL.JS.Core.BaseTypes
                 System.Console.WriteLine("DEBUG: Run \"" + creator.Reference.Name + "\"");
 #endif
             var body = creator.body;
+            thisBind = correctThisBind(thisBind, body, context);
             if (body == null || body.lines.Length == 0)
             {
-                if (thisBind != null)
-                    correctThisBind(thisBind, body, null); // на тот случай, когда функция вызвана как конструктор
                 notExists.valueType = JSObjectType.NotExistsInObject;
                 return notExists;
             }
@@ -780,10 +779,9 @@ namespace NiL.JS.Core.BaseTypes
             creator.recursiveDepth++;
             var oldcaller = _caller;
             Context internalContext = null;
-            internalContext = new Context(context ?? Context.CurrentContext, creator.containsEval || creator.containsWith, this);
+            internalContext = new Context(context, creator.containsEval || creator.containsWith, this);
             try
-            {
-                thisBind = correctThisBind(thisBind, body, internalContext);
+            {                
                 internalContext.thisBind = thisBind;
 
                 if (args == null)
@@ -975,7 +973,7 @@ namespace NiL.JS.Core.BaseTypes
         private JSObject correctThisBind(JSObject thisBind, CodeBlock body, Context internalContext)
         {
             if (thisBind == null)
-                thisBind = body.strict ? undefined : internalContext.Root.thisBind;
+                return body.strict ? undefined : internalContext.Root.thisBind;
             else if (thisBind.oValue == typeof(New) as object)
             {
                 thisBind.__proto__ = prototype.oValue as JSObject ?? prototype;
@@ -986,12 +984,12 @@ namespace NiL.JS.Core.BaseTypes
                 if (!body.strict) // Поправляем this
                 {
                     if (thisBind.valueType > JSObjectType.Undefined && thisBind.valueType < JSObjectType.Object)
-                        thisBind = thisBind.ToObject();
+                        return thisBind.ToObject();
                     else if (thisBind.valueType <= JSObjectType.Undefined || thisBind.oValue == null)
-                        thisBind = internalContext.Root.thisBind;
+                        return internalContext.Root.thisBind;
                 }
                 else if (thisBind.valueType < JSObjectType.Undefined)
-                    thisBind = undefined;
+                    return undefined;
             }
             return thisBind;
         }
