@@ -285,8 +285,11 @@ function isum(a, b)
     //return (((((a | 0) + (b | 0)) | 0) + (((a | 0) + (b | 0)) | 0) | 0) + ((((a | 0) + (b | 0)) | 0) + (((a | 0) + (b | 0)) | 0) | 0)) | 0;
 }
 var isum2 = isum;
-for (var i = 0; i < 20000000; i++)
-    isum2(2, 3);
+for (var i = 0; i < 20000000; )
+{
+    i++;
+    typeof i;
+}
 ");
             Expression<Func<object, object, int>> nativeTest = (a, b) => (((((Convert.ToInt32(a) | 0) + (Convert.ToInt32(b) | 0)) | 0) + (((Convert.ToInt32(a) | 0) + (Convert.ToInt32(b) | 0)) | 0) | 0) + ((((Convert.ToInt32(a) | 0) + (Convert.ToInt32(b) | 0)) | 0) + (((Convert.ToInt32(a) | 0) + (Convert.ToInt32(b) | 0)) | 0) | 0)) | 0;
             var cme = nativeTest.Compile();
@@ -320,24 +323,10 @@ for (var i = 0; i < 20000000; i++)
                 return JSObject.Undefined;
             }));
 
-            int mode = -6
+            int mode = 3
                    ;
             switch (mode)
             {
-                case -6:
-                    {
-                        Console.WriteLine(Translator.Translate(new Script(
-@"
-var a = 1;
-var b = 2;
-function sum(x, y)
-{
-    return x + y;
-}
-console.log(sum(a, b));
-").Root));
-                        break;
-                    }
                 case -5:
                     {
                         var f = new FileStream("ftest.js", FileMode.Open, FileAccess.Read);

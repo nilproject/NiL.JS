@@ -277,7 +277,9 @@ namespace NiL.JS.Statements
                 if (context.debugging)
                     context.raiseDebugger(lines[i]);
 #endif
-                context.lastResult = lines[i].Evaluate(context) ?? context.lastResult;
+                var t = lines[i].Evaluate(context);
+                if (t != null)
+                    context.lastResult = t;
 #if DEBUG
                 if (!context.IsExcecuting)
                     if (System.Diagnostics.Debugger.IsAttached)

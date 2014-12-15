@@ -33,8 +33,6 @@ namespace NiL.JS.Expressions
         internal override JSObject Evaluate(Context context)
         {
             var val = first.Evaluate(context);
-            if (val.valueType == JSObjectType.Property)
-                return (val.oValue as PropertyPair).get.Invoke(context.objectSource, null);
             switch (val.valueType)
             {
                 case JSObjectType.Int:
@@ -60,16 +58,10 @@ namespace NiL.JS.Expressions
                     {
                         return functionString;
                     }
-                case JSObjectType.Date:
-                case JSObjectType.Object:
-                case JSObjectType.Property:
+                default:
                     {
-                        //if (val.oValue is TypeProxy
-                        //    && (val.oValue as TypeProxy).hostedType == typeof(Function))
-                        //    return functionString;
                         return objectString;
                     }
-                default: throw new NotImplementedException();
             }
         }
 
