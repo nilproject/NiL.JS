@@ -110,13 +110,13 @@ namespace NiL.JS.Expressions
                         else
                         {
                             if (message != null)
-                                message(MessageLevel.Warning, new CodeCoordinates(0, Position), "Variable \"" + vr.Name + "\" has ambiguous type. It can be make impossible some optimizations and cause errors.");
+                                message(MessageLevel.Warning, new CodeCoordinates(0, Position, Length), "Variable \"" + vr.Name + "\" has ambiguous type. It can be make impossible some optimizations and cause errors.");
                             vr.descriptor.lastPredictedType = PredictedType.Ambiguous;
                         }
                     }
                 }
                 else if (message != null)
-                    message(MessageLevel.CriticalWarning, new CodeCoordinates(0, Position), "Assign to undefined variable \"" + vr.Name + "\". It will declare a global variable.");
+                    message(MessageLevel.CriticalWarning, new CodeCoordinates(0, Position, Length), "Assign to undefined variable \"" + vr.Name + "\". It will declare a global variable.");
             }
             var gme = first as GetMemberExpression;
             if (gme != null)

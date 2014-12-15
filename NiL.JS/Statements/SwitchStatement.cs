@@ -42,10 +42,10 @@ namespace NiL.JS.Statements
             while (char.IsWhiteSpace(state.Code[i])) i++;
             var image = ExpressionTree.Parse(state, ref i).Statement;
             if (state.Code[i] != ')')
-                throw new JSException((new Core.BaseTypes.SyntaxError("Expected \")\" at + " + CodeCoordinates.FromTextPosition(state.Code, i))));
+                throw new JSException((new Core.BaseTypes.SyntaxError("Expected \")\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
             do i++; while (char.IsWhiteSpace(state.Code[i]));
             if (state.Code[i] != '{')
-                throw new JSException((new Core.BaseTypes.SyntaxError("Expected \"{\" at + " + CodeCoordinates.FromTextPosition(state.Code, i))));
+                throw new JSException((new Core.BaseTypes.SyntaxError("Expected \"{\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
             do i++; while (char.IsWhiteSpace(state.Code[i]));
             var body = new List<CodeNode>();
             var funcs = new List<FunctionExpression>();
@@ -62,17 +62,17 @@ namespace NiL.JS.Statements
                         while (char.IsWhiteSpace(state.Code[i])) i++;
                         var sample = ExpressionTree.Parse(state, ref i).Statement;
                         if (state.Code[i] != ':')
-                            throw new JSException((new Core.BaseTypes.SyntaxError("Expected \":\" at + " + CodeCoordinates.FromTextPosition(state.Code, i))));
+                            throw new JSException((new Core.BaseTypes.SyntaxError("Expected \":\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
                         i++;
                         cases.Add(new SwitchCase() { index = body.Count, statement = sample });
                     }
                     else if (Parser.Validate(state.Code, "default", i) && Parser.isIdentificatorTerminator(state.Code[i + 7]))
                     {
                         if (cases[0] != null)
-                            throw new JSException((new Core.BaseTypes.SyntaxError("Duplicate default case in switch at " + CodeCoordinates.FromTextPosition(state.Code, i))));
+                            throw new JSException((new Core.BaseTypes.SyntaxError("Duplicate default case in switch at " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
                         i += 7;
                         if (state.Code[i] != ':')
-                            throw new JSException((new Core.BaseTypes.SyntaxError("Expected \":\" at + " + CodeCoordinates.FromTextPosition(state.Code, i))));
+                            throw new JSException((new Core.BaseTypes.SyntaxError("Expected \":\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
                         i++;
                         cases[0] = new SwitchCase() { index = body.Count, statement = null };
                     }
@@ -80,7 +80,7 @@ namespace NiL.JS.Statements
                     while (char.IsWhiteSpace(state.Code[i]) || (state.Code[i] == ';')) i++;
                 } while (true);
                 if (cases.Count == 1 && cases[0] == null)
-                    throw new JSException((new Core.BaseTypes.SyntaxError("Switch statement must be contain cases. " + CodeCoordinates.FromTextPosition(state.Code, index))));
+                    throw new JSException((new Core.BaseTypes.SyntaxError("Switch statement must be contain cases. " + CodeCoordinates.FromTextPosition(state.Code, index, 0))));
                 var t = Parser.Parse(state, ref i, 0);
                 if (t == null)
                     continue;

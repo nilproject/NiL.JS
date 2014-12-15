@@ -48,7 +48,7 @@ namespace NiL.JS.Statements
                 if (state.strict.Peek())
                     throw new JSException((new NiL.JS.Core.BaseTypes.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
                 if (state.message != null)
-                    state.message(MessageLevel.CriticalWarning, CodeCoordinates.FromTextPosition(state.Code, body.Position), "Do not declare function in nested blocks.");
+                    state.message(MessageLevel.CriticalWarning, CodeCoordinates.FromTextPosition(state.Code, body.Position, body.Length), "Do not declare function in nested blocks.");
                 body = new CodeBlock(new[] { body }, state.strict.Peek()); // для того, чтобы не дублировать код по декларации функции, 
                 // она оборачивается в блок, который сделает самовыпил на втором этапе, но перед этим корректно объявит функцию.
             } 
@@ -156,7 +156,7 @@ namespace NiL.JS.Statements
             if (condition is ToBool)
             {
                 if (message == null)
-                    message(MessageLevel.Warning, new CodeCoordinates(0, condition.Position), "Useless conversion. Remove double negation in condition");
+                    message(MessageLevel.Warning, new CodeCoordinates(0, condition.Position, 2), "Useless conversion. Remove double negation in condition");
                 condition = (condition as Expression).first;
             }
             try

@@ -36,7 +36,7 @@ namespace NiL.JS.Statements
             if (stat is FunctionExpression)
             {
                 if (state.message != null)
-                    state.message(MessageLevel.CriticalWarning, CodeCoordinates.FromTextPosition(state.Code, stat.Position), "Labeled function. Are you sure?.");
+                    state.message(MessageLevel.CriticalWarning, CodeCoordinates.FromTextPosition(state.Code, stat.Position, stat.Length), "Labeled function. Are you sure?.");
                 stat = new CodeBlock(new[] { stat }, state.strict.Peek()); // для того, чтобы не дублировать код по декларации функции, 
                 // она оборачивается в блок, который сделает самовыпил на втором этапе, но перед этим корректно объявит функцию.
             }

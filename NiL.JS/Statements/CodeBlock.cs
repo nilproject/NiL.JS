@@ -185,11 +185,11 @@ namespace NiL.JS.Statements
                 if (t == null || t is EmptyStatement)
                 {
                     if (sroot && i < state.Code.Length && state.Code[i] == '}')
-                        throw new JSException(new SyntaxError("Unexpected symbol \"}\" at " + CodeCoordinates.FromTextPosition(state.Code, i)));
+                        throw new JSException(new SyntaxError("Unexpected symbol \"}\" at " + CodeCoordinates.FromTextPosition(state.Code, i, 0)));
                     if (state.message != null
                         && !expectSemicolon
                         && (state.Code[i - 1] == ';' || state.Code[i - 1] == ','))
-                        state.message(MessageLevel.Warning, CodeCoordinates.FromTextPosition(state.Code, i), "Unnecessary semicolon.");
+                        state.message(MessageLevel.Warning, CodeCoordinates.FromTextPosition(state.Code, i, 1), "Unnecessary semicolon.");
                     expectSemicolon = false;
                     continue;
                 }
@@ -329,7 +329,7 @@ namespace NiL.JS.Statements
                     else
                     {
                         if (unreachable && message != null)
-                            message(MessageLevel.CriticalWarning, new CodeCoordinates(0, lines[i].Position), "Unreachable code detected.");
+                            message(MessageLevel.CriticalWarning, new CodeCoordinates(0, lines[i].Position, lines[i].Length), "Unreachable code detected.");
                         var cn = lines[i];
                         Parser.Build(ref cn, depth < 0 ? 2 : Math.Max(1, depth), variables, this.strict, message);
                         lines[i] = cn;
@@ -385,7 +385,7 @@ namespace NiL.JS.Statements
                     for (var i = 0; i < localVariables.Length; i++)
                     {
                         if (localVariables[i].ReferenceCount <= 1)
-                            message(MessageLevel.Recomendation, new CodeCoordinates(0, EndPosition), "Unused variable \"" + localVariables[i].name + "\"");
+                            message(MessageLevel.Recomendation, new CodeCoordinates(0, EndPosition, 0), "Unused variable \"" + localVariables[i].name + "\"");
                     }
                 }
 #if (NET40 || INLINE) && JIT

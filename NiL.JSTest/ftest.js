@@ -1,1 +1,4 @@
-﻿Int16Array([1,2,3,4])
+﻿var a = {
+    "test member": 1
+};
+a["test member"] = 2;

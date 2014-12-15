@@ -83,7 +83,7 @@ namespace NiL.JS.Expressions
                 && (threads[0] is GetVariableExpression || threads[0] is Constant)
                 && (threads[1] is GetVariableExpression || threads[1] is Constant)
                 && ResultType == PredictedType.Ambiguous)
-                message(MessageLevel.Warning, new CodeCoordinates(0, Position), "Type of a expression is ambiguous");
+                message(MessageLevel.Warning, new CodeCoordinates(0, Position, Length), "Type of a expression is ambiguous");
         }
 
         public override T Visit<T>(Visitor<T> visitor)
