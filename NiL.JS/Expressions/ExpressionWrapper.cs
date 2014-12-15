@@ -7,6 +7,8 @@ namespace NiL.JS.Expressions
     {
         private CodeNode node;
 
+        public CodeNode Node { get { return node; } }
+
         public override bool IsContextIndependent
         {
             get
@@ -23,6 +25,11 @@ namespace NiL.JS.Expressions
         internal override JSObject Evaluate(Context context)
         {
             return node.Evaluate(context);
+        }
+
+        public override T Visit<T>(Visitor<T> visitor)
+        {
+            return visitor.Visit(this);
         }
 
         internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict, CompilerMessageCallback message)

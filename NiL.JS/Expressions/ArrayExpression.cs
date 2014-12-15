@@ -8,7 +8,7 @@ using NiL.JS.Statements;
 namespace NiL.JS.Expressions
 {
     [Serializable]
-    public sealed class ArrayStatement : Expression
+    public sealed class ArrayExpression : Expression
     {
         private static JSObject writableNotExist = null;
         private Expression[] elements;
@@ -36,7 +36,7 @@ namespace NiL.JS.Expressions
             }
         }
 
-        private ArrayStatement()
+        private ArrayExpression()
         {
 
         }
@@ -73,7 +73,7 @@ namespace NiL.JS.Expressions
             return new ParseResult()
             {
                 IsParsed = true,
-                Statement = new ArrayStatement()
+                Statement = new ArrayExpression()
                 {
                     elements = elms.ToArray(),
                     Position = pos,
@@ -134,6 +134,11 @@ namespace NiL.JS.Expressions
                     elements[i] = cn as Expression;
                 }
             }
+        }
+
+        public override T Visit<T>(Visitor<T> visitor)
+        {
+            return visitor.Visit(this);
         }
 
         public override string ToString()

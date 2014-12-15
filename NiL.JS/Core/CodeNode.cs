@@ -90,5 +90,7 @@ namespace NiL.JS.Core
         {
             return null;
         }
+
+        public abstract T Visit<T>(Visitor<T> visitor);
     }
 }

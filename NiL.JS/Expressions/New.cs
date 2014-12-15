@@ -46,6 +46,17 @@ namespace NiL.JS.Expressions
                 return source.ToString();
             }
 
+            public override T Visit<T>(Visitor<T> visitor)
+            {
+                if (source is GetVariableExpression)
+                    return visitor.Visit(source as GetVariableExpression);
+                if (source is GetMemberExpression)
+                    return visitor.Visit(source as GetMemberExpression);
+                if (source is None)
+                    return visitor.Visit(source as None);
+                return visitor.Visit(source);
+            }
+
             internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message)
             {
                 return source.Build(ref source, depth, variables, strict, message);
@@ -86,6 +97,11 @@ namespace NiL.JS.Expressions
             {
                 thisSetter.lastThisBind = prevTB;
             }
+        }
+
+        public override T Visit<T>(Visitor<T> visitor)
+        {
+            return visitor.Visit(this);
         }
 
         public override string ToString()

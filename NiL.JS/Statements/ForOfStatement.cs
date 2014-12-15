@@ -344,7 +344,7 @@ namespace NiL.JS.Statements
             }
             if (message != null
                 && (source is Json
-                || source is ArrayStatement
+                || source is ArrayExpression
                 || source is Constant))
                 message(MessageLevel.Recomendation, new CodeCoordinates(0, Position), "for..in with constant source. This reduce performance. Rewrite without using for..in.");
             return false;
@@ -355,6 +355,11 @@ namespace NiL.JS.Statements
             source.Optimize(ref source, owner, message);
             if (body != null)
                 body.Optimize(ref body, owner, message);
+        }
+
+        public override T Visit<T>(Visitor<T> visitor)
+        {
+            return visitor.Visit(this);
         }
 
         public override string ToString()

@@ -192,6 +192,11 @@ namespace NiL.JS.Statements
             body.Optimize(ref body, owner, message);
         }
 
+        public override T Visit<T>(Visitor<T> visitor)
+        {
+            return visitor.Visit(this);
+        }
+
         public override string ToString()
         {
             return "do" + (body is CodeBlock ? body + " " : Environment.NewLine + "  " + body + ";" + Environment.NewLine) + "while (" + condition + ")";

@@ -46,6 +46,11 @@ namespace NiL.JS.Expressions
             return System.Linq.Expressions.Expression.Call(new Func<object, int>(Convert.ToInt32).Method, st);
         }
 
+        public override T Visit<T>(Visitor<T> visitor)
+        {
+            return visitor.Visit(this);
+        }
+
         public override string ToString()
         {
             return "(" + first + " | 0)";

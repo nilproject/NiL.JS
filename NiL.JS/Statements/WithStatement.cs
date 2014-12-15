@@ -137,5 +137,10 @@ namespace NiL.JS.Statements
         {
             return "with (" + obj + ")" + (body is CodeBlock ? "" : Environment.NewLine + "  ") + body;
         }
+
+        public override T Visit<T>(Visitor<T> visitor)
+        {
+            return visitor.Visit(this);
+        }
     }
 }

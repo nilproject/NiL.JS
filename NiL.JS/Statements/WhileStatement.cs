@@ -169,7 +169,7 @@ namespace NiL.JS.Statements
                         _this = null;
                 }
                 else if ((condition is Json && (condition as Json).Fields.Length == 0) 
-                    || (condition is ArrayStatement && (condition as ArrayStatement).Elements.Count == 0))
+                    || (condition is ArrayExpression && (condition as ArrayExpression).Elements.Count == 0))
                 {
                     _this = new InfinityLoop(body, labels);
                 }
@@ -187,6 +187,11 @@ namespace NiL.JS.Statements
                 condition.Optimize(ref condition, owner, message);
             if (body != null)
                 body.Optimize(ref body, owner, message);
+        }
+
+        public override T Visit<T>(Visitor<T> visitor)
+        {
+            return visitor.Visit(this);
         }
 
         public override string ToString()

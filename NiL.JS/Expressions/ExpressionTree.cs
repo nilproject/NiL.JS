@@ -1254,6 +1254,11 @@ namespace NiL.JS.Statements
             throw new InvalidOperationException();
         }
 
+        public override T Visit<T>(Visitor<T> visitor)
+        {
+            return visitor.Visit(this);
+        }
+
         internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict, CompilerMessageCallback message)
         {
             Type = Type;

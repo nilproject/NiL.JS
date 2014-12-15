@@ -119,6 +119,11 @@ namespace NiL.JS.Expressions
                 System.Linq.Expressions.Expression.Convert(st, typeof(double)));
         }
 
+        public override T Visit<T>(Visitor<T> visitor)
+        {
+            return visitor.Visit(this);
+        }
+
         public override string ToString()
         {
             return "(" + first + " + " + second + ")";

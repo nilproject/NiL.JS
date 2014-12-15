@@ -288,6 +288,11 @@ namespace NiL.JS.Expressions
             return res;
         }
 
+        public override T Visit<T>(Visitor<T> visitor)
+        {
+            return visitor.Visit(this);
+        }
+
         public override string ToString()
         {
             return "(" + first + " == " + second + ")";

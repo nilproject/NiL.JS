@@ -83,6 +83,11 @@ namespace NiL.JS.Expressions
                 message(MessageLevel.Warning, new CodeCoordinates(0, Position), "Type of a expression is ambiguous");
         }
 
+        public override T Visit<T>(Visitor<T> visitor)
+        {
+            return visitor.Visit(this);
+        }
+
         public override string ToString()
         {
             return "(" + first + " ? " + threads[0] + " : " + threads[1] + ")";

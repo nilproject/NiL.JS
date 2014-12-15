@@ -43,6 +43,11 @@ namespace NiL.JS.Statements
             return "debugger";
         }
 
+        public override T Visit<T>(Visitor<T> visitor)
+        {
+            return visitor.Visit(this);
+        }
+
         protected override CodeNode[] getChildsImpl()
         {
             return null;

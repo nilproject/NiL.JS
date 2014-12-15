@@ -12,7 +12,8 @@ using NiL.JS.Core.JIT;
 
 namespace NiL.JS.Core
 {
-    internal sealed class CompiledNode : Expressions.Expression
+    [Serializable]
+    public sealed class CompiledNode : Expressions.Expression
     {
         private static readonly MethodInfo wrapMethod = typeof(JITHelpers).GetMethod("wrap", BindingFlags.Static | BindingFlags.NonPublic);
 
@@ -173,6 +174,11 @@ namespace NiL.JS.Core
         internal override Expression TryCompile(bool selfCompile, bool forAssign, Type expectedType, List<CodeNode> dynamicValues)
         {
             return tree;
+        }
+
+        public override T Visit<T>(Visitor<T> visitor)
+        {
+            return visitor.Visit(this);
         }
 
         public override string ToString()

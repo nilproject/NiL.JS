@@ -17,6 +17,11 @@ namespace NiL.JS.Expressions
             return base.Evaluate(context).iValue == 0;
         }
 
+        public override T Visit<T>(Visitor<T> visitor)
+        {
+            return visitor.Visit(this);
+        }
+
         public override string ToString()
         {
             return "(" + first + " !== " + second + ")";

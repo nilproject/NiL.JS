@@ -5,8 +5,9 @@ using NiL.JS.Core;
 using NiL.JS.Core.BaseTypes;
 using NiL.JS.Core.JIT;
 using NiL.JS.Expressions;
+using NiL.JS.Statements;
 
-namespace NiL.JS.Statements
+namespace NiL.JS.Expressions
 {
     [Serializable]
     public sealed class Json : Expression
@@ -237,6 +238,11 @@ namespace NiL.JS.Statements
         protected override CodeNode[] getChildsImpl()
         {
             return values;
+        }
+
+        public override T Visit<T>(Visitor<T> visitor)
+        {
+            return visitor.Visit(this);
         }
 
         public override string ToString()

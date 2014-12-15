@@ -108,6 +108,11 @@ namespace NiL.JS.Expressions
             }
         }
 
+        public override T Visit<T>(Visitor<T> visitor)
+        {
+            return visitor.Visit(this);
+        }
+
         protected override CodeNode[] getChildsImpl()
         {
             if (first != null && second != null)

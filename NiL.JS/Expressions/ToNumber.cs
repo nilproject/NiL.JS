@@ -25,6 +25,11 @@ namespace NiL.JS.Expressions
             return Tools.JSObjectToNumber(first.Evaluate(context), tempContainer);
         }
 
+        public override T Visit<T>(Visitor<T> visitor)
+        {
+            return visitor.Visit(this);
+        }
+
         public override string ToString()
         {
             return "+" + first;

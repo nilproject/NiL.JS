@@ -123,6 +123,11 @@ namespace NiL.JS.Expressions
                 _this = new SetMemberExpression(gme.first, gme.second, second);
         }
 
+        public override T Visit<T>(Visitor<T> visitor)
+        {
+            return visitor.Visit(this);
+        }
+
         public override string ToString()
         {
             string f = first.ToString();

@@ -93,6 +93,11 @@ namespace NiL.JS.Statements
             statement.Optimize(ref statement, owner, message);
         }
 
+        public override T Visit<T>(Visitor<T> visitor)
+        {
+            return visitor.Visit(this);
+        }
+
         public override string ToString()
         {
             return label + ": " + statement;

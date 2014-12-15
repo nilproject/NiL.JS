@@ -41,7 +41,7 @@ namespace NiL.JS.Expressions
                     _this = new Constant(false);
                     return true;
                 }
-                if (first.GetType() == typeof(ArrayStatement))
+                if (first.GetType() == typeof(ArrayExpression))
                 {
                     _this = new Constant(false);
                     return true;
@@ -73,6 +73,11 @@ namespace NiL.JS.Expressions
                 }
             }
             return res;
+        }
+
+        public override T Visit<T>(Visitor<T> visitor)
+        {
+            return visitor.Visit(this);
         }
 
         public override string ToString()

@@ -8,7 +8,7 @@ using NiL.JS.Statements;
 namespace NiL.JS.Expressions
 {
     [Serializable]
-    internal sealed class Mul : Expression
+    public sealed class Mul : Expression
     {
         protected internal override PredictedType ResultType
         {
@@ -114,6 +114,11 @@ namespace NiL.JS.Expressions
                 }
             }
             return res;
+        }
+
+        public override T Visit<T>(Visitor<T> visitor)
+        {
+            return visitor.Visit(this);
         }
 
         public override string ToString()

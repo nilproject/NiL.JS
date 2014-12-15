@@ -91,6 +91,11 @@ namespace NiL.JS.Expressions
             return first.Childs;
         }
 
+        public override T Visit<T>(Visitor<T> visitor)
+        {
+            return visitor.Visit(this);
+        }
+
         internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message)
         {
             var res = first.Build(ref _this, depth, variables, strict, message);

@@ -62,6 +62,11 @@ namespace NiL.JS.Statements
             return null;
         }
 
+        public override T Visit<T>(Visitor<T> visitor)
+        {
+            return visitor.Visit(this);
+        }
+
         public override string ToString()
         {
             return "//" + Text;

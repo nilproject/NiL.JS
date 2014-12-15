@@ -6,7 +6,7 @@ using NiL.JS.Expressions;
 namespace NiL.JS.Core
 {
     [Serializable]
-    internal sealed class RegExpExpression : Expression
+    public sealed class RegExpExpression : Expression
     {
         private string pattern;
         private string flags;
@@ -25,6 +25,11 @@ namespace NiL.JS.Core
         internal override JSObject Evaluate(Context context)
         {
             return new RegExp(pattern, flags);
+        }
+
+        public override T Visit<T>(Visitor<T> visitor)
+        {
+            return visitor.Visit(this);
         }
 
         public override string ToString()

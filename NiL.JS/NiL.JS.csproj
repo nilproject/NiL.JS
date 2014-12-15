@@ -282,6 +282,7 @@
     <Compile Include="Core\TypeProxing\TypeProxy.cs" />
     <Compile Include="Core\Modules\ReadOnlyAttribute.cs" />
     <Compile Include="Core\TypeProxing\ProxyConstructor.cs" />
+    <Compile Include="Core\Visitor.cs" />
     <Compile Include="Core\WithContext.cs" />
     <Compile Include="Expressions\ExpressionWrapper.cs" />
     <Compile Include="Expressions\DeleteMemberExpression.cs" />

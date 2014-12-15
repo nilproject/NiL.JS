@@ -60,6 +60,11 @@ namespace NiL.JS.Statements
             return "if (" + condition + ")" + (body is CodeBlock ? sbody : Environment.NewLine + "  " + sbody.Replace(rp, rs));
         }
 
+        public override T Visit<T>(Visitor<T> visitor)
+        {
+            return visitor.Visit(this);
+        }
+
         internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message)
         {
             condition.Optimize(ref condition, owner, message);
@@ -234,6 +239,11 @@ namespace NiL.JS.Statements
                 body.Optimize(ref body, owner, message);
             if (elseBody != null)
                 elseBody.Optimize(ref elseBody, owner, message);
+        }
+
+        public override T Visit<T>(Visitor<T> visitor)
+        {
+            return visitor.Visit(this);
         }
 
         public override string ToString()

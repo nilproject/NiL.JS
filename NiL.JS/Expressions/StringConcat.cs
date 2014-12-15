@@ -78,6 +78,11 @@ namespace NiL.JS.Expressions
             return res;
         }
 
+        public override T Visit<T>(Visitor<T> visitor)
+        {
+            return visitor.Visit(this);
+        }
+
         public override string ToString()
         {
             StringBuilder res = new StringBuilder("(", sources.Count * 10).Append(sources[0]);

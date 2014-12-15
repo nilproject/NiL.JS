@@ -48,6 +48,11 @@ namespace NiL.JS.Statements
                 return res;
             }
 
+            public override T Visit<T>(Visitor<T> visitor)
+            {
+                return visitor.Visit(variable);
+            }
+
             protected override CodeNode[] getChildsImpl()
             {
                 return variable.Childs;
@@ -281,6 +286,11 @@ namespace NiL.JS.Statements
             {
                 initializators[i].Optimize(ref initializators[i], owner, message);
             }
+        }
+
+        public override T Visit<T>(Visitor<T> visitor)
+        {
+            return visitor.Visit(this);
         }
 
         public override string ToString()

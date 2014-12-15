@@ -94,7 +94,7 @@ namespace NiL.JS.Core
             // 2
             new _Rule[] // Для операторов №2
             {
-                new _Rule("[", ArrayStatement.Parse),
+                new _Rule("[", ArrayExpression.Parse),
                 new _Rule("{", Json.Parse),
                 new _Rule("function", FunctionExpression.Parse),
             },

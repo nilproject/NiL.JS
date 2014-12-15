@@ -171,6 +171,11 @@ namespace NiL.JS.Expressions
                 this.owner = owner;
             }
 
+            public override T Visit<T>(Visitor<T> visitor)
+            {
+                return visitor.Visit(this);
+            }
+
             public override string ToString()
             {
                 return owner.ToString();
@@ -197,6 +202,11 @@ namespace NiL.JS.Expressions
                 functionDepth = fdepth;
                 this.name = name;
                 descriptor = new VariableDescriptor(this, true, fdepth);
+            }
+
+            public override T Visit<T>(Visitor<T> visitor)
+            {
+                return visitor.Visit(this);
             }
 
             public override string ToString()
@@ -619,6 +629,11 @@ namespace NiL.JS.Expressions
         {
             body.TryCompile(true, false, null, new List<CodeNode>());
             return null;
+        }
+
+        public override T Visit<T>(Visitor<T> visitor)
+        {
+            return visitor.Visit(this);
         }
 
         public override string ToString()

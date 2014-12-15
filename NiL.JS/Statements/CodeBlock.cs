@@ -472,6 +472,11 @@ namespace NiL.JS.Statements
             return ToString(false);
         }
 
+        public override T Visit<T>(Visitor<T> visitor)
+        {
+            return visitor.Visit(this);
+        }
+
         public string ToString(bool parsed)
         {
             if (parsed)

@@ -190,6 +190,11 @@ namespace NiL.JS.Expressions
             return result;
         }
 
+        public override T Visit<T>(Visitor<T> visitor)
+        {
+            return visitor.Visit(this);
+        }
+
         public override string ToString()
         {
             string res = first + "(";

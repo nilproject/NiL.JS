@@ -43,6 +43,11 @@ namespace NiL.JS.Expressions
                 return res;
             }
 
+            public override T Visit<T>(Visitor<T> visitor)
+            {
+                return visitor.Visit(proto);
+            }
+
             public override string ToString()
             {
                 return proto.ToString();
@@ -148,6 +153,11 @@ namespace NiL.JS.Expressions
                     (f.Descriptor.assignations = new System.Collections.Generic.List<CodeNode>())).Add(this);
             }
             return false;
+        }
+
+        public override T Visit<T>(Visitor<T> visitor)
+        {
+            return visitor.Visit(this);
         }
 
         public override string ToString()

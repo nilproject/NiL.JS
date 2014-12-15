@@ -63,6 +63,11 @@ namespace NiL.JS.Expressions
             throw new InvalidOperationException();
         }
 
+        public override T Visit<T>(Visitor<T> visitor)
+        {
+            return visitor.Visit(this);
+        }
+
         public override string ToString()
         {
             var res = first.ToString();

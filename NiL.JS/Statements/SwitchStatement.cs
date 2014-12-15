@@ -196,6 +196,11 @@ namespace NiL.JS.Statements
             }
         }
 
+        public override T Visit<T>(Visitor<T> visitor)
+        {
+            return visitor.Visit(this);
+        }
+
         public override string ToString()
         {
             string res = "switch (" + image + ") {" + Environment.NewLine;

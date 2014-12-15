@@ -407,6 +407,11 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
+        public override T Visit<T>(Visitor<T> visitor)
+        {
+            return visitor.Visit(this);
+        }
+
         public override string ToString()
         {
             var sbody = body.ToString();
