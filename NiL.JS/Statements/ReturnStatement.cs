@@ -91,7 +91,8 @@ namespace NiL.JS.Statements
 
         internal override void Optimize(ref CodeNode _this, Expressions.FunctionExpression owner, CompilerMessageCallback message)
         {
-            body.Optimize(ref body, owner, message);
+            if (body != null)
+                body.Optimize(ref body, owner, message);
         }
 
         internal override System.Linq.Expressions.Expression TryCompile(bool selfCompile, bool forAssign, Type expectedType, List<CodeNode> dynamicValues)

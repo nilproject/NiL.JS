@@ -320,24 +320,10 @@ for (var i = 0; i < 20000000; i++)
                 return JSObject.Undefined;
             }));
 
-            int mode = -6
+            int mode = 11
                    ;
             switch (mode)
             {
-                case -6:
-                    {
-                        Console.WriteLine(Translator.Translate(new Script(
-@"
-var a = 1;
-var b = 2;
-function sum(x, y)
-{
-    return x + y;
-}
-console.log(sum(a, b));
-").Root));
-                        break;
-                    }
                 case -5:
                     {
                         var f = new FileStream("ftest.js", FileMode.Open, FileAccess.Read);
@@ -454,6 +440,11 @@ console.log(sum(a, b));
                         break;
                     }
                 case 11:
+                    {
+                        runFile(@"jquery.js");
+                        break;
+                    }
+                case 12:
                     {
                         runFile(@"tests\custom\Int8Array.js");
                         break;

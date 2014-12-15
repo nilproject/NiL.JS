@@ -334,6 +334,7 @@
     <Content Include="crypto-js\3.1.2\test\x64-wordarray-test.js" />
     <Content Include="Draft\generators.js" />
     <Content Include="handlebars-v2.0.0.js" />
+    <Content Include="jquery.js" />
     <Content Include="jsfunfuzz.js" />
     <Content Include="kraken-1.1\ai-astar-data.js" />
     <Content Include="kraken-1.1\ai-astar.js" />

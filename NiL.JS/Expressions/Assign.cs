@@ -103,7 +103,7 @@ namespace NiL.JS.Expressions
                 if (vr.descriptor.isDefined)
                 {
                     var stype = second.ResultType;
-                    if (vr.descriptor.lastPredictedType != stype)
+                    if (vr.descriptor.lastPredictedType != stype && vr.descriptor.lastPredictedType != PredictedType.Unknown)
                     {
                         if (Tools.IsEqual(vr.descriptor.lastPredictedType, stype, PredictedType.Group))
                             vr.descriptor.lastPredictedType = stype & PredictedType.Group;

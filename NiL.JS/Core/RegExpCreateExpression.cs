@@ -11,6 +11,14 @@ namespace NiL.JS.Core
         private string pattern;
         private string flags;
 
+        protected internal override PredictedType ResultType
+        {
+            get
+            {
+                return PredictedType.Object;
+            }
+        }
+
         public RegExpExpression(string pattern, string flags)
         {
             this.pattern = pattern;

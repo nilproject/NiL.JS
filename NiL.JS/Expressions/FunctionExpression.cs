@@ -561,6 +561,16 @@ namespace NiL.JS.Expressions
                     arguments[i].owner = this;
                 }
             }
+            if (message != null)
+            {
+                for (var i = arguments.Length; i-- > 0; )
+                {
+                    if (arguments[i].ReferenceCount <= 1)
+                        message(MessageLevel.Recomendation, new CodeCoordinates(0, EndPosition), "Unused variable \"" + arguments[i].name + "\"");
+                    else
+                        break;
+                }
+            }
             body = bodyCode as CodeBlock;
             if (body.variables != null)
             {

@@ -177,7 +177,7 @@ namespace NiL.JS.Statements
             }
             for (var j = body.Count; j-- > 0; )
                 (body[j] as Constant).value.oValue = Tools.Unescape((body[j] as Constant).value.oValue.ToString(), state.strict.Peek());
-            //Dictionary<string, VariableDescriptor> vars = null;
+
             bool expectSemicolon = false;
             while ((sroot && i < state.Code.Length) || (!sroot && state.Code[i] != '}'))
             {
@@ -199,43 +199,10 @@ namespace NiL.JS.Statements
                         throw new JSException((new NiL.JS.Core.BaseTypes.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
                     if (state.InExpression == 0 && string.IsNullOrEmpty((t as FunctionExpression).Name))
                         throw new JSException((new NiL.JS.Core.BaseTypes.SyntaxError("Declarated function must have name.")));
-                    //if (vars == null)
-                    //    vars = new Dictionary<string, VariableDescriptor>();
-                    //VariableDescriptor vd = null;
-                    //var f = (t as FunctionExpression);
-                    //if (!vars.TryGetValue(f.Name, out vd))
-                    //    vars[f.Name] = new VariableDescriptor(f.Reference, true, state.functionsDepth);
-                    //else
-                    //{
-                    //    f.Reference.functionDepth = state.functionsDepth;
-                    //    vd.references.Add(f.Reference);
-                    //    f.Reference.descriptor = vd;
-                    //    vd.Inititalizator = f.Reference;
-                    //}
                     expectSemicolon = false;
                 }
                 else
                 {
-                    //if (state.message != null && expectSemicolon)
-                    //    state.message(MessageLevel.Warning, CodeCoordinates.FromTextPosition(state.Code, body.Count > 0 ? body[body.Count - 1].EndPosition : i), "Missing semicolon.");
-                    /*if (t is VariableDefineStatement)
-                    {
-                        var inits = (t as VariableDefineStatement).initializators;
-                        if (vars == null)
-                            vars = new Dictionary<string, VariableDescriptor>();
-                        for (var j = inits.Length; j-- > 0; )
-                        {
-                            VariableDescriptor desc = null;
-                            var gvs = (inits[j] as VariableReference) ?? ((inits[j] as Assign).FirstOperand as VariableReference);
-                            if (!vars.TryGetValue(gvs.Name, out desc))
-                                vars[gvs.Name] = new VariableDescriptor(gvs, true, state.functionsDepth);
-                            else
-                            {
-                                desc.references.Add(gvs);
-                                gvs.descriptor = desc;
-                            }
-                        }
-                    }*/
                     expectSemicolon = true;
                 }
                 body.Add(t);
@@ -261,23 +228,17 @@ namespace NiL.JS.Statements
             };
         }
 
-        internal override JSObject Evaluate(Context context)
+        internal sealed override JSObject Evaluate(Context context)
         {
-#if (NET40 || INLINE) && JIT
-            if (compiledVersion != null)
-            {
-                context.abortInfo = compiledVersion(context);
-                context.abort = AbortType.Return;
-                return context.abortInfo;
-            }
-#endif
             for (int i = lines.Length; i-- > 0; )
             {
 #if DEV
                 if (context.debugging)
                     context.raiseDebugger(lines[i]);
 #endif
-                context.lastResult = lines[i].Evaluate(context) ?? context.lastResult;
+                var t = lines[i].Evaluate(context);
+                if (t != null)
+                    context.lastResult = t;
 #if DEBUG
                 if (!context.IsExcecuting)
                     if (System.Diagnostics.Debugger.IsAttached)
@@ -399,9 +360,6 @@ namespace NiL.JS.Statements
             }
             else
             {
-
-                //if (body.Length > 0 && body[0] is Call)
-                //    (body[0] as Call).allowTCO = true;
                 if (variables.Count != 0 &&
                     (this.variables == null || this.variables.Length != variables.Count))
                     this.variables = variables.Values.ToArray();
@@ -420,6 +378,14 @@ namespace NiL.JS.Statements
                     {
                         if (this.variables[i].owner == this)
                             localVariables[--localVariablesCount] = this.variables[i];
+                    }
+                }
+                if (message != null)
+                {
+                    for (var i = 0; i < localVariables.Length; i++)
+                    {
+                        if (localVariables[i].ReferenceCount <= 1)
+                            message(MessageLevel.Recomendation, new CodeCoordinates(0, EndPosition), "Unused variable \"" + localVariables[i].name + "\"");
                     }
                 }
 #if (NET40 || INLINE) && JIT
