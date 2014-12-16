@@ -12,19 +12,21 @@ namespace NiL.JS.Core
     {
         public int Line { get; private set; }
         public int Column { get; private set; }
+        public int Length { get; private set; }
 
-        public CodeCoordinates(int line, int column)
+        public CodeCoordinates(int line, int column, int length)
         {
             Line = line;
             Column = column;
+            Length = length;
         }
 
         public override string ToString()
         {
-            return "(" + Line + ": " + Column + ")";
+            return "(" + Line + ": " + Column + "*" + Length + ")";
         }
 
-        public static CodeCoordinates FromTextPosition(string text, int position)
+        public static CodeCoordinates FromTextPosition(string text, int position, int length)
         {
             if (text == null)
                 throw new ArgumentNullException("text");
@@ -50,7 +52,7 @@ namespace NiL.JS.Core
                 }
                 column++;
             }
-            return new CodeCoordinates(line, column);
+            return new CodeCoordinates(line, column, length);
         }
     }
     /// <summary>

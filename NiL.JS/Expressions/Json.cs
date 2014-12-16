@@ -89,9 +89,9 @@ namespace NiL.JS.Expressions
                         var vle = flds[setter.Name];
                         if (!(vle is Constant)
                             || (vle as Constant).value.valueType != JSObjectType.Property)
-                            throw new JSException((new SyntaxError("Try to define setter for defined field at " + CodeCoordinates.FromTextPosition(state.Code, pos))));
+                            throw new JSException((new SyntaxError("Try to define setter for defined field at " + CodeCoordinates.FromTextPosition(state.Code, pos, 0))));
                         if (((vle as Constant).value.oValue as CodeNode[])[0] != null)
-                            throw new JSException((new SyntaxError("Try to redefine setter " + setter.Name + " at " + CodeCoordinates.FromTextPosition(state.Code, pos))));
+                            throw new JSException((new SyntaxError("Try to redefine setter " + setter.Name + " at " + CodeCoordinates.FromTextPosition(state.Code, pos, 0))));
                         ((vle as Constant).value.oValue as CodeNode[])[0] = setter;
                     }
                 }
@@ -111,9 +111,9 @@ namespace NiL.JS.Expressions
                         var vle = flds[getter.Name];
                         if (!(vle is Constant)
                             || (vle as Constant).value.valueType != JSObjectType.Property)
-                            throw new JSException((new SyntaxError("Try to define getter for defined field at " + CodeCoordinates.FromTextPosition(state.Code, pos))));
+                            throw new JSException((new SyntaxError("Try to define getter for defined field at " + CodeCoordinates.FromTextPosition(state.Code, pos, 0))));
                         if (((vle as Constant).value.oValue as CodeNode[])[1] != null)
-                            throw new JSException((new SyntaxError("Try to redefine getter " + getter.Name + " at " + CodeCoordinates.FromTextPosition(state.Code, pos))));
+                            throw new JSException((new SyntaxError("Try to redefine getter " + getter.Name + " at " + CodeCoordinates.FromTextPosition(state.Code, pos, 0))));
                         ((vle as Constant).value.oValue as CodeNode[])[1] = getter;
                     }
                 }
@@ -132,7 +132,7 @@ namespace NiL.JS.Expressions
                         else if (state.Code[s] == '\'' || state.Code[s] == '"')
                             fieldName = Tools.Unescape(state.Code.Substring(s + 1, i - s - 2), state.strict.Peek());
                         else if (flds.Count != 0)
-                            throw new JSException((new SyntaxError("Invalid field name at " + CodeCoordinates.FromTextPosition(state.Code, pos))));
+                            throw new JSException((new SyntaxError("Invalid field name at " + CodeCoordinates.FromTextPosition(state.Code, pos, i - pos))));
                         else
                             return new ParseResult();
                     }
@@ -149,9 +149,9 @@ namespace NiL.JS.Expressions
                     {
                         if (((state.strict.Peek() && (!(aei is Constant) || (aei as Constant).value != JSObject.undefined))
                             || (aei is Constant && ((aei as Constant).value.valueType == JSObjectType.Property))))
-                            throw new JSException(new SyntaxError("Try to redefine field \"" + fieldName + "\" at " + CodeCoordinates.FromTextPosition(state.Code, pos)));
+                            throw new JSException(new SyntaxError("Try to redefine field \"" + fieldName + "\" at " + CodeCoordinates.FromTextPosition(state.Code, pos, i - pos)));
                         if (state.message != null)
-                            state.message(MessageLevel.Warning, CodeCoordinates.FromTextPosition(state.Code, initializator.Position), "Duplicate key \"" + fieldName + "\"");
+                            state.message(MessageLevel.Warning, CodeCoordinates.FromTextPosition(state.Code, initializator.Position, 0), "Duplicate key \"" + fieldName + "\"");
                     }
                     flds[fieldName] = initializator;
                 }

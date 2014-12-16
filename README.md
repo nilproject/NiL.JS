@@ -35,5 +35,7 @@ Context.GlobalContext.DefineVariable("alert").Assign(new ExternalFunction((self,
     <a href="https://github.com/nilproject/NiL.JS/wiki/Samples">Samples</a>
     <br/><br/>
     <a href="https://www.nuget.org/packages/NiL.JS">Available in NuGet</a>
+    <br/><br/>
+    <a href="http://nilproject.net/linter.html">Linter with this engine</a>
 </body>
 </html>

@@ -323,7 +323,7 @@ for (var i = 0; i < 20000000; )
                 return JSObject.Undefined;
             }));
 
-            int mode = 3
+            int mode = 2
                    ;
             switch (mode)
             {
@@ -443,6 +443,11 @@ for (var i = 0; i < 20000000; )
                         break;
                     }
                 case 11:
+                    {
+                        runFile(@"jquery.js");
+                        break;
+                    }
+                case 12:
                     {
                         runFile(@"tests\custom\Int8Array.js");
                         break;

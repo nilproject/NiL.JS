@@ -50,7 +50,7 @@ namespace NiL.JS.Statements
                 if (state.strict.Peek())
                 {
                     if (varName == "arguments" || varName == "eval")
-                        throw new JSException(new Core.BaseTypes.SyntaxError("Parameters name may not be \"arguments\" or \"eval\" in strict mode at " + CodeCoordinates.FromTextPosition(state.Code, start)));
+                        throw new JSException(new Core.BaseTypes.SyntaxError("Parameters name may not be \"arguments\" or \"eval\" in strict mode at " + CodeCoordinates.FromTextPosition(state.Code, start, i - start)));
                 }
                 res.variable = new VariableDefineStatement(varName, new GetVariableExpression(varName, state.functionsDepth) { Position = start, Length = i - start, functionDepth = state.functionsDepth }, false, state.functionsDepth) { Position = vStart, Length = i - vStart };
             }
@@ -67,7 +67,7 @@ namespace NiL.JS.Statements
                     {
                         while (char.IsWhiteSpace(state.Code[i])) i++;
                         if (Parser.Validate(state.Code, "in", ref i))
-                            throw new JSException(new SyntaxError("Invalid accumulator name at " + CodeCoordinates.FromTextPosition(state.Code, start)));
+                            throw new JSException(new SyntaxError("Invalid accumulator name at " + CodeCoordinates.FromTextPosition(state.Code, start, i - start)));
                         else
                             return new ParseResult();
                     }
@@ -81,7 +81,7 @@ namespace NiL.JS.Statements
                 if (state.strict.Peek())
                 {
                     if (varName == "arguments" || varName == "eval")
-                        throw new JSException((new Core.BaseTypes.SyntaxError("Parameters name may not be \"arguments\" or \"eval\" in strict mode at " + CodeCoordinates.FromTextPosition(state.Code, start))));
+                        throw new JSException((new Core.BaseTypes.SyntaxError("Parameters name may not be \"arguments\" or \"eval\" in strict mode at " + CodeCoordinates.FromTextPosition(state.Code, start, i - start))));
                 }
                 res.variable = new GetVariableExpression(varName, state.functionsDepth) { Position = start, Length = i - start, functionDepth = state.functionsDepth };
             }
@@ -112,7 +112,7 @@ namespace NiL.JS.Statements
             res.source = Parser.Parse(state, ref i, 1);
             while (char.IsWhiteSpace(state.Code[i])) i++;
             if (state.Code[i] != ')')
-                throw new JSException((new Core.BaseTypes.SyntaxError("Expected \")\" at + " + CodeCoordinates.FromTextPosition(state.Code, i))));
+                throw new JSException((new Core.BaseTypes.SyntaxError("Expected \")\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
             i++;
             state.AllowBreak.Push(true);
             state.AllowContinue.Push(true);
@@ -122,7 +122,7 @@ namespace NiL.JS.Statements
                 if (state.strict.Peek())
                     throw new JSException((new NiL.JS.Core.BaseTypes.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
                 if (state.message != null)
-                    state.message(MessageLevel.CriticalWarning, CodeCoordinates.FromTextPosition(state.Code, res.body.Position), "Do not declare function in nested blocks.");
+                    state.message(MessageLevel.CriticalWarning, CodeCoordinates.FromTextPosition(state.Code, res.body.Position, 0), "Do not declare function in nested blocks.");
                 res.body = new CodeBlock(new[] { res.body }, state.strict.Peek()); // для того, чтобы не дублировать код по декларации функции, 
                 // она оборачивается в блок, который сделает самовыпил на втором этапе, но перед этим корректно объявит функцию.
             }
@@ -371,7 +371,7 @@ namespace NiL.JS.Statements
                 && (source is Json
                 || source is ArrayExpression
                 || source is Constant))
-                message(MessageLevel.Recomendation, new CodeCoordinates(0, Position), "for..in with constant source. This reduce performance. Rewrite without using for..in.");
+                message(MessageLevel.Recomendation, new CodeCoordinates(0, Position, Length), "for..in with constant source. This reduce performance. Rewrite without using for..in.");
             return false;
         }
 

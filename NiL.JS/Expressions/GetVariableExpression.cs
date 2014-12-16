@@ -131,7 +131,7 @@ namespace NiL.JS.Expressions
             {
                 _this = null;
                 if (message != null)
-                    message(MessageLevel.Warning, new CodeCoordinates(0, Position), "Unused get of defined variable was removed. Maybe, something missing.");
+                    message(MessageLevel.Warning, new CodeCoordinates(0, Position, Length), "Unused get of defined variable was removed. Maybe, something missing.");
             }
             else if (variableName == "arguments"
                 && functionDepth > 0)

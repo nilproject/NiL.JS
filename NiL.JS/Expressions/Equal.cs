@@ -268,7 +268,13 @@ namespace NiL.JS.Expressions
         internal override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> vars, bool strict, CompilerMessageCallback message)
         {
             var res = base.Build(ref _this, depth, vars, strict, message);
-            if (!res && message != null)
+            return res;
+        }
+
+        internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message)
+        {
+            base.Optimize(ref _this, owner, message);
+            if (message != null)
             {
                 var fc = first as Constant ?? second as Constant;
                 if (fc != null)
@@ -276,16 +282,15 @@ namespace NiL.JS.Expressions
                     switch (fc.value.valueType)
                     {
                         case JSObjectType.Undefined:
-                            message(MessageLevel.Warning, new CodeCoordinates(0, Position), "To compare with undefined use '===' or '!==' instead of '==' or '!='.");
+                            message(MessageLevel.Warning, new CodeCoordinates(0, Position, Length), "To compare with undefined use '===' or '!==' instead of '==' or '!='.");
                             break;
                         case JSObjectType.Object:
                             if (fc.value.oValue == null)
-                                message(MessageLevel.Warning, new CodeCoordinates(0, Position), "To compare with null use '===' or '!==' instead of '==' or '!='.");
+                                message(MessageLevel.Warning, new CodeCoordinates(0, Position, Length), "To compare with null use '===' or '!==' instead of '==' or '!='.");
                             break;
                     }
                 }
             }
-            return res;
         }
 
         public override T Visit<T>(Visitor<T> visitor)

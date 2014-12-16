@@ -330,23 +330,23 @@ namespace NiL.JS.Expressions
                     name = Tools.Unescape(code.Substring(nameStartPos + 1, i - nameStartPos - 2), state.strict.Peek());
                 else if ((mode == FunctionType.Get || mode == FunctionType.Set) && Parser.ValidateNumber(code, ref i))
                     name = Tools.Unescape(code.Substring(nameStartPos, i - nameStartPos), state.strict.Peek());
-                else throw new JSException((new SyntaxError("Invalid function name at " + CodeCoordinates.FromTextPosition(code, nameStartPos))));
+                else throw new JSException((new SyntaxError("Invalid function name at " + CodeCoordinates.FromTextPosition(code, nameStartPos, i - nameStartPos))));
                 while (char.IsWhiteSpace(code[i])) i++;
                 if (code[i] != '(')
-                    throw new JSException(new SyntaxError("Unexpected char at " + CodeCoordinates.FromTextPosition(code, i)));
+                    throw new JSException(new SyntaxError("Unexpected char at " + CodeCoordinates.FromTextPosition(code, i, 0)));
             }
             else if (mode == FunctionType.Get || mode == FunctionType.Set)
                 throw new JSException(new SyntaxError("Getters and Setters must have name"));
             do i++; while (char.IsWhiteSpace(code[i]));
             if (code[i] == ',')
-                throw new JSException(new SyntaxError("Unexpected char at " + CodeCoordinates.FromTextPosition(code, i)));
+                throw new JSException(new SyntaxError("Unexpected char at " + CodeCoordinates.FromTextPosition(code, i, 0)));
             while (code[i] != ')')
             {
                 if (code[i] == ',')
                     do i++; while (char.IsWhiteSpace(code[i]));
                 int n = i;
                 if (!Parser.ValidateName(code, ref i, state.strict.Peek()))
-                    throw new JSException((new SyntaxError("Invalid description of function arguments at " + CodeCoordinates.FromTextPosition(code, nameStartPos))));
+                    throw new JSException((new SyntaxError("Invalid description of function arguments at " + CodeCoordinates.FromTextPosition(code, nameStartPos, 0))));
                 var pname = Tools.Unescape(code.Substring(n, i - n), state.strict.Peek());
                 parameters.Add(new ParameterReference(pname, state.functionsDepth + 1) { Position = n, Length = i - n });
                 while (char.IsWhiteSpace(code[i])) i++;
@@ -370,7 +370,7 @@ namespace NiL.JS.Expressions
                 i++;
             while (char.IsWhiteSpace(code[i]));
             if (code[i] != '{')
-                throw new JSException(new SyntaxError("Unexpected char at " + CodeCoordinates.FromTextPosition(code, i)));
+                throw new JSException(new SyntaxError("Unexpected char at " + CodeCoordinates.FromTextPosition(code, i, 0)));
             bool needSwitchCWith = state.containsWith.Peek();
             if (needSwitchCWith)
                 state.containsWith.Push(false);
@@ -406,11 +406,11 @@ namespace NiL.JS.Expressions
                         if (parameters[j].Name == parameters[k].Name)
                             throw new JSException(new SyntaxError("Duplicate names of function parameters not allowed in strict mode."));
                 if (name == "arguments" || name == "eval")
-                    throw new JSException((new Core.BaseTypes.SyntaxError("Functions name may not be \"arguments\" or \"eval\" in strict mode at " + CodeCoordinates.FromTextPosition(code, index))));
+                    throw new JSException((new Core.BaseTypes.SyntaxError("Functions name may not be \"arguments\" or \"eval\" in strict mode at " + CodeCoordinates.FromTextPosition(code, index, 0))));
                 for (int j = parameters.Count; j-- > 0; )
                 {
                     if (parameters[j].Name == "arguments" || parameters[j].Name == "eval")
-                        throw new JSException((new Core.BaseTypes.SyntaxError("Parameters name may not be \"arguments\" or \"eval\" in strict mode at " + CodeCoordinates.FromTextPosition(code, index))));
+                        throw new JSException((new Core.BaseTypes.SyntaxError("Parameters name may not be \"arguments\" or \"eval\" in strict mode at " + CodeCoordinates.FromTextPosition(code, parameters[j].Position, parameters[j].Length))));
                 }
             }
             if (mode == FunctionType.Function && string.IsNullOrEmpty(name))
@@ -559,6 +559,16 @@ namespace NiL.JS.Expressions
                     desc.defineDepth = arguments[i].defineDepth;
                     arguments[i] = desc;
                     arguments[i].owner = this;
+                }
+            }
+            if (message != null)
+            {
+                for (var i = arguments.Length; i-- > 0; )
+                {
+                    if (arguments[i].ReferenceCount <= 1)
+                        message(MessageLevel.Recomendation, new CodeCoordinates(0, EndPosition, 0), "Unused variable \"" + arguments[i].name + "\"");
+                    else
+                        break;
                 }
             }
             body = bodyCode as CodeBlock;

@@ -507,7 +507,7 @@ namespace NiL.JS.Core
             while ((index < state.Code.Length) && (char.IsWhiteSpace(state.Code[index])) && (!lineAutoComplite || !Tools.isLineTerminator(state.Code[index])))
                 index++;
             if (index >= state.Code.Length || state.Code[index] == '}')
-                return null;
+                return EmptyStatement.Instance;
             int sindex = index;
             if (state.Code[index] == ','
                 || state.Code[index] == ';'
@@ -527,7 +527,7 @@ namespace NiL.JS.Core
                         return pr.Statement;
                 }
             }
-            var cord = CodeCoordinates.FromTextPosition(state.Code, sindex);
+            var cord = CodeCoordinates.FromTextPosition(state.Code, sindex, 0);
             throw new JSException((new NiL.JS.Core.BaseTypes.SyntaxError("Unexpected token at " + cord + " : "
                 + state.Code.Substring(index, Math.Min(20, state.Code.Length - index)).Split(new[] { ' ', '\n', '\r' })[0])));
         }

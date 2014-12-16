@@ -31,7 +31,7 @@ namespace NiL.JS.Statements
                 return new ParseResult();
             var b = Parser.Parse(state, ref i, 1, true);
             if (b is EmptyStatement)
-                throw new JSException((new Core.BaseTypes.SyntaxError("Can't throw result of EmptyStatement " + CodeCoordinates.FromTextPosition(state.Code, i - 1))));
+                throw new JSException((new Core.BaseTypes.SyntaxError("Can't throw result of EmptyStatement " + CodeCoordinates.FromTextPosition(state.Code, i - 1, 0))));
             var pos = index;
             index = i;
             return new ParseResult()

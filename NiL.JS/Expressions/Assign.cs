@@ -103,20 +103,20 @@ namespace NiL.JS.Expressions
                 if (vr.descriptor.isDefined)
                 {
                     var stype = second.ResultType;
-                    if (vr.descriptor.lastPredictedType != stype)
+                    if (vr.descriptor.lastPredictedType != stype && vr.descriptor.lastPredictedType != PredictedType.Unknown)
                     {
                         if (Tools.IsEqual(vr.descriptor.lastPredictedType, stype, PredictedType.Group))
                             vr.descriptor.lastPredictedType = stype & PredictedType.Group;
                         else
                         {
                             if (message != null)
-                                message(MessageLevel.Warning, new CodeCoordinates(0, Position), "Variable \"" + vr.Name + "\" has ambiguous type. It can be make impossible some optimizations and cause errors.");
+                                message(MessageLevel.Warning, new CodeCoordinates(0, Position, Length), "Variable \"" + vr.Name + "\" has ambiguous type. It can be make impossible some optimizations and cause errors.");
                             vr.descriptor.lastPredictedType = PredictedType.Ambiguous;
                         }
                     }
                 }
                 else if (message != null)
-                    message(MessageLevel.CriticalWarning, new CodeCoordinates(0, Position), "Assign to undefined variable \"" + vr.Name + "\". It will declare a global variable.");
+                    message(MessageLevel.CriticalWarning, new CodeCoordinates(0, Position, Length), "Assign to undefined variable \"" + vr.Name + "\". It will declare a global variable.");
             }
             var gme = first as GetMemberExpression;
             if (gme != null)

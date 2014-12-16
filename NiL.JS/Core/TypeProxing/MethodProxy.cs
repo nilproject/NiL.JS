@@ -131,7 +131,7 @@ namespace NiL.JS.Core.TypeProxing
             Type retType = null;
             constructorMode = methodinfo is ConstructorInfo;
             alternedTypes = (AllowUnsafeCallAttribute[])methodinfo.GetCustomAttributes(typeof(AllowUnsafeCallAttribute), false);
-            allowNull = methodinfo.IsDefined(typeof(AllowNullArgumentsAttribute));
+            allowNull = methodinfo.IsDefined(typeof(AllowNullArgumentsAttribute), false);
 
             var methodInfo = info as MethodInfo;
             retType = constructorMode ? typeof(void) : methodInfo.ReturnType;

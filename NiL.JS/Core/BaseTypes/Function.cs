@@ -781,7 +781,7 @@ namespace NiL.JS.Core.BaseTypes
             Context internalContext = null;
             internalContext = new Context(context, creator.containsEval || creator.containsWith, this);
             try
-            {                
+            {
                 internalContext.thisBind = thisBind;
 
                 if (args == null)
@@ -818,11 +818,12 @@ namespace NiL.JS.Core.BaseTypes
                 internalContext.Activate();
                 JSObject ai = null;
                 initVariables(body, internalContext);
+                bool restore = creator.recursiveDepth == creator.parametersStored;
                 do
                 {
                     internalContext.abort = AbortType.None;
                     initParameters(this._arguments as Arguments ?? args, body, internalContext);
-                    if (creator.recursiveDepth == creator.parametersStored)
+                    if (restore)
                         storeParameters();
                     body.Evaluate(internalContext);
                     ai = internalContext.abortInfo;

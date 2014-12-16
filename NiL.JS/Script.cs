@@ -74,7 +74,7 @@ namespace NiL.JS
                 throw new System.ArgumentException("Invalid char");
             CompilerMessageCallback icallback = messageCallback != null ? (level, cord, message) =>
                 {
-                    messageCallback(level, CodeCoordinates.FromTextPosition(code, cord.Column), message);
+                    messageCallback(level, CodeCoordinates.FromTextPosition(code, cord.Column, cord.Length), message);
                 } : null as CompilerMessageCallback;
             Parser.Build(ref root, 0, new System.Collections.Generic.Dictionary<string, VariableDescriptor>(), false, icallback);
             var body = root as CodeBlock;

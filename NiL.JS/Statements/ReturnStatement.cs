@@ -81,7 +81,7 @@ namespace NiL.JS.Statements
             {
                 var bat = body as NiL.JS.Expressions.Ternary;
                 var bts = bat.Threads;
-                _this = new IfElseStatement(bat.FirstOperand, new ReturnStatement(bts[0]), new ReturnStatement(bts[1]));
+                _this = new IfElseStatement(bat.FirstOperand, new ReturnStatement(bts[0]), new ReturnStatement(bts[1])) { Position = bat.Position, Length = bat.Length };
                 return false;
             }
             else if (body is NiL.JS.Expressions.Call)
@@ -91,7 +91,8 @@ namespace NiL.JS.Statements
 
         internal override void Optimize(ref CodeNode _this, Expressions.FunctionExpression owner, CompilerMessageCallback message)
         {
-            body.Optimize(ref body, owner, message);
+            if (body != null)
+                body.Optimize(ref body, owner, message);
         }
 
         internal override System.Linq.Expressions.Expression TryCompile(bool selfCompile, bool forAssign, Type expectedType, List<CodeNode> dynamicValues)

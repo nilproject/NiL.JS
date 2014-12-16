@@ -1,1 +1,3 @@
-﻿Int16Array([1,2,3,4])
+﻿(function () {
+    if (isNaN(+undefined))
+        return})();

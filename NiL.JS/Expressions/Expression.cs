@@ -69,7 +69,7 @@ namespace NiL.JS.Expressions
                 if (this.IsContextIndependent)
                 {
                     if (message != null && !(this is RegExpExpression))
-                        message(MessageLevel.Warning, new CodeCoordinates(0, Position), "Constant expression. Maybe, it's a mistake.");
+                        message(MessageLevel.Warning, new CodeCoordinates(0, Position, Length), "Constant expression. Maybe, it's a mistake.");
                     var res = this.Evaluate(null);
                     if (res.valueType == JSObjectType.Double
                         && !double.IsNegativeInfinity(1.0 / res.dValue)
