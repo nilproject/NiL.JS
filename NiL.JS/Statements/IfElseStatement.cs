@@ -190,7 +190,7 @@ namespace NiL.JS.Statements
                 if (context.debugging && !(elseBody is CodeBlock))
                     context.raiseDebugger(elseBody);
 #endif
-                var temp = body.Evaluate(context);
+                var temp = elseBody.Evaluate(context);
                 if (temp != null)
                     context.lastResult = temp;
                 return null;
