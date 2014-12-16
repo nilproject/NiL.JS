@@ -325,3 +325,7 @@ for ( a = 1 ; false;);
 for ( a == 1 ; false;);
 
 for(undefinedVariable in {});
+
+(function(){
+    if (isNaN(+undefined))
+        return})();
