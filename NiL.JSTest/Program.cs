@@ -173,7 +173,7 @@ namespace NiL.JSTest
                         {
                             bool fail = code.Length == 0; // она всегда не равна нулю, 
                             // но таким образом мы можем прочитать код без гуляния по стеку
-                            for (var ti = 0; ti < e.Length; ti++)
+                            for (var ti = 0; e != null && ti < e.Length; ti++)
                             {
                                 var text = e[ti].ToString();
                                 if (ti == 0 && text == "FAIL")
@@ -323,7 +323,7 @@ for (var i = 0; i < 20000000; )
                 return JSObject.Undefined;
             }));
 
-            int mode = 11
+            int mode = 0
                    ;
             switch (mode)
             {

@@ -818,12 +818,11 @@ namespace NiL.JS.Core.BaseTypes
                 internalContext.Activate();
                 JSObject ai = null;
                 initVariables(body, internalContext);
-                bool restore = creator.recursiveDepth == creator.parametersStored;
                 do
                 {
                     internalContext.abort = AbortType.None;
                     initParameters(this._arguments as Arguments ?? args, body, internalContext);
-                    if (restore)
+                    if (creator.recursiveDepth == creator.parametersStored)
                         storeParameters();
                     body.Evaluate(internalContext);
                     ai = internalContext.abortInfo;
