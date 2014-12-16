@@ -36,7 +36,7 @@ Licensed under BSD 3-Clause License.
 
 ## If you found bug
 
-... then you can choose one of three path:  
+... then you can choose one of three paths:  
   **1.** Ignore it. Maybe, sometime, somebody finds it too and tell me about it.  
   **2.** Create [bug report](https://github.com/nilproject/NiL.JS/issues). It's will take some time, but reduce time for fixing it.  
   **3.** Fork project and fix bug by yourself, after that create pull request.  
