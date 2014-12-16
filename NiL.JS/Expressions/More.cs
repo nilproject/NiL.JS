@@ -236,7 +236,11 @@ namespace NiL.JS.Expressions
             tempContainer = temp;
             if (tempContainer.valueType == s.valueType
                 && tempContainer.valueType == JSObjectType.Int)
-                return tempContainer.iValue > s.iValue;
+            {
+                tempContainer.valueType = JSObjectType.Bool;
+                tempContainer.iValue = tempContainer.iValue > s.iValue ? 1 : 0;
+                return tempContainer;
+            }
             return Check(tempContainer, s, this is LessOrEqual);
         }
 

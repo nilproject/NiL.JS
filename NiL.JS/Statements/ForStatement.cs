@@ -156,15 +156,19 @@ namespace NiL.JS.Statements
 #endif
             if (!(bool)condition.Evaluate(context))
                 return null;
+            bool be = body != null;
+            bool pne = post == null;
             do
             {
 #if DEV
                 if (context.debugging && !(body is CodeBlock))
                     context.raiseDebugger(body);
 #endif
-                if (body != null)
+                if (be)
                 {
-                    context.lastResult = body.Evaluate(context) ?? context.lastResult;
+                    var temp = body.Evaluate(context);
+                    if (temp != null)
+                        context.lastResult = temp;
                     if (context.abort != AbortType.None)
                     {
                         var me = context.abortInfo == null || System.Array.IndexOf(labels, context.abortInfo.oValue as string) != -1;
@@ -178,7 +182,7 @@ namespace NiL.JS.Statements
                             return null;
                     }
                 }
-                if (post == null)
+                if (pne)
                     continue;
 #if DEV
                 if (context.debugging)

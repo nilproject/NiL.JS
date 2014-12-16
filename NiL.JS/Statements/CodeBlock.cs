@@ -230,13 +230,14 @@ namespace NiL.JS.Statements
 
         internal sealed override JSObject Evaluate(Context context)
         {
-            for (int i = lines.Length; i-- > 0; )
+            var ls = lines;
+            for (int i = ls.Length; i-- > 0; )
             {
 #if DEV
                 if (context.debugging)
                     context.raiseDebugger(lines[i]);
 #endif
-                var t = lines[i].Evaluate(context);
+                var t = ls[i].Evaluate(context);
                 if (t != null)
                     context.lastResult = t;
 #if DEBUG

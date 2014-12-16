@@ -323,7 +323,7 @@ for (var i = 0; i < 20000000; )
                 return JSObject.Undefined;
             }));
 
-            int mode = 0
+            int mode = 101
                    ;
             switch (mode)
             {

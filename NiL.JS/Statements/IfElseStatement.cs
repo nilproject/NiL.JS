@@ -42,7 +42,9 @@ namespace NiL.JS.Statements
                 if (context.debugging && !(body is CodeBlock))
                     context.raiseDebugger(body);
 #endif
-                context.lastResult = body.Evaluate(context) ?? context.lastResult;
+                var temp = body.Evaluate(context);
+                if (temp != null)
+                    context.lastResult = temp;
             }
             return null;
         }
@@ -177,7 +179,10 @@ namespace NiL.JS.Statements
                 if (context.debugging && !(body is CodeBlock))
                     context.raiseDebugger(body);
 #endif
-                return body.Evaluate(context);
+                var temp = body.Evaluate(context);
+                if (temp != null)
+                    context.lastResult = temp;
+                return null;
             }
             else
             {
@@ -185,7 +190,10 @@ namespace NiL.JS.Statements
                 if (context.debugging && !(elseBody is CodeBlock))
                     context.raiseDebugger(elseBody);
 #endif
-                return elseBody.Evaluate(context);
+                var temp = body.Evaluate(context);
+                if (temp != null)
+                    context.lastResult = temp;
+                return null;
             }
         }
 
