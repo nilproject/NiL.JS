@@ -1,3 +1,1 @@
-﻿(function () {
-    if (isNaN(+undefined))
-        return})();
+﻿for (var p in { a: 1, b: 2 });

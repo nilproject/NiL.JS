@@ -200,7 +200,9 @@ namespace NiL.JS.Statements
             }
             else
                 v = variable.EvaluateForAssing(context);
-            if (!s.IsDefinded || (s.valueType >= JSObjectType.Object && s.oValue == null))
+            if (!s.IsDefinded
+                || (s.valueType >= JSObjectType.Object && s.oValue == null)
+                || body == null)
                 return JSObject.undefined;
             int index = 0;
             HashSet<string> processedKeys = new HashSet<string>(StringComparer.Ordinal);

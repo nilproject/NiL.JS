@@ -324,6 +324,8 @@ for ( a = 1 ; false;);
 
 for ( a == 1 ; false;);
 
+for (var p in { a: 1, b: 2 });
+
 for(undefinedVariable in {});
 
 (function(){

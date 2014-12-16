@@ -260,7 +260,7 @@ namespace NiL.JS.Statements
             int actualChilds = 0;
             for (int i = 0; i < initializators.Length; i++)
             {
-                Parser.Build(ref initializators[i], message != null ? 2 : 1, variables, strict, message);
+                Parser.Build(ref initializators[i], message != null ? 2 : depth, variables, strict, message);
                 if (initializators[i] != null)
                     actualChilds++;
             }

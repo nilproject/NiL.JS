@@ -507,14 +507,14 @@ namespace NiL.JS.Core
             while ((index < state.Code.Length) && (char.IsWhiteSpace(state.Code[index])) && (!lineAutoComplite || !Tools.isLineTerminator(state.Code[index])))
                 index++;
             if (index >= state.Code.Length || state.Code[index] == '}')
-                return EmptyStatement.Instance;
+                return null;
             int sindex = index;
             if (state.Code[index] == ','
                 || state.Code[index] == ';'
                 || (lineAutoComplite && Tools.isLineTerminator(state.Code[index])))
             {
                 index++;
-                return EmptyStatement.Instance;
+                return null;
             }
             if (index >= state.Code.Length)
                 return null;
