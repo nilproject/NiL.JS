@@ -11,6 +11,14 @@ namespace NiL.JS.Core
         private string pattern;
         private string flags;
 
+        public override bool IsContextIndependent
+        {
+            get
+            {
+                return false;
+            }
+        }
+
         protected internal override PredictedType ResultType
         {
             get
