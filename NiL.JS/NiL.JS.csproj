@@ -220,9 +220,10 @@
     <Compile Include="Core\BaseTypes\Int8Array.cs" />
     <Compile Include="Core\BaseTypes\TypedArray.cs" />
     <Compile Include="Core\BinaryTree.cs" />
-    <Compile Include="Core\BindedFunction.cs" />
+    <Compile Include="Core\Functions\BindedFunction.cs" />
     <Compile Include="Core\CatchContext.cs" />
     <Compile Include="Core\CompiledNode.cs" />
+    <Compile Include="Core\Functions\MacroFunction.cs" />
     <Compile Include="Core\Modules\CallOverloaded.cs" />
     <Compile Include="Core\Modules\Debug.cs" />
     <Compile Include="Core\Modules\ImmutablePrototypeAttribute.cs" />
@@ -244,8 +245,8 @@
     <Compile Include="Core\BaseTypes\ReferenceError.cs" />
     <Compile Include="Core\BaseTypes\TypeError.cs" />
     <Compile Include="Core\Delegates.cs" />
-    <Compile Include="Core\EvalFunction.cs" />
-    <Compile Include="Core\ExternalFunction.cs" />
+    <Compile Include="Core\Functions\EvalFunction.cs" />
+    <Compile Include="Core\Functions\ExternalFunction.cs" />
     <Compile Include="Core\GlobalFunctions.cs" />
     <Compile Include="Core\JIT\JITHelpers.cs" />
     <Compile Include="Core\JIT\TreeBuildingState.cs" />
@@ -266,7 +267,7 @@
     <Compile Include="Core\Modules\ParametersCountAttribute.cs" />
     <Compile Include="Core\Modules\PrototypeAttribute.cs" />
     <Compile Include="Core\Modules\ConvertValueAttribute.cs" />
-    <Compile Include="Core\ObjectConstructor.cs" />
+    <Compile Include="Core\Functions\ObjectConstructor.cs" />
     <Compile Include="Core\ParsingState.cs" />
     <Compile Include="Core\CodeNode.cs" />
     <Compile Include="Core\Context.cs" />
@@ -278,10 +279,10 @@
     <Compile Include="Core\Modules\ImmutableAttribute.cs" />
     <Compile Include="Core\Modules\Math.cs" />
     <Compile Include="Core\Tools.cs" />
-    <Compile Include="Core\TypeProxing\MethodProxy.cs" />
+    <Compile Include="Core\Functions\MethodProxy.cs" />
     <Compile Include="Core\TypeProxing\TypeProxy.cs" />
     <Compile Include="Core\Modules\ReadOnlyAttribute.cs" />
-    <Compile Include="Core\TypeProxing\ProxyConstructor.cs" />
+    <Compile Include="Core\Functions\ProxyConstructor.cs" />
     <Compile Include="Core\Visitor.cs" />
     <Compile Include="Core\WithContext.cs" />
     <Compile Include="Expressions\ExpressionWrapper.cs" />

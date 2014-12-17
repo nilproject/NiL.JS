@@ -3,8 +3,9 @@ using System.Reflection;
 using System.Runtime.Serialization;
 using NiL.JS.Core.BaseTypes;
 using NiL.JS.Core.Modules;
+using NiL.JS.Core.TypeProxing;
 
-namespace NiL.JS.Core.TypeProxing
+namespace NiL.JS.Core.Functions
 {
     [Serializable]
     public sealed class MethodProxy : Function

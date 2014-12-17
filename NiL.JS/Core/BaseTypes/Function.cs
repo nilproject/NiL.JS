@@ -7,6 +7,7 @@ using NiL.JS.Core.Modules;
 using NiL.JS.Core.TypeProxing;
 using NiL.JS.Expressions;
 using NiL.JS.Statements;
+using NiL.JS.Core.Functions;
 
 namespace NiL.JS.Core.BaseTypes
 {

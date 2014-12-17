@@ -5,6 +5,7 @@ using System.Threading;
 using NiL.JS.Core.BaseTypes;
 using NiL.JS.Core.TypeProxing;
 using NiL.JS.Statements;
+using NiL.JS.Core.Functions;
 
 namespace NiL.JS.Core
 {

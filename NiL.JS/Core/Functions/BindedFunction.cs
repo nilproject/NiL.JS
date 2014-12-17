@@ -6,7 +6,7 @@ using NiL.JS.Core.TypeProxing;
 using NiL.JS.Expressions;
 using NiL.JS.Statements;
 
-namespace NiL.JS.Core
+namespace NiL.JS.Core.Functions
 {
     /// <summary>
     /// Реализует поведение функции Function.prototype.bind.
