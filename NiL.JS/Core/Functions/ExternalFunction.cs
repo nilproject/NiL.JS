@@ -2,7 +2,7 @@
 using NiL.JS.Core.BaseTypes;
 using NiL.JS.Core.Modules;
 
-namespace NiL.JS.Core
+namespace NiL.JS.Core.Functions
 {
     /// <summary>
     /// Представляет функцию платформы с фиксированной сигнатурой.

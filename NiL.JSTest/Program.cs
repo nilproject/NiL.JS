@@ -12,6 +12,7 @@ using System.Threading;
 using NiL.JS.Core.TypeProxing;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using NiL.JS.Core.Functions;
 
 namespace NiL.JSTest
 {
@@ -323,7 +324,7 @@ for (var i = 0; i < 20000000; )
                 return JSObject.Undefined;
             }));
 
-            int mode = 101
+            int mode = 100
                    ;
             switch (mode)
             {

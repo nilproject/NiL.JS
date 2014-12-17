@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using NiL.JS.Core.BaseTypes;
 using NiL.JS.Core.Modules;
+using NiL.JS.Core.Functions;
 
 namespace NiL.JS.Core.TypeProxing
 {

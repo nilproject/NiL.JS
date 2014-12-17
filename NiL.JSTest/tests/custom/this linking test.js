@@ -102,3 +102,10 @@ function func(x) {
 
 if ((new (function () { return function () { this.str = 'hello' } }())).str != "hello")
     console.log("new (f()) failed.");
+
+function f() {
+    return /./;
+}
+
+if (f() === f())
+    throw "Need to recreate regex";

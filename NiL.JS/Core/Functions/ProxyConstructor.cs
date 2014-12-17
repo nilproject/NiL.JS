@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Reflection;
 using NiL.JS.Core.BaseTypes;
 using NiL.JS.Core.Modules;
+using NiL.JS.Core.TypeProxing;
 
-namespace NiL.JS.Core.TypeProxing
+namespace NiL.JS.Core.Functions
 {
     [Serializable]
     [Prototype(typeof(Function))]
