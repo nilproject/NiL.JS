@@ -5,7 +5,7 @@ using System.Collections;
 namespace NiL.JS.Core
 {
     [Serializable]
-    public class Arguments : JSObject, IEnumerable
+    public sealed class Arguments : JSObject, IEnumerable
     {
         private sealed class _LengthContainer : JSObject
         {

@@ -818,15 +818,19 @@ namespace NiL.JS.Core.BaseTypes
                 internalContext.Activate();
                 JSObject ai = null;
                 initVariables(body, internalContext);
-                do
+                initParameters(args, body, internalContext);
+                for (; ; )
                 {
-                    internalContext.abort = AbortType.None;
-                    initParameters(this._arguments as Arguments ?? args, body, internalContext);
-                    if (creator.recursiveDepth == creator.parametersStored)
-                        storeParameters();
                     body.Evaluate(internalContext);
                     ai = internalContext.abortInfo;
-                } while (internalContext.abort == AbortType.TailRecursion);
+                    if (internalContext.abort != AbortType.TailRecursion)
+                        break;
+                    args = this._arguments as Arguments;
+                    initParameters(args, body, internalContext);
+                    if (creator.recursiveDepth == creator.parametersStored)
+                        storeParameters();
+                    internalContext.abort = AbortType.None;
+                }
                 if (ai == null)
                 {
                     notExists.valueType = JSObjectType.NotExistsInObject;
@@ -909,7 +913,7 @@ namespace NiL.JS.Core.BaseTypes
                 }
                 t.attributes &= ~JSObjectAttributesInternal.Cloned;
                 if (creator.arguments[i].captured || creator.containsEval || creator.containsWith)
-                    (internalContext.fields ?? (internalContext.fields = new Dictionary<string, JSObject>()))[creator.arguments[i].Name] = t;
+                    (internalContext.fields ?? (internalContext.fields = createFields(1)))[creator.arguments[i].Name] = t;
                 creator.arguments[i].cacheContext = internalContext;
                 creator.arguments[i].cacheRes = t;
                 if (string.CompareOrdinal(creator.arguments[i].name, "arguments") == 0)

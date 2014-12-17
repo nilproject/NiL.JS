@@ -903,11 +903,17 @@ namespace NiL.JS.Core
             return res.IsExist;
         }
 
+#if INLINE
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
         internal static Dictionary<string, JSObject> createFields()
         {
             return createFields(0);
         }
 
+#if INLINE
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
         internal static Dictionary<string, JSObject> createFields(int p)
         {
             return new Dictionary<string, JSObject>(p, System.StringComparer.Ordinal);
