@@ -387,14 +387,20 @@ namespace NiL.JS.Statements
             {
                 string value = state.Code.Substring(s, i - s);
                 if ((value[0] == '\'') || (value[0] == '"'))
-                    first = new Constant(Tools.Unescape(value.Substring(1, value.Length - 2), state.strict.Peek())) { Position = index, Length = i - s };
+                {
+                    value = Tools.Unescape(value.Substring(1, value.Length - 2), state.strict.Peek());
+                    if (state.stringConstants.ContainsKey(value))
+                        first = new Constant(state.stringConstants[value]) { Position = index, Length = i - s };
+                    else
+                        first = new Constant(state.stringConstants[value] = value) { Position = index, Length = i - s };
+                }
                 else
                 {
                     bool b = false;
                     if (value == "null")
                         first = new Constant(JSObject.Null) { Position = s, Length = i - s };
                     else if (bool.TryParse(value, out b))
-                        first = new Constant(b) { Position = index, Length = i - s };
+                        first = new Constant(b ? Core.BaseTypes.Boolean.True : Core.BaseTypes.Boolean.False) { Position = index, Length = i - s };
                     else
                     {
                         int n = 0;
@@ -402,9 +408,19 @@ namespace NiL.JS.Statements
                         if (Tools.ParseNumber(state.Code, ref s, out d, 0, Tools.ParseNumberOptions.Default | (state.strict.Peek() ? Tools.ParseNumberOptions.RaiseIfOctal : Tools.ParseNumberOptions.None)))
                         {
                             if ((n = (int)d) == d && !double.IsNegativeInfinity(1.0 / d))
-                                first = new Constant(n) { Position = index, Length = i - index };
+                            {
+                                if (state.intConstants.ContainsKey(n))
+                                    first = new Constant(state.intConstants[n]) { Position = index, Length = i - index };
+                                else
+                                    first = new Constant(state.intConstants[n] = n) { Position = index, Length = i - index };
+                            }
                             else
-                                first = new Constant(d) { Position = index, Length = i - index };
+                            {
+                                if (state.doubleConstants.ContainsKey(d))
+                                    first = new Constant(state.doubleConstants[d]) { Position = index, Length = i - index };
+                                else
+                                    first = new Constant(state.doubleConstants[d] = d) { Position = index, Length = i - index };
+                            }
                         }
                         else if (Parser.ValidateRegex(state.Code, ref s, true))
                         {
@@ -1058,7 +1074,10 @@ namespace NiL.JS.Statements
                             if (!Parser.ValidateName(state.Code, ref i, false, true, state.strict.Peek()))
                                 throw new ArgumentException("code (" + i + ")");
                             string name = state.Code.Substring(s, i - s);
-                            first = new GetMemberExpression(first, new Constant(name)
+                            JSObject jsname = null;
+                            if (!state.stringConstants.TryGetValue(name, out jsname))
+                                state.stringConstants[name] = jsname = name;
+                            first = new GetMemberExpression(first, new Constant(jsname)
                                                                      {
                                                                          Position = s,
                                                                          Length = i - s
@@ -1083,7 +1102,7 @@ namespace NiL.JS.Statements
                                 throw new JSException((new Core.BaseTypes.SyntaxError("Unexpected token at " + CodeCoordinates.FromTextPosition(state.Code, startPos, 0))));
                             while (char.IsWhiteSpace(state.Code[i])) i++;
                             if (state.Code[i] != ']')
-                                throw new JSException((new Core.BaseTypes.SyntaxError("Expected \"]\" at " + CodeCoordinates.FromTextPosition(state.Code, startPos, 0))));                            
+                                throw new JSException((new Core.BaseTypes.SyntaxError("Expected \"]\" at " + CodeCoordinates.FromTextPosition(state.Code, startPos, 0))));
                             first = new GetMemberExpression(first, mname) { Position = first.Position, Length = i + 1 - first.Position };
                             i++;
                             repeat = true;

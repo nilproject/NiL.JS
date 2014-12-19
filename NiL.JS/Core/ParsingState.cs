@@ -19,6 +19,9 @@ namespace NiL.JS.Core
         public readonly Stack<bool> containsWith;
         public int breaksCount;
         public int continiesCount;
+        public readonly Dictionary<string, JSObject> stringConstants;
+        public readonly Dictionary<int, JSObject> intConstants;
+        public readonly Dictionary<double, JSObject> doubleConstants;
 
         public readonly CompilerMessageCallback message;
 
@@ -39,6 +42,9 @@ namespace NiL.JS.Core
             AllowYield = new Stack<bool>();
             AllowYield.Push(false);
             this.message = message;
+            stringConstants = new Dictionary<string, JSObject>();
+            intConstants = new Dictionary<int, JSObject>();
+            doubleConstants = new Dictionary<double, JSObject>();
         }
     }
 }

@@ -89,6 +89,9 @@ namespace NiL.JS.Expressions
             if (r)
                 System.Diagnostics.Debugger.Break();
 #endif
+            var gme = first as GetMemberExpression;
+            if (gme != null)
+                _this = new SetMemberExpression(gme.first, gme.second, second);
             if (depth > 1)
                 saveResult = true;
             return r;
@@ -118,9 +121,6 @@ namespace NiL.JS.Expressions
                 else if (message != null)
                     message(MessageLevel.CriticalWarning, new CodeCoordinates(0, Position, Length), "Assign to undefined variable \"" + vr.Name + "\". It will declare a global variable.");
             }
-            var gme = first as GetMemberExpression;
-            if (gme != null)
-                _this = new SetMemberExpression(gme.first, gme.second, second);
         }
 
         public override T Visit<T>(Visitor<T> visitor)

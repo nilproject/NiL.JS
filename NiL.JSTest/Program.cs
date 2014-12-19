@@ -324,7 +324,7 @@ for (var i = 0; i < 20000000; )
                 return JSObject.Undefined;
             }));
 
-            int mode = 100
+            int mode = 0
                    ;
             switch (mode)
             {
