@@ -24,7 +24,7 @@ namespace NiL.JS.Expressions
         {
             get
             {
-                switch(value.valueType)
+                switch (value.valueType)
                 {
                     case JSObjectType.Undefined:
                     case JSObjectType.NotExists:
@@ -39,7 +39,7 @@ namespace NiL.JS.Expressions
                     case JSObjectType.String:
                         return PredictedType.String;
                     default:
-                        return PredictedType.Object;                        
+                        return PredictedType.Object;
                 }
             }
         }
@@ -49,7 +49,7 @@ namespace NiL.JS.Expressions
         {
             this.value = value;
         }
-
+        
         internal override JSObject Evaluate(Context context)
         {
             return value;

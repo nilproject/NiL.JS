@@ -375,6 +375,19 @@ namespace NiL.JS.Core
         {
             switch (valueType)
             {
+                case JSObjectType.Bool:
+                    {
+                        if (own)
+                            return notExists;
+                        forWrite = false;
+                        if (__prototype == null)
+                            __prototype = TypeProxy.GetPrototype(typeof(BaseTypes.Boolean));
+#if DEBUG
+                        else if (__prototype.oValue != TypeProxy.GetPrototype(typeof(BaseTypes.Boolean)).oValue)
+                            System.Diagnostics.Debugger.Break();
+#endif
+                        return __prototype.GetMember(name, false, false);
+                    }
                 case JSObjectType.Int:
                 case JSObjectType.Double:
                     {
@@ -393,68 +406,63 @@ namespace NiL.JS.Core
                     {
                         if (own)
                             return notExists;
-                        forWrite = false;
-                        double dindex = 0.0;
-                        int index = 0;
-                        dindex = Tools.JSObjectToDouble(name as JSObject);
 
-                        if (dindex >= 0.0
-                            && ((index = (int)dindex) == dindex)
-                            && oValue.ToString().Length > index)
-                            return oValue.ToString()[index];
-
-                        if (__prototype == null)
-                            __prototype = TypeProxy.GetPrototype(typeof(BaseTypes.String));
-#if DEBUG
-                        else if (__prototype.oValue != TypeProxy.GetPrototype(typeof(BaseTypes.String)).oValue)
-                            System.Diagnostics.Debugger.Break();
-#endif
-                        return __prototype.GetMember(name, false, false);
-                    }
-                case JSObjectType.Bool:
-                    {
-                        if (own)
-                            return notExists;
-                        forWrite = false;
-                        if (__prototype == null)
-                            __prototype = TypeProxy.GetPrototype(typeof(BaseTypes.Boolean));
-#if DEBUG
-                        else if (__prototype.oValue != TypeProxy.GetPrototype(typeof(BaseTypes.Boolean)).oValue)
-                            System.Diagnostics.Debugger.Break();
-#endif
-                        return __prototype.GetMember(name, false, false);
+                        return stringGetMember(name, ref forWrite);
                     }
                 case JSObjectType.Date:
+                case JSObjectType.Function:
                 case JSObjectType.Object:
                     {
                         if (oValue == this)
                             return DefaultFieldGetter(name, forWrite, own);
                         if (oValue == null)
-                            throw new JSException(new TypeError("Can't get property \"" + name + "\" of \"null\""));
+                            throw can_not_get_property_of_null(name);
                         var inObj = oValue as JSObject;
                         if (inObj != null)
                             return inObj.GetMember(name, forWrite, own);
                         break;
                     }
-                case JSObjectType.Function:
-                    {
-                        if (oValue == null)
-                            throw new JSException(new TypeError("Can't get property \"" + name + "\" of \"null\""));
-                        if (oValue == this)
-                        {
-#if DEBUG
-                            System.Diagnostics.Debugger.Break();
-#endif
-                            break;
-                        }
-                        return (oValue as JSObject).GetMember(name, forWrite, own);
-                    }
                 case JSObjectType.Property:
-                    throw new InvalidOperationException("Try to get member of property");
+                    return null;
                 default:
-                    throw new JSException(new TypeError("Can't get property \"" + name + "\" of \"undefined\"."));
+                    throw can_not_get_property_of_undefined(name);
             }
             return DefaultFieldGetter(name, forWrite, own);
+        }
+
+        private Exception can_not_get_property_of_undefined(JSObject name)
+        {
+            return new JSException(new TypeError("Can't get property \"" + name + "\" of \"undefined\""));
+        }
+
+        private static Exception can_not_get_property_of_null(JSObject name)
+        {
+            return new JSException(new TypeError("Can't get property \"" + name + "\" of \"null\""));
+        }
+
+        private JSObject stringGetMember(JSObject name, ref bool forWrite)
+        {
+            forWrite = false;
+            if (name.valueType == JSObjectType.String
+                && string.CompareOrdinal(name.oValue.ToString(), "length") == 0)
+                return oValue.ToString().Length;
+
+            double dindex = 0.0;
+            int index = 0;
+            dindex = Tools.JSObjectToDouble(name);
+
+            if (dindex >= 0.0
+                && ((index = (int)dindex) == dindex)
+                && oValue.ToString().Length > index)
+                return oValue.ToString()[index];
+
+            if (__prototype == null)
+                __prototype = TypeProxy.GetPrototype(typeof(BaseTypes.String));
+#if DEBUG
+                        else if (__prototype.oValue != TypeProxy.GetPrototype(typeof(BaseTypes.String)).oValue)
+                            System.Diagnostics.Debugger.Break();
+#endif
+            return __prototype.GetMember(name, false, false);
         }
 
         [Hidden]
@@ -970,9 +978,6 @@ namespace NiL.JS.Core
             return new BaseTypes.String(value);
         }
 
-#if INLINE
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-#endif
         [Hidden]
         public static explicit operator bool(JSObject obj)
         {
@@ -982,16 +987,15 @@ namespace NiL.JS.Core
                 case JSObjectType.Bool:
                     return obj.iValue != 0;
                 case JSObjectType.Double:
-                    return obj.dValue != 0.0 && !double.IsNaN(obj.dValue);
+                    return !(obj.dValue == 0.0 || double.IsNaN(obj.dValue));
                 case JSObjectType.String:
                     return !string.IsNullOrEmpty(obj.oValue.ToString());
                 case JSObjectType.Object:
                 case JSObjectType.Date:
                 case JSObjectType.Function:
                     return obj.oValue != null;
-                default:
-                    return false;
             }
+            return false;
         }
 
         [Hidden]

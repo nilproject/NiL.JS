@@ -757,6 +757,34 @@ namespace NiL.JS.Core.BaseTypes
             }
         }
 
+        private static void checkStack()
+        {
+            try
+            {
+                System.Runtime.CompilerServices.RuntimeHelpers.EnsureSufficientExecutionStack();
+            }
+            catch
+            {
+                throw new JSException(new RangeError("Stack overflow."));
+            }
+        }
+
+        protected internal virtual JSObject InternalInvoke(JSObject self, Expression[] arguments, Context initiator)
+        {
+            Arguments _arguments = new Core.Arguments()
+            {
+                caller = initiator.strict && initiator.caller != null && initiator.caller.creator.body.strict ? Function.propertiesDummySM : initiator.caller,
+                length = arguments.Length
+            };
+
+            for (int i = 0; i < arguments.Length; i++)
+                _arguments[i] = Call.prepareArg(initiator, arguments[i], false, arguments.Length > 1);
+            initiator.objectSource = null;
+            
+            checkStack();
+            return Invoke(self, _arguments);
+        }
+
         [Hidden]
         public virtual JSObject Invoke(JSObject thisBind, Arguments args)
         {

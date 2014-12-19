@@ -1,6 +1,1 @@
-﻿function macro(a, b) {
-    "macro"; // force macrofunction validation. SyntaxError if fail
-    return a * b - a - b;
-}
-
-console.log(macro(3, 3));
+﻿console.log(JSON.stringify(Object.getOwnPropertyDescriptor(new String, "length")));

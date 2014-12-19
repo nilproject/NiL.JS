@@ -29,7 +29,7 @@ namespace NiL.JS.Expressions
             this.arguments = arguments;
         }
 
-        private static JSObject prepareArg(Context context, CodeNode source, bool tail, bool clone)
+        internal static JSObject prepareArg(Context context, CodeNode source, bool tail, bool clone)
         {
             context.objectSource = null;
             var a = source.Evaluate(context);
@@ -80,9 +80,9 @@ namespace NiL.JS.Expressions
                 {
                     context.abort = AbortType.TailRecursion;
                     tail = true;
-                }
-                if (tail || this.arguments.Length > 0)
-                {
+                    //}
+                    //if (tail || this.arguments.Length > 0)
+                    //{
                     arguments = new Core.Arguments()
                     {
                         caller = context.strict && context.caller != null && context.caller.creator.body.strict ? Function.propertiesDummySM : context.caller,
@@ -90,10 +90,10 @@ namespace NiL.JS.Expressions
                     };
                     for (int i = 0; i < this.arguments.Length; i++)
                         arguments[i] = prepareArg(context, this.arguments[i], tail, this.arguments.Length > 1);
-                }
-                context.objectSource = null;
-                if (tail)
-                {
+                    //}
+                    context.objectSource = null;
+                    //if (tail)
+                    //{
                     arguments.callee = func;
                     for (var i = func.creator.body.localVariables.Length; i-- > 0; )
                     {
@@ -104,25 +104,15 @@ namespace NiL.JS.Expressions
                     if (context.fields != null && context.fields.ContainsKey("arguments"))
                         context.fields["arguments"] = arguments;
                     return JSObject.undefined;
+                    //}
                 }
+                else
+                    context.objectSource = null;
             }
             func.attributes = (func.attributes & ~JSObjectAttributesInternal.Eval) | (temp.attributes & JSObjectAttributesInternal.Eval);
 
-            checkStack();
-            return func.Invoke(newThisBind, arguments);
-        }
-
-        private void checkStack()
-        {
-            try
-            {
-                System.Runtime.CompilerServices.RuntimeHelpers.EnsureSufficientExecutionStack();
-            }
-            catch
-            {
-                throw new JSException(new RangeError("Stack overflow."));
-            }
-        }
+            return func.InternalInvoke(newThisBind, this.arguments, context);
+        }        
 
         internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict, CompilerMessageCallback message)
         {
