@@ -48,6 +48,10 @@ namespace NiL.JS.Core
         ContainsParsedInt = 1 << 23,
         ContainsParsedDouble = 1 << 24,
         Reassign = 1 << 25,
+        IntrinsicFunction = 1 << 26,
+        /// <summary>
+        /// Аттрибуты, не передающиеся при присваивании
+        /// </summary>
         PrivateAttributes = Immutable | ProxyPrototype | Field,
     }
 

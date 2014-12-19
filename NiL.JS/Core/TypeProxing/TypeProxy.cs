@@ -371,7 +371,7 @@ namespace NiL.JS.Core.TypeProxing
                         {
                             var method = (MethodInfo)m[0];
                             r = new MethodProxy(method);
-                            r.attributes = JSObjectAttributesInternal.SystemObject;
+                            r.attributes &= ~(JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.DoNotEnum);
                             break;
                         }
                     case MemberTypes.Field:

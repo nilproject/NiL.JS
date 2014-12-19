@@ -30,7 +30,7 @@ namespace NiL.JS.Core.BaseTypes
 
         private int getValue(int index)
         {
-            return (int)(buffer.Data[index * BYTES_PER_ELEMENT + byteOffset + 0]
+            return (buffer.Data[index * BYTES_PER_ELEMENT + byteOffset + 0]
                                 | (buffer.Data[index * BYTES_PER_ELEMENT + byteOffset + 1] << 8)
                                 | (buffer.Data[index * BYTES_PER_ELEMENT + byteOffset + 2] << 16)
                                 | (buffer.Data[index * BYTES_PER_ELEMENT + byteOffset + 3] << 24));

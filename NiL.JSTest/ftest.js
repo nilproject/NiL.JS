@@ -1,6 +1,9 @@
-﻿function macro(a, b) {
-    "macro"; // force macrofunction validation. SyntaxError if fail
-    return a * b - a - b;
+﻿var desc = Object.getOwnPropertyDescriptor(String.prototype, "substr");
+if (desc.value === String.prototype.substr &&
+    desc.writable === true &&
+    desc.enumerable === false &&
+    desc.configurable === true) {
+    console.log(true);
 }
-
-console.log(macro(3, 3));
+else
+    console.log(false);

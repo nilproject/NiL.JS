@@ -9,7 +9,7 @@ namespace NiL.JS.Core
     {
         private sealed class _LengthContainer : JSObject
         {
-            private Arguments owner;
+            private readonly Arguments owner;
 
             public _LengthContainer(Arguments owner)
             {

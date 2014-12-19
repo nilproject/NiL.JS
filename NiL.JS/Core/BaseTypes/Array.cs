@@ -191,7 +191,7 @@ namespace NiL.JS.Core.BaseTypes
                 }
                 else
                 {
-                    _lengthObj.dValue = data.Length > uint.MaxValue ? 0 : (uint)data.Length;
+                    _lengthObj.dValue = data.Length > uint.MaxValue ? 0 : data.Length;
                     _lengthObj.valueType = JSObjectType.Double;
                 }
                 return _lengthObj;
@@ -306,8 +306,8 @@ namespace NiL.JS.Core.BaseTypes
             var context = Context.CurrentContext;
             IEnumerator<KeyValuePair<int, JSObject>> alternativeEnum = null;
             long prew = -1;
-            var _length = (src as Array).data.Length;
-            var mainEnum = ((src as Array).data as IEnumerable<KeyValuePair<int, JSObject>>).GetEnumerator();
+            var _length = src.data.Length;
+            var mainEnum = (src.data as IEnumerable<KeyValuePair<int, JSObject>>).GetEnumerator();
             bool moved = true;
             while (moved)
             {
@@ -395,8 +395,8 @@ namespace NiL.JS.Core.BaseTypes
             var context = Context.CurrentContext;
             IEnumerator<KeyValuePair<int, JSObject>> alternativeEnum = null;
             long prew = -1;
-            var _length = (src as Array).data.Length;
-            var mainEnum = ((src as Array).data as IEnumerable<KeyValuePair<int, JSObject>>).GetEnumerator();
+            var _length = src.data.Length;
+            var mainEnum = (src.data as IEnumerable<KeyValuePair<int, JSObject>>).GetEnumerator();
             bool moved = true;
             while (moved)
             {

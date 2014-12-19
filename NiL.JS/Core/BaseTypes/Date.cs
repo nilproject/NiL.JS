@@ -429,7 +429,7 @@ namespace NiL.JS.Core.BaseTypes
         public Date()
         {
             time = DateTime.Now.Ticks / 10000;
-            timeZoneOffset = TimeZone.CurrentTimeZone.GetUtcOffset(new DateTime((((long)DateTime.Now.Ticks) % _400yearsMilliseconds + _unixTimeBase) * 10000)).Ticks / 10000;
+            timeZoneOffset = TimeZone.CurrentTimeZone.GetUtcOffset(new DateTime(((DateTime.Now.Ticks) % _400yearsMilliseconds + _unixTimeBase) * 10000)).Ticks / 10000;
         }
 
         [DoNotEnumerate]
@@ -583,7 +583,7 @@ namespace NiL.JS.Core.BaseTypes
         public static JSObject now()
         {
             var time = DateTime.Now.Ticks / 10000;
-            var timeZoneOffset = TimeZone.CurrentTimeZone.GetUtcOffset(new DateTime((((long)DateTime.Now.Ticks) % _400yearsMilliseconds + _unixTimeBase) * 10000)).Ticks / 10000;
+            var timeZoneOffset = TimeZone.CurrentTimeZone.GetUtcOffset(new DateTime(((DateTime.Now.Ticks) % _400yearsMilliseconds + _unixTimeBase) * 10000)).Ticks / 10000;
             return time + timeZoneOffset - _unixTimeBase;
         }
 
