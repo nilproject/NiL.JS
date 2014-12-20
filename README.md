@@ -31,8 +31,8 @@ Licensed under BSD 3-Clause License.
 ## Links
 
 [Samples](https://github.com/nilproject/NiL.JS/wiki/Samples)  
-[Available in NuGet](https://www.nuget.org/packages/NiL.JS)  
-[Linter with this engine](http://nilproject.net/linter.html)  
+[NuGet](https://www.nuget.org/packages/NiL.JS)  
+[Code analyzer on this engine](http://nilproject.net/linter.html)  
 
 ## If you found bug
 
