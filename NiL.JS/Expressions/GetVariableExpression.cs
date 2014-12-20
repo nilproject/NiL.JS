@@ -113,8 +113,10 @@ namespace NiL.JS.Expressions
             return visitor.Visit(this);
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic)
         {
+            if (statistic != null && variableName == "this")
+                statistic.UseThis = true;
             VariableDescriptor desc = null;
             if (!variables.TryGetValue(variableName, out desc) || desc == null)
             {
@@ -135,7 +137,11 @@ namespace NiL.JS.Expressions
             }
             else if (variableName == "arguments"
                 && functionDepth > 0)
+            {
+                if (statistic != null)
+                    statistic.ContainsArguments = true;
                 _this = new GetArgumentsExpression(functionDepth) { descriptor = descriptor };
+            }
             return false;
         }
     }

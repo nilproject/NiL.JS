@@ -193,11 +193,10 @@ namespace NiL.JS.Core
                             break;
                             //return JSObjectToDouble(arg);
                         }
+                    case JSObjectType.NotExists:
                     case JSObjectType.Undefined:
                     case JSObjectType.NotExistsInObject:
                         return double.NaN;
-                    case JSObjectType.NotExists:
-                        throw new JSException((new NiL.JS.Core.BaseTypes.ReferenceError("Variable not defined.")));
                     default:
                         throw new NotImplementedException();
                 }
@@ -214,6 +213,8 @@ namespace NiL.JS.Core
 #endif
         public static int JSObjectToInt32(JSObject arg)
         {
+            if (arg.valueType == JSObjectType.Int)
+                return arg.iValue;
             return JSObjectToInt32(arg, 0, false);
         }
 
@@ -441,6 +442,7 @@ namespace NiL.JS.Core
                         arg = arg.ToPrimitiveValue_Value_String();
                         return JSObjectToNumber(arg);
                     }
+                case JSObjectType.NotExists:
                 case JSObjectType.Undefined:
                 case JSObjectType.NotExistsInObject:
                     {
@@ -448,8 +450,6 @@ namespace NiL.JS.Core
                         result.dValue = double.NaN;
                         return result;
                     }
-                case JSObjectType.NotExists:
-                    throw new JSException(new ReferenceError("Variable not defined."));
                 default:
                     throw new NotImplementedException();
             }

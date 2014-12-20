@@ -4,6 +4,7 @@ using System.Runtime.Serialization;
 using NiL.JS.Core.BaseTypes;
 using NiL.JS.Core.Modules;
 using NiL.JS.Core.TypeProxing;
+using NiL.JS.Expressions;
 
 namespace NiL.JS.Core.Functions
 {
@@ -674,6 +675,59 @@ namespace NiL.JS.Core.Functions
 #endif
                 throw new JSException(new TypeError(e.Message), e);
             }
+        }
+
+        protected internal override JSObject InternalInvoke(JSObject self, Expression[] arguments, Context initiator)
+        {
+            Arguments _arguments = null;
+            if (arguments.Length > 0)
+            {
+                if (parameters.Length > 0)
+                {
+                    if (!constructorMode && arguments.Length == 1)
+                    {
+                        switch (mode)
+                        {
+                            case CallMode.FuncStaticOne:
+                                {
+                                    if (typeof(JSObject).IsAssignableFrom(parameters[0].ParameterType))
+                                        return TypeProxy.Proxy(delegateF1(arguments[0].Evaluate(initiator)));
+                                    break;
+                                }
+                            case CallMode.FuncDynamicOne:
+                                {
+                                    object target = hardTarget ?? getTargetObject(self ?? undefined, info.DeclaringType);
+                                    if (target == null)
+                                        throw new JSException(new TypeError("Can not call function \"" + this.name + "\" for object of another type."));
+
+                                    if (!callOverload && info.IsVirtual)
+                                        break;
+                                    if (typeof(JSObject).IsAssignableFrom(parameters[0].ParameterType))
+                                        return TypeProxy.Proxy(delegateF2(
+                                            target,
+                                            arguments[0].Evaluate(initiator)));
+                                    break;
+                                }
+                        }
+                    }
+                    _arguments = new Core.Arguments()
+                    {
+                        caller = initiator.strict && initiator.caller != null && initiator.caller.creator.body.strict ? Function.propertiesDummySM : initiator.caller,
+                        length = arguments.Length
+                    };
+
+                    for (int i = 0; i < arguments.Length; i++)
+                        _arguments[i] = Call.prepareArg(initiator, arguments[i], false, arguments.Length > 1);
+                }
+                else
+                {
+                    for (int i = 0; i < arguments.Length; i++)
+                        arguments[i].Evaluate(initiator);
+                }
+            }
+            initiator.objectSource = null;
+
+            return TypeProxy.Proxy(InvokeImpl(self, null, _arguments));
         }
 
         [Hidden]

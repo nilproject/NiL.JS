@@ -75,6 +75,7 @@ namespace NiL.JS.Expressions
             {
                 if (allowTCO
                     && context.caller != null
+                    && (func.Type == FunctionType.Function || func.Type == FunctionType.AnonymousFunction)
                     && func == context.caller.oValue
                     && context.caller.oValue != Script.pseudoCaller)
                 {
@@ -111,17 +112,34 @@ namespace NiL.JS.Expressions
             }
             func.attributes = (func.attributes & ~JSObjectAttributesInternal.Eval) | (temp.attributes & JSObjectAttributesInternal.Eval);
 
+            checkStack();
             return func.InternalInvoke(newThisBind, this.arguments, context);
-        }        
+        }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict, CompilerMessageCallback message)
+        private static void checkStack()
         {
+            try
+            {
+                System.Runtime.CompilerServices.RuntimeHelpers.EnsureSufficientExecutionStack();
+            }
+            catch
+            {
+                throw new JSException(new RangeError("Stack overflow."));
+            }
+        }
+
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict, CompilerMessageCallback message, FunctionStatistic statistic)
+        {
+            if (statistic != null)
+                statistic.UseCall = true;
             for (var i = 0; i < arguments.Length; i++)
-                Parser.Build(ref arguments[i], depth + 1, vars, strict, message);
-            base.Build(ref _this, depth, vars, strict, message);
+                Parser.Build(ref arguments[i], depth + 1, vars, strict, message, statistic);
+            base.Build(ref _this, depth, vars, strict, message, statistic);
             if (first is GetVariableExpression)
             {
                 var name = first.ToString();
+                if (name == "eval" && statistic != null)
+                    statistic.ContainsEval = true;
                 VariableDescriptor f = null;
                 if (vars.TryGetValue(name, out f))
                 {

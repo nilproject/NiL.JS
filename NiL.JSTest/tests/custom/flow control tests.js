@@ -331,3 +331,17 @@ for(undefinedVariable in {});
 (function(){
     if (isNaN(+undefined))
         return})();
+
+(function () {
+    function macro() {
+        return 10;
+    }
+    (function () { macro(); })()
+})();
+
+function RegExpf() {
+    return /./;
+}
+
+if (RegExpf() === RegExpf())
+    throw "Need to recreate regex";

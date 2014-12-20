@@ -41,7 +41,7 @@ namespace NiL.JS.Statements
             return null;
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message)
+        internal override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic)
         {
             if (depth < 2)
                 _this = null;

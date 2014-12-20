@@ -21,9 +21,9 @@ namespace NiL.JS.Expressions
             return tempContainer;
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> vars, bool strict, CompilerMessageCallback message)
+        internal override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> vars, bool strict, CompilerMessageCallback message, FunctionStatistic statistic)
         {
-            var res = base.Build(ref _this, depth, vars, strict, message);
+            var res = base.Build(ref _this, depth, vars, strict, message, statistic);
             if (_this != this)
                 return res;
             if ((second is Constant || (second is Expression && ((Expression)second).IsContextIndependent))

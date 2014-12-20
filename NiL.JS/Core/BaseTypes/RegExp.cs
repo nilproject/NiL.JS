@@ -183,11 +183,11 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [DoNotEnumerate]
-        public JSObject exec(Arguments args)
+        public JSObject exec(JSObject arg)
         {
             if (this.GetType() != typeof(RegExp))
                 throw new JSException(new TypeError("Try to call RegExp.exec on not RegExp object."));
-            string input = args[0].ToString();
+            string input = arg.ToString();
             lIndex = Tools.JSObjectToNumber(lastIndex);
             if ((lIndex.attributes & JSObjectAttributesInternal.SystemObject) != 0)
                 lIndex = lIndex.CloneImpl();
@@ -220,9 +220,9 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [DoNotEnumerate]
-        public JSObject test(Arguments args)
+        public JSObject test(JSObject arg)
         {
-            string input = args[0].ToString();
+            string input = arg.ToString();
             lIndex = Tools.JSObjectToNumber(lIndex);
             if (lIndex.valueType == JSObjectType.Double)
             {

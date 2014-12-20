@@ -23,18 +23,21 @@ namespace NiL.JS.Core.BaseTypes
             get;
             set;
         }
+#if CALLSTACKTOSTRING
         public JSObject callstack
         {
             get;
             private set;
         }
-
+#endif
         [DoNotEnumerate]
         public Error()
         {
             name = this.GetType().Name;
             message = "";
+#if CALLSTACKTOSTRING
             makeCallStack();
+#endif
         }
 
         [DoNotEnumerate]
@@ -42,7 +45,9 @@ namespace NiL.JS.Core.BaseTypes
         {
             name = this.GetType().Name;
             message = args[0].ToString();
+#if CALLSTACKTOSTRING
             makeCallStack();
+#endif
         }
 
         [DoNotEnumerate]
@@ -50,9 +55,11 @@ namespace NiL.JS.Core.BaseTypes
         {
             name = this.GetType().Name;
             this.message = message;
+#if CALLSTACKTOSTRING
             makeCallStack();
+#endif
         }
-
+#if CALLSTACKTOSTRING
         private void makeCallStack()
         {
             StringBuilder res = new StringBuilder();
@@ -64,7 +71,7 @@ namespace NiL.JS.Core.BaseTypes
             }
             callstack = res.ToString();
         }
-
+#endif
         [Hidden]
         public override string ToString()
         {

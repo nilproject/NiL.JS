@@ -26,9 +26,9 @@ namespace NiL.JS.Expressions
             return !(bool)first.Evaluate(context);
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> vars, bool strict, CompilerMessageCallback message)
+        internal override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> vars, bool strict, CompilerMessageCallback message, FunctionStatistic statistic)
         {
-            var res = base.Build(ref _this, depth, vars, strict, message);
+            var res = base.Build(ref _this, depth, vars, strict, message, statistic);
             if (!res)
             {
                 if (first.GetType() == typeof(LogicalNot))

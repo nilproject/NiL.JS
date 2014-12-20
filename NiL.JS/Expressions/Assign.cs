@@ -67,7 +67,7 @@ namespace NiL.JS.Expressions
             return temp;
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> vars, bool strict, CompilerMessageCallback message)
+        internal override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> vars, bool strict, CompilerMessageCallback message, FunctionStatistic statistic)
         {
 #if GIVENAMEFUNCTION
             if (first is VariableReference && second is FunctionExpression)
@@ -77,7 +77,7 @@ namespace NiL.JS.Expressions
                     fs.name = (first as VariableReference).Name;
             }
 #endif
-            var r = base.Build(ref _this, depth, vars, strict, message);
+            var r = base.Build(ref _this, depth, vars, strict, message, statistic);
 
             var f = first as VariableReference ?? ((first is OpAssignCache) ? (first as OpAssignCache).Source as VariableReference : null);
             if (f != null)

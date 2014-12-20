@@ -191,8 +191,6 @@ namespace NiL.JS.Core.BaseTypes
                             goto case JSObjectType.Double;
                         break;
                     }
-                case JSObjectType.NotExists:
-                    throw new InvalidOperationException("Variable not defined.");
                 default:
                     return res.ToString("e", System.Globalization.CultureInfo.InvariantCulture);
             }

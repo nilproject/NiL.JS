@@ -127,9 +127,9 @@ namespace NiL.JS.Expressions
             }
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> vars, bool strict, CompilerMessageCallback message)
+        internal override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> vars, bool strict, CompilerMessageCallback message, FunctionStatistic statistic)
         {
-            if (base.Build(ref _this, depth, vars, strict, message))
+            if (base.Build(ref _this, depth, vars, strict, message, statistic))
                 return true;
             if (first is GetVariableExpression)
             {

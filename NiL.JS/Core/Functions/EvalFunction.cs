@@ -51,6 +51,7 @@ namespace NiL.JS.Core.Functions
         [Hidden]
         public override NiL.JS.Core.JSObject Invoke(NiL.JS.Core.JSObject thisBind, Arguments args)
         {
+            notExists.valueType = JSObjectType.NotExistsInObject;
             if (args == null)
                 return notExists;
             var arg = args[0];

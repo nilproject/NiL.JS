@@ -213,20 +213,20 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic)
         {
-            Parser.Build(ref init, 1, variables, strict, message);
+            Parser.Build(ref init, 1, variables, strict, message, statistic);
             if (init is VariableDefineStatement
                 && (init as VariableDefineStatement).initializators.Length == 1)
                 init = (init as VariableDefineStatement).initializators[0];
-            Parser.Build(ref condition, 2, variables, strict, message);
+            Parser.Build(ref condition, 2, variables, strict, message, statistic);
             if (post != null)
             {
-                Parser.Build(ref post, 1, variables, strict, message);
+                Parser.Build(ref post, 1, variables, strict, message, statistic);
                 if (post == null && message != null)
                     message(MessageLevel.Warning, new CodeCoordinates(0, Position, Length), "Last expression of for-loop was removed. Maybe, it's a mistake.");
             }
-            Parser.Build(ref body, System.Math.Max(1, depth), variables, strict, message);
+            Parser.Build(ref body, System.Math.Max(1, depth), variables, strict, message, statistic);
             if (condition == null)
                 condition = new Constant(Core.BaseTypes.Boolean.True);
             else if ((condition is Expressions.Expression)

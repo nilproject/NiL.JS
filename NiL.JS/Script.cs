@@ -76,7 +76,7 @@ namespace NiL.JS
                 {
                     messageCallback(level, CodeCoordinates.FromTextPosition(code, cord.Column, cord.Length), message);
                 } : null as CompilerMessageCallback;
-            Parser.Build(ref root, 0, new System.Collections.Generic.Dictionary<string, VariableDescriptor>(), false, icallback);
+            Parser.Build(ref root, 0, new System.Collections.Generic.Dictionary<string, VariableDescriptor>(), false, icallback, null);
             var body = root as CodeBlock;
             Context = new Context(parentContext ?? NiL.JS.Core.Context.globalContext, true, pseudoCaller);
             Context.thisBind = new ThisBind(Context);

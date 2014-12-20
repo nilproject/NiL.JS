@@ -215,7 +215,11 @@ namespace NiL.JS.Core
                     case JSObjectType.Function:
                     case JSObjectType.Property:
                     case JSObjectType.Date:
-                        return oValue;
+                        {
+                            if (oValue != this && oValue is JSObject)
+                                return (oValue as JSObject).Value;
+                            return oValue;
+                        }
                     case JSObjectType.Undefined:
                     case JSObjectType.NotExistsInObject:
                     default:
@@ -440,12 +444,12 @@ namespace NiL.JS.Core
         }
 
         private static Exception can_not_get_property_of_null(JSObject name)
-                    {
+        {
             return new JSException(new TypeError("Can't get property \"" + name + "\" of \"null\""));
         }
 
         private JSObject stringGetMember(JSObject name, ref bool forWrite)
-                        {
+        {
             forWrite = false;
             if (name.valueType == JSObjectType.String
                 && string.CompareOrdinal(name.oValue.ToString(), "length") == 0)
@@ -999,8 +1003,8 @@ namespace NiL.JS.Core
                 case JSObjectType.Function:
                     return obj.oValue != null;
             }
-                    return false;
-            }
+            return false;
+        }
 
         [Hidden]
         public bool IsExist

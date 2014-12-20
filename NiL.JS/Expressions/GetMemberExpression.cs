@@ -98,9 +98,10 @@ namespace NiL.JS.Expressions
                 }
                 else
                 {
-                    if ((sjso ?? source).valueType >= JSObjectType.Object
-                        && (((sjso ?? source).attributes & JSObjectAttributesInternal.Immutable) == 0)
-                        && (sjso ?? source).fields == null)
+                    if (source.valueType >= JSObjectType.Object
+                        && source.oValue != null
+                        && source.fields == null
+                        && ((source.attributes & JSObjectAttributesInternal.Immutable) == 0)                        )
                         (sjso ?? source).fields = JSObject.createFields();
                     sjso = source;
                     tempContainer.Assign(source);
@@ -125,11 +126,18 @@ namespace NiL.JS.Expressions
             return res;
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic)
         {
-            base.Build(ref _this, depth, variables, strict, message);
+            if (statistic != null)
+                statistic.UseGetMember = true;
+            base.Build(ref _this, depth, variables, strict, message, statistic);
             if (second is Constant)
+            {
                 cachedMemberName = second.Evaluate(null);
+                if (statistic != null
+                    && cachedMemberName.ToString() == "arguments")
+                    statistic.ContainsArguments = true;
+            }
             return false;
         }
 

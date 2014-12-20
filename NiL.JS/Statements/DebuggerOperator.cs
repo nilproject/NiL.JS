@@ -48,6 +48,13 @@ namespace NiL.JS.Statements
             return visitor.Visit(this);
         }
 
+        internal override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic)
+        {
+            if (statistic != null)
+                statistic.ContainsDebugger = true;
+            return base.Build(ref _this, depth, variables, strict, message, statistic);
+        }
+
         protected override CodeNode[] getChildsImpl()
         {
             return null;

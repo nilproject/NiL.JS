@@ -32,9 +32,9 @@ namespace NiL.JS.Expressions
             return visitor.Visit(this);
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict, CompilerMessageCallback message)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict, CompilerMessageCallback message, FunctionStatistic statistic)
         {
-            return node.Build(ref node, depth, vars, strict, message);
+            return node.Build(ref node, depth, vars, strict, message, statistic);
         }
     }
 }

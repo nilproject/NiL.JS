@@ -343,10 +343,12 @@ namespace NiL.JS.Statements
             context.abortInfo = catchContext.abortInfo;
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic)
         {
+            if (statistic != null)
+                statistic.ContainsTry = true;
             CodeNode b = null;
-            Parser.Build(ref body, depth, variables, strict, message);
+            Parser.Build(ref body, depth, variables, strict, message, statistic);
             if (catchBody != null)
             {
                 catchVariableDesc.owner = this;
@@ -354,7 +356,7 @@ namespace NiL.JS.Statements
                 variables.TryGetValue(catchVariableDesc.name, out oldVarDesc);
                 variables[catchVariableDesc.name] = catchVariableDesc;
                 b = catchBody as CodeNode;
-                Parser.Build(ref b, depth, variables, strict, message);
+                Parser.Build(ref b, depth, variables, strict, message, statistic);
                 catchBody = b != null ? b as CodeBlock ?? ((b is EmptyStatement || b == null) ? new CodeBlock(new CodeNode[0], false) : new CodeBlock(new[] { b }, strict)) : new CodeBlock(new CodeNode[0], false);
                 if (oldVarDesc != null)
                     variables[catchVariableDesc.name] = oldVarDesc;
@@ -364,7 +366,7 @@ namespace NiL.JS.Statements
                     v.Value.captured = true;
             }
             b = finallyBody as CodeNode;
-            Parser.Build(ref b, depth, variables, strict, message);
+            Parser.Build(ref b, depth, variables, strict, message, statistic);
             finallyBody = b != null ? b as CodeBlock ?? ((b is EmptyStatement || b == null) ? null : new CodeBlock(new[] { b }, strict)) : null;
             if (body == null
                 || body is EmptyStatement

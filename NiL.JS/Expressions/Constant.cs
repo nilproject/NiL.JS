@@ -69,7 +69,7 @@ namespace NiL.JS.Expressions
             return null;
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic)
         {
             var vss = value.oValue as CodeNode[];
             if (vss != null)

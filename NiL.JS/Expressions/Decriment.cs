@@ -176,9 +176,9 @@ namespace NiL.JS.Expressions
             return res;
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> vars, bool strict, CompilerMessageCallback message)
+        internal override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> vars, bool strict, CompilerMessageCallback message, FunctionStatistic statistic)
         {
-            Parser.Build(ref first, depth + 1, vars, strict, message);
+            Parser.Build(ref first, depth + 1, vars, strict, message, statistic);
             if (depth <= 1 && second != null)
             {
                 first = second;

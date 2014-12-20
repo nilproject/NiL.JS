@@ -189,8 +189,6 @@ namespace NiL.JS.Expressions
                                                 else
                                                     return lessOrEqual;
                                             }
-                                        case JSObjectType.NotExists:
-                                            throw new JSException((new NiL.JS.Core.BaseTypes.ReferenceError("Variable not defined.")));
                                         default: throw new NotImplementedException();
                                     }
                                 }

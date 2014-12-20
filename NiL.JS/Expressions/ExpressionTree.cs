@@ -1280,7 +1280,7 @@ namespace NiL.JS.Statements
             return visitor.Visit(this);
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict, CompilerMessageCallback message)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict, CompilerMessageCallback message, FunctionStatistic statistic)
         {
             Type = Type;
             _this = fastImpl;

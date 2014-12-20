@@ -239,8 +239,7 @@ namespace NiL.JS.Core.BaseTypes
                 {
                     regex.lastIndex.valueType = JSObjectType.Int;
                     regex.lastIndex.iValue = 0;
-                    args[0] = this;
-                    return regex.exec(args);
+                    return regex.exec(this);
                 }
                 else
                 {
@@ -277,15 +276,14 @@ namespace NiL.JS.Core.BaseTypes
             if (args.length == 0)
                 return 0;
             var a0 = args[0];
-            if ((args[0] ?? Null).valueType == JSObjectType.Object
-                && (args[0] ?? Null).oValue != null
-                && args[0].oValue.GetType() == typeof(RegExp))
+            if (a0.valueType == JSObjectType.Object
+                && a0.oValue != null
+                && a0.oValue.GetType() == typeof(RegExp))
             {
                 var regex = a0.oValue as RegExp;
                 if (!regex._global)
                 {
-                    args[0] = this;
-                    var res = regex.exec(args);
+                    var res = regex.exec(this);
                     if ((res ?? Null) != Null)
                         return res["index"];
                     return -1;

@@ -249,12 +249,17 @@ namespace NiL.JS.Core.Modules
         [ParametersCount(3)]
         public static JSObject stringify(Arguments args)
         {
-            var length = Tools.JSObjectToInt32(args.length);
+            var length = args.length;
             Function replacer = length > 1 ? args[1].oValue as Function : null;
             string space = "";
             if (args.length > 2)
             {
                 var sa = args[2];
+                if (sa.valueType >= JSObjectType.Object
+                    && sa.oValue != sa)
+                    sa = sa.oValue as JSObject ?? sa;
+                if (sa is ObjectContainer)
+                    sa = (sa as ObjectContainer).Value as JSObject ?? sa;
                 sa = sa.Value as JSObject ?? sa;
                 if (sa.valueType == JSObjectType.Int
                     || sa.valueType == JSObjectType.Double

@@ -10,6 +10,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Collections;
 using NiL.JS.Statements;
+using NiL.JS.Core.Functions;
 
 namespace NiL.JS.Expressions
 {
@@ -215,9 +216,9 @@ namespace NiL.JS.Expressions
             }
         }
 
+        internal VariableReference reference;
         internal int parametersStored;
         internal int recursiveDepth;
-        internal bool assignToArguments;
         internal bool containsFunctions;
         internal bool containsEval;
         internal bool containsArguments;
@@ -234,7 +235,7 @@ namespace NiL.JS.Expressions
         public CodeBlock Body { get { return body; } }
         public string Name { get { return name; } }
         public ReadOnlyCollection<VariableDescriptor> Parameters { get { return new ReadOnlyCollection<VariableDescriptor>(arguments); } }
-        public VariableReference Reference { get; private set; }
+        public VariableReference Reference { get { return reference; } }
 
 #if !NET35
 
@@ -267,7 +268,7 @@ namespace NiL.JS.Expressions
 
         internal FunctionExpression(string name)
         {
-            Reference = new FunctionReference(this);
+            reference = new FunctionReference(this);
             arguments = new VariableDescriptor[0];
             body = new CodeBlock(new CodeNode[0], false);
             body.variables = new VariableDescriptor[0];
@@ -518,16 +519,21 @@ namespace NiL.JS.Expressions
         {
             if (type == FunctionType.Generator)
                 return new GeneratorInitializator(new Function(context, this));
+            if (type == FunctionType.Macro)
+                return new MacroFunction(context, this);
             return new Function(context, this);
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic)
         {
             if (body.builded)
                 return false;
+            if (statistic != null)
+                statistic.ContainsInnerFunction = true;
             var bodyCode = body as CodeNode;
             var nvars = new Dictionary<string, VariableDescriptor>();
-            bodyCode.Build(ref bodyCode, 0, nvars, strict, message);
+            var stat = new FunctionStatistic();
+            bodyCode.Build(ref bodyCode, 0, nvars, strict, message, stat);
             if (type == FunctionType.Function && !string.IsNullOrEmpty(name))
             {
                 VariableDescriptor fdesc = null;
@@ -606,7 +612,9 @@ namespace NiL.JS.Expressions
                     }
                 }
             }
-            checkUsings();
+            checkUsings(stat);
+            if (statistic != null)
+                statistic.ContainsEval |= stat.ContainsEval;
             return false;
         }
 
@@ -616,23 +624,50 @@ namespace NiL.JS.Expressions
             body.Optimize(ref bd, this, message);
         }
 
-        private void checkUsings()
+        private void checkUsings(FunctionStatistic stat)
         {
             if (body == null
                 || body.lines == null
                 || body.lines.Length == 0)
                 return;
-            for (var i = 0; i < body.variables.Length; i++)
+            containsFunctions = stat.ContainsInnerFunction;
+            if (!containsFunctions)
             {
-                containsArguments |= body.variables[i].name == "arguments";
-                containsEval |= body.variables[i].name == "eval";
-                isRecursive |= body.variables[i].name == name;
-            }
-            if (body.localVariables != null)
-                for (var i = 0; i < body.localVariables.Length && !containsFunctions; i++)
+                for (var i = 0; !containsFunctions && i < body.localVariables.Length; i++)
                     containsFunctions |= body.localVariables[i].Inititalizator != null;
-            ICollection t = null;
-            assignToArguments = containsArguments && (t = body.variables.First(x => x.name == "arguments").assignations) != null && t.Count != 0;
+                stat.ContainsInnerFunction = containsFunctions;
+            }
+            for (var i = 0; i < body.variables.Length; i++)
+                isRecursive |= body.variables[i].name == name;
+            containsEval = stat.ContainsEval;
+            containsArguments = stat.ContainsArguments;
+            if (!isRecursive // макросы могут выдержать рекурсивный вызов, но дадут сильное падение производительности
+                && (type == FunctionType.Function || type == FunctionType.AnonymousFunction)
+                && !stat.ContainsDebugger
+                && !stat.ContainsInnerFunction
+                && !stat.ContainsArguments
+                //&& !stat.UseCall
+                && !stat.ContainsEval
+                //&& !stat.UseGetMember
+                && !stat.UseThis
+                && !stat.UseWith
+                && !stat.ContainsTry
+                && (body.variables.All(x => x.Owner == body || x == reference.descriptor)))
+            {
+                type = FunctionType.Macro;
+                for (var i = 0; i < body.localVariables.Length; i++)
+                    body.localVariables[i].cacheRes = new JSObject()
+                    {
+                        attributes = JSObjectAttributesInternal.DoNotDelete | (body.localVariables[i].readOnly ? JSObjectAttributesInternal.ReadOnly : 0),
+                        valueType = JSObjectType.Undefined
+                    };
+                for (var i = 0; i < arguments.Length; i++)
+                    arguments[i].cacheRes = new JSObject()
+                    {
+                        attributes = JSObjectAttributesInternal.Argument,
+                        valueType = JSObjectType.Undefined
+                    };
+            }
         }
 
         internal override System.Linq.Expressions.Expression TryCompile(bool selfCompile, bool forAssign, Type expectedType, List<CodeNode> dynamicValues)

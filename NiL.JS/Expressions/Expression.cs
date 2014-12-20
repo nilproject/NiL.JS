@@ -60,10 +60,10 @@ namespace NiL.JS.Expressions
             this.second = second;
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict, CompilerMessageCallback message)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict, CompilerMessageCallback message, FunctionStatistic statistic)
         {
-            Parser.Build(ref first, depth + 1, vars, strict, message);
-            Parser.Build(ref second, depth + 1, vars, strict, message);
+            Parser.Build(ref first, depth + 1, vars, strict, message, statistic);
+            Parser.Build(ref second, depth + 1, vars, strict, message, statistic);
             try
             {
                 if (this.IsContextIndependent)

@@ -162,11 +162,11 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic)
         {
             depth = System.Math.Max(1, depth);
-            Parser.Build(ref body, depth, variables, strict, message);
-            Parser.Build(ref condition, 2, variables, strict, message);
+            Parser.Build(ref body, depth, variables, strict, message, statistic);
+            Parser.Build(ref condition, 2, variables, strict, message, statistic);
             try
             {
                 if (allowRemove && (condition is Constant || (condition as Expressions.Expression).IsContextIndependent))

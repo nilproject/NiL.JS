@@ -40,10 +40,10 @@ namespace NiL.JS.Statements
                 return res;
             }
 
-            internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message)
+            internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic)
             {
                 var v = variable as CodeNode;
-                var res = variable.Build(ref v, depth, variables, strict, message);
+                var res = variable.Build(ref v, depth, variables, strict, message, statistic);
                 variable = v as VariableReference;
                 return res;
             }
@@ -225,7 +225,7 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic)
         {
             this.variables = new VariableDescriptor[names.Length];
             for (var i = 0; i < names.Length; i++)
@@ -260,7 +260,7 @@ namespace NiL.JS.Statements
             int actualChilds = 0;
             for (int i = 0; i < initializators.Length; i++)
             {
-                Parser.Build(ref initializators[i], message != null ? 2 : depth, variables, strict, message);
+                Parser.Build(ref initializators[i], message != null ? 2 : depth, variables, strict, message, statistic);
                 if (initializators[i] != null)
                     actualChilds++;
             }

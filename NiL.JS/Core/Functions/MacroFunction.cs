@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using NiL.JS.Core.TypeProxing;
+using NiL.JS.Core.Modules;
 
 namespace NiL.JS.Core.Functions
 {
@@ -19,9 +21,177 @@ namespace NiL.JS.Core.Functions
     /// </summary>
     public sealed class MacroFunction : Function
     {
+        [Field]
+        [DoNotDelete]
+        [DoNotEnumerate]
+        public override JSObject arguments
+        {
+            [CallOverloaded]
+            [Hidden]
+            get
+            {
+                if (_arguments == null)
+                {
+                    var args = new Arguments()
+                    {
+                        caller = this._caller,
+                        callee = this,
+                        length = creator.arguments.Length
+                    };
+                    for (var i = 0; i < creator.arguments.Length; i++)
+                        args[i] = creator.arguments[i].cacheRes.CloneImpl();
+                    _arguments = args;
+                }
+                return base.arguments;
+            }
+            [CallOverloaded]
+            [Hidden]
+            set
+            {
+                base.arguments = value;
+            }
+        }
+
+        public MacroFunction(Context context, Expressions.FunctionExpression creator)
+            : base(context, creator)
+        {
+
+        }
+
+        private JSObject[] initScope(Expressions.Expression[] arguments, Context initiator)
+        {
+            JSObject[] storedData = null;
+            JSObject temp;
+            int i;
+            int j;
+            storedData = new JSObject[creator.body.localVariables.Length + creator.arguments.Length];
+            for (i = 0; i < creator.arguments.Length; i++)
+            {
+                if (i < arguments.Length)
+                {
+                    storedData[i] = arguments[i].Evaluate(initiator).CloneImpl();
+                    storedData[i].attributes = JSObjectAttributesInternal.DoNotDelete;
+                }
+                else
+                    storedData[i] = new JSObject()
+                    {
+                        attributes = JSObjectAttributesInternal.Argument,
+                        valueType = JSObjectType.Undefined
+                    };
+            }
+            for (i = 0; i < creator.arguments.Length; i++)
+            {
+                temp = storedData[i];
+                storedData[i] = creator.arguments[i].cacheRes;
+                creator.arguments[i].cacheRes = temp;
+            }
+            j = i;
+            for (; i < arguments.Length; i++)
+                arguments[i].Evaluate(initiator);
+            for (i = 0; i < creator.body.localVariables.Length; i++)
+            {
+                storedData[j++] = creator.body.localVariables[i].cacheRes;
+                creator.body.localVariables[i].cacheRes = new JSObject()
+                {
+                    attributes = JSObjectAttributesInternal.DoNotDelete | (creator.body.localVariables[i].readOnly ? JSObjectAttributesInternal.ReadOnly : 0),
+                    valueType = JSObjectType.Undefined
+                };
+            }
+            return storedData;
+        }
+
+        protected internal override JSObject InternalInvoke(JSObject self, Expressions.Expression[] arguments, Context initiator)
+        {
+            JSObject[] storedData = null;
+            int i;
+            int j;
+            var body = creator.body;
+            var context = this.context;
+            lock (creator)
+            {
+                self = correctThisBind(self, body, context);
+                if (creator.recursiveDepth == 0)
+                {
+                    for (i = 0; i < creator.arguments.Length; i++)
+                    {
+                        if (i < arguments.Length)
+                            creator.arguments[i].cacheRes.Assign(arguments[i].Evaluate(initiator));
+                        else
+                        {
+                            creator.arguments[i].cacheRes.valueType = JSObjectType.Undefined;
+                            creator.arguments[i].cacheRes.oValue = null;
+                        }
+                        creator.arguments[i].cacheContext = context;
+                    }
+                    for (; i < arguments.Length; i++)
+                        arguments[i].Evaluate(initiator);
+                    for (i = 0; i < creator.body.localVariables.Length; i++)
+                    {
+                        creator.body.localVariables[i].cacheRes.valueType = JSObjectType.Undefined;
+                        creator.body.localVariables[i].cacheRes.oValue = null;
+                        creator.body.localVariables[i].cacheContext = context;
+                    }
+                }
+                else
+                    storedData = initScope(arguments, initiator);
+                creator.recursiveDepth++;
+                if (this.creator.reference.descriptor != null)
+                {
+                    creator.reference.descriptor.cacheContext = context.parent;
+                    creator.reference.descriptor.cacheRes = this;
+                }
+                var oldAbort = context.abort;
+                var oldAbortInfo = context.abortInfo;
+                var oldLastResult = context.lastResult;
+                var oldOldContext = context.oldContext;
+                var oldCaller = context.caller;
+                var oldArgs = this._arguments;
+                this._arguments = null;
+                var oldSCaller = this._caller;
+                this._caller = initiator.strict && initiator.caller != null && initiator.caller.creator.body.strict ? Function.propertiesDummySM : initiator.caller;
+                context.caller = this;
+                context.oldContext = null;
+                bool deactivate = context.Activate();
+                JSObject res = notExists;
+                try
+                {
+                    body.Evaluate(context);
+                }
+                finally
+                {
+                    if (context.abort == AbortType.Return)
+                        res = context.abortInfo;
+                    context.abort = oldAbort;
+                    context.abortInfo = oldAbortInfo;
+                    context.lastResult = oldLastResult;
+                    context.caller = oldCaller;
+                    if (deactivate)
+                        context.Deactivate();
+                    context.oldContext = oldOldContext;
+                    this._arguments = oldArgs;
+                    this._caller = oldSCaller;
+                    creator.recursiveDepth--;
+                    if (creator.recursiveDepth > 0)
+                    {
+                        for (i = 0; i < creator.arguments.Length; i++)
+                            creator.arguments[i].cacheRes = storedData[i];
+                        j = i;
+                        for (i = 0; i < creator.body.localVariables.Length; i++)
+                            creator.body.localVariables[i].cacheRes = storedData[j++];
+                    }
+                }
+                return res;
+            }
+        }
+
         public override NiL.JS.Core.JSObject Invoke(NiL.JS.Core.JSObject thisBind, NiL.JS.Core.Arguments args)
         {
-            return null;
+            return base.Invoke(thisBind, args);
+        }
+
+        protected override JSObject getDefaultPrototype()
+        {
+            return TypeProxy.GetPrototype(typeof(Function));
         }
     }
 }

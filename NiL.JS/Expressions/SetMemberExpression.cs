@@ -7,6 +7,8 @@ namespace NiL.JS.Expressions
     [Serializable]
     public sealed class SetMemberExpression : Expression
     {
+        private JSObject tempContainer1;
+        private JSObject tempContainer2;
         private JSObject cachedMemberName;
         private Expression value;
 
@@ -27,13 +29,15 @@ namespace NiL.JS.Expressions
         {
             if (fieldName is Constant)
                 cachedMemberName = fieldName.Evaluate(null);
+            else
+                tempContainer1 = new JSObject();
             this.value = value;
+            tempContainer2 = new JSObject();
         }
 
         internal override JSObject Evaluate(Context context)
         {
             JSObject sjso = null;
-            JSObject res = null;
             JSObject source = null;
             source = first.Evaluate(context);
             if (source.valueType >= JSObjectType.Object
@@ -49,16 +53,24 @@ namespace NiL.JS.Expressions
             {
                 if ((sjso ?? source).fields == null)
                     (sjso ?? source).fields = JSObject.createFields();
-                sjso = source;
                 tempContainer.Assign(source);
                 source = tempContainer;
             }
-            source.SetMember(cachedMemberName ?? second.Evaluate(context), res = value.Evaluate(context), context.strict);
+            source.SetMember(
+                cachedMemberName ?? safeGet(tempContainer1, second, context),
+                safeGet(tempContainer2, value, context), 
+                context.strict);
             context.objectSource = null;
-            return res;
+            return tempContainer2;
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message)
+        private static JSObject safeGet(JSObject temp, CodeNode source, Context context)
+        {
+            temp.Assign(source.Evaluate(context));
+            return temp;
+        }
+
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic)
         {
             throw new InvalidOperationException();
         }

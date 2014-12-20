@@ -101,7 +101,7 @@ namespace NiL.JS.Expressions
                     else
                         res.data[i] = (writableNotExist ?? (writableNotExist = new JSObject() { valueType = JSObjectType.NotExistsInObject, attributes = JSObjectAttributesInternal.SystemObject }));
                 }
-                res.data[elements.Length - 1] = res.data[elements.Length - 1];
+                //res.data[elements.Length - 1] = res.data[elements.Length - 1];
             }
             return res;
         }
@@ -116,10 +116,10 @@ namespace NiL.JS.Expressions
             return elements;
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict, CompilerMessageCallback message)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict, CompilerMessageCallback message, FunctionStatistic statistic)
         {
             for (int i = 0; i < elements.Length; i++)
-                Parser.Build(ref elements[i], 2, vars, strict, message);
+                Parser.Build(ref elements[i], 2, vars, strict, message, statistic);
             return false;
         }
 

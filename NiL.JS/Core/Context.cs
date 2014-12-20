@@ -464,7 +464,7 @@ namespace NiL.JS.Core
                 if (i < c.Length)
                     throw new System.ArgumentException("Invalid char");
                 var vars = new Dictionary<string, VariableDescriptor>();
-                Parser.Build(ref cb, leak ? -1 : -2, vars, strict, null);
+                Parser.Build(ref cb, leak ? -1 : -2, vars, strict, null, null);
                 Context context = null;
                 var body = cb as CodeBlock;
                 if (leak)

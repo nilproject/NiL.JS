@@ -1,6 +1,19 @@
-﻿function macro(a, b) {
-    "macro"; // force macrofunction validation. SyntaxError if fail
-    return a * b - a - b;
+﻿function foo(s, sideEffect) {
+    var a = String(s);
+    sideEffect(s);
+    var b = String(s);
+    return a + b;
 }
 
-console.log(macro(3, 3));
+var count = 0;
+for (var i = 0; i < 200; ++i) {
+    var code = "(function(s) { " + (i < 150 ? "return " + i + ";" : "count++; debug(\"hi!\"); s.toString = function() { return " + i + "; };") + " })";
+    var sideEffect = eval(code);
+    shouldBe("foo(new String(\"hello\"), sideEffect)", i < 150 ? "\"hellohello\"" : "\"hello" + i + "\"");
+}
+
+function shouldBe(x, y)
+{
+    if (eval(x) !== eval(y))
+        console.log(x, " !== ", y);
+}

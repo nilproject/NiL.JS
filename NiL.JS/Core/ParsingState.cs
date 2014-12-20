@@ -47,4 +47,17 @@ namespace NiL.JS.Core
             doubleConstants = new Dictionary<double, JSObject>();
         }
     }
+
+    internal sealed class FunctionStatistic
+    {
+        public bool UseGetMember;
+        public bool UseCall;
+        public bool ContainsArguments;
+        public bool ContainsEval;
+        public bool UseWith;
+        public bool ContainsInnerFunction;
+        public bool UseThis;
+        public bool ContainsDebugger;
+        public bool ContainsTry;
+    }
 }

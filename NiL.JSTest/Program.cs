@@ -174,9 +174,10 @@ namespace NiL.JSTest
                         {
                             bool fail = code.Length == 0; // она всегда не равна нулю, 
                             // но таким образом мы можем прочитать код без гуляния по стеку
+                            string text;
                             for (var ti = 0; e != null && ti < e.Length; ti++)
                             {
-                                var text = e[ti].ToString();
+                                text = e[ti].ToString();
                                 if (ti == 0 && text == "FAIL")
                                     fail = true;
                                 if (ti > 0)
@@ -276,22 +277,7 @@ for (var i = 0; i < 10000000; i++) abs(i * (1 - 2 * (i & 1)));
         private static void testEx()
         {
             var sw = new Stopwatch();
-            var s = new Script(
-@"
-function isum(a, b)
-{    
-    return undefined;
-    //a;a;a;a;
-    //b;b;b;b;
-    //return (((((a | 0) + (b | 0)) | 0) + (((a | 0) + (b | 0)) | 0) | 0) + ((((a | 0) + (b | 0)) | 0) + (((a | 0) + (b | 0)) | 0) | 0)) | 0;
-}
-var isum2 = isum;
-for (var i = 0; i < 20000000; )
-{
-    i++;
-    typeof i;
-}
-");
+            var s = new Script("");
             Expression<Func<object, object, int>> nativeTest = (a, b) => (((((Convert.ToInt32(a) | 0) + (Convert.ToInt32(b) | 0)) | 0) + (((Convert.ToInt32(a) | 0) + (Convert.ToInt32(b) | 0)) | 0) | 0) + ((((Convert.ToInt32(a) | 0) + (Convert.ToInt32(b) | 0)) | 0) + (((Convert.ToInt32(a) | 0) + (Convert.ToInt32(b) | 0)) | 0) | 0)) | 0;
             var cme = nativeTest.Compile();
             sw.Start();
@@ -324,7 +310,7 @@ for (var i = 0; i < 20000000; )
                 return JSObject.Undefined;
             }));
 
-            int mode = 0
+            int mode = 100
                    ;
             switch (mode)
             {

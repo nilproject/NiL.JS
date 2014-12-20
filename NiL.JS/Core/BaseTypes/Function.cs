@@ -21,7 +21,8 @@ namespace NiL.JS.Core.BaseTypes
         Get = 1,
         Set = 2,
         AnonymousFunction = 4,
-        Generator = 5
+        Generator = 8,
+        Macro = 12
     }
 
     [Serializable]
@@ -632,6 +633,10 @@ namespace NiL.JS.Core.BaseTypes
             [Hidden]
             set
             {
+                if (value.oValue != value
+                    && value.oValue is JSObject
+                    && (value.oValue as JSObject).valueType >= JSObjectType.Object)
+                    value = value.oValue as JSObject;
                 _prototype = value;
             }
         }
@@ -727,7 +732,7 @@ namespace NiL.JS.Core.BaseTypes
             var fs = FunctionExpression.Parse(new ParsingState(Tools.RemoveComments(code, 0), code, null), ref index);
             if (fs.IsParsed)
             {
-                Parser.Build(ref fs.Statement, 0, new Dictionary<string, VariableDescriptor>(), context.strict, null);
+                Parser.Build(ref fs.Statement, 0, new Dictionary<string, VariableDescriptor>(), context.strict, null, null);
                 creator = fs.Statement as FunctionExpression;
             }
             else
@@ -757,18 +762,6 @@ namespace NiL.JS.Core.BaseTypes
             }
         }
 
-        private static void checkStack()
-        {
-            try
-            {
-                System.Runtime.CompilerServices.RuntimeHelpers.EnsureSufficientExecutionStack();
-            }
-            catch
-            {
-                throw new JSException(new RangeError("Stack overflow."));
-            }
-        }
-
         protected internal virtual JSObject InternalInvoke(JSObject self, Expression[] arguments, Context initiator)
         {
             Arguments _arguments = new Core.Arguments()
@@ -780,8 +773,7 @@ namespace NiL.JS.Core.BaseTypes
             for (int i = 0; i < arguments.Length; i++)
                 _arguments[i] = Call.prepareArg(initiator, arguments[i], false, arguments.Length > 1);
             initiator.objectSource = null;
-            
-            checkStack();
+
             return Invoke(self, _arguments);
         }
 
@@ -792,6 +784,7 @@ namespace NiL.JS.Core.BaseTypes
             if (creator.trace)
                 System.Console.WriteLine("DEBUG: Run \"" + creator.Reference.Name + "\"");
 #endif
+            JSObject res = null;
             var body = creator.body;
             thisBind = correctThisBind(thisBind, body, context);
             if (body == null || body.lines.Length == 0)
@@ -812,7 +805,6 @@ namespace NiL.JS.Core.BaseTypes
             try
             {
                 internalContext.thisBind = thisBind;
-
                 if (args == null)
                 {
                     var cc = Context.CurrentContext;
@@ -836,12 +828,11 @@ namespace NiL.JS.Core.BaseTypes
                     args.callee = this;
                     _caller = args.caller;
                 }
-                if ((creator.containsEval || creator.isRecursive) && this.creator.Reference.descriptor != null)
+                if (this.creator.reference.descriptor != null && creator.reference.descriptor.cacheRes == null)
                 {
-                    this.creator.Reference.descriptor.cacheContext = internalContext.parent;
-                    this.creator.Reference.descriptor.cacheRes = this;
+                    creator.reference.descriptor.cacheContext = internalContext.parent;
+                    creator.reference.descriptor.cacheRes = this;
                 }
-
                 internalContext.strict |= body.strict;
                 internalContext.variables = body.variables;
                 internalContext.Activate();
@@ -863,11 +854,17 @@ namespace NiL.JS.Core.BaseTypes
                 if (ai == null)
                 {
                     notExists.valueType = JSObjectType.NotExistsInObject;
-                    return notExists;
+                    res = notExists;
                 }
-                if (ai.valueType == JSObjectType.NotExists)
-                    ai.valueType = JSObjectType.NotExistsInObject;
-                return ai;
+                else
+                {
+                    if (ai.valueType <= JSObjectType.NotExists)
+                        res = notExists;
+                    else if (ai.valueType == JSObjectType.Undefined)
+                        res = undefined;
+                    else
+                        res = ai;
+                }
             }
             finally
             {
@@ -903,6 +900,7 @@ namespace NiL.JS.Core.BaseTypes
                 _caller = oldcaller;
                 _arguments = oldargs;
             }
+            return res;
         }
 
         private void initParameters(Arguments args, CodeBlock body, Context internalContext)
@@ -961,10 +959,10 @@ namespace NiL.JS.Core.BaseTypes
             {
                 if (creator.containsEval || creator.containsWith || creator.arguments[i].assignations != null)
                     creator.arguments[i].cacheRes = new JSObject()
-                       {
-                           attributes = JSObjectAttributesInternal.Argument,
-                           valueType = JSObjectType.Undefined
-                       };
+                    {
+                        attributes = JSObjectAttributesInternal.Argument,
+                        valueType = JSObjectType.Undefined
+                    };
                 else
                     creator.arguments[i].cacheRes = JSObject.undefined;
                 creator.arguments[i].cacheContext = internalContext;
@@ -1003,7 +1001,7 @@ namespace NiL.JS.Core.BaseTypes
                 }
         }
 
-        private JSObject correctThisBind(JSObject thisBind, CodeBlock body, Context internalContext)
+        internal JSObject correctThisBind(JSObject thisBind, CodeBlock body, Context internalContext)
         {
             if (thisBind == null)
                 return body.strict ? undefined : internalContext.Root.thisBind;
@@ -1152,7 +1150,7 @@ namespace NiL.JS.Core.BaseTypes
                 if (len.valueType == JSObjectType.Property)
                     len = (len.oValue as PropertyPair).get.Invoke(argsSource, null);
                 nargs.length = Tools.JSObjectToInt32(len);
-                if (nargs.length >= 500000)
+                if (nargs.length >= 50000)
                     throw new JSException(new RangeError("Too many arguments."));
                 for (var i = nargs.length; i-- > 0; )
                     nargs[i] = argsSource[i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture)];

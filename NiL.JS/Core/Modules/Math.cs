@@ -116,18 +116,18 @@ namespace NiL.JS.Core.Modules
 
         [DoNotDelete]
         [DoNotEnumerate]
-        public static JSObject floor(Arguments args)
+        public static JSObject floor(JSObject arg)
         {
-            if (args[0].valueType == JSObjectType.Int)
-                return args[0];
-            var a = args.Length > 0 ? Tools.JSObjectToDouble(args[0]) : double.NaN;
+            if (arg.valueType == JSObjectType.Int)
+                return arg;
+            var a = Tools.JSObjectToDouble(arg);
             if (a == 0.0)
             {
-                if ((args[0].attributes & JSObjectAttributesInternal.Cloned) != 0)
+                if ((arg.attributes & JSObjectAttributesInternal.Cloned) != 0)
                 {
-                    args.a0.valueType = JSObjectType.Int;
-                    args.a0.iValue = 0;
-                    return args.a0;
+                    arg.valueType = JSObjectType.Int;
+                    arg.iValue = 0;
+                    return arg;
                 }
                 return a;
             }
@@ -147,19 +147,19 @@ namespace NiL.JS.Core.Modules
                     return -(long)shl(m, e);
                 }
                 var r = (long)shl(m, e) * s;
-                if ((args[0].attributes & JSObjectAttributesInternal.Cloned) != 0)
+                if ((arg.attributes & JSObjectAttributesInternal.Cloned) != 0)
                 {
                     if (r <= int.MaxValue)
                     {
-                        args.a0.valueType = JSObjectType.Int;
-                        args.a0.iValue = (int)r;
+                        arg.valueType = JSObjectType.Int;
+                        arg.iValue = (int)r;
                     }
                     else
                     {
-                        args.a0.valueType = JSObjectType.Double;
-                        args.a0.dValue = r;
+                        arg.valueType = JSObjectType.Double;
+                        arg.dValue = r;
                     }
-                    return args.a0;
+                    return arg;
                 }
                 return r;
             }
@@ -245,20 +245,20 @@ namespace NiL.JS.Core.Modules
             return randomInstance.NextDouble();
         }
 
-        [DoNotEnumerate]
         [DoNotDelete]
-        public static JSObject round(Arguments args)
+        [DoNotEnumerate]
+        public static JSObject round(JSObject arg)
         {
-            if (args[0].valueType == JSObjectType.Int)
-                return args[0];
-            var a = args.Length > 0 ? Tools.JSObjectToDouble(args[0]) : double.NaN;
+            if (arg.valueType == JSObjectType.Int)
+                return arg;
+            var a = Tools.JSObjectToDouble(arg);
             if (a == 0.0)
             {
-                if ((args[0].attributes & JSObjectAttributesInternal.Cloned) != 0)
+                if ((arg.attributes & JSObjectAttributesInternal.Cloned) != 0)
                 {
-                    args.a0.valueType = JSObjectType.Int;
-                    args.a0.iValue = 0;
-                    return args.a0;
+                    arg.valueType = JSObjectType.Int;
+                    arg.iValue = 0;
+                    return arg;
                 }
                 return a;
             }
@@ -281,19 +281,19 @@ namespace NiL.JS.Core.Modules
                     }
                 }
                 var r = ((long)shl(m, e) + ((long)shl(m, (e - 1)) & 1) * s) * s;
-                if ((args[0].attributes & JSObjectAttributesInternal.Cloned) != 0)
+                if ((arg.attributes & JSObjectAttributesInternal.Cloned) != 0)
                 {
                     if (r <= int.MaxValue)
                     {
-                        args.a0.valueType = JSObjectType.Int;
-                        args.a0.iValue = (int)r;
+                        arg.valueType = JSObjectType.Int;
+                        arg.iValue = (int)r;
                     }
                     else
                     {
-                        args.a0.valueType = JSObjectType.Double;
-                        args.a0.dValue = r;
+                        arg.valueType = JSObjectType.Double;
+                        arg.dValue = r;
                     }
-                    return args.a0;
+                    return arg;
                 }
                 return r;
             }
