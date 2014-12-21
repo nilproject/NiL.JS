@@ -1140,8 +1140,11 @@ namespace NiL.JS.Core.BaseTypes
         [AllowNullArguments]
         public JSObject apply(Arguments args)
         {
-            var nargs = new Arguments();
-            var argsSource = args != null ? args[1] : notExists;
+            var nargs = args ?? new Arguments();
+            var argsSource = nargs[1];
+            var self = args[0];
+            if (args != null)
+                nargs.Reset();
             if (argsSource.IsDefinded)
             {
                 if (argsSource.valueType < JSObjectType.Object)
@@ -1155,7 +1158,7 @@ namespace NiL.JS.Core.BaseTypes
                 for (var i = nargs.length; i-- > 0; )
                     nargs[i] = argsSource[i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture)];
             }
-            return Invoke(args != null ? args[0] : null, nargs);
+            return Invoke(self, nargs);
         }
 
         [DoNotEnumerate]
