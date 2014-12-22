@@ -58,27 +58,28 @@ namespace NiL.JS.Core.Functions
 
         }
 
-        private JSObject[] initScope(Expressions.Expression[] arguments, Context initiator)
+        private JSObject[] initScope(Expressions.Expression[] arguments, Context initiator, bool storeOnly)
         {
             JSObject[] storedData = null;
             JSObject temp;
             int i;
             int j;
             storedData = new JSObject[creator.body.localVariables.Length + creator.arguments.Length];
-            for (i = 0; i < creator.arguments.Length; i++)
-            {
-                if (i < arguments.Length)
+            if (!storeOnly)
+                for (i = 0; i < creator.arguments.Length; i++)
                 {
-                    storedData[i] = arguments[i].Evaluate(initiator).CloneImpl();
-                    storedData[i].attributes = JSObjectAttributesInternal.DoNotDelete;
-                }
-                else
-                    storedData[i] = new JSObject()
+                    if (i < arguments.Length)
                     {
-                        attributes = JSObjectAttributesInternal.Argument,
-                        valueType = JSObjectType.Undefined
-                    };
-            }
+                        storedData[i] = arguments[i].Evaluate(initiator).CloneImpl();
+                        storedData[i].attributes = JSObjectAttributesInternal.DoNotDelete;
+                    }
+                    else
+                        storedData[i] = new JSObject()
+                        {
+                            attributes = JSObjectAttributesInternal.Argument,
+                            valueType = JSObjectType.Undefined
+                        };
+                }
             for (i = 0; i < creator.arguments.Length; i++)
             {
                 temp = storedData[i];
@@ -86,16 +87,20 @@ namespace NiL.JS.Core.Functions
                 creator.arguments[i].cacheRes = temp;
             }
             j = i;
-            for (; i < arguments.Length; i++)
-                arguments[i].Evaluate(initiator);
+            if (!storeOnly)
+                for (; i < arguments.Length; i++)
+                    arguments[i].Evaluate(initiator);
             for (i = 0; i < creator.body.localVariables.Length; i++)
             {
                 storedData[j++] = creator.body.localVariables[i].cacheRes;
-                creator.body.localVariables[i].cacheRes = new JSObject()
-                {
-                    attributes = JSObjectAttributesInternal.DoNotDelete | (creator.body.localVariables[i].readOnly ? JSObjectAttributesInternal.ReadOnly : 0),
-                    valueType = JSObjectType.Undefined
-                };
+                if (storeOnly)
+                    creator.body.localVariables[i].cacheRes = null;
+                else
+                    creator.body.localVariables[i].cacheRes = new JSObject()
+                    {
+                        attributes = JSObjectAttributesInternal.DoNotDelete | (creator.body.localVariables[i].readOnly ? JSObjectAttributesInternal.ReadOnly : 0),
+                        valueType = JSObjectType.Undefined
+                    };
             }
             return storedData;
         }
@@ -133,7 +138,7 @@ namespace NiL.JS.Core.Functions
                     }
                 }
                 else
-                    storedData = initScope(arguments, initiator);
+                    storedData = initScope(arguments, initiator, false);
                 creator.recursiveDepth++;
                 if (this.creator.reference.descriptor != null)
                 {
@@ -186,7 +191,37 @@ namespace NiL.JS.Core.Functions
 
         public override NiL.JS.Core.JSObject Invoke(NiL.JS.Core.JSObject thisBind, NiL.JS.Core.Arguments args)
         {
-            return base.Invoke(thisBind, args);
+            JSObject[] storedData = null;
+            int rd = creator.recursiveDepth;
+            if (creator.recursiveDepth > 0)
+            {
+                storedData = initScope(null, null, true);
+                creator.recursiveDepth = 0;
+            }
+            JSObject res;
+            try
+            {
+                res = base.Invoke(thisBind, args);
+            }
+            finally
+            {
+                if (rd != 0)
+                {
+                    int i;
+                    for (i = 0; i < creator.arguments.Length; i++)
+                    {
+                        creator.arguments[i].cacheRes = storedData[i];
+                        creator.arguments[i].cacheContext = context;
+                    }
+                    int j = i;
+                    for (i = 0; i < creator.body.localVariables.Length; i++)
+                    {
+                        creator.body.localVariables[i].cacheRes = storedData[j++];
+                        creator.body.localVariables[i].cacheContext = context;
+                    }
+                }
+            }
+            return res;
         }
 
         protected override JSObject getDefaultPrototype()

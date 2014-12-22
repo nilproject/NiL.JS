@@ -795,7 +795,8 @@ namespace NiL.JS.Core.BaseTypes
             var oldargs = _arguments;
             if (creator.recursiveDepth > creator.parametersStored) // рекурсивный вызов. Из-за With мы можем упустить eval
             {
-                storeParameters();
+                if (!(creator.containsEval || creator.containsWith))
+                    storeParameters();
                 creator.parametersStored++;
             }
             creator.recursiveDepth++;
