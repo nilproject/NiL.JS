@@ -1142,7 +1142,7 @@ namespace NiL.JS.Core.BaseTypes
         {
             var nargs = args ?? new Arguments();
             var argsSource = nargs[1];
-            var self = args[0];
+            var self = nargs[0];
             if (args != null)
                 nargs.Reset();
             if (argsSource.IsDefinded)
