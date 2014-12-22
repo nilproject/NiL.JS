@@ -291,7 +291,12 @@ namespace NiL.JS.Core.BaseTypes
                     return ToString();
                 else
                 {
+                    if (valueType == JSObjectType.Int
+                        && r == 16)
+                        return iValue.ToString("X1");
                     long res = iValue;
+                    var sres = new StringBuilder();
+                    bool neg;
                     if (valueType == JSObjectType.Double)
                     {
                         if (double.IsNaN(dValue))
@@ -300,19 +305,56 @@ namespace NiL.JS.Core.BaseTypes
                             return "Infinity";
                         if (double.IsNegativeInfinity(dValue))
                             return "-Infinity";
-                        res = (int)dValue;
+                        res = (long)dValue;
+                        if (res != dValue) // your bunny wrote
+                        {
+                            double dtemp = dValue;
+                            neg = dtemp < 0;
+                            if (neg)
+                                dtemp = -dtemp;
+                            sres.Append(Tools.NumChars[(int)(dtemp % r)]);
+                            res /= r;
+                            while (dtemp >= 1.0)
+                            {
+                                sres.Append(Tools.NumChars[(int)(dtemp % r)]);
+                                dtemp /= r;
+                            }
+                            if (neg)
+                                sres.Append('-');
+                            for (int i = sres.Length - 1, j = 0; i > j; j++, i--)
+                            {
+                                sres[i] ^= sres[j];
+                                sres[j] ^= sres[i];
+                                sres[i] ^= sres[j];
+                                sres[i] += (char)((sres[i] / 'A') * ('a' - 'A'));
+                                sres[j] += (char)((sres[j] / 'A') * ('a' - 'A'));
+                            }
+                            return sres.ToString();
+                        }
                     }
-                    bool neg = res < 0;
+                    neg = res < 0;
                     if (neg)
                         res = -res;
-                    string sres = Tools.NumChars[res % r].ToString();
+                    if (res < 0)
+                        throw new JSException(new Error("Internal error"));
+                    sres.Append(Tools.NumChars[res % r]);
                     res /= r;
                     while (res != 0)
                     {
-                        sres = Tools.NumChars[res % r] + sres;
+                        sres.Append(Tools.NumChars[res % r]);
                         res /= r;
                     }
-                    return neg ? "-" + sres : sres;
+                    if (neg)
+                        sres.Append('-');
+                    for (int i = sres.Length, j = 0; i-- > j; j++)
+                    {
+                        sres[i] ^= sres[j];
+                        sres[j] ^= sres[i];
+                        sres[i] ^= sres[j];
+                        sres[i] += (char)((sres[i] / 'A') * ('a' - 'A'));
+                        sres[j] += (char)((sres[j] / 'A') * ('a' - 'A'));
+                    }
+                    return sres.ToString();
                 }
             }
             finally

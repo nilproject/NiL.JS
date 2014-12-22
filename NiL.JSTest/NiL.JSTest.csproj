@@ -153,6 +153,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="pbkdf.js" />
     <Content Include="aes.js" />
     <Content Include="arraytests.js" />
     <Content Include="coffee-script.js" />
