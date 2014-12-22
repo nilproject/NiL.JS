@@ -34,6 +34,11 @@ Licensed under BSD 3-Clause License.
 [NuGet](https://www.nuget.org/packages/NiL.JS)  
 [Code analyzer on this engine](http://nilproject.net/linter.html)  
 
+## Known bugs
+
+**Async**
+Execution of function in two or more threads gives incorrect result. To fix it, need to write "eval();" in any part of method body (e.g. after "return;"). But, better way to avoid this is to create functions dynamically for each thread using eval or Function("some code").
+
 ## If you found bug
 
 ... then you can choose one of three paths:  
