@@ -153,6 +153,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="aes.js" />
     <Content Include="arraytests.js" />
     <Content Include="coffee-script.js" />
     <Content Include="crypto-js\3.1.2\build\components\aes-min.js" />

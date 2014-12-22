@@ -310,7 +310,7 @@ for (var i = 0; i < 10000000; i++) abs(i * (1 - 2 * (i & 1)));
                 return JSObject.Undefined;
             }));
 
-            int mode = 100
+            int mode = 13
                    ;
             switch (mode)
             {
@@ -437,6 +437,11 @@ for (var i = 0; i < 10000000; i++) abs(i * (1 - 2 * (i & 1)));
                 case 12:
                     {
                         runFile(@"tests\custom\Int8Array.js");
+                        break;
+                    }
+                case 13:
+                    {
+                        runFile("aes.js");
                         break;
                     }
                 case 151:
@@ -821,7 +826,7 @@ for (var i = 0; i < 10000000; i++) abs(i * (1 - 2 * (i & 1)));
             {
                 TimeSpan total = new TimeSpan();
 
-                for (var i = 0; i < fls.Length; )
+                for (var i = 20; i < fls.Length; )
                 {
                     string data, body;
                     using (var f = new FileStream(fls[i++], FileMode.Open, FileAccess.Read))
