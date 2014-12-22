@@ -1225,22 +1225,41 @@ namespace NiL.JS.Statements
                 return new ParseResult();
             if (assign)
             {
+                root = false; // блокируем вызов дейкстры
+                second = deicstra(second as ExpressionTree);
                 var opassigncache = new OpAssignCache(first);
-                res = new ExpressionTree()
+                if (second is ExpressionTree
+                    && (second as ExpressionTree)._type == OperationType.None)
                 {
-                    first = opassigncache,
-                    second = new None(deicstra(new ExpressionTree()
+                    second.first = new Assign(opassigncache, new ExpressionTree()
                     {
                         first = opassigncache,
-                        second = second is ExpressionTree ? (second as ExpressionTree)._type == OperationType.None ? second : new None(deicstra(second as ExpressionTree), null) : second,
+                        second = second.first,
                         _type = type,
                         Position = index,
                         Length = i - index
-                    }), null),
-                    _type = OperationType.Assign,
-                    Position = index,
-                    Length = i - index
-                };
+                    })
+                    {
+                        Position = index,
+                        Length = i - index
+                    };
+                    res = second;
+                }
+                else
+                {
+                    res = new Assign(opassigncache, new ExpressionTree()
+                    {
+                        first = opassigncache,
+                        second = second,
+                        _type = type,
+                        Position = index,
+                        Length = i - index
+                    })
+                    {
+                        Position = index,
+                        Length = i - index
+                    };
+                }
             }
             else
             {
