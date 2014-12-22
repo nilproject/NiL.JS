@@ -913,17 +913,16 @@ namespace NiL.JS.Core.BaseTypes
                 JSObject t = args[i];
                 if (body.strict)
                 {
+                    if (creator.arguments[i].assignations != null)
+                    {
+                        args[i] = t = t.CloneImpl();
+                        t.attributes |= JSObjectAttributesInternal.Cloned;
+                    }
                     if (creator.containsEval || creator.containsArguments)
                     {
                         if ((t.attributes & JSObjectAttributesInternal.Cloned) == 0)
                             args[i] = t.CloneImpl();
                         t = t.CloneImpl();
-                    }
-                    else if (creator.containsArguments)
-                    {
-                        args[i] = t.CloneImpl();
-                        if (creator.arguments[i].assignations != null && (t.attributes & JSObjectAttributesInternal.Cloned) == 0)
-                            t = t.CloneImpl();
                     }
                 }
                 else
