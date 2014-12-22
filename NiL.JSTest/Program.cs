@@ -310,7 +310,7 @@ for (var i = 0; i < 10000000; i++) abs(i * (1 - 2 * (i & 1)));
                 return JSObject.Undefined;
             }));
 
-            int mode = 14
+            int mode = 157
                    ;
             switch (mode)
             {
@@ -831,7 +831,7 @@ for (var i = 0; i < 10000000; i++) abs(i * (1 - 2 * (i & 1)));
             {
                 TimeSpan total = new TimeSpan();
 
-                for (var i = 20; i < fls.Length; )
+                for (var i = 0; i < fls.Length; )
                 {
                     string data, body;
                     using (var f = new FileStream(fls[i++], FileMode.Open, FileAccess.Read))

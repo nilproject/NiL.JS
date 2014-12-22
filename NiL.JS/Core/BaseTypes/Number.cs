@@ -291,9 +291,6 @@ namespace NiL.JS.Core.BaseTypes
                     return ToString();
                 else
                 {
-                    if (valueType == JSObjectType.Int
-                        && r == 16)
-                        return iValue.ToString("X1");
                     long res = iValue;
                     var sres = new StringBuilder();
                     bool neg;
@@ -346,7 +343,7 @@ namespace NiL.JS.Core.BaseTypes
                     }
                     if (neg)
                         sres.Append('-');
-                    for (int i = sres.Length, j = 0; i-- > j; j++)
+                    for (int i = sres.Length - 1, j = 0; i > j; j++, i--)
                     {
                         sres[i] ^= sres[j];
                         sres[j] ^= sres[i];
