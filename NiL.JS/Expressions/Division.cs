@@ -10,7 +10,7 @@ namespace NiL.JS.Expressions
         {
             get
             {
-                return PredictedType.Double;
+                return PredictedType.Number;
             }
         }
 
@@ -22,7 +22,30 @@ namespace NiL.JS.Expressions
 
         internal override JSObject Evaluate(Context context)
         {
-            tempContainer.dValue = Tools.JSObjectToDouble(first.Evaluate(context)) / Tools.JSObjectToDouble(second.Evaluate(context));
+            int itemp;
+            var jstemp = first.Evaluate(context);
+            if (jstemp.valueType == JSObjectType.Int
+                || jstemp.valueType == JSObjectType.Bool)
+            {
+                itemp = jstemp.iValue;
+                jstemp = second.Evaluate(context);
+                if ((jstemp.valueType == JSObjectType.Bool
+                    || jstemp.valueType == JSObjectType.Int)
+                    && jstemp.iValue > 0
+                    && itemp > 0
+                    && (itemp % jstemp.iValue) == 0)
+                {
+                    tempContainer.valueType = JSObjectType.Int;
+                    tempContainer.iValue = itemp / jstemp.iValue;
+                }
+                else
+                {
+                    tempContainer.valueType = JSObjectType.Double;
+                    tempContainer.dValue = itemp / Tools.JSObjectToDouble(jstemp);
+                }
+                return tempContainer;
+            }
+            tempContainer.dValue = Tools.JSObjectToDouble(jstemp) / Tools.JSObjectToDouble(second.Evaluate(context));
             tempContainer.valueType = JSObjectType.Double;
             return tempContainer;
         }

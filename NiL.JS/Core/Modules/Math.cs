@@ -108,8 +108,8 @@ namespace NiL.JS.Core.Modules
         {
             while (y > 0)
             {
-                x >>= y % 64;
-                y -= 64;
+                x >>= System.Math.Min(y, 62);
+                y -= 62;
             }
             return x;
         }
@@ -134,8 +134,8 @@ namespace NiL.JS.Core.Modules
             var b = BitConverter.DoubleToInt64Bits(a);
             ulong m = ((ulong)b & ((1UL << 52) - 1)) | (1UL << 52);
             int e = 0;
-            long s = (b >> 63) | 1;
-            unchecked { b &= ((1L << 63) - 1L); }
+            long s = (b >> 63) | 1L;
+            b &= long.MaxValue;
             e |= (int)(b >> 52);
             e = 52 - e + 1023;
             if (e > 0)
@@ -265,8 +265,8 @@ namespace NiL.JS.Core.Modules
             var b = BitConverter.DoubleToInt64Bits(a);
             ulong m = ((ulong)b & ((1UL << 52) - 1)) | (1UL << 52);
             int e = 0;
-            long s = (b >> 63) | 1;
-            unchecked { b &= ((1L << 63) - 1L); }
+            long s = (b >> 63) | 1L;
+            b &= long.MaxValue;
             e |= (int)(b >> 52);
             e = 52 - e + 1023;
             if (e > 0) // есть что округлить
