@@ -281,9 +281,14 @@ namespace NiL.JS.Core
                 yield return "caller";
             if (_length != null && _length.IsExist && (!hideNonEnum || (_length.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
                 yield return "length";
-            var be = base.GetEnumeratorImpl(hideNonEnum);
+            var be = getBaseEnumerator(hideNonEnum);
             while (be.MoveNext())
                 yield return be.Current;
+        }
+
+        private IEnumerator<string> getBaseEnumerator(bool hideNonEnum)
+        {
+            return base.GetEnumeratorImpl(hideNonEnum);
         }
 
         protected internal override bool DeleteMember(JSObject name)

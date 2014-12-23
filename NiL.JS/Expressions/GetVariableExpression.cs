@@ -94,7 +94,7 @@ namespace NiL.JS.Expressions
         {
             return variableName;
         }
-
+#if !NET35
         internal override System.Linq.Expressions.Expression TryCompile(bool selfCompile, bool forAssign, Type expectedType, List<CodeNode> dynamicValues)
         {
             dynamicValues.Add(this);
@@ -107,7 +107,7 @@ namespace NiL.JS.Expressions
                 res = System.Linq.Expressions.Expression.Call(JITHelpers.JSObjectToInt32Method, res);
             return res;
         }
-
+#endif
         public override T Visit<T>(Visitor<T> visitor)
         {
             return visitor.Visit(this);

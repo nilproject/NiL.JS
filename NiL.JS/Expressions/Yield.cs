@@ -30,7 +30,12 @@ namespace NiL.JS.Expressions
                 context.abortInfo = tempContainer;
                 context.abort = AbortType.Yield;
                 context.Deactivate();
-                while (context.abort == AbortType.Yield) Thread.Yield();
+                while (context.abort == AbortType.Yield)
+#if !NET35
+                    Thread.Yield();
+#else
+                    Thread.Sleep(0);
+#endif
                 if (context.abort == AbortType.Exception)
                     throw new JSException(new Error("Execution aborted"));
                 context.abort = AbortType.None;

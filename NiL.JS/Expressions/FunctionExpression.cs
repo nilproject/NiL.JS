@@ -96,7 +96,11 @@ namespace NiL.JS.Expressions
                     }
                     while (generatorContext == null);
                     while (generatorContext.abort == AbortType.None)
+#if !NET35
                         Thread.Yield();
+#else
+                        Thread.Sleep(0);
+#endif
                     var res = JSObject.CreateObject();
                     res.fields["value"] = generatorContext.abortInfo;
                     res.fields["done"] = generatorContext.abort == AbortType.Return;
@@ -110,7 +114,11 @@ namespace NiL.JS.Expressions
                         generatorContext.abortInfo = args[0];
                         generatorContext.abort = AbortType.None;
                         while (generatorContext.abort == AbortType.None)
+#if !NET35
                             Thread.Yield();
+#else
+                            Thread.Sleep(0);
+#endif
                         var res = JSObject.CreateObject();
                         res.fields["value"] = generatorContext.abortInfo;
                         res.fields["done"] = generatorContext.abort == AbortType.Return;
