@@ -140,7 +140,7 @@ namespace NiL.JS.Expressions
                 var name = first.ToString();
                 if (name == "eval" && statistic != null)
                     statistic.ContainsEval = true;
-                VariableDescriptor f = null;
+                /*VariableDescriptor f = null;
                 if (vars.TryGetValue(name, out f))
                 {
                     if (f.Inititalizator != null) // Defined function
@@ -174,7 +174,7 @@ namespace NiL.JS.Expressions
                             }
                         }
                     }
-                }
+                }*/
             }
             return false;
         }

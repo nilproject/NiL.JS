@@ -473,22 +473,24 @@ namespace NiL.JS.Core
             return __prototype.GetMember(name, false, false);
         }
 
+        private object cacheKey;
+        private JSObject cacheResult;
+
         [Hidden]
         protected JSObject DefaultFieldGetter(JSObject nameObj, bool forWrite, bool own)
         {
             string name = nameObj.ToString();
+            if (cacheKey == name as object && cacheResult != null && cacheResult.valueType >= JSObjectType.Undefined)
+                return cacheResult;
+            cacheKey = null;
+            cacheResult = null;
             JSObject res = null;
             JSObject proto = null;
-            bool fromProto =
-                (fields == null || !fields.TryGetValue(name, out res) || res.valueType < JSObjectType.Undefined)
-                && ((proto = __proto__).oValue != null);
+            bool fromProto = (fields == null || !fields.TryGetValue(name, out res) || res.valueType < JSObjectType.Undefined) && ((proto = __proto__).oValue != null);
             if (fromProto)
             {
                 res = proto.GetMember(nameObj, false, own);
-                if (((own
-                    && (res.valueType != JSObjectType.Property || (res.attributes & JSObjectAttributesInternal.Field) == 0)
-                    ))
-                    || !res.IsExist)
+                if (((own && ((res.attributes & JSObjectAttributesInternal.Field) == 0 || res.valueType != JSObjectType.Property))) || res.valueType < JSObjectType.Undefined)
                     res = null;
             }
             if (res == null)
@@ -512,12 +514,16 @@ namespace NiL.JS.Core
                 if ((res.attributes & JSObjectAttributesInternal.ReadOnly) == 0
                     && (res.valueType != JSObjectType.Property || own))
                 {
-                    var t = res.CloneImpl();
+                    res = res.CloneImpl();
                     if (fields == null)
                         fields = createFields();
-                    fields[name] = t;
-                    res = t;
+                    fields[name] = res;
                 }
+            }
+            else if (!fromProto && res.valueType >= JSObjectType.Undefined)
+            {
+                cacheKey = name;
+                cacheResult = res;
             }
             res.valueType |= JSObjectType.NotExistsInObject;
             return res;
@@ -659,6 +665,7 @@ namespace NiL.JS.Core
             this.attributes =
                 (this.attributes & ~JSObjectAttributesInternal.PrivateAttributes)
                 | (value.attributes & JSObjectAttributesInternal.PrivateAttributes);
+            cacheKey = null;
             return;
         }
 
@@ -703,7 +710,7 @@ namespace NiL.JS.Core
                 tempStr += "]";
                 return tempStr;
             }
-            var res = ToPrimitiveValue_String_Value();
+            var res = this.valueType >= JSObjectType.Object ? ToPrimitiveValue_String_Value() : this;
             switch (res.valueType)
             {
                 case JSObjectType.Bool:

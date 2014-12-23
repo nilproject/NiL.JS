@@ -12,11 +12,9 @@ namespace NiL.JS.Core.Functions
     /// <summary>
     /// Ограничения для макрофункций:
     /// * нет инструкции debugger
-    /// * нет вложенных вызовов функции
     /// * нет eval, arguments и with
     /// * не используется this
     /// * все используемые переменные и константы либо объявлены внутри функции, либо являются её аргументами
-    /// * нет получения и записи значений в поля объектов (по причине возможного вызова getter или setter)
     /// * нет создания других функций
     /// </summary>
     public sealed class MacroFunction : Function
@@ -112,9 +110,17 @@ namespace NiL.JS.Core.Functions
             int j;
             var body = creator.body;
             var context = this.context;
+            if (body == null || body.lines.Length == 0)
+            {
+                correctThisBind(self, body.strict, context ?? initiator);
+                for (i = 0; i < arguments.Length; i++)
+                    arguments[i].Evaluate(initiator);
+                notExists.valueType = JSObjectType.NotExistsInObject;
+                return notExists;
+            }
             lock (creator)
             {
-                self = correctThisBind(self, body, context);
+                self = correctThisBind(self, body.strict, context);
                 if (creator.recursiveDepth == 0)
                 {
                     for (i = 0; i < creator.arguments.Length; i++)
@@ -140,9 +146,12 @@ namespace NiL.JS.Core.Functions
                 else
                     storedData = initScope(arguments, initiator, false);
                 creator.recursiveDepth++;
-                if (this.creator.reference.descriptor != null)
+                if (creator.reference.descriptor != null)
                 {
-                    creator.reference.descriptor.cacheContext = context.parent;
+                    creator.reference.descriptor.cacheContext = context.parent; 
+                    // тонкое место. Родителем контекста может оказаться базовый контекст (тот, что над глобальным скрипта)
+                    // а там о этой функции ничего не знают. Спасёт срабатывание кэша. Но если родителем, вдруг, окажется, базовый контекст, то
+                    // кэш не сработает, будет попытка получить эту функцию из контекста над базовым, что приведёт к фаталу
                     creator.reference.descriptor.cacheRes = this;
                 }
                 var oldAbort = context.abort;

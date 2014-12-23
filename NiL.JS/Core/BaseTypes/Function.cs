@@ -764,6 +764,18 @@ namespace NiL.JS.Core.BaseTypes
 
         protected internal virtual JSObject InternalInvoke(JSObject self, Expression[] arguments, Context initiator)
         {
+            if (this.GetType() == typeof(Function))
+            {
+                var body = creator.body;
+                if (body == null || body.lines.Length == 0)
+                {
+                    correctThisBind(self, body.strict, context ?? initiator);
+                    for (int i = 0; i < arguments.Length; i++)
+                        arguments[i].Evaluate(initiator);
+                    notExists.valueType = JSObjectType.NotExistsInObject;
+                    return notExists;
+                }
+            }
             Arguments _arguments = new Core.Arguments()
             {
                 caller = initiator.strict && initiator.caller != null && initiator.caller.creator.body.strict ? Function.propertiesDummySM : initiator.caller,
@@ -786,7 +798,7 @@ namespace NiL.JS.Core.BaseTypes
 #endif
             JSObject res = null;
             var body = creator.body;
-            thisBind = correctThisBind(thisBind, body, context);
+            thisBind = correctThisBind(thisBind, body.strict, context);
             if (body == null || body.lines.Length == 0)
             {
                 notExists.valueType = JSObjectType.NotExistsInObject;
@@ -1001,10 +1013,10 @@ namespace NiL.JS.Core.BaseTypes
                 }
         }
 
-        internal JSObject correctThisBind(JSObject thisBind, CodeBlock body, Context internalContext)
+        internal JSObject correctThisBind(JSObject thisBind, bool strict, Context internalContext)
         {
             if (thisBind == null)
-                return body.strict ? undefined : internalContext.Root.thisBind;
+                return strict ? undefined : internalContext.Root.thisBind;
             else if (thisBind.oValue == typeof(New) as object)
             {
                 thisBind.__proto__ = prototype.oValue as JSObject ?? prototype;
@@ -1012,7 +1024,7 @@ namespace NiL.JS.Core.BaseTypes
             }
             else if (internalContext != null)
             {
-                if (!body.strict) // Поправляем this
+                if (!strict) // Поправляем this
                 {
                     if (thisBind.valueType > JSObjectType.Undefined && thisBind.valueType < JSObjectType.Object)
                         return thisBind.ToObject();
