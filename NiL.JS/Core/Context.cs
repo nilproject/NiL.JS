@@ -71,7 +71,7 @@ namespace NiL.JS.Core
                 globalContext.fields.Add("Object", TypeProxy.GetConstructor(typeof(JSObject)).CloneImpl());
                 globalContext.fields["Object"].attributes = JSObjectAttributesInternal.DoNotDelete;
                 JSObject.GlobalPrototype = TypeProxy.GetPrototype(typeof(JSObject));
-                Core.ThisBind.refreshThisBindProto();
+                Core.GlobalObject.refreshGlobalObjectProto();
                 globalContext.AttachModule(typeof(Modules.Math));
                 globalContext.AttachModule(typeof(BaseTypes.Array));
                 globalContext.AttachModule(typeof(Modules.JSON));
@@ -180,7 +180,7 @@ namespace NiL.JS.Core
                     {
                         if (c.parent == globalContext)
                         {
-                            thisBind = new ThisBind(c);
+                            thisBind = new GlobalObject(c);
                             c.thisBind = thisBind;
                             break;
                         }

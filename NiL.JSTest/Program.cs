@@ -310,7 +310,7 @@ for (var i = 0; i < 10000000; i++) abs(i * (1 - 2 * (i & 1)));
                 return JSObject.Undefined;
             }));
 
-            int mode = 100
+            int mode = 101
                    ;
             switch (mode)
             {
@@ -437,6 +437,16 @@ for (var i = 0; i < 10000000; i++) abs(i * (1 - 2 * (i & 1)));
                 case 12:
                     {
                         runFile(@"tests\custom\Int8Array.js");
+                        break;
+                    }
+                case 13:
+                    {
+                        runFile("aes.js");
+                        break;
+                    }
+                case 14:
+                    {
+                        runFile("pbkdf.js");
                         break;
                     }
                 case 151:

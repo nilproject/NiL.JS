@@ -176,9 +176,7 @@ namespace NiL.JS.Expressions
 
         internal override JSObject Evaluate(Context context)
         {
-            var res = new JSObject(false);
-            res.valueType = JSObjectType.Object;
-            res.oValue = res;
+            var res = JSObject.CreateObject(false);
             if (fields.Length == 0)
                 return res;
             res.fields = JSObject.createFields(fields.Length);
