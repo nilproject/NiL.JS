@@ -254,17 +254,18 @@ namespace NiL.JS.Core
 
         public bool ContainsKey(string key)
         {
-            throw new NotImplementedException();
+            TValue fake;
+            return TryGetValue(key, out fake);
         }
 
         public ICollection<string> Keys
         {
-            get { throw new NotImplementedException(); }
+            get { return (from item in records where item.key != null select item.key).ToArray(); }
         }
 
         public ICollection<TValue> Values
         {
-            get { throw new NotImplementedException(); }
+            get { return (from item in records where item.key != null select item.value).ToArray(); }
         }
 
         public TValue this[string key]
@@ -289,7 +290,13 @@ namespace NiL.JS.Core
 
         public void Clear()
         {
-            throw new NotImplementedException();
+            if (existedIndexes != null)
+                Array.Clear(existedIndexes, 0, existedIndexes.Length);
+            Array.Clear(records, 0, records.Length);
+            count = 0;
+            eicount = 0;
+            emptyKeyValue = default(TValue);
+            emptyKeyValueExists = false;
         }
 
         public bool Contains(KeyValuePair<string, TValue> item)

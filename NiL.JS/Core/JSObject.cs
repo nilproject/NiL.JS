@@ -277,6 +277,12 @@ namespace NiL.JS.Core
         [Hidden]
         public static JSObject CreateObject()
         {
+            return CreateObject(true);
+        }
+
+        [Hidden]
+        public static JSObject CreateObject(bool createFields)
+        {
             var t = new JSObject(true)
             {
                 valueType = JSObjectType.Object,
@@ -473,17 +479,10 @@ namespace NiL.JS.Core
             return __prototype.GetMember(name, false, false);
         }
 
-        //private object cacheKey;
-        //private JSObject cacheResult;
-
         [Hidden]
         protected JSObject DefaultFieldGetter(JSObject nameObj, bool forWrite, bool own)
         {
-            string name = nameObj.ToString();
-            //if (cacheKey == name as object && cacheResult != null && cacheResult.valueType >= JSObjectType.Undefined)
-            //    return cacheResult;
-            //cacheKey = null;
-            //cacheResult = null;
+            string name = forWrite || fields != null ? nameObj.ToString() : null;
             JSObject res = null;
             JSObject proto = null;
             bool fromProto = (fields == null || !fields.TryGetValue(name, out res) || res.valueType < JSObjectType.Undefined) && ((proto = __proto__).oValue != null);
@@ -520,11 +519,6 @@ namespace NiL.JS.Core
                     fields[name] = res;
                 }
             }
-            //else if (!fromProto && res.valueType >= JSObjectType.Undefined)
-            //{
-            //    cacheKey = name;
-            //    cacheResult = res;
-            //}
             res.valueType |= JSObjectType.NotExistsInObject;
             return res;
         }
@@ -665,7 +659,6 @@ namespace NiL.JS.Core
             this.attributes =
                 (this.attributes & ~JSObjectAttributesInternal.PrivateAttributes)
                 | (value.attributes & JSObjectAttributesInternal.PrivateAttributes);
-            //cacheKey = null;
             return;
         }
 
@@ -796,6 +789,7 @@ namespace NiL.JS.Core
         [CLSCompliant(false)]
         [DoNotEnumerate]
         [ParametersCount(0)]
+        [AllowNullArguments]
         public virtual JSObject toString(Arguments args)
         {
             var self = this.oValue as JSObject ?? this;
@@ -825,7 +819,7 @@ namespace NiL.JS.Core
                 case JSObjectType.Date:
                 case JSObjectType.Object:
                     {
-                        if (self.oValue is ThisBind)
+                        if (self.oValue is GlobalObject)
                             return self.oValue.ToString();
                         if (self.oValue is TypeProxy)
                         {

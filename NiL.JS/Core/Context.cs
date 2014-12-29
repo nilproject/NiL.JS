@@ -65,13 +65,13 @@ namespace NiL.JS.Core
                 if (globalContext.fields != null)
                     globalContext.fields.Clear();
                 else
-                    globalContext.fields = new Dictionary<string, JSObject>();
+                    globalContext.fields = new StringMap2<JSObject>();
                 JSObject.GlobalPrototype = null;
                 TypeProxy.Clear();
                 globalContext.fields.Add("Object", TypeProxy.GetConstructor(typeof(JSObject)).CloneImpl());
                 globalContext.fields["Object"].attributes = JSObjectAttributesInternal.DoNotDelete;
                 JSObject.GlobalPrototype = TypeProxy.GetPrototype(typeof(JSObject));
-                Core.ThisBind.refreshThisBindProto();
+                Core.GlobalObject.refreshGlobalObjectProto();
                 globalContext.AttachModule(typeof(Modules.Math));
                 globalContext.AttachModule(typeof(BaseTypes.Array));
                 globalContext.AttachModule(typeof(Modules.JSON));
@@ -180,7 +180,7 @@ namespace NiL.JS.Core
                     {
                         if (c.parent == globalContext)
                         {
-                            thisBind = new ThisBind(c);
+                            thisBind = new GlobalObject(c);
                             c.thisBind = thisBind;
                             break;
                         }
@@ -262,7 +262,7 @@ namespace NiL.JS.Core
             }
             this.caller = caller;
             if (createFields)
-                this.fields = new Dictionary<string, JSObject>();
+                this.fields = new StringMap2<JSObject>();
             this.abortInfo = JSObject.notExists;
         }
 
@@ -421,7 +421,7 @@ namespace NiL.JS.Core
         public void AttachModule(Type moduleType)
         {
             if (fields == null)
-                fields = new Dictionary<string, JSObject>();
+                fields = new StringMap2<JSObject>();
             fields.Add(moduleType.Name, TypeProxy.GetConstructor(moduleType).CloneImpl());
             fields[moduleType.Name].attributes = JSObjectAttributesInternal.DoNotEnum;
         }

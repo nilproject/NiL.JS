@@ -273,7 +273,7 @@
     <Compile Include="Core\CodeNode.cs" />
     <Compile Include="Core\Context.cs" />
     <Compile Include="Core\Parser.cs" />
-    <Compile Include="Core\ThisBind.cs" />
+    <Compile Include="Core\GlobalObject.cs" />
     <Compile Include="Core\ParseResult.cs" />
     <Compile Include="Core\Modules\Console.cs" />
     <Compile Include="Core\Modules\HiddenAttribute.cs" />

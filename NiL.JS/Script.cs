@@ -79,7 +79,7 @@ namespace NiL.JS
             Parser.Build(ref root, 0, new System.Collections.Generic.Dictionary<string, VariableDescriptor>(), false, icallback, null);
             var body = root as CodeBlock;
             Context = new Context(parentContext ?? NiL.JS.Core.Context.globalContext, true, pseudoCaller);
-            Context.thisBind = new ThisBind(Context);
+            Context.thisBind = new GlobalObject(Context);
             Context.variables = (root as CodeBlock).variables;
             Context.strict = (root as CodeBlock).strict;
             for (i = body.localVariables.Length; i-- > 0; )

@@ -5,11 +5,11 @@ using NiL.JS.Core.BaseTypes;
 namespace NiL.JS.Core
 {
     [Serializable]
-    internal sealed class ThisBind : JSObject
+    internal sealed class GlobalObject : JSObject
     {
         private static JSObject thisProto;
 
-        internal static JSObject refreshThisBindProto()
+        internal static JSObject refreshGlobalObjectProto()
         {
             thisProto = CreateObject();
             thisProto.oValue = thisProto;
@@ -24,7 +24,7 @@ namespace NiL.JS.Core
             return thisProto;
         }
 
-        public ThisBind(Context context)
+        public GlobalObject(Context context)
             : base(false)
         {
             attributes = JSObjectAttributesInternal.SystemObject;
