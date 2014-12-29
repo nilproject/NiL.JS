@@ -176,7 +176,7 @@ namespace NiL.JS.Core
         internal double dValue;
         internal object oValue;
 
-        internal Dictionary<string, JSObject> fields;
+        internal IDictionary<string, JSObject> fields;
         internal JSObject __prototype;
         internal JSObjectAttributesInternal attributes;
 
@@ -473,17 +473,17 @@ namespace NiL.JS.Core
             return __prototype.GetMember(name, false, false);
         }
 
-        private object cacheKey;
-        private JSObject cacheResult;
+        //private object cacheKey;
+        //private JSObject cacheResult;
 
         [Hidden]
         protected JSObject DefaultFieldGetter(JSObject nameObj, bool forWrite, bool own)
         {
             string name = nameObj.ToString();
-            if (cacheKey == name as object && cacheResult != null && cacheResult.valueType >= JSObjectType.Undefined)
-                return cacheResult;
-            cacheKey = null;
-            cacheResult = null;
+            //if (cacheKey == name as object && cacheResult != null && cacheResult.valueType >= JSObjectType.Undefined)
+            //    return cacheResult;
+            //cacheKey = null;
+            //cacheResult = null;
             JSObject res = null;
             JSObject proto = null;
             bool fromProto = (fields == null || !fields.TryGetValue(name, out res) || res.valueType < JSObjectType.Undefined) && ((proto = __proto__).oValue != null);
@@ -520,11 +520,11 @@ namespace NiL.JS.Core
                     fields[name] = res;
                 }
             }
-            else if (!fromProto && res.valueType >= JSObjectType.Undefined)
-            {
-                cacheKey = name;
-                cacheResult = res;
-            }
+            //else if (!fromProto && res.valueType >= JSObjectType.Undefined)
+            //{
+            //    cacheKey = name;
+            //    cacheResult = res;
+            //}
             res.valueType |= JSObjectType.NotExistsInObject;
             return res;
         }
@@ -665,7 +665,7 @@ namespace NiL.JS.Core
             this.attributes =
                 (this.attributes & ~JSObjectAttributesInternal.PrivateAttributes)
                 | (value.attributes & JSObjectAttributesInternal.PrivateAttributes);
-            cacheKey = null;
+            //cacheKey = null;
             return;
         }
 
@@ -929,7 +929,7 @@ namespace NiL.JS.Core
 #if INLINE
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-        internal static Dictionary<string, JSObject> createFields()
+        internal static IDictionary<string, JSObject> createFields()
         {
             return createFields(0);
         }
@@ -937,9 +937,10 @@ namespace NiL.JS.Core
 #if INLINE
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-        internal static Dictionary<string, JSObject> createFields(int p)
+        internal static IDictionary<string, JSObject> createFields(int p)
         {
-            return new Dictionary<string, JSObject>(p, System.StringComparer.Ordinal);
+            //return new Dictionary<string, JSObject>(p, System.StringComparer.Ordinal);
+            return new StringMap2<JSObject>();
         }
 
         [Hidden]
