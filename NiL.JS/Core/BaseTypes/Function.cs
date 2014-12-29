@@ -619,13 +619,18 @@ namespace NiL.JS.Core.BaseTypes
             {
                 if (_prototype == null)
                 {
-                    _prototype = new JSObject(true)
+                    if ((attributes & JSObjectAttributesInternal.ProxyPrototype) != 0)
+                        _prototype = new JSObject();
+                    else
                     {
-                        valueType = JSObjectType.Object,
-                        attributes = JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.DoNotDelete
-                    };
-                    _prototype.oValue = _prototype;
-                    (_prototype.fields["constructor"] = this.CloneImpl()).attributes = JSObjectAttributesInternal.DoNotEnum;
+                        _prototype = new JSObject(true)
+                        {
+                            valueType = JSObjectType.Object,
+                            attributes = JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.DoNotDelete
+                        };
+                        _prototype.oValue = _prototype;
+                        (_prototype.fields["constructor"] = this.CloneImpl()).attributes = JSObjectAttributesInternal.DoNotEnum;
+                    }
                 }
                 return _prototype;
             }
@@ -808,7 +813,7 @@ namespace NiL.JS.Core.BaseTypes
             if (creator.recursiveDepth > creator.parametersStored) // рекурсивный вызов. Из-за With мы можем упустить eval
             {
                 if (!(creator.containsEval || creator.containsWith))
-                storeParameters();
+                    storeParameters();
                 creator.parametersStored++;
             }
             creator.recursiveDepth++;
@@ -1071,22 +1076,6 @@ namespace NiL.JS.Core.BaseTypes
                 return propertiesDummySM;
             if ((attributes & JSObjectAttributesInternal.ProxyPrototype) != 0 && name == "prototype")
                 return prototype;
-            //if (name == "arguments")
-            //{
-            //    if (_arguments == null)
-            //    {
-            //        notExists.valueType = JSObjectType.NotExistsInObject;
-            //        return notExists;
-            //    }
-            //    if (_arguments is PooledArguments)
-            //        _arguments = _arguments.CloneImpl();
-            //    if (forWrite)
-            //    {
-            //        if (_arguments is Arguments)
-            //            _arguments = _arguments.CloneImpl();
-            //    }
-            //    return _arguments;
-            //}
             return DefaultFieldGetter(nameObj, forWrite, own);
         }
 

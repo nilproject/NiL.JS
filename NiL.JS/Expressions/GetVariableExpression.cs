@@ -73,15 +73,29 @@ namespace NiL.JS.Expressions
         internal override JSObject Evaluate(Context context)
         {
             var res = descriptor.Get(context, false, functionDepth);
-            if (res.valueType == JSObjectType.NotExists && !suspendThrow)
-                throw new JSException(new NiL.JS.Core.BaseTypes.ReferenceError("Variable \"" + variableName + "\" is not defined."));
-            if (res.valueType == JSObjectType.Property)
+            switch (res.valueType)
             {
-                var getter = (res.oValue as PropertyPair).get;
-                if (getter == null)
-                    return JSObject.notExists;
-                return getter.Invoke(context.objectSource, null);
+                case JSObjectType.NotExists:
+                    if (suspendThrow)
+                        break;
+                    throw new JSException(new NiL.JS.Core.BaseTypes.ReferenceError("Variable \"" + variableName + "\" is not defined."));
+                case JSObjectType.Property:
+                    {
+                        var getter = (res.oValue as PropertyPair).get;
+                        if (getter == null)
+                            return JSObject.notExists;
+                        return getter.Invoke(context.objectSource, null);
+                    }
             }
+            //if (res.valueType == JSObjectType.NotExists && !suspendThrow)
+            //    throw new JSException(new NiL.JS.Core.BaseTypes.ReferenceError("Variable \"" + variableName + "\" is not defined."));
+            //if (res.valueType == JSObjectType.Property)
+            //{
+            //    var getter = (res.oValue as PropertyPair).get;
+            //    if (getter == null)
+            //        return JSObject.notExists;
+            //    return getter.Invoke(context.objectSource, null);
+            //}
             return res;
         }
 

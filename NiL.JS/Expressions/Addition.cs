@@ -58,9 +58,9 @@ namespace NiL.JS.Expressions
             var f = first.Evaluate(context);
             var temp = tempContainer ?? (tempContainer = new JSObject() { attributes = JSObjectAttributesInternal.Temporary });
             temp.valueType = f.valueType;
-            temp.oValue = f.oValue;
             temp.iValue = f.iValue;
             temp.dValue = f.dValue;
+            temp.oValue = f.oValue;
             temp.__prototype = f.__prototype;
             tempContainer = null;
             Impl(temp, temp, second.Evaluate(context));

@@ -304,8 +304,7 @@ namespace NiL.JS.Core.TypeProxing
                 }
                 if (create
                     && ((attributes & JSObjectAttributesInternal.Immutable) == 0)
-                    && (r.attributes & JSObjectAttributesInternal.SystemObject) != 0
-                    && (r.attributes & JSObjectAttributesInternal.ReadOnly) == 0)
+                    && (r.attributes & (JSObjectAttributesInternal.SystemObject | JSObjectAttributesInternal.ReadOnly)) == JSObjectAttributesInternal.SystemObject)
                     fields[name] = r = r.CloneImpl();
                 return r;
             }

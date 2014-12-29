@@ -86,7 +86,7 @@ namespace NiL.JS.Core.Functions
         [Hidden]
         internal protected override JSObject GetMember(JSObject name, bool forWrite, bool own)
         {
-            if (name.ToString() == "prototype")
+            if (name.ToString() == "prototype") // Все прокси-прототипы read-only и non-configurable. Это и оптимизация, и устранение необходимости навешивания атрибутов
                 return prototype;
             var res = proxy.GetMember(name, forWrite && own, own);
             if (res.IsExist || (own && forWrite))

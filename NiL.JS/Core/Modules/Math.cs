@@ -1,3 +1,4 @@
+using NiL.JS.Core.BaseTypes;
 using System;
 
 namespace NiL.JS.Core.Modules
@@ -14,7 +15,7 @@ namespace NiL.JS.Core.Modules
         [DoNotDelete]
         [DoNotEnumerate]
         [NotConfigurable]
-        public const double PI = System.Math.PI;
+        public static readonly Number PI = System.Math.PI;
         [DoNotDelete]
         [DoNotEnumerate]
         [NotConfigurable]
@@ -42,9 +43,31 @@ namespace NiL.JS.Core.Modules
 
         [DoNotEnumerate]
         [DoNotDelete]
-        public static JSObject abs(Arguments args)
+        public static JSObject abs(JSObject arg)
         {
-            return System.Math.Abs(Tools.JSObjectToDouble(args.Length > 0 ? args[0] : null));
+            switch(arg.valueType)
+            {
+                case JSObjectType.Int:
+                    {
+                        if ((arg.iValue & int.MinValue) == 0)
+                            return arg;
+                        break;
+                    }
+                case JSObjectType.Double:
+                    {
+                        if (arg.dValue >= 0)
+                            return arg;
+                        break;
+                    }
+            }
+            var res = System.Math.Abs(Tools.JSObjectToDouble(arg));
+            if ((arg.attributes & JSObjectAttributesInternal.Cloned) != 0)
+            {
+                arg.valueType = JSObjectType.Double;
+                arg.dValue = res;
+                return arg;
+            }
+            return res;
         }
 
         [DoNotEnumerate]
@@ -99,9 +122,16 @@ namespace NiL.JS.Core.Modules
 
         [DoNotEnumerate]
         [DoNotDelete]
-        public static JSObject exp(Arguments args)
+        public static JSObject exp(JSObject arg)
         {
-            return System.Math.Exp(Tools.JSObjectToDouble(args.length > 0 ? args[0] : null));
+            var res = System.Math.Exp(Tools.JSObjectToDouble(arg));
+            if ((arg.attributes & JSObjectAttributesInternal.Cloned) != 0)
+            {
+                arg.valueType = JSObjectType.Double;
+                arg.dValue = res;
+                return arg;
+            }
+            return res;
         }
 
         private static ulong shl(ulong x, int y)
@@ -310,9 +340,16 @@ namespace NiL.JS.Core.Modules
 
         [DoNotEnumerate]
         [DoNotDelete]
-        public static JSObject sqrt(Arguments args)
+        public static JSObject sqrt(JSObject arg)
         {
-            return System.Math.Sqrt(Tools.JSObjectToDouble(args.Length > 0 ? args[0] : null));
+            var res = System.Math.Sqrt(Tools.JSObjectToDouble(arg));
+            if ((arg.attributes & JSObjectAttributesInternal.Cloned) != 0)
+            {
+                arg.valueType = JSObjectType.Double;
+                arg.dValue = res;
+                return arg;
+            }
+            return res;
         }
 
         [DoNotEnumerate]

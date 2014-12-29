@@ -2090,7 +2090,7 @@ namespace NiL.JS.Core.BaseTypes
             {
                 case JSObjectType.Int:
                     {
-                        isIndex = tname.iValue >= 0;
+                        isIndex = (tname.iValue & int.MinValue) == 0;
                         index = tname.iValue;
                         break;
                     }
@@ -2146,7 +2146,7 @@ namespace NiL.JS.Core.BaseTypes
                 {
                     notExists.valueType = JSObjectType.NotExistsInObject;
                     var res = data[(int)index] ?? notExists;
-                    if (!res.IsExist && !own)
+                    if (res.valueType < JSObjectType.Undefined && !own)
                         return __proto__.GetMember(name, forWrite, own);
                     return res;
                 }

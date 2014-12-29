@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -107,7 +108,7 @@ namespace NiL.JS.Core
         {
             int hash;
             var keyLen = key.Length;
-            hash = keyLen * 0x51 ^ 0xe5b5e5;
+            hash = keyLen * 0x55 ^ 0xe5b5e5;
             for (var i = 0; i < keyLen; i++)
                 hash += (hash >> 28) + (hash << 4) + key[i];
             return hash;
@@ -133,13 +134,9 @@ namespace NiL.JS.Core
                 return false;
             }
             var elen = records.Length - 1;
-            int hash;
-            int index;
-            hash = key[0];
-            index = hash & elen;
-            hash = computeHash(key);
-            //hash = key.GetHashCode();
-            for (index = hash & elen; index >= 0; index = records[index].next - 1)
+            int hash = computeHash(key);
+            int index = hash & elen;
+            for (; index >= 0; index = records[index].next - 1)
             {
                 if (records[index].hash == hash && string.CompareOrdinal(records[index].key, key) == 0)
                 {

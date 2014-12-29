@@ -56,16 +56,30 @@ namespace NiL.JS.Expressions
             if (first is Constant)
             {
                 _this = (bool)first.Evaluate(null) ? threads[0] : threads[1];
+                if (message != null)
+                    message(MessageLevel.Warning, new CodeCoordinates(0, Position, Length), "Constant expression.");
             }
             else
             {
-                if (threads[0] == null
-                    && threads[1] == null)
-                    _this = first;
-                else if (threads[0] == null)
+                if (statistic != null
+                    && threads[0] != null
+                    && !statistic.UseWith
+                    && (first is VariableReference && threads[0] is VariableReference)
+                    && (first as VariableReference).descriptor == (threads[0] as VariableReference).descriptor)
+                {
                     _this = new LogicalOr(first, threads[1]) { Position = Position, Length = Length };
-                else if (threads[1] == null)
-                    _this = new LogicalAnd(first, threads[0]) { Position = Position, Length = Length };
+                }
+                else
+                {
+                    // Эти оптимизации работают только в тех случаях, когда результат выражения нигде не используется.
+                    if (threads[0] == null
+                        && threads[1] == null)
+                        _this = first;
+                    else if (threads[0] == null)
+                        _this = new LogicalOr(first, threads[1]) { Position = Position, Length = Length };
+                    else if (threads[1] == null)
+                        _this = new LogicalAnd(first, threads[0]) { Position = Position, Length = Length };
+                }
             }
             return false;
         }

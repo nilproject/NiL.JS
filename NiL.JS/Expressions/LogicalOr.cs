@@ -20,7 +20,7 @@ namespace NiL.JS.Expressions
 
         }
 
-        internal override JSObject Evaluate(Context context)
+        internal sealed override JSObject Evaluate(Context context)
         {
             var left = first.Evaluate(context);
             if ((bool)left)

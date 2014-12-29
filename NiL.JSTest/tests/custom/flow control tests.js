@@ -345,3 +345,6 @@ function RegExpf() {
 
 if (RegExpf() === RegExpf())
     throw "Need to recreate regex";
+
+if (Function.prototype.prototype !== undefined)
+    throw "Function.prototype.prototype mast be undefined";

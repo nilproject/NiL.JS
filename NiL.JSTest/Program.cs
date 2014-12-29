@@ -310,7 +310,7 @@ for (var i = 0; i < 10000000; i++) abs(i * (1 - 2 * (i & 1)));
                 return JSObject.Undefined;
             }));
 
-            int mode = 1
+            int mode = 100
                    ;
             switch (mode)
             {
@@ -352,7 +352,7 @@ for (var i = 0; i < 10000000; i++) abs(i * (1 - 2 * (i & 1)));
                         sputnikTests(@"tests\sputnik\ch15\15.2\");
                         sputnikTests(@"tests\sputnik\ch15\15.3\");
                         sputnikTests(@"tests\sputnik\ch15\15.4\"); // with 42 asserts
-                        sputnikTests(@"tests\sputnik\ch15\15.5\"); // with some errors due double.toString()
+                        sputnikTests(@"tests\sputnik\ch15\15.5\"); // with some errors due double.toString() (8)
                         sputnikTests(@"tests\sputnik\ch15\15.6\");
                         sputnikTests(@"tests\sputnik\ch15\15.7\");
                         sputnikTests(@"tests\sputnik\ch15\15.8\"); // with some errors due accuracy comparison
@@ -831,7 +831,7 @@ for (var i = 0; i < 10000000; i++) abs(i * (1 - 2 * (i & 1)));
             {
                 TimeSpan total = new TimeSpan();
 
-                for (var i = 0; i < fls.Length; )
+                for (var i = 14; i < fls.Length; )
                 {
                     string data, body;
                     using (var f = new FileStream(fls[i++], FileMode.Open, FileAccess.Read))
@@ -860,6 +860,7 @@ for (var i = 0; i < 10000000; i++) abs(i * (1 - 2 * (i & 1)));
                     GC.Collect(1);
                     GC.Collect(2);
                     GC.GetTotalMemory(true);
+                    Environment.Exit(0);
                 }
                 _("Total: " + total);
                 _total += total.Ticks;
