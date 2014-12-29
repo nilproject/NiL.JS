@@ -437,7 +437,7 @@ namespace NiL.JS.Core
                         break;
                     }
                 case JSObjectType.Property:
-                    return null;
+                    return notExists;
                 default:
                     throw can_not_get_property_of_undefined(name);
             }

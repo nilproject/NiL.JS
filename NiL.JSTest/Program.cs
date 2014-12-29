@@ -310,7 +310,7 @@ for (var i = 0; i < 10000000; i++) abs(i * (1 - 2 * (i & 1)));
                 return JSObject.Undefined;
             }));
 
-            int mode = 100
+            int mode = 2
                    ;
             switch (mode)
             {

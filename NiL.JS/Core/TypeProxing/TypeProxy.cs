@@ -383,18 +383,19 @@ namespace NiL.JS.Core.TypeProxing
                                 {
                                     valueType = JSObjectType.Property,
                                     oValue = new PropertyPair
-                                    {
-                                        set = m[0].IsDefined(typeof(Modules.ReadOnlyAttribute), false) ?
+                                    (
+                                        new ExternalFunction((thisBind, a) =>
+                                        {
+                                            return Proxy(cva.From(field.GetValue(field.IsStatic ? null : thisBind.Value)));
+                                        }),
+                                        m[0].IsDefined(typeof(Modules.ReadOnlyAttribute), false) ?
                                             new ExternalFunction((thisBind, a) =>
                                             {
                                                 field.SetValue(field.IsStatic ? null : thisBind.Value, cva.To(a[0].Value));
                                                 return null;
-                                            }) : null,
-                                        get = new ExternalFunction((thisBind, a) =>
-                                        {
-                                            return Proxy(cva.From(field.GetValue(field.IsStatic ? null : thisBind.Value)));
-                                        })
-                                    }
+                                            }) : null
+                                        
+                                    )
                                 };
                                 r.attributes = JSObjectAttributesInternal.Immutable | JSObjectAttributesInternal.Field;
                                 if ((r.oValue as PropertyPair).set == null)
@@ -414,17 +415,17 @@ namespace NiL.JS.Core.TypeProxing
                                     {
                                         valueType = JSObjectType.Property,
                                         oValue = new PropertyPair
-                                        {
-                                            set = !m[0].IsDefined(typeof(Modules.ReadOnlyAttribute), false) ? new ExternalFunction((thisBind, a) =>
+                                        (
+                                            new ExternalFunction((thisBind, a) =>
+                                            {
+                                                return Proxy(field.GetValue(field.IsStatic ? null : thisBind.Value));
+                                            }),
+                                            !m[0].IsDefined(typeof(Modules.ReadOnlyAttribute), false) ? new ExternalFunction((thisBind, a) =>
                                             {
                                                 field.SetValue(field.IsStatic ? null : thisBind.Value, a[0].Value);
                                                 return null;
-                                            }) : null,
-                                            get = new ExternalFunction((thisBind, a) =>
-                                            {
-                                                return Proxy(field.GetValue(field.IsStatic ? null : thisBind.Value));
-                                            })
-                                        }
+                                            }) : null
+                                        )
                                     };
                                     r.attributes = JSObjectAttributesInternal.Immutable | JSObjectAttributesInternal.Field;
                                     if ((r.oValue as PropertyPair).set == null)
@@ -443,10 +444,10 @@ namespace NiL.JS.Core.TypeProxing
                                 {
                                     valueType = JSObjectType.Property,
                                     oValue = new PropertyPair
-                                        {
-                                            set = pinfo.CanWrite && pinfo.GetSetMethod(false) != null && !pinfo.IsDefined(typeof(ReadOnlyAttribute), false) ? new MethodProxy(pinfo.GetSetMethod(false), cva, new[] { cva }) : null,
-                                            get = pinfo.CanRead && pinfo.GetGetMethod(false) != null ? new MethodProxy(pinfo.GetGetMethod(false), cva, null) : null
-                                        }
+                                        (
+                                            pinfo.CanRead && pinfo.GetGetMethod(false) != null ? new MethodProxy(pinfo.GetGetMethod(false), cva, null) : null,
+                                            pinfo.CanWrite && pinfo.GetSetMethod(false) != null && !pinfo.IsDefined(typeof(ReadOnlyAttribute), false) ? new MethodProxy(pinfo.GetSetMethod(false), cva, new[] { cva }) : null
+                                        )
                                 };
                             }
                             else
@@ -455,10 +456,10 @@ namespace NiL.JS.Core.TypeProxing
                                 {
                                     valueType = JSObjectType.Property,
                                     oValue = new PropertyPair
-                                        {
-                                            set = pinfo.CanWrite && pinfo.GetSetMethod(false) != null && !pinfo.IsDefined(typeof(ReadOnlyAttribute), false) ? new MethodProxy(pinfo.GetSetMethod(false)) : null,
-                                            get = pinfo.CanRead && pinfo.GetGetMethod(false) != null ? new MethodProxy(pinfo.GetGetMethod(false)) : null
-                                        }
+                                        (
+                                            pinfo.CanRead && pinfo.GetGetMethod(false) != null ? new MethodProxy(pinfo.GetGetMethod(false)) : null,
+                                            pinfo.CanWrite && pinfo.GetSetMethod(false) != null && !pinfo.IsDefined(typeof(ReadOnlyAttribute), false) ? new MethodProxy(pinfo.GetSetMethod(false)) : null
+                                        )
                                 };
                             }
                             r.attributes = JSObjectAttributesInternal.Immutable;
@@ -475,9 +476,10 @@ namespace NiL.JS.Core.TypeProxing
                             {
                                 valueType = JSObjectType.Property,
                                 oValue = new PropertyPair
-                                {
-                                    set = new MethodProxy(pinfo.GetAddMethod())
-                                }
+                                (
+                                    null,
+                                    new MethodProxy(pinfo.GetAddMethod())
+                                )
                             };
                             break;
                         }

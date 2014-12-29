@@ -187,11 +187,7 @@ namespace NiL.JS.Expressions
                 {
                     var gs = val.oValue as CodeNode[];
                     var prop = res.fields[fields[i]] = new JSObject();
-                    prop.oValue = new PropertyPair
-                    {
-                        set = gs[0] != null ? gs[0].Evaluate(context) as Function : null,
-                        get = gs[1] != null ? gs[1].Evaluate(context) as Function : null
-                    };
+                    prop.oValue = new PropertyPair(gs[1] != null ? gs[1].Evaluate(context) as Function : null, gs[0] != null ? gs[0].Evaluate(context) as Function : null);
                     prop.valueType = JSObjectType.Property;
                 }
                 else

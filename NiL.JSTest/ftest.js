@@ -1,3 +1,3 @@
 ﻿console.log(function () {
-    return Math.atan(-Infinity) == -Math.PI / 2;
+    return {}.__lookupGetter("__proto__");
 }());
