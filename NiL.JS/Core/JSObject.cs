@@ -482,7 +482,9 @@ namespace NiL.JS.Core
         [Hidden]
         protected JSObject DefaultFieldGetter(JSObject nameObj, bool forWrite, bool own)
         {
-            string name = forWrite || fields != null ? nameObj.ToString() : null;
+            string name = null;
+            if (forWrite || fields != null)
+                name = nameObj.ToString();
             JSObject res = null;
             JSObject proto = null;
             bool fromProto = (fields == null || !fields.TryGetValue(name, out res) || res.valueType < JSObjectType.Undefined) && ((proto = __proto__).oValue != null);
@@ -683,7 +685,7 @@ namespace NiL.JS.Core
             res.attributes = this.attributes & ~resetMask;
             return res;
         }
-
+        
         [Hidden]
         public override string ToString()
         {
@@ -709,7 +711,7 @@ namespace NiL.JS.Core
                 case JSObjectType.Bool:
                     return res.iValue != 0 ? "true" : "false";
                 case JSObjectType.Int:
-                    return res.iValue >= 0 && res.iValue < 16 ? Tools.NumString[res.iValue] : res.iValue.ToString(CultureInfo.InvariantCulture);
+                    return res.iValue >= 0 && res.iValue < 16 ? Tools.NumString[res.iValue] : Tools.Int32ToString(res.iValue);
                 case JSObjectType.Double:
                     return Tools.DoubleToString(res.dValue);
                 case JSObjectType.String:

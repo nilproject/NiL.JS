@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Text;
 using NiL.JS.Core.BaseTypes;
 using NiL.JS.Core.TypeProxing;
+using System.Globalization;
 
 namespace NiL.JS.Core
 {
@@ -479,9 +480,14 @@ namespace NiL.JS.Core
             return null;
         }
 
-        private static readonly double[] cachedDoubleStringsKeys = new double[5];
-        private static readonly string[] cachedDoubleStringsValues = new string[5];
-        private static int cachedDoubleStringsIter = 0;
+        private struct DoubleStringCacheItem
+        {
+            public double key;
+            public string value;
+        }
+
+        private static readonly DoubleStringCacheItem[] cachedDoubleString = new DoubleStringCacheItem[8];
+        private static int cachedDoubleStringsIndex = 0;
         private static string[] divFormats = {
                                                  ".#",
                                                  ".##",
@@ -510,10 +516,10 @@ namespace NiL.JS.Core
                 return "-Infinity";
             if (double.IsNaN(d))
                 return "NaN";
-            for (var i = 0; i < 5; i++)
+            for (var i = 8; i-- > 0; )
             {
-                if (cachedDoubleStringsKeys[i] == d)
-                    return cachedDoubleStringsValues[i];
+                if (cachedDoubleString[i].key == d)
+                    return cachedDoubleString[i].value;
             }
             //return dtoString(d);
             var abs = Math.Abs(d);
@@ -535,9 +541,9 @@ namespace NiL.JS.Core
             abs %= 1.0;
             if (abs != 0 && res.Length < (15 + neg))
                 res += abs.ToString(divFormats[15 - res.Length + neg], System.Globalization.CultureInfo.InvariantCulture);
-            cachedDoubleStringsKeys[cachedDoubleStringsIter] = d;
-            cachedDoubleStringsValues[cachedDoubleStringsIter++] = res;
-            cachedDoubleStringsIter %= 5;
+            cachedDoubleString[cachedDoubleStringsIndex].key = d;
+            cachedDoubleString[cachedDoubleStringsIndex++].value = res;
+            cachedDoubleStringsIndex &= 7;
             return res;
         }
 
@@ -680,6 +686,25 @@ namespace NiL.JS.Core
                 }
                 return res.ToString();
             }
+        }
+
+        private struct IntStringCacheItem
+        {
+            public int key;
+            public string value;
+        }
+
+        private static readonly IntStringCacheItem[] intStringCache = new IntStringCacheItem[8]; // Обрати внимание на константы внизу
+        private static int intStrCacheIndex = -1;
+
+        public static string Int32ToString(int value)
+        {
+            for (var i = 8; i-- > 0; )
+            {
+                if (intStringCache[i].key == value)
+                    return intStringCache[i].value;
+            }
+            return (intStringCache[intStrCacheIndex = (intStrCacheIndex + 1) & 7] = new IntStringCacheItem { key = value, value = value.ToString(CultureInfo.InvariantCulture) }).value;
         }
 
         public static bool ParseNumber(string code, out double value, int radix)
