@@ -195,17 +195,6 @@ namespace NiL.JS.Statements
             };
         }
 
-#if !NET35
-
-        internal override System.Linq.Expressions.Expression CompileToIL(NiL.JS.Core.JIT.TreeBuildingState state)
-        {
-            if (initializators.Length == 1)
-                return initializators[0].CompileToIL(state);
-            return System.Linq.Expressions.Expression.Block(System.Linq.Expressions.Expression.Block(from x in initializators select x.CompileToIL(state)), JITHelpers.UndefinedConstant).Reduce();
-        }
-
-#endif
-
         internal override JSObject Evaluate(Context context)
         {
             for (int i = 0; i < initializators.Length; i++)

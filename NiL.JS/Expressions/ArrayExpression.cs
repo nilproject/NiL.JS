@@ -15,19 +15,6 @@ namespace NiL.JS.Expressions
 
         public ICollection<Expression> Elements { get { return elements; } }
 
-#if !NET35
-
-        internal override System.Linq.Expressions.Expression CompileToIL(NiL.JS.Core.JIT.TreeBuildingState state)
-        {
-            return System.Linq.Expressions.Expression.Call(
-                       JITHelpers.methodof(impl),
-                       JITHelpers.ContextParameter,
-                       System.Linq.Expressions.Expression.Constant(elements)
-                       );
-        }
-
-#endif
-
         public override bool IsContextIndependent
         {
             get

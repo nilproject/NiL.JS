@@ -55,17 +55,6 @@ namespace NiL.JS.Statements
             };
         }
 
-#if !NET35
-
-        internal override System.Linq.Expressions.Expression CompileToIL(Core.JIT.TreeBuildingState state)
-        {
-            var labelTarget = System.Linq.Expressions.Expression.Label(label);
-            state.NamedBreakLabels[label] = labelTarget;
-            return System.Linq.Expressions.Expression.Block(statement.CompileToIL(state), System.Linq.Expressions.Expression.Label(labelTarget));
-        }
-
-#endif
-
         internal override JSObject Evaluate(Context context)
         {
             statement.Evaluate(context);

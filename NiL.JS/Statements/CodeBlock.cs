@@ -65,37 +65,6 @@ namespace NiL.JS.Statements
             }
         }
 
-#if !NET35
-
-        internal override System.Linq.Expressions.Expression CompileToIL(NiL.JS.Core.JIT.TreeBuildingState state)
-        {
-            for (int i = lines.Length >> 1; i-- > 0; )
-            {
-                var t = lines[i];
-                lines[i] = lines[lines.Length - i - 1];
-                lines[lines.Length - i - 1] = t;
-            }
-            try
-            {
-                if (lines.Length == 1)
-                    return lines[0].CompileToIL(state);
-                if (lines.Length == 0)
-                    return JITHelpers.UndefinedConstant;
-                return System.Linq.Expressions.Expression.Block(from x in lines where x != null select x.CompileToIL(state));
-            }
-            finally
-            {
-                for (int i = lines.Length >> 1; i-- > 0; )
-                {
-                    var t = lines[i];
-                    lines[i] = lines[lines.Length - i - 1];
-                    lines[lines.Length - i - 1] = t;
-                }
-            }
-        }
-
-#endif
-
         public CodeBlock(CodeNode[] body, bool strict)
         {
             if (body == null)

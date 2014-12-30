@@ -10,60 +10,6 @@ namespace NiL.JS.Statements
     [Serializable]
     public sealed class ForStatement : CodeNode
     {
-#if !NET35
-
-        internal override System.Linq.Expressions.Expression CompileToIL(NiL.JS.Core.JIT.TreeBuildingState state)
-        {
-            var continueLabel = System.Linq.Expressions.Expression.Label("continue" + (DateTime.Now.Ticks % 1000));
-            var breakLabel = System.Linq.Expressions.Expression.Label("break" + (DateTime.Now.Ticks % 1000));
-            for (var i = 0; i < labels.Length; i++)
-                state.NamedContinueLabels[labels[i]] = continueLabel;
-            state.ContinueLabels.Push(continueLabel);
-            state.BreakLabels.Push(breakLabel);
-            System.Linq.Expressions.Expression res = null;
-            try
-            {
-                System.Linq.Expressions.Expression loopBody = null;
-                if (body == null)
-                {
-                    if (post == null)
-                        loopBody = System.Linq.Expressions.Expression.Label(continueLabel);
-                    else
-                        loopBody = System.Linq.Expressions.Expression.Block(System.Linq.Expressions.Expression.Label(continueLabel), post.CompileToIL(state));
-                }
-                else
-                {
-                    if (post == null)
-                        loopBody = System.Linq.Expressions.Expression.Block(body.CompileToIL(state), System.Linq.Expressions.Expression.Label(continueLabel));
-                    else
-                        loopBody = System.Linq.Expressions.Expression.Block(body.CompileToIL(state), System.Linq.Expressions.Expression.Label(continueLabel), post.CompileToIL(state));
-                }
-                System.Linq.Expressions.Expression loop = condition == null ? System.Linq.Expressions.Expression.Loop(loopBody, breakLabel) :
-                    System.Linq.Expressions.Expression.Loop(
-                    System.Linq.Expressions.Expression.IfThenElse(System.Linq.Expressions.Expression.Call(JITHelpers.JSObjectToBooleanMethod, condition.CompileToIL(state)) as System.Linq.Expressions.Expression,
-                        loopBody
-                    ,// else
-                        System.Linq.Expressions.Expression.Break(breakLabel)).Reduce()
-                    , breakLabel);
-                if (init != null)
-                    res = System.Linq.Expressions.Expression.Block(init.CompileToIL(state), loop);
-                else
-                    res = loop;
-                return res;
-            }
-            finally
-            {
-                if (state.BreakLabels.Peek() != breakLabel)
-                    throw new InvalidOperationException();
-                state.BreakLabels.Pop();
-                if (state.ContinueLabels.Peek() != continueLabel)
-                    throw new InvalidOperationException();
-                state.ContinueLabels.Pop();
-                for (var i = 0; i < labels.Length; i++)
-                    state.NamedContinueLabels.Remove(labels[i]);
-            }
-        }
-#endif
         private CodeNode init;
         private CodeNode condition;
         private CodeNode post;

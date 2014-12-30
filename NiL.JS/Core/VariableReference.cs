@@ -13,19 +13,6 @@ namespace NiL.JS.Core
         internal VariableDescriptor descriptor;
         public VariableDescriptor Descriptor { get { return descriptor; } }
 
-#if !NET35
-
-        internal override System.Linq.Expressions.Expression CompileToIL(NiL.JS.Core.JIT.TreeBuildingState state)
-        {
-            return System.Linq.Expressions.Expression.Call(
-                       System.Linq.Expressions.Expression.Constant(this),
-                       JITHelpers.methodof(Evaluate),
-                       JITHelpers.ContextParameter
-                       );
-        }
-
-#endif
-
         public override bool IsContextIndependent
         {
             get

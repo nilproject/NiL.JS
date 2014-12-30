@@ -54,29 +54,7 @@ namespace NiL.JS.Statements
                 }
             };
         }
-#if !NET35
-        internal override System.Linq.Expressions.Expression CompileToIL(Core.JIT.TreeBuildingState state)
-        {
-            var intContext = System.Linq.Expressions.Expression.Parameter(typeof(WithContext));
-            var tempContainer = System.Linq.Expressions.Expression.Parameter(typeof(Context));
-            return System.Linq.Expressions.Expression.Block(new[] { intContext, tempContainer }
-                , System.Linq.Expressions.Expression.Assign(intContext, System.Linq.Expressions.Expression.Call(JITHelpers.methodof(initContext), JITHelpers.ContextParameter, obj.CompileToIL(state)))
-                , System.Linq.Expressions.Expression.TryFinally(
-                    System.Linq.Expressions.Expression.Block(
-                        System.Linq.Expressions.Expression.Assign(tempContainer, JITHelpers.ContextParameter)
-                        , System.Linq.Expressions.Expression.Assign(JITHelpers.ContextParameter, intContext)
-                        , System.Linq.Expressions.Expression.Call(intContext, typeof(WithContext).GetMethod("Activate", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance))
-                        , body.CompileToIL(state)
-                    )
-                    , System.Linq.Expressions.Expression.Block(
-                        System.Linq.Expressions.Expression.Assign(JITHelpers.ContextParameter, tempContainer)
-                        , System.Linq.Expressions.Expression.Call(intContext, typeof(WithContext).GetMethod("Deactivate", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance))
-                        , System.Linq.Expressions.Expression.Assign(System.Linq.Expressions.Expression.Field(JITHelpers.ContextParameter, "abort"), System.Linq.Expressions.Expression.Field(intContext, "abort"))
-                        , System.Linq.Expressions.Expression.Assign(System.Linq.Expressions.Expression.Field(JITHelpers.ContextParameter, "abortInfo"), System.Linq.Expressions.Expression.Field(intContext, "abortInfo"))
-                    )
-                ));
-        }
-#endif
+
         private static WithContext initContext(Context parent, JSObject obj)
         {
             return new WithContext(obj, parent);

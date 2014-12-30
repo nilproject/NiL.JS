@@ -166,11 +166,6 @@ namespace NiL.JS.Core
             original.Optimize(ref _this, owner, message);
         }
 
-        internal override Expression CompileToIL(JIT.TreeBuildingState state)
-        {
-            return tree;
-        }
-
         internal override Expression TryCompile(bool selfCompile, bool forAssign, Type expectedType, List<CodeNode> dynamicValues)
         {
             return tree;

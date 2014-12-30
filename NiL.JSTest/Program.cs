@@ -277,7 +277,19 @@ for (var i = 0; i < 10000000; i++) abs(i * (1 - 2 * (i & 1)));
         private static void testEx()
         {
             var sw = new Stopwatch();
-            var s = new Script("");
+            var s = new Script(
+@"
+function isum(a, b)
+{    
+    return (((((a | 0) + (b | 0)) | 0) + (((a | 0) + (b | 0)) | 0) | 0) + ((((a | 0) + (b | 0)) | 0) + (((a | 0) + (b | 0)) | 0) | 0)) | 0;
+}
+var isum2 = isum;
+for (var i = 0; i < 20000000; )
+{
+    i++;
+    isum(2,3);
+}
+");
             Expression<Func<object, object, int>> nativeTest = (a, b) => (((((Convert.ToInt32(a) | 0) + (Convert.ToInt32(b) | 0)) | 0) + (((Convert.ToInt32(a) | 0) + (Convert.ToInt32(b) | 0)) | 0) | 0) + ((((Convert.ToInt32(a) | 0) + (Convert.ToInt32(b) | 0)) | 0) + (((Convert.ToInt32(a) | 0) + (Convert.ToInt32(b) | 0)) | 0) | 0)) | 0;
             var cme = nativeTest.Compile();
             sw.Start();
@@ -310,7 +322,7 @@ for (var i = 0; i < 10000000; i++) abs(i * (1 - 2 * (i & 1)));
                 return JSObject.Undefined;
             }));
 
-            int mode = 2
+            int mode = 3
                    ;
             switch (mode)
             {

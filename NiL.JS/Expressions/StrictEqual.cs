@@ -20,7 +20,7 @@ namespace NiL.JS.Expressions
 
         }
 
-        internal static bool Check(JSObject first, JSObject second, Context context)
+        internal static bool Check(JSObject first, JSObject second)
         {
             switch (first.valueType)
             {
@@ -79,7 +79,9 @@ namespace NiL.JS.Expressions
         internal override JSObject Evaluate(Context context)
         {
             tempContainer.Assign(first.Evaluate(context));
-            return Check(tempContainer, second.Evaluate(context), context);
+            if (Check(tempContainer, second.Evaluate(context)))
+                return Core.BaseTypes.Boolean.True;
+            return Core.BaseTypes.Boolean.False;
         }
 
         public override T Visit<T>(Visitor<T> visitor)

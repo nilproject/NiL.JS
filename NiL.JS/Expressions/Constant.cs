@@ -8,14 +8,6 @@ namespace NiL.JS.Expressions
     [Serializable]
     public sealed class Constant : Expression
     {
-#if !NET35
-
-        internal override System.Linq.Expressions.Expression CompileToIL(NiL.JS.Core.JIT.TreeBuildingState state)
-        {
-            return JITHelpers.cnst(value);
-        }
-
-#endif
         internal JSObject value;
 
         public JSObject Value { get { return value; } }

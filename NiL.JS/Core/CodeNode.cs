@@ -17,15 +17,6 @@ namespace NiL.JS.Core
         internal static readonly CodeNode[] emptyCodeNodeArray = new CodeNode[0];
 
 #if !NET35
-
-        internal virtual System.Linq.Expressions.Expression CompileToIL(TreeBuildingState state)
-        {
-#if DEBUG
-            System.Diagnostics.Debug.Print("JIT for " + this.GetType() + " not implemented");
-#endif
-            return defaultJit(state);
-        }
-
         internal System.Linq.Expressions.Expression JitOverCall(bool forAssign)
         {
             return System.Linq.Expressions.Expression.Call(
@@ -34,18 +25,6 @@ namespace NiL.JS.Core
                 JITHelpers.ContextParameter
                 );
         }
-
-        internal System.Linq.Expressions.Expression defaultJit(TreeBuildingState state)
-        {
-            var wraper = JitOverCall(false);
-            return System.Linq.Expressions.Expression.Block(
-                    wraper,
-                    System.Linq.Expressions.Expression.IfThen(System.Linq.Expressions.Expression.Equal(JITHelpers.cnst(AbortType.Return), System.Linq.Expressions.Expression.Field(JITHelpers.ContextParameter, "abort")),
-                                        System.Linq.Expressions.Expression.Return(state.ReturnTarget, System.Linq.Expressions.Expression.Field(JITHelpers.ContextParameter, "abortInfo"))),
-                    JITHelpers.UndefinedConstant
-                   );
-        }
-
 #endif
 
         public virtual int Position { get; internal set; }

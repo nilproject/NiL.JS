@@ -133,9 +133,8 @@ namespace NiL.JS.Core
                 value = default(TValue);
                 return false;
             }
-            var elen = records.Length - 1;
             int hash = computeHash(key);
-            int index = hash & elen;
+            int index = hash & (records.Length - 1);
             for (; index >= 0; index = records[index].next - 1)
             {
                 if (records[index].hash == hash && string.CompareOrdinal(records[index].key, key) == 0)

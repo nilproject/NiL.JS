@@ -15,15 +15,6 @@ namespace NiL.JS.Statements
         public CodeNode Body { get { return body; } }
         public CodeNode Condition { get { return condition; } }
 
-#if !NET35
-
-        internal override System.Linq.Expressions.Expression CompileToIL(NiL.JS.Core.JIT.TreeBuildingState state)
-        {
-            return System.Linq.Expressions.Expression.IfThen(System.Linq.Expressions.Expression.Call(JITHelpers.JSObjectToBooleanMethod, condition.CompileToIL(state)), body.CompileToIL(state));
-        }
-
-#endif
-
         internal IfStatement(IfElseStatement parent)
         {
             condition = parent.Condition;
@@ -84,18 +75,6 @@ namespace NiL.JS.Statements
         public CodeNode Body { get { return body; } }
         public CodeNode ElseBody { get { return elseBody; } }
         public CodeNode Condition { get { return condition; } }
-
-#if !NET35
-
-        internal override System.Linq.Expressions.Expression CompileToIL(NiL.JS.Core.JIT.TreeBuildingState state)
-        {
-            return elseBody != null ?
-                System.Linq.Expressions.Expression.IfThenElse(System.Linq.Expressions.Expression.Call(JITHelpers.JSObjectToBooleanMethod, condition.CompileToIL(state)), body.CompileToIL(state), elseBody.CompileToIL(state))
-                :
-                System.Linq.Expressions.Expression.IfThen(System.Linq.Expressions.Expression.Call(JITHelpers.JSObjectToBooleanMethod, condition.CompileToIL(state)), body.CompileToIL(state));
-        }
-
-#endif
 
         private IfElseStatement()
         {

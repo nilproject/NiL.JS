@@ -149,34 +149,6 @@ namespace NiL.JS.Core.JIT
             return dest;
         }
 
-        public static Func<Context, JSObject> compile(CodeBlock node, bool defaultReturn)
-        {
-            Expression exp = null;
-            try
-            {
-                var state = new TreeBuildingState();
-                if (defaultReturn)
-                    state.ReturnTarget = Expression.Label(typeof(JSObject), "@NJS@Return.Label");
-                exp = node.CompileToIL(state);
-                if (defaultReturn)
-                    exp = Expression.Block(exp, state.ReturnLabel);
-                else if (exp.Type == typeof(void))
-                    exp = Expression.Block(exp, UndefinedConstant);
-                while (exp.CanReduce)
-                    exp = exp.Reduce();
-                return (Func<Context, JSObject>)System.Linq.Expressions.Expression.Lambda(
-                    exp,
-                    JITHelpers.ContextParameter).Compile();
-            }
-            catch
-            {
-#if DEBUG
-                System.Diagnostics.Debugger.Break();
-#endif
-                throw;
-            }
-        }
-
         internal static MethodInfo methodof(Func<JSObject, JSObject, bool, JSObject> method)
         {
             return method.Method;

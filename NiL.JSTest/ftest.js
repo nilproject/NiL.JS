@@ -1,3 +1,5 @@
-﻿console.log(function () {
-    return {}.__lookupGetter("__proto__");
-}());
+﻿function sum(a, b) {
+    return a + b;
+}
+
+(function (b) { console.log(sum(2, 3), b); }(sum(1, 1)));

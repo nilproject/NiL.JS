@@ -26,7 +26,7 @@ namespace NiL.JS.Expressions
 
         internal override JSObject Evaluate(Context context)
         {
-            lock (this)
+            //lock (this)
             {
 #if TYPE_SAFE
                 double da = 0.0;
@@ -43,8 +43,9 @@ namespace NiL.JS.Expressions
                     || s.valueType == JSObjectType.Bool)
                     {
                         l = (long)a - s.iValue;
-                        if (l > 2147483647L
-                            || l < -2147483648L)
+                        //if (l > 2147483647L
+                        //    || l < -2147483648L)
+                        if (l != (int)l)
                         {
                             tempContainer.dValue = l;
                             tempContainer.valueType = JSObjectType.Double;

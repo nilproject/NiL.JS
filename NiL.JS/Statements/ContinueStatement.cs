@@ -42,17 +42,6 @@ namespace NiL.JS.Statements
             };
         }
 
-#if !NET35
-
-        internal override System.Linq.Expressions.Expression CompileToIL(Core.JIT.TreeBuildingState state)
-        {
-            if (label != null)
-                return Expression.Goto(state.NamedContinueLabels[label.ToString()]);
-            return Expression.Goto(state.ContinueLabels.Peek());
-        }
-
-#endif
-
         internal override JSObject Evaluate(Context context)
         {
             context.abort = AbortType.Continue;

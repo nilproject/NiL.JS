@@ -653,15 +653,14 @@ namespace NiL.JS.Core
             if (this == value || (attributes & (JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.SystemObject)) != 0)
                 return;
             this.valueType = value.valueType | JSObjectType.Undefined;
-            __prototype = value.__prototype;
             this.iValue = value.iValue;
             this.dValue = value.dValue;
             this.oValue = value.oValue;
             this.fields = null;
+            this.__prototype = value.__prototype;
             this.attributes =
                 (this.attributes & ~JSObjectAttributesInternal.PrivateAttributes)
                 | (value.attributes & JSObjectAttributesInternal.PrivateAttributes);
-            return;
         }
 
         [Hidden]
@@ -1359,7 +1358,7 @@ namespace NiL.JS.Core
             {
                 if (!config
                     && (obj.attributes & JSObjectAttributesInternal.ReadOnly) != 0
-                    && !((StrictEqual.Check(obj, value, null) && ((obj.valueType == JSObjectType.Undefined && value.valueType == JSObjectType.Undefined) || !obj.IsNumber || !value.IsNumber || (1.0 / Tools.JSObjectToDouble(obj) == 1.0 / Tools.JSObjectToDouble(value))))
+                    && !((StrictEqual.Check(obj, value) && ((obj.valueType == JSObjectType.Undefined && value.valueType == JSObjectType.Undefined) || !obj.IsNumber || !value.IsNumber || (1.0 / Tools.JSObjectToDouble(obj) == 1.0 / Tools.JSObjectToDouble(value))))
                         || (obj.valueType == JSObjectType.Double && value.valueType == JSObjectType.Double && double.IsNaN(obj.dValue) && double.IsNaN(value.dValue))))
                     throw new JSException(new TypeError("Cannot change value of not configurable not writable peoperty."));
                 //if ((obj.attributes & JSObjectAttributesInternal.ReadOnly) == 0 || obj.valueType == JSObjectType.Property)
