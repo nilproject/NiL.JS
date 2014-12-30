@@ -647,7 +647,11 @@ namespace NiL.JS.Expressions
                 && !stat.UseThis
                 && !stat.UseWith
                 && !stat.ContainsTry
-                && (body.variables.All(x => x.Owner == body || x == reference.descriptor)))
+                && (body.variables.All(x => 
+                    x.Owner == body // Переменные
+                    || x == reference.descriptor // Параметры
+                    || (reference.descriptor != null && x.owner == reference.descriptor.Inititalizator) // аргументы
+                    )))
             {
                 type = FunctionType.Macro;
                 for (var i = 0; i < body.localVariables.Length; i++)

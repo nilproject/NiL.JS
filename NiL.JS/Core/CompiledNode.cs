@@ -145,7 +145,7 @@ namespace NiL.JS.Core
                 //Expression.Lambda(tree, lambdaArgs).CompileToMethod(method);
                 //compiledTree = (Func<Context, CodeNode[], JSObject, JSObject>)type.CreateType().GetMethods()[0].CreateDelegate(typeof(Func<Context, CodeNode[], JSObject, JSObject>));
 
-                compiledTree = (Func<Context, CodeNode[], JSObject, JSObject>)Expression.Lambda(tree, lambdaArgs).Compile();
+                compiledTree = Expression.Lambda<Func<Context, CodeNode[], JSObject, JSObject>>(tree, lambdaArgs).Compile();
             }
             var result = compiledTree(context, dynamicValues, tempContainer);
             return result;

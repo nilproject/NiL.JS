@@ -284,23 +284,23 @@ function isum(a, b)
     return (((((a | 0) + (b | 0)) | 0) + (((a | 0) + (b | 0)) | 0) | 0) + ((((a | 0) + (b | 0)) | 0) + (((a | 0) + (b | 0)) | 0) | 0)) | 0;
 }
 var isum2 = isum;
-for (var i = 0; i < 20000000; )
+for (var i = 0; i < 10000000; )
 {
     i++;
     isum(2,3);
 }
 ");
-            Expression<Func<object, object, int>> nativeTest = (a, b) => (((((Convert.ToInt32(a) | 0) + (Convert.ToInt32(b) | 0)) | 0) + (((Convert.ToInt32(a) | 0) + (Convert.ToInt32(b) | 0)) | 0) | 0) + ((((Convert.ToInt32(a) | 0) + (Convert.ToInt32(b) | 0)) | 0) + (((Convert.ToInt32(a) | 0) + (Convert.ToInt32(b) | 0)) | 0) | 0)) | 0;
+            Expression<Func<object, object, int>> nativeTest = (a, b) => ((((((int)(a) | 0) + ((int)(b) | 0)) | 0) + ((((int)(a) | 0) + ((int)(b) | 0)) | 0) | 0) + (((((int)(a) | 0) + ((int)(b) | 0)) | 0) + ((((int)(a) | 0) + ((int)(b) | 0)) | 0) | 0)) | 0;
             var cme = nativeTest.Compile();
             sw.Start();
             int sum = 0;
-            for (int i = 0; i < 20000000; i++)
+            for (int i = 0; i < 10000000; i++)
                 sum += cme(2, 3);
             sw.Stop();
             Console.WriteLine(sum);
             Console.WriteLine(sw.Elapsed);
             sw.Restart();
-            //s.TryCompile();
+            s.TryCompile();
             sw.Stop();
             Console.WriteLine(sw.Elapsed);
             sw.Restart();
@@ -322,7 +322,7 @@ for (var i = 0; i < 20000000; )
                 return JSObject.Undefined;
             }));
 
-            int mode = 3
+            int mode = 101
                    ;
             switch (mode)
             {
@@ -843,7 +843,7 @@ for (var i = 0; i < 20000000; )
             {
                 TimeSpan total = new TimeSpan();
 
-                for (var i = 14; i < fls.Length; )
+                for (var i = 0; i < fls.Length; )
                 {
                     string data, body;
                     using (var f = new FileStream(fls[i++], FileMode.Open, FileAccess.Read))
@@ -872,7 +872,6 @@ for (var i = 0; i < 20000000; )
                     GC.Collect(1);
                     GC.Collect(2);
                     GC.GetTotalMemory(true);
-                    Environment.Exit(0);
                 }
                 _("Total: " + total);
                 _total += total.Ticks;

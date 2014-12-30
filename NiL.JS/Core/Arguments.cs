@@ -84,22 +84,6 @@ namespace NiL.JS.Core
                         return a6 ?? notExists;
                     case 7:
                         return a7 ?? notExists;
-                    //case 8:
-                    //    return a8 ?? notExists;
-                    //case 9:
-                    //    return a9 ?? notExists;
-                    //case 10:
-                    //    return a10 ?? notExists;
-                    //case 11:
-                    //    return a11 ?? notExists;
-                    //case 12:
-                    //    return a12 ?? notExists;
-                    //case 13:
-                    //    return a13 ?? notExists;
-                    //case 14:
-                    //    return a14 ?? notExists;
-                    //case 15:
-                    //    return a15 ?? notExists;
                 }
                 return base[index.ToString()];
             }
