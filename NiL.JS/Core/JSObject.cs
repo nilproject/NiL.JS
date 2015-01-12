@@ -473,8 +473,8 @@ namespace NiL.JS.Core
             if (__prototype == null)
                 __prototype = TypeProxy.GetPrototype(typeof(BaseTypes.String));
 #if DEBUG
-                        else if (__prototype.oValue != TypeProxy.GetPrototype(typeof(BaseTypes.String)).oValue)
-                            System.Diagnostics.Debugger.Break();
+            else if (__prototype.oValue != TypeProxy.GetPrototype(typeof(BaseTypes.String)).oValue)
+                System.Diagnostics.Debugger.Break();
 #endif
             return __prototype.GetMember(name, false, false);
         }
@@ -684,7 +684,7 @@ namespace NiL.JS.Core
             res.attributes = this.attributes & ~resetMask;
             return res;
         }
-        
+
         [Hidden]
         public override string ToString()
         {
@@ -990,6 +990,24 @@ namespace NiL.JS.Core
         }
 
         [Hidden]
+        public static explicit operator int(JSObject obj)
+        {
+            return Tools.JSObjectToInt32(obj);
+        }
+
+        [Hidden]
+        public static explicit operator long(JSObject obj)
+        {
+            return Tools.JSObjectToInt64(obj);
+        }
+
+        [Hidden]
+        public static explicit operator double(JSObject obj)
+        {
+            return Tools.JSObjectToDouble(obj);
+        }
+
+        [Hidden]
         public static explicit operator bool(JSObject obj)
         {
             switch (obj.valueType)
@@ -1007,6 +1025,121 @@ namespace NiL.JS.Core
                     return obj.oValue != null;
             }
             return false;
+        }
+
+        public virtual T As<T>()
+        {
+            switch (Type.GetTypeCode(typeof(T)))
+            {
+                case TypeCode.Boolean:
+                    return (T)(object)(bool)this; // оптимизатор разруливает такой каскад преобразований
+                case TypeCode.Byte:
+                    {
+                        if (valueType == JSObjectType.Int)
+                            return (T)(object)(byte)iValue;
+                        if (valueType == JSObjectType.Double)
+                            return (T)(object)(byte)(int)dValue;
+                        break;
+                    }
+                case TypeCode.Char:
+                    {
+                        if (valueType == JSObjectType.Object
+                            && oValue is char)
+                            return (T)oValue;
+                        break;
+                    }
+                case TypeCode.Decimal:
+                    {
+                        if (valueType == JSObjectType.Int)
+                            return (T)(object)(decimal)iValue;
+                        if (valueType == JSObjectType.Double)
+                            return (T)(object)(decimal)dValue;
+                        break;
+                    }
+                case TypeCode.Double:
+                    {
+                        if (valueType == JSObjectType.Int)
+                            return (T)(object)(double)iValue;
+                        if (valueType == JSObjectType.Double)
+                            return (T)(object)dValue;
+                        break;
+                    }
+                case TypeCode.Int16:
+                    {
+                        if (valueType == JSObjectType.Int)
+                            return (T)(object)(Int16)iValue;
+                        if (valueType == JSObjectType.Double)
+                            return (T)(object)(Int16)dValue;
+                        break;
+                    }
+                case TypeCode.Int32:
+                    {
+                        if (valueType == JSObjectType.Int)
+                            return (T)(object)iValue;
+                        if (valueType == JSObjectType.Double)
+                            return (T)(object)(int)dValue;
+                        break;
+                    }
+                case TypeCode.Int64:
+                    {
+                        if (valueType == JSObjectType.Int)
+                            return (T)(object)(Int64)iValue;
+                        if (valueType == JSObjectType.Double)
+                            return (T)(object)(Int64)dValue;
+                        break;
+                    }
+                case TypeCode.Object:
+                    {
+                        return (T)oValue;
+                    }
+                case TypeCode.SByte:
+                    {
+                        if (valueType == JSObjectType.Int)
+                            return (T)(object)(sbyte)iValue;
+                        if (valueType == JSObjectType.Double)
+                            return (T)(object)(sbyte)dValue;
+                        break;
+                    }
+                case TypeCode.Single:
+                    {
+                        if (valueType == JSObjectType.Int)
+                            return (T)(object)(Single)iValue;
+                        if (valueType == JSObjectType.Double)
+                            return (T)(object)(Single)dValue;
+                        break;
+                    }
+                case TypeCode.String:
+                    {
+                        if (valueType == JSObjectType.String)
+                            return (T)oValue;
+                        break;
+                    }
+                case TypeCode.UInt16:
+                    {
+                        if (valueType == JSObjectType.Int)
+                            return (T)(object)(UInt16)iValue;
+                        if (valueType == JSObjectType.Double)
+                            return (T)(object)(UInt16)dValue;
+                        break;
+                    }
+                case TypeCode.UInt32:
+                    {
+                        if (valueType == JSObjectType.Int)
+                            return (T)(object)(uint)iValue;
+                        if (valueType == JSObjectType.Double)
+                            return (T)(object)(uint)dValue;
+                        break;
+                    }
+                case TypeCode.UInt64:
+                    {
+                        if (valueType == JSObjectType.Int)
+                            return (T)(object)(ulong)iValue;
+                        if (valueType == JSObjectType.Double)
+                            return (T)(object)(ulong)dValue;
+                        break;
+                    }
+            }
+            throw new InvalidCastException();
         }
 
         [Hidden]
