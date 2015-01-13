@@ -1196,7 +1196,9 @@ namespace NiL.JS.Core.BaseTypes
                     for (int i = 0; i < prms.Length; i++)
                         argtypes[i] = prms[i].ParameterType;
                     var instance = new _DelegateWraper(this);
-                    var method = ((System.Reflection.MethodInfo)invokes[17 + prms.Length]).MakeGenericMethod(argtypes);
+                    var method = ((System.Reflection.MethodInfo)invokes[17 + prms.Length]);
+                    if (prms.Length > 0)
+                        method = method.MakeGenericMethod(argtypes);
                     return Delegate.CreateDelegate(delegateType, instance, method);
                 }
             }
