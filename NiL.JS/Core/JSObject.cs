@@ -1035,7 +1035,7 @@ namespace NiL.JS.Core
                     return (T)(object)(bool)this; // оптимизатор разруливает такой каскад преобразований
                 case TypeCode.Byte:
                     {
-                        if (valueType == JSObjectType.Int)
+                        if ((valueType == JSObjectType.Int) || (valueType == JSObjectType.Bool))
                             return (T)(object)(byte)iValue;
                         if (valueType == JSObjectType.Double)
                             return (T)(object)(byte)(int)dValue;
@@ -1050,7 +1050,7 @@ namespace NiL.JS.Core
                     }
                 case TypeCode.Decimal:
                     {
-                        if (valueType == JSObjectType.Int)
+                        if ((valueType == JSObjectType.Int) || (valueType == JSObjectType.Bool))
                             return (T)(object)(decimal)iValue;
                         if (valueType == JSObjectType.Double)
                             return (T)(object)(decimal)dValue;
@@ -1058,7 +1058,7 @@ namespace NiL.JS.Core
                     }
                 case TypeCode.Double:
                     {
-                        if (valueType == JSObjectType.Int)
+                        if ((valueType == JSObjectType.Int) || (valueType == JSObjectType.Bool))
                             return (T)(object)(double)iValue;
                         if (valueType == JSObjectType.Double)
                             return (T)(object)dValue;
@@ -1066,7 +1066,7 @@ namespace NiL.JS.Core
                     }
                 case TypeCode.Int16:
                     {
-                        if (valueType == JSObjectType.Int)
+                        if ((valueType == JSObjectType.Int) || (valueType == JSObjectType.Bool))
                             return (T)(object)(Int16)iValue;
                         if (valueType == JSObjectType.Double)
                             return (T)(object)(Int16)dValue;
@@ -1074,7 +1074,7 @@ namespace NiL.JS.Core
                     }
                 case TypeCode.Int32:
                     {
-                        if (valueType == JSObjectType.Int)
+                        if ((valueType == JSObjectType.Int) || (valueType == JSObjectType.Bool))
                             return (T)(object)iValue;
                         if (valueType == JSObjectType.Double)
                             return (T)(object)(int)dValue;
@@ -1082,7 +1082,7 @@ namespace NiL.JS.Core
                     }
                 case TypeCode.Int64:
                     {
-                        if (valueType == JSObjectType.Int)
+                        if ((valueType == JSObjectType.Int) || (valueType == JSObjectType.Bool))
                             return (T)(object)(Int64)iValue;
                         if (valueType == JSObjectType.Double)
                             return (T)(object)(Int64)dValue;
@@ -1094,7 +1094,7 @@ namespace NiL.JS.Core
                     }
                 case TypeCode.SByte:
                     {
-                        if (valueType == JSObjectType.Int)
+                        if ((valueType == JSObjectType.Int) || (valueType == JSObjectType.Bool))
                             return (T)(object)(sbyte)iValue;
                         if (valueType == JSObjectType.Double)
                             return (T)(object)(sbyte)dValue;
@@ -1102,7 +1102,7 @@ namespace NiL.JS.Core
                     }
                 case TypeCode.Single:
                     {
-                        if (valueType == JSObjectType.Int)
+                        if ((valueType == JSObjectType.Int) || (valueType == JSObjectType.Bool))
                             return (T)(object)(Single)iValue;
                         if (valueType == JSObjectType.Double)
                             return (T)(object)(Single)dValue;
@@ -1116,7 +1116,7 @@ namespace NiL.JS.Core
                     }
                 case TypeCode.UInt16:
                     {
-                        if (valueType == JSObjectType.Int)
+                        if ((valueType == JSObjectType.Int) || (valueType == JSObjectType.Bool))
                             return (T)(object)(UInt16)iValue;
                         if (valueType == JSObjectType.Double)
                             return (T)(object)(UInt16)dValue;
@@ -1124,7 +1124,7 @@ namespace NiL.JS.Core
                     }
                 case TypeCode.UInt32:
                     {
-                        if (valueType == JSObjectType.Int)
+                        if ((valueType == JSObjectType.Int) || (valueType == JSObjectType.Bool))
                             return (T)(object)(uint)iValue;
                         if (valueType == JSObjectType.Double)
                             return (T)(object)(uint)dValue;
@@ -1132,7 +1132,7 @@ namespace NiL.JS.Core
                     }
                 case TypeCode.UInt64:
                     {
-                        if (valueType == JSObjectType.Int)
+                        if ((valueType == JSObjectType.Int) || (valueType == JSObjectType.Bool))
                             return (T)(object)(ulong)iValue;
                         if (valueType == JSObjectType.Double)
                             return (T)(object)(ulong)dValue;
