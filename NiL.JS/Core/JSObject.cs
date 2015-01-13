@@ -1027,6 +1027,7 @@ namespace NiL.JS.Core
             return false;
         }
 
+        [Hidden]
         public virtual T As<T>()
         {
             switch (Type.GetTypeCode(typeof(T)))

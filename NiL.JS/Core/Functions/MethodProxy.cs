@@ -148,113 +148,115 @@ namespace NiL.JS.Core.Functions
                     paramsConverters[i] = t;
                 }
             }
-            if (!retType.IsValueType && !info.ReflectedType.IsValueType)
+            if (!info.IsGenericMethod)
             {
-                switch (parameters.Length)
+                if (!retType.IsValueType && !info.ReflectedType.IsValueType)
                 {
-                    case 0:
-                        {
-                            if (methodinfo.IsStatic)
+                    switch (parameters.Length)
+                    {
+                        case 0:
                             {
-                                this.delegateF0 = Activator.CreateInstance(typeof(Func<object>), null, info.MethodHandle.GetFunctionPointer()) as Func<object>;
-                                mode = CallMode.FuncStaticZero;
-                            }
-                            else
-                            {
-                                this.delegateF1 = Activator.CreateInstance(typeof(Func<object, object>), null, info.MethodHandle.GetFunctionPointer()) as Func<object, object>;
-                                this.delegateF0 = Activator.CreateInstance(typeof(Func<object>), this, info.MethodHandle.GetFunctionPointer()) as Func<object>;
-                                mode = CallMode.FuncDynamicZero;
-                            }
-                            break;
-                        }
-                    case 1:
-                        {
-                            if (methodinfo.IsStatic)
-                            {
-                                if (parameters[0].ParameterType == typeof(Arguments))
+                                if (methodinfo.IsStatic)
+                                {
+                                    this.delegateF0 = Activator.CreateInstance(typeof(Func<object>), null, info.MethodHandle.GetFunctionPointer()) as Func<object>;
+                                    mode = CallMode.FuncStaticZero;
+                                }
+                                else
                                 {
                                     this.delegateF1 = Activator.CreateInstance(typeof(Func<object, object>), null, info.MethodHandle.GetFunctionPointer()) as Func<object, object>;
-                                    mode = CallMode.FuncStaticOneRaw;
+                                    this.delegateF0 = Activator.CreateInstance(typeof(Func<object>), this, info.MethodHandle.GetFunctionPointer()) as Func<object>;
+                                    mode = CallMode.FuncDynamicZero;
                                 }
-                                else if (!parameters[0].ParameterType.IsValueType)
-                                {
-                                    this.delegateF1 = Activator.CreateInstance(typeof(Func<object, object>), null, info.MethodHandle.GetFunctionPointer()) as Func<object, object>;
-                                    mode = CallMode.FuncStaticOne;
-                                }
+                                break;
                             }
-                            else
+                        case 1:
                             {
-                                if (parameters[0].ParameterType == typeof(Arguments))
+                                if (methodinfo.IsStatic)
                                 {
-                                    this.delegateF2 = Activator.CreateInstance(typeof(Func<object, object, object>), null, info.MethodHandle.GetFunctionPointer()) as Func<object, object, object>;
-                                    this.delegateF1 = Activator.CreateInstance(typeof(Func<object, object>), this, info.MethodHandle.GetFunctionPointer()) as Func<object, object>;
-                                    mode = CallMode.FuncDynamicOneRaw;
+                                    if (parameters[0].ParameterType == typeof(Arguments))
+                                    {
+                                        this.delegateF1 = Activator.CreateInstance(typeof(Func<object, object>), null, info.MethodHandle.GetFunctionPointer()) as Func<object, object>;
+                                        mode = CallMode.FuncStaticOneRaw;
+                                    }
+                                    else if (!parameters[0].ParameterType.IsValueType)
+                                    {
+                                        this.delegateF1 = Activator.CreateInstance(typeof(Func<object, object>), null, info.MethodHandle.GetFunctionPointer()) as Func<object, object>;
+                                        mode = CallMode.FuncStaticOne;
+                                    }
                                 }
-                                else if (!parameters[0].ParameterType.IsValueType)
+                                else
                                 {
-                                    this.delegateF2 = Activator.CreateInstance(typeof(Func<object, object, object>), null, info.MethodHandle.GetFunctionPointer()) as Func<object, object, object>;
-                                    this.delegateF1 = Activator.CreateInstance(typeof(Func<object, object>), this, info.MethodHandle.GetFunctionPointer()) as Func<object, object>;
-                                    mode = CallMode.FuncDynamicOne;
+                                    if (parameters[0].ParameterType == typeof(Arguments))
+                                    {
+                                        this.delegateF2 = Activator.CreateInstance(typeof(Func<object, object, object>), null, info.MethodHandle.GetFunctionPointer()) as Func<object, object, object>;
+                                        this.delegateF1 = Activator.CreateInstance(typeof(Func<object, object>), this, info.MethodHandle.GetFunctionPointer()) as Func<object, object>;
+                                        mode = CallMode.FuncDynamicOneRaw;
+                                    }
+                                    else if (!parameters[0].ParameterType.IsValueType)
+                                    {
+                                        this.delegateF2 = Activator.CreateInstance(typeof(Func<object, object, object>), null, info.MethodHandle.GetFunctionPointer()) as Func<object, object, object>;
+                                        this.delegateF1 = Activator.CreateInstance(typeof(Func<object, object>), this, info.MethodHandle.GetFunctionPointer()) as Func<object, object>;
+                                        mode = CallMode.FuncDynamicOne;
+                                    }
                                 }
+                                break;
                             }
-                            break;
-                        }
+                    }
                 }
-            }
-            else if (retType == typeof(void) && !info.ReflectedType.IsValueType)
-            {
-                switch (parameters.Length)
+                else if (retType == typeof(void) && !info.ReflectedType.IsValueType)
                 {
-                    case 0:
-                        {
-                            if (methodinfo.IsStatic)
+                    switch (parameters.Length)
+                    {
+                        case 0:
                             {
-                                this.delegateA0 = Activator.CreateInstance(typeof(Action), null, info.MethodHandle.GetFunctionPointer()) as Action;
-                                mode = CallMode.ActionStaticZero;
-                            }
-                            else
-                            {
-                                this.delegateA1 = Activator.CreateInstance(typeof(Action<object>), null, info.MethodHandle.GetFunctionPointer()) as Action<object>;
-                                this.delegateA0 = Activator.CreateInstance(typeof(Action), this, info.MethodHandle.GetFunctionPointer()) as Action;
-                                mode = CallMode.ActionDynamicZero;
-                            }
-                            break;
-                        }
-                    case 1:
-                        {
-                            if (methodinfo.IsStatic)
-                            {
-                                if (parameters[0].ParameterType == typeof(Arguments))
+                                if (methodinfo.IsStatic)
+                                {
+                                    this.delegateA0 = Activator.CreateInstance(typeof(Action), null, info.MethodHandle.GetFunctionPointer()) as Action;
+                                    mode = CallMode.ActionStaticZero;
+                                }
+                                else
                                 {
                                     this.delegateA1 = Activator.CreateInstance(typeof(Action<object>), null, info.MethodHandle.GetFunctionPointer()) as Action<object>;
-                                    mode = CallMode.ActionStaticOneRaw;
+                                    this.delegateA0 = Activator.CreateInstance(typeof(Action), this, info.MethodHandle.GetFunctionPointer()) as Action;
+                                    mode = CallMode.ActionDynamicZero;
                                 }
-                                else if (!parameters[0].ParameterType.IsValueType)
-                                {
-                                    this.delegateA1 = Activator.CreateInstance(typeof(Action<object>), null, info.MethodHandle.GetFunctionPointer()) as Action<object>;
-                                    mode = CallMode.ActionStaticOne;
-                                }
+                                break;
                             }
-                            else
+                        case 1:
                             {
-                                if (parameters[0].ParameterType == typeof(Arguments))
+                                if (methodinfo.IsStatic)
                                 {
-                                    this.delegateA2 = Activator.CreateInstance(typeof(Action<object, object>), null, info.MethodHandle.GetFunctionPointer()) as Action<object, object>;
-                                    this.delegateA1 = Activator.CreateInstance(typeof(Action<object>), this, info.MethodHandle.GetFunctionPointer()) as Action<object>;
-                                    mode = CallMode.ActionDynamicOneRaw;
+                                    if (parameters[0].ParameterType == typeof(Arguments))
+                                    {
+                                        this.delegateA1 = Activator.CreateInstance(typeof(Action<object>), null, info.MethodHandle.GetFunctionPointer()) as Action<object>;
+                                        mode = CallMode.ActionStaticOneRaw;
+                                    }
+                                    else if (!parameters[0].ParameterType.IsValueType)
+                                    {
+                                        this.delegateA1 = Activator.CreateInstance(typeof(Action<object>), null, info.MethodHandle.GetFunctionPointer()) as Action<object>;
+                                        mode = CallMode.ActionStaticOne;
+                                    }
                                 }
-                                else if (!parameters[0].ParameterType.IsValueType)
+                                else
                                 {
-                                    this.delegateA2 = Activator.CreateInstance(typeof(Action<object, object>), null, info.MethodHandle.GetFunctionPointer()) as Action<object, object>;
-                                    this.delegateA1 = Activator.CreateInstance(typeof(Action<object>), this, info.MethodHandle.GetFunctionPointer()) as Action<object>;
-                                    mode = CallMode.ActionDynamicOne;
+                                    if (parameters[0].ParameterType == typeof(Arguments))
+                                    {
+                                        this.delegateA2 = Activator.CreateInstance(typeof(Action<object, object>), null, info.MethodHandle.GetFunctionPointer()) as Action<object, object>;
+                                        this.delegateA1 = Activator.CreateInstance(typeof(Action<object>), this, info.MethodHandle.GetFunctionPointer()) as Action<object>;
+                                        mode = CallMode.ActionDynamicOneRaw;
+                                    }
+                                    else if (!parameters[0].ParameterType.IsValueType)
+                                    {
+                                        this.delegateA2 = Activator.CreateInstance(typeof(Action<object, object>), null, info.MethodHandle.GetFunctionPointer()) as Action<object, object>;
+                                        this.delegateA1 = Activator.CreateInstance(typeof(Action<object>), this, info.MethodHandle.GetFunctionPointer()) as Action<object>;
+                                        mode = CallMode.ActionDynamicOne;
+                                    }
                                 }
+                                break;
                             }
-                            break;
-                        }
+                    }
                 }
             }
-
             callOverload = info.IsDefined(typeof(CallOverloaded), true);
             if (_length == null)
                 _length = new Number(0) { attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.SystemObject };
