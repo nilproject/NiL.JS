@@ -1036,11 +1036,7 @@ namespace NiL.JS.Core
                     return (T)(object)(bool)this; // оптимизатор разруливает такой каскад преобразований
                 case TypeCode.Byte:
                     {
-                        if ((valueType == JSObjectType.Int) || (valueType == JSObjectType.Bool))
-                            return (T)(object)(byte)iValue;
-                        if (valueType == JSObjectType.Double)
-                            return (T)(object)(byte)(int)dValue;
-                        break;
+                        return (T)(object)(byte)Tools.JSObjectToInt32(this);
                     }
                 case TypeCode.Char:
                     {
@@ -1051,93 +1047,51 @@ namespace NiL.JS.Core
                     }
                 case TypeCode.Decimal:
                     {
-                        if ((valueType == JSObjectType.Int) || (valueType == JSObjectType.Bool))
-                            return (T)(object)(decimal)iValue;
-                        if (valueType == JSObjectType.Double)
-                            return (T)(object)(decimal)dValue;
-                        break;
+                        return (T)(object)(decimal)Tools.JSObjectToDouble(this);
                     }
                 case TypeCode.Double:
                     {
-                        if ((valueType == JSObjectType.Int) || (valueType == JSObjectType.Bool))
-                            return (T)(object)(double)iValue;
-                        if (valueType == JSObjectType.Double)
-                            return (T)(object)dValue;
-                        break;
+                        return (T)(object)Tools.JSObjectToDouble(this);
                     }
                 case TypeCode.Int16:
                     {
-                        if ((valueType == JSObjectType.Int) || (valueType == JSObjectType.Bool))
-                            return (T)(object)(Int16)iValue;
-                        if (valueType == JSObjectType.Double)
-                            return (T)(object)(Int16)dValue;
-                        break;
+                        return (T)(object)(Int16)Tools.JSObjectToInt32(this);
                     }
                 case TypeCode.Int32:
                     {
-                        if ((valueType == JSObjectType.Int) || (valueType == JSObjectType.Bool))
-                            return (T)(object)iValue;
-                        if (valueType == JSObjectType.Double)
-                            return (T)(object)(int)dValue;
-                        break;
+                        return (T)(object)Tools.JSObjectToInt32(this);
                     }
                 case TypeCode.Int64:
                     {
-                        if ((valueType == JSObjectType.Int) || (valueType == JSObjectType.Bool))
-                            return (T)(object)(Int64)iValue;
-                        if (valueType == JSObjectType.Double)
-                            return (T)(object)(Int64)dValue;
-                        break;
+                        return (T)(object)Tools.JSObjectToInt64(this);
                     }
                 case TypeCode.Object:
                     {
-                        return (T)oValue;
+                        return (T)Value;
                     }
                 case TypeCode.SByte:
                     {
-                        if ((valueType == JSObjectType.Int) || (valueType == JSObjectType.Bool))
-                            return (T)(object)(sbyte)iValue;
-                        if (valueType == JSObjectType.Double)
-                            return (T)(object)(sbyte)dValue;
-                        break;
+                        return (T)(object)(sbyte)Tools.JSObjectToInt32(this);
                     }
                 case TypeCode.Single:
                     {
-                        if ((valueType == JSObjectType.Int) || (valueType == JSObjectType.Bool))
-                            return (T)(object)(Single)iValue;
-                        if (valueType == JSObjectType.Double)
-                            return (T)(object)(Single)dValue;
-                        break;
+                        return (T)(object)(float)Tools.JSObjectToDouble(this);
                     }
                 case TypeCode.String:
                     {
-                        if (valueType == JSObjectType.String)
-                            return (T)oValue;
-                        break;
+                        return (T)(object)this.ToString();
                     }
                 case TypeCode.UInt16:
                     {
-                        if ((valueType == JSObjectType.Int) || (valueType == JSObjectType.Bool))
-                            return (T)(object)(UInt16)iValue;
-                        if (valueType == JSObjectType.Double)
-                            return (T)(object)(UInt16)dValue;
-                        break;
+                        return (T)(object)(ushort)Tools.JSObjectToInt32(this);
                     }
                 case TypeCode.UInt32:
                     {
-                        if ((valueType == JSObjectType.Int) || (valueType == JSObjectType.Bool))
-                            return (T)(object)(uint)iValue;
-                        if (valueType == JSObjectType.Double)
-                            return (T)(object)(uint)dValue;
-                        break;
+                        return (T)(object)(uint)Tools.JSObjectToInt32(this);
                     }
                 case TypeCode.UInt64:
                     {
-                        if ((valueType == JSObjectType.Int) || (valueType == JSObjectType.Bool))
-                            return (T)(object)(ulong)iValue;
-                        if (valueType == JSObjectType.Double)
-                            return (T)(object)(ulong)dValue;
-                        break;
+                        return (T)(object)(ulong)Tools.JSObjectToInt64(this);
                     }
             }
             throw new InvalidCastException();
