@@ -735,7 +735,7 @@ namespace NiL.JS.Core.BaseTypes
                 argn += args[i] + (i + 1 < len ? "," : "");
             string code = "function(" + argn + "){" + Environment.NewLine + (len == -1 ? "undefined" : args[len]) + Environment.NewLine + "}";
             var fs = FunctionExpression.Parse(new ParsingState(Tools.RemoveComments(code, 0), code, null), ref index);
-            if (fs.IsParsed)
+            if (fs.IsParsed && code.Length == index)
             {
                 Parser.Build(ref fs.Statement, 0, new Dictionary<string, VariableDescriptor>(), context.strict, null, null);
                 creator = fs.Statement as FunctionExpression;
@@ -1196,7 +1196,9 @@ namespace NiL.JS.Core.BaseTypes
                     for (int i = 0; i < prms.Length; i++)
                         argtypes[i] = prms[i].ParameterType;
                     var instance = new _DelegateWraper(this);
-                    var method = ((System.Reflection.MethodInfo)invokes[17 + prms.Length]).MakeGenericMethod(argtypes);
+                    var method = ((System.Reflection.MethodInfo)invokes[17 + prms.Length]);
+                    if (prms.Length > 0)
+                        method = method.MakeGenericMethod(argtypes);
                     return Delegate.CreateDelegate(delegateType, instance, method);
                 }
             }
