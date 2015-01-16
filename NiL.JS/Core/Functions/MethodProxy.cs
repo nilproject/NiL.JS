@@ -1,10 +1,15 @@
-﻿using System;
+﻿//#define OVERDYNAMIC
+
+using System;
 using System.Reflection;
 using System.Runtime.Serialization;
 using NiL.JS.Core.BaseTypes;
 using NiL.JS.Core.Modules;
 using NiL.JS.Core.TypeProxing;
 using NiL.JS.Expressions;
+
+using expr = System.Linq.Expressions;
+using System.Reflection.Emit;
 
 namespace NiL.JS.Core.Functions
 {
@@ -121,19 +126,19 @@ namespace NiL.JS.Core.Functions
         {
         }
 
-        public MethodProxy(MethodBase methodinfo, object hardTarget)
+        public MethodProxy(MethodBase methodbase, object hardTarget)
         {
-            if (!(methodinfo is MethodInfo)
-               && !(methodinfo is ConstructorInfo))
+            if (!(methodbase is MethodInfo)
+               && !(methodbase is ConstructorInfo))
                 throw new ArgumentException("methodinfo");
             _prototype = undefined;
             this.hardTarget = hardTarget;
-            info = methodinfo;
+            info = methodbase;
             parameters = info.GetParameters();
             Type retType = null;
-            constructorMode = methodinfo is ConstructorInfo;
-            alternedTypes = (AllowUnsafeCallAttribute[])methodinfo.GetCustomAttributes(typeof(AllowUnsafeCallAttribute), false);
-            allowNull = methodinfo.IsDefined(typeof(AllowNullArgumentsAttribute), false);
+            constructorMode = methodbase is ConstructorInfo;
+            alternedTypes = (AllowUnsafeCallAttribute[])methodbase.GetCustomAttributes(typeof(AllowUnsafeCallAttribute), false);
+            allowNull = methodbase.IsDefined(typeof(AllowNullArgumentsAttribute), false);
 
             var methodInfo = info as MethodInfo;
             retType = constructorMode ? typeof(void) : methodInfo.ReturnType;
@@ -148,31 +153,84 @@ namespace NiL.JS.Core.Functions
                     paramsConverters[i] = t;
                 }
             }
-            if (!info.IsGenericMethod)
+            if (!info.IsGenericMethod && methodInfo != null)
             {
+#if OVERDYNAMIC
+                var objectArray = new Type[parameters.Length + (methodbase.IsStatic ? 0 : 1)];
+                for (var i = objectArray.Length; i-- > 0; )
+                    objectArray[i] = typeof(object);
+                var dm = new DynamicMethod("<>wraper_" + (methodbase.Name ?? Environment.TickCount.ToString()), typeof(object), objectArray, true);
+                var ilgen = dm.GetILGenerator();
+                if (!methodbase.IsStatic)
+                {
+                    ilgen.Emit(OpCodes.Ldarg, 0);
+                    if (info.ReflectedType != typeof(object))
+                        ilgen.Emit(OpCodes.Castclass, info.ReflectedType);
+                }
+                for (var i = 0; i < parameters.Length; i++)
+                {
+                    ilgen.Emit(OpCodes.Ldarg, i + (methodbase.IsStatic ? 0 : 1));
+                    if (parameters[i].ParameterType != typeof(object))
+                        ilgen.Emit(OpCodes.Castclass, parameters[i].ParameterType);
+                }
+                if (info.IsStatic)
+                    ilgen.Emit(OpCodes.Call, methodInfo);
+                else
+                    ilgen.Emit(OpCodes.Callvirt, methodInfo);
+                if (retType != typeof(void))
+                {
+                    if (retType.IsValueType)
+                    {
+                        //ilgen.Emit(OpCodes.Newobj, typeof(Nullable<>).MakeGenericType(retType).GetConstructors()[0]);
+                        ilgen.Emit(OpCodes.Box, retType);
+                        //ilgen.Emit(OpCodes.Castclass, typeof(object));
+                    }
+                }
+                else
+                    ilgen.Emit(OpCodes.Ldnull);
+                ilgen.Emit(OpCodes.Ret);
+#endif
+#if !OVERDYNAMIC
                 if (!retType.IsValueType && !info.ReflectedType.IsValueType)
+#endif
                 {
                     switch (parameters.Length)
                     {
                         case 0:
                             {
-                                if (methodinfo.IsStatic)
+                                if (methodbase.IsStatic)
                                 {
+#if OVERDYNAMIC
+                                    this.delegateF0 = dm.CreateDelegate(typeof(Func<object>)) as Func<object>;
+#else
                                     this.delegateF0 = Activator.CreateInstance(typeof(Func<object>), null, info.MethodHandle.GetFunctionPointer()) as Func<object>;
+#endif
                                     mode = CallMode.FuncStaticZero;
                                 }
                                 else
                                 {
+#if OVERDYNAMIC
+                                    this.delegateF1 = dm.CreateDelegate(typeof(Func<object, object>)) as Func<object, object>;
+#else
                                     this.delegateF1 = Activator.CreateInstance(typeof(Func<object, object>), null, info.MethodHandle.GetFunctionPointer()) as Func<object, object>;
                                     this.delegateF0 = Activator.CreateInstance(typeof(Func<object>), this, info.MethodHandle.GetFunctionPointer()) as Func<object>;
+#endif
+
                                     mode = CallMode.FuncDynamicZero;
                                 }
                                 break;
                             }
                         case 1:
                             {
-                                if (methodinfo.IsStatic)
+                                if (methodbase.IsStatic)
                                 {
+#if OVERDYNAMIC
+                                    this.delegateF1 = dm.CreateDelegate(typeof(Func<object, object>)) as Func<object, object>;
+                                    if (parameters[0].ParameterType == typeof(Arguments))
+                                        mode = CallMode.FuncStaticOneRaw;
+                                    else
+                                        mode = CallMode.FuncStaticOne;
+#else
                                     if (parameters[0].ParameterType == typeof(Arguments))
                                     {
                                         this.delegateF1 = Activator.CreateInstance(typeof(Func<object, object>), null, info.MethodHandle.GetFunctionPointer()) as Func<object, object>;
@@ -183,9 +241,17 @@ namespace NiL.JS.Core.Functions
                                         this.delegateF1 = Activator.CreateInstance(typeof(Func<object, object>), null, info.MethodHandle.GetFunctionPointer()) as Func<object, object>;
                                         mode = CallMode.FuncStaticOne;
                                     }
+#endif
                                 }
                                 else
                                 {
+#if OVERDYNAMIC
+                                    this.delegateF2 = dm.CreateDelegate(typeof(Func<object, object, object>)) as Func<object, object, object>;
+                                    if (parameters[0].ParameterType == typeof(Arguments))
+                                        mode = CallMode.FuncDynamicOneRaw;
+                                    else
+                                        mode = CallMode.FuncDynamicOne;
+#else
                                     if (parameters[0].ParameterType == typeof(Arguments))
                                     {
                                         this.delegateF2 = Activator.CreateInstance(typeof(Func<object, object, object>), null, info.MethodHandle.GetFunctionPointer()) as Func<object, object, object>;
@@ -198,18 +264,20 @@ namespace NiL.JS.Core.Functions
                                         this.delegateF1 = Activator.CreateInstance(typeof(Func<object, object>), this, info.MethodHandle.GetFunctionPointer()) as Func<object, object>;
                                         mode = CallMode.FuncDynamicOne;
                                     }
+#endif
                                 }
                                 break;
                             }
                     }
                 }
+#if !OVERDYNAMIC
                 else if (retType == typeof(void) && !info.ReflectedType.IsValueType)
                 {
                     switch (parameters.Length)
                     {
                         case 0:
                             {
-                                if (methodinfo.IsStatic)
+                                if (methodbase.IsStatic)
                                 {
                                     this.delegateA0 = Activator.CreateInstance(typeof(Action), null, info.MethodHandle.GetFunctionPointer()) as Action;
                                     mode = CallMode.ActionStaticZero;
@@ -224,7 +292,7 @@ namespace NiL.JS.Core.Functions
                             }
                         case 1:
                             {
-                                if (methodinfo.IsStatic)
+                                if (methodbase.IsStatic)
                                 {
                                     if (parameters[0].ParameterType == typeof(Arguments))
                                     {
@@ -256,6 +324,7 @@ namespace NiL.JS.Core.Functions
                             }
                     }
                 }
+#endif
             }
             callOverload = info.IsDefined(typeof(CallOverloaded), true);
             if (_length == null)
@@ -387,6 +456,7 @@ namespace NiL.JS.Core.Functions
                 {
                     case CallMode.FuncDynamicOneRaw:
                         {
+#if !OVERDYNAMIC
                             if (!callOverload && target != null && info.IsVirtual && target.GetType() != info.ReflectedType) // your bunny wrote
 #if !NET35
                             {
@@ -394,7 +464,7 @@ namespace NiL.JS.Core.Functions
 #if !__MonoCS__
                                 SetFieldValue(_targetInfo, delegateF1, target, typeof(object), _targetInfo.Attributes, typeof(Action), ref di);
 #else
-								_targetInfo.SetValue(delegateF1, target);
+                                _targetInfo.SetValue(delegateF1, target);
 #endif
                                 res = delegateF1(argsSource == null ? allowNull ? null : new Arguments() : argsSource);
                             }
@@ -402,11 +472,13 @@ namespace NiL.JS.Core.Functions
 #else
                                 goto default;
 #endif
-                                res = delegateF2(target, argsSource == null ? allowNull ? null : new Arguments() : argsSource);
+#endif
+                            res = delegateF2(target, argsSource == null ? allowNull ? null : new Arguments() : argsSource);
                             break;
                         }
                     case CallMode.FuncDynamicZero:
                         {
+#if !OVERDYNAMIC
                             if (target != null && info.IsVirtual && target.GetType() != info.ReflectedType && (!callOverload || !info.ReflectedType.IsAssignableFrom(target.GetType()))) // your bunny wrote
 #if !NET35
                             {
@@ -414,7 +486,7 @@ namespace NiL.JS.Core.Functions
 #if !__MonoCS__
                                 SetFieldValue(_targetInfo, delegateF0, target, typeof(object), _targetInfo.Attributes, typeof(Action), ref di);
 #else
-								_targetInfo.SetValue(delegateF0, target);
+                                _targetInfo.SetValue(delegateF0, target);
 #endif
                                 res = delegateF0();
                             }
@@ -422,11 +494,13 @@ namespace NiL.JS.Core.Functions
 #else
                                 goto default;
 #endif
-                                res = delegateF1(target);
+#endif
+                            res = delegateF1(target);
                             break;
                         }
                     case CallMode.FuncDynamicOneArray:
                         {
+#if !OVERDYNAMIC
                             if (!callOverload && target != null && info.IsVirtual && target.GetType() != info.ReflectedType) // your bunny wrote
 #if !NET35
                             {
@@ -434,7 +508,7 @@ namespace NiL.JS.Core.Functions
 #if !__MonoCS__
                                 SetFieldValue(_targetInfo, delegateF1, target, typeof(object), _targetInfo.Attributes, typeof(Action), ref di);
 #else
-								_targetInfo.SetValue(delegateF1, target);
+                                _targetInfo.SetValue(delegateF1, target);
 #endif
                                 res = delegateF1(args != null ? args[0] : argsSource == null ? new object[0] : argumentsToArray(argsSource));
                             }
@@ -442,11 +516,13 @@ namespace NiL.JS.Core.Functions
 #else
                                 goto default;
 #endif
-                                res = delegateF2(target, args ?? (argsSource == null ? new object[0] : argumentsToArray(argsSource)));
+#endif
+                            res = delegateF2(target, args ?? (argsSource == null ? new object[0] : argumentsToArray(argsSource)));
                             break;
                         }
                     case CallMode.FuncDynamicOne:
                         {
+#if !OVERDYNAMIC
                             if (!callOverload && target != null && info.IsVirtual && target.GetType() != info.ReflectedType) // your bunny wrote
 #if !NET35
                             {
@@ -454,7 +530,7 @@ namespace NiL.JS.Core.Functions
 #if !__MonoCS__
                                 SetFieldValue(_targetInfo, delegateF1, target, typeof(object), _targetInfo.Attributes, typeof(Action), ref di);
 #else
-								_targetInfo.SetValue(delegateF1, target);
+                                _targetInfo.SetValue(delegateF1, target);
 #endif
                                 res = delegateF1(args == null ? marshal(argsSource == null ? undefined : argsSource[0], parameters[0].ParameterType) : args[0]);
                             }
@@ -462,7 +538,8 @@ namespace NiL.JS.Core.Functions
 #else
                                 goto default;
 #endif
-                                res = delegateF2(target, args == null ? marshal(argsSource == null ? undefined : argsSource[0], parameters[0].ParameterType) : args[0]);
+#endif
+                            res = delegateF2(target, args == null ? marshal(argsSource == null ? undefined : argsSource[0], parameters[0].ParameterType) : args[0]);
                             break;
                         }
                     case CallMode.FuncStaticZero:
@@ -494,6 +571,7 @@ namespace NiL.JS.Core.Functions
                             }
                             else
                             {
+#if !OVERDYNAMIC
                                 if (!callOverload && target != null && info.IsVirtual && target.GetType() != info.ReflectedType) // your bunny wrote
 #if !NET35
                                 {
@@ -501,15 +579,16 @@ namespace NiL.JS.Core.Functions
 #if !__MonoCS__
                                     SetFieldValue(_targetInfo, delegateA1, target, typeof(object), _targetInfo.Attributes, typeof(Action), ref di);
 #else
-								    _targetInfo.SetValue(delegateF1, target);
+                                    _targetInfo.SetValue(delegateF1, target);
 #endif
                                     delegateA1(argsSource == null ? allowNull ? null : new Arguments() : argsSource);
                                 }
                                 else
 #else
-                                goto default;
+                                    goto default;
 #endif
-                                    delegateA2(target, argsSource == null ? allowNull ? null : new Arguments() : argsSource);
+#endif
+                                delegateA2(target, argsSource == null ? allowNull ? null : new Arguments() : argsSource);
                                 res = null;
                             }
                             break;
@@ -523,6 +602,7 @@ namespace NiL.JS.Core.Functions
                             }
                             else
                             {
+#if !OVERDYNAMIC
                                 if (!callOverload && target != null && info.IsVirtual && target.GetType() != info.ReflectedType) // your bunny wrote
 #if !NET35
                                 {
@@ -530,15 +610,16 @@ namespace NiL.JS.Core.Functions
 #if !__MonoCS__
                                     SetFieldValue(_targetInfo, delegateA1, target, typeof(object), _targetInfo.Attributes, typeof(Action), ref di);
 #else
-								    _targetInfo.SetValue(delegateF1, target);
+                                    _targetInfo.SetValue(delegateF1, target);
 #endif
                                     delegateA0();
                                 }
                                 else
 #else
-                                goto default;
+                                    goto default;
 #endif
-                                    delegateA1(target);
+#endif
+                                delegateA1(target);
                                 res = null;
                             }
                             break;
@@ -552,6 +633,7 @@ namespace NiL.JS.Core.Functions
                             }
                             else
                             {
+#if !OVERDYNAMIC
                                 if (!callOverload && target != null && info.IsVirtual && target.GetType() != info.ReflectedType) // your bunny wrote
 #if !NET35
                                 {
@@ -559,15 +641,16 @@ namespace NiL.JS.Core.Functions
 #if !__MonoCS__
                                     SetFieldValue(_targetInfo, delegateA1, target, typeof(object), _targetInfo.Attributes, typeof(Action), ref di);
 #else
-								    _targetInfo.SetValue(delegateF1, target);
+                                    _targetInfo.SetValue(delegateF1, target);
 #endif
                                     delegateA1(args == null ? marshal(argsSource == null ? undefined : argsSource[0], parameters[0].ParameterType) : args[0]);
                                 }
                                 else
 #else
-                                goto default;
+                                    goto default;
 #endif
-                                    delegateA2(target, args == null ? marshal(argsSource == null ? undefined : argsSource[0], parameters[0].ParameterType) : args[0]);
+#endif
+                                delegateA2(target, args == null ? marshal(argsSource == null ? undefined : argsSource[0], parameters[0].ParameterType) : args[0]);
                                 res = null;
                             }
                             break;
