@@ -70,10 +70,9 @@ namespace NiL.JS.Expressions
                         else
                             return object.ReferenceEquals(second.oValue, first.oValue);
                     }
-                case JSObjectType.Property:
+                default:
                     return false;
             }
-            throw new NotImplementedException();
         }
 
         internal override JSObject Evaluate(Context context)

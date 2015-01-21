@@ -941,7 +941,11 @@ namespace NiL.JS.Core
         [Hidden]
         public override bool Equals(object obj)
         {
-            return base.Equals(obj);
+            if (object.ReferenceEquals(obj as JSObject, null))
+                return false;
+            if (object.ReferenceEquals(obj, this))
+                return true;
+            return Expressions.StrictEqual.Check(this, obj as JSObject);
         }
 
         [Hidden]
