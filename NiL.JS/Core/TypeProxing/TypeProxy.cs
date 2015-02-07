@@ -331,24 +331,33 @@ namespace NiL.JS.Core.TypeProxing
                 r = new ExternalFunction((thisBind, args) =>
                 {
                     int l = args == null ? 0 : args.length;
-                    for (int i = 0; i < m.Count; i++)
+                    object[] cargs = null;
+
+                    for (var i = 0; i < m.Count; i++)
                     {
-                        if (cache[i].Parameters.Length == l
-                        || (cache[i].Parameters.Length == 1
-                            && (cache[i].Parameters[0].ParameterType == typeof(Arguments)
-                            //|| cache[i].Parameters[0].ParameterType == typeof(JSObject[])
-                                || cache[i].Parameters[0].ParameterType == typeof(object[]))))
+                        if (cache[i].Parameters.Length == 1 && cache[i].Parameters[0].ParameterType == typeof(Arguments))
+                            return TypeProxy.Proxy(cache[i].InvokeImpl(thisBind, null, args));
+                        if (cache[i].Parameters.Length == l)
                         {
-                            object[] cargs = null;
                             if (l != 0)
                             {
                                 cargs = cache[i].ConvertArgs(args);
                                 for (var j = cargs.Length; j-- > 0; )
                                 {
-                                    if (cargs[j] == null ? cache[i].Parameters[j].ParameterType.IsValueType : !cache[i].Parameters[j].ParameterType.IsAssignableFrom(cargs[j].GetType()))
+                                    var prmType = cache[i].Parameters[j].ParameterType;
+                                    if ((cargs[j] == null ?
+                                            prmType.IsValueType
+                                        :
+                                            cargs[j].GetType() == typeof(int) ?
+                                                   prmType != typeof(int)
+                                                && prmType != typeof(int)
+                                                && prmType != typeof(double)
+                                                && prmType != typeof(float)
+                                            :
+                                                !prmType.IsAssignableFrom(cargs[j].GetType())))
                                     {
-                                        j = 0;
                                         cargs = null;
+                                        break;
                                     }
                                 }
                                 if (cargs == null)
@@ -394,7 +403,7 @@ namespace NiL.JS.Core.TypeProxing
                                                 field.SetValue(field.IsStatic ? null : thisBind.Value, cva.To(a[0].Value));
                                                 return null;
                                             }) : null
-                                        
+
                                     )
                                 };
                                 r.attributes = JSObjectAttributesInternal.Immutable | JSObjectAttributesInternal.Field;
