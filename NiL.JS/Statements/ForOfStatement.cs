@@ -264,16 +264,16 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, OptimizationOptions opts)
         {
-            Parser.Build(ref variable, 2, variables, strict, message, statistic);
+            Parser.Build(ref variable, 2, variables, strict, message, statistic, opts);
             var tvar = variable as VariableDefineStatement;
             if (tvar != null)
                 variable = tvar.initializators[0];
             if (variable is Assign)
                 ((variable as Assign).first.first as GetVariableExpression).forceThrow = false;
-            Parser.Build(ref source, 2, variables, strict, message, statistic);
-            Parser.Build(ref body, System.Math.Max(1, depth), variables, strict, message, statistic);
+            Parser.Build(ref source, 2, variables, strict, message, statistic, opts);
+            Parser.Build(ref body, System.Math.Max(1, depth), variables, strict, message, statistic, opts);
             if (variable is Expressions.None)
             {
                 if ((variable as Expressions.None).SecondOperand != null)

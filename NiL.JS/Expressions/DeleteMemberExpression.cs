@@ -58,9 +58,9 @@ namespace NiL.JS.Expressions
             return res;
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, OptimizationOptions opts)
         {
-            throw new InvalidOperationException();
+            return false;
         }
 
         public override T Visit<T>(Visitor<T> visitor)

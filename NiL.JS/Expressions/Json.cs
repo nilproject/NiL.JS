@@ -190,18 +190,18 @@ namespace NiL.JS.Expressions
             return res;
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict, CompilerMessageCallback message, FunctionStatistic statistic)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, OptimizationOptions opts)
         {
             for (int i = 0; i < values.Length; i++)
             {
                 if ((values[i] is Constant) && ((values[i] as Constant).value.valueType == JSObjectType.Property))
                 {
                     var gs = (values[i] as Constant).value.oValue as CodeNode[];
-                    Parser.Build(ref gs[0], 1, vars, strict, message, statistic);
-                    Parser.Build(ref gs[1], 1, vars, strict, message, statistic);
+                    Parser.Build(ref gs[0], 1, vars, strict, message, statistic, opts);
+                    Parser.Build(ref gs[1], 1, vars, strict, message, statistic, opts);
                 }
                 else
-                    Parser.Build(ref values[i], 2, vars, strict, message, statistic);
+                    Parser.Build(ref values[i], 2, vars, strict, message, statistic, opts);
             }
             return false;
         }

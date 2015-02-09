@@ -7,6 +7,14 @@ using NiL.JS.Statements;
 
 namespace NiL.JS
 {
+    [Flags]
+    public enum OptimizationOptions
+    {
+        Default = 0,
+        SuppressRemoveUselessExpressions = 1,
+        SuppressRemoveUselessStatements = 2
+    }
+
     /// <summary>
     /// Управляет выполнением скрипта на языке JavaScript.
     /// </summary>
@@ -31,7 +39,7 @@ namespace NiL.JS
         /// </summary>
         /// <param name="code">Код скрипта на языке JavaScript.</param>
         public Script(string code)
-            : this(code, null, null)
+            : this(code, null, null, OptimizationOptions.Default)
         {
 
         }
@@ -42,7 +50,7 @@ namespace NiL.JS
         /// <param name="code">Код скрипта на языке JavaScript.</param>
         /// <param name="messageCallback">Делегат обратного вызова, используемый для вывода сообщений компилятора</param>
         public Script(string code, CompilerMessageCallback messageCallback)
-            : this(code, null, messageCallback)
+            : this(code, null, messageCallback, OptimizationOptions.Default)
         {
 
         }
@@ -54,7 +62,7 @@ namespace NiL.JS
         /// <param name="parentContext">Родительский контекст для контекста выполнения сценария.</param>
         /// <param name="messageCallback">Делегат обратного вызова, используемый для вывода сообщений компилятора</param>
         public Script(string code, Context parentContext)
-            : this(code, parentContext, null)
+            : this(code, parentContext, null, OptimizationOptions.Default)
         { }
 
         /// <summary>
@@ -63,7 +71,7 @@ namespace NiL.JS
         /// <param name="code">Код скрипта на языке JavaScript.</param>
         /// <param name="parentContext">Родительский контекст для контекста выполнения сценария.</param>
         /// <param name="messageCallback">Делегат обратного вызова, используемый для вывода сообщений компилятора</param>
-        public Script(string code, Context parentContext, CompilerMessageCallback messageCallback)
+        public Script(string code, Context parentContext, CompilerMessageCallback messageCallback, OptimizationOptions ooptions)
         {
             if (code == null)
                 throw new ArgumentNullException();
@@ -76,7 +84,7 @@ namespace NiL.JS
                 {
                     messageCallback(level, CodeCoordinates.FromTextPosition(code, cord.Column, cord.Length), message);
                 } : null as CompilerMessageCallback;
-            Parser.Build(ref root, 0, new System.Collections.Generic.Dictionary<string, VariableDescriptor>(), false, icallback, null);
+            Parser.Build(ref root, 0, new System.Collections.Generic.Dictionary<string, VariableDescriptor>(), false, icallback, null, ooptions);
             var body = root as CodeBlock;
             Context = new Context(parentContext ?? NiL.JS.Core.Context.globalContext, true, pseudoCaller);
             Context.thisBind = new GlobalObject(Context);

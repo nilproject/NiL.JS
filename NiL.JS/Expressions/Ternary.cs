@@ -48,12 +48,12 @@ namespace NiL.JS.Expressions
             return (bool)first.Evaluate(context) ? threads[0].Evaluate(context) : threads[1].Evaluate(context);
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict, CompilerMessageCallback message, FunctionStatistic statistic)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, OptimizationOptions opts)
         {
-            Parser.Build(ref threads[0], depth, vars, strict, message, statistic);
-            Parser.Build(ref threads[1], depth, vars, strict, message, statistic);
-            base.Build(ref _this, depth, vars, strict, message, statistic);
-            if (first is Constant)
+            Parser.Build(ref threads[0], depth, vars, strict, message, statistic, opts);
+            Parser.Build(ref threads[1], depth, vars, strict, message, statistic, opts);
+            base.Build(ref _this, depth, vars, strict, message, statistic, opts);
+            if ((opts & OptimizationOptions.SuppressRemoveUselessExpressions) == 0 && first is Constant)
             {
                 _this = (bool)first.Evaluate(null) ? threads[0] : threads[1];
                 if (message != null)
@@ -67,14 +67,20 @@ namespace NiL.JS.Expressions
                     && (first is VariableReference && threads[0] is VariableReference)
                     && (first as VariableReference).descriptor == (threads[0] as VariableReference).descriptor)
                 {
-                    _this = new LogicalOr(first, threads[1]) { Position = Position, Length = Length };
+                    if (threads[0] == null)
+                        _this = first;
+                    else
+                        _this = new LogicalOr(first, threads[1]) { Position = Position, Length = Length };
                 }
                 else
                 {
                     // Эти оптимизации работают только в тех случаях, когда результат выражения нигде не используется.
                     if (threads[0] == null
                         && threads[1] == null)
+                    {
                         _this = first;
+                        return true; // можно попытаться удалить и это
+                    }
                     else if (threads[0] == null)
                         _this = new LogicalOr(first, threads[1]) { Position = Position, Length = Length };
                     else if (threads[1] == null)

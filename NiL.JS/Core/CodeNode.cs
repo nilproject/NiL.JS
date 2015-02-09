@@ -55,7 +55,7 @@ namespace NiL.JS.Core
         /// <param name="depth">Глубина погружения в выражении</param>
         /// <param name="functionDepth">Глубина погружения в функции. Увеличивается при входе в функцию и уменьшается при выходе из нее</param>
         /// <returns>true если были внесены изменения и требуется повторный вызов функции</returns>
-        internal virtual bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic)
+        internal virtual bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, OptimizationOptions opts)
         {
             return false;
         }

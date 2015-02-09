@@ -1152,7 +1152,7 @@ namespace NiL.JS.Core
             if (members.valueType >= JSObjectType.Object && members.oValue == null)
                 throw new JSException(new TypeError("Properties descriptor may be only Object."));
             var res = CreateObject();
-            if (proto.oValue != null)
+            if (proto.valueType >= JSObjectType.Object)
                 res.__prototype = proto;
             if (members.valueType >= JSObjectType.Object)
             {
