@@ -3,9 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 using NiL.JS.Core.BaseTypes;
+using NiL.JS.Core.Functions;
 using NiL.JS.Core.TypeProxing;
 using NiL.JS.Statements;
-using NiL.JS.Core.Functions;
 
 namespace NiL.JS.Core
 {
@@ -464,7 +464,7 @@ namespace NiL.JS.Core
                 if (i < c.Length)
                     throw new System.ArgumentException("Invalid char");
                 var vars = new Dictionary<string, VariableDescriptor>();
-                Parser.Build(ref cb, leak ? -1 : -2, vars, strict, null, null, OptimizationOptions.Default);
+                Parser.Build(ref cb, leak ? -1 : -2, vars, strict, null, null, Options.Default);
                 Context context = null;
                 var body = cb as CodeBlock;
                 if (leak)

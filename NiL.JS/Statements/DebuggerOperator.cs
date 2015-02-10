@@ -48,7 +48,7 @@ namespace NiL.JS.Statements
             return visitor.Visit(this);
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, OptimizationOptions opts)
+        internal override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
         {
             if (statistic != null)
                 statistic.ContainsDebugger = true;

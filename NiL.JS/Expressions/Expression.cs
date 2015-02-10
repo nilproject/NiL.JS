@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using NiL.JS.Core;
-using NiL.JS.Core.JIT;
-using NiL.JS.Statements;
 
 namespace NiL.JS.Expressions
 {
@@ -47,7 +45,7 @@ namespace NiL.JS.Expressions
             this.second = second;
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, OptimizationOptions opts)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
         {
             Parser.Build(ref first, depth + 1, vars, strict, message, statistic, opts);
             Parser.Build(ref second, depth + 1, vars, strict, message, statistic, opts);

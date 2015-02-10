@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using NiL.JS.Core;
 using NiL.JS.Core.BaseTypes;
-using NiL.JS.Core.JIT;
 using NiL.JS.Expressions;
 
 namespace NiL.JS.Statements
@@ -264,7 +263,7 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, OptimizationOptions opts)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
         {
             if (builded)
                 return false;

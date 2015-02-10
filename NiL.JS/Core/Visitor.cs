@@ -1,10 +1,6 @@
-﻿using NiL.JS.Expressions;
+﻿using System;
+using NiL.JS.Expressions;
 using NiL.JS.Statements;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NiL.JS.Core
 {

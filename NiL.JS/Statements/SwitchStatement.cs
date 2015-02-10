@@ -143,7 +143,7 @@ namespace NiL.JS.Statements
             return null;
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, OptimizationOptions opts)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
         {
             if (depth < 1)
                 throw new InvalidOperationException();

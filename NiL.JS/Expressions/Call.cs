@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using NiL.JS.Core;
 using NiL.JS.Core.BaseTypes;
 using NiL.JS.Core.TypeProxing;
-using NiL.JS.Statements;
 
 namespace NiL.JS.Expressions
 {
@@ -128,7 +127,7 @@ namespace NiL.JS.Expressions
             }
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, OptimizationOptions opts)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
         {
             if (statistic != null)
                 statistic.UseCall = true;

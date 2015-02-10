@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using NiL.JS.Core;
-using NiL.JS.Core.JIT;
 
 namespace NiL.JS.Expressions
 {
@@ -61,12 +60,12 @@ namespace NiL.JS.Expressions
             return null;
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, OptimizationOptions opts)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
         {
             var vss = value.oValue as CodeNode[];
             if (vss != null)
                 throw new InvalidOperationException("It behaviour is deprecated");
-            if ((opts & OptimizationOptions.SuppressRemoveUselessExpressions) == 0 && depth <= 1)
+            if ((opts & Options.SuppressRemoveUselessExpressions) == 0 && depth <= 1)
             {
                 _this = null;
                 if (message != null && (value.valueType != JSObjectType.String || value.oValue.ToString() != "use strict"))

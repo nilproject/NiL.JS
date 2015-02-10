@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using NiL.JS.Core;
 using NiL.JS.Core.BaseTypes;
-using NiL.JS.Core.JIT;
 using NiL.JS.Core.TypeProxing;
 
 namespace NiL.JS.Statements
@@ -343,7 +341,7 @@ namespace NiL.JS.Statements
             context.abortInfo = catchContext.abortInfo;
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, OptimizationOptions opts)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
         {
             if (statistic != null)
                 statistic.ContainsTry = true;

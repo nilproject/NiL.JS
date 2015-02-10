@@ -1,5 +1,4 @@
 ﻿using System;
-using NiL.JS.Core.JIT;
 using NiL.JS.Expressions;
 
 namespace NiL.JS.Core

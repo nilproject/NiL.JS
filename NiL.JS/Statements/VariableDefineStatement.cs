@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using NiL.JS.Core;
 using NiL.JS.Core.BaseTypes;
-using NiL.JS.Core.JIT;
 using NiL.JS.Expressions;
 
 namespace NiL.JS.Statements
@@ -40,7 +38,7 @@ namespace NiL.JS.Statements
                 return res;
             }
 
-            internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, OptimizationOptions opts)
+            internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
             {
                 var v = variable as CodeNode;
                 var res = variable.Build(ref v, depth, variables, strict, message, statistic, opts);
@@ -214,7 +212,7 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, OptimizationOptions opts)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
         {
             this.variables = new VariableDescriptor[names.Length];
             for (var i = 0; i < names.Length; i++)

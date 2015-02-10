@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using NiL.JS.Core;
-using NiL.JS.Statements;
 
 namespace NiL.JS.Expressions
 {
@@ -37,7 +36,7 @@ namespace NiL.JS.Expressions
             return temp;
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, OptimizationOptions opts)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
         {
             if (second == null && (depth > 2 || first is Expression))
             {

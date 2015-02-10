@@ -1,11 +1,6 @@
 ﻿using NiL.JS.Core.BaseTypes;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using NiL.JS.Core.TypeProxing;
 using NiL.JS.Core.Modules;
+using NiL.JS.Core.TypeProxing;
 
 namespace NiL.JS.Core.Functions
 {

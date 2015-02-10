@@ -1,6 +1,5 @@
 ﻿using System;
 using NiL.JS.Core;
-using NiL.JS.Core.JIT;
 
 namespace NiL.JS.Statements
 {
@@ -32,7 +31,7 @@ namespace NiL.JS.Statements
             return null;
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, OptimizationOptions opts)
+        internal override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
         {
             if (depth < 2)
                 _this = null;

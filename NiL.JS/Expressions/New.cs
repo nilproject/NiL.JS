@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using NiL.JS.Core;
 using NiL.JS.Core.BaseTypes;
-using NiL.JS.Core.TypeProxing;
-using NiL.JS.Statements;
 using NiL.JS.Core.Functions;
 
 namespace NiL.JS.Expressions
@@ -58,7 +56,7 @@ namespace NiL.JS.Expressions
                 return visitor.Visit(source);
             }
 
-            internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, OptimizationOptions opts)
+            internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
             {
                 return source.Build(ref source, depth, variables, strict, message, statistic, opts);
             }

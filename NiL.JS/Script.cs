@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq.Expressions;
 using NiL.JS.Core;
 using NiL.JS.Core.BaseTypes;
 using NiL.JS.Statements;
@@ -8,7 +7,7 @@ using NiL.JS.Statements;
 namespace NiL.JS
 {
     [Flags]
-    public enum OptimizationOptions
+    public enum Options
     {
         Default = 0,
         SuppressRemoveUselessExpressions = 1,
@@ -39,7 +38,7 @@ namespace NiL.JS
         /// </summary>
         /// <param name="code">Код скрипта на языке JavaScript.</param>
         public Script(string code)
-            : this(code, null, null, OptimizationOptions.Default)
+            : this(code, null, null, Options.Default)
         {
 
         }
@@ -50,7 +49,7 @@ namespace NiL.JS
         /// <param name="code">Код скрипта на языке JavaScript.</param>
         /// <param name="messageCallback">Делегат обратного вызова, используемый для вывода сообщений компилятора</param>
         public Script(string code, CompilerMessageCallback messageCallback)
-            : this(code, null, messageCallback, OptimizationOptions.Default)
+            : this(code, null, messageCallback, Options.Default)
         {
 
         }
@@ -62,7 +61,7 @@ namespace NiL.JS
         /// <param name="parentContext">Родительский контекст для контекста выполнения сценария.</param>
         /// <param name="messageCallback">Делегат обратного вызова, используемый для вывода сообщений компилятора</param>
         public Script(string code, Context parentContext)
-            : this(code, parentContext, null, OptimizationOptions.Default)
+            : this(code, parentContext, null, Options.Default)
         { }
 
         /// <summary>
@@ -71,7 +70,7 @@ namespace NiL.JS
         /// <param name="code">Код скрипта на языке JavaScript.</param>
         /// <param name="parentContext">Родительский контекст для контекста выполнения сценария.</param>
         /// <param name="messageCallback">Делегат обратного вызова, используемый для вывода сообщений компилятора</param>
-        public Script(string code, Context parentContext, CompilerMessageCallback messageCallback, OptimizationOptions ooptions)
+        public Script(string code, Context parentContext, CompilerMessageCallback messageCallback, Options ooptions)
         {
             if (code == null)
                 throw new ArgumentNullException();

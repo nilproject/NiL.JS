@@ -96,7 +96,7 @@ namespace NiL.JS.Expressions
             return visitor.Visit(this);
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, OptimizationOptions opts)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
         {
             var res = first.Build(ref _this, depth, variables, strict, message, statistic, opts);
             if (!res && first is GetVariableExpression)

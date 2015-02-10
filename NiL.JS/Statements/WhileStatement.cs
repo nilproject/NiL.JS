@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using NiL.JS.Core;
 using NiL.JS.Core.BaseTypes;
-using NiL.JS.Core.JIT;
 using NiL.JS.Expressions;
 
 namespace NiL.JS.Statements
@@ -115,12 +114,12 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, OptimizationOptions opts)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
         {
             depth = System.Math.Max(1, depth);
             Parser.Build(ref body, depth, variables, strict, message, statistic, opts);
             Parser.Build(ref condition, 2, variables, strict, message, statistic, opts);
-            if ((opts & OptimizationOptions.SuppressRemoveUselessExpressions) == 0 && condition is ToBool)
+            if ((opts & Options.SuppressRemoveUselessExpressions) == 0 && condition is ToBool)
             {
                 if (message == null)
                     message(MessageLevel.Warning, new CodeCoordinates(0, condition.Position, 2), "Useless conversion. Remove double negation in condition");
@@ -132,13 +131,13 @@ namespace NiL.JS.Statements
                 {
                     if ((bool)condition.Evaluate(null))
                     {
-                        if ((opts & OptimizationOptions.SuppressRemoveUselessExpressions) == 0)
+                        if ((opts & Options.SuppressRemoveUselessExpressions) == 0)
                             _this = new InfinityLoop(body, labels);
                     }
-                    else if ((opts & OptimizationOptions.SuppressRemoveUselessStatements) == 0)
+                    else if ((opts & Options.SuppressRemoveUselessStatements) == 0)
                         _this = null;
                 }
-                else if ((opts & OptimizationOptions.SuppressRemoveUselessExpressions) == 0
+                else if ((opts & Options.SuppressRemoveUselessExpressions) == 0
                         && ((condition is Json && (condition as Json).Fields.Length == 0)
                             || (condition is ArrayExpression && (condition as ArrayExpression).Elements.Count == 0)))
                 {

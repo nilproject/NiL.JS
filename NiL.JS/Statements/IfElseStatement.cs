@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using NiL.JS.Core;
-using NiL.JS.Core.JIT;
 using NiL.JS.Expressions;
 
 namespace NiL.JS.Statements
@@ -188,13 +187,13 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, OptimizationOptions opts)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
         {
             Parser.Build(ref condition, 2, variables, strict, message, statistic, opts);
             Parser.Build(ref body, depth, variables, strict, message, statistic, opts);
             Parser.Build(ref elseBody, depth, variables, strict, message, statistic, opts);
 
-            if ((opts & OptimizationOptions.SuppressRemoveUselessExpressions) == 0 && condition is ToBool)
+            if ((opts & Options.SuppressRemoveUselessExpressions) == 0 && condition is ToBool)
             {
                 if (message != null)
                     message(MessageLevel.Warning, new CodeCoordinates(0, condition.Position, 2), "Useless conversion. Remove double negation in condition");
@@ -202,7 +201,7 @@ namespace NiL.JS.Statements
             }
             try
             {
-                if ((opts & OptimizationOptions.SuppressRemoveUselessExpressions) == 0 && (condition is Constant || (condition is Expression && ((Expression)condition).IsContextIndependent)))
+                if ((opts & Options.SuppressRemoveUselessExpressions) == 0 && (condition is Constant || (condition is Expression && ((Expression)condition).IsContextIndependent)))
                 {
                     if ((bool)condition.Evaluate(null))
                         _this = body;

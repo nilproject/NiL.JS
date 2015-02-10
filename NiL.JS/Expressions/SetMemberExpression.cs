@@ -70,14 +70,19 @@ namespace NiL.JS.Expressions
             return temp;
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, OptimizationOptions opts)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
         {
-            throw new InvalidOperationException();
+            return false;
         }
 
         public override T Visit<T>(Visitor<T> visitor)
         {
             return visitor.Visit(this);
+        }
+
+        protected override CodeNode[] getChildsImpl()
+        {
+            return new CodeNode[] { first, second, value };
         }
 
         public override string ToString()

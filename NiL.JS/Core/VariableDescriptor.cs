@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using NiL.JS.Statements;
 using System.Collections.ObjectModel;
 using NiL.JS.Core.TypeProxing;
 using NiL.JS.Expressions;
