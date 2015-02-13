@@ -144,7 +144,7 @@ namespace NiL.JS.Core.Modules
                         throw new JSException((new SyntaxError("Unexpected token.")));
                     var v = stack.Peek();
                     v.state = ParseState.End;
-                    v.value = true;
+                    v.value = false;
                 }
                 else if (code[pos] == '{')
                 {
