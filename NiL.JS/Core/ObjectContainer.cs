@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using NiL.JS.Core.BaseTypes;
 using NiL.JS.Core.Modules;
 using NiL.JS.Core.TypeProxing;
 
@@ -34,9 +35,13 @@ namespace NiL.JS.Core
         {
             __prototype = proto;
             this.instance = instance;
-            valueType = JSObjectType.Object;
+            if (instance is Date)
+                valueType = JSObjectType.Date;
+            else
+                valueType = JSObjectType.Object;
             oValue = this;
             attributes = JSObjectAttributesInternal.SystemObject;
+            attributes |= proto.attributes & JSObjectAttributesInternal.Immutable;
         }
 
         [Hidden]

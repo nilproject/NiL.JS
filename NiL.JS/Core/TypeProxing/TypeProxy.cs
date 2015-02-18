@@ -107,7 +107,6 @@ namespace NiL.JS.Core.TypeProxing
             if (value is Delegate)
                 return new MethodProxy(((Delegate)value).Method, ((Delegate)value).Target);
             res = new ObjectContainer(value);
-            res.attributes |= res.__proto__.attributes & JSObjectAttributesInternal.Immutable;
             return res;
         }
 
