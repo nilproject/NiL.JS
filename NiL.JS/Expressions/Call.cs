@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using NiL.JS.Core;
 using NiL.JS.Core.BaseTypes;
 using NiL.JS.Core.TypeProxing;
-using NiL.JS.Statements;
 
 namespace NiL.JS.Expressions
 {
@@ -128,13 +127,13 @@ namespace NiL.JS.Expressions
             }
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict, CompilerMessageCallback message, FunctionStatistic statistic)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
         {
             if (statistic != null)
                 statistic.UseCall = true;
             for (var i = 0; i < arguments.Length; i++)
-                Parser.Build(ref arguments[i], depth + 1, vars, strict, message, statistic);
-            base.Build(ref _this, depth, vars, strict, message, statistic);
+                Parser.Build(ref arguments[i], depth + 1, vars, strict, message, statistic, opts);
+            base.Build(ref _this, depth, vars, strict, message, statistic, opts);
             if (first is GetVariableExpression)
             {
                 var name = first.ToString();

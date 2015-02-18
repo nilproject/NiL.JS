@@ -1,17 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Reflection.Emit;
-using System.Runtime.CompilerServices;
-using System.Security;
-using System.Text;
-using System.Threading.Tasks;
 using NiL.JS.Core.JIT;
 
 namespace NiL.JS.Core
 {
+#if !NET35
     [Serializable]
     public sealed class CompiledNode : Expressions.Expression
     {
@@ -156,9 +151,9 @@ namespace NiL.JS.Core
             return original.EvaluateForAssing(context);
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
         {
-            return original.Build(ref _this, depth, variables, strict, message, statistic);
+            return original.Build(ref _this, depth, variables, strict, message, statistic, opts);
         }
 
         internal override void Optimize(ref CodeNode _this, Expressions.FunctionExpression owner, CompilerMessageCallback message)
@@ -181,4 +176,5 @@ namespace NiL.JS.Core
             return original.ToString();
         }
     }
+#endif
 }

@@ -737,7 +737,7 @@ namespace NiL.JS.Core.BaseTypes
             var fs = FunctionExpression.Parse(new ParsingState(Tools.RemoveComments(code, 0), code, null), ref index);
             if (fs.IsParsed && code.Length == index)
             {
-                Parser.Build(ref fs.Statement, 0, new Dictionary<string, VariableDescriptor>(), context.strict, null, null);
+                Parser.Build(ref fs.Statement, 0, new Dictionary<string, VariableDescriptor>(), context.strict, null, null, Options.Default);
                 creator = fs.Statement as FunctionExpression;
             }
             else

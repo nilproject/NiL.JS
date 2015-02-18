@@ -2,8 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using NiL.JS.Core.BaseTypes;
-using NiL.JS.Core.Modules;
 using NiL.JS.Core.Functions;
+using NiL.JS.Core.Modules;
 
 namespace NiL.JS.Core.TypeProxing
 {

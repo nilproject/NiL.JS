@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using NiL.JS.Core;
-using NiL.JS.Core.BaseTypes;
-using NiL.JS.Core.JIT;
 
 namespace NiL.JS.Expressions
 {
@@ -112,11 +110,11 @@ namespace NiL.JS.Expressions
             return res;
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
         {
             if (statistic != null)
                 statistic.UseGetMember = true;
-            base.Build(ref _this, depth, variables, strict, message, statistic);
+            base.Build(ref _this, depth, variables, strict, message, statistic, opts);
             if (second is Constant)
             {
                 cachedMemberName = second.Evaluate(null);

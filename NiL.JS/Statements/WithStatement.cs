@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using NiL.JS.Core;
-using NiL.JS.Core.JIT;
 using NiL.JS.Expressions;
 
 namespace NiL.JS.Statements
@@ -96,12 +95,12 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
         {
             if (statistic != null)
                 statistic.UseWith = true;
-            Parser.Build(ref obj, depth + 1, variables, strict, message, statistic);
-            Parser.Build(ref body, depth, variables, strict, message, statistic);
+            Parser.Build(ref obj, depth + 1, variables, strict, message, statistic, opts);
+            Parser.Build(ref body, depth, variables, strict, message, statistic, opts);
             return false;
         }
 

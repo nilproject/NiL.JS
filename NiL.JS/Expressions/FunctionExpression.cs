@@ -1,16 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading;
 using NiL.JS.Core;
 using NiL.JS.Core.BaseTypes;
-using NiL.JS.Core.JIT;
+using NiL.JS.Core.Functions;
 using NiL.JS.Core.Modules;
 using NiL.JS.Core.TypeProxing;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Collections;
 using NiL.JS.Statements;
-using NiL.JS.Core.Functions;
 
 namespace NiL.JS.Expressions
 {
@@ -519,7 +517,7 @@ namespace NiL.JS.Expressions
             return new Function(context, this);
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
         {
             if (body.builded)
                 return false;
@@ -528,7 +526,7 @@ namespace NiL.JS.Expressions
             var bodyCode = body as CodeNode;
             var nvars = new Dictionary<string, VariableDescriptor>();
             var stat = new FunctionStatistic();
-            bodyCode.Build(ref bodyCode, 0, nvars, strict, message, stat);
+            bodyCode.Build(ref bodyCode, 0, nvars, strict, message, stat, opts);
             if (type == FunctionType.Function && !string.IsNullOrEmpty(name))
             {
                 VariableDescriptor fdesc = null;

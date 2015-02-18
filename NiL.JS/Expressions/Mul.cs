@@ -3,7 +3,6 @@
 
 using System;
 using NiL.JS.Core;
-using NiL.JS.Statements;
 
 namespace NiL.JS.Expressions
 {
@@ -93,9 +92,9 @@ namespace NiL.JS.Expressions
             }
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> vars, bool strict, CompilerMessageCallback message, FunctionStatistic statistic)
+        internal override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> vars, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
         {
-            var res = base.Build(ref _this, depth, vars, strict, message, statistic);
+            var res = base.Build(ref _this, depth, vars, strict, message, statistic, opts);
             if (!res)
             {
                 var exp = first as Constant;

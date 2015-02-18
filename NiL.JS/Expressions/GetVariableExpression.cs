@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Security;
 using NiL.JS.Core;
 using NiL.JS.Core.JIT;
-using System.Reflection;
 
 namespace NiL.JS.Expressions
 {
@@ -127,7 +125,7 @@ namespace NiL.JS.Expressions
             return visitor.Visit(this);
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
         {
             if (statistic != null && variableName == "this")
                 statistic.UseThis = true;
@@ -143,7 +141,7 @@ namespace NiL.JS.Expressions
                 desc.references.Add(this);
                 descriptor = desc;
             }
-            if (depth >= 0 && depth < 2 && desc.IsDefined)
+            if (depth >= 0 && depth < 2 && desc.IsDefined && (opts & Options.SuppressRemoveUselessExpressions) == 0)
             {
                 _this = null;
                 if (message != null)

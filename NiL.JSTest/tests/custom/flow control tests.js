@@ -348,3 +348,29 @@ if (RegExpf() === RegExpf())
 
 if (Function.prototype.prototype !== undefined)
     throw "Function.prototype.prototype mast be undefined";
+
+var jsonprs = JSON.parse('{ "True" : true, "False" : false, "Null": null, "One": 1, "Pi": 3.14159265358, "String": "This Is String", "Negative one": -1, "Negative Pi": -3.14159265358 }');
+
+if (jsonprs.False !== false)
+    throw "false parsed with error"
+
+if (jsonprs.True !== true)
+    throw "true parsed with error"
+
+if (jsonprs.Null !== null)
+    throw "null parsed with error"
+
+if (jsonprs.One !== 1)
+    throw "one parsed with error"
+
+if (jsonprs.Pi !== 3.14159265358)
+    throw "pi parsed with error"
+
+if (jsonprs.String !== "This Is String")
+    throw "string parsed with error"
+
+if (jsonprs["Negative one"] !== -1)
+    throw "Negative one parsed with error"
+
+if (jsonprs["Negative Pi"] !== -3.14159265358)
+    throw "Negative Pi parsed with error"

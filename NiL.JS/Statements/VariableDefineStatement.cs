@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using NiL.JS.Core;
 using NiL.JS.Core.BaseTypes;
-using NiL.JS.Core.JIT;
 using NiL.JS.Expressions;
 
 namespace NiL.JS.Statements
@@ -40,10 +38,10 @@ namespace NiL.JS.Statements
                 return res;
             }
 
-            internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic)
+            internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
             {
                 var v = variable as CodeNode;
-                var res = variable.Build(ref v, depth, variables, strict, message, statistic);
+                var res = variable.Build(ref v, depth, variables, strict, message, statistic, opts);
                 variable = v as VariableReference;
                 return res;
             }
@@ -214,7 +212,7 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
         {
             this.variables = new VariableDescriptor[names.Length];
             for (var i = 0; i < names.Length; i++)
@@ -249,7 +247,7 @@ namespace NiL.JS.Statements
             int actualChilds = 0;
             for (int i = 0; i < initializators.Length; i++)
             {
-                Parser.Build(ref initializators[i], message != null ? 2 : depth, variables, strict, message, statistic);
+                Parser.Build(ref initializators[i], message != null ? 2 : depth, variables, strict, message, statistic, opts);
                 if (initializators[i] != null)
                     actualChilds++;
             }

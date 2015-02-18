@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq.Expressions;
 using NiL.JS.Core;
 using NiL.JS.Core.BaseTypes;
-using NiL.JS.Core.JIT;
 using NiL.JS.Expressions;
 
 namespace NiL.JS.Statements
@@ -125,14 +123,14 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
         {
             depth = System.Math.Max(1, depth);
-            Parser.Build(ref body, depth, variables, strict, message, statistic);
-            Parser.Build(ref condition, 2, variables, strict, message, statistic);
+            Parser.Build(ref body, depth, variables, strict, message, statistic, opts);
+            Parser.Build(ref condition, 2, variables, strict, message, statistic, opts);
             try
             {
-                if (allowRemove && (condition is Constant || (condition as Expressions.Expression).IsContextIndependent))
+                if (allowRemove && (opts & Options.SuppressRemoveUselessExpressions) == 0 && (condition is Constant || (condition as Expressions.Expression).IsContextIndependent))
                 {
                     if ((bool)condition.Evaluate(null))
                         _this = new InfinityLoop(body, labels);

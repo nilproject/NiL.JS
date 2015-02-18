@@ -532,15 +532,15 @@ namespace NiL.JS.Core
                 + state.Code.Substring(index, Math.Min(20, state.Code.Length - index)).Split(new[] { ' ', '\n', '\r' })[0])));
         }
 
-        internal static void Build(ref CodeNode s, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic)
+        internal static void Build(ref CodeNode s, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
         {
-            while (s != null && s.Build(ref s, depth, variables, strict, message, statistic)) ;
+            while (s != null && s.Build(ref s, depth, variables, strict, message, statistic, opts)) ;
         }
 
-        internal static void Build(ref Expressions.Expression s, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic)
+        internal static void Build(ref Expressions.Expression s, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
         {
             CodeNode t = s;
-            Build(ref t, depth, variables, strict, message, statistic);
+            Build(ref t, depth, variables, strict, message, statistic, opts);
             if (t == null)
             {
                 s = null;

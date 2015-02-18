@@ -1,7 +1,6 @@
 ﻿using System;
 using NiL.JS.Core;
 using NiL.JS.Core.BaseTypes;
-using NiL.JS.Statements;
 
 namespace NiL.JS.Expressions
 {
@@ -67,7 +66,7 @@ namespace NiL.JS.Expressions
             return temp;
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> vars, bool strict, CompilerMessageCallback message, FunctionStatistic statistic)
+        internal override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> vars, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
         {
 #if GIVENAMEFUNCTION
             if (first is VariableReference && second is FunctionExpression)
@@ -77,7 +76,7 @@ namespace NiL.JS.Expressions
                     fs.name = (first as VariableReference).Name;
             }
 #endif
-            var r = base.Build(ref _this, depth, vars, strict, message, statistic);
+            var r = base.Build(ref _this, depth, vars, strict, message, statistic, opts);
 
             var f = first as VariableReference ?? ((first is OpAssignCache) ? (first as OpAssignCache).Source as VariableReference : null);
             if (f != null)
@@ -91,7 +90,7 @@ namespace NiL.JS.Expressions
 #endif
             var gme = first as GetMemberExpression;
             if (gme != null)
-                _this = new SetMemberExpression(gme.first, gme.second, second);
+                _this = new SetMemberExpression(gme.first, gme.second, second) { Position = Position, Length = Length };
             if (depth > 1)
                 saveResult = true;
             return r;

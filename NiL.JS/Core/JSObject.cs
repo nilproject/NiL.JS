@@ -8,7 +8,6 @@ using NiL.JS.Core.BaseTypes;
 using NiL.JS.Core.Modules;
 using NiL.JS.Core.TypeProxing;
 using NiL.JS.Expressions;
-using NiL.JS.Statements;
 
 namespace NiL.JS.Core
 {
@@ -1152,7 +1151,7 @@ namespace NiL.JS.Core
             if (members.valueType >= JSObjectType.Object && members.oValue == null)
                 throw new JSException(new TypeError("Properties descriptor may be only Object."));
             var res = CreateObject();
-            if (proto.oValue != null)
+            if (proto.valueType >= JSObjectType.Object)
                 res.__prototype = proto;
             if (members.valueType >= JSObjectType.Object)
             {
