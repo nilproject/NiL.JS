@@ -11,8 +11,6 @@ namespace NiL.JS.Core.JIT
         public readonly Stack<LabelTarget> ContinueLabels;
         public Dictionary<string, LabelTarget> NamedBreakLabels;
         public Dictionary<string, LabelTarget> NamedContinueLabels;
-        public LabelTarget ReturnTarget;
-        public LabelExpression ReturnLabel { get { return Expression.Label(ReturnTarget, Expression.Constant(JSObject.notExists)); } }
 
         public TreeBuildingState()
         {

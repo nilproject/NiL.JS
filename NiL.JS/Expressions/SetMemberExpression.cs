@@ -4,7 +4,9 @@ using NiL.JS.Core;
 
 namespace NiL.JS.Expressions
 {
+#if !PORTABLE
     [Serializable]
+#endif
     public sealed class SetMemberExpression : Expression
     {
         private JSObject tempContainer1;
@@ -58,7 +60,7 @@ namespace NiL.JS.Expressions
             }
             source.SetMember(
                 cachedMemberName ?? safeGet(tempContainer1, second, context),
-                safeGet(tempContainer2, value, context), 
+                safeGet(tempContainer2, value, context),
                 context.strict);
             context.objectSource = null;
             return tempContainer2;

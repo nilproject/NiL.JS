@@ -5,10 +5,14 @@ using NiL.JS.Core.TypeProxing;
 
 namespace NiL.JS.Core.BaseTypes
 {
+#if !PORTABLE
     [Serializable]
+#endif
     public sealed class ArrayBuffer : CustomType
     {
+#if !PORTABLE
         [Serializable]
+#endif
         private sealed class Element : JSObject
         {
             private int index;

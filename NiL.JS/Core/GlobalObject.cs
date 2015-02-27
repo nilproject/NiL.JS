@@ -4,7 +4,9 @@ using NiL.JS.Core.BaseTypes;
 
 namespace NiL.JS.Core
 {
+#if !PORTABLE
     [Serializable]
+#endif
     internal sealed class GlobalObject : JSObject
     {
         private static JSObject thisProto;

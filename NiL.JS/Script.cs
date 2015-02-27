@@ -17,7 +17,9 @@ namespace NiL.JS
     /// <summary>
     /// Управляет выполнением скрипта на языке JavaScript.
     /// </summary>
+#if !PORTABLE
     [Serializable]
+#endif
     public sealed class Script
     {
         internal static readonly Function pseudoCaller = null;//new Function(Context.globalContext, FunctionStatement.Parse("function superCaller(){ }"));
@@ -121,7 +123,7 @@ namespace NiL.JS
                 Context.Deactivate();
             }
         }
-        
+
         /// <summary>
         /// Пытается провести частичную или полную компилияцию сценария, начиная с листов синтаксического дерева.
         /// Максимальные по высоте поддеревья, для которых допустима компиляция, будут заменены на листы, 

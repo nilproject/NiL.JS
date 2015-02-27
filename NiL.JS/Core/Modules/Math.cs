@@ -45,7 +45,7 @@ namespace NiL.JS.Core.Modules
         [DoNotDelete]
         public static JSObject abs(JSObject arg)
         {
-            switch(arg.valueType)
+            switch (arg.valueType)
             {
                 case JSObjectType.Int:
                     {

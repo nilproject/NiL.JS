@@ -6,7 +6,7 @@ using System.Text;
 
 namespace NiL.JS.Core
 {
-    public sealed class RopeString : IComparable, ICloneable, IComparable<string>, IEnumerable<char>, IEnumerable, IEquatable<string>
+    public sealed class RopeString : IEnumerable<char>, IEnumerable, IEquatable<string>
     {
         private object _firstSource;
         private object _secondSource;
@@ -124,10 +124,6 @@ namespace NiL.JS.Core
         {
             return new RopeString(_firstSource, _secondSource);
         }
-        public int CompareTo(object value)
-        {
-            return ToString().CompareTo(value);
-        }
         public int CompareTo(string strB)
         {
             return ToString().CompareTo(strB);
@@ -148,10 +144,6 @@ namespace NiL.JS.Core
         {
             return ToString().EndsWith(value, comparisonType);
         }
-        public bool EndsWith(string value, bool ignoreCase, CultureInfo culture)
-        {
-            return ToString().EndsWith(value, ignoreCase, culture);
-        }
         public override bool Equals(object obj)
         {
             return ToString().Equals(obj);
@@ -164,17 +156,9 @@ namespace NiL.JS.Core
         {
             return ToString().Equals(value, comparisonType);
         }
-        public CharEnumerator GetEnumerator()
-        {
-            return ToString().GetEnumerator();
-        }
         public override int GetHashCode()
         {
             return ToString().GetHashCode();
-        }
-        public TypeCode GetTypeCode()
-        {
-            return ToString().GetTypeCode();
         }
         public int IndexOf(char value)
         {
@@ -255,14 +239,6 @@ namespace NiL.JS.Core
         {
             return ToString().Insert(startIndex, value);
         }
-        public bool IsNormalized()
-        {
-            return ToString().IsNormalized();
-        }
-        public bool IsNormalized(NormalizationForm normalizationForm)
-        {
-            return ToString().IsNormalized(normalizationForm);
-        }
         public int LastIndexOf(char value)
         {
             var r = firstSource.LastIndexOf(value);
@@ -342,10 +318,6 @@ namespace NiL.JS.Core
         {
             return ToString().Normalize();
         }
-        public string Normalize(NormalizationForm normalizationForm)
-        {
-            return ToString().Normalize(normalizationForm);
-        }
         public string PadLeft(int totalWidth)
         {
             return ToString().PadLeft(totalWidth);
@@ -410,10 +382,6 @@ namespace NiL.JS.Core
         {
             return ToString().StartsWith(value, comparisonType);
         }
-        public bool StartsWith(string value, bool ignoreCase, CultureInfo culture)
-        {
-            return ToString().StartsWith(value, ignoreCase, culture);
-        }
         public string Substring(int startIndex)
         {
             return ToString().Substring(startIndex);
@@ -433,10 +401,6 @@ namespace NiL.JS.Core
         public string ToLower()
         {
             return ToString().ToLower();
-        }
-        public string ToLower(CultureInfo culture)
-        {
-            return ToString().ToLower(culture);
         }
         public string ToLowerInvariant()
         {
@@ -528,10 +492,6 @@ namespace NiL.JS.Core
         {
             return ToString().ToUpper();
         }
-        public string ToUpper(CultureInfo culture)
-        {
-            return ToString().ToUpper(culture);
-        }
         public string ToUpperInvariant()
         {
             return ToString().ToUpperInvariant();
@@ -591,7 +551,7 @@ namespace NiL.JS.Core
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return GetEnumerator();
+            return (this as IEnumerable<char>).GetEnumerator();
         }
 
         #endregion

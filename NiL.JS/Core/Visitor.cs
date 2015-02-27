@@ -8,7 +8,9 @@ namespace NiL.JS.Core
     /// AST nodes visitor.
     /// </summary>
     /// <typeparam name="T">Type of return value</typeparam>
+#if !PORTABLE
     [Serializable]
+#endif
     public abstract class Visitor<T>
     {
         internal protected abstract T Visit(CodeNode node);

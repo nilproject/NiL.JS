@@ -6,7 +6,9 @@ using NiL.JS.Expressions;
 
 namespace NiL.JS.Statements
 {
+#if !PORTABLE
     [Serializable]
+#endif
     public sealed class SwitchCase
     {
         internal int index;
@@ -16,7 +18,9 @@ namespace NiL.JS.Statements
         public CodeNode Statement { get { return statement; } }
     }
 
+#if !PORTABLE
     [Serializable]
+#endif
     public sealed class SwitchStatement : CodeNode
     {
         private FunctionExpression[] functions;

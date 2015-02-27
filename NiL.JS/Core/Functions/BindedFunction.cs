@@ -11,7 +11,9 @@ namespace NiL.JS.Core.Functions
     /// <summary>
     /// Реализует поведение функции Function.prototype.bind.
     /// </summary>
+#if !PORTABLE
     [Serializable]
+#endif
     internal sealed class BindedFunction : Function
     {
         private Function proto;

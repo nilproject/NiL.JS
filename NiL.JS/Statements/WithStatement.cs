@@ -5,7 +5,9 @@ using NiL.JS.Expressions;
 
 namespace NiL.JS.Statements
 {
+#if !PORTABLE
     [Serializable]
+#endif
     public sealed class WithStatement : CodeNode
     {
         private CodeNode obj;

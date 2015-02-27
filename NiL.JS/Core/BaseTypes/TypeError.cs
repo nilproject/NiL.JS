@@ -4,7 +4,9 @@ using NiL.JS.Core.Modules;
 namespace NiL.JS.Core.BaseTypes
 {
     [Prototype(typeof(Error))]
+#if !PORTABLE
     [Serializable]
+#endif
     public sealed class TypeError : Error
     {
         [DoNotEnumerate]

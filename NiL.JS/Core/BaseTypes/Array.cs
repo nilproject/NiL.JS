@@ -7,7 +7,9 @@ using NiL.JS.Core.TypeProxing;
 
 namespace NiL.JS.Core.BaseTypes
 {
+#if !PORTABLE
     [Serializable]
+#endif
     public sealed class Array : JSObject
     {
         private sealed class _lengthField : JSObject

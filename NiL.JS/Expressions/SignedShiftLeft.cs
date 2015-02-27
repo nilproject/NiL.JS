@@ -3,7 +3,9 @@ using NiL.JS.Core;
 
 namespace NiL.JS.Expressions
 {
+#if !PORTABLE
     [Serializable]
+#endif
     public sealed class SignedShiftLeft : Expression
     {
         protected internal override PredictedType ResultType

@@ -4,7 +4,9 @@ using NiL.JS.Core.BaseTypes;
 
 namespace NiL.JS.Expressions
 {
+#if !PORTABLE
     [Serializable]
+#endif
     public sealed class InstanceOf : Expression
     {
         private static readonly JSObject prototype = "prototype";

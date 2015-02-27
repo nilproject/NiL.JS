@@ -5,7 +5,9 @@ using NiL.JS.Core.JIT;
 
 namespace NiL.JS.Expressions
 {
+#if !PORTABLE
     [Serializable]
+#endif
     public sealed class GetArgumentsExpression : GetVariableExpression
     {
         internal GetArgumentsExpression(int functionDepth)
@@ -30,7 +32,9 @@ namespace NiL.JS.Expressions
         }
     }
 
+#if !PORTABLE
     [Serializable]
+#endif
     public class GetVariableExpression : VariableReference
     {
         private string variableName;

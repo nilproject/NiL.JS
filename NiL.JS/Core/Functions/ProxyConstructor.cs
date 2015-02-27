@@ -7,7 +7,9 @@ using NiL.JS.Core.TypeProxing;
 
 namespace NiL.JS.Core.Functions
 {
+#if !PORTABLE
     [Serializable]
+#endif
     [Prototype(typeof(Function))]
     internal class ProxyConstructor : Function
     {

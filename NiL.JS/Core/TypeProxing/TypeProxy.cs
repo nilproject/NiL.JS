@@ -9,14 +9,18 @@ using NiL.JS.Core.Functions;
 
 namespace NiL.JS.Core.TypeProxing
 {
+#if !PORTABLE
     [Serializable]
+#endif
     public sealed class TypeProxy : JSObject
     {
         private static readonly Dictionary<Type, JSObject> staticProxies = new Dictionary<Type, JSObject>();
         private static readonly Dictionary<Type, TypeProxy> dynamicProxies = new Dictionary<Type, TypeProxy>();
 
         internal Type hostedType;
+#if !PORTABLE
         [NonSerialized]
+#endif
         internal Dictionary<string, IList<MemberInfo>> members;
         private ConstructorInfo ictor;
         private JSObject _prototypeInstance;

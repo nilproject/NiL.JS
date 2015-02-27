@@ -35,7 +35,7 @@ namespace NiL.JS.Core
             if (instance is Date)
                 valueType = JSObjectType.Date;
             else
-            valueType = JSObjectType.Object;
+                valueType = JSObjectType.Object;
             oValue = this;
             attributes = JSObjectAttributesInternal.SystemObject;
             attributes |= proto.attributes & JSObjectAttributesInternal.Immutable;

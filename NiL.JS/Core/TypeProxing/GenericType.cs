@@ -6,7 +6,9 @@ using System.Reflection;
 
 namespace NiL.JS.Core.TypeProxing
 {
+#if !PORTABLE
     [Serializable]
+#endif
     internal sealed class GenericType : Type, IEnumerable
     {
         private class Pinfo : ParameterInfo
@@ -67,7 +69,7 @@ namespace NiL.JS.Core.TypeProxing
 
             public override object[] GetCustomAttributes(Type attributeType, bool inherit)
             {
-                return Activator.CreateInstance(attributeType.MakeArrayType(), new object[]{ 0 }) as object[];
+                return Activator.CreateInstance(attributeType.MakeArrayType(), new object[] { 0 }) as object[];
             }
 
             public override bool IsDefined(Type attributeType, bool inherit)

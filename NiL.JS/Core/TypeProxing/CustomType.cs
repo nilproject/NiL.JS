@@ -9,7 +9,9 @@ namespace NiL.JS.Core.TypeProxing
     /// Предоставляет возможность переопределить обработчики получения поля объекта 
     /// и получения перечислителя полей объекта.
     /// </summary>
+#if !PORTABLE
     [Serializable]
+#endif
     public abstract class CustomType : JSObject
     {
         protected CustomType()

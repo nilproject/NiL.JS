@@ -5,7 +5,9 @@ using NiL.JS.Core.TypeProxing;
 
 namespace NiL.JS.Core.Functions
 {
+#if !PORTABLE
     [Serializable]
+#endif
     internal class ObjectConstructor : ProxyConstructor
     {
         public ObjectConstructor(TypeProxy proxy)

@@ -6,7 +6,9 @@ using NiL.JS.Core.JIT;
 
 namespace NiL.JS.Statements
 {
+#if !PORTABLE
     [Serializable]
+#endif
     public sealed class ReturnStatement : CodeNode
     {
         private CodeNode body;

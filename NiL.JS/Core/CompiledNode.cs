@@ -7,7 +7,9 @@ using NiL.JS.Core.JIT;
 namespace NiL.JS.Core
 {
 #if !NET35
+#if !PORTABLE
     [Serializable]
+#endif
     public sealed class CompiledNode : Expressions.Expression
     {
         private static readonly MethodInfo wrapMethod = typeof(JITHelpers).GetMethod("wrap", BindingFlags.Static | BindingFlags.NonPublic);

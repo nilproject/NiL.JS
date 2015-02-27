@@ -7,7 +7,9 @@ using NiL.JS.Expressions;
 
 namespace NiL.JS.Statements
 {
+#if !PORTABLE
     [Serializable]
+#endif
     public sealed class WhileStatement : CodeNode
     {
         private bool allowRemove;

@@ -5,7 +5,9 @@ using NiL.JS.Core;
 
 namespace NiL.JS.Expressions
 {
+#if !PORTABLE
     [Serializable]
+#endif
     public sealed class StringConcat : Expression
     {
         internal IList<Expression> sources;

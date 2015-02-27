@@ -11,7 +11,11 @@ using NiL.JS.Expressions;
 
 namespace NiL.JS.Core
 {
+#if !PORTABLE
+#if !PORTABLE
     [Serializable]
+#endif
+#endif
     public enum JSObjectType
     {
         NotExists = 0,
@@ -27,7 +31,11 @@ namespace NiL.JS.Core
         Property = 515
     }
 
+#if !PORTABLE
+#if !PORTABLE
     [Serializable]
+#endif
+#endif
     [Flags]
     internal enum JSObjectAttributesInternal : uint
     {
@@ -54,7 +62,11 @@ namespace NiL.JS.Core
         PrivateAttributes = Immutable | ProxyPrototype | Field,
     }
 
+#if !PORTABLE
+#if !PORTABLE
     [Serializable]
+#endif
+#endif
     [Flags]
     public enum JSObjectAttributes : int
     {
@@ -66,9 +78,16 @@ namespace NiL.JS.Core
         NotConfigurable = 1 << 4,
     }
 
-    [StructLayout(LayoutKind.Sequential)]
+#if !PORTABLE
+#if !PORTABLE
     [Serializable]
-    public class JSObject : IEnumerable<string>, IEnumerable, ICloneable, IComparable<JSObject>, IConvertible
+#endif
+#endif
+    [StructLayout(LayoutKind.Sequential)]
+    public class JSObject : IEnumerable<string>, IEnumerable, IComparable<JSObject>
+#if !PORTABLE
+, ICloneable, IConvertible
+#endif
     {
         [Hidden]
         internal static readonly IEnumerator<string> EmptyEnumerator = ((IEnumerable<string>)(new string[0])).GetEnumerator();
@@ -1031,76 +1050,6 @@ namespace NiL.JS.Core
         }
 
         [Hidden]
-        public virtual T As<T>()
-        {
-            switch (Type.GetTypeCode(typeof(T)))
-            {
-                case TypeCode.Boolean:
-                    return (T)(object)(bool)this; // оптимизатор разруливает такой каскад преобразований
-                case TypeCode.Byte:
-                    {
-                        return (T)(object)(byte)Tools.JSObjectToInt32(this);
-                    }
-                case TypeCode.Char:
-                    {
-                        if (valueType == JSObjectType.Object
-                            && oValue is char)
-                            return (T)oValue;
-                        break;
-                    }
-                case TypeCode.Decimal:
-                    {
-                        return (T)(object)(decimal)Tools.JSObjectToDouble(this);
-                    }
-                case TypeCode.Double:
-                    {
-                        return (T)(object)Tools.JSObjectToDouble(this);
-                    }
-                case TypeCode.Int16:
-                    {
-                        return (T)(object)(Int16)Tools.JSObjectToInt32(this);
-                    }
-                case TypeCode.Int32:
-                    {
-                        return (T)(object)Tools.JSObjectToInt32(this);
-                    }
-                case TypeCode.Int64:
-                    {
-                        return (T)(object)Tools.JSObjectToInt64(this);
-                    }
-                case TypeCode.Object:
-                    {
-                        return (T)Value;
-                    }
-                case TypeCode.SByte:
-                    {
-                        return (T)(object)(sbyte)Tools.JSObjectToInt32(this);
-                    }
-                case TypeCode.Single:
-                    {
-                        return (T)(object)(float)Tools.JSObjectToDouble(this);
-                    }
-                case TypeCode.String:
-                    {
-                        return (T)(object)this.ToString();
-                    }
-                case TypeCode.UInt16:
-                    {
-                        return (T)(object)(ushort)Tools.JSObjectToInt32(this);
-                    }
-                case TypeCode.UInt32:
-                    {
-                        return (T)(object)(uint)Tools.JSObjectToInt32(this);
-                    }
-                case TypeCode.UInt64:
-                    {
-                        return (T)(object)(ulong)Tools.JSObjectToInt64(this);
-                    }
-            }
-            throw new InvalidCastException();
-        }
-
-        [Hidden]
         public bool IsExist
         {
             [Hidden]
@@ -1821,6 +1770,76 @@ namespace NiL.JS.Core
         internal bool isNeedClone { get { return (attributes & (JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.SystemObject)) == JSObjectAttributesInternal.SystemObject; } }
 
         #region „лены IConvertible
+#if !PORTABLE
+        [Hidden]
+        public virtual T As<T>()
+        {
+            switch (Type.GetTypeCode(typeof(T)))
+            {
+                case TypeCode.Boolean:
+                    return (T)(object)(bool)this; // оптимизатор разруливает такой каскад преобразований
+                case TypeCode.Byte:
+                    {
+                        return (T)(object)(byte)Tools.JSObjectToInt32(this);
+                    }
+                case TypeCode.Char:
+                    {
+                        if (valueType == JSObjectType.Object
+                            && oValue is char)
+                            return (T)oValue;
+                        break;
+                    }
+                case TypeCode.Decimal:
+                    {
+                        return (T)(object)(decimal)Tools.JSObjectToDouble(this);
+                    }
+                case TypeCode.Double:
+                    {
+                        return (T)(object)Tools.JSObjectToDouble(this);
+                    }
+                case TypeCode.Int16:
+                    {
+                        return (T)(object)(Int16)Tools.JSObjectToInt32(this);
+                    }
+                case TypeCode.Int32:
+                    {
+                        return (T)(object)Tools.JSObjectToInt32(this);
+                    }
+                case TypeCode.Int64:
+                    {
+                        return (T)(object)Tools.JSObjectToInt64(this);
+                    }
+                case TypeCode.Object:
+                    {
+                        return (T)Value;
+                    }
+                case TypeCode.SByte:
+                    {
+                        return (T)(object)(sbyte)Tools.JSObjectToInt32(this);
+                    }
+                case TypeCode.Single:
+                    {
+                        return (T)(object)(float)Tools.JSObjectToDouble(this);
+                    }
+                case TypeCode.String:
+                    {
+                        return (T)(object)this.ToString();
+                    }
+                case TypeCode.UInt16:
+                    {
+                        return (T)(object)(ushort)Tools.JSObjectToInt32(this);
+                    }
+                case TypeCode.UInt32:
+                    {
+                        return (T)(object)(uint)Tools.JSObjectToInt32(this);
+                    }
+                case TypeCode.UInt64:
+                    {
+                        return (T)(object)(ulong)Tools.JSObjectToInt64(this);
+                    }
+            }
+            throw new InvalidCastException();
+        }
 
         TypeCode IConvertible.GetTypeCode()
         {
@@ -1912,6 +1931,7 @@ namespace NiL.JS.Core
             return (ulong)Tools.JSObjectToInt64(this);
         }
 
+#endif
         #endregion
     }
 }

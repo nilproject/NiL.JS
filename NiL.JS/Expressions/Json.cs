@@ -6,7 +6,9 @@ using NiL.JS.Statements;
 
 namespace NiL.JS.Expressions
 {
+#if !PORTABLE
     [Serializable]
+#endif
     public sealed class Json : Expression
     {
         private string[] fields;

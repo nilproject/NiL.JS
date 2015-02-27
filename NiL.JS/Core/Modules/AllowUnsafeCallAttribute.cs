@@ -11,7 +11,9 @@ namespace NiL.JS.Core.Modules
     /// включая те случаи, когда указанный тип и тип, объявивший помеченный метод,
     /// не находятся в одной иерархии наследования.
     /// </summary>
+#if !PORTABLE
     [Serializable]
+#endif
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true, Inherited = false)]
     public class AllowUnsafeCallAttribute : Attribute
     {

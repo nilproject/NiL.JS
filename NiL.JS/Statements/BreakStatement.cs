@@ -3,7 +3,9 @@ using NiL.JS.Core;
 
 namespace NiL.JS.Statements
 {
+#if !PORTABLE
     [Serializable]
+#endif
     public sealed class BreakStatement : CodeNode
     {
         private JSObject label;

@@ -3,7 +3,9 @@ using NiL.JS.Core;
 
 namespace NiL.JS.Expressions
 {
+#if !PORTABLE
     [Serializable]
+#endif
     public sealed class Or : Expression
     {
         public Or(Expression first, Expression second)

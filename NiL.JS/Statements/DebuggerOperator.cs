@@ -3,7 +3,9 @@ using NiL.JS.Core;
 
 namespace NiL.JS.Statements
 {
+#if !PORTABLE
     [Serializable]
+#endif
     public sealed class DebuggerOperator : CodeNode
     {
         internal static ParseResult Parse(ParsingState state, ref int index)

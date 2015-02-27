@@ -6,7 +6,9 @@ using NiL.JS.Core.Functions;
 
 namespace NiL.JS.Expressions
 {
+#if !PORTABLE
     [Serializable]
+#endif
     public sealed class New : Expression
     {
         private sealed class ThisSetter : Expression

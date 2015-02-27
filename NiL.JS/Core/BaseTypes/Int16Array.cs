@@ -3,7 +3,9 @@ using NiL.JS.Core.Modules;
 
 namespace NiL.JS.Core.BaseTypes
 {
+#if !PORTABLE
     [Serializable]
+#endif
     public sealed class Int16Array : TypedArray
     {
         protected override JSObject this[int index]

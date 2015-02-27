@@ -22,7 +22,9 @@ namespace NiL.JS.Core
         Full = 0xFF
     }
 
+#if !PORTABLE
     [Serializable]
+#endif
     public sealed class VariableDescriptor
     {
         internal int defineDepth;

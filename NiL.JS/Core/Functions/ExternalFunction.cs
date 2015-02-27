@@ -8,7 +8,9 @@ namespace NiL.JS.Core.Functions
     /// Представляет функцию платформы с фиксированной сигнатурой.
     /// </summary>
     [Prototype(typeof(Function))]
+#if !PORTABLE
     [Serializable]
+#endif
     public sealed class ExternalFunction : Function
     {
         [Hidden]
@@ -62,7 +64,7 @@ namespace NiL.JS.Core.Functions
             if (del == null)
                 throw new ArgumentNullException();
             this.del = del;
-       }
+        }
 
         [Hidden]
         public override JSObject Invoke(JSObject thisBind, Arguments args)

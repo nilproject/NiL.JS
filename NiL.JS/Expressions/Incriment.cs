@@ -5,7 +5,9 @@ using NiL.JS.Core.BaseTypes;
 
 namespace NiL.JS.Expressions
 {
+#if !PORTABLE
     [Serializable]
+#endif
     public sealed class Incriment : Expression
     {
         public enum Type

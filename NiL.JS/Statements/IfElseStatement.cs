@@ -5,7 +5,9 @@ using NiL.JS.Expressions;
 
 namespace NiL.JS.Statements
 {
+#if !PORTABLE
     [Serializable]
+#endif
     public sealed class IfStatement : CodeNode
     {
         private CodeNode condition;
@@ -64,7 +66,9 @@ namespace NiL.JS.Statements
         }
     }
 
+#if !PORTABLE
     [Serializable]
+#endif
     public sealed class IfElseStatement : CodeNode
     {
         private CodeNode condition;

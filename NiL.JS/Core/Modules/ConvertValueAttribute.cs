@@ -2,7 +2,9 @@
 
 namespace NiL.JS.Core.Modules
 {
-	[Serializable]
+#if !PORTABLE
+    [Serializable]
+#endif
     [AttributeUsage(
         AttributeTargets.Field
         | AttributeTargets.Property

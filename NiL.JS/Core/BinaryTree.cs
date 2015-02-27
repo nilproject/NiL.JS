@@ -9,8 +9,16 @@ namespace NiL.JS
     /// <summary>
     /// Предоставляет реализацию бинарного дерева поиска со строковым аргументом.
     /// </summary>
+#if !PORTABLE
+#if !PORTABLE
     [Serializable]
-    public class BinaryTree<TKey, TValue> : IDictionary<TKey, TValue>, ISerializable where TKey : IComparable<TKey>
+#endif
+#endif
+    public class BinaryTree<TKey, TValue> : IDictionary<TKey, TValue>
+#if !PORTABLE
+, ISerializable
+#endif
+ where TKey : IComparable<TKey>
     {
         private sealed class _Values : ICollection<TValue>
         {
@@ -133,7 +141,11 @@ namespace NiL.JS
             }
         }
 
+#if !PORTABLE
+#if !PORTABLE
         [Serializable]
+#endif
+#endif
         internal sealed class Node
         {
             public TKey key;
@@ -230,17 +242,25 @@ namespace NiL.JS
         }
 
         private IComparer<TKey> comparer;
+#if !PORTABLE
         [NonSerialized]
+#endif
         private long state = 0;
+#if !PORTABLE
         [NonSerialized]
+#endif
         private Stack<Node> stack = new Stack<Node>();
         public int Height { get { return root == null ? 0 : root.height; } }
         public int Count { get; private set; }
         public bool IsReadOnly { get { return false; } }
+#if !PORTABLE
         [NonSerialized]
+#endif
         private ICollection<TKey> keys;
         public ICollection<TKey> Keys { get { return keys ?? (keys = new _Keys(this)); } }
+#if !PORTABLE
         [NonSerialized]
+#endif
         private ICollection<TValue> values;
         public ICollection<TValue> Values { get { return values ?? (values = new _Values(this)); } }
         private Node root;
@@ -248,8 +268,13 @@ namespace NiL.JS
 
         public BinaryTree()
         {
+#if PORTABLE
             if (!typeof(IComparable).IsAssignableFrom(typeof(TKey))
                && !typeof(IComparable<TKey>).IsAssignableFrom(typeof(TKey)))
+#else
+            if (!typeof(IComparable).IsAssignableFrom(typeof(TKey))
+               && !typeof(IComparable<TKey>).IsAssignableFrom(typeof(TKey)))
+#endif
                 throw new ArgumentException("Compaper not defined.");
             root = null;
             Count = 0;
@@ -263,7 +288,7 @@ namespace NiL.JS
             state = DateTime.UtcNow.Ticks;
             this.comparer = comparer;
         }
-
+#if !PORTABLE
         protected BinaryTree(SerializationInfo info, StreamingContext context)
         {
             root = info.GetValue("root", typeof(Node)) as Node;
@@ -284,7 +309,7 @@ namespace NiL.JS
             info.AddValue("count", Count);
             info.AddValue("comparer", comparer);
         }
-
+#endif
         public TValue this[TKey key]
         {
             get
@@ -900,7 +925,11 @@ namespace NiL.JS
         }
     }
 
+#if !PORTABLE
+#if !PORTABLE
     [Serializable]
+#endif
+#endif
     public sealed class BinaryTree<TValue> : BinaryTree<string, TValue>
     {
         public BinaryTree()
@@ -908,11 +937,13 @@ namespace NiL.JS
 
         }
 
+#if !PORTABLE
         private BinaryTree(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
 
         }
+#endif
 
         public IEnumerable<KeyValuePair<string, TValue>> StartedWith(string prefix)
         {

@@ -12,11 +12,14 @@ using System.Runtime.InteropServices;
 #endif
 [assembly: AssemblyDescriptionAttribute("JavaScript engine for .NET")]
 [assembly: AssemblyCompanyAttribute("NiLProject")]
-[assembly: AssemblyCopyrightAttribute("Copyright © NiLProject 2014")]
+[assembly: AssemblyCopyrightAttribute("Copyright © NiLProject 2015")]
 [assembly: AssemblyTrademarkAttribute("NiL.JS")]
 [assembly: AssemblyVersionAttribute("1.2.676")]
 [assembly: AssemblyFileVersionAttribute("1.2.676")]
 [assembly: NeutralResourcesLanguageAttribute("en-US")]
 [assembly: ComVisibleAttribute(false)]
-[assembly: GuidAttribute("a70afe5a-2b29-49fd-afbf-28794042ea21")]
 [assembly: CLSCompliant(true)]
+
+#if !PORTABLE
+[assembly: GuidAttribute("a70afe5a-2b29-49fd-afbf-28794042ea21")]
+#endif

@@ -6,7 +6,9 @@ using NiL.JS.Expressions;
 
 namespace NiL.JS.Statements
 {
+#if !PORTABLE
     [Serializable]
+#endif
     public sealed class VariableDefineStatement : CodeNode
     {
         private sealed class AllowWriteCN : Expression

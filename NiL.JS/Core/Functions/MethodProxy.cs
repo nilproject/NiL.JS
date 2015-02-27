@@ -13,7 +13,9 @@ using System.Reflection.Emit;
 
 namespace NiL.JS.Core.Functions
 {
+#if !PORTABLE
     [Serializable]
+#endif
     public sealed class MethodProxy : Function
     {
 #if !NET35
@@ -473,7 +475,7 @@ namespace NiL.JS.Core.Functions
                                 goto default;
 #endif
 #endif
-                            res = delegateF2(target, argsSource == null ? allowNull ? null : new Arguments() : argsSource);
+                                res = delegateF2(target, argsSource == null ? allowNull ? null : new Arguments() : argsSource);
                             break;
                         }
                     case CallMode.FuncDynamicZero:
@@ -495,7 +497,7 @@ namespace NiL.JS.Core.Functions
                                 goto default;
 #endif
 #endif
-                            res = delegateF1(target);
+                                res = delegateF1(target);
                             break;
                         }
                     case CallMode.FuncDynamicOneArray:
@@ -517,7 +519,7 @@ namespace NiL.JS.Core.Functions
                                 goto default;
 #endif
 #endif
-                            res = delegateF2(target, args ?? (argsSource == null ? new object[0] : argumentsToArray(argsSource)));
+                                res = delegateF2(target, args ?? (argsSource == null ? new object[0] : argumentsToArray(argsSource)));
                             break;
                         }
                     case CallMode.FuncDynamicOne:
@@ -539,7 +541,7 @@ namespace NiL.JS.Core.Functions
                                 goto default;
 #endif
 #endif
-                            res = delegateF2(target, args == null ? marshal(argsSource == null ? undefined : argsSource[0], parameters[0].ParameterType) : args[0]);
+                                res = delegateF2(target, args == null ? marshal(argsSource == null ? undefined : argsSource[0], parameters[0].ParameterType) : args[0]);
                             break;
                         }
                     case CallMode.FuncStaticZero:
@@ -588,7 +590,7 @@ namespace NiL.JS.Core.Functions
                                     goto default;
 #endif
 #endif
-                                delegateA2(target, argsSource == null ? allowNull ? null : new Arguments() : argsSource);
+                                    delegateA2(target, argsSource == null ? allowNull ? null : new Arguments() : argsSource);
                                 res = null;
                             }
                             break;
@@ -619,7 +621,7 @@ namespace NiL.JS.Core.Functions
                                     goto default;
 #endif
 #endif
-                                delegateA1(target);
+                                    delegateA1(target);
                                 res = null;
                             }
                             break;
@@ -650,7 +652,7 @@ namespace NiL.JS.Core.Functions
                                     goto default;
 #endif
 #endif
-                                delegateA2(target, args == null ? marshal(argsSource == null ? undefined : argsSource[0], parameters[0].ParameterType) : args[0]);
+                                    delegateA2(target, args == null ? marshal(argsSource == null ? undefined : argsSource[0], parameters[0].ParameterType) : args[0]);
                                 res = null;
                             }
                             break;

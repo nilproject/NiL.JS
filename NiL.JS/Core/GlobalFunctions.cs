@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Text;
 using System.Threading;
-using System.Web;
 using NiL.JS.Core.BaseTypes;
 using NiL.JS.Core.Modules;
 using NiL.JS.Core.TypeProxing;
@@ -38,7 +37,7 @@ namespace NiL.JS.Core
 
         internal static JSObject unescape(JSObject thisBind, Arguments x)
         {
-            var res = HttpUtility.UrlDecode(x[0].ToString());
+            var res = Uri.UnescapeDataString(x[0].ToString());
             return res;
         }
 
@@ -87,7 +86,7 @@ namespace NiL.JS.Core
 
         internal static JSObject escape(JSObject thisBind, Arguments x)
         {
-            return System.Web.HttpUtility.HtmlEncode(x[0].ToString());
+            return Uri.EscapeDataString(x[0].ToString());
         }
 
         internal static uint __pinvokeCalled;

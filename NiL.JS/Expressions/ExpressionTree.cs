@@ -6,7 +6,9 @@ using NiL.JS.Expressions;
 
 namespace NiL.JS.Statements
 {
+#if !PORTABLE
     [Serializable]
+#endif
     internal enum OperationTypeGroups : int
     {
         None = 0x0,
@@ -27,7 +29,9 @@ namespace NiL.JS.Statements
         Special = 0xF0
     }
 
+#if !PORTABLE
     [Serializable]
+#endif
     internal enum OperationType : int
     {
         None = OperationTypeGroups.None + 0,
@@ -77,7 +81,9 @@ namespace NiL.JS.Statements
         Yield = OperationTypeGroups.Special + 4
     }
 
+#if !PORTABLE
     [Serializable]
+#endif
     internal sealed class ExpressionTree : Expression
     {
         private Expression fastImpl;

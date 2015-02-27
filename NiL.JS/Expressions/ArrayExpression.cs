@@ -6,7 +6,9 @@ using NiL.JS.Statements;
 
 namespace NiL.JS.Expressions
 {
+#if !PORTABLE
     [Serializable]
+#endif
     public sealed class ArrayExpression : Expression
     {
         private static JSObject writableNotExist = null;

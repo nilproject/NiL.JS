@@ -9,7 +9,9 @@ using NiL.JS.Statements;
 
 namespace NiL.JS.Core
 {
+#if !PORTABLE
     [Serializable]
+#endif
     internal enum AbortType
     {
         None = 0,
@@ -24,7 +26,9 @@ namespace NiL.JS.Core
     /// <summary>
     /// Контекст выполнения скрипта. Хранит состояние выполнения сценария.
     /// </summary>
+#if !PORTABLE
     [Serializable]
+#endif
     public class Context : IEnumerable<string>
     {
         internal const int MaxConcurentContexts = 65535;

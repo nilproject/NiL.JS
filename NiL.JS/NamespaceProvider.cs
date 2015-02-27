@@ -8,7 +8,9 @@ namespace NiL.JS
     /// <summary>
     /// Предоставляет доступ к указанному при создании пространству имён.
     /// </summary>
+#if !PORTABLE
     [Serializable]
+#endif
     public class NamespaceProvider : CustomType
     {
         private static BinaryTree<Type> types = new BinaryTree<Type>();

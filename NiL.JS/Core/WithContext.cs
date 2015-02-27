@@ -3,7 +3,9 @@ using NiL.JS.Core.BaseTypes;
 
 namespace NiL.JS.Core
 {
+#if !PORTABLE
     [Serializable]
+#endif
     public sealed class WithContext : Context
     {
         private JSObject @object;

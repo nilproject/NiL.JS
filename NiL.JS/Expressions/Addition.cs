@@ -6,7 +6,9 @@ using NiL.JS.Core.JIT;
 
 namespace NiL.JS.Expressions
 {
+#if !PORTABLE
     [Serializable]
+#endif
     public sealed class Addition : Expression
     {
         protected internal override PredictedType ResultType

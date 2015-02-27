@@ -7,7 +7,9 @@ using NiL.JS.Expressions;
 
 namespace NiL.JS.Statements
 {
+#if !PORTABLE
     [Serializable]
+#endif
     public sealed class DoWhileStatement : CodeNode
     {
         private bool allowRemove;
@@ -46,7 +48,7 @@ namespace NiL.JS.Statements
                     state.message(MessageLevel.CriticalWarning, CodeCoordinates.FromTextPosition(state.Code, body.Position, body.Length), "Do not declare function in nested blocks.");
                 body = new CodeBlock(new[] { body }, state.strict.Peek()); // для того, чтобы не дублировать код по декларации функции, 
                 // она оборачивается в блок, который сделает самовыпил на втором этапе, но перед этим корректно объявит функцию.
-            } 
+            }
             state.AllowBreak.Pop();
             state.AllowContinue.Pop();
             if (!(body is CodeBlock) && state.Code[i] == ';')

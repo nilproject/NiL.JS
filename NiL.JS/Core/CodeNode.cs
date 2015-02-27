@@ -7,7 +7,9 @@ using NiL.JS.Expressions;
 
 namespace NiL.JS.Core
 {
+#if !PORTABLE
     [Serializable]
+#endif
     public abstract class CodeNode
     {
         internal static readonly MethodInfo EvaluateForAssignMethod = typeof(CodeNode).GetMethod("EvaluateForAssing", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic, null, new[] { typeof(Context) }, null);

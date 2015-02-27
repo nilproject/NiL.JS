@@ -1,4 +1,5 @@
-﻿using NiL.JS.Core.BaseTypes;
+﻿using System;
+using NiL.JS.Core.BaseTypes;
 using NiL.JS.Core.Modules;
 using NiL.JS.Core.TypeProxing;
 
@@ -12,6 +13,9 @@ namespace NiL.JS.Core.Functions
     /// * все используемые переменные и константы либо объявлены внутри функции, либо являются её аргументами
     /// * нет создания других функций
     /// </summary>
+#if !PORTABLE
+    [Serializable]
+#endif
     public sealed class MacroFunction : Function
     {
         [Field]
@@ -143,7 +147,7 @@ namespace NiL.JS.Core.Functions
                 creator.recursiveDepth++;
                 if (creator.reference.descriptor != null)
                 {
-                    creator.reference.descriptor.cacheContext = context.parent; 
+                    creator.reference.descriptor.cacheContext = context.parent;
                     // тонкое место. Родителем контекста может оказаться базовый контекст (тот, что над глобальным скрипта)
                     // а там о этой функции ничего не знают. Спасёт срабатывание кэша. Но если родителем, вдруг, окажется, базовый контекст, то
                     // кэш не сработает, будет попытка получить эту функцию из контекста над базовым, что приведёт к фаталу

@@ -6,7 +6,9 @@ using NiL.JS.Core.TypeProxing;
 
 namespace NiL.JS.Expressions
 {
+#if !PORTABLE
     [Serializable]
+#endif
     public sealed class Call : Expression
     {
         public override bool IsContextIndependent

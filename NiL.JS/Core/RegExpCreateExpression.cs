@@ -5,7 +5,9 @@ using NiL.JS.Expressions;
 
 namespace NiL.JS.Core
 {
+#if !PORTABLE
     [Serializable]
+#endif
     public sealed class RegExpExpression : Expression
     {
         private string pattern;

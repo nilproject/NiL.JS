@@ -14,7 +14,9 @@ namespace NiL.JS.Core.BaseTypes
     /// <summary>
     /// Возможные типы функции в контексте использования.
     /// </summary>
+#if !PORTABLE
     [Serializable]
+#endif
     public enum FunctionType
     {
         Function = 0,
@@ -25,7 +27,9 @@ namespace NiL.JS.Core.BaseTypes
         Macro = 12
     }
 
+#if !PORTABLE
     [Serializable]
+#endif
     public class Function : JSObject
     {
         private class _DelegateWraper

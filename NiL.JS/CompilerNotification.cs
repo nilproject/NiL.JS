@@ -1,7 +1,7 @@
 ﻿using NiL.JS.Core;
 
 namespace NiL.JS
-{    
+{
     public enum MessageLevel
     {
         Regular = 0,

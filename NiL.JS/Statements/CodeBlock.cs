@@ -9,7 +9,9 @@ using NiL.JS.Expressions;
 
 namespace NiL.JS.Statements
 {
+#if !PORTABLE
     [Serializable]
+#endif
     public sealed class CodeBlock : CodeNode
     {
         private static readonly VariableDescriptor[] emptyVariables = new VariableDescriptor[0];

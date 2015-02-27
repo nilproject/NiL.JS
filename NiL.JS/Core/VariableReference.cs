@@ -3,7 +3,9 @@ using NiL.JS.Expressions;
 
 namespace NiL.JS.Core
 {
+#if !PORTABLE
     [Serializable]
+#endif
     public abstract class VariableReference : Expression
     {
         internal int functionDepth;

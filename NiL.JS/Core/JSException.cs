@@ -7,7 +7,9 @@ namespace NiL.JS.Core
     /// <summary>
     /// Представляет ошибки, возникшие во время выполнения скрипта.
     /// </summary>
+#if !PORTABLE
     [Serializable]
+#endif
     public sealed class JSException : Exception
     {
         public JSObject Avatar { get; private set; }

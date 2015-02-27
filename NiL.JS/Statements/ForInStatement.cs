@@ -7,7 +7,9 @@ using NiL.JS.Expressions;
 
 namespace NiL.JS.Statements
 {
+#if !PORTABLE
     [Serializable]
+#endif
     public sealed class ForInStatement : CodeNode
     {
         private CodeNode variable;
@@ -71,7 +73,7 @@ namespace NiL.JS.Statements
                     }
                     else
                         return new ParseResult();
-                        //throw new JSException(new SyntaxError("Unexpected token at " + CodeCoordinates.FromTextPosition(state.Code, start)));
+                    //throw new JSException(new SyntaxError("Unexpected token at " + CodeCoordinates.FromTextPosition(state.Code, start)));
                 }
                 //if (!Parser.ValidateName(state.Code, ref i, state.strict.Peek()))
                 //    return new ParseResult(); // for (1 in {};;); должен вызвать синтаксическую ошибку, но это проверка заставляет перейти в обычный for, для которого такое выражение допустимо
@@ -147,7 +149,7 @@ namespace NiL.JS.Statements
             }
             else
                 v = variable.EvaluateForAssing(context);
-            if (!s.IsDefinded 
+            if (!s.IsDefinded
                 || (s.valueType >= JSObjectType.Object && s.oValue == null)
                 || body == null)
                 return JSObject.undefined;

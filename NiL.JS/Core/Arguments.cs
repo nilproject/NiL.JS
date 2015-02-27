@@ -4,7 +4,9 @@ using System.Collections;
 
 namespace NiL.JS.Core
 {
+#if !PORTABLE
     [Serializable]
+#endif
     public sealed class Arguments : JSObject, IEnumerable
     {
         private sealed class _LengthContainer : JSObject

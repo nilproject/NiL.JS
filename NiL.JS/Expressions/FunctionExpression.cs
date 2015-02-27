@@ -12,7 +12,9 @@ using NiL.JS.Statements;
 
 namespace NiL.JS.Expressions
 {
+#if !PORTABLE
     [Serializable]
+#endif
     public sealed class FunctionExpression : Expression
     {
         internal sealed class GeneratorInitializator : Function
@@ -155,7 +157,11 @@ namespace NiL.JS.Expressions
             }
         }
 
+#if !PORTABLE
+#if !PORTABLE
         [Serializable]
+#endif
+#endif
         internal sealed class FunctionReference : VariableReference
         {
             private FunctionExpression owner;
@@ -189,7 +195,11 @@ namespace NiL.JS.Expressions
             }
         }
 
+#if !PORTABLE
+#if !PORTABLE
         [Serializable]
+#endif
+#endif
         internal sealed class ParameterReference : VariableReference
         {
             private string name;
@@ -645,7 +655,7 @@ namespace NiL.JS.Expressions
                 && !stat.UseThis
                 && !stat.UseWith
                 && !stat.ContainsTry
-                && (body.variables.All(x => 
+                && (body.variables.All(x =>
                     x.Owner == body // Переменные
                     || x == reference.descriptor // Параметры
                     || (reference.descriptor != null && x.owner == reference.descriptor.Inititalizator) // аргументы

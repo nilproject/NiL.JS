@@ -7,7 +7,9 @@ using NiL.JS.Core.TypeProxing;
 
 namespace NiL.JS.Statements
 {
+#if !PORTABLE
     [Serializable]
+#endif
     public sealed class TryCatchStatement : CodeNode
     {
         private CodeNode body;

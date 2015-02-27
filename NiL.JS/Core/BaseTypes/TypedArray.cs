@@ -4,6 +4,9 @@ using NiL.JS.Core.TypeProxing;
 
 namespace NiL.JS.Core.BaseTypes
 {
+#if !PORTABLE
+    [Serializable]
+#endif
     public abstract class TypedArray : JSObject
     {
         protected sealed class Element : JSObject
@@ -297,6 +300,6 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         protected internal abstract System.Array ToNativeArray();
-        
+
     }
 }

@@ -5,7 +5,9 @@ namespace NiL.JS.Core.Modules
     /// <summary>
     /// Служит для передачи в среду выполнения скрипта информации о количестве ожидаемых параметров метода.
     /// </summary>
+#if !PORTABLE
     [Serializable]
+#endif
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Constructor, AllowMultiple = false, Inherited = false)]
     public sealed class ParametersCountAttribute : Attribute
     {
