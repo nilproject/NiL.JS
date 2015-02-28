@@ -1,1 +1,0 @@
-﻿console.log(+new Date(1899, 11));

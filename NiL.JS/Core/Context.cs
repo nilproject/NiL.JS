@@ -143,6 +143,10 @@ namespace NiL.JS.Core
                 foreach (var v in globalContext.fields.Values)
                     v.attributes |= JSObjectAttributesInternal.DoNotEnum;
             }
+            catch
+            {
+                throw;
+            }
             finally
             {
                 globalContext.Deactivate();
@@ -296,6 +300,7 @@ namespace NiL.JS.Core
             if (currentContext != null)
                 throw new InvalidOperationException("Too many concurrent contexts.");
             oldContext = currentContext;
+            currentContext = this;
             return true;
 #else
             int threadId = Thread.CurrentThread.ManagedThreadId;
@@ -329,7 +334,7 @@ namespace NiL.JS.Core
         internal Context Deactivate()
         {
 #if PORTABLE
-            if (currentContext == this)
+            if (currentContext != this)
                 throw new InvalidOperationException("Context not runned");
             currentContext = oldContext;
             var res = oldContext;

@@ -294,7 +294,7 @@ for (var i = 0; i < 10000000; i++) abs(i * (1 - 2 * (i & 1)));
                 return JSObject.Undefined;
             }));
 
-            int mode = 159
+            int mode = 0
                    ;
             switch (mode)
             {
@@ -308,6 +308,7 @@ for (var i = 0; i < 10000000; i++) abs(i * (1 - 2 * (i & 1)));
                         });
                         break;
                     }
+#if !PORTABLE
                 case -3:
                     {
                         Context.GlobalContext.DefineVariable
@@ -317,6 +318,7 @@ for (var i = 0; i < 10000000; i++) abs(i * (1 - 2 * (i & 1)));
                         runFile("samples/WinFormsSample.js");
                         break;
                     }
+#endif
                 case -2:
                     {
                         var bf = new BinaryFormatter();

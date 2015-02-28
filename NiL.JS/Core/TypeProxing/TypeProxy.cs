@@ -202,7 +202,7 @@ namespace NiL.JS.Core.TypeProxing
                 if (pa.Length != 0 && (pa[0] as PrototypeAttribute).PrototypeType != hostedType)
                     __prototype = GetPrototype((pa[0] as PrototypeAttribute).PrototypeType);
 #if PORTABLE
-                ictor = hostedType.GetTypeInfo().DeclaredConstructors.First(x => x.GetParameters().Length == 0);
+                ictor = hostedType.GetTypeInfo().DeclaredConstructors.FirstOrDefault(x => x.GetParameters().Length == 0 && !x.IsStatic);
 #else
                 ictor = hostedType.GetConstructor(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy, null, System.Type.EmptyTypes, null);
 #endif
@@ -518,8 +518,8 @@ namespace NiL.JS.Core.TypeProxing
                                     oValue = new PropertyPair
                                         (
 #if PORTABLE
-                                            pinfo.CanRead && pinfo.GetMethod != null ? new MethodProxy(pinfo.GetMethod, cva, null) : null,
-                                            pinfo.CanWrite && pinfo.SetMethod != null && !pinfo.IsDefined(typeof(ReadOnlyAttribute), false) ? new MethodProxy(pinfo.SetMethod, cva, new[] { cva }) : null
+                                            pinfo.CanRead && pinfo.GetMethod != null ? new MethodProxy(pinfo.GetMethod) : null,
+                                            pinfo.CanWrite && pinfo.SetMethod != null && !pinfo.IsDefined(typeof(ReadOnlyAttribute), false) ? new MethodProxy(pinfo.SetMethod) : null
 #else
                                             pinfo.CanRead && pinfo.GetGetMethod(false) != null ? new MethodProxy(pinfo.GetGetMethod(false), cva, null) : null,
                                             pinfo.CanWrite && pinfo.GetSetMethod(false) != null && !pinfo.IsDefined(typeof(ReadOnlyAttribute), false) ? new MethodProxy(pinfo.GetSetMethod(false), cva, new[] { cva }) : null

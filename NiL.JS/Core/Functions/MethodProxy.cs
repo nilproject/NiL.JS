@@ -395,6 +395,8 @@ namespace NiL.JS.Core.Functions
 
         private static object marshal(JSObject obj, Type targetType)
         {
+            if (obj == null)
+                return null;
             var v = Tools.convertJStoObj(obj, targetType);
             if (v != null)
                 return v;

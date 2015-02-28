@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using NiL.JS.Core.BaseTypes;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI.Xaml;
@@ -25,6 +26,18 @@ namespace NiL.JS.Portable.Test
         public MainPage()
         {
             this.InitializeComponent();
+        }
+
+        protected override void OnNavigatedTo(NavigationEventArgs e)
+        {
+            base.OnNavigatedTo(e);
+
+            var s = new Script(
+@"function sum(a, b){ return a + b }"
+);
+            s.Invoke();
+            var sum = s.Context.GetVariable("sum").Value as Function;
+            textBlock.Text = sum.Invoke(new Core.Arguments { 1, 2 }).ToString();
         }
     }
 }
