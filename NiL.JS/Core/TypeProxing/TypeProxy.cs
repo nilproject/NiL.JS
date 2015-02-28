@@ -276,15 +276,39 @@ namespace NiL.JS.Core.TypeProxing
                     string prewName = null;
                     IList<MemberInfo> temp = null;
 #if PORTABLE
-                    var mmbrs = hostedType.GetTypeInfo().DeclaredMembers.ToArray();
+                    var mmbrs = hostedType.GetTypeInfo().DeclaredMembers
+                        .Union(hostedType.GetRuntimeMethods())
+                        .Union(hostedType.GetRuntimeProperties())
+                        .Union(hostedType.GetRuntimeFields())
+                        .Union(hostedType.GetRuntimeEvents()).ToArray(); // приходится делать вот так неоптимально, другого способа нет
                     for (int i = 0; i < mmbrs.Length; i++)
                     {
+                        if ((mmbrs[i] is PropertyInfo)
+                            && ((mmbrs[i] as PropertyInfo).SetMethod == null || !(mmbrs[i] as PropertyInfo).SetMethod.IsPublic)
+                            && ((mmbrs[i] as PropertyInfo).GetMethod == null || !(mmbrs[i] as PropertyInfo).GetMethod.IsPublic))
+                            continue;
+
+                        if ((mmbrs[i] is EventInfo)
+                            && !(mmbrs[i] as EventInfo).AddMethod.IsPublic)
+                            continue;
+
+                        if ((mmbrs[i] is FieldInfo) && !(mmbrs[i] as FieldInfo).IsPublic)
+                            continue;
+
+                        if ((mmbrs[i] is TypeInfo) && !(mmbrs[i] as TypeInfo).IsPublic)
+                            continue;
+
                         if (mmbrs[i].IsDefined(typeof(HiddenAttribute), false))
                             continue;
-                        if (mmbrs[i] is MethodBase && ((mmbrs[i] as MethodBase).DeclaringType == typeof(object)))
-                            continue;
-                        if (mmbrs[i] is ConstructorInfo)
-                            continue;
+                        if (mmbrs[i] is MethodBase)
+                        {
+                            if (!(mmbrs[i] as MethodBase).IsPublic)
+                                continue;
+                            if ((mmbrs[i] as MethodBase).DeclaringType == typeof(object))
+                                continue;
+                            if (mmbrs[i] is ConstructorInfo)
+                                continue;
+                        }
 #else
                     var mmbrs = hostedType.GetMembers(bindFlags);
                     for (int i = 0; i < mmbrs.Length; i++)
@@ -572,7 +596,8 @@ namespace NiL.JS.Core.TypeProxing
 #if PORTABLE
                     case MemberTypes.TypeInfo:
                         {
-                            throw new NotImplementedException("Not implemented in portable version");
+                            r = GetConstructor((m[0] as TypeInfo).AsType());
+                            break;
                         }
                     default:
                         throw new NotImplementedException("Convertion from " + m[0].get_MemberType() + " not implemented");

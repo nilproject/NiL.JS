@@ -12,6 +12,7 @@ namespace NiL.JS.Core.BaseTypes
 #endif
     public sealed class Array : JSObject
     {
+        [Hidden]
         private sealed class _lengthField : JSObject
         {
             private Array array;
@@ -199,6 +200,7 @@ namespace NiL.JS.Core.BaseTypes
             }
         }
 
+        [Hidden]
         internal bool setLength(long nlen)
         {
             if (data.Length == nlen)

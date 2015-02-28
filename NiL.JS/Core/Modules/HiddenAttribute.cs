@@ -8,7 +8,7 @@ namespace NiL.JS.Core.Modules
 #if !PORTABLE
     [Serializable]
 #endif
-    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Method | AttributeTargets.Field | AttributeTargets.Constructor, AllowMultiple = false, Inherited = false)]
+    [AttributeUsage(AttributeTargets.All, AllowMultiple = false, Inherited = false)]
     public sealed class HiddenAttribute : Attribute
     {
     }

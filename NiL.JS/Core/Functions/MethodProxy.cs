@@ -435,10 +435,7 @@ namespace NiL.JS.Core.Functions
                 var at = alternedTypes[i];
                 res = Tools.convertJStoObj(_this, at.baseType);
                 if (res != null)
-                {
-                    res = at.Convert(res);
                     return res;
-                }
             }
             return null;
         }

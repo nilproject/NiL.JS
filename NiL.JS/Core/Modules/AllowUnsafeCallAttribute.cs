@@ -15,7 +15,12 @@ namespace NiL.JS.Core.Modules
     [Serializable]
 #endif
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true, Inherited = false)]
-    public class AllowUnsafeCallAttribute : Attribute
+#if PORTABLE
+    internal
+#else
+    public 
+#endif
+        class AllowUnsafeCallAttribute : Attribute
     {
         internal readonly Type baseType;
 
@@ -31,16 +36,6 @@ namespace NiL.JS.Core.Modules
         public AllowUnsafeCallAttribute(Type type)
         {
             baseType = type;
-        }
-
-        /// <summary>
-        /// Метод, вызываемый перед вызовом помеченного метода и возвращающий преобразованный объект, если это требуется.
-        /// </summary>
-        /// <param name="arg">Объект, который следует преобразовать.</param>
-        /// <returns>Результат преобразования.</returns>
-        protected internal virtual object Convert(object arg)
-        {
-            return arg;
         }
     }
 }

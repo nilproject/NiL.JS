@@ -84,9 +84,10 @@ namespace NiL.JSTest
                     if (!pass)
                         Console.WriteLine(e.Message);
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
                     System.Diagnostics.Debugger.Break();
+                    Console.WriteLine(e);
                     pass = false;
                 }
                 if (pass)
@@ -276,8 +277,7 @@ for (var i = 0; i < 10000000; i++) abs(i * (1 - 2 * (i & 1)));
 
         private static void testEx()
         {
-            var script = new Script("Console.WriteLine(0)");
-            script.Context.AttachModule(typeof(Console));
+            var script = new Script("console.log(Object.preventExtensions.length)");
             script.Invoke();
         }
 
@@ -294,7 +294,24 @@ for (var i = 0; i < 10000000; i++) abs(i * (1 - 2 * (i & 1)));
                 return JSObject.Undefined;
             }));
 
-            int mode = 0
+#if PORTABLE
+            Context.GlobalContext.DefineVariable("console").Assign(TypeProxy.Proxy(new
+            {
+                log = new Action<Arguments>(arguments =>
+                {
+                    for (var i = 0; i < arguments.Length; i++)
+                    {
+                        if (i > 0)
+                            System.Console.Write(" ");
+                        var r = arguments[i].ToString();
+                        System.Console.Write(r);
+                    }
+                    System.Console.WriteLine();
+                })
+            }));
+#endif
+
+            int mode = 1510
                    ;
             switch (mode)
             {

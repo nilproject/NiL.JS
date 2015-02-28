@@ -295,12 +295,18 @@ namespace NiL.JS.Core
         internal bool Activate()
         {
 #if PORTABLE
+            if (currentContext == this)
+                return false;
             if (oldContext != null)
                 throw new InvalidOperationException("Try to reactivate context");
-            if (currentContext != null)
-                throw new InvalidOperationException("Too many concurrent contexts.");
+            if (currentContext != null) // что-то выполняется
+            {
+                if (!Monitor.IsEntered(currentContext)) // не в этом потоке?
+                    throw new InvalidOperationException("Too many concurrent contexts.");
+            }
             oldContext = currentContext;
             currentContext = this;
+            Monitor.Enter(this);
             return true;
 #else
             int threadId = Thread.CurrentThread.ManagedThreadId;
@@ -339,6 +345,7 @@ namespace NiL.JS.Core
             currentContext = oldContext;
             var res = oldContext;
             oldContext = null;
+            Monitor.Exit(this);
             return res;
 #else
             Context c = null;

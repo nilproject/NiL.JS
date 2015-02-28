@@ -12,14 +12,33 @@ namespace NiL.JS.Core.Functions
 {
     public sealed class MethodProxy : Function
     {
+        private enum _Mode
+        {
+            Regular = 0,
+            A1,
+            A2,
+            F1,
+            F2
+        }
+
+        private static FieldInfo handleInfo;
         private Func<object, object[], Arguments, object> implementation;
         private bool raw;
+
+        #region Только для небезопасных вызовов
+        private AllowUnsafeCallAttribute[] alternedTypes;
+        private Action<object> action1;
+        private Action<object, object> action2;
+        private Func<object, object> func1;
+        private Func<object, object, object> func2;
+        private _Mode mode;
+        #endregion
 
         private object hardTarget;
         internal ParameterInfo[] parameters;
         private MethodBase methodBase;
         private ConvertValueAttribute cva;
-        private ConvertValueAttribute[] convertValueAttribute;
+        private ConvertValueAttribute[] paramsConverters;
         [Hidden]
         public ParameterInfo[] Parameters
         {
@@ -35,13 +54,54 @@ namespace NiL.JS.Core.Functions
             }
         }
 
+        static MethodProxy()
+        {
+            Func<IntPtr, IntPtr> donor = x => x;
+            var members = donor.GetType().GetRuntimeFields().ToArray();
+            handleInfo = members[3];
+#if DEBUG
+            var handle = handleInfo.GetValue(donor);
+            var forceConverterHandle = (IntPtr)handle;
+
+            var forceConverterType = typeof(Func<,>).MakeGenericType(typeof(JSObject), typeof(BaseTypes.String));
+            var forceConverterConstructor = forceConverterType.GetTypeInfo().DeclaredConstructors.First();
+            var forceConverter = forceConverterConstructor.Invoke(new object[] { null, (IntPtr)forceConverterHandle }) as Func<JSObject, BaseTypes.String>;
+
+            var test = forceConverter(new JSObject() { oValue = "hello", valueType = JSObjectType.String });
+            var t = forceConverter.GetMethodInfo().ReturnType;
+#endif
+        }
+
+        public MethodProxy()
+        {
+            implementation = (a, b, c) => null;
+        }
+
         public MethodProxy(MethodBase methodBase, object hardTarget)
         {
-            // TODO: Complete member initialization
             this.methodBase = methodBase;
             this.hardTarget = hardTarget;
 
             parameters = methodBase.GetParameters();
+
+            if (_length == null)
+                _length = new Number(0) { attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.SystemObject };
+            var pc = methodBase.GetCustomAttributes(typeof(Modules.ParametersCountAttribute), false).ToArray();
+            if (pc.Length != 0)
+                _length.iValue = (pc[0] as Modules.ParametersCountAttribute).Count;
+            else
+                _length.iValue = parameters.Length;
+
+            for (int i = 0; i < parameters.Length; i++)
+            {
+                var t = parameters[i].GetCustomAttribute(typeof(Modules.ConvertValueAttribute)) as Modules.ConvertValueAttribute;
+                if (t != null)
+                {
+                    if (paramsConverters == null)
+                        paramsConverters = new Modules.ConvertValueAttribute[parameters.Length];
+                    paramsConverters[i] = t;
+                }
+            }
 
             Expression[] prms = null;
             ParameterExpression target = Expression.Parameter(typeof(object), "target");
@@ -54,13 +114,67 @@ namespace NiL.JS.Core.Functions
             {
                 var methodInfo = methodBase as MethodInfo;
 
+                if (!methodInfo.IsStatic
+                    && (parameters.Length == 0 || (parameters.Length == 1 && parameters[0].ParameterType == typeof(Arguments)))
+                    && !methodInfo.ReturnType.GetTypeInfo().IsValueType)
+                {
+                    var t = methodBase.GetCustomAttributes(typeof(AllowUnsafeCallAttribute)).ToArray();
+                    alternedTypes = new AllowUnsafeCallAttribute[t.Length];
+                    if (alternedTypes.Length == 0)
+                        alternedTypes = null;
+                    else for (var i = 0; i < t.Length; i++)
+                            alternedTypes[i] = (AllowUnsafeCallAttribute)t[i];
+                }
+
+                #region Magic
+                if (alternedTypes != null)
+                {
+                    if (methodInfo.ReturnType == typeof(void))
+                    {
+                        if (parameters.Length == 0)
+                        {
+                            var methodDelegate = methodInfo.CreateDelegate(typeof(Action<>).MakeGenericType(methodBase.DeclaringType));
+                            var handle = handleInfo.GetValue(methodDelegate);
+                            var forceConverterConstructor = typeof(Action<object>).GetTypeInfo().DeclaredConstructors.First();
+                            action1 = (Action<object>)forceConverterConstructor.Invoke(new object[] { null, (IntPtr)handle });
+                            mode = _Mode.A1;
+                        }
+                        else // 1
+                        {
+                            var methodDelegate = methodInfo.CreateDelegate(typeof(Action<,>).MakeGenericType(methodBase.DeclaringType, typeof(Arguments)));
+                            var handle = handleInfo.GetValue(methodDelegate);
+                            var forceConverterConstructor = typeof(Action<object, object>).GetTypeInfo().DeclaredConstructors.First();
+                            action2 = (Action<object, object>)forceConverterConstructor.Invoke(new object[] { null, (IntPtr)handle });
+                            mode = _Mode.A2;
+                        }
+                    }
+                    else
+                    {
+                        if (parameters.Length == 0)
+                        {
+                            var methodDelegate = methodInfo.CreateDelegate(typeof(Func<,>).MakeGenericType(methodBase.DeclaringType, methodInfo.ReturnType));
+                            var handle = handleInfo.GetValue(methodDelegate);
+                            var forceConverterConstructor = typeof(Func<object, object>).GetTypeInfo().DeclaredConstructors.First();
+                            func1 = (Func<object, object>)forceConverterConstructor.Invoke(new object[] { typeof(JSObject).IsAssignableFrom(methodBase.DeclaringType) ? typeof(Function).IsAssignableFrom(methodBase.DeclaringType) ? this : new JSObject() : null, (IntPtr)handle });
+                            mode = _Mode.F1;
+                        }
+                        else // 1
+                        {
+                            var methodDelegate = methodInfo.CreateDelegate(typeof(Func<,,>).MakeGenericType(methodBase.DeclaringType, typeof(Arguments), methodInfo.ReturnType));
+                            var handle = handleInfo.GetValue(methodDelegate);
+                            var forceConverterConstructor = typeof(Func<object, object, object>).GetTypeInfo().DeclaredConstructors.First();
+                            func2 = (Func<object, object, object>)forceConverterConstructor.Invoke(new object[] { null, (IntPtr)handle });
+                            mode = _Mode.F2;
+                        }
+                    }
+                    return; // больше ничего не требуется, будет вызывать через этот путь
+                }
+                #endregion
+
                 if (parameters.Length == 0)
                 {
                     raw = true;
-                    if (methodInfo.ReturnType == typeof(void))
-                        tree = Expression.Block(methodInfo.IsStatic ? Expression.Call(methodInfo) : Expression.Call(target, methodInfo), Expression.Constant(null));
-                    else
-                        tree = methodInfo.IsStatic ? Expression.Call(methodInfo) : Expression.Call(target, methodInfo);
+                    tree = methodInfo.IsStatic ? Expression.Call(methodInfo) : Expression.Call(Expression.TypeAs(target, methodInfo.DeclaringType), methodInfo);
                 }
                 else
                 {
@@ -68,16 +182,20 @@ namespace NiL.JS.Core.Functions
                     if (parameters.Length == 1 && parameters[0].ParameterType == typeof(Arguments))
                     {
                         raw = true;
-                        if (methodInfo.ReturnType == typeof(void))
-                            tree = Expression.Block(Expression.Call(target, methodInfo, argsSource), Expression.Constant(null));
-                        else
-                            tree = Expression.Call(target, methodInfo, argsSource);
+                        tree = methodInfo.IsStatic ? Expression.Call(methodInfo, argsSource) : Expression.Call(Expression.TypeAs(target, methodInfo.DeclaringType), methodInfo, argsSource);
                     }
                     else
                     {
-                        throw new NotImplementedException();
+                        for (var i = 0; i < prms.Length; i++)
+                            prms[i] = Expression.Convert(Expression.ArrayAccess(argsArray, Expression.Constant(i)), parameters[i].ParameterType);
+                        tree = methodInfo.IsStatic ?
+                            Expression.Call(methodInfo, prms)
+                            :
+                            Expression.Call(Expression.TypeAs(target, methodInfo.DeclaringType), methodInfo, prms);
                     }
                 }
+                if (methodInfo.ReturnType == typeof(void))
+                    tree = Expression.Block(tree, Expression.Constant(null));
             }
             else if (methodBase is ConstructorInfo)
             {
@@ -114,7 +232,6 @@ namespace NiL.JS.Core.Functions
             {
                 throw;
             }
-            _length = parameters.Length;
         }
 
         public MethodProxy(MethodBase methodBase)
@@ -122,30 +239,87 @@ namespace NiL.JS.Core.Functions
         {
         }
 
-        [Hidden]
-        internal object[] ConvertArgs(Arguments args)
+        private object getTargetObject(JSObject _this, Type targetType)
         {
-            throw new NotImplementedException();
+            if (_this == null)
+                return null;
+            _this = _this.oValue as JSObject ?? _this; // это может быть лишь ссылка на какой-то другой контейнер
+            var res = Tools.convertJStoObj(_this, targetType);
+            if (res != null)
+                return res;
+            if (alternedTypes != null)
+                for (var i = alternedTypes.Length; i-- > 0; )
+                {
+                    var at = alternedTypes[i];
+                    res = Tools.convertJStoObj(_this, at.baseType);
+                    if (res != null)
+                        return res;
+                }
+
+            return null;
+        }
+
+        [Hidden]
+        internal object[] ConvertArgs(Arguments source)
+        {
+            if (parameters.Length == 0)
+                return null;
+            int len = source.length;
+            if (parameters.Length == 1)
+            {
+                var ptype = parameters[0].ParameterType;
+                if (ptype == typeof(Arguments))
+                    return new object[] { source };
+            }
+            int targetCount = parameters.Length;
+            object[] res = new object[targetCount];
+            for (int i = len; i-- > 0; )
+            {
+                var obj = source[i];
+                if (obj.IsExist)
+                {
+                    res[i] = marshal(obj, parameters[i].ParameterType);
+                    if (paramsConverters != null && paramsConverters[i] != null)
+                        res[i] = paramsConverters[i].To(res[i]);
+                }
+            }
+            return res;
         }
 
         [Hidden]
         internal object InvokeImpl(JSObject thisBind, object[] args, Arguments argsSource)
         {
-            return TypeProxing.TypeProxy.Proxy(
-                implementation(
-                marshal(thisBind, methodBase.DeclaringType),
-                raw ? null : args ?? ConvertArgs(argsSource), 
-                argsSource));
-        }
+            object target = null;
+            if (!methodBase.IsStatic && !methodBase.IsConstructor)
+            {
+                target = hardTarget ?? getTargetObject(thisBind ?? undefined, methodBase.DeclaringType);
+                if (target == null)
+                    throw new JSException(new TypeError("Can not call function \"" + this.name + "\" for object of another type."));
+            }
 
-        protected internal override NiL.JS.Core.JSObject InternalInvoke(NiL.JS.Core.JSObject self, NiL.JS.Expressions.Expression[] arguments, NiL.JS.Core.Context initiator)
-        {
-            throw new NotImplementedException();
+            switch (mode)
+            {
+                case _Mode.A1:
+                    action1(target);
+                    return null;
+                case _Mode.A2:
+                    action2(target, argsSource);
+                    return null;
+                case _Mode.F1:
+                    return func1(target);
+                case _Mode.F2:
+                    return func2(target, argsSource);
+            }
+
+            return implementation(
+                target,
+                raw ? null : args ?? ConvertArgs(argsSource),
+                argsSource);
         }
 
         public override NiL.JS.Core.JSObject Invoke(NiL.JS.Core.JSObject thisBind, NiL.JS.Core.Arguments args)
         {
-            throw new NotImplementedException();
+            return TypeProxing.TypeProxy.Proxy(InvokeImpl(thisBind, null, args));
         }
 
         private static object[] convertArray(NiL.JS.Core.BaseTypes.Array array)
