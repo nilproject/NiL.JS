@@ -13,10 +13,11 @@ namespace NiL.JS.Core.Functions
     {
         private System.Reflection.ConstructorInfo constructorInfo;
 
-        private MethodInfo methodInfo;
         private object p;
         internal ParameterInfo[] parameters;
         private MethodBase methodBase;
+        private ConvertValueAttribute cva;
+        private ConvertValueAttribute[] convertValueAttribute;
         [Hidden]
         public ParameterInfo[] Parameters
         {
@@ -33,7 +34,7 @@ namespace NiL.JS.Core.Functions
         public MethodProxy(MethodInfo methodInfo, object p)
         {
             // TODO: Complete member initialization
-            this.methodInfo = methodInfo;
+            this.methodBase = methodInfo;
             this.p = p;
         }
 
@@ -41,6 +42,14 @@ namespace NiL.JS.Core.Functions
         {
             // TODO: Complete member initialization
             this.methodBase = methodBase;
+        }
+
+        public MethodProxy(MethodInfo methodInfo, ConvertValueAttribute cva, ConvertValueAttribute[] convertValueAttribute)
+        {
+            // TODO: Complete member initialization
+            this.methodBase = methodInfo;
+            this.cva = cva;
+            this.convertValueAttribute = convertValueAttribute;
         }
 
 

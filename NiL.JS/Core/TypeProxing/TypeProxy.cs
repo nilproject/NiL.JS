@@ -273,12 +273,22 @@ namespace NiL.JS.Core.TypeProxing
                     if (members != null)
                         return;
                     var tempmemb = new Dictionary<string, IList<MemberInfo>>();
-                    var mmbrs = hostedType.GetMembers(bindFlags);
                     string prewName = null;
                     IList<MemberInfo> temp = null;
+#if PORTABLE
+                    var mmbrs = hostedType.GetTypeInfo().DeclaredMembers.ToArray();
                     for (int i = 0; i < mmbrs.Length; i++)
                     {
-                        mmbrs[i].ToString();
+                        if (mmbrs[i].IsDefined(typeof(HiddenAttribute), false))
+                            continue;
+                        if (mmbrs[i] is MethodBase && ((mmbrs[i] as MethodBase).DeclaringType == typeof(object)))
+                            continue;
+                        if (mmbrs[i] is ConstructorInfo)
+                            continue;
+#else
+                    var mmbrs = hostedType.GetMembers(bindFlags);
+                    for (int i = 0; i < mmbrs.Length; i++)
+                    {
                         if (mmbrs[i].IsDefined(typeof(HiddenAttribute), false))
                             continue;
                         if (mmbrs[i].MemberType == MemberTypes.Method
@@ -286,6 +296,7 @@ namespace NiL.JS.Core.TypeProxing
                             continue;
                         if (mmbrs[i].MemberType == MemberTypes.Constructor)
                             continue;
+#endif
                         var membername = mmbrs[i].Name;
                         membername = membername[0] == '.' ? membername : membername.Contains(".") ? membername.Substring(membername.LastIndexOf('.') + 1) : membername;
                         if (prewName != membername)
@@ -390,7 +401,11 @@ namespace NiL.JS.Core.TypeProxing
                                 {
                                     var prmType = cache[i].Parameters[j].ParameterType;
                                     if ((cargs[j] == null ?
+#if PORTABLE
+                                            prmType.GetTypeInfo().IsValueType
+#else
                                             prmType.IsValueType
+#endif
                                         :
                                             cargs[j].GetType() == typeof(int) ?
                                                    prmType != typeof(int)
@@ -415,7 +430,11 @@ namespace NiL.JS.Core.TypeProxing
             }
             else
             {
+#if PORTABLE
+                switch (m[0].get_MemberType())
+#else
                 switch (m[0].MemberType)
+#endif
                 {
                     case MemberTypes.Constructor:
                         throw new InvalidOperationException("Constructor can not be called directly");
@@ -498,8 +517,13 @@ namespace NiL.JS.Core.TypeProxing
                                     valueType = JSObjectType.Property,
                                     oValue = new PropertyPair
                                         (
+#if PORTABLE
+                                            pinfo.CanRead && pinfo.GetMethod != null ? new MethodProxy(pinfo.GetMethod, cva, null) : null,
+                                            pinfo.CanWrite && pinfo.SetMethod != null && !pinfo.IsDefined(typeof(ReadOnlyAttribute), false) ? new MethodProxy(pinfo.SetMethod, cva, new[] { cva }) : null
+#else
                                             pinfo.CanRead && pinfo.GetGetMethod(false) != null ? new MethodProxy(pinfo.GetGetMethod(false), cva, null) : null,
                                             pinfo.CanWrite && pinfo.GetSetMethod(false) != null && !pinfo.IsDefined(typeof(ReadOnlyAttribute), false) ? new MethodProxy(pinfo.GetSetMethod(false), cva, new[] { cva }) : null
+#endif
                                         )
                                 };
                             }
@@ -510,8 +534,13 @@ namespace NiL.JS.Core.TypeProxing
                                     valueType = JSObjectType.Property,
                                     oValue = new PropertyPair
                                         (
+#if PORTABLE
+                                            pinfo.CanRead && pinfo.GetMethod != null ? new MethodProxy(pinfo.GetMethod) : null,
+                                            pinfo.CanWrite && pinfo.SetMethod != null && !pinfo.IsDefined(typeof(ReadOnlyAttribute), false) ? new MethodProxy(pinfo.SetMethod) : null
+#else
                                             pinfo.CanRead && pinfo.GetGetMethod(false) != null ? new MethodProxy(pinfo.GetGetMethod(false)) : null,
                                             pinfo.CanWrite && pinfo.GetSetMethod(false) != null && !pinfo.IsDefined(typeof(ReadOnlyAttribute), false) ? new MethodProxy(pinfo.GetSetMethod(false)) : null
+#endif
                                         )
                                 };
                             }
@@ -531,11 +560,23 @@ namespace NiL.JS.Core.TypeProxing
                                 oValue = new PropertyPair
                                 (
                                     null,
+#if PORTABLE
+                                    new MethodProxy(pinfo.AddMethod)
+#else
                                     new MethodProxy(pinfo.GetAddMethod())
+#endif
                                 )
                             };
                             break;
                         }
+#if PORTABLE
+                    case MemberTypes.TypeInfo:
+                        {
+                            throw new NotImplementedException("Not implemented in portable version");
+                        }
+                    default:
+                        throw new NotImplementedException("Convertion from " + m[0].get_MemberType() + " not implemented");
+#else
                     case MemberTypes.NestedType:
                         {
                             r = GetConstructor(m[0] as Type);
@@ -543,6 +584,7 @@ namespace NiL.JS.Core.TypeProxing
                         }
                     default:
                         throw new NotImplementedException("Convertion from " + m[0].MemberType + " not implemented");
+#endif
                 }
             }
             if (m[0].IsDefined(typeof(DoNotEnumerateAttribute), false))

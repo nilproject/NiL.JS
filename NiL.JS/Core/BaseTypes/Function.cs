@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
@@ -558,7 +559,18 @@ namespace NiL.JS.Core.BaseTypes
 
         private static readonly FunctionExpression creatorDummy = new FunctionExpression("anonymous");
         internal static readonly Function emptyFunction = new Function();
-        private static readonly Function TTEProxy = new MethodProxy(typeof(Function).GetMethod("ThrowTypeError", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic)) { attributes = JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.Immutable | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.ReadOnly };
+        private static readonly Function TTEProxy = new MethodProxy(typeof(Function)
+#if PORTABLE
+            .GetTypeInfo().GetDeclaredMethod("ThrowTypeError"))
+#else
+            .GetMethod("ThrowTypeError", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic))
+#endif
+            {
+                attributes = JSObjectAttributesInternal.DoNotDelete 
+                | JSObjectAttributesInternal.Immutable
+                | JSObjectAttributesInternal.DoNotEnum 
+                | JSObjectAttributesInternal.ReadOnly
+            };
         protected static void ThrowTypeError()
         {
             throw new JSException(new TypeError("Properties caller, callee and arguments not allowed in strict mode."));
