@@ -5,7 +5,7 @@ NiL.JS
 Open source ECMAScript 5.1 (JavaScript) engine.<br/>
 Licensed under BSD 3-Clause License.
     
-* Work on Windows Runtime (Portable version)
+* Works on Windows Runtime (Portable version)
 * No native dependence.
 * One assembly.
 * Automatically wrapping .NET objects. No changes are required.
