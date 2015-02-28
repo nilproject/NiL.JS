@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Reflection;
 using NiL.JS.Core.BaseTypes;
@@ -67,18 +68,28 @@ namespace NiL.JS.Core.Functions
 
             fields = typeProxy.fields;
             proxy = typeProxy;
+#if PORTABLE
+            var ctors = typeProxy.hostedType.GetTypeInfo().DeclaredConstructors.ToArray();
+            List<MethodProxy> ctorsL = new List<MethodProxy>(ctors.Length + (typeProxy.hostedType.GetTypeInfo().IsValueType ? 1 : 0));
+#else
             var ctors = typeProxy.hostedType.GetConstructors();
             List<MethodProxy> ctorsL = new List<MethodProxy>(ctors.Length + (typeProxy.hostedType.IsValueType ? 1 : 0));
+#endif
             for (int i = 0; i < ctors.Length; i++)
             {
-                if (ctors[i].GetCustomAttributes(typeof(HiddenAttribute), false).Length == 0)
+                if (!ctors[i].IsDefined(typeof(HiddenAttribute), false))
                 {
                     ctorsL.Add(new MethodProxy(ctors[i]));
                     length.iValue = System.Math.Max(ctorsL[ctorsL.Count - 1]._length.iValue, _length.iValue);
                 }
             }
+#if PORTABLE
+            if (typeProxy.hostedType.GetTypeInfo().IsValueType)
+                throw new ArgumentException("ValueTypes do not supported in portable version");
+#else
             if (typeProxy.hostedType.IsValueType)
                 ctorsL.Add(new MethodProxy(new StructureDefaultConstructorInfo(proxy.hostedType)));
+#endif
             ctorsL.Sort((x, y) => x.Parameters.Length == 1 && x.Parameters[0].ParameterType == typeof(Arguments) ? 1 :
                 y.Parameters.Length == 1 && y.Parameters[0].ParameterType == typeof(Arguments) ? -1 :
                 x.Parameters.Length - y.Parameters.Length);
@@ -112,8 +123,13 @@ namespace NiL.JS.Core.Functions
         [Hidden]
         public override JSObject Invoke(JSObject thisOverride, Arguments argsObj)
         {
+#if PORTABLE
+            if (proxy.hostedType.GetTypeInfo().ContainsGenericParameters)
+                throw new JSException((new BaseTypes.TypeError(proxy.hostedType.Name + " can't be created because it's generic type.")));
+#else
             if (proxy.hostedType.ContainsGenericParameters)
                 throw new JSException((new BaseTypes.TypeError(proxy.hostedType.Name + " can't be created because it's generic type.")));
+#endif
             bool bynew = false;
             if (thisOverride != null)
                 bynew = thisOverride.oValue == typeof(Expressions.New) as object;
@@ -208,8 +224,10 @@ namespace NiL.JS.Core.Functions
             }
             catch (TargetInvocationException e)
             {
+#if !PORTABLE
                 if (System.Diagnostics.Debugger.IsAttached)
                     System.Diagnostics.Debugger.Log(10, "Exception", e.Message);
+#endif
                 throw e.InnerException;
             }
         }

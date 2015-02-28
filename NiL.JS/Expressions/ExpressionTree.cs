@@ -276,11 +276,13 @@ namespace NiL.JS.Statements
                             fastImpl = new Expressions.In(first, second);
                             break;
                         }
+#if !PORTABLE
                     case OperationType.Yield:
                         {
                             fastImpl = new Expressions.Yield(first);
                             break;
                         }
+#endif
                     default:
                         throw new ArgumentException("invalid operation type");
                 }
@@ -615,6 +617,9 @@ namespace NiL.JS.Statements
                         }
                     case 'y':
                         {
+#if PORTABLE
+                            throw new NotSupportedException("Do not supported in portable version");
+#else
                             if (!state.AllowYield.Peek())
                                 throw new JSException(new SyntaxError("Invalid use of yield operator"));
                             i += 4;
@@ -629,6 +634,7 @@ namespace NiL.JS.Statements
                             }
                             first = new Expressions.Yield(first) { Position = index, Length = i - index };
                             break;
+#endif
                         }
                     default:
                         throw new NotImplementedException("Unary operator " + state.Code[i]);

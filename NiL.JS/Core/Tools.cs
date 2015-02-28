@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
@@ -465,8 +466,13 @@ namespace NiL.JS.Core
                 return null;
             if (targetType.IsAssignableFrom(value.GetType()))
                 return value;
+#if PORTABLE
+            if (targetType.GetTypeInfo().IsEnum && Enum.IsDefined(targetType, value))
+                return value;
+#else
             if (targetType.IsEnum && Enum.IsDefined(targetType, value))
                 return value;
+#endif
             var tpres = value as TypeProxy;
             if (tpres != null && targetType.IsAssignableFrom(tpres.hostedType))
             {

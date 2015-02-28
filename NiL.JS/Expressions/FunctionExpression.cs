@@ -17,6 +17,7 @@ namespace NiL.JS.Expressions
 #endif
     public sealed class FunctionExpression : Expression
     {
+#if !PORTABLE
         internal sealed class GeneratorInitializator : Function
         {
             public override JSObject prototype
@@ -156,11 +157,10 @@ namespace NiL.JS.Expressions
                 }
             }
         }
+#endif
 
 #if !PORTABLE
-#if !PORTABLE
         [Serializable]
-#endif
 #endif
         internal sealed class FunctionReference : VariableReference
         {

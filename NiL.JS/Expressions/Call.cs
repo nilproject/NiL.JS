@@ -121,7 +121,9 @@ namespace NiL.JS.Expressions
         {
             try
             {
+#if !PORTABLE
                 System.Runtime.CompilerServices.RuntimeHelpers.EnsureSufficientExecutionStack();
+#endif
             }
             catch
             {

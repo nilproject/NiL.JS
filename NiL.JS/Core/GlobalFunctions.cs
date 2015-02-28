@@ -88,7 +88,7 @@ namespace NiL.JS.Core
         {
             return Uri.EscapeDataString(x[0].ToString());
         }
-
+#if !PORTABLE
         internal static uint __pinvokeCalled;
         internal static JSObject __pinvoke(JSObject thisBind, Arguments args)
         {
@@ -155,7 +155,7 @@ namespace NiL.JS.Core
                 })
             });
         }
-
+#endif
         internal static JSObject decodeURIComponent(JSObject thisBind, Arguments args)
         {
             var str = args[0].ToString();

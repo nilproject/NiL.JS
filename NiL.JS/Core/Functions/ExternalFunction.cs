@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using System.Reflection;
 using NiL.JS.Core.BaseTypes;
 using NiL.JS.Core.Modules;
 
@@ -19,7 +21,11 @@ namespace NiL.JS.Core.Functions
             [Hidden]
             get
             {
+#if PORTABLE
+                return del.GetMethodInfo().Name;
+#else
                 return del.Method.Name;
+#endif
             }
         }
 
@@ -58,7 +64,12 @@ namespace NiL.JS.Core.Functions
         {
             if (_length == null)
                 _length = new Number(0) { attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum };
+            
+#if PORTABLE
+            var paramCountAttrbt = del.GetMethodInfo().GetCustomAttributes(typeof(ParametersCountAttribute), false).ToArray();
+#else
             var paramCountAttrbt = del.Method.GetCustomAttributes(typeof(ParametersCountAttribute), false);
+#endif
             _length.iValue = paramCountAttrbt != null && paramCountAttrbt.Length > 0 ? ((ParametersCountAttribute)paramCountAttrbt[0]).Count : 1;
             _prototype = undefined;
             if (del == null)

@@ -299,12 +299,12 @@ namespace NiL.JS.Core
         {
             return Visit(node as Expression);
         }
-
+#if !PORTABLE
         internal protected virtual T Visit(Yield node)
         {
             return Visit(node as Expression);
         }
-
+#endif
         internal protected virtual T Visit(BreakStatement node)
         {
             return Visit(node as CodeNode);

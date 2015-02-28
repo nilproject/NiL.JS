@@ -343,7 +343,7 @@ namespace NiL.JS.Expressions
                 return;
             }
         }
-
+#if !PORTABLE
         internal override System.Linq.Expressions.Expression TryCompile(bool selfCompile, bool forAssign, Type expectedType, List<CodeNode> dynamicValues)
         {
             var ft = first.TryCompile(false, false, null, dynamicValues);
@@ -364,7 +364,7 @@ namespace NiL.JS.Expressions
                 return System.Linq.Expressions.Expression.Add(ft, st);
             return null;
         }
-
+#endif
         public override T Visit<T>(Visitor<T> visitor)
         {
             return visitor.Visit(this);

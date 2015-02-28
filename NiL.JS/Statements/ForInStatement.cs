@@ -20,7 +20,17 @@ namespace NiL.JS.Statements
         public CodeNode Variable { get { return variable; } }
         public CodeNode Source { get { return source; } }
         public CodeNode Body { get { return body; } }
-        public ReadOnlyCollection<string> Labels { get { return System.Array.AsReadOnly<string>(labels); } }
+        public ReadOnlyCollection<string> Labels
+        {
+            get
+            {
+#if PORTABLE
+                return labels.AsReadOnly<string>();
+#else
+                return System.Array.AsReadOnly<string>(labels);
+#endif
+            }
+        }
 
         private ForInStatement()
         {

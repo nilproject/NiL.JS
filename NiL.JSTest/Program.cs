@@ -276,37 +276,9 @@ for (var i = 0; i < 10000000; i++) abs(i * (1 - 2 * (i & 1)));
 
         private static void testEx()
         {
-            var sw = new Stopwatch();
-            var s = new Script(
-@"
-function isum(a, b)
-{    
-    return (((((a | 0) + (b | 0)) | 0) + (((a | 0) + (b | 0)) | 0) | 0) + ((((a | 0) + (b | 0)) | 0) + (((a | 0) + (b | 0)) | 0) | 0)) | 0;
-}
-var isum2 = isum;
-for (var i = 0; i < 10000000; )
-{
-    i++;
-    isum(2,3);
-}
-");
-            Expression<Func<object, object, int>> nativeTest = (a, b) => ((((((int)(a) | 0) + ((int)(b) | 0)) | 0) + ((((int)(a) | 0) + ((int)(b) | 0)) | 0) | 0) + (((((int)(a) | 0) + ((int)(b) | 0)) | 0) + ((((int)(a) | 0) + ((int)(b) | 0)) | 0) | 0)) | 0;
-            var cme = nativeTest.Compile();
-            sw.Start();
-            int sum = 0;
-            for (int i = 0; i < 10000000; i++)
-                sum += cme(2, 3);
-            sw.Stop();
-            Console.WriteLine(sum);
-            Console.WriteLine(sw.Elapsed);
-            sw.Restart();
-            s.TryCompile();
-            sw.Stop();
-            Console.WriteLine(sw.Elapsed);
-            sw.Restart();
-            s.Invoke();
-            sw.Stop();
-            Console.WriteLine(sw.Elapsed);
+            var script = new Script("Console.WriteLine(0)");
+            script.Context.AttachModule(typeof(Console));
+            script.Invoke();
         }
 
         static void Main(string[] args)
@@ -322,7 +294,7 @@ for (var i = 0; i < 10000000; )
                 return JSObject.Undefined;
             }));
 
-            int mode = 101
+            int mode = 159
                    ;
             switch (mode)
             {
@@ -356,9 +328,9 @@ for (var i = 0; i < 10000000; )
                     }
                 case -1:
                     {
-                        var currentTimeZone = TimeZone.CurrentTimeZone;
-                        var offset = currentTimeZone.GetType().GetField("m_ticksOffset", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
-                        offset.SetValue(currentTimeZone, new TimeSpan(-8, 0, 0).Ticks);
+                        //var currentTimeZone = TimeZone.CurrentTimeZone;
+                        //var offset = currentTimeZone.GetType().GetField("m_ticksOffset", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+                        //offset.SetValue(currentTimeZone, new TimeSpan(-8, 0, 0).Ticks);
                         runFiles("tests/custom/");
                         sputnikTests(@"tests\sputnik\ch15\15.1\");
                         sputnikTests(@"tests\sputnik\ch15\15.2\");
@@ -511,9 +483,9 @@ for (var i = 0; i < 10000000; )
                     }
                 case 159:
                     {
-                        var currentTimeZone = TimeZone.CurrentTimeZone;
-                        var offset = currentTimeZone.GetType().GetField("m_ticksOffset", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
-                        offset.SetValue(currentTimeZone, new TimeSpan(-8, 0, 0).Ticks);
+                        //var currentTimeZone = TimeZone.CurrentTimeZone;
+                        //var offset = currentTimeZone.GetType().GetField("m_ticksOffset", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+                        //offset.SetValue(currentTimeZone, new TimeSpan(-8, 0, 0).Ticks);
                         // Date
                         sputnikTests(@"tests\sputnik\ch15\15.9\");
                         break;

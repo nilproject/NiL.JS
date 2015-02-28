@@ -287,7 +287,7 @@ namespace NiL.JS.Core.BaseTypes
                     );
                 if (pm)
                     time += _hourMilliseconds * 12;
-                timeZoneOffset = TimeZone.CurrentTimeZone.GetUtcOffset(DateTime.Now).Ticks / 10000;
+                timeZoneOffset = TimeZoneInfo.Local.GetUtcOffset(DateTime.Now).Ticks / 10000;
                 if (wasTZ)
                 {
                     time += timeZoneOffset;
@@ -431,7 +431,7 @@ namespace NiL.JS.Core.BaseTypes
         public Date()
         {
             time = DateTime.Now.Ticks / 10000;
-            timeZoneOffset = TimeZone.CurrentTimeZone.GetUtcOffset(new DateTime(((DateTime.Now.Ticks) % _400yearsMilliseconds + _unixTimeBase) * 10000)).Ticks / 10000;
+            timeZoneOffset = TimeZoneInfo.Local.GetUtcOffset(DateTime.Now).Ticks / 10000;
         }
 
         [DoNotEnumerate]
@@ -456,7 +456,7 @@ namespace NiL.JS.Core.BaseTypes
                                 break;
                             }
                             time = (long)timeValue + _unixTimeBase;
-                            timeZoneOffset = TimeZone.CurrentTimeZone.GetUtcOffset(DateTime.Now).Ticks / 10000;
+                            timeZoneOffset = TimeZoneInfo.Local.GetUtcOffset(DateTime.Now).Ticks / 10000;
                             time += timeZoneOffset;
                             break;
                         }
@@ -545,7 +545,7 @@ namespace NiL.JS.Core.BaseTypes
                 if (y < 100)
                     y += 1900;
                 time = dateToMilliseconds(y, m, d, h, n, s, ms);
-                timeZoneOffset = TimeZone.CurrentTimeZone.GetUtcOffset(DateTime.Now).Ticks / 10000;
+                timeZoneOffset = TimeZoneInfo.Local.GetUtcOffset(DateTime.Now).Ticks / 10000;
                 //time += timeZoneOffset;
             }
         }
@@ -585,7 +585,7 @@ namespace NiL.JS.Core.BaseTypes
         public static JSObject now()
         {
             var time = DateTime.Now.Ticks / 10000;
-            var timeZoneOffset = TimeZone.CurrentTimeZone.GetUtcOffset(new DateTime(((DateTime.Now.Ticks) % _400yearsMilliseconds + _unixTimeBase) * 10000)).Ticks / 10000;
+            var timeZoneOffset = TimeZoneInfo.Local.GetUtcOffset(DateTime.Now).Ticks / 10000;
             return time + timeZoneOffset - _unixTimeBase;
         }
 
@@ -991,16 +991,22 @@ namespace NiL.JS.Core.BaseTypes
         public JSObject toLocaleString()
         {
             var dt = ToDateTime();
+#if !PORTABLE
             return dt.ToLongDateString() + " " + dt.ToLongTimeString();
-            //var res =
-            //    dt.ToString("dddd MMMM")
-            //    + " " + getDateImpl() + " "
-            //    + getYearImpl() + " "
-            //    + getHoursImpl().ToString("00:")
-            //    + getMinutesImpl().ToString("00:")
-            //    + getSecondsImpl().ToString("00")
-            //    + " GMT" + (offset.Ticks > 0 ? "+" : "") + (offset.Hours * 100 + offset.Minutes).ToString("0000") + " (" + TimeZone.CurrentTimeZone.DaylightName + ")";
-            //return res;
+#else
+            return dt.ToString();
+            /*
+            var res =
+                dt.ToString("dddd MMMM")
+                + " " + getDateImpl() + " "
+                + getYearImpl() + " "
+                + getHoursImpl().ToString("00:")
+                + getMinutesImpl().ToString("00:")
+                + getSecondsImpl().ToString("00")
+                + " GMT" + (timeZoneOffset.Ticks > 0 ? "+" : "") + (timeZoneOffset.Hours * 100 + timeZoneOffset.Minutes).ToString("0000") + " (" + TimeZoneInfo.Local.DaylightName + ")";
+            return res;
+            */
+#endif
         }
 
         [DoNotEnumerate]
@@ -1064,7 +1070,7 @@ namespace NiL.JS.Core.BaseTypes
                 getHoursImpl().ToString("00:")
                 + getMinutesImpl().ToString("00:")
                 + getSecondsImpl().ToString("00")
-                + " GMT" + (offset.Ticks > 0 ? "+" : "") + (offset.Hours * 100 + offset.Minutes).ToString("0000") + " (" + TimeZone.CurrentTimeZone.DaylightName + ")";
+                + " GMT" + (offset.Ticks > 0 ? "+" : "") + (offset.Hours * 100 + offset.Minutes).ToString("0000") + " (" + TimeZoneInfo.Local.DaylightName + ")";
             return res;
         }
 
@@ -1091,7 +1097,11 @@ namespace NiL.JS.Core.BaseTypes
             dt = dt.AddDays((System.Math.Abs(time) % _weekMilliseconds) / _dayMilliseconds);
             dt = dt.AddMonths(getMonthImpl());
             dt = dt.AddYears(y);
+#if PORTABLE
+            return dt.ToString();
+#else
             return dt.ToLongDateString();
+#endif
             //var res =
             //    dt.ToString("dddd, MMMM")
             //    + " " + getDateImpl() + ", "
@@ -1113,7 +1123,7 @@ namespace NiL.JS.Core.BaseTypes
                 + getHoursImpl().ToString("00:")
                 + getMinutesImpl().ToString("00:")
                 + getSecondsImpl().ToString("00")
-                + " GMT" + (offset.Ticks > 0 ? "+" : "") + (offset.Hours * 100 + offset.Minutes).ToString("0000") + " (" + TimeZone.CurrentTimeZone.DaylightName + ")";
+                + " GMT" + (offset.Ticks > 0 ? "+" : "") + (offset.Hours * 100 + offset.Minutes).ToString("0000") + " (" + TimeZoneInfo.Local.DaylightName + ")";
             return res;
         }
 

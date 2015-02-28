@@ -32,7 +32,7 @@ namespace NiL.JS.Expressions
             tempContainer.valueType = JSObjectType.Int;
             return tempContainer;
         }
-
+#if !PORTABLE
         internal override System.Linq.Expressions.Expression TryCompile(bool selfCompile, bool forAssign, Type expectedType, List<CodeNode> dynamicValues)
         {
             var st = first.TryCompile(false, false, typeof(int), dynamicValues);
@@ -46,7 +46,7 @@ namespace NiL.JS.Expressions
                 return System.Linq.Expressions.Expression.Convert(st, typeof(double));
             return System.Linq.Expressions.Expression.Call(new Func<object, int>(Convert.ToInt32).Method, st);
         }
-
+#endif
         public override T Visit<T>(Visitor<T> visitor)
         {
             return visitor.Visit(this);

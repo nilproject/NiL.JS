@@ -32,6 +32,7 @@ namespace NiL.JS.Core.BaseTypes
 #endif
     public class Function : JSObject
     {
+#if !PORTABLE
         private class _DelegateWraper
         {
             private Function function;
@@ -552,8 +553,8 @@ namespace NiL.JS.Core.BaseTypes
                 eargs[15] = TypeProxy.Proxy(a16);
                 function.Invoke(eargs);
             }
-
         }
+#endif
 
         private static readonly FunctionExpression creatorDummy = new FunctionExpression("anonymous");
         internal static readonly Function emptyFunction = new Function();
@@ -801,7 +802,7 @@ namespace NiL.JS.Core.BaseTypes
         [Hidden]
         public virtual JSObject Invoke(JSObject thisBind, Arguments args)
         {
-#if DEBUG
+#if DEBUG && !PORTABLE
             if (creator.trace)
                 System.Console.WriteLine("DEBUG: Run \"" + creator.Reference.Name + "\"");
 #endif
@@ -890,7 +891,7 @@ namespace NiL.JS.Core.BaseTypes
             }
             finally
             {
-#if DEBUG
+#if DEBUG && !PORTABLE
                 if (creator.trace)
                     System.Console.WriteLine("DEBUG: Exit \"" + creator.Reference.Name + "\"");
 #endif
@@ -1177,8 +1178,11 @@ namespace NiL.JS.Core.BaseTypes
         }
 
         [Hidden]
-        public object MakeDelegate(Type delegateType)
+        public virtual object MakeDelegate(Type delegateType)
         {
+#if PORTABLE
+            throw new NotSupportedException("Do not supported in portable version");
+#else
             var del = delegateType.GetMethod("Invoke");
             var prms = del.GetParameters();
             if (prms.Length <= 16)
@@ -1208,6 +1212,7 @@ namespace NiL.JS.Core.BaseTypes
             }
             else
                 throw new ArgumentException("Parameters count must be less or equal 16.");
+#endif
         }
     }
 }

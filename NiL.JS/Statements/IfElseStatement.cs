@@ -215,7 +215,9 @@ namespace NiL.JS.Statements
             }
             catch (Exception e)
             {
+#if !PORTABLE
                 System.Diagnostics.Debugger.Log(10, "Error", e.Message);
+#endif
             }
             if (_this == this && elseBody == null)
                 _this = new IfStatement(this);

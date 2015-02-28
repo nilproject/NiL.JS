@@ -316,17 +316,19 @@ namespace NiL.JS.Statements
             if (catchBody.lines == null || catchBody.lines.Length == 0)
                 return;
             JSObject cvar = null;
+#if !PORTABLE
             if (e is RuntimeWrappedException)
             {
                 cvar = new JSObject();
                 cvar.Assign((e as RuntimeWrappedException).WrappedException as JSObject);
             }
             else
+#endif
                 cvar = e is JSException ? (e as JSException).Avatar.CloneImpl() : TypeProxy.Proxy(e);
             cvar.attributes |= JSObjectAttributesInternal.DoNotDelete;
             var catchContext = new CatchContext(cvar, context, catchVariableDesc.name);
 #if DEBUG
-            if (!(e is JSException) && !(e is RuntimeWrappedException))
+            if (!(e is JSException))
                 System.Diagnostics.Debugger.Break();
 #endif
             try

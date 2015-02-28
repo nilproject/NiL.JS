@@ -148,7 +148,9 @@ namespace NiL.JS.Statements
             }
             catch (Exception e)
             {
+#if !PORTABLE
                 System.Diagnostics.Debugger.Log(10, "Error", e.Message);
+#endif
             }
             return false;
         }

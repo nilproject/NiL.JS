@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using System.Collections;
 using System.Collections.Generic;
 using NiL.JS.Core.BaseTypes;
@@ -90,7 +91,11 @@ namespace NiL.JS.Core.TypeProxing
                 }
                 else if (value is Delegate)
                 {
+#if PORTABLE
+                    oValue = new MethodProxy(((Delegate)value).GetMethodInfo(), ((Delegate)value).Target);
+#else
                     oValue = new MethodProxy(((Delegate)value).Method, ((Delegate)value).Target);
+#endif
                     valueType = JSObjectType.Function;
                 }
                 else if (value is IList)

@@ -31,13 +31,20 @@ namespace NiL.JS.Core
 #endif
     public class Context : IEnumerable<string>
     {
+#if PORTABLE
+        [ThreadStatic]
+        internal static Context currentContext;
+#else
         internal const int MaxConcurentContexts = 65535;
         internal static readonly Context[] runnedContexts = new Context[MaxConcurentContexts];
-
+#endif
         public static Context CurrentContext
         {
             get
             {
+#if PORTABLE
+                return currentContext;
+#else
                 int threadId = Thread.CurrentThread.ManagedThreadId;
                 for (var i = 0; i < MaxConcurentContexts; i++)
                 {
@@ -48,6 +55,7 @@ namespace NiL.JS.Core
                         return c;
                 }
                 return null;
+#endif
             }
         }
 
@@ -92,8 +100,9 @@ namespace NiL.JS.Core
                 globalContext.AttachModule(typeof(BaseTypes.URIError));
                 globalContext.AttachModule(typeof(BaseTypes.SyntaxError));
                 globalContext.AttachModule(typeof(BaseTypes.RegExp));
+#if !PORTABLE
                 globalContext.AttachModule(typeof(Modules.console));
-
+#endif
                 globalContext.AttachModule(typeof(BaseTypes.ArrayBuffer));
                 globalContext.AttachModule(typeof(BaseTypes.Int8Array));
                 globalContext.AttachModule(typeof(BaseTypes.Uint8Array));
@@ -120,7 +129,9 @@ namespace NiL.JS.Core
                 globalContext.DefineVariable("isFinite").Assign(new ExternalFunction(GlobalFunctions.isFinite));
                 globalContext.DefineVariable("parseFloat").Assign(new ExternalFunction(GlobalFunctions.parseFloat));
                 globalContext.DefineVariable("parseInt").Assign(new ExternalFunction(GlobalFunctions.parseInt));
+#if !PORTABLE
                 globalContext.DefineVariable("__pinvoke").Assign(new ExternalFunction(GlobalFunctions.__pinvoke));
+#endif
                 #endregion
                 #region Consts
                 globalContext.fields["undefined"] = JSObject.undefined;
@@ -279,6 +290,14 @@ namespace NiL.JS.Core
         /// <returns>Истина если текущий контекст был активирован данным вызовом. Ложь если контекст уже активен.</returns>
         internal bool Activate()
         {
+#if PORTABLE
+            if (oldContext != null)
+                throw new InvalidOperationException("Try to reactivate context");
+            if (currentContext != null)
+                throw new InvalidOperationException("Too many concurrent contexts.");
+            oldContext = currentContext;
+            return true;
+#else
             int threadId = Thread.CurrentThread.ManagedThreadId;
             var i = 0;
             do
@@ -299,6 +318,7 @@ namespace NiL.JS.Core
             }
             while (i < MaxConcurentContexts);
             throw new InvalidOperationException("Too many concurrent contexts.");
+#endif
         }
 
         /// <summary>
@@ -308,6 +328,14 @@ namespace NiL.JS.Core
         /// <returns>Текущий активный контекст</returns>
         internal Context Deactivate()
         {
+#if PORTABLE
+            if (currentContext == this)
+                throw new InvalidOperationException("Context not runned");
+            currentContext = oldContext;
+            var res = oldContext;
+            oldContext = null;
+            return res;
+#else
             Context c = null;
             var i = 0;
             for (; i < runnedContexts.Length; i++)
@@ -325,6 +353,7 @@ namespace NiL.JS.Core
                 throw new InvalidOperationException("Context not runned");
             oldContext = null;
             return c;
+#endif
         }
 
         /// <summary>

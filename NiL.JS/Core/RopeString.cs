@@ -314,10 +314,6 @@ namespace NiL.JS.Core
         {
             return ToString().LastIndexOfAny(anyOf, startIndex, count);
         }
-        public string Normalize()
-        {
-            return ToString().Normalize();
-        }
         public string PadLeft(int totalWidth)
         {
             return ToString().PadLeft(totalWidth);

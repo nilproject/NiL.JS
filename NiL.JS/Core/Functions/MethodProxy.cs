@@ -1,6 +1,4 @@
-﻿//#define OVERDYNAMIC
-
-using System;
+﻿using System;
 using System.Reflection;
 using System.Runtime.Serialization;
 using NiL.JS.Core.BaseTypes;
@@ -20,11 +18,13 @@ namespace NiL.JS.Core.Functions
     {
 #if !NET35
         private delegate void SetValueDelegate(FieldInfo field, Object obj, Object value, Type fieldType, FieldAttributes fieldAttr, Type declaringType, ref bool domainInitialized);
-#if !__MonoCS__
+#if __MonoCS__
+		private static readonly FieldInfo _targetInfo = typeof(Delegate).GetMember("m_target", BindingFlags.NonPublic | BindingFlags.Instance)[0] as FieldInfo;
+#elif PORTABLE
+        // not availible
+#else
         private static readonly SetValueDelegate SetFieldValue = Activator.CreateInstance(typeof(SetValueDelegate), null, typeof(RuntimeFieldHandle).GetMethod("SetValue", BindingFlags.Static | BindingFlags.NonPublic).MethodHandle.GetFunctionPointer()) as SetValueDelegate;
         private static readonly FieldInfo _targetInfo = typeof(Action).GetMember("_target", BindingFlags.NonPublic | BindingFlags.Instance)[0] as FieldInfo;
-#else
-		private static readonly FieldInfo _targetInfo = typeof(Delegate).GetMember("m_target", BindingFlags.NonPublic | BindingFlags.Instance)[0] as FieldInfo;
 #endif
 #endif
         private enum CallMode

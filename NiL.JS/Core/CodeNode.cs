@@ -12,10 +12,10 @@ namespace NiL.JS.Core
 #endif
     public abstract class CodeNode
     {
+        internal static readonly CodeNode[] emptyCodeNodeArray = new CodeNode[0];
+#if !PORTABLE
         internal static readonly MethodInfo EvaluateForAssignMethod = typeof(CodeNode).GetMethod("EvaluateForAssing", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic, null, new[] { typeof(Context) }, null);
         internal static readonly MethodInfo EvaluateMethod = typeof(CodeNode).GetMethod("Evaluate", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic, null, new[] { typeof(Context) }, null);
-
-        internal static readonly CodeNode[] emptyCodeNodeArray = new CodeNode[0];
 
 #if !NET35
         internal System.Linq.Expressions.Expression JitOverCall(bool forAssign)
@@ -27,7 +27,7 @@ namespace NiL.JS.Core
                 );
         }
 #endif
-
+#endif
         public virtual int Position { get; internal set; }
         public virtual int Length { get; internal set; }
         public virtual int EndPosition { get { return Position + Length; } }

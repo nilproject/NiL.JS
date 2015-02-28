@@ -98,7 +98,7 @@ namespace NiL.JS.Expressions
             }
             return tempContainer;
         }
-
+#if !PORTABLE
         internal override System.Linq.Expressions.Expression TryCompile(bool selfCompile, bool forAssign, Type expectedType, List<CodeNode> dynamicValues)
         {
             var ft = first.TryCompile(false, false, null, dynamicValues);
@@ -121,7 +121,7 @@ namespace NiL.JS.Expressions
                 System.Linq.Expressions.Expression.Convert(ft, typeof(double)),
                 System.Linq.Expressions.Expression.Convert(st, typeof(double)));
         }
-
+#endif
         public override T Visit<T>(Visitor<T> visitor)
         {
             return visitor.Visit(this);

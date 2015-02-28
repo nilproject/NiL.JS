@@ -21,7 +21,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;PORTABLE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -42,9 +42,6 @@
     </Compile>
     <Compile Include="..\NiL.JS\Core\Arguments.cs">
       <Link>Core\Arguments.cs</Link>
-    </Compile>
-    <Compile Include="..\NiL.JS\Core\Backward.cs">
-      <Link>Core\Backward.cs</Link>
     </Compile>
     <Compile Include="..\NiL.JS\Core\BaseTypes\Array.cs">
       <Link>Core\BaseTypes\Array.cs</Link>
@@ -130,9 +127,6 @@
     <Compile Include="..\NiL.JS\Core\CodeNode.cs">
       <Link>Core\CodeNode.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Core\CompiledNode.cs">
-      <Link>Core\CompiledNode.cs</Link>
-    </Compile>
     <Compile Include="..\NiL.JS\Core\Context.cs">
       <Link>Core\Context.cs</Link>
     </Compile>
@@ -151,9 +145,6 @@
     <Compile Include="..\NiL.JS\Core\Functions\MacroFunction.cs">
       <Link>Core\Functions\MacroFunction.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Core\Functions\MethodProxy.cs">
-      <Link>Core\Functions\MethodProxy.cs</Link>
-    </Compile>
     <Compile Include="..\NiL.JS\Core\Functions\ObjectConstructor.cs">
       <Link>Core\Functions\ObjectConstructor.cs</Link>
     </Compile>
@@ -165,9 +156,6 @@
     </Compile>
     <Compile Include="..\NiL.JS\Core\GlobalObject.cs">
       <Link>Core\GlobalObject.cs</Link>
-    </Compile>
-    <Compile Include="..\NiL.JS\Core\JIT\JITHelpers.cs">
-      <Link>Core\JIT\JITHelpers.cs</Link>
     </Compile>
     <Compile Include="..\NiL.JS\Core\JIT\TreeBuildingState.cs">
       <Link>Core\JIT\TreeBuildingState.cs</Link>
@@ -183,9 +171,6 @@
     </Compile>
     <Compile Include="..\NiL.JS\Core\Modules\CallOverloaded.cs">
       <Link>Core\Modules\CallOverloaded.cs</Link>
-    </Compile>
-    <Compile Include="..\NiL.JS\Core\Modules\Console.cs">
-      <Link>Core\Modules\Console.cs</Link>
     </Compile>
     <Compile Include="..\NiL.JS\Core\Modules\ConvertValueAttribute.cs">
       <Link>Core\Modules\ConvertValueAttribute.cs</Link>
@@ -255,9 +240,6 @@
     </Compile>
     <Compile Include="..\NiL.JS\Core\StringMap2.cs">
       <Link>Core\StringMap2.cs</Link>
-    </Compile>
-    <Compile Include="..\NiL.JS\Core\StructureDefaultConstructorInfo.cs">
-      <Link>Core\StructureDefaultConstructorInfo.cs</Link>
     </Compile>
     <Compile Include="..\NiL.JS\Core\Tools.cs">
       <Link>Core\Tools.cs</Link>
@@ -460,9 +442,6 @@
     <Compile Include="..\NiL.JS\Expressions\Xor.cs">
       <Link>Expressions\Xor.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Expressions\Yield.cs">
-      <Link>Expressions\Yield.cs</Link>
-    </Compile>
     <Compile Include="..\NiL.JS\Properties\AssemblyInfo.cs">
       <Link>Properties\AssemblyInfo.cs</Link>
     </Compile>
@@ -532,6 +511,8 @@
     <Compile Include="..\NiL.JS\Statements\WithStatement.cs">
       <Link>Statements\WithStatement.cs</Link>
     </Compile>
+    <Compile Include="Core\Backward.cs" />
+    <Compile Include="Core\Functions\MethodProxy.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -210,7 +210,7 @@ namespace NiL.JS.Statements
                 var t = ls[i].Evaluate(context);
                 if (t != null)
                     context.lastResult = t;
-#if DEBUG
+#if DEBUG && !PORTABLE
                 if (!context.IsExcecuting)
                     if (System.Diagnostics.Debugger.IsAttached)
                         System.Diagnostics.Debugger.Break();

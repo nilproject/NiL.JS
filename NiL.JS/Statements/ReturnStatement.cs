@@ -85,7 +85,7 @@ namespace NiL.JS.Statements
             if (body != null)
                 body.Optimize(ref body, owner, message);
         }
-
+#if !PORTABLE
         internal override System.Linq.Expressions.Expression TryCompile(bool selfCompile, bool forAssign, Type expectedType, List<CodeNode> dynamicValues)
         {
             var b = body.TryCompile(false, false, null, dynamicValues);
@@ -93,7 +93,7 @@ namespace NiL.JS.Statements
                 body = new CompiledNode(body, b, JITHelpers._items.GetValue(dynamicValues) as CodeNode[]);
             return null;
         }
-
+#endif
         public override T Visit<T>(Visitor<T> visitor)
         {
             return visitor.Visit(this);

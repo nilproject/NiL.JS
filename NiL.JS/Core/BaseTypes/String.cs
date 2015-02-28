@@ -740,14 +740,14 @@ namespace NiL.JS.Core.BaseTypes
         [DoNotEnumerate]
         public JSObject toLocaleLowerCase()
         {
-            return (this as JSObject).ToString().ToLower(System.Threading.Thread.CurrentThread.CurrentUICulture);
+            return (this as JSObject).ToString().ToLower();
         }
 
         [AllowUnsafeCall(typeof(JSObject))]
         [DoNotEnumerate]
         public JSObject toLocaleUpperCase()
         {
-            return (this as JSObject).ToString().ToUpper(System.Threading.Thread.CurrentThread.CurrentUICulture);
+            return (this as JSObject).ToString().ToUpper();
         }
 
         [AllowUnsafeCall(typeof(JSObject))]
