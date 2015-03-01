@@ -21,6 +21,7 @@ namespace NiL.JS.Core.Functions
             F2
         }
 
+        private static bool partiallyTrusted;
         private static FieldInfo handleInfo;
         private Func<object, object[], Arguments, object> implementation;
         private bool raw;
@@ -86,17 +87,25 @@ namespace NiL.JS.Core.Functions
             members.MoveNext(); // 2
             members.MoveNext(); // 3
             handleInfo = members.Current;
-#if DEBUG
-            var handle = handleInfo.GetValue(donor);
-            var forceConverterHandle = (IntPtr)handle;
 
-            var forceConverterType = typeof(Func<,>).MakeGenericType(typeof(JSObject), typeof(BaseTypes.String));
-            var forceConverterConstructor = forceConverterType.GetTypeInfo().DeclaredConstructors.First();
-            var forceConverter = forceConverterConstructor.Invoke(new object[] { null, (IntPtr)forceConverterHandle }) as Func<JSObject, BaseTypes.String>;
+            try
+            {
+                var handle = handleInfo.GetValue(donor);
+                var forceConverterHandle = (IntPtr)handle;
 
-            var test = forceConverter(new JSObject() { oValue = "hello", valueType = JSObjectType.String });
-            var t = forceConverter.GetMethodInfo().ReturnType;
-#endif
+                var forceConverterType = typeof(Func<,>).MakeGenericType(typeof(JSObject), typeof(BaseTypes.String));
+                var forceConverterConstructor = forceConverterType.GetTypeInfo().DeclaredConstructors.First();
+                var forceConverter = forceConverterConstructor.Invoke(new object[] { null, (IntPtr)forceConverterHandle }) as Func<JSObject, BaseTypes.String>;
+
+                var test = forceConverter(new JSObject() { oValue = "hello", valueType = JSObjectType.String });
+                if (test == null || test.GetType() != typeof(JSObject))
+                    partiallyTrusted = true;
+            }
+            catch
+            {
+                partiallyTrusted = true;
+            }
+
         }
 
         public MethodProxy()
@@ -141,8 +150,9 @@ namespace NiL.JS.Core.Functions
             {
                 var methodInfo = methodBase as MethodInfo;
                 returnConverter = methodInfo.ReturnParameter.GetCustomAttribute(typeof(Modules.ConvertValueAttribute), false) as Modules.ConvertValueAttribute;
-
-                if (!methodInfo.IsStatic
+                
+                if (!partiallyTrusted
+                    && !methodInfo.IsStatic
                     && (parameters.Length == 0 || (parameters.Length == 1 && parameters[0].ParameterType == typeof(Arguments)))
                     && !methodInfo.ReturnType.GetTypeInfo().IsValueType)
                 {
