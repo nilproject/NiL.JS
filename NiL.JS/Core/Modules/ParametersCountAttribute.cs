@@ -9,7 +9,7 @@ namespace NiL.JS.Core.Modules
     [Serializable]
 #endif
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Constructor, AllowMultiple = false, Inherited = false)]
-    public sealed class ParametersCountAttribute : Attribute
+    internal sealed class ParametersCountAttribute : Attribute
     {
         public int Count { get; private set; }
 

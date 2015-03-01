@@ -116,7 +116,7 @@ namespace NiL.JS.Core.BaseTypes
 
         [DoNotEnumerate]
         [AllowUnsafeCall(typeof(JSObject))]
-        public override JSObject valueOf()
+        public new JSObject valueOf()
         {
             if (this.GetType() == typeof(Boolean))
                 return iValue != 0;

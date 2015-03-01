@@ -224,7 +224,7 @@ namespace NiL.JS.Core.BaseTypes
         [DoNotEnumerate]
         public JSObject test(JSObject arg)
         {
-            string input = (arg ?? "").ToString();
+            string input = (arg ?? "undefined").ToString();
             lIndex = Tools.JSObjectToNumber(lIndex);
             if (lIndex.valueType == JSObjectType.Double)
             {

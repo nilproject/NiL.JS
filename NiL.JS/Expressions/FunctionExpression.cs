@@ -678,13 +678,13 @@ namespace NiL.JS.Expressions
                     };
             }
         }
-
+#if !PORTABLE
         internal override System.Linq.Expressions.Expression TryCompile(bool selfCompile, bool forAssign, Type expectedType, List<CodeNode> dynamicValues)
         {
             body.TryCompile(true, false, null, new List<CodeNode>());
             return null;
         }
-
+#endif
         public override T Visit<T>(Visitor<T> visitor)
         {
             return visitor.Visit(this);

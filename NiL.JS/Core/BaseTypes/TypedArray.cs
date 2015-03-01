@@ -37,7 +37,6 @@ namespace NiL.JS.Core.BaseTypes
         public ArrayBuffer buffer
         {
             [Hidden]
-            [CallOverloaded]
             get;
             private set;
         }
@@ -45,7 +44,6 @@ namespace NiL.JS.Core.BaseTypes
         public int byteLength
         {
             [Hidden]
-            [CallOverloaded]
             get;
             private set;
         }
@@ -53,7 +51,6 @@ namespace NiL.JS.Core.BaseTypes
         public int byteOffset
         {
             [Hidden]
-            [CallOverloaded]
             get;
             private set;
         }
@@ -61,7 +58,6 @@ namespace NiL.JS.Core.BaseTypes
         public Number length
         {
             [Hidden]
-            [CallOverloaded]
             get;
             private set;
         }
@@ -69,7 +65,6 @@ namespace NiL.JS.Core.BaseTypes
         public abstract int BYTES_PER_ELEMENT
         {
             [Hidden]
-            [CallOverloaded]
             get;
         }
 

@@ -38,34 +38,34 @@ namespace NiL.JS.Core.TypeProxing
                     try
                     {
 #endif
-                    if (ictor != null)
-                    {
-                        if (hostedType == typeof(JSObject))
+                        if (ictor != null)
                         {
-                            _prototypeInstance = CreateObject();
-                            (_prototypeInstance as JSObject).__prototype = Null;
-                            (_prototypeInstance as JSObject).fields = fields;
-                            (_prototypeInstance as JSObject).attributes |= JSObjectAttributesInternal.ProxyPrototype;
-                        }
-                        else if (typeof(JSObject).IsAssignableFrom(hostedType))
-                        {
-                            _prototypeInstance = ictor.Invoke(null) as JSObject;
-                            _prototypeInstance.__prototype = __proto__;
-                            _prototypeInstance.attributes |= JSObjectAttributesInternal.ProxyPrototype;
-                            _prototypeInstance.fields = fields;
-                            //_prototypeInstance.valueType = (JSObjectType)System.Math.Max((int)JSObjectType.Object, (int)_prototypeInstance.valueType);
-                            valueType = (JSObjectType)System.Math.Max((int)JSObjectType.Object, (int)_prototypeInstance.valueType);
-                        }
-                        else
-                        {
-                            _prototypeInstance = new ObjectContainer(ictor.Invoke(null))
+                            if (hostedType == typeof(JSObject))
                             {
-                                attributes = attributes | JSObjectAttributesInternal.ProxyPrototype,
-                                fields = fields,
-                                __prototype = JSObject.GlobalPrototype
-                            };
+                                _prototypeInstance = CreateObject();
+                                (_prototypeInstance as JSObject).__prototype = Null;
+                                (_prototypeInstance as JSObject).fields = fields;
+                                (_prototypeInstance as JSObject).attributes |= JSObjectAttributesInternal.ProxyPrototype;
+                            }
+                            else if (typeof(JSObject).IsAssignableFrom(hostedType))
+                            {
+                                _prototypeInstance = ictor.Invoke(null) as JSObject;
+                                _prototypeInstance.__prototype = __proto__;
+                                _prototypeInstance.attributes |= JSObjectAttributesInternal.ProxyPrototype;
+                                _prototypeInstance.fields = fields;
+                                //_prototypeInstance.valueType = (JSObjectType)System.Math.Max((int)JSObjectType.Object, (int)_prototypeInstance.valueType);
+                                valueType = (JSObjectType)System.Math.Max((int)JSObjectType.Object, (int)_prototypeInstance.valueType);
+                            }
+                            else
+                            {
+                                _prototypeInstance = new ObjectContainer(ictor.Invoke(null))
+                                {
+                                    attributes = attributes | JSObjectAttributesInternal.ProxyPrototype,
+                                    fields = fields,
+                                    __prototype = JSObject.GlobalPrototype
+                                };
+                            }
                         }
-                    }
 #if !PORTABLE
                     }
                     catch (COMException)
@@ -284,15 +284,16 @@ namespace NiL.JS.Core.TypeProxing
                     for (int i = 0; i < mmbrs.Length; i++)
                     {
                         if ((mmbrs[i] is PropertyInfo)
-                            && ((mmbrs[i] as PropertyInfo).SetMethod == null || !(mmbrs[i] as PropertyInfo).SetMethod.IsPublic)
-                            && ((mmbrs[i] as PropertyInfo).GetMethod == null || !(mmbrs[i] as PropertyInfo).GetMethod.IsPublic))
+                            && (((mmbrs[i] as PropertyInfo).SetMethod ?? (mmbrs[i] as PropertyInfo).GetMethod).IsStatic != !InstanceMode
+                                || (((mmbrs[i] as PropertyInfo).SetMethod == null || !(mmbrs[i] as PropertyInfo).SetMethod.IsPublic)
+                                    && ((mmbrs[i] as PropertyInfo).GetMethod == null || !(mmbrs[i] as PropertyInfo).GetMethod.IsPublic))))
                             continue;
 
                         if ((mmbrs[i] is EventInfo)
-                            && !(mmbrs[i] as EventInfo).AddMethod.IsPublic)
+                            && (!(mmbrs[i] as EventInfo).AddMethod.IsPublic || (mmbrs[i] as EventInfo).AddMethod.IsStatic != !InstanceMode))
                             continue;
 
-                        if ((mmbrs[i] is FieldInfo) && !(mmbrs[i] as FieldInfo).IsPublic)
+                        if ((mmbrs[i] is FieldInfo) && (!(mmbrs[i] as FieldInfo).IsPublic || (mmbrs[i] as FieldInfo).IsStatic != !InstanceMode))
                             continue;
 
                         if ((mmbrs[i] is TypeInfo) && !(mmbrs[i] as TypeInfo).IsPublic)
@@ -302,6 +303,8 @@ namespace NiL.JS.Core.TypeProxing
                             continue;
                         if (mmbrs[i] is MethodBase)
                         {
+                            if ((mmbrs[i] as MethodBase).IsStatic != !InstanceMode)
+                                continue;
                             if (!(mmbrs[i] as MethodBase).IsPublic)
                                 continue;
                             if ((mmbrs[i] as MethodBase).DeclaringType == typeof(object))
@@ -426,11 +429,11 @@ namespace NiL.JS.Core.TypeProxing
                                     var prmType = cache[i].Parameters[j].ParameterType;
                                     if ((cargs[j] == null ?
 #if PORTABLE
-                                            prmType.GetTypeInfo().IsValueType
+ prmType.GetTypeInfo().IsValueType
 #else
-                                            prmType.IsValueType
+ prmType.IsValueType
 #endif
-                                        :
+ :
                                             cargs[j].GetType() == typeof(int) ?
                                                    prmType != typeof(int)
                                                 && prmType != typeof(int)
@@ -472,8 +475,13 @@ namespace NiL.JS.Core.TypeProxing
                     case MemberTypes.Field:
                         {
                             var field = (m[0] as FieldInfo);
-                            var cva = field.GetCustomAttribute(typeof(ConvertValueAttribute)) as ConvertValueAttribute;
-                            if (cva != null)
+                            if ((field.Attributes & (FieldAttributes.Literal | FieldAttributes.InitOnly)) != 0
+                                && (field.Attributes & FieldAttributes.Static) != 0)
+                            {
+                                r = Proxy(field.GetValue(null));
+                                r.attributes |= JSObjectAttributesInternal.ReadOnly;
+                            }
+                            else
                             {
                                 r = new JSObject()
                                 {
@@ -482,92 +490,40 @@ namespace NiL.JS.Core.TypeProxing
                                     (
                                         new ExternalFunction((thisBind, a) =>
                                         {
-                                            return Proxy(cva.From(field.GetValue(field.IsStatic ? null : thisBind.Value)));
+                                            return Proxy(field.GetValue(field.IsStatic ? null : thisBind.Value));
                                         }),
-                                        m[0].IsDefined(typeof(Modules.ReadOnlyAttribute), false) ?
-                                            new ExternalFunction((thisBind, a) =>
-                                            {
-                                                field.SetValue(field.IsStatic ? null : thisBind.Value, cva.To(a[0].Value));
-                                                return null;
-                                            }) : null
-
+                                        !m[0].IsDefined(typeof(Modules.ReadOnlyAttribute), false) ? new ExternalFunction((thisBind, a) =>
+                                        {
+                                            field.SetValue(field.IsStatic ? null : thisBind.Value, a[0].Value);
+                                            return null;
+                                        }) : null
                                     )
                                 };
                                 r.attributes = JSObjectAttributesInternal.Immutable | JSObjectAttributesInternal.Field;
                                 if ((r.oValue as PropertyPair).set == null)
                                     r.attributes |= JSObjectAttributesInternal.ReadOnly;
-                            }
-                            else
-                            {
-                                if ((field.Attributes & (FieldAttributes.Literal | FieldAttributes.InitOnly)) != 0
-                                    && (field.Attributes & FieldAttributes.Static) != 0)
-                                {
-                                    r = Proxy(field.GetValue(null));
-                                    r.attributes |= JSObjectAttributesInternal.ReadOnly;
-                                }
-                                else
-                                {
-                                    r = new JSObject()
-                                    {
-                                        valueType = JSObjectType.Property,
-                                        oValue = new PropertyPair
-                                        (
-                                            new ExternalFunction((thisBind, a) =>
-                                            {
-                                                return Proxy(field.GetValue(field.IsStatic ? null : thisBind.Value));
-                                            }),
-                                            !m[0].IsDefined(typeof(Modules.ReadOnlyAttribute), false) ? new ExternalFunction((thisBind, a) =>
-                                            {
-                                                field.SetValue(field.IsStatic ? null : thisBind.Value, a[0].Value);
-                                                return null;
-                                            }) : null
-                                        )
-                                    };
-                                    r.attributes = JSObjectAttributesInternal.Immutable | JSObjectAttributesInternal.Field;
-                                    if ((r.oValue as PropertyPair).set == null)
-                                        r.attributes |= JSObjectAttributesInternal.ReadOnly;
-                                }
+
                             }
                             break;
                         }
                     case MemberTypes.Property:
                         {
                             var pinfo = (PropertyInfo)m[0];
-                            var cva = pinfo.GetCustomAttribute(typeof(ConvertValueAttribute)) as ConvertValueAttribute;
-                            if (cva != null)
+                            r = new JSObject()
                             {
-                                r = new JSObject()
-                                {
-                                    valueType = JSObjectType.Property,
-                                    oValue = new PropertyPair
-                                        (
+                                valueType = JSObjectType.Property,
+                                oValue = new PropertyPair
+                                    (
 #if PORTABLE
-                                            pinfo.CanRead && pinfo.GetMethod != null ? new MethodProxy(pinfo.GetMethod) : null,
+pinfo.CanRead && pinfo.GetMethod != null ? new MethodProxy(pinfo.GetMethod) : null,
                                             pinfo.CanWrite && pinfo.SetMethod != null && !pinfo.IsDefined(typeof(ReadOnlyAttribute), false) ? new MethodProxy(pinfo.SetMethod) : null
 #else
-                                            pinfo.CanRead && pinfo.GetGetMethod(false) != null ? new MethodProxy(pinfo.GetGetMethod(false), cva, null) : null,
-                                            pinfo.CanWrite && pinfo.GetSetMethod(false) != null && !pinfo.IsDefined(typeof(ReadOnlyAttribute), false) ? new MethodProxy(pinfo.GetSetMethod(false), cva, new[] { cva }) : null
+pinfo.CanRead && pinfo.GetGetMethod(false) != null ? new MethodProxy(pinfo.GetGetMethod(false)) : null,
+                                        pinfo.CanWrite && pinfo.GetSetMethod(false) != null && !pinfo.IsDefined(typeof(ReadOnlyAttribute), false) ? new MethodProxy(pinfo.GetSetMethod(false)) : null
 #endif
-                                        )
-                                };
-                            }
-                            else
-                            {
-                                r = new JSObject()
-                                {
-                                    valueType = JSObjectType.Property,
-                                    oValue = new PropertyPair
-                                        (
-#if PORTABLE
-                                            pinfo.CanRead && pinfo.GetMethod != null ? new MethodProxy(pinfo.GetMethod) : null,
-                                            pinfo.CanWrite && pinfo.SetMethod != null && !pinfo.IsDefined(typeof(ReadOnlyAttribute), false) ? new MethodProxy(pinfo.SetMethod) : null
-#else
-                                            pinfo.CanRead && pinfo.GetGetMethod(false) != null ? new MethodProxy(pinfo.GetGetMethod(false)) : null,
-                                            pinfo.CanWrite && pinfo.GetSetMethod(false) != null && !pinfo.IsDefined(typeof(ReadOnlyAttribute), false) ? new MethodProxy(pinfo.GetSetMethod(false)) : null
-#endif
-                                        )
-                                };
-                            }
+)
+                            };
+
                             r.attributes = JSObjectAttributesInternal.Immutable;
                             if ((r.oValue as PropertyPair).set == null)
                                 r.attributes |= JSObjectAttributesInternal.ReadOnly;
@@ -585,11 +541,11 @@ namespace NiL.JS.Core.TypeProxing
                                 (
                                     null,
 #if PORTABLE
-                                    new MethodProxy(pinfo.AddMethod)
+ new MethodProxy(pinfo.AddMethod)
 #else
-                                    new MethodProxy(pinfo.GetAddMethod())
+ new MethodProxy(pinfo.GetAddMethod())
 #endif
-                                )
+)
                             };
                             break;
                         }
@@ -678,8 +634,8 @@ namespace NiL.JS.Core.TypeProxing
             {
                 for (var i = m.Count; i-- > 0; )
                     if (!m[i].IsDefined(typeof(DoNotEnumerateAttribute), false))
-                        return false;
-                return true;
+                        return true;
+                return false;
             }
             return false;
         }

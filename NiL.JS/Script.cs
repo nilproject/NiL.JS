@@ -123,7 +123,7 @@ namespace NiL.JS
                 Context.Deactivate();
             }
         }
-
+#if !PORTABLE
         /// <summary>
         /// Пытается провести частичную или полную компилияцию сценария, начиная с листов синтаксического дерева.
         /// Максимальные по высоте поддеревья, для которых допустима компиляция, будут заменены на листы, 
@@ -134,5 +134,6 @@ namespace NiL.JS
         {
             root.TryCompile(true, false, null, new List<CodeNode>());
         }
+#endif
     }
 }

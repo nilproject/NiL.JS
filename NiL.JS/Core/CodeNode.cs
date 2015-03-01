@@ -65,12 +65,12 @@ namespace NiL.JS.Core
         {
 
         }
-
+#if !PORTABLE
         internal virtual System.Linq.Expressions.Expression TryCompile(bool selfCompile, bool forAssign, Type expectedType, List<CodeNode> dynamicValues)
         {
             return null;
         }
-
+#endif
         public abstract T Visit<T>(Visitor<T> visitor);
     }
 }

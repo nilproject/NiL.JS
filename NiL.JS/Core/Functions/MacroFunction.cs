@@ -23,7 +23,6 @@ namespace NiL.JS.Core.Functions
         [DoNotEnumerate]
         public override JSObject arguments
         {
-            [CallOverloaded]
             [Hidden]
             get
             {
@@ -41,7 +40,6 @@ namespace NiL.JS.Core.Functions
                 }
                 return base.arguments;
             }
-            [CallOverloaded]
             [Hidden]
             set
             {

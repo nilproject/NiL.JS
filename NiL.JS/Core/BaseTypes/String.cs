@@ -833,7 +833,7 @@ namespace NiL.JS.Core.BaseTypes
 
         [DoNotEnumerate]
         [AllowUnsafeCall(typeof(JSObject))]
-        public override JSObject valueOf()
+        public new JSObject valueOf()
         {
             if (typeof(String) == this.GetType() && valueType == JSObjectType.Object) // class instance
                 return oValue.ToString();

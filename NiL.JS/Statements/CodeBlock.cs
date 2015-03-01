@@ -393,7 +393,7 @@ namespace NiL.JS.Statements
                     }
                 }
         }
-
+#if !PORTABLE
         internal override System.Linq.Expressions.Expression TryCompile(bool selfCompile, bool forAssign, Type expectedType, List<CodeNode> dynamicValues)
         {
             for (int i = lines.Length; i-- > 0; )
@@ -403,7 +403,7 @@ namespace NiL.JS.Statements
                     localVariables[i].Inititalizator.TryCompile(true, false, null, dynamicValues);
             return null;
         }
-
+#endif
         public override string ToString()
         {
             return ToString(false);

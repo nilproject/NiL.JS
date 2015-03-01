@@ -223,7 +223,8 @@
     <Compile Include="Core\CatchContext.cs" />
     <Compile Include="Core\CompiledNode.cs" />
     <Compile Include="Core\Functions\MacroFunction.cs" />
-    <Compile Include="Core\Modules\CallOverloaded.cs" />
+    <Compile Include="Core\Functions\MethodProxy.cs" />
+    <Compile Include="Core\Modules\ConvertValueAttribute.cs" />
     <Compile Include="Core\Modules\Debug.cs" />
     <Compile Include="Core\Modules\ImmutablePrototypeAttribute.cs" />
     <Compile Include="Core\PropertyPair.cs" />
@@ -266,7 +267,6 @@
     <Compile Include="Core\Modules\JSON.cs" />
     <Compile Include="Core\Modules\ParametersCountAttribute.cs" />
     <Compile Include="Core\Modules\PrototypeAttribute.cs" />
-    <Compile Include="Core\Modules\ConvertValueAttribute.cs" />
     <Compile Include="Core\Functions\ObjectConstructor.cs" />
     <Compile Include="Core\ParsingState.cs" />
     <Compile Include="Core\CodeNode.cs" />
@@ -279,7 +279,6 @@
     <Compile Include="Core\Modules\ImmutableAttribute.cs" />
     <Compile Include="Core\Modules\Math.cs" />
     <Compile Include="Core\Tools.cs" />
-    <Compile Include="Core\Functions\MethodProxy.cs" />
     <Compile Include="Core\TypeProxing\TypeProxy.cs" />
     <Compile Include="Core\Modules\ReadOnlyAttribute.cs" />
     <Compile Include="Core\Functions\ProxyConstructor.cs" />

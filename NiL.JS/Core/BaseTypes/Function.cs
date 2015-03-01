@@ -589,7 +589,6 @@ namespace NiL.JS.Core.BaseTypes
         [Hidden]
         public Context Context
         {
-            [CallOverloaded]
             [Hidden]
             get { return context; }
         }
@@ -598,21 +597,18 @@ namespace NiL.JS.Core.BaseTypes
         [DoNotEnumerate]
         public virtual string name
         {
-            [CallOverloaded]
             [Hidden]
             get { return creator.name; }
         }
         [Hidden]
         public virtual FunctionType Type
         {
-            [CallOverloaded]
             [Hidden]
             get { return creator.type; }
         }
         [Hidden]
         public virtual bool Strict
         {
-            [CallOverloaded]
             [Hidden]
             get
             {
@@ -630,7 +626,6 @@ namespace NiL.JS.Core.BaseTypes
         [NotConfigurable]
         public virtual JSObject prototype
         {
-            [CallOverloaded]
             [Hidden]
             get
             {
@@ -651,7 +646,6 @@ namespace NiL.JS.Core.BaseTypes
                 }
                 return _prototype;
             }
-            [CallOverloaded]
             [Hidden]
             set
             {
@@ -671,7 +665,6 @@ namespace NiL.JS.Core.BaseTypes
         [DoNotEnumerate]
         public virtual JSObject arguments
         {
-            [CallOverloaded]
             [Hidden]
             get
             {
@@ -679,7 +672,6 @@ namespace NiL.JS.Core.BaseTypes
                     throw new JSException(new TypeError("Property arguments not allowed in strict mode."));
                 return _arguments;
             }
-            [CallOverloaded]
             [Hidden]
             set
             {
@@ -699,7 +691,6 @@ namespace NiL.JS.Core.BaseTypes
         public virtual JSObject length
         {
             [AllowUnsafeCall(typeof(JSObject))]
-            [CallOverloaded]
             [Hidden]
             get
             {
@@ -720,10 +711,8 @@ namespace NiL.JS.Core.BaseTypes
         [DoNotEnumerate]
         public virtual JSObject caller
         {
-            [CallOverloaded]
             [Hidden]
             get { if (creator.body.strict || _caller == propertiesDummySM) throw new JSException(new TypeError("Property caller not allowed in strict mode.")); return _caller; }
-            [CallOverloaded]
             [Hidden]
             set { if (creator.body.strict || _caller == propertiesDummySM) throw new JSException(new TypeError("Property caller not allowed in strict mode.")); }
         }
@@ -763,6 +752,7 @@ namespace NiL.JS.Core.BaseTypes
             this.oValue = this;
         }
 
+        [Hidden]
         internal Function(Context context, FunctionExpression creator)
         {
             attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.SystemObject;
@@ -1099,7 +1089,7 @@ namespace NiL.JS.Core.BaseTypes
         [CLSCompliant(false)]
         [DoNotEnumerate]
         [ParametersCount(0)]
-        public override JSObject toString(Arguments args)
+        public new virtual JSObject toString(Arguments args)
         {
             return ToString();
         }

@@ -2045,7 +2045,7 @@ namespace NiL.JS.Core.BaseTypes
         [DoNotEnumerate]
         [CLSCompliant(false)]
         [ParametersCount(0)]
-        public override JSObject toString(Arguments args)
+        public new JSObject toString(Arguments args)
         {
             if (this.GetType() != typeof(Array) && !this.GetType().IsSubclassOf(typeof(Array)))
                 throw new JSException(new TypeError("Try to call Array.toString on not Array object."));

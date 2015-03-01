@@ -145,6 +145,9 @@
     <Compile Include="..\NiL.JS\Core\Functions\MacroFunction.cs">
       <Link>Core\Functions\MacroFunction.cs</Link>
     </Compile>
+    <Compile Include="..\NiL.JS\Core\Functions\MethodProxy.cs">
+      <Link>Core\Functions\MethodProxy.cs</Link>
+    </Compile>
     <Compile Include="..\NiL.JS\Core\Functions\ObjectConstructor.cs">
       <Link>Core\Functions\ObjectConstructor.cs</Link>
     </Compile>
@@ -168,9 +171,6 @@
     </Compile>
     <Compile Include="..\NiL.JS\Core\Modules\AllowUnsafeCallAttribute.cs">
       <Link>Core\Modules\AllowUnsafeCallAttribute.cs</Link>
-    </Compile>
-    <Compile Include="..\NiL.JS\Core\Modules\CallOverloaded.cs">
-      <Link>Core\Modules\CallOverloaded.cs</Link>
     </Compile>
     <Compile Include="..\NiL.JS\Core\Modules\ConvertValueAttribute.cs">
       <Link>Core\Modules\ConvertValueAttribute.cs</Link>
@@ -512,7 +512,6 @@
       <Link>Statements\WithStatement.cs</Link>
     </Compile>
     <Compile Include="Core\Backward.cs" />
-    <Compile Include="Core\Functions\MethodProxy.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
