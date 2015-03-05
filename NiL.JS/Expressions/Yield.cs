@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading;
 using NiL.JS.Core;
-using NiL.JS.Core.BaseTypes;
+using NiL.JS.BaseLibrary;
 
 namespace NiL.JS.Expressions
 {

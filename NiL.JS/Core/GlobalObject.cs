@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using NiL.JS.Core.BaseTypes;
+using NiL.JS.BaseLibrary;
 
 namespace NiL.JS.Core
 {
@@ -38,7 +38,7 @@ namespace NiL.JS.Core
 
         public override void Assign(NiL.JS.Core.JSObject value)
         {
-            throw new JSException((new NiL.JS.Core.BaseTypes.ReferenceError("Invalid left-hand side")));
+            throw new JSException((new NiL.JS.BaseLibrary.ReferenceError("Invalid left-hand side")));
         }
 
         internal protected override JSObject GetMember(JSObject name, bool forWrite, bool own)

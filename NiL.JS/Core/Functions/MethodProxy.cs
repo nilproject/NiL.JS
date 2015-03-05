@@ -4,9 +4,9 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
-using NiL.JS.Core.BaseTypes;
+using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Modules;
+using NiL.JS.Core.TypeProxing;
 
 namespace NiL.JS.Core.Functions
 {
@@ -21,10 +21,11 @@ namespace NiL.JS.Core.Functions
             F2
         }
 
-        private static bool partiallyTrusted;
+        public static bool PartiallyTrusted { get; private set; }
         private static FieldInfo handleInfo;
         private Func<object, object[], Arguments, object> implementation;
         private bool raw;
+        private bool forceInstance;
 
         #region Только для небезопасных вызовов
         private AllowUnsafeCallAttribute[] alternedTypes;
@@ -80,30 +81,39 @@ namespace NiL.JS.Core.Functions
 
         static MethodProxy()
         {
-            Func<IntPtr, IntPtr> donor = x => x;
-            var members = donor.GetType().GetRuntimeFields().GetEnumerator();
-            members.MoveNext(); // 0
-            members.MoveNext(); // 1
-            members.MoveNext(); // 2
-            members.MoveNext(); // 3
-            handleInfo = members.Current;
-
             try
             {
+                Func<IntPtr, IntPtr> donor = x => x;
+#if PORTABLE
+                var members = donor.GetType().GetRuntimeFields().GetEnumerator();
+                members.MoveNext(); // 0
+                members.MoveNext(); // 1
+                members.MoveNext(); // 2
+                members.MoveNext(); // 3
+                handleInfo = members.Current as FieldInfo;
+#else
+                var members = donor.GetType().GetFields(BindingFlags.Instance | BindingFlags.NonPublic);
+                handleInfo = members[3] as FieldInfo;
+#endif
+
                 var handle = handleInfo.GetValue(donor);
                 var forceConverterHandle = (IntPtr)handle;
 
-                var forceConverterType = typeof(Func<,>).MakeGenericType(typeof(JSObject), typeof(BaseTypes.String));
+                var forceConverterType = typeof(Func<,>).MakeGenericType(typeof(JSObject), typeof(NiL.JS.BaseLibrary.String));
+#if PORTABLE
                 var forceConverterConstructor = forceConverterType.GetTypeInfo().DeclaredConstructors.First();
-                var forceConverter = forceConverterConstructor.Invoke(new object[] { null, (IntPtr)forceConverterHandle }) as Func<JSObject, BaseTypes.String>;
+#else
+                var forceConverterConstructor = forceConverterType.GetConstructors().First();
+#endif
+                var forceConverter = forceConverterConstructor.Invoke(new object[] { null, (IntPtr)forceConverterHandle }) as Func<JSObject, NiL.JS.BaseLibrary.String>;
 
                 var test = forceConverter(new JSObject() { oValue = "hello", valueType = JSObjectType.String });
                 if (test == null || test.GetType() != typeof(JSObject))
-                    partiallyTrusted = true;
+                    PartiallyTrusted = true;
             }
             catch
             {
-                partiallyTrusted = true;
+                PartiallyTrusted = true;
             }
 
         }
@@ -122,9 +132,9 @@ namespace NiL.JS.Core.Functions
 
             if (_length == null)
                 _length = new Number(0) { attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.SystemObject };
-            var pc = methodBase.GetCustomAttributes(typeof(Modules.ParametersCountAttribute), false).ToArray();
+            var pc = methodBase.GetCustomAttributes(typeof(Modules.ArgumentsLengthAttribute), false).ToArray();
             if (pc.Length != 0)
-                _length.iValue = (pc[0] as Modules.ParametersCountAttribute).Count;
+                _length.iValue = (pc[0] as Modules.ArgumentsLengthAttribute).Count;
             else
                 _length.iValue = parameters.Length;
 
@@ -150,13 +160,30 @@ namespace NiL.JS.Core.Functions
             {
                 var methodInfo = methodBase as MethodInfo;
                 returnConverter = methodInfo.ReturnParameter.GetCustomAttribute(typeof(Modules.ConvertValueAttribute), false) as Modules.ConvertValueAttribute;
-                
-                if (!partiallyTrusted
+
+                forceInstance = methodBase.IsDefined(typeof(InstanceMemberAttribute), false);
+
+                if (forceInstance)
+                {
+                    if (!methodInfo.IsStatic
+                        || (parameters.Length == 0)
+                        || (parameters.Length > 2)
+                        || (parameters[0].ParameterType != typeof(JSObject))
+                        || (parameters.Length > 1 && parameters[1].ParameterType != typeof(Arguments)))
+                        throw new ArgumentException("Force-instance method \"" + methodBase + "\" have invalid signature");
+                    raw = true;
+                }
+
+                if (!PartiallyTrusted
                     && !methodInfo.IsStatic
                     && (parameters.Length == 0 || (parameters.Length == 1 && parameters[0].ParameterType == typeof(Arguments)))
+#if PORTABLE
                     && !methodInfo.ReturnType.GetTypeInfo().IsValueType)
+#else
+ && !methodInfo.ReturnType.IsValueType)
+#endif
                 {
-                    var t = methodBase.GetCustomAttributes(typeof(AllowUnsafeCallAttribute)).ToArray();
+                    var t = methodBase.GetCustomAttributes(typeof(AllowUnsafeCallAttribute), false).ToArray();
                     alternedTypes = new AllowUnsafeCallAttribute[t.Length];
                     for (var i = 0; i < t.Length; i++)
                         alternedTypes[i] = (AllowUnsafeCallAttribute)t[i];
@@ -169,17 +196,27 @@ namespace NiL.JS.Core.Functions
                     {
                         if (parameters.Length == 0)
                         {
+#if PORTABLE
                             var methodDelegate = methodInfo.CreateDelegate(typeof(Action<>).MakeGenericType(methodBase.DeclaringType));
                             var handle = handleInfo.GetValue(methodDelegate);
                             var forceConverterConstructor = typeof(Action<object>).GetTypeInfo().DeclaredConstructors.First();
+#else
+                            var forceConverterConstructor = typeof(Action<object>).GetConstructors().First();
+                            var handle = methodInfo.MethodHandle.GetFunctionPointer();
+#endif
                             action1 = (Action<object>)forceConverterConstructor.Invoke(new object[] { null, (IntPtr)handle });
                             mode = _Mode.A1;
                         }
                         else // 1
                         {
+#if PORTABLE
                             var methodDelegate = methodInfo.CreateDelegate(typeof(Action<,>).MakeGenericType(methodBase.DeclaringType, typeof(Arguments)));
                             var handle = handleInfo.GetValue(methodDelegate);
                             var forceConverterConstructor = typeof(Action<object, object>).GetTypeInfo().DeclaredConstructors.First();
+#else
+                            var forceConverterConstructor = typeof(Action<object, object>).GetConstructors().First();
+                            var handle = methodInfo.MethodHandle.GetFunctionPointer();
+#endif
                             action2 = (Action<object, object>)forceConverterConstructor.Invoke(new object[] { null, (IntPtr)handle });
                             mode = _Mode.A2;
                         }
@@ -188,17 +225,28 @@ namespace NiL.JS.Core.Functions
                     {
                         if (parameters.Length == 0)
                         {
+#if PORTABLE
                             var methodDelegate = methodInfo.CreateDelegate(typeof(Func<,>).MakeGenericType(methodBase.DeclaringType, methodInfo.ReturnType));
                             var handle = handleInfo.GetValue(methodDelegate);
                             var forceConverterConstructor = typeof(Func<object, object>).GetTypeInfo().DeclaredConstructors.First();
+#else
+                            var forceConverterConstructor = typeof(Func<object, object>).GetConstructors().First();
+                            var handle = methodInfo.MethodHandle.GetFunctionPointer();
+#endif
                             func1 = (Func<object, object>)forceConverterConstructor.Invoke(new object[] { getDummy(), (IntPtr)handle });
                             mode = _Mode.F1;
+
                         }
                         else // 1
                         {
+#if PORTABLE
                             var methodDelegate = methodInfo.CreateDelegate(typeof(Func<,,>).MakeGenericType(methodBase.DeclaringType, typeof(Arguments), methodInfo.ReturnType));
                             var handle = handleInfo.GetValue(methodDelegate);
                             var forceConverterConstructor = typeof(Func<object, object, object>).GetTypeInfo().DeclaredConstructors.First();
+#else
+                            var forceConverterConstructor = typeof(Func<object, object, object>).GetConstructors().First();
+                            var handle = methodInfo.MethodHandle.GetFunctionPointer();
+#endif
                             func2 = (Func<object, object, object>)forceConverterConstructor.Invoke(new object[] { getDummy(), (IntPtr)handle });
                             mode = _Mode.F2;
                         }
@@ -207,10 +255,25 @@ namespace NiL.JS.Core.Functions
                 }
                 #endregion
 
-                if (parameters.Length == 0)
+                if (forceInstance)
+                {
+                    if (parameters.Length == 1)
+                    {
+                        tree = Expression.Call(methodInfo, Expression.Convert(target, typeof(JSObject)));
+                    }
+                    else // 2
+                    {
+                        System.Diagnostics.Debug.Assert(parameters.Length == 2);
+                        tree = Expression.Call(methodInfo, Expression.Convert(target, typeof(JSObject)), argsSource);
+                    }
+                }
+                else if (parameters.Length == 0)
                 {
                     raw = true;
-                    tree = methodInfo.IsStatic ? Expression.Call(methodInfo) : Expression.Call(Expression.TypeAs(target, methodInfo.DeclaringType), methodInfo);
+                    tree = methodInfo.IsStatic ?
+                        Expression.Call(methodInfo)
+                        :
+                        Expression.Call(Expression.Convert(target, methodInfo.DeclaringType), methodInfo);
                 }
                 else
                 {
@@ -218,20 +281,33 @@ namespace NiL.JS.Core.Functions
                     if (parameters.Length == 1 && parameters[0].ParameterType == typeof(Arguments))
                     {
                         raw = true;
-                        tree = methodInfo.IsStatic ? Expression.Call(methodInfo, argsSource) : Expression.Call(Expression.TypeAs(target, methodInfo.DeclaringType), methodInfo, argsSource);
+                        tree = methodInfo.IsStatic ?
+                            Expression.Call(methodInfo, argsSource)
+                            :
+                            Expression.Call(Expression.Convert(target, methodInfo.DeclaringType), methodInfo, argsSource);
                     }
                     else
                     {
                         for (var i = 0; i < prms.Length; i++)
+#if NET35
+                            prms[i] = Expression.Convert(Expression.ArrayIndex(argsArray, Expression.Constant(i)), parameters[i].ParameterType);
+#else
                             prms[i] = Expression.Convert(Expression.ArrayAccess(argsArray, Expression.Constant(i)), parameters[i].ParameterType);
+#endif
                         tree = methodInfo.IsStatic ?
                             Expression.Call(methodInfo, prms)
                             :
-                            Expression.Call(Expression.TypeAs(target, methodInfo.DeclaringType), methodInfo, prms);
+                            Expression.Call(Expression.Convert(target, methodInfo.DeclaringType), methodInfo, prms);
                     }
                 }
                 if (methodInfo.ReturnType == typeof(void))
+#if NET35
+                {
+#error Expression.Block do not supported in .NET 3.5
+                }
+#else
                     tree = Expression.Block(tree, Expression.Constant(null));
+#endif
             }
             else if (methodBase is ConstructorInfo)
             {
@@ -253,7 +329,11 @@ namespace NiL.JS.Core.Functions
                     else
                     {
                         for (var i = 0; i < prms.Length; i++)
+#if NET35
+                            prms[i] = Expression.Convert(Expression.ArrayIndex(argsArray, Expression.Constant(i)), parameters[i].ParameterType);
+#else
                             prms[i] = Expression.Convert(Expression.ArrayAccess(argsArray, Expression.Constant(i)), parameters[i].ParameterType);
+#endif
                         tree = Expression.New(constructorInfo, prms);
                     }
                 }
@@ -267,6 +347,67 @@ namespace NiL.JS.Core.Functions
             catch
             {
                 throw;
+            }
+        }
+
+        [Hidden]
+        internal object InvokeImpl(JSObject thisBind, object[] args, Arguments argsSource)
+        {
+            object target = null;
+            if (forceInstance)
+            {
+                if (thisBind != null && thisBind.valueType >= JSObjectType.Object)
+                {
+                    target = thisBind.Value;
+                    if (target is TypeProxy)
+                        target = (target as TypeProxy).prototypeInstance ?? thisBind.Value;
+                    if (target == null || !typeof(JSObject).IsAssignableFrom(target.GetType()))
+                        target = thisBind;
+                }
+                else
+                    target = thisBind ?? undefined;
+            }
+            else if (!methodBase.IsStatic && !methodBase.IsConstructor)
+            {
+                target = hardTarget ?? getTargetObject(thisBind ?? undefined, methodBase.DeclaringType);
+                if (target == null)
+                    throw new JSException(new TypeError("Can not call function \"" + this.name + "\" for object of another type."));
+            }
+            try
+            {
+                object res = null;
+                switch (mode)
+                {
+                    case _Mode.A1:
+                        action1(target);
+                        break;
+                    case _Mode.A2:
+                        action2(target, argsSource);
+                        break;
+                    case _Mode.F1:
+                        res = func1(target);
+                        break;
+                    case _Mode.F2:
+                        res = func2(target, argsSource);
+                        break;
+                    default:
+                        res = implementation(
+                            target,
+                            raw ? null : args ?? ConvertArgs(argsSource),
+                            argsSource);
+                        break;
+                }
+                if (returnConverter != null)
+                    res = returnConverter.From(res);
+                return res;
+            }
+            catch (Exception e)
+            {
+                while (e.InnerException != null)
+                    e = e.InnerException;
+                if (e is JSException)
+                    throw e;
+                throw new JSException(new TypeError(e.Message), e);
             }
         }
 
@@ -336,66 +477,18 @@ namespace NiL.JS.Core.Functions
             return res;
         }
 
-        [Hidden]
-        internal object InvokeImpl(JSObject thisBind, object[] args, Arguments argsSource)
-        {
-            object target = null;
-            if (!methodBase.IsStatic && !methodBase.IsConstructor)
-            {
-                target = hardTarget ?? getTargetObject(thisBind ?? undefined, methodBase.DeclaringType);
-                if (target == null)
-                    throw new JSException(new TypeError("Can not call function \"" + this.name + "\" for object of another type."));
-            }
-            try
-            {
-                object res = null;
-                switch (mode)
-                {
-                    case _Mode.A1:
-                        action1(target);
-                        break;
-                    case _Mode.A2:
-                        action2(target, argsSource);
-                        break;
-                    case _Mode.F1:
-                        res = func1(target);
-                        break;
-                    case _Mode.F2:
-                        res = func2(target, argsSource);
-                        break;
-                    default:
-                        res = implementation(
-                            target,
-                            raw ? null : args ?? ConvertArgs(argsSource),
-                            argsSource);
-                        break;
-                }
-                if (returnConverter != null)
-                    res = returnConverter.From(res);
-                return res;
-            }
-            catch (Exception e)
-            {
-                while (e.InnerException != null)
-                    e = e.InnerException;
-                if (e is JSException)
-                    throw e;
-                throw new JSException(new TypeError(e.Message), e);
-            }
-        }
-
         public override NiL.JS.Core.JSObject Invoke(NiL.JS.Core.JSObject thisBind, NiL.JS.Core.Arguments args)
         {
             return TypeProxing.TypeProxy.Proxy(InvokeImpl(thisBind, null, args));
         }
 
-        private static object[] convertArray(NiL.JS.Core.BaseTypes.Array array)
+        private static object[] convertArray(NiL.JS.BaseLibrary.Array array)
         {
             var arg = new object[array.data.Count];
             for (var j = arg.Length; j-- > 0; )
             {
                 var temp = (array.data[j] ?? undefined).Value;
-                arg[j] = temp is NiL.JS.Core.BaseTypes.Array ? convertArray(temp as NiL.JS.Core.BaseTypes.Array) : temp;
+                arg[j] = temp is NiL.JS.BaseLibrary.Array ? convertArray(temp as NiL.JS.BaseLibrary.Array) : temp;
             }
             return arg;
         }
@@ -417,8 +510,8 @@ namespace NiL.JS.Core.Functions
             if (v != null)
                 return v;
             v = obj.Value;
-            if (v is Core.BaseTypes.Array)
-                return convertArray(v as Core.BaseTypes.Array);
+            if (v is NiL.JS.BaseLibrary.Array)
+                return convertArray(v as NiL.JS.BaseLibrary.Array);
             else if (v is ProxyConstructor)
                 return (v as ProxyConstructor).proxy.hostedType;
             else if (v is Function && targetType.IsSubclassOf(typeof(Delegate)))
@@ -426,8 +519,13 @@ namespace NiL.JS.Core.Functions
             else if (targetType.IsArray)
             {
                 var eltype = targetType.GetElementType();
+#if PORTABLE
                 if (eltype.GetTypeInfo().IsPrimitive)
                 {
+#else
+                if (eltype.IsPrimitive)
+                {
+#endif
                     if (eltype == typeof(byte) && v is ArrayBuffer)
                         return (v as ArrayBuffer).Data;
                     var ta = v as TypedArray;

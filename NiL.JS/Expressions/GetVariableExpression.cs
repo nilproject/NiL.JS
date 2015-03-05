@@ -66,7 +66,7 @@ namespace NiL.JS.Expressions
             {
                 var res = Descriptor.Get(context, false, functionDepth);
                 if (res.valueType < JSObjectType.Undefined && (!suspendThrow || forceThrow))
-                    throw new JSException((new NiL.JS.Core.BaseTypes.ReferenceError("Variable \"" + variableName + "\" is not defined.")));
+                    throw new JSException((new NiL.JS.BaseLibrary.ReferenceError("Variable \"" + variableName + "\" is not defined.")));
                 return res;
             }
             return descriptor.Get(context, true, functionDepth);
@@ -80,7 +80,7 @@ namespace NiL.JS.Expressions
                 case JSObjectType.NotExists:
                     if (suspendThrow)
                         break;
-                    throw new JSException(new NiL.JS.Core.BaseTypes.ReferenceError("Variable \"" + variableName + "\" is not defined."));
+                    throw new JSException(new NiL.JS.BaseLibrary.ReferenceError("Variable \"" + variableName + "\" is not defined."));
                 case JSObjectType.Property:
                     {
                         var getter = (res.oValue as PropertyPair).get;
@@ -90,7 +90,7 @@ namespace NiL.JS.Expressions
                     }
             }
             //if (res.valueType == JSObjectType.NotExists && !suspendThrow)
-            //    throw new JSException(new NiL.JS.Core.BaseTypes.ReferenceError("Variable \"" + variableName + "\" is not defined."));
+            //    throw new JSException(new NiL.JS.BaseLibrary.ReferenceError("Variable \"" + variableName + "\" is not defined."));
             //if (res.valueType == JSObjectType.Property)
             //{
             //    var getter = (res.oValue as PropertyPair).get;

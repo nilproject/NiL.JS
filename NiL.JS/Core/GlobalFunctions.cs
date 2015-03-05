@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text;
 using System.Threading;
-using NiL.JS.Core.BaseTypes;
+using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Modules;
 using NiL.JS.Core.TypeProxing;
 
@@ -41,7 +41,7 @@ namespace NiL.JS.Core
             return res;
         }
 
-        [ParametersCount(2)]
+        [ArgumentsLength(2)]
         internal static JSObject parseInt(JSObject thisBind, Arguments args)
         {
             double result = double.NaN;

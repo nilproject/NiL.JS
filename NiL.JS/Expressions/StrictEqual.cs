@@ -81,8 +81,8 @@ namespace NiL.JS.Expressions
         {
             tempContainer.Assign(first.Evaluate(context));
             if (Check(tempContainer, second.Evaluate(context)))
-                return Core.BaseTypes.Boolean.True;
-            return Core.BaseTypes.Boolean.False;
+                return BaseLibrary.Boolean.True;
+            return BaseLibrary.Boolean.False;
         }
 
         public override T Visit<T>(Visitor<T> visitor)

@@ -81,5 +81,20 @@ namespace System
                 return MemberTypes.Property;
             return MemberTypes.Custom; // чёт своё, пускай сами разбираются
         }
+
+        public static MethodInfo GetGetMethod(this PropertyInfo self)
+        {
+            return self.GetMethod;
+        }
+
+        public static MethodInfo GetSetMethod(this PropertyInfo self)
+        {
+            return self.SetMethod;
+        }
+
+        public static MethodInfo GetAddMethod(this EventInfo self)
+        {
+            return self.AddMethod;
+        }
     }
 }

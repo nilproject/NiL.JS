@@ -1,25 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Runtime.InteropServices.WindowsRuntime;
 using NiL.JS;
 using NiL.JS.Core;
 using NiL.JS.Core.TypeProxing;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 
 // Документацию по шаблону элемента "Пустая страница" см. по адресу http://go.microsoft.com/fwlink/?LinkId=391641
@@ -31,7 +24,7 @@ namespace Portable.Test.Phone
     /// </summary>
     public sealed partial class MainPage : Page
     {
-        private sealed class Tester
+        private sealed class Tester : INotifyPropertyChanged
         {
             private class Logger
             {
@@ -60,6 +53,10 @@ namespace Portable.Test.Phone
 
             private Logger logger;
             public ObservableCollection<string> Messages { get; private set; }
+
+            public int Passed { get; set; }
+
+            public int Failed { get; set; }
 
             public Tester()
             {
@@ -94,12 +91,47 @@ namespace Portable.Test.Phone
 
             private void test(string code)
             {
-                Context.RefreshGlobalContext();
-                var s = new Script(staCode); // инициализация
-                s.Context.DefineVariable("console").Assign(TypeProxy.Proxy(logger));
-                s.Invoke();
+                bool pass = true;
+                bool negative = code.IndexOf("@negative") != -1;
+                try
+                {
 
-                s.Context.Eval(code);
+                    Context.RefreshGlobalContext();
+                    var s = new Script(staCode); // инициализация
+                    s.Context.DefineVariable("console").Assign(TypeProxy.Proxy(logger));
+                    s.Invoke();
+                    try
+                    {
+                        s.Context.Eval(code, true);
+                    }
+                    finally
+                    {
+                        pass ^= negative;
+                    }
+                }
+                catch (JSException e)
+                {
+                    pass = negative;
+                    if (!pass)
+                        logger.log(new Arguments { e.Message });
+                }
+                catch (Exception e)
+                {
+                    logger.log(new Arguments { e.ToString() });
+                    pass = false;
+                }
+                if (pass)
+                {
+                    Passed++;
+                    if (PropertyChanged != null)
+                        PropertyChanged(this, new PropertyChangedEventArgs("Passed"));
+                }
+                else
+                {
+                    Failed++;
+                    if (PropertyChanged != null)
+                        PropertyChanged(this, new PropertyChangedEventArgs("Failed"));
+                }
             }
 
             private static IEnumerable<StorageFile> enumerateFiles(StorageFolder folder)
@@ -116,6 +148,12 @@ namespace Portable.Test.Phone
                 foreach (var file in files.GetResults())
                     yield return file;
             }
+
+            #region Члены INotifyPropertyChanged
+
+            public event PropertyChangedEventHandler PropertyChanged;
+
+            #endregion
         }
 
         public MainPage()

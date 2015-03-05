@@ -4,7 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
 using NiL.JS.Core;
-using NiL.JS.Core.BaseTypes;
+using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Functions;
 using NiL.JS.Core.Modules;
 using NiL.JS.Core.TypeProxing;
@@ -410,11 +410,11 @@ namespace NiL.JS.Expressions
                         if (parameters[j].Name == parameters[k].Name)
                             throw new JSException(new SyntaxError("Duplicate names of function parameters not allowed in strict mode."));
                 if (name == "arguments" || name == "eval")
-                    throw new JSException((new Core.BaseTypes.SyntaxError("Functions name may not be \"arguments\" or \"eval\" in strict mode at " + CodeCoordinates.FromTextPosition(code, index, 0))));
+                    throw new JSException((new SyntaxError("Functions name may not be \"arguments\" or \"eval\" in strict mode at " + CodeCoordinates.FromTextPosition(code, index, 0))));
                 for (int j = parameters.Count; j-- > 0; )
                 {
                     if (parameters[j].Name == "arguments" || parameters[j].Name == "eval")
-                        throw new JSException((new Core.BaseTypes.SyntaxError("Parameters name may not be \"arguments\" or \"eval\" in strict mode at " + CodeCoordinates.FromTextPosition(code, parameters[j].Position, parameters[j].Length))));
+                        throw new JSException((new SyntaxError("Parameters name may not be \"arguments\" or \"eval\" in strict mode at " + CodeCoordinates.FromTextPosition(code, parameters[j].Position, parameters[j].Length))));
                 }
             }
             if (mode == FunctionType.Function && string.IsNullOrEmpty(name))

@@ -1,6 +1,6 @@
 ﻿using System;
 using NiL.JS.Core;
-using NiL.JS.Core.BaseTypes;
+using NiL.JS.BaseLibrary;
 
 namespace NiL.JS.Expressions
 {
@@ -32,7 +32,7 @@ namespace NiL.JS.Expressions
             var c = second.Evaluate(context);
             tempContainer = a;
             if (c.valueType != JSObjectType.Function)
-                throw new JSException(new NiL.JS.Core.BaseTypes.TypeError("Right-hand value of instanceof is not function."));
+                throw new JSException(new NiL.JS.BaseLibrary.TypeError("Right-hand value of instanceof is not function."));
             var p = (c.oValue as Function).prototype;
             if (p.valueType < JSObjectType.Object)
                 throw new JSException(new TypeError("Property \"prototype\" of function not represent object."));

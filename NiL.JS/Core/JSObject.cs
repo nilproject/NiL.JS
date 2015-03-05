@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using NiL.JS.Core.BaseTypes;
+using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Modules;
 using NiL.JS.Core.TypeProxing;
 using NiL.JS.Expressions;
@@ -173,12 +173,12 @@ namespace NiL.JS.Core
             switch (valueType)
             {
                 case JSObjectType.Bool:
-                    return TypeProxy.GetPrototype(typeof(BaseTypes.Boolean));
+                    return TypeProxy.GetPrototype(typeof(NiL.JS.BaseLibrary.Boolean));
                 case JSObjectType.Double:
                 case JSObjectType.Int:
-                    return TypeProxy.GetPrototype(typeof(BaseTypes.Number));
+                    return TypeProxy.GetPrototype(typeof(Number));
                 case JSObjectType.String:
-                    return TypeProxy.GetPrototype(typeof(BaseTypes.String));
+                    return TypeProxy.GetPrototype(typeof(NiL.JS.BaseLibrary.String));
             }
             if (valueType >= JSObjectType.Object && oValue != this)
             {
@@ -413,9 +413,9 @@ namespace NiL.JS.Core
                             return notExists;
                         forWrite = false;
                         if (__prototype == null)
-                            __prototype = TypeProxy.GetPrototype(typeof(BaseTypes.Boolean));
+                            __prototype = TypeProxy.GetPrototype(typeof(NiL.JS.BaseLibrary.Boolean));
 #if DEBUG
-                        else if (__prototype.oValue != TypeProxy.GetPrototype(typeof(BaseTypes.Boolean)).oValue)
+                        else if (__prototype.oValue != TypeProxy.GetPrototype(typeof(NiL.JS.BaseLibrary.Boolean)).oValue)
                             System.Diagnostics.Debugger.Break();
 #endif
                         return __prototype.GetMember(name, false, false);
@@ -427,9 +427,9 @@ namespace NiL.JS.Core
                             return notExists;
                         forWrite = false;
                         if (__prototype == null)
-                            __prototype = TypeProxy.GetPrototype(typeof(BaseTypes.Number));
+                            __prototype = TypeProxy.GetPrototype(typeof(Number));
 #if DEBUG
-                        else if (__prototype.oValue != TypeProxy.GetPrototype(typeof(BaseTypes.Number)).oValue)
+                        else if (__prototype.oValue != TypeProxy.GetPrototype(typeof(Number)).oValue)
                             System.Diagnostics.Debugger.Break();
 #endif
                         return __prototype.GetMember(name, false, false);
@@ -489,9 +489,9 @@ namespace NiL.JS.Core
                 return oValue.ToString()[index];
 
             if (__prototype == null)
-                __prototype = TypeProxy.GetPrototype(typeof(BaseTypes.String));
+                __prototype = TypeProxy.GetPrototype(typeof(NiL.JS.BaseLibrary.String));
 #if DEBUG
-            else if (__prototype.oValue != TypeProxy.GetPrototype(typeof(BaseTypes.String)).oValue)
+            else if (__prototype.oValue != TypeProxy.GetPrototype(typeof(NiL.JS.BaseLibrary.String)).oValue)
                 System.Diagnostics.Debugger.Break();
 #endif
             return __prototype.GetMember(name, false, false);
@@ -633,11 +633,11 @@ namespace NiL.JS.Core
                 JSObject res = null;
                 if (tpvs.valueType == JSObjectType.Function)
                 {
-                    res = (tpvs.oValue as NiL.JS.Core.BaseTypes.Function).Invoke(this, null);
+                    res = (tpvs.oValue as NiL.JS.BaseLibrary.Function).Invoke(this, null);
                     if (res.valueType == JSObjectType.Object)
                     {
-                        if (res.oValue is BaseTypes.String)
-                            res = res.oValue as BaseTypes.String;
+                        if (res.oValue is NiL.JS.BaseLibrary.String)
+                            res = res.oValue as NiL.JS.BaseLibrary.String;
                     }
                     if (res.valueType < JSObjectType.Object)
                         return res;
@@ -645,11 +645,11 @@ namespace NiL.JS.Core
                 tpvs = GetMember(func1);
                 if (tpvs.valueType == JSObjectType.Function)
                 {
-                    res = (tpvs.oValue as NiL.JS.Core.BaseTypes.Function).Invoke(this, null);
+                    res = (tpvs.oValue as NiL.JS.BaseLibrary.Function).Invoke(this, null);
                     if (res.valueType == JSObjectType.Object)
                     {
-                        if (res.oValue is BaseTypes.String)
-                            res = res.oValue as BaseTypes.String;
+                        if (res.oValue is NiL.JS.BaseLibrary.String)
+                            res = res.oValue as NiL.JS.BaseLibrary.String;
                     }
                     if (res.valueType < JSObjectType.Object)
                         return res;
@@ -746,13 +746,13 @@ namespace NiL.JS.Core
             switch (valueType)
             {
                 case JSObjectType.Bool:
-                    return new ObjectContainer(new BaseTypes.Boolean(iValue != 0));
+                    return new ObjectContainer(new NiL.JS.BaseLibrary.Boolean(iValue != 0));
                 case JSObjectType.Int:
-                    return new ObjectContainer(new BaseTypes.Number(iValue));
+                    return new ObjectContainer(new Number(iValue));
                 case JSObjectType.Double:
-                    return new ObjectContainer(new BaseTypes.Number(dValue));
+                    return new ObjectContainer(new Number(dValue));
                 case JSObjectType.String:
-                    return new ObjectContainer(new BaseTypes.String(oValue.ToString()));
+                    return new ObjectContainer(new NiL.JS.BaseLibrary.String(oValue.ToString()));
             }
             return new JSObject() { valueType = JSObjectType.Object };
         }
@@ -787,7 +787,7 @@ namespace NiL.JS.Core
 
         protected internal virtual IEnumerator<string> GetEnumeratorImpl(bool hideNonEnum)
         {
-            if (valueType == JSObjectType.String || this.GetType() == typeof(BaseTypes.String))
+            if (valueType == JSObjectType.String || this.GetType() == typeof(NiL.JS.BaseLibrary.String))
             {
                 var len = (oValue.ToString()).Length;
                 for (var i = 0; i < len; i++)
@@ -807,7 +807,7 @@ namespace NiL.JS.Core
 
         [CLSCompliant(false)]
         [DoNotEnumerate]
-        [ParametersCount(0)]
+        [ArgumentsLength(0)]
         [AllowNullArguments]
         public virtual JSObject toString(Arguments args)
         {
@@ -975,7 +975,7 @@ namespace NiL.JS.Core
         [Hidden]
         public static implicit operator JSObject(char value)
         {
-            return new BaseTypes.String(value.ToString());
+            return new NiL.JS.BaseLibrary.String(value.ToString());
         }
 
 #if INLINE
@@ -984,7 +984,7 @@ namespace NiL.JS.Core
         [Hidden]
         public static implicit operator JSObject(bool value)
         {
-            return (BaseTypes.Boolean)value;
+            return (NiL.JS.BaseLibrary.Boolean)value;
         }
 
         [Hidden]
@@ -1008,7 +1008,7 @@ namespace NiL.JS.Core
         [Hidden]
         public static implicit operator JSObject(string value)
         {
-            return new BaseTypes.String(value);
+            return new NiL.JS.BaseLibrary.String(value);
         }
 
         [Hidden]
@@ -1089,7 +1089,7 @@ namespace NiL.JS.Core
         #endregion
 
         [DoNotEnumerate]
-        [ParametersCount(2)]
+        [ArgumentsLength(2)]
         public static JSObject create(Arguments args)
         {
             var proto = args[0];
@@ -1209,7 +1209,7 @@ namespace NiL.JS.Core
             return res;
         }
 
-        [ParametersCount(2)]
+        [ArgumentsLength(2)]
         [DoNotEnumerate]
         public static JSObject defineProperties(Arguments args)
         {
@@ -1251,7 +1251,7 @@ namespace NiL.JS.Core
         }
 
         [DoNotEnumerate]
-        [ParametersCount(3)]
+        [ArgumentsLength(3)]
         public static JSObject defineProperty(Arguments args)
         {
             var target = args[0];
@@ -1335,7 +1335,7 @@ namespace NiL.JS.Core
             if ((obj.attributes & JSObjectAttributesInternal.SystemObject) != 0)
                 throw new JSException(new TypeError("Can not define property \"" + memberName + "\". Object is immutable."));
 
-            if (target is BaseTypes.Array)
+            if (target is NiL.JS.BaseLibrary.Array)
             {
                 if (memberName == "length")
                 {
@@ -1351,7 +1351,7 @@ namespace NiL.JS.Core
                                 && ((obj.valueType == JSObjectType.Double && nlenD != obj.dValue)
                                     || (obj.valueType == JSObjectType.Int && nlen != obj.iValue)))
                                 throw new JSException(new TypeError("Cannot change length of fixed size array"));
-                            if (!(target as BaseTypes.Array).setLength(nlen))
+                            if (!(target as NiL.JS.BaseLibrary.Array).setLength(nlen))
                                 throw new JSException(new TypeError("Unable to reduce length because not configurable elements"));
                             value = notExists;
                         }
@@ -1549,9 +1549,9 @@ namespace NiL.JS.Core
             obj.attributes |= JSObjectAttributesInternal.Immutable;
             obj = obj.Value as JSObject ?? obj;
             obj.attributes |= JSObjectAttributesInternal.Immutable;
-            if (obj is BaseTypes.Array)
+            if (obj is NiL.JS.BaseLibrary.Array)
             {
-                var arr = obj as BaseTypes.Array;
+                var arr = obj as NiL.JS.BaseLibrary.Array;
                 foreach (var element in arr.data)
                     if (element != null && element.IsExist)
                         element.attributes |= JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete;
@@ -1606,9 +1606,9 @@ namespace NiL.JS.Core
                 return false;
             if (obj is TypeProxy)
                 return true;
-            if (obj is BaseTypes.Array)
+            var arr = obj as NiL.JS.BaseLibrary.Array;
+            if (arr != null)
             {
-                var arr = obj as BaseTypes.Array;
                 foreach (var node in arr.data)
                 {
                     if (node != null
@@ -1638,9 +1638,9 @@ namespace NiL.JS.Core
             obj = obj.Value as JSObject ?? obj;
             obj.attributes |= JSObjectAttributesInternal.Immutable;
             (obj.Value as JSObject ?? obj).attributes |= JSObjectAttributesInternal.Immutable;
-            if (obj is BaseTypes.Array)
+            var arr = obj as NiL.JS.BaseLibrary.Array;
+            if (arr != null)
             {
-                var arr = obj as BaseTypes.Array;
                 foreach (var element in arr.data)
                     if (element != null && element.IsExist)
                         element.attributes |= JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.DoNotDelete;
@@ -1670,9 +1670,9 @@ namespace NiL.JS.Core
                 return false;
             if (obj is TypeProxy)
                 return true;
-            if (obj is BaseTypes.Array)
+            var arr = obj as NiL.JS.BaseLibrary.Array;
+            if (arr != null)
             {
-                var arr = obj as BaseTypes.Array;
                 foreach (var node in (arr.data as IEnumerable<KeyValuePair<int, JSObject>>))
                 {
                     if (node.Value != null && node.Value.IsExist &&
@@ -1713,7 +1713,7 @@ namespace NiL.JS.Core
         }
 
         [DoNotEnumerate]
-        [ParametersCount(2)]
+        [ArgumentsLength(2)]
         public static JSObject getOwnPropertyDescriptor(Arguments args)
         {
             var source = args[0];
@@ -1753,7 +1753,7 @@ namespace NiL.JS.Core
                 throw new JSException(new TypeError("Object.getOwnPropertyNames called on non-object value."));
             if (obj.oValue == null)
                 throw new JSException(new TypeError("Cannot get property names of null"));
-            return new BaseTypes.Array((obj.oValue as JSObject ?? obj).GetEnumeratorImpl(false));
+            return new NiL.JS.BaseLibrary.Array((obj.oValue as JSObject ?? obj).GetEnumeratorImpl(false));
         }
 
         [DoNotEnumerate]
@@ -1764,7 +1764,7 @@ namespace NiL.JS.Core
                 throw new JSException(new TypeError("Object.keys called on non-object value."));
             if (obj.oValue == null)
                 throw new JSException(new TypeError("Cannot get property names of null"));
-            return new BaseTypes.Array((obj.Value as JSObject ?? obj).GetEnumeratorImpl(true));
+            return new NiL.JS.BaseLibrary.Array((obj.Value as JSObject ?? obj).GetEnumeratorImpl(true));
         }
 
         internal bool isNeedClone { get { return (attributes & (JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.SystemObject)) == JSObjectAttributesInternal.SystemObject; } }

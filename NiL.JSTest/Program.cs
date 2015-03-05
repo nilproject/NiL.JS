@@ -1,6 +1,5 @@
 ﻿using NiL.JS;
 using NiL.JS.Core;
-using NiL.JS.Core.BaseTypes;
 using NiL.JS.Core.Modules;
 using System;
 using System.Diagnostics;
@@ -278,12 +277,8 @@ for (var i = 0; i < 10000000; i++) abs(i * (1 - 2 * (i & 1)));
         private static void testEx()
         {
             var script = new Script(@"
-__re = /undefined/;
-
-//CHECK#0
-if (__re.test() !== (__re.exec() !== null)) {
-	console.log('#0: __re = /undefined/; __re.test() === (__re.exec() !== null)');
-}");
+console.log(1..toLocaleString());
+");
             script.Invoke();
         }
 

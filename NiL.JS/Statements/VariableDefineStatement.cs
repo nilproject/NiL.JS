@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using NiL.JS.Core;
-using NiL.JS.Core.BaseTypes;
+using NiL.JS.BaseLibrary;
 using NiL.JS.Expressions;
 
 namespace NiL.JS.Statements
@@ -108,20 +108,20 @@ namespace NiL.JS.Statements
                 if (!Parser.ValidateName(state.Code, ref i, state.strict.Peek()))
                 {
                     if (Parser.ValidateName(state.Code, ref i, false, true, state.strict.Peek()))
-                        throw new JSException((new Core.BaseTypes.SyntaxError('\"' + Tools.Unescape(state.Code.Substring(s, i - s), state.strict.Peek()) + "\" is a reserved word at " + CodeCoordinates.FromTextPosition(state.Code, s, i - s))));
-                    throw new JSException((new Core.BaseTypes.SyntaxError("Invalid variable definition at " + CodeCoordinates.FromTextPosition(state.Code, s, i - s))));
+                        throw new JSException((new SyntaxError('\"' + Tools.Unescape(state.Code.Substring(s, i - s), state.strict.Peek()) + "\" is a reserved word at " + CodeCoordinates.FromTextPosition(state.Code, s, i - s))));
+                    throw new JSException((new SyntaxError("Invalid variable definition at " + CodeCoordinates.FromTextPosition(state.Code, s, i - s))));
                 }
                 string name = Tools.Unescape(state.Code.Substring(s, i - s), state.strict.Peek());
                 if (state.strict.Peek())
                 {
                     if (name == "arguments" || name == "eval")
-                        throw new JSException((new Core.BaseTypes.SyntaxError("Varible name may not be \"arguments\" or \"eval\" in strict mode at " + CodeCoordinates.FromTextPosition(state.Code, s, i - s))));
+                        throw new JSException((new SyntaxError("Varible name may not be \"arguments\" or \"eval\" in strict mode at " + CodeCoordinates.FromTextPosition(state.Code, s, i - s))));
                 }
                 names.Add(name);
                 isDef = true;
                 while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]) && !Tools.isLineTerminator(state.Code[i])) i++;
                 if (i < state.Code.Length && (state.Code[i] != ',') && (state.Code[i] != ';') && (state.Code[i] != '=') && (state.Code[i] != '}') && (!Tools.isLineTerminator(state.Code[i])))
-                    throw new JSException((new Core.BaseTypes.SyntaxError("Expected \";\", \",\", \"=\" or \"}\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 1))));
+                    throw new JSException((new SyntaxError("Expected \";\", \",\", \"=\" or \"}\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 1))));
                 if (i >= state.Code.Length)
                 {
                     initializator.Add(new GetVariableExpression(name, state.functionsDepth) { Position = s, Length = name.Length, functionDepth = state.functionsDepth });

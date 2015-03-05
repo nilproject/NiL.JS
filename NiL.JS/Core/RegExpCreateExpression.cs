@@ -1,5 +1,5 @@
 ﻿using System;
-using NiL.JS.Core.BaseTypes;
+using NiL.JS.BaseLibrary;
 using NiL.JS.Core.JIT;
 using NiL.JS.Expressions;
 

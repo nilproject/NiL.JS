@@ -1,6 +1,6 @@
 ﻿using System;
 using NiL.JS.Core;
-using NiL.JS.Core.BaseTypes;
+using NiL.JS.BaseLibrary;
 
 namespace NiL.JS.Expressions
 {
@@ -36,7 +36,7 @@ namespace NiL.JS.Expressions
                 throw new JSException(new TypeError("Right-hand value of operator in is not object."));
             if (temp.valueType == JSObjectType.Int)
             {
-                var array = source.oValue as Core.BaseTypes.Array;
+                var array = source.oValue as BaseLibrary.Array;
                 if (array != null)
                 {
                     res = temp.iValue >= 0 && temp.iValue < array.data.Length && (array.data[temp.iValue] ?? JSObject.notExists).IsExist;

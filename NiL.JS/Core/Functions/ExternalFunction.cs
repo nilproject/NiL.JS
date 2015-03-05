@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
-using NiL.JS.Core.BaseTypes;
+using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Modules;
 
 namespace NiL.JS.Core.Functions
@@ -66,11 +66,11 @@ namespace NiL.JS.Core.Functions
                 _length = new Number(0) { attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum };
             
 #if PORTABLE
-            var paramCountAttrbt = del.GetMethodInfo().GetCustomAttributes(typeof(ParametersCountAttribute), false).ToArray();
+            var paramCountAttrbt = del.GetMethodInfo().GetCustomAttributes(typeof(ArgumentsLengthAttribute), false).ToArray();
 #else
-            var paramCountAttrbt = del.Method.GetCustomAttributes(typeof(ParametersCountAttribute), false);
+            var paramCountAttrbt = del.Method.GetCustomAttributes(typeof(ArgumentsLengthAttribute), false);
 #endif
-            _length.iValue = paramCountAttrbt != null && paramCountAttrbt.Length > 0 ? ((ParametersCountAttribute)paramCountAttrbt[0]).Count : 1;
+            _length.iValue = paramCountAttrbt != null && paramCountAttrbt.Length > 0 ? ((ArgumentsLengthAttribute)paramCountAttrbt[0]).Count : 1;
             _prototype = undefined;
             if (del == null)
                 throw new ArgumentNullException();

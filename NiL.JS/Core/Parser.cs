@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using NiL.JS.BaseLibrary;
 using NiL.JS.Expressions;
 using NiL.JS.Statements;
 
@@ -423,7 +424,7 @@ namespace NiL.JS.Core
                     {
                         if (!@throw)
                             return false;
-                        throw new JSException((new BaseTypes.SyntaxError("Unterminated string constant")));
+                        throw new JSException((new SyntaxError("Unterminated string constant")));
                     }
                     j++;
                     if (j >= code.Length)
@@ -528,8 +529,8 @@ namespace NiL.JS.Core
                 }
             }
             var cord = CodeCoordinates.FromTextPosition(state.Code, sindex, 0);
-            throw new JSException((new NiL.JS.Core.BaseTypes.SyntaxError("Unexpected token at " + cord + " : "
-                + state.Code.Substring(index, Math.Min(20, state.Code.Length - index)).Split(new[] { ' ', '\n', '\r' })[0])));
+            throw new JSException((new NiL.JS.BaseLibrary.SyntaxError("Unexpected token at " + cord + " : "
+                + state.Code.Substring(index, System.Math.Min(20, state.Code.Length - index)).Split(new[] { ' ', '\n', '\r' })[0])));
         }
 
         internal static void Build(ref CodeNode s, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using NiL.JS.Core;
-using NiL.JS.Core.BaseTypes;
+using NiL.JS.BaseLibrary;
 using NiL.JS.Expressions;
 
 namespace NiL.JS.Statements
@@ -61,7 +61,7 @@ namespace NiL.JS.Statements
                 if (state.strict.Peek())
                 {
                     if (varName == "arguments" || varName == "eval")
-                        throw new JSException((new Core.BaseTypes.SyntaxError("Parameters name may not be \"arguments\" or \"eval\" in strict mode at " + CodeCoordinates.FromTextPosition(state.Code, start, i - start))));
+                        throw new JSException((new SyntaxError("Parameters name may not be \"arguments\" or \"eval\" in strict mode at " + CodeCoordinates.FromTextPosition(state.Code, start, i - start))));
                 }
                 res.variable = new VariableDefineStatement(varName, new GetVariableExpression(varName, state.functionsDepth) { Position = start, Length = i - start, functionDepth = state.functionsDepth }, false, state.functionsDepth) { Position = vStart, Length = i - vStart };
             }
@@ -78,7 +78,7 @@ namespace NiL.JS.Statements
                 if (state.strict.Peek())
                 {
                     if (varName == "arguments" || varName == "eval")
-                        throw new JSException((new Core.BaseTypes.SyntaxError("Parameters name may not be \"arguments\" or \"eval\" in strict mode at " + CodeCoordinates.FromTextPosition(state.Code, start, i - start))));
+                        throw new JSException((new SyntaxError("Parameters name may not be \"arguments\" or \"eval\" in strict mode at " + CodeCoordinates.FromTextPosition(state.Code, start, i - start))));
                 }
                 res.variable = new GetVariableExpression(varName, state.functionsDepth) { Position = start, Length = i - start, functionDepth = state.functionsDepth };
             }
@@ -109,7 +109,7 @@ namespace NiL.JS.Statements
             res.source = Parser.Parse(state, ref i, 1);
             while (char.IsWhiteSpace(state.Code[i])) i++;
             if (state.Code[i] != ')')
-                throw new JSException((new Core.BaseTypes.SyntaxError("Expected \")\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
+                throw new JSException((new SyntaxError("Expected \")\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
             i++;
             state.AllowBreak.Push(true);
             state.AllowContinue.Push(true);
@@ -117,7 +117,7 @@ namespace NiL.JS.Statements
             if (res.body is FunctionExpression)
             {
                 if (state.strict.Peek())
-                    throw new JSException((new NiL.JS.Core.BaseTypes.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
+                    throw new JSException((new NiL.JS.BaseLibrary.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
                 if (state.message != null)
                     state.message(MessageLevel.CriticalWarning, CodeCoordinates.FromTextPosition(state.Code, res.body.Position, res.body.Length), "Do not declare function in nested blocks.");
                 res.body = new CodeBlock(new[] { res.body }, state.strict.Peek()); // для того, чтобы не дублировать код по декларации функции, 
@@ -154,9 +154,9 @@ namespace NiL.JS.Statements
             HashSet<string> processedKeys = new HashSet<string>(StringComparer.Ordinal);
             while (s != null)
             {
-                if (s.oValue is Core.BaseTypes.Array)
+                if (s.oValue is NiL.JS.BaseLibrary.Array)
                 {
-                    var src = s.oValue as Core.BaseTypes.Array;
+                    var src = s.oValue as NiL.JS.BaseLibrary.Array;
                     foreach (var item in src.data)
                     {
                         if (item == null

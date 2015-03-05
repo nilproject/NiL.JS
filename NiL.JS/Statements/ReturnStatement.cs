@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using NiL.JS.Core;
-using NiL.JS.Core.BaseTypes;
+using NiL.JS.BaseLibrary;
 using NiL.JS.Core.JIT;
 
 namespace NiL.JS.Statements
@@ -85,7 +85,7 @@ namespace NiL.JS.Statements
             if (body != null)
                 body.Optimize(ref body, owner, message);
         }
-#if !PORTABLE
+#if !PORTABLE && !NET35
         internal override System.Linq.Expressions.Expression TryCompile(bool selfCompile, bool forAssign, Type expectedType, List<CodeNode> dynamicValues)
         {
             var b = body.TryCompile(false, false, null, dynamicValues);

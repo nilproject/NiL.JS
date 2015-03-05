@@ -131,6 +131,7 @@
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Developer Release|x64'">
     <OutputPath>bin\x64\Developer Release\</OutputPath>
@@ -143,6 +144,7 @@
     <CodeAnalysisIgnoreBuiltInRuleSets>false</CodeAnalysisIgnoreBuiltInRuleSets>
     <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Developer Release|x86'">
     <OutputPath>bin\x86\Developer Release\</OutputPath>
@@ -154,6 +156,7 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Not optimized Release|AnyCPU' ">
     <OutputPath>bin\Not optimized release\</OutputPath>
@@ -164,6 +167,7 @@
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Not optimized Release|x64' ">
     <OutputPath>bin\x64\Not optimized release\</OutputPath>
@@ -176,6 +180,7 @@
     <CodeAnalysisIgnoreBuiltInRuleSets>false</CodeAnalysisIgnoreBuiltInRuleSets>
     <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Not optimized Release|x86' ">
     <OutputPath>bin\x86\Not optimized release\</OutputPath>
@@ -188,6 +193,7 @@
     <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
     <DebugSymbols>true</DebugSymbols>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
     <DefineConstants Condition=" '$(Configuration)' == 'Debug' ">$(DefineConstants);DEV</DefineConstants>
@@ -205,19 +211,19 @@
     <Compile Include="CompilerNotification.cs" />
     <Compile Include="Core\Arguments.cs" />
     <Compile Include="Core\Backward.cs" />
-    <Compile Include="Core\BaseTypes\Array.cs" />
-    <Compile Include="Core\BaseTypes\ArrayBuffer.cs" />
-    <Compile Include="Core\BaseTypes\Boolean.cs" />
-    <Compile Include="Core\BaseTypes\Float64Array.cs" />
-    <Compile Include="Core\BaseTypes\Float32Array.cs" />
-    <Compile Include="Core\BaseTypes\Int32Array.cs" />
-    <Compile Include="Core\BaseTypes\Uint32Array.cs" />
-    <Compile Include="Core\BaseTypes\Uint16Array.cs" />
-    <Compile Include="Core\BaseTypes\Int16Array.cs" />
-    <Compile Include="Core\BaseTypes\Uint8ClampedArray.cs" />
-    <Compile Include="Core\BaseTypes\Uint8Array.cs" />
-    <Compile Include="Core\BaseTypes\Int8Array.cs" />
-    <Compile Include="Core\BaseTypes\TypedArray.cs" />
+    <Compile Include="BaseLibrary\Array.cs" />
+    <Compile Include="BaseLibrary\ArrayBuffer.cs" />
+    <Compile Include="BaseLibrary\Boolean.cs" />
+    <Compile Include="BaseLibrary\Float64Array.cs" />
+    <Compile Include="BaseLibrary\Float32Array.cs" />
+    <Compile Include="BaseLibrary\Int32Array.cs" />
+    <Compile Include="BaseLibrary\Uint32Array.cs" />
+    <Compile Include="BaseLibrary\Uint16Array.cs" />
+    <Compile Include="BaseLibrary\Int16Array.cs" />
+    <Compile Include="BaseLibrary\Uint8ClampedArray.cs" />
+    <Compile Include="BaseLibrary\Uint8Array.cs" />
+    <Compile Include="BaseLibrary\Int8Array.cs" />
+    <Compile Include="BaseLibrary\TypedArray.cs" />
     <Compile Include="Core\BinaryTree.cs" />
     <Compile Include="Core\Functions\BindedFunction.cs" />
     <Compile Include="Core\CatchContext.cs" />
@@ -225,7 +231,7 @@
     <Compile Include="Core\Functions\MacroFunction.cs" />
     <Compile Include="Core\Functions\MethodProxy.cs" />
     <Compile Include="Core\Modules\ConvertValueAttribute.cs" />
-    <Compile Include="Core\Modules\Debug.cs" />
+    <Compile Include="BaseLibrary\Debug.cs" />
     <Compile Include="Core\Modules\ImmutablePrototypeAttribute.cs" />
     <Compile Include="Core\PropertyPair.cs" />
     <Compile Include="Core\RopeString.cs" />
@@ -233,18 +239,18 @@
     <Compile Include="Core\StringMap2.cs" />
     <Compile Include="Core\TypeProxing\AllowNullArgumentsAttribute.cs" />
     <Compile Include="Core\TypeProxing\CustomType.cs" />
-    <Compile Include="Core\BaseTypes\Date.cs" />
-    <Compile Include="Core\BaseTypes\RegExp.cs" />
-    <Compile Include="Core\BaseTypes\URIError.cs" />
-    <Compile Include="Core\BaseTypes\SyntaxError.cs" />
-    <Compile Include="Core\BaseTypes\RangeError.cs" />
-    <Compile Include="Core\BaseTypes\EvalError.cs" />
-    <Compile Include="Core\BaseTypes\Error.cs" />
-    <Compile Include="Core\BaseTypes\Function.cs" />
-    <Compile Include="Core\BaseTypes\Number.cs" />
-    <Compile Include="Core\BaseTypes\String.cs" />
-    <Compile Include="Core\BaseTypes\ReferenceError.cs" />
-    <Compile Include="Core\BaseTypes\TypeError.cs" />
+    <Compile Include="BaseLibrary\Date.cs" />
+    <Compile Include="BaseLibrary\RegExp.cs" />
+    <Compile Include="BaseLibrary\URIError.cs" />
+    <Compile Include="BaseLibrary\SyntaxError.cs" />
+    <Compile Include="BaseLibrary\RangeError.cs" />
+    <Compile Include="BaseLibrary\EvalError.cs" />
+    <Compile Include="BaseLibrary\Error.cs" />
+    <Compile Include="BaseLibrary\Function.cs" />
+    <Compile Include="BaseLibrary\Number.cs" />
+    <Compile Include="BaseLibrary\String.cs" />
+    <Compile Include="BaseLibrary\ReferenceError.cs" />
+    <Compile Include="BaseLibrary\TypeError.cs" />
     <Compile Include="Core\Delegates.cs" />
     <Compile Include="Core\Functions\EvalFunction.cs" />
     <Compile Include="Core\Functions\ExternalFunction.cs" />
@@ -256,6 +262,7 @@
     <Compile Include="Core\Modules\NotConfigurable.cs" />
     <Compile Include="Core\RegExpCreateExpression.cs" />
     <Compile Include="Core\StructureDefaultConstructorInfo.cs" />
+    <Compile Include="Core\TypeProxing\InstanceMemberAttribute.cs" />
     <Compile Include="Core\TypeProxing\NativeList.cs" />
     <Compile Include="Core\ObjectContainer.cs" />
     <Compile Include="Core\VariableDescriptor.cs" />
@@ -264,8 +271,8 @@
     <Compile Include="Core\JSException.cs" />
     <Compile Include="Core\Modules\DoNotEnumerateAttribute.cs" />
     <Compile Include="Core\Modules\DontDeleteAttribute.cs" />
-    <Compile Include="Core\Modules\JSON.cs" />
-    <Compile Include="Core\Modules\ParametersCountAttribute.cs" />
+    <Compile Include="BaseLibrary\JSON.cs" />
+    <Compile Include="Core\Modules\ArgumentsLengthAttribute.cs" />
     <Compile Include="Core\Modules\PrototypeAttribute.cs" />
     <Compile Include="Core\Functions\ObjectConstructor.cs" />
     <Compile Include="Core\ParsingState.cs" />
@@ -274,10 +281,10 @@
     <Compile Include="Core\Parser.cs" />
     <Compile Include="Core\GlobalObject.cs" />
     <Compile Include="Core\ParseResult.cs" />
-    <Compile Include="Core\Modules\Console.cs" />
+    <Compile Include="BaseLibrary\Console.cs" />
     <Compile Include="Core\Modules\HiddenAttribute.cs" />
     <Compile Include="Core\Modules\ImmutableAttribute.cs" />
-    <Compile Include="Core\Modules\Math.cs" />
+    <Compile Include="BaseLibrary\Math.cs" />
     <Compile Include="Core\Tools.cs" />
     <Compile Include="Core\TypeProxing\TypeProxy.cs" />
     <Compile Include="Core\Modules\ReadOnlyAttribute.cs" />

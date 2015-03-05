@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using NiL.JS.Core;
-using NiL.JS.Core.BaseTypes;
+using NiL.JS.BaseLibrary;
 using NiL.JS.Expressions;
 
 namespace NiL.JS.Statements
@@ -166,9 +166,9 @@ namespace NiL.JS.Statements
                 if (t is FunctionExpression)
                 {
                     if (state.strict.Peek() && !allowDirectives)
-                        throw new JSException((new NiL.JS.Core.BaseTypes.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
+                        throw new JSException((new NiL.JS.BaseLibrary.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
                     if (state.InExpression == 0 && string.IsNullOrEmpty((t as FunctionExpression).Name))
-                        throw new JSException((new NiL.JS.Core.BaseTypes.SyntaxError("Declarated function must have name.")));
+                        throw new JSException((new NiL.JS.BaseLibrary.SyntaxError("Declarated function must have name.")));
                     expectSemicolon = false;
                 }
                 else
@@ -216,7 +216,7 @@ namespace NiL.JS.Statements
                         System.Diagnostics.Debugger.Break();
                     else
                         throw new ApplicationException("Context was stopped");
-                if (NiL.JS.Core.BaseTypes.Number.NaN.valueType != JSObjectType.Double || !double.IsNaN(NiL.JS.Core.BaseTypes.Number.NaN.dValue))
+                if (NiL.JS.BaseLibrary.Number.NaN.valueType != JSObjectType.Double || !double.IsNaN(NiL.JS.BaseLibrary.Number.NaN.dValue))
                     if (System.Diagnostics.Debugger.IsAttached)
                         System.Diagnostics.Debugger.Break();
                     else
@@ -231,14 +231,14 @@ namespace NiL.JS.Statements
                         System.Diagnostics.Debugger.Break();
                     else
                         throw new ApplicationException("notExist was rewrite");
-                if (Core.BaseTypes.Boolean.False.valueType != JSObjectType.Bool
-                    || Core.BaseTypes.Boolean.False.iValue != 0)
+                if (BaseLibrary.Boolean.False.valueType != JSObjectType.Bool
+                    || BaseLibrary.Boolean.False.iValue != 0)
                     if (System.Diagnostics.Debugger.IsAttached)
                         System.Diagnostics.Debugger.Break();
                     else
                         throw new ApplicationException("Boolean.False was rewrite");
-                if (Core.BaseTypes.Boolean.True.valueType != JSObjectType.Bool
-                    || Core.BaseTypes.Boolean.True.iValue != 1)
+                if (BaseLibrary.Boolean.True.valueType != JSObjectType.Bool
+                    || BaseLibrary.Boolean.True.iValue != 1)
                     if (System.Diagnostics.Debugger.IsAttached)
                         System.Diagnostics.Debugger.Break();
                     else
@@ -275,7 +275,7 @@ namespace NiL.JS.Statements
                 var fe = lines[i] as FunctionExpression;
                 if (fe != null)
                 {
-                    Parser.Build(ref lines[i], depth < 0 ? 2 : Math.Max(1, depth), variables, this.strict, message, statistic, opts);
+                    Parser.Build(ref lines[i], depth < 0 ? 2 : System.Math.Max(1, depth), variables, this.strict, message, statistic, opts);
                     VariableDescriptor desc = null;
                     if (!variables.TryGetValue(fe.name, out desc) || desc == null)
                         variables[fe.name] = fe.Reference.descriptor;
@@ -302,7 +302,7 @@ namespace NiL.JS.Statements
                         if (unreachable && message != null)
                             message(MessageLevel.CriticalWarning, new CodeCoordinates(0, lines[i].Position, lines[i].Length), "Unreachable code detected.");
                         var cn = lines[i];
-                        Parser.Build(ref cn, depth < 0 ? 2 : Math.Max(1, depth), variables, this.strict, message, statistic, opts);
+                        Parser.Build(ref cn, depth < 0 ? 2 : System.Math.Max(1, depth), variables, this.strict, message, statistic, opts);
                         lines[i] = cn;
                         unreachable |= cn is ReturnStatement || cn is BreakStatement || cn is ContinueStatement;
                     }

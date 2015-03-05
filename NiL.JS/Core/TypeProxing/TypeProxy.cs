@@ -4,7 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
-using NiL.JS.Core.BaseTypes;
+using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Modules;
 using NiL.JS.Core.Functions;
 
@@ -33,7 +33,7 @@ namespace NiL.JS.Core.TypeProxing
                 if (_prototypeInstance == null && InstanceMode && !hostedType.GetTypeInfo().IsAbstract)
                 {
 #else
-                if (_prototypeInstance == null && (bindFlags & BindingFlags.Instance) != 0 && !hostedType.IsAbstract)
+                if (_prototypeInstance == null && InstanceMode && !hostedType.IsAbstract)
                 {
                     try
                     {
@@ -77,11 +77,9 @@ namespace NiL.JS.Core.TypeProxing
                 return _prototypeInstance;
             }
         }
-#if PORTABLE
+
         internal bool InstanceMode = false;
-#else
-        internal BindingFlags bindFlags = BindingFlags.Public;
-#endif
+
         public static JSObject Proxy(object value)
         {
             JSObject res;
@@ -167,8 +165,8 @@ namespace NiL.JS.Core.TypeProxing
 
         internal static void Clear()
         {
-            BaseTypes.Boolean.True.__prototype = null;
-            BaseTypes.Boolean.False.__prototype = null;
+            NiL.JS.BaseLibrary.Boolean.True.__prototype = null;
+            NiL.JS.BaseLibrary.Boolean.False.__prototype = null;
             JSObject.nullString.__prototype = null;
             Number.NaN.__prototype = null;
             Number.POSITIVE_INFINITY.__prototype = null;
@@ -213,17 +211,9 @@ namespace NiL.JS.Core.TypeProxing
                 var staticProxy = new TypeProxy()
                 {
                     hostedType = type,
-#if PORTABLE
                     InstanceMode = false
                 };
-#else
-                    bindFlags = bindFlags | BindingFlags.Static
-                };
-                bindFlags |= BindingFlags.Instance;
-#endif
-#if PORTABLE
                 InstanceMode = true;
-#endif
 
                 if (typeof(JSObject).IsAssignableFrom(hostedType))
                     _prototypeInstance = prototypeInstance;
@@ -275,35 +265,50 @@ namespace NiL.JS.Core.TypeProxing
                     var tempmemb = new Dictionary<string, IList<MemberInfo>>();
                     string prewName = null;
                     IList<MemberInfo> temp = null;
+                    bool instanceAttribute = false;
 #if PORTABLE
                     var mmbrs = hostedType.GetTypeInfo().DeclaredMembers
                         .Union(hostedType.GetRuntimeMethods())
                         .Union(hostedType.GetRuntimeProperties())
                         .Union(hostedType.GetRuntimeFields())
                         .Union(hostedType.GetRuntimeEvents()).ToArray(); // приходится делать вот так неоптимально, другого способа нет
+#else
+                    var mmbrs = hostedType.GetMembers();
+#endif
                     for (int i = 0; i < mmbrs.Length; i++)
                     {
-                        if ((mmbrs[i] is PropertyInfo)
-                            && (((mmbrs[i] as PropertyInfo).SetMethod ?? (mmbrs[i] as PropertyInfo).GetMethod).IsStatic != !InstanceMode
-                                || (((mmbrs[i] as PropertyInfo).SetMethod == null || !(mmbrs[i] as PropertyInfo).SetMethod.IsPublic)
-                                    && ((mmbrs[i] as PropertyInfo).GetMethod == null || !(mmbrs[i] as PropertyInfo).GetMethod.IsPublic))))
+                        if (mmbrs[i].IsDefined(typeof(HiddenAttribute), false))
                             continue;
 
+                        instanceAttribute = mmbrs[i].IsDefined(typeof(InstanceMemberAttribute), false);
+
+                        if (!InstanceMode && instanceAttribute)
+                            continue;
+
+                        if (mmbrs[i] is PropertyInfo)
+                        {
+                            if (((mmbrs[i] as PropertyInfo).GetSetMethod() ?? (mmbrs[i] as PropertyInfo).GetGetMethod()).IsStatic != !(InstanceMode ^ instanceAttribute))
+                                continue;
+                            if (((mmbrs[i] as PropertyInfo).GetSetMethod() == null || !(mmbrs[i] as PropertyInfo).GetSetMethod().IsPublic)
+                                && ((mmbrs[i] as PropertyInfo).GetGetMethod() == null || !(mmbrs[i] as PropertyInfo).GetGetMethod().IsPublic))
+                                continue;
+                        }
                         if ((mmbrs[i] is EventInfo)
-                            && (!(mmbrs[i] as EventInfo).AddMethod.IsPublic || (mmbrs[i] as EventInfo).AddMethod.IsStatic != !InstanceMode))
+                            && (!(mmbrs[i] as EventInfo).GetAddMethod().IsPublic || (mmbrs[i] as EventInfo).GetAddMethod().IsStatic != !InstanceMode))
                             continue;
 
                         if ((mmbrs[i] is FieldInfo) && (!(mmbrs[i] as FieldInfo).IsPublic || (mmbrs[i] as FieldInfo).IsStatic != !InstanceMode))
                             continue;
-
+#if PORTABLE
                         if ((mmbrs[i] is TypeInfo) && !(mmbrs[i] as TypeInfo).IsPublic)
                             continue;
-
-                        if (mmbrs[i].IsDefined(typeof(HiddenAttribute), false))
+#else
+                        if ((mmbrs[i] is Type) && !(mmbrs[i] as Type).IsPublic)
                             continue;
+#endif
                         if (mmbrs[i] is MethodBase)
                         {
-                            if ((mmbrs[i] as MethodBase).IsStatic != !InstanceMode)
+                            if ((mmbrs[i] as MethodBase).IsStatic != !(InstanceMode ^ instanceAttribute))
                                 continue;
                             if (!(mmbrs[i] as MethodBase).IsPublic)
                                 continue;
@@ -312,18 +317,6 @@ namespace NiL.JS.Core.TypeProxing
                             if (mmbrs[i] is ConstructorInfo)
                                 continue;
                         }
-#else
-                    var mmbrs = hostedType.GetMembers(bindFlags);
-                    for (int i = 0; i < mmbrs.Length; i++)
-                    {
-                        if (mmbrs[i].IsDefined(typeof(HiddenAttribute), false))
-                            continue;
-                        if (mmbrs[i].MemberType == MemberTypes.Method
-                            && ((mmbrs[i] as MethodBase).DeclaringType == typeof(object)))
-                            continue;
-                        if (mmbrs[i].MemberType == MemberTypes.Constructor)
-                            continue;
-#endif
                         var membername = mmbrs[i].Name;
                         membername = membername[0] == '.' ? membername : membername.Contains(".") ? membername.Substring(membername.LastIndexOf('.') + 1) : membername;
                         if (prewName != membername)

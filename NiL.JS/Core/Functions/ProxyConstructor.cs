@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Collections.Generic;
 using System.Reflection;
-using NiL.JS.Core.BaseTypes;
+using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Modules;
 using NiL.JS.Core.TypeProxing;
 
@@ -125,10 +125,10 @@ namespace NiL.JS.Core.Functions
         {
 #if PORTABLE
             if (proxy.hostedType.GetTypeInfo().ContainsGenericParameters)
-                throw new JSException((new BaseTypes.TypeError(proxy.hostedType.Name + " can't be created because it's generic type.")));
+                throw new JSException((new TypeError(proxy.hostedType.Name + " can't be created because it's generic type.")));
 #else
             if (proxy.hostedType.ContainsGenericParameters)
-                throw new JSException((new BaseTypes.TypeError(proxy.hostedType.Name + " can't be created because it's generic type.")));
+                throw new JSException((new TypeError(proxy.hostedType.Name + " can't be created because it's generic type.")));
 #endif
             bool bynew = false;
             if (thisOverride != null)
@@ -138,33 +138,33 @@ namespace NiL.JS.Core.Functions
                 if (!bynew && proxy.hostedType == typeof(Date))
                     return new Date().toString();
                 object obj;
-                if (proxy.hostedType == typeof(BaseTypes.Array))
+                if (proxy.hostedType == typeof(NiL.JS.BaseLibrary.Array))
                 {
                     if (argsObj == null)
-                        obj = new BaseTypes.Array();
+                        obj = new NiL.JS.BaseLibrary.Array();
                     else switch (argsObj.length)
                         {
                             case 0:
-                                obj = new BaseTypes.Array();
+                                obj = new NiL.JS.BaseLibrary.Array();
                                 break;
                             case 1:
                                 {
                                     switch (argsObj.a0.valueType)
                                     {
                                         case JSObjectType.Int:
-                                            obj = new BaseTypes.Array(argsObj.a0.iValue);
+                                            obj = new NiL.JS.BaseLibrary.Array(argsObj.a0.iValue);
                                             break;
                                         case JSObjectType.Double:
-                                            obj = new BaseTypes.Array(argsObj.a0.dValue);
+                                            obj = new NiL.JS.BaseLibrary.Array(argsObj.a0.dValue);
                                             break;
                                         default:
-                                            obj = new BaseTypes.Array(argsObj);
+                                            obj = new NiL.JS.BaseLibrary.Array(argsObj);
                                             break;
                                     }
                                     break;
                                 }
                             default:
-                                obj = new BaseTypes.Array(argsObj);
+                                obj = new NiL.JS.BaseLibrary.Array(argsObj);
                                 break;
                         }
                 }
@@ -173,7 +173,7 @@ namespace NiL.JS.Core.Functions
                     object[] args = null;
                     MethodProxy constructor = findConstructor(argsObj, ref args);
                     if (constructor == null)
-                        throw new JSException((new BaseTypes.TypeError(proxy.hostedType.Name + " can't be created.")));
+                        throw new JSException((new TypeError(proxy.hostedType.Name + " can't be created.")));
                     obj = constructor.InvokeImpl(null, args, argsObj == null ? constructor.parameters.Length != 0 ? new Arguments() : null : argsObj);
                 }
                 JSObject res = null;
@@ -204,7 +204,7 @@ namespace NiL.JS.Core.Functions
                         //    res.fields = createFields();
                         // из-за того, что GetMember сам дотягивается до объекта, можно попробовать убрать создание филдов
                         res.attributes |= proxy.hostedType.IsDefined(typeof(ImmutableAttribute), false) ? JSObjectAttributesInternal.Immutable : JSObjectAttributesInternal.None;
-                        if (obj is BaseTypes.Date)
+                        if (obj is Date)
                             res.valueType = JSObjectType.Date;
                     }
                 }

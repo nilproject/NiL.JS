@@ -343,7 +343,7 @@ namespace NiL.JS.Expressions
                 return;
             }
         }
-#if !PORTABLE
+#if !PORTABLE && !NET35
         internal override System.Linq.Expressions.Expression TryCompile(bool selfCompile, bool forAssign, Type expectedType, List<CodeNode> dynamicValues)
         {
             var ft = first.TryCompile(false, false, null, dynamicValues);

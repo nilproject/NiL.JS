@@ -3,7 +3,7 @@ using System.Reflection;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
-using NiL.JS.Core.BaseTypes;
+using NiL.JS.BaseLibrary;
 using NiL.JS.Core.TypeProxing;
 
 namespace NiL.JS.Core
@@ -296,7 +296,7 @@ namespace NiL.JS.Core
                         return JSObjectToInt32(r);
                     }
                 case JSObjectType.NotExists:
-                //throw new JSException((new NiL.JS.Core.BaseTypes.ReferenceError("Variable not defined.")));
+                //throw new JSException((new NiL.JS.BaseLibrary.ReferenceError("Variable not defined.")));
                 case JSObjectType.Undefined:
                 case JSObjectType.NotExistsInObject:
                     return nullOrUndef;
@@ -526,7 +526,7 @@ namespace NiL.JS.Core
                     return cachedDoubleString[i].value;
             }
             //return dtoString(d);
-            var abs = Math.Abs(d);
+            var abs = System.Math.Abs(d);
             string res = null;
             if (abs < 1.0)
             {
@@ -541,7 +541,7 @@ namespace NiL.JS.Core
             else if (d == -100000000000000000000d)
                 res = "-100000000000000000000";
             else
-                res = abs < 1.0 ? neg == 1 ? "-0" : "0" : ((d < 0 ? "-" : "") + ((ulong)(Math.Abs(d))).ToString(System.Globalization.CultureInfo.InvariantCulture));
+                res = abs < 1.0 ? neg == 1 ? "-0" : "0" : ((d < 0 ? "-" : "") + ((ulong)(System.Math.Abs(d))).ToString(System.Globalization.CultureInfo.InvariantCulture));
             abs %= 1.0;
             if (abs != 0 && res.Length < (15 + neg))
                 res += abs.ToString(divFormats[15 - res.Length + neg], System.Globalization.CultureInfo.InvariantCulture);
@@ -625,7 +625,7 @@ namespace NiL.JS.Core
                         res.Append("0");
                     return res.ToString();
                 }
-                for (var i = 0; i < Math.Min(17, ts.Length); i++)
+                for (var i = 0; i < System.Math.Min(17, ts.Length); i++)
                 {
                     if (i == 1)
                         res.Append('.');
@@ -904,7 +904,7 @@ namespace NiL.JS.Core
                         }
                         else
                         {
-                            value = (double)((decimal)temp * (decimal)Math.Pow(10.0, deg));
+                            value = (double)((decimal)temp * (decimal)System.Math.Pow(10.0, deg));
                             deg = 0;
                         }
                     }
@@ -917,7 +917,7 @@ namespace NiL.JS.Core
                         }
                         else
                         {
-                            value = (double)((decimal)temp * (decimal)Math.Pow(10.0, deg));
+                            value = (double)((decimal)temp * (decimal)System.Math.Pow(10.0, deg));
                             deg = 0;
                         }
                     }
@@ -930,7 +930,7 @@ namespace NiL.JS.Core
                         }
                         else
                         {
-                            var exp = Math.Pow(10.0, deg);
+                            var exp = System.Math.Pow(10.0, deg);
                             value *= exp;
                         }
                     }
@@ -1024,7 +1024,7 @@ namespace NiL.JS.Core
                                         break;
                                     }
                                     else
-                                        throw new JSException((new Core.BaseTypes.SyntaxError("Invalid escape code (\"" + code + "\")")));
+                                        throw new JSException((new SyntaxError("Invalid escape code (\"" + code + "\")")));
                                 }
                                 string c = code.Substring(i + 1, code[i] == 'u' ? 4 : 2);
                                 ushort chc = 0;
@@ -1039,7 +1039,7 @@ namespace NiL.JS.Core
                                     if (processRegexComp)
                                         res.Append(code[i]);
                                     else
-                                        throw new JSException((new Core.BaseTypes.SyntaxError("Invalid escape sequence '\\" + code[i] + c + "'")));
+                                        throw new JSException((new SyntaxError("Invalid escape sequence '\\" + code[i] + c + "'")));
                                 }
                                 break;
                             }
@@ -1235,7 +1235,7 @@ namespace NiL.JS.Core
         internal static JSObject RaiseIfNotExist(JSObject obj, object name)
         {
             if (obj.valueType == JSObjectType.NotExists)
-                throw new JSException((new NiL.JS.Core.BaseTypes.ReferenceError("Variable \"" + name + "\" is not defined.")));
+                throw new JSException((new NiL.JS.BaseLibrary.ReferenceError("Variable \"" + name + "\" is not defined.")));
             return obj;
         }
 
@@ -1287,20 +1287,20 @@ namespace NiL.JS.Core
             return res;
         }
 
-        internal static BaseTypes.Array iterableToArray(JSObject src, bool evalProps, bool clone, bool reassignLen, long _length)
+        internal static BaseLibrary.Array iterableToArray(JSObject src, bool evalProps, bool clone, bool reassignLen, long _length)
         {
-            BaseTypes.Array temp = new BaseTypes.Array();
+            var temp = new BaseLibrary.Array();
             HashSet<string> processedKeys = null;
             bool goDeep = true;
             for (; goDeep; )
             {
                 goDeep = false;
-                if (src.GetType() == typeof(BaseTypes.Array))
+                if (src.GetType() == typeof(BaseLibrary.Array))
                 {
                     if (_length == -1)
-                        _length = (src as BaseTypes.Array).data.Length;
+                        _length = (src as NiL.JS.BaseLibrary.Array).data.Length;
                     long prew = -1;
-                    foreach (var element in ((src as BaseTypes.Array).data as IEnumerable<KeyValuePair<int, JSObject>>))
+                    foreach (var element in ((src as BaseLibrary.Array).data as IEnumerable<KeyValuePair<int, JSObject>>))
                     {
                         if (element.Key >= _length) // эээ...
                             break;

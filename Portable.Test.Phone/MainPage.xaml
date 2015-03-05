@@ -10,6 +10,14 @@
 
     <StackPanel Width="auto" Height="auto" Orientation="Vertical">
         <Button Content="Select folder" Width="auto" Height="auto" VerticalAlignment="Top" Click="Button_Click"/>
-        
+        <TextBlock Text="{Binding Passed}"></TextBlock>
+        <TextBlock Text="{Binding Failed}"></TextBlock>
+        <ListView ItemsSource="{Binding Messages}">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding}"/>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
     </StackPanel>
 </Page>

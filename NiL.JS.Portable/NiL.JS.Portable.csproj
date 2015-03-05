@@ -37,93 +37,99 @@
     <SignAssembly>true</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
-    <AssemblyOriginatorKeyFile>NiL.JS.Key.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>
+    </AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
-    <!-- A reference to the entire .NET Framework is automatically included -->
-    <None Include="NiL.JS.Key.snk" />
-  </ItemGroup>
-  <ItemGroup>
+    <Compile Include="..\NiL.JS\BaseLibrary\Array.cs">
+      <Link>BaseLibrary\Array.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\BaseLibrary\ArrayBuffer.cs">
+      <Link>BaseLibrary\ArrayBuffer.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\BaseLibrary\Boolean.cs">
+      <Link>BaseLibrary\Boolean.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\BaseLibrary\Date.cs">
+      <Link>BaseLibrary\Date.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\BaseLibrary\Debug.cs">
+      <Link>BaseLibrary\Debug.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\BaseLibrary\Error.cs">
+      <Link>BaseLibrary\Error.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\BaseLibrary\EvalError.cs">
+      <Link>BaseLibrary\EvalError.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\BaseLibrary\Float32Array.cs">
+      <Link>BaseLibrary\Float32Array.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\BaseLibrary\Float64Array.cs">
+      <Link>BaseLibrary\Float64Array.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\BaseLibrary\Function.cs">
+      <Link>BaseLibrary\Function.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\BaseLibrary\Int16Array.cs">
+      <Link>BaseLibrary\Int16Array.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\BaseLibrary\Int32Array.cs">
+      <Link>BaseLibrary\Int32Array.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\BaseLibrary\Int8Array.cs">
+      <Link>BaseLibrary\Int8Array.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\BaseLibrary\JSON.cs">
+      <Link>BaseLibrary\JSON.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\BaseLibrary\Math.cs">
+      <Link>BaseLibrary\Math.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\BaseLibrary\Number.cs">
+      <Link>BaseLibrary\Number.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\BaseLibrary\RangeError.cs">
+      <Link>BaseLibrary\RangeError.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\BaseLibrary\ReferenceError.cs">
+      <Link>BaseLibrary\ReferenceError.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\BaseLibrary\RegExp.cs">
+      <Link>BaseLibrary\RegExp.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\BaseLibrary\String.cs">
+      <Link>BaseLibrary\String.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\BaseLibrary\SyntaxError.cs">
+      <Link>BaseLibrary\SyntaxError.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\BaseLibrary\TypedArray.cs">
+      <Link>BaseLibrary\TypedArray.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\BaseLibrary\TypeError.cs">
+      <Link>BaseLibrary\TypeError.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\BaseLibrary\Uint16Array.cs">
+      <Link>BaseLibrary\Uint16Array.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\BaseLibrary\Uint32Array.cs">
+      <Link>BaseLibrary\Uint32Array.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\BaseLibrary\Uint8Array.cs">
+      <Link>BaseLibrary\Uint8Array.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\BaseLibrary\Uint8ClampedArray.cs">
+      <Link>BaseLibrary\Uint8ClampedArray.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\BaseLibrary\URIError.cs">
+      <Link>BaseLibrary\URIError.cs</Link>
+    </Compile>
     <Compile Include="..\NiL.JS\CompilerNotification.cs">
       <Link>CompilerNotification.cs</Link>
     </Compile>
     <Compile Include="..\NiL.JS\Core\Arguments.cs">
       <Link>Core\Arguments.cs</Link>
-    </Compile>
-    <Compile Include="..\NiL.JS\Core\BaseTypes\Array.cs">
-      <Link>Core\BaseTypes\Array.cs</Link>
-    </Compile>
-    <Compile Include="..\NiL.JS\Core\BaseTypes\ArrayBuffer.cs">
-      <Link>Core\BaseTypes\ArrayBuffer.cs</Link>
-    </Compile>
-    <Compile Include="..\NiL.JS\Core\BaseTypes\Boolean.cs">
-      <Link>Core\BaseTypes\Boolean.cs</Link>
-    </Compile>
-    <Compile Include="..\NiL.JS\Core\BaseTypes\Date.cs">
-      <Link>Core\BaseTypes\Date.cs</Link>
-    </Compile>
-    <Compile Include="..\NiL.JS\Core\BaseTypes\Error.cs">
-      <Link>Core\BaseTypes\Error.cs</Link>
-    </Compile>
-    <Compile Include="..\NiL.JS\Core\BaseTypes\EvalError.cs">
-      <Link>Core\BaseTypes\EvalError.cs</Link>
-    </Compile>
-    <Compile Include="..\NiL.JS\Core\BaseTypes\Float32Array.cs">
-      <Link>Core\BaseTypes\Float32Array.cs</Link>
-    </Compile>
-    <Compile Include="..\NiL.JS\Core\BaseTypes\Float64Array.cs">
-      <Link>Core\BaseTypes\Float64Array.cs</Link>
-    </Compile>
-    <Compile Include="..\NiL.JS\Core\BaseTypes\Function.cs">
-      <Link>Core\BaseTypes\Function.cs</Link>
-    </Compile>
-    <Compile Include="..\NiL.JS\Core\BaseTypes\Int16Array.cs">
-      <Link>Core\BaseTypes\Int16Array.cs</Link>
-    </Compile>
-    <Compile Include="..\NiL.JS\Core\BaseTypes\Int32Array.cs">
-      <Link>Core\BaseTypes\Int32Array.cs</Link>
-    </Compile>
-    <Compile Include="..\NiL.JS\Core\BaseTypes\Int8Array.cs">
-      <Link>Core\BaseTypes\Int8Array.cs</Link>
-    </Compile>
-    <Compile Include="..\NiL.JS\Core\BaseTypes\Number.cs">
-      <Link>Core\BaseTypes\Number.cs</Link>
-    </Compile>
-    <Compile Include="..\NiL.JS\Core\BaseTypes\RangeError.cs">
-      <Link>Core\BaseTypes\RangeError.cs</Link>
-    </Compile>
-    <Compile Include="..\NiL.JS\Core\BaseTypes\ReferenceError.cs">
-      <Link>Core\BaseTypes\ReferenceError.cs</Link>
-    </Compile>
-    <Compile Include="..\NiL.JS\Core\BaseTypes\RegExp.cs">
-      <Link>Core\BaseTypes\RegExp.cs</Link>
-    </Compile>
-    <Compile Include="..\NiL.JS\Core\BaseTypes\String.cs">
-      <Link>Core\BaseTypes\String.cs</Link>
-    </Compile>
-    <Compile Include="..\NiL.JS\Core\BaseTypes\SyntaxError.cs">
-      <Link>Core\BaseTypes\SyntaxError.cs</Link>
-    </Compile>
-    <Compile Include="..\NiL.JS\Core\BaseTypes\TypedArray.cs">
-      <Link>Core\BaseTypes\TypedArray.cs</Link>
-    </Compile>
-    <Compile Include="..\NiL.JS\Core\BaseTypes\TypeError.cs">
-      <Link>Core\BaseTypes\TypeError.cs</Link>
-    </Compile>
-    <Compile Include="..\NiL.JS\Core\BaseTypes\Uint16Array.cs">
-      <Link>Core\BaseTypes\Uint16Array.cs</Link>
-    </Compile>
-    <Compile Include="..\NiL.JS\Core\BaseTypes\Uint32Array.cs">
-      <Link>Core\BaseTypes\Uint32Array.cs</Link>
-    </Compile>
-    <Compile Include="..\NiL.JS\Core\BaseTypes\Uint8Array.cs">
-      <Link>Core\BaseTypes\Uint8Array.cs</Link>
-    </Compile>
-    <Compile Include="..\NiL.JS\Core\BaseTypes\Uint8ClampedArray.cs">
-      <Link>Core\BaseTypes\Uint8ClampedArray.cs</Link>
-    </Compile>
-    <Compile Include="..\NiL.JS\Core\BaseTypes\URIError.cs">
-      <Link>Core\BaseTypes\URIError.cs</Link>
     </Compile>
     <Compile Include="..\NiL.JS\Core\BinaryTree.cs">
       <Link>Core\BinaryTree.cs</Link>
@@ -182,9 +188,6 @@
     <Compile Include="..\NiL.JS\Core\Modules\ConvertValueAttribute.cs">
       <Link>Core\Modules\ConvertValueAttribute.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Core\Modules\Debug.cs">
-      <Link>Core\Modules\Debug.cs</Link>
-    </Compile>
     <Compile Include="..\NiL.JS\Core\Modules\DoNotEnumerateAttribute.cs">
       <Link>Core\Modules\DoNotEnumerateAttribute.cs</Link>
     </Compile>
@@ -203,17 +206,8 @@
     <Compile Include="..\NiL.JS\Core\Modules\ImmutablePrototypeAttribute.cs">
       <Link>Core\Modules\ImmutablePrototypeAttribute.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Core\Modules\JSON.cs">
-      <Link>Core\Modules\JSON.cs</Link>
-    </Compile>
-    <Compile Include="..\NiL.JS\Core\Modules\Math.cs">
-      <Link>Core\Modules\Math.cs</Link>
-    </Compile>
     <Compile Include="..\NiL.JS\Core\Modules\NotConfigurable.cs">
       <Link>Core\Modules\NotConfigurable.cs</Link>
-    </Compile>
-    <Compile Include="..\NiL.JS\Core\Modules\ParametersCountAttribute.cs">
-      <Link>Core\Modules\ParametersCountAttribute.cs</Link>
     </Compile>
     <Compile Include="..\NiL.JS\Core\Modules\PrototypeAttribute.cs">
       <Link>Core\Modules\PrototypeAttribute.cs</Link>
@@ -256,6 +250,9 @@
     </Compile>
     <Compile Include="..\NiL.JS\Core\TypeProxing\CustomType.cs">
       <Link>Core\TypeProxing\CustomType.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\Core\TypeProxing\InstanceMemberAttribute.cs">
+      <Link>Core\TypeProxing\InstanceMemberAttribute.cs</Link>
     </Compile>
     <Compile Include="..\NiL.JS\Core\TypeProxing\NativeList.cs">
       <Link>Core\TypeProxing\NativeList.cs</Link>
@@ -519,6 +516,7 @@
       <Link>Statements\WithStatement.cs</Link>
     </Compile>
     <Compile Include="Core\Backward.cs" />
+    <Compile Include="Core\Modules\ArgumentsLengthAttribute.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using NiL.JS.Core;
-using NiL.JS.Core.BaseTypes;
+using NiL.JS.BaseLibrary;
 using NiL.JS.Core.TypeProxing;
 
 namespace NiL.JS.Expressions
@@ -70,7 +70,7 @@ namespace NiL.JS.Expressions
                 }
                 context.objectSource = null;
                 // Аргументы должны быть вычислены даже если функция не существует.
-                throw new JSException((new NiL.JS.Core.BaseTypes.TypeError(first.ToString() + " is not callable")));
+                throw new JSException((new NiL.JS.BaseLibrary.TypeError(first.ToString() + " is not callable")));
             }
             else
             {
@@ -121,7 +121,7 @@ namespace NiL.JS.Expressions
         {
             try
             {
-#if !PORTABLE
+#if !PORTABLE && !NET35
                 System.Runtime.CompilerServices.RuntimeHelpers.EnsureSufficientExecutionStack();
 #endif
             }

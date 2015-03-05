@@ -42,17 +42,17 @@ namespace NiL.JS.Expressions
                             case JSObjectType.Bool:
                             case JSObjectType.Int:
                                 {
-                                    return tint == tjso.iValue ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+                                    return tint == tjso.iValue ? NiL.JS.BaseLibrary.Boolean.True : NiL.JS.BaseLibrary.Boolean.False;
                                 }
                             case JSObjectType.Double:
                                 {
-                                    return tint == tjso.dValue ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+                                    return tint == tjso.dValue ? NiL.JS.BaseLibrary.Boolean.True : NiL.JS.BaseLibrary.Boolean.False;
                                 }
                             case JSObjectType.String:
                                 {
                                     tstr = tjso.oValue.ToString();
                                     if (Tools.ParseNumber(tstr, ref index, out tdouble) && (index == tstr.Length))
-                                        return tint == tdouble ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+                                        return tint == tdouble ? NiL.JS.BaseLibrary.Boolean.True : NiL.JS.BaseLibrary.Boolean.False;
                                     else
                                         return false;
                                 }
@@ -73,7 +73,7 @@ namespace NiL.JS.Expressions
                                     throw new NotImplementedException();
                                 }
                         }
-                        return NiL.JS.Core.BaseTypes.Boolean.False;
+                        return NiL.JS.BaseLibrary.Boolean.False;
                     }
                 case JSObjectType.Double:
                     {
@@ -84,17 +84,17 @@ namespace NiL.JS.Expressions
                             case JSObjectType.Bool:
                             case JSObjectType.Int:
                                 {
-                                    return tdouble == tjso.iValue ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+                                    return tdouble == tjso.iValue ? NiL.JS.BaseLibrary.Boolean.True : NiL.JS.BaseLibrary.Boolean.False;
                                 }
                             case JSObjectType.Double:
                                 {
-                                    return tdouble == tjso.dValue ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+                                    return tdouble == tjso.dValue ? NiL.JS.BaseLibrary.Boolean.True : NiL.JS.BaseLibrary.Boolean.False;
                                 }
                             case JSObjectType.String:
                                 {
                                     tstr = tjso.oValue.ToString();
                                     if (Tools.ParseNumber(tstr, ref index, out tjso.dValue) && (index == tstr.Length))
-                                        return tdouble == tjso.dValue ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+                                        return tdouble == tjso.dValue ? NiL.JS.BaseLibrary.Boolean.True : NiL.JS.BaseLibrary.Boolean.False;
                                     else
                                         return false;
                                 }
@@ -129,20 +129,20 @@ namespace NiL.JS.Expressions
                             case JSObjectType.Int:
                                 {
                                     if (Tools.ParseNumber(tstr, ref index, out tdouble) && (index == tstr.Length))
-                                        return tdouble == temp.iValue ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+                                        return tdouble == temp.iValue ? NiL.JS.BaseLibrary.Boolean.True : NiL.JS.BaseLibrary.Boolean.False;
                                     else
                                         return false;
                                 }
                             case JSObjectType.Double:
                                 {
                                     if (Tools.ParseNumber(tstr, ref index, out tdouble) && (index == tstr.Length))
-                                        return tdouble == temp.dValue ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+                                        return tdouble == temp.dValue ? NiL.JS.BaseLibrary.Boolean.True : NiL.JS.BaseLibrary.Boolean.False;
                                     else
                                         return false;
                                 }
                             case JSObjectType.String:
                                 {
-                                    return string.CompareOrdinal(tstr, temp.oValue.ToString()) == 0 ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+                                    return string.CompareOrdinal(tstr, temp.oValue.ToString()) == 0 ? NiL.JS.BaseLibrary.Boolean.True : NiL.JS.BaseLibrary.Boolean.False;
                                 }
                             case JSObjectType.Function:
                             case JSObjectType.Object:
@@ -154,20 +154,20 @@ namespace NiL.JS.Expressions
                                         case JSObjectType.Bool:
                                             {
                                                 if (Tools.ParseNumber(tstr, ref index, out tdouble) && (index == tstr.Length))
-                                                    return tdouble == temp.iValue ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+                                                    return tdouble == temp.iValue ? NiL.JS.BaseLibrary.Boolean.True : NiL.JS.BaseLibrary.Boolean.False;
                                                 else goto
                                                     case JSObjectType.String;
                                             }
                                         case JSObjectType.Double:
                                             {
                                                 if (Tools.ParseNumber(tstr, ref index, out tdouble) && (index == tstr.Length))
-                                                    return tdouble == temp.dValue ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+                                                    return tdouble == temp.dValue ? NiL.JS.BaseLibrary.Boolean.True : NiL.JS.BaseLibrary.Boolean.False;
                                                 else
                                                     goto case JSObjectType.String;
                                             }
                                         case JSObjectType.String:
                                             {
-                                                return string.CompareOrdinal(tstr, temp.Value.ToString()) == 0 ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+                                                return string.CompareOrdinal(tstr, temp.Value.ToString()) == 0 ? NiL.JS.BaseLibrary.Boolean.True : NiL.JS.BaseLibrary.Boolean.False;
                                             }
                                     }
                                     break;
@@ -198,17 +198,17 @@ namespace NiL.JS.Expressions
                                         case JSObjectType.Bool:
                                         case JSObjectType.Int:
                                             {
-                                                return temp.iValue == tdouble ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+                                                return temp.iValue == tdouble ? NiL.JS.BaseLibrary.Boolean.True : NiL.JS.BaseLibrary.Boolean.False;
                                             }
                                         case JSObjectType.Double:
                                             {
-                                                return temp.dValue == tdouble ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+                                                return temp.dValue == tdouble ? NiL.JS.BaseLibrary.Boolean.True : NiL.JS.BaseLibrary.Boolean.False;
                                             }
                                         case JSObjectType.String:
                                             {
                                                 tstr = temp.oValue.ToString();
                                                 if (Tools.ParseNumber(tstr, ref index, out temp.dValue) && (index == tstr.Length))
-                                                    return tdouble == temp.dValue ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+                                                    return tdouble == temp.dValue ? NiL.JS.BaseLibrary.Boolean.True : NiL.JS.BaseLibrary.Boolean.False;
                                                 else
                                                     return false;
                                             }
@@ -227,20 +227,20 @@ namespace NiL.JS.Expressions
                                             {
                                                 temp.dValue = temp.valueType == JSObjectType.Double ? temp.dValue : temp.iValue;
                                                 if (Tools.ParseNumber(tstr, ref index, out tdouble) && (index == tstr.Length))
-                                                    return tdouble == temp.dValue ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+                                                    return tdouble == temp.dValue ? NiL.JS.BaseLibrary.Boolean.True : NiL.JS.BaseLibrary.Boolean.False;
                                                 else
                                                     return false;
                                             }
                                         case JSObjectType.String:
                                             {
-                                                return temp.oValue.ToString() == tstr ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+                                                return temp.oValue.ToString() == tstr ? NiL.JS.BaseLibrary.Boolean.True : NiL.JS.BaseLibrary.Boolean.False;
                                             }
                                     }
                                     break;
                                 }
                             default:
                                 {
-                                    return temp.oValue == tjso.oValue ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+                                    return temp.oValue == tjso.oValue ? NiL.JS.BaseLibrary.Boolean.True : NiL.JS.BaseLibrary.Boolean.False;
                                 }
                         }
                         break;
@@ -253,11 +253,11 @@ namespace NiL.JS.Expressions
                         {
                             case JSObjectType.Object:
                                 {
-                                    return temp.oValue == null ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+                                    return temp.oValue == null ? NiL.JS.BaseLibrary.Boolean.True : NiL.JS.BaseLibrary.Boolean.False;
                                 }
                             default:
                                 {
-                                    return !temp.IsDefinded ? NiL.JS.Core.BaseTypes.Boolean.True : NiL.JS.Core.BaseTypes.Boolean.False;
+                                    return !temp.IsDefinded ? NiL.JS.BaseLibrary.Boolean.True : NiL.JS.BaseLibrary.Boolean.False;
                                 }
                         }
                     }

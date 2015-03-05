@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
-using NiL.JS.Core.BaseTypes;
+using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Functions;
 using NiL.JS.Core.TypeProxing;
 using NiL.JS.Statements;
@@ -84,37 +84,37 @@ namespace NiL.JS.Core
                 globalContext.fields["Object"].attributes = JSObjectAttributesInternal.DoNotDelete;
                 JSObject.GlobalPrototype = TypeProxy.GetPrototype(typeof(JSObject));
                 Core.GlobalObject.refreshGlobalObjectProto();
-                globalContext.AttachModule(typeof(Modules.Math));
-                globalContext.AttachModule(typeof(BaseTypes.Array));
-                globalContext.AttachModule(typeof(Modules.JSON));
-                globalContext.AttachModule(typeof(BaseTypes.String));
-                globalContext.AttachModule(typeof(BaseTypes.Function));
-                globalContext.AttachModule(typeof(BaseTypes.Date));
-                globalContext.AttachModule(typeof(BaseTypes.Number));
-                globalContext.AttachModule(typeof(BaseTypes.Boolean));
-                globalContext.AttachModule(typeof(BaseTypes.Error));
-                globalContext.AttachModule(typeof(BaseTypes.TypeError));
-                globalContext.AttachModule(typeof(BaseTypes.ReferenceError));
-                globalContext.AttachModule(typeof(BaseTypes.EvalError));
-                globalContext.AttachModule(typeof(BaseTypes.RangeError));
-                globalContext.AttachModule(typeof(BaseTypes.URIError));
-                globalContext.AttachModule(typeof(BaseTypes.SyntaxError));
-                globalContext.AttachModule(typeof(BaseTypes.RegExp));
+                globalContext.AttachModule(typeof(BaseLibrary.Math));
+                globalContext.AttachModule(typeof(BaseLibrary.Array));
+                globalContext.AttachModule(typeof(JSON));
+                globalContext.AttachModule(typeof(BaseLibrary.String));
+                globalContext.AttachModule(typeof(Function));
+                globalContext.AttachModule(typeof(Date));
+                globalContext.AttachModule(typeof(Number));
+                globalContext.AttachModule(typeof(BaseLibrary.Boolean));
+                globalContext.AttachModule(typeof(Error));
+                globalContext.AttachModule(typeof(TypeError));
+                globalContext.AttachModule(typeof(ReferenceError));
+                globalContext.AttachModule(typeof(EvalError));
+                globalContext.AttachModule(typeof(RangeError));
+                globalContext.AttachModule(typeof(URIError));
+                globalContext.AttachModule(typeof(SyntaxError));
+                globalContext.AttachModule(typeof(RegExp));
 #if !PORTABLE
-                globalContext.AttachModule(typeof(Modules.console));
+                globalContext.AttachModule(typeof(console));
 #endif
-                globalContext.AttachModule(typeof(BaseTypes.ArrayBuffer));
-                globalContext.AttachModule(typeof(BaseTypes.Int8Array));
-                globalContext.AttachModule(typeof(BaseTypes.Uint8Array));
-                globalContext.AttachModule(typeof(BaseTypes.Uint8ClampedArray));
-                globalContext.AttachModule(typeof(BaseTypes.Int16Array));
-                globalContext.AttachModule(typeof(BaseTypes.Uint16Array));
-                globalContext.AttachModule(typeof(BaseTypes.Int32Array));
-                globalContext.AttachModule(typeof(BaseTypes.Uint32Array));
-                globalContext.AttachModule(typeof(BaseTypes.Float32Array));
-                globalContext.AttachModule(typeof(BaseTypes.Float64Array));
+                globalContext.AttachModule(typeof(ArrayBuffer));
+                globalContext.AttachModule(typeof(Int8Array));
+                globalContext.AttachModule(typeof(Uint8Array));
+                globalContext.AttachModule(typeof(Uint8ClampedArray));
+                globalContext.AttachModule(typeof(Int16Array));
+                globalContext.AttachModule(typeof(Uint16Array));
+                globalContext.AttachModule(typeof(Int32Array));
+                globalContext.AttachModule(typeof(Uint32Array));
+                globalContext.AttachModule(typeof(Float32Array));
+                globalContext.AttachModule(typeof(Float64Array));
 
-                globalContext.AttachModule(typeof(Modules.Debug));
+                globalContext.AttachModule(typeof(Debug));
 
                 #region Base Function
                 globalContext.DefineVariable("eval").Assign(new EvalFunction());

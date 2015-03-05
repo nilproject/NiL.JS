@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using NiL.JS.Core;
-using NiL.JS.Core.BaseTypes;
+using NiL.JS.BaseLibrary;
 using NiL.JS.Expressions;
 
 namespace NiL.JS.Statements
@@ -43,7 +43,7 @@ namespace NiL.JS.Statements
             if (body is FunctionExpression)
             {
                 if (state.strict.Peek())
-                    throw new JSException((new NiL.JS.Core.BaseTypes.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
+                    throw new JSException((new NiL.JS.BaseLibrary.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
                 if (state.message != null)
                     state.message(MessageLevel.CriticalWarning, CodeCoordinates.FromTextPosition(state.Code, body.Position, body.Length), "Do not declare function in nested blocks.");
                 body = new CodeBlock(new[] { body }, state.strict.Peek()); // для того, чтобы не дублировать код по декларации функции, 
@@ -57,15 +57,15 @@ namespace NiL.JS.Statements
             if (i >= state.Code.Length)
                 throw new JSException(new SyntaxError("Unexpected end of source."));
             if (!Parser.Validate(state.Code, "while", ref i))
-                throw new JSException((new Core.BaseTypes.SyntaxError("Expected \"while\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
+                throw new JSException((new SyntaxError("Expected \"while\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
             while (char.IsWhiteSpace(state.Code[i])) i++;
             if (state.Code[i] != '(')
-                throw new JSException((new Core.BaseTypes.SyntaxError("Expected \"(\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
+                throw new JSException((new SyntaxError("Expected \"(\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
             do i++; while (char.IsWhiteSpace(state.Code[i]));
             var condition = Parser.Parse(state, ref i, 1);
             while (char.IsWhiteSpace(state.Code[i])) i++;
             if (state.Code[i] != ')')
-                throw new JSException((new Core.BaseTypes.SyntaxError("Expected \")\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
+                throw new JSException((new SyntaxError("Expected \")\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
             i++;
             var pos = index;
             index = i;

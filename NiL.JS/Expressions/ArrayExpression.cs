@@ -75,7 +75,7 @@ namespace NiL.JS.Expressions
 #endif
         private static JSObject impl(Context context, CodeNode[] elements)
         {
-            var res = new NiL.JS.Core.BaseTypes.Array((long)elements.Length);
+            var res = new NiL.JS.BaseLibrary.Array((long)elements.Length);
             if (elements.Length > 0)
             {
                 for (int i = 0; i < elements.Length; i++)

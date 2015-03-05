@@ -19,7 +19,7 @@ namespace NiL.JS.Statements
             if (!Parser.Validate(state.Code, "break", ref i) || !Parser.isIdentificatorTerminator(state.Code[i]))
                 return new ParseResult();
             if (!state.AllowBreak.Peek())
-                throw new JSException((new NiL.JS.Core.BaseTypes.SyntaxError("Invalid use break statement")));
+                throw new JSException((new NiL.JS.BaseLibrary.SyntaxError("Invalid use break statement")));
             while (char.IsWhiteSpace(state.Code[i]) && !Tools.isLineTerminator(state.Code[i])) i++;
             int sl = i;
             JSObject label = null;
@@ -27,7 +27,7 @@ namespace NiL.JS.Statements
             {
                 label = Tools.Unescape(state.Code.Substring(sl, i - sl), state.strict.Peek());
                 if (!state.Labels.Contains(label.oValue.ToString()))
-                    throw new JSException((new NiL.JS.Core.BaseTypes.SyntaxError("Try to break to undefined label.")));
+                    throw new JSException((new NiL.JS.BaseLibrary.SyntaxError("Try to break to undefined label.")));
             }
             var pos = index;
             index = i;
