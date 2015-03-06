@@ -164,6 +164,13 @@ namespace NiL.JS.Expressions
                     CodeNode lastAssign = null;
                     for (var i = 0; i < assigns.Count; i++)
                     {
+                        if (assigns[i].Position >= Position) // присваивание может быть после этого использования, но если всё это в цикле, то выполнение вернётся сюда.
+                        {
+                            // оптимизация не применяется
+                            lastAssign = null;
+                            break;
+                        }
+
                         if (descriptor.isReadOnly)
                         {
                             if ((assigns[i] is Assign)
@@ -175,14 +182,7 @@ namespace NiL.JS.Expressions
                         }
                         else if (lastAssign == null || assigns[i].Position > lastAssign.Position)
                         {
-                            lastAssign = assigns[i];
-
-                            if (lastAssign.Position >= Position) // присваивание может быть после этого использования, но если всё это в цикле, то выполнение вернётся сюда.
-                            {
-                                // оптимизация не применяется
-                                lastAssign = null;
-                                break;
-                            }
+                            lastAssign = assigns[i];                            
                         }
                     }
                     var assign = lastAssign as Assign;
