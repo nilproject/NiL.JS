@@ -148,22 +148,22 @@ namespace NiL.JS.Statements
             return null;
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
         {
             if (depth < 1)
                 throw new InvalidOperationException();
-            Parser.Build(ref image, 2, variables, strict, message, statistic, opts);
+            Parser.Build(ref image, 2, variables, state, message, statistic, opts);
             for (int i = 0; i < lines.Length; i++)
-                Parser.Build(ref lines[i], 1, variables, strict, message, statistic, opts);
+                Parser.Build(ref lines[i], 1, variables, state | _BuildState.Conditional, message, statistic, opts);
             for (int i = 0; functions != null && i < functions.Length; i++)
             {
                 CodeNode stat = functions[i];
-                Parser.Build(ref stat, 1, variables, strict, message, statistic, opts);
+                Parser.Build(ref stat, 1, variables, state, message, statistic, opts);
                 variables[functions[i].Name] = new VariableDescriptor(functions[i].Reference, true, functions[i].Reference.functionDepth);
             }
             functions = null;
             for (int i = 1; i < cases.Length; i++)
-                Parser.Build(ref cases[i].statement, 2, variables, strict, message, statistic, opts);
+                Parser.Build(ref cases[i].statement, 2, variables, state, message, statistic, opts);
             for (int i = 0; i < lines.Length / 2; i++)
             {
                 var t = lines[i];

@@ -93,7 +93,7 @@ namespace NiL.JS.Core.Functions
                 else
                     creator.body.localVariables[i].cacheRes = new JSObject()
                     {
-                        attributes = JSObjectAttributesInternal.DoNotDelete | (creator.body.localVariables[i].readOnly ? JSObjectAttributesInternal.ReadOnly : 0),
+                        attributes = JSObjectAttributesInternal.DoNotDelete | (creator.body.localVariables[i].isReadOnly ? JSObjectAttributesInternal.ReadOnly : 0),
                         valueType = JSObjectType.Undefined
                     };
             }

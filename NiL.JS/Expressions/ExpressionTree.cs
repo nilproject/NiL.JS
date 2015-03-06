@@ -481,7 +481,7 @@ namespace NiL.JS.Statements
                                 if (state.strict.Peek()
                                     && (first is GetVariableExpression) && ((first as GetVariableExpression).Name == "arguments" || (first as GetVariableExpression).Name == "eval"))
                                     throw new JSException(new SyntaxError("Can not incriment \"" + (first as GetVariableExpression).Name + "\" in strict mode."));
-                                first = new Expressions.Incriment(first, Expressions.Incriment.Type.Preincriment);
+                                first = new Expressions.Incriment(first, Expressions.Incriment.Type.Preincriment) { Position = index, Length = i - index };
                             }
                             else
                             {
@@ -1311,7 +1311,7 @@ namespace NiL.JS.Statements
             return visitor.Visit(this);
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
         {
             Type = Type;
             _this = fastImpl;

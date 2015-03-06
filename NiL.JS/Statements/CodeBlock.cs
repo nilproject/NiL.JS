@@ -265,7 +265,7 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
         {
             if (builded)
                 return false;
@@ -275,7 +275,7 @@ namespace NiL.JS.Statements
                 var fe = lines[i] as FunctionExpression;
                 if (fe != null)
                 {
-                    Parser.Build(ref lines[i], depth < 0 ? 2 : System.Math.Max(1, depth), variables, this.strict, message, statistic, opts);
+                    Parser.Build(ref lines[i], depth < 0 ? 2 : System.Math.Max(1, depth), variables, state | (this.strict ? _BuildState.Strict : _BuildState.None), message, statistic, opts);
                     VariableDescriptor desc = null;
                     if (!variables.TryGetValue(fe.name, out desc) || desc == null)
                         variables[fe.name] = fe.Reference.descriptor;
@@ -302,7 +302,7 @@ namespace NiL.JS.Statements
                         if (unreachable && message != null)
                             message(MessageLevel.CriticalWarning, new CodeCoordinates(0, lines[i].Position, lines[i].Length), "Unreachable code detected.");
                         var cn = lines[i];
-                        Parser.Build(ref cn, depth < 0 ? 2 : System.Math.Max(1, depth), variables, this.strict, message, statistic, opts);
+                        Parser.Build(ref cn, depth < 0 ? 2 : System.Math.Max(1, depth), variables, state | (this.strict ? _BuildState.Strict : _BuildState.None), message, statistic, opts);
                         lines[i] = cn;
                         unreachable |= cn is ReturnStatement || cn is BreakStatement || cn is ContinueStatement;
                     }

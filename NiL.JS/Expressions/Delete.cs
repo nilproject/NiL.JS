@@ -128,13 +128,13 @@ namespace NiL.JS.Expressions
             }
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> vars, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
+        internal override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
         {
-            if (base.Build(ref _this, depth, vars, strict, message, statistic, opts))
+            if (base.Build(ref _this, depth,variables, state, message, statistic, opts))
                 return true;
             if (first is GetVariableExpression)
             {
-                if (strict)
+                if ((state & _BuildState.Strict) != 0)
                     throw new JSException(new SyntaxError("Can not evalute delete on variable in strict mode"));
                 (first as GetVariableExpression).suspendThrow = true;
             }
@@ -149,7 +149,7 @@ namespace NiL.JS.Expressions
             if (f != null)
             {
                 if (f.Descriptor.isDefined && message != null)
-                    message(MessageLevel.Warning, new CodeCoordinates(0, Position, Length), "Try to delete defined variable." + (strict ? " In strict mode it cause exception." : " This is not allowed"));
+                    message(MessageLevel.Warning, new CodeCoordinates(0, Position, Length), "Try to delete defined variable." + ((state & _BuildState.Strict) != 0 ? " In strict mode it cause exception." : " This is not allowed"));
                 (f.Descriptor.assignations ??
                     (f.Descriptor.assignations = new System.Collections.Generic.List<CodeNode>())).Add(this);
             }

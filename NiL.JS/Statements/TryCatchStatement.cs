@@ -345,12 +345,12 @@ namespace NiL.JS.Statements
             context.abortInfo = catchContext.abortInfo;
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
         {
             if (statistic != null)
                 statistic.ContainsTry = true;
             CodeNode b = null;
-            Parser.Build(ref body, depth, variables, strict, message, statistic, opts);
+            Parser.Build(ref body, depth, variables, state | _BuildState.Conditional, message, statistic, opts);
             if (catchBody != null)
             {
                 catchVariableDesc.owner = this;
@@ -358,8 +358,8 @@ namespace NiL.JS.Statements
                 variables.TryGetValue(catchVariableDesc.name, out oldVarDesc);
                 variables[catchVariableDesc.name] = catchVariableDesc;
                 b = catchBody as CodeNode;
-                Parser.Build(ref b, depth, variables, strict, message, statistic, opts);
-                catchBody = b != null ? b as CodeBlock ?? ((b is EmptyStatement || b == null) ? new CodeBlock(new CodeNode[0], false) : new CodeBlock(new[] { b }, strict)) : new CodeBlock(new CodeNode[0], false);
+                Parser.Build(ref b, depth, variables, state | _BuildState.Conditional, message, statistic, opts);
+                catchBody = b != null ? b as CodeBlock ?? ((b is EmptyStatement || b == null) ? new CodeBlock(new CodeNode[0], false) : new CodeBlock(new[] { b }, (state & _BuildState.Strict) != 0)) : new CodeBlock(new CodeNode[0], false);
                 if (oldVarDesc != null)
                     variables[catchVariableDesc.name] = oldVarDesc;
                 else
@@ -368,8 +368,8 @@ namespace NiL.JS.Statements
                     v.Value.captured = true;
             }
             b = finallyBody as CodeNode;
-            Parser.Build(ref b, depth, variables, strict, message, statistic, opts);
-            finallyBody = b != null ? b as CodeBlock ?? ((b is EmptyStatement || b == null) ? null : new CodeBlock(new[] { b }, strict)) : null;
+            Parser.Build(ref b, depth, variables, state, message, statistic, opts);
+            finallyBody = b != null ? b as CodeBlock ?? ((b is EmptyStatement || b == null) ? null : new CodeBlock(new[] { b }, (state & _BuildState.Strict) != 0)) : null;
             if (body == null
                 || body is EmptyStatement
                 || (body is CodeBlock && (body as CodeBlock).lines.Length == 0))

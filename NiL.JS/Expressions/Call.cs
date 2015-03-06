@@ -131,13 +131,13 @@ namespace NiL.JS.Expressions
             }
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
         {
             if (statistic != null)
                 statistic.UseCall = true;
             for (var i = 0; i < arguments.Length; i++)
-                Parser.Build(ref arguments[i], depth + 1, vars, strict, message, statistic, opts);
-            base.Build(ref _this, depth, vars, strict, message, statistic, opts);
+                Parser.Build(ref arguments[i], depth + 1,variables, state, message, statistic, opts);
+            base.Build(ref _this, depth,variables, state, message, statistic, opts);
             if (first is GetVariableExpression)
             {
                 var name = first.ToString();

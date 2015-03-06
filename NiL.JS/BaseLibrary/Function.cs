@@ -744,7 +744,7 @@ namespace NiL.JS.BaseLibrary
             var fs = FunctionExpression.Parse(new ParsingState(Tools.RemoveComments(code, 0), code, null), ref index);
             if (fs.IsParsed && code.Length == index)
             {
-                Parser.Build(ref fs.Statement, 0, new Dictionary<string, VariableDescriptor>(), context.strict, null, null, Options.Default);
+                Parser.Build(ref fs.Statement, 0, new Dictionary<string, VariableDescriptor>(), context.strict ? _BuildState.Strict : _BuildState.None, null, null, Options.Default);
                 creator = fs.Statement as FunctionExpression;
             }
             else
@@ -1017,7 +1017,7 @@ namespace NiL.JS.BaseLibrary
                         (internalContext.fields ?? (internalContext.fields = createFields()))[v.name] = f;
                     if (v.Inititalizator != null)
                         f.Assign(v.Inititalizator.Evaluate(internalContext));
-                    if (v.readOnly)
+                    if (v.isReadOnly)
                         f.attributes |= JSObjectAttributesInternal.ReadOnly;
                     v.cacheRes = f;
                     v.cacheContext = internalContext;

@@ -9,6 +9,18 @@ namespace NiL.JS.Expressions
 #endif
     public sealed class Assign : Expression
     {
+        /// <summary>
+        /// Присваивание под условием в рамках функции
+        /// <example>
+        /// function boo()
+        /// {
+        ///     var a = 1; // false
+        ///     if (is_moon_red)
+        ///         b = 2; // true
+        /// }
+        /// </example>
+        /// </summary>
+        internal bool byCondition = true;
         private Arguments setterArgs;
         private bool saveResult;
 
@@ -68,7 +80,7 @@ namespace NiL.JS.Expressions
             return temp;
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> vars, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
+        internal override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
         {
 #if GIVENAMEFUNCTION
             if (first is VariableReference && second is FunctionExpression)
@@ -78,7 +90,7 @@ namespace NiL.JS.Expressions
                     fs.name = (first as VariableReference).Name;
             }
 #endif
-            var r = base.Build(ref _this, depth, vars, strict, message, statistic, opts);
+            var r = base.Build(ref _this, depth, variables, state, message, statistic, opts);
 
             var f = first as VariableReference ?? ((first is OpAssignCache) ? (first as OpAssignCache).Source as VariableReference : null);
             if (f != null)
@@ -95,6 +107,11 @@ namespace NiL.JS.Expressions
                 _this = new SetMemberExpression(gme.first, gme.second, second) { Position = Position, Length = Length };
             if (depth > 1)
                 saveResult = true;
+
+            var callStackTrace = new System.Diagnostics.StackTrace().GetFrames();
+
+            byCondition = (state & _BuildState.Conditional) != 0;
+
             return r;
         }
 

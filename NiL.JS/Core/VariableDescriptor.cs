@@ -34,7 +34,7 @@ namespace NiL.JS.Core
         internal readonly string name;
         internal CodeNode owner;
         internal bool captured;
-        internal bool readOnly;
+        internal bool isReadOnly;
         internal List<CodeNode> assignations;
         internal PredictedType lastPredictedType;
 

@@ -64,9 +64,9 @@ namespace NiL.JS.Statements
             return new CodeNode[0];
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
         {
-            Parser.Build(ref body, 2, variables, strict, message, statistic, opts);
+            Parser.Build(ref body, 2, variables, state, message, statistic, opts);
             // Улучшает работу оптимизатора хвостовой рекурсии
             if (message == null && body is NiL.JS.Expressions.Ternary)
             {

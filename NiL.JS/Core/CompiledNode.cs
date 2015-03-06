@@ -153,9 +153,9 @@ namespace NiL.JS.Core
             return original.EvaluateForAssing(context);
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
         {
-            return original.Build(ref _this, depth, variables, strict, message, statistic, opts);
+            return original.Build(ref _this, depth, variables, state, message, statistic, opts);
         }
 
         internal override void Optimize(ref CodeNode _this, Expressions.FunctionExpression owner, CompilerMessageCallback message)

@@ -220,22 +220,24 @@ namespace NiL.JS.Core
         {
             if (records.Length == 0)
             {
-                records = new Record[1];
-                existedIndexes = new int[1];
-                return 1;
+                records = new Record[4];
+                existedIndexes = new int[4];
             }
-            //if (count > 100 && records.Length / count > 50)
-            //    throw new InvalidOperationException();
-            var oldRecords = records;
-            records = new Record[records.Length << 1];
-            int i = 0, c = eicount;
-            count = 0;
-            eicount = 0;
-            for (; i < c; i++)
+            else
             {
-                var index = existedIndexes[i];
-                if (oldRecords[index].key != null)
-                    insert(oldRecords[index].key, oldRecords[index].value, oldRecords[index].hash, false, true);
+                //if (count > 100 && records.Length / count > 50)
+                //    throw new InvalidOperationException();
+                var oldRecords = records;
+                records = new Record[records.Length << 1];
+                int i = 0, c = eicount;
+                count = 0;
+                eicount = 0;
+                for (; i < c; i++)
+                {
+                    var index = existedIndexes[i];
+                    if (oldRecords[index].key != null)
+                        insert(oldRecords[index].key, oldRecords[index].value, oldRecords[index].hash, false, true);
+                }
             }
             return records.Length;
         }

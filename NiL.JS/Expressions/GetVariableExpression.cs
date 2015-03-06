@@ -89,15 +89,6 @@ namespace NiL.JS.Expressions
                         return getter.Invoke(context.objectSource, null);
                     }
             }
-            //if (res.valueType == JSObjectType.NotExists && !suspendThrow)
-            //    throw new JSException(new NiL.JS.BaseLibrary.ReferenceError("Variable \"" + variableName + "\" is not defined."));
-            //if (res.valueType == JSObjectType.Property)
-            //{
-            //    var getter = (res.oValue as PropertyPair).get;
-            //    if (getter == null)
-            //        return JSObject.notExists;
-            //    return getter.Invoke(context.objectSource, null);
-            //}
             return res;
         }
 
@@ -130,7 +121,7 @@ namespace NiL.JS.Expressions
             return visitor.Visit(this);
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
         {
             if (statistic != null && variableName == "this")
                 statistic.UseThis = true;
@@ -160,6 +151,47 @@ namespace NiL.JS.Expressions
                 _this = new GetArgumentsExpression(functionDepth) { descriptor = descriptor };
             }
             return false;
+        }
+
+        internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message)
+        {
+            base.Optimize(ref _this, owner, message);
+            if (!descriptor.captured && descriptor.isDefined)
+            {
+                var assigns = descriptor.assignations;
+                if (assigns != null && assigns.Count > 0)
+                {
+                    CodeNode lastAssign = null;
+                    for (var i = 0; i < assigns.Count; i++)
+                    {
+                        if (descriptor.isReadOnly)
+                        {
+                            if ((assigns[i] is Assign)
+                                && (assigns[i] as Assign).first is Statements.VariableDefineStatement.AllowWriteCN)
+                            {
+                                lastAssign = assigns[i];
+                                break;
+                            }
+                        }
+                        else if (lastAssign == null || assigns[i].Position > lastAssign.Position)
+                        {
+                            lastAssign = assigns[i];
+
+                            if (lastAssign.Position >= Position) // присваивание может быть после этого использования, но если всё это в цикле, то выполнение вернётся сюда.
+                            {
+                                // оптимизация не применяется
+                                lastAssign = null;
+                                break;
+                            }
+                        }
+                    }
+                    var assign = lastAssign as Assign;
+                    if (assign != null && !assign.byCondition && assign.second is Constant)
+                    {
+                        _this = assign.second;
+                    }
+                }
+            }
         }
     }
 }

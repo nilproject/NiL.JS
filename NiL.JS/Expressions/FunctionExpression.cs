@@ -529,7 +529,7 @@ namespace NiL.JS.Expressions
             return new Function(context, this);
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
         {
             if (body.builded)
                 return false;
@@ -538,7 +538,7 @@ namespace NiL.JS.Expressions
             var bodyCode = body as CodeNode;
             var nvars = new Dictionary<string, VariableDescriptor>();
             var stat = new FunctionStatistic();
-            bodyCode.Build(ref bodyCode, 0, nvars, strict, message, stat, opts);
+            bodyCode.Build(ref bodyCode, 0, nvars, state & ~_BuildState.Conditional, message, stat, opts);
             if (type == FunctionType.Function && !string.IsNullOrEmpty(name))
             {
                 VariableDescriptor fdesc = null;
@@ -620,6 +620,9 @@ namespace NiL.JS.Expressions
             checkUsings(stat);
             if (statistic != null)
                 statistic.ContainsEval |= stat.ContainsEval;
+            if (body.variables != null)
+                for (var i = 0; i < body.variables.Length; i++)
+                    body.variables[i].captured |= containsEval;
             return false;
         }
 
@@ -659,7 +662,7 @@ namespace NiL.JS.Expressions
                 && !stat.ContainsTry
                 && (body.variables.All(x =>
                     x.Owner == body // Переменные
-                    || x == reference.descriptor // Параметры
+                    || x == reference.descriptor // Сама функция
                     || (reference.descriptor != null && x.owner == reference.descriptor.Inititalizator) // аргументы
                     )))
             {
@@ -667,7 +670,7 @@ namespace NiL.JS.Expressions
                 for (var i = 0; i < body.localVariables.Length; i++)
                     body.localVariables[i].cacheRes = new JSObject()
                     {
-                        attributes = JSObjectAttributesInternal.DoNotDelete | (body.localVariables[i].readOnly ? JSObjectAttributesInternal.ReadOnly : 0),
+                        attributes = JSObjectAttributesInternal.DoNotDelete | (body.localVariables[i].isReadOnly ? JSObjectAttributesInternal.ReadOnly : 0),
                         valueType = JSObjectType.Undefined
                     };
                 for (var i = 0; i < arguments.Length; i++)

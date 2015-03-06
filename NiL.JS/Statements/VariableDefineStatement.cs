@@ -11,7 +11,7 @@ namespace NiL.JS.Statements
 #endif
     public sealed class VariableDefineStatement : CodeNode
     {
-        private sealed class AllowWriteCN : Expression
+        internal sealed class AllowWriteCN : Expression
         {
             internal VariableReference variable;
             internal readonly CodeNode source;
@@ -40,10 +40,10 @@ namespace NiL.JS.Statements
                 return res;
             }
 
-            internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
+            internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
             {
                 var v = variable as CodeNode;
-                var res = variable.Build(ref v, depth, variables, strict, message, statistic, opts);
+                var res = variable.Build(ref v, depth, variables, state, message, statistic, opts);
                 variable = v as VariableReference;
                 return res;
             }
@@ -201,7 +201,7 @@ namespace NiL.JS.Statements
             {
                 initializators[i].Evaluate(context);
                 if (isConst)
-                    this.variables[i].cacheRes.attributes |= JSObjectAttributesInternal.ReadOnly;
+                    (this.variables[i].cacheRes ?? this.variables[i].Get(context, false, this.variables[i].defineDepth)).attributes |= JSObjectAttributesInternal.ReadOnly;
             }
             return JSObject.notExists;
         }
@@ -214,7 +214,7 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
         {
             this.variables = new VariableDescriptor[names.Length];
             for (var i = 0; i < names.Length; i++)
@@ -244,12 +244,12 @@ namespace NiL.JS.Statements
                 }
                 this.variables[i] = desc;
                 this.variables[i].isDefined = true;
-                this.variables[i].readOnly = isConst;
+                this.variables[i].isReadOnly = isConst;
             }
             int actualChilds = 0;
             for (int i = 0; i < initializators.Length; i++)
             {
-                Parser.Build(ref initializators[i], message != null ? 2 : depth, variables, strict, message, statistic, opts);
+                Parser.Build(ref initializators[i], message != null ? 2 : depth, variables, state, message, statistic, opts);
                 if (initializators[i] != null)
                     actualChilds++;
             }
@@ -284,7 +284,7 @@ namespace NiL.JS.Statements
 
         public override string ToString()
         {
-            var res = isConst ? "conts " : "var ";
+            var res = isConst ? "const " : "var ";
             for (var i = 0; i < initializators.Length; i++)
             {
                 var t = initializators[i].ToString();

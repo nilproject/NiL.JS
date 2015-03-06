@@ -510,7 +510,7 @@ namespace NiL.JS.Core
                 if (i < c.Length)
                     throw new System.ArgumentException("Invalid char");
                 var vars = new Dictionary<string, VariableDescriptor>();
-                Parser.Build(ref cb, leak ? -1 : -2, vars, strict, null, null, Options.Default);
+                Parser.Build(ref cb, leak ? -1 : -2, vars, strict ? _BuildState.Strict : _BuildState.None, null, null, Options.Default);
                 Context context = null;
                 var body = cb as CodeBlock;
                 if (leak)
@@ -528,6 +528,7 @@ namespace NiL.JS.Core
                                 if (desc.IsDefined)
                                 {
                                     context.variables[i].defineDepth = -1; // Кеш будет игнорироваться.
+                                    context.variables[i].captured = true;
                                     // чистить кэш тут не достаточно. 
                                     // Мы не знаем, где объявлена одноимённая переменная 
                                     // и в тех случаях, когда она пришла из функции выше
@@ -561,9 +562,13 @@ namespace NiL.JS.Core
                         f.attributes = JSObjectAttributesInternal.None;
                     if (body.localVariables[i].Inititalizator != null)
                         f.Assign(body.localVariables[i].Inititalizator.Evaluate(context));
-                    if (body.localVariables[i].readOnly)
+                    if (body.localVariables[i].isReadOnly)
                         f.attributes |= JSObjectAttributesInternal.ReadOnly;
+                    body.localVariables[i].captured = true;
                 }
+
+                var bd = body as CodeNode;
+                body.Optimize(ref bd, null, null);
 
                 var run = context.Activate();
                 try

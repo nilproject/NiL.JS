@@ -191,11 +191,11 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
         {
-            Parser.Build(ref condition, 2, variables, strict, message, statistic, opts);
-            Parser.Build(ref body, depth, variables, strict, message, statistic, opts);
-            Parser.Build(ref elseBody, depth, variables, strict, message, statistic, opts);
+            Parser.Build(ref condition, 2, variables, state, message, statistic, opts);
+            Parser.Build(ref body, depth, variables, state | _BuildState.Conditional, message, statistic, opts);
+            Parser.Build(ref elseBody, depth, variables, state | _BuildState.Conditional, message, statistic, opts);
 
             if ((opts & Options.SuppressRemoveUselessExpressions) == 0 && condition is ToBool)
             {

@@ -72,7 +72,7 @@ namespace NiL.JS
         /// <param name="code">Код скрипта на языке JavaScript.</param>
         /// <param name="parentContext">Родительский контекст для контекста выполнения сценария.</param>
         /// <param name="messageCallback">Делегат обратного вызова, используемый для вывода сообщений компилятора</param>
-        public Script(string code, Context parentContext, CompilerMessageCallback messageCallback, Options ooptions)
+        public Script(string code, Context parentContext, CompilerMessageCallback messageCallback, Options options)
         {
             if (code == null)
                 throw new ArgumentNullException();
@@ -85,7 +85,8 @@ namespace NiL.JS
                 {
                     messageCallback(level, CodeCoordinates.FromTextPosition(code, cord.Column, cord.Length), message);
                 } : null as CompilerMessageCallback;
-            Parser.Build(ref root, 0, new System.Collections.Generic.Dictionary<string, VariableDescriptor>(), false, icallback, null, ooptions);
+            var stat = new FunctionStatistic();
+            Parser.Build(ref root, 0, new System.Collections.Generic.Dictionary<string, VariableDescriptor>(), _BuildState.None, icallback, stat, options);
             var body = root as CodeBlock;
             Context = new Context(parentContext ?? NiL.JS.Core.Context.globalContext, true, pseudoCaller);
             Context.thisBind = new GlobalObject(Context);
@@ -98,8 +99,9 @@ namespace NiL.JS
                 body.localVariables[i].cacheContext = Context;
                 if (body.localVariables[i].Inititalizator != null)
                     f.Assign(body.localVariables[i].Inititalizator.Evaluate(Context));
-                if (body.localVariables[i].readOnly)
+                if (body.localVariables[i].isReadOnly)
                     body.localVariables[i].cacheRes.attributes |= JSObjectAttributesInternal.ReadOnly;
+                body.localVariables[i].captured |= stat.ContainsEval;
             }
             var bd = body as CodeNode;
             body.Optimize(ref bd, null, icallback);

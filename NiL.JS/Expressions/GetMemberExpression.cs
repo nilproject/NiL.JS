@@ -112,11 +112,11 @@ namespace NiL.JS.Expressions
             return res;
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
         {
             if (statistic != null)
                 statistic.UseGetMember = true;
-            base.Build(ref _this, depth, variables, strict, message, statistic, opts);
+            base.Build(ref _this, depth, variables, state, message, statistic, opts);
             if (second is Constant)
             {
                 cachedMemberName = second.Evaluate(null);

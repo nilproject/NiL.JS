@@ -97,12 +97,12 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
         {
             if (statistic != null)
                 statistic.UseWith = true;
-            Parser.Build(ref obj, depth + 1, variables, strict, message, statistic, opts);
-            Parser.Build(ref body, depth, variables, strict, message, statistic, opts);
+            Parser.Build(ref obj, depth + 1, variables, state, message, statistic, opts);
+            Parser.Build(ref body, depth, variables, state, message, statistic, opts);
             return false;
         }
 

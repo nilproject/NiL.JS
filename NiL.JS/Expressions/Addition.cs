@@ -278,9 +278,9 @@ namespace NiL.JS.Expressions
             throw new NotImplementedException();
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
         {
-            var res = base.Build(ref _this, depth, vars, strict, message, statistic, opts);
+            var res = base.Build(ref _this, depth,variables, state, message, statistic, opts);
             if (!res && _this == this)
             {
                 if (first is StringConcat)

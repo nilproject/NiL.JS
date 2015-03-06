@@ -312,7 +312,7 @@ console.log(1..toLocaleString());
             }));
 #endif
 
-            int mode = 0
+            int mode = 103
                    ;
             switch (mode)
             {

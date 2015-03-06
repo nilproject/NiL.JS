@@ -49,11 +49,11 @@ namespace NiL.JS.Expressions
             return (bool)first.Evaluate(context) ? threads[0].Evaluate(context) : threads[1].Evaluate(context);
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
         {
-            Parser.Build(ref threads[0], depth, vars, strict, message, statistic, opts);
-            Parser.Build(ref threads[1], depth, vars, strict, message, statistic, opts);
-            base.Build(ref _this, depth, vars, strict, message, statistic, opts);
+            Parser.Build(ref threads[0], depth, variables, state | _BuildState.Conditional, message, statistic, opts);
+            Parser.Build(ref threads[1], depth, variables, state | _BuildState.Conditional, message, statistic, opts);
+            base.Build(ref _this, depth, variables, state, message, statistic, opts);
             if ((opts & Options.SuppressRemoveUselessExpressions) == 0 && first is Constant)
             {
                 _this = (bool)first.Evaluate(null) ? threads[0] : threads[1];

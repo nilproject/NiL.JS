@@ -104,10 +104,10 @@ namespace NiL.JS.Expressions
             return elements;
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> vars, bool strict, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
         {
             for (int i = 0; i < elements.Length; i++)
-                Parser.Build(ref elements[i], 2, vars, strict, message, statistic, opts);
+                Parser.Build(ref elements[i], 2,variables, state, message, statistic, opts);
             return false;
         }
 
