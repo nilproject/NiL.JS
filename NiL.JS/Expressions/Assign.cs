@@ -107,9 +107,7 @@ namespace NiL.JS.Expressions
                 _this = new SetMemberExpression(gme.first, gme.second, second) { Position = Position, Length = Length };
             if (depth > 1)
                 saveResult = true;
-
-            var callStackTrace = new System.Diagnostics.StackTrace().GetFrames();
-
+            
             byCondition = (state & _BuildState.Conditional) != 0;
 
             return r;
