@@ -221,8 +221,9 @@ namespace NiL.JS.BaseLibrary
                 break;
             }
             var strValue = self.ToString();
-            pos += strValue.Length;
-            return strValue.LastIndexOf(fstr, System.Math.Max(0, System.Math.Min(pos, strValue.Length)), StringComparison.CurrentCulture);
+            return strValue.LastIndexOf(fstr, StringComparison.CurrentCulture) == 0
+                    ? 0
+                    : strValue.LastIndexOf(fstr, System.Math.Max(0, System.Math.Min(pos, strValue.Length - 1)), StringComparison.CurrentCulture);
         }
 
         [DoNotEnumerate]
