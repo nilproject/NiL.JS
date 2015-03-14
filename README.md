@@ -9,7 +9,7 @@ Licensed under BSD 3-Clause License.
 * No native dependence.
 * One assembly.
 * Automatically wrapping .NET objects. No changes are required.
-* Access to AST and result code analysis.
+* Access to AST and results of code analysis.
 * Compatible with ASP.NET.
 * High performance.
 * Integrated debugger (In "For developers" version).
