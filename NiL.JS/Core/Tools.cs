@@ -1045,32 +1045,32 @@ namespace NiL.JS.Core
                             }
                         case 't':
                             {
-                                res.Append('\t');
+                                res.Append(processRegexComp ? "\\t" : "\t");
                                 break;
                             }
                         case 'f':
                             {
-                                res.Append('\f');
+                                res.Append(processRegexComp ? "\\f" : "\f");
                                 break;
                             }
                         case 'v':
                             {
-                                res.Append('\v');
+                                res.Append(processRegexComp ? "\\v" : "\v");
                                 break;
                             }
                         case 'b':
                             {
-                                res.Append('\b');
+                                res.Append(processRegexComp ? "\\b" : "\b");
                                 break;
                             }
                         case 'n':
                             {
-                                res.Append('\n');
+                                res.Append(processRegexComp ? "\\n" : "\n");
                                 break;
                             }
                         case 'r':
                             {
-                                res.Append('\r');
+                                res.Append(processRegexComp ? "\\r" : "\r");
                                 break;
                             }
                         case 'c':
@@ -1078,13 +1078,24 @@ namespace NiL.JS.Core
                             {
                                 if (!processRegexComp)
                                     goto default;
-                                if (i + 1 >= code.Length
-                                    || ((code[i + 1] < 'a' || code[i + 1] > 'z') && (code[i + 1] < 'A' || code[i + 1] > 'Z')))
-                                    goto case 'p';
-                                i++;
-                                res.Append((char)(code[i] % 32));
-                                break;
+
+                                if (i + 1 < code.Length) {
+                                    char ch = code[i + 1];
+                                    // convert a -> A
+                                    if (ch >= 'a' && ch <= 'z')
+                                        ch = (char)(ch - ('a' - 'A'));
+                                    if ((char)(ch - '@') < ' ') {
+                                        res.Append("\\c");
+                                        res.Append(ch);
+                                        ++i;
+                                        break;
+                                    }
+                                }
+
+                                // invalid control character
+                                goto case 'p';
                             }
+                        // not supported in standard
                         case 'P':
                         case 'p':
                         case 'k':
@@ -1092,7 +1103,9 @@ namespace NiL.JS.Core
                             {
                                 if (!processRegexComp)
                                     goto default;
-                                res.Append(code[i]);
+
+                                // regex that does not match anything
+                                res.Append(@"\b\B");
                                 break;
                             }
                         default:
