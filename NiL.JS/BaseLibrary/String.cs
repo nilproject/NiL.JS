@@ -525,7 +525,8 @@ namespace NiL.JS.BaseLibrary
                 if ((args[0].oValue as RegExp).regEx.ToString().Length == 0)
                 {
                     match = match.NextMatch();
-                    limit = (uint)selfString.Length;
+                    if (limit == uint.MaxValue)
+                        limit = (uint)selfString.Length;
                 }
                 Array res = new Array();
                 int index = 0;
