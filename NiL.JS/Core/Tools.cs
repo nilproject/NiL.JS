@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Reflection;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
@@ -1079,12 +1078,14 @@ namespace NiL.JS.Core
                                 if (!processRegexComp)
                                     goto default;
 
-                                if (i + 1 < code.Length) {
+                                if (i + 1 < code.Length)
+                                {
                                     char ch = code[i + 1];
                                     // convert a -> A
                                     if (ch >= 'a' && ch <= 'z')
                                         ch = (char)(ch - ('a' - 'A'));
-                                    if ((char)(ch - '@') < ' ') {
+                                    if ((char)(ch - '@') < ' ')
+                                    {
                                         res.Append("\\c");
                                         res.Append(ch);
                                         ++i;

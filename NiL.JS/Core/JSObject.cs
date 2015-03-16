@@ -244,6 +244,44 @@ namespace NiL.JS.Core
                         return null;
                 }
             }
+            protected set
+            {
+                switch (valueType)
+                {
+                    case JSObjectType.Bool:
+                        {
+                            iValue = (bool)value ? 1 : 0;
+                            break;
+                        }
+                    case JSObjectType.Int:
+                        {
+                            iValue = (int)value;
+                            break;
+                        }
+                    case JSObjectType.Double:
+                        {
+                            dValue = (double)value;
+                            break;
+                        }
+                    case JSObjectType.String:
+                        {
+                            oValue = (string)value;
+                            break;
+                        }
+                    case JSObjectType.Object:
+                    case JSObjectType.Function:
+                    case JSObjectType.Property:
+                    case JSObjectType.Date:
+                        {
+                            oValue = value;
+                            break;
+                        }
+                    case JSObjectType.Undefined:
+                    case JSObjectType.NotExistsInObject:
+                    default:
+                        throw new InvalidOperationException();
+                }
+            }
         }
 
         [Hidden]
