@@ -843,8 +843,6 @@ namespace NiL.JS.Core
                         if (self.oValue is TypeProxy)
                         {
                             var ht = (self.oValue as TypeProxy).hostedType;
-                            if (ht == typeof(RegExp))
-                                return "[object Object]";
                             return "[object " + (ht == typeof(JSObject) ? typeof(System.Object) : ht).Name + "]";
                         }
                         if (self.oValue != null)
