@@ -108,12 +108,12 @@ namespace NiL.JS.Statements
             bool pne = post == null;
             do
             {
-#if DEV
-                if (context.debugging && !(body is CodeBlock))
-                    context.raiseDebugger(body);
-#endif
                 if (be)
                 {
+#if DEV
+                    if (context.debugging && !(body is CodeBlock))
+                        context.raiseDebugger(body);
+#endif
                     var temp = body.Evaluate(context);
                     if (temp != null)
                         context.lastResult = temp;
@@ -130,18 +130,21 @@ namespace NiL.JS.Statements
                             return null;
                     }
                 }
-                if (pne)
-                    continue;
 #if DEV
                 if (context.debugging)
                 {
-                    context.raiseDebugger(post);
-                    post.Evaluate(context);
+                    if (!pne)
+                    {
+                        context.raiseDebugger(post);
+                        post.Evaluate(context);
+                    }
                     context.raiseDebugger(condition);
                 }
-                else
+                else if (!pne)
                     post.Evaluate(context);
 #else
+                if (pne)
+                    continue;
                 post.Evaluate(context);
 #endif
             } while ((bool)condition.Evaluate(context));

@@ -104,6 +104,28 @@ namespace NiL.JS.Core
 
         [Hidden]
         public static JSObject Undefined { [Hidden] get { return undefined; } }
+        [Hidden]
+        public static JSObject NotExists
+        {
+            [Hidden]
+            get
+            {
+                notExists.valueType = JSObjectType.NotExists;
+                return notExists;
+            }
+        }
+        [Hidden]
+        public static JSObject NotExistsInObject
+        {
+            [Hidden]
+            get
+            {
+                notExists.valueType = JSObjectType.NotExistsInObject;
+                return notExists;
+            }
+        }
+        [Hidden]
+        public static JSObject JSNull { [Hidden] get { return Null; } }
 
         [DoNotDelete]
         [DoNotEnumerate]
