@@ -203,6 +203,9 @@
     <DefineConstants Condition=" '$(TargetFrameworkVersion)' == 'v3.5' ">$(DefineConstants);NET35</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.Scripting.Core" Condition="'$(TargetFrameworkVersion)'=='v3.5'">
+      <HintPath>..\Ext\dlr\bin\v2Release\Microsoft.Scripting.Core.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
@@ -376,13 +379,10 @@
     <Compile Include="Statements\DebuggerOperator.cs" />
     <Compile Include="Statements\ForOfStatement.cs" />
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
+  <Target Name="BeforeBuild" >
+    <MSBuild Projects="..\Ext\dlr\Src\Microsoft.Scripting.Core\Microsoft.Scripting.Core.csproj" Properties="Configuration=v2Release" Condition="'$(TargetFrameworkVersion)'=='v3.5'" />
   </Target>
   <Target Name="AfterBuild">
   </Target>
-  -->
 </Project>

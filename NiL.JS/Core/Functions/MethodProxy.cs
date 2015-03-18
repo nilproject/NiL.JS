@@ -1,12 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Modules;
 using NiL.JS.Core.TypeProxing;
+
+#if NET35
+using Microsoft.Scripting.Ast;
+#else
+using System.Linq.Expressions;
+#endif
 
 namespace NiL.JS.Core.Functions
 {
@@ -301,13 +306,7 @@ namespace NiL.JS.Core.Functions
                     }
                 }
                 if (methodInfo.ReturnType == typeof(void))
-#if NET35
-                {
-#error Expression.Block do not supported in .NET 3.5
-                }
-#else
                     tree = Expression.Block(tree, Expression.Constant(null));
-#endif
             }
             else if (methodBase is ConstructorInfo)
             {
