@@ -1,6 +1,7 @@
 ﻿using System;
 using NiL.JS.Core;
 using NiL.JS.BaseLibrary;
+using NiL.JS.Statements;
 
 namespace NiL.JS.Expressions
 {
@@ -9,18 +10,6 @@ namespace NiL.JS.Expressions
 #endif
     public sealed class Assign : Expression
     {
-        /// <summary>
-        /// Присваивание под условием в рамках функции
-        /// <example>
-        /// function boo()
-        /// {
-        ///     var a = 1; // false
-        ///     if (is_moon_red)
-        ///         b = 2; // true
-        /// }
-        /// </example>
-        /// </summary>
-        internal bool byCondition = true;
         private Arguments setterArgs;
         private bool saveResult;
 
@@ -80,7 +69,7 @@ namespace NiL.JS.Expressions
             return temp;
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
+        internal override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
 #if GIVENAMEFUNCTION
             if (first is VariableReference && second is FunctionExpression)
@@ -105,17 +94,16 @@ namespace NiL.JS.Expressions
             var gme = first as GetMemberExpression;
             if (gme != null)
                 _this = new SetMemberExpression(gme.first, gme.second, second) { Position = Position, Length = Length };
+
             if (depth > 1)
                 saveResult = true;
-            
-            byCondition = (state & _BuildState.Conditional) != 0;
 
             return r;
         }
 
-        internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message)
+        internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
-            baseOptimize(owner, message);
+            baseOptimize(owner, message, opts, statistic);
             var vr = first as VariableReference;
             if (vr != null)
             {
@@ -136,6 +124,41 @@ namespace NiL.JS.Expressions
                 }
                 else if (message != null)
                     message(MessageLevel.CriticalWarning, new CodeCoordinates(0, Position, Length), "Assign to undefined variable \"" + vr.Name + "\". It will declare a global variable.");
+            }
+
+            if (owner != null // не будем это применять в корневом узле. Только в функциях. Иначе это может задумываться как настройка контекста для последующего использования в Eval
+                && (opts & Options.SuppressUselessExpressionsElimination) == 0
+                && !statistic.ContainsEval
+                && !statistic.ContainsWith // можем упустить присваивание
+                && first is GetVariableExpression)
+            {
+                var gve = first as GetVariableExpression;
+                if ((owner == null || owner.body.strict || gve.descriptor.owner != owner || !owner.containsArguments) // аргументы это одна сущность с двумя именами
+                    && !gve.descriptor.captured
+                    && gve.descriptor.isDefined
+                    && (codeContext & _BuildState.InLoop) == 0)
+                {
+                    bool last = true;
+                    for (var i = 0; last && i < gve.descriptor.references.Count; i++)
+                    {
+                        last &= gve.descriptor.references[i].Eliminated || gve.descriptor.references[i].Position <= Position;
+                    }
+                    if (last)
+                    {
+                        if (second.IsContextIndependent)
+                        {
+                            _this = EmptyStatement.Instance;
+                            _this.Eliminated = true;
+                        }
+                        else
+                        {
+                            _this = second;
+                            this.second = null;
+                            this.Eliminated = true;
+                            this.second = _this as Expression;
+                        }
+                    }
+                }
             }
         }
 

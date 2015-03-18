@@ -62,14 +62,17 @@ namespace NiL.JS.Expressions
             return null;
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
+            codeContext = state;
+
             var vss = value.oValue as CodeNode[];
             if (vss != null)
                 throw new InvalidOperationException("It behaviour is deprecated");
-            if ((opts & Options.SuppressRemoveUselessExpressions) == 0 && depth <= 1)
+            if ((opts & Options.SuppressUselessExpressionsElimination) == 0 && depth <= 1)
             {
                 _this = null;
+                Eliminated = true;
                 if (message != null && (value.valueType != JSObjectType.String || value.oValue.ToString() != "use strict"))
                     message(MessageLevel.Warning, new CodeCoordinates(0, Position, Length), "Unused constant was removed. Maybe, something missing.");
             }

@@ -49,12 +49,12 @@ namespace NiL.JS.Expressions
             return (bool)first.Evaluate(context) ? threads[0].Evaluate(context) : threads[1].Evaluate(context);
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             Parser.Build(ref threads[0], depth, variables, state | _BuildState.Conditional, message, statistic, opts);
             Parser.Build(ref threads[1], depth, variables, state | _BuildState.Conditional, message, statistic, opts);
             base.Build(ref _this, depth, variables, state, message, statistic, opts);
-            if ((opts & Options.SuppressRemoveUselessExpressions) == 0 && first is Constant)
+            if ((opts & Options.SuppressUselessExpressionsElimination) == 0 && first is Constant)
             {
                 _this = (bool)first.Evaluate(null) ? threads[0] : threads[1];
                 if (message != null)
@@ -64,7 +64,7 @@ namespace NiL.JS.Expressions
             {
                 if (statistic != null
                     && threads[0] != null
-                    && !statistic.UseWith
+                    && !statistic.ContainsWith
                     && (first is VariableReference && threads[0] is VariableReference)
                     && (first as VariableReference).descriptor == (threads[0] as VariableReference).descriptor)
                 {
@@ -91,13 +91,13 @@ namespace NiL.JS.Expressions
             return false;
         }
 
-        internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message)
+        internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
-            base.Optimize(ref _this, owner, message);
+            base.Optimize(ref _this, owner, message, opts, statistic);
             for (var i = threads.Length; i-- > 0; )
             {
                 var cn = threads[i] as CodeNode;
-                cn.Optimize(ref cn, owner, message);
+                cn.Optimize(ref cn, owner, message, opts, statistic);
                 threads[i] = cn as Expression;
             }
             if (message != null

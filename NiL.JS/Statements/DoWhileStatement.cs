@@ -125,19 +125,22 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             depth = System.Math.Max(1, depth);
-            Parser.Build(ref body, depth, variables, state, message, statistic, opts);
-            Parser.Build(ref condition, 2, variables, state, message, statistic, opts);
+            Parser.Build(ref body, depth, variables, state | _BuildState.InLoop, message, statistic, opts);
+            Parser.Build(ref condition, 2, variables, state | _BuildState.InLoop, message, statistic, opts);
             try
             {
-                if (allowRemove && (opts & Options.SuppressRemoveUselessExpressions) == 0 && (condition is Constant || (condition as Expressions.Expression).IsContextIndependent))
+                if (allowRemove 
+                    && (opts & Options.SuppressUselessExpressionsElimination) == 0 
+                    && (condition is Constant || (condition as Expressions.Expression).IsContextIndependent))
                 {
                     if ((bool)condition.Evaluate(null))
                         _this = new InfinityLoop(body, labels);
                     else if (labels.Length == 0)
                         _this = body;
+                    condition.Eliminated = true;
                 }
             }
             catch (Exception e)
@@ -151,10 +154,10 @@ namespace NiL.JS.Statements
             return false;
         }
 
-        internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message)
+        internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
-            condition.Optimize(ref condition, owner, message);
-            body.Optimize(ref body, owner, message);
+            condition.Optimize(ref condition, owner, message, opts, statistic);
+            body.Optimize(ref body, owner, message, opts, statistic);
         }
 
         public override T Visit<T>(Visitor<T> visitor)

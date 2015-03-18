@@ -345,7 +345,7 @@ namespace NiL.JS.Statements
             context.abortInfo = catchContext.abortInfo;
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             if (statistic != null)
                 statistic.ContainsTry = true;
@@ -381,20 +381,20 @@ namespace NiL.JS.Statements
             return false;
         }
 
-        internal override void Optimize(ref CodeNode _this, Expressions.FunctionExpression owner, CompilerMessageCallback message)
+        internal override void Optimize(ref CodeNode _this, Expressions.FunctionExpression owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             CodeNode b = null;
-            body.Optimize(ref body, owner, message);
+            body.Optimize(ref body, owner, message, opts, statistic);
             if (catchBody != null)
             {
                 b = catchBody as CodeNode;
-                catchBody.Optimize(ref b, owner, message);
+                catchBody.Optimize(ref b, owner, message, opts, statistic);
                 catchBody = b as CodeBlock ?? new CodeBlock(new[] { b }, owner.body.strict);
             }
             if (finallyBody != null)
             {
                 b = finallyBody as CodeNode;
-                finallyBody.Optimize(ref b, owner, message);
+                finallyBody.Optimize(ref b, owner, message, opts, statistic);
                 finallyBody = b as CodeBlock ?? new CodeBlock(new[] { b }, owner.body.strict);
             }
         }

@@ -274,7 +274,7 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             Parser.Build(ref variable, 2, variables, state, message, statistic, opts);
             var tvar = variable as VariableDefineStatement;
@@ -283,7 +283,7 @@ namespace NiL.JS.Statements
             if (variable is Assign)
                 ((variable as Assign).first.first as GetVariableExpression).forceThrow = false;
             Parser.Build(ref source, 2, variables, state, message, statistic, opts);
-            Parser.Build(ref body, System.Math.Max(1, depth), variables, state | _BuildState.Conditional, message, statistic, opts);
+            Parser.Build(ref body, System.Math.Max(1, depth), variables, state | _BuildState.Conditional | _BuildState.InLoop, message, statistic, opts);
             if (variable is Expressions.None)
             {
                 if ((variable as Expressions.None).SecondOperand != null)
@@ -298,11 +298,11 @@ namespace NiL.JS.Statements
             return false;
         }
 
-        internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message)
+        internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
-            source.Optimize(ref source, owner, message);
+            source.Optimize(ref source, owner, message, opts, statistic);
             if (body != null)
-                body.Optimize(ref body, owner, message);
+                body.Optimize(ref body, owner, message, opts, statistic);
         }
 
         public override T Visit<T>(Visitor<T> visitor)

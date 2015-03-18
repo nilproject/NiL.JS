@@ -164,20 +164,20 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             Parser.Build(ref init, 1, variables, state, message, statistic, opts);
             if (init is VariableDefineStatement
                 && (init as VariableDefineStatement).initializators.Length == 1)
                 init = (init as VariableDefineStatement).initializators[0];
-            Parser.Build(ref condition, 2, variables, state, message, statistic, opts);
+            Parser.Build(ref condition, 2, variables, state | _BuildState.InLoop, message, statistic, opts);
             if (post != null)
             {
-                Parser.Build(ref post, 1, variables, state | _BuildState.Conditional, message, statistic, opts);
+                Parser.Build(ref post, 1, variables, state | _BuildState.Conditional | _BuildState.InLoop, message, statistic, opts);
                 if (post == null && message != null)
                     message(MessageLevel.Warning, new CodeCoordinates(0, Position, Length), "Last expression of for-loop was removed. Maybe, it's a mistake.");
             }
-            Parser.Build(ref body, System.Math.Max(1, depth), variables, state | _BuildState.Conditional, message, statistic, opts);
+            Parser.Build(ref body, System.Math.Max(1, depth), variables, state | _BuildState.Conditional | _BuildState.InLoop, message, statistic, opts);
             if (condition == null)
                 condition = new Constant(NiL.JS.BaseLibrary.Boolean.True);
             else if ((condition is Expressions.Expression)
@@ -250,16 +250,16 @@ namespace NiL.JS.Statements
             return false;
         }
 
-        internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message)
+        internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             if (init != null)
-                init.Optimize(ref init, owner, message);
+                init.Optimize(ref init, owner, message, opts, statistic);
             if (condition != null)
-                condition.Optimize(ref condition, owner, message);
+                condition.Optimize(ref condition, owner, message, opts, statistic);
             if (post != null)
-                post.Optimize(ref post, owner, message);
+                post.Optimize(ref post, owner, message, opts, statistic);
             if (body != null)
-                body.Optimize(ref body, owner, message);
+                body.Optimize(ref body, owner, message, opts, statistic);
         }
 
         public override T Visit<T>(Visitor<T> visitor)

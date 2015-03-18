@@ -18,12 +18,29 @@ namespace NiL.JS.Expressions
                 return PredictedType.Unknown;
             }
         }
+        internal _BuildState codeContext;
 
         protected internal Expression first;
         protected internal Expression second;
 
         public Expression FirstOperand { get { return first; } }
         public Expression SecondOperand { get { return second; } }
+
+        public override bool Eliminated
+        {
+            get
+            {
+                return base.Eliminated;
+            }
+            internal set
+            {
+                if (first != null)
+                    first.Eliminated = true;
+                if (second != null)
+                    second.Eliminated = true;
+                base.Eliminated = value;
+            }
+        }
 
         public virtual bool IsContextIndependent
         {
@@ -47,8 +64,10 @@ namespace NiL.JS.Expressions
             this.second = second;
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
+            codeContext = state;
+
             Parser.Build(ref first, depth + 1, variables, state, message, statistic, opts);
             Parser.Build(ref second, depth + 1, variables, state, message, statistic, opts);
             try
@@ -74,23 +93,23 @@ namespace NiL.JS.Expressions
             return false;
         }
 
-        internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message)
+        internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
-            baseOptimize(owner, message);
+            baseOptimize(owner, message, opts, statistic);
         }
 
-        protected void baseOptimize(FunctionExpression owner, CompilerMessageCallback message)
+        protected void baseOptimize(FunctionExpression owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             var f = first as CodeNode;
             var s = second as CodeNode;
             if (f != null)
             {
-                f.Optimize(ref f, owner, message);
+                f.Optimize(ref f, owner, message, opts, statistic);
                 first = f as Expression;
             }
             if (s != null)
             {
-                s.Optimize(ref s, owner, message);
+                s.Optimize(ref s, owner, message, opts, statistic);
                 second = s as Expression;
             }
         }

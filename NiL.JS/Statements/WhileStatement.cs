@@ -116,12 +116,12 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             depth = System.Math.Max(1, depth);
-            Parser.Build(ref body, depth, variables, state | _BuildState.Conditional, message, statistic, opts);
-            Parser.Build(ref condition, 2, variables, state, message, statistic, opts);
-            if ((opts & Options.SuppressRemoveUselessExpressions) == 0 && condition is ToBool)
+            Parser.Build(ref body, depth, variables, state | _BuildState.Conditional | _BuildState.InLoop, message, statistic, opts);
+            Parser.Build(ref condition, 2, variables, state | _BuildState.InLoop, message, statistic, opts);
+            if ((opts & Options.SuppressUselessExpressionsElimination) == 0 && condition is ToBool)
             {
                 if (message == null)
                     message(MessageLevel.Warning, new CodeCoordinates(0, condition.Position, 2), "Useless conversion. Remove double negation in condition");
@@ -133,17 +133,23 @@ namespace NiL.JS.Statements
                 {
                     if ((bool)condition.Evaluate(null))
                     {
-                        if ((opts & Options.SuppressRemoveUselessExpressions) == 0)
+                        if ((opts & Options.SuppressUselessExpressionsElimination) == 0)
                             _this = new InfinityLoop(body, labels);
                     }
-                    else if ((opts & Options.SuppressRemoveUselessStatements) == 0)
+                    else if ((opts & Options.SuppressUselessStatementsElimination) == 0)
+                    {
                         _this = null;
+                        Eliminated = true;
+                        body.Eliminated = true;
+                    }
+                    condition.Eliminated = true;
                 }
-                else if ((opts & Options.SuppressRemoveUselessExpressions) == 0
+                else if ((opts & Options.SuppressUselessExpressionsElimination) == 0
                         && ((condition is Json && (condition as Json).Fields.Length == 0)
                             || (condition is ArrayExpression && (condition as ArrayExpression).Elements.Count == 0)))
                 {
                     _this = new InfinityLoop(body, labels);
+                    condition.Eliminated = true;
                 }
             }
             catch (Exception e)
@@ -155,12 +161,12 @@ namespace NiL.JS.Statements
             return false;
         }
 
-        internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message)
+        internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             if (condition != null)
-                condition.Optimize(ref condition, owner, message);
+                condition.Optimize(ref condition, owner, message, opts, statistic);
             if (body != null)
-                body.Optimize(ref body, owner, message);
+                body.Optimize(ref body, owner, message, opts, statistic);
         }
 
         public override T Visit<T>(Visitor<T> visitor)

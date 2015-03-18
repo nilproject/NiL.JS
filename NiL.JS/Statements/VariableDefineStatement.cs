@@ -40,7 +40,7 @@ namespace NiL.JS.Statements
                 return res;
             }
 
-            internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
+            internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
             {
                 var v = variable as CodeNode;
                 var res = variable.Build(ref v, depth, variables, state, message, statistic, opts);
@@ -214,7 +214,7 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             this.variables = new VariableDescriptor[names.Length];
             for (var i = 0; i < names.Length; i++)
@@ -258,6 +258,7 @@ namespace NiL.JS.Statements
                 if (actualChilds == 0)
                 {
                     _this = null;
+                    Eliminated = true;
                     return false;
                 }
                 var newinits = new CodeNode[actualChilds];
@@ -269,11 +270,11 @@ namespace NiL.JS.Statements
             return false;
         }
 
-        internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message)
+        internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             for (int i = 0; i < initializators.Length; i++)
             {
-                initializators[i].Optimize(ref initializators[i], owner, message);
+                initializators[i].Optimize(ref initializators[i], owner, message, opts, statistic);
             }
         }
 

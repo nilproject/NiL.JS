@@ -27,9 +27,9 @@ namespace NiL.JS.Expressions
             return base.Evaluate(context).iValue == 0;
         }
 
-        internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message)
+        internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
-            baseOptimize(owner, message);
+            baseOptimize(owner, message, opts, statistic);
             if (first.ResultType == PredictedType.Number
                 && second.ResultType == PredictedType.Number)
             {

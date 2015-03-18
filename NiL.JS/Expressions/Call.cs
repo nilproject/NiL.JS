@@ -131,10 +131,13 @@ namespace NiL.JS.Expressions
             }
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             if (statistic != null)
                 statistic.UseCall = true;
+
+            codeContext = state;
+
             for (var i = 0; i < arguments.Length; i++)
                 Parser.Build(ref arguments[i], depth + 1,variables, state, message, statistic, opts);
             base.Build(ref _this, depth,variables, state, message, statistic, opts);
@@ -182,13 +185,13 @@ namespace NiL.JS.Expressions
             return false;
         }
 
-        internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message)
+        internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
-            base.Optimize(ref _this, owner, message);
+            base.Optimize(ref _this, owner, message, opts, statistic);
             for (var i = arguments.Length; i-- > 0; )
             {
                 var cn = arguments[i] as CodeNode;
-                cn.Optimize(ref cn, owner, message);
+                cn.Optimize(ref cn, owner, message, opts, statistic);
                 arguments[i] = cn as Expression;
             }
         }

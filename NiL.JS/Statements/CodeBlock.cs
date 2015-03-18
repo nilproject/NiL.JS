@@ -265,7 +265,7 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             if (builded)
                 return false;
@@ -375,12 +375,12 @@ namespace NiL.JS.Statements
             return false;
         }
 
-        internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message)
+        internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             for (var i = lines.Length; i-- > 0; )
             {
                 var cn = lines[i] as CodeNode;
-                cn.Optimize(ref cn, owner, message);
+                cn.Optimize(ref cn, owner, message, opts, statistic);
                 lines[i] = cn;
             }
             if (localVariables != null)
@@ -389,7 +389,7 @@ namespace NiL.JS.Statements
                     if (localVariables[i].Inititalizator != null)
                     {
                         var cn = localVariables[i].Inititalizator as CodeNode;
-                        cn.Optimize(ref cn, owner, message);
+                        cn.Optimize(ref cn, owner, message, opts, statistic);
                     }
                 }
         }

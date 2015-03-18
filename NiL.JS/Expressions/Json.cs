@@ -189,8 +189,10 @@ namespace NiL.JS.Expressions
             return res;
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
+            codeContext = state;
+
             for (int i = 0; i < values.Length; i++)
             {
                 if ((values[i] is Constant) && ((values[i] as Constant).value.valueType == JSObjectType.Property))
@@ -205,12 +207,12 @@ namespace NiL.JS.Expressions
             return false;
         }
 
-        internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message)
+        internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             for (var i = Initializators.Length; i-- > 0; )
             {
                 var cn = Initializators[i] as CodeNode;
-                cn.Optimize(ref cn, owner, message);
+                cn.Optimize(ref cn, owner, message, opts, statistic);
                 Initializators[i] = cn as Expression;
             }
         }

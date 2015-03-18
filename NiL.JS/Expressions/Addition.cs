@@ -278,7 +278,7 @@ namespace NiL.JS.Expressions
             throw new NotImplementedException();
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             var res = base.Build(ref _this, depth,variables, state, message, statistic, opts);
             if (!res && _this == this)
@@ -314,9 +314,9 @@ namespace NiL.JS.Expressions
             return res;
         }
 
-        internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message)
+        internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
-            base.Optimize(ref _this, owner, message);
+            base.Optimize(ref _this, owner, message, opts, statistic);
             //if (first.ResultType == PredictedType.String
             //    || second.ResultType == PredictedType.String)
             //{

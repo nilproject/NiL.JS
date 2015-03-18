@@ -121,8 +121,10 @@ namespace NiL.JS.Expressions
             return visitor.Visit(this);
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
+            codeContext = state;
+
             if (statistic != null && variableName == "this")
                 statistic.UseThis = true;
             VariableDescriptor desc = null;
@@ -137,9 +139,10 @@ namespace NiL.JS.Expressions
                 desc.references.Add(this);
                 descriptor = desc;
             }
-            if (depth >= 0 && depth < 2 && desc.IsDefined && (opts & Options.SuppressRemoveUselessExpressions) == 0)
+            if (depth >= 0 && depth < 2 && desc.IsDefined && (opts & Options.SuppressUselessExpressionsElimination) == 0)
             {
                 _this = null;
+                Eliminated = true;
                 if (message != null)
                     message(MessageLevel.Warning, new CodeCoordinates(0, Position, Length), "Unused get of defined variable was removed. Maybe, something missing.");
             }
@@ -153,10 +156,15 @@ namespace NiL.JS.Expressions
             return false;
         }
 
-        internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message)
+        internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
-            base.Optimize(ref _this, owner, message);
-            if (!descriptor.captured && descriptor.isDefined)
+            base.Optimize(ref _this, owner, message, opts, statistic);
+            if ((opts & Options.SuppressConstantPropogation) == 0
+                && !descriptor.captured
+                && descriptor.isDefined
+                && !statistic.ContainsWith
+                && !statistic.ContainsEval
+                && (descriptor.owner != owner || !owner.containsArguments))
             {
                 var assigns = descriptor.assignations;
                 if (assigns != null && assigns.Count > 0)
@@ -164,11 +172,23 @@ namespace NiL.JS.Expressions
                     CodeNode lastAssign = null;
                     for (var i = 0; i < assigns.Count; i++)
                     {
-                        if (assigns[i].Position >= Position) // присваивание может быть после этого использования, но если всё это в цикле, то выполнение вернётся сюда.
+                        if (assigns[i].Position == Position)
                         {
                             // оптимизация не применяется
                             lastAssign = null;
                             break;
+                        }
+
+                        if (assigns[i].Position > Position)
+                        {
+                            if ((codeContext & _BuildState.InLoop) != 0 && ((assigns[i] as Expression).codeContext & _BuildState.InLoop) != 0)
+                            // присваивание может быть после этого использования, но если всё это в цикле, то выполнение вернётся сюда.
+                            {
+                                // оптимизация не применяется
+                                lastAssign = null;
+                                break;
+                            }
+                            continue; // пропускаем ноду
                         }
 
                         if (descriptor.isReadOnly)
@@ -182,11 +202,11 @@ namespace NiL.JS.Expressions
                         }
                         else if (lastAssign == null || assigns[i].Position > lastAssign.Position)
                         {
-                            lastAssign = assigns[i];                            
+                            lastAssign = assigns[i];
                         }
                     }
                     var assign = lastAssign as Assign;
-                    if (assign != null && !assign.byCondition && assign.second is Constant)
+                    if (assign != null && (assign.codeContext & _BuildState.Conditional) == 0 && assign.second is Constant)
                     {
                         _this = assign.second;
                     }

@@ -529,15 +529,20 @@ namespace NiL.JS.Expressions
             return new Function(context, this);
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
         {
             if (body.builded)
                 return false;
-            if (statistic != null)
-                statistic.ContainsInnerFunction = true;
+            if (stats != null)
+                stats.ContainsInnerFunction = true;
+            codeContext = state;
+
+            if ((state & _BuildState.InLoop) != 0 && message != null)
+                message(MessageLevel.Warning, new CodeCoordinates(0, Position, EndPosition - Position), "Do not define function inside loop");
+
             var bodyCode = body as CodeNode;
             var nvars = new Dictionary<string, VariableDescriptor>();
-            var stat = new FunctionStatistic();
+            var stat = new FunctionStatistics();
             bodyCode.Build(ref bodyCode, 0, nvars, state & ~_BuildState.Conditional, message, stat, opts);
             if (type == FunctionType.Function && !string.IsNullOrEmpty(name))
             {
@@ -618,21 +623,21 @@ namespace NiL.JS.Expressions
                 }
             }
             checkUsings(stat);
-            if (statistic != null)
-                statistic.ContainsEval |= stat.ContainsEval;
+            if (stats != null)
+                stats.ContainsEval |= stat.ContainsEval;
             if (body.variables != null)
                 for (var i = 0; i < body.variables.Length; i++)
                     body.variables[i].captured |= containsEval;
             return false;
         }
 
-        internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message)
+        internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             var bd = body as CodeNode;
-            body.Optimize(ref bd, this, message);
+            body.Optimize(ref bd, this, message, opts, statistic);
         }
 
-        private void checkUsings(FunctionStatistic stat)
+        private void checkUsings(FunctionStatistics stat)
         {
             if (body == null
                 || body.lines == null
@@ -658,7 +663,7 @@ namespace NiL.JS.Expressions
                 && !stat.ContainsEval
                 //&& !stat.UseGetMember
                 && !stat.UseThis
-                && !stat.UseWith
+                && !stat.ContainsWith
                 && !stat.ContainsTry
                 && (body.variables.All(x =>
                     x.Owner == body // Переменные

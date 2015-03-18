@@ -10,8 +10,9 @@ namespace NiL.JS
     public enum Options
     {
         Default = 0,
-        SuppressRemoveUselessExpressions = 1,
-        SuppressRemoveUselessStatements = 2
+        SuppressUselessExpressionsElimination = 1,
+        SuppressUselessStatementsElimination = 2,
+        SuppressConstantPropogation = 4,
     }
 
     /// <summary>
@@ -85,7 +86,7 @@ namespace NiL.JS
                 {
                     messageCallback(level, CodeCoordinates.FromTextPosition(code, cord.Column, cord.Length), message);
                 } : null as CompilerMessageCallback;
-            var stat = new FunctionStatistic();
+            var stat = new FunctionStatistics();
             Parser.Build(ref root, 0, new System.Collections.Generic.Dictionary<string, VariableDescriptor>(), _BuildState.None, icallback, stat, options);
             var body = root as CodeBlock;
             Context = new Context(parentContext ?? NiL.JS.Core.Context.globalContext, true, pseudoCaller);
@@ -104,7 +105,7 @@ namespace NiL.JS
                 body.localVariables[i].captured |= stat.ContainsEval;
             }
             var bd = body as CodeNode;
-            body.Optimize(ref bd, null, icallback);
+            body.Optimize(ref bd, null, icallback, options, stat);
         }
 
         /// <summary>

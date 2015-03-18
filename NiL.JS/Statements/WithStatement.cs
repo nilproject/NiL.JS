@@ -97,21 +97,21 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             if (statistic != null)
-                statistic.UseWith = true;
+                statistic.ContainsWith = true;
             Parser.Build(ref obj, depth + 1, variables, state, message, statistic, opts);
-            Parser.Build(ref body, depth, variables, state, message, statistic, opts);
+            Parser.Build(ref body, depth, variables, state | _BuildState.InWith, message, statistic, opts);
             return false;
         }
 
-        internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message)
+        internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             if (obj != null)
-                obj.Optimize(ref obj, owner, message);
+                obj.Optimize(ref obj, owner, message, opts, statistic);
             if (body != null)
-                body.Optimize(ref body, owner, message);
+                body.Optimize(ref body, owner, message, opts, statistic);
         }
 
         public override string ToString()

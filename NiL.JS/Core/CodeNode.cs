@@ -12,8 +12,10 @@ namespace NiL.JS.Core
     {
         None = 0,
         Strict = 1,
-        //ForAssign = 2
+        //ForAssign = 2,
         Conditional = 4,
+        InLoop = 8,
+        InWith = 16
     }
 
 #if !PORTABLE
@@ -37,6 +39,7 @@ namespace NiL.JS.Core
         }
 #endif
 #endif
+        public virtual bool Eliminated { get; internal set; }
         public virtual int Position { get; internal set; }
         public virtual int Length { get; internal set; }
         public virtual int EndPosition { get { return Position + Length; } }
@@ -65,12 +68,12 @@ namespace NiL.JS.Core
         /// <param name="depth">Глубина погружения в выражении</param>
         /// <param name="functionDepth">Глубина погружения в функции. Увеличивается при входе в функцию и уменьшается при выходе из нее</param>
         /// <returns>true если были внесены изменения и требуется повторный вызов функции</returns>
-        internal virtual bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
+        internal virtual bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             return false;
         }
 
-        internal virtual void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message)
+        internal virtual void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
 
         }

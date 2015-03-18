@@ -244,9 +244,9 @@ namespace NiL.JS.Expressions
             return Check(tempContainer, s, this is MoreOrEqual);
         }
 
-        internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message)
+        internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
-            baseOptimize(owner, message);
+            baseOptimize(owner, message, opts, statistic);
             if (first.ResultType == PredictedType.Number
                 && second.ResultType == PredictedType.Number)
             {

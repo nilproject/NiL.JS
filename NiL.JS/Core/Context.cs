@@ -568,7 +568,7 @@ namespace NiL.JS.Core
                 }
 
                 var bd = body as CodeNode;
-                body.Optimize(ref bd, null, null);
+                body.Optimize(ref bd, null, null, Options.SuppressUselessExpressionsElimination | Options.SuppressConstantPropogation, null);
 
                 var run = context.Activate();
                 try

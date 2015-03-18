@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace NiL.JS.Core
 {
@@ -101,6 +102,9 @@ namespace NiL.JS.Core
                 increaseSize();
         }
 
+#if INLINE
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
         private static int computeHash(string key)
         {
             int hash;

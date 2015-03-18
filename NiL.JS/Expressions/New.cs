@@ -58,7 +58,7 @@ namespace NiL.JS.Expressions
                 return visitor.Visit(source);
             }
 
-            internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistic statistic, Options opts)
+            internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
             {
                 return source.Build(ref source, depth, variables, state, message, statistic, opts);
             }

@@ -63,7 +63,7 @@ namespace NiL.JS.Core
             context.objectSource = null;
             if (((defineDepth | depth) & int.MinValue) != 0)
                 return context.GetVariable(name, create);
-            if (context == cacheContext)
+            if (context as object == cacheContext)
                 return cacheRes;
             return deepGet(context, create, depth);
         }
