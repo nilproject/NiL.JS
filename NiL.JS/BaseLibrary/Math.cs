@@ -45,8 +45,9 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [DoNotDelete]
-        public static JSObject abs(JSObject arg)
+        public static JSObject abs(Arguments args)
         {
+            var arg = args[0];
             switch (arg.valueType)
             {
                 case JSObjectType.Int:
@@ -279,8 +280,9 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotDelete]
         [DoNotEnumerate]
-        public static JSObject round(JSObject arg)
+        public static JSObject round(Arguments args)
         {
+            var arg = args[0];
             if (arg.valueType == JSObjectType.Int)
                 return arg;
             var a = Tools.JSObjectToDouble(arg);
@@ -342,8 +344,9 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [DoNotDelete]
-        public static JSObject sqrt(JSObject arg)
+        public static JSObject sqrt(Arguments args)
         {
+            var arg = args[0];
             var res = System.Math.Sqrt(Tools.JSObjectToDouble(arg));
             if ((arg.attributes & JSObjectAttributesInternal.Cloned) != 0)
             {

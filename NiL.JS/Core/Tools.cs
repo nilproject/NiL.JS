@@ -466,7 +466,7 @@ namespace NiL.JS.Core
             if (targetType.IsAssignableFrom(value.GetType()))
                 return value;
 #if PORTABLE
-            if (targetType.GetTypeInfo().IsEnum && Enum.IsDefined(targetType, value))
+            if (System.Reflection.IntrospectionExtensions.GetTypeInfo(targetType).IsEnum && Enum.IsDefined(targetType, value))
                 return value;
 #else
             if (targetType.IsEnum && Enum.IsDefined(targetType, value))
