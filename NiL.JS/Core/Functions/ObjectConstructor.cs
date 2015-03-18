@@ -1,6 +1,4 @@
 ﻿using System;
-using NiL.JS.BaseLibrary;
-using NiL.JS.Core.Modules;
 using NiL.JS.Core.TypeProxing;
 
 namespace NiL.JS.Core.Functions

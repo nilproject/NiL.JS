@@ -143,6 +143,8 @@ namespace NiL.JS.Core.Functions
                 else
                     storedData = initScope(arguments, initiator, false);
                 creator.recursiveDepth++;
+                if (creator.recursiveDepth > 3)
+                    creator.type = FunctionType.Function;
                 if (creator.reference.descriptor != null)
                 {
                     creator.reference.descriptor.cacheContext = context.parent;
