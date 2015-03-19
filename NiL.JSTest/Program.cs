@@ -38,7 +38,7 @@ namespace NiL.JSTest
             _("Directory: \"" + Directory.GetParent(folderPath) + "\"");
 
             _("Scaning directory...");
-            var fls = Directory.EnumerateFiles(folderPath, "*.js", SearchOption.AllDirectories).ToArray();
+            var fls = Directory.GetFiles(folderPath, "*.js", SearchOption.AllDirectories).OrderBy(x => x).ToArray();
             _("Found " + fls.Length + " js-files");
             bool skipedShowed = false;
             sw.Start();
@@ -142,7 +142,7 @@ namespace NiL.JSTest
             _("Directory: \"" + Directory.GetParent(folderPath) + "\"");
 
             _("Scaning directory...");
-            var fls = Directory.EnumerateFiles(folderPath, "*.js", SearchOption.AllDirectories).ToArray();
+            var fls = Directory.GetFiles(folderPath, "*.js", SearchOption.AllDirectories).OrderBy(x => x).ToArray();
             _("Found " + (fls.Length - 2) + " js-files");
             bool skipedShowed = false;
             sw.Start();
@@ -722,7 +722,7 @@ console.log(1..toLocaleString());
         {
             Action<string> _ = Console.WriteLine;
             _("Scaning directory...");
-            var fls = Directory.EnumerateFiles(folderPath, "*.js", SearchOption.AllDirectories).ToArray();
+            var fls = Directory.GetFiles(folderPath, "*.js", SearchOption.AllDirectories).OrderBy(x => x).ToArray();
             _("Found " + (fls.Length - 2) + " js-files");
             for (var i = 0; i < fls.Length; i++)
                 runFile(fls[i]);
@@ -741,7 +741,8 @@ console.log(1..toLocaleString());
             sw.Stop();
             Console.WriteLine("Compile time: " + sw.Elapsed);
             Console.WriteLine("-------------------------------------");
-            sw.Restart();
+            sw.Reset();
+            sw.Start();
             s.Invoke();
             sw.Stop();
             Console.WriteLine("-------------------------------------");
@@ -762,7 +763,8 @@ console.log(1..toLocaleString());
             var s = new Script(staCode);
             sw.Stop();
             Console.WriteLine("Compile time: " + sw.Elapsed);
-            sw.Restart();
+            sw.Reset();
+            sw.Start();
             s.Invoke();
             sw.Stop();
             Console.WriteLine("Init time: " + sw.Elapsed);
@@ -782,7 +784,7 @@ console.log(1..toLocaleString());
             var sw = new Stopwatch();
             _("Directory: \"" + Directory.GetParent(folderPath) + "\"");
             _("Scaning directory...");
-            var fls = Directory.EnumerateFiles(folderPath, "*.js", SearchOption.AllDirectories).ToArray();
+            var fls = Directory.GetFiles(folderPath, "*.js", SearchOption.AllDirectories).OrderBy(x => x).ToArray();
             _("Founded " + fls.Length + " js-files");
 
             long _total = 0;
@@ -801,7 +803,8 @@ console.log(1..toLocaleString());
                     sr.Dispose();
                     f.Dispose();
 
-                    sw.Restart();
+                    sw.Reset();
+                    sw.Start();
                     new Script(script).Invoke();
                     sw.Stop();
                     total += sw.Elapsed;
@@ -824,7 +827,7 @@ console.log(1..toLocaleString());
             var sw = new Stopwatch();
             _("Directory: \"" + Directory.GetParent(folderPath) + "\"");
             _("Scaning directory...");
-            var fls = Directory.EnumerateFiles(folderPath, "*.js", SearchOption.AllDirectories).ToArray();
+            var fls = Directory.GetFiles(folderPath, "*.js", SearchOption.AllDirectories).OrderBy(x => x).ToArray();
             _("Founded " + fls.Length + " js-files");
 
             long _total = 0;
@@ -846,7 +849,8 @@ console.log(1..toLocaleString());
                     using (var sr = new StreamReader(f))
                         body = sr.ReadToEnd();
 
-                    sw.Restart();
+                    sw.Reset();
+                    sw.Start();
                     var script = new Script(data);
                     script.Context.DefineVariable("print").Assign(new ExternalFunction((t, a) =>
                     {

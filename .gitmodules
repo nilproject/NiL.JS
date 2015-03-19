@@ -1,0 +1,3 @@
+[submodule "Ext/dlr"]
+	path = Ext/dlr
+	url = https://github.com/IronLanguages/dlr
