@@ -460,7 +460,40 @@ namespace NiL.JS.Core
                 return null;
             if (targetType.IsAssignableFrom(jsobj.GetType()))
                 return jsobj;
-            var value = jsobj.Value;
+            object value = null;
+            switch (jsobj.valueType)
+            {
+                case JSObjectType.Bool:
+                    {
+                        if (targetType == typeof(bool))
+                            return jsobj.iValue != 0;
+                        break;
+                    }
+                case JSObjectType.Double:
+                    {
+                        if (targetType == typeof(double)) return (double)jsobj.dValue;
+                        if (targetType == typeof(float)) return (float)jsobj.dValue;
+                        break;
+                    }
+                case JSObjectType.Int:
+                    {
+                        if (targetType == typeof(int)) return (int)jsobj.iValue;
+
+                        if (targetType == typeof(byte)) return (byte)jsobj.iValue;
+                        if (targetType == typeof(sbyte)) return (sbyte)jsobj.iValue;
+                        if (targetType == typeof(short)) return (short)jsobj.iValue;
+                        if (targetType == typeof(ushort)) return (ushort)jsobj.iValue;
+                        if (targetType == typeof(uint)) return (uint)jsobj.iValue;
+                        if (targetType == typeof(long)) return (long)jsobj.iValue;
+                        if (targetType == typeof(ulong)) return (ulong)jsobj.iValue;
+                        if (targetType == typeof(double)) return (double)jsobj.iValue;
+                        if (targetType == typeof(float)) return (float)jsobj.iValue;
+                        break;
+                    }
+                default:
+                    value = jsobj.Value;
+                    break;
+            }
             if (value == null)
                 return null;
             if (targetType.IsAssignableFrom(value.GetType()))

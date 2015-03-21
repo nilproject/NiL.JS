@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Reflection.Emit;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Modules;
 using NiL.JS.Core.TypeProxing;
@@ -147,13 +148,6 @@ namespace NiL.JS.Core.Functions
                 }
             }
 
-            Expression[] prms = null;
-            ParameterExpression target = Expression.Parameter(typeof(object), "target");
-            ParameterExpression argsArray = Expression.Parameter(typeof(object[]), "argsArray");
-            ParameterExpression argsSource = Expression.Parameter(typeof(Arguments), "arguments");
-
-            Expression tree = null;
-
             if (methodBase is MethodInfo)
             {
                 var methodInfo = methodBase as MethodInfo;
@@ -176,7 +170,7 @@ namespace NiL.JS.Core.Functions
                     && !methodInfo.IsStatic
                     && (parameters.Length == 0 || (parameters.Length == 1 && parameters[0].ParameterType == typeof(Arguments)))
 #if PORTABLE
-                    && !methodInfo.ReturnType.GetTypeInfo().IsValueType)
+ && !methodInfo.ReturnType.GetTypeInfo().IsValueType)
 #else
  && !methodInfo.ReturnType.IsValueType)
 #endif
@@ -252,92 +246,256 @@ namespace NiL.JS.Core.Functions
                     return; // больше ничего не требуется, будет вызывать через этот путь
                 }
                 #endregion
+#if PORTABLE
+                makeMethodOverExpression(methodInfo);
+#else
+                makeMethodOverEmit(methodInfo);
+#endif
+            }
+            else if (methodBase is ConstructorInfo)
+            {
+                makeConstructorOverExpression(methodBase as ConstructorInfo);
+            }
+            else
+                throw new NotImplementedException();
+        }
+#if !PORTABLE
+        private void makeMethodOverEmit(MethodInfo methodInfo)
+        {
+            var impl = new DynamicMethod(
+                "<nil.js@wrapper>" + methodInfo.Name,
+                typeof(object),
+                new[] 
+                { 
+                    typeof(object), // target
+                    typeof(object[]), // argsArray
+                    typeof(Arguments) // argsSource
+                }, typeof(MethodProxy), true);
+            var generator = impl.GetILGenerator();
 
-                if (forceInstance)
+            if (!methodInfo.IsStatic)
+                generator.Emit(OpCodes.Ldarg_0);
+
+            if (forceInstance)
+            {
+                for (; ; )
                 {
-                    if (parameters.Length == 1)
+                    if (methodInfo.IsStatic && parameters[0].ParameterType == typeof(JSObject))
                     {
-                        tree = Expression.Call(methodInfo, Expression.Convert(target, typeof(JSObject)));
+                        generator.Emit(OpCodes.Ldarg_0);
+                        if (parameters.Length == 1)
+                        {
+                            break;
+                        }
+                        else if (parameters.Length == 2 && parameters[1].ParameterType == typeof(Arguments))
+                        {
+                            generator.Emit(OpCodes.Ldarg_2);
+                            break;
+                        }
                     }
-                    else // 2
-                    {
-                        System.Diagnostics.Debug.Assert(parameters.Length == 2);
-                        tree = Expression.Call(methodInfo, Expression.Convert(target, typeof(JSObject)), argsSource);
-                    }
+                    throw new ArgumentException("Invalid method signature");
                 }
-                else if (parameters.Length == 0)
+            }
+            else if (parameters.Length == 0)
+            {
+                raw = true;
+            }
+            else
+            {
+                if (parameters.Length == 1 && parameters[0].ParameterType == typeof(Arguments))
                 {
                     raw = true;
-                    tree = methodInfo.IsStatic ?
-                        Expression.Call(methodInfo)
-                        :
-                        Expression.Call(Expression.Convert(target, methodInfo.DeclaringType), methodInfo);
+                    generator.Emit(OpCodes.Ldarg_2);
                 }
                 else
                 {
-                    prms = new Expression[parameters.Length];
-                    if (parameters.Length == 1 && parameters[0].ParameterType == typeof(Arguments))
+                    for (var i = 0; i < parameters.Length; i++)
                     {
-                        raw = true;
-                        tree = methodInfo.IsStatic ?
-                            Expression.Call(methodInfo, argsSource)
-                            :
-                            Expression.Call(Expression.Convert(target, methodInfo.DeclaringType), methodInfo, argsSource);
-                    }
-                    else
-                    {
-                        for (var i = 0; i < prms.Length; i++)
-#if NET35
-                            prms[i] = Expression.Convert(Expression.ArrayIndex(argsArray, Expression.Constant(i)), parameters[i].ParameterType);
-#else
-                            prms[i] = Expression.Convert(Expression.ArrayAccess(argsArray, Expression.Constant(i)), parameters[i].ParameterType);
-#endif
-                        tree = methodInfo.IsStatic ?
-                            Expression.Call(methodInfo, prms)
-                            :
-                            Expression.Call(Expression.Convert(target, methodInfo.DeclaringType), methodInfo, prms);
+                        generator.Emit(OpCodes.Ldarg_1);
+                        switch (i)
+                        {
+                            case 0:
+                                {
+                                    generator.Emit(OpCodes.Ldc_I4_0);
+                                    break;
+                                }
+                            case 1:
+                                {
+                                    generator.Emit(OpCodes.Ldc_I4_1);
+                                    break;
+                                }
+                            case 2:
+                                {
+                                    generator.Emit(OpCodes.Ldc_I4_2);
+                                    break;
+                                }
+                            case 3:
+                                {
+                                    generator.Emit(OpCodes.Ldc_I4_3);
+                                    break;
+                                }
+                            case 4:
+                                {
+                                    generator.Emit(OpCodes.Ldc_I4_4);
+                                    break;
+                                }
+                            case 5:
+                                {
+                                    generator.Emit(OpCodes.Ldc_I4_5);
+                                    break;
+                                }
+                            case 6:
+                                {
+                                    generator.Emit(OpCodes.Ldc_I4_6);
+                                    break;
+                                }
+                            case 7:
+                                {
+                                    generator.Emit(OpCodes.Ldc_I4_7);
+                                    break;
+                                }
+                            case 8:
+                                {
+                                    generator.Emit(OpCodes.Ldc_I4_8);
+                                    break;
+                                }
+                            default:
+                                {
+                                    generator.Emit(OpCodes.Ldc_I4, i);
+                                    break;
+                                }
+                        }
+                        generator.Emit(OpCodes.Ldelem_Ref);
+                        if (parameters[i].ParameterType.IsValueType)
+                            generator.Emit(OpCodes.Unbox_Any, parameters[i].ParameterType);
                     }
                 }
-                if (methodInfo.ReturnType == typeof(void))
+            }
+            if (methodInfo.IsStatic)
+                generator.Emit(OpCodes.Call, methodInfo);
+            else
+                generator.Emit(OpCodes.Callvirt, methodInfo);
+            if (methodInfo.ReturnType == typeof(void))
+                generator.Emit(OpCodes.Ldnull);
+            else if (methodInfo.ReturnType.IsValueType)
+                generator.Emit(OpCodes.Box, methodInfo.ReturnType);
+            generator.Emit(OpCodes.Ret);
+            implementation = (Func<object, object[], Arguments, object>)impl.CreateDelegate(typeof(Func<object, object[], Arguments, object>));
+        }
+#else
+        private void makeMethodOverExpression(MethodInfo methodInfo)
+        {
+            Expression[] prms = null;
+            ParameterExpression target = Expression.Parameter(typeof(object), "target");
+            ParameterExpression argsArray = Expression.Parameter(typeof(object[]), "argsArray");
+            ParameterExpression argsSource = Expression.Parameter(typeof(Arguments), "arguments");
+
+            Expression tree = null;
+
+            if (forceInstance)
+            {
+                for (; ; )
+                {
+                    if (methodInfo.IsStatic && parameters[0].ParameterType == typeof(JSObject))
+                    {
+                        if (parameters.Length == 1)
+                        {
+                            tree = Expression.Call(methodInfo, Expression.Convert(target, typeof(JSObject)));
+                            break;
+                        }
+                        else if (parameters.Length == 2 && parameters[1].ParameterType == typeof(Arguments))
+                        {
+                            tree = Expression.Call(methodInfo, Expression.Convert(target, typeof(JSObject)), argsSource);
+                            break;
+                        }
+                    }
+                    throw new ArgumentException("Invalid method signature");
+                }
+            }
+            else if (parameters.Length == 0)
+            {
+                raw = true;
+                tree = methodInfo.IsStatic ?
+                    Expression.Call(methodInfo)
+                    :
+                    Expression.Call(Expression.Convert(target, methodInfo.DeclaringType), methodInfo);
+            }
+            else
+            {
+                prms = new Expression[parameters.Length];
+                if (parameters.Length == 1 && parameters[0].ParameterType == typeof(Arguments))
+                {
+                    raw = true;
+                    tree = methodInfo.IsStatic ?
+                        Expression.Call(methodInfo, argsSource)
+                        :
+                        Expression.Call(Expression.Convert(target, methodInfo.DeclaringType), methodInfo, argsSource);
+                }
+                else
+                {
+                    for (var i = 0; i < prms.Length; i++)
+#if NET35
+                        prms[i] = Expression.Convert(Expression.ArrayIndex(argsArray, Expression.Constant(i)), parameters[i].ParameterType);
+#else
+                        prms[i] = Expression.Convert(Expression.ArrayAccess(argsArray, Expression.Constant(i)), parameters[i].ParameterType);
+#endif
+                    tree = methodInfo.IsStatic ?
+                        Expression.Call(methodInfo, prms)
+                        :
+                        Expression.Call(Expression.Convert(target, methodInfo.DeclaringType), methodInfo, prms);
+                }
+            }
+            if (methodInfo.ReturnType == typeof(void))
 #if NET35
                 {
 #error Expression.Block do not supported in .NET 3.5
                 }
 #else
-                    tree = Expression.Block(tree, Expression.Constant(null));
+                tree = Expression.Block(tree, Expression.Constant(null));
 #endif
-            }
-            else if (methodBase is ConstructorInfo)
+            try
             {
-                var constructorInfo = methodBase as ConstructorInfo;
+                implementation = Expression.Lambda<Func<object, object[], Arguments, object>>(Expression.Convert(tree, typeof(object)), target, argsArray, argsSource).Compile();
+            }
+            catch
+            {
+                throw;
+            }
+        }
+#endif
+        private void makeConstructorOverExpression(ConstructorInfo constructorInfo)
+        {
+            Expression[] prms = null;
+            ParameterExpression target = Expression.Parameter(typeof(object), "target");
+            ParameterExpression argsArray = Expression.Parameter(typeof(object[]), "argsArray");
+            ParameterExpression argsSource = Expression.Parameter(typeof(Arguments), "arguments");
 
-                if (parameters.Length == 0)
+            Expression tree = null;
+
+            if (parameters.Length == 0)
+            {
+                raw = true;
+                tree = Expression.New(constructorInfo.DeclaringType);
+            }
+            else
+            {
+                prms = new Expression[parameters.Length];
+                if (parameters.Length == 1 && parameters[0].ParameterType == typeof(Arguments))
                 {
                     raw = true;
-                    tree = Expression.New(constructorInfo.DeclaringType);
+                    tree = Expression.New(constructorInfo, argsSource);
                 }
                 else
                 {
-                    prms = new Expression[parameters.Length];
-                    if (parameters.Length == 1 && parameters[0].ParameterType == typeof(Arguments))
-                    {
-                        raw = true;
-                        tree = Expression.New(constructorInfo, argsSource);
-                    }
-                    else
-                    {
-                        for (var i = 0; i < prms.Length; i++)
+                    for (var i = 0; i < prms.Length; i++)
 #if NET35
                             prms[i] = Expression.Convert(Expression.ArrayIndex(argsArray, Expression.Constant(i)), parameters[i].ParameterType);
 #else
-                            prms[i] = Expression.Convert(Expression.ArrayAccess(argsArray, Expression.Constant(i)), parameters[i].ParameterType);
+                        prms[i] = Expression.Convert(Expression.ArrayAccess(argsArray, Expression.Constant(i)), parameters[i].ParameterType);
 #endif
-                        tree = Expression.New(constructorInfo, prms);
-                    }
+                    tree = Expression.New(constructorInfo, prms);
                 }
             }
-            else
-                throw new NotImplementedException();
             try
             {
                 implementation = Expression.Lambda<Func<object, object[], Arguments, object>>(Expression.Convert(tree, typeof(object)), target, argsArray, argsSource).Compile();

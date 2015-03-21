@@ -82,9 +82,7 @@ namespace NiL.JS.Expressions
                 {
                     context.abort = AbortType.TailRecursion;
                     tail = true;
-                    //}
-                    //if (tail || this.arguments.Length > 0)
-                    //{
+
                     arguments = new Core.Arguments()
                     {
                         caller = context.strict && context.caller != null && context.caller.creator.body.strict ? Function.propertiesDummySM : context.caller,
@@ -92,10 +90,8 @@ namespace NiL.JS.Expressions
                     };
                     for (int i = 0; i < this.arguments.Length; i++)
                         arguments[i] = prepareArg(context, this.arguments[i], tail, this.arguments.Length > 1);
-                    //}
                     context.objectSource = null;
-                    //if (tail)
-                    //{
+
                     arguments.callee = func;
                     for (var i = func.creator.body.localVariables.Length; i-- > 0; )
                     {
@@ -106,7 +102,6 @@ namespace NiL.JS.Expressions
                     if (context.fields != null && context.fields.ContainsKey("arguments"))
                         context.fields["arguments"] = arguments;
                     return JSObject.undefined;
-                    //}
                 }
                 else
                     context.objectSource = null;
