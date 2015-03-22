@@ -202,13 +202,15 @@ namespace NiL.JS.Core
                 case JSObjectType.String:
                     return TypeProxy.GetPrototype(typeof(NiL.JS.BaseLibrary.String));
             }
-            if (valueType >= JSObjectType.Object && oValue != this)
+            if (valueType >= JSObjectType.Object && oValue != null && oValue != this)
             {
                 var rojso = oValue as JSObject;
                 if (rojso != null)
                     return rojso.getDefaultPrototype() ?? Null;
+                else
+                    return TypeProxy.GetPrototype(oValue.GetType());
             }
-            return TypeProxy.GetPrototype(this.GetType()) ?? Null;
+            return TypeProxy.GetPrototype(this.GetType());
         }
 
         internal JSObjectType valueType;
@@ -382,7 +384,7 @@ namespace NiL.JS.Core
             var ovt = cc.tempContainer.valueType;
             try
             {
-                return GetMember(cc != null ? cc.wrap(name) : (JSObject)name, false, false);
+                return GetMember(cc.wrap(name), false, false);
             }
             finally
             {
@@ -405,7 +407,7 @@ namespace NiL.JS.Core
             var ovt = cc.tempContainer.valueType;
             try
             {
-                return GetMember(cc != null ? cc.wrap(name) : (JSObject)name, false, own);
+                return GetMember(cc.wrap(name), false, own);
             }
             finally
             {
@@ -428,7 +430,7 @@ namespace NiL.JS.Core
             var ovt = cc.tempContainer.valueType;
             try
             {
-                return GetMember(cc != null ? cc.wrap(name) : (JSObject)name, true, true);
+                return GetMember(cc.wrap(name), true, true);
             }
             finally
             {
@@ -451,7 +453,7 @@ namespace NiL.JS.Core
             var ovt = cc.tempContainer.valueType;
             try
             {
-                return GetMember(cc != null ? cc.wrap(name) : (JSObject)name, createMember, own);
+                return GetMember(cc.wrap(name), createMember, own);
             }
             finally
             {
@@ -609,7 +611,7 @@ namespace NiL.JS.Core
             if (valueType >= JSObjectType.Object && oValue != this)
             {
                 if (oValue == null)
-                    throw new JSException(new TypeError("Can't get property \"" + name + "\" of \"null\""));
+                    throw new JSException(new TypeError("Can not get property \"" + name + "\" of \"null\""));
                 field = oValue as JSObject;
                 if (field != null)
                 {
@@ -628,9 +630,34 @@ namespace NiL.JS.Core
                 return;
             }
             else
-                if ((field.attributes & JSObjectAttributesInternal.ReadOnly) != 0 && strict)
+                if (strict && (field.attributes & JSObjectAttributesInternal.ReadOnly) != 0)
                     throw new JSException(new TypeError("Can not assign to readonly property \"" + name + "\""));
             field.Assign(value);
+        }
+
+        [Hidden]
+        public bool Delete(string memberName)
+        {
+            if (memberName == null)
+                throw new ArgumentNullException("memberName can not be null");
+            var cc = Context.CurrentContext;
+            if (cc == null)
+                return DeleteMember((JSObject)memberName);
+            var oi = cc.tempContainer.iValue;
+            var od = cc.tempContainer.dValue;
+            object oo = cc.tempContainer.oValue;
+            var ovt = cc.tempContainer.valueType;
+            try
+            {
+                return DeleteMember(cc.wrap(memberName));
+            }
+            finally
+            {
+                cc.tempContainer.iValue = oi;
+                cc.tempContainer.oValue = oo;
+                cc.tempContainer.dValue = od;
+                cc.tempContainer.valueType = ovt;
+            }
         }
 
         internal protected virtual bool DeleteMember(JSObject name)

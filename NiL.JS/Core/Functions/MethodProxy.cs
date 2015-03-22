@@ -611,25 +611,19 @@ namespace NiL.JS.Core.Functions
         {
             if (parameters.Length == 0)
                 return null;
-            int len = source.length;
-            if (parameters.Length == 1)
-            {
-                var ptype = parameters[0].ParameterType;
-                if (ptype == typeof(Arguments))
-                    return new object[] { source };
-            }
             int targetCount = parameters.Length;
             object[] res = new object[targetCount];
-            for (int i = len; i-- > 0; )
-            {
-                var obj = source[i];
-                if (obj.IsExist)
+            if (source != null) // it is possible
+                for (int i = targetCount; i-- > 0; )
                 {
-                    res[i] = marshal(obj, parameters[i].ParameterType);
-                    if (paramsConverters != null && paramsConverters[i] != null)
-                        res[i] = paramsConverters[i].To(res[i]);
+                    var obj = source[i];
+                    if (obj.IsExist)
+                    {
+                        res[i] = marshal(obj, parameters[i].ParameterType);
+                        if (paramsConverters != null && paramsConverters[i] != null)
+                            res[i] = paramsConverters[i].To(res[i]);
+                    }
                 }
-            }
             return res;
         }
 

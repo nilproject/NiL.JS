@@ -147,8 +147,8 @@ namespace NiL.JS.Expressions
                     {
                         if (second.IsContextIndependent)
                         {
-                            _this = EmptyStatement.Instance;
                             _this.Eliminated = true;
+                            _this = EmptyStatement.Instance;
                         }
                         else
                         {

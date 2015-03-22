@@ -2110,6 +2110,45 @@ namespace NiL.JS.BaseLibrary
         }
 
         [Hidden]
+        public JSObject this[int index]
+        {
+            [Hidden]
+            get
+            {
+                notExists.valueType = JSObjectType.NotExistsInObject;
+                var res = data[(int)index] ?? notExists;
+                if (res.valueType < JSObjectType.Undefined)
+                    return __proto__.GetMember(index, false, false);
+                return res;
+            }
+            [Hidden]
+            set
+            {
+                if (index >= data.Length
+                    && _lengthObj != null
+                    && (_lengthObj.attributes & JSObjectAttributesInternal.ReadOnly) != 0)
+                    return; // fixed size array. Item could not be added
+
+                var res = data[index];
+                if (res == null)
+                {
+                    res = new JSObject() { valueType = JSObjectType.NotExistsInObject };
+                    data[index] = res;
+                }
+                else if ((res.attributes & JSObjectAttributesInternal.SystemObject) != 0)
+                    data[index] = res = res.CloneImpl();
+                if (res.valueType == JSObjectType.Property)
+                {
+                    var setter = (res.oValue as PropertyPair).set;
+                    if (setter != null)
+                        setter.Invoke(this, new Arguments { value });
+                    return;
+                }
+                res.Assign(value);
+            }
+        }
+
+        [Hidden]
         internal protected override JSObject GetMember(JSObject name, bool forWrite, bool own)
         {
             if (name.valueType == JSObjectType.String && string.CompareOrdinal("length", name.oValue.ToString()) == 0)
@@ -2162,7 +2201,7 @@ namespace NiL.JS.BaseLibrary
                     if (_lengthObj != null && (_lengthObj.attributes & JSObjectAttributesInternal.ReadOnly) != 0 && index >= data.Length)
                     {
                         if (own)
-                            throw new JSException(new TypeError("Cannot add element in fixed size array"));
+                            throw new JSException(new TypeError("Can not add item to fixed size array"));
                         return notExists;
                     }
                     var res = data[(int)index];
