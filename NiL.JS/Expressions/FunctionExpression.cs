@@ -529,8 +529,8 @@ namespace NiL.JS.Expressions
             if (type == FunctionType.Generator)
                 return new GeneratorInitializator(new Function(context, this));
 #endif
-            if (type == FunctionType.Macro)
-                return new MacroFunction(context, this);
+            //if (type == FunctionType.Macro)
+            //    return new MacroFunction(context, this);
             return new Function(context, this);
         }
 

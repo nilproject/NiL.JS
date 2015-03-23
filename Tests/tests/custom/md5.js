@@ -17,7 +17,6 @@ var MD5 = function (string) {
         lY8 = (lY & 0x80000000);
         lX4 = (lX & 0x40000000);
         lY4 = (lY & 0x40000000);
-        //console.log(lX, lY, lX4, lY4);
         lResult = (lX & 0x3FFFFFFF) + (lY & 0x3FFFFFFF);
         if (lX4 & lY4) {
             return (lResult ^ 0x80000000 ^ lX8 ^ lY8);
@@ -201,6 +200,7 @@ var MD5 = function (string) {
         c = AddUnsigned(c, CC);
         d = AddUnsigned(d, DD);
     }
+
     var temp = WordToHex(a) + WordToHex(b) + WordToHex(c) + WordToHex(d);
 
     return temp.toLowerCase();
