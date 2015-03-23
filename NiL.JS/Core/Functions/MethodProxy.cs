@@ -506,6 +506,23 @@ namespace NiL.JS.Core.Functions
             }
         }
 
+        protected internal override NiL.JS.Core.JSObject InternalInvoke(NiL.JS.Core.JSObject self, NiL.JS.Expressions.Expression[] arguments, NiL.JS.Core.Context initiator)
+        {
+            if (parameters.Length == 0)
+                return Invoke(self, null);
+            Arguments _arguments = new Core.Arguments()
+            {
+                caller = initiator.strict && initiator.caller != null && initiator.caller.creator.body.strict ? Function.propertiesDummySM : initiator.caller,
+                length = arguments.Length
+            };
+
+            for (int i = 0; i < arguments.Length; i++)
+                _arguments[i] = NiL.JS.Expressions.Call.prepareArg(initiator, arguments[i], false, arguments.Length > 1);
+            initiator.objectSource = null;
+
+            return Invoke(self, _arguments);
+        }
+
         [Hidden]
         internal object InvokeImpl(JSObject thisBind, object[] args, Arguments argsSource)
         {

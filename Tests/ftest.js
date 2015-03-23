@@ -1,9 +1,13 @@
-function foo(b) {
-    var a = b | 0;
-    var x, y;
-    x = a;
-    y = a >>> 0;
-    return [x, y];
+(function (x) {
+    x
+})();
+
+function f(char, count) {
+    var r = "";
+    while (count-- > 0)
+        r += char;
+    return r + (char < 10 ? f(++char, 3) : "");
 }
 
-console.log(foo(-1));
+if (f(1, 3) != "111222333444555666777888999101010")
+    throw "Reqursive fail";

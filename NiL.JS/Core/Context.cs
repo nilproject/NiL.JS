@@ -164,7 +164,7 @@ namespace NiL.JS.Core
         /// </remarks>
         /// </summary>
         internal JSObject tempContainer;
-        internal readonly Context parent;
+        internal Context parent;
         internal IDictionary<string, JSObject> fields;
         internal AbortType abort;
         internal JSObject objectSource;

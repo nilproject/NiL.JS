@@ -529,8 +529,6 @@ namespace NiL.JS.Expressions
             if (type == FunctionType.Generator)
                 return new GeneratorInitializator(new Function(context, this));
 #endif
-            //if (type == FunctionType.Macro)
-            //    return new MacroFunction(context, this);
             return new Function(context, this);
         }
 
@@ -659,37 +657,6 @@ namespace NiL.JS.Expressions
                 isRecursive |= body.variables[i].name == name;
             containsEval = stat.ContainsEval;
             containsArguments = stat.ContainsArguments;
-            if (!isRecursive // макросы могут выдержать рекурсивный вызов, но дадут сильное падение производительности
-                && (type == FunctionType.Function || type == FunctionType.AnonymousFunction)
-                && !stat.ContainsDebugger
-                && !stat.ContainsInnerFunction
-                && !stat.ContainsArguments
-                //&& !stat.UseCall
-                && !stat.ContainsEval
-                //&& !stat.UseGetMember
-                && !stat.UseThis
-                && !stat.ContainsWith
-                && !stat.ContainsTry
-                && (body.variables.All(x =>
-                    x.Owner == body // Переменные
-                    || x == reference.descriptor // Сама функция
-                    || (reference.descriptor != null && x.owner == reference.descriptor.Inititalizator) // аргументы
-                    )))
-            {
-                type = FunctionType.Macro;
-                for (var i = 0; i < body.localVariables.Length; i++)
-                    body.localVariables[i].cacheRes = new JSObject()
-                    {
-                        attributes = JSObjectAttributesInternal.DoNotDelete | (body.localVariables[i].isReadOnly ? JSObjectAttributesInternal.ReadOnly : 0),
-                        valueType = JSObjectType.Undefined
-                    };
-                for (var i = 0; i < arguments.Length; i++)
-                    arguments[i].cacheRes = new JSObject()
-                    {
-                        attributes = JSObjectAttributesInternal.Argument,
-                        valueType = JSObjectType.Undefined
-                    };
-            }
         }
 #if !PORTABLE
         internal override System.Linq.Expressions.Expression TryCompile(bool selfCompile, bool forAssign, Type expectedType, List<CodeNode> dynamicValues)
