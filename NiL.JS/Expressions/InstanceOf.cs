@@ -19,6 +19,11 @@ namespace NiL.JS.Expressions
             }
         }
 
+        protected internal override bool ResultInTempContainer
+        {
+            get { return false; }
+        }
+
         public InstanceOf(Expression first, Expression second)
             : base(first, second, true)
         {
@@ -27,8 +32,8 @@ namespace NiL.JS.Expressions
         internal override JSObject Evaluate(Context context)
         {
             var a = tempContainer ?? new JSObject { attributes = JSObjectAttributesInternal.Temporary };
-            a.Assign(first.Evaluate(context));
             tempContainer = null;
+            a.Assign(first.Evaluate(context));
             var c = second.Evaluate(context);
             tempContainer = a;
             if (c.valueType != JSObjectType.Function)

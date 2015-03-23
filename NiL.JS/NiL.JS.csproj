@@ -306,6 +306,7 @@
     <Compile Include="Expressions\ToUInt.cs" />
     <Compile Include="Expressions\ToNumber.cs" />
     <Compile Include="Expressions\ToInt.cs" />
+    <Compile Include="Expressions\AssignOverReplace.cs" />
     <Compile Include="Expressions\Yield.cs" />
     <Compile Include="NamespaceProvider.cs" />
     <Compile Include="Statements\LabeledStatement.cs" />

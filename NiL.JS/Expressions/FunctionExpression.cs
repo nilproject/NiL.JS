@@ -261,6 +261,11 @@ namespace NiL.JS.Expressions
             }
         }
 
+        protected internal override bool ResultInTempContainer
+        {
+            get { return false; }
+        }
+
         protected internal override PredictedType ResultType
         {
             get

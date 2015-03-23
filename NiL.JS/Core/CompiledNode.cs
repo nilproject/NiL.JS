@@ -38,6 +38,11 @@ namespace NiL.JS.Core
             }
         }
 
+        protected internal override bool ResultInTempContainer
+        {
+            get { return false; }
+        }
+
         protected internal override PredictedType ResultType
         {
             get

@@ -29,6 +29,11 @@ namespace NiL.JS.Expressions
             }
         }
 
+        protected internal override bool ResultInTempContainer
+        {
+            get { return false; }
+        }
+
         internal OpAssignCache(Expression source)
             : base(source, null, false)
         {

@@ -23,6 +23,11 @@ namespace NiL.JS.Expressions
             }
         }
 
+        protected internal override bool ResultInTempContainer
+        {
+            get { return false; }
+        }
+
         internal DeleteMemberExpression(Expression obj, Expression fieldName)
             : base(obj, fieldName, true)
         {

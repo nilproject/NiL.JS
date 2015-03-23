@@ -16,6 +16,11 @@ namespace NiL.JS.Expressions
             }
         }
 
+        protected internal override bool ResultInTempContainer
+        {
+            get { return true; }
+        }
+
         public ToUInt(Expression first)
             : base(first, null, true)
         {

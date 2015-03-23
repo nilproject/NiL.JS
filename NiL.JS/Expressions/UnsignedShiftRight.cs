@@ -8,6 +8,11 @@ namespace NiL.JS.Expressions
 #endif
     public sealed class UnsignedShiftRight : Expression
     {
+        protected internal override bool ResultInTempContainer
+        {
+            get { return true; }
+        }
+
         protected internal override PredictedType ResultType
         {
             get

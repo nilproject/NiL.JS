@@ -34,6 +34,11 @@ namespace NiL.JS.Expressions
             }
         }
 
+        protected internal override bool ResultInTempContainer
+        {
+            get { return true; }
+        }
+
         public StringConcat(IList<Expression> sources)
             : base(null, null, true)
         {
@@ -57,7 +62,7 @@ namespace NiL.JS.Expressions
 
         internal override JSObject Evaluate(Context context)
         {
-            lock (this)
+            //lock (this)
             {
                 bool metString = false;
                 object res = prep(sources[0].Evaluate(context), ref metString);

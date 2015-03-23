@@ -10,6 +10,11 @@ namespace NiL.JS.Expressions
 #endif
     public sealed class Yield : Expression
     {
+        protected internal override bool ResultInTempContainer
+        {
+            get { return false; }
+        }
+
         public override bool IsContextIndependent
         {
             get

@@ -8,6 +8,19 @@ namespace NiL.JS.Expressions
 #endif
     public sealed class Or : Expression
     {
+        protected internal override PredictedType ResultType
+        {
+            get
+            {
+                return PredictedType.Int;
+            }
+        }
+
+        protected internal override bool ResultInTempContainer
+        {
+            get { return true; }
+        }
+
         public Or(Expression first, Expression second)
             : base(first, second, true)
         {

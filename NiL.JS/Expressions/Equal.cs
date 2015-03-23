@@ -16,6 +16,11 @@ namespace NiL.JS.Expressions
             }
         }
 
+        protected internal override bool ResultInTempContainer
+        {
+            get { return false; }
+        }
+
         public Equal(Expression first, Expression second)
             : base(first, second, false)
         {

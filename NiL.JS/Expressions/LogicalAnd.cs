@@ -16,6 +16,11 @@ namespace NiL.JS.Expressions
             }
         }
 
+        protected internal override bool ResultInTempContainer
+        {
+            get { return false; }
+        }
+
         public LogicalAnd(Expression first, Expression second)
             : base(first, second, false)
         {

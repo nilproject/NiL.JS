@@ -88,6 +88,11 @@ namespace NiL.JS.Statements
     {
         private Expression fastImpl;
 
+        protected internal override bool ResultInTempContainer
+        {
+            get { return false; }
+        }
+
         private OperationType _type;
         internal OperationType Type
         {

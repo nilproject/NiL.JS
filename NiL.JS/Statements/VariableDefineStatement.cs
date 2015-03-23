@@ -16,6 +16,11 @@ namespace NiL.JS.Statements
             internal VariableReference variable;
             internal readonly CodeNode source;
 
+            protected internal override bool ResultInTempContainer
+            {
+                get { return false; }
+            }
+
             internal AllowWriteCN(VariableReference variable, Expression source)
             {
                 this.variable = variable;

@@ -22,6 +22,11 @@ namespace NiL.JS.Expressions
             }
         }
 
+        protected internal override bool ResultInTempContainer
+        {
+            get { return false; }
+        }
+
         internal static bool Check(JSObject first, JSObject second)
         {
             return Check(first, second, false);

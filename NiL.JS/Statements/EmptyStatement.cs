@@ -11,6 +11,11 @@ namespace NiL.JS.Statements
         private static readonly EmptyStatement _instance = new EmptyStatement();
         public static EmptyStatement Instance { get { return _instance; } }
 
+        protected internal override bool ResultInTempContainer
+        {
+            get { return false; }
+        }
+
         public EmptyStatement()
             : base(null, null, false)
         {

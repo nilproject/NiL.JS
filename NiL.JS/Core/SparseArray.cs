@@ -99,7 +99,7 @@ namespace NiL.JS.Core
                     if (navyData[index].index == _index)
                         return values[index];
                     bi = navyData[index].bitIndex;
-                    i = (uint)(-1 ^ ((1 << bi) - 1));
+                    i = (uint)(~((1 << bi) - 1));
                     if ((navyData[_index].index & i) != (_index & i))
                     {
                         bi = 31;

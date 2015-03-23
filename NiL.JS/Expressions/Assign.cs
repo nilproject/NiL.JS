@@ -8,7 +8,7 @@ namespace NiL.JS.Expressions
 #if !PORTABLE
     [Serializable]
 #endif
-    public sealed class Assign : Expression
+    public class Assign : Expression
     {
         private Arguments setterArgs;
         private bool saveResult;
@@ -19,6 +19,11 @@ namespace NiL.JS.Expressions
             {
                 return false;
             }
+        }
+
+        protected internal override bool ResultInTempContainer
+        {
+            get { return false; }
         }
 
         public Assign(Expression first, Expression second)
@@ -126,38 +131,48 @@ namespace NiL.JS.Expressions
                     message(MessageLevel.CriticalWarning, new CodeCoordinates(0, Position, Length), "Assign to undefined variable \"" + vr.Name + "\". It will declare a global variable.");
             }
 
-            if (owner != null // не будем это применять в корневом узле. Только в функциях. Иначе это может задумываться как настройка контекста для последующего использования в Eval
-                && (opts & Options.SuppressUselessExpressionsElimination) == 0
-                && !statistic.ContainsEval
-                && !statistic.ContainsWith // можем упустить присваивание
-                && first is GetVariableExpression)
+            var gve = first as GetVariableExpression;
+            if (gve != null && gve.descriptor.isDefined && (codeContext & _BuildState.InWith) == 0)
             {
-                var gve = first as GetVariableExpression;
-                if ((owner == null || owner.body.strict || gve.descriptor.owner != owner || !owner.containsArguments) // аргументы это одна сущность с двумя именами
+                if (owner != null // не будем это применять в корневом узле. Только в функциях. Иначе это может задумываться как настройка контекста для последующего использования в Eval
                     && !gve.descriptor.captured
-                    && gve.descriptor.isDefined
-                    && (codeContext & _BuildState.InLoop) == 0)
+                    && (opts & Options.SuppressUselessExpressionsElimination) == 0
+                    && !statistic.ContainsEval
+                    && !statistic.ContainsWith) // можем упустить присваивание
                 {
-                    bool last = true;
-                    for (var i = 0; last && i < gve.descriptor.references.Count; i++)
+                    if ((owner == null || owner.body.strict || gve.descriptor.owner != owner || !owner.containsArguments) // аргументы это одна сущность с двумя именами
+                        && (codeContext & _BuildState.InLoop) == 0)
                     {
-                        last &= gve.descriptor.references[i].Eliminated || gve.descriptor.references[i].Position <= Position;
+                        bool last = true;
+                        for (var i = 0; last && i < gve.descriptor.references.Count; i++)
+                        {
+                            last &= gve.descriptor.references[i].Eliminated || gve.descriptor.references[i].Position <= Position;
+                        }
+                        if (last)
+                        {
+                            if (second.IsContextIndependent)
+                            {
+                                _this.Eliminated = true;
+                                _this = EmptyStatement.Instance;
+                            }
+                            else
+                            {
+                                _this = second;
+                                this.second = null;
+                                this.Eliminated = true;
+                                this.second = _this as Expression;
+                            }
+                        }
                     }
-                    if (last)
+                }
+                if (_this == this && second.ResultInTempContainer) // это присваивание, не последнее, без with
+                {
+                    _this = new AssignOverReplace(first, second)
                     {
-                        if (second.IsContextIndependent)
-                        {
-                            _this.Eliminated = true;
-                            _this = EmptyStatement.Instance;
-                        }
-                        else
-                        {
-                            _this = second;
-                            this.second = null;
-                            this.Eliminated = true;
-                            this.second = _this as Expression;
-                        }
-                    }
+                        Position = Position,
+                        Length = Length,
+                        codeContext = codeContext
+                    };
                 }
             }
         }

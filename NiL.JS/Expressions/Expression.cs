@@ -18,6 +18,10 @@ namespace NiL.JS.Expressions
                 return PredictedType.Unknown;
             }
         }
+        internal protected abstract bool ResultInTempContainer
+        {
+            get;
+        }
         internal _BuildState codeContext;
 
         protected internal Expression first;

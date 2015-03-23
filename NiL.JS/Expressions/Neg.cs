@@ -16,6 +16,11 @@ namespace NiL.JS.Expressions
             }
         }
 
+        protected internal override bool ResultInTempContainer
+        {
+            get { return true; }
+        }
+
         public Neg(Expression first)
             : base(first, null, true)
         {
@@ -38,7 +43,7 @@ namespace NiL.JS.Expressions
                     if (val.iValue == int.MinValue)
                     {
                         tempContainer.valueType = JSObjectType.Double;
-                        tempContainer.dValue = -val.iValue;
+                        tempContainer.dValue = val.iValue;
                     }
                     else
                     {

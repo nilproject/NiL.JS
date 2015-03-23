@@ -30,6 +30,11 @@ namespace NiL.JS.Expressions
             }
         }
 
+        protected internal override bool ResultInTempContainer
+        {
+            get { return true; }
+        }
+
         public Mul(Expression first, Expression second)
             : base(first, second, true)
         {
@@ -61,8 +66,7 @@ namespace NiL.JS.Expressions
                         else
                         {
                             l = (long)a * s.iValue;
-                            if (l > 2147483647L
-                                || l < -2147483648L)
+                            if (l > 2147483647L || l < -2147483648L)
                             {
                                 tempContainer.dValue = l;
                                 tempContainer.valueType = JSObjectType.Double;
@@ -96,7 +100,7 @@ namespace NiL.JS.Expressions
 
         internal override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
-            var res = base.Build(ref _this, depth,variables, state, message, statistic, opts);
+            var res = base.Build(ref _this, depth, variables, state, message, statistic, opts);
             if (!res)
             {
                 var exp = first as Constant;

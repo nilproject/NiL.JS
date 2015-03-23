@@ -16,6 +16,11 @@ namespace NiL.JS.Expressions
             private CodeNode source;
             public JSObject lastThisBind;
 
+            protected internal override bool ResultInTempContainer
+            {
+                get { return false; }
+            }
+
             public ThisSetter(CodeNode source)
             {
                 this.source = source;
@@ -70,6 +75,11 @@ namespace NiL.JS.Expressions
             {
                 return false;
             }
+        }
+
+        protected internal override bool ResultInTempContainer
+        {
+            get { return false; }
         }
 
         private ThisSetter thisSetter;

@@ -36,6 +36,11 @@ namespace NiL.JS.Expressions
             }
         }
 
+        protected internal override bool ResultInTempContainer
+        {
+            get { return false; }
+        }
+
         public IList<CodeNode> Threads { get { return new ReadOnlyCollection<CodeNode>(threads); } }
 
         public Ternary(Expression first, Expression[] threads)

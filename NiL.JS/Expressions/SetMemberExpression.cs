@@ -26,6 +26,11 @@ namespace NiL.JS.Expressions
             }
         }
 
+        protected internal override bool ResultInTempContainer
+        {
+            get { return true; }
+        }
+
         internal SetMemberExpression(Expression obj, Expression fieldName, Expression value)
             : base(obj, fieldName, true)
         {
@@ -39,31 +44,34 @@ namespace NiL.JS.Expressions
 
         internal override JSObject Evaluate(Context context)
         {
-            JSObject sjso = null;
-            JSObject source = null;
-            source = first.Evaluate(context);
-            if (source.valueType >= JSObjectType.Object
-                && source.oValue != null
-                && source.oValue != source
-                && (sjso = source.oValue as JSObject) != null
-                && sjso.valueType >= JSObjectType.Object)
+            lock (this)
             {
-                source = sjso;
-                sjso = null;
+                JSObject sjso = null;
+                JSObject source = null;
+                source = first.Evaluate(context);
+                if (source.valueType >= JSObjectType.Object
+                    && source.oValue != null
+                    && source.oValue != source
+                    && (sjso = source.oValue as JSObject) != null
+                    && sjso.valueType >= JSObjectType.Object)
+                {
+                    source = sjso;
+                    sjso = null;
+                }
+                else
+                {
+                    //if ((sjso ?? source).fields == null)
+                    //    (sjso ?? source).fields = JSObject.createFields();
+                    tempContainer2.Assign(source);
+                    source = tempContainer2;
+                }
+                source.SetMember(
+                    cachedMemberName ?? safeGet(tempContainer1, second, context),
+                    safeGet(tempContainer, value, context),
+                    context.strict);
+                context.objectSource = null;
+                return tempContainer;
             }
-            else
-            {
-                if ((sjso ?? source).fields == null)
-                    (sjso ?? source).fields = JSObject.createFields();
-                tempContainer.Assign(source);
-                source = tempContainer;
-            }
-            source.SetMember(
-                cachedMemberName ?? safeGet(tempContainer1, second, context),
-                safeGet(tempContainer2, value, context),
-                context.strict);
-            context.objectSource = null;
-            return tempContainer2;
         }
 
         private static JSObject safeGet(JSObject temp, CodeNode source, Context context)

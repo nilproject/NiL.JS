@@ -48,6 +48,11 @@ namespace NiL.JS.Expressions
             }
         }
 
+        protected internal override bool ResultInTempContainer
+        {
+            get { return false; }
+        }
+
         public Addition(Expression first, Expression second)
             : base(first, second, true)
         {

@@ -17,6 +17,11 @@ namespace NiL.JS.Expressions
             }
         }
 
+        protected internal override bool ResultInTempContainer
+        {
+            get { return true; }
+        }
+
         public ToInt(Expression first)
             : base(first, null, true)
         {
@@ -27,8 +32,9 @@ namespace NiL.JS.Expressions
         {
             var t = first.Evaluate(context);
             if (t.valueType == JSObjectType.Int)
-                return t;
-            tempContainer.iValue = Tools.JSObjectToInt32(t, 0, false);
+                tempContainer.iValue = t.iValue;
+            else
+                tempContainer.iValue = Tools.JSObjectToInt32(t, 0, false);
             tempContainer.valueType = JSObjectType.Int;
             return tempContainer;
         }

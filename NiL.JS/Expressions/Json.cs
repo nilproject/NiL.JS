@@ -33,6 +33,11 @@ namespace NiL.JS.Expressions
             }
         }
 
+        protected internal override bool ResultInTempContainer
+        {
+            get { return false; }
+        }
+
         private Json(Dictionary<string, CodeNode> fields)
         {
             this.fields = new string[fields.Count];

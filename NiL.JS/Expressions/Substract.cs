@@ -19,6 +19,11 @@ namespace NiL.JS.Expressions
             }
         }
 
+        protected internal override bool ResultInTempContainer
+        {
+            get { return true; }
+        }
+
         public Substract(Expression first, Expression second)
             : base(first, second, true)
         {

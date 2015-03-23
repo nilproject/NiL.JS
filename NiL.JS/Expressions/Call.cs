@@ -19,6 +19,11 @@ namespace NiL.JS.Expressions
             }
         }
 
+        protected internal override bool ResultInTempContainer
+        {
+            get { return false; }
+        }
+
         private Expression[] arguments;
         public Expression[] Arguments { get { return arguments; } }
         internal bool allowTCO;

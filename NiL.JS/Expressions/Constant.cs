@@ -37,6 +37,11 @@ namespace NiL.JS.Expressions
             }
         }
 
+        protected internal override bool ResultInTempContainer
+        {
+            get { return false; }
+        }
+
         public Constant(JSObject value)
             : base(null, null, false)
         {

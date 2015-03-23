@@ -2204,20 +2204,20 @@ namespace NiL.JS.BaseLibrary
                             throw new JSException(new TypeError("Can not add item to fixed size array"));
                         return notExists;
                     }
-                    var res = data[(int)index];
+                    var res = data[index];
                     if (res == null)
                     {
                         res = new JSObject() { valueType = JSObjectType.NotExistsInObject };
-                        data[(int)index] = res;
+                        data[index] = res;
                     }
                     else if ((res.attributes & JSObjectAttributesInternal.SystemObject) != 0)
-                        data[(int)index] = res = res.CloneImpl();
+                        data[index] = res = res.CloneImpl();
                     return res;
                 }
                 else
                 {
                     notExists.valueType = JSObjectType.NotExistsInObject;
-                    var res = data[(int)index] ?? notExists;
+                    var res = data[index] ?? notExists;
                     if (res.valueType < JSObjectType.Undefined && !own)
                         return __proto__.GetMember(name, forWrite, own);
                     return res;

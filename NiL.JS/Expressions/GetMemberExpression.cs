@@ -22,6 +22,11 @@ namespace NiL.JS.Expressions
             }
         }
 
+        protected internal override bool ResultInTempContainer
+        {
+            get { return false; }
+        }
+
         internal GetMemberExpression(Expression obj, Expression fieldName)
             : base(obj, fieldName, true)
         {

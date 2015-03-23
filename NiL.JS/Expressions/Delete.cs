@@ -21,6 +21,11 @@ namespace NiL.JS.Expressions
                 }
             }
 
+            protected internal override bool ResultInTempContainer
+            {
+                get { return false; }
+            }
+
             internal SafeMemberGetter(GetMemberExpression gms)
             {
                 proto = gms;
@@ -61,6 +66,11 @@ namespace NiL.JS.Expressions
             {
                 return PredictedType.Bool;
             }
+        }
+
+        protected internal override bool ResultInTempContainer
+        {
+            get { return true; }
         }
 
         public Delete(Expression first)

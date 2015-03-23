@@ -17,6 +17,11 @@ namespace NiL.JS.Expressions
             }
         }
 
+        protected internal override bool ResultInTempContainer
+        {
+            get { return false; }
+        }
+
         public None(Expression first, Expression second)
             : base(first, second, false)
         {
