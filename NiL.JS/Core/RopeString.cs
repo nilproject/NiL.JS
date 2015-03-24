@@ -406,19 +406,20 @@ namespace NiL.JS.Core
         private static StringBuilder _append(StringBuilder sb, object arg)
         {
             var str = arg.ToString();
-            if (sb.Capacity < sb.Length + str.Length)
-                sb.EnsureCapacity(Math.Max(sb.Capacity * 2, sb.Length + str.Length));
+            var start = sb.Length;
+            if (sb.Capacity < start + str.Length)
+                sb.EnsureCapacity(Math.Max(sb.Capacity << 1, start + str.Length));
+            sb.Length += str.Length;
             for (var i = 0; i < str.Length; i++)
             {
-                sb.Append('\0');
-                sb[sb.Length - 1] = str[i];
+                sb[start + i] = str[i];
             }
             return sb;
         }
 
         public override string ToString()
         {
-            if (!string.IsNullOrEmpty(secondSource))
+            if (_secondSource != null)
             {
                 if (!(_firstSource is RopeString)
                     && !(_secondSource is RopeString))

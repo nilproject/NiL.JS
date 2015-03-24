@@ -258,12 +258,11 @@ namespace NiL.JS.BaseLibrary
                     var match = regex.regEx.Match(self.ToString());
                     int index = 0;
                     var res = new Array();
-                    if (match.Success) do
-                        {
-                            res.data[index++] = match.Value;
-                            match = match.NextMatch();
-                        }
-                        while (match.Success);
+                    while (match.Success)
+                    {
+                        res.data[index++] = match.Value;
+                        match = match.NextMatch();
+                    }
                     return res;
                 }
             }

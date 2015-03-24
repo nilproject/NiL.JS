@@ -25,8 +25,7 @@ namespace NiL.JS.BaseLibrary
         Get = 1,
         Set = 2,
         AnonymousFunction = 4,
-        Generator = 8,
-        Macro = 12
+        Generator = 8
     }
 
 #if !PORTABLE

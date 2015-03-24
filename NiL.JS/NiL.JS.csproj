@@ -228,7 +228,6 @@
     <Compile Include="Core\Functions\BindedFunction.cs" />
     <Compile Include="Core\CatchContext.cs" />
     <Compile Include="Core\CompiledNode.cs" />
-    <Compile Include="Core\Functions\MacroFunction.cs" />
     <Compile Include="Core\Functions\MethodProxy.cs" />
     <Compile Include="Core\Modules\ConvertValueAttribute.cs" />
     <Compile Include="BaseLibrary\Debug.cs" />
