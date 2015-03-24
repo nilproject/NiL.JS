@@ -13,7 +13,7 @@ namespace NiL.JS.BaseLibrary
         [DoNotDelete]
         [DoNotEnumerate]
         [NotConfigurable]
-        public const double E = System.Math.E;
+        public static readonly Number E = System.Math.E;
         [DoNotDelete]
         [DoNotEnumerate]
         [NotConfigurable]
@@ -21,30 +21,30 @@ namespace NiL.JS.BaseLibrary
         [DoNotDelete]
         [DoNotEnumerate]
         [NotConfigurable]
-        public static readonly double LN2 = System.Math.Log(2);
+        public static readonly Number LN2 = System.Math.Log(2);
         [DoNotDelete]
         [DoNotEnumerate]
         [NotConfigurable]
-        public static readonly double LN10 = System.Math.Log(10);
+        public static readonly Number LN10 = System.Math.Log(10);
         [DoNotDelete]
         [DoNotEnumerate]
         [NotConfigurable]
-        public static readonly double LOG2E = 1.0 / LN2;
+        public static readonly Number LOG2E = 1.0 / LN2;
         [DoNotDelete]
         [DoNotEnumerate]
         [NotConfigurable]
-        public static readonly double LOG10E = 1.0 / LN10;
+        public static readonly Number LOG10E = 1.0 / LN10;
         [DoNotDelete]
         [DoNotEnumerate]
         [NotConfigurable]
-        public static readonly double SQRT1_2 = System.Math.Sqrt(0.5);
+        public static readonly Number SQRT1_2 = System.Math.Sqrt(0.5);
         [DoNotDelete]
         [DoNotEnumerate]
         [NotConfigurable]
-        public static readonly double SQRT2 = System.Math.Sqrt(2);
+        public static readonly Number SQRT2 = System.Math.Sqrt(2);
 
-        [DoNotEnumerate]
         [DoNotDelete]
+        [DoNotEnumerate]
         public static JSObject abs(Arguments args)
         {
             var arg = args[0];
@@ -54,23 +54,40 @@ namespace NiL.JS.BaseLibrary
                     {
                         if ((arg.iValue & int.MinValue) == 0)
                             return arg;
-                        break;
+                        if (arg.iValue == int.MinValue)
+                            goto default;
+                        if ((arg.attributes & JSObjectAttributesInternal.Cloned) != 0)
+                        {
+                            arg.valueType = JSObjectType.Int;
+                            arg.iValue = -arg.iValue;
+                            return arg;
+                        }
+                        return -arg.iValue;
                     }
                 case JSObjectType.Double:
                     {
                         if (arg.dValue >= 0)
                             return arg;
-                        break;
+                        if ((arg.attributes & JSObjectAttributesInternal.Cloned) != 0)
+                        {
+                            arg.valueType = JSObjectType.Double;
+                            arg.dValue = -arg.dValue;
+                            return arg;
+                        }
+                        return -arg.dValue;
+                    }
+                default:
+                    {
+                        var value = System.Math.Abs(Tools.JSObjectToDouble(arg));
+                        if ((arg.attributes & JSObjectAttributesInternal.Cloned) != 0)
+                        {
+                            arg.valueType = JSObjectType.Double;
+                            arg.dValue = value;
+                            return arg;
+                        }
+                        return value;
                     }
             }
-            var res = System.Math.Abs(Tools.JSObjectToDouble(arg));
-            if ((arg.attributes & JSObjectAttributesInternal.Cloned) != 0)
-            {
-                arg.valueType = JSObjectType.Double;
-                arg.dValue = res;
-                return arg;
-            }
-            return res;
         }
 
         [DoNotEnumerate]
@@ -125,8 +142,9 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [DoNotDelete]
-        public static JSObject exp(JSObject arg)
+        public static JSObject exp(Arguments args)
         {
+            var arg = args[0];
             var res = System.Math.Exp(Tools.JSObjectToDouble(arg));
             if ((arg.attributes & JSObjectAttributesInternal.Cloned) != 0)
             {
@@ -149,8 +167,9 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotDelete]
         [DoNotEnumerate]
-        public static JSObject floor(JSObject arg)
+        public static JSObject floor(Arguments args)
         {
+            var arg = args.a0 ?? JSObject.notExists;
             if (arg.valueType == JSObjectType.Int)
                 return arg;
             var a = Tools.JSObjectToDouble(arg);

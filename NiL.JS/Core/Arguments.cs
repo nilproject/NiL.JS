@@ -30,9 +30,9 @@ namespace NiL.JS.Core
         internal JSObject a2;
         internal JSObject a3;
         internal JSObject a4;
-        internal JSObject a5;
-        internal JSObject a6;
-        internal JSObject a7;
+        //internal JSObject a5;
+        //internal JSObject a6;
+        //internal JSObject a7;
         internal JSObject callee;
         internal JSObject caller;
         private _LengthContainer _length;
@@ -68,26 +68,30 @@ namespace NiL.JS.Core
         {
             get
             {
+                JSObject res = null;
                 switch (index)
                 {
                     case 0:
-                        return a0 ?? notExists;
+                        res = a0;
+                        break;
                     case 1:
-                        return a1 ?? notExists;
+                        res = a1;
+                        break;
                     case 2:
-                        return a2 ?? notExists;
+                        res = a2;
+                        break;
                     case 3:
-                        return a3 ?? notExists;
+                        res = a3;
+                        break;
                     case 4:
-                        return a4 ?? notExists;
-                    case 5:
-                        return a5 ?? notExists;
-                    case 6:
-                        return a6 ?? notExists;
-                    case 7:
-                        return a7 ?? notExists;
+                        res = a4;
+                        break;
+                    default:
+                        return base[index.ToString()];
                 }
-                return base[index.ToString()];
+                if (res == null)
+                    return notExists;
+                return res;
             }
             set
             {
@@ -107,15 +111,6 @@ namespace NiL.JS.Core
                         break;
                     case 4:
                         a4 = value;
-                        break;
-                    case 5:
-                        a5 = value;
-                        break;
-                    case 6:
-                        a6 = value;
-                        break;
-                    case 7:
-                        a7 = value;
                         break;
                     default:
                         if (fields == null)
@@ -173,12 +168,12 @@ namespace NiL.JS.Core
                         return (a3 ?? (!createMember ? notExists : (a3 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
                     case 4:
                         return (a4 ?? (!createMember ? notExists : (a4 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
-                    case 5:
-                        return (a5 ?? (!createMember ? notExists : (a5 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
-                    case 6:
-                        return (a6 ?? (!createMember ? notExists : (a6 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
-                    case 7:
-                        return (a7 ?? (!createMember ? notExists : (a7 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
+                    //case 5:
+                    //    return (a5 ?? (!createMember ? notExists : (a5 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
+                    //case 6:
+                    //    return (a6 ?? (!createMember ? notExists : (a6 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
+                    //case 7:
+                    //    return (a7 ?? (!createMember ? notExists : (a7 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
                 }
             }
             switch (name.ToString())
@@ -193,12 +188,12 @@ namespace NiL.JS.Core
                     return (a3 ?? (!createMember ? notExists : (a3 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
                 case "4":
                     return (a4 ?? (!createMember ? notExists : (a4 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
-                case "5":
-                    return (a5 ?? (!createMember ? notExists : (a5 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
-                case "6":
-                    return (a6 ?? (!createMember ? notExists : (a6 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
-                case "7":
-                    return (a7 ?? (!createMember ? notExists : (a7 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
+                //case "5":
+                //    return (a5 ?? (!createMember ? notExists : (a5 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
+                //case "6":
+                //    return (a6 ?? (!createMember ? notExists : (a6 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
+                //case "7":
+                //    return (a7 ?? (!createMember ? notExists : (a7 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
                 case "length":
                     {
                         if (_length == null)
@@ -239,12 +234,12 @@ namespace NiL.JS.Core
                 yield return "3";
             if (a4 != null && a4.IsExist && (!hideNonEnum || (a4.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
                 yield return "4";
-            if (a5 != null && a5.IsExist && (!hideNonEnum || (a5.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
-                yield return "5";
-            if (a6 != null && a6.IsExist && (!hideNonEnum || (a6.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
-                yield return "6";
-            if (a7 != null && a7.IsExist && (!hideNonEnum || (a7.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
-                yield return "7";
+            //if (a5 != null && a5.IsExist && (!hideNonEnum || (a5.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+            //    yield return "5";
+            //if (a6 != null && a6.IsExist && (!hideNonEnum || (a6.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+            //    yield return "6";
+            //if (a7 != null && a7.IsExist && (!hideNonEnum || (a7.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+            //    yield return "7";
             //if (a8 != null && a8.isExist && (!hideNonEnum || (a8.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
             //    yield return "8";
             //if (a9 != null && a9.isExist && (!hideNonEnum || (a9.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
@@ -293,12 +288,12 @@ namespace NiL.JS.Core
                         return a3 == null || ((a3.attributes & JSObjectAttributesInternal.DoNotDelete) == 0) && (a3 = null) == null;
                     case 4:
                         return a4 == null || ((a4.attributes & JSObjectAttributesInternal.DoNotDelete) == 0) && (a4 = null) == null;
-                    case 5:
-                        return a5 == null || ((a5.attributes & JSObjectAttributesInternal.DoNotDelete) == 0) && (a5 = null) == null;
-                    case 6:
-                        return a6 == null || ((a6.attributes & JSObjectAttributesInternal.DoNotDelete) == 0) && (a6 = null) == null;
-                    case 7:
-                        return a7 == null || ((a7.attributes & JSObjectAttributesInternal.DoNotDelete) == 0) && (a7 = null) == null;
+                    //case 5:
+                    //    return a5 == null || ((a5.attributes & JSObjectAttributesInternal.DoNotDelete) == 0) && (a5 = null) == null;
+                    //case 6:
+                    //    return a6 == null || ((a6.attributes & JSObjectAttributesInternal.DoNotDelete) == 0) && (a6 = null) == null;
+                    //case 7:
+                    //    return a7 == null || ((a7.attributes & JSObjectAttributesInternal.DoNotDelete) == 0) && (a7 = null) == null;
                 }
             }
             switch (name.ToString())
@@ -313,12 +308,12 @@ namespace NiL.JS.Core
                     return a3 == null || ((a3.attributes & JSObjectAttributesInternal.DoNotDelete) == 0) && (a3 = null) == null;
                 case "4":
                     return a4 == null || ((a4.attributes & JSObjectAttributesInternal.DoNotDelete) == 0) && (a4 = null) == null;
-                case "5":
-                    return a5 == null || ((a5.attributes & JSObjectAttributesInternal.DoNotDelete) == 0) && (a5 = null) == null;
-                case "6":
-                    return a6 == null || ((a6.attributes & JSObjectAttributesInternal.DoNotDelete) == 0) && (a6 = null) == null;
-                case "7":
-                    return a7 == null || ((a7.attributes & JSObjectAttributesInternal.DoNotDelete) == 0) && (a7 = null) == null;
+                //case "5":
+                //    return a5 == null || ((a5.attributes & JSObjectAttributesInternal.DoNotDelete) == 0) && (a5 = null) == null;
+                //case "6":
+                //    return a6 == null || ((a6.attributes & JSObjectAttributesInternal.DoNotDelete) == 0) && (a6 = null) == null;
+                //case "7":
+                //    return a7 == null || ((a7.attributes & JSObjectAttributesInternal.DoNotDelete) == 0) && (a7 = null) == null;
             }
             return base.DeleteMember(name);
         }
@@ -332,9 +327,9 @@ namespace NiL.JS.Core
             a2 = null;
             a3 = null;
             a4 = null;
-            a5 = null;
-            a6 = null;
-            a7 = null;
+            //a5 = null;
+            //a6 = null;
+            //a7 = null;
             callee = null;
             caller = null;
             __prototype = null;

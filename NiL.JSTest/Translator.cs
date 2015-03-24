@@ -80,7 +80,7 @@ namespace NiL.JSTest
             protected override Visitor Visit(JS.Statements.ReturnStatement node)
             {
                 result.Append("return");
-                if (node.Body != node)
+                if (node.Body != null)
                 {
                     result.Append(" ");
                     node.Body.Visit(this);

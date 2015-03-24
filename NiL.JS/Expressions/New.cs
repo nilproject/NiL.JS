@@ -26,6 +26,14 @@ namespace NiL.JS.Expressions
                 this.source = source;
             }
 
+            public override bool IsContextIndependent
+            {
+                get
+                {
+                    return false;
+                }
+            }
+
             protected override CodeNode[] getChildsImpl()
             {
                 throw new InvalidOperationException();

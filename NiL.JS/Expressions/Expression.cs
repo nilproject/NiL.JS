@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using NiL.JS.Core;
+using NiL.JS.Statements;
 
 namespace NiL.JS.Expressions
 {
@@ -74,12 +75,12 @@ namespace NiL.JS.Expressions
 
             Parser.Build(ref first, depth + 1, variables, state, message, statistic, opts);
             Parser.Build(ref second, depth + 1, variables, state, message, statistic, opts);
-            try
+            if (this.IsContextIndependent)
             {
-                if (this.IsContextIndependent)
+                if (message != null && !(this is RegExpExpression))
+                    message(MessageLevel.Warning, new CodeCoordinates(0, Position, Length), "Constant expression. Maybe, it's a mistake.");
+                try
                 {
-                    if (message != null && !(this is RegExpExpression))
-                        message(MessageLevel.Warning, new CodeCoordinates(0, Position, Length), "Constant expression. Maybe, it's a mistake.");
                     var res = this.Evaluate(null);
                     if (res.valueType == JSObjectType.Double
                         && !double.IsNegativeInfinity(1.0 / res.dValue)
@@ -91,18 +92,28 @@ namespace NiL.JS.Expressions
                     _this = new Constant(res);
                     return true;
                 }
+                catch (JSException e)
+                {
+                    _this = new ExpressionWrapper(new ThrowStatement(new Constant(e.Avatar)));
+                    expressionWillThrow(message);
+                    return true;
+                }
+                catch (Exception e)
+                {
+                    _this = new ExpressionWrapper(new ThrowStatement(e));
+                    expressionWillThrow(message);
+                    return true;
+                }
             }
-            catch
-            { }
             return false;
         }
 
         internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
-            baseOptimize(owner, message, opts, statistic);
+            baseOptimize(ref _this, owner, message, opts, statistic);
         }
 
-        protected void baseOptimize(FunctionExpression owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        protected void baseOptimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             var f = first as CodeNode;
             var s = second as CodeNode;
@@ -116,6 +127,29 @@ namespace NiL.JS.Expressions
                 s.Optimize(ref s, owner, message, opts, statistic);
                 second = s as Expression;
             }
+            if (IsContextIndependent && !(this is Constant))
+            {
+                try
+                {
+                    _this = new Constant(Evaluate(null));
+                }
+                catch (JSException e)
+                {
+                    _this = new ExpressionWrapper(new ThrowStatement(new Constant(e.Avatar)));
+                    expressionWillThrow(message);
+                }
+                catch (Exception e)
+                {
+                    _this = new ExpressionWrapper(new ThrowStatement(e));
+                    expressionWillThrow(message);
+                }
+            }
+        }
+
+        private void expressionWillThrow(CompilerMessageCallback message)
+        {
+            if (message != null && !(this is RegExpExpression))
+                message(MessageLevel.Warning, new CodeCoordinates(0, Position, Length), "Expression will throw an exception");
         }
 
         public override T Visit<T>(Visitor<T> visitor)

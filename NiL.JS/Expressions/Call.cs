@@ -49,7 +49,7 @@ namespace NiL.JS.Expressions
                     if (intObj != null && intObj != a && intObj.valueType >= JSObjectType.Object)
                         return intObj;
                 }
-                if (clone)
+                if (clone && (a.attributes & JSObjectAttributesInternal.Temporary) != 0)
                 {
                     a = a.CloneImpl();
                     a.attributes |= JSObjectAttributesInternal.Cloned;

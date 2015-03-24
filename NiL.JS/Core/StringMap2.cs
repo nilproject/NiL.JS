@@ -66,9 +66,7 @@ namespace NiL.JS.Core
             while (index >= 0);
             // не нашли
 
-            if (
-                (count > 50 && count * 9 / 5 >= elen) ||
-                count == elen + 1)
+            if ((count > 50 && count * 9 / 5 >= elen) || count == elen + 1)
                 elen = increaseSize() - 1;
             int prewIndex = -1;
             index = hash & elen;

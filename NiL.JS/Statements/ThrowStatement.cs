@@ -19,7 +19,7 @@ namespace NiL.JS.Statements
             body = new Constant(TypeProxy.Proxy(e));
         }
 
-        private ThrowStatement(CodeNode statement)
+        internal ThrowStatement(CodeNode statement)
         {
             body = statement;
         }
@@ -49,12 +49,7 @@ namespace NiL.JS.Statements
 
         internal override JSObject Evaluate(Context context)
         {
-#if DEBUG // Экономим на переменных в релизе
-            var message = body.Evaluate(context);
-            throw new JSException(message);
-#else
             throw new JSException(body.Evaluate(context));
-#endif
         }
 
         protected override CodeNode[] getChildsImpl()

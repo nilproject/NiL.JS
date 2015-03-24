@@ -752,7 +752,11 @@ namespace NiL.JS.BaseLibrary
         [ArgumentsLength(0)]
         public static JSObject toLocaleLowerCase(JSObject self)
         {
-            return self.ToString().ToLower();
+            var sstr = self.ToString();
+            var res = sstr.ToLower();
+            if (self.valueType == JSObjectType.String && string.CompareOrdinal(sstr, res) == 0)
+                return self;
+            return res;
         }
 
         [DoNotEnumerate]
@@ -760,7 +764,11 @@ namespace NiL.JS.BaseLibrary
         [ArgumentsLength(0)]
         public static JSObject toLocaleUpperCase(JSObject self)
         {
-            return self.ToString().ToUpper();
+            var sstr = self.ToString();
+            var res = sstr.ToUpper();
+            if (self.valueType == JSObjectType.String && string.CompareOrdinal(sstr, res) == 0)
+                return self;
+            return res;
         }
 
         [DoNotEnumerate]
@@ -768,7 +776,11 @@ namespace NiL.JS.BaseLibrary
         [ArgumentsLength(0)]
         public static JSObject toLowerCase(JSObject self)
         {
-            return self.ToString().ToLowerInvariant();
+            var sstr = self.ToString();
+            var res = sstr.ToLowerInvariant();
+            if (self.valueType == JSObjectType.String && string.CompareOrdinal(sstr, res) == 0)
+                return self;
+            return res;
         }
 
         [DoNotEnumerate]
@@ -776,7 +788,11 @@ namespace NiL.JS.BaseLibrary
         [ArgumentsLength(0)]
         public static JSObject toUpperCase(JSObject self)
         {
-            return self.ToString().ToUpperInvariant();
+            var sstr = self.ToString();
+            var res = sstr.ToUpperInvariant();
+            if (self.valueType == JSObjectType.String && string.CompareOrdinal(sstr, res) == 0)
+                return self;
+            return res;
         }
 
         [DoNotEnumerate]

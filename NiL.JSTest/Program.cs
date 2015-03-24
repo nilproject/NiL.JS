@@ -276,10 +276,16 @@ for (var i = 0; i < 10000000; i++) abs(i * (1 - 2 * (i & 1)));
 
         private static void testEx()
         {
-            var script = new Script(@"
-console.log(1..toLocaleString());
+            var t = new Script(@"
+function sum(x, r)
+{
+    if (x <= 0)
+        return r;
+    return sum(x - 1, r + x);
+}
+console.log(sum(10000, 0));
 ");
-            script.Invoke();
+            t.Invoke();
         }
 
         static void Main(string[] args)
@@ -312,7 +318,7 @@ console.log(1..toLocaleString());
             }));
 #endif
 
-            int mode = 103
+            int mode = 4
                    ;
             switch (mode)
             {
@@ -551,7 +557,7 @@ console.log(1..toLocaleString());
                 case 102:
                     {
                         for (var i = 0; i < 10; i++)
-                            runFile(@"sunspider-0.9.1\string-base64.js");
+                            runFile(@"sunspider-0.9.1\regexp-dna.js");
                         break;
                     }
                 case 103:

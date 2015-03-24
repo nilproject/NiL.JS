@@ -779,13 +779,35 @@ namespace NiL.JS.BaseLibrary
             if (this.GetType() == typeof(Function))
             {
                 var body = creator.body;
-                if (body == null || body.lines.Length == 0)
+                var result = notExists;
+                notExists.valueType = JSObjectType.NotExistsInObject;
+                for (; ; )
                 {
-                    correctThisBind(self, body.strict, context ?? initiator);
+                    if (body != null)
+                    {
+                        if (body.lines.Length == 1)
+                        {
+                            var ret = body.lines[0] as ReturnStatement;
+                            if (ret != null)
+                            {
+                                if (ret.Body != null)
+                                {
+                                    if (ret.Body.IsContextIndependent)
+                                        result = ret.Body.Evaluate(null);
+                                    else
+                                        break;
+                                }
+                            }
+                            else
+                                break;
+                        }
+                        else if (body.lines.Length != 0)
+                            break;
+                    }
+                    correctThisBind(self, body.strict);
                     for (int i = 0; i < arguments.Length; i++)
                         arguments[i].Evaluate(initiator);
-                    notExists.valueType = JSObjectType.NotExistsInObject;
-                    return notExists;
+                    return result;
                 }
             }
             Arguments _arguments = new Core.Arguments()
@@ -810,14 +832,14 @@ namespace NiL.JS.BaseLibrary
 #endif
             JSObject res = null;
             var body = creator.body;
-            thisBind = correctThisBind(thisBind, body.strict, context);
+            thisBind = correctThisBind(thisBind, body.strict);
             if (body == null || body.lines.Length == 0)
             {
                 notExists.valueType = JSObjectType.NotExistsInObject;
                 return notExists;
             }
             var oldargs = _arguments;
-            if (creator.recursiveDepth > creator.parametersStored) // рекурсивный вызов. Из-за With мы можем упустить eval
+            if (creator.recursiveDepth > creator.parametersStored) // рекурсивный вызов.
             {
                 if (!(creator.containsEval || creator.containsWith))
                     storeParameters();
@@ -825,8 +847,7 @@ namespace NiL.JS.BaseLibrary
             }
             creator.recursiveDepth++;
             var oldcaller = _caller;
-            Context internalContext = null;
-            internalContext = new Context(context, creator.containsEval || creator.containsWith, this);
+            var internalContext = new Context(context, creator.containsEval || creator.containsWith, this);
             try
             {
                 internalContext.thisBind = thisBind;
@@ -861,9 +882,9 @@ namespace NiL.JS.BaseLibrary
                 internalContext.strict |= body.strict;
                 internalContext.variables = body.variables;
                 internalContext.Activate();
-                JSObject ai = null;
                 initVariables(body, internalContext);
                 initParameters(args, body, internalContext);
+                JSObject ai = null;
                 for (; ; )
                 {
                     body.Evaluate(internalContext);
@@ -1026,23 +1047,23 @@ namespace NiL.JS.BaseLibrary
                 }
         }
 
-        internal JSObject correctThisBind(JSObject thisBind, bool strict, Context internalContext)
+        internal JSObject correctThisBind(JSObject thisBind, bool strict)
         {
             if (thisBind == null)
-                return strict ? undefined : internalContext.Root.thisBind;
+                return strict ? undefined : context.Root.thisBind;
             else if (thisBind.oValue == typeof(New) as object)
             {
                 thisBind.__proto__ = prototype.oValue as JSObject ?? prototype;
                 thisBind.oValue = thisBind;
             }
-            else if (internalContext != null)
+            else if (context != null)
             {
                 if (!strict) // Поправляем this
                 {
                     if (thisBind.valueType > JSObjectType.Undefined && thisBind.valueType < JSObjectType.Object)
                         return thisBind.ToObject();
                     else if (thisBind.valueType <= JSObjectType.Undefined || thisBind.oValue == null)
-                        return internalContext.Root.thisBind;
+                        return context.Root.thisBind;
                 }
                 else if (thisBind.valueType < JSObjectType.Undefined)
                     return undefined;

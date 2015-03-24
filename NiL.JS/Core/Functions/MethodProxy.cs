@@ -119,6 +119,7 @@ namespace NiL.JS.Core.Functions
 
         public MethodProxy()
         {
+            parameters = new ParameterInfo[0];
             implementation = (a, b, c) => null;
         }
 
@@ -243,6 +244,7 @@ namespace NiL.JS.Core.Functions
                             mode = _Mode.F2;
                         }
                     }
+                    raw = true;
                     return; // больше ничего не требуется, будет вызывать через этот путь
                 }
                 #endregion
@@ -295,6 +297,7 @@ namespace NiL.JS.Core.Functions
                     }
                     throw new ArgumentException("Invalid method signature");
                 }
+                raw = true;
             }
             else if (parameters.Length == 0)
             {
@@ -488,11 +491,7 @@ namespace NiL.JS.Core.Functions
                 else
                 {
                     for (var i = 0; i < prms.Length; i++)
-#if NET35
-                            prms[i] = Expression.Convert(Expression.ArrayIndex(argsArray, Expression.Constant(i)), parameters[i].ParameterType);
-#else
                         prms[i] = Expression.Convert(Expression.ArrayAccess(argsArray, Expression.Constant(i)), parameters[i].ParameterType);
-#endif
                     tree = Expression.New(constructorInfo, prms);
                 }
             }
@@ -508,19 +507,40 @@ namespace NiL.JS.Core.Functions
 
         protected internal override NiL.JS.Core.JSObject InternalInvoke(NiL.JS.Core.JSObject self, NiL.JS.Expressions.Expression[] arguments, NiL.JS.Core.Context initiator)
         {
-            if (parameters.Length == 0)
+            if (parameters.Length == 0 || (forceInstance && parameters.Length == 1))
                 return Invoke(self, null);
-            Arguments _arguments = new Core.Arguments()
+            if (raw)
             {
-                caller = initiator.strict && initiator.caller != null && initiator.caller.creator.body.strict ? Function.propertiesDummySM : initiator.caller,
-                length = arguments.Length
-            };
+                Arguments _arguments = new Core.Arguments()
+                {
+                    caller = initiator.strict && initiator.caller != null && initiator.caller.creator.body.strict ? Function.propertiesDummySM : initiator.caller,
+                    length = arguments.Length
+                };
 
-            for (int i = 0; i < arguments.Length; i++)
-                _arguments[i] = NiL.JS.Expressions.Call.prepareArg(initiator, arguments[i], false, arguments.Length > 1);
-            initiator.objectSource = null;
+                for (int i = 0; i < arguments.Length; i++)
+                    _arguments[i] = NiL.JS.Expressions.Call.prepareArg(initiator, arguments[i], false, arguments.Length > 1);
+                initiator.objectSource = null;
 
-            return Invoke(self, _arguments);
+                return Invoke(self, _arguments);
+            }
+            else
+            {
+                // copied from ConvertArgs
+                object[] args = null;
+                int targetCount = parameters.Length;
+                args = new object[targetCount];
+                for (int i = targetCount; i-- > 0; )
+                {
+                    var obj = arguments.Length > i ? NiL.JS.Expressions.Call.prepareArg(initiator, arguments[i], false, arguments.Length > 1) : notExists;
+                    if (obj.IsExist)
+                    {
+                        args[i] = marshal(obj, parameters[i].ParameterType);
+                        if (paramsConverters != null && paramsConverters[i] != null)
+                            args[i] = paramsConverters[i].To(args[i]);
+                    }
+                }
+                return TypeProxing.TypeProxy.Proxy(InvokeImpl(self, args, null));
+            }
         }
 
         [Hidden]
@@ -566,7 +586,7 @@ namespace NiL.JS.Core.Functions
                     default:
                         res = implementation(
                             target,
-                            raw ? null : args ?? ConvertArgs(argsSource),
+                            raw ? null : (args ?? ConvertArgs(argsSource)),
                             argsSource);
                         break;
                 }
@@ -623,7 +643,6 @@ namespace NiL.JS.Core.Functions
             return null;
         }
 
-        [Hidden]
         internal object[] ConvertArgs(Arguments source)
         {
             if (parameters.Length == 0)

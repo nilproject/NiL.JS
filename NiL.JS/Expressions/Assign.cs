@@ -108,7 +108,7 @@ namespace NiL.JS.Expressions
 
         internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
-            baseOptimize(owner, message, opts, statistic);
+            baseOptimize(ref _this, owner, message, opts, statistic);
             var vr = first as VariableReference;
             if (vr != null)
             {

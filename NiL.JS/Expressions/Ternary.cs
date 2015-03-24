@@ -41,7 +41,7 @@ namespace NiL.JS.Expressions
             get { return false; }
         }
 
-        public IList<CodeNode> Threads { get { return new ReadOnlyCollection<CodeNode>(threads); } }
+        public IList<Expression> Threads { get { return new ReadOnlyCollection<Expression>(threads); } }
 
         public Ternary(Expression first, Expression[] threads)
             : base(first, null, false)

@@ -11,16 +11,16 @@ namespace NiL.JS.Statements
 #endif
     public sealed class ReturnStatement : CodeNode
     {
-        private CodeNode body;
+        private Expressions.Expression body;
 
-        public CodeNode Body { get { return body; } }
+        public Expressions.Expression Body { get { return body; } }
 
         internal ReturnStatement()
         {
 
         }
 
-        internal ReturnStatement(CodeNode body)
+        internal ReturnStatement(Expressions.Expression body)
         {
             this.body = body;
         }
@@ -40,7 +40,7 @@ namespace NiL.JS.Statements
                 IsParsed = true,
                 Statement = new ReturnStatement()
                 {
-                    body = body,
+                    body = (Expressions.Expression)body,
                     Position = pos,
                     Length = index - pos
                 }
@@ -83,7 +83,11 @@ namespace NiL.JS.Statements
         internal override void Optimize(ref CodeNode _this, Expressions.FunctionExpression owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             if (body != null)
-                body.Optimize(ref body, owner, message, opts, statistic);
+            {
+                var t = body as CodeNode;
+                body.Optimize(ref t, owner, message, opts, statistic);
+                body = (Expressions.Expression)t;
+            }
         }
 #if !PORTABLE && !NET35
         internal override System.Linq.Expressions.Expression TryCompile(bool selfCompile, bool forAssign, Type expectedType, List<CodeNode> dynamicValues)

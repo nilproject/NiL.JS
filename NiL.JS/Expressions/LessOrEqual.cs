@@ -29,13 +29,13 @@ namespace NiL.JS.Expressions
 
         internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
-            baseOptimize(owner, message, opts, statistic);
-            if (first.ResultType == PredictedType.Number
-                && second.ResultType == PredictedType.Number)
-            {
-                _this = new NumberLessOrEqual(first, second);
-                return;
-            }
+            baseOptimize(ref _this, owner, message, opts, statistic);
+            if (_this == this)
+                if (first.ResultType == PredictedType.Number && second.ResultType == PredictedType.Number)
+                {
+                    _this = new NumberLessOrEqual(first, second);
+                    return;
+                }
         }
 
         public override T Visit<T>(Visitor<T> visitor)
