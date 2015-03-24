@@ -155,9 +155,6 @@
     <Compile Include="..\NiL.JS\Core\Functions\ExternalFunction.cs">
       <Link>Core\Functions\ExternalFunction.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Core\Functions\MacroFunction.cs">
-      <Link>Core\Functions\MacroFunction.cs</Link>
-    </Compile>
     <Compile Include="..\NiL.JS\Core\Functions\MethodProxy.cs">
       <Link>Core\Functions\MethodProxy.cs</Link>
     </Compile>
@@ -283,6 +280,9 @@
     </Compile>
     <Compile Include="..\NiL.JS\Expressions\Assign.cs">
       <Link>Expressions\Assign.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\Expressions\AssignOverReplace.cs">
+      <Link>Expressions\AssignOverReplace.cs</Link>
     </Compile>
     <Compile Include="..\NiL.JS\Expressions\Call.cs">
       <Link>Expressions\Call.cs</Link>
