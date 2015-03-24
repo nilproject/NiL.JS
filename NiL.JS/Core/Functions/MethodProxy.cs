@@ -437,11 +437,7 @@ namespace NiL.JS.Core.Functions
                 else
                 {
                     for (var i = 0; i < prms.Length; i++)
-#if NET35
-                        prms[i] = Expression.Convert(Expression.ArrayIndex(argsArray, Expression.Constant(i)), parameters[i].ParameterType);
-#else
                         prms[i] = Expression.Convert(Expression.ArrayAccess(argsArray, Expression.Constant(i)), parameters[i].ParameterType);
-#endif
                     tree = methodInfo.IsStatic ?
                         Expression.Call(methodInfo, prms)
                         :
@@ -449,13 +445,7 @@ namespace NiL.JS.Core.Functions
                 }
             }
             if (methodInfo.ReturnType == typeof(void))
-#if NET35
-                {
-#error Expression.Block do not supported in .NET 3.5
-                }
-#else
                 tree = Expression.Block(tree, Expression.Constant(null));
-#endif
             try
             {
                 implementation = Expression.Lambda<Func<object, object[], Arguments, object>>(Expression.Convert(tree, typeof(object)), target, argsArray, argsSource).Compile();
@@ -491,7 +481,11 @@ namespace NiL.JS.Core.Functions
                 else
                 {
                     for (var i = 0; i < prms.Length; i++)
+#if NET35
+                        prms[i] = Expression.Convert(Expression.ArrayIndex(argsArray, Expression.Constant(i)), parameters[i].ParameterType);
+#else
                         prms[i] = Expression.Convert(Expression.ArrayAccess(argsArray, Expression.Constant(i)), parameters[i].ParameterType);
+#endif
                     tree = Expression.New(constructorInfo, prms);
                 }
             }
