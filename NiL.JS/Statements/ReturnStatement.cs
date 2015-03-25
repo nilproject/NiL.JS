@@ -73,7 +73,7 @@ namespace NiL.JS.Statements
                 var bat = body as NiL.JS.Expressions.Ternary;
                 var bts = bat.Threads;
                 _this = new IfElseStatement(bat.FirstOperand, new ReturnStatement(bts[0]), new ReturnStatement(bts[1])) { Position = bat.Position, Length = bat.Length };
-                return false;
+                return true;
             }
             else if (body is NiL.JS.Expressions.Call)
                 (body as NiL.JS.Expressions.Call).allowTCO = true;
