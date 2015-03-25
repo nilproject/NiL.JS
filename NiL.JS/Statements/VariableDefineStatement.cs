@@ -53,6 +53,13 @@ namespace NiL.JS.Statements
                 return res;
             }
 
+            internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+            {
+                var v = variable as CodeNode;
+                variable.Optimize(ref v, owner, message, opts, statistic);
+                variable = v as VariableReference;
+            }
+
             public override T Visit<T>(Visitor<T> visitor)
             {
                 return visitor.Visit(variable);
@@ -260,7 +267,7 @@ namespace NiL.JS.Statements
             }
             if (this == _this && actualChilds < initializators.Length)
             {
-                if (actualChilds == 0)
+                if ((opts & Options.SuppressUselessStatementsElimination) == 0 && actualChilds == 0)
                 {
                     _this = null;
                     Eliminated = true;

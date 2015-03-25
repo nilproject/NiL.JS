@@ -47,7 +47,7 @@ namespace NiL.JS.Core
         public CodeNode Inititalizator { get; internal set; }
         public string Name { get { return name; } }
         public int ReferenceCount { get { return references.Count; } }
-        public ReadOnlyCollection<CodeNode> Assignations { get { return assignations.AsReadOnly(); } }
+        public ReadOnlyCollection<CodeNode> Assignations { get { return assignations == null ? null : assignations.AsReadOnly(); } }
 
         public IEnumerable<VariableReference> References
         {

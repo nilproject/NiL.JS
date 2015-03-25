@@ -274,16 +274,57 @@ for (var i = 0; i < 10000000; i++) abs(i * (1 - 2 * (i & 1)));
             Console.WriteLine(sw.Elapsed);
         }
 
+        private static void compileTest()
+        {
+            /*
+             * Я, крче, хз, но оно медленнее, чем без компиляции.
+             * Либо мой зверинец классов реально быстрее,
+             * чем Linq.Expressions, либо я как-то неправильно курю этот Linq.
+             * Пускай, пока, этот метод поживёт. Может, когда-нибудь,
+             * мою голову посетит прозрение и я пойму, что тут не так.
+             * К слову, я пытался сам составлять байткод. 
+             * Разницы в скорости не заметил, поэтому делаю вывод, что дело не в самих линках,
+             * а обработчике байт-кода. Но он, вроде как, должен быть с JIT-ом, 
+             * который обязан выдавать код на порядок быстрее, чем постоянные виртуальные вызовы
+             * и блуждания по AST. Но нет, результат, всё равно, медленнее.
+             */ 
+            var sw = new Stopwatch();
+            var s = new Script(
+@"
+function isum(a, b)
+{    
+    return (((((a | 0) + (b | 0)) | 0) + (((a | 0) + (b | 0)) | 0) | 0) + ((((a | 0) + (b | 0)) | 0) + (((a | 0) + (b | 0)) | 0) | 0)) | 0;
+}
+var isum2 = isum;
+for (var i = 0; i < 10000000; )
+{
+    i++;
+    isum(2,3);
+}
+");
+            Expression<Func<object, object, int>> nativeTest = (a, b) => ((((((int)(a) | 0) + ((int)(b) | 0)) | 0) + ((((int)(a) | 0) + ((int)(b) | 0)) | 0) | 0) + (((((int)(a) | 0) + ((int)(b) | 0)) | 0) + ((((int)(a) | 0) + ((int)(b) | 0)) | 0) | 0)) | 0;
+            var cme = nativeTest.Compile();
+            sw.Start();
+            int sum = 0;
+            for (int i = 0; i < 10000000; i++)
+                sum += cme(2, 3);
+            sw.Stop();
+            Console.WriteLine(sum);
+            Console.WriteLine(sw.Elapsed);
+            sw.Restart();
+            s.TryCompile();
+            sw.Stop();
+            Console.WriteLine(sw.Elapsed);
+            sw.Restart();
+            s.Invoke();
+            sw.Stop();
+            Console.WriteLine(sw.Elapsed);
+        }
+
         private static void testEx()
         {
             var t = new Script(@"
-function sum(x, r)
-{
-    if (x <= 0)
-        return r;
-    return sum(x - 1, r + x);
-}
-console.log(sum(10000, 0));
+for (const i = 0; i < 1; i++) console.log(i);
 ");
             t.Invoke();
         }
@@ -318,7 +359,7 @@ console.log(sum(10000, 0));
             }));
 #endif
 
-            int mode = 4
+            int mode = 0
                    ;
             switch (mode)
             {

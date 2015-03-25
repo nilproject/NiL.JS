@@ -374,3 +374,18 @@ if (jsonprs["Negative one"] !== -1)
 
 if (jsonprs["Negative Pi"] !== -3.14159265358)
     throw "Negative Pi parsed with error"
+
+function sum(x, r)
+{
+    if (x <= 0)
+        return r;
+    return sum(x - 1, r + x);
+}
+sum(10000, 0);
+
+if (Const != undefined)
+    throw "Invalid const predefined value";
+const Const = 0;
+Const++;
+if (Const != 0)
+    throw "Const was rewrite";

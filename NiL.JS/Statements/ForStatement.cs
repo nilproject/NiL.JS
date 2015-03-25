@@ -167,7 +167,9 @@ namespace NiL.JS.Statements
         internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             Parser.Build(ref init, 1, variables, state, message, statistic, opts);
-            if (init is VariableDefineStatement
+            if ((opts & Options.SuppressUselessStatementsElimination) == 0
+                && init is VariableDefineStatement
+                && !(init as VariableDefineStatement).isConst
                 && (init as VariableDefineStatement).initializators.Length == 1)
                 init = (init as VariableDefineStatement).initializators[0];
             Parser.Build(ref condition, 2, variables, state | _BuildState.InLoop, message, statistic, opts);
