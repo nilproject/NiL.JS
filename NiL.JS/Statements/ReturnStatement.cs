@@ -77,6 +77,9 @@ namespace NiL.JS.Statements
             }
             else if (body is NiL.JS.Expressions.Call)
                 (body as NiL.JS.Expressions.Call).allowTCO = true;
+
+            statistic.Returns.Add(body ?? EmptyStatement.Instance);
+
             return false;
         }
 

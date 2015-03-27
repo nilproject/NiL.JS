@@ -59,5 +59,8 @@ namespace NiL.JS.Core
         public bool UseThis;
         public bool ContainsDebugger;
         public bool ContainsTry;
+        public readonly List<Expressions.Expression> Returns = new List<Expressions.Expression>();
+        public bool IsRecursive;
+        public PredictedType ResultType;
     }
 }

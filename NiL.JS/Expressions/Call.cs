@@ -24,6 +24,23 @@ namespace NiL.JS.Expressions
             get { return false; }
         }
 
+        protected internal override PredictedType ResultType
+        {
+            get
+            {
+                
+                if (first is VariableReference)
+                {
+                    var desc = (first as VariableReference).descriptor;
+                    var fe = desc.Inititalizator as FunctionExpression;
+                    if (fe != null)
+                        return fe.statistic.ResultType; // для рекурсивных функций будет Unknown
+                }
+                
+                return PredictedType.Unknown;
+            }
+        }
+
         private Expression[] arguments;
         public Expression[] Arguments { get { return arguments; } }
         internal bool allowTCO;
@@ -139,8 +156,8 @@ namespace NiL.JS.Expressions
             codeContext = state;
 
             for (var i = 0; i < arguments.Length; i++)
-                Parser.Build(ref arguments[i], depth + 1,variables, state, message, statistic, opts);
-            base.Build(ref _this, depth,variables, state, message, statistic, opts);
+                Parser.Build(ref arguments[i], depth + 1, variables, state, message, statistic, opts);
+            base.Build(ref _this, depth, variables, state, message, statistic, opts);
             if (first is GetVariableExpression)
             {
                 var name = first.ToString();

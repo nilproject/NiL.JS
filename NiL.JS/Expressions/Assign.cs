@@ -91,6 +91,12 @@ namespace NiL.JS.Expressions
             {
                 (f.Descriptor.assignations ??
                     (f.Descriptor.assignations = new System.Collections.Generic.List<CodeNode>())).Add(this);
+                if (second is Constant)
+                {
+                    var pt = second.ResultType;
+                    if (f.descriptor.lastPredictedType == PredictedType.Unknown)
+                        f.descriptor.lastPredictedType = pt;
+                }
             }
 #if DEBUG
             if (r)
@@ -115,7 +121,9 @@ namespace NiL.JS.Expressions
                 if (vr.descriptor.isDefined)
                 {
                     var stype = second.ResultType;
-                    if (vr.descriptor.lastPredictedType != stype && vr.descriptor.lastPredictedType != PredictedType.Unknown)
+                    if (vr.descriptor.lastPredictedType == PredictedType.Unknown)
+                        vr.descriptor.lastPredictedType = stype;
+                    else if (vr.descriptor.lastPredictedType != stype)
                     {
                         if (Tools.IsEqual(vr.descriptor.lastPredictedType, stype, PredictedType.Group))
                             vr.descriptor.lastPredictedType = stype & PredictedType.Group;
@@ -140,7 +148,7 @@ namespace NiL.JS.Expressions
                     && !statistic.ContainsEval
                     && !statistic.ContainsWith) // можем упустить присваивание
                 {
-                    if ((owner == null || owner.body.strict || gve.descriptor.owner != owner || !owner.containsArguments) // аргументы это одна сущность с двумя именами
+                    if ((owner == null || owner.body.strict || gve.descriptor.owner != owner || !owner.statistic.ContainsArguments) // аргументы это одна сущность с двумя именами
                         && (codeContext & _BuildState.InLoop) == 0)
                     {
                         bool last = true;

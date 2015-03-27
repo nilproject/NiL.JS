@@ -90,6 +90,14 @@ namespace NiL.JS.Expressions
             get { return false; }
         }
 
+        protected internal override PredictedType ResultType
+        {
+            get
+            {
+                return PredictedType.Object;
+            }
+        }
+
         private ThisSetter thisSetter;
 
         public New(Expression first, Expression[] arguments)

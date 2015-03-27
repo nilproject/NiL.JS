@@ -107,7 +107,7 @@ namespace NiL.JS.Expressions
         {
             dynamicValues.Add(this);
             var res = System.Linq.Expressions.Expression.Call(
-                System.Linq.Expressions.Expression.ArrayIndex(JITHelpers.DynamicValuesParameter, JITHelpers.cnst(dynamicValues.Count - 1)),
+                System.Linq.Expressions.Expression.ArrayAccess(JITHelpers.DynamicValuesParameter, JITHelpers.cnst(dynamicValues.Count - 1)),
                 forAssign ? EvaluateForAssignMethod : EvaluateMethod,
                 JITHelpers.ContextParameter
                 );
@@ -164,7 +164,7 @@ namespace NiL.JS.Expressions
                 && descriptor.isDefined
                 && !statistic.ContainsWith
                 && !statistic.ContainsEval
-                && (descriptor.owner != owner || !owner.containsArguments))
+                && (descriptor.owner != owner || !owner.statistic.ContainsArguments))
             {
                 var assigns = descriptor.assignations;
                 if (assigns != null && assigns.Count > 0)

@@ -377,12 +377,6 @@ namespace NiL.JS.Statements
 
         internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
-            for (var i = lines.Length; i-- > 0; )
-            {
-                var cn = lines[i] as CodeNode;
-                cn.Optimize(ref cn, owner, message, opts, statistic);
-                lines[i] = cn;
-            }
             if (localVariables != null)
                 for (var i = 0; i < localVariables.Length; i++)
                 {
@@ -392,6 +386,12 @@ namespace NiL.JS.Statements
                         cn.Optimize(ref cn, owner, message, opts, statistic);
                     }
                 }
+            for (var i = lines.Length; i-- > 0; )
+            {
+                var cn = lines[i] as CodeNode;
+                cn.Optimize(ref cn, owner, message, opts, statistic);
+                lines[i] = cn;
+            }
         }
 #if !PORTABLE
         internal override System.Linq.Expressions.Expression TryCompile(bool selfCompile, bool forAssign, Type expectedType, List<CodeNode> dynamicValues)
