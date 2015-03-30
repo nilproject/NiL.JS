@@ -134,14 +134,16 @@ namespace NiL.JS.Core
             }
             int hash = computeHash(key);
             int index = hash & (records.Length - 1);
-            for (; index >= 0; index = records[index].next - 1)
+            do
             {
                 if (records[index].hash == hash && string.CompareOrdinal(records[index].key, key) == 0)
                 {
                     value = records[index].value;
                     return true;
                 }
+                index = records[index].next - 1;
             }
+            while (index >= 0);
             value = default(TValue);
             return false;
         }

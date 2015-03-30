@@ -355,8 +355,8 @@ namespace NiL.JS.Statements
                 {
                     for (var i = 0; i < localVariables.Length; i++)
                     {
-                        if (localVariables[i].ReferenceCount <= 1)
-                            message(MessageLevel.Recomendation, new CodeCoordinates(0, EndPosition, 0), "Unused variable \"" + localVariables[i].name + "\"");
+                        if (localVariables[i].ReferenceCount == 1)
+                            message(MessageLevel.Recomendation, new CodeCoordinates(0, localVariables[i].references[0].Position, 0), "Unused variable \"" + localVariables[i].name + "\"");
                     }
                 }
 #if (NET40 || INLINE) && JIT

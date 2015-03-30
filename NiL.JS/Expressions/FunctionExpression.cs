@@ -581,8 +581,8 @@ namespace NiL.JS.Expressions
             {
                 for (var i = arguments.Length; i-- > 0; )
                 {
-                    if (arguments[i].ReferenceCount <= 1)
-                        message(MessageLevel.Recomendation, new CodeCoordinates(0, EndPosition, 0), "Unused variable \"" + arguments[i].name + "\"");
+                    if (arguments[i].ReferenceCount == 1)
+                        message(MessageLevel.Recomendation, new CodeCoordinates(0, arguments[i].references[0].Position, 0), "Unused variable \"" + arguments[i].name + "\"");
                     else
                         break;
                 }

@@ -287,7 +287,7 @@ for (var i = 0; i < 10000000; i++) abs(i * (1 - 2 * (i & 1)));
              * а обработчике байт-кода. Но он, вроде как, должен быть с JIT-ом, 
              * который обязан выдавать код на порядок быстрее, чем постоянные виртуальные вызовы
              * и блуждания по AST. Но нет, результат, всё равно, медленнее.
-             */ 
+             */
             var sw = new Stopwatch();
             var s = new Script(
 @"
@@ -311,10 +311,12 @@ for (var i = 0; i < 10000000; )
             sw.Stop();
             Console.WriteLine(sum);
             Console.WriteLine(sw.Elapsed);
+
             sw.Restart();
-            s.TryCompile();
+            //s.TryCompile();
             sw.Stop();
             Console.WriteLine(sw.Elapsed);
+
             sw.Restart();
             s.Invoke();
             sw.Stop();
@@ -324,7 +326,20 @@ for (var i = 0; i < 10000000; )
         private static void testEx()
         {
             var t = new Script(@"
-for (const i = 0; i < 1; i++) console.log(i);
+var random = (function() {
+  var seed = 49734321;
+  return function() {
+    // Robert Jenkins' 32 bit integer hash function.
+    seed = ((seed + 0x7ed55d16) + (seed << 12))  & 0xffffffff;
+    seed = ((seed ^ 0xc761c23c) ^ (seed >>> 19)) & 0xffffffff;
+    seed = ((seed + 0x165667b1) + (seed << 5))   & 0xffffffff;
+    seed = ((seed + 0xd3a2646c) ^ (seed << 9))   & 0xffffffff;
+    seed = ((seed + 0xfd7046c5) + (seed << 3))   & 0xffffffff;
+    seed = ((seed ^ 0xb55a4f09) ^ (seed >>> 16)) & 0xffffffff;
+    return (seed & 0xfffffff) / 0x10000000;
+  };
+})();
+random();
 ");
             t.Invoke();
         }
@@ -359,7 +374,7 @@ for (const i = 0; i < 1; i++) console.log(i);
             }));
 #endif
 
-            int mode = 0
+            int mode = 14
                    ;
             switch (mode)
             {
@@ -446,7 +461,7 @@ for (const i = 0; i < 1; i++) console.log(i);
                     }
                 case 4:
                     {
-                        benchmark();
+                        compileTest();
                         break;
                     }
                 case 5:
