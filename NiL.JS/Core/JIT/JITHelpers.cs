@@ -16,8 +16,19 @@ namespace NiL.JS.Core.JIT
         public static readonly Expression UndefinedConstant = Expression.Field(null, typeof(JSObject).GetField("undefined", BindingFlags.Static | BindingFlags.NonPublic));
         public static readonly Expression NotExistsConstant = Expression.Field(null, typeof(JSObject).GetField("notExists", BindingFlags.Static | BindingFlags.NonPublic));
 
-        public static readonly MethodInfo JSObjectToBooleanMethod = typeof(JSObject).GetMethod("op_Explicit");
+        public static readonly MethodInfo JSObjectToBooleanMethod = null;
         public static readonly MethodInfo JSObjectToInt32Method = typeof(Tools).GetMethod("JSObjectToInt32", BindingFlags.Public | BindingFlags.Static, null, new[] { typeof(JSObject) }, null);
+
+        static JITHelpers()
+        {
+            var methods = typeof(JSObject).GetMethods(BindingFlags.Static | BindingFlags.Public);
+            for (var i = 0; i < methods.Length; i++)
+                if (methods[i].Name == "op_Explicite" && methods[i].ReturnType == typeof(bool))
+                {
+                    JSObjectToBooleanMethod = methods[i];
+                    break;
+                }
+        }
 
         internal static Expression cnst(object obj)
         {

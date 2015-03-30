@@ -16,6 +16,14 @@ namespace NiL.JS.Statements
             get { return false; }
         }
 
+        protected internal override PredictedType ResultType
+        {
+            get
+            {
+                return PredictedType.Undefined;
+            }
+        }
+
         public EmptyStatement()
             : base(null, null, false)
         {

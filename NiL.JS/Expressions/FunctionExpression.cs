@@ -233,13 +233,11 @@ namespace NiL.JS.Expressions
         }
 
         internal VariableReference reference;
+        #region Runtime
         internal int parametersStored;
         internal int recursiveDepth;
-        internal bool containsFunctions;
-        internal bool containsEval;
-        internal bool containsArguments;
-        internal bool isRecursive;
-        internal bool containsWith;
+        #endregion
+        internal FunctionStatistics statistic;
         internal VariableDescriptor[] arguments;
         internal CodeBlock body;
         internal string name;
@@ -431,7 +429,6 @@ namespace NiL.JS.Expressions
                 type = mode,
                 Position = index,
                 Length = i - index,
-                containsWith = state.containsWith.Peek() || (needSwitchCWith && state.containsWith.Pop()),
 #if DEBUG
                 trace = body.directives != null ? body.directives.Contains("debug trace") : false
 #endif
@@ -625,38 +622,60 @@ namespace NiL.JS.Expressions
                     }
                 }
             }
-            checkUsings(stat);
-            if (stats != null)
-                stats.ContainsEval |= stat.ContainsEval;
-            if (body.variables != null)
-                for (var i = 0; i < body.variables.Length; i++)
-                    body.variables[i].captured |= containsEval;
+            statistic = stat;
+            checkUsings();
             return false;
         }
 
         internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             var bd = body as CodeNode;
-            body.Optimize(ref bd, this, message, opts, statistic);
+            body.Optimize(ref bd, this, message, opts, this.statistic);
+            if (this.statistic.Returns.Count > 0)
+            {
+                this.statistic.ResultType = this.statistic.Returns[0].ResultType;
+                for (var i = 1; i < this.statistic.Returns.Count; i++)
+                {
+                    if (this.statistic.ResultType != this.statistic.Returns[i].ResultType)
+                    {
+                        this.statistic.ResultType = PredictedType.Ambiguous;
+                        break;
+                    }
+                }
+            }
+            else
+                this.statistic.ResultType = PredictedType.Undefined;
+            if (statistic != null)
+            {
+                statistic.ContainsDebugger |= this.statistic.ContainsDebugger;
+                statistic.ContainsEval |= this.statistic.ContainsEval;
+                statistic.ContainsInnerFunction |= true;
+                statistic.ContainsTry |= this.statistic.ContainsTry;
+                statistic.ContainsWith |= this.statistic.ContainsWith;
+                statistic.UseCall |= this.statistic.UseCall;
+                statistic.UseGetMember |= this.statistic.UseGetMember;
+                statistic.UseThis |= this.statistic.UseThis;
+            }
         }
 
-        private void checkUsings(FunctionStatistics stat)
+        private void checkUsings()
         {
             if (body == null
                 || body.lines == null
                 || body.lines.Length == 0)
                 return;
-            containsFunctions = stat.ContainsInnerFunction;
+            var containsFunctions = statistic.ContainsInnerFunction;
             if (!containsFunctions)
             {
                 for (var i = 0; !containsFunctions && i < body.localVariables.Length; i++)
                     containsFunctions |= body.localVariables[i].Inititalizator != null;
-                stat.ContainsInnerFunction = containsFunctions;
+                statistic.ContainsInnerFunction = containsFunctions;
             }
-            for (var i = 0; i < body.variables.Length; i++)
-                isRecursive |= body.variables[i].name == name;
-            containsEval = stat.ContainsEval;
-            containsArguments = stat.ContainsArguments;
+            for (var i = 0; !statistic.IsRecursive && i < body.variables.Length; i++)
+                statistic.IsRecursive |= body.variables[i].name == name;
+            if (body.variables != null)
+                for (var i = 0; i < body.variables.Length; i++)
+                    body.variables[i].captured |= statistic.ContainsEval;
         }
 #if !PORTABLE
         internal override System.Linq.Expressions.Expression TryCompile(bool selfCompile, bool forAssign, Type expectedType, List<CodeNode> dynamicValues)

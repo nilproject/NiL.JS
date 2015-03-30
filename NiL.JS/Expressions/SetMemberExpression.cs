@@ -87,6 +87,14 @@ namespace NiL.JS.Expressions
             return false;
         }
 
+        internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        {
+            var cn = value as CodeNode;
+            value.Optimize(ref cn, owner, message, opts, statistic);
+            value = cn as Expression;
+            base.Optimize(ref _this, owner, message, opts, statistic);
+        }
+
         public override T Visit<T>(Visitor<T> visitor)
         {
             return visitor.Visit(this);
