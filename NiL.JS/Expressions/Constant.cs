@@ -17,6 +17,8 @@ namespace NiL.JS.Expressions
         {
             get
             {
+                if (value == null)
+                    return PredictedType.Unknown;
                 switch (value.valueType)
                 {
                     case JSObjectType.Undefined:
@@ -62,7 +64,7 @@ namespace NiL.JS.Expressions
 
         protected override CodeNode[] getChildsImpl()
         {
-            if (value.Value is CodeNode[])
+            if (value != null && value.Value is CodeNode[])
                 return value.Value as CodeNode[];
             return null;
         }
@@ -91,6 +93,8 @@ namespace NiL.JS.Expressions
 
         public override string ToString()
         {
+            if (value == null)
+                return "";
             if (value.valueType == JSObjectType.String)
                 return "\"" + value.oValue + "\"";
             if (value.oValue is CodeNode[])

@@ -194,50 +194,58 @@ namespace NiL.JS.Core.TypeProxing
             {
                 hostedType = type;
                 dynamicProxies[type] = this;
-                valueType = JSObjectType.Object;
-                oValue = this;
-                var pa = type.GetCustomAttributes(typeof(PrototypeAttribute), false);
-                if (pa.Length != 0 && (pa[0] as PrototypeAttribute).PrototypeType != hostedType)
-                    __prototype = GetPrototype((pa[0] as PrototypeAttribute).PrototypeType);
+                try
+                {
+                    valueType = JSObjectType.Object;
+                    oValue = this;
+                    var pa = type.GetCustomAttributes(typeof(PrototypeAttribute), false);
+                    if (pa.Length != 0 && (pa[0] as PrototypeAttribute).PrototypeType != hostedType)
+                        __prototype = GetPrototype((pa[0] as PrototypeAttribute).PrototypeType);
 #if PORTABLE
-                ictor = hostedType.GetTypeInfo().DeclaredConstructors.FirstOrDefault(x => x.GetParameters().Length == 0 && !x.IsStatic);
+                    ictor = hostedType.GetTypeInfo().DeclaredConstructors.FirstOrDefault(x => x.GetParameters().Length == 0 && !x.IsStatic);
 #else
-                ictor = hostedType.GetConstructor(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy, null, System.Type.EmptyTypes, null);
+                    ictor = hostedType.GetConstructor(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy, null, System.Type.EmptyTypes, null);
 #endif
 
-                attributes |= JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.SystemObject;
-                if (hostedType.IsDefined(typeof(ImmutablePrototypeAttribute), false))
-                    attributes |= JSObjectAttributesInternal.Immutable;
-                var staticProxy = new TypeProxy()
-                {
-                    hostedType = type,
-                    InstanceMode = false
-                };
-                InstanceMode = true;
+                    attributes |= JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.SystemObject;
+                    if (hostedType.IsDefined(typeof(ImmutablePrototypeAttribute), false))
+                        attributes |= JSObjectAttributesInternal.Immutable;
+                    var staticProxy = new TypeProxy()
+                    {
+                        hostedType = type,
+                        InstanceMode = false
+                    };
+                    InstanceMode = true;
 
-                if (typeof(JSObject).IsAssignableFrom(hostedType))
-                    _prototypeInstance = prototypeInstance;
+                    if (typeof(JSObject).IsAssignableFrom(hostedType))
+                        _prototypeInstance = prototypeInstance;
 
 #if PORTABLE
-                if (hostedType.GetTypeInfo().IsAbstract)
+                    if (hostedType.GetTypeInfo().IsAbstract)
 #else
-                if (hostedType.IsAbstract)
+                    if (hostedType.IsAbstract)
 #endif
-                {
-                    staticProxies[type] = staticProxy;
-                }
-                else
-                {
-                    Function ctor = null;
-                    if (type == typeof(JSObject))
-                        ctor = new ObjectConstructor(staticProxy);
+                    {
+                        staticProxies[type] = staticProxy;
+                    }
                     else
-                        ctor = new ProxyConstructor(staticProxy);
-                    ctor.attributes = attributes;
-                    attributes |= JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.ReadOnly;
-                    staticProxies[type] = ctor;
-                    if (hostedType != typeof(ProxyConstructor))
-                        fields["constructor"] = ctor;
+                    {
+                        Function ctor = null;
+                        if (type == typeof(JSObject))
+                            ctor = new ObjectConstructor(staticProxy);
+                        else
+                            ctor = new ProxyConstructor(staticProxy);
+                        ctor.attributes = attributes;
+                        attributes |= JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.ReadOnly;
+                        staticProxies[type] = ctor;
+                        if (hostedType != typeof(ProxyConstructor))
+                            fields["constructor"] = ctor;
+                    }
+                }
+                catch
+                {
+                    dynamicProxies.Remove(type);
+                    throw;
                 }
             }
         }
@@ -542,18 +550,16 @@ pinfo.CanRead && pinfo.GetGetMethod(false) != null ? new MethodProxy(pinfo.GetGe
                             };
                             break;
                         }
-#if PORTABLE
                     case MemberTypes.TypeInfo:
+#if PORTABLE
                         {
                             r = GetConstructor((m[0] as TypeInfo).AsType());
                             break;
                         }
-                    default:
-                        throw new NotImplementedException("Convertion from " + m[0].get_MemberType() + " not implemented");
 #else
                     case MemberTypes.NestedType:
                         {
-                            r = GetConstructor(m[0] as Type);
+                            r = GetConstructor((Type)m[0]);
                             break;
                         }
                     default:

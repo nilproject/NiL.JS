@@ -281,7 +281,7 @@ namespace NiL.JS.Core.Functions
         }
 
         [Hidden]
-        public override string ToString()
+        public override string ToString(bool headerOnly)
         {
             return "function " + proxy.hostedType.Name + "() { [native code] }";
         }
