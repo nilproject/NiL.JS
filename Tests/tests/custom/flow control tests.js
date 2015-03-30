@@ -316,8 +316,8 @@ if (__func(3) != 6)
     a;
     a = 1;
     for (var a = false of {});
-    if (a !== false)
-        throw "for..of with default value";
+if (a !== false)
+    throw "for..of with default value";
 })();
 
 for ( a = 1 ; false;);
@@ -389,3 +389,11 @@ const Const = 0;
 Const++;
 if (Const != 0)
     throw "Const was rewrite";
+
+if (Object);
+
+if (Object);else;
+
+while(!Object);
+
+do;while(!Object);

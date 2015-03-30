@@ -62,7 +62,10 @@ namespace NiL.JS.Statements
         internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             condition.Optimize(ref condition, owner, message, opts, statistic);
-            body.Optimize(ref body, owner, message, opts, statistic);
+            if (body != null)
+                body.Optimize(ref body, owner, message, opts, statistic);
+            else
+                _this = condition;
         }
     }
 
