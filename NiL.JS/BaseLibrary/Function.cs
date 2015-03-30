@@ -1122,7 +1122,13 @@ namespace NiL.JS.BaseLibrary
         }
 
         [Hidden]
-        public override string ToString()
+        public override sealed string ToString()
+        {
+            return ToString(false);
+        }
+
+        [Hidden]
+        public virtual string ToString(bool headerOnly)
         {
             StringBuilder res = new StringBuilder();
             switch (creator.type)
@@ -1144,7 +1150,9 @@ namespace NiL.JS.BaseLibrary
             if (creator != null && creator.arguments != null)
                 for (int i = 0; i < creator.arguments.Length; )
                     res.Append(creator.arguments[i].Name).Append(++i < creator.arguments.Length ? "," : "");
-            res.Append(") ").Append(creator != creatorDummy ? creator.body as object : "{ [native code] }");
+            res.Append(")");
+            if (!headerOnly)
+                res.Append(' ').Append(creator != creatorDummy ? creator.body as object : "{ [native code] }");
             return res.ToString();
         }
 

@@ -39,7 +39,7 @@ namespace NiL.JS.Core.Functions
                 yield return pe.Current;
         }
 
-        public override string ToString()
+        public override string ToString(bool headerOnly)
         {
             return "function Object() { [native code] }";
         }

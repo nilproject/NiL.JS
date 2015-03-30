@@ -312,7 +312,7 @@ for (var i = 0; i < 10000000; )
             Console.WriteLine(sum);
             Console.WriteLine(sw.Elapsed);
             sw.Restart();
-            s.TryCompile();
+            //s.TryCompile();
             sw.Stop();
             Console.WriteLine(sw.Elapsed);
             sw.Restart();
