@@ -10,16 +10,16 @@ namespace NiL.JS.Statements
 #endif
     public sealed class IfStatement : CodeNode
     {
-        private CodeNode condition;
+        private Expression condition;
         private CodeNode body;
 
         public CodeNode Body { get { return body; } }
         public CodeNode Condition { get { return condition; } }
 
-        internal IfStatement(IfElseStatement parent)
+        internal IfStatement(Expression condition, CodeNode body)
         {
-            condition = parent.Condition;
-            body = parent.Body;
+            this.condition = condition;
+            this.body = body;
         }
 
         internal override JSObject Evaluate(Context context)
@@ -61,7 +61,9 @@ namespace NiL.JS.Statements
 
         internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
-            condition.Optimize(ref condition, owner, message, opts, statistic);
+            var cc = condition as CodeNode;
+            condition.Optimize(ref cc, owner, message, opts, statistic);
+            condition = (Expression)cc;
             if (body != null)
                 body.Optimize(ref body, owner, message, opts, statistic);
             else
@@ -74,20 +76,20 @@ namespace NiL.JS.Statements
 #endif
     public sealed class IfElseStatement : CodeNode
     {
-        private CodeNode condition;
+        private Expression condition;
         private CodeNode body;
         private CodeNode elseBody;
 
         public CodeNode Body { get { return body; } }
         public CodeNode ElseBody { get { return elseBody; } }
-        public CodeNode Condition { get { return condition; } }
+        public Expression Condition { get { return condition; } }
 
         private IfElseStatement()
         {
 
         }
 
-        public IfElseStatement(CodeNode condition, CodeNode body, CodeNode elseBody)
+        public IfElseStatement(Expression condition, CodeNode body, CodeNode elseBody)
         {
             this.condition = condition;
             this.body = body;
@@ -100,7 +102,7 @@ namespace NiL.JS.Statements
             if (!Parser.Validate(state.Code, "if (", ref i) && !Parser.Validate(state.Code, "if(", ref i))
                 return new ParseResult();
             while (char.IsWhiteSpace(state.Code[i])) i++;
-            CodeNode condition = ExpressionTree.Parse(state, ref i).Statement;
+            var condition = (Expression)ExpressionTree.Parse(state, ref i).Statement;
             while (char.IsWhiteSpace(state.Code[i])) i++;
             if (state.Code[i] != ')')
                 throw new ArgumentException("code (" + i + ")");
@@ -225,13 +227,15 @@ namespace NiL.JS.Statements
 #endif
             }
             if (_this == this && elseBody == null)
-                _this = new IfStatement(this);
+                _this = new IfStatement(this.condition, this.body) { Position = Position, Length = Length };
             return false;
         }
 
         internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
-            condition.Optimize(ref condition, owner, message, opts, statistic);
+            var cc = condition as CodeNode;
+            condition.Optimize(ref cc, owner, message, opts, statistic);
+            condition = (Expression)cc;
             if (body != null)
                 body.Optimize(ref body, owner, message, opts, statistic);
             if (elseBody != null)

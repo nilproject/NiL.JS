@@ -171,9 +171,11 @@ namespace NiL.JS.Core.Functions
                     && !methodInfo.IsStatic
                     && (parameters.Length == 0 || (parameters.Length == 1 && parameters[0].ParameterType == typeof(Arguments)))
 #if PORTABLE
- && !methodInfo.ReturnType.GetTypeInfo().IsValueType)
+ && !methodInfo.ReturnType.GetTypeInfo().IsValueType
+ && !methodInfo.DeclaringType.GetTypeInfo().IsValueType)
 #else
- && !methodInfo.ReturnType.IsValueType)
+ && !methodInfo.ReturnType.IsValueType
+ && !methodInfo.DeclaringType.IsValueType)
 #endif
                 {
                     var t = methodBase.GetCustomAttributes(typeof(AllowUnsafeCallAttribute), false).ToArray();
@@ -276,7 +278,14 @@ namespace NiL.JS.Core.Functions
             var generator = impl.GetILGenerator();
 
             if (!methodInfo.IsStatic)
+            {
                 generator.Emit(OpCodes.Ldarg_0);
+                if (methodBase.DeclaringType.IsValueType)
+                {
+                    generator.Emit(OpCodes.Ldc_I4, IntPtr.Size);
+                    generator.Emit(OpCodes.Add);
+                }
+            }
 
             if (forceInstance)
             {
@@ -374,7 +383,7 @@ namespace NiL.JS.Core.Functions
                     }
                 }
             }
-            if (methodInfo.IsStatic)
+            if (methodInfo.IsStatic || methodBase.DeclaringType.IsValueType)
                 generator.Emit(OpCodes.Call, methodInfo);
             else
                 generator.Emit(OpCodes.Callvirt, methodInfo);
