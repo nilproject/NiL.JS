@@ -411,50 +411,7 @@ namespace NiL.JS.Core.TypeProxing
                 var cache = new MethodProxy[m.Count];
                 for (int i = 0; i < m.Count; i++)
                     cache[i] = new MethodProxy(m[i] as MethodBase);
-                r = new ExternalFunction((thisBind, args) =>
-                {
-                    int l = args == null ? 0 : args.length;
-                    object[] cargs = null;
-
-                    for (var i = 0; i < m.Count; i++)
-                    {
-                        if (cache[i].Parameters.Length == 1 && cache[i].Parameters[0].ParameterType == typeof(Arguments))
-                            return TypeProxy.Proxy(cache[i].InvokeImpl(thisBind, null, args));
-                        if (cache[i].Parameters.Length == l)
-                        {
-                            if (l != 0)
-                            {
-                                cargs = cache[i].ConvertArgs(args);
-                                for (var j = cargs.Length; j-- > 0; )
-                                {
-                                    var prmType = cache[i].Parameters[j].ParameterType;
-                                    if ((cargs[j] == null ?
-#if PORTABLE
- prmType.GetTypeInfo().IsValueType
-#else
- prmType.IsValueType
-#endif
- :
-                                            cargs[j].GetType() == typeof(int) ?
-                                                   prmType != typeof(int)
-                                                && prmType != typeof(int)
-                                                && prmType != typeof(double)
-                                                && prmType != typeof(float)
-                                            :
-                                                !prmType.IsAssignableFrom(cargs[j].GetType())))
-                                    {
-                                        cargs = null;
-                                        break;
-                                    }
-                                }
-                                if (cargs == null)
-                                    continue;
-                            }
-                            return TypeProxy.Proxy(cache[i].InvokeImpl(thisBind, cargs, args));
-                        }
-                    }
-                    throw new JSException(new TypeError("Invalid parameters for function " + m[0].Name));
-                });
+                r = new MethodGroup(cache);
             }
             else
             {

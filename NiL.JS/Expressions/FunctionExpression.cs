@@ -542,6 +542,12 @@ namespace NiL.JS.Expressions
 
             var bodyCode = body as CodeNode;
             var nvars = new Dictionary<string, VariableDescriptor>();
+            for (var i = 0; i < arguments.Length; i++)
+            {
+                nvars[arguments[i].name] = arguments[i];
+                arguments[i].owner = this;
+                arguments[i].isDefined = true;
+            }
             var stat = new FunctionStatistics();
             bodyCode.Build(ref bodyCode, 0, nvars, state & ~_BuildState.Conditional, message, stat, opts);
             if (type == FunctionType.Function && !string.IsNullOrEmpty(name))
@@ -565,6 +571,7 @@ namespace NiL.JS.Expressions
                         }
                     }
             }
+            /*
             for (var i = 0; i < arguments.Length; i++)
             {
                 VariableDescriptor desc = null;
@@ -577,6 +584,7 @@ namespace NiL.JS.Expressions
                     arguments[i].owner = this;
                 }
             }
+            */
             if (message != null)
             {
                 for (var i = arguments.Length; i-- > 0; )

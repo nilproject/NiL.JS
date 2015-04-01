@@ -67,6 +67,8 @@ namespace NiL.JS.Expressions
                 var res = Descriptor.Get(context, false, functionDepth);
                 if (res.valueType < JSObjectType.Undefined && (!suspendThrow || forceThrow))
                     throw new JSException((new NiL.JS.BaseLibrary.ReferenceError("Variable \"" + variableName + "\" is not defined.")));
+                if ((res.attributes & JSObjectAttributesInternal.Argument) != 0)
+                    context.caller.buildArgumentsObject();
                 return res;
             }
             return descriptor.Get(context, true, functionDepth);

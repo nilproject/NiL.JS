@@ -14,11 +14,9 @@ namespace NiL.JS.Core.Functions
     [Prototype(typeof(Function))]
     internal class ProxyConstructor : Function
     {
-        [Hidden]
         private static readonly object[] _objectA = new object[0];
-        [Hidden]
+        private readonly int passCount;
         internal readonly TypeProxy proxy;
-        [Hidden]
         private MethodProxy[] constructors;
 
         [Hidden]
@@ -63,11 +61,18 @@ namespace NiL.JS.Core.Functions
         [Hidden]
         public ProxyConstructor(TypeProxy typeProxy)
         {
+            fields = typeProxy.fields;
+            proxy = typeProxy;
+#if PORTABLE
+            if (proxy.hostedType.GetTypeInfo().ContainsGenericParameters)
+                throw new JSException((new TypeError(proxy.hostedType.Name + " can't be created because it's generic type.")));
+#else
+            if (proxy.hostedType.ContainsGenericParameters)
+                throw new JSException((new TypeError(proxy.hostedType.Name + " can't be created because it's generic type.")));
+#endif
             if (_length == null)
                 _length = new Number(0) { attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum };
 
-            fields = typeProxy.fields;
-            proxy = typeProxy;
 #if PORTABLE
             var ctors = typeProxy.hostedType.GetTypeInfo().DeclaredConstructors.ToArray();
             List<MethodProxy> ctorsL = new List<MethodProxy>(ctors.Length + (typeProxy.hostedType.GetTypeInfo().IsValueType ? 1 : 0));
@@ -83,10 +88,7 @@ namespace NiL.JS.Core.Functions
                     length.iValue = System.Math.Max(ctorsL[ctorsL.Count - 1]._length.iValue, _length.iValue);
                 }
             }
-#if PORTABLE
-            if (typeProxy.hostedType.GetTypeInfo().IsValueType)
-                throw new ArgumentException("ValueTypes do not supported in portable version");
-#else
+#if !PORTABLE
             if (typeProxy.hostedType.IsValueType)
                 ctorsL.Add(new MethodProxy(new StructureDefaultConstructorInfo(proxy.hostedType)));
 #endif
@@ -94,6 +96,12 @@ namespace NiL.JS.Core.Functions
                 y.Parameters.Length == 1 && y.Parameters[0].ParameterType == typeof(Arguments) ? -1 :
                 x.Parameters.Length - y.Parameters.Length);
             constructors = ctorsL.ToArray();
+
+            passCount = 2;
+            // На втором проходе будет выбираться первый метод, 
+            // для которого получится сгенерировать параметры по-умолчанию.
+            // Если нужен более строгий подбор, то количество проходов нужно
+            // уменьшить до одного
         }
 
         [Hidden]
@@ -123,13 +131,6 @@ namespace NiL.JS.Core.Functions
         [Hidden]
         public override JSObject Invoke(JSObject thisOverride, Arguments argsObj)
         {
-#if PORTABLE
-            if (proxy.hostedType.GetTypeInfo().ContainsGenericParameters)
-                throw new JSException((new TypeError(proxy.hostedType.Name + " can't be created because it's generic type.")));
-#else
-            if (proxy.hostedType.ContainsGenericParameters)
-                throw new JSException((new TypeError(proxy.hostedType.Name + " can't be created because it's generic type.")));
-#endif
             bool bynew = false;
             if (thisOverride != null)
                 bynew = thisOverride.oValue == typeof(Expressions.New) as object;
@@ -170,11 +171,21 @@ namespace NiL.JS.Core.Functions
                 }
                 else
                 {
-                    object[] args = null;
-                    MethodProxy constructor = findConstructor(argsObj, ref args);
-                    if (constructor == null)
-                        throw new JSException((new TypeError(proxy.hostedType.Name + " can't be created.")));
-                    obj = constructor.InvokeImpl(null, args, argsObj == null ? constructor.parameters.Length != 0 ? new Arguments() : null : argsObj);
+                    if ((argsObj == null || argsObj.length == 0)
+#if PORTABLE
+ && proxy.hostedType.GetTypeInfo().IsValueType)
+#else
+ && proxy.hostedType.IsValueType)
+#endif
+                        obj = Activator.CreateInstance(proxy.hostedType);
+                    else
+                    {
+                        object[] args = null;
+                        MethodProxy constructor = findConstructor(argsObj, ref args);
+                        if (constructor == null)
+                            throw new JSException((new TypeError(proxy.hostedType.Name + " can't be created.")));
+                        obj = constructor.InvokeImpl(null, args, argsObj == null ? constructor.parameters.Length != 0 ? new Arguments() : null : argsObj);
+                    }
                 }
                 JSObject res = null;
                 if (bynew)
@@ -237,30 +248,32 @@ namespace NiL.JS.Core.Functions
         {
             args = null;
             var len = argObj == null ? 0 : argObj.length;
-            for (int i = 0; i < constructors.Length; i++)
-            {
-                if (constructors[i].parameters.Length == len
-                    || (constructors[i].parameters.Length == 1 && (constructors[i].parameters[0].ParameterType == typeof(Arguments))))
+            for (var pass = 0; pass < passCount; pass++)
+                for (int i = 0; i < constructors.Length; i++)
                 {
-                    if (len == 0)
-                        args = _objectA;
-                    else if (constructors[i].parameters.Length != 1 || (constructors[i].parameters[0].ParameterType != typeof(Arguments)))
+                    if (constructors[i].parameters.Length == 1 && (constructors[i].parameters[0].ParameterType == typeof(Arguments)))
+                        return constructors[i];
+                    if (pass == 1 || constructors[i].parameters.Length == len)
                     {
-                        args = constructors[i].ConvertArgs(argObj);
-                        for (var j = args.Length; j-- > 0; )
+                        if (len == 0)
+                            args = _objectA;
+                        else
                         {
-                            if (!constructors[i].parameters[j].ParameterType.IsAssignableFrom(args[j] != null ? args[j].GetType() : typeof(object)))
+                            args = constructors[i].ConvertArgs(argObj, pass == 1);
+                            for (var j = args.Length; j-- > 0; )
                             {
-                                j = 0;
-                                args = null;
+                                if (!constructors[i].parameters[j].ParameterType.IsAssignableFrom(args[j] != null ? args[j].GetType() : typeof(object)))
+                                {
+                                    j = 0;
+                                    args = null;
+                                }
                             }
+                            if (args == null)
+                                continue;
                         }
-                        if (args == null)
-                            continue;
+                        return constructors[i];
                     }
-                    return constructors[i];
                 }
-            }
             return null;
         }
 

@@ -670,6 +670,8 @@ namespace NiL.JS.BaseLibrary
             {
                 if (creator.body.strict)
                     throw new JSException(new TypeError("Property arguments not allowed in strict mode."));
+                if (_arguments == null && creator.recursiveDepth > 0)
+                    buildArgumentsObject();
                 return _arguments;
             }
             [Hidden]
@@ -809,7 +811,23 @@ namespace NiL.JS.BaseLibrary
                         arguments[i].Evaluate(initiator);
                     return result;
                 }
+
+                // быстро выполнить не получилось. 
+                // Попробуем чуточку медленее
+                if (creator != null
+                    && creator.statistic != null
+                    && !creator.statistic.ContainsArguments
+                    && !creator.statistic.ContainsEval
+                    && !creator.statistic.ContainsWith
+                    && creator.arguments.Length == arguments.Length // из-за необходимости иметь возможность построить аргументы, если они потребуются
+                    && arguments.Length < 9
+                    )
+                {
+                    return fastInvoke(self, arguments, initiator);
+                }
             }
+
+            // Совсем медленно. Плохая функция попалась
             Arguments _arguments = new Core.Arguments()
             {
                 caller = initiator.strict && initiator.caller != null && initiator.caller.creator.body.strict ? Function.propertiesDummySM : initiator.caller,
@@ -821,6 +839,47 @@ namespace NiL.JS.BaseLibrary
             initiator.objectSource = null;
 
             return Invoke(self, _arguments);
+        }
+
+        private JSObject fastInvoke(JSObject self, Expression[] arguments, Context initiator)
+        {
+            var body = creator.body;
+            var oldcaller = _caller;
+            var oldArgs = this._arguments;
+            self = correctThisBind(self, body.strict);
+            if (creator.recursiveDepth > creator.parametersStored) // рекурсивный вызов.
+            {
+                storeParameters();
+                creator.parametersStored++;
+            }
+            var internalContext = new Context(context, false, this);
+            internalContext.thisBind = self;
+            initParametersFast(arguments, initiator, internalContext);
+            this._arguments = null;
+            creator.recursiveDepth++;
+            if (body.strict || (initiator.strict && initiator.caller != null && initiator.caller.creator.body.strict))
+                _caller = propertiesDummySM;
+            else
+                _caller = initiator.caller;
+            if (this.creator.reference.descriptor != null
+                && creator.reference.descriptor.cacheRes == null)
+            {
+                creator.reference.descriptor.cacheContext = internalContext.parent;
+                creator.reference.descriptor.cacheRes = this;
+            }
+            internalContext.strict |= body.strict;
+            internalContext.variables = body.variables;
+            internalContext.Activate();
+            try
+            {
+                return evaluate(internalContext);
+            }
+            finally
+            {
+                exit(internalContext);
+                _caller = oldcaller;
+                this._arguments = oldArgs;
+            }
         }
 
         [Hidden]
@@ -839,6 +898,7 @@ namespace NiL.JS.BaseLibrary
                 return notExists;
             }
             var oldargs = _arguments;
+            var oldcaller = _caller;
             var ceocw = creator.statistic.ContainsEval || creator.statistic.ContainsWith;
             if (creator.recursiveDepth > creator.parametersStored) // рекурсивный вызов.
             {
@@ -847,11 +907,10 @@ namespace NiL.JS.BaseLibrary
                 creator.parametersStored++;
             }
             creator.recursiveDepth++;
-            var oldcaller = _caller;
             var internalContext = new Context(context, ceocw, this);
+            internalContext.thisBind = thisBind;
             try
             {
-                internalContext.thisBind = thisBind;
                 if (args == null)
                 {
                     var cc = Context.CurrentContext;
@@ -875,7 +934,8 @@ namespace NiL.JS.BaseLibrary
                     args.callee = this;
                     _caller = args.caller;
                 }
-                if (this.creator.reference.descriptor != null && creator.reference.descriptor.cacheRes == null)
+                if (this.creator.reference.descriptor != null
+                    && creator.reference.descriptor.cacheRes == null)
                 {
                     creator.reference.descriptor.cacheContext = internalContext.parent;
                     creator.reference.descriptor.cacheRes = this;
@@ -883,35 +943,8 @@ namespace NiL.JS.BaseLibrary
                 internalContext.strict |= body.strict;
                 internalContext.variables = body.variables;
                 internalContext.Activate();
-                initVariables(body, internalContext);
                 initParameters(args, body, internalContext);
-                JSObject ai = null;
-                for (; ; )
-                {
-                    body.Evaluate(internalContext);
-                    ai = internalContext.abortInfo;
-                    if (internalContext.abort != AbortType.TailRecursion)
-                        break;
-                    args = this._arguments as Arguments;
-                    initParameters(args, body, internalContext);
-                    if (creator.recursiveDepth == creator.parametersStored)
-                        storeParameters();
-                    internalContext.abort = AbortType.None;
-                }
-                if (ai == null)
-                {
-                    notExists.valueType = JSObjectType.NotExistsInObject;
-                    res = notExists;
-                }
-                else
-                {
-                    if (ai.valueType <= JSObjectType.NotExists)
-                        res = notExists;
-                    else if (ai.valueType == JSObjectType.Undefined)
-                        res = undefined;
-                    else
-                        res = ai;
-                }
+                res = evaluate(internalContext);
             }
             finally
             {
@@ -919,35 +952,272 @@ namespace NiL.JS.BaseLibrary
                 if (creator.trace)
                     System.Console.WriteLine("DEBUG: Exit \"" + creator.Reference.Name + "\"");
 #endif
-                creator.recursiveDepth--;
-                if (creator.parametersStored > creator.recursiveDepth)
-                    creator.parametersStored--;
-                try
-                {
-                    internalContext.abort = AbortType.Return;
-                    internalContext.Deactivate();
-                }
-                finally
-                {
-                    if (creator.recursiveDepth == 0)
-                    {
-                        var i = body.localVariables.Length;
-                        for (; i-- > 0; )
-                        {
-                            body.localVariables[i].cacheRes = null;
-                            body.localVariables[i].cacheContext = null;
-                        }
-                        for (i = creator.arguments.Length; i-- > 0; )
-                        {
-                            creator.arguments[i].cacheRes = null;
-                            creator.arguments[i].cacheContext = null;
-                        }
-                    }
-                }
+                exit(internalContext);
                 _caller = oldcaller;
                 _arguments = oldargs;
             }
             return res;
+        }
+
+        private void exit(Core.Context internalContext)
+        {
+            creator.recursiveDepth--;
+            if (creator.parametersStored > creator.recursiveDepth)
+                creator.parametersStored--;
+            try
+            {
+                internalContext.abort = AbortType.Return;
+                internalContext.Deactivate();
+            }
+            finally
+            {
+                if (creator.recursiveDepth == 0)
+                {
+                    var i = creator.body.localVariables.Length;
+                    for (; i-- > 0; )
+                    {
+                        creator.body.localVariables[i].cacheRes = null;
+                        creator.body.localVariables[i].cacheContext = null;
+                    }
+                    for (i = creator.arguments.Length; i-- > 0; )
+                    {
+                        creator.arguments[i].cacheRes = null;
+                        creator.arguments[i].cacheContext = null;
+                    }
+                }
+            }
+        }
+
+        private JSObject evaluate(Core.Context internalContext)
+        {
+            initVariables(creator.body, internalContext);
+            JSObject ai = null;
+            for (; ; )
+            {
+                creator.body.Evaluate(internalContext);
+                ai = internalContext.abortInfo;
+                if (internalContext.abort != AbortType.TailRecursion)
+                    break;
+                initParameters(this._arguments as Arguments, creator.body, internalContext);
+                if (creator.recursiveDepth == creator.parametersStored)
+                    storeParameters();
+                internalContext.abort = AbortType.None;
+            }
+            if (ai == null)
+            {
+                notExists.valueType = JSObjectType.NotExistsInObject;
+                return notExists;
+            }
+            else
+            {
+                if (ai.valueType <= JSObjectType.NotExists)
+                    return notExists;
+                else if (ai.valueType == JSObjectType.Undefined)
+                    return undefined;
+                else
+                    return ai;
+            }
+        }
+
+        private void initParametersFast(Expression[] arguments, Core.Context initiator, Context internalContext)
+        {
+            JSObject a0, a1, a2, a3, a4, a5, a6, a7; // Вместо кучи, выделяем память на стеке
+
+            var m = System.Math.Min(creator.arguments.Length, arguments.Length);
+            switch (m)
+            {
+                case 0:
+                    break;
+                case 1:
+                    {
+                        a0 = arguments[0].Evaluate(initiator).CloneImpl();
+
+                        for (int i = m; i < arguments.Length; i++)
+                            arguments[i].Evaluate(initiator);
+
+                        setPrmFst(0, a0, internalContext);
+                        break;
+                    }
+                case 2:
+                    {
+                        a0 = arguments[0].Evaluate(initiator).CloneImpl();
+                        a1 = arguments[1].Evaluate(initiator).CloneImpl();
+
+                        for (int i = m; i < arguments.Length; i++)
+                            arguments[i].Evaluate(initiator);
+
+                        setPrmFst(0, a0, internalContext);
+                        setPrmFst(1, a1, internalContext);
+                        break;
+                    }
+                case 3:
+                    {
+                        a0 = arguments[0].Evaluate(initiator).CloneImpl();
+                        a1 = arguments[1].Evaluate(initiator).CloneImpl();
+                        a2 = arguments[2].Evaluate(initiator).CloneImpl();
+
+                        for (int i = m; i < arguments.Length; i++)
+                            arguments[i].Evaluate(initiator);
+
+                        setPrmFst(0, a0, internalContext);
+                        setPrmFst(1, a1, internalContext);
+                        setPrmFst(2, a2, internalContext);
+                        break;
+                    }
+                case 4:
+                    {
+                        a0 = arguments[0].Evaluate(initiator).CloneImpl();
+                        a1 = arguments[1].Evaluate(initiator).CloneImpl();
+                        a2 = arguments[2].Evaluate(initiator).CloneImpl();
+                        a3 = arguments[3].Evaluate(initiator).CloneImpl();
+
+                        for (int i = m; i < arguments.Length; i++)
+                            arguments[i].Evaluate(initiator);
+
+                        setPrmFst(0, a0, internalContext);
+                        setPrmFst(1, a1, internalContext);
+                        setPrmFst(2, a2, internalContext);
+                        setPrmFst(3, a3, internalContext);
+                        break;
+                    }
+                case 5:
+                    {
+                        a0 = arguments[0].Evaluate(initiator).CloneImpl();
+                        a1 = arguments[1].Evaluate(initiator).CloneImpl();
+                        a2 = arguments[2].Evaluate(initiator).CloneImpl();
+                        a3 = arguments[3].Evaluate(initiator).CloneImpl();
+                        a4 = arguments[4].Evaluate(initiator).CloneImpl();
+
+                        for (int i = m; i < arguments.Length; i++)
+                            arguments[i].Evaluate(initiator);
+
+                        setPrmFst(0, a0, internalContext);
+                        setPrmFst(1, a1, internalContext);
+                        setPrmFst(2, a2, internalContext);
+                        setPrmFst(3, a3, internalContext);
+                        setPrmFst(4, a4, internalContext);
+                        break;
+                    }
+                case 6:
+                    {
+                        a0 = arguments[0].Evaluate(initiator).CloneImpl();
+                        a1 = arguments[1].Evaluate(initiator).CloneImpl();
+                        a2 = arguments[2].Evaluate(initiator).CloneImpl();
+                        a3 = arguments[3].Evaluate(initiator).CloneImpl();
+                        a4 = arguments[4].Evaluate(initiator).CloneImpl();
+                        a5 = arguments[5].Evaluate(initiator).CloneImpl();
+
+                        for (int i = m; i < arguments.Length; i++)
+                            arguments[i].Evaluate(initiator);
+
+                        setPrmFst(0, a0, internalContext);
+                        setPrmFst(1, a1, internalContext);
+                        setPrmFst(2, a2, internalContext);
+                        setPrmFst(3, a3, internalContext);
+                        setPrmFst(4, a4, internalContext);
+                        setPrmFst(5, a5, internalContext);
+                        break;
+                    }
+                case 7:
+                    {
+                        a0 = arguments[0].Evaluate(initiator).CloneImpl();
+                        a1 = arguments[1].Evaluate(initiator).CloneImpl();
+                        a2 = arguments[2].Evaluate(initiator).CloneImpl();
+                        a3 = arguments[3].Evaluate(initiator).CloneImpl();
+                        a4 = arguments[4].Evaluate(initiator).CloneImpl();
+                        a5 = arguments[5].Evaluate(initiator).CloneImpl();
+                        a6 = arguments[6].Evaluate(initiator).CloneImpl();
+
+                        for (int i = m; i < arguments.Length; i++)
+                            arguments[i].Evaluate(initiator);
+
+                        setPrmFst(0, a0, internalContext);
+                        setPrmFst(1, a1, internalContext);
+                        setPrmFst(2, a2, internalContext);
+                        setPrmFst(3, a3, internalContext);
+                        setPrmFst(4, a4, internalContext);
+                        setPrmFst(5, a5, internalContext);
+                        setPrmFst(6, a6, internalContext);
+                        break;
+                    }
+                case 8:
+                    {
+                        a0 = arguments[0].Evaluate(initiator).CloneImpl();
+                        a1 = arguments[1].Evaluate(initiator).CloneImpl();
+                        a2 = arguments[2].Evaluate(initiator).CloneImpl();
+                        a3 = arguments[3].Evaluate(initiator).CloneImpl();
+                        a4 = arguments[4].Evaluate(initiator).CloneImpl();
+                        a5 = arguments[5].Evaluate(initiator).CloneImpl();
+                        a6 = arguments[6].Evaluate(initiator).CloneImpl();
+                        a7 = arguments[7].Evaluate(initiator).CloneImpl();
+
+                        for (int i = m; i < arguments.Length; i++)
+                            arguments[i].Evaluate(initiator);
+
+                        setPrmFst(0, a0, internalContext);
+                        setPrmFst(1, a1, internalContext);
+                        setPrmFst(2, a2, internalContext);
+                        setPrmFst(3, a3, internalContext);
+                        setPrmFst(4, a4, internalContext);
+                        setPrmFst(5, a5, internalContext);
+                        setPrmFst(6, a6, internalContext);
+                        setPrmFst(7, a7, internalContext);
+                        break;
+                    }
+                default:
+                    throw new ArgumentException("To many arguments");
+            }
+            for (int i = m; i < creator.arguments.Length; i++)
+            {
+                if (creator.arguments[i].assignations != null)
+                    creator.arguments[i].cacheRes = new JSObject()
+                    {
+                        valueType = JSObjectType.Undefined,
+                        attributes = JSObjectAttributesInternal.Argument
+                    };
+                else
+                    creator.arguments[i].cacheRes = undefined;
+                creator.arguments[i].cacheContext = internalContext;
+                if (creator.arguments[i].captured)
+                {
+                    if (internalContext.fields == null)
+                        internalContext.fields = createFields();
+                    internalContext.fields[creator.arguments[i].Name] = creator.arguments[i].cacheRes;
+                }
+            }
+        }
+
+        private void setPrmFst(int index, JSObject value, Context context)
+        {
+            value.attributes |= JSObjectAttributesInternal.Argument;
+            creator.arguments[index].cacheRes = value;
+            creator.arguments[index].cacheContext = context;
+            if (creator.arguments[index].captured)
+            {
+                if (context.fields == null)
+                    context.fields = createFields();
+                context.fields[creator.arguments[index].name] = value;
+            }
+        }
+
+        internal void buildArgumentsObject()
+        {
+            if (this._arguments == null)
+            {
+                var args = new Arguments()
+                {
+                    caller = _caller,
+                    callee = this
+                };
+                for (var i = 0; i < creator.arguments.Length; i++)
+                {
+                    if (creator.body.strict)
+                        args.Add(creator.arguments[i].cacheRes.CloneImpl());
+                    else
+                        args.Add(creator.arguments[i].cacheRes);
+                }
+                this._arguments = args;
+            }
         }
 
         private void initParameters(Arguments args, CodeBlock body, Context internalContext)

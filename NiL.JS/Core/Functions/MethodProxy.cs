@@ -541,6 +541,13 @@ namespace NiL.JS.Core.Functions
                         if (paramsConverters != null && paramsConverters[i] != null)
                             args[i] = paramsConverters[i].To(args[i]);
                     }
+#if PORTABLE
+                    if (args[i] == null && parameters[i].ParameterType.GetTypeInfo().IsValueType)
+                        args[i] = Activator.CreateInstance(parameters[i].ParameterType);
+#else
+                    if (args[i] == null && parameters[i].ParameterType.IsValueType)
+                        args[i] = Activator.CreateInstance(parameters[i].ParameterType);
+#endif
                 }
                 return TypeProxing.TypeProxy.Proxy(InvokeImpl(self, args, null));
             }
@@ -589,7 +596,7 @@ namespace NiL.JS.Core.Functions
                     default:
                         res = implementation(
                             target,
-                            raw ? null : (args ?? ConvertArgs(argsSource)),
+                            raw ? null : (args ?? ConvertArgs(argsSource, true)),
                             argsSource);
                         break;
                 }
@@ -646,7 +653,7 @@ namespace NiL.JS.Core.Functions
             return null;
         }
 
-        internal object[] ConvertArgs(Arguments source)
+        internal object[] ConvertArgs(Arguments source, bool dummyValueTypes)
         {
             if (parameters.Length == 0)
                 return null;
@@ -661,6 +668,16 @@ namespace NiL.JS.Core.Functions
                         res[i] = marshal(obj, parameters[i].ParameterType);
                         if (paramsConverters != null && paramsConverters[i] != null)
                             res[i] = paramsConverters[i].To(res[i]);
+                    }
+                    if (dummyValueTypes)
+                    {
+#if PORTABLE
+                        if (res[i] == null && parameters[i].ParameterType.GetTypeInfo().IsValueType)
+                            res[i] = Activator.CreateInstance(parameters[i].ParameterType);
+#else
+                        if (res[i] == null && parameters[i].ParameterType.IsValueType)
+                            res[i] = Activator.CreateInstance(parameters[i].ParameterType);
+#endif
                     }
                 }
             return res;

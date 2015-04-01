@@ -479,10 +479,10 @@ namespace NiL.JS.Core
                     {
                         if (targetType == typeof(int)) return (int)jsobj.iValue;
 
-                        if (targetType == typeof(byte)) return (byte)jsobj.iValue;
-                        if (targetType == typeof(sbyte)) return (sbyte)jsobj.iValue;
-                        if (targetType == typeof(short)) return (short)jsobj.iValue;
-                        if (targetType == typeof(ushort)) return (ushort)jsobj.iValue;
+                        //if (targetType == typeof(byte)) return (byte)jsobj.iValue;
+                        //if (targetType == typeof(sbyte)) return (sbyte)jsobj.iValue;
+                        //if (targetType == typeof(short)) return (short)jsobj.iValue;
+                        //if (targetType == typeof(ushort)) return (ushort)jsobj.iValue;
                         if (targetType == typeof(uint)) return (uint)jsobj.iValue;
                         if (targetType == typeof(long)) return (long)jsobj.iValue;
                         if (targetType == typeof(ulong)) return (ulong)jsobj.iValue;

@@ -397,3 +397,9 @@ if (Object);else;
 while(!Object);
 
 do;while(!Object);
+
+if ((function (x) {
+    var x;
+    return x;
+})(1) != 1)
+    throw "Parameter redefinition fail";

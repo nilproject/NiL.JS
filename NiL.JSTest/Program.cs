@@ -115,7 +115,7 @@ namespace NiL.JSTest
             _("passed: " + passed + ". (" + (passed * 100 / fls.Length) + "%)");
             _("failed: " + failed);
             _("time: " + sw.Elapsed);
-            _("Sputnik testing complite");
+            _("Sputnik test complite");
         }
 
         private static void webkitTests(string folderPath = "tests\\webkit\\")
@@ -218,7 +218,7 @@ namespace NiL.JSTest
             }
             sw.Stop();
             _("time: " + sw.Elapsed);
-            _("webkit testing complite");
+            _("webkit test complite");
         }
 
         private static void benchmark()
@@ -323,24 +323,25 @@ for (var i = 0; i < 10000000; )
             Console.WriteLine(sw.Elapsed);
         }
 
+        private struct T
+        {
+            public void test(JSObject n)
+            {
+                System.Console.WriteLine(n);
+            }
+
+            public void test(object n)
+            {
+                System.Console.WriteLine(n);
+            }
+        }
+
         private static void testEx()
         {
             var t = new Script(@"
-var random = (function() {
-  var seed = 49734321;
-  return function() {
-    // Robert Jenkins' 32 bit integer hash function.
-    seed = ((seed + 0x7ed55d16) + (seed << 12))  & 0xffffffff;
-    seed = ((seed ^ 0xc761c23c) ^ (seed >>> 19)) & 0xffffffff;
-    seed = ((seed + 0x165667b1) + (seed << 5))   & 0xffffffff;
-    seed = ((seed + 0xd3a2646c) ^ (seed << 9))   & 0xffffffff;
-    seed = ((seed + 0xfd7046c5) + (seed << 3))   & 0xffffffff;
-    seed = ((seed ^ 0xb55a4f09) ^ (seed >>> 16)) & 0xffffffff;
-    return (seed & 0xfffffff) / 0x10000000;
-  };
-})();
-random();
+t.test();
 ");
+            t.Context.DefineVariable("t").Assign(new JSObject(new T()));
             t.Invoke();
         }
 
@@ -374,7 +375,7 @@ random();
             }));
 #endif
 
-            int mode = 14
+            int mode = 0
                    ;
             switch (mode)
             {
@@ -467,50 +468,16 @@ random();
                 case 5:
                     {
                         runFile(@"coffee-script.js");
-                        break;
-                    }
-                case 6:
-                    {
                         runFile(@"linq.js");
-                        break;
-                    }
-                case 7:
-                    {
                         runFile(@"arraytests.js");
-                        break;
-                    }
-                case 8:
-                    {
                         runFile(@"handlebars-v2.0.0.js");
-                        break;
-                    }
-                case 9:
-                    {
                         Context.GlobalContext.DefineVariable("stderr").Assign(true);
                         runFile(@"jsfunfuzz.js");
-                        break;
-                    }
-                case 10:
-                    {
                         runFile(@"md5.js");
-                        break;
-                    }
-                case 11:
-                    {
-                        runFile(@"jquery.js");
-                        break;
-                    }
-                case 12:
-                    {
-                        runFile(@"tests\custom\Int8Array.js");
-                        break;
-                    }
-                case 13:
-                    {
                         runFile("aes.js");
                         break;
                     }
-                case 14:
+                case 6:
                     {
                         runFile("pbkdf.js");
                         break;
@@ -627,7 +594,7 @@ random();
                         break;
                     }
             }
-
+            
             GC.Collect(0);
             GC.Collect(1);
             GC.Collect(2);

@@ -468,8 +468,17 @@ namespace NiL.JS.Core
         {
             if (fields == null)
                 fields = new StringMap2<JSObject>();
-            fields.Add(moduleType.Name, TypeProxy.GetConstructor(moduleType).CloneImpl());
-            fields[moduleType.Name].attributes = JSObjectAttributesInternal.DoNotEnum;
+            string name;
+#if PORTABLE
+            if (System.Reflection.IntrospectionExtensions.GetTypeInfo(moduleType).IsGenericType)
+#else
+            if (moduleType.IsGenericType)
+#endif
+                name = moduleType.Name.Substring(0, moduleType.Name.LastIndexOf('`'));
+            else
+                name = moduleType.Name;
+            fields.Add(name, TypeProxy.GetConstructor(moduleType).CloneImpl());
+            fields[name].attributes = JSObjectAttributesInternal.DoNotEnum;
         }
 
         /// <summary>
