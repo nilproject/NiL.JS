@@ -153,7 +153,9 @@ namespace NiL.JS.Core
             }
         }
 
+#if !PORTABLE
         internal int threadId;
+#endif
         internal Context oldContext;
         /// <summary>
         /// Временное хранилище для передачи значений.

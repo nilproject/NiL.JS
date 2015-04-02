@@ -132,8 +132,8 @@ namespace NiL.JS.Statements
             Parser.Build(ref condition, 2, variables, state | _BuildState.InLoop, message, statistic, opts);
             try
             {
-                if (allowRemove 
-                    && (opts & Options.SuppressUselessExpressionsElimination) == 0 
+                if (allowRemove
+                    && (opts & Options.SuppressUselessExpressionsElimination) == 0
                     && (condition is Constant || (condition as Expressions.Expression).IsContextIndependent))
                 {
                     if ((bool)condition.Evaluate(null))
@@ -143,9 +143,13 @@ namespace NiL.JS.Statements
                     condition.Eliminated = true;
                 }
             }
+
+#if PORTABLE
+            catch
+            {
+#else
             catch (Exception e)
             {
-#if !PORTABLE
                 System.Diagnostics.Debugger.Log(10, "Error", e.Message);
 #endif
             }

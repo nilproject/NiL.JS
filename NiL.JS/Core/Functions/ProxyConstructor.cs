@@ -88,10 +88,6 @@ namespace NiL.JS.Core.Functions
                     length.iValue = System.Math.Max(ctorsL[ctorsL.Count - 1]._length.iValue, _length.iValue);
                 }
             }
-#if !PORTABLE
-            if (typeProxy.hostedType.IsValueType)
-                ctorsL.Add(new MethodProxy(new StructureDefaultConstructorInfo(proxy.hostedType)));
-#endif
             ctorsL.Sort((x, y) => x.Parameters.Length == 1 && x.Parameters[0].ParameterType == typeof(Arguments) ? 1 :
                 y.Parameters.Length == 1 && y.Parameters[0].ParameterType == typeof(Arguments) ? -1 :
                 x.Parameters.Length - y.Parameters.Length);

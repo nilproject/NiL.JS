@@ -220,9 +220,12 @@ namespace NiL.JS.Statements
                     condition.Eliminated = true;
                 }
             }
+#if PORTABLE
+            catch
+            {
+#else
             catch (Exception e)
             {
-#if !PORTABLE
                 System.Diagnostics.Debugger.Log(10, "Error", e.Message);
 #endif
             }
