@@ -313,7 +313,7 @@ for (var i = 0; i < 10000000; )
             Console.WriteLine(sw.Elapsed);
 
             sw.Restart();
-            s.TryCompile();
+            //s.TryCompile();
             sw.Stop();
             Console.WriteLine(sw.Elapsed);
 
@@ -380,7 +380,7 @@ t.__proto__.constructor().type(Number);
             }));
 #endif
 
-            int mode = 7
+            int mode = 5
                    ;
             switch (mode)
             {
@@ -510,6 +510,11 @@ ast.print_to_string();");
 
                             Console.WriteLine(result.ToString());
                         }
+                        break;
+                    }
+                case 8:
+                    {
+                        runFile("acorn_interpreter.js");
                         break;
                     }
                 case 151:

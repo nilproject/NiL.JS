@@ -29,7 +29,7 @@ namespace NiL.JS.Statements
         internal static ParseResult Parse(ParsingState state, ref int index)
         {
             int i = index;
-            if (!Parser.Validate(state.Code, "throw", ref i) || (!char.IsWhiteSpace(state.Code[i]) && (state.Code[i] != '(')))
+            if (!Parser.Validate(state.Code, "throw", ref i) || (!Parser.isIdentificatorTerminator(state.Code[i])))
                 return new ParseResult();
             var b = Parser.Parse(state, ref i, 1, true);
             if (b is EmptyStatement)

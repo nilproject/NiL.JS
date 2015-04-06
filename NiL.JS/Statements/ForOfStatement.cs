@@ -86,7 +86,7 @@ namespace NiL.JS.Statements
             if (state.Code[i] == '=')
             {
                 do i++; while (char.IsWhiteSpace(state.Code[i]));
-                var defVal = ExpressionTree.Parse(state, ref i, true, false, false, true, false, true);
+                var defVal = ExpressionTree.Parse(state, ref i, false, false, false, true, false, true);
                 if (!defVal.IsParsed)
                     return defVal;
                 NiL.JS.Expressions.Expression exp = new OpAssignCache(res.variable as GetVariableExpression ?? (res.variable as VariableDefineStatement).initializators[0] as GetVariableExpression);

@@ -381,7 +381,7 @@ namespace NiL.JS.Statements
                 position = i;
                 var threads = new Expression[]
                     {
-                        (Expression)ExpressionTree.Parse(state, ref i, true, false, false, true, false, forEnumeration).Statement,
+                        (Expression)ExpressionTree.Parse(state, ref i, true, false, false, true, false, false).Statement,
                         null
                     };
                 if (state.Code[i] != ':')
@@ -1118,8 +1118,8 @@ namespace NiL.JS.Statements
                             do i++; while (char.IsWhiteSpace(state.Code[i]));
                             int startPos = i;
                             mname = (Expression)ExpressionTree.Parse(state, ref i, true, false, false, true, false, false).Statement;
-                            if (forEnumeration)
-                                return new ParseResult();
+                            //if (forEnumeration) // why?! (o_O)
+                            //    return new ParseResult();
                             if (mname == null)
                                 throw new JSException((new SyntaxError("Unexpected token at " + CodeCoordinates.FromTextPosition(state.Code, startPos, 0))));
                             while (char.IsWhiteSpace(state.Code[i])) i++;
