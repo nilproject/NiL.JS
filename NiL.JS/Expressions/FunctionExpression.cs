@@ -196,9 +196,7 @@ namespace NiL.JS.Expressions
         }
 
 #if !PORTABLE
-#if !PORTABLE
         [Serializable]
-#endif
 #endif
         internal sealed class ParameterReference : VariableReference
         {

@@ -28,7 +28,7 @@ namespace NiL.JS.Expressions
         {
             get
             {
-                
+
                 if (first is VariableReference)
                 {
                     var desc = (first as VariableReference).descriptor;
@@ -36,7 +36,7 @@ namespace NiL.JS.Expressions
                     if (fe != null)
                         return fe.statistic.ResultType; // для рекурсивных функций будет Unknown
                 }
-                
+
                 return PredictedType.Unknown;
             }
         }
@@ -163,41 +163,26 @@ namespace NiL.JS.Expressions
                 var name = first.ToString();
                 if (name == "eval" && statistic != null)
                     statistic.ContainsEval = true;
-                /*VariableDescriptor f = null;
-                if (vars.TryGetValue(name, out f))
+                VariableDescriptor f = null;
+                if (variables.TryGetValue(name, out f))
                 {
                     if (f.Inititalizator != null) // Defined function
                     {
                         var func = f.Inititalizator as FunctionExpression;
                         if (func != null)
                         {
-                            if (func.body == null
-                                || func.body.lines == null
-                                || func.body.lines.Length == 0)
+                            for (var i = 0; i < func.arguments.Length; i++)
                             {
-                                if (arguments.Length == 0)
-                                    _this = new Constant(JSObject.notExists);
-                                else
-                                {
-                                    if (depth > 1)
-                                    {
-                                        var b = new CodeNode[arguments.Length + 1];
-                                        for (int i = arguments.Length, j = 0; i > 0; i--, j++)
-                                            b[i] = arguments[j];
-                                        b[0] = new Constant(JSObject.notExists);
-                                        _this = new CodeBlock(b, strict);
-                                    }
-                                    else
-                                    {
-                                        System.Array.Reverse(arguments, 0, arguments.Length);
-                                        _this = new CodeBlock(arguments, strict);
-                                    }
-                                }
-                                return true;
+                                if (i >= arguments.Length)
+                                    break;
+                                if (func.arguments[i].lastPredictedType == PredictedType.Unknown)
+                                    func.arguments[i].lastPredictedType = arguments[i].ResultType;
+                                else if (Tools.CompareWithMask(func.arguments[i].lastPredictedType, arguments[i].ResultType, PredictedType.Group) != 0)
+                                    func.arguments[i].lastPredictedType = PredictedType.Ambiguous;
                             }
                         }
                     }
-                }*/
+                }
             }
             return false;
         }

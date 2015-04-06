@@ -392,6 +392,15 @@ namespace NiL.JS.Statements
                 cn.Optimize(ref cn, owner, message, opts, statistic);
                 lines[i] = cn;
             }
+            if (localVariables != null)
+                for (var i = 0; i < localVariables.Length; i++)
+                {
+                    if (localVariables[i].Inititalizator != null)
+                    {
+                        var cn = localVariables[i].Inititalizator as CodeNode;
+                        cn.Optimize(ref cn, owner, message, opts, statistic);
+                    }
+                }
         }
 #if !PORTABLE
         internal override System.Linq.Expressions.Expression TryCompile(bool selfCompile, bool forAssign, Type expectedType, List<CodeNode> dynamicValues)
