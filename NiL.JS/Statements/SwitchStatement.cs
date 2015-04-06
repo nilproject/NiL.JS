@@ -182,8 +182,10 @@ namespace NiL.JS.Statements
                 image
             };
             res.AddRange(lines);
-            res.AddRange(functions);
-            res.AddRange(from c in cases select c.statement);
+            if (functions != null && functions.Length > 0)
+                res.AddRange(functions);
+            if (cases.Length > 0)
+                res.AddRange(from c in cases where c != null select c.statement);
             res.RemoveAll(x => x == null);
             return res.ToArray();
         }
