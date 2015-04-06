@@ -494,7 +494,8 @@ namespace NiL.JS.Core
                 || (c == '[')
                 || (c == ']')
                 || (c == '\'')
-                || (c == '"');
+                || (c == '"')
+                || (c == '~');
         }
 
         internal static CodeNode Parse(ParsingState state, ref int index, int ruleset)
