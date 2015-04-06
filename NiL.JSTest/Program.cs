@@ -293,7 +293,7 @@ for (var i = 0; i < 10000000; i++) abs(i * (1 - 2 * (i & 1)));
 @"
 function isum(a, b)
 {    
-    return (((((a | 0) + (b | 0)) | 0) + (((a | 0) + (b | 0)) | 0) | 0) + ((((a | 0) + (b | 0)) | 0) + (((a | 0) + (b | 0)) | 0) | 0)) | 0;
+    return a + b;
 }
 var isum2 = isum;
 for (var i = 0; i < 10000000; )
@@ -313,7 +313,7 @@ for (var i = 0; i < 10000000; )
             Console.WriteLine(sw.Elapsed);
 
             sw.Restart();
-            //s.TryCompile();
+            s.TryCompile();
             sw.Stop();
             Console.WriteLine(sw.Elapsed);
 
@@ -323,25 +323,30 @@ for (var i = 0; i < 10000000; )
             Console.WriteLine(sw.Elapsed);
         }
 
-        private struct T
+        private struct Struct
         {
-            public void test(JSObject n)
+            public T test<T>(T n) where T : class
             {
-                System.Console.WriteLine(n);
+                return (T)(object)n;
             }
 
-            public void test(object n)
+            public void type(Type type)
             {
-                System.Console.WriteLine(n);
+
             }
+        }
+
+        private void test()
+        {
+            new Struct().test<object>(null);
         }
 
         private static void testEx()
         {
             var t = new Script(@"
-t.test();
+t.__proto__.constructor().type(Number);
 ");
-            t.Context.DefineVariable("t").Assign(new JSObject(new T()));
+            t.Context.DefineVariable("t").Assign(new JSObject(new Struct()));
             t.Invoke();
         }
 
@@ -375,7 +380,7 @@ t.test();
             }));
 #endif
 
-            int mode = 0
+            int mode = 7
                    ;
             switch (mode)
             {
@@ -467,6 +472,7 @@ t.test();
                     }
                 case 5:
                     {
+                        runFile("uglifyjs.js");
                         runFile(@"coffee-script.js");
                         runFile(@"linq.js");
                         runFile(@"arraytests.js");
@@ -480,6 +486,30 @@ t.test();
                 case 6:
                     {
                         runFile("pbkdf.js");
+                        break;
+                    }
+                case 7:
+                    {
+                        using (var file = new FileStream("uglifyjs.js", FileMode.Open, FileAccess.Read))
+                        {
+                            var myString =
+@"(function (fallback) {
+    fallback = fallback || function () { };
+})(null);";
+
+                            var script = new Script("");
+                            script.Context.Eval(new StreamReader(file).ReadToEnd());
+                            script.Context.DefineVariable("code").Assign(new NiL.JS.BaseLibrary.String(myString));
+
+                            var result = script.Context.Eval(@"var ast = UglifyJS.parse(code);
+ast.figure_out_scope();
+compressor = UglifyJS.Compressor();
+ast = ast.transform(compressor);
+ast.print_to_string();");
+
+
+                            Console.WriteLine(result.ToString());
+                        }
                         break;
                     }
                 case 151:
@@ -594,7 +624,7 @@ t.test();
                         break;
                     }
             }
-            
+
             GC.Collect(0);
             GC.Collect(1);
             GC.Collect(2);

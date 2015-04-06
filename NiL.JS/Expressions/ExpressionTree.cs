@@ -81,6 +81,11 @@ namespace NiL.JS.Statements
         Yield = OperationTypeGroups.Special + 4
     }
 
+    /// <summary>
+    /// Ты входишь в самый тёмный переулок всего проекта. Ходят слухи о страшных делах, происходящих в этом месте.
+    /// Изредка отсюда доносятся людские стоны, полные боли и отчаяния. Наберись терпения и мужества, ибо те ужасы, что ты можешь тут увидеть, испытают твой нервы.
+    /// Если желание твоё посетить сие место всё ещё живо и не угасло... и да хранит тебя Б-г.
+    /// </summary>
 #if !PORTABLE
     [Serializable]
 #endif
@@ -376,7 +381,7 @@ namespace NiL.JS.Statements
                 position = i;
                 var threads = new Expression[]
                     {
-                        (Expression)ExpressionTree.Parse(state, ref i, true, false, false, false, false, forEnumeration).Statement,
+                        (Expression)ExpressionTree.Parse(state, ref i, true, false, false, true, false, forEnumeration).Statement,
                         null
                     };
                 if (state.Code[i] != ':')
@@ -385,7 +390,7 @@ namespace NiL.JS.Statements
                     i++;
                 while (char.IsWhiteSpace(state.Code[i]));
                 first = new Constant(new JSObject() { valueType = JSObjectType.Object, oValue = threads }) { Position = position };
-                threads[1] = (Expression)ExpressionTree.Parse(state, ref i, false, false, false, false, false, forEnumeration).Statement;
+                threads[1] = (Expression)ExpressionTree.Parse(state, ref i, false, false, false, true, false, forEnumeration).Statement;
                 first.Length = i - first.Position;
             }
             else if (Parser.ValidateName(state.Code, ref i, state.strict.Peek()) || Parser.Validate(state.Code, "this", ref i))
@@ -1237,7 +1242,7 @@ namespace NiL.JS.Statements
                 if (state.Code.Length > i)
                     second = (Expression)ExpressionTree.Parse(state, ref i, processComma, false, false, false, type == OperationType.Ternary, forEnumeration).Statement;
             }
-            CodeNode res = null;
+            Expression res = null;
             if (first == second && first == null)
                 return new ParseResult();
             if (assign)

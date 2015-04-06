@@ -403,3 +403,21 @@ if ((function (x) {
     return x;
 })(1) != 1)
     throw "Parameter redefinition fail";
+
+if (0 * 1 + 2 ? false : true)
+    throw "Tree of condition of conditional operator has not been rebuilded #1";
+
+if (undefined = 0 * 1 + 2 ? false : true)
+    throw "Tree of condition of conditional operator has not been rebuilded #2";
+
+if ((true ? 0 * 1 + 2 : false) != 2)
+    throw "Tree of condition of conditional operator has not been rebuilded #3";
+
+if ((true ? undefined = 0 * 1 + 2 : false) != 2)
+    throw "Tree of condition of conditional operator has not been rebuilded #4";
+
+if ((false ? false : 0 * 1 + 2) != 2)
+    throw "Tree of condition of conditional operator has not been rebuilded #5";
+
+if ((false ? false : undefined = 0 * 1 + 2 ) != 2)
+    throw "Tree of condition of conditional operator has not been rebuilded #6";
