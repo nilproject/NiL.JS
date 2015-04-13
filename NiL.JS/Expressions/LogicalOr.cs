@@ -38,6 +38,8 @@ namespace NiL.JS.Expressions
 
         internal override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
+            if (message != null && depth <= 1)
+                message(MessageLevel.Warning, new CodeCoordinates(0, Position, 0), "Do not use logical operator as a conditional statement");
             return base.Build(ref _this, depth, variables, state | _BuildState.Conditional, message, statistic, opts);
         }
 

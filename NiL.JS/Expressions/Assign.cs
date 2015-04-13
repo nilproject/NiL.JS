@@ -129,7 +129,7 @@ namespace NiL.JS.Expressions
                             vr.descriptor.lastPredictedType = stype & PredictedType.Group;
                         else
                         {
-                            if (message != null)
+                            if (message != null && stype >= PredictedType.Undefined && vr.descriptor.lastPredictedType >= PredictedType.Undefined)
                                 message(MessageLevel.Warning, new CodeCoordinates(0, Position, Length), "Variable \"" + vr.Name + "\" has ambiguous type. It can be make impossible some optimizations and cause errors.");
                             vr.descriptor.lastPredictedType = PredictedType.Ambiguous;
                         }

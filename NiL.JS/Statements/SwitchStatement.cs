@@ -137,6 +137,8 @@ namespace NiL.JS.Statements
             }
             while (i-- > 0)
             {
+                if (lines[i] == null)
+                    continue;
                 context.lastResult = lines[i].Evaluate(context) ?? context.lastResult;
                 if (context.abort != AbortType.None)
                 {
@@ -197,6 +199,8 @@ namespace NiL.JS.Statements
                 cases[i].statement.Optimize(ref cases[i].statement, owner, message, opts, statistic);
             for (var i = lines.Length; i-- > 0; )
             {
+                if (lines[i] == null)
+                    continue;
                 var cn = lines[i] as CodeNode;
                 cn.Optimize(ref cn, owner, message, opts, statistic);
                 lines[i] = cn;

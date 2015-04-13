@@ -536,7 +536,7 @@ namespace NiL.JS.Expressions
             codeContext = state;
 
             if ((state & _BuildState.InLoop) != 0 && message != null)
-                message(MessageLevel.Warning, new CodeCoordinates(0, Position, EndPosition - Position), "Do not define function inside loop");
+                message(MessageLevel.Warning, new CodeCoordinates(0, Position, EndPosition - Position), "Do not define function inside a loop");
 
             var bodyCode = body as CodeNode;
             var nvars = new Dictionary<string, VariableDescriptor>();
@@ -645,6 +645,10 @@ namespace NiL.JS.Expressions
                     if (this.statistic.ResultType != this.statistic.Returns[i].ResultType)
                     {
                         this.statistic.ResultType = PredictedType.Ambiguous;
+                        if (message != null
+                            && this.statistic.ResultType >= PredictedType.Undefined
+                            && this.statistic.Returns[i].ResultType >= PredictedType.Undefined)
+                            message(MessageLevel.Warning, new CodeCoordinates(0, arguments[i].references[0].Position, 0), "Type of return value is ambiguous");
                         break;
                     }
                 }
