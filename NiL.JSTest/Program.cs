@@ -380,7 +380,7 @@ t.__proto__.constructor().type(Number);
             }));
 #endif
 
-            int mode = 5
+            int mode = 103
                    ;
             switch (mode)
             {

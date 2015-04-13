@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using NiL.JS.BaseLibrary;
@@ -253,7 +254,7 @@ namespace NiL.JS.BaseLibrary
         {
             var length = args.length;
             Function replacer = length > 1 ? args[1].oValue as Function : null;
-            string space = "";
+            string space = null;
             if (args.length > 2)
             {
                 var sa = args[2];
@@ -268,14 +269,22 @@ namespace NiL.JS.BaseLibrary
                     || sa.valueType == JSObjectType.String)
                 {
                     if (sa.valueType == JSObjectType.Int)
-                        space = "          ".Substring(10 - System.Math.Max(0, System.Math.Min(10, sa.iValue)));
+                    {
+                        if (sa.iValue > 0)
+                            space = "          ".Substring(10 - System.Math.Max(0, System.Math.Min(10, sa.iValue)));
+                    }
                     else if (sa.valueType == JSObjectType.Double)
-                        space = "          ".Substring(10 - System.Math.Max(0, System.Math.Min(10, (int)sa.dValue)));
+                    {
+                        if ((int)sa.dValue > 0)
+                            space = "          ".Substring(10 - System.Math.Max(0, System.Math.Min(10, (int)sa.dValue)));
+                    }
                     else
                     {
                         space = sa.ToString();
                         if (space.Length > 10)
                             space = space.Substring(0, 10);
+                        if (space.Length == 0)
+                            space = null;
                     }
                 }
             }
@@ -287,6 +296,54 @@ namespace NiL.JS.BaseLibrary
         public static string stringify(JSObject obj, Function replacer, string space)
         {
             return stringifyImpl("", obj, replacer, space, new List<JSObject>(), new Arguments());
+        }
+
+        private static void escapeIfNeed(StringBuilder sb, char c)
+        {
+            if ((c >= 0 && c <= 0x1f)
+                || (c == '\\'))
+            {
+                switch (c)
+                {
+                    case (char)8:
+                        {
+                            sb.Append("\\b");
+                            break;
+                        }
+                    case (char)9:
+                        {
+                            sb.Append("\\t");
+                            break;
+                        }
+                    case (char)10:
+                        {
+                            sb.Append("\\n");
+                            break;
+                        }
+                    case (char)12:
+                        {
+                            sb.Append("\\f");
+                            break;
+                        }
+                    case (char)13:
+                        {
+                            sb.Append("\\r");
+                            break;
+                        }
+                    case '\\':
+                        {
+                            sb.Append("\\\\");
+                            break;
+                        }
+                    default:
+                        {
+                            sb.Append("\\u").Append(((int)c).ToString("x4"));
+                            break;
+                        }
+                }
+            }
+            else
+                sb.Append(c);
         }
 
         private static string stringifyImpl(string key, JSObject obj, Function replacer, string space, List<JSObject> processed, Arguments args)
@@ -315,14 +372,18 @@ namespace NiL.JS.BaseLibrary
                 obj = obj.Value as JSObject ?? obj;
                 if (obj.valueType < JSObjectType.Object)
                 {
+
                     if (obj.valueType == JSObjectType.String)
+                    {
                         return "\"" + (obj.oValue.ToString())
-                            .Replace("\\", "\\\\")
-                            .Replace("\"", "\\\"")
-                            .Replace("\n", "\\\n")
-                            .Replace("\r", "\\\r")
-                            .Replace("\n\\\r", "\n\r")
-                            .Replace("\r\\\n", "\r\n") + '"';
+                            //.Replace("\\", "\\\\")
+                            //.Replace("\"", "\\\"")
+                            //.Replace("\n", "\\n")
+                            //.Replace("\r", "\\r")
+                            //.Replace("\n\\\r", "\n\r")
+                            //.Replace("\r\\\n", "\r\n") 
+                            + '"';
+                    }
                     return obj.ToString();
                 }
                 if (obj.Value == null)
@@ -345,140 +406,44 @@ namespace NiL.JS.BaseLibrary
                     if (strval == null)
                         continue;
                     if (!first)
-                        res.Append(",").Append(space);
+                        res.Append(",");
+                    if (space != null)
+                        res.Append(Environment.NewLine);
+                    if (space != null)
+                        res.Append(space);
                     if (res[0] == '[')
                     {
+                        if (space != null)
+                            res.Append(space);
                         for (var i = 0; i < strval.Length; i++)
                         {
-                            if (strval[i] >= 0 && strval[i] <= 0x1f)
-                            {
-                                switch (strval[i])
-                                {
-                                    case (char)8:
-                                        {
-                                            res.Append("\\b");
-                                            break;
-                                        }
-                                    case (char)9:
-                                        {
-                                            res.Append("\\t");
-                                            break;
-                                        }
-                                    case (char)10:
-                                        {
-                                            res.Append("\\n");
-                                            break;
-                                        }
-                                    case (char)12:
-                                        {
-                                            res.Append("\\f");
-                                            break;
-                                        }
-                                    case (char)13:
-                                        {
-                                            res.Append("\\r");
-                                            break;
-                                        }
-                                    default:
-                                        {
-                                            res.Append("\\u").Append(((int)strval[i]).ToString("x4"));
-                                            break;
-                                        }
-                                }
-                            }
-                            else
-                                res.Append(strval[i]);
+                            escapeIfNeed(res, strval[i]);
                         }
                     }
                     else
                     {
-                        res.Append('"');//.Append(member).Append("\":").Append(strval);
+                        res.Append('"');
                         for (var i = 0; i < member.Length; i++)
                         {
-                            if (member[i] >= 0 && member[i] <= 0x1f)
-                            {
-                                switch (member[i])
-                                {
-                                    case (char)8:
-                                        {
-                                            res.Append("\\b");
-                                            break;
-                                        }
-                                    case (char)9:
-                                        {
-                                            res.Append("\\t");
-                                            break;
-                                        }
-                                    case (char)10:
-                                        {
-                                            res.Append("\\n");
-                                            break;
-                                        }
-                                    case (char)12:
-                                        {
-                                            res.Append("\\f");
-                                            break;
-                                        }
-                                    case (char)13:
-                                        {
-                                            res.Append("\\r");
-                                            break;
-                                        }
-                                    default:
-                                        {
-                                            res.Append("\\u").Append(((int)member[i]).ToString("x4"));
-                                            break;
-                                        }
-                                }
-                            }
-                            else
-                                res.Append(member[i]);
+                            escapeIfNeed(res, member[i]);
                         }
-                        res.Append("\":");
+                        res.Append("\":").Append(space ?? "");
                         for (var i = 0; i < strval.Length; i++)
                         {
-                            if (strval[i] >= 0 && strval[i] <= 0x1f)
-                            {
-                                switch (strval[i])
-                                {
-                                    case (char)8:
-                                        {
-                                            res.Append("\\b");
-                                            break;
-                                        }
-                                    case (char)9:
-                                        {
-                                            res.Append("\\t");
-                                            break;
-                                        }
-                                    case (char)10:
-                                        {
-                                            res.Append("\\n");
-                                            break;
-                                        }
-                                    case (char)12:
-                                        {
-                                            res.Append("\\f");
-                                            break;
-                                        }
-                                    case (char)13:
-                                        {
-                                            res.Append("\\r");
-                                            break;
-                                        }
-                                    default:
-                                        {
-                                            res.Append("\\u").Append(((int)strval[i]).ToString("x4"));
-                                            break;
-                                        }
-                                }
-                            }
+                            if (strval.Length > 0 && strval[0] == '"')
+                                escapeIfNeed(res, strval[i]);
                             else
+                            {
                                 res.Append(strval[i]);
+                                if (i >= Environment.NewLine.Length && strval.IndexOf(Environment.NewLine, i - 1, Environment.NewLine.Length) != -1)
+                                    res.Append(space);
+                            }
                         }
                     }
                     first = false;
                 }
+                if (!first && space != null)
+                    res.Append(Environment.NewLine);
                 return res.Append(obj is Array ? "]" : "}").ToString();
             }
             finally
