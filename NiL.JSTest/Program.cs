@@ -341,6 +341,42 @@ for (var i = 0; i < 10000000; )
             new Struct().test<object>(null);
         }
 
+        private static void staticAnalyzer(string fileName)
+        {
+            var f = new FileStream("ftest.js", FileMode.Open, FileAccess.Read);
+            var sr = new StreamReader(f);
+            var sw = new System.Diagnostics.Stopwatch();
+            sw.Start();
+            var s = new Script(sr.ReadToEnd(), (level, coords, message) =>
+            {
+                switch (level)
+                {
+                    case MessageLevel.Warning:
+                        Console.ForegroundColor = ConsoleColor.Yellow;
+                        break;
+                    case MessageLevel.Recomendation:
+                        Console.ForegroundColor = ConsoleColor.Green;
+                        break;
+                    case MessageLevel.Error:
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        break;
+                    case MessageLevel.CriticalWarning:
+                        Console.ForegroundColor = ConsoleColor.DarkRed;
+                        break;
+                    default:
+                        Console.ForegroundColor = ConsoleColor.Gray;
+                        break;
+                }
+                Console.Write(level);
+                Console.Write(coords);
+                Console.WriteLine(": " + message);
+            });
+            Console.ForegroundColor = ConsoleColor.Gray;
+            sr.Dispose();
+            f.Dispose();
+            sw.Stop();
+        }
+
         private static void testEx()
         {
             var t = new Script(@"
@@ -380,18 +416,13 @@ t.__proto__.constructor().type(Number);
             }));
 #endif
 
-            int mode = 103
+            int mode = 0
                    ;
             switch (mode)
             {
                 case -5:
                     {
-                        var f = new FileStream("ftest.js", FileMode.Open, FileAccess.Read);
-                        var sr = new StreamReader(f);
-                        new Script(sr.ReadToEnd(), (level, pos, message) =>
-                        {
-                            Console.WriteLine(level + " " + pos + ": " + message);
-                        });
+                        staticAnalyzer("ftest.js");
                         break;
                     }
 #if !PORTABLE
