@@ -421,3 +421,21 @@ if ((false ? false : 0 * 1 + 2) != 2)
 
 if ((false ? false : undefined = 0 * 1 + 2 ) != 2)
     throw "Tree of condition of conditional operator has not been rebuilded #6";
+
+console.log((function (x) {
+    switch (x) {
+        case 0:
+            {
+                var a;
+                console.log(x);
+                break;
+            }
+        case 1:
+            var b;
+            x = "pass";
+            break;
+        default
+            :
+    }
+    return x;
+})(1));

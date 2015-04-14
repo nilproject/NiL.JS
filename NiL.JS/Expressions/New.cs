@@ -126,6 +126,13 @@ namespace NiL.JS.Expressions
             }
         }
 
+        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        {
+            if (message != null && depth <= 1)
+                message(MessageLevel.Warning, new CodeCoordinates(0, Position, 0), "Do not use NewOperator for side effect");
+            return base.Build(ref _this, depth, variables, state, message, statistic, opts);
+        }
+
         public override T Visit<T>(Visitor<T> visitor)
         {
             return visitor.Visit(this);

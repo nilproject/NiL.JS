@@ -47,6 +47,8 @@ namespace NiL.JS.Expressions
         {
             codeContext = state;
 
+            if (message != null && depth <= 1)
+                message(MessageLevel.Warning, new CodeCoordinates(0, Position, 0), "Do not use comma as a statements delimiter");
             if (second == null && (depth > 2 || first is Expression))
             {
                 _this = first;

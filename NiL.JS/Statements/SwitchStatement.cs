@@ -73,9 +73,10 @@ namespace NiL.JS.Statements
                     }
                     else if (Parser.Validate(state.Code, "default", i) && Parser.isIdentificatorTerminator(state.Code[i + 7]))
                     {
+                        i += 7;
+                        while (char.IsWhiteSpace(state.Code[i])) i++;
                         if (cases[0] != null)
                             throw new JSException((new SyntaxError("Duplicate default case in switch at " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
-                        i += 7;
                         if (state.Code[i] != ':')
                             throw new JSException((new SyntaxError("Expected \":\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
                         i++;
@@ -161,7 +162,17 @@ namespace NiL.JS.Statements
             {
                 CodeNode stat = functions[i];
                 Parser.Build(ref stat, 1, variables, state, message, statistic, opts);
-                variables[functions[i].Name] = new VariableDescriptor(functions[i].Reference, true, functions[i].Reference.functionDepth);
+                VariableDescriptor desc = null;
+                if (!variables.TryGetValue(functions[i].name, out desc) || desc == null)
+                    variables[functions[i].name] = functions[i].Reference.descriptor;
+                else
+                {
+                    variables[functions[i].name] = functions[i].Reference.descriptor;
+                    for (var j = 0; j < desc.references.Count; j++)
+                        desc.references[j].descriptor = functions[i].Reference.descriptor;
+                    functions[i].Reference.descriptor.references.AddRange(desc.references);
+                    functions[i].Reference.descriptor.captured = functions[i].Reference.descriptor.captured || functions[i].Reference.descriptor.references.FindIndex(x => x.functionDepth > x.descriptor.defineDepth) != -1;
+                }
             }
             functions = null;
             for (int i = 1; i < cases.Length; i++)
