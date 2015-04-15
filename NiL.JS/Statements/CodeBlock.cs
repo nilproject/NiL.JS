@@ -304,7 +304,7 @@ namespace NiL.JS.Statements
                         var cn = lines[i];
                         Parser.Build(ref cn, depth < 0 ? 2 : System.Math.Max(1, depth), variables, state | (this.strict ? _BuildState.Strict : _BuildState.None), message, statistic, opts);
                         lines[i] = cn;
-                        unreachable |= cn is ReturnStatement || cn is BreakStatement || cn is ContinueStatement;
+                        unreachable |= cn is ReturnStatement || cn is BreakStatement || cn is ContinueStatement || cn is ThrowStatement;
                     }
                 }
             }
