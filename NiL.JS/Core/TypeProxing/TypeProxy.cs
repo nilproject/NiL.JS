@@ -279,7 +279,7 @@ namespace NiL.JS.Core.TypeProxing
                         .Union(hostedType.GetRuntimeMethods())
                         .Union(hostedType.GetRuntimeProperties())
                         .Union(hostedType.GetRuntimeFields())
-                        .Union(hostedType.GetRuntimeEvents()).ToArray(); // приходится делать вот так неоптимально, другого способа нет
+                        .Union(hostedType.GetRuntimeEvents()).ToArray(); // ГЇГ°ГЁГµГ®Г¤ГЁГІГ±Гї Г¤ГҐГ«Г ГІГј ГўГ®ГІ ГІГ ГЄ Г­ГҐГ®ГЇГІГЁГ¬Г Г«ГјГ­Г®, Г¤Г°ГіГЈГ®ГЈГ® Г±ГЇГ®Г±Г®ГЎГ  Г­ГҐГІ
 #else
                     var mmbrs = hostedType.GetMembers();
 #endif
@@ -320,7 +320,7 @@ namespace NiL.JS.Core.TypeProxing
                                 continue;
                             if (!(mmbrs[i] as MethodBase).IsPublic)
                                 continue;
-                            if ((mmbrs[i] as MethodBase).DeclaringType == typeof(object))
+                            if ((mmbrs[i] as MethodBase).DeclaringType == typeof(object) && mmbrs[i].Name == "GetType")
                                 continue;
                             if (mmbrs[i] is ConstructorInfo)
                                 continue;
