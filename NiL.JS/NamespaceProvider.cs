@@ -19,6 +19,8 @@ namespace NiL.JS
         {
             try
             {
+                if (assembly is System.Reflection.Emit.AssemblyBuilder)
+                    return;
                 var types = assembly.GetExportedTypes();
                 for (var i = 0; i < types.Length; i++)
                 {
