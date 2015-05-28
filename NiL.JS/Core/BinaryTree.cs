@@ -7,12 +7,10 @@ using System.Runtime.Serialization;
 namespace NiL.JS
 {
     /// <summary>
-    /// Предоставляет реализацию бинарного дерева поиска со строковым аргументом.
+    /// Предоставляет реализацию бинарного дерева поиска со строковым ключом.
     /// </summary>
 #if !PORTABLE
-#if !PORTABLE
     [Serializable]
-#endif
 #endif
     public class BinaryTree<TKey, TValue> : IDictionary<TKey, TValue>
 #if !PORTABLE
