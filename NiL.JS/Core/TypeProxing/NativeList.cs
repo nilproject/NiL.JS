@@ -124,14 +124,14 @@ namespace NiL.JS.Core.TypeProxing
         public NativeList()
         {
             this.data = new List<object>();
-            lenObj = 0;
+            lenObj = new Number(0);
         }
 
         [Hidden]
         public NativeList(IList data)
         {
             this.data = data;
-            lenObj = data.Count;
+            lenObj = new Number(data.Count);
         }
 
         public void push(Arguments args)

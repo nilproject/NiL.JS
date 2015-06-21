@@ -13,35 +13,35 @@ namespace NiL.JS.BaseLibrary
         [DoNotDelete]
         [DoNotEnumerate]
         [NotConfigurable]
-        public static readonly Number E = System.Math.E;
+        public static readonly Number E = new Number(System.Math.E);
         [DoNotDelete]
         [DoNotEnumerate]
         [NotConfigurable]
-        public static readonly Number PI = System.Math.PI;
+        public static readonly Number PI = new Number(System.Math.PI);
         [DoNotDelete]
         [DoNotEnumerate]
         [NotConfigurable]
-        public static readonly Number LN2 = System.Math.Log(2);
+        public static readonly Number LN2 = new Number(System.Math.Log(2));
         [DoNotDelete]
         [DoNotEnumerate]
         [NotConfigurable]
-        public static readonly Number LN10 = System.Math.Log(10);
+        public static readonly Number LN10 = new Number(System.Math.Log(10));
         [DoNotDelete]
         [DoNotEnumerate]
         [NotConfigurable]
-        public static readonly Number LOG2E = 1.0 / LN2;
+        public static readonly Number LOG2E = new Number(1.0 / System.Math.Log(2));
         [DoNotDelete]
         [DoNotEnumerate]
         [NotConfigurable]
-        public static readonly Number LOG10E = 1.0 / LN10;
+        public static readonly Number LOG10E = new Number(1.0 / System.Math.Log(10));
         [DoNotDelete]
         [DoNotEnumerate]
         [NotConfigurable]
-        public static readonly Number SQRT1_2 = System.Math.Sqrt(0.5);
+        public static readonly Number SQRT1_2 = new Number(System.Math.Sqrt(0.5));
         [DoNotDelete]
         [DoNotEnumerate]
         [NotConfigurable]
-        public static readonly Number SQRT2 = System.Math.Sqrt(2);
+        public static readonly Number SQRT2 = new Number(System.Math.Sqrt(2));
 
         [DoNotDelete]
         [DoNotEnumerate]

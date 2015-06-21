@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using NiL.JS.Core;
+#if !PORTABLE
 using NiL.JS.Core.JIT;
+#endif
 
 namespace NiL.JS.Expressions
 {

@@ -273,7 +273,7 @@ namespace NiL.JS.Statements
             }
             context.abort = AbortType.None;
             context.abortInfo = JSObject.undefined;
-            finallyBody.Evaluate(context);
+            context.lastResult = finallyBody.Evaluate(context) ?? context.lastResult;
             if (context.abort == AbortType.None)
             {
                 context.abort = abort;

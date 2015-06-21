@@ -741,7 +741,7 @@ namespace NiL.JS.BaseLibrary
             var argn = "";
             for (int i = 0; i < len; i++)
                 argn += args[i] + (i + 1 < len ? "," : "");
-            string code = "function(" + argn + "){" + Environment.NewLine + (len == -1 ? "undefined" : args[len]) + Environment.NewLine + "}";
+            string code = "function (" + argn + "){" + Environment.NewLine + (len == -1 ? "undefined" : args[len]) + Environment.NewLine + "}";
             var fs = FunctionExpression.Parse(new ParsingState(Tools.RemoveComments(code, 0), code, null), ref index);
             if (fs.IsParsed && code.Length == index)
             {

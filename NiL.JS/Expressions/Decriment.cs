@@ -4,17 +4,16 @@ using NiL.JS.BaseLibrary;
 
 namespace NiL.JS.Expressions
 {
+    public enum DecrimentType
+    {
+        Predecriment,
+        Postdecriment
+    }
 #if !PORTABLE
     [Serializable]
 #endif
     public sealed class Decriment : Expression
     {
-        public enum Type
-        {
-            Predecriment,
-            Postdecriment
-        }
-
         public override bool IsContextIndependent
         {
             get
@@ -51,10 +50,10 @@ namespace NiL.JS.Expressions
             }
         }
 
-        public Decriment(Expression op, Type type)
-            : base(op, type == Type.Postdecriment ? op : null, type == Type.Postdecriment)
+        public Decriment(Expression op, DecrimentType type)
+            : base(op, type == DecrimentType.Postdecriment ? op : null, type == DecrimentType.Postdecriment)
         {
-            if (type > Type.Postdecriment)
+            if (type > DecrimentType.Postdecriment)
                 throw new ArgumentException("type");
             if (op == null)
                 throw new ArgumentNullException("op");
@@ -186,7 +185,7 @@ namespace NiL.JS.Expressions
         {
             codeContext = state;
 
-            Parser.Build(ref first, depth + 1,variables, state, message, statistic, opts);
+            Parser.Build(ref first, depth + 1, variables, state, message, statistic, opts);
             if (depth <= 1 && second != null)
             {
                 first = second;

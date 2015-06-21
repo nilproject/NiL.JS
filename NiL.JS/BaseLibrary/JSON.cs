@@ -301,7 +301,8 @@ namespace NiL.JS.BaseLibrary
         private static void escapeIfNeed(StringBuilder sb, char c)
         {
             if ((c >= 0 && c <= 0x1f)
-                || (c == '\\'))
+                || (c == '\\')
+                || (c == '"'))
             {
                 switch (c)
                 {
@@ -333,6 +334,11 @@ namespace NiL.JS.BaseLibrary
                     case '\\':
                         {
                             sb.Append("\\\\");
+                            break;
+                        }
+                    case '"':
+                        {
+                            sb.Append("\\\"");
                             break;
                         }
                     default:
@@ -370,19 +376,18 @@ namespace NiL.JS.BaseLibrary
                     || obj.valueType == JSObjectType.Function)
                     return null;
                 obj = obj.Value as JSObject ?? obj;
+                StringBuilder res = null;
+                string strval = null;
                 if (obj.valueType < JSObjectType.Object)
                 {
-
                     if (obj.valueType == JSObjectType.String)
                     {
-                        return "\"" + (obj.oValue.ToString())
-                            //.Replace("\\", "\\\\")
-                            //.Replace("\"", "\\\"")
-                            //.Replace("\n", "\\n")
-                            //.Replace("\r", "\\r")
-                            //.Replace("\n\\\r", "\n\r")
-                            //.Replace("\r\\\n", "\r\n") 
-                            + '"';
+                        res = new StringBuilder("\"");
+                        strval = obj.ToString();
+                        for (var i = 0; i < strval.Length ; i++)
+                            escapeIfNeed(res, strval[i]);
+                        res.Append('"');
+                        return res.ToString();
                     }
                     return obj.ToString();
                 }
@@ -392,7 +397,7 @@ namespace NiL.JS.BaseLibrary
                 toJSONmemb = toJSONmemb.Value as JSObject ?? toJSONmemb;
                 if (toJSONmemb.valueType == JSObjectType.Function)
                     return stringifyImpl("", (toJSONmemb.oValue as Function).Invoke(obj, null), null, space, processed, null);
-                StringBuilder res = new StringBuilder(obj is Array ? "[" : "{");
+                res = new StringBuilder(obj is Array ? "[" : "{");
                 bool first = true;
                 foreach (var member in obj)
                 {
@@ -402,7 +407,7 @@ namespace NiL.JS.BaseLibrary
                         continue;
                     if (value.valueType == JSObjectType.Property)
                         value = ((value.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(obj, null);
-                    string strval = stringifyImpl(member, value, replacer, space, processed, args);
+                    strval = stringifyImpl(member, value, replacer, space, processed, args);
                     if (strval == null)
                         continue;
                     if (!first)
@@ -415,10 +420,13 @@ namespace NiL.JS.BaseLibrary
                     {
                         if (space != null)
                             res.Append(space);
+                        /*
                         for (var i = 0; i < strval.Length; i++)
                         {
                             escapeIfNeed(res, strval[i]);
                         }
+                        */
+                        res.Append(strval);
                     }
                     else
                     {
@@ -427,12 +435,23 @@ namespace NiL.JS.BaseLibrary
                         {
                             escapeIfNeed(res, member[i]);
                         }
-                        res.Append("\":").Append(space ?? "");
-                        for (var i = 0; i < strval.Length; i++)
+                        res.Append("\":")
+                           .Append(space ?? "");
+                        /*
+                        if (strval.Length > 0 && strval[0] == '"')
                         {
-                            if (strval.Length > 0 && strval[0] == '"')
+                            res.Append(strval[0]);
+                            for (var i = 1; i < strval.Length - 1; i++)
+                            {
                                 escapeIfNeed(res, strval[i]);
-                            else
+                            }
+                            if (strval.Length > 1)
+                                res.Append(strval[strval.Length - 1]);
+                        }
+                        else
+                        */
+                        {
+                            for (var i = 0; i < strval.Length; i++)
                             {
                                 res.Append(strval[i]);
                                 if (i >= Environment.NewLine.Length && strval.IndexOf(Environment.NewLine, i - 1, Environment.NewLine.Length) != -1)

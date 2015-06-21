@@ -416,7 +416,7 @@ t.__proto__.constructor().type(Number);
             }));
 #endif
 
-            int mode = 0
+            int mode = 5
                    ;
             switch (mode)
             {
@@ -504,14 +504,16 @@ t.__proto__.constructor().type(Number);
                 case 5:
                     {
                         runFile("uglifyjs.js");
-                        runFile(@"coffee-script.js");
-                        runFile(@"linq.js");
-                        runFile(@"arraytests.js");
-                        runFile(@"handlebars-v2.0.0.js");
+                        runFile("coffee-script.js");
+                        runFile("linq.js");
+                        runFile("arraytests.js");
+                        runFile("handlebars-v2.0.0.js");
                         Context.GlobalContext.DefineVariable("stderr").Assign(true);
-                        runFile(@"jsfunfuzz.js");
-                        runFile(@"md5.js");
+                        runFile("jsfunfuzz.js");
+                        runFile("md5.js");
                         runFile("aes.js");
+                        runFile("d3.min.js");
+                        runFile("knockout-3.3.0.js");
                         break;
                     }
                 case 6:
@@ -546,6 +548,21 @@ ast.print_to_string();");
                 case 8:
                     {
                         runFile("acorn_interpreter.js");
+                        break;
+                    }
+                case 9:
+                    {
+                        runFile("d3.min.js");
+                        break;
+                    }
+                case 10:
+                    {
+                        runFile("knockout-3.3.0.js");
+                        break;
+                    }
+                case 11:
+                    {
+                        runFile("sunspider-regexp-dna.js");
                         break;
                     }
                 case 151:

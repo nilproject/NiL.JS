@@ -173,9 +173,6 @@
     <Compile Include="..\NiL.JS\Core\GlobalObject.cs">
       <Link>Core\GlobalObject.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Core\JIT\TreeBuildingState.cs">
-      <Link>Core\JIT\TreeBuildingState.cs</Link>
-    </Compile>
     <Compile Include="..\NiL.JS\Core\JSException.cs">
       <Link>Core\JSException.cs</Link>
     </Compile>
@@ -184,6 +181,9 @@
     </Compile>
     <Compile Include="..\NiL.JS\Core\Modules\AllowUnsafeCallAttribute.cs">
       <Link>Core\Modules\AllowUnsafeCallAttribute.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\Core\Modules\ArgumentsLengthAttribute.cs">
+      <Link>Core\Modules\ArgumentsLengthAttribute.cs</Link>
     </Compile>
     <Compile Include="..\NiL.JS\Core\Modules\ConvertValueAttribute.cs">
       <Link>Core\Modules\ConvertValueAttribute.cs</Link>
@@ -196,6 +196,9 @@
     </Compile>
     <Compile Include="..\NiL.JS\Core\Modules\FieldAttribute.cs">
       <Link>Core\Modules\FieldAttribute.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\Core\Modules\ForceUse.cs">
+      <Link>Core\TypeProxing\ForceUse.cs</Link>
     </Compile>
     <Compile Include="..\NiL.JS\Core\Modules\HiddenAttribute.cs">
       <Link>Core\Modules\HiddenAttribute.cs</Link>
@@ -519,7 +522,9 @@
       <Link>Statements\WithStatement.cs</Link>
     </Compile>
     <Compile Include="Core\Backward.cs" />
-    <Compile Include="Core\Modules\ArgumentsLengthAttribute.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Core\JIT\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

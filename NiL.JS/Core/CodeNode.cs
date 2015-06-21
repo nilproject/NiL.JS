@@ -2,8 +2,11 @@
 using System.Collections.Generic;
 using System.Reflection;
 using NiL.JS.BaseLibrary;
-using NiL.JS.Core.JIT;
 using NiL.JS.Expressions;
+
+#if !PORTABLE
+using NiL.JS.Core.JIT;
+#endif
 
 namespace NiL.JS.Core
 {

@@ -200,8 +200,8 @@ namespace NiL.JS.Statements
                 }
                 else if (condition is NiL.JS.Expressions.More)
                 {
-                    variable = (condition as NiL.JS.Expressions.Less).SecondOperand as VariableReference;
-                    limit = (condition as NiL.JS.Expressions.Less).FirstOperand as Constant;
+                    variable = (condition as NiL.JS.Expressions.More).SecondOperand as VariableReference;
+                    limit = (condition as NiL.JS.Expressions.More).FirstOperand as Constant;
                 }
                 else if (condition is NiL.JS.Expressions.NotEqual)
                 {

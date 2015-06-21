@@ -165,6 +165,7 @@ namespace NiL.JS.Core
                     && (oValue as JSObject) != null)
                 {
                     (oValue as JSObject).__proto__ = value;
+                    __prototype = null;
                     return;
                 }
                 if (value == null)
@@ -180,13 +181,13 @@ namespace NiL.JS.Core
                     return;
                 }
                 var c = value.oValue as JSObject ?? value;
-                while (c != Null && c.valueType > JSObjectType.Undefined)
+                while (c != null && c != Null && c.valueType > JSObjectType.Undefined)
                 {
-                    if (c.oValue == this)
+                    if (c == this || c.oValue == this)
                         throw new JSException(new Error("Try to set cyclic __proto__ value."));
-                    c = c.__proto__.oValue as JSObject ?? c.__proto__;
+                    c = c.__proto__;
                 }
-                __prototype = value;
+                __prototype = value.oValue as JSObject ?? value;
             }
         }
 
@@ -762,7 +763,7 @@ namespace NiL.JS.Core
             this.dValue = value.dValue;
             this.oValue = value.oValue;
             this.fields = null;
-            this.__prototype = value.__prototype;
+            this.__prototype = null;
             this.attributes =
                 (this.attributes & ~JSObjectAttributesInternal.PrivateAttributes)
                 | (value.attributes & JSObjectAttributesInternal.PrivateAttributes);

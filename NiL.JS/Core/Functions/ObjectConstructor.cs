@@ -1,4 +1,5 @@
 ﻿using System;
+using NiL.JS.BaseLibrary;
 using NiL.JS.Core.TypeProxing;
 
 namespace NiL.JS.Core.Functions
@@ -11,7 +12,7 @@ namespace NiL.JS.Core.Functions
         public ObjectConstructor(TypeProxy proxy)
             : base(proxy)
         {
-            _length = 1;
+            _length = new Number(1);
         }
 
         public override NiL.JS.Core.JSObject Invoke(JSObject thisBind, Arguments args)

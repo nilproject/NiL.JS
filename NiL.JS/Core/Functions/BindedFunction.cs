@@ -62,7 +62,7 @@ namespace NiL.JS.Core.Functions
             : base(null, proto.creator)
         {
             if (_length == null)
-                _length = 0;
+                _length = new Number(0);
             _length.iValue = proto.length.iValue;
             this.proto = proto;
             this.thisBind = args[0];

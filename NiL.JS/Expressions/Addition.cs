@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Globalization;
 using NiL.JS.Core;
+#if !PORTABLE
 using NiL.JS.Core.JIT;
+#endif
 
 namespace NiL.JS.Expressions
 {

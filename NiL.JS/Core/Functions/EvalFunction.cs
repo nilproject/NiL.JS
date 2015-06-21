@@ -45,7 +45,7 @@ namespace NiL.JS.Core.Functions
         [Hidden]
         public EvalFunction()
         {
-            _length = 1;
+            _length = new Number(1);
         }
 
         [Hidden]

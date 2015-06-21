@@ -77,12 +77,12 @@ namespace NiL.JS.Core.Functions
             var ctors = typeProxy.hostedType.GetTypeInfo().DeclaredConstructors.ToArray();
             List<MethodProxy> ctorsL = new List<MethodProxy>(ctors.Length + (typeProxy.hostedType.GetTypeInfo().IsValueType ? 1 : 0));
 #else
-            var ctors = typeProxy.hostedType.GetConstructors();
+            var ctors = typeProxy.hostedType.GetConstructors(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
             List<MethodProxy> ctorsL = new List<MethodProxy>(ctors.Length + (typeProxy.hostedType.IsValueType ? 1 : 0));
 #endif
             for (int i = 0; i < ctors.Length; i++)
             {
-                if (!ctors[i].IsDefined(typeof(HiddenAttribute), false))
+                if (!ctors[i].IsDefined(typeof(HiddenAttribute), false) || ctors[i].IsDefined(typeof(ForceUse), true))
                 {
                     ctorsL.Add(new MethodProxy(ctors[i]));
                     length.iValue = System.Math.Max(ctorsL[ctorsL.Count - 1]._length.iValue, _length.iValue);
@@ -133,7 +133,7 @@ namespace NiL.JS.Core.Functions
             try
             {
                 if (!bynew && proxy.hostedType == typeof(Date))
-                    return new Date().toString();
+                    return new Date().ToString();
                 object obj;
                 if (proxy.hostedType == typeof(NiL.JS.BaseLibrary.Array))
                 {

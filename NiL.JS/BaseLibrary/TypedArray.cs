@@ -86,7 +86,7 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         protected TypedArray(int length)
         {
-            this.length = length;
+            this.length = new Number(length);
             this.buffer = new ArrayBuffer(length * BYTES_PER_ELEMENT);
             this.byteLength = length * BYTES_PER_ELEMENT;
             this.byteOffset = 0;
@@ -105,7 +105,7 @@ namespace NiL.JS.BaseLibrary
                 throw new JSException(new RangeError("Invalid offset"));
             this.byteLength = System.Math.Min(buffer.byteLength - byteOffset, length * BYTES_PER_ELEMENT);
             this.buffer = buffer;
-            this.length = byteLength / BYTES_PER_ELEMENT;
+            this.length = new Number(byteLength / BYTES_PER_ELEMENT);
             this.byteOffset = byteOffset;
             this.valueType = JSObjectType.Object;
             this.oValue = this;
@@ -119,7 +119,7 @@ namespace NiL.JS.BaseLibrary
                 throw new System.OutOfMemoryException();
             var length = (int)src.data.Length;
             this.buffer = new ArrayBuffer(length * BYTES_PER_ELEMENT);
-            this.length = length;
+            this.length = new Number(length);
             this.byteLength = length * BYTES_PER_ELEMENT;
             this.valueType = JSObjectType.Object;
             this.oValue = this;
@@ -174,7 +174,7 @@ namespace NiL.JS.BaseLibrary
             r.buffer = buffer;
             r.byteLength = System.Math.Max(0, System.Math.Min(ei, length.iValue) - bi) * BYTES_PER_ELEMENT;
             r.byteOffset = byteOffset + bi * BYTES_PER_ELEMENT;
-            r.length = r.byteLength / BYTES_PER_ELEMENT;
+            r.length = new Number(r.byteLength / BYTES_PER_ELEMENT);
             return r;
         }
 

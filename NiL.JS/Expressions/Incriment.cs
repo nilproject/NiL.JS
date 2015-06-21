@@ -5,17 +5,17 @@ using NiL.JS.BaseLibrary;
 
 namespace NiL.JS.Expressions
 {
-#if !PORTABLE
-    [Serializable]
-#endif
-    public sealed class Incriment : Expression
-    {
-        public enum Type
+        public enum IncrimentType
         {
             Preincriment,
             Postincriment
         }
 
+#if !PORTABLE
+    [Serializable]
+#endif
+    public sealed class Incriment : Expression
+    {
         public override bool IsContextIndependent
         {
             get
@@ -52,10 +52,10 @@ namespace NiL.JS.Expressions
             }
         }
 
-        public Incriment(Expression op, Type type)
-            : base(op, type == Type.Postincriment ? op : null, type == Type.Postincriment)
+        public Incriment(Expression op, IncrimentType type)
+            : base(op, type == IncrimentType.Postincriment ? op : null, type == IncrimentType.Postincriment)
         {
-            if (type > Type.Postincriment)
+            if (type > IncrimentType.Postincriment)
                 throw new ArgumentException("type");
             if (op == null)
                 throw new ArgumentNullException("op");

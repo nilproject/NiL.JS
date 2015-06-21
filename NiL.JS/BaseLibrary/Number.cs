@@ -390,7 +390,7 @@ namespace NiL.JS.BaseLibrary
         {
             return valueType == JSObjectType.Int ? iValue.GetHashCode() : dValue.GetHashCode();
         }
-
+#if !WRC
         [Hidden]
         public static implicit operator Number(int value)
         {
@@ -414,7 +414,7 @@ namespace NiL.JS.BaseLibrary
         {
             return value == null ? 0 : value.valueType == JSObjectType.Int ? value.iValue : (int)value.dValue;
         }
-
+#endif
         [DoNotEnumerate]
         public static JSObject isNaN(Arguments a)
         {

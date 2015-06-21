@@ -232,6 +232,7 @@
     <Compile Include="Core\Functions\MethodProxy.cs" />
     <Compile Include="Core\Modules\ConvertValueAttribute.cs" />
     <Compile Include="BaseLibrary\Debug.cs" />
+    <Compile Include="Core\Modules\ForceUse.cs" />
     <Compile Include="Core\Modules\ImmutablePrototypeAttribute.cs" />
     <Compile Include="Core\PropertyPair.cs" />
     <Compile Include="Core\RopeString.cs" />

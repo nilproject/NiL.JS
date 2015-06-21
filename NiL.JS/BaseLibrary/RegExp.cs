@@ -158,7 +158,7 @@ namespace NiL.JS.BaseLibrary
         {
             get
             {
-                return _source;
+                return new String(_source);
             }
         }
 
@@ -248,12 +248,14 @@ namespace NiL.JS.BaseLibrary
             return m.Success;
         }
 
+#if !WRC
         [CLSCompliant(false)]
         [DoNotEnumerate]
         public JSObject toString()
         {
             return ToString();
         }
+#endif
 
         [Hidden]
         public override string ToString()
