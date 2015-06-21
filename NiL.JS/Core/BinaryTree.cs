@@ -7,12 +7,10 @@ using System.Runtime.Serialization;
 namespace NiL.JS
 {
     /// <summary>
-    /// Предоставляет реализацию бинарного дерева поиска со строковым аргументом.
+    /// Предоставляет реализацию бинарного дерева поиска.
     /// </summary>
 #if !PORTABLE
-#if !PORTABLE
     [Serializable]
-#endif
 #endif
     public class BinaryTree<TKey, TValue> : IDictionary<TKey, TValue>
 #if !PORTABLE
@@ -142,9 +140,7 @@ namespace NiL.JS
         }
 
 #if !PORTABLE
-#if !PORTABLE
         [Serializable]
-#endif
 #endif
         internal sealed class Node
         {
@@ -926,9 +922,7 @@ namespace NiL.JS
     }
 
 #if !PORTABLE
-#if !PORTABLE
     [Serializable]
-#endif
 #endif
     public sealed class BinaryTree<TValue> : BinaryTree<string, TValue>
     {

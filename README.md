@@ -2,17 +2,19 @@
 NiL.JS
 ======
     
-Open source ECMAScript 5.1 (JavaScript) engine.<br/>
+Open source ECMAScript 5.1 (JavaScript) engine.
 Licensed under BSD 3-Clause License.
     
-* Works on Windows Runtime (Portable version)
-* No native dependence.
-* One assembly.
-* Automatically wrapping .NET objects. No changes are required.
-* Compiler as a Service (CaaS).
-* Compatible with ASP.NET.
 * High performance.
-* Integrated debugger (In "For developers" version).
+* Works on Windows Runtime (Portable version)
+* Support .NET 3.5.
+* Support Mono.
+* Compatible with ASP.NET.
+* Automatic wrapping .NET objects. No changes are required.
+* Support .NET namespaces (Standalon version).
+* Compiler as a Service (CaaS).
+* Integrated static analyser.
+* Integrated debugger ("For developers" version).
 * 99% of Sputnik tests passed.
 
 ## Sample
@@ -38,6 +40,7 @@ Licensed under BSD 3-Clause License.
 ## Known bugs
 
 **Async**
+
 Execution of function in two or more threads gives incorrect result. To fix it, need to write "eval();" in any part of method body (e.g. after "return;"). But, better way to avoid this is to create functions dynamically for each thread using eval or Function("some code").
 
 ## If you found bug
