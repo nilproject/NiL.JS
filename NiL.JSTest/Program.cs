@@ -416,7 +416,7 @@ t.__proto__.constructor().type(Number);
             }));
 #endif
 
-            int mode = 5
+            int mode = 100
                    ;
             switch (mode)
             {
@@ -663,7 +663,7 @@ ast.print_to_string();");
                 case 102:
                     {
                         for (var i = 0; i < 10; i++)
-                            runFile(@"sunspider-0.9.1\regexp-dna.js");
+                            runFile(@"sunspider-0.9.1\access-nsieve.js");
                         break;
                     }
                 case 103:

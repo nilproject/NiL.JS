@@ -76,9 +76,20 @@ namespace NiL.JS.BaseLibrary
             valueType = JSObjectType.Object;
             if (length < 0)
                 throw new JSException((new RangeError("Invalid array length.")));
-            data = new SparseArray<JSObject>();
+            data = new SparseArray<JSObject>((int)System.Math.Min(100000, (uint)length));
             if (length > 0)
-                data[length - 1] = null;
+            {
+                if (length > 1024 && length < 100000)
+                {
+                    for (var i = 0; i < length; i++)
+                    {
+                        data[i] = this;
+                        data[i] = null;
+                    }
+                }
+                else
+                    data[length - 1] = null;
+            }
             attributes |= JSObjectAttributesInternal.SystemObject;
         }
 
@@ -90,7 +101,20 @@ namespace NiL.JS.BaseLibrary
             valueType = JSObjectType.Object;
             if (length < 0 || (uint)length > uint.MaxValue)
                 throw new JSException((new RangeError("Invalid array length.")));
-            data = new SparseArray<JSObject>((int)length);
+            data = new SparseArray<JSObject>((int)System.Math.Min(100000, length));
+            if (length > 0)
+            {
+                if (length > 1024 && length < 100000)
+                {
+                    for (var i = 0; i < length; i++)
+                    {
+                        data[i] = this;
+                        data[i] = null;
+                    }
+                }
+                else
+                    data[(int)(length - 1)] = null;
+            }
             attributes |= JSObjectAttributesInternal.SystemObject;
         }
 
