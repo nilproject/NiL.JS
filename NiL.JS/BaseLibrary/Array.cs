@@ -1611,14 +1611,14 @@ namespace NiL.JS.BaseLibrary
             {
                 var selfa = self as Array;
                 var _length = selfa.data.Length;
-                long pos0 = System.Math.Min(Tools.JSObjectToInt64(args[0]), selfa.data.Length);
+                long pos0 = (long)System.Math.Min(Tools.JSObjectToDouble(args[0]), selfa.data.Length); // double потому, что нужно "с заполнением", а не "с переполнением"
                 long pos1 = 0;
                 if (args.Length > 1)
                 {
                     if (args[1].valueType <= JSObjectType.Undefined)
                         pos1 = 0;
                     else
-                        pos1 = System.Math.Min(Tools.JSObjectToInt64(args[1]), selfa.data.Length);
+                        pos1 = (long)System.Math.Min(Tools.JSObjectToDouble(args[1]), selfa.data.Length);
                 }
                 else
                     pos1 = selfa.data.Length;
