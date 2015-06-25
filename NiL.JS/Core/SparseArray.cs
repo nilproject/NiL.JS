@@ -171,8 +171,8 @@ namespace NiL.JS.Core
                                 return;
                             }
                             var oi = navyData[i].index;
-                            navyData[i].index = _index;
                             var ov = values[i];
+                            navyData[i].index = _index;
                             values[i] = value;
                             if (oi < pseudoLength)
                                 this[(int)oi] = ov;

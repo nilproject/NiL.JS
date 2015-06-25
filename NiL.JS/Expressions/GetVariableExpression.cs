@@ -68,7 +68,7 @@ namespace NiL.JS.Expressions
             {
                 var res = Descriptor.Get(context, false, functionDepth);
                 if (res.valueType < JSObjectType.Undefined && (!suspendThrow || forceThrow))
-                    throw new JSException((new NiL.JS.BaseLibrary.ReferenceError("Variable \"" + variableName + "\" is not defined.")));
+                    throwRefError();
                 if ((res.attributes & JSObjectAttributesInternal.Argument) != 0)
                     context.caller.buildArgumentsObject();
                 return res;
@@ -79,21 +79,29 @@ namespace NiL.JS.Expressions
         internal override JSObject Evaluate(Context context)
         {
             var res = descriptor.Get(context, false, functionDepth);
-            switch (res.valueType)
+            if (res.valueType == JSObjectType.NotExists)
             {
-                case JSObjectType.NotExists:
-                    if (suspendThrow)
-                        break;
-                    throw new JSException(new NiL.JS.BaseLibrary.ReferenceError("Variable \"" + variableName + "\" is not defined."));
-                case JSObjectType.Property:
-                    {
-                        var getter = (res.oValue as PropertyPair).get;
-                        if (getter == null)
-                            return JSObject.notExists;
-                        return getter.Invoke(context.objectSource, null);
-                    }
+                if (!suspendThrow)
+                    throwRefError();
+            }
+            else if (res.valueType == JSObjectType.Property)
+            {
+                return processProp(context, res);
             }
             return res;
+        }
+
+        private static JSObject processProp(Context context, JSObject res)
+        {
+            var getter = (res.oValue as PropertyPair).get;
+            if (getter == null)
+                return JSObject.notExists;
+            return getter.Invoke(context.objectSource, null);
+        }
+
+        private void throwRefError()
+        {
+            throw new JSException(new NiL.JS.BaseLibrary.ReferenceError("Variable \"" + variableName + "\" is not defined."));
         }
 
         protected override CodeNode[] getChildsImpl()

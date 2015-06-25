@@ -79,7 +79,7 @@ namespace NiL.JS.BaseLibrary
             data = new SparseArray<JSObject>((int)System.Math.Min(100000, (uint)length));
             if (length > 0)
             {
-                if (length > 1024 && length < 100000)
+                if (length > 4096 && length < 100000)
                 {
                     for (var i = 0; i < length; i++)
                     {
@@ -93,9 +93,7 @@ namespace NiL.JS.BaseLibrary
             attributes |= JSObjectAttributesInternal.SystemObject;
         }
 
-        [Hidden]
-        [CLSCompliant(false)]
-        public Array(long length)
+        internal Array(long length)
         {
             oValue = this;
             valueType = JSObjectType.Object;
@@ -103,18 +101,7 @@ namespace NiL.JS.BaseLibrary
                 throw new JSException((new RangeError("Invalid array length.")));
             data = new SparseArray<JSObject>((int)System.Math.Min(100000, length));
             if (length > 0)
-            {
-                if (length > 1024 && length < 100000)
-                {
-                    for (var i = 0; i < length; i++)
-                    {
-                        data[i] = this;
-                        data[i] = null;
-                    }
-                }
-                else
-                    data[(int)(length - 1)] = null;
-            }
+                data[(int)(length - 1)] = null;
             attributes |= JSObjectAttributesInternal.SystemObject;
         }
 
@@ -1624,14 +1611,14 @@ namespace NiL.JS.BaseLibrary
             {
                 var selfa = self as Array;
                 var _length = selfa.data.Length;
-                long pos0 = (long)System.Math.Min(Tools.JSObjectToDouble(args[0]), selfa.data.Length);
+                long pos0 = System.Math.Min(Tools.JSObjectToInt64(args[0]), selfa.data.Length);
                 long pos1 = 0;
                 if (args.Length > 1)
                 {
                     if (args[1].valueType <= JSObjectType.Undefined)
                         pos1 = 0;
                     else
-                        pos1 = (long)System.Math.Min(Tools.JSObjectToDouble(args[1]), selfa.data.Length);
+                        pos1 = System.Math.Min(Tools.JSObjectToInt64(args[1]), selfa.data.Length);
                 }
                 else
                     pos1 = selfa.data.Length;
@@ -1680,10 +1667,14 @@ namespace NiL.JS.BaseLibrary
                         selfa.data[(int)(key)] = null;
                     }
                 }
-                if (delta < 0) do
+                if (delta < 0)
+                {
+                    do
                         selfa.data.RemoveAt((int)(selfa.data.Length - 1));
                     while (++delta < 0);
+                }
                 for (var i = 2; i < args.length; i++)
+                {
                     if (args[i].IsExist)
                     {
                         var t = selfa.data[(int)(pos0 + i - 2)];
@@ -1692,6 +1683,7 @@ namespace NiL.JS.BaseLibrary
                         else
                             selfa.data[(int)(pos0 + i - 2)] = args[i].CloneImpl();
                     }
+                }
                 return res;
             }
             else // êòî-òî îòïðàâèë îáúåêò ñ ïîëåì length
