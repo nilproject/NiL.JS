@@ -20,15 +20,16 @@ namespace NiL.JS.Core
     {
         NotExists = 0,
         NotExistsInObject = 1,
-        Undefined = 3,
-        Bool = 7,
-        Int = 11,
-        Double = 19,
-        String = 35,
-        Object = 67,
-        Function = 131,
-        Date = 259,
-        Property = 515
+        Undefined = 3,  // 00000000011
+        Bool = 7,       // 00000000111
+        Int = 11,       // 00000001011
+        Double = 19,    // 00000010011
+        String = 35,    // 00000100011
+        Symbol = 67,    // 00001000011
+        Object = 131,   // 00010000011
+        Function = 259, // 00100000011
+        Date = 515,     // 01000000011
+        Property = 1027 // 10000000011
     }
 
 #if !PORTABLE
@@ -506,6 +507,7 @@ namespace NiL.JS.Core
                     }
                 case JSObjectType.Date:
                 case JSObjectType.Function:
+                case JSObjectType.Symbol:
                 case JSObjectType.Object:
                     {
                         if (oValue == this)

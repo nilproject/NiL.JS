@@ -35,6 +35,7 @@ namespace NiL.JS.Expressions
         internal override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             var res = base.Build(ref _this, depth,variables, state, message, statistic, opts);
+            /* // Так нельзя. (x > y) == !(x <= y) только если x и y числа или строки.
             if (!res)
             {
                 if (first.GetType() == typeof(LogicalNot))
@@ -78,6 +79,7 @@ namespace NiL.JS.Expressions
                     return true;
                 }
             }
+            */
             return res;
         }
 

@@ -68,6 +68,7 @@ namespace NiL.JS.Expressions
                     }
                 case JSObjectType.Date:
                 case JSObjectType.Function:
+                case JSObjectType.Symbol:
                 case JSObjectType.Object:
                     {
                         if (first.valueType != second.valueType)
@@ -78,7 +79,7 @@ namespace NiL.JS.Expressions
                             return object.ReferenceEquals(second.oValue, first.oValue);
                     }
                 default:
-                    return false;
+                    throw new NotImplementedException();
             }
         }
 

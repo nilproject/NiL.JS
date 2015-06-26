@@ -91,6 +91,7 @@ namespace NiL.JS.Core
                 globalContext.AttachModule(typeof(Function));
                 globalContext.AttachModule(typeof(Date));
                 globalContext.AttachModule(typeof(Number));
+                globalContext.AttachModule(typeof(Symbol));
                 globalContext.AttachModule(typeof(BaseLibrary.Boolean));
                 globalContext.AttachModule(typeof(Error));
                 globalContext.AttachModule(typeof(TypeError));

@@ -182,6 +182,7 @@ namespace NiL.JS.Expressions
                     }
                 case JSObjectType.Function:
                 case JSObjectType.Date:
+                case JSObjectType.Symbol:
                 case JSObjectType.Object:
                     {
                         if (tempContainer == null)

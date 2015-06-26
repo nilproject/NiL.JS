@@ -12,6 +12,7 @@ namespace NiL.JS.Expressions
         private static readonly JSObject numberString = "number";
         private static readonly JSObject undefinedString = "undefined";
         private static readonly JSObject stringString = "string";
+        private static readonly JSObject symbolString = "symbol";
         private static readonly JSObject booleanString = "boolean";
         private static readonly JSObject functionString = "function";
         private static readonly JSObject objectString = "object";
@@ -55,6 +56,10 @@ namespace NiL.JS.Expressions
                 case JSObjectType.String:
                     {
                         return stringString;
+                    }
+                case JSObjectType.Symbol:
+                    {
+                        return symbolString;
                     }
                 case JSObjectType.Bool:
                     {

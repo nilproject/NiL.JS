@@ -109,5 +109,11 @@ namespace NiL.JS.BaseLibrary
         {
             return ToString();
         }
+
+        [Hidden]
+        public JSException Wrap()
+        {
+            return new JSException(this);
+        }
     }
 }

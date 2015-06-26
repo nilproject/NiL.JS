@@ -208,6 +208,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BaseLibrary\Symbol.cs" />
     <Compile Include="CompilerNotification.cs" />
     <Compile Include="Core\Arguments.cs" />
     <Compile Include="Core\Backward.cs" />

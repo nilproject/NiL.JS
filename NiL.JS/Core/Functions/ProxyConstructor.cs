@@ -130,10 +130,18 @@ namespace NiL.JS.Core.Functions
             bool bynew = false;
             if (thisOverride != null)
                 bynew = thisOverride.oValue == typeof(Expressions.New) as object;
+            if (!bynew)
+            {
+                if (proxy.hostedType == typeof(Date))
+                    return new Date().ToString();
+            }
+            else
+            {
+                if (proxy.hostedType == typeof(Symbol))
+                    throw new TypeError("Symbol cannot be created as an object").Wrap();
+            }
             try
             {
-                if (!bynew && proxy.hostedType == typeof(Date))
-                    return new Date().ToString();
                 object obj;
                 if (proxy.hostedType == typeof(NiL.JS.BaseLibrary.Array))
                 {
