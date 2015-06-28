@@ -2,10 +2,6 @@
 using NiL.JS.BaseLibrary;
 using NiL.JS.Expressions;
 
-#if !PORTABLE
-using NiL.JS.Core.JIT;
-#endif
-
 namespace NiL.JS.Core
 {
 #if !PORTABLE

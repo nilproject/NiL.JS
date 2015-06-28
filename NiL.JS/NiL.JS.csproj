@@ -227,7 +227,6 @@
     <Compile Include="Core\BinaryTree.cs" />
     <Compile Include="Core\Functions\BindedFunction.cs" />
     <Compile Include="Core\CatchContext.cs" />
-    <Compile Include="Core\CompiledNode.cs" />
     <Compile Include="Core\Functions\MethodGroup.cs" />
     <Compile Include="Core\Functions\MethodProxy.cs" />
     <Compile Include="Core\Modules\ConvertValueAttribute.cs" />
@@ -256,8 +255,6 @@
     <Compile Include="Core\Functions\EvalFunction.cs" />
     <Compile Include="Core\Functions\ExternalFunction.cs" />
     <Compile Include="Core\GlobalFunctions.cs" />
-    <Compile Include="Core\JIT\JITHelpers.cs" />
-    <Compile Include="Core\JIT\TreeBuildingState.cs" />
     <Compile Include="Core\Modules\AllowUnsafeCallAttribute.cs" />
     <Compile Include="Core\Modules\FieldAttribute.cs" />
     <Compile Include="Core\Modules\NotConfigurable.cs" />

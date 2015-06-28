@@ -1,9 +1,6 @@
 using System;
 using System.Collections.Generic;
 using NiL.JS.Core;
-#if !PORTABLE
-using NiL.JS.Core.JIT;
-#endif
 
 namespace NiL.JS.Expressions
 {
@@ -114,20 +111,6 @@ namespace NiL.JS.Expressions
             return variableName;
         }
 
-#if !NET35 && !PORTABLE
-        internal override System.Linq.Expressions.Expression TryCompile(bool selfCompile, bool forAssign, Type expectedType, List<CodeNode> dynamicValues)
-        {
-            dynamicValues.Add(this);
-            var res = System.Linq.Expressions.Expression.Call(
-                System.Linq.Expressions.Expression.ArrayAccess(JITHelpers.DynamicValuesParameter, JITHelpers.cnst(dynamicValues.Count - 1)),
-                forAssign ? EvaluateForAssignMethod : EvaluateMethod,
-                JITHelpers.ContextParameter
-                );
-            if (expectedType == typeof(int))
-                res = System.Linq.Expressions.Expression.Call(JITHelpers.JSObjectToInt32Method, res);
-            return res;
-        }
-#endif
         public override T Visit<T>(Visitor<T> visitor)
         {
             return visitor.Visit(this);

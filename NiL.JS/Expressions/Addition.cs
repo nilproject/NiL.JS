@@ -2,9 +2,6 @@
 using System.Collections.Generic;
 using System.Globalization;
 using NiL.JS.Core;
-#if !PORTABLE
-using NiL.JS.Core.JIT;
-#endif
 
 namespace NiL.JS.Expressions
 {
@@ -350,28 +347,7 @@ namespace NiL.JS.Expressions
                 return;
             }
         }
-#if !PORTABLE && !NET35
-        internal override System.Linq.Expressions.Expression TryCompile(bool selfCompile, bool forAssign, Type expectedType, List<CodeNode> dynamicValues)
-        {
-            var ft = first.TryCompile(false, false, null, dynamicValues);
-            var st = second.TryCompile(false, false, null, dynamicValues);
-            if (ft == st) // null == null
-                return null;
-            if (ft == null && st != null)
-            {
-                second = new CompiledNode(second, st, JITHelpers._items.GetValue(dynamicValues) as CodeNode[]);
-                return null;
-            }
-            if (ft != null && st == null)
-            {
-                first = new CompiledNode(first, ft, JITHelpers._items.GetValue(dynamicValues) as CodeNode[]);
-                return null;
-            }
-            if (ft.Type == st.Type)
-                return System.Linq.Expressions.Expression.Add(ft, st);
-            return null;
-        }
-#endif
+
         public override T Visit<T>(Visitor<T> visitor)
         {
             return visitor.Visit(this);

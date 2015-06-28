@@ -3,10 +3,6 @@ using System.Collections.Generic;
 using NiL.JS.Core;
 using NiL.JS.BaseLibrary;
 
-#if !PORTABLE
-using NiL.JS.Core.JIT;
-#endif
-
 namespace NiL.JS.Statements
 {
 #if !PORTABLE
@@ -95,15 +91,7 @@ namespace NiL.JS.Statements
                 body = (Expressions.Expression)t;
             }
         }
-#if !PORTABLE && !NET35
-        internal override System.Linq.Expressions.Expression TryCompile(bool selfCompile, bool forAssign, Type expectedType, List<CodeNode> dynamicValues)
-        {
-            var b = body.TryCompile(false, false, null, dynamicValues);
-            if (b != null)
-                body = new CompiledNode(body, b, JITHelpers._items.GetValue(dynamicValues) as CodeNode[]);
-            return null;
-        }
-#endif
+
         public override T Visit<T>(Visitor<T> visitor)
         {
             return visitor.Visit(this);

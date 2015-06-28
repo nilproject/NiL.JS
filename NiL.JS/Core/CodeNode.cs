@@ -4,10 +4,6 @@ using System.Reflection;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Expressions;
 
-#if !PORTABLE
-using NiL.JS.Core.JIT;
-#endif
-
 namespace NiL.JS.Core
 {
     [Flags]
@@ -27,21 +23,7 @@ namespace NiL.JS.Core
     public abstract class CodeNode
     {
         internal static readonly CodeNode[] emptyCodeNodeArray = new CodeNode[0];
-#if !PORTABLE
-        internal static readonly MethodInfo EvaluateForAssignMethod = typeof(CodeNode).GetMethod("EvaluateForAssing", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic, null, new[] { typeof(Context) }, null);
-        internal static readonly MethodInfo EvaluateMethod = typeof(CodeNode).GetMethod("Evaluate", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic, null, new[] { typeof(Context) }, null);
 
-#if !NET35
-        internal System.Linq.Expressions.Expression JitOverCall(bool forAssign)
-        {
-            return System.Linq.Expressions.Expression.Call(
-                System.Linq.Expressions.Expression.Constant(this),
-                this.GetType().GetMethod(forAssign ? "EvaluateForAssing" : "Evaluate", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic, null, new[] { typeof(Context) }, null),
-                JITHelpers.ContextParameter
-                );
-        }
-#endif
-#endif
         public virtual bool Eliminated { get; internal set; }
         public virtual int Position { get; internal set; }
         public virtual int Length { get; internal set; }

@@ -111,39 +111,84 @@ if (!(null == 0))
     console.log("!(null == 0) pass");
 
 if (1)
-    console.log("if(1) pass");
+{}
 else
     console.log("if(1) fail");
 if (0)
     console.log("if(0) fail");
-else
-    console.log("if(0) pass");
 
 if ({})
-    console.log("if({}) pass");
+{}
 else
     console.log("if({}) fail");
 if (!{})
     console.log("if(!{}) fail");
-else
-    console.log("if(!{}) pass");
+
 var a = {}
 if (a == a)
-    console.log('if(a==a) pass');
+{}
 else
     console.log('if(a==a) fail');
+
 if (a != a)
     console.log('if(a!=a) fail');
+
+if (!(a == a))
+    console.log('if(!(a==a)) fail');
+
+if (!(a != a))
+{}
 else
-    console.log('if(a!=a) pass');
+    console.log('if(!(a!=a)) fail');
+
 if (a === a)
-    console.log('if(a===a) pass');
+{}
 else
     console.log('if(a===a) fail');
+
 if (a !== a)
     console.log('if(a!==a) fail');
+
+if (!(a === a))
+    console.log('if(!(a===a)) fail');
+
+if (!(a !== a))
+{}
 else
-    console.log('if(a!==a) pass');
+    console.log('if(!(a!==a)) fail');
+
+var b = {};
+if (a == b)
+    console.log('if(a==b) fail');
+
+if (a != b)
+{}
+else
+    console.log('if(a!=a) fail');
+
+if (!(a == b))
+{}
+else
+    console.log('if(!(a==b)) fail');
+
+if (!(a != b))
+    console.log('if(!(a!=b)) fail');
+
+if (a === b)
+    console.log('if(a===b) fail');
+
+if (a !== b)
+{}
+else
+    console.log('if(a!==b) fail');
+
+if (!(a === b))
+{}
+else
+    console.log('if(!(a===b)) fail');
+
+if (!(a !== b))
+    console.log('if(!(a!==b)) fail');
 
 for (var i = 0; i < 2; i++) if (i) break;
 console.log([, "pass", "fail"][i]);
