@@ -8,6 +8,9 @@ using NiL.JS.Core.Modules;
 
 namespace NiL.JS.BaseLibrary
 {
+#if !PORTABLE
+    [Serializable]
+#endif
     public sealed class Symbol : JSObject
     {
         private static readonly Dictionary<string, Symbol> symbolsCache = new Dictionary<string, Symbol>();
@@ -34,6 +37,13 @@ namespace NiL.JS.BaseLibrary
             Symbol result = null;
             symbolsCache.TryGetValue(description, out result);
             return result ?? new Symbol(description);
+        }
+
+        public static string keyFor(Symbol symbol)
+        {
+            if (symbol == null)
+                throw new TypeError("Invalid argument").Wrap();
+            return symbol.Description;
         }
 
         public override JSObject toString(Arguments args)
