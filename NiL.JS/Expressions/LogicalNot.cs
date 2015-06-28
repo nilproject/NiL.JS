@@ -34,52 +34,7 @@ namespace NiL.JS.Expressions
 
         internal override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
-            var res = base.Build(ref _this, depth,variables, state, message, statistic, opts);
-            /* // Так нельзя. (x > y) == !(x <= y) только если x и y числа или строки.
-            if (!res)
-            {
-                if (first.GetType() == typeof(LogicalNot))
-                {
-                    _this = new ToBool((first).FirstOperand) { Position = Position, Length = Length };
-                    return true;
-                }
-                if (first.GetType() == typeof(Json))
-                {
-                    _this = new Constant(false) { Position = Position, Length = Length };
-                    return true;
-                }
-                if (first.GetType() == typeof(ArrayExpression))
-                {
-                    _this = new Constant(false) { Position = Position, Length = Length };
-                    return true;
-                }
-                if (first.GetType() == typeof(Equal))
-                {
-                    _this = new NotEqual((first).FirstOperand, (first).SecondOperand) { Position = Position, Length = Length };
-                    return true;
-                }
-                if (first.GetType() == typeof(More))
-                {
-                    _this = new LessOrEqual((first).FirstOperand, (first).SecondOperand) { Position = Position, Length = Length };
-                    return true;
-                }
-                if (first.GetType() == typeof(Less))
-                {
-                    _this = new MoreOrEqual((first).FirstOperand, (first).SecondOperand) { Position = Position, Length = Length };
-                    return true;
-                }
-                if (first.GetType() == typeof(MoreOrEqual))
-                {
-                    _this = new Less((first).FirstOperand, (first).SecondOperand) { Position = Position, Length = Length };
-                    return true;
-                }
-                if (first.GetType() == typeof(LessOrEqual))
-                {
-                    _this = new More((first).FirstOperand, (first).SecondOperand) { Position = Position, Length = Length };
-                    return true;
-                }
-            }
-            */
+            var res = base.Build(ref _this, depth, variables, state, message, statistic, opts);
             return res;
         }
 
