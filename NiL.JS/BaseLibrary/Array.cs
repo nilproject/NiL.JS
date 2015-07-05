@@ -100,8 +100,8 @@ namespace NiL.JS.BaseLibrary
             if (length < 0 || (uint)length > uint.MaxValue)
                 throw new JSException((new RangeError("Invalid array length.")));
             data = new SparseArray<JSObject>((int)System.Math.Min(100000, length));
-            if (length > 0)
-                data[(int)(length - 1)] = null;
+            //if (length > 0)
+            //    data[(int)(length - 1)] = null;
             attributes |= JSObjectAttributesInternal.SystemObject;
         }
 

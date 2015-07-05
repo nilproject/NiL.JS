@@ -239,7 +239,7 @@ namespace NiL.JS.Statements
                     if (message != null)
                     {
                         if (desc.isDefined)
-                            message(MessageLevel.Warning, new CodeCoordinates(0, Position, Length), "Redefinition of the variable \"" + names[i] + "\". It's already defined.");
+                            message(MessageLevel.Warning, new CodeCoordinates(0, Position, Length), "Variable redefinition. \"" + names[i] + "\" already defined.");
                         else
                         {
                             if (desc.references != null && desc.references.Count > 0)

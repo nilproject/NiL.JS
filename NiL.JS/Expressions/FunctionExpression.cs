@@ -198,25 +198,40 @@ namespace NiL.JS.Expressions
 #if !PORTABLE
         [Serializable]
 #endif
-        internal sealed class ParameterReference : VariableReference
+        public sealed class ParameterDescriptor : VariableDescriptor
         {
-            private string name;
+            public bool IsRest { get; private set; }
 
+            internal ParameterDescriptor(string name, bool rest, int depth)
+                : base(name, depth)
+            {
+                this.IsRest = rest;
+            }
+
+            public override string ToString()
+            {
+                if (IsRest)
+                    return "..." + name;
+                return name;
+            }
+        }
+
+        public sealed class ParameterReference : VariableReference
+        {
             public override string Name
             {
-                get { return name; }
+                get { return descriptor.name; }
+            }
+
+            internal ParameterReference(string name, bool rest, int depth)
+            {
+                descriptor = new ParameterDescriptor(name, rest, depth);
+                descriptor.references.Add(this);
             }
 
             internal override JSObject Evaluate(Context context)
             {
-                return null;
-            }
-
-            public ParameterReference(string name, int fdepth)
-            {
-                functionDepth = fdepth;
-                this.name = name;
-                descriptor = new VariableDescriptor(this, true, fdepth);
+                throw new InvalidOperationException();
             }
 
             public override T Visit<T>(Visitor<T> visitor)
@@ -226,7 +241,7 @@ namespace NiL.JS.Expressions
 
             public override string ToString()
             {
-                return name;
+                return Descriptor.ToString();
             }
         }
 
@@ -235,8 +250,8 @@ namespace NiL.JS.Expressions
         internal int parametersStored;
         internal int recursiveDepth;
         #endregion
-        internal FunctionStatistics statistic;
-        internal VariableDescriptor[] arguments;
+        internal readonly FunctionStatistics statistic;
+        internal ParameterDescriptor[] parameters;
         internal CodeBlock body;
         internal string name;
         internal FunctionType type;
@@ -246,7 +261,7 @@ namespace NiL.JS.Expressions
 
         public CodeBlock Body { get { return body; } }
         public string Name { get { return name; } }
-        public ReadOnlyCollection<VariableDescriptor> Parameters { get { return new ReadOnlyCollection<VariableDescriptor>(arguments); } }
+        public ReadOnlyCollection<ParameterDescriptor> Parameters { get { return new ReadOnlyCollection<ParameterDescriptor>(parameters); } }
         public VariableReference Reference { get { return reference; } }
 
         public override bool IsContextIndependent
@@ -273,9 +288,10 @@ namespace NiL.JS.Expressions
         internal FunctionExpression(string name)
         {
             reference = new FunctionReference(this);
-            arguments = new VariableDescriptor[0];
+            parameters = new ParameterDescriptor[0];
             body = new CodeBlock(new CodeNode[0], false);
             body.variables = new VariableDescriptor[0];
+            statistic = new FunctionStatistics();
             this.name = name;
         }
 
@@ -323,7 +339,7 @@ namespace NiL.JS.Expressions
             var inExp = state.InExpression;
             state.InExpression = 0;
             while (char.IsWhiteSpace(code[i])) i++;
-            var parameters = new List<ParameterReference>();
+            var parameters = new List<ParameterDescriptor>();
             string name = null;
             int nameStartPos = 0;
             if (code[i] != '(')
@@ -347,14 +363,23 @@ namespace NiL.JS.Expressions
                 throw new JSException(new SyntaxError("Unexpected char at " + CodeCoordinates.FromTextPosition(code, i, 0)));
             while (code[i] != ')')
             {
-                if (code[i] == ',')
-                    do i++; while (char.IsWhiteSpace(code[i]));
+                bool rest = Parser.Validate(code, "...", ref i);
                 int n = i;
                 if (!Parser.ValidateName(code, ref i, state.strict.Peek()))
-                    throw new JSException((new SyntaxError("Invalid description of function arguments at " + CodeCoordinates.FromTextPosition(code, nameStartPos, 0))));
+                    throw new JSException((new SyntaxError("Invalid char at " + CodeCoordinates.FromTextPosition(code, nameStartPos, 0))));
                 var pname = Tools.Unescape(code.Substring(n, i - n), state.strict.Peek());
-                parameters.Add(new ParameterReference(pname, state.functionsDepth + 1) { Position = n, Length = i - n });
+                parameters.Add(new ParameterReference(pname, rest, state.functionsDepth + 1)
+                {
+                    Position = n,
+                    Length = i - n
+                }.Descriptor as ParameterDescriptor);
                 while (char.IsWhiteSpace(code[i])) i++;
+                if (code[i] == ',')
+                {
+                    if (rest)
+                        throw new SyntaxError("Rest parameters must be the last in parameters list").Wrap();
+                    do i++; while (char.IsWhiteSpace(code[i]));
+                }
             }
             switch (mode)
             {
@@ -371,9 +396,7 @@ namespace NiL.JS.Expressions
                         break;
                     }
             }
-            do
-                i++;
-            while (char.IsWhiteSpace(code[i]));
+            do i++; while (char.IsWhiteSpace(code[i]));
             if (code[i] != '{')
                 throw new JSException(new SyntaxError("Unexpected char at " + CodeCoordinates.FromTextPosition(code, i, 0)));
             bool needSwitchCWith = state.containsWith.Peek();
@@ -404,7 +427,7 @@ namespace NiL.JS.Expressions
                 state.functionsDepth--;
                 state.AllowReturn--;
             }
-            if (body.strict)
+            if (body.strict || (parameters.Count > 0 && parameters[parameters.Count - 1].IsRest))
             {
                 for (var j = parameters.Count; j-- > 1; )
                     for (var k = j; k-- > 0; )
@@ -415,14 +438,14 @@ namespace NiL.JS.Expressions
                 for (int j = parameters.Count; j-- > 0; )
                 {
                     if (parameters[j].Name == "arguments" || parameters[j].Name == "eval")
-                        throw new JSException((new SyntaxError("Parameters name may not be \"arguments\" or \"eval\" in strict mode at " + CodeCoordinates.FromTextPosition(code, parameters[j].Position, parameters[j].Length))));
+                        throw new JSException((new SyntaxError("Parameters name may not be \"arguments\" or \"eval\" in strict mode at " + CodeCoordinates.FromTextPosition(code, parameters[j].references[0].Position, parameters[j].references[0].Length))));
                 }
             }
             if (mode == FunctionType.Function && string.IsNullOrEmpty(name))
                 mode = FunctionType.AnonymousFunction;
             FunctionExpression func = new FunctionExpression(name)
             {
-                arguments = (from prm in parameters select prm.descriptor).ToArray(),
+                parameters = parameters.ToArray(),
                 body = body,
                 type = mode,
                 Position = index,
@@ -494,10 +517,10 @@ namespace NiL.JS.Expressions
 
         protected override CodeNode[] getChildsImpl()
         {
-            var res = new CodeNode[1 + arguments.Length + (Reference != null ? 1 : 0)];
-            for (var i = 0; i < arguments.Length; i++)
-                res[i] = arguments[i].references[0];
-            res[arguments.Length] = body;
+            var res = new CodeNode[1 + parameters.Length + (Reference != null ? 1 : 0)];
+            for (var i = 0; i < parameters.Length; i++)
+                res[i] = parameters[i].references[0];
+            res[parameters.Length] = body;
             if (Reference != null)
                 res[res.Length - 1] = Reference;
             return res;
@@ -540,20 +563,20 @@ namespace NiL.JS.Expressions
 
             var bodyCode = body as CodeNode;
             var nvars = new Dictionary<string, VariableDescriptor>();
-            for (var i = 0; i < arguments.Length; i++)
+            for (var i = 0; i < parameters.Length; i++)
             {
-                nvars[arguments[i].name] = arguments[i];
-                arguments[i].owner = this;
-                arguments[i].isDefined = true;
+                nvars[parameters[i].name] = parameters[i];
+                parameters[i].owner = this;
+                parameters[i].isDefined = true;
             }
-            var stat = new FunctionStatistics();
-            bodyCode.Build(ref bodyCode, 0, nvars, state & ~_BuildState.Conditional, message, stat, opts);
+            statistic.ContainsRestParameters = parameters.Length > 0 && parameters[parameters.Length - 1].IsRest;
+            bodyCode.Build(ref bodyCode, 0, nvars, state & ~_BuildState.Conditional, message, statistic, opts);
             if (type == FunctionType.Function && !string.IsNullOrEmpty(name))
             {
                 VariableDescriptor fdesc = null;
                 if (Reference.Descriptor == null)
                     Reference.descriptor = new VariableDescriptor(Reference, true, Reference.functionDepth);// { owner = this };
-                if (System.Array.FindIndex(arguments, x => x.Name == Reference.descriptor.name) == -1)
+                if (System.Array.FindIndex(parameters, x => x.Name == Reference.descriptor.name) == -1)
                     if (nvars.TryGetValue(name, out fdesc) && !fdesc.IsDefined)
                     {
                         foreach (var r in fdesc.references)
@@ -569,26 +592,12 @@ namespace NiL.JS.Expressions
                         }
                     }
             }
-            /*
-            for (var i = 0; i < arguments.Length; i++)
-            {
-                VariableDescriptor desc = null;
-                if (nvars.TryGetValue(arguments[i].Name, out desc) && desc.Inititalizator == null)
-                {
-                    desc.references.AddRange(arguments[i].references);
-                    desc.isDefined = true;
-                    desc.defineDepth = arguments[i].defineDepth;
-                    arguments[i] = desc;
-                    arguments[i].owner = this;
-                }
-            }
-            */
             if (message != null)
             {
-                for (var i = arguments.Length; i-- > 0; )
+                for (var i = parameters.Length; i-- > 0; )
                 {
-                    if (arguments[i].ReferenceCount == 1)
-                        message(MessageLevel.Recomendation, new CodeCoordinates(0, arguments[i].references[0].Position, 0), "Unused variable \"" + arguments[i].name + "\"");
+                    if (parameters[i].ReferenceCount == 1)
+                        message(MessageLevel.Recomendation, new CodeCoordinates(0, parameters[i].references[0].Position, 0), "Unused variable \"" + parameters[i].name + "\"");
                     else
                         break;
                 }
@@ -628,7 +637,6 @@ namespace NiL.JS.Expressions
                     }
                 }
             }
-            statistic = stat;
             checkUsings();
             return false;
         }
@@ -648,7 +656,7 @@ namespace NiL.JS.Expressions
                         if (message != null
                             && this.statistic.ResultType >= PredictedType.Undefined
                             && this.statistic.Returns[i].ResultType >= PredictedType.Undefined)
-                            message(MessageLevel.Warning, new CodeCoordinates(0, arguments[i].references[0].Position, 0), "Type of return value is ambiguous");
+                            message(MessageLevel.Warning, new CodeCoordinates(0, parameters[i].references[0].Position, 0), "Type of return value is ambiguous");
                         break;
                     }
                 }
@@ -702,9 +710,9 @@ namespace NiL.JS.Expressions
         public override string ToString()
         {
             var res = ((FunctionType)((int)type & 3)).ToString().ToLowerInvariant() + " " + name + "(";
-            if (arguments != null)
-                for (int i = 0; i < arguments.Length; )
-                    res += arguments[i] + (++i < arguments.Length ? "," : "");
+            if (parameters != null)
+                for (int i = 0; i < parameters.Length; )
+                    res += parameters[i] + (++i < parameters.Length ? "," : "");
             res += ")" + ((object)body ?? "{ [native code] }").ToString();
             return res;
         }

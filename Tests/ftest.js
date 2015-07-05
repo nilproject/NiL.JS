@@ -19,3 +19,9 @@ console.assert(Symbol() != Symbol(), 'Symbol() != Symbol()');
 console.assert(Symbol() !== Symbol(), 'Symbol() !== Symbol()');
 
 console.assert(Symbol("symbol") == Symbol.for("symbol"), 'Symbol("symbol") == Symbol.for("symbol")');
+
+function testRest(a, b, ...rest)
+{
+    console.log(rest);
+}
+testRest(1,2,3,4,5,6,7);

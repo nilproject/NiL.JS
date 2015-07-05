@@ -521,7 +521,7 @@ namespace NiL.JS.Core.Functions
                 };
 
                 for (int i = 0; i < arguments.Length; i++)
-                    _arguments[i] = NiL.JS.Expressions.Call.prepareArg(initiator, arguments[i], false, arguments.Length > 1);
+                    _arguments[i] = NiL.JS.Expressions.Call.PrepareArg(initiator, arguments[i], false, arguments.Length > 1);
                 initiator.objectSource = null;
 
                 return Invoke(self, _arguments);
@@ -534,7 +534,7 @@ namespace NiL.JS.Core.Functions
                 args = new object[targetCount];
                 for (int i = targetCount; i-- > 0; )
                 {
-                    var obj = arguments.Length > i ? NiL.JS.Expressions.Call.prepareArg(initiator, arguments[i], false, arguments.Length > 1) : notExists;
+                    var obj = arguments.Length > i ? NiL.JS.Expressions.Call.PrepareArg(initiator, arguments[i], false, arguments.Length > 1) : notExists;
                     if (obj.IsExist)
                     {
                         args[i] = marshal(obj, parameters[i].ParameterType);

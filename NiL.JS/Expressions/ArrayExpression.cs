@@ -94,7 +94,6 @@ namespace NiL.JS.Expressions
                     else
                         res.data[i] = (writableNotExist ?? (writableNotExist = new JSObject() { valueType = JSObjectType.NotExistsInObject, attributes = JSObjectAttributesInternal.SystemObject }));
                 }
-                //res.data[elements.Length - 1] = res.data[elements.Length - 1];
             }
             return res;
         }

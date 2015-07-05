@@ -48,11 +48,12 @@ namespace NiL.JS.Core
         }
     }
 
-    public sealed class FunctionStatistics
+    internal sealed class FunctionStatistics
     {
         public bool UseGetMember;
         public bool UseCall;
         public bool ContainsArguments;
+        public bool ContainsRestParameters;
         public bool ContainsEval;
         public bool ContainsWith;
         public bool ContainsInnerFunction;

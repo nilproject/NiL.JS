@@ -214,13 +214,15 @@ namespace NiL.JS.Core
         private void ensureCapacity(int p)
         {
             var newData = new _Item[Math.Max(4, p)];
-            for (var i = 0; i < navyData.Length; i++)
-                newData[i] = navyData[i];
-            navyData = newData;
             var newValues = new TValue[newData.Length];
-            if (values != null)
+            if (navyData.Length > 0)
+            {
+                for (var i = 0; i < navyData.Length; i++)
+                    newData[i] = navyData[i];
                 for (var i = 0; i < values.Length; i++)
                     newValues[i] = values[i];
+            }
+            navyData = newData;
             values = newValues;
         }
 

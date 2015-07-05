@@ -113,7 +113,7 @@ namespace NiL.JS.Expressions
             baseOptimize(ref _this, owner, message, opts, statistic);
         }
 
-        protected void baseOptimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal void baseOptimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             var f = first as CodeNode;
             var s = second as CodeNode;

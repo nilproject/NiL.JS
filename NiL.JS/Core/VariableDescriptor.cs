@@ -25,7 +25,7 @@ namespace NiL.JS.Core
 #if !PORTABLE
     [Serializable]
 #endif
-    public sealed class VariableDescriptor
+    public class VariableDescriptor
     {
         internal int defineDepth;
         internal JSObject cacheRes;
@@ -34,17 +34,15 @@ namespace NiL.JS.Core
         internal readonly string name;
         internal CodeNode owner;
         internal bool captured;
-        internal bool isReadOnly;
         internal List<CodeNode> assignations;
         internal PredictedType lastPredictedType;
 
         internal bool isDefined;
         public bool IsDefined { get { return isDefined; } }
-        public CodeNode Owner
-        {
-            get { return owner; }
-        }
-        public CodeNode Inititalizator { get; internal set; }
+        public CodeNode Owner { get { return owner; } }
+        internal bool isReadOnly;
+        public bool IsReadOnly { get { return isReadOnly; } }
+        public Expression Inititalizator { get; internal set; }
         public string Name { get { return name; } }
         public int ReferenceCount { get { return references.Count; } }
         public ReadOnlyCollection<CodeNode> Assignations { get { return assignations == null ? null : assignations.AsReadOnly(); } }
@@ -122,8 +120,7 @@ namespace NiL.JS.Core
             this.name = proto.Name;
             if (proto is FunctionExpression.FunctionReference)
                 Inititalizator = (proto as FunctionExpression.FunctionReference).Owner;
-            references = new List<VariableReference>();
-            references.Add(proto);
+            references = new List<VariableReference>() { proto };
             proto.descriptor = this;
             this.isDefined = defined;
         }

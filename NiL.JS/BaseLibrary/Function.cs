@@ -701,7 +701,7 @@ namespace NiL.JS.BaseLibrary
                 if (_length == null)
                 {
                     _length = new Number(0) { attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum };
-                    _length.iValue = creator.arguments.Length;
+                    _length.iValue = creator.parameters.Length;
                 }
                 return _length;
             }
@@ -815,13 +815,12 @@ namespace NiL.JS.BaseLibrary
                 // быстро выполнить не получилось. 
                 // Попробуем чуточку медленее
                 if (creator != null
-                    && creator.statistic != null
                     && !creator.statistic.ContainsArguments
+                    && !creator.statistic.ContainsRestParameters
                     && !creator.statistic.ContainsEval
                     && !creator.statistic.ContainsWith
-                    && creator.arguments.Length == arguments.Length // из-за необходимости иметь возможность построить аргументы, если они потребуются
-                    && arguments.Length < 9
-                    )
+                    && creator.parameters.Length == arguments.Length // из-за необходимости иметь возможность построить аргументы, если они потребуются
+                    && arguments.Length < 9)
                 {
                     return fastInvoke(self, arguments, initiator);
                 }
@@ -833,9 +832,26 @@ namespace NiL.JS.BaseLibrary
                 caller = initiator.strict && initiator.caller != null && initiator.caller.creator.body.strict ? Function.propertiesDummySM : initiator.caller,
                 length = arguments.Length
             };
-
-            for (int i = 0; i < arguments.Length; i++)
-                _arguments[i] = Call.prepareArg(initiator, arguments[i], false, arguments.Length > 1);
+            if (creator.statistic.ContainsRestParameters)
+            {
+                for (int i = 0; i < arguments.Length; i++)
+                {
+                    if (creator.parameters[i].IsRest)
+                    {
+                        var restArr = new Array((long)(arguments.Length - i));
+                        _arguments[i] = restArr;
+                        for (; i < arguments.Length; i++)
+                            restArr.data.Add(Call.PrepareArg(initiator, arguments[i], false, arguments.Length > 1));
+                    }
+                    else
+                        _arguments[i] = Call.PrepareArg(initiator, arguments[i], false, arguments.Length > 1);
+                }
+            }
+            else
+            {
+                for (int i = 0; i < arguments.Length; i++)
+                    _arguments[i] = Call.PrepareArg(initiator, arguments[i], false, arguments.Length > 1);
+            }
             initiator.objectSource = null;
 
             return Invoke(self, _arguments);
@@ -979,10 +995,10 @@ namespace NiL.JS.BaseLibrary
                         creator.body.localVariables[i].cacheRes = null;
                         creator.body.localVariables[i].cacheContext = null;
                     }
-                    for (i = creator.arguments.Length; i-- > 0; )
+                    for (i = creator.parameters.Length; i-- > 0; )
                     {
-                        creator.arguments[i].cacheRes = null;
-                        creator.arguments[i].cacheContext = null;
+                        creator.parameters[i].cacheRes = null;
+                        creator.parameters[i].cacheContext = null;
                     }
                 }
             }
@@ -1023,7 +1039,7 @@ namespace NiL.JS.BaseLibrary
         {
             JSObject a0, a1, a2, a3, a4, a5, a6, a7; // Вместо кучи, выделяем память на стеке
 
-            var m = System.Math.Min(creator.arguments.Length, arguments.Length);
+            var m = System.Math.Min(creator.parameters.Length, arguments.Length);
             switch (m)
             {
                 case 0:
@@ -1167,22 +1183,22 @@ namespace NiL.JS.BaseLibrary
                 default:
                     throw new ArgumentException("To many arguments");
             }
-            for (int i = m; i < creator.arguments.Length; i++)
+            for (int i = m; i < creator.parameters.Length; i++)
             {
-                if (creator.arguments[i].assignations != null)
-                    creator.arguments[i].cacheRes = new JSObject()
+                if (creator.parameters[i].assignations != null)
+                    creator.parameters[i].cacheRes = new JSObject()
                     {
                         valueType = JSObjectType.Undefined,
                         attributes = JSObjectAttributesInternal.Argument
                     };
                 else
-                    creator.arguments[i].cacheRes = undefined;
-                creator.arguments[i].cacheContext = internalContext;
-                if (creator.arguments[i].captured)
+                    creator.parameters[i].cacheRes = undefined;
+                creator.parameters[i].cacheContext = internalContext;
+                if (creator.parameters[i].captured)
                 {
                     if (internalContext.fields == null)
                         internalContext.fields = createFields();
-                    internalContext.fields[creator.arguments[i].Name] = creator.arguments[i].cacheRes;
+                    internalContext.fields[creator.parameters[i].Name] = creator.parameters[i].cacheRes;
                 }
             }
         }
@@ -1190,13 +1206,13 @@ namespace NiL.JS.BaseLibrary
         private void setPrmFst(int index, JSObject value, Context context)
         {
             value.attributes |= JSObjectAttributesInternal.Argument;
-            creator.arguments[index].cacheRes = value;
-            creator.arguments[index].cacheContext = context;
-            if (creator.arguments[index].captured)
+            creator.parameters[index].cacheRes = value;
+            creator.parameters[index].cacheContext = context;
+            if (creator.parameters[index].captured)
             {
                 if (context.fields == null)
                     context.fields = createFields();
-                context.fields[creator.arguments[index].name] = value;
+                context.fields[creator.parameters[index].name] = value;
             }
         }
 
@@ -1209,12 +1225,12 @@ namespace NiL.JS.BaseLibrary
                     caller = _caller,
                     callee = this
                 };
-                for (var i = 0; i < creator.arguments.Length; i++)
+                for (var i = 0; i < creator.parameters.Length; i++)
                 {
                     if (creator.body.strict)
-                        args.Add(creator.arguments[i].cacheRes.CloneImpl());
+                        args.Add(creator.parameters[i].cacheRes.CloneImpl());
                     else
-                        args.Add(creator.arguments[i].cacheRes);
+                        args.Add(creator.parameters[i].cacheRes);
                 }
                 this._arguments = args;
             }
@@ -1224,12 +1240,12 @@ namespace NiL.JS.BaseLibrary
         {
             var cea = creator.statistic.ContainsEval || creator.statistic.ContainsArguments;
             var cew = creator.statistic.ContainsEval || creator.statistic.ContainsWith;
-            int min = System.Math.Min(args.length, creator.arguments.Length);
+            int min = System.Math.Min(args.length, creator.parameters.Length);
             int i = 0;
             for (; i < min; i++)
             {
                 JSObject t = args[i];
-                var arg = creator.arguments[i];
+                var arg = creator.parameters[i];
                 if (body.strict)
                 {
                     if (arg.assignations != null)
@@ -1273,9 +1289,9 @@ namespace NiL.JS.BaseLibrary
                     args[i] = t = t.CloneImpl();
                 t.attributes |= JSObjectAttributesInternal.Argument;
             }
-            for (; i < creator.arguments.Length; i++)
+            for (; i < creator.parameters.Length; i++)
             {
-                var arg = creator.arguments[i];
+                var arg = creator.parameters[i];
                 if (cew || arg.assignations != null)
                     arg.cacheRes = new JSObject()
                     {
@@ -1348,13 +1364,13 @@ namespace NiL.JS.BaseLibrary
 
         private void storeParameters()
         {
-            if (creator.arguments.Length != 0)
+            if (creator.parameters.Length != 0)
             {
-                var context = creator.arguments[0].cacheContext;
+                var context = creator.parameters[0].cacheContext;
                 if (context.fields == null)
-                    context.fields = createFields(creator.arguments.Length);
-                for (var i = 0; i < creator.arguments.Length; i++)
-                    context.fields[creator.arguments[i].Name] = creator.arguments[i].cacheRes;
+                    context.fields = createFields(creator.parameters.Length);
+                for (var i = 0; i < creator.parameters.Length; i++)
+                    context.fields[creator.parameters[i].Name] = creator.parameters[i].cacheRes;
             }
             if (creator.body.localVariables != null && creator.body.localVariables.Length > 0)
             {
@@ -1417,9 +1433,9 @@ namespace NiL.JS.BaseLibrary
                     break;
             }
             res.Append(" ").Append(name).Append("(");
-            if (creator != null && creator.arguments != null)
-                for (int i = 0; i < creator.arguments.Length; )
-                    res.Append(creator.arguments[i].Name).Append(++i < creator.arguments.Length ? "," : "");
+            if (creator != null && creator.parameters != null)
+                for (int i = 0; i < creator.parameters.Length; )
+                    res.Append(creator.parameters[i].Name).Append(++i < creator.parameters.Length ? "," : "");
             res.Append(")");
             if (!headerOnly)
                 res.Append(' ').Append(creator != creatorDummy ? creator.body as object : "{ [native code] }");

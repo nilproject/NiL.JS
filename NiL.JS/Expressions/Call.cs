@@ -52,7 +52,7 @@ namespace NiL.JS.Expressions
             this.arguments = arguments;
         }
 
-        internal static JSObject prepareArg(Context context, CodeNode source, bool tail, bool clone)
+        internal static JSObject PrepareArg(Context context, CodeNode source, bool tail, bool clone)
         {
             context.objectSource = null;
             var a = source.Evaluate(context);
@@ -111,7 +111,7 @@ namespace NiL.JS.Expressions
                         length = this.arguments.Length
                     };
                     for (int i = 0; i < this.arguments.Length; i++)
-                        arguments[i] = prepareArg(context, this.arguments[i], tail, this.arguments.Length > 1);
+                        arguments[i] = PrepareArg(context, this.arguments[i], tail, this.arguments.Length > 1);
                     context.objectSource = null;
 
                     arguments.callee = func;
@@ -171,14 +171,14 @@ namespace NiL.JS.Expressions
                         var func = f.Inititalizator as FunctionExpression;
                         if (func != null)
                         {
-                            for (var i = 0; i < func.arguments.Length; i++)
+                            for (var i = 0; i < func.parameters.Length; i++)
                             {
                                 if (i >= arguments.Length)
                                     break;
-                                if (func.arguments[i].lastPredictedType == PredictedType.Unknown)
-                                    func.arguments[i].lastPredictedType = arguments[i].ResultType;
-                                else if (Tools.CompareWithMask(func.arguments[i].lastPredictedType, arguments[i].ResultType, PredictedType.Group) != 0)
-                                    func.arguments[i].lastPredictedType = PredictedType.Ambiguous;
+                                if (func.parameters[i].lastPredictedType == PredictedType.Unknown)
+                                    func.parameters[i].lastPredictedType = arguments[i].ResultType;
+                                else if (Tools.CompareWithMask(func.parameters[i].lastPredictedType, arguments[i].ResultType, PredictedType.Group) != 0)
+                                    func.parameters[i].lastPredictedType = PredictedType.Ambiguous;
                             }
                         }
                     }
