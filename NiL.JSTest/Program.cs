@@ -380,9 +380,8 @@ for (var i = 0; i < 10000000; )
         private static void testEx()
         {
             var t = new Script(@"
-t.__proto__.constructor().type(Number);
+({ get : function() { return this; } })
 ");
-            t.Context.DefineVariable("t").Assign(new JSObject(new Struct()));
             t.Invoke();
         }
 
@@ -416,7 +415,7 @@ t.__proto__.constructor().type(Number);
             }));
 #endif
 
-            int mode = 2
+            int mode = 1
                    ;
             switch (mode)
             {

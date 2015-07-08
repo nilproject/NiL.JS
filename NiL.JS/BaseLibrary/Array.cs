@@ -79,7 +79,7 @@ namespace NiL.JS.BaseLibrary
             data = new SparseArray<JSObject>((int)System.Math.Min(100000, (uint)length));
             if (length > 0)
             {
-                if (length > 2048 && length < 100000)
+                if (length > 4096 && length < 100000)
                 {
                     for (var i = 0; i < length; i++)
                     {

@@ -22,10 +22,11 @@ namespace NiL.JS.BaseLibrary
     public enum FunctionType
     {
         Function = 0,
-        Get = 1,
-        Set = 2,
-        AnonymousFunction = 4,
-        Generator = 8
+        Get,
+        Set,
+        AnonymousFunction,
+        Generator,
+        Method
     }
 
 #if !PORTABLE

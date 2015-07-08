@@ -25,3 +25,42 @@ function testRest(a, b, ...rest)
     console.log(rest);
 }
 testRest(1,2,3,4,5,6,7);
+
+class BaseClass
+{
+    constructor()
+    {
+        this.a = "a";
+    }
+    get A()
+    {
+        return this.a;
+    }
+    getA()
+    {
+        return this.a;
+    }
+    static getA()
+    {
+        return "static a";
+    }
+    static get A()
+    {
+        return "static a";
+    }
+}
+
+class DerivedClass extends BaseClass
+{
+    constructor()
+    {
+        super();
+        this.b = "b";
+    }
+    get B()
+    {
+        return this.b;
+    }
+}
+
+var a = new DerivedClass();

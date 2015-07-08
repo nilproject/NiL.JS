@@ -335,6 +335,12 @@ namespace NiL.JS.Expressions
                             return new ParseResult() { IsParsed = false };
                         break;
                     }
+                case FunctionType.Method:
+                    {
+                        break;
+                    }
+                default:
+                    throw new NotImplementedException(mode.ToString());
             }
             var inExp = state.InExpression;
             state.InExpression = 0;
@@ -358,6 +364,8 @@ namespace NiL.JS.Expressions
             }
             else if (mode == FunctionType.Get || mode == FunctionType.Set)
                 throw new JSException(new SyntaxError("Getters and Setters must have name"));
+            else if (mode == FunctionType.Method)
+                throw new JSException(new SyntaxError("Methods must have name"));
             do i++; while (char.IsWhiteSpace(code[i]));
             if (code[i] == ',')
                 throw new JSException(new SyntaxError("Unexpected char at " + CodeCoordinates.FromTextPosition(code, i, 0)));

@@ -12,15 +12,13 @@ using NiL.JS.Expressions;
 namespace NiL.JS.Core
 {
 #if !PORTABLE
-#if !PORTABLE
     [Serializable]
-#endif
 #endif
     public enum JSObjectType
     {
         NotExists = 0,
         NotExistsInObject = 1,
-        Undefined = 3,  // 00000000011
+        Undefined = 3,  // 00000000011 // значение undefined говорит о том, что этот объект, вообще-то, определён, но вот его значение нет
         Bool = 7,       // 00000000111
         Int = 11,       // 00000001011
         Double = 19,    // 00000010011
@@ -31,11 +29,9 @@ namespace NiL.JS.Core
         Date = 515,     // 01000000011
         Property = 1027 // 10000000011
     }
-
-#if !PORTABLE
+    
 #if !PORTABLE
     [Serializable]
-#endif
 #endif
     [Flags]
     internal enum JSObjectAttributesInternal : uint
@@ -748,8 +744,6 @@ namespace NiL.JS.Core
             }
             return this;
         }
-
-        //private static readonly Func<object, IntPtr> getPtr = Activator.CreateInstance(typeof(Func<object, IntPtr>), null, (new Func<IntPtr, IntPtr>(x => x)).Method.MethodHandle.GetFunctionPointer()) as Func<object, IntPtr>;
 
         [Hidden]
         public virtual void Assign(JSObject value)

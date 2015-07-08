@@ -10,10 +10,11 @@ namespace NiL.JS.Core
     /// Объект-контейнер для внешних объектов. 
     /// Так же используется для типов наследников JSObject, имеющих valueType меньше Object, 
     /// с целью имитировать valueType == Object.
-    /// 
+    /// </summary>
+    /// <remarks>
     /// Был создан так как вместе с объектом требуется ещё хранить его аттрибуты, 
     /// которые могли разъехаться при переприсваиваниях
-    /// </summary>
+    /// </remarks>
     internal sealed class ObjectContainer : JSObject
     {
         private object instance;

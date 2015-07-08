@@ -17,7 +17,8 @@ namespace NiL.JS.Core
         Double = 0x42,
         String = 0x50,
         Object = 0x60,
-        Function = 0x70,
+        Function = 0x61,
+        Class = 0x62,
         Group = 0xF0,
         Full = 0xFF
     }

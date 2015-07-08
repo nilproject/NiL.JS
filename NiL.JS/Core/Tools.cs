@@ -488,6 +488,7 @@ namespace NiL.JS.Core
                         if (targetType == typeof(ulong)) return (ulong)jsobj.iValue;
                         if (targetType == typeof(double)) return (double)jsobj.iValue;
                         if (targetType == typeof(float)) return (float)jsobj.iValue;
+                        if (targetType == typeof(decimal)) return (float)jsobj.iValue;
                         break;
                     }
                 default:
