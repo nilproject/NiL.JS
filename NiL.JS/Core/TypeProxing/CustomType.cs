@@ -16,15 +16,15 @@ namespace NiL.JS.Core.TypeProxing
     {
         protected CustomType()
         {
-            valueType = JSObjectType.Object;
+            valueType = JSValueType.Object;
             oValue = this;
             attributes |= JSObjectAttributesInternal.SystemObject | JSObjectAttributesInternal.ReadOnly;
         }
 
         [CLSCompliant(false)]
-        [AllowUnsafeCall(typeof(JSObject))]
+        [AllowUnsafeCall(typeof(JSValue))]
         [DoNotEnumerate]
-        public new JSObject toString(Arguments args)
+        public new JSValue toString(Arguments args)
         {
             return ToString();
         }
@@ -32,27 +32,10 @@ namespace NiL.JS.Core.TypeProxing
         [Hidden]
         public override string ToString()
         {
-            if (oValue != this || valueType < JSObjectType.Object)
+            if (oValue != this || valueType < JSValueType.Object)
                 return base.ToString();
             else
                 return GetType().ToString();
-        }
-
-        internal protected override JSObject GetMember(JSObject name, bool forWrite, bool own)
-        {
-            return DefaultFieldGetter(name, forWrite, own);
-        }
-
-        [Hidden]
-        public override void Assign(JSObject value)
-        {
-            if ((attributes & JSObjectAttributesInternal.ReadOnly) == 0)
-            {
-#if DEBUG
-                System.Diagnostics.Debugger.Break();
-#endif
-                throw new InvalidOperationException("Try to assign to " + this.GetType().Name);
-            }
         }
 
         [Hidden]

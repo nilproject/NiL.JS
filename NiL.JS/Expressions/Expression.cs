@@ -10,7 +10,7 @@ namespace NiL.JS.Expressions
 #endif
     public abstract class Expression : CodeNode
     {
-        internal JSObject tempContainer;
+        internal JSValue tempContainer;
 
         internal protected virtual PredictedType ResultType
         {
@@ -64,7 +64,7 @@ namespace NiL.JS.Expressions
         internal protected Expression(Expression first, Expression second, bool createTempContainer)
         {
             if (createTempContainer)
-                tempContainer = new JSObject() { attributes = JSObjectAttributesInternal.Temporary };
+                tempContainer = new JSValue() { attributes = JSObjectAttributesInternal.Temporary };
             this.first = first;
             this.second = second;
         }
@@ -82,12 +82,12 @@ namespace NiL.JS.Expressions
                 try
                 {
                     var res = this.Evaluate(null);
-                    if (res.valueType == JSObjectType.Double
+                    if (res.valueType == JSValueType.Double
                         && !double.IsNegativeInfinity(1.0 / res.dValue)
                         && res.dValue == (double)(int)res.dValue)
                     {
                         res.iValue = (int)res.dValue;
-                        res.valueType = JSObjectType.Int;
+                        res.valueType = JSValueType.Int;
                     }
                     _this = new Constant(res);
                     return true;

@@ -27,18 +27,18 @@ namespace NiL.JS.Expressions
 
         }
 
-        internal override JSObject Evaluate(Context context)
+        internal override JSValue Evaluate(Context context)
         {
             var t = (uint)Tools.JSObjectToInt32(first.Evaluate(context));
             if (t <= int.MaxValue)
             {
                 tempContainer.iValue = (int)t;
-                tempContainer.valueType = JSObjectType.Int;
+                tempContainer.valueType = JSValueType.Int;
             }
             else
             {
                 tempContainer.dValue = (double)t;
-                tempContainer.valueType = JSObjectType.Double;
+                tempContainer.valueType = JSValueType.Double;
             }
             return tempContainer;
         }

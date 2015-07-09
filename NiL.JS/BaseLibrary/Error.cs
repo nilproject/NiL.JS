@@ -13,14 +13,14 @@ namespace NiL.JS.BaseLibrary
     public class Error
     {
         [DoNotEnumerate]
-        public virtual JSObject message
+        public virtual JSValue message
         {
             [Hidden]
             get;
             private set;
         }
         [DoNotEnumerate]
-        public virtual JSObject name
+        public virtual JSValue name
         {
             [Hidden]
             get;
@@ -81,7 +81,7 @@ namespace NiL.JS.BaseLibrary
             string mstring;
             string nstring;
             if (message == null
-                || message.valueType <= JSObjectType.Undefined
+                || message.valueType <= JSValueType.Undefined
                 || (mstring = message.ToString()) == "")
                 return name.ToString()
 #if CALLSTACKTOSTRING
@@ -89,7 +89,7 @@ namespace NiL.JS.BaseLibrary
 #endif
 ;
             if (name == null
-                || name.valueType <= JSObjectType.Undefined
+                || name.valueType <= JSValueType.Undefined
                 || (nstring = name.ToString()) == "")
                 return mstring
 #if CALLSTACKTOSTRING
@@ -105,13 +105,13 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [CLSCompliant(false)]
-        public JSObject toString()
+        public JSValue toString()
         {
             return ToString();
         }
 
         [Hidden]
-        public JSException Wrap()
+        internal JSException Wrap()
         {
             return new JSException(this);
         }

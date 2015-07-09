@@ -9,7 +9,7 @@ namespace NiL.JS.Expressions
 #endif
     public sealed class OpAssignCache : Expression
     {
-        private JSObject result;
+        private JSValue result;
 
         public CodeNode Source { get { return first; } }
 
@@ -39,17 +39,17 @@ namespace NiL.JS.Expressions
         {
         }
 
-        internal override JSObject EvaluateForAssing(Context context)
+        internal override JSValue EvaluateForAssing(Context context)
         {
             var res = first.EvaluateForAssing(context);
-            if (res.valueType == JSObjectType.Property)
-                result = (res.oValue as PropertyPair).get != null ? (res.oValue as PropertyPair).get.Invoke(context.objectSource, null) : JSObject.notExists;
+            if (res.valueType == JSValueType.Property)
+                result = (res.oValue as PropertyPair).get != null ? (res.oValue as PropertyPair).get.Invoke(context.objectSource, null) : JSValue.notExists;
             else
                 result = res;
             return res;
         }
 
-        internal override JSObject Evaluate(Context context)
+        internal override JSValue Evaluate(Context context)
         {
             var res = result;
             result = null;

@@ -135,10 +135,10 @@ namespace NiL.JS.Statements
             };
         }
 
-        internal override JSObject Evaluate(Context context)
+        internal override JSValue Evaluate(Context context)
         {
             var s = source.Evaluate(context);
-            JSObject v = null;
+            JSValue v = null;
             if (variable is Assign)
             {
                 variable.Evaluate(context);
@@ -147,9 +147,9 @@ namespace NiL.JS.Statements
             else
                 v = variable.EvaluateForAssing(context);
             if (!s.IsDefinded
-                || (s.valueType >= JSObjectType.Object && s.oValue == null)
+                || (s.valueType >= JSValueType.Object && s.oValue == null)
                 || body == null)
-                return JSObject.undefined;
+                return JSValue.undefined;
             int index = 0;
             HashSet<string> processedKeys = new HashSet<string>(StringComparer.Ordinal);
             while (s != null)
@@ -177,7 +177,7 @@ namespace NiL.JS.Statements
                             if (context.abort < AbortType.Return && me)
                             {
                                 context.abort = AbortType.None;
-                                context.abortInfo = JSObject.notExists;
+                                context.abortInfo = JSValue.notExists;
                             }
                             if (_break)
                                 return null;
@@ -207,7 +207,7 @@ namespace NiL.JS.Statements
                                 if (context.abort < AbortType.Return && me)
                                 {
                                     context.abort = AbortType.None;
-                                    context.abortInfo = JSObject.notExists;
+                                    context.abortInfo = JSValue.notExists;
                                 }
                                 if (_break)
                                     return null;
@@ -232,7 +232,7 @@ namespace NiL.JS.Statements
                         if (processedKeys.Contains(keys.Current))
                             continue;
                         processedKeys.Add(keys.Current);
-                        v.valueType = JSObjectType.String;
+                        v.valueType = JSValueType.String;
                         v.oValue = keys.Current;
                         v.Assign(s.GetMember(v, false, true));
 #if DEV
@@ -247,7 +247,7 @@ namespace NiL.JS.Statements
                             if (context.abort < AbortType.Return && me)
                             {
                                 context.abort = AbortType.None;
-                                context.abortInfo = JSObject.notExists;
+                                context.abortInfo = JSValue.notExists;
                             }
                             if (_break)
                                 return null;
@@ -256,7 +256,7 @@ namespace NiL.JS.Statements
                     }
                 }
                 s = s.__proto__;
-                if (s == JSObject.Null || !s.IsDefinded || (s.valueType >= JSObjectType.Object && s.oValue == null))
+                if (s == JSValue.Null || !s.IsDefinded || (s.valueType >= JSValueType.Object && s.oValue == null))
                     break;
             }
             return null;

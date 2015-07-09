@@ -77,7 +77,7 @@ namespace NiL.JS.Core
                 if (globalContext.fields != null)
                     globalContext.fields.Clear();
                 else
-                    globalContext.fields = new StringMap2<JSObject>();
+                    globalContext.fields = new StringMap2<JSValue>();
                 JSObject.GlobalPrototype = null;
                 TypeProxy.Clear();
                 globalContext.fields.Add("Object", TypeProxy.GetConstructor(typeof(JSObject)).CloneImpl());
@@ -135,10 +135,10 @@ namespace NiL.JS.Core
 #endif
                 #endregion
                 #region Consts
-                globalContext.fields["undefined"] = JSObject.undefined;
+                globalContext.fields["undefined"] = JSValue.undefined;
                 globalContext.fields["Infinity"] = Number.POSITIVE_INFINITY;
                 globalContext.fields["NaN"] = Number.NaN;
-                globalContext.fields["null"] = JSObject.Null;
+                globalContext.fields["null"] = JSValue.Null;
                 #endregion
 
                 foreach (var v in globalContext.fields.Values)
@@ -166,14 +166,14 @@ namespace NiL.JS.Core
         /// отсутствует вероятность конфликта при использовании данного поля.
         /// </remarks>
         /// </summary>
-        internal JSObject tempContainer;
+        internal JSValue tempContainer;
         internal Context parent;
-        internal IDictionary<string, JSObject> fields;
+        internal IDictionary<string, JSValue> fields;
         internal AbortType abort;
-        internal JSObject objectSource;
-        internal JSObject abortInfo;
-        internal JSObject lastResult;
-        internal JSObject thisBind;
+        internal JSValue objectSource;
+        internal JSValue abortInfo;
+        internal JSValue lastResult;
+        internal JSValue thisBind;
         internal Function caller;
         internal bool strict;
         internal VariableDescriptor[] variables;
@@ -189,7 +189,7 @@ namespace NiL.JS.Core
                 return res;
             }
         }
-        public JSObject ThisBind
+        public JSValue ThisBind
         {
             get
             {
@@ -197,7 +197,7 @@ namespace NiL.JS.Core
                 if (thisBind == null)
                 {
                     if (strict)
-                        return JSObject.undefined;
+                        return JSValue.undefined;
                     for (; c.thisBind == null; )
                     {
                         if (c.parent == globalContext)
@@ -280,12 +280,12 @@ namespace NiL.JS.Core
             }
             else
             {
-                tempContainer = new JSObject() { attributes = JSObjectAttributesInternal.Temporary };
+                tempContainer = new JSValue() { attributes = JSObjectAttributesInternal.Temporary };
             }
             this.caller = caller;
             if (createFields)
-                this.fields = new StringMap2<JSObject>();
-            this.abortInfo = JSObject.notExists;
+                this.fields = new StringMap2<JSValue>();
+            this.abortInfo = JSValue.notExists;
         }
 
         /// <summary>
@@ -376,19 +376,21 @@ namespace NiL.JS.Core
         /// </summary>
         /// <param name="name">Имя поля, которое необходимо вернуть.</param>
         /// <returns>Поле, соответствующее указанному имени.</returns>
-        public virtual JSObject DefineVariable(string name)
+        public virtual JSValue DefineVariable(string name)
         {
             if (name == "this")
                 return thisBind;
-            JSObject res = null;
+            JSValue res = null;
             if (!fields.TryGetValue(name, out res))
             {
-                fields[name] = res = new JSObject()
+                fields[name] = res = new JSValue()
                 {
                     attributes = JSObjectAttributesInternal.DoNotDelete
                 };
             }
-            res.valueType |= JSObjectType.Undefined;
+            else if ((res.attributes & (JSObjectAttributesInternal.SystemObject | JSObjectAttributesInternal.ReadOnly)) == JSObjectAttributesInternal.SystemObject)
+                fields[name] = res = res.CloneImpl();
+            res.valueType |= JSValueType.Undefined;
             return res;
         }
 
@@ -397,12 +399,12 @@ namespace NiL.JS.Core
         /// </summary>
         /// <param name="name">Имя переменной</param>
         /// <returns></returns>
-        public JSObject GetVariable(string name)
+        public JSValue GetVariable(string name)
         {
             return GetVariable(name, false);
         }
 
-        internal protected virtual JSObject GetVariable(string name, bool create)
+        internal protected virtual JSValue GetVariable(string name, bool create)
         {
 #if DEBUG
             //if (!IsExcecuting)
@@ -414,7 +416,7 @@ namespace NiL.JS.Core
                 && name[2] == 'i'
                 && name[3] == 's')
                 return ThisBind;
-            JSObject res = null;
+            JSValue res = null;
             bool fromProto = fields == null || (!fields.TryGetValue(name, out res) && (parent != null));
             if (fromProto)
                 res = parent.GetVariable(name, create);
@@ -425,12 +427,12 @@ namespace NiL.JS.Core
                 else
                 {
                     if (create)
-                        fields[name] = res = new JSObject() { valueType = JSObjectType.NotExists };
+                        fields[name] = res = new JSValue() { valueType = JSValueType.NotExists };
                     else
                     {
                         res = JSObject.GlobalPrototype.GetMember(wrap(name), create, false);
-                        if (res.valueType == JSObjectType.NotExistsInObject)
-                            res.valueType = JSObjectType.NotExists;
+                        if (res.valueType == JSValueType.NotExistsInObject)
+                            res.valueType = JSValueType.NotExists;
                     }
                 }
             }
@@ -470,7 +472,7 @@ namespace NiL.JS.Core
         public void AttachModule(Type moduleType)
         {
             if (fields == null)
-                fields = new StringMap2<JSObject>();
+                fields = new StringMap2<JSValue>();
             string name;
 #if PORTABLE
             if (System.Reflection.IntrospectionExtensions.GetTypeInfo(moduleType).IsGenericType)
@@ -490,7 +492,7 @@ namespace NiL.JS.Core
         /// </summary>
         /// <param name="code">Код скрипта на языке JavaScript</param>
         /// <returns>Результат выполнения кода (аргумент оператора "return" либо результат выполнения последней выполненной строки кода).</returns>
-        public JSObject Eval(string code)
+        public JSValue Eval(string code)
         {
             return Eval(code, false);
         }
@@ -502,10 +504,10 @@ namespace NiL.JS.Core
         /// <param name="code">Код скрипта на языке JavaScript</param>
         /// <param name="inplace">Если истина, переменные объявленные в ходе выполнения, не будут доступны для удаления</param>
         /// <returns>Результат выполнения кода (аргумент оператора "return" либо результат выполнения последней выполненной строки кода).</returns>
-        public JSObject Eval(string code, bool inplace)
+        public JSValue Eval(string code, bool inplace)
         {
             if (string.IsNullOrEmpty(code))
-                return JSObject.undefined;
+                return JSValue.undefined;
 #if DEV
             var debugging = this.debugging;
             this.debugging = false;
@@ -585,7 +587,7 @@ namespace NiL.JS.Core
                 var run = context.Activate();
                 try
                 {
-                    return cb.Evaluate(context) ?? context.lastResult ?? JSObject.notExists;
+                    return cb.Evaluate(context) ?? context.lastResult ?? JSValue.notExists;
                 }
                 finally
                 {
@@ -621,17 +623,17 @@ namespace NiL.JS.Core
 #if INLINE
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
-        internal JSObject wrap(long value)
+        internal JSValue wrap(long value)
         {
             if (value <= int.MaxValue)
             {
-                tempContainer.valueType = JSObjectType.Int;
+                tempContainer.valueType = JSValueType.Int;
                 tempContainer.iValue = (int)value;
                 return tempContainer;
             }
             else
             {
-                tempContainer.valueType = JSObjectType.Double;
+                tempContainer.valueType = JSValueType.Double;
                 tempContainer.dValue = value;
                 return tempContainer;
             }
@@ -640,9 +642,9 @@ namespace NiL.JS.Core
 #if INLINE
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
-        internal JSObject wrap(string value)
+        internal JSValue wrap(string value)
         {
-            tempContainer.valueType = JSObjectType.String;
+            tempContainer.valueType = JSValueType.String;
             tempContainer.oValue = value;
             return tempContainer;
         }

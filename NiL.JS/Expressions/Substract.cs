@@ -30,23 +30,23 @@ namespace NiL.JS.Expressions
 
         }
 
-        internal override JSObject Evaluate(Context context)
+        internal override JSValue Evaluate(Context context)
         {
             //lock (this)
             {
 #if TYPE_SAFE
                 double da = 0.0;
-                JSObject f = first.Evaluate(context);
-                JSObject s = null;
+                JSValue f = first.Evaluate(context);
+                JSValue s = null;
                 long l = 0;
                 int a;
-                if (f.valueType == JSObjectType.Int
-                    || f.valueType == JSObjectType.Bool)
+                if (f.valueType == JSValueType.Int
+                    || f.valueType == JSValueType.Bool)
                 {
                     a = f.iValue;
                     s = second.Evaluate(context);
-                    if (s.valueType == JSObjectType.Int
-                    || s.valueType == JSObjectType.Bool)
+                    if (s.valueType == JSValueType.Int
+                    || s.valueType == JSValueType.Bool)
                     {
                         l = (long)a - s.iValue;
                         //if (l > 2147483647L
@@ -54,12 +54,12 @@ namespace NiL.JS.Expressions
                         if (l != (int)l)
                         {
                             tempContainer.dValue = l;
-                            tempContainer.valueType = JSObjectType.Double;
+                            tempContainer.valueType = JSValueType.Double;
                         }
                         else
                         {
                             tempContainer.iValue = (int)l;
-                            tempContainer.valueType = JSObjectType.Int;
+                            tempContainer.valueType = JSValueType.Int;
                         }
                         return tempContainer;
                     }
@@ -72,7 +72,7 @@ namespace NiL.JS.Expressions
                     s = second.Evaluate(context);
                 }
                 tempContainer.dValue = da - Tools.JSObjectToDouble(s);
-                tempContainer.valueType = JSObjectType.Double;
+                tempContainer.valueType = JSValueType.Double;
                 return tempContainer;
 #else
                 tempResult.dValue = Tools.JSObjectToDouble(first.Invoke(context)) - Tools.JSObjectToDouble(second.Invoke(context));

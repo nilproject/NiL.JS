@@ -231,6 +231,7 @@
     <Compile Include="Core\CompiledNode.cs" />
     <Compile Include="Core\Functions\MethodGroup.cs" />
     <Compile Include="Core\Functions\MethodProxy.cs" />
+    <Compile Include="Core\JSValue.cs" />
     <Compile Include="Core\Modules\ConvertValueAttribute.cs" />
     <Compile Include="BaseLibrary\Debug.cs" />
     <Compile Include="Core\Modules\ForceUse.cs" />

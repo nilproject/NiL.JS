@@ -14,7 +14,7 @@ namespace NiL.JS.Core
     {
         private static readonly MethodInfo wrapMethod = typeof(JITHelpers).GetMethod("wrap", BindingFlags.Static | BindingFlags.NonPublic);
 
-        private static readonly ParameterExpression wrapContainerParameter = Expression.Parameter(typeof(JSObject), "wrapContainer");
+        private static readonly ParameterExpression wrapContainerParameter = Expression.Parameter(typeof(JSValue), "wrapContainer");
 
         private static readonly ParameterExpression[] lambdaArgs = new[] 
                 { 
@@ -25,7 +25,7 @@ namespace NiL.JS.Core
 
         private CodeNode[] dynamicValues;
         private CodeNode original;
-        private Func<Context, CodeNode[], JSObject, JSObject> compiledTree;
+        private Func<Context, CodeNode[], JSValue, JSValue> compiledTree;
         private Expression tree;
 
         public CodeNode Original { get { return original; } }
@@ -110,7 +110,7 @@ namespace NiL.JS.Core
             return original.Childs;
         }
 
-        internal override JSObject Evaluate(Context context)
+        internal override JSValue Evaluate(Context context)
         {
             if (compiledTree == null)
             {
@@ -118,7 +118,7 @@ namespace NiL.JS.Core
                 this.tree = this.tree.Reduce();
                 if (original is Expressions.Expression)
                 {
-                    if (typeof(JSObject).IsAssignableFrom(this.tree.Type))
+                    if (typeof(JSValue).IsAssignableFrom(this.tree.Type))
                         tree = this.tree;
                     else
                         tree = Expression.Call(wrapMethod.MakeGenericMethod(this.tree.Type), this.tree, wrapContainerParameter);
@@ -147,13 +147,13 @@ namespace NiL.JS.Core
                 //Expression.Lambda(tree, lambdaArgs).CompileToMethod(method);
                 //compiledTree = (Func<Context, CodeNode[], JSObject, JSObject>)type.CreateType().GetMethods()[0].CreateDelegate(typeof(Func<Context, CodeNode[], JSObject, JSObject>));
 
-                compiledTree = Expression.Lambda<Func<Context, CodeNode[], JSObject, JSObject>>(tree, lambdaArgs).Compile();
+                compiledTree = Expression.Lambda<Func<Context, CodeNode[], JSValue, JSValue>>(tree, lambdaArgs).Compile();
             }
             var result = compiledTree(context, dynamicValues, tempContainer);
             return result;
         }
 
-        internal override JSObject EvaluateForAssing(Context context)
+        internal override JSValue EvaluateForAssing(Context context)
         {
             return original.EvaluateForAssing(context);
         }

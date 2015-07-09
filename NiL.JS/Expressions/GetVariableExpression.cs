@@ -17,7 +17,7 @@ namespace NiL.JS.Expressions
         {
         }
 
-        internal override JSObject EvaluateForAssing(Context context)
+        internal override JSValue EvaluateForAssing(Context context)
         {
             var res = context.caller._arguments;
             if (res is Arguments)
@@ -27,7 +27,7 @@ namespace NiL.JS.Expressions
             return res;
         }
 
-        internal sealed override JSObject Evaluate(Context context)
+        internal sealed override JSValue Evaluate(Context context)
         {
             var res = context.caller._arguments;
             return res;
@@ -62,12 +62,12 @@ namespace NiL.JS.Expressions
             this.variableName = name;
         }
 
-        internal override JSObject EvaluateForAssing(Context context)
+        internal override JSValue EvaluateForAssing(Context context)
         {
             if (context.strict || forceThrow)
             {
                 var res = Descriptor.Get(context, false, functionDepth);
-                if (res.valueType < JSObjectType.Undefined && (!suspendThrow || forceThrow))
+                if (res.valueType < JSValueType.Undefined && (!suspendThrow || forceThrow))
                     throwRefError();
                 if ((res.attributes & JSObjectAttributesInternal.Argument) != 0)
                     context.caller.buildArgumentsObject();
@@ -76,26 +76,26 @@ namespace NiL.JS.Expressions
             return descriptor.Get(context, true, functionDepth);
         }
 
-        internal override JSObject Evaluate(Context context)
+        internal override JSValue Evaluate(Context context)
         {
             var res = descriptor.Get(context, false, functionDepth);
-            if (res.valueType == JSObjectType.NotExists)
+            if (res.valueType == JSValueType.NotExists)
             {
                 if (!suspendThrow)
                     throwRefError();
             }
-            else if (res.valueType == JSObjectType.Property)
+            else if (res.valueType == JSValueType.Property)
             {
                 return processProp(context, res);
             }
             return res;
         }
 
-        private static JSObject processProp(Context context, JSObject res)
+        private static JSValue processProp(Context context, JSValue res)
         {
             var getter = (res.oValue as PropertyPair).get;
             if (getter == null)
-                return JSObject.notExists;
+                return JSValue.notExists;
             return getter.Invoke(context.objectSource, null);
         }
 

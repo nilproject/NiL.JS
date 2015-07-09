@@ -9,7 +9,7 @@ namespace NiL.JS.Expressions
 #endif
     public sealed class GetMemberExpression : Expression
     {
-        private JSObject cachedMemberName;
+        private JSValue cachedMemberName;
 
         public CodeNode Source { get { return first; } }
         public CodeNode FieldName { get { return second; } }
@@ -28,92 +28,41 @@ namespace NiL.JS.Expressions
         }
 
         internal GetMemberExpression(Expression obj, Expression fieldName)
-            : base(obj, fieldName, true)
+            : base(obj, fieldName, false)
         {
         }
 
-        internal override JSObject EvaluateForAssing(Context context)
+        internal override JSValue EvaluateForAssing(Context context)
         {
-            JSObject sjso = null;
-            JSObject res = null;
-            JSObject source = null;
+            JSValue res = null;
+            JSValue source = null;
             source = first.Evaluate(context);
-            if (source.valueType >= JSObjectType.Object
-                && source.oValue != null
-                && source.oValue != source
-                && (sjso = source.oValue as JSObject) != null
-                && sjso.valueType >= JSObjectType.Object)
-            {
-                source = sjso;
-                sjso = null;
-            }
+            if (source.valueType < JSValueType.Object)
+                source = source.Clone() as JSValue;
             else
-            {
-                if ((sjso ?? source).fields == null)
-                    (sjso ?? source).fields = JSObject.createFields();
-                sjso = source;
-                tempContainer.Assign(source);
-                source = tempContainer;
-            }
+                source = source.oValue as JSValue ?? source;
             res = source.GetMember(cachedMemberName ?? second.Evaluate(context), true, false);
-            if (sjso != null)
-            {
-                if (sjso.oValue == tempContainer.oValue)
-                    source = sjso;
-                else
-                    source = tempContainer.CloneImpl();
-                tempContainer.fields = null;
-                tempContainer.oValue = null;
-            }
             context.objectSource = source;
-            if (res.valueType == JSObjectType.NotExists)
-                res.valueType = JSObjectType.NotExistsInObject;
+            if (res.valueType == JSValueType.NotExists)
+                res.valueType = JSValueType.NotExistsInObject;
             return res;
         }
 
-        internal override JSObject Evaluate(Context context)
+        internal override JSValue Evaluate(Context context)
         {
-            JSObject sjso = null;
-            JSObject res = null;
-            JSObject source = null;
+            JSValue res = null;
+            JSValue source = null;
             source = first.Evaluate(context);
-            if ((source.attributes & JSObjectAttributesInternal.SystemObject) == 0)
-            {
-                if (source.valueType >= JSObjectType.Object
-                    && source.oValue != source
-                    && (sjso = source.oValue as JSObject) != null
-                    && sjso.valueType >= JSObjectType.Object)
-                {
-                    source = sjso;
-                    sjso = null;
-                }
-                else
-                {
-                    if (source.valueType >= JSObjectType.Object
-                        && source.oValue != null
-                        && source.fields == null
-                        && ((source.attributes & JSObjectAttributesInternal.Immutable) == 0))
-                        (sjso ?? source).fields = JSObject.createFields();
-                    sjso = source;
-                    tempContainer.Assign(source);
-                    source = tempContainer;
-                }
-            }
+            if (source.valueType < JSValueType.Object)
+                source = source.Clone() as JSValue;
+            else
+                source = source.oValue as JSValue ?? source;
             res = source.GetMember(cachedMemberName ?? second.Evaluate(context), false, false);
-            if (sjso != null)
-            {
-                if (sjso.oValue == tempContainer.oValue)
-                    source = sjso;
-                else
-                    source = tempContainer.CloneImpl();
-                tempContainer.fields = null;
-                tempContainer.oValue = null;
-            }
             context.objectSource = source;
-            if (res.valueType == JSObjectType.NotExists)
-                res.valueType = JSObjectType.NotExistsInObject;
-            else if (res.valueType == JSObjectType.Property)
-                res = (res.oValue as PropertyPair).get != null ? (res.oValue as PropertyPair).get.Invoke(source, null) : JSObject.notExists;
+            if (res.valueType == JSValueType.NotExists)
+                res.valueType = JSValueType.NotExistsInObject;
+            else if (res.valueType == JSValueType.Property)
+                res = (res.oValue as PropertyPair).get != null ? (res.oValue as PropertyPair).get.Invoke(source, null) : JSValue.notExists;
             return res;
         }
 

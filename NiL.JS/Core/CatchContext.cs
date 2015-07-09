@@ -4,11 +4,11 @@ namespace NiL.JS.Core
 {
     internal sealed class CatchContext : Context
     {
-        private JSObject errorContainer;
+        private JSValue errorContainer;
         private Context prototype;
         private string errorVariableName;
 
-        internal CatchContext(JSObject e, Context proto, string name)
+        internal CatchContext(JSValue e, Context proto, string name)
             : base(proto, false, proto.caller)
         {
             if (e == null)
@@ -26,12 +26,12 @@ namespace NiL.JS.Core
             variables = proto.variables;
         }
 
-        public override JSObject DefineVariable(string name)
+        public override JSValue DefineVariable(string name)
         {
             return prototype.DefineVariable(name);
         }
 
-        protected internal override JSObject GetVariable(string name, bool create)
+        protected internal override JSValue GetVariable(string name, bool create)
         {
             if (name == errorVariableName && errorContainer.IsExist)
                 return errorContainer;

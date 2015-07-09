@@ -52,7 +52,7 @@ namespace NiL.JS.Statements
             Text = text;
         }
 
-        internal override NiL.JS.Core.JSObject Evaluate(NiL.JS.Core.Context context)
+        internal override NiL.JS.Core.JSValue Evaluate(NiL.JS.Core.Context context)
         {
             return null;
         }

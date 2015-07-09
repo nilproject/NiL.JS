@@ -88,7 +88,7 @@ namespace NiL.JS.Statements
             };
         }
 
-        internal override JSObject Evaluate(Context context)
+        internal override JSValue Evaluate(Context context)
         {
             if (init != null)
             {
@@ -229,12 +229,12 @@ namespace NiL.JS.Statements
                             {
                                 var vvalue = value.Evaluate(null);
                                 var lvalue = limit.Evaluate(null);
-                                if ((vvalue.valueType == JSObjectType.Int
-                                    || vvalue.valueType == JSObjectType.Bool
-                                    || vvalue.valueType == JSObjectType.Double)
-                                    && (lvalue.valueType == JSObjectType.Int
-                                    || lvalue.valueType == JSObjectType.Bool
-                                    || lvalue.valueType == JSObjectType.Double))
+                                if ((vvalue.valueType == JSValueType.Int
+                                    || vvalue.valueType == JSValueType.Bool
+                                    || vvalue.valueType == JSValueType.Double)
+                                    && (lvalue.valueType == JSValueType.Int
+                                    || lvalue.valueType == JSValueType.Bool
+                                    || lvalue.valueType == JSValueType.Double))
                                 {
                                     if (!(bool)NiL.JS.Expressions.Less.Check(vvalue, lvalue))
                                     {

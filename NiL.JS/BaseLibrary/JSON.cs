@@ -24,16 +24,16 @@ namespace NiL.JS.BaseLibrary
 
         private class StackFrame
         {
-            public JSObject container;
-            public JSObject value;
-            public JSObject fieldName;
+            public JSValue container;
+            public JSValue value;
+            public JSValue fieldName;
             public int valuesCount;
             public ParseState state;
         }
 
         [DoNotEnumerate]
         [ArgumentsLength(2)]
-        public static JSObject parse(Arguments args)
+        public static JSValue parse(Arguments args)
         {
             var length = Tools.JSObjectToInt32(args.length);
             var code = args[0].ToString();
@@ -42,7 +42,7 @@ namespace NiL.JS.BaseLibrary
         }
 
         [Hidden]
-        public static JSObject parse(string code)
+        public static JSValue parse(string code)
         {
             return parse(code, null);
         }
@@ -74,7 +74,7 @@ namespace NiL.JS.BaseLibrary
         }
 
         [Hidden]
-        public static JSObject parse(string code, Function reviewer)
+        public static JSValue parse(string code, Function reviewer)
         {
             Stack<StackFrame> stack = new Stack<StackFrame>();
             Arguments revargs = reviewer != null ? new Arguments() { length = 2 } : null;
@@ -131,7 +131,7 @@ namespace NiL.JS.BaseLibrary
                         throw new JSException((new SyntaxError("Unexpected token.")));
                     var v = stack.Peek();
                     v.state = ParseState.End;
-                    v.value = JSObject.Null;
+                    v.value = JSValue.Null;
                 }
                 else if (Parser.Validate(code, "true", ref pos))
                 {
@@ -250,7 +250,7 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [ArgumentsLength(3)]
-        public static JSObject stringify(Arguments args)
+        public static JSValue stringify(Arguments args)
         {
             var length = args.length;
             Function replacer = length > 1 ? args[1].oValue as Function : null;
@@ -258,22 +258,20 @@ namespace NiL.JS.BaseLibrary
             if (args.length > 2)
             {
                 var sa = args[2];
-                if (sa.valueType >= JSObjectType.Object
-                    && sa.oValue != sa)
-                    sa = sa.oValue as JSObject ?? sa;
+                if (sa.valueType >= JSValueType.Object)
+                    sa = sa.oValue as JSValue ?? sa;
                 if (sa is ObjectContainer)
-                    sa = (sa as ObjectContainer).Value as JSObject ?? sa;
-                sa = sa.Value as JSObject ?? sa;
-                if (sa.valueType == JSObjectType.Int
-                    || sa.valueType == JSObjectType.Double
-                    || sa.valueType == JSObjectType.String)
+                    sa = sa.Value as JSValue ?? sa;
+                if (sa.valueType == JSValueType.Int
+                    || sa.valueType == JSValueType.Double
+                    || sa.valueType == JSValueType.String)
                 {
-                    if (sa.valueType == JSObjectType.Int)
+                    if (sa.valueType == JSValueType.Int)
                     {
                         if (sa.iValue > 0)
                             space = "          ".Substring(10 - System.Math.Max(0, System.Math.Min(10, sa.iValue)));
                     }
-                    else if (sa.valueType == JSObjectType.Double)
+                    else if (sa.valueType == JSValueType.Double)
                     {
                         if ((int)sa.dValue > 0)
                             space = "          ".Substring(10 - System.Math.Max(0, System.Math.Min(10, (int)sa.dValue)));
@@ -289,13 +287,13 @@ namespace NiL.JS.BaseLibrary
                 }
             }
             var target = args[0];
-            return stringify(target.Value as JSObject ?? target, replacer, space) ?? JSObject.undefined;
+            return stringify(target.Value as JSValue ?? target, replacer, space) ?? JSValue.undefined;
         }
 
         [Hidden]
-        public static string stringify(JSObject obj, Function replacer, string space)
+        public static string stringify(JSValue obj, Function replacer, string space)
         {
-            return stringifyImpl("", obj, replacer, space, new List<JSObject>(), new Arguments());
+            return stringifyImpl("", obj, replacer, space, new List<JSValue>(), new Arguments());
         }
 
         private static void escapeIfNeed(StringBuilder sb, char c)
@@ -352,7 +350,7 @@ namespace NiL.JS.BaseLibrary
                 sb.Append(c);
         }
 
-        private static string stringifyImpl(string key, JSObject obj, Function replacer, string space, List<JSObject> processed, Arguments args)
+        private static string stringifyImpl(string key, JSValue obj, Function replacer, string space, List<JSValue> processed, Arguments args)
         {
             if (processed.IndexOf(obj) != -1)
                 throw new JSException(new TypeError("Can not convert circular structure to JSON."));
@@ -367,24 +365,24 @@ namespace NiL.JS.BaseLibrary
                         args[1] = obj;
                         args.length = 2;
                         var t = replacer.Invoke(args);
-                        if (t.valueType <= JSObjectType.Undefined || (t.valueType >= JSObjectType.Object && t.oValue == null))
+                        if (t.valueType <= JSValueType.Undefined || (t.valueType >= JSValueType.Object && t.oValue == null))
                             return null;
                         obj = t;
                     }
                 }
-                if (obj.valueType <= JSObjectType.Undefined
-                    || obj.valueType == JSObjectType.Function)
+                if (obj.valueType <= JSValueType.Undefined
+                    || obj.valueType == JSValueType.Function)
                     return null;
-                obj = obj.Value as JSObject ?? obj;
+                obj = obj.Value as JSValue ?? obj;
                 StringBuilder res = null;
                 string strval = null;
-                if (obj.valueType < JSObjectType.Object)
+                if (obj.valueType < JSValueType.Object)
                 {
-                    if (obj.valueType == JSObjectType.String)
+                    if (obj.valueType == JSValueType.String)
                     {
                         res = new StringBuilder("\"");
                         strval = obj.ToString();
-                        for (var i = 0; i < strval.Length ; i++)
+                        for (var i = 0; i < strval.Length; i++)
                             escapeIfNeed(res, strval[i]);
                         res.Append('"');
                         return res.ToString();
@@ -394,18 +392,18 @@ namespace NiL.JS.BaseLibrary
                 if (obj.Value == null)
                     return "null";
                 var toJSONmemb = obj["toJSON"];
-                toJSONmemb = toJSONmemb.Value as JSObject ?? toJSONmemb;
-                if (toJSONmemb.valueType == JSObjectType.Function)
+                toJSONmemb = toJSONmemb.Value as JSValue ?? toJSONmemb;
+                if (toJSONmemb.valueType == JSValueType.Function)
                     return stringifyImpl("", (toJSONmemb.oValue as Function).Invoke(obj, null), null, space, processed, null);
                 res = new StringBuilder(obj is Array ? "[" : "{");
                 bool first = true;
                 foreach (var member in obj)
                 {
                     var value = obj[member];
-                    value = value.Value as JSObject ?? value;
-                    if (value.valueType < JSObjectType.Undefined)
+                    value = value.Value as JSValue ?? value;
+                    if (value.valueType < JSValueType.Undefined)
                         continue;
-                    if (value.valueType == JSObjectType.Property)
+                    if (value.valueType == JSValueType.Property)
                         value = ((value.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(obj, null);
                     strval = stringifyImpl(member, value, replacer, space, processed, args);
                     if (strval == null)

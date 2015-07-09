@@ -389,7 +389,7 @@ namespace NiL.JS.Statements
                 do
                     i++;
                 while (char.IsWhiteSpace(state.Code[i]));
-                first = new Constant(new JSObject() { valueType = JSObjectType.Object, oValue = threads }) { Position = position };
+                first = new Constant(new JSValue() { valueType = JSValueType.Object, oValue = threads }) { Position = position };
                 threads[1] = (Expression)ExpressionTree.Parse(state, ref i, false, false, false, true, false, forEnumeration).Statement;
                 first.Length = i - first.Position;
             }
@@ -397,7 +397,7 @@ namespace NiL.JS.Statements
             {
                 var name = Tools.Unescape(state.Code.Substring(s, i - s), state.strict.Peek());
                 if (name == "undefined")
-                    first = new Constant(JSObject.undefined) { Position = index, Length = i - index };
+                    first = new Constant(JSValue.undefined) { Position = index, Length = i - index };
                 else
                     first = new GetVariableExpression(name, state.functionsDepth) { Position = index, Length = i - index, functionDepth = state.functionsDepth };
             }
@@ -416,7 +416,7 @@ namespace NiL.JS.Statements
                 {
                     bool b = false;
                     if (value == "null")
-                        first = new Constant(JSObject.Null) { Position = s, Length = i - s };
+                        first = new Constant(JSValue.Null) { Position = s, Length = i - s };
                     else if (bool.TryParse(value, out b))
                         first = new Constant(b ? NiL.JS.BaseLibrary.Boolean.True : NiL.JS.BaseLibrary.Boolean.False) { Position = index, Length = i - s };
                     else
@@ -580,7 +580,7 @@ namespace NiL.JS.Statements
                             do
                                 i++;
                             while (char.IsWhiteSpace(state.Code[i]));
-                            first = new Expressions.None((Expression)Parse(state, ref i, false, true, false, true, false, forEnumeration).Statement, new Constant(JSObject.undefined)) { Position = index, Length = i - index };
+                            first = new Expressions.None((Expression)Parse(state, ref i, false, true, false, true, false, forEnumeration).Statement, new Constant(JSValue.undefined)) { Position = index, Length = i - index };
                             if (first == null)
                             {
                                 var cord = CodeCoordinates.FromTextPosition(state.Code, i, 0);
@@ -1096,7 +1096,7 @@ namespace NiL.JS.Statements
                             if (!Parser.ValidateName(state.Code, ref i, false, true, state.strict.Peek()))
                                 throw new ArgumentException("code (" + i + ")");
                             string name = state.Code.Substring(s, i - s);
-                            JSObject jsname = null;
+                            JSValue jsname = null;
                             if (!state.stringConstants.TryGetValue(name, out jsname))
                                 state.stringConstants[name] = jsname = name;
                             first = new GetMemberExpression(first, new Constant(jsname)
@@ -1135,7 +1135,7 @@ namespace NiL.JS.Statements
                                 startPos = 0;
                                 var cname = mname as Constant;
                                 if (cname != null
-                                    && cname.value.valueType == JSObjectType.String
+                                    && cname.value.valueType == JSValueType.String
                                     && Parser.ValidateName(cname.value.oValue.ToString(), ref startPos, false)
                                     && startPos == cname.value.oValue.ToString().Length)
                                     state.message(MessageLevel.Recomendation, CodeCoordinates.FromTextPosition(state.Code, mname.Position, mname.Length), "[\"" + cname.value.oValue + "\"] is better written in dot notation.");
@@ -1306,7 +1306,7 @@ namespace NiL.JS.Statements
             };
         }
 
-        internal override JSObject Evaluate(Context context)
+        internal override JSValue Evaluate(Context context)
         {
             throw new InvalidOperationException();
         }

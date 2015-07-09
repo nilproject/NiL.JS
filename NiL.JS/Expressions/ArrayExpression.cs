@@ -11,7 +11,7 @@ namespace NiL.JS.Expressions
 #endif
     public sealed class ArrayExpression : Expression
     {
-        private static JSObject writableNotExist = null;
+        private static JSValue writableNotExist = null;
         private Expression[] elements;
 
         public ICollection<Expression> Elements { get { return elements; } }
@@ -78,7 +78,7 @@ namespace NiL.JS.Expressions
 #if INLINE
         [MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
-        private static JSObject impl(Context context, CodeNode[] elements)
+        private static JSValue impl(Context context, CodeNode[] elements)
         {
             var res = new NiL.JS.BaseLibrary.Array((long)elements.Length);
             if (elements.Length > 0)
@@ -92,13 +92,13 @@ namespace NiL.JS.Expressions
                         res.data[i] = e;
                     }
                     else
-                        res.data[i] = (writableNotExist ?? (writableNotExist = new JSObject() { valueType = JSObjectType.NotExistsInObject, attributes = JSObjectAttributesInternal.SystemObject }));
+                        res.data[i] = (writableNotExist ?? (writableNotExist = new JSValue() { valueType = JSValueType.NotExistsInObject, attributes = JSObjectAttributesInternal.SystemObject }));
                 }
             }
             return res;
         }
 
-        internal override JSObject Evaluate(Context context)
+        internal override JSValue Evaluate(Context context)
         {
             return impl(context, elements);
         }

@@ -9,9 +9,9 @@ namespace NiL.JS.Expressions
 #endif
     public sealed class Constant : Expression
     {
-        internal JSObject value;
+        internal JSValue value;
 
-        public JSObject Value { get { return value; } }
+        public JSValue Value { get { return value; } }
 
         protected internal override PredictedType ResultType
         {
@@ -21,17 +21,17 @@ namespace NiL.JS.Expressions
                     return PredictedType.Unknown;
                 switch (value.valueType)
                 {
-                    case JSObjectType.Undefined:
-                    case JSObjectType.NotExists:
-                    case JSObjectType.NotExistsInObject:
+                    case JSValueType.Undefined:
+                    case JSValueType.NotExists:
+                    case JSValueType.NotExistsInObject:
                         return PredictedType.Undefined;
-                    case JSObjectType.Bool:
+                    case JSValueType.Bool:
                         return PredictedType.Bool;
-                    case JSObjectType.Int:
+                    case JSValueType.Int:
                         return PredictedType.Int;
-                    case JSObjectType.Double:
+                    case JSValueType.Double:
                         return PredictedType.Double;
-                    case JSObjectType.String:
+                    case JSValueType.String:
                         return PredictedType.String;
                     default:
                         return PredictedType.Object;
@@ -44,28 +44,28 @@ namespace NiL.JS.Expressions
             get { return false; }
         }
 
-        public Constant(JSObject value)
+        public Constant(JSValue value)
             : base(null, null, false)
         {
             this.value = value;
         }
 
-        internal override JSObject Evaluate(Context context)
+        internal override JSValue Evaluate(Context context)
         {
             return value;
         }
 
-        internal override NiL.JS.Core.JSObject EvaluateForAssing(NiL.JS.Core.Context context)
+        internal override NiL.JS.Core.JSValue EvaluateForAssing(NiL.JS.Core.Context context)
         {
-            if (value == JSObject.undefined)
+            if (value == JSValue.undefined)
                 return value;
             return base.EvaluateForAssing(context);
         }
 
         protected override CodeNode[] getChildsImpl()
         {
-            if (value != null && value.Value is CodeNode[])
-                return value.Value as CodeNode[];
+            if (value != null && value.oValue is CodeNode[])
+                return value.oValue as CodeNode[];
             return null;
         }
 
@@ -80,7 +80,7 @@ namespace NiL.JS.Expressions
             {
                 _this = null;
                 Eliminated = true;
-                if (message != null && (value.valueType != JSObjectType.String || value.oValue.ToString() != "use strict"))
+                if (message != null && (value.valueType != JSValueType.String || value.oValue.ToString() != "use strict"))
                     message(MessageLevel.Warning, new CodeCoordinates(0, Position, Length), "Unused constant was removed. Maybe, something missing.");
             }
             return false;
@@ -95,7 +95,7 @@ namespace NiL.JS.Expressions
         {
             if (value == null)
                 return "";
-            if (value.valueType == JSObjectType.String)
+            if (value.valueType == JSValueType.String)
                 return "\"" + value.oValue + "\"";
             if (value.oValue is CodeNode[])
             {

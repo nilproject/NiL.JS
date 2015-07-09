@@ -52,17 +52,17 @@ namespace NiL.JS.Core
 
         protected abstract CodeNode[] getChildsImpl();
 
-        internal virtual JSObject EvaluateForAssing(NiL.JS.Core.Context context)
+        internal virtual JSValue EvaluateForAssing(NiL.JS.Core.Context context)
         {
             return raiseInvalidAssignment();
         }
 
-        protected static JSObject raiseInvalidAssignment()
+        protected static JSValue raiseInvalidAssignment()
         {
             throw new JSException(new ReferenceError("Invalid left-hand side in assignment."));
         }
 
-        internal abstract JSObject Evaluate(Context context);
+        internal abstract JSValue Evaluate(Context context);
 
         /// <summary>
         /// Заставляет объект перестроить своё содержимое перед началом выполнения.

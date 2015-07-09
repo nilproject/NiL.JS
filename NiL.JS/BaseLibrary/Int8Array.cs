@@ -9,13 +9,13 @@ namespace NiL.JS.BaseLibrary
 #endif
     public sealed class Int8Array : TypedArray
     {
-        protected override JSObject this[int index]
+        protected override JSValue this[int index]
         {
             get
             {
                 var res = new Element(this, index);
                 res.iValue = getValue(index);
-                res.valueType = JSObjectType.Int;
+                res.valueType = JSValueType.Int;
                 return res;
             }
             set
@@ -61,7 +61,7 @@ namespace NiL.JS.BaseLibrary
         {
         }
 
-        public Int8Array(JSObject src)
+        public Int8Array(JSValue src)
             : base(src) { }
 
         [ArgumentsLength(2)]

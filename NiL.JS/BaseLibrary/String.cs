@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 using NiL.JS.Core;
@@ -13,7 +15,7 @@ namespace NiL.JS.BaseLibrary
     public sealed class String : JSObject
     {
         [DoNotEnumerate]
-        public static JSObject fromCharCode(Arguments code)
+        public static JSValue fromCharCode(Arguments code)
         {
             int chc = 0;
             if (code == null || code.Length == 0)
@@ -43,38 +45,26 @@ namespace NiL.JS.BaseLibrary
         public String(string s)
         {
             oValue = s;
-            valueType = JSObjectType.String;
+            valueType = JSValueType.String;
             attributes |= JSObjectAttributesInternal.SystemObject;
         }
 
         [Hidden]
-        public override void Assign(JSObject value)
-        {
-            if ((attributes & JSObjectAttributesInternal.ReadOnly) == 0)
-            {
-#if DEBUG
-                System.Diagnostics.Debugger.Break();
-#endif
-                throw new InvalidOperationException("Try to assign to String");
-            }
-        }
-
-        [Hidden]
-        public JSObject this[int pos]
+        public JSValue this[int pos]
         {
             [Hidden]
             get
             {
                 if ((pos < 0) || (pos >= oValue.ToString().Length))
-                    return JSObject.notExists;
-                return new JSObject(false) { valueType = JSObjectType.String, oValue = (oValue.ToString())[pos].ToString(), attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.DoNotDelete };
+                    return JSValue.notExists;
+                return new JSValue() { valueType = JSValueType.String, oValue = (oValue.ToString())[pos].ToString(), attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.DoNotDelete };
             }
         }
 
         [DoNotEnumerate]
         [InstanceMember]
         [ArgumentsLength(1)]
-        public static String charAt(JSObject self, Arguments pos)
+        public static String charAt(JSValue self, Arguments pos)
         {
             var strValue = self.ToString();
             int p = Tools.JSObjectToInt32(pos[0], true);
@@ -86,15 +76,15 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         [InstanceMember]
         [ArgumentsLength(1)]
-        public static JSObject charCodeAt(JSObject self, Arguments pos)
+        public static JSValue charCodeAt(JSValue self, Arguments pos)
         {
             int p = Tools.JSObjectToInt32(pos.a0 ?? notExists, true);
             var selfStr = self.ToString();
             if ((p < 0) || (p >= selfStr.Length))
                 return Number.NaN;
-            var res = new JSObject()
+            var res = new JSValue()
             {
-                valueType = JSObjectType.Int,
+                valueType = JSValueType.Int,
                 iValue = selfStr[p],
             };
             return res;
@@ -103,7 +93,7 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         [InstanceMember]
         [ArgumentsLength(1)]
-        public static JSObject concat(JSObject self, Arguments args)
+        public static JSValue concat(JSValue self, Arguments args)
         {
             if (args.length == 0)
                 return self.ToString();
@@ -124,7 +114,7 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         [InstanceMember]
         [ArgumentsLength(1)]
-        public static JSObject indexOf(JSObject self, Arguments args)
+        public static JSValue indexOf(JSValue self, Arguments args)
         {
             if (args.Length == 0)
                 return -1;
@@ -132,33 +122,33 @@ namespace NiL.JS.BaseLibrary
             int pos = 0;
             while (args.Length > 1)
             {
-                JSObject value = null;
+                JSValue value = null;
                 switch (args[1].valueType)
                 {
-                    case JSObjectType.Int:
-                    case JSObjectType.Bool:
+                    case JSValueType.Int:
+                    case JSValueType.Bool:
                         {
                             pos = args[1].iValue;
                             break;
                         }
-                    case JSObjectType.Double:
+                    case JSValueType.Double:
                         {
                             pos = (int)args[1].dValue;
                             break;
                         }
-                    case JSObjectType.Object:
-                    case JSObjectType.Date:
-                    case JSObjectType.Function:
+                    case JSValueType.Object:
+                    case JSValueType.Date:
+                    case JSValueType.Function:
                         {
                             value = args[1].ToPrimitiveValue_Value_String();
-                            if (value.valueType < JSObjectType.String)
+                            if (value.valueType < JSValueType.String)
                             {
                                 args[1] = value;
                                 continue;
                             }
-                            goto case JSObjectType.String;
+                            goto case JSValueType.String;
                         }
-                    case JSObjectType.String:
+                    case JSValueType.String:
                         {
                             double d = 0;
                             Tools.ParseNumber((value ?? args[1]).ToString(), pos, out d, Tools.ParseNumberOptions.Default);
@@ -175,7 +165,7 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         [InstanceMember]
         [ArgumentsLength(1)]
-        public static JSObject lastIndexOf(JSObject self, Arguments args)
+        public static JSValue lastIndexOf(JSValue self, Arguments args)
         {
             if (args.Length == 0)
                 return -1;
@@ -183,34 +173,34 @@ namespace NiL.JS.BaseLibrary
             int pos = int.MaxValue >> 1;
             while (args.Length > 1)
             {
-                JSObject value = null;
+                JSValue value = null;
                 switch (args[1].valueType)
                 {
-                    case JSObjectType.Int:
-                    case JSObjectType.Bool:
+                    case JSValueType.Int:
+                    case JSValueType.Bool:
                         {
                             pos = args[1].iValue;
                             break;
                         }
-                    case JSObjectType.Double:
+                    case JSValueType.Double:
                         {
                             if (!double.IsNaN(args[1].dValue))
                                 pos = (int)args[1].dValue;
                             break;
                         }
-                    case JSObjectType.Object:
-                    case JSObjectType.Date:
-                    case JSObjectType.Function:
+                    case JSValueType.Object:
+                    case JSValueType.Date:
+                    case JSValueType.Function:
                         {
                             value = args[1].ToPrimitiveValue_Value_String();
-                            if (value.valueType < JSObjectType.String)
+                            if (value.valueType < JSValueType.String)
                             {
                                 args[1] = value;
                                 continue;
                             }
-                            goto case JSObjectType.String;
+                            goto case JSValueType.String;
                         }
-                    case JSObjectType.String:
+                    case JSValueType.String:
                         {
                             double d = 0;
                             Tools.ParseNumber((value ?? args[1]).ToString(), pos, out d, Tools.ParseNumberOptions.Default);
@@ -229,7 +219,7 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         [InstanceMember]
         [ArgumentsLength(1)]
-        public static JSObject localeCompare(JSObject self, Arguments args)
+        public static JSValue localeCompare(JSValue self, Arguments args)
         {
             string str0 = self.ToString();
             string str1 = args[0].ToString();
@@ -239,17 +229,17 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         [InstanceMember]
         [ArgumentsLength(1)]
-        public static JSObject match(JSObject self, Arguments args)
+        public static JSValue match(JSValue self, Arguments args)
         {
-            if (self.valueType <= JSObjectType.Undefined || (self.valueType >= JSObjectType.Object && self.Value == null))
+            if (self.valueType <= JSValueType.Undefined || (self.valueType >= JSValueType.Object && self.Value == null))
                 throw new JSException(new TypeError("String.prototype.match called on null or undefined"));
             var a0 = args[0];
-            if (a0.valueType == JSObjectType.Object && a0.oValue is RegExp)
+            if (a0.valueType == JSValueType.Object && a0.oValue is RegExp)
             {
                 var regex = a0.oValue as RegExp;
                 if (!regex._global)
                 {
-                    regex.lastIndex.valueType = JSObjectType.Int;
+                    regex.lastIndex.valueType = JSValueType.Int;
                     regex.lastIndex.iValue = 0;
                     return regex.exec(self);
                 }
@@ -268,7 +258,7 @@ namespace NiL.JS.BaseLibrary
             }
             else
             {
-                var match = new Regex((a0.valueType > JSObjectType.Undefined ? (object)a0 : "").ToString(), RegexOptions.ECMAScript).Match(self.ToString());
+                var match = new Regex((a0.valueType > JSValueType.Undefined ? (object)a0 : "").ToString(), RegexOptions.ECMAScript).Match(self.ToString());
                 var res = new Array(match.Groups.Count);
                 for (int i = 0; i < match.Groups.Count; i++)
                     res.data[i] = match.Groups[i].Value;
@@ -281,14 +271,14 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         [InstanceMember]
         [ArgumentsLength(1)]
-        public static JSObject search(JSObject self, Arguments args)
+        public static JSValue search(JSValue self, Arguments args)
         {
-            if (self.valueType <= JSObjectType.Undefined || (self.valueType >= JSObjectType.Object && self.Value == null))
+            if (self.valueType <= JSValueType.Undefined || (self.valueType >= JSValueType.Object && self.Value == null))
                 throw new JSException(new TypeError("String.prototype.match called on null or undefined"));
             if (args.length == 0)
                 return 0;
             var a0 = args[0];
-            if (a0.valueType == JSObjectType.Object
+            if (a0.valueType == JSValueType.Object
                 && a0.oValue != null
                 && a0.oValue.GetType() == typeof(RegExp))
             {
@@ -315,13 +305,13 @@ namespace NiL.JS.BaseLibrary
         [InstanceMember]
         [ArgumentsLength(2)]
         [AllowNullArguments]
-        public static JSObject replace(JSObject self, Arguments args)
+        public static JSValue replace(JSValue self, Arguments args)
         {
             if (args == null || args.length == 0)
                 return self;
-            if ((args[0] ?? Null).valueType == JSObjectType.Object
-                && (args[0] ?? Null).oValue != null
-                && args[0].oValue.GetType() == typeof(RegExp))
+            if ((args[0] ?? Null).valueType == JSValueType.Object
+                && (args[0] ?? Null).Value != null
+                && args[0].Value.GetType() == typeof(RegExp))
             {
                 if (args.length > 1 && args[1].oValue is Function)
                 {
@@ -335,10 +325,10 @@ namespace NiL.JS.BaseLibrary
                         (m) =>
                         {
                             self.oValue = temp;
-                            self.valueType = JSObjectType.String;
+                            self.valueType = JSValueType.String;
                             margs.length = 1 + m.Groups.Count - 1 + 1 + 1;
                             match.oValue = m.Value;
-                            JSObject t;
+                            JSValue t;
                             for (int i = 1; i < m.Groups.Count; i++)
                             {
                                 t = m.Groups[i].Value;
@@ -350,12 +340,12 @@ namespace NiL.JS.BaseLibrary
                             return f.Invoke(margs).ToString();
                         }), (args[0].Value as RegExp)._global ? int.MaxValue : 1);
                     self.oValue = temp;
-                    self.valueType = JSObjectType.String;
+                    self.valueType = JSValueType.String;
                     return match;
                 }
                 else
                 {
-                    return (args[0].oValue as RegExp).regEx.Replace(self.ToString(), args.Length > 1 ? args[1].ToString() : "undefined", (args[0].oValue as RegExp)._global ? int.MaxValue : 1);
+                    return (args[0].Value as RegExp).regEx.Replace(self.ToString(), args.Length > 1 ? args[1].ToString() : "undefined", (args[0].Value as RegExp)._global ? int.MaxValue : 1);
                 }
             }
             else
@@ -375,7 +365,7 @@ namespace NiL.JS.BaseLibrary
                     margs[1] = index;
                     var res = othis.Substring(0, index) + f.Invoke(margs).ToString() + othis.Substring(index + pattern.Length);
                     self.oValue = othis;
-                    self.valueType = JSObjectType.String;
+                    self.valueType = JSValueType.String;
                     return res;
                 }
                 else
@@ -395,7 +385,7 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         [InstanceMember]
         [ArgumentsLength(2)]
-        public static JSObject slice(JSObject self, Arguments args)
+        public static JSValue slice(JSValue self, Arguments args)
         {
             string selfString = self.ToPrimitiveValue_Value_String().ToString();
             if (args.Length == 0)
@@ -403,13 +393,13 @@ namespace NiL.JS.BaseLibrary
             int pos0 = 0;
             switch (args[0].valueType)
             {
-                case JSObjectType.Int:
-                case JSObjectType.Bool:
+                case JSValueType.Int:
+                case JSValueType.Bool:
                     {
                         pos0 = args[0].iValue;
                         break;
                     }
-                case JSObjectType.Double:
+                case JSValueType.Double:
                     {
                         if (double.IsNaN(args[0].dValue) || double.IsNegativeInfinity(args[0].dValue))
                             pos0 = 0;
@@ -419,10 +409,10 @@ namespace NiL.JS.BaseLibrary
                             pos0 = (int)args[0].dValue;
                         break;
                     }
-                case JSObjectType.Object:
-                case JSObjectType.Date:
-                case JSObjectType.Function:
-                case JSObjectType.String:
+                case JSValueType.Object:
+                case JSValueType.Date:
+                case JSValueType.Function:
+                case JSValueType.String:
                     {
                         pos0 = Tools.JSObjectToInt32(args[0], 0, true);
                         break;
@@ -433,13 +423,13 @@ namespace NiL.JS.BaseLibrary
             {
                 switch (args[1].valueType)
                 {
-                    case JSObjectType.Int:
-                    case JSObjectType.Bool:
+                    case JSValueType.Int:
+                    case JSValueType.Bool:
                         {
                             pos1 = args[1].iValue;
                             break;
                         }
-                    case JSObjectType.Double:
+                    case JSValueType.Double:
                         {
                             if (double.IsNaN(args[1].dValue) || double.IsNegativeInfinity(args[0].dValue))
                                 pos1 = 0;
@@ -449,10 +439,10 @@ namespace NiL.JS.BaseLibrary
                                 pos1 = (int)args[1].dValue;
                             break;
                         }
-                    case JSObjectType.Object:
-                    case JSObjectType.Date:
-                    case JSObjectType.Function:
-                    case JSObjectType.String:
+                    case JSValueType.Object:
+                    case JSValueType.Date:
+                    case JSValueType.Function:
+                    case JSValueType.String:
                         {
                             //double d;
                             //Tools.ParseNumber(args[1].ToPrimitiveValue_Value_String().ToString(), pos1, out d, Tools.ParseNumberOptions.Default);
@@ -460,9 +450,9 @@ namespace NiL.JS.BaseLibrary
                             pos1 = Tools.JSObjectToInt32(args[1], 0, true);
                             break;
                         }
-                    case JSObjectType.NotExists:
-                    case JSObjectType.NotExistsInObject:
-                    case JSObjectType.Undefined:
+                    case JSValueType.NotExists:
+                    case JSValueType.NotExistsInObject:
+                    case JSValueType.Undefined:
                         {
                             pos1 = selfString.Length;
                             break;
@@ -482,7 +472,7 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         [InstanceMember]
         [ArgumentsLength(2)]
-        public static JSObject split(JSObject self, Arguments args)
+        public static JSValue split(JSValue self, Arguments args)
         {
             if (args.Length == 0 || !args[0].IsDefinded)
                 return new Array(new object[] { self.ToString() });
@@ -490,25 +480,25 @@ namespace NiL.JS.BaseLibrary
             if (args.Length > 1)
             {
                 var limO = args[1];
-                if (limO.valueType >= JSObjectType.Object)
+                if (limO.valueType >= JSValueType.Object)
                     limO = limO.ToPrimitiveValue_Value_String();
                 switch (limO.valueType)
                 {
-                    case JSObjectType.Int:
-                    case JSObjectType.Bool:
+                    case JSValueType.Int:
+                    case JSValueType.Bool:
                         {
                             limit = (uint)limO.iValue;
                             break;
                         }
-                    case JSObjectType.Double:
+                    case JSValueType.Double:
                         {
                             limit = (uint)limO.dValue;
                             break;
                         }
-                    case JSObjectType.Object:
-                    case JSObjectType.Date:
-                    case JSObjectType.Function:
-                    case JSObjectType.String:
+                    case JSValueType.Object:
+                    case JSValueType.Date:
+                    case JSValueType.Function:
+                    case JSValueType.String:
                         {
                             double d;
                             Tools.ParseNumber(limO.ToString(), 0, out d, Tools.ParseNumberOptions.Default);
@@ -517,7 +507,7 @@ namespace NiL.JS.BaseLibrary
                         }
                 }
             }
-            if (args[0].valueType == JSObjectType.Object && args[0].oValue is RegExp)
+            if (args[0].valueType == JSValueType.Object && args[0].oValue is RegExp)
             {
                 string selfString = self.ToPrimitiveValue_Value_String().ToString();
                 var match = (args[0].oValue as RegExp).regEx.Match(selfString);
@@ -588,7 +578,7 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         [InstanceMember]
         [ArgumentsLength(2)]
-        public static JSObject substring(JSObject self, Arguments args)
+        public static JSValue substring(JSValue self, Arguments args)
         {
             string selfString = self.ToPrimitiveValue_Value_String().ToString();
             if (args.Length == 0)
@@ -596,13 +586,13 @@ namespace NiL.JS.BaseLibrary
             int pos0 = 0;
             switch (args[0].valueType)
             {
-                case JSObjectType.Int:
-                case JSObjectType.Bool:
+                case JSValueType.Int:
+                case JSValueType.Bool:
                     {
                         pos0 = args[0].iValue;
                         break;
                     }
-                case JSObjectType.Double:
+                case JSValueType.Double:
                     {
                         if (double.IsNaN(args[0].dValue) || double.IsNegativeInfinity(args[0].dValue))
                             pos0 = 0;
@@ -612,10 +602,10 @@ namespace NiL.JS.BaseLibrary
                             pos0 = (int)args[0].dValue;
                         break;
                     }
-                case JSObjectType.Object:
-                case JSObjectType.Date:
-                case JSObjectType.Function:
-                case JSObjectType.String:
+                case JSValueType.Object:
+                case JSValueType.Date:
+                case JSValueType.Function:
+                case JSValueType.String:
                     {
                         pos0 = Tools.JSObjectToInt32(args[0], 0, true);
                         break;
@@ -626,13 +616,13 @@ namespace NiL.JS.BaseLibrary
             {
                 switch (args[1].valueType)
                 {
-                    case JSObjectType.Int:
-                    case JSObjectType.Bool:
+                    case JSValueType.Int:
+                    case JSValueType.Bool:
                         {
                             pos1 = args[1].iValue;
                             break;
                         }
-                    case JSObjectType.Double:
+                    case JSValueType.Double:
                         {
                             if (double.IsNaN(args[1].dValue) || double.IsNegativeInfinity(args[0].dValue))
                                 pos1 = 0;
@@ -642,17 +632,17 @@ namespace NiL.JS.BaseLibrary
                                 pos1 = (int)args[1].dValue;
                             break;
                         }
-                    case JSObjectType.Object:
-                    case JSObjectType.Date:
-                    case JSObjectType.Function:
-                    case JSObjectType.String:
+                    case JSValueType.Object:
+                    case JSValueType.Date:
+                    case JSValueType.Function:
+                    case JSValueType.String:
                         {
                             pos1 = Tools.JSObjectToInt32(args[1], 0, true);
                             break;
                         }
-                    case JSObjectType.NotExists:
-                    case JSObjectType.NotExistsInObject:
-                    case JSObjectType.Undefined:
+                    case JSValueType.NotExists:
+                    case JSValueType.NotExistsInObject:
+                    case JSValueType.Undefined:
                         {
                             pos1 = selfString.Length;
                             break;
@@ -675,7 +665,7 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         [InstanceMember]
         [ArgumentsLength(2)]
-        public static JSObject substr(JSObject self, Arguments args)
+        public static JSValue substr(JSValue self, Arguments args)
         {
             if (args.Length == 0)
                 return self;
@@ -684,21 +674,21 @@ namespace NiL.JS.BaseLibrary
             {
                 switch (args[0].valueType)
                 {
-                    case JSObjectType.Int:
-                    case JSObjectType.Bool:
+                    case JSValueType.Int:
+                    case JSValueType.Bool:
                         {
                             pos0 = args[0].iValue;
                             break;
                         }
-                    case JSObjectType.Double:
+                    case JSValueType.Double:
                         {
                             pos0 = (int)args[0].dValue;
                             break;
                         }
-                    case JSObjectType.Object:
-                    case JSObjectType.Date:
-                    case JSObjectType.Function:
-                    case JSObjectType.String:
+                    case JSValueType.Object:
+                    case JSValueType.Date:
+                    case JSValueType.Function:
+                    case JSValueType.String:
                         {
                             double d;
                             Tools.ParseNumber(args[0].ToString(), pos0, out d, Tools.ParseNumberOptions.Default);
@@ -713,21 +703,21 @@ namespace NiL.JS.BaseLibrary
             {
                 switch (args[1].valueType)
                 {
-                    case JSObjectType.Int:
-                    case JSObjectType.Bool:
+                    case JSValueType.Int:
+                    case JSValueType.Bool:
                         {
                             len = args[1].iValue;
                             break;
                         }
-                    case JSObjectType.Double:
+                    case JSValueType.Double:
                         {
                             len = (int)args[1].dValue;
                             break;
                         }
-                    case JSObjectType.Object:
-                    case JSObjectType.Date:
-                    case JSObjectType.Function:
-                    case JSObjectType.String:
+                    case JSValueType.Object:
+                    case JSValueType.Date:
+                    case JSValueType.Function:
+                    case JSValueType.String:
                         {
                             double d;
                             Tools.ParseNumber(args[1].ToString(), len, out d, Tools.ParseNumberOptions.Default);
@@ -750,11 +740,11 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         [InstanceMember]
         [ArgumentsLength(0)]
-        public static JSObject toLocaleLowerCase(JSObject self)
+        public static JSValue toLocaleLowerCase(JSValue self)
         {
             var sstr = self.ToString();
             var res = sstr.ToLower();
-            if (self.valueType == JSObjectType.String && string.CompareOrdinal(sstr, res) == 0)
+            if (self.valueType == JSValueType.String && string.CompareOrdinal(sstr, res) == 0)
                 return self;
             return res;
         }
@@ -762,11 +752,11 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         [InstanceMember]
         [ArgumentsLength(0)]
-        public static JSObject toLocaleUpperCase(JSObject self)
+        public static JSValue toLocaleUpperCase(JSValue self)
         {
             var sstr = self.ToString();
             var res = sstr.ToUpper();
-            if (self.valueType == JSObjectType.String && string.CompareOrdinal(sstr, res) == 0)
+            if (self.valueType == JSValueType.String && string.CompareOrdinal(sstr, res) == 0)
                 return self;
             return res;
         }
@@ -774,11 +764,11 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         [InstanceMember]
         [ArgumentsLength(0)]
-        public static JSObject toLowerCase(JSObject self)
+        public static JSValue toLowerCase(JSValue self)
         {
             var sstr = self.ToString();
             var res = sstr.ToLowerInvariant();
-            if (self.valueType == JSObjectType.String && string.CompareOrdinal(sstr, res) == 0)
+            if (self.valueType == JSValueType.String && string.CompareOrdinal(sstr, res) == 0)
                 return self;
             return res;
         }
@@ -786,11 +776,11 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         [InstanceMember]
         [ArgumentsLength(0)]
-        public static JSObject toUpperCase(JSObject self)
+        public static JSValue toUpperCase(JSValue self)
         {
             var sstr = self.ToString();
             var res = sstr.ToUpperInvariant();
-            if (self.valueType == JSObjectType.String && string.CompareOrdinal(sstr, res) == 0)
+            if (self.valueType == JSValueType.String && string.CompareOrdinal(sstr, res) == 0)
                 return self;
             return res;
         }
@@ -798,17 +788,17 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         [InstanceMember]
         [ArgumentsLength(0)]
-        public static JSObject trim(JSObject self)
+        public static JSValue trim(JSValue self)
         {
             switch (self.valueType)
             {
-                case JSObjectType.Undefined:
-                case JSObjectType.NotExists:
-                case JSObjectType.NotExistsInObject:
+                case JSValueType.Undefined:
+                case JSValueType.NotExists:
+                case JSValueType.NotExistsInObject:
                     throw new JSException(new TypeError("string can't be undefined"));
-                case JSObjectType.Function:
-                case JSObjectType.String:
-                case JSObjectType.Object:
+                case JSValueType.Function:
+                case JSValueType.String:
+                case JSValueType.Object:
                     {
                         if (self.oValue == null)
                             throw new JSException(new TypeError("string can't be null"));
@@ -853,11 +843,11 @@ namespace NiL.JS.BaseLibrary
         [InstanceMember]
         [ArgumentsLength(0)]
         [CLSCompliant(false)]
-        public static JSObject toString(JSObject self)
+        public static JSValue toString(JSValue self)
         {
-            if ((self as object) is String && self.valueType == JSObjectType.Object) // prototype instance
+            if ((self as object) is String && self.valueType == JSValueType.Object) // prototype instance
                 return self.ToString();
-            if (self.valueType == JSObjectType.String)
+            if (self.valueType == JSValueType.String)
                 return self;
             else
                 throw new JSException(new TypeError("Try to call String.toString for not string object."));
@@ -866,11 +856,11 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         [InstanceMember]
         [ArgumentsLength(0)]
-        public static JSObject valueOf(JSObject self)
+        public static JSValue valueOf(JSValue self)
         {
-            if ((self as object) is String && self.valueType == JSObjectType.Object) // prototype instance
+            if ((self as object) is String && self.valueType == JSValueType.Object) // prototype instance
                 return self.ToString();
-            if (self.valueType == JSObjectType.String)
+            if (self.valueType == JSValueType.String)
                 return self;
             else
                 throw new JSException(new TypeError("Try to call String.valueOf for not string object."));
@@ -883,9 +873,9 @@ namespace NiL.JS.BaseLibrary
         [DoNotDelete]
         [DoNotEnumerate]
         [NotConfigurable]
-        public JSObject length
+        public JSValue length
         {
-            [AllowUnsafeCall(typeof(JSObject))]
+            [AllowUnsafeCall(typeof(JSValue))]
             [Hidden]
             get
             {
@@ -906,7 +896,7 @@ namespace NiL.JS.BaseLibrary
         [Hidden]
         public override string ToString()
         {
-            if (this.valueType != JSObjectType.String)
+            if (this.valueType != JSValueType.String)
                 throw new JSException(new TypeError("Try to call String.toString for not string object."));
             return oValue.ToString();
         }
@@ -926,7 +916,7 @@ namespace NiL.JS.BaseLibrary
         }
 
         [Hidden]
-        internal protected override JSObject GetMember(JSObject name, bool forWrite, bool own)
+        internal protected override JSValue GetMember(JSValue name, bool forWrite, bool own)
         {
             int index = 0;
             double dindex = Tools.JSObjectToDouble(name);
@@ -942,97 +932,114 @@ namespace NiL.JS.BaseLibrary
             var namestr = name.ToString();
             if (namestr == "length")
                 return length;
-            return DefaultFieldGetter(name, forWrite, own); // обращение идёт к Объекту String, а не к значению string, поэтому члены создавать можно
+            return base.GetMember(name, forWrite, own); // обращение идёт к Объекту String, а не к значению string, поэтому члены создавать можно
+        }
+
+        protected internal override IEnumerator<string> GetEnumeratorImpl(bool hideNonEnum)
+        {
+            var len = (oValue.ToString()).Length;
+            for (var i = 0; i < len; i++)
+                yield return i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture);
+            if (!hideNonEnum)
+                yield return "length";
+            if (fields != null)
+            {
+                foreach (var f in fields)
+                {
+                    if (f.Value.IsExist && (!hideNonEnum || (f.Value.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+                        yield return f.Key;
+                }
+            }
         }
 
         #region HTML Wraping
         [DoNotEnumerate]
         [InstanceMember]
-        public static JSObject anchor(JSObject self, JSObject arg)
+        public static JSValue anchor(JSValue self, JSValue arg)
         {
             return "<a name=\"" + arg.Value + "\">" + self + "</a>";
         }
 
         [DoNotEnumerate]
         [InstanceMember]
-        public static JSObject big(JSObject self)
+        public static JSValue big(JSValue self)
         {
             return "<big>" + self + "</big>";
         }
 
         [DoNotEnumerate]
         [InstanceMember]
-        public static JSObject blink(JSObject self)
+        public static JSValue blink(JSValue self)
         {
             return "<blink>" + self + "</blink>";
         }
 
         [DoNotEnumerate]
         [InstanceMember]
-        public static JSObject bold(JSObject self)
+        public static JSValue bold(JSValue self)
         {
             return "<bold>" + self + "</bold>";
         }
 
         [DoNotEnumerate]
         [InstanceMember]
-        public static JSObject @fixed(JSObject self)
+        public static JSValue @fixed(JSValue self)
         {
             return "<tt>" + self + "</tt>";
         }
 
         [DoNotEnumerate]
         [InstanceMember]
-        public static JSObject fontcolor(JSObject self, JSObject arg)
+        public static JSValue fontcolor(JSValue self, JSValue arg)
         {
             return "<font color=\"" + arg.Value + "\">" + self + "</font>";
         }
 
         [DoNotEnumerate]
         [InstanceMember]
-        public static JSObject fontsize(JSObject self, JSObject arg)
+        public static JSValue fontsize(JSValue self, JSValue arg)
         {
             return "<font size=\"" + arg.Value + "\">" + self + "</font>";
         }
 
         [DoNotEnumerate]
         [InstanceMember]
-        public static JSObject italics(JSObject self)
+        public static JSValue italics(JSValue self)
         {
             return "<i>" + self + "</i>";
         }
 
         [DoNotEnumerate]
         [InstanceMember]
-        public static JSObject link(JSObject self, JSObject arg)
+        public static JSValue link(JSValue self, JSValue arg)
         {
             return "<a href=\"" + arg.Value + "\">" + self + "</a>";
         }
 
         [DoNotEnumerate]
         [InstanceMember]
-        public static JSObject small(JSObject self)
+        public static JSValue small(JSValue self)
         {
             return "<small>" + self + "</small>";
         }
 
         [DoNotEnumerate]
         [InstanceMember]
-        public static JSObject strike(JSObject self)
+        public static JSValue strike(JSValue self)
         {
             return "<strike>" + self + "</strike>";
         }
 
         [DoNotEnumerate]
         [InstanceMember]
-        public static JSObject sub(JSObject self)
+        public static JSValue sub(JSValue self)
         {
             return "<sub>" + self + "</sub>";
         }
 
         [DoNotEnumerate]
         [InstanceMember]
-        public static JSObject sup(JSObject self)
+        public static JSValue sup(JSValue self)
         {
             return "<sup>" + self + "</sup>";
         }

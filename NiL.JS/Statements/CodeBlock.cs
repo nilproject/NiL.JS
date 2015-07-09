@@ -198,7 +198,7 @@ namespace NiL.JS.Statements
             };
         }
 
-        internal sealed override JSObject Evaluate(Context context)
+        internal sealed override JSValue Evaluate(Context context)
         {
             var ls = lines;
             for (int i = ls.Length; i-- > 0; )
@@ -216,12 +216,12 @@ namespace NiL.JS.Statements
                         System.Diagnostics.Debugger.Break();
                     else
                         throw new ApplicationException("Context was stopped");
-                if (NiL.JS.BaseLibrary.Number.NaN.valueType != JSObjectType.Double || !double.IsNaN(NiL.JS.BaseLibrary.Number.NaN.dValue))
+                if (NiL.JS.BaseLibrary.Number.NaN.valueType != JSValueType.Double || !double.IsNaN(NiL.JS.BaseLibrary.Number.NaN.dValue))
                     if (System.Diagnostics.Debugger.IsAttached)
                         System.Diagnostics.Debugger.Break();
                     else
                         throw new ApplicationException("NaN was rewrite");
-                if (JSObject.undefined.valueType != JSObjectType.Undefined)
+                if (JSObject.undefined.valueType != JSValueType.Undefined)
                     if (System.Diagnostics.Debugger.IsAttached)
                         System.Diagnostics.Debugger.Break();
                     else
@@ -231,13 +231,13 @@ namespace NiL.JS.Statements
                         System.Diagnostics.Debugger.Break();
                     else
                         throw new ApplicationException("notExist was rewrite");
-                if (BaseLibrary.Boolean.False.valueType != JSObjectType.Bool
+                if (BaseLibrary.Boolean.False.valueType != JSValueType.Bool
                     || BaseLibrary.Boolean.False.iValue != 0)
                     if (System.Diagnostics.Debugger.IsAttached)
                         System.Diagnostics.Debugger.Break();
                     else
                         throw new ApplicationException("Boolean.False was rewrite");
-                if (BaseLibrary.Boolean.True.valueType != JSObjectType.Bool
+                if (BaseLibrary.Boolean.True.valueType != JSValueType.Bool
                     || BaseLibrary.Boolean.True.iValue != 1)
                     if (System.Diagnostics.Debugger.IsAttached)
                         System.Diagnostics.Debugger.Break();

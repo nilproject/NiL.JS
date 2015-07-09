@@ -442,13 +442,13 @@ namespace NiL.JS.BaseLibrary
             if (args.length == 1)
             {
                 var arg = args[0];
-                if (arg.valueType >= JSObjectType.Object)
+                if (arg.valueType >= JSValueType.Object)
                     arg = arg.ToPrimitiveValue_Value_String();
                 switch (arg.valueType)
                 {
-                    case JSObjectType.Int:
-                    case JSObjectType.Bool:
-                    case JSObjectType.Double:
+                    case JSValueType.Int:
+                    case JSValueType.Bool:
+                    case JSValueType.Double:
                         {
                             var timeValue = Tools.JSObjectToDouble(arg);
                             if (double.IsNaN(timeValue) || double.IsInfinity(timeValue))
@@ -461,7 +461,7 @@ namespace NiL.JS.BaseLibrary
                             time += timeZoneOffset;
                             break;
                         }
-                    case JSObjectType.String:
+                    case JSValueType.String:
                         {
                             error = !tryParse(args.a0.ToString(), out time, out timeZoneOffset);
                             break;
@@ -551,11 +551,11 @@ namespace NiL.JS.BaseLibrary
             }
         }
 
-        private void offsetTimeValue(JSObject value, long amort, long mul)
+        private void offsetTimeValue(JSValue value, long amort, long mul)
         {
             if (value == null
                || !value.IsDefinded
-               || (value.valueType == JSObjectType.Double && (double.IsNaN(value.dValue) || double.IsInfinity(value.dValue))))
+               || (value.valueType == JSValueType.Double && (double.IsNaN(value.dValue) || double.IsInfinity(value.dValue))))
             {
                 error = true;
                 time = 0;
@@ -569,13 +569,13 @@ namespace NiL.JS.BaseLibrary
         }
 
         [DoNotEnumerate]
-        public JSObject valueOf()
+        public JSValue valueOf()
         {
             return getTime();
         }
 
         [DoNotEnumerate]
-        public JSObject getTime()
+        public JSValue getTime()
         {
             if (error)
                 return double.NaN;
@@ -583,7 +583,7 @@ namespace NiL.JS.BaseLibrary
         }
 
         [DoNotEnumerate]
-        public static JSObject now()
+        public static JSValue now()
         {
             var time = DateTime.Now.Ticks / 10000;
             var timeZoneOffset = TimeZoneInfo.Local.GetUtcOffset(DateTime.Now).Ticks / 10000;
@@ -591,7 +591,7 @@ namespace NiL.JS.BaseLibrary
         }
 
         [DoNotEnumerate]
-        public JSObject getTimezoneOffset()
+        public JSValue getTimezoneOffset()
         {
             if (error)
                 return Number.NaN;
@@ -600,13 +600,13 @@ namespace NiL.JS.BaseLibrary
         }
 
         [DoNotEnumerate]
-        public JSObject getYear()
+        public JSValue getYear()
         {
             return getFullYear();
         }
 
         [DoNotEnumerate]
-        public JSObject getFullYear()
+        public JSValue getFullYear()
         {
             if (error)
                 return Number.NaN;
@@ -627,13 +627,13 @@ namespace NiL.JS.BaseLibrary
         }
 
         [DoNotEnumerate]
-        public JSObject getUTCFullYear()
+        public JSValue getUTCFullYear()
         {
             return getFullYear();
         }
 
         [DoNotEnumerate]
-        public JSObject getMonth()
+        public JSValue getMonth()
         {
             if (error)
                 return Number.NaN;
@@ -661,13 +661,13 @@ namespace NiL.JS.BaseLibrary
         }
 
         [DoNotEnumerate]
-        public JSObject getUTCMonth()
+        public JSValue getUTCMonth()
         {
             return getMonth();
         }
 
         [DoNotEnumerate]
-        public JSObject getDate()
+        public JSValue getDate()
         {
             if (error)
                 return Number.NaN;
@@ -697,25 +697,25 @@ namespace NiL.JS.BaseLibrary
         }
 
         [DoNotEnumerate]
-        public JSObject getUTCDate()
+        public JSValue getUTCDate()
         {
             return getDate();
         }
 
         [DoNotEnumerate]
-        public JSObject getDay()
+        public JSValue getDay()
         {
             return (int)((time / _dayMilliseconds + 1) % 7);
         }
 
         [DoNotEnumerate]
-        public JSObject getUTCDay()
+        public JSValue getUTCDay()
         {
             return (int)((time / _dayMilliseconds + 1) % 7);
         }
 
         [DoNotEnumerate]
-        public JSObject getHours()
+        public JSValue getHours()
         {
             if (error)
                 return Number.NaN;
@@ -729,13 +729,13 @@ namespace NiL.JS.BaseLibrary
         }
 
         [DoNotEnumerate]
-        public JSObject getUTCHours()
+        public JSValue getUTCHours()
         {
             return getHours();
         }
 
         [DoNotEnumerate]
-        public JSObject getMinutes()
+        public JSValue getMinutes()
         {
             if (error)
                 return Number.NaN;
@@ -749,7 +749,7 @@ namespace NiL.JS.BaseLibrary
         }
 
         [DoNotEnumerate]
-        public JSObject getUTCMinutes()
+        public JSValue getUTCMinutes()
         {
             if (error)
                 return Number.NaN;
@@ -757,7 +757,7 @@ namespace NiL.JS.BaseLibrary
         }
 
         [DoNotEnumerate]
-        public JSObject getSeconds()
+        public JSValue getSeconds()
         {
             if (error)
                 return Number.NaN;
@@ -772,13 +772,13 @@ namespace NiL.JS.BaseLibrary
         }
 
         [DoNotEnumerate]
-        public JSObject getUTCSeconds()
+        public JSValue getUTCSeconds()
         {
             return getSeconds();
         }
 
         [DoNotEnumerate]
-        public JSObject getMilliseconds()
+        public JSValue getMilliseconds()
         {
             if (error)
                 return Number.NaN;
@@ -793,17 +793,17 @@ namespace NiL.JS.BaseLibrary
         }
 
         [DoNotEnumerate]
-        public JSObject getUTCMilliseconds()
+        public JSValue getUTCMilliseconds()
         {
             return getMilliseconds();
         }
 
         [DoNotEnumerate]
-        public JSObject setTime(JSObject time)
+        public JSValue setTime(JSValue time)
         {
             if (time == null
                 || !time.IsDefinded
-                || (time.valueType == JSObjectType.Double && (double.IsNaN(time.dValue) || double.IsInfinity(time.dValue))))
+                || (time.valueType == JSValueType.Double && (double.IsNaN(time.dValue) || double.IsInfinity(time.dValue))))
             {
                 error = true;
                 time = 0;
@@ -817,20 +817,20 @@ namespace NiL.JS.BaseLibrary
         }
 
         [DoNotEnumerate]
-        public JSObject setMilliseconds(JSObject milliseconds)
+        public JSValue setMilliseconds(JSValue milliseconds)
         {
             offsetTimeValue(milliseconds, getMillisecondsImpl(), 1);
             return getMilliseconds();
         }
 
         [DoNotEnumerate]
-        public JSObject setUTCMilliseconds(JSObject milliseconds)
+        public JSValue setUTCMilliseconds(JSValue milliseconds)
         {
             return setMilliseconds(milliseconds);
         }
 
         [DoNotEnumerate]
-        public JSObject setSeconds(JSObject seconds, JSObject milliseconds)
+        public JSValue setSeconds(JSValue seconds, JSValue milliseconds)
         {
             if (seconds != null && seconds.IsExist)
                 offsetTimeValue(seconds, getSecondsImpl(), 1000);
@@ -840,13 +840,13 @@ namespace NiL.JS.BaseLibrary
         }
 
         [DoNotEnumerate]
-        public JSObject setUTCSeconds(JSObject seconds, JSObject milliseconds)
+        public JSValue setUTCSeconds(JSValue seconds, JSValue milliseconds)
         {
             return setSeconds(seconds, milliseconds);
         }
 
         [DoNotEnumerate]
-        public JSObject setMinutes(JSObject minutes, JSObject seconds, JSObject milliseconds)
+        public JSValue setMinutes(JSValue minutes, JSValue seconds, JSValue milliseconds)
         {
             if (minutes != null && minutes.IsExist)
                 offsetTimeValue(minutes, getMinutesImpl(), _minuteMillisecond);
@@ -856,13 +856,13 @@ namespace NiL.JS.BaseLibrary
         }
 
         [DoNotEnumerate]
-        public JSObject setUTCMinutes(JSObject minutes, JSObject seconds, JSObject milliseconds)
+        public JSValue setUTCMinutes(JSValue minutes, JSValue seconds, JSValue milliseconds)
         {
             return setMinutes(minutes, seconds, milliseconds);
         }
 
         [DoNotEnumerate]
-        public JSObject setHours(JSObject hours, JSObject minutes, JSObject seconds, JSObject milliseconds)
+        public JSValue setHours(JSValue hours, JSValue minutes, JSValue seconds, JSValue milliseconds)
         {
             if (hours != null && hours.IsExist)
                 offsetTimeValue(hours, getHoursImpl(), _hourMilliseconds);
@@ -871,13 +871,13 @@ namespace NiL.JS.BaseLibrary
         }
 
         [DoNotEnumerate]
-        public JSObject setUTCHours(JSObject hours, JSObject minutes, JSObject seconds, JSObject milliseconds)
+        public JSValue setUTCHours(JSValue hours, JSValue minutes, JSValue seconds, JSValue milliseconds)
         {
             return setHours(hours, minutes, seconds, milliseconds);
         }
 
         [DoNotEnumerate]
-        public JSObject setDate(JSObject days)
+        public JSValue setDate(JSValue days)
         {
             if (days != null && days.IsExist)
                 offsetTimeValue(days, getDateImpl(), _dayMilliseconds);
@@ -885,18 +885,18 @@ namespace NiL.JS.BaseLibrary
         }
 
         [DoNotEnumerate]
-        public JSObject setUTCDate(JSObject days)
+        public JSValue setUTCDate(JSValue days)
         {
             return setDate(days);
         }
 
         [DoNotEnumerate]
-        public JSObject setMonth(JSObject monthO, JSObject day)
+        public JSValue setMonth(JSValue monthO, JSValue day)
         {
             if (monthO != null)
             {
                 if (!monthO.IsDefinded
-                || (monthO.valueType == JSObjectType.Double && (double.IsNaN(monthO.dValue) || double.IsInfinity(monthO.dValue))))
+                || (monthO.valueType == JSValueType.Double && (double.IsNaN(monthO.dValue) || double.IsInfinity(monthO.dValue))))
                 {
                     error = true;
                     time = 0;
@@ -917,32 +917,32 @@ namespace NiL.JS.BaseLibrary
         }
 
         [DoNotEnumerate]
-        public JSObject setUTCMonth(JSObject monthO, JSObject day)
+        public JSValue setUTCMonth(JSValue monthO, JSValue day)
         {
             return setMonth(monthO, day);
         }
 
         [DoNotEnumerate]
-        public JSObject setYear(JSObject year)
+        public JSValue setYear(JSValue year)
         {
             time = dateToMilliseconds(Tools.JSObjectToInt64(year) + 1900, getMonthImpl(), getDateImpl(), getHoursImpl(), getMinutesImpl(), getSecondsImpl(), getMillisecondsImpl());
             return year;
         }
 
         [DoNotEnumerate]
-        public JSObject setUTCYear(JSObject year)
+        public JSValue setUTCYear(JSValue year)
         {
             time = dateToMilliseconds(Tools.JSObjectToInt64(year) + 1900, getMonthImpl(), getDateImpl(), getHoursImpl(), getMinutesImpl(), getSecondsImpl(), getMillisecondsImpl());
             return year;
         }
 
         [DoNotEnumerate]
-        public JSObject setFullYear(JSObject year, JSObject month, JSObject day)
+        public JSValue setFullYear(JSValue year, JSValue month, JSValue day)
         {
             if (year != null && year.IsExist)
             {
                 if (!year.IsDefinded
-                   || (year.valueType == JSObjectType.Double && (double.IsNaN(year.dValue) || double.IsInfinity(year.dValue))))
+                   || (year.valueType == JSValueType.Double && (double.IsNaN(year.dValue) || double.IsInfinity(year.dValue))))
                 {
                     error = true;
                     time = 0;
@@ -957,14 +957,14 @@ namespace NiL.JS.BaseLibrary
         }
 
         [DoNotEnumerate]
-        public JSObject setUTCFullYear(JSObject year, JSObject month, JSObject day)
+        public JSValue setUTCFullYear(JSValue year, JSValue month, JSValue day)
         {
             return setFullYear(year, month, day);
         }
 
         [DoNotEnumerate]
         [CLSCompliant(false)]
-        public JSObject toString()
+        public JSValue toString()
         {
             return ToString();
         }
@@ -989,7 +989,7 @@ namespace NiL.JS.BaseLibrary
         }
 
         [DoNotEnumerate]
-        public JSObject toLocaleString()
+        public JSValue toLocaleString()
         {
             var dt = ToDateTime();
 #if !PORTABLE
@@ -1011,7 +1011,7 @@ namespace NiL.JS.BaseLibrary
         }
 
         [DoNotEnumerate]
-        public JSObject toLocaleTimeString()
+        public JSValue toLocaleTimeString()
         {
             var res =
                 getHoursImpl().ToString("00:")
@@ -1021,7 +1021,7 @@ namespace NiL.JS.BaseLibrary
         }
 
         [DoNotEnumerate]
-        public JSObject toISOString()
+        public JSValue toISOString()
         {
             try
             {
@@ -1046,25 +1046,25 @@ namespace NiL.JS.BaseLibrary
         }
 
         [DoNotEnumerate]
-        public JSObject toJSON(JSObject obj)
+        public JSValue toJSON(JSValue obj)
         {
             return toISOString();
         }
 
         [DoNotEnumerate]
-        public JSObject toUTCString()
+        public JSValue toUTCString()
         {
             return ToString();
         }
 
         [DoNotEnumerate]
-        public JSObject toGMTString()
+        public JSValue toGMTString()
         {
             return ToString();
         }
 
         [DoNotEnumerate]
-        public JSObject toTimeString()
+        public JSValue toTimeString()
         {
             var offset = new TimeSpan(timeZoneOffset * 10000);
             var res =
@@ -1076,7 +1076,7 @@ namespace NiL.JS.BaseLibrary
         }
 
         [DoNotEnumerate]
-        public JSObject toDateString()
+        public JSValue toDateString()
         {
             var res =
                 daysOfWeek[(System.Math.Abs(time) % _weekMilliseconds) / _dayMilliseconds] + " "
@@ -1087,7 +1087,7 @@ namespace NiL.JS.BaseLibrary
         }
 
         [DoNotEnumerate]
-        public JSObject toLocaleDateString()
+        public JSValue toLocaleDateString()
         {
             var y = getYearImpl();
             while (y > 2800)
@@ -1129,7 +1129,7 @@ namespace NiL.JS.BaseLibrary
         }
 
         [DoNotEnumerate]
-        public static JSObject parse(string dateTime)
+        public static JSValue parse(string dateTime)
         {
             var time = 0L;
             var tzo = 0L;
@@ -1140,7 +1140,7 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [ArgumentsLength(7)]
-        public static JSObject UTC(Arguments dateTime)
+        public static JSValue UTC(Arguments dateTime)
         {
             try
             {

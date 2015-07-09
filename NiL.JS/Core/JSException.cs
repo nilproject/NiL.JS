@@ -12,19 +12,19 @@ namespace NiL.JS.Core
 #endif
     public sealed class JSException : Exception
     {
-        public JSObject Avatar { get; private set; }
+        public JSValue Avatar { get; private set; }
 
         public JSException(Error avatar)
         {
             Avatar = TypeProxy.Proxy(avatar);
         }
 
-        public JSException(JSObject avatar)
+        public JSException(JSValue avatar)
         {
             Avatar = avatar;
         }
 
-        public JSException(JSObject avatar, Exception innerException)
+        public JSException(JSValue avatar, Exception innerException)
             : base("", innerException)
         {
             Avatar = avatar;
@@ -43,11 +43,11 @@ namespace NiL.JS.Core
                 if (Avatar.oValue is Error)
                 {
                     var n = Avatar.GetMember("name");
-                    if (n.valueType == JSObjectType.Property)
+                    if (n.valueType == JSValueType.Property)
                         n = (n.oValue as PropertyPair).get.Invoke(Avatar, null).ToString();
 
                     var m = Avatar.GetMember("message");
-                    if (m.valueType == JSObjectType.Property)
+                    if (m.valueType == JSValueType.Property)
                         return n + ": " + (m.oValue as PropertyPair).get.Invoke(Avatar, null).ToString();
                     else
                         return n + ": " + m.ToString();

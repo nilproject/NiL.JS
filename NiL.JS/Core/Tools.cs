@@ -154,7 +154,7 @@ namespace NiL.JS.Core
 #if INLINE
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
-        public static double JSObjectToDouble(JSObject arg)
+        public static double JSObjectToDouble(JSValue arg)
         {
             do
             {
@@ -162,16 +162,16 @@ namespace NiL.JS.Core
                     return double.NaN;
                 switch (arg.valueType)
                 {
-                    case JSObjectType.Bool:
-                    case JSObjectType.Int:
+                    case JSValueType.Bool:
+                    case JSValueType.Int:
                         {
                             return arg.iValue;
                         }
-                    case JSObjectType.Double:
+                    case JSValueType.Double:
                         {
                             return arg.dValue;
                         }
-                    case JSObjectType.String:
+                    case JSValueType.String:
                         {
                             double x = double.NaN;
                             int ix = 0;
@@ -182,9 +182,9 @@ namespace NiL.JS.Core
                                 return double.NaN;
                             return x;
                         }
-                    case JSObjectType.Date:
-                    case JSObjectType.Function:
-                    case JSObjectType.Object:
+                    case JSValueType.Date:
+                    case JSValueType.Function:
+                    case JSValueType.Object:
                         {
                             if (arg.oValue == null)
                                 return 0;
@@ -192,9 +192,9 @@ namespace NiL.JS.Core
                             break;
                             //return JSObjectToDouble(arg);
                         }
-                    case JSObjectType.NotExists:
-                    case JSObjectType.Undefined:
-                    case JSObjectType.NotExistsInObject:
+                    case JSValueType.NotExists:
+                    case JSValueType.Undefined:
+                    case JSValueType.NotExistsInObject:
                         return double.NaN;
                     default:
                         throw new NotImplementedException();
@@ -210,9 +210,9 @@ namespace NiL.JS.Core
 #if INLINE
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
-        public static int JSObjectToInt32(JSObject arg)
+        public static int JSObjectToInt32(JSValue arg)
         {
-            if (arg.valueType == JSObjectType.Int)
+            if (arg.valueType == JSValueType.Int)
                 return arg.iValue;
             return JSObjectToInt32(arg, 0, false);
         }
@@ -226,7 +226,7 @@ namespace NiL.JS.Core
 #if INLINE
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
-        public static int JSObjectToInt32(JSObject arg, int nullOrUndef)
+        public static int JSObjectToInt32(JSValue arg, int nullOrUndef)
         {
             return JSObjectToInt32(arg, nullOrUndef, false);
         }
@@ -240,7 +240,7 @@ namespace NiL.JS.Core
 #if INLINE
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
-        public static int JSObjectToInt32(JSObject arg, bool alternateInfinity)
+        public static int JSObjectToInt32(JSValue arg, bool alternateInfinity)
         {
             return JSObjectToInt32(arg, 0, alternateInfinity);
         }
@@ -252,19 +252,19 @@ namespace NiL.JS.Core
         /// <param name="nullOrUndef">Значение, которое будет возвращено, если значение arg null или undefined.</param>
         /// <param name="alternateInfinity">Если истина, для значений +Infinity и -Infinity будут возвращены значения int.MaxValue и int.MinValue соответственно.</param>
         /// <returns>Целочисленное значение, представленное в объекте arg.</returns>
-        public static int JSObjectToInt32(JSObject arg, int nullOrUndef, bool alternateInfinity)
+        public static int JSObjectToInt32(JSValue arg, int nullOrUndef, bool alternateInfinity)
         {
             if (arg == null)
                 return nullOrUndef;
             var r = arg;
             switch (r.valueType)
             {
-                case JSObjectType.Bool:
-                case JSObjectType.Int:
+                case JSValueType.Bool:
+                case JSValueType.Int:
                     {
                         return r.iValue;
                     }
-                case JSObjectType.Double:
+                case JSValueType.Double:
                     {
                         if (double.IsNaN(r.dValue))
                             return 0;
@@ -272,7 +272,7 @@ namespace NiL.JS.Core
                             return alternateInfinity ? double.IsPositiveInfinity(r.dValue) ? int.MaxValue : int.MinValue : 0;
                         return (int)(long)r.dValue;
                     }
-                case JSObjectType.String:
+                case JSValueType.String:
                     {
                         double x = 0;
                         int ix = 0;
@@ -285,19 +285,19 @@ namespace NiL.JS.Core
                             return alternateInfinity ? double.IsPositiveInfinity(x) ? int.MaxValue : int.MinValue : 0;
                         return (int)x;
                     }
-                case JSObjectType.Date:
-                case JSObjectType.Function:
-                case JSObjectType.Object:
+                case JSValueType.Date:
+                case JSValueType.Function:
+                case JSValueType.Object:
                     {
                         if (r.oValue == null)
                             return nullOrUndef;
                         r = r.ToPrimitiveValue_Value_String();
                         return JSObjectToInt32(r);
                     }
-                case JSObjectType.NotExists:
+                case JSValueType.NotExists:
                 //throw new JSException((new NiL.JS.BaseLibrary.ReferenceError("Variable not defined.")));
-                case JSObjectType.Undefined:
-                case JSObjectType.NotExistsInObject:
+                case JSValueType.Undefined:
+                case JSValueType.NotExistsInObject:
                     return nullOrUndef;
                 default:
                     throw new NotImplementedException();
@@ -313,7 +313,7 @@ namespace NiL.JS.Core
 #if INLINE
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
-        public static long JSObjectToInt64(JSObject arg)
+        public static long JSObjectToInt64(JSValue arg)
         {
             return JSObjectToInt64(arg, 0, false);
         }
@@ -327,7 +327,7 @@ namespace NiL.JS.Core
 #if INLINE
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
-        public static long JSObjectToInt64(JSObject arg, long nullOrUndef)
+        public static long JSObjectToInt64(JSValue arg, long nullOrUndef)
         {
             return JSObjectToInt64(arg, nullOrUndef, false);
         }
@@ -339,19 +339,19 @@ namespace NiL.JS.Core
         /// <param name="nullOrUndef">Значение, которое будет возвращено, если значение arg null или undefined.</param>
         /// <param name="alternateInfinity">Если истина, для значений +Infinity и -Infinity будут возвращены значения int.MaxValue и int.MinValue соответственно.</param>
         /// <returns>Целочисленное значение, представленное в объекте arg.</returns>
-        public static long JSObjectToInt64(JSObject arg, long nullOrUndef, bool alternateInfinity)
+        public static long JSObjectToInt64(JSValue arg, long nullOrUndef, bool alternateInfinity)
         {
             if (arg == null)
                 return nullOrUndef;
             var r = arg;
             switch (r.valueType)
             {
-                case JSObjectType.Bool:
-                case JSObjectType.Int:
+                case JSValueType.Bool:
+                case JSValueType.Int:
                     {
                         return r.iValue;
                     }
-                case JSObjectType.Double:
+                case JSValueType.Double:
                     {
                         if (double.IsNaN(r.dValue))
                             return 0;
@@ -359,7 +359,7 @@ namespace NiL.JS.Core
                             return alternateInfinity ? double.IsPositiveInfinity(r.dValue) ? long.MaxValue : long.MinValue : 0;
                         return (long)r.dValue;
                     }
-                case JSObjectType.String:
+                case JSValueType.String:
                     {
                         double x = 0;
                         int ix = 0;
@@ -372,18 +372,18 @@ namespace NiL.JS.Core
                             return alternateInfinity ? double.IsPositiveInfinity(x) ? long.MaxValue : long.MinValue : 0;
                         return (long)x;
                     }
-                case JSObjectType.Date:
-                case JSObjectType.Function:
-                case JSObjectType.Object:
+                case JSValueType.Date:
+                case JSValueType.Function:
+                case JSValueType.Object:
                     {
                         if (r.oValue == null)
                             return nullOrUndef;
                         r = r.ToPrimitiveValue_Value_String();
                         return JSObjectToInt32(r);
                     }
-                case JSObjectType.NotExists:
-                case JSObjectType.Undefined:
-                case JSObjectType.NotExistsInObject:
+                case JSValueType.NotExists:
+                case JSValueType.Undefined:
+                case JSValueType.NotExistsInObject:
                     return nullOrUndef;
                 default:
                     throw new NotImplementedException();
@@ -393,59 +393,59 @@ namespace NiL.JS.Core
 #if INLINE
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
-        public static JSObject JSObjectToNumber(JSObject arg)
+        public static JSValue JSObjectToNumber(JSValue arg)
         {
-            return JSObjectToNumber(arg, new JSObject());
+            return JSObjectToNumber(arg, new JSValue());
         }
 
-        internal static JSObject JSObjectToNumber(JSObject arg, JSObject result)
+        internal static JSValue JSObjectToNumber(JSValue arg, JSValue result)
         {
             if (arg == null)
             {
-                result.valueType = JSObjectType.Int;
+                result.valueType = JSValueType.Int;
                 result.iValue = 0;
                 return result;
             }
             switch (arg.valueType)
             {
-                case JSObjectType.Bool:
+                case JSValueType.Bool:
                     {
-                        result.valueType = JSObjectType.Int;
+                        result.valueType = JSValueType.Int;
                         result.iValue = arg.iValue;
                         return result;
                     }
-                case JSObjectType.Int:
-                case JSObjectType.Double:
+                case JSValueType.Int:
+                case JSValueType.Double:
                     return arg;
-                case JSObjectType.String:
+                case JSValueType.String:
                     {
                         double x = 0;
                         int ix = 0;
                         string s = (arg.oValue.ToString()).Trim(TrimChars);
                         if (!Tools.ParseNumber(s, ref ix, out x) || ix < s.Length)
                             return Number.NaN;
-                        result.valueType = JSObjectType.Double;
+                        result.valueType = JSValueType.Double;
                         result.dValue = x;
                         return result;
                     }
-                case JSObjectType.Date:
-                case JSObjectType.Function:
-                case JSObjectType.Object:
+                case JSValueType.Date:
+                case JSValueType.Function:
+                case JSValueType.Object:
                     {
                         if (arg.oValue == null)
                         {
-                            result.valueType = JSObjectType.Int;
+                            result.valueType = JSValueType.Int;
                             result.iValue = 0;
                             return result;
                         }
                         arg = arg.ToPrimitiveValue_Value_String();
                         return JSObjectToNumber(arg);
                     }
-                case JSObjectType.NotExists:
-                case JSObjectType.Undefined:
-                case JSObjectType.NotExistsInObject:
+                case JSValueType.NotExists:
+                case JSValueType.Undefined:
+                case JSValueType.NotExistsInObject:
                     {
-                        result.valueType = JSObjectType.Double;
+                        result.valueType = JSValueType.Double;
                         result.dValue = double.NaN;
                         return result;
                     }
@@ -454,7 +454,7 @@ namespace NiL.JS.Core
             }
         }
 
-        internal static object convertJStoObj(JSObject jsobj, Type targetType)
+        internal static object convertJStoObj(JSValue jsobj, Type targetType)
         {
             if (jsobj == null)
                 return null;
@@ -463,19 +463,19 @@ namespace NiL.JS.Core
             object value = null;
             switch (jsobj.valueType)
             {
-                case JSObjectType.Bool:
+                case JSValueType.Bool:
                     {
                         if (targetType == typeof(bool))
                             return jsobj.iValue != 0;
                         break;
                     }
-                case JSObjectType.Double:
+                case JSValueType.Double:
                     {
                         if (targetType == typeof(double)) return (double)jsobj.dValue;
                         if (targetType == typeof(float)) return (float)jsobj.dValue;
                         break;
                     }
-                case JSObjectType.Int:
+                case JSValueType.Int:
                     {
                         if (targetType == typeof(int)) return (int)jsobj.iValue;
 
@@ -1280,9 +1280,9 @@ namespace NiL.JS.Core
 #if INLINE
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
-        internal static JSObject RaiseIfNotExist(JSObject obj, object name)
+        internal static JSValue RaiseIfNotExist(JSValue obj, object name)
         {
-            if (obj.valueType == JSObjectType.NotExists)
+            if (obj.valueType == JSValueType.NotExists)
                 throw new JSException((new NiL.JS.BaseLibrary.ReferenceError("Variable \"" + name + "\" is not defined.")));
             return obj;
         }
@@ -1307,27 +1307,27 @@ namespace NiL.JS.Core
         {
             return ((p % 'a' % 'A' + 10) % ('0' + 10));
         }
-        internal static long getLengthOfIterably(JSObject src, bool reassignLen)
+        internal static long getLengthOfIterably(JSValue src, bool reassignLen)
         {
             var len = src.GetMember("length", true, false); // тут же проверка на null/undefined с падением если надо
-            if (len.valueType == JSObjectType.Property)
+            if (len.valueType == JSValueType.Property)
             {
                 if (reassignLen && (len.attributes & JSObjectAttributesInternal.ReadOnly) == 0)
                 {
-                    len.valueType = JSObjectType.Undefined;
+                    len.valueType = JSValueType.Undefined;
                     len.Assign(((len.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(src, null));
                 }
                 else
                     len = ((len.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(src, null);
             }
             uint res;
-            if (len.valueType >= JSObjectType.Object)
+            if (len.valueType >= JSValueType.Object)
                 res = (uint)Tools.JSObjectToInt64(len.ToPrimitiveValue_Value_String(), 0, false);
             else
                 res = (uint)Tools.JSObjectToInt64(len, 0, false);
             if (reassignLen)
             {
-                if (len.valueType == JSObjectType.Property)
+                if (len.valueType == JSValueType.Property)
                     ((len.oValue as PropertyPair).set ?? Function.emptyFunction).Invoke(src, new Arguments() { a0 = res, length = 1 });
                 else
                     len.Assign(res);
@@ -1335,7 +1335,7 @@ namespace NiL.JS.Core
             return res;
         }
 
-        internal static BaseLibrary.Array iterableToArray(JSObject src, bool evalProps, bool clone, bool reassignLen, long _length)
+        internal static BaseLibrary.Array iterableToArray(JSValue src, bool evalProps, bool clone, bool reassignLen, long _length)
         {
             var temp = new BaseLibrary.Array();
             HashSet<string> processedKeys = null;
@@ -1348,7 +1348,7 @@ namespace NiL.JS.Core
                     if (_length == -1)
                         _length = (src as NiL.JS.BaseLibrary.Array).data.Length;
                     long prew = -1;
-                    foreach (var element in ((src as BaseLibrary.Array).data as IEnumerable<KeyValuePair<int, JSObject>>))
+                    foreach (var element in ((src as BaseLibrary.Array).data as IEnumerable<KeyValuePair<int, JSValue>>))
                     {
                         if (element.Key >= _length) // эээ...
                             break;
@@ -1357,8 +1357,8 @@ namespace NiL.JS.Core
                             continue;
                         if (!goDeep && System.Math.Abs(prew - element.Key) > 1)
                             goDeep = true;
-                        if (evalProps && value.valueType == JSObjectType.Property)
-                            value = (value.oValue as PropertyPair).get == null ? JSObject.undefined : (value.oValue as PropertyPair).get.Invoke(src, null).CloneImpl();
+                        if (evalProps && value.valueType == JSValueType.Property)
+                            value = (value.oValue as PropertyPair).get == null ? JSValue.undefined : (value.oValue as PropertyPair).get.Invoke(src, null).CloneImpl();
                         else if (clone)
                             value = value.CloneImpl();
                         if (processedKeys != null)
@@ -1381,15 +1381,15 @@ namespace NiL.JS.Core
                             return temp;
                     }
                     long prew = -1;
-                    var tjo = new JSObject() { valueType = JSObjectType.String };
+                    var tjo = new JSValue() { valueType = JSValueType.String };
                     foreach (var index in iterablyEnum(_length, src))
                     {
                         tjo.oValue = index.Value;
                         var value = src.GetMember(tjo, false, false);
                         if (!value.IsExist)
                             continue;
-                        if (evalProps && value.valueType == JSObjectType.Property)
-                            value = (value.oValue as PropertyPair).get == null ? JSObject.undefined : (value.oValue as PropertyPair).get.Invoke(src, null).CloneImpl();
+                        if (evalProps && value.valueType == JSValueType.Property)
+                            value = (value.oValue as PropertyPair).get == null ? JSValue.undefined : (value.oValue as PropertyPair).get.Invoke(src, null).CloneImpl();
                         else if (clone)
                             value = value.CloneImpl();
                         if (!goDeep && System.Math.Abs(prew - index.Key) > 1)
@@ -1406,10 +1406,10 @@ namespace NiL.JS.Core
                     goDeep |= System.Math.Abs(prew - _length) > 1;
                 }
                 var crnt = src;
-                if (src.__proto__ == JSObject.Null)
+                if (src.__proto__ == JSValue.Null)
                     break;
-                src = src.__proto__.oValue as JSObject ?? src.__proto__;
-                if (src == null || (src.valueType >= JSObjectType.String && src.oValue == null))
+                src = src.__proto__.oValue as JSValue ?? src.__proto__;
+                if (src == null || (src.valueType >= JSValueType.String && src.oValue == null))
                     break;
                 if (processedKeys == null)
                 {
@@ -1422,7 +1422,7 @@ namespace NiL.JS.Core
             return temp;
         }
 
-        internal static IEnumerable<KeyValuePair<long, string>> iterablyEnum(long length, JSObject src)
+        internal static IEnumerable<KeyValuePair<long, string>> iterablyEnum(long length, JSValue src)
         {
             var res = new List<KeyValuePair<long, string>>();
             var @enum = src.GetEnumerator(false);

@@ -17,10 +17,10 @@ namespace NiL.JS.Core.Functions
     internal sealed class BindedFunction : Function
     {
         private Function proto;
-        private JSObject thisBind;
+        private JSValue thisBind;
         private Arguments bindedArguments;
 
-        public override JSObject caller
+        public override JSValue caller
         {
             get
             {
@@ -33,7 +33,7 @@ namespace NiL.JS.Core.Functions
             }
         }
 
-        public override JSObject arguments
+        public override JSValue arguments
         {
             get
             {
@@ -46,7 +46,7 @@ namespace NiL.JS.Core.Functions
             }
         }
 
-        public override JSObject prototype
+        public override JSValue prototype
         {
             get
             {
@@ -83,7 +83,7 @@ namespace NiL.JS.Core.Functions
         }
 
         [Hidden]
-        public override JSObject Invoke(JSObject thisBind, Arguments args)
+        public override JSValue Invoke(JSValue thisBind, Arguments args)
         {
             if (bindedArguments != null)
             {
@@ -107,7 +107,7 @@ namespace NiL.JS.Core.Functions
         }
 
         [Hidden]
-        protected internal override JSObject GetMember(JSObject name, bool forWrite, bool own)
+        protected internal override JSValue GetMember(JSValue name, bool forWrite, bool own)
         {
             return proto.GetMember(name, forWrite, own);
         }

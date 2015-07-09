@@ -10,7 +10,7 @@ namespace NiL.JS.Core.TypeProxing
 {
     public sealed class NativeList : CustomType
     {
-        private sealed class Element : JSObject
+        private sealed class Element : JSValue
         {
             private readonly NativeList owner;
             private int index;
@@ -21,73 +21,73 @@ namespace NiL.JS.Core.TypeProxing
                 this.index = index;
                 attributes |= JSObjectAttributesInternal.Reassign;
                 var value = owner.data[index];
-                valueType = JSObjectType.Undefined;
-                if (value is JSObject)
-                    base.Assign(value as JSObject);
+                valueType = JSValueType.Undefined;
+                if (value is JSValue)
+                    base.Assign(value as JSValue);
                 else if (value is sbyte)
                 {
                     iValue = (int)(sbyte)value;
-                    valueType = JSObjectType.Int;
+                    valueType = JSValueType.Int;
                 }
                 else if (value is byte)
                 {
                     iValue = (int)(byte)value;
-                    valueType = JSObjectType.Int;
+                    valueType = JSValueType.Int;
                 }
                 else if (value is short)
                 {
                     iValue = (int)(short)value;
-                    valueType = JSObjectType.Int;
+                    valueType = JSValueType.Int;
                 }
                 else if (value is ushort)
                 {
                     iValue = (int)(ushort)value;
-                    valueType = JSObjectType.Int;
+                    valueType = JSValueType.Int;
                 }
                 else if (value is int)
                 {
                     iValue = (int)value;
-                    valueType = JSObjectType.Int;
+                    valueType = JSValueType.Int;
                 }
                 else if (value is uint)
                 {
                     dValue = (long)(uint)value;
-                    valueType = JSObjectType.Double;
+                    valueType = JSValueType.Double;
                 }
                 else if (value is long)
                 {
                     dValue = (long)value;
-                    valueType = JSObjectType.Double;
+                    valueType = JSValueType.Double;
                 }
                 else if (value is ulong)
                 {
                     dValue = (double)(ulong)value;
-                    valueType = JSObjectType.Double;
+                    valueType = JSValueType.Double;
                 }
                 else if (value is float)
                 {
                     dValue = (double)(float)value;
-                    valueType = JSObjectType.Double;
+                    valueType = JSValueType.Double;
                 }
                 else if (value is double)
                 {
                     dValue = (double)value;
-                    valueType = JSObjectType.Double;
+                    valueType = JSValueType.Double;
                 }
                 else if (value is string)
                 {
                     oValue = value.ToString();
-                    valueType = JSObjectType.String;
+                    valueType = JSValueType.String;
                 }
                 else if (value is char)
                 {
                     oValue = value.ToString();
-                    valueType = JSObjectType.String;
+                    valueType = JSValueType.String;
                 }
                 else if (value is bool)
                 {
                     iValue = (bool)value ? 1 : 0;
-                    valueType = JSObjectType.Bool;
+                    valueType = JSValueType.Bool;
                 }
                 else if (value is Delegate)
                 {
@@ -96,12 +96,12 @@ namespace NiL.JS.Core.TypeProxing
 #else
                     oValue = new MethodProxy(((Delegate)value).Method, ((Delegate)value).Target);
 #endif
-                    valueType = JSObjectType.Function;
+                    valueType = JSValueType.Function;
                 }
                 else if (value is IList)
                 {
                     oValue = new NativeList(value as IList);
-                    valueType = JSObjectType.Object;
+                    valueType = JSValueType.Object;
                 }
                 else
                 {
@@ -111,7 +111,7 @@ namespace NiL.JS.Core.TypeProxing
                 }
             }
 
-            public override void Assign(JSObject value)
+            public override void Assign(JSValue value)
             {
                 owner.data[index] = value.Value;
             }
@@ -140,11 +140,11 @@ namespace NiL.JS.Core.TypeProxing
                 data.Add(args[i].Value);
         }
 
-        public JSObject pop()
+        public JSValue pop()
         {
             if (data.Count == 0)
             {
-                notExists.valueType = JSObjectType.NotExistsInObject;
+                notExists.valueType = JSValueType.NotExistsInObject;
                 return notExists;
             }
             var result = data[data.Count - 1];
@@ -155,35 +155,35 @@ namespace NiL.JS.Core.TypeProxing
                 return TypeProxy.Proxy(result);
         }
 
-        protected internal override JSObject GetMember(JSObject name, bool forWrite, bool own)
+        protected internal override JSValue GetMember(JSValue name, bool forWrite, bool own)
         {
             forWrite &= (attributes & JSObjectAttributesInternal.Immutable) == 0;
-            if (name.valueType == JSObjectType.String && string.CompareOrdinal("length", name.oValue.ToString()) == 0)
+            if (name.valueType == JSValueType.String && string.CompareOrdinal("length", name.oValue.ToString()) == 0)
             {
                 lenObj.iValue = data.Count;
                 return lenObj;
             }
             bool isIndex = false;
             int index = 0;
-            JSObject tname = name;
-            if (tname.valueType >= JSObjectType.Object)
+            JSValue tname = name;
+            if (tname.valueType >= JSValueType.Object)
                 tname = tname.ToPrimitiveValue_String_Value();
             switch (tname.valueType)
             {
-                case JSObjectType.Int:
+                case JSValueType.Int:
                     {
                         isIndex = tname.iValue >= 0;
                         index = tname.iValue;
                         break;
                     }
-                case JSObjectType.Double:
+                case JSValueType.Double:
                     {
                         isIndex = tname.dValue >= 0 && tname.dValue < uint.MaxValue && (long)tname.dValue == tname.dValue;
                         if (isIndex)
                             index = (int)(uint)tname.dValue;
                         break;
                     }
-                case JSObjectType.String:
+                case JSValueType.String:
                     {
                         var fc = tname.oValue.ToString()[0];
                         if ('0' <= fc && '9' >= fc)
@@ -205,39 +205,39 @@ namespace NiL.JS.Core.TypeProxing
             }
             if (isIndex)
             {
-                notExists.valueType = JSObjectType.NotExistsInObject;
+                notExists.valueType = JSValueType.NotExistsInObject;
                 if (index < 0 || index > data.Count)
                     return notExists;
                 return new Element(this, index);
             }
-            return DefaultFieldGetter(name, forWrite, own);
+            return base.GetMember(name, forWrite, own);
         }
 
-        protected internal override void SetMember(JSObject name, JSObject value, bool strict)
+        protected internal override void SetMember(JSValue name, JSValue value, bool strict)
         {
-            if (name.valueType == JSObjectType.String && string.CompareOrdinal("length", name.oValue.ToString()) == 0)
+            if (name.valueType == JSValueType.String && string.CompareOrdinal("length", name.oValue.ToString()) == 0)
                 return;
             bool isIndex = false;
             int index = 0;
-            JSObject tname = name;
-            if (tname.valueType >= JSObjectType.Object)
+            JSValue tname = name;
+            if (tname.valueType >= JSValueType.Object)
                 tname = tname.ToPrimitiveValue_String_Value();
             switch (tname.valueType)
             {
-                case JSObjectType.Int:
+                case JSValueType.Int:
                     {
                         isIndex = tname.iValue >= 0;
                         index = tname.iValue;
                         break;
                     }
-                case JSObjectType.Double:
+                case JSValueType.Double:
                     {
                         isIndex = tname.dValue >= 0 && tname.dValue < uint.MaxValue && (long)tname.dValue == tname.dValue;
                         if (isIndex)
                             index = (int)(uint)tname.dValue;
                         break;
                     }
-                case JSObjectType.String:
+                case JSValueType.String:
                     {
                         var fc = tname.oValue.ToString()[0];
                         if ('0' <= fc && '9' >= fc)
@@ -259,7 +259,7 @@ namespace NiL.JS.Core.TypeProxing
             }
             if (isIndex)
             {
-                notExists.valueType = JSObjectType.NotExistsInObject;
+                notExists.valueType = JSValueType.NotExistsInObject;
                 if (index < 0 || index > data.Count)
                     return;
                 data[index] = value.Value;

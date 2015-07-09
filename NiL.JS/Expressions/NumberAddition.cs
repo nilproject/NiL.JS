@@ -42,59 +42,59 @@ namespace NiL.JS.Expressions
 
         }
 
-        internal override Core.JSObject Evaluate(Core.Context context)
+        internal override Core.JSValue Evaluate(Core.Context context)
         {
             int itemp;
             long ltemp;
             double dtemp;
             var op = first.Evaluate(context);
-            if (op.valueType == Core.JSObjectType.Int)
+            if (op.valueType == Core.JSValueType.Int)
             {
                 itemp = op.iValue;
                 op = second.Evaluate(context);
-                if (op.valueType == Core.JSObjectType.Int)
+                if (op.valueType == Core.JSValueType.Int)
                 {
                     ltemp = (long)itemp + op.iValue;
                     if ((int)ltemp == ltemp)
                     {
-                        tempContainer.valueType = JSObjectType.Int;
+                        tempContainer.valueType = JSValueType.Int;
                         tempContainer.iValue = (int)ltemp;
                     }
                     else
                     {
-                        tempContainer.valueType = JSObjectType.Double;
+                        tempContainer.valueType = JSValueType.Double;
                         tempContainer.dValue = (double)ltemp;
                     }
                 }
-                else if (op.valueType == Core.JSObjectType.Double)
+                else if (op.valueType == Core.JSValueType.Double)
                 {
-                    tempContainer.valueType = JSObjectType.Double;
+                    tempContainer.valueType = JSValueType.Double;
                     tempContainer.dValue = itemp + op.dValue;
                 }
                 else
                 {
-                    tempContainer.valueType = JSObjectType.Int;
+                    tempContainer.valueType = JSValueType.Int;
                     tempContainer.iValue = itemp;
                     Addition.Impl(tempContainer, tempContainer, op);
                 }
             }
-            else if (op.valueType == Core.JSObjectType.Double)
+            else if (op.valueType == Core.JSValueType.Double)
             {
                 dtemp = op.dValue;
                 op = second.Evaluate(context);
-                if (op.valueType == Core.JSObjectType.Int)
+                if (op.valueType == Core.JSValueType.Int)
                 {
-                    tempContainer.valueType = JSObjectType.Double;
+                    tempContainer.valueType = JSValueType.Double;
                     tempContainer.dValue = dtemp + op.iValue;
                 }
-                else if (op.valueType == Core.JSObjectType.Double)
+                else if (op.valueType == Core.JSValueType.Double)
                 {
-                    tempContainer.valueType = JSObjectType.Double;
+                    tempContainer.valueType = JSValueType.Double;
                     tempContainer.dValue = dtemp + op.dValue;
                 }
                 else
                 {
-                    tempContainer.valueType = JSObjectType.Double;
+                    tempContainer.valueType = JSValueType.Double;
                     tempContainer.dValue = dtemp;
                     Addition.Impl(tempContainer, tempContainer, op);
                 }

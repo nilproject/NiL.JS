@@ -15,16 +15,16 @@ namespace NiL.JS.Core.Functions
             _length = new Number(1);
         }
 
-        public override NiL.JS.Core.JSObject Invoke(JSObject thisBind, Arguments args)
+        public override NiL.JS.Core.JSValue Invoke(JSValue thisBind, Arguments args)
         {
-            JSObject oVal = null;
+            JSValue oVal = null;
             if (args != null && args.length > 0)
                 oVal = args[0];
             if ((oVal == null) ||
-                (((oVal.valueType >= JSObjectType.Object && oVal.oValue == null)
-                                        || oVal.valueType <= JSObjectType.Undefined)))
+                (((oVal.valueType >= JSValueType.Object && oVal.oValue == null)
+                                        || oVal.valueType <= JSValueType.Undefined)))
                 return CreateObject();
-            else if (oVal.valueType >= JSObjectType.Object && oVal.oValue != null)
+            else if (oVal.valueType >= JSValueType.Object && oVal.oValue != null)
                 return oVal;
 
             return oVal.ToObject();

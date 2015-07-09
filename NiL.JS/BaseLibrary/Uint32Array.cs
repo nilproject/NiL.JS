@@ -9,18 +9,18 @@ namespace NiL.JS.BaseLibrary
 #endif
     public sealed class Uint32Array : TypedArray
     {
-        protected override JSObject this[int index]
+        protected override JSValue this[int index]
         {
             get
             {
                 var res = new Element(this, index);
                 res.iValue = (int)getValue(index);
                 if (res.iValue >= 0)
-                    res.valueType = JSObjectType.Int;
+                    res.valueType = JSValueType.Int;
                 else
                 {
                     res.dValue = (uint)res.iValue;
-                    res.valueType = JSObjectType.Double;
+                    res.valueType = JSValueType.Double;
                 }
                 return res;
             }
@@ -74,7 +74,7 @@ namespace NiL.JS.BaseLibrary
         {
         }
 
-        public Uint32Array(JSObject src)
+        public Uint32Array(JSValue src)
             : base(src) { }
 
         [ArgumentsLength(2)]

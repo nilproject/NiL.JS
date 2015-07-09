@@ -9,7 +9,7 @@ namespace NiL.JS.Core
 #endif
     public sealed class Arguments : JSObject, IEnumerable
     {
-        private sealed class _LengthContainer : JSObject
+        private sealed class _LengthContainer : JSValue
         {
             private readonly Arguments owner;
 
@@ -18,23 +18,23 @@ namespace NiL.JS.Core
                 this.owner = owner;
             }
 
-            public override void Assign(JSObject value)
+            public override void Assign(JSValue value)
             {
                 base.Assign(value);
                 owner.length = Tools.JSObjectToInt32(value);
             }
         }
 
-        internal JSObject a0;
-        internal JSObject a1;
-        internal JSObject a2;
-        internal JSObject a3;
-        internal JSObject a4;
+        internal JSValue a0;
+        internal JSValue a1;
+        internal JSValue a2;
+        internal JSValue a3;
+        internal JSValue a4;
         //internal JSObject a5;
         //internal JSObject a6;
         //internal JSObject a7;
-        internal JSObject callee;
-        internal JSObject caller;
+        internal JSValue callee;
+        internal JSValue caller;
         private _LengthContainer _length;
         internal int length;
 
@@ -43,7 +43,7 @@ namespace NiL.JS.Core
             get { return length; }
         }
 
-        public override JSObject this[string name]
+        public override JSValue this[string name]
         {
             get
             {
@@ -64,11 +64,11 @@ namespace NiL.JS.Core
             }
         }
 
-        public JSObject this[int index]
+        public JSValue this[int index]
         {
             get
             {
-                JSObject res = null;
+                JSValue res = null;
                 switch (index)
                 {
                     case 0:
@@ -125,12 +125,12 @@ namespace NiL.JS.Core
         public Arguments()
             : base()
         {
-            valueType = JSObjectType.Object;
+            valueType = JSValueType.Object;
             oValue = this;
             attributes = JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.SystemObject;
         }
 
-        public void Add(JSObject arg)
+        public void Add(JSValue arg)
         {
             this[length++] = arg;
         }
@@ -140,34 +140,23 @@ namespace NiL.JS.Core
             return GlobalPrototype ?? Null;
         }
 
-        public override void Assign(NiL.JS.Core.JSObject value)
-        {
-            if ((attributes & JSObjectAttributesInternal.ReadOnly) != 0)
-            {
-#if DEBUG
-                System.Diagnostics.Debugger.Break();
-#endif
-                throw new InvalidOperationException("Try to assign to Arguments");
-            }
-        }
-
-        protected internal override JSObject GetMember(JSObject name, bool createMember, bool own)
+        protected internal override JSValue GetMember(JSValue name, bool createMember, bool own)
         {
             createMember &= (attributes & JSObjectAttributesInternal.Immutable) == 0;
-            if (name.valueType == JSObjectType.Int)
+            if (name.valueType == JSValueType.Int)
             {
                 switch (name.iValue)
                 {
                     case 0:
-                        return (a0 ?? (!createMember ? notExists : (a0 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
+                        return (a0 ?? (!createMember ? notExists : (a0 = new JSValue() { valueType = JSValueType.NotExistsInObject })));
                     case 1:
-                        return (a1 ?? (!createMember ? notExists : (a1 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
+                        return (a1 ?? (!createMember ? notExists : (a1 = new JSValue() { valueType = JSValueType.NotExistsInObject })));
                     case 2:
-                        return (a2 ?? (!createMember ? notExists : (a2 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
+                        return (a2 ?? (!createMember ? notExists : (a2 = new JSValue() { valueType = JSValueType.NotExistsInObject })));
                     case 3:
-                        return (a3 ?? (!createMember ? notExists : (a3 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
+                        return (a3 ?? (!createMember ? notExists : (a3 = new JSValue() { valueType = JSValueType.NotExistsInObject })));
                     case 4:
-                        return (a4 ?? (!createMember ? notExists : (a4 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
+                        return (a4 ?? (!createMember ? notExists : (a4 = new JSValue() { valueType = JSValueType.NotExistsInObject })));
                     //case 5:
                     //    return (a5 ?? (!createMember ? notExists : (a5 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
                     //case 6:
@@ -179,15 +168,15 @@ namespace NiL.JS.Core
             switch (name.ToString())
             {
                 case "0":
-                    return (a0 ?? (!createMember ? notExists : (a0 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
+                    return (a0 ?? (!createMember ? notExists : (a0 = new JSValue() { valueType = JSValueType.NotExistsInObject })));
                 case "1":
-                    return (a1 ?? (!createMember ? notExists : (a1 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
+                    return (a1 ?? (!createMember ? notExists : (a1 = new JSValue() { valueType = JSValueType.NotExistsInObject })));
                 case "2":
-                    return (a2 ?? (!createMember ? notExists : (a2 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
+                    return (a2 ?? (!createMember ? notExists : (a2 = new JSValue() { valueType = JSValueType.NotExistsInObject })));
                 case "3":
-                    return (a3 ?? (!createMember ? notExists : (a3 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
+                    return (a3 ?? (!createMember ? notExists : (a3 = new JSValue() { valueType = JSValueType.NotExistsInObject })));
                 case "4":
-                    return (a4 ?? (!createMember ? notExists : (a4 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
+                    return (a4 ?? (!createMember ? notExists : (a4 = new JSValue() { valueType = JSValueType.NotExistsInObject })));
                 //case "5":
                 //    return (a5 ?? (!createMember ? notExists : (a5 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
                 //case "6":
@@ -197,7 +186,7 @@ namespace NiL.JS.Core
                 case "length":
                     {
                         if (_length == null)
-                            _length = new _LengthContainer(this) { valueType = JSObjectType.Int, iValue = length, attributes = JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.Reassign };
+                            _length = new _LengthContainer(this) { valueType = JSValueType.Int, iValue = length, attributes = JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.Reassign };
                         return _length;
                     }
                 case "callee":
@@ -207,7 +196,7 @@ namespace NiL.JS.Core
                             callee = callee.CloneImpl();
                             callee.attributes = JSObjectAttributesInternal.DoNotEnum;
                         }
-                        return (callee ?? (!createMember ? notExists : (callee = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
+                        return (callee ?? (!createMember ? notExists : (callee = new JSValue() { valueType = JSValueType.NotExistsInObject })));
                     }
                 case "caller":
                     {
@@ -216,7 +205,7 @@ namespace NiL.JS.Core
                             caller = caller.CloneImpl();
                             callee.attributes = JSObjectAttributesInternal.DoNotEnum;
                         }
-                        return (caller ?? (!createMember ? notExists : (caller = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
+                        return (caller ?? (!createMember ? notExists : (caller = new JSValue() { valueType = JSValueType.NotExistsInObject })));
                     }
             }
             return base.GetMember(name, createMember, own);
@@ -272,9 +261,9 @@ namespace NiL.JS.Core
             return base.GetEnumeratorImpl(hideNonEnum);
         }
 
-        protected internal override bool DeleteMember(JSObject name)
+        protected internal override bool DeleteMember(JSValue name)
         {
-            if (name.valueType == JSObjectType.Int)
+            if (name.valueType == JSValueType.Int)
             {
                 switch (name.iValue)
                 {
@@ -334,7 +323,7 @@ namespace NiL.JS.Core
             caller = null;
             __prototype = null;
             _length = null;
-            valueType = JSObjectType.Object;
+            valueType = JSValueType.Object;
             oValue = this;
             attributes = JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.SystemObject;
         }

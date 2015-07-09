@@ -56,12 +56,12 @@ namespace NiL.JS.Statements
             };
         }
 
-        private static WithContext initContext(Context parent, JSObject obj)
+        private static WithContext initContext(Context parent, JSValue obj)
         {
             return new WithContext(obj, parent);
         }
 
-        internal override JSObject Evaluate(Context context)
+        internal override JSValue Evaluate(Context context)
         {
 #if DEV
             if (context.debugging)

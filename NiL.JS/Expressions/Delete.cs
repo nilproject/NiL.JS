@@ -35,12 +35,16 @@ namespace NiL.JS.Expressions
 
             protected override CodeNode[] getChildsImpl()
             {
-                return new[] { proto };
+                return proto.Childs;
             }
 
-            internal override JSObject Evaluate(Context context)
+            internal override JSValue Evaluate(Context context)
             {
                 var source = proto.Source.Evaluate(context);
+                if (source.valueType < JSValueType.Object)
+                    source = source.Clone() as JSValue;
+                else
+                    source = source.oValue as JSValue ?? source;
                 var memberName = proto.FieldName.Evaluate(context);
                 context.objectSource = source;
                 var res = context.objectSource.GetMember(memberName, false, true);
@@ -78,71 +82,71 @@ namespace NiL.JS.Expressions
 
         protected internal override bool ResultInTempContainer
         {
-            get { return true; }
+            get { return false; }
         }
 
         public Delete(Expression first)
-            : base(first, null, true)
+            : base(first, null, false)
         {
 
         }
 
-        internal override JSObject Evaluate(Context context)
+        internal override JSValue Evaluate(Context context)
         {
             lock (this)
             {
                 var temp = first.Evaluate(context);
-                tempContainer.valueType = JSObjectType.Bool;
-                if (temp.valueType < JSObjectType.Undefined)
-                    tempContainer.iValue = 1;
+                if (temp.valueType < JSValueType.Undefined)
+                    return true;
                 else if ((temp.attributes & JSObjectAttributesInternal.Argument) != 0)
                 {
                     if (first is SafeMemberGetter && (temp.attributes & JSObjectAttributesInternal.DoNotDelete) == 0)
                     {
-                        tempContainer.iValue = 1;
-                        var args = context.objectSource;
-                        if (args.fields != null)
+                        var args = context.objectSource.oValue as JSObject;
+                        if (args != null)
                         {
-                            foreach (var a in args.fields)
+                            if (args.fields != null)
                             {
-                                if (a.Value == temp)
+                                foreach (var a in args.fields)
                                 {
-                                    args.fields.Remove(a.Key);
-                                    return tempContainer;
+                                    if (a.Value == temp)
+                                    {
+                                        args.fields.Remove(a.Key);
+                                        return true;
+                                    }
                                 }
                             }
+                            var oaa = args.oValue as Arguments;
+                            if (oaa != null)
+                            {
+                                for (var i = 0; i < oaa.length; i++)
+                                    if (oaa[i] == temp)
+                                    {
+                                        oaa[i] = null;
+                                        return true;
+                                    }
+                            }
                         }
-                        var oaa = args.oValue as Arguments;
-                        if (oaa != null)
-                        {
-                            for (var i = 0; i < oaa.length; i++)
-                                if (oaa[i] == temp)
-                                {
-                                    oaa[i] = null;
-                                    return tempContainer;
-                                }
-                        }
+                        return true;
                     }
                     else
                     {
-                        tempContainer.iValue = 0;
-                        return tempContainer;
+                        return false;
                     }
                 }
                 else if ((temp.attributes & JSObjectAttributesInternal.DoNotDelete) == 0)
                 {
-                    tempContainer.iValue = 1;
                     if ((temp.attributes & JSObjectAttributesInternal.SystemObject) == 0)
                     {
-                        temp.valueType = JSObjectType.NotExists;
+                        temp.valueType = JSValueType.NotExists;
                         temp.oValue = null;
                     }
+                    return true;
                 }
                 else if (context.strict)
                     throw new JSException(new TypeError("Can not delete property \"" + first + "\"."));
                 else
-                    tempContainer.iValue = 0;
-                return tempContainer;
+                    return false;
             }
         }
 

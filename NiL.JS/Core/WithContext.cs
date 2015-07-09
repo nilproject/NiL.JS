@@ -8,32 +8,32 @@ namespace NiL.JS.Core
 #endif
     public sealed class WithContext : Context
     {
-        private JSObject @object;
+        private JSValue @object;
 
-        public WithContext(JSObject obj, Context prototype)
+        public WithContext(JSValue obj, Context prototype)
             : base(prototype, false, prototype.caller)
         {
             if (obj == null)
                 throw new ArgumentNullException("obj");
-            if (obj.valueType == JSObjectType.NotExists)
+            if (obj.valueType == JSValueType.NotExists)
                 throw new JSException((new ReferenceError("Variable not defined.")));
-            if (obj.valueType <= JSObjectType.Undefined)
+            if (obj.valueType <= JSValueType.Undefined)
                 throw new JSException(new TypeError("Can't access to property value of \"undefined\"."));
-            if (obj.valueType >= JSObjectType.Object && obj.oValue == null)
+            if (obj.valueType >= JSValueType.Object && obj.oValue == null)
                 throw new JSException(new TypeError("Can't access to property value of \"null\"."));
-            @object = obj.oValue as JSObject ?? obj;
+            @object = obj.oValue as JSValue ?? obj;
         }
 
-        public override JSObject DefineVariable(string name)
+        public override JSValue DefineVariable(string name)
         {
             return parent.DefineVariable(name);
         }
 
-        internal protected override JSObject GetVariable(string name, bool create)
+        internal protected override JSValue GetVariable(string name, bool create)
         {
             thisBind = parent.thisBind;
             var res = @object.GetMember(name, create, false);
-            if (res.valueType < JSObjectType.Undefined)
+            if (res.valueType < JSValueType.Undefined)
             {
                 res = parent.GetVariable(name, create);
                 objectSource = parent.objectSource;

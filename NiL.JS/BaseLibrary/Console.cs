@@ -5,7 +5,7 @@ namespace NiL.JS.BaseLibrary
 {
     internal static class console
     {
-        public static JSObject log(Arguments args)
+        public static JSValue log(Arguments args)
         {
             for (var i = 0; i < args.length; i++)
             {
@@ -15,10 +15,10 @@ namespace NiL.JS.BaseLibrary
                 System.Console.Write(r);
             }
             System.Console.WriteLine();
-            return JSObject.undefined;
+            return JSValue.undefined;
         }
 
-        public static JSObject assert(Arguments args)
+        public static JSValue assert(Arguments args)
         {
             if (!(bool)args[0])
             {
@@ -34,7 +34,7 @@ namespace NiL.JS.BaseLibrary
             return null;
         }
 
-        public static JSObject error(Arguments args)
+        public static JSValue error(Arguments args)
         {
             for (var i = 0; i < args.length; i++)
             {

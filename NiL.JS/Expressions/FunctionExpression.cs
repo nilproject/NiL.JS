@@ -20,7 +20,7 @@ namespace NiL.JS.Expressions
 #if !PORTABLE
         internal sealed class GeneratorInitializator : Function
         {
-            public override JSObject prototype
+            public override JSValue prototype
             {
                 get
                 {
@@ -40,7 +40,7 @@ namespace NiL.JS.Expressions
             }
 
             [Hidden]
-            public override JSObject Invoke(JSObject thisBind, Arguments args)
+            public override JSValue Invoke(JSValue thisBind, Arguments args)
             {
                 return TypeProxy.Proxy(new Generator(generator, thisBind, args));
             }
@@ -57,10 +57,10 @@ namespace NiL.JS.Expressions
             private Arguments initialArgs;
             private Thread thread;
             private Function generator;
-            private JSObject self;
+            private JSValue self;
 
             [Hidden]
-            public Generator(Function generator, JSObject self, Arguments args)
+            public Generator(Function generator, JSValue self, Arguments args)
             {
                 this.generator = generator;
                 this.initialArgs = args;
@@ -72,7 +72,7 @@ namespace NiL.JS.Expressions
                 Dispose();
             }
 
-            public JSObject next(Arguments args)
+            public JSValue next(Arguments args)
             {
                 if (thread == null)
                 {
@@ -173,7 +173,7 @@ namespace NiL.JS.Expressions
                 get { return owner.name; }
             }
 
-            internal override JSObject Evaluate(Context context)
+            internal override JSValue Evaluate(Context context)
             {
                 return owner.Evaluate(context);
             }
@@ -229,7 +229,7 @@ namespace NiL.JS.Expressions
                 descriptor.references.Add(this);
             }
 
-            internal override JSObject Evaluate(Context context)
+            internal override JSValue Evaluate(Context context)
             {
                 throw new InvalidOperationException();
             }
@@ -518,7 +518,7 @@ namespace NiL.JS.Expressions
             };
         }
 
-        internal override JSObject Evaluate(Context context)
+        internal override JSValue Evaluate(Context context)
         {
             return MakeFunction(context);
         }

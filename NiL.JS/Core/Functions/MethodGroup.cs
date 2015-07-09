@@ -12,7 +12,7 @@ namespace NiL.JS.Core.Functions
         private readonly MethodProxy[] methods;
         private readonly int passCount;
 
-        public override JSObject prototype
+        public override JSValue prototype
         {
             get
             {
@@ -57,7 +57,7 @@ namespace NiL.JS.Core.Functions
             return TypeProxy.GetPrototype(typeof(Function));
         }
 
-        public override NiL.JS.Core.JSObject Invoke(NiL.JS.Core.JSObject thisBind, NiL.JS.Core.Arguments args)
+        public override NiL.JS.Core.JSValue Invoke(NiL.JS.Core.JSValue thisBind, NiL.JS.Core.Arguments args)
         {
             int l = args == null ? 0 : args.length;
             object[] cargs = null;

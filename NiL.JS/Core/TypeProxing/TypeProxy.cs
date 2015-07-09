@@ -15,7 +15,7 @@ namespace NiL.JS.Core.TypeProxing
 #endif
     public sealed class TypeProxy : JSObject
     {
-        private static readonly Dictionary<Type, JSObject> staticProxies = new Dictionary<Type, JSObject>();
+        private static readonly Dictionary<Type, JSValue> staticProxies = new Dictionary<Type, JSValue>();
         private static readonly Dictionary<Type, TypeProxy> dynamicProxies = new Dictionary<Type, TypeProxy>();
 
         internal Type hostedType;
@@ -53,8 +53,8 @@ namespace NiL.JS.Core.TypeProxing
                                 _prototypeInstance.__prototype = __proto__;
                                 _prototypeInstance.attributes |= JSObjectAttributesInternal.ProxyPrototype;
                                 _prototypeInstance.fields = fields;
-                                //_prototypeInstance.valueType = (JSObjectType)System.Math.Max((int)JSObjectType.Object, (int)_prototypeInstance.valueType);
-                                valueType = (JSObjectType)System.Math.Max((int)JSObjectType.Object, (int)_prototypeInstance.valueType);
+                                //_prototypeInstance.valueType = (JSValueType)System.Math.Max((int)JSValueType.Object, (int)_prototypeInstance.valueType);
+                                valueType = (JSValueType)System.Math.Max((int)JSValueType.Object, (int)_prototypeInstance.valueType);
                             }
                             else
                             {
@@ -80,14 +80,14 @@ namespace NiL.JS.Core.TypeProxing
 
         internal bool InstanceMode = false;
 
-        public static JSObject Proxy(object value)
+        public static JSValue Proxy(object value)
         {
-            JSObject res;
+            JSValue res;
             if (value == null)
-                return JSObject.undefined;
+                return JSValue.undefined;
             else
             {
-                res = value as JSObject;
+                res = value as JSValue;
                 if (res != null)
                     return res;
             }
@@ -149,9 +149,9 @@ namespace NiL.JS.Core.TypeProxing
             return prot;
         }
 
-        public static JSObject GetConstructor(Type type)
+        public static JSValue GetConstructor(Type type)
         {
-            JSObject constructor = null;
+            JSValue constructor = null;
             if (!staticProxies.TryGetValue(type, out constructor))
             {
                 lock (staticProxies)
@@ -167,12 +167,6 @@ namespace NiL.JS.Core.TypeProxing
         {
             NiL.JS.BaseLibrary.Boolean.True.__prototype = null;
             NiL.JS.BaseLibrary.Boolean.False.__prototype = null;
-            JSObject.nullString.__prototype = null;
-            Number.NaN.__prototype = null;
-            Number.POSITIVE_INFINITY.__prototype = null;
-            Number.NEGATIVE_INFINITY.__prototype = null;
-            Number.MIN_VALUE.__prototype = null;
-            Number.MAX_VALUE.__prototype = null;
             staticProxies.Clear();
             dynamicProxies.Clear();
         }
@@ -180,7 +174,7 @@ namespace NiL.JS.Core.TypeProxing
         private TypeProxy()
             : base(true)
         {
-            valueType = JSObjectType.Object;
+            valueType = JSValueType.Object;
             oValue = this;
             attributes |= JSObjectAttributesInternal.SystemObject;
         }
@@ -196,7 +190,7 @@ namespace NiL.JS.Core.TypeProxing
                 dynamicProxies[type] = this;
                 try
                 {
-                    valueType = JSObjectType.Object;
+                    valueType = JSValueType.Object;
                     oValue = this;
                     var pa = type.GetCustomAttributes(typeof(PrototypeAttribute), false);
                     if (pa.Length != 0 && (pa[0] as PrototypeAttribute).PrototypeType != hostedType)
@@ -217,7 +211,7 @@ namespace NiL.JS.Core.TypeProxing
                     };
                     InstanceMode = true;
 
-                    if (typeof(JSObject).IsAssignableFrom(hostedType))
+                    if (typeof(JSValue).IsAssignableFrom(hostedType))
                         _prototypeInstance = prototypeInstance;
 
 #if PORTABLE
@@ -364,23 +358,17 @@ namespace NiL.JS.Core.TypeProxing
             }
         }
 
-        public override void Assign(NiL.JS.Core.JSObject value)
-        {
-            if ((attributes & JSObjectAttributesInternal.ReadOnly) == 0)
-                throw new JSException("Can not assign to __proto__ of immutable or special objects.");
-        }
-
-        internal protected override JSObject GetMember(JSObject nameObj, bool create, bool own)
+        internal protected override JSValue GetMember(JSValue nameObj, bool create, bool own)
         {
             string name = nameObj.ToString();
-            JSObject r = null;
+            JSValue r = null;
             if (fields.TryGetValue(name, out r))
             {
-                if (r.valueType < JSObjectType.Undefined)
+                if (r.valueType < JSValueType.Undefined)
                 {
                     if (!create)
                     {
-                        var t = DefaultFieldGetter(nameObj, false, own);
+                        var t = base.GetMember(nameObj, false, own);
                         if (t.IsExist)
                             r.Assign(t);
                     }
@@ -397,11 +385,11 @@ namespace NiL.JS.Core.TypeProxing
             members.TryGetValue(name, out m);
             if (m == null || m.Count == 0)
             {
-                var pi = prototypeInstance as JSObject;
+                var pi = prototypeInstance as JSValue;
                 if (pi != null)
                     return pi.GetMember(nameObj, create, own);
                 else
-                    return DefaultFieldGetter(nameObj, create, own);
+                    return base.GetMember(nameObj, create, own);
             }
             if (m.Count > 1)
             {
@@ -441,9 +429,9 @@ namespace NiL.JS.Core.TypeProxing
                             }
                             else
                             {
-                                r = new JSObject()
+                                r = new JSValue()
                                 {
-                                    valueType = JSObjectType.Property,
+                                    valueType = JSValueType.Property,
                                     oValue = new PropertyPair
                                     (
                                         new ExternalFunction((thisBind, a) =>
@@ -467,9 +455,9 @@ namespace NiL.JS.Core.TypeProxing
                     case MemberTypes.Property:
                         {
                             var pinfo = (PropertyInfo)m[0];
-                            r = new JSObject()
+                            r = new JSValue()
                             {
-                                valueType = JSObjectType.Property,
+                                valueType = JSValueType.Property,
                                 oValue = new PropertyPair
                                     (
 #if PORTABLE
@@ -492,9 +480,9 @@ pinfo.CanRead && pinfo.GetGetMethod(false) != null ? new MethodProxy(pinfo.GetGe
                     case MemberTypes.Event:
                         {
                             var pinfo = (EventInfo)m[0];
-                            r = new JSObject()
+                            r = new JSValue()
                             {
-                                valueType = JSObjectType.Property,
+                                valueType = JSValueType.Property,
                                 oValue = new PropertyPair
                                 (
                                     null,
@@ -546,18 +534,18 @@ pinfo.CanRead && pinfo.GetGetMethod(false) != null ? new MethodProxy(pinfo.GetGe
             return r;
         }
 
-        protected internal override bool DeleteMember(JSObject name)
+        protected internal override bool DeleteMember(JSValue name)
         {
             if (members == null)
                 fillMembers();
             string tname = null;
-            JSObject field = null;
+            JSValue field = null;
             if (fields != null
                 && fields.TryGetValue(tname = name.ToString(), out field)
                 && (!field.IsExist || (field.attributes & JSObjectAttributesInternal.DoNotDelete) == 0))
             {
                 if ((field.attributes & JSObjectAttributesInternal.SystemObject) == 0)
-                    field.valueType = JSObjectType.NotExistsInObject;
+                    field.valueType = JSValueType.NotExistsInObject;
                 return fields.Remove(tname) | members.Remove(tname); // it's not mistake
             }
             else
@@ -577,12 +565,12 @@ pinfo.CanRead && pinfo.GetGetMethod(false) != null ? new MethodProxy(pinfo.GetGe
             return true;
         }
 
-        public override JSObject propertyIsEnumerable(Arguments args)
+        public override JSValue propertyIsEnumerable(Arguments args)
         {
             if (args == null)
                 throw new ArgumentNullException("args");
             var name = args[0].ToString();
-            JSObject temp;
+            JSValue temp;
             if (fields != null && fields.TryGetValue(name, out temp))
                 return temp.IsExist && (temp.attributes & JSObjectAttributesInternal.DoNotEnum) == 0;
             IList<MemberInfo> m = null;

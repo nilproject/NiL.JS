@@ -11,7 +11,7 @@ namespace NiL.JS.Core
     {
         private static JSObject thisProto;
 
-        internal static JSObject refreshGlobalObjectProto()
+        internal static JSValue refreshGlobalObjectProto()
         {
             thisProto = CreateObject();
             thisProto.oValue = thisProto;
@@ -32,16 +32,11 @@ namespace NiL.JS.Core
             attributes = JSObjectAttributesInternal.SystemObject;
             this.context = context;
             fields = context.fields;
-            valueType = JSObjectType.Object;
+            valueType = JSValueType.Object;
             oValue = this;
         }
 
-        public override void Assign(NiL.JS.Core.JSObject value)
-        {
-            throw new JSException((new NiL.JS.BaseLibrary.ReferenceError("Invalid left-hand side")));
-        }
-
-        internal protected override JSObject GetMember(JSObject name, bool forWrite, bool own)
+        internal protected override JSValue GetMember(JSValue name, bool forWrite, bool own)
         {
             var nameStr = name.ToString();
             var res = context.GetVariable(nameStr, forWrite);

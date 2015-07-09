@@ -28,23 +28,23 @@ namespace NiL.JS.Expressions
 
         }
 
-        internal override JSObject Evaluate(Context context)
+        internal override JSValue Evaluate(Context context)
         {
             bool res;
             if (tempContainer == null)
-                tempContainer = new JSObject { attributes = JSObjectAttributesInternal.Temporary };
+                tempContainer = new JSValue { attributes = JSObjectAttributesInternal.Temporary };
             tempContainer.Assign(first.Evaluate(context));
             var temp = tempContainer;
             tempContainer = null;
             var source = second.Evaluate(context);
-            if (source.valueType < JSObjectType.Object)
+            if (source.valueType < JSValueType.Object)
                 throw new JSException(new TypeError("Right-hand value of operator in is not object."));
-            if (temp.valueType == JSObjectType.Int)
+            if (temp.valueType == JSValueType.Int)
             {
                 var array = source.oValue as BaseLibrary.Array;
                 if (array != null)
                 {
-                    res = temp.iValue >= 0 && temp.iValue < array.data.Length && (array.data[temp.iValue] ?? JSObject.notExists).IsExist;
+                    res = temp.iValue >= 0 && temp.iValue < array.data.Length && (array.data[temp.iValue] ?? JSValue.notExists).IsExist;
                     tempContainer = temp;
                     return res;
                 }

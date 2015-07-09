@@ -9,7 +9,7 @@ namespace NiL.JS.Expressions
 #endif
     public sealed class InstanceOf : Expression
     {
-        private static readonly JSObject prototype = "prototype";
+        private static readonly JSValue prototype = "prototype";
 
         protected internal override PredictedType ResultType
         {
@@ -29,21 +29,21 @@ namespace NiL.JS.Expressions
         {
         }
 
-        internal override JSObject Evaluate(Context context)
+        internal override JSValue Evaluate(Context context)
         {
-            var a = tempContainer ?? new JSObject { attributes = JSObjectAttributesInternal.Temporary };
+            var a = tempContainer ?? new JSValue { attributes = JSObjectAttributesInternal.Temporary };
             tempContainer = null;
             a.Assign(first.Evaluate(context));
             var c = second.Evaluate(context);
             tempContainer = a;
-            if (c.valueType != JSObjectType.Function)
+            if (c.valueType != JSValueType.Function)
                 throw new JSException(new NiL.JS.BaseLibrary.TypeError("Right-hand value of instanceof is not function."));
             var p = (c.oValue as Function).prototype;
-            if (p.valueType < JSObjectType.Object)
+            if (p.valueType < JSValueType.Object)
                 throw new JSException(new TypeError("Property \"prototype\" of function not represent object."));
             if (p.oValue != null)
             {
-                while (a != null && a.valueType >= JSObjectType.Object && a.oValue != null)
+                while (a != null && a.valueType >= JSValueType.Object && a.oValue != null)
                 {
                     if (a.oValue == p.oValue)
                         return true;

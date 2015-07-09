@@ -118,7 +118,7 @@ namespace NiL.JS.Statements
             };
         }
 
-        internal override JSObject Evaluate(Context context)
+        internal override JSValue Evaluate(Context context)
         {
             if (functions != null)
                 throw new InvalidOperationException();

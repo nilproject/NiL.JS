@@ -29,7 +29,7 @@ namespace NiL.JS.Expressions
 
         }
 
-        internal override JSObject Evaluate(Context context)
+        internal override JSValue Evaluate(Context context)
         {
             lock (this)
             {
@@ -47,7 +47,7 @@ namespace NiL.JS.Expressions
                     throw new JSException(new Error("Execution aborted"));
                 context.abort = AbortType.None;
                 context.Activate();
-                tempContainer.Assign(context.abortInfo ?? JSObject.notExists);
+                tempContainer.Assign(context.abortInfo ?? JSValue.notExists);
                 return tempContainer;
             }
         }

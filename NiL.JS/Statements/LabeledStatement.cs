@@ -56,15 +56,15 @@ namespace NiL.JS.Statements
             };
         }
 
-        internal override JSObject Evaluate(Context context)
+        internal override JSValue Evaluate(Context context)
         {
             statement.Evaluate(context);
             if ((context.abort == AbortType.Break) && (context.abortInfo != null) && (context.abortInfo.oValue as string == label))
             {
                 context.abort = AbortType.None;
-                context.abortInfo = JSObject.notExists;
+                context.abortInfo = JSValue.notExists;
             }
-            return JSObject.notExists;
+            return JSValue.notExists;
         }
 
         protected override CodeNode[] getChildsImpl()

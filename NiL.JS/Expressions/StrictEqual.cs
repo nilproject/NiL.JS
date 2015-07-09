@@ -27,49 +27,49 @@ namespace NiL.JS.Expressions
 
         }
 
-        internal static bool Check(JSObject first, JSObject second)
+        internal static bool Check(JSValue first, JSValue second)
         {
             switch (first.valueType)
             {
-                case JSObjectType.NotExistsInObject:
-                case JSObjectType.Undefined:
+                case JSValueType.NotExistsInObject:
+                case JSValueType.Undefined:
                     {
-                        return second.valueType <= JSObjectType.Undefined;
+                        return second.valueType <= JSValueType.Undefined;
                     }
-                case JSObjectType.Bool:
+                case JSValueType.Bool:
                     {
                         if (first.valueType != second.valueType)
                             return false;
                         return first.iValue == second.iValue;
                     }
-                case JSObjectType.Int:
+                case JSValueType.Int:
                     {
-                        if (second.valueType == JSObjectType.Double)
+                        if (second.valueType == JSValueType.Double)
                             return first.iValue == second.dValue;
-                        else if (second.valueType != JSObjectType.Int)
+                        else if (second.valueType != JSValueType.Int)
                             return false;
                         else
                             return first.iValue == second.iValue;
                     }
-                case JSObjectType.Double:
+                case JSValueType.Double:
                     {
-                        if (second.valueType == JSObjectType.Int)
+                        if (second.valueType == JSValueType.Int)
                             return first.dValue == second.iValue;
-                        else if (second.valueType != JSObjectType.Double)
+                        else if (second.valueType != JSValueType.Double)
                             return false;
                         else
                             return first.dValue == second.dValue;
                     }
-                case JSObjectType.String:
+                case JSValueType.String:
                     {
-                        if (second.valueType != JSObjectType.String)
+                        if (second.valueType != JSValueType.String)
                             return false;
                         return string.CompareOrdinal(first.oValue.ToString(), second.oValue.ToString()) == 0;
                     }
-                case JSObjectType.Date:
-                case JSObjectType.Function:
-                case JSObjectType.Symbol:
-                case JSObjectType.Object:
+                case JSValueType.Date:
+                case JSValueType.Function:
+                case JSValueType.Symbol:
+                case JSValueType.Object:
                     {
                         if (first.valueType != second.valueType)
                             return false;
@@ -83,7 +83,7 @@ namespace NiL.JS.Expressions
             }
         }
 
-        internal override JSObject Evaluate(Context context)
+        internal override JSValue Evaluate(Context context)
         {
             tempContainer.Assign(first.Evaluate(context));
             if (Check(tempContainer, second.Evaluate(context)))

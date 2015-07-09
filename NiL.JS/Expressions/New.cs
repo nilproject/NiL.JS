@@ -14,7 +14,7 @@ namespace NiL.JS.Expressions
         private sealed class ThisSetter : Expression
         {
             private CodeNode source;
-            public JSObject lastThisBind;
+            public JSValue lastThisBind;
 
             protected internal override bool ResultInTempContainer
             {
@@ -39,17 +39,17 @@ namespace NiL.JS.Expressions
                 throw new InvalidOperationException();
             }
 
-            internal override JSObject Evaluate(Context context)
+            internal override JSValue Evaluate(Context context)
             {
-                JSObject ctor = source.Evaluate(context);
-                if (ctor.valueType != JSObjectType.Function && !(ctor.valueType == JSObjectType.Object && ctor.oValue is Function))
+                JSValue ctor = source.Evaluate(context);
+                if (ctor.valueType != JSValueType.Function && !(ctor.valueType == JSValueType.Object && ctor.oValue is Function))
                     throw new JSException((new NiL.JS.BaseLibrary.TypeError(ctor + " is not callable")));
                 if (ctor.oValue is EvalFunction
                     || ctor.oValue is ExternalFunction
                     || ctor.oValue is MethodProxy)
                     throw new JSException(new TypeError("Function \"" + (ctor.oValue as Function).name + "\" is not a constructor."));
 
-                JSObject _this = new JSObject(false) { valueType = JSObjectType.Object, oValue = typeof(New) };
+                JSValue _this = new JSObject(false) { valueType = JSValueType.Object, oValue = typeof(New) };
                 context.objectSource = _this;
                 lastThisBind = _this;
                 return ctor;
@@ -109,14 +109,14 @@ namespace NiL.JS.Expressions
             this.first = new Call(thisSetter = new ThisSetter(first), arguments);
         }
 
-        internal override NiL.JS.Core.JSObject Evaluate(NiL.JS.Core.Context context)
+        internal override NiL.JS.Core.JSValue Evaluate(NiL.JS.Core.Context context)
         {
             var prevTB = thisSetter.lastThisBind;
             try
             {
                 thisSetter.lastThisBind = null;
                 var temp = first.Evaluate(context);
-                if (temp.valueType >= JSObjectType.Object && temp.oValue != null)
+                if (temp.valueType >= JSValueType.Object && temp.oValue != null)
                     return temp;
                 return thisSetter.lastThisBind;
             }

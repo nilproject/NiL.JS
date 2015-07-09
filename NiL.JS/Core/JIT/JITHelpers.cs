@@ -13,15 +13,15 @@ namespace NiL.JS.Core.JIT
         public static readonly FieldInfo _items = typeof(List<CodeNode>).GetField("_items", BindingFlags.Instance | BindingFlags.NonPublic);
         public static readonly ParameterExpression DynamicValuesParameter = Expression.Parameter(typeof(CodeNode[]), "dv");
         public static readonly ParameterExpression ContextParameter = Expression.Parameter(typeof(Context), "context");
-        public static readonly Expression UndefinedConstant = Expression.Field(null, typeof(JSObject).GetField("undefined", BindingFlags.Static | BindingFlags.NonPublic));
-        public static readonly Expression NotExistsConstant = Expression.Field(null, typeof(JSObject).GetField("notExists", BindingFlags.Static | BindingFlags.NonPublic));
+        public static readonly Expression UndefinedConstant = Expression.Field(null, typeof(JSValue).GetField("undefined", BindingFlags.Static | BindingFlags.NonPublic));
+        public static readonly Expression NotExistsConstant = Expression.Field(null, typeof(JSValue).GetField("notExists", BindingFlags.Static | BindingFlags.NonPublic));
 
         public static readonly MethodInfo JSObjectToBooleanMethod = null;
-        public static readonly MethodInfo JSObjectToInt32Method = typeof(Tools).GetMethod("JSObjectToInt32", BindingFlags.Public | BindingFlags.Static, null, new[] { typeof(JSObject) }, null);
+        public static readonly MethodInfo JSObjectToInt32Method = typeof(Tools).GetMethod("JSObjectToInt32", BindingFlags.Public | BindingFlags.Static, null, new[] { typeof(JSValue) }, null);
 
         static JITHelpers()
         {
-            var methods = typeof(JSObject).GetMethods(BindingFlags.Static | BindingFlags.Public);
+            var methods = typeof(JSValue).GetMethods(BindingFlags.Static | BindingFlags.Public);
             for (var i = 0; i < methods.Length; i++)
                 if (methods[i].Name == "op_Explicite" && methods[i].ReturnType == typeof(bool))
                 {
@@ -35,50 +35,50 @@ namespace NiL.JS.Core.JIT
             return Expression.Constant(obj);
         }
 
-        internal static JSObject wrap<T>(T source, JSObject dest)
+        internal static JSValue wrap<T>(T source, JSValue dest)
         {
             switch (Type.GetTypeCode(typeof(T)))
             {
                 case TypeCode.Boolean:
                     {
                         dest.iValue = (bool)(object)source ? 1 : 0;
-                        dest.valueType = JSObjectType.Bool;
+                        dest.valueType = JSValueType.Bool;
                         break;
                     }
                 case TypeCode.Byte:
                     {
                         dest.iValue = (byte)(object)source;
-                        dest.valueType = JSObjectType.Int;
+                        dest.valueType = JSValueType.Int;
                         break;
                     }
                 case TypeCode.Char:
                     {
                         dest.oValue = source.ToString();
-                        dest.valueType = JSObjectType.String;
+                        dest.valueType = JSValueType.String;
                         break;
                     }
                 case TypeCode.Decimal:
                     {
                         dest.dValue = (double)(decimal)(object)source;
-                        dest.valueType = JSObjectType.Double;
+                        dest.valueType = JSValueType.Double;
                         break;
                     }
                 case TypeCode.Double:
                     {
                         dest.dValue = (double)(object)source;
-                        dest.valueType = JSObjectType.Double;
+                        dest.valueType = JSValueType.Double;
                         break;
                     }
                 case TypeCode.Int16:
                     {
                         dest.iValue = (short)(object)source;
-                        dest.valueType = JSObjectType.Int;
+                        dest.valueType = JSValueType.Int;
                         break;
                     }
                 case TypeCode.Int32:
                     {
                         dest.iValue = (int)(object)source;
-                        dest.valueType = JSObjectType.Int;
+                        dest.valueType = JSValueType.Int;
                         break;
                     }
                 case TypeCode.Int64:
@@ -87,37 +87,37 @@ namespace NiL.JS.Core.JIT
                         if (t > int.MaxValue || t < int.MinValue)
                         {
                             dest.dValue = t;
-                            dest.valueType = JSObjectType.Double;
+                            dest.valueType = JSValueType.Double;
                         }
                         else
                         {
                             dest.iValue = (int)t;
-                            dest.valueType = JSObjectType.Int;
+                            dest.valueType = JSValueType.Int;
                         }
                         break;
                     }
                 case TypeCode.SByte:
                     {
                         dest.iValue = (sbyte)(object)source;
-                        dest.valueType = JSObjectType.Int;
+                        dest.valueType = JSValueType.Int;
                         break;
                     }
                 case TypeCode.Single:
                     {
                         dest.dValue = (float)(object)source;
-                        dest.valueType = JSObjectType.Double;
+                        dest.valueType = JSValueType.Double;
                         break;
                     }
                 case TypeCode.String:
                     {
                         dest.oValue = source.ToString();
-                        dest.valueType = JSObjectType.String;
+                        dest.valueType = JSValueType.String;
                         break;
                     }
                 case TypeCode.UInt16:
                     {
                         dest.iValue = (ushort)(object)source;
-                        dest.valueType = JSObjectType.Int;
+                        dest.valueType = JSValueType.Int;
                         break;
                     }
                 case TypeCode.UInt32:
@@ -126,12 +126,12 @@ namespace NiL.JS.Core.JIT
                         if (t > int.MaxValue)
                         {
                             dest.dValue = t;
-                            dest.valueType = JSObjectType.Double;
+                            dest.valueType = JSValueType.Double;
                         }
                         else
                         {
                             dest.iValue = (int)t;
-                            dest.valueType = JSObjectType.Int;
+                            dest.valueType = JSValueType.Int;
                         }
                         break;
                     }
@@ -141,36 +141,36 @@ namespace NiL.JS.Core.JIT
                         if (t > int.MaxValue)
                         {
                             dest.dValue = t;
-                            dest.valueType = JSObjectType.Double;
+                            dest.valueType = JSValueType.Double;
                         }
                         else
                         {
                             dest.iValue = (int)t;
-                            dest.valueType = JSObjectType.Int;
+                            dest.valueType = JSValueType.Int;
                         }
                         break;
                     }
                 default:
                     {
                         dest.oValue = new ObjectContainer(source);
-                        dest.valueType = JSObjectType.Object;
+                        dest.valueType = JSValueType.Object;
                         break;
                     }
             }
             return dest;
         }
 
-        internal static MethodInfo methodof(Func<JSObject, JSObject, bool, JSObject> method)
+        internal static MethodInfo methodof(Func<JSValue, JSValue, bool, JSValue> method)
         {
             return method.Method;
         }
 
-        internal static MethodInfo methodof(Action<JSObject> method)
+        internal static MethodInfo methodof(Action<JSValue> method)
         {
             return method.Method;
         }
 
-        internal static MethodInfo methodof(Func<Context, JSObject> method)
+        internal static MethodInfo methodof(Func<Context, JSValue> method)
         {
             return method.Method;
         }
@@ -180,7 +180,7 @@ namespace NiL.JS.Core.JIT
             return method.Method;
         }
 
-        internal static MethodInfo methodof(Func<Context, CodeNode[], JSObject> method)
+        internal static MethodInfo methodof(Func<Context, CodeNode[], JSValue> method)
         {
             return method.Method;
         }
@@ -195,12 +195,12 @@ namespace NiL.JS.Core.JIT
             return method.Method;
         }
 
-        internal static MethodInfo methodof(Func<JSObject, object> func)
+        internal static MethodInfo methodof(Func<JSValue, object> func)
         {
             return func.Method;
         }
 
-        internal static MethodInfo methodof(Func<Context, JSObject, Context> method)
+        internal static MethodInfo methodof(Func<Context, JSValue, Context> method)
         {
             return method.Method;
         }

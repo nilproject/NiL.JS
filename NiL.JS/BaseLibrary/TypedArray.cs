@@ -10,7 +10,7 @@ namespace NiL.JS.BaseLibrary
 #endif
     public abstract class TypedArray : JSObject
     {
-        protected sealed class Element : JSObject
+        protected sealed class Element : JSValue
         {
             private readonly TypedArray owner;
             private int index;
@@ -22,13 +22,13 @@ namespace NiL.JS.BaseLibrary
                 attributes |= JSObjectAttributesInternal.Reassign;
             }
 
-            public override void Assign(JSObject value)
+            public override void Assign(JSValue value)
             {
                 owner[index] = value;
             }
         }
 
-        protected abstract JSObject this[int index]
+        protected abstract JSValue this[int index]
         {
             get;
             set;
@@ -79,7 +79,7 @@ namespace NiL.JS.BaseLibrary
         protected TypedArray()
         {
             buffer = new ArrayBuffer();
-            valueType = JSObjectType.Object;
+            valueType = JSValueType.Object;
             oValue = this;
         }
 
@@ -90,7 +90,7 @@ namespace NiL.JS.BaseLibrary
             this.buffer = new ArrayBuffer(length * BYTES_PER_ELEMENT);
             this.byteLength = length * BYTES_PER_ELEMENT;
             this.byteOffset = 0;
-            this.valueType = JSObjectType.Object;
+            this.valueType = JSValueType.Object;
             this.oValue = this;
         }
 
@@ -107,12 +107,12 @@ namespace NiL.JS.BaseLibrary
             this.buffer = buffer;
             this.length = new Number(byteLength / BYTES_PER_ELEMENT);
             this.byteOffset = byteOffset;
-            this.valueType = JSObjectType.Object;
+            this.valueType = JSValueType.Object;
             this.oValue = this;
         }
 
         [DoNotEnumerate]
-        protected TypedArray(JSObject iterablyObject)
+        protected TypedArray(JSValue iterablyObject)
         {
             var src = Tools.iterableToArray(iterablyObject, true, false, false, -1);
             if (src.data.Length > int.MaxValue)
@@ -121,7 +121,7 @@ namespace NiL.JS.BaseLibrary
             this.buffer = new ArrayBuffer(length * BYTES_PER_ELEMENT);
             this.length = new Number(length);
             this.byteLength = length * BYTES_PER_ELEMENT;
-            this.valueType = JSObjectType.Object;
+            this.valueType = JSValueType.Object;
             this.oValue = this;
             foreach (var item in src.data.Reversed)
                 this[item.Key] = item.Value;
@@ -135,24 +135,24 @@ namespace NiL.JS.BaseLibrary
                 return;
             var offset = Tools.JSObjectToInt64(args.a1 ?? undefined, 0, false);
             var src = args.a0 ?? undefined;
-            if (src.valueType < JSObjectType.String)
+            if (src.valueType < JSValueType.String)
                 return;
             var length = Tools.JSObjectToInt64(src["length"], 0, false);
             if (this.length.iValue - offset < length)
                 throw new JSException(new RangeError("Invalid source length or offset argument"));
-            JSObject index = 0;
+            JSValue index = 0;
             var dummyArgs = new Arguments();
             for (var i = 0L; i < length; i++)
             {
                 if (i > int.MaxValue)
                 {
-                    index.valueType = JSObjectType.Double;
+                    index.valueType = JSValueType.Double;
                     index.dValue = i;
                 }
                 else
                     index.iValue = (int)i;
                 var value = src.GetMember(index, false, false);
-                if (value.valueType == JSObjectType.Property)
+                if (value.valueType == JSValueType.Property)
                 {
                     value = ((value.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(src, dummyArgs);
                     dummyArgs.Reset();
@@ -164,7 +164,7 @@ namespace NiL.JS.BaseLibrary
         [ArgumentsLength(2)]
         public abstract TypedArray subarray(Arguments args);
 
-        protected T subarrayImpl<T>(JSObject begin, JSObject end) where T : TypedArray, new()
+        protected T subarrayImpl<T>(JSValue begin, JSValue end) where T : TypedArray, new()
         {
             var bi = Tools.JSObjectToInt32(begin, 0, false);
             var ei = end.IsExist ? Tools.JSObjectToInt32(end, 0, false) : Tools.JSObjectToInt32(length);
@@ -178,34 +178,34 @@ namespace NiL.JS.BaseLibrary
             return r;
         }
 
-        protected internal sealed override JSObject GetMember(JSObject name, bool forWrite, bool own)
+        protected internal sealed override JSValue GetMember(JSValue name, bool forWrite, bool own)
         {
-            if (name.valueType == JSObjectType.String && "length".Equals(name.oValue))
+            if (name.valueType == JSValueType.String && "length".Equals(name.oValue))
                 return length;
             bool isIndex = false;
             int index = 0;
-            JSObject tname = name;
-            if (tname.valueType >= JSObjectType.Object)
+            JSValue tname = name;
+            if (tname.valueType >= JSValueType.Object)
                 tname = tname.ToPrimitiveValue_String_Value();
             switch (tname.valueType)
             {
-                case JSObjectType.Object:
-                case JSObjectType.Bool:
+                case JSValueType.Object:
+                case JSValueType.Bool:
                     break;
-                case JSObjectType.Int:
+                case JSValueType.Int:
                     {
                         isIndex = tname.iValue >= 0;
                         index = tname.iValue;
                         break;
                     }
-                case JSObjectType.Double:
+                case JSValueType.Double:
                     {
                         isIndex = tname.dValue >= 0 && tname.dValue < uint.MaxValue && (long)tname.dValue == tname.dValue;
                         if (isIndex)
                             index = (int)(uint)tname.dValue;
                         break;
                     }
-                case JSObjectType.String:
+                case JSValueType.String:
                     {
                         var fc = tname.oValue.ToString()[0];
                         if ('0' <= fc && '9' >= fc)
@@ -236,34 +236,34 @@ namespace NiL.JS.BaseLibrary
             return base.GetMember(name, forWrite, own);
         }
 
-        protected internal override void SetMember(JSObject name, JSObject value, bool strict)
+        protected internal override void SetMember(JSValue name, JSValue value, bool strict)
         {
-            if (name.valueType == JSObjectType.String && "length".Equals(name.oValue))
+            if (name.valueType == JSValueType.String && "length".Equals(name.oValue))
                 return;
             bool isIndex = false;
             int index = 0;
-            JSObject tname = name;
-            if (tname.valueType >= JSObjectType.Object)
+            JSValue tname = name;
+            if (tname.valueType >= JSValueType.Object)
                 tname = tname.ToPrimitiveValue_String_Value();
             switch (tname.valueType)
             {
-                case JSObjectType.Object:
-                case JSObjectType.Bool:
+                case JSValueType.Object:
+                case JSValueType.Bool:
                     break;
-                case JSObjectType.Int:
+                case JSValueType.Int:
                     {
                         isIndex = tname.iValue >= 0;
                         index = tname.iValue;
                         break;
                     }
-                case JSObjectType.Double:
+                case JSValueType.Double:
                     {
                         isIndex = tname.dValue >= 0 && tname.dValue < uint.MaxValue && (long)tname.dValue == tname.dValue;
                         if (isIndex)
                             index = (int)(uint)tname.dValue;
                         break;
                     }
-                case JSObjectType.String:
+                case JSValueType.String:
                     {
                         var fc = tname.oValue.ToString()[0];
                         if ('0' <= fc && '9' >= fc)

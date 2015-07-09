@@ -12,7 +12,7 @@ namespace NiL.JS.BaseLibrary
     public sealed class RegExp : CustomType
     {
         private string _source;
-        private JSObject lIndex;
+        private JSValue lIndex;
         internal Regex regEx;
 
         [DoNotEnumerate]
@@ -21,24 +21,23 @@ namespace NiL.JS.BaseLibrary
             _source = "";
             _global = false;
             regEx = new System.Text.RegularExpressions.Regex("");
-            attributes |= JSObjectAttributesInternal.ReadOnly;
         }
 
         private void makeRegex(Arguments args)
         {
             var ptrn = args[0];
-            if (ptrn.valueType == JSObjectType.Object && ptrn.oValue is RegExp)
+            if (ptrn.valueType == JSValueType.Object && ptrn.Value is RegExp)
             {
-                if (args.GetMember("length").iValue > 1 && args[1].valueType > JSObjectType.Undefined)
+                if (args.GetMember("length").iValue > 1 && args[1].valueType > JSValueType.Undefined)
                     throw new JSException(new TypeError("Cannot supply flags when constructing one RegExp from another"));
                 oValue = ptrn.oValue;
-                regEx = (oValue as RegExp).regEx;
-                _global = (oValue as RegExp).global;
-                _source = (oValue as RegExp)._source;
+                regEx = (ptrn.Value as RegExp).regEx;
+                _global = (ptrn.Value as RegExp).global;
+                _source = (ptrn.Value as RegExp)._source;
                 return;
             }
-            var pattern = ptrn.valueType > JSObjectType.Undefined ? ptrn.ToString() : "";
-            var flags = args.GetMember("length").iValue > 1 && args[1].valueType > JSObjectType.Undefined ? args[1].ToString() : "";
+            var pattern = ptrn.valueType > JSValueType.Undefined ? ptrn.ToString() : "";
+            var flags = args.GetMember("length").iValue > 1 && args[1].valueType > JSValueType.Undefined ? args[1].ToString() : "";
             makeRegex(pattern, flags);
         }
 
@@ -166,7 +165,7 @@ namespace NiL.JS.BaseLibrary
         [DoNotDelete]
         [DoNotEnumerate]
         [NotConfigurable]
-        public JSObject lastIndex
+        public JSValue lastIndex
         {
             get
             {
@@ -174,19 +173,19 @@ namespace NiL.JS.BaseLibrary
             }
             set
             {
-                lIndex = (value ?? undefined).CloneImpl();
+                lIndex = (value ?? JSValue.undefined).CloneImpl();
             }
         }
 
         [DoNotEnumerate]
-        public JSObject compile(Arguments args)
+        public RegExp compile(Arguments args)
         {
             makeRegex(args);
             return this;
         }
 
         [DoNotEnumerate]
-        public JSObject exec(JSObject arg)
+        public JSValue exec(JSValue arg)
         {
             if (this.GetType() != typeof(RegExp))
                 throw new JSException(new TypeError("Try to call RegExp.exec on not RegExp object."));
@@ -194,9 +193,9 @@ namespace NiL.JS.BaseLibrary
             lIndex = Tools.JSObjectToNumber(lastIndex);
             if ((lIndex.attributes & JSObjectAttributesInternal.SystemObject) != 0)
                 lIndex = lIndex.CloneImpl();
-            if (lIndex.valueType == JSObjectType.Double)
+            if (lIndex.valueType == JSValueType.Double)
             {
-                lIndex.valueType = JSObjectType.Int;
+                lIndex.valueType = JSValueType.Int;
                 lIndex.iValue = (int)lIndex.dValue;
             }
             if (lIndex.iValue < 0)
@@ -204,17 +203,17 @@ namespace NiL.JS.BaseLibrary
             if (lIndex.iValue >= input.Length && input.Length > 0)
             {
                 lIndex.iValue = 0;
-                return Null;
+                return JSValue.Null;
             }
             var m = regEx.Match(input, lIndex.iValue);
             if (!m.Success)
             {
                 lIndex.iValue = 0;
-                return Null;
+                return JSValue.Null;
             }
             var res = new Array(m.Groups.Count);
             for (int i = 0; i < m.Groups.Count; i++)
-                res.data[i] = m.Groups[i].Success ? (JSObject)m.Groups[i].Value : null;
+                res.data[i] = m.Groups[i].Success ? (JSValue)m.Groups[i].Value : null;
             if (_global)
                 lIndex.iValue = m.Index + m.Length;
             res.DefineMember("index").Assign(m.Index);
@@ -223,13 +222,13 @@ namespace NiL.JS.BaseLibrary
         }
 
         [DoNotEnumerate]
-        public JSObject test(JSObject arg)
+        public JSValue test(JSValue arg)
         {
             string input = (arg ?? "undefined").ToString();
             lIndex = Tools.JSObjectToNumber(lIndex);
-            if (lIndex.valueType == JSObjectType.Double)
+            if (lIndex.valueType == JSValueType.Double)
             {
-                lIndex.valueType = JSObjectType.Int;
+                lIndex.valueType = JSValueType.Int;
                 lIndex.iValue = (int)lIndex.dValue;
             }
             if (lIndex.iValue >= input.Length || lIndex.iValue < 0)
@@ -251,7 +250,7 @@ namespace NiL.JS.BaseLibrary
 #if !WRC
         [CLSCompliant(false)]
         [DoNotEnumerate]
-        public JSObject toString()
+        public JSValue toString()
         {
             return ToString();
         }

@@ -42,7 +42,7 @@ namespace NiL.JS.Core.Functions
         [DoNotDelete]
         [DoNotEnumerate]
         [NotConfigurable]
-        public override JSObject prototype
+        public override JSValue prototype
         {
             [Hidden]
             get
@@ -78,11 +78,11 @@ namespace NiL.JS.Core.Functions
         }
 
         [Hidden]
-        public override JSObject Invoke(JSObject thisBind, Arguments args)
+        public override JSValue Invoke(JSValue thisBind, Arguments args)
         {
             var res = del(thisBind, args);
             if (res == null)
-                return JSObject.Null;
+                return JSValue.Null;
             return res;
         }
     }

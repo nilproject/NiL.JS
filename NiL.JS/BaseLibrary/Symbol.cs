@@ -28,7 +28,7 @@ namespace NiL.JS.BaseLibrary
         {
             Description = description;
             oValue = this;
-            valueType = JSObjectType.Symbol;
+            valueType = JSValueType.Symbol;
             symbolsCache[description] = this;
         }
 
@@ -46,7 +46,7 @@ namespace NiL.JS.BaseLibrary
             return symbol.Description;
         }
 
-        public override JSObject toString(Arguments args)
+        public override JSValue toString(Arguments args)
         {
             return ToString();
         }
@@ -57,23 +57,11 @@ namespace NiL.JS.BaseLibrary
             return "Symbol(" + Description + ")";
         }
 
-        protected internal override JSObject GetMember(JSObject name, bool forWrite, bool own)
+        protected internal override JSValue GetMember(JSValue name, bool forWrite, bool own)
         {
             if (forWrite)
                 return undefined;
             return base.GetMember(name, forWrite, own);
-        }
-
-        [Hidden]
-        public override void Assign(JSObject value)
-        {
-            if ((attributes & JSObjectAttributesInternal.ReadOnly) == 0)
-            {
-#if DEBUG
-                System.Diagnostics.Debugger.Break();
-#endif
-                throw new InvalidOperationException("Try to assign to Boolean");
-            }
         }
     }
 }

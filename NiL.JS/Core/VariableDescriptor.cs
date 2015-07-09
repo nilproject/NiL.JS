@@ -29,7 +29,7 @@ namespace NiL.JS.Core
     public class VariableDescriptor
     {
         internal int defineDepth;
-        internal JSObject cacheRes;
+        internal JSValue cacheRes;
         internal Context cacheContext;
         internal readonly List<VariableReference> references;
         internal readonly string name;
@@ -57,7 +57,7 @@ namespace NiL.JS.Core
             }
         }
 
-        internal JSObject Get(Context context, bool create, int depth)
+        internal JSValue Get(Context context, bool create, int depth)
         {
             context.objectSource = null;
             if (((defineDepth | depth) & int.MinValue) != 0)
@@ -67,10 +67,10 @@ namespace NiL.JS.Core
             return deepGet(context, create, depth);
         }
 
-        private JSObject deepGet(Context context, bool create, int depth)
+        private JSValue deepGet(Context context, bool create, int depth)
         {
             TypeProxy tp = null;
-            JSObject res = null;
+            JSValue res = null;
             if (cacheRes != null && depth > defineDepth)
             {
                 do
@@ -92,7 +92,7 @@ namespace NiL.JS.Core
             res = context.GetVariable(name, create);
             if (create
                 && !isDefined
-                && res.valueType == JSObjectType.NotExists)
+                && res.valueType == JSValueType.NotExists)
                 res.attributes = JSObjectAttributesInternal.None;
             else
             {

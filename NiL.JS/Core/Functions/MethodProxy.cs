@@ -64,7 +64,7 @@ namespace NiL.JS.Core.Functions
         [DoNotDelete]
         [DoNotEnumerate]
         [NotConfigurable]
-        public override JSObject prototype
+        public override JSValue prototype
         {
             [Hidden]
             get
@@ -98,16 +98,16 @@ namespace NiL.JS.Core.Functions
                 var handle = handleInfo.GetValue(donor);
                 var forceConverterHandle = (IntPtr)handle;
 
-                var forceConverterType = typeof(Func<,>).MakeGenericType(typeof(JSObject), typeof(NiL.JS.BaseLibrary.String));
+                var forceConverterType = typeof(Func<,>).MakeGenericType(typeof(JSValue), typeof(NiL.JS.BaseLibrary.String));
 #if PORTABLE
                 var forceConverterConstructor = forceConverterType.GetTypeInfo().DeclaredConstructors.First();
 #else
                 var forceConverterConstructor = forceConverterType.GetConstructors().First();
 #endif
-                var forceConverter = forceConverterConstructor.Invoke(new object[] { null, (IntPtr)forceConverterHandle }) as Func<JSObject, NiL.JS.BaseLibrary.String>;
+                var forceConverter = forceConverterConstructor.Invoke(new object[] { null, (IntPtr)forceConverterHandle }) as Func<JSValue, NiL.JS.BaseLibrary.String>;
 
-                var test = forceConverter(new JSObject() { oValue = "hello", valueType = JSObjectType.String });
-                if (test == null || test.GetType() != typeof(JSObject))
+                var test = forceConverter(new JSValue() { oValue = "hello", valueType = JSValueType.String });
+                if (test == null || test.GetType() != typeof(JSValue))
                     PartiallyTrusted = true;
             }
             catch
@@ -161,7 +161,7 @@ namespace NiL.JS.Core.Functions
                     if (!methodInfo.IsStatic
                         || (parameters.Length == 0)
                         || (parameters.Length > 2)
-                        || (parameters[0].ParameterType != typeof(JSObject))
+                        || (parameters[0].ParameterType != typeof(JSValue))
                         || (parameters.Length > 1 && parameters[1].ParameterType != typeof(Arguments)))
                         throw new ArgumentException("Force-instance method \"" + methodBase + "\" have invalid signature");
                     raw = true;
@@ -291,7 +291,7 @@ namespace NiL.JS.Core.Functions
             {
                 for (; ; )
                 {
-                    if (methodInfo.IsStatic && parameters[0].ParameterType == typeof(JSObject))
+                    if (methodInfo.IsStatic && parameters[0].ParameterType == typeof(JSValue))
                     {
                         generator.Emit(OpCodes.Ldarg_0);
                         if (parameters.Length == 1)
@@ -508,7 +508,7 @@ namespace NiL.JS.Core.Functions
             }
         }
 
-        protected internal override NiL.JS.Core.JSObject InternalInvoke(NiL.JS.Core.JSObject self, NiL.JS.Expressions.Expression[] arguments, NiL.JS.Core.Context initiator)
+        protected internal override NiL.JS.Core.JSValue InternalInvoke(NiL.JS.Core.JSValue self, NiL.JS.Expressions.Expression[] arguments, NiL.JS.Core.Context initiator)
         {
             if (parameters.Length == 0 || (forceInstance && parameters.Length == 1))
                 return Invoke(self, null);
@@ -554,17 +554,19 @@ namespace NiL.JS.Core.Functions
         }
 
         [Hidden]
-        internal object InvokeImpl(JSObject thisBind, object[] args, Arguments argsSource)
+        internal object InvokeImpl(JSValue thisBind, object[] args, Arguments argsSource)
         {
             object target = null;
             if (forceInstance)
             {
-                if (thisBind != null && thisBind.valueType >= JSObjectType.Object)
+                if (thisBind != null && thisBind.valueType >= JSValueType.Object)
                 {
+                    // Объект нужно развернуть до основного значения. Даже если это обёртка над примитивным значением
                     target = thisBind.Value;
                     if (target is TypeProxy)
                         target = (target as TypeProxy).prototypeInstance ?? thisBind.Value;
-                    if (target == null || !typeof(JSObject).IsAssignableFrom(target.GetType()))
+                    // ForceInstance работает только если первый аргумент типа JSValue
+                    if (!(target is JSValue))
                         target = thisBind;
                 }
                 else
@@ -616,13 +618,13 @@ namespace NiL.JS.Core.Functions
 
         private object getDummy()
         {
-            if (typeof(JSObject).IsAssignableFrom(methodBase.DeclaringType))
+            if (typeof(JSValue).IsAssignableFrom(methodBase.DeclaringType))
                 if (typeof(Function).IsAssignableFrom(methodBase.DeclaringType))
                     return this;
                 else if (typeof(TypedArray).IsAssignableFrom(methodBase.DeclaringType))
                     return new Int8Array();
                 else
-                    return new JSObject();
+                    return new JSValue();
             if (typeof(Error).IsAssignableFrom(methodBase.DeclaringType))
                 return new Error();
             return null;
@@ -633,11 +635,11 @@ namespace NiL.JS.Core.Functions
         {
         }
 
-        private object getTargetObject(JSObject _this, Type targetType)
+        private object getTargetObject(JSValue _this, Type targetType)
         {
             if (_this == null)
                 return null;
-            _this = _this.oValue as JSObject ?? _this; // это может быть лишь ссылка на какой-то другой контейнер
+            _this = _this.oValue as JSValue ?? _this; // это может быть лишь ссылка на какой-то другой контейнер
             var res = Tools.convertJStoObj(_this, targetType);
             if (res != null)
                 return res;
@@ -683,7 +685,7 @@ namespace NiL.JS.Core.Functions
             return res;
         }
 
-        public override NiL.JS.Core.JSObject Invoke(NiL.JS.Core.JSObject thisBind, NiL.JS.Core.Arguments args)
+        public override NiL.JS.Core.JSValue Invoke(NiL.JS.Core.JSValue thisBind, NiL.JS.Core.Arguments args)
         {
             return TypeProxing.TypeProxy.Proxy(InvokeImpl(thisBind, null, args));
         }
@@ -708,7 +710,7 @@ namespace NiL.JS.Core.Functions
             return res;
         }
 
-        private static object marshal(JSObject obj, Type targetType)
+        private static object marshal(JSValue obj, Type targetType)
         {
             if (obj == null)
                 return null;

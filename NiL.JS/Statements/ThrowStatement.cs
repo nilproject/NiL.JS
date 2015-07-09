@@ -47,9 +47,9 @@ namespace NiL.JS.Statements
             };
         }
 
-        internal override JSObject Evaluate(Context context)
+        internal override JSValue Evaluate(Context context)
         {
-            throw new JSException(body.Evaluate(context));
+            throw new JSException(body == null ? JSValue.undefined : body.Evaluate(context));
         }
 
         protected override CodeNode[] getChildsImpl()

@@ -72,7 +72,7 @@ namespace NiL.JS.Statements
             };
         }
 
-        internal override JSObject Evaluate(Context context)
+        internal override JSValue Evaluate(Context context)
         {
 #if DEV
             if (context.debugging)
@@ -131,16 +131,17 @@ namespace NiL.JS.Statements
             {
                 if (allowRemove && (condition is Constant || (condition is Expression && (condition as Expression).IsContextIndependent)))
                 {
+                    Eliminated = true;
                     if ((bool)condition.Evaluate(null))
                     {
-                        if ((opts & Options.SuppressUselessExpressionsElimination) == 0)
+                        if ((opts & Options.SuppressUselessExpressionsElimination) == 0 && body != null)
                             _this = new InfinityLoop(body, labels);
                     }
                     else if ((opts & Options.SuppressUselessStatementsElimination) == 0)
                     {
                         _this = null;
-                        Eliminated = true;
-                        body.Eliminated = true;
+                        if (body != null)
+                            body.Eliminated = true;
                     }
                     condition.Eliminated = true;
                 }

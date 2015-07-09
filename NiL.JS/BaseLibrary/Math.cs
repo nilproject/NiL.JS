@@ -45,12 +45,12 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotDelete]
         [DoNotEnumerate]
-        public static JSObject abs(Arguments args)
+        public static JSValue abs(Arguments args)
         {
             var arg = args[0];
             switch (arg.valueType)
             {
-                case JSObjectType.Int:
+                case JSValueType.Int:
                     {
                         if ((arg.iValue & int.MinValue) == 0)
                             return arg;
@@ -58,19 +58,19 @@ namespace NiL.JS.BaseLibrary
                             goto default;
                         if ((arg.attributes & JSObjectAttributesInternal.Cloned) != 0)
                         {
-                            arg.valueType = JSObjectType.Int;
+                            arg.valueType = JSValueType.Int;
                             arg.iValue = -arg.iValue;
                             return arg;
                         }
                         return -arg.iValue;
                     }
-                case JSObjectType.Double:
+                case JSValueType.Double:
                     {
                         if (arg.dValue >= 0)
                             return arg;
                         if ((arg.attributes & JSObjectAttributesInternal.Cloned) != 0)
                         {
-                            arg.valueType = JSObjectType.Double;
+                            arg.valueType = JSValueType.Double;
                             arg.dValue = -arg.dValue;
                             return arg;
                         }
@@ -81,7 +81,7 @@ namespace NiL.JS.BaseLibrary
                         var value = System.Math.Abs(Tools.JSObjectToDouble(arg));
                         if ((arg.attributes & JSObjectAttributesInternal.Cloned) != 0)
                         {
-                            arg.valueType = JSObjectType.Double;
+                            arg.valueType = JSValueType.Double;
                             arg.dValue = value;
                             return arg;
                         }
@@ -92,21 +92,21 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [DoNotDelete]
-        public static JSObject acos(Arguments args)
+        public static JSValue acos(Arguments args)
         {
             return System.Math.Acos(Tools.JSObjectToDouble(args.Length > 0 ? args[0] : null));
         }
 
         [DoNotEnumerate]
         [DoNotDelete]
-        public static JSObject asin(Arguments args)
+        public static JSValue asin(Arguments args)
         {
             return System.Math.Asin(Tools.JSObjectToDouble(args.Length > 0 ? args[0] : null));
         }
 
         [DoNotEnumerate]
         [DoNotDelete]
-        public static JSObject atan(Arguments args)
+        public static JSValue atan(Arguments args)
         {
             return System.Math.Atan(Tools.JSObjectToDouble(args.Length > 0 ? args[0] : null));
         }
@@ -114,7 +114,7 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         [DoNotDelete]
         [ArgumentsLength(2)]
-        public static JSObject atan2(Arguments args)
+        public static JSValue atan2(Arguments args)
         {
             if (args.Length < 2)
                 return double.NaN;
@@ -128,27 +128,27 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [DoNotDelete]
-        public static JSObject ceil(Arguments args)
+        public static JSValue ceil(Arguments args)
         {
             return System.Math.Ceiling(Tools.JSObjectToDouble(args.Length > 0 ? args[0] : null));
         }
 
         [DoNotEnumerate]
         [DoNotDelete]
-        public static JSObject cos(Arguments args)
+        public static JSValue cos(Arguments args)
         {
             return System.Math.Cos(Tools.JSObjectToDouble(args.length > 0 ? args[0] : null));
         }
 
         [DoNotEnumerate]
         [DoNotDelete]
-        public static JSObject exp(Arguments args)
+        public static JSValue exp(Arguments args)
         {
             var arg = args[0];
             var res = System.Math.Exp(Tools.JSObjectToDouble(arg));
             if ((arg.attributes & JSObjectAttributesInternal.Cloned) != 0)
             {
-                arg.valueType = JSObjectType.Double;
+                arg.valueType = JSValueType.Double;
                 arg.dValue = res;
                 return arg;
             }
@@ -167,17 +167,17 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotDelete]
         [DoNotEnumerate]
-        public static JSObject floor(Arguments args)
+        public static JSValue floor(Arguments args)
         {
-            var arg = args.a0 ?? JSObject.notExists;
-            if (arg.valueType == JSObjectType.Int)
+            var arg = args.a0 ?? JSValue.notExists;
+            if (arg.valueType == JSValueType.Int)
                 return arg;
             var a = Tools.JSObjectToDouble(arg);
             if (a == 0.0)
             {
                 if ((arg.attributes & JSObjectAttributesInternal.Cloned) != 0)
                 {
-                    arg.valueType = JSObjectType.Int;
+                    arg.valueType = JSValueType.Int;
                     arg.iValue = 0;
                     return arg;
                 }
@@ -203,12 +203,12 @@ namespace NiL.JS.BaseLibrary
                 {
                     if (r <= int.MaxValue)
                     {
-                        arg.valueType = JSObjectType.Int;
+                        arg.valueType = JSValueType.Int;
                         arg.iValue = (int)r;
                     }
                     else
                     {
-                        arg.valueType = JSObjectType.Double;
+                        arg.valueType = JSValueType.Double;
                         arg.dValue = r;
                     }
                     return arg;
@@ -221,7 +221,7 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotDelete]
         [DoNotEnumerate]
-        public static JSObject log(Arguments args)
+        public static JSValue log(Arguments args)
         {
             return System.Math.Log(Tools.JSObjectToDouble(args.Length > 0 ? args[0] : null));
         }
@@ -229,9 +229,9 @@ namespace NiL.JS.BaseLibrary
         [DoNotDelete]
         [DoNotEnumerate]
         [ArgumentsLength(2)]
-        public static JSObject max(Arguments args)
+        public static JSValue max(Arguments args)
         {
-            JSObject reso = null;
+            JSValue reso = null;
             double res = double.NegativeInfinity;
             for (int i = 0; i < args.Length; i++)
             {
@@ -244,7 +244,7 @@ namespace NiL.JS.BaseLibrary
             }
             if (reso != null)
             {
-                reso.valueType = JSObjectType.Double;
+                reso.valueType = JSValueType.Double;
                 reso.dValue = res;
                 return reso;
             }
@@ -254,7 +254,7 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         [DoNotDelete]
         [ArgumentsLength(2)]
-        public static JSObject min(Arguments args)
+        public static JSValue min(Arguments args)
         {
             double res = double.PositiveInfinity;
             for (int i = 0; i < args.Length; i++)
@@ -270,9 +270,9 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         [DoNotDelete]
         [ArgumentsLength(2)]
-        public static JSObject pow(Arguments args)
+        public static JSValue pow(Arguments args)
         {
-            JSObject result = 0;
+            JSValue result = 0;
             if (args.Length < 2)
                 result.dValue = double.NaN;
             else
@@ -286,30 +286,30 @@ namespace NiL.JS.BaseLibrary
                 else
                     result.dValue = System.Math.Pow(@base, degree);
             }
-            result.valueType = JSObjectType.Double;
+            result.valueType = JSValueType.Double;
             return result;
         }
 
         [DoNotEnumerate]
         [DoNotDelete]
-        public static JSObject random()
+        public static JSValue random()
         {
             return randomInstance.NextDouble();
         }
 
         [DoNotDelete]
         [DoNotEnumerate]
-        public static JSObject round(Arguments args)
+        public static JSValue round(Arguments args)
         {
             var arg = args[0];
-            if (arg.valueType == JSObjectType.Int)
+            if (arg.valueType == JSValueType.Int)
                 return arg;
             var a = Tools.JSObjectToDouble(arg);
             if (a == 0.0)
             {
                 if ((arg.attributes & JSObjectAttributesInternal.Cloned) != 0)
                 {
-                    arg.valueType = JSObjectType.Int;
+                    arg.valueType = JSValueType.Int;
                     arg.iValue = 0;
                     return arg;
                 }
@@ -338,12 +338,12 @@ namespace NiL.JS.BaseLibrary
                 {
                     if (r <= int.MaxValue)
                     {
-                        arg.valueType = JSObjectType.Int;
+                        arg.valueType = JSValueType.Int;
                         arg.iValue = (int)r;
                     }
                     else
                     {
-                        arg.valueType = JSObjectType.Double;
+                        arg.valueType = JSValueType.Double;
                         arg.dValue = r;
                     }
                     return arg;
@@ -356,20 +356,20 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [DoNotDelete]
-        public static JSObject sin(Arguments args)
+        public static JSValue sin(Arguments args)
         {
             return System.Math.Sin(Tools.JSObjectToDouble(args.Length > 0 ? args[0] : null));
         }
 
         [DoNotEnumerate]
         [DoNotDelete]
-        public static JSObject sqrt(Arguments args)
+        public static JSValue sqrt(Arguments args)
         {
             var arg = args[0];
             var res = System.Math.Sqrt(Tools.JSObjectToDouble(arg));
             if ((arg.attributes & JSObjectAttributesInternal.Cloned) != 0)
             {
-                arg.valueType = JSObjectType.Double;
+                arg.valueType = JSValueType.Double;
                 arg.dValue = res;
                 return arg;
             }
@@ -378,7 +378,7 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [DoNotDelete]
-        public static JSObject tan(Arguments args)
+        public static JSValue tan(Arguments args)
         {
             return System.Math.Tan(Tools.JSObjectToDouble(args.Length > 0 ? args[0] : null));
         }
@@ -388,7 +388,7 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         [DoNotDelete]
         [ArgumentsLength(2)]
-        public static JSObject IEEERemainder(Arguments args)
+        public static JSValue IEEERemainder(Arguments args)
         {
             if (args.Length < 2)
                 return double.NaN;
@@ -397,7 +397,7 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [DoNotDelete]
-        public static JSObject sign(Arguments args)
+        public static JSValue sign(Arguments args)
         {
             if (args.Length < 1)
                 return double.NaN;
@@ -406,7 +406,7 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [DoNotDelete]
-        public static JSObject sinh(Arguments args)
+        public static JSValue sinh(Arguments args)
         {
             if (args.Length < 1)
                 return double.NaN;
@@ -415,7 +415,7 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [DoNotDelete]
-        public static JSObject tanh(Arguments args)
+        public static JSValue tanh(Arguments args)
         {
             if (args.Length < 1)
                 return double.NaN;
@@ -424,7 +424,7 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [DoNotDelete]
-        public static JSObject trunc(Arguments args)
+        public static JSValue trunc(Arguments args)
         {
             if (args.Length < 1)
                 return double.NaN;

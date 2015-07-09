@@ -27,7 +27,7 @@ namespace NiL.JS.Statements
                 this.source = source;
             }
 
-            internal override JSObject Evaluate(Context context)
+            internal override JSValue Evaluate(Context context)
             {
                 var res = source.Evaluate(context);
                 var v = variable.Evaluate(context);
@@ -36,7 +36,7 @@ namespace NiL.JS.Statements
                 return res;
             }
 
-            internal override JSObject EvaluateForAssing(Context context)
+            internal override JSValue EvaluateForAssing(Context context)
             {
                 var res = source.EvaluateForAssing(context);
                 var v = variable.Evaluate(context);
@@ -207,7 +207,7 @@ namespace NiL.JS.Statements
             };
         }
 
-        internal override JSObject Evaluate(Context context)
+        internal override JSValue Evaluate(Context context)
         {
             for (int i = 0; i < initializators.Length; i++)
             {
@@ -215,7 +215,7 @@ namespace NiL.JS.Statements
                 if (isConst)
                     (this.variables[i].cacheRes ?? this.variables[i].Get(context, false, this.variables[i].defineDepth)).attributes |= JSObjectAttributesInternal.ReadOnly;
             }
-            return JSObject.notExists;
+            return JSValue.notExists;
         }
 
         protected override CodeNode[] getChildsImpl()

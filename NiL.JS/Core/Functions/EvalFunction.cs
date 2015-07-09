@@ -29,7 +29,7 @@ namespace NiL.JS.Core.Functions
         [DoNotDelete]
         [DoNotEnumerate]
         [NotConfigurable]
-        public override JSObject prototype
+        public override JSValue prototype
         {
             [Hidden]
             get
@@ -49,16 +49,15 @@ namespace NiL.JS.Core.Functions
         }
 
         [Hidden]
-        public override NiL.JS.Core.JSObject Invoke(NiL.JS.Core.JSObject thisBind, Arguments args)
+        public override NiL.JS.Core.JSValue Invoke(NiL.JS.Core.JSValue thisBind, Arguments args)
         {
-            notExists.valueType = JSObjectType.NotExistsInObject;
             if (args == null)
-                return notExists;
+                return NotExistsInObject;
             var arg = args[0];
-            if (arg.valueType != JSObjectType.String)
+            if (arg.valueType != JSValueType.String)
                 return arg;
             if ((this.attributes & JSObjectAttributesInternal.Eval) != 0)
-                return Context.CurrentContext.Eval(arg.ToString(), false);
+                return Context.CurrentContext.Eval(arg.oValue.ToString(), false);
             Stack<Context> stack = new Stack<Context>();
             try
             {
@@ -90,7 +89,7 @@ namespace NiL.JS.Core.Functions
             }
         }
 
-        protected internal override JSObject GetMember(JSObject name, bool forWrite, bool own)
+        protected internal override JSValue GetMember(JSValue name, bool forWrite, bool own)
         {
             if (name.ToString() == "prototype")
                 return undefined;

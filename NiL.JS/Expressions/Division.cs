@@ -27,33 +27,33 @@ namespace NiL.JS.Expressions
 
         }
 
-        internal override JSObject Evaluate(Context context)
+        internal override JSValue Evaluate(Context context)
         {
             int itemp;
             var jstemp = first.Evaluate(context);
-            if (jstemp.valueType == JSObjectType.Int
-                || jstemp.valueType == JSObjectType.Bool)
+            if (jstemp.valueType == JSValueType.Int
+                || jstemp.valueType == JSValueType.Bool)
             {
                 itemp = jstemp.iValue;
                 jstemp = second.Evaluate(context);
-                if ((jstemp.valueType == JSObjectType.Bool
-                    || jstemp.valueType == JSObjectType.Int)
+                if ((jstemp.valueType == JSValueType.Bool
+                    || jstemp.valueType == JSValueType.Int)
                     && jstemp.iValue > 0
                     && itemp > 0
                     && (itemp % jstemp.iValue) == 0)
                 {
-                    tempContainer.valueType = JSObjectType.Int;
+                    tempContainer.valueType = JSValueType.Int;
                     tempContainer.iValue = itemp / jstemp.iValue;
                 }
                 else
                 {
-                    tempContainer.valueType = JSObjectType.Double;
+                    tempContainer.valueType = JSValueType.Double;
                     tempContainer.dValue = itemp / Tools.JSObjectToDouble(jstemp);
                 }
                 return tempContainer;
             }
             tempContainer.dValue = Tools.JSObjectToDouble(jstemp) / Tools.JSObjectToDouble(second.Evaluate(context));
-            tempContainer.valueType = JSObjectType.Double;
+            tempContainer.valueType = JSValueType.Double;
             return tempContainer;
         }
 

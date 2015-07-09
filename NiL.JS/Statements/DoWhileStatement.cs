@@ -84,7 +84,7 @@ namespace NiL.JS.Statements
             };
         }
 
-        internal override JSObject Evaluate(Context context)
+        internal override JSValue Evaluate(Context context)
         {
             do
             {
@@ -100,7 +100,7 @@ namespace NiL.JS.Statements
                     if (context.abort < AbortType.Return && me)
                     {
                         context.abort = AbortType.None;
-                        context.abortInfo = JSObject.notExists;
+                        context.abortInfo = JSValue.notExists;
                     }
                     if (_break)
                         return null;

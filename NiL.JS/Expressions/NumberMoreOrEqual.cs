@@ -27,52 +27,52 @@ namespace NiL.JS.Expressions
 
         }
 
-        internal override Core.JSObject Evaluate(Core.Context context)
+        internal override Core.JSValue Evaluate(Core.Context context)
         {
             int itemp;
             double dtemp;
             var op = first.Evaluate(context);
-            if (op.valueType == Core.JSObjectType.Int
-            || op.valueType == Core.JSObjectType.Bool)
+            if (op.valueType == Core.JSValueType.Int
+            || op.valueType == Core.JSValueType.Bool)
             {
                 itemp = op.iValue;
                 op = second.Evaluate(context);
-                if (op.valueType == Core.JSObjectType.Int
-                || op.valueType == Core.JSObjectType.Bool)
+                if (op.valueType == Core.JSValueType.Int
+                || op.valueType == Core.JSValueType.Bool)
                 {
                     return itemp >= op.iValue;
                 }
-                else if (op.valueType == Core.JSObjectType.Double)
+                else if (op.valueType == Core.JSValueType.Double)
                 {
                     return itemp >= op.dValue;
                 }
                 else
                 {
                     if (tempContainer == null)
-                        tempContainer = new JSObject() { attributes = JSObjectAttributesInternal.Temporary };
-                    tempContainer.valueType = JSObjectType.Int;
+                        tempContainer = new JSValue() { attributes = JSObjectAttributesInternal.Temporary };
+                    tempContainer.valueType = JSValueType.Int;
                     tempContainer.iValue = itemp;
                     return !Less.Check(tempContainer, op, true);
                 }
             }
-            else if (op.valueType == Core.JSObjectType.Double)
+            else if (op.valueType == Core.JSValueType.Double)
             {
                 dtemp = op.dValue;
                 op = second.Evaluate(context);
-                if (op.valueType == Core.JSObjectType.Int
-                || op.valueType == Core.JSObjectType.Bool)
+                if (op.valueType == Core.JSValueType.Int
+                || op.valueType == Core.JSValueType.Bool)
                 {
                     return dtemp >= op.iValue;
                 }
-                else if (op.valueType == Core.JSObjectType.Double)
+                else if (op.valueType == Core.JSValueType.Double)
                 {
                     return dtemp >= op.dValue;
                 }
                 else
                 {
                     if (tempContainer == null)
-                        tempContainer = new JSObject() { attributes = JSObjectAttributesInternal.Temporary };
-                    tempContainer.valueType = JSObjectType.Double;
+                        tempContainer = new JSValue() { attributes = JSObjectAttributesInternal.Temporary };
+                    tempContainer.valueType = JSValueType.Double;
                     tempContainer.dValue = dtemp;
                     return !Less.Check(tempContainer, op, true);
                 }
@@ -80,7 +80,7 @@ namespace NiL.JS.Expressions
             else
             {
                 if (tempContainer == null)
-                    tempContainer = new JSObject() { attributes = JSObjectAttributesInternal.Temporary };
+                    tempContainer = new JSValue() { attributes = JSObjectAttributesInternal.Temporary };
                 var temp = tempContainer;
                 temp.Assign(op);
                 tempContainer = null;

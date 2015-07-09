@@ -28,7 +28,7 @@ namespace TestsDownloader
             @"http://test262.ecmascript.org/json/annexB.json",
         };
 
-        private static void saveTest(string rootDir, JSObject testObj)
+        private static void saveTest(string rootDir, JSValue testObj)
         {
             var code = Convert.FromBase64String(testObj["code"].ToString());
             var commentary = testObj["commentary"].ToString();

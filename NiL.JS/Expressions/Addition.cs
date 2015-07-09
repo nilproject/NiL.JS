@@ -61,224 +61,223 @@ namespace NiL.JS.Expressions
 
         }
 
-        internal override JSObject Evaluate(Context context)
+        internal override JSValue Evaluate(Context context)
         {
             var f = first.Evaluate(context);
-            var temp = tempContainer ?? (tempContainer = new JSObject() { attributes = JSObjectAttributesInternal.Temporary });
+            var temp = tempContainer ?? (tempContainer = new JSValue() { attributes = JSObjectAttributesInternal.Temporary });
             temp.valueType = f.valueType;
             temp.iValue = f.iValue;
             temp.dValue = f.dValue;
             temp.oValue = f.oValue;
-            temp.__prototype = f.__prototype;
             tempContainer = null;
             Impl(temp, temp, second.Evaluate(context));
             tempContainer = temp;
             return temp;
         }
 
-        internal static void Impl(JSObject resultContainer, JSObject first, JSObject second)
+        internal static void Impl(JSValue resultContainer, JSValue first, JSValue second)
         {
             switch (first.valueType)
             {
-                case JSObjectType.Bool:
-                case JSObjectType.Int:
+                case JSValueType.Bool:
+                case JSValueType.Int:
                     {
-                        if (second.valueType >= JSObjectType.Object)
+                        if (second.valueType >= JSValueType.Object)
                             second = second.ToPrimitiveValue_Value_String();
                         switch (second.valueType)
                         {
-                            case JSObjectType.Int:
-                            case JSObjectType.Bool:
+                            case JSValueType.Int:
+                            case JSValueType.Bool:
                                 {
                                     long tl = (long)first.iValue + second.iValue;
                                     if ((int)tl == tl)
                                     {
-                                        resultContainer.valueType = JSObjectType.Int;
+                                        resultContainer.valueType = JSValueType.Int;
                                         resultContainer.iValue = (int)tl;
                                     }
                                     else
                                     {
-                                        resultContainer.valueType = JSObjectType.Double;
+                                        resultContainer.valueType = JSValueType.Double;
                                         resultContainer.dValue = (double)tl;
                                     }
                                     return;
                                 }
-                            case JSObjectType.Double:
+                            case JSValueType.Double:
                                 {
-                                    resultContainer.valueType = JSObjectType.Double;
+                                    resultContainer.valueType = JSValueType.Double;
                                     resultContainer.dValue = first.iValue + second.dValue;
                                     return;
                                 }
-                            case JSObjectType.String:
+                            case JSValueType.String:
                                 {
-                                    resultContainer.oValue = new RopeString((first.valueType == JSObjectType.Bool ? (first.iValue != 0 ? "true" : "false") : first.iValue.ToString(CultureInfo.InvariantCulture)), second.oValue);
-                                    resultContainer.valueType = JSObjectType.String;
+                                    resultContainer.oValue = new RopeString((first.valueType == JSValueType.Bool ? (first.iValue != 0 ? "true" : "false") : first.iValue.ToString(CultureInfo.InvariantCulture)), second.oValue);
+                                    resultContainer.valueType = JSValueType.String;
                                     return;
                                 }
-                            case JSObjectType.NotExists:
-                            case JSObjectType.NotExistsInObject:
-                            case JSObjectType.Undefined:
+                            case JSValueType.NotExists:
+                            case JSValueType.NotExistsInObject:
+                            case JSValueType.Undefined:
                                 {
                                     resultContainer.dValue = double.NaN;
-                                    resultContainer.valueType = JSObjectType.Double;
+                                    resultContainer.valueType = JSValueType.Double;
                                     return;
                                 }
-                            case JSObjectType.Object: // x+null
+                            case JSValueType.Object: // x+null
                                 {
                                     resultContainer.iValue = first.iValue;
-                                    resultContainer.valueType = JSObjectType.Int;
+                                    resultContainer.valueType = JSValueType.Int;
                                     return;
                                 }
                         }
                         throw new NotImplementedException();
                     }
-                case JSObjectType.Double:
+                case JSValueType.Double:
                     {
-                        if (second.valueType >= JSObjectType.Object)
+                        if (second.valueType >= JSValueType.Object)
                             second = second.ToPrimitiveValue_Value_String();
                         switch (second.valueType)
                         {
-                            case JSObjectType.Int:
-                            case JSObjectType.Bool:
+                            case JSValueType.Int:
+                            case JSValueType.Bool:
                                 {
-                                    resultContainer.valueType = JSObjectType.Double;
+                                    resultContainer.valueType = JSValueType.Double;
                                     resultContainer.dValue = first.dValue + second.iValue;
                                     return;
                                 }
-                            case JSObjectType.Double:
+                            case JSValueType.Double:
                                 {
-                                    resultContainer.valueType = JSObjectType.Double;
+                                    resultContainer.valueType = JSValueType.Double;
                                     resultContainer.dValue = first.dValue + second.dValue;
                                     return;
                                 }
-                            case JSObjectType.String:
+                            case JSValueType.String:
                                 {
                                     resultContainer.oValue = new RopeString(Tools.DoubleToString(first.dValue), second.oValue);
-                                    resultContainer.valueType = JSObjectType.String;
+                                    resultContainer.valueType = JSValueType.String;
                                     return;
                                 }
-                            case JSObjectType.Object: // null
+                            case JSValueType.Object: // null
                                 {
                                     resultContainer.dValue = first.dValue;
-                                    resultContainer.valueType = JSObjectType.Double;
+                                    resultContainer.valueType = JSValueType.Double;
                                     return;
                                 }
-                            case JSObjectType.NotExists:
-                            case JSObjectType.NotExistsInObject:
-                            case JSObjectType.Undefined:
+                            case JSValueType.NotExists:
+                            case JSValueType.NotExistsInObject:
+                            case JSValueType.Undefined:
                                 {
                                     resultContainer.dValue = double.NaN;
-                                    resultContainer.valueType = JSObjectType.Double;
+                                    resultContainer.valueType = JSValueType.Double;
                                     return;
                                 }
                             default:
                                 throw new NotImplementedException();
                         }
                     }
-                case JSObjectType.String:
+                case JSValueType.String:
                     {
                         object tstr = first.oValue;
                         switch (second.valueType)
                         {
-                            case JSObjectType.String:
+                            case JSValueType.String:
                                 {
                                     tstr = new RopeString(tstr, second.oValue);
                                     break;
                                 }
-                            case JSObjectType.Bool:
+                            case JSValueType.Bool:
                                 {
                                     tstr = new RopeString(tstr, second.iValue != 0 ? "true" : "false");
                                     break;
                                 }
-                            case JSObjectType.Int:
+                            case JSValueType.Int:
                                 {
                                     tstr = new RopeString(tstr, second.iValue.ToString(CultureInfo.InvariantCulture));
                                     break;
                                 }
-                            case JSObjectType.Double:
+                            case JSValueType.Double:
                                 {
                                     tstr = new RopeString(tstr, Tools.DoubleToString(second.dValue));
                                     break;
                                 }
-                            case JSObjectType.Undefined:
-                            case JSObjectType.NotExistsInObject:
+                            case JSValueType.Undefined:
+                            case JSValueType.NotExistsInObject:
                                 {
                                     tstr = new RopeString(tstr, "undefined");
                                     break;
                                 }
-                            case JSObjectType.Object:
-                            case JSObjectType.Function:
-                            case JSObjectType.Date:
+                            case JSValueType.Object:
+                            case JSValueType.Function:
+                            case JSValueType.Date:
                                 {
                                     tstr = new RopeString(tstr, second.ToString());
                                     break;
                                 }
                         }
                         resultContainer.oValue = tstr;
-                        resultContainer.valueType = JSObjectType.String;
+                        resultContainer.valueType = JSValueType.String;
                         return;
                     }
-                case JSObjectType.Date:
+                case JSValueType.Date:
                     {
                         first = first.ToPrimitiveValue_String_Value();
                         Impl(resultContainer, first, second);
                         return;
                     }
-                case JSObjectType.NotExistsInObject:
-                case JSObjectType.Undefined:
+                case JSValueType.NotExistsInObject:
+                case JSValueType.Undefined:
                     {
-                        if (second.valueType >= JSObjectType.Object)
+                        if (second.valueType >= JSValueType.Object)
                             second = second.ToPrimitiveValue_Value_String();
                         switch (second.valueType)
                         {
-                            case JSObjectType.String:
+                            case JSValueType.String:
                                 {
-                                    resultContainer.valueType = JSObjectType.String;
+                                    resultContainer.valueType = JSValueType.String;
                                     resultContainer.oValue = new RopeString("undefined", second.oValue);
                                     return;
                                 }
-                            case JSObjectType.Double:
-                            case JSObjectType.Bool:
-                            case JSObjectType.Int:
+                            case JSValueType.Double:
+                            case JSValueType.Bool:
+                            case JSValueType.Int:
                                 {
-                                    resultContainer.valueType = JSObjectType.Double;
+                                    resultContainer.valueType = JSValueType.Double;
                                     resultContainer.dValue = double.NaN;
                                     return;
                                 }
-                            case JSObjectType.Object: // undefined+null
-                            case JSObjectType.NotExistsInObject:
-                            case JSObjectType.Undefined:
+                            case JSValueType.Object: // undefined+null
+                            case JSValueType.NotExistsInObject:
+                            case JSValueType.Undefined:
                                 {
-                                    resultContainer.valueType = JSObjectType.Double;
+                                    resultContainer.valueType = JSValueType.Double;
                                     resultContainer.dValue = double.NaN;
                                     return;
                                 }
                         }
                         break;
                     }
-                case JSObjectType.Function:
-                case JSObjectType.Object:
+                case JSValueType.Function:
+                case JSValueType.Object:
                     {
                         first = first.ToPrimitiveValue_Value_String();
-                        if (first.valueType == JSObjectType.Int || first.valueType == JSObjectType.Bool)
-                            goto case JSObjectType.Int;
-                        else if (first.valueType == JSObjectType.Object) // null
+                        if (first.valueType == JSValueType.Int || first.valueType == JSValueType.Bool)
+                            goto case JSValueType.Int;
+                        else if (first.valueType == JSValueType.Object) // null
                         {
-                            if (second.valueType >= JSObjectType.String)
+                            if (second.valueType >= JSValueType.String)
                                 second = second.ToPrimitiveValue_Value_String();
-                            if (second.valueType == JSObjectType.String)
+                            if (second.valueType == JSValueType.String)
                             {
                                 resultContainer.oValue = new RopeString("null", second.oValue);
-                                resultContainer.valueType = JSObjectType.String;
+                                resultContainer.valueType = JSValueType.String;
                                 return;
                             }
                             first.iValue = 0;
-                            goto case JSObjectType.Int;
+                            goto case JSValueType.Int;
                         }
-                        else if (first.valueType == JSObjectType.Double)
-                            goto case JSObjectType.Double;
-                        else if (first.valueType == JSObjectType.String)
-                            goto case JSObjectType.String;
+                        else if (first.valueType == JSValueType.Double)
+                            goto case JSValueType.Double;
+                        else if (first.valueType == JSValueType.String)
+                            goto case JSValueType.String;
                         break;
                     }
             }
@@ -302,14 +301,14 @@ namespace NiL.JS.Expressions
                 }
                 else
                 {
-                    if (first is Constant && (first as Constant).value.valueType == JSObjectType.String)
+                    if (first is Constant && (first as Constant).value.valueType == JSValueType.String)
                     {
                         if ((first as Constant).value.oValue.ToString() == "")
                             _this = new ToStr(second);
                         else
                             _this = new StringConcat(new List<Expression>() { first, second });
                     }
-                    else if (second is Constant && (second as Constant).value.valueType == JSObjectType.String)
+                    else if (second is Constant && (second as Constant).value.valueType == JSValueType.String)
                     {
                         if ((second as Constant).value.oValue.ToString() == "")
                             _this = new ToStr(first);

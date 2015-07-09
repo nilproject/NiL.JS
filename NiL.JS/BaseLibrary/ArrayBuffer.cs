@@ -14,21 +14,21 @@ namespace NiL.JS.BaseLibrary
 #if !PORTABLE
         [Serializable]
 #endif
-        private sealed class Element : JSObject
+        private sealed class Element : JSValue
         {
             private int index;
             private byte[] data;
 
             public Element(int index, ArrayBuffer parent)
             {
-                this.valueType = JSObjectType.Int;
+                this.valueType = JSValueType.Int;
                 this.index = index;
                 this.iValue = parent.Data[index];
                 this.data = parent.Data;
                 this.attributes |= JSObjectAttributesInternal.Reassign;
             }
 
-            public override void Assign(JSObject value)
+            public override void Assign(JSValue value)
             {
                 data[index] = (byte)Tools.JSObjectToInt32(value);
             }
@@ -119,7 +119,7 @@ namespace NiL.JS.BaseLibrary
         }
 
         [Hidden]
-        internal protected override JSObject GetMember(JSObject name, bool forWrite, bool own)
+        internal protected override JSValue GetMember(JSValue name, bool forWrite, bool own)
         {
             int index = 0;
             double dindex = Tools.JSObjectToDouble(name);

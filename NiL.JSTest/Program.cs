@@ -192,7 +192,7 @@ namespace NiL.JSTest
                             else
                                 passed++;
                             System.Console.WriteLine();
-                            return JSObject.Undefined;
+                            return JSValue.Undefined;
                         }));
                     }
                     else
@@ -380,7 +380,14 @@ for (var i = 0; i < 10000000; )
         private static void testEx()
         {
             var t = new Script(@"
-({ get : function() { return this; } })
+console.log(function(){
+var strObj = new String(""bbq"");
+        var preCheck = Object.isExtensible(strObj);
+        Object.preventExtensions(strObj);
+
+        strObj.exName = 2;
+        return preCheck && !strObj.hasOwnProperty(""exName"");
+}());
 ");
             t.Invoke();
         }
@@ -395,7 +402,7 @@ for (var i = 0; i < 10000000; )
             {
                 for (var i = 0; i < a.Length; i++)
                     System.Console.WriteLine(a[i]);
-                return JSObject.Undefined;
+                return JSValue.Undefined;
             }));
 
 #if PORTABLE
@@ -415,8 +422,8 @@ for (var i = 0; i < 10000000; )
             }));
 #endif
 
-            int mode = 1
-                   ;
+            int mode = 100
+                    ;
             switch (mode)
             {
                 case -5:
@@ -459,7 +466,7 @@ for (var i = 0; i < 10000000; )
                         sputnikTests(@"tests\sputnik\ch15\15.7\");
                         sputnikTests(@"tests\sputnik\ch15\15.8\"); // with some errors due accuracy comparison
                         sputnikTests(@"tests\sputnik\ch15\15.9\");
-                        sputnikTests(@"tests\sputnik\ch15\15.10\"); // with 30 asserts
+                        sputnikTests(@"tests\sputnik\ch15\15.10\"); // with 17 asserts
                         sputnikTests(@"tests\sputnik\ch15\15.11\");
                         sputnikTests(@"tests\sputnik\ch15\15.12\");
                         break;
@@ -963,7 +970,7 @@ ast.print_to_string();");
                     {
                         for (var j = 0; j < a.Length; j++)
                             System.Console.WriteLine(a[j]);
-                        return JSObject.Undefined;
+                        return JSValue.Undefined;
                     }));
                     script.Invoke();
                     script.Context.Eval(body, true);

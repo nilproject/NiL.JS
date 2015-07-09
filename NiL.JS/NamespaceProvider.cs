@@ -47,7 +47,7 @@ namespace NiL.JS
         }
 
         private Dictionary<string, GenericType> unions;
-        private BinaryTree<JS.Core.JSObject> childs;
+        private BinaryTree<JS.Core.JSValue> childs;
 
         /// <summary>
         /// Пространство имён, доступ к которому предоставляет указанный экземпляр.
@@ -61,7 +61,7 @@ namespace NiL.JS
         public NamespaceProvider(string @namespace)
         {
             Namespace = @namespace;
-            childs = new BinaryTree<JS.Core.JSObject>();
+            childs = new BinaryTree<JS.Core.JSValue>();
         }
 
         /// <summary>
@@ -77,10 +77,10 @@ namespace NiL.JS
                 unions = new Dictionary<string, GenericType>();
         }
 
-        internal protected override JS.Core.JSObject GetMember(JSObject nameObj, bool create, bool own)
+        internal protected override JS.Core.JSValue GetMember(JSValue nameObj, bool create, bool own)
         {
             var name = nameObj.ToString();
-            JS.Core.JSObject res = null;
+            JS.Core.JSValue res = null;
             if (childs.TryGetValue(name, out res))
                 return res;
             string reqname = Namespace + "." + name;
@@ -114,7 +114,7 @@ namespace NiL.JS
                 childs.Add(name, res);
                 return res;
             }
-            return new JS.Core.JSObject();
+            return new JS.Core.JSValue();
         }
 
         /// <summary>

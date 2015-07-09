@@ -10,7 +10,7 @@ namespace NiL.JS.Expressions
 #endif
     public sealed class DeleteMemberExpression : Expression
     {
-        private JSObject cachedMemberName;
+        private JSValue cachedMemberName;
 
         public Expression Source { get { return first; } }
         public Expression FieldName { get { return second; } }
@@ -35,28 +35,14 @@ namespace NiL.JS.Expressions
                 cachedMemberName = fieldName.Evaluate(null);
         }
 
-        internal override JSObject Evaluate(Context context)
+        internal override JSValue Evaluate(Context context)
         {
-            JSObject sjso = null;
-            JSObject source = null;
+            JSValue source = null;
             source = first.Evaluate(context);
-            if (source.valueType >= JSObjectType.Object
-                && source.oValue != null
-                && source.oValue != source
-                && (sjso = source.oValue as JSObject) != null
-                && sjso.valueType >= JSObjectType.Object)
-            {
-                source = sjso;
-                sjso = null;
-            }
+            if (source.valueType < JSValueType.Object)
+                source = source.Clone() as JSValue;
             else
-            {
-                if ((sjso ?? source).fields == null)
-                    (sjso ?? source).fields = JSObject.createFields();
-                sjso = source;
-                tempContainer.Assign(source);
-                source = tempContainer;
-            }
+                source = source.oValue as JSValue ?? source;
             var res = source.DeleteMember(cachedMemberName ?? second.Evaluate(context));
             context.objectSource = null;
             if (!res && context.strict)

@@ -59,12 +59,12 @@ namespace NiL.JS.Expressions
                 throw new ArgumentNullException("op");
         }
 
-        internal override JSObject Evaluate(Context context)
+        internal override JSValue Evaluate(Context context)
         {
             Function setter = null;
-            JSObject res = null;
+            JSValue res = null;
             var val = first.EvaluateForAssing(context);
-            if (val.valueType == JSObjectType.Property)
+            if (val.valueType == JSValueType.Property)
             {
                 setter = (val.oValue as PropertyPair).set;
                 if (context.strict && setter == null)
@@ -80,55 +80,55 @@ namespace NiL.JS.Expressions
             }
             switch (val.valueType)
             {
-                case JSObjectType.Bool:
+                case JSValueType.Bool:
                     {
-                        val.valueType = JSObjectType.Int;
+                        val.valueType = JSValueType.Int;
                         break;
                     }
-                case JSObjectType.String:
+                case JSValueType.String:
                     {
                         double resd;
                         int i = 0;
                         if (!Tools.ParseNumber(val.oValue.ToString(), i, out resd, Tools.ParseNumberOptions.Default))
                             resd = double.NaN;
-                        val.valueType = JSObjectType.Double;
+                        val.valueType = JSValueType.Double;
                         val.dValue = resd;
                         break;
                     }
-                case JSObjectType.Object:
-                case JSObjectType.Date:
-                case JSObjectType.Function:
+                case JSValueType.Object:
+                case JSValueType.Date:
+                case JSValueType.Function:
                     {
                         val.Assign(val.ToPrimitiveValue_Value_String());
                         switch (val.valueType)
                         {
-                            case JSObjectType.Bool:
+                            case JSValueType.Bool:
                                 {
-                                    val.valueType = JSObjectType.Int;
+                                    val.valueType = JSValueType.Int;
                                     break;
                                 }
-                            case JSObjectType.String:
+                            case JSValueType.String:
                                 {
                                     double resd;
                                     int i = 0;
                                     if (!Tools.ParseNumber(val.oValue.ToString(), i, out resd, Tools.ParseNumberOptions.Default))
                                         resd = double.NaN;
-                                    val.valueType = JSObjectType.Double;
+                                    val.valueType = JSValueType.Double;
                                     val.dValue = resd;
                                     break;
                                 }
-                            case JSObjectType.Date:
-                            case JSObjectType.Function:
-                            case JSObjectType.Object: // null
+                            case JSValueType.Date:
+                            case JSValueType.Function:
+                            case JSValueType.Object: // null
                                 {
                                     val.iValue = 0;
-                                    val.valueType = JSObjectType.Int;
+                                    val.valueType = JSValueType.Int;
                                     break;
                                 }
                         }
                         break;
                     }
-                case JSObjectType.NotExists:
+                case JSValueType.NotExists:
                     {
                         Tools.RaiseIfNotExist(val, first);
                         break;
@@ -143,26 +143,26 @@ namespace NiL.JS.Expressions
                 res = val;
             switch (val.valueType)
             {
-                case JSObjectType.Int:
+                case JSValueType.Int:
                     {
                         if (val.iValue == int.MinValue)
                         {
                             val.dValue = val.iValue - 1.0;
-                            val.valueType = JSObjectType.Double;
+                            val.valueType = JSValueType.Double;
                         }
                         else
                             val.iValue--;
                         break;
                     }
-                case JSObjectType.Double:
+                case JSValueType.Double:
                     {
                         val.dValue--;
                         break;
                     }
-                case JSObjectType.Undefined:
-                case JSObjectType.NotExistsInObject:
+                case JSValueType.Undefined:
+                case JSValueType.NotExistsInObject:
                     {
-                        val.valueType = JSObjectType.Double;
+                        val.valueType = JSValueType.Double;
                         val.dValue = double.NaN;
                         break;
                     }

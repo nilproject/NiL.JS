@@ -228,7 +228,7 @@ namespace NiL.JS.Statements
             return Expression.Block(new[] { except }, impl);
         }*/
 #endif
-        internal override JSObject Evaluate(Context context)
+        internal override JSValue Evaluate(Context context)
         {
             Exception except = null;
             try
@@ -269,10 +269,10 @@ namespace NiL.JS.Statements
                 if (ainfo.IsDefinded)
                     ainfo = ainfo.CloneImpl();
                 else
-                    ainfo = JSObject.Undefined;
+                    ainfo = JSValue.Undefined;
             }
             context.abort = AbortType.None;
-            context.abortInfo = JSObject.undefined;
+            context.abortInfo = JSValue.undefined;
             context.lastResult = finallyBody.Evaluate(context) ?? context.lastResult;
             if (context.abort == AbortType.None)
             {
@@ -321,12 +321,12 @@ namespace NiL.JS.Statements
 #endif
             if (catchBody.lines == null || catchBody.lines.Length == 0)
                 return;
-            JSObject cvar = null;
+            JSValue cvar = null;
 #if !PORTABLE
             if (e is RuntimeWrappedException)
             {
-                cvar = new JSObject();
-                cvar.Assign((e as RuntimeWrappedException).WrappedException as JSObject);
+                cvar = new JSValue();
+                cvar.Assign((e as RuntimeWrappedException).WrappedException as JSValue);
             }
             else
 #endif

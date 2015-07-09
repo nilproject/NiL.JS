@@ -9,13 +9,13 @@ namespace NiL.JS.BaseLibrary
 #endif
     public sealed class Float64Array : TypedArray
     {
-        protected override JSObject this[int index]
+        protected override JSValue this[int index]
         {
             get
             {
                 var res = new Element(this, index);
                 res.dValue = getValue(index);
-                res.valueType = JSObjectType.Double;
+                res.valueType = JSValueType.Double;
                 return res;
             }
             set
@@ -83,7 +83,7 @@ namespace NiL.JS.BaseLibrary
         {
         }
 
-        public Float64Array(JSObject src)
+        public Float64Array(JSValue src)
             : base(src) { }
 
         [ArgumentsLength(2)]

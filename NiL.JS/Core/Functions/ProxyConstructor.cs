@@ -44,7 +44,7 @@ namespace NiL.JS.Core.Functions
         [DoNotDelete]
         [DoNotEnumerate]
         [NotConfigurable]
-        public override JSObject prototype
+        public override JSValue prototype
         {
             [Hidden]
             get
@@ -101,7 +101,7 @@ namespace NiL.JS.Core.Functions
         }
 
         [Hidden]
-        internal protected override JSObject GetMember(JSObject name, bool forWrite, bool own)
+        internal protected override JSValue GetMember(JSValue name, bool forWrite, bool own)
         {
             if (name.ToString() == "prototype") // Все прокси-прототипы read-only и non-configurable. Это и оптимизация, и устранение необходимости навешивания атрибутов
                 return prototype;
@@ -113,19 +113,18 @@ namespace NiL.JS.Core.Functions
                 return res;
             }
             res = __proto__.GetMember(name, forWrite, own);
-            if (own
-                && (res.valueType != JSObjectType.Property || (res.attributes & JSObjectAttributesInternal.Field) == 0))
+            if (own && (res.valueType != JSValueType.Property || (res.attributes & JSObjectAttributesInternal.Field) == 0))
                 return notExists; // если для записи, то первая ветка всё разрулит и сюда выполнение не придёт
             return res;
         }
 
-        protected internal override bool DeleteMember(JSObject name)
+        protected internal override bool DeleteMember(JSValue name)
         {
             return proxy.DeleteMember(name) && __proto__.DeleteMember(name);
         }
 
         [Hidden]
-        public override JSObject Invoke(JSObject thisOverride, Arguments argsObj)
+        public override JSValue Invoke(JSValue thisOverride, Arguments argsObj)
         {
             bool bynew = false;
             if (thisOverride != null)
@@ -156,10 +155,10 @@ namespace NiL.JS.Core.Functions
                                 {
                                     switch (argsObj.a0.valueType)
                                     {
-                                        case JSObjectType.Int:
+                                        case JSValueType.Int:
                                             obj = new NiL.JS.BaseLibrary.Array(argsObj.a0.iValue);
                                             break;
-                                        case JSObjectType.Double:
+                                        case JSValueType.Double:
                                             obj = new NiL.JS.BaseLibrary.Array(argsObj.a0.dValue);
                                             break;
                                         default:
@@ -191,19 +190,19 @@ namespace NiL.JS.Core.Functions
                         obj = constructor.InvokeImpl(null, args, argsObj == null ? constructor.parameters.Length != 0 ? new Arguments() : null : argsObj);
                     }
                 }
-                JSObject res = null;
+                JSValue res = null;
                 if (bynew)
                 {
                     // Здесь нельзя возвращать контейнер с ValueType < Object, иначе из New выйдет служебный экземпляр NewMarker
-                    res = obj as JSObject;
+                    res = obj as JSValue;
                     if (res != null)
                     {
                         // Для Number, Boolean и String
-                        if (res.valueType < JSObjectType.Object)
+                        if (res.valueType < JSValueType.Object)
                         {
                             res = new ObjectContainer(obj, res.__proto__);
                         }
-                        else if (res.oValue is JSObject)
+                        else if (res.oValue is JSValue)
                         {
                             res.oValue = res;
                             // На той стороне понять, по new или нет вызван конструктор не удастся,
@@ -220,17 +219,17 @@ namespace NiL.JS.Core.Functions
                         // из-за того, что GetMember сам дотягивается до объекта, можно попробовать убрать создание филдов
                         res.attributes |= proxy.hostedType.IsDefined(typeof(ImmutableAttribute), false) ? JSObjectAttributesInternal.Immutable : JSObjectAttributesInternal.None;
                         if (obj is Date)
-                            res.valueType = JSObjectType.Date;
+                            res.valueType = JSValueType.Date;
                     }
                 }
                 else
                 {
-                    if (proxy.hostedType == typeof(JSObject))
+                    if (proxy.hostedType == typeof(JSValue))
                     {
-                        if (((obj as JSObject).oValue is JSObject) && ((obj as JSObject).oValue as JSObject).valueType >= JSObjectType.Object)
-                            return (obj as JSObject).oValue as JSObject;
+                        if (((obj as JSValue).oValue is JSValue) && ((obj as JSValue).oValue as JSValue).valueType >= JSValueType.Object)
+                            return (obj as JSValue).oValue as JSValue;
                     }
-                    res = obj as JSObject ?? new ObjectContainer(obj)
+                    res = obj as JSValue ?? new ObjectContainer(obj)
                     {
                         attributes = JSObjectAttributesInternal.SystemObject | (proxy.hostedType.IsDefined(typeof(ImmutableAttribute), false) ? JSObjectAttributesInternal.Immutable : JSObjectAttributesInternal.None)
                     };
@@ -304,7 +303,7 @@ namespace NiL.JS.Core.Functions
         }
 
         [Hidden]
-        public override JSObject toString(Arguments args)
+        public override JSValue toString(Arguments args)
         {
             return base.toString(args);
         }

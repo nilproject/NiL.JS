@@ -27,12 +27,12 @@ namespace NiL.JS.Expressions
 
         }
 
-        internal override JSObject Evaluate(Context context)
+        internal override JSValue Evaluate(Context context)
         {
             var t = first.Evaluate(context);
-            if (t.valueType == JSObjectType.String)
+            if (t.valueType == JSValueType.String)
                 return t;
-            tempContainer.valueType = JSObjectType.String;
+            tempContainer.valueType = JSValueType.String;
             tempContainer.oValue = t.ToPrimitiveValue_Value_String().ToString();
             return tempContainer;
         }

@@ -9,9 +9,9 @@ namespace NiL.JS.Expressions
 #endif
     public sealed class SetMemberExpression : Expression
     {
-        private JSObject tempContainer1;
-        private JSObject tempContainer2;
-        private JSObject cachedMemberName;
+        private JSValue tempContainer1;
+        private JSValue tempContainer2;
+        private JSValue cachedMemberName;
         private Expression value;
 
         public Expression Source { get { return first; } }
@@ -37,23 +37,23 @@ namespace NiL.JS.Expressions
             if (fieldName is Constant)
                 cachedMemberName = fieldName.Evaluate(null);
             else
-                tempContainer1 = new JSObject();
+                tempContainer1 = new JSValue();
             this.value = value;
-            tempContainer2 = new JSObject();
+            tempContainer2 = new JSValue();
         }
 
-        internal override JSObject Evaluate(Context context)
+        internal override JSValue Evaluate(Context context)
         {
             lock (this)
             {
-                JSObject sjso = null;
-                JSObject source = null;
+                JSValue sjso = null;
+                JSValue source = null;
                 source = first.Evaluate(context);
-                if (source.valueType >= JSObjectType.Object
+                if (source.valueType >= JSValueType.Object
                     && source.oValue != null
                     && source.oValue != source
-                    && (sjso = source.oValue as JSObject) != null
-                    && sjso.valueType >= JSObjectType.Object)
+                    && (sjso = source.oValue as JSValue) != null
+                    && sjso.valueType >= JSValueType.Object)
                 {
                     source = sjso;
                     sjso = null;
@@ -74,7 +74,7 @@ namespace NiL.JS.Expressions
             }
         }
 
-        private static JSObject safeGet(JSObject temp, CodeNode source, Context context)
+        private static JSValue safeGet(JSValue temp, CodeNode source, Context context)
         {
             temp.Assign(source.Evaluate(context));
             return temp;

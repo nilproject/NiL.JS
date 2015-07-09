@@ -27,7 +27,7 @@ namespace NiL.JS.Statements
             };
         }
 
-        internal override JSObject Evaluate(Context context)
+        internal override JSValue Evaluate(Context context)
         {
 #if DEV
             if (!context.debugging)
@@ -37,7 +37,7 @@ namespace NiL.JS.Statements
 #else
             context.raiseDebugger(this);
 #endif
-            return JSObject.undefined;
+            return JSValue.undefined;
         }
 
         public override string ToString()

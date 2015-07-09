@@ -31,23 +31,23 @@ namespace NiL.JS.Expressions
 
         }
 
-        internal override JSObject Evaluate(Context context)
+        internal override JSValue Evaluate(Context context)
         {
             lock (this)
             {
                 var f = first.Evaluate(context);
-                if (f.valueType == JSObjectType.Int)
+                if (f.valueType == JSValueType.Int)
                 {
                     var ileft = f.iValue;
                     f = second.Evaluate(context);
-                    if (ileft >= 0 && f.valueType == JSObjectType.Int && f.iValue != 0)
+                    if (ileft >= 0 && f.valueType == JSValueType.Int && f.iValue != 0)
                     {
-                        tempContainer.valueType = JSObjectType.Int;
+                        tempContainer.valueType = JSValueType.Int;
                         tempContainer.iValue = ileft % f.iValue;
                     }
                     else
                     {
-                        tempContainer.valueType = JSObjectType.Double;
+                        tempContainer.valueType = JSValueType.Double;
                         tempContainer.dValue = ileft % Tools.JSObjectToDouble(f);
                     }
                 }
@@ -55,7 +55,7 @@ namespace NiL.JS.Expressions
                 {
                     double left = Tools.JSObjectToDouble(f);
                     tempContainer.dValue = left % Tools.JSObjectToDouble(second.Evaluate(context));
-                    tempContainer.valueType = JSObjectType.Double;
+                    tempContainer.valueType = JSValueType.Double;
                 }
                 return tempContainer;
             }

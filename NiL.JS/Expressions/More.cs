@@ -27,28 +27,28 @@ namespace NiL.JS.Expressions
 
         }
 
-        internal static bool Check(JSObject first, JSObject second, bool lessOrEqual)
+        internal static bool Check(JSValue first, JSValue second, bool lessOrEqual)
         {
             switch (first.valueType)
             {
-                case JSObjectType.Bool:
-                case JSObjectType.Int:
+                case JSValueType.Bool:
+                case JSValueType.Int:
                     {
                         switch (second.valueType)
                         {
-                            case JSObjectType.Bool:
-                            case JSObjectType.Int:
+                            case JSValueType.Bool:
+                            case JSValueType.Int:
                                 {
                                     return first.iValue > second.iValue;
                                 }
-                            case JSObjectType.Double:
+                            case JSValueType.Double:
                                 {
                                     if (double.IsNaN(second.dValue))
                                         return lessOrEqual; // Костыль. Для его устранения нужно делать полноценную реализацию оператора MoreOrEqual.
                                     else
                                         return first.iValue > second.dValue;
                                 }
-                            case JSObjectType.String:
+                            case JSValueType.String:
                                 {
                                     var index = 0;
                                     double td = 0;
@@ -57,19 +57,19 @@ namespace NiL.JS.Expressions
                                     else
                                         return lessOrEqual;
                                 }
-                            case JSObjectType.Date:
-                            case JSObjectType.Object:
+                            case JSValueType.Date:
+                            case JSValueType.Object:
                                 {
                                     second = second.ToPrimitiveValue_Value_String();
-                                    if (second.valueType == JSObjectType.Int)
-                                        goto case JSObjectType.Int;
-                                    if (second.valueType == JSObjectType.Bool)
-                                        goto case JSObjectType.Int;
-                                    if (second.valueType == JSObjectType.Double)
-                                        goto case JSObjectType.Double;
-                                    if (second.valueType == JSObjectType.String)
-                                        goto case JSObjectType.String;
-                                    if (second.valueType >= JSObjectType.Object) // null
+                                    if (second.valueType == JSValueType.Int)
+                                        goto case JSValueType.Int;
+                                    if (second.valueType == JSValueType.Bool)
+                                        goto case JSValueType.Int;
+                                    if (second.valueType == JSValueType.Double)
+                                        goto case JSValueType.Double;
+                                    if (second.valueType == JSValueType.String)
+                                        goto case JSValueType.String;
+                                    if (second.valueType >= JSValueType.Object) // null
                                         return first.iValue > 0;
                                     throw new NotImplementedException();
                                 }
@@ -77,26 +77,26 @@ namespace NiL.JS.Expressions
                                 return lessOrEqual;
                         }
                     }
-                case JSObjectType.Double:
+                case JSValueType.Double:
                     {
                         if (double.IsNaN(first.dValue))
                             return lessOrEqual; // Костыль. Для его устранения нужно делать полноценную реализацию оператора MoreOrEqual.
                         else
                             switch (second.valueType)
                             {
-                                case JSObjectType.Bool:
-                                case JSObjectType.Int:
+                                case JSValueType.Bool:
+                                case JSValueType.Int:
                                     {
                                         return first.dValue > second.iValue;
                                     }
-                                case JSObjectType.Double:
+                                case JSValueType.Double:
                                     {
                                         if (double.IsNaN(first.dValue) || double.IsNaN(second.dValue))
                                             return lessOrEqual; // Костыль. Для его устранения нужно делать полноценную реализацию оператора MoreOrEqual.
                                         else
                                             return first.dValue > second.dValue;
                                     }
-                                case JSObjectType.String:
+                                case JSValueType.String:
                                     {
                                         var index = 0;
                                         double td = 0;
@@ -105,24 +105,24 @@ namespace NiL.JS.Expressions
                                         else
                                             return lessOrEqual;
                                     }
-                                case JSObjectType.Undefined:
-                                case JSObjectType.NotExistsInObject:
+                                case JSValueType.Undefined:
+                                case JSValueType.NotExistsInObject:
                                     {
                                         return lessOrEqual;
                                     }
-                                case JSObjectType.Date:
-                                case JSObjectType.Object:
+                                case JSValueType.Date:
+                                case JSValueType.Object:
                                     {
                                         second = second.ToPrimitiveValue_Value_String();
-                                        if (second.valueType == JSObjectType.Int)
-                                            goto case JSObjectType.Int;
-                                        if (second.valueType == JSObjectType.Bool)
-                                            goto case JSObjectType.Int;
-                                        if (second.valueType == JSObjectType.Double)
-                                            goto case JSObjectType.Double;
-                                        if (second.valueType == JSObjectType.String)
-                                            goto case JSObjectType.String;
-                                        if (second.valueType >= JSObjectType.Object) // null
+                                        if (second.valueType == JSValueType.Int)
+                                            goto case JSValueType.Int;
+                                        if (second.valueType == JSValueType.Bool)
+                                            goto case JSValueType.Int;
+                                        if (second.valueType == JSValueType.Double)
+                                            goto case JSValueType.Double;
+                                        if (second.valueType == JSValueType.String)
+                                            goto case JSValueType.String;
+                                        if (second.valueType >= JSValueType.Object) // null
                                             return first.dValue > 0;
                                         throw new NotImplementedException();
                                     }
@@ -130,13 +130,13 @@ namespace NiL.JS.Expressions
                                     return lessOrEqual;
                             }
                     }
-                case JSObjectType.String:
+                case JSValueType.String:
                     {
                         string left = first.oValue.ToString();
                         switch (second.valueType)
                         {
-                            case JSObjectType.Bool:
-                            case JSObjectType.Int:
+                            case JSValueType.Bool:
+                            case JSValueType.Int:
                                 {
                                     double d = 0;
                                     int i = 0;
@@ -145,7 +145,7 @@ namespace NiL.JS.Expressions
                                     else
                                         return lessOrEqual;
                                 }
-                            case JSObjectType.Double:
+                            case JSValueType.Double:
                                 {
                                     double d = 0;
                                     int i = 0;
@@ -154,40 +154,40 @@ namespace NiL.JS.Expressions
                                     else
                                         return lessOrEqual;
                                 }
-                            case JSObjectType.String:
+                            case JSValueType.String:
                                 {
                                     return string.CompareOrdinal(left, second.oValue.ToString()) > 0;
                                 }
-                            case JSObjectType.Function:
-                            case JSObjectType.Object:
+                            case JSValueType.Function:
+                            case JSValueType.Object:
                                 {
                                     second = second.ToPrimitiveValue_Value_String();
                                     switch (second.valueType)
                                     {
-                                        case JSObjectType.Int:
-                                        case JSObjectType.Bool:
+                                        case JSValueType.Int:
+                                        case JSValueType.Bool:
                                             {
                                                 double t = 0.0;
                                                 int i = 0;
                                                 if (Tools.ParseNumber(left, ref i, out t) && (i == left.Length))
                                                     return t > second.iValue;
                                                 else
-                                                    goto case JSObjectType.String;
+                                                    goto case JSValueType.String;
                                             }
-                                        case JSObjectType.Double:
+                                        case JSValueType.Double:
                                             {
                                                 double t = 0.0;
                                                 int i = 0;
                                                 if (Tools.ParseNumber(left, ref i, out t) && (i == left.Length))
                                                     return t > second.dValue;
                                                 else
-                                                    goto case JSObjectType.String;
+                                                    goto case JSValueType.String;
                                             }
-                                        case JSObjectType.String:
+                                        case JSValueType.String:
                                             {
-                                                return string.CompareOrdinal(left, second.Value.ToString()) > 0;
+                                                return string.CompareOrdinal(left, second.oValue.ToString()) > 0;
                                             }
-                                        case JSObjectType.Object:
+                                        case JSValueType.Object:
                                             {
                                                 double t = 0.0;
                                                 int i = 0;
@@ -203,23 +203,23 @@ namespace NiL.JS.Expressions
                                 return lessOrEqual;
                         }
                     }
-                case JSObjectType.Function:
-                case JSObjectType.Date:
-                case JSObjectType.Object:
+                case JSValueType.Function:
+                case JSValueType.Date:
+                case JSValueType.Object:
                     {
                         first = first.ToPrimitiveValue_Value_String();
-                        if (first.valueType == JSObjectType.Int)
-                            goto case JSObjectType.Int;
-                        if (first.valueType == JSObjectType.Bool)
-                            goto case JSObjectType.Int;
-                        if (first.valueType == JSObjectType.Double)
-                            goto case JSObjectType.Double;
-                        if (first.valueType == JSObjectType.String)
-                            goto case JSObjectType.String;
-                        if (first.valueType >= JSObjectType.Object) // null
+                        if (first.valueType == JSValueType.Int)
+                            goto case JSValueType.Int;
+                        if (first.valueType == JSValueType.Bool)
+                            goto case JSValueType.Int;
+                        if (first.valueType == JSValueType.Double)
+                            goto case JSValueType.Double;
+                        if (first.valueType == JSValueType.String)
+                            goto case JSValueType.String;
+                        if (first.valueType >= JSValueType.Object) // null
                         {
                             first.iValue = 0; // такое делать можно, поскольку тип не меняется
-                            goto case JSObjectType.Int;
+                            goto case JSValueType.Int;
                         }
                         throw new NotImplementedException();
                     }
@@ -228,10 +228,10 @@ namespace NiL.JS.Expressions
             }
         }
 
-        internal override JSObject Evaluate(Context context)
+        internal override JSValue Evaluate(Context context)
         {
             var f = first.Evaluate(context);
-            var temp = tempContainer ?? new JSObject { attributes = JSObjectAttributesInternal.Temporary };
+            var temp = tempContainer ?? new JSValue { attributes = JSObjectAttributesInternal.Temporary };
             temp.valueType = f.valueType;
             temp.iValue = f.iValue;
             temp.dValue = f.dValue;
@@ -240,9 +240,9 @@ namespace NiL.JS.Expressions
             var s = second.Evaluate(context);
             tempContainer = temp;
             if (tempContainer.valueType == s.valueType
-                && tempContainer.valueType == JSObjectType.Int)
+                && tempContainer.valueType == JSValueType.Int)
             {
-                tempContainer.valueType = JSObjectType.Bool;
+                tempContainer.valueType = JSValueType.Bool;
                 tempContainer.iValue = tempContainer.iValue > s.iValue ? 1 : 0;
                 return tempContainer;
             }

@@ -31,11 +31,11 @@ namespace NiL.JS.Expressions
         {
         }
 
-        internal override JSObject Evaluate(Context context)
+        internal override JSValue Evaluate(Context context)
         {
-            JSObject temp;
-            JSObject field = first.EvaluateForAssing(context);
-            if (field.valueType == JSObjectType.Property)
+            JSValue temp;
+            JSValue field = first.EvaluateForAssing(context);
+            if (field.valueType == JSValueType.Property)
             {
                 lock (this)
                 {
@@ -46,7 +46,7 @@ namespace NiL.JS.Expressions
                     if (saveResult)
                     {
                         if (tempContainer == null)
-                            tempContainer = new JSObject();
+                            tempContainer = new JSValue();
                         tempContainer.Assign(temp);
                         temp = tempContainer;
                         tempContainer = null;

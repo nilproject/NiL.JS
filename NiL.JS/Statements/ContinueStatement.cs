@@ -8,9 +8,9 @@ namespace NiL.JS.Statements
 #endif
     public sealed class ContinueStatement : CodeNode
     {
-        private JSObject label;
+        private JSValue label;
 
-        public JSObject Label { get { return label; } }
+        public JSValue Label { get { return label; } }
 
         internal static ParseResult Parse(ParsingState state, ref int index)
         {
@@ -21,7 +21,7 @@ namespace NiL.JS.Statements
                 throw new JSException((new NiL.JS.BaseLibrary.SyntaxError("Invalid use continue statement")));
             while (char.IsWhiteSpace(state.Code[i]) && !Tools.isLineTerminator(state.Code[i])) i++;
             int sl = i;
-            JSObject label = null;
+            JSValue label = null;
             if (Parser.ValidateName(state.Code, ref i, state.strict.Peek()))
             {
                 label = Tools.Unescape(state.Code.Substring(sl, i - sl), state.strict.Peek());
@@ -43,7 +43,7 @@ namespace NiL.JS.Statements
             };
         }
 
-        internal override JSObject Evaluate(Context context)
+        internal override JSValue Evaluate(Context context)
         {
             context.abort = AbortType.Continue;
             context.abortInfo = label;

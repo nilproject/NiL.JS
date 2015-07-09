@@ -9,13 +9,13 @@ namespace NiL.JS.Expressions
 #endif
     public sealed class TypeOf : Expression
     {
-        private static readonly JSObject numberString = "number";
-        private static readonly JSObject undefinedString = "undefined";
-        private static readonly JSObject stringString = "string";
-        private static readonly JSObject symbolString = "symbol";
-        private static readonly JSObject booleanString = "boolean";
-        private static readonly JSObject functionString = "function";
-        private static readonly JSObject objectString = "object";
+        private static readonly JSValue numberString = "number";
+        private static readonly JSValue undefinedString = "undefined";
+        private static readonly JSValue stringString = "string";
+        private static readonly JSValue symbolString = "symbol";
+        private static readonly JSValue booleanString = "boolean";
+        private static readonly JSValue functionString = "function";
+        private static readonly JSValue objectString = "object";
 
         protected internal override PredictedType ResultType
         {
@@ -37,35 +37,35 @@ namespace NiL.JS.Expressions
                 throw new InvalidOperationException("Second operand not allowed for typeof operator/");
         }
 
-        internal override JSObject Evaluate(Context context)
+        internal override JSValue Evaluate(Context context)
         {
             var val = first.Evaluate(context);
             switch (val.valueType)
             {
-                case JSObjectType.Int:
-                case JSObjectType.Double:
+                case JSValueType.Int:
+                case JSValueType.Double:
                     {
                         return numberString;
                     }
-                case JSObjectType.NotExists:
-                case JSObjectType.NotExistsInObject:
-                case JSObjectType.Undefined:
+                case JSValueType.NotExists:
+                case JSValueType.NotExistsInObject:
+                case JSValueType.Undefined:
                     {
                         return undefinedString;
                     }
-                case JSObjectType.String:
+                case JSValueType.String:
                     {
                         return stringString;
                     }
-                case JSObjectType.Symbol:
+                case JSValueType.Symbol:
                     {
                         return symbolString;
                     }
-                case JSObjectType.Bool:
+                case JSValueType.Bool:
                     {
                         return booleanString;
                     }
-                case JSObjectType.Function:
+                case JSValueType.Function:
                     {
                         return functionString;
                     }

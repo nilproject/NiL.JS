@@ -18,7 +18,7 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         public Boolean()
         {
-            valueType = JSObjectType.Bool;
+            valueType = JSValueType.Bool;
             iValue = 0;
             attributes |= JSObjectAttributesInternal.SystemObject;
         }
@@ -28,7 +28,7 @@ namespace NiL.JS.BaseLibrary
         {
             if (obj == null)
                 throw new ArgumentNullException("obj");
-            valueType = JSObjectType.Bool;
+            valueType = JSValueType.Bool;
             iValue = (bool)obj[0] ? 1 : 0;
             attributes |= JSObjectAttributesInternal.SystemObject;
         }
@@ -36,7 +36,7 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         public Boolean(bool value)
         {
-            valueType = JSObjectType.Bool;
+            valueType = JSValueType.Bool;
             iValue = value ? 1 : 0;
             attributes |= JSObjectAttributesInternal.SystemObject;
         }
@@ -44,7 +44,7 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         public Boolean(double value)
         {
-            valueType = JSObjectType.Bool;
+            valueType = JSValueType.Bool;
             iValue = value != 0 && !double.IsNaN(value) ? 1 : 0;
             attributes |= JSObjectAttributesInternal.SystemObject;
         }
@@ -52,7 +52,7 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         public Boolean(int value)
         {
-            valueType = JSObjectType.Bool;
+            valueType = JSValueType.Bool;
             iValue = value != 0 ? 1 : 0;
             attributes |= JSObjectAttributesInternal.SystemObject;
         }
@@ -60,27 +60,9 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         public Boolean(string value)
         {
-            valueType = JSObjectType.Bool;
+            valueType = JSValueType.Bool;
             iValue = !string.IsNullOrEmpty(value) ? 1 : 0;
             attributes |= JSObjectAttributesInternal.SystemObject;
-        }
-
-        [Hidden]
-        internal protected override JSObject GetMember(JSObject name, bool forWrite, bool own)
-        {
-            return DefaultFieldGetter(name, forWrite, own); // обращение идёт к Объекту Number, а не к значению number, поэтому члены создавать можно
-        }
-
-        [Hidden]
-        public override void Assign(JSObject value)
-        {
-            if ((attributes & JSObjectAttributesInternal.ReadOnly) == 0)
-            {
-#if DEBUG
-                System.Diagnostics.Debugger.Break();
-#endif
-                throw new InvalidOperationException("Try to assign to Boolean");
-            }
         }
 
 #if INLINE
@@ -110,9 +92,9 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         [InstanceMember]
         [ArgumentsLength(0)]
-        public static JSObject toLocaleString(JSObject self)
+        public static JSValue toLocaleString(JSValue self)
         {
-            if (self.GetType() != typeof(Boolean) && self.valueType != JSObjectType.Bool)
+            if (self.GetType() != typeof(Boolean) && self.valueType != JSValueType.Bool)
                 throw new JSException(new TypeError("Boolean.prototype.toLocaleString called for not boolean."));
             return self.iValue != 0 ? "true" : "false";
         }
@@ -120,11 +102,11 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         [InstanceMember]
         [ArgumentsLength(0)]
-        public static JSObject valueOf(JSObject self)
+        public static JSValue valueOf(JSValue self)
         {
             if (self.GetType() == typeof(Boolean))
                 return self.iValue != 0;
-            if (!typeof(JSObject).IsAssignableFrom(self.GetType()) || self.valueType != JSObjectType.Bool)
+            if (!typeof(JSValue).IsAssignableFrom(self.GetType()) || self.valueType != JSValueType.Bool)
                 throw new JSException(new TypeError("Boolean.prototype.valueOf called for not boolean."));
             return self;
         }
@@ -133,9 +115,9 @@ namespace NiL.JS.BaseLibrary
         [InstanceMember]
         [ArgumentsLength(0)]
         [DoNotEnumerate]
-        public static JSObject toString(JSObject self, Arguments args)
+        public static JSValue toString(JSValue self, Arguments args)
         {
-            if (self.GetType() != typeof(Boolean) && self.valueType != JSObjectType.Bool)
+            if (self.GetType() != typeof(Boolean) && self.valueType != JSValueType.Bool)
                 throw new JSException(new TypeError("Boolean.prototype.toString called for not boolean."));
             return self.iValue != 0 ? "true" : "false";
         }

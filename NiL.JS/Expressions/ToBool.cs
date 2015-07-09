@@ -27,7 +27,7 @@ namespace NiL.JS.Expressions
 
         }
 
-        internal override JSObject Evaluate(Context context)
+        internal override JSValue Evaluate(Context context)
         {
             return (bool)first.Evaluate(context);
         }

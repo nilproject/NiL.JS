@@ -52,7 +52,7 @@ namespace NiL.JS.Expressions
             this.arguments = arguments;
         }
 
-        internal static JSObject PrepareArg(Context context, CodeNode source, bool tail, bool clone)
+        internal static JSValue PrepareArg(Context context, CodeNode source, bool tail, bool clone)
         {
             context.objectSource = null;
             var a = source.Evaluate(context);
@@ -60,12 +60,8 @@ namespace NiL.JS.Expressions
             {
                 // Предполагается, что тут мы отдаём не контейнер, а сам объект. 
                 // В частности, preventExtensions ожидает именно такое поведение
-                if (a.valueType >= JSObjectType.Object)
-                {
-                    var intObj = a.oValue as JSObject;
-                    if (intObj != null && intObj != a && intObj.valueType >= JSObjectType.Object)
-                        return intObj;
-                }
+                if (a.IsBox)
+                    return a.oValue as JSObject; // клонировать в таком случае не надо, так как это точно не временный объект
                 if (clone && (a.attributes & JSObjectAttributesInternal.Temporary) != 0)
                 {
                     a = a.CloneImpl();
@@ -75,13 +71,13 @@ namespace NiL.JS.Expressions
             return a;
         }
 
-        internal override JSObject Evaluate(Context context)
+        internal override JSValue Evaluate(Context context)
         {
             var temp = first.Evaluate(context);
-            JSObject newThisBind = context.objectSource;
+            JSValue newThisBind = context.objectSource;
 
             bool tail = false;
-            Function func = temp.valueType == JSObjectType.Function ? temp.oValue as Function ?? (temp.oValue as TypeProxy).prototypeInstance as Function : null; // будем надеяться, что только в одном случае в oValue не будет лежать функция
+            Function func = temp.valueType == JSValueType.Function ? temp.oValue as Function ?? (temp.oValue as TypeProxy).prototypeInstance as Function : null; // будем надеяться, что только в одном случае в oValue не будет лежать функция
             Arguments arguments = null;
             if (func == null)
             {
@@ -92,7 +88,7 @@ namespace NiL.JS.Expressions
                 }
                 context.objectSource = null;
                 // Аргументы должны быть вычислены даже если функция не существует.
-                throw new JSException((new NiL.JS.BaseLibrary.TypeError(first.ToString() + " is not callable")));
+                throw new JSException(new NiL.JS.BaseLibrary.TypeError(first.ToString() + " is not callable"));
             }
             else
             {
@@ -118,12 +114,12 @@ namespace NiL.JS.Expressions
                     for (var i = func.creator.body.localVariables.Length; i-- > 0; )
                     {
                         if (func.creator.body.localVariables[i].Inititalizator == null)
-                            func.creator.body.localVariables[i].cacheRes.Assign(JSObject.undefined);
+                            func.creator.body.localVariables[i].cacheRes.Assign(JSValue.undefined);
                     }
                     func._arguments = arguments;
                     if (context.fields != null && context.fields.ContainsKey("arguments"))
                         context.fields["arguments"] = arguments;
-                    return JSObject.undefined;
+                    return JSValue.undefined;
                 }
                 else
                     context.objectSource = null;
