@@ -268,7 +268,7 @@ namespace NiL.JS.Core
         /// </summary>
         /// <param name="index"></param>
         /// <returns>Zero if the requested index does not exists</returns>
-        public uint NearestIndexNotLess(uint index)
+        public long NearestIndexNotLess(long index)
         {
             int bi = 31;
             long i = 0;
@@ -305,7 +305,7 @@ namespace NiL.JS.Core
             }
         }
 
-        public uint NearestIndexNotMore(uint index)
+        public long NearestIndexNotMore(long index)
         {
             int bi = 31;
             long i = 0;
@@ -337,7 +337,10 @@ namespace NiL.JS.Core
                     if (allocatedCount > 0)
                         yield return new KeyValuePair<int, TValue>(0, values[0]);
                     else
+                    {
+                        yield return new KeyValuePair<int, TValue>((int)(pseudoLength - 1), default(TValue));
                         yield break;
+                    }
                     var index = 1U;
                     while (index < pseudoLength)
                     {
@@ -352,7 +355,10 @@ namespace NiL.JS.Core
                             if (i == 0)
                             {
                                 if (pm == -1)
+                                {
+                                    yield return new KeyValuePair<int, TValue>((int)(pseudoLength - 1), default(TValue));
                                     yield break;
+                                }
                                 i = navyData[pm].oneContinue;
                                 for (; ; )
                                 {

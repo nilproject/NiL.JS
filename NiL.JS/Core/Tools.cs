@@ -1409,7 +1409,7 @@ namespace NiL.JS.Core
 
         internal static IEnumerable<KeyValuePair<long, string>> iterablyEnum(long length, JSValue src)
         {
-            var res = new List<KeyValuePair<long, string>>();
+            List<KeyValuePair<long, string>> res = null;
             var @enum = src.GetEnumerator(false);
             while (@enum.MoveNext())
             {
@@ -1422,9 +1422,13 @@ namespace NiL.JS.Core
                     && dindex < length
                     && (lindex = (long)dindex) == dindex)
                 {
+                    if (res == null)
+                        res = new List<KeyValuePair<long, string>>();
                     res.Add(new KeyValuePair<long, string>(lindex, i));
                 }
             }
+            if (res == null)
+                return new KeyValuePair<long, string>[0];
             res.Sort(new Comparison<KeyValuePair<long, string>>((x, y) => System.Math.Sign(x.Key - y.Key)));
             return res;
         }

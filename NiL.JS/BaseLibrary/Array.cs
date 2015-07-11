@@ -1037,13 +1037,27 @@ namespace NiL.JS.BaseLibrary
         [ArgumentsLength(1)]
         public static JSValue reduce(JSValue self, Arguments args)
         {
+            return reduceImpl(false, self, args);
+        }
+
+        [DoNotEnumerate]
+        [InstanceMember]
+        [ArgumentsLength(1)]
+        public static JSValue reduceRight(JSValue self, Arguments args)
+        {
+            return reduceImpl(true, self, args);
+        }
+
+        private static JSValue reduceImpl(bool right, JSValue self, Arguments args)
+        {
             if (self.valueType < JSValueType.Object)
                 self = self.ToObject();
 
             //if (self.GetType() != typeof(Array)) // при переборе должны быть получены значения из прототипов. 
             // Если просто запрашивать пропущенные индексы, то может быть большое падение производительности в случаях
-            // когда пропуски очень огромны и элементов реально нет ни здесь, ни в прототипе
-            var src = Tools.iterableToArray(self, false, false, false, -1);
+            // когда пропуски очень огромны и элементов реально нет ни здесь, ни в прототипе 
+            var src = self.oValue as Array ?? Tools.iterableToArray(self, false, false, false, -1);
+            var native = src == self.oValue;
             var func = args[0].oValue as Function;
             var accum = new JSValue() { valueType = JSValueType.NotExists };
             if (args.length > 1)
@@ -1065,102 +1079,78 @@ namespace NiL.JS.BaseLibrary
             args.a1 = new JSValue();
             args[2] = new JSValue();
             bool called = false;
-            foreach (var element in src.data.DirectOrder)
+            var length = src.data.Length;
+            long prewIndex = right ? length - 1 : 0;
+            for (var e = (right ? src.data.ReversOrder : src.data.DirectOrder).GetEnumerator(); ; )
             {
-                if (element.Value == null || !element.Value.IsExist)
-                    continue;
-                args[0] = accum;
-                if (element.Value.valueType == JSValueType.Property)
-                    args.a1.Assign((element.Value.oValue as PropertyPair).get == null ? undefined : (element.Value.oValue as PropertyPair).get.Invoke(self, null));
-                else
-                    args.a1.Assign(element.Value);
-                called = true;
-                if (skip)
-                {
-                    accum.Assign(args.a1);
-                    skip = false;
-                    continue;
-                }
-                if (element.Key >= 0)
-                {
-                    args.a2.valueType = JSValueType.Int;
-                    args.a2.iValue = element.Key;
-                }
+                KeyValuePair<int, JSValue> element;
+                if (e.MoveNext())
+                    element = e.Current;
                 else
                 {
-                    args.a2.valueType = JSValueType.Double;
-                    args.a2.dValue = (uint)element.Key;
+                    if (right)
+                        element = new KeyValuePair<int, JSValue>(0, null);
+                    else
+                        element = new KeyValuePair<int, JSValue>((int)length, null);
                 }
-                args[3] = self;
-                accum.Assign(func.Invoke(args));
-            }
-            if (!called && skip)
-                throw new JSException(new TypeError("Array is empty."));
-            return accum;
-        }
+                JSValue value = null;
+                int key = 0;
+                if ((right ? element.Key > 0 : (uint)element.Key < length - 1) && (element.Value == null || !element.Value.IsExist))
+                    continue;
+                if (!native)
+                    prewIndex = (uint)element.Key;
+                for (; ; prewIndex += right ? -1 : 1)
+                {
+                    if (right)
+                    {
+                        if (prewIndex < (uint)element.Key)
+                            break;
+                    }
+                    else
+                    {
+                        if (!(prewIndex < length && prewIndex <= (uint)element.Key))
+                            break;
+                    }
 
-        [DoNotEnumerate]
-        [InstanceMember]
-        [ArgumentsLength(1)]
-        public static JSValue reduceRight(JSValue self, Arguments args)
-        {
-            if (self.valueType < JSValueType.Object)
-                self = self.ToObject();
-
-            //if (self.GetType() != typeof(Array))
-            var src = Tools.iterableToArray(self, false, false, false, -1);
-            var func = args[0].oValue as Function;
-            var accum = new JSValue() { valueType = JSValueType.NotExists };
-            if (args.length > 1)
-                accum.Assign(args[1]);
-            var context = Context.CurrentContext;
-            bool skip = false;
-            if (accum.valueType < JSValueType.Undefined)
-            {
-                if (src.data.Length == 0)
-                    throw new JSException(new TypeError("Array is empty."));
-                skip = true;
-            }
-            else if (src.data.Length == 0)
-                return accum;
-            if (func == null)
-                throw new JSException(new TypeError("First argument on reduceRight mast be a function."));
-            if (accum.GetType() != typeof(JSValue))
-                accum = accum.CloneImpl();
-            args.length = 4;
-            args.a1 = new JSValue();
-            args[2] = new JSValue();
-            bool called = false;
-            foreach (var element in src.data.ReversOrder)
-            {
-                if (self.GetType() == typeof(Array) && (self as Array).data.Length <= (uint)element.Key)
-                    continue;
-                if (element.Value == null || !element.Value.IsExist)
-                    continue;
-                args[0] = accum;
-                if (element.Value.valueType == JSValueType.Property)
-                    args.a1.Assign((element.Value.oValue as PropertyPair).get == null ? undefined : (element.Value.oValue as PropertyPair).get.Invoke(self, null));
-                else
-                    args.a1.Assign(element.Value);
-                called = true;
-                if (skip)
-                {
-                    accum.Assign(args.a1);
-                    skip = false;
-                    continue;
+                    if (prewIndex == (uint)element.Key && element.Value != null && element.Value.IsExist)
+                    {
+                        value = element.Value;
+                        key = element.Key;
+                    }
+                    else
+                    {
+                        key = (int)prewIndex;
+                        value = src.__proto__[prewIndex.ToString()];
+                        if (value == null || !value.IsExist)
+                            continue;
+                    }
+                    args[0] = accum;
+                    if (value.valueType == JSValueType.Property)
+                        args.a1.Assign((value.oValue as PropertyPair).get == null ? undefined : (value.oValue as PropertyPair).get.Invoke(self, null));
+                    else
+                        args.a1.Assign(value);
+                    called = true;
+                    if (skip)
+                    {
+                        accum.Assign(args.a1);
+                        skip = false;
+                        continue;
+                    }
+                    if (key >= 0)
+                    {
+                        args.a2.valueType = JSValueType.Int;
+                        args.a2.iValue = key;
+                    }
+                    else
+                    {
+                        args.a2.valueType = JSValueType.Double;
+                        args.a2.dValue = (uint)key;
+                    }
+                    args[3] = self;
+                    accum.Assign(func.Invoke(args));
                 }
-                if (element.Key >= 0)
-                {
-                    args.a2.valueType = JSValueType.Int;
-                    args.a2.iValue = element.Key;
-                }
-                else
-                {
-                    args.a2.valueType = JSValueType.Double;
-                    args.a2.dValue = (uint)element.Key;
-                }
-                args[3] = self;
-                accum.Assign(func.Invoke(args));
+                if (prewIndex >= length || prewIndex < 0)
+                    break;
             }
             if (!called && skip)
                 throw new JSException(new TypeError("Array is empty."));
@@ -1172,73 +1162,85 @@ namespace NiL.JS.BaseLibrary
         [ArgumentsLength(0)]
         public static JSValue shift(JSValue self)
         {
-            notExists.valueType = JSValueType.NotExistsInObject;
             if (self.GetType() == typeof(Array))
             {
-                var selfa = self as Array;
-                if (selfa.data.Length == 0)
-                    return notExists;
-                var len = selfa.data.Length;
-                var res = selfa.data[0];
+                var src = self.oValue as Array;
+                var res = src.data[0];
                 try
                 {
                     if (res == null || !res.IsExist)
-                        res = selfa.__proto__["0"];
+                        res = src.__proto__["0"];
                 }
                 catch
                 { }
-                selfa.data[0] = null;
                 if (res.valueType == JSValueType.Property)
                     res = ((res.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(self, null);
 
-                var prew = 0U;
-                foreach (var item in selfa.data.DirectOrder)
+                JSValue prw = res;
+                var length = src.data.Length;
+                long prewIndex = 0;
+                for (var e = src.data.DirectOrder.GetEnumerator(); ; )
                 {
-                    if ((uint)item.Key >= len)
-                        break;
-                    if ((uint)item.Key - prew > 1)
-                        break;
-                    prew = (uint)item.Key;
-                }
-                Array source = selfa;
-                if (len - prew > 1)
-                    source = Tools.iterableToArray(self, false, false, false, -1);
-
-                JSValue prw = null;
-                foreach (var item in source.data.DirectOrder)
-                {
-                    if (item.Key == 0)
-                    {
-                        prw = item.Value;
-                        continue;
-                    }
-                    var value = item.Value;
-                    if (value != null && value.valueType == JSValueType.Property)
-                        value = ((value.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(self, null);
-                    if (prw != null && prw.valueType == JSValueType.Property)
-                    {
-                        ((prw.oValue as PropertyPair).set ?? Function.emptyFunction).Invoke(self, new Arguments() { a0 = value, length = 1 });
-                    }
+                    KeyValuePair<int, JSValue> element;
+                    if (e.MoveNext())
+                        element = e.Current;
                     else
                     {
-                        if (item.Value != null)
-                        {
-                            if (item.Value.IsExist)
-                                selfa.data[item.Key - 1] = value;
-                            if (item.Value.valueType != JSValueType.Property)
-                                selfa.data[item.Key] = null;
-                        }
+                        if (length == 0)
+                            break;
+                        element = new KeyValuePair<int, JSValue>((int)length, null);
                     }
-                    prw = item.Value;
+
+                    if (element.Key == 0)
+                        continue;
+
+                    JSValue value = null;
+                    int key = 0;
+                    if ((uint)element.Key < length - 1 && (element.Value == null || !element.Value.IsExist))
+                        continue;
+                    for (; prewIndex < length && prewIndex <= (uint)element.Key; prewIndex++)
+                    {
+                        if (prewIndex == (uint)element.Key && element.Value != null && element.Value.IsExist)
+                        {
+                            value = element.Value;
+                            key = element.Key;
+                        }
+                        else
+                        {
+                            key = (int)prewIndex;
+                            value = src.__proto__[prewIndex.ToString()];
+                            //if (value == null || !value.IsExist)
+                            //    continue;
+                        }
+                        if (value != null && value.valueType == JSValueType.Property)
+                            value = ((value.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(self, null);
+                        if (prw != null && prw.valueType == JSValueType.Property)
+                        {
+                            ((prw.oValue as PropertyPair).set ?? Function.emptyFunction).Invoke(self, new Arguments() { a0 = value, length = 1 });
+                        }
+                        else
+                        {
+                            if (value != null)
+                            {
+                                if (value.IsExist)
+                                    src.data[key - 1] = value;
+                                if (value.valueType != JSValueType.Property)
+                                    src.data[key] = null;
+                            }
+                        }
+                        prw = value;
+                    }
+                    if (prewIndex >= length || prewIndex < 0)
+                        break;
                 }
-                if (len == 1)
-                    selfa.data.Clear();
-                else
+                if (length == 1)
+                    src.data.Clear();
+                else if (length > 0)
                 {
-                    selfa.data.RemoveAt((int)len - 1);
-                    selfa.data.Trim();
-                    if (len - 1 > selfa.data.Length)
-                        selfa.data[(int)len - 2] = selfa.data[(int)len - 2];
+                    src.data.RemoveAt((int)length - 1);
+                    //selfa.data.Trim();
+                    //if (len - 1 > selfa.data.Length)
+                    //    selfa.data[(int)len - 2] = selfa.data[(int)len - 2];
                 }
                 return res;
             }
