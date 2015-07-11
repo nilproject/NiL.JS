@@ -123,7 +123,7 @@ namespace NiL.JS.BaseLibrary
             this.byteLength = length * BYTES_PER_ELEMENT;
             this.valueType = JSObjectType.Object;
             this.oValue = this;
-            foreach (var item in src.data.Reversed)
+            foreach (var item in src.data.ReversOrder)
                 this[item.Key] = item.Value;
         }
 

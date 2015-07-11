@@ -690,7 +690,7 @@ namespace NiL.JS.Core.Functions
 
         private static object[] convertArray(NiL.JS.BaseLibrary.Array array)
         {
-            var arg = new object[array.data.Count];
+            var arg = new object[array.data.Length];
             for (var j = arg.Length; j-- > 0; )
             {
                 var temp = (array.data[j] ?? undefined).Value;
