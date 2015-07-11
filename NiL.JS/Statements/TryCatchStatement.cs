@@ -384,9 +384,7 @@ namespace NiL.JS.Statements
                     message(MessageLevel.Warning, new CodeCoordinates(0, Position, Length), "Empty (or reduced to empty) try" + (catchBody != null || finallyBody == null ? "..catch" : "") + (finallyBody != null ? "..finally" : "") + " block. Maybe, something missing.");
                 _this = finallyBody;
             }
-            if ((catchBody != null
-                 && (catchBody.lines.Length == 0))
-                || finallyBody == null)
+            if (catchBody != null && (catchBody.lines.Length == 0 || (catchBody.lines.Length == 1 && catchBody.lines[0] is EmptyStatement)))
             {
                 if (message != null)
                     message(MessageLevel.Warning, new CodeCoordinates(0, (catchBody ?? this as CodeNode).Position, (catchBody ?? this as CodeNode).Length), "Empty (or reduced to empty) catch block. Do not ignore exceptions.");
