@@ -13,7 +13,32 @@ namespace NiL.JS.BaseLibrary
 #endif
     public sealed class Array : JSObject
     {
-        [Hidden]
+        private sealed class JSComparer : IComparer<JSValue>
+        {
+            Arguments args;
+            JSValue first;
+            JSValue second;
+            Function comparer;
+
+            public JSComparer(Arguments args, JSValue first, JSValue second, Function comparer)
+            {
+                this.args = args;
+                this.first = first;
+                this.second = second;
+                this.comparer = comparer;
+            }
+
+            public int Compare(JSValue x, JSValue y)
+            {
+                first.Assign(x);
+                second.Assign(y);
+                args[0] = first;
+                args[1] = second;
+                var res = Tools.JSObjectToInt32(comparer.Invoke(JSValue.undefined, args));
+                return res;
+            }
+        }
+
         private sealed class _lengthField : JSValue
         {
             private Array array;
@@ -215,7 +240,7 @@ namespace NiL.JS.BaseLibrary
             if (data.Length > nlen)
             {
                 var res = true;
-                foreach (var element in data.Reversed)
+                foreach (var element in data.ReversOrder)
                 {
                     if ((uint)element.Key < nlen)
                         break;
@@ -285,90 +310,7 @@ namespace NiL.JS.BaseLibrary
         [ArgumentsLength(1)]
         public static JSValue every(JSValue self, Arguments args)
         {
-            bool nativeMode = self.GetType() == typeof(Array);
-            Array src;
-            if (!self.IsDefinded || (self.valueType >= JSValueType.Object && self.oValue == null))
-                throw new JSException(new TypeError("Can not call Array.prototype.every for null or undefined"));
-            if (!nativeMode)
-                src = Tools.iterableToArray(self, false, false, false, -1);
-            else
-                src = self as Array;
-
-            Function f = args[0] == null ? null : args[0].oValue as Function;
-            if (f == null)
-                throw new JSException(new TypeError("Callback argument is not a function."));
-            var ao = new Arguments();
-            ao.length = 3;
-            ao[0] = new JSValue();
-            ao[1] = new JSValue();
-            ao[2] = self;
-            if (self.valueType < JSValueType.Object)
-                ao[2] = self.ToObject();
-
-            var tb = args.Length > 1 ? args[1] : null;
-            var context = Context.CurrentContext;
-            IEnumerator<KeyValuePair<int, JSValue>> alternativeEnum = null;
-            long prew = -1;
-            var _length = src.data.Length;
-            var mainEnum = (src.data as IEnumerable<KeyValuePair<int, JSValue>>).GetEnumerator();
-            bool moved = true;
-            while (moved)
-            {
-                moved = mainEnum.MoveNext();
-                while (moved && (mainEnum.Current.Value == null || !mainEnum.Current.Value.IsExist))
-                    moved = mainEnum.MoveNext();
-                var element = mainEnum.Current;
-                uint key = (uint)element.Key;
-                if (!moved && (mainEnum.Current.Value == null || !mainEnum.Current.Value.IsExist))
-                    key = _length;
-                bool alter = false;
-                var value = element.Value;
-                if (key - prew > 1 || (!moved && key < _length))
-                {
-                    if (alternativeEnum == null)
-                    {
-                        alternativeEnum = (Tools.iterableToArray(self.__proto__, false, false, false, _length).data as IEnumerable<KeyValuePair<int, JSValue>>).GetEnumerator();
-                        alternativeEnum.MoveNext();
-                    }
-                    alter = true;
-                }
-                do
-                {
-                    if (alter)
-                    {
-                        bool amoved = (uint)alternativeEnum.Current.Key > prew || alternativeEnum.MoveNext();
-                        while ((uint)alternativeEnum.Current.Key <= prew && amoved)
-                            amoved = alternativeEnum.MoveNext();
-                        if (amoved && (uint)alternativeEnum.Current.Key > prew
-                                   && ((uint)alternativeEnum.Current.Key < (uint)element.Key
-                                        || !moved && (uint)alternativeEnum.Current.Key < _length))
-                        {
-                            key = (uint)alternativeEnum.Current.Key;
-                            value = alternativeEnum.Current.Value;
-                        }
-                        else
-                        {
-                            alter = false;
-                            value = element.Value;
-                            key = (uint)element.Key;
-                        }
-                    }
-                    if (key >= _length
-                        || (!alter && !moved))
-                        break;
-                    prew = key;
-                    if (value == null || !value.IsExist)
-                        continue;
-                    if (value.valueType == JSValueType.Property)
-                        value = (value.oValue as PropertyPair).get == null ? undefined : (value.oValue as PropertyPair).get.Invoke(self, null);
-                    ao[0].Assign(value);
-                    ao[1].Assign(context.wrap(key));
-                    if (!(bool)f.Invoke(tb, ao))
-                        return false;
-                }
-                while (alter);
-            }
-            return true;
+            return someImpl(true, self, args);
         }
 
         [DoNotEnumerate]
@@ -376,10 +318,15 @@ namespace NiL.JS.BaseLibrary
         [ArgumentsLength(1)]
         public static JSValue some(JSValue self, Arguments args)
         {
+            return someImpl(false, self, args);
+        }
+
+        private static JSValue someImpl(bool inverse, JSValue self, Arguments args)
+        {
             bool nativeMode = self.GetType() == typeof(Array);
             Array src;
             if (!self.IsDefinded || (self.valueType >= JSValueType.Object && self.oValue == null))
-                throw new JSException(new TypeError("Can not call Array.prototype.some for null or undefined"));
+                throw new JSException(new TypeError("Can not call Array.prototype." + (inverse ? "some" : "every") + " for null or undefined"));
             if (!nativeMode)
                 src = Tools.iterableToArray(self, false, false, false, -1);
             else
@@ -401,7 +348,7 @@ namespace NiL.JS.BaseLibrary
             IEnumerator<KeyValuePair<int, JSValue>> alternativeEnum = null;
             long prew = -1;
             var _length = src.data.Length;
-            var mainEnum = (src.data as IEnumerable<KeyValuePair<int, JSValue>>).GetEnumerator();
+            var mainEnum = src.data.DirectOrder.GetEnumerator();
             bool moved = true;
             while (moved)
             {
@@ -418,7 +365,7 @@ namespace NiL.JS.BaseLibrary
                 {
                     if (alternativeEnum == null)
                     {
-                        alternativeEnum = (Tools.iterableToArray(self.__proto__, false, false, false, _length).data as IEnumerable<KeyValuePair<int, JSValue>>).GetEnumerator();
+                        alternativeEnum = Tools.iterableToArray(self.__proto__, false, false, false, _length).data.DirectOrder.GetEnumerator();
                         alternativeEnum.MoveNext();
                     }
                     alter = true;
@@ -454,12 +401,12 @@ namespace NiL.JS.BaseLibrary
                         value = (value.oValue as PropertyPair).get == null ? undefined : (value.oValue as PropertyPair).get.Invoke(self, null);
                     ao[0].Assign(value);
                     ao[1].Assign(context.wrap(key));
-                    if ((bool)f.Invoke(tb, ao))
-                        return true;
+                    if ((bool)f.Invoke(tb, ao) ^ inverse)
+                        return true ^ inverse;
                 }
                 while (alter);
             }
-            return false;
+            return false ^ inverse;
         }
 
         [DoNotEnumerate]
@@ -492,7 +439,7 @@ namespace NiL.JS.BaseLibrary
             IEnumerator<KeyValuePair<int, JSValue>> alternativeEnum = null;
             long prew = -1;
             var _length = (src as Array).data.Length;
-            var mainEnum = ((src as Array).data as IEnumerable<KeyValuePair<int, JSValue>>).GetEnumerator();
+            var mainEnum = (src as Array).data.DirectOrder.GetEnumerator();
             var res = new SparseArray<JSValue>();
             bool moved = true;
             while (moved)
@@ -510,7 +457,7 @@ namespace NiL.JS.BaseLibrary
                 {
                     if (alternativeEnum == null)
                     {
-                        alternativeEnum = (Tools.iterableToArray(self.__proto__, false, false, false, _length).data as IEnumerable<KeyValuePair<int, JSValue>>).GetEnumerator();
+                        alternativeEnum = Tools.iterableToArray(self.__proto__, false, false, false, _length).data.DirectOrder.GetEnumerator();
                         alternativeEnum.MoveNext();
                     }
                     alter = true;
@@ -563,91 +510,7 @@ namespace NiL.JS.BaseLibrary
         [ArgumentsLength(1)]
         public static JSValue map(JSValue self, Arguments args)
         {
-            bool nativeMode = self.GetType() == typeof(Array);
-            Array src;
-            if (!self.IsDefinded || (self.valueType >= JSValueType.Object && self.oValue == null))
-                throw new JSException(new TypeError("Can not call Array.prototype.map for null or undefined"));
-            if (!nativeMode)
-                src = Tools.iterableToArray(self, false, false, false, -1);
-            else
-                src = self as Array;
-
-            Function f = args[0] == null ? null : args[0].oValue as Function;
-            if (f == null)
-                throw new JSException(new TypeError("Callback argument is not a function."));
-            var ao = new Arguments();
-            ao.length = 3;
-            ao[0] = new JSValue();
-            ao[1] = new JSValue();
-            ao[2] = self;
-            if (self.valueType < JSValueType.Object)
-                ao[2] = self.ToObject();
-
-            var tb = args.Length > 1 ? args[1] : null;
-            var context = Context.CurrentContext;
-            IEnumerator<KeyValuePair<int, JSValue>> alternativeEnum = null;
-            long prew = -1;
-            var _length = (src as Array).data.Length;
-            var mainEnum = ((src as Array).data as IEnumerable<KeyValuePair<int, JSValue>>).GetEnumerator();
-            var res = new Array();
-            bool moved = true;
-            while (moved)
-            {
-                moved = mainEnum.MoveNext();
-                while (moved && (mainEnum.Current.Value == null || !mainEnum.Current.Value.IsExist))
-                    moved = mainEnum.MoveNext();
-                var element = mainEnum.Current;
-                uint key = (uint)element.Key;
-                if (!moved && (mainEnum.Current.Value == null || !mainEnum.Current.Value.IsExist))
-                    key = _length;
-                bool alter = false;
-                var value = element.Value;
-                if (key - prew > 1 || (!moved && key < _length))
-                {
-                    if (alternativeEnum == null)
-                    {
-                        alternativeEnum = (Tools.iterableToArray(self.__proto__, false, false, false, _length).data as IEnumerable<KeyValuePair<int, JSValue>>).GetEnumerator();
-                        alternativeEnum.MoveNext();
-                    }
-                    alter = true;
-                }
-                do
-                {
-                    if (alter)
-                    {
-                        bool amoved = (uint)alternativeEnum.Current.Key > prew || alternativeEnum.MoveNext();
-                        while ((uint)alternativeEnum.Current.Key <= prew && amoved)
-                            amoved = alternativeEnum.MoveNext();
-                        if (amoved && (uint)alternativeEnum.Current.Key > prew
-                                   && ((uint)alternativeEnum.Current.Key < (uint)element.Key
-                                        || !moved && (uint)alternativeEnum.Current.Key < _length))
-                        {
-                            key = (uint)alternativeEnum.Current.Key;
-                            value = alternativeEnum.Current.Value;
-                        }
-                        else
-                        {
-                            alter = false;
-                            value = element.Value;
-                            key = (uint)element.Key;
-                        }
-                    }
-                    if (key >= _length
-                        || (!alter && !moved))
-                        break;
-                    prew = key;
-                    if (value == null || !value.IsExist)
-                        continue;
-                    if (value.valueType == JSValueType.Property)
-                        value = (value.oValue as PropertyPair).get == null ? undefined : (value.oValue as PropertyPair).get.Invoke(self, null);
-                    ao[0].Assign(value);
-                    ao[1].Assign(context.wrap(key));
-                    res.data[(int)key] = f.Invoke(tb, ao).CloneImpl();
-                }
-                while (alter);
-            }
-            res.data[(int)_length - 1] = res.data[(int)_length - 1];
-            return res;
+            return mapImpl(true, self, args);
         }
 
         [DoNotEnumerate]
@@ -655,10 +518,15 @@ namespace NiL.JS.BaseLibrary
         [ArgumentsLength(1)]
         public static JSValue forEach(JSValue self, Arguments args)
         {
+            return mapImpl(false, self, args);
+        }
+
+        private static JSValue mapImpl(bool needResult, JSValue self, Arguments args)
+        {
             bool nativeMode = self.GetType() == typeof(Array);
             Array src;
             if (!self.IsDefinded || (self.valueType >= JSValueType.Object && self.oValue == null))
-                throw new JSException(new TypeError("Can not call Array.prototype.forEach for null or undefined"));
+                throw new JSException(new TypeError("Can not call Array.prototype." + (needResult ? "map" : "forEach") + " for null or undefined"));
             if (!nativeMode)
                 src = Tools.iterableToArray(self, false, false, false, -1);
             else
@@ -680,7 +548,8 @@ namespace NiL.JS.BaseLibrary
             IEnumerator<KeyValuePair<int, JSValue>> alternativeEnum = null;
             long prew = -1;
             var _length = (src as Array).data.Length;
-            var mainEnum = ((src as Array).data as IEnumerable<KeyValuePair<int, JSValue>>).GetEnumerator();
+            var mainEnum = (src as Array).data.DirectOrder.GetEnumerator();
+            var res = needResult ? new Array() : null;
             bool moved = true;
             while (moved)
             {
@@ -697,7 +566,7 @@ namespace NiL.JS.BaseLibrary
                 {
                     if (alternativeEnum == null)
                     {
-                        alternativeEnum = (Tools.iterableToArray(self.__proto__, false, false, false, _length).data as IEnumerable<KeyValuePair<int, JSValue>>).GetEnumerator();
+                        alternativeEnum = Tools.iterableToArray(self.__proto__, false, false, false, _length).data.DirectOrder.GetEnumerator();
                         alternativeEnum.MoveNext();
                     }
                     alter = true;
@@ -733,11 +602,15 @@ namespace NiL.JS.BaseLibrary
                         value = (value.oValue as PropertyPair).get == null ? undefined : (value.oValue as PropertyPair).get.Invoke(self, null);
                     ao[0].Assign(value);
                     ao[1].Assign(context.wrap(key));
-                    f.Invoke(tb, ao);
+                    var r = f.Invoke(tb, ao).CloneImpl();
+                    if (needResult)
+                        res.data[(int)key] = r;
                 }
                 while (alter);
             }
-            return null;
+            if (needResult)
+                res.data[(int)_length - 1] = res.data[(int)_length - 1];
+            return res;
         }
 
         [DoNotEnumerate]
@@ -761,7 +634,7 @@ namespace NiL.JS.BaseLibrary
             JSValue image = args[0];
             IEnumerator<KeyValuePair<int, JSValue>> alternativeEnum = null;
             long prew = fromIndex - 1;
-            var mainEnum = (src.data as IEnumerable<KeyValuePair<int, JSValue>>).GetEnumerator();
+            var mainEnum = src.data.DirectOrder.GetEnumerator();
             bool moved = true;
             while (moved)
             {
@@ -778,7 +651,7 @@ namespace NiL.JS.BaseLibrary
                 {
                     if (alternativeEnum == null)
                     {
-                        alternativeEnum = (Tools.iterableToArray(self.__proto__, false, false, false, _length).data as IEnumerable<KeyValuePair<int, JSValue>>).GetEnumerator();
+                        alternativeEnum = Tools.iterableToArray(self.__proto__, false, false, false, _length).data.DirectOrder.GetEnumerator();
                         alternativeEnum.MoveNext();
                     }
                     alter = true;
@@ -895,7 +768,7 @@ namespace NiL.JS.BaseLibrary
                 throw new JSException(new TypeError("Can not call Array.prototype.lastIndexOf for null or undefined"));
 
             var _length = nativeMode ? (self as Array).data.Length : Tools.getLengthOfIterably(self, false);
-            var fromIndex = args.length > 1 ? Tools.JSObjectToInt64(args[1], 0, true) : _length;
+            var fromIndex = args.length > 1 ? Tools.JSObjectToInt64(args[1], 0, true) : _length - 1;
             if (fromIndex < 0)
                 fromIndex += _length;
 
@@ -907,7 +780,7 @@ namespace NiL.JS.BaseLibrary
             JSValue image = args[0];
             IEnumerator<KeyValuePair<int, JSValue>> alternativeEnum = null;
             long prew = fromIndex + 1;
-            var mainEnum = (src as Array).data.Reversed.GetEnumerator();
+            var mainEnum = (src as Array).data.ReversOrder.GetEnumerator();
             bool moved = true;
             while (moved)
             {
@@ -924,7 +797,7 @@ namespace NiL.JS.BaseLibrary
                 {
                     if (alternativeEnum == null)
                     {
-                        alternativeEnum = Tools.iterableToArray(self.__proto__, false, false, false, _length).data.Reversed.GetEnumerator();
+                        alternativeEnum = Tools.iterableToArray(self.__proto__, false, false, false, _length).data.ReversOrder.GetEnumerator();
                         alternativeEnum.MoveNext();
                     }
                     alter = true;
@@ -1192,10 +1065,8 @@ namespace NiL.JS.BaseLibrary
             args.a1 = new JSValue();
             args[2] = new JSValue();
             bool called = false;
-            foreach (var element in (src.data as IEnumerable<KeyValuePair<int, JSValue>>))
+            foreach (var element in src.data.DirectOrder)
             {
-                if (self.GetType() == typeof(Array) && (self as Array).data.Length <= (uint)element.Key)
-                    break;
                 if (element.Value == null || !element.Value.IsExist)
                     continue;
                 args[0] = accum;
@@ -1260,7 +1131,7 @@ namespace NiL.JS.BaseLibrary
             args.a1 = new JSValue();
             args[2] = new JSValue();
             bool called = false;
-            foreach (var element in src.data.Reversed)
+            foreach (var element in src.data.ReversOrder)
             {
                 if (self.GetType() == typeof(Array) && (self as Array).data.Length <= (uint)element.Key)
                     continue;
@@ -1321,7 +1192,7 @@ namespace NiL.JS.BaseLibrary
                     res = ((res.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(self, null);
 
                 var prew = 0U;
-                foreach (var item in (selfa.data as IEnumerable<KeyValuePair<int, JSValue>>))
+                foreach (var item in selfa.data.DirectOrder)
                 {
                     if ((uint)item.Key >= len)
                         break;
@@ -1334,7 +1205,7 @@ namespace NiL.JS.BaseLibrary
                     source = Tools.iterableToArray(self, false, false, false, -1);
 
                 JSValue prw = null;
-                foreach (var item in (source.data as IEnumerable<KeyValuePair<int, JSValue>>))
+                foreach (var item in source.data.DirectOrder)
                 {
                     if (item.Key == 0)
                     {
@@ -1434,7 +1305,7 @@ namespace NiL.JS.BaseLibrary
                     }
                 }
                 tjo.valueType = JSValueType.Int;
-                foreach (var item in (protoSource.data as IEnumerable<KeyValuePair<int, JSValue>>))
+                foreach (var item in protoSource.data.DirectOrder)
                 {
                     if ((uint)item.Key > int.MaxValue)
                     {
@@ -1481,7 +1352,7 @@ namespace NiL.JS.BaseLibrary
                     if (endIndex < 0)
                         endIndex += selfa.data.Length;
                     var len = selfa.data.Length;
-                    foreach (var element in (selfa.data as IEnumerable<KeyValuePair<int, JSValue>>))
+                    foreach (var element in selfa.data.DirectOrder)
                     {
                         if (element.Key >= len) // ýýý...
                             break;
@@ -1604,7 +1475,7 @@ namespace NiL.JS.BaseLibrary
                 pos1 = (uint)System.Math.Min(pos1, selfa.data.Length);
                 var res = needResult ? new Array((int)(pos1 - pos0)) : null;
                 var delta = System.Math.Max(0, args.length - 2) - (pos1 - pos0);
-                foreach (var node in (delta > 0 ? selfa.data.Reversed : (selfa.data as IEnumerable<KeyValuePair<int, JSValue>>)))
+                foreach (var node in (delta > 0 ? selfa.data.ReversOrder : selfa.data.DirectOrder))
                 {
                     if (node.Key < pos0)
                         continue;
@@ -1857,32 +1728,6 @@ namespace NiL.JS.BaseLibrary
             }
         }
 
-        private sealed class JSComparer : IComparer<JSValue>
-        {
-            Arguments args;
-            JSValue first;
-            JSValue second;
-            Function comparer;
-
-            public JSComparer(Arguments args, JSValue first, JSValue second, Function comparer)
-            {
-                this.args = args;
-                this.first = first;
-                this.second = second;
-                this.comparer = comparer;
-            }
-
-            public int Compare(JSValue x, JSValue y)
-            {
-                first.Assign(x);
-                second.Assign(y);
-                args[0] = first;
-                args[1] = second;
-                var res = Tools.JSObjectToInt32(comparer.Invoke(JSValue.undefined, args));
-                return res;
-            }
-        }
-
         [DoNotEnumerate]
         [InstanceMember]
         [ArgumentsLength(1)]
@@ -1905,7 +1750,7 @@ namespace NiL.JS.BaseLibrary
 
                     var tt = new BinaryTree<JSValue, List<JSValue>>(new JSComparer(args, first, second, comparer));
                     uint length = selfa.data.Length;
-                    foreach (var item in (selfa.data as IEnumerable<KeyValuePair<int, JSValue>>))
+                    foreach (var item in selfa.data.DirectOrder)
                     {
                         if (item.Value == null || !item.Value.IsDefinded)
                             continue;
@@ -1929,7 +1774,7 @@ namespace NiL.JS.BaseLibrary
                 {
                     var tt = new BinaryTree<string, List<JSValue>>(StringComparer.Ordinal);
                     uint length = selfa.data.Length;
-                    foreach (var item in (selfa.data as IEnumerable<KeyValuePair<int, JSValue>>))
+                    foreach (var item in selfa.data.DirectOrder)
                     {
                         if (item.Value == null || !item.Value.IsExist)
                             continue;
@@ -2075,7 +1920,7 @@ namespace NiL.JS.BaseLibrary
 
         protected internal override IEnumerator<string> GetEnumeratorImpl(bool hideNonEnum)
         {
-            foreach (var node in (data as IEnumerable<KeyValuePair<int, JSValue>>))
+            foreach (var node in data.DirectOrder)
             {
                 if (node.Value != null
                     && node.Value.IsExist

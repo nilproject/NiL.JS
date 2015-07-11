@@ -4,23 +4,37 @@ using System.Runtime.InteropServices;
 
 namespace NiL.JS.Core
 {
-    public sealed class SparseArray<TValue> : IList<TValue>, IEnumerable<TValue>, IEnumerable<KeyValuePair<int, TValue>>
+    public enum ArrayMode
+    {
+        Flat,
+        Sparse
+    }
+
+    public sealed class SparseArray<TValue> : IList<TValue>
     {
         [StructLayout(LayoutKind.Sequential)]
-        private struct _Item
+        private struct _NavyItem
         {
             public uint index;
             public uint zeroContinue;
             public uint oneContinue;
-            public int bitIndex;
         }
 
-        private static readonly _Item[] emptyData = new _Item[0]; // data dummy. In cases where instance of current class was created, but not used
+        private static readonly _NavyItem[] emptyData = new _NavyItem[0]; // data dummy. In cases where instance of current class was created, but not used
 
         private uint allocatedCount;
-        private _Item[] navyData;
+        private _NavyItem[] navyData;
         private TValue[] values;
         private uint pseudoLength;
+        private ArrayMode mode;
+
+        public ArrayMode Mode
+        {
+            get
+            {
+                return mode;
+            }
+        }
 
         [CLSCompliant(false)]
         public uint Length
@@ -33,11 +47,13 @@ namespace NiL.JS.Core
 
         public SparseArray()
         {
+            mode = ArrayMode.Sparse;
             navyData = emptyData;
         }
 
         public SparseArray(int capacity)
         {
+            mode = ArrayMode.Sparse;
             navyData = emptyData;
             if (capacity > 0)
                 ensureCapacity(capacity);
@@ -55,7 +71,7 @@ namespace NiL.JS.Core
 
         void IList<TValue>.Insert(int index, TValue item)
         {
-            throw new InvalidOperationException();
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -70,20 +86,6 @@ namespace NiL.JS.Core
             pseudoLength--;
         }
 
-        /// <summary>
-        /// Reduce length to "index of last item with non-default value" + 1
-        /// </summary>
-        public void Trim()
-        {
-            long len = -1;
-            for (var i = 0; i < allocatedCount; i++)
-            {
-                if (navyData[i].index > len && !object.Equals(values[i], default(TValue)))
-                    len = navyData[i].index;
-            }
-            pseudoLength = (uint)(len + 1);
-        }
-
         public TValue this[int index]
         {
             get
@@ -91,43 +93,21 @@ namespace NiL.JS.Core
                 if (navyData.Length == 0)
                     return default(TValue);
                 uint _index = (uint)index;
-                bool first = true;
                 int bi = 31;
                 uint i = 0;
                 if (_index < allocatedCount)
                 {
                     if (navyData[index].index == _index)
                         return values[index];
-                    bi = navyData[index].bitIndex;
-                    i = (uint)(~((1 << bi) - 1));
-                    if ((navyData[_index].index & i) != (_index & i))
-                    {
-                        bi = 31;
-                        i = 0;
-                    }
-                    else
-                    {
-                        i = _index;
-                    }
                 }
                 for (; ; bi--)
                 {
-                    if (navyData[i].index != _index)
+                    i = (_index & (1 << bi)) == 0 ? navyData[i].zeroContinue : navyData[i].oneContinue;
+                    if (i == 0)
                     {
-                        i = (_index & (1 << bi)) == 0 ? navyData[i].zeroContinue : navyData[i].oneContinue;
-                        if (i == 0)
-                        {
-                            if (first)
-                            {
-                                first = false;
-                                i = 0;
-                                bi = 32;
-                                continue;
-                            }
-                            return default(TValue);
-                        }
+                        return default(TValue);
                     }
-                    else
+                    else if (navyData[i].index == _index)
                     {
                         return values[i];
                     }
@@ -140,7 +120,6 @@ namespace NiL.JS.Core
                     ensureCapacity(navyData.Length * 2);
                 if (allocatedCount == 0)
                 {
-                    navyData[0].bitIndex = 31;
                     allocatedCount = 1;
                     pseudoLength = 1;
                 }
@@ -193,7 +172,6 @@ namespace NiL.JS.Core
                                 else
                                     navyData[i].oneContinue = ni = allocatedCount++;
                                 navyData[ni].index = _index;
-                                navyData[ni].bitIndex = bi - 1;
                                 values[ni] = value;
                                 return;
                             }
@@ -211,21 +189,6 @@ namespace NiL.JS.Core
             }
         }
 
-        private void ensureCapacity(int p)
-        {
-            var newData = new _Item[Math.Max(4, p)];
-            var newValues = new TValue[newData.Length];
-            if (navyData.Length > 0)
-            {
-                for (var i = 0; i < navyData.Length; i++)
-                    newData[i] = navyData[i];
-                for (var i = 0; i < values.Length; i++)
-                    newValues[i] = values[i];
-            }
-            navyData = newData;
-            values = newValues;
-        }
-
         #endregion
 
         #region Члены ICollection<TValue>
@@ -240,7 +203,7 @@ namespace NiL.JS.Core
         public void Clear()
         {
             while (allocatedCount > 0)
-                navyData[(int)(--allocatedCount)] = default(_Item);
+                navyData[(int)(--allocatedCount)] = default(_NavyItem);
             pseudoLength = 0;
         }
 
@@ -264,19 +227,19 @@ namespace NiL.JS.Core
                     array[v.Key + arrayIndex] = v.Value;
         }
 
-        public int Count
+        int ICollection<TValue>.Count
         {
             get { return (int)pseudoLength; }
         }
 
-        bool ICollection<TValue>.IsReadOnly
+        public bool IsReadOnly
         {
             get { return false; }
         }
 
-        bool ICollection<TValue>.Remove(TValue item)
+        public bool Remove(TValue item)
         {
-            throw new InvalidOperationException();
+            throw new NotImplementedException();
         }
 
         #endregion
@@ -285,45 +248,8 @@ namespace NiL.JS.Core
 
         public IEnumerator<TValue> GetEnumerator()
         {
-            if (navyData.Length == 0)
-                yield break;
-            var stack = new uint[33];
-            var stepstack = new byte[33];
-            int stackIndex = 0;
-            var node = 0u;
-            for (; ; )
-            {
-                if ((stepstack[stackIndex] & 4) == 0)
-                {
-                    stepstack[stackIndex] |= 4;
-                    yield return values[node];
-                }
-                if ((stepstack[stackIndex] & 1) == 0)
-                {
-                    if (navyData[node].zeroContinue != 0)
-                    {
-                        stepstack[stackIndex] |= 1;
-                        stack[stackIndex++] = node;
-                        stepstack[stackIndex] = 0;
-                        node = navyData[node].zeroContinue;
-                        continue;
-                    }
-                }
-                if ((stepstack[stackIndex] & 2) == 0)
-                {
-                    if (navyData[node].oneContinue != 0)
-                    {
-                        stepstack[stackIndex] |= 2;
-                        stack[stackIndex++] = node;
-                        stepstack[stackIndex] = 0;
-                        node = navyData[node].oneContinue;
-                        continue;
-                    }
-                }
-                if (stackIndex == 0)
-                    yield break;
-                node = stack[--stackIndex];
-            }
+            foreach (var kvp in DirectOrder)
+                yield return kvp.Value;
         }
 
         #endregion
@@ -337,96 +263,195 @@ namespace NiL.JS.Core
 
         #endregion
 
-        #region Члены IEnumerable<KeyValuePair<int,TValue>>
-
-        IEnumerator<KeyValuePair<int, TValue>> IEnumerable<KeyValuePair<int, TValue>>.GetEnumerator()
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns>Zero if the requested index does not exists</returns>
+        public uint NearestIndexNotLess(uint index)
         {
-            if (navyData.Length == 0)
-                yield break;
-            var stack = new uint[33];
-            var stepstack = new byte[33];
-            int stackIndex = 0;
-            var node = 0u;
-            for (; ; )
+            int bi = 31;
+            long i = 0;
+            long pm = -1;
+            for (; ; bi--)
             {
-                if ((stepstack[stackIndex] & 4) == 0)
+                if (navyData[i].oneContinue != 0)
+                    pm = i;
+                i = (index & (1 << bi)) == 0 ? navyData[i].zeroContinue : navyData[i].oneContinue;
+                if (i == 0)
                 {
-                    stepstack[stackIndex] |= 4;
-                    yield return new KeyValuePair<int, TValue>((int)navyData[node].index, values[node]);
-                }
-                if ((stepstack[stackIndex] & 1) == 0)
-                {
-                    if (navyData[node].zeroContinue != 0)
+                    if (pm == -1)
+                        return 0;
+                    i = navyData[pm].oneContinue;
+                    for (; ; )
                     {
-                        stepstack[stackIndex] |= 1;
-                        stack[stackIndex++] = node;
-                        stepstack[stackIndex] = 0;
-                        node = navyData[node].zeroContinue;
-                        continue;
+                        if (navyData[i].zeroContinue != 0)
+                        {
+                            i = navyData[i].zeroContinue;
+                            continue;
+                        }
+                        if (navyData[i].oneContinue != 0)
+                        {
+                            i = navyData[i].oneContinue;
+                            continue;
+                        }
+                        break;
                     }
                 }
-                if ((stepstack[stackIndex] & 2) == 0)
+                if (navyData[i].index >= (uint)index)
                 {
-                    if (navyData[node].oneContinue != 0)
-                    {
-                        stepstack[stackIndex] |= 2;
-                        stack[stackIndex++] = node;
-                        stepstack[stackIndex] = 0;
-                        node = navyData[node].oneContinue;
-                        continue;
-                    }
+                    return navyData[i].index;
                 }
-                if (stackIndex == 0)
-                    yield break;
-                node = stack[--stackIndex];
             }
         }
 
-        #endregion
+        public uint NearestIndexNotMore(uint index)
+        {
+            int bi = 31;
+            long i = 0;
+            for (; ; bi--)
+            {
+                var ni = (index & (1 << bi)) == 0 ? navyData[i].zeroContinue : navyData[i].oneContinue;
+                if (ni == 0 || navyData[ni].index > index)
+                    index = navyData[i].index;
+                else
+                    i = ni;
+                if (navyData[i].index == index)
+                {
+                    return navyData[i].index;
+                }
+            }
+        }
 
-        public IEnumerable<KeyValuePair<int, TValue>> Reversed
+        public IEnumerable<KeyValuePair<int, TValue>> DirectOrder
         {
             get
             {
-                if (navyData.Length == 0)
-                    yield break;
-                var stack = new uint[33];
-                var stepstack = new byte[33];
-                int stackIndex = 0;
-                var node = 0u;
-                for (; ; )
+                if (mode == ArrayMode.Flat)
                 {
-                    if ((stepstack[stackIndex] & 1) == 0)
-                    {
-                        if (navyData[node].oneContinue != 0)
-                        {
-                            stepstack[stackIndex] |= 1;
-                            stack[stackIndex++] = node;
-                            stepstack[stackIndex] = 0;
-                            node = navyData[node].oneContinue;
-                            continue;
-                        }
-                    }
-                    if ((stepstack[stackIndex] & 2) == 0)
-                    {
-                        if (navyData[node].zeroContinue != 0)
-                        {
-                            stepstack[stackIndex] |= 2;
-                            stack[stackIndex++] = node;
-                            stepstack[stackIndex] = 0;
-                            node = navyData[node].zeroContinue;
-                            continue;
-                        }
-                    }
-                    if ((stepstack[stackIndex] & 4) == 0)
-                    {
-                        stepstack[stackIndex] |= 4;
-                        yield return new KeyValuePair<int, TValue>((int)navyData[node].index, values[node]);
-                    }
-                    if (stackIndex == 0)
-                        yield break;
-                    node = stack[--stackIndex];
+                    for (var i = 0; i < values.Length; i++)
+                        yield return new KeyValuePair<int, TValue>(i, values[i]);
                 }
+                else
+                {
+                    if (allocatedCount > 0)
+                        yield return new KeyValuePair<int, TValue>(0, values[0]);
+                    else
+                        yield break;
+                    var index = 1U;
+                    while (index < pseudoLength)
+                    {
+                        int bi = 31;
+                        long i = 0;
+                        long pm = -1;
+                        for (; ; bi--)
+                        {
+                            if (navyData[i].oneContinue != 0)
+                                pm = i;
+                            i = (index & (1 << bi)) == 0 ? navyData[i].zeroContinue : navyData[i].oneContinue;
+                            if (i == 0)
+                            {
+                                if (pm == -1)
+                                    yield break;
+                                i = navyData[pm].oneContinue;
+                                for (; ; )
+                                {
+                                    if (navyData[i].zeroContinue != 0)
+                                    {
+                                        i = navyData[i].zeroContinue;
+                                        continue;
+                                    }
+                                    if (navyData[i].oneContinue != 0)
+                                    {
+                                        i = navyData[i].oneContinue;
+                                        continue;
+                                    }
+                                    break;
+                                }
+                            }
+                            if (navyData[i].index >= index)
+                            {
+                                index = navyData[i].index;
+                                yield return new KeyValuePair<int, TValue>((int)index, values[i]);
+                                index++;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        public IEnumerable<KeyValuePair<int, TValue>> ReversOrder
+        {
+            get
+            {
+                if (mode == ArrayMode.Flat)
+                {
+                    for (var i = values.Length; i-- > 0; )
+                        yield return new KeyValuePair<int, TValue>(i, values[i]);
+                }
+                else
+                {
+                    if (allocatedCount == 0)
+                        yield break;
+                    var index = pseudoLength - 1;
+                    while (index > 0)
+                    {
+                        int bi = 31;
+                        long i = 0;
+                        for (; ; bi--)
+                        {
+                            var ni = (index & (1 << bi)) == 0 ? navyData[i].zeroContinue : navyData[i].oneContinue;
+                            if (ni == 0 || navyData[ni].index > index)
+                                index = navyData[i].index;
+                            else
+                                i = ni;
+                            if (navyData[i].index == index)
+                            {
+                                yield return new KeyValuePair<int, TValue>((int)index, values[i]);
+                                if (index == 0)
+                                    yield break;
+                                index--;
+                                break;
+                            }
+                        }
+                    }
+                    yield return new KeyValuePair<int, TValue>(0, values[0]);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Reduce length to "index of last item with non-default value" + 1
+        /// </summary>
+        public void Trim()
+        {
+            long len = -1;
+            for (var i = 0; i < allocatedCount; i++)
+            {
+                if (navyData[i].index > len && !object.Equals(values[i], default(TValue)))
+                    len = navyData[i].index;
+            }
+            pseudoLength = (uint)(len + 1);
+        }
+
+        private void ensureCapacity(int p)
+        {
+            p = Math.Max(4, p);
+            var newValues = new TValue[p];
+            if (values != null)
+                for (var i = 0; i < values.Length; i++)
+                    newValues[i] = values[i];
+            values = newValues;
+
+            if (mode == ArrayMode.Sparse)
+            {
+                var newData = new _NavyItem[p];
+                if (navyData.Length != 0)
+                    for (var i = 0; i < navyData.Length; i++)
+                        newData[i] = navyData[i];
+                navyData = newData;
             }
         }
     }

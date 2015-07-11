@@ -925,7 +925,7 @@ namespace NiL.JS.Core
             var arr = obj as NiL.JS.BaseLibrary.Array;
             if (arr != null)
             {
-                foreach (var node in (arr.data as IEnumerable<KeyValuePair<int, JSValue>>))
+                foreach (var node in arr.data.DirectOrder)
                 {
                     if (node.Value != null && node.Value.IsExist &&
                         ((node.Value.attributes & JSObjectAttributesInternal.NotConfigurable) == 0

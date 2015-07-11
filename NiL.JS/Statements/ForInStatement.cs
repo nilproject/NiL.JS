@@ -170,7 +170,7 @@ namespace NiL.JS.Statements
                 if (s.oValue is NiL.JS.BaseLibrary.Array)
                 {
                     var src = s.oValue as NiL.JS.BaseLibrary.Array;
-                    foreach (var item in (src.data as IEnumerable<KeyValuePair<int, JSValue>>))
+                    foreach (var item in src.data.DirectOrder)
                     {
                         if (item.Value == null
                             || !item.Value.IsExist

@@ -1338,7 +1338,6 @@ namespace NiL.JS.Core
         internal static BaseLibrary.Array iterableToArray(JSValue src, bool evalProps, bool clone, bool reassignLen, long _length)
         {
             var temp = new BaseLibrary.Array();
-            HashSet<string> processedKeys = null;
             bool goDeep = true;
             for (; goDeep; )
             {
@@ -1348,7 +1347,7 @@ namespace NiL.JS.Core
                     if (_length == -1)
                         _length = (src as NiL.JS.BaseLibrary.Array).data.Length;
                     long prew = -1;
-                    foreach (var element in ((src as BaseLibrary.Array).data as IEnumerable<KeyValuePair<int, JSValue>>))
+                    foreach (var element in (src as BaseLibrary.Array).data.DirectOrder)
                     {
                         if (element.Key >= _length) // эээ...
                             break;
@@ -1356,19 +1355,15 @@ namespace NiL.JS.Core
                         if (value == null || !value.IsExist)
                             continue;
                         if (!goDeep && System.Math.Abs(prew - element.Key) > 1)
+                        {
                             goDeep = true;
+                        }
                         if (evalProps && value.valueType == JSValueType.Property)
                             value = (value.oValue as PropertyPair).get == null ? JSValue.undefined : (value.oValue as PropertyPair).get.Invoke(src, null).CloneImpl();
                         else if (clone)
                             value = value.CloneImpl();
-                        if (processedKeys != null)
-                        {
-                            var sk = element.Key.ToString();
-                            if (processedKeys.Contains(sk))
-                                continue;
-                            processedKeys.Add(sk);
-                        }
-                        temp.data[element.Key] = value;
+                        if (temp.data[element.Key] == null)
+                            temp.data[element.Key] = value;
                     }
                     goDeep |= System.Math.Abs(prew - _length) > 1;
                 }
@@ -1393,15 +1388,11 @@ namespace NiL.JS.Core
                         else if (clone)
                             value = value.CloneImpl();
                         if (!goDeep && System.Math.Abs(prew - index.Key) > 1)
-                            goDeep = true;
-                        if (processedKeys != null)
                         {
-                            var sk = index.Value;
-                            if (processedKeys.Contains(sk))
-                                continue;
-                            processedKeys.Add(sk);
+                            goDeep = true;
                         }
-                        temp.data[(int)(uint)index.Key] = value;
+                        if (temp.data[(int)(uint)index.Key] == null)
+                            temp.data[(int)(uint)index.Key] = value;
                     }
                     goDeep |= System.Math.Abs(prew - _length) > 1;
                 }
@@ -1411,12 +1402,6 @@ namespace NiL.JS.Core
                 src = src.__proto__.oValue as JSValue ?? src.__proto__;
                 if (src == null || (src.valueType >= JSValueType.String && src.oValue == null))
                     break;
-                if (processedKeys == null)
-                {
-                    processedKeys = new HashSet<string>();
-                    for (var @enum = crnt.GetEnumeratorImpl(false); @enum.MoveNext(); )
-                        processedKeys.Add(@enum.Current);
-                }
             }
             temp.data[(int)(_length - 1)] = temp.data[(int)(_length - 1)];
             return temp;
