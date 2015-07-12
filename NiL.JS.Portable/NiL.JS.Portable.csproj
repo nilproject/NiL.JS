@@ -101,6 +101,9 @@
     <Compile Include="..\NiL.JS\BaseLibrary\String.cs">
       <Link>BaseLibrary\String.cs</Link>
     </Compile>
+    <Compile Include="..\NiL.JS\BaseLibrary\Symbol.cs">
+      <Link>BaseLibrary\Symbol.cs</Link>
+    </Compile>
     <Compile Include="..\NiL.JS\BaseLibrary\SyntaxError.cs">
       <Link>BaseLibrary\SyntaxError.cs</Link>
     </Compile>
@@ -178,6 +181,9 @@
     </Compile>
     <Compile Include="..\NiL.JS\Core\JSObject.cs">
       <Link>Core\JSObject.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\Core\JSValue.cs">
+      <Link>Core\JSValue.cs</Link>
     </Compile>
     <Compile Include="..\NiL.JS\Core\Modules\AllowUnsafeCallAttribute.cs">
       <Link>Core\Modules\AllowUnsafeCallAttribute.cs</Link>
@@ -292,6 +298,9 @@
     </Compile>
     <Compile Include="..\NiL.JS\Expressions\Call.cs">
       <Link>Expressions\Call.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\Expressions\ClassExpression.cs">
+      <Link>Expressions\ClassExpression.cs</Link>
     </Compile>
     <Compile Include="..\NiL.JS\Expressions\Constant.cs">
       <Link>Expressions\Constant.cs</Link>
