@@ -830,17 +830,17 @@ namespace NiL.JS.Core
         public JSObject ToObject()
         {
             if (valueType >= JSObjectType.Object)
-                return this;
+                return oValue as JSObject;
             switch (valueType)
             {
                 case JSObjectType.Bool:
-                    return new ObjectContainer(new NiL.JS.BaseLibrary.Boolean(iValue != 0));
+                    return new ObjectContainer(this is BaseLibrary.Boolean ? this : new NiL.JS.BaseLibrary.Boolean(iValue != 0));
                 case JSObjectType.Int:
-                    return new ObjectContainer(new Number(iValue));
+                    return new ObjectContainer(this is BaseLibrary.Number ? this : new Number(iValue));
                 case JSObjectType.Double:
-                    return new ObjectContainer(new Number(dValue));
+                    return new ObjectContainer(this is BaseLibrary.Number ? this : new Number(dValue));
                 case JSObjectType.String:
-                    return new ObjectContainer(new NiL.JS.BaseLibrary.String(oValue.ToString()));
+                    return new ObjectContainer(this is BaseLibrary.String ? this : new NiL.JS.BaseLibrary.String(oValue.ToString()));
             }
             return new JSObject() { valueType = JSObjectType.Object };
         }
