@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using NiL.JS.Core;
 using NiL.JS.BaseLibrary;
+using NiL.JS.Expressions;
 
 #if !PORTABLE
 using NiL.JS.Core.JIT;
-using NiL.JS.Expressions;
 #endif
 
 namespace NiL.JS.Statements
