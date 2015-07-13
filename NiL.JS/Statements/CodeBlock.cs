@@ -152,7 +152,7 @@ namespace NiL.JS.Statements
             while ((sroot && i < state.Code.Length) || (!sroot && state.Code[i] != '}'))
             {
                 var t = Parser.Parse(state, ref i, 0);
-                if (t == null || t is EmptyStatement)
+                if (t == null || t is EmptyExpression)
                 {
                     if (sroot && i < state.Code.Length && state.Code[i] == '}')
                         throw new JSException(new SyntaxError("Unexpected symbol \"}\" at " + CodeCoordinates.FromTextPosition(state.Code, i, 0)));
@@ -295,7 +295,7 @@ namespace NiL.JS.Statements
             {
                 if (lines[i] != null)
                 {
-                    if (lines[i] is EmptyStatement)
+                    if (lines[i] is EmptyExpression)
                         lines[i] = null;
                     else
                     {
@@ -325,9 +325,9 @@ namespace NiL.JS.Statements
             {
                 variables = null;
                 if (lines.Length == 1 || (t >= 0 && (lines.Length - t - 1) == 1))
-                    _this = lines[lines.Length - 1] ?? EmptyStatement.Instance; // блок не должен быть null, так как он может быть вложен в выражение
+                    _this = lines[lines.Length - 1] ?? EmptyExpression.Instance; // блок не должен быть null, так как он может быть вложен в выражение
                 else if (lines.Length == 0)
-                    _this = EmptyStatement.Instance;
+                    _this = EmptyExpression.Instance;
             }
             else
             {

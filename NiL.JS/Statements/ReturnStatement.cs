@@ -5,6 +5,7 @@ using NiL.JS.BaseLibrary;
 
 #if !PORTABLE
 using NiL.JS.Core.JIT;
+using NiL.JS.Expressions;
 #endif
 
 namespace NiL.JS.Statements
@@ -81,7 +82,7 @@ namespace NiL.JS.Statements
             else if (body is NiL.JS.Expressions.CallOperator)
                 (body as NiL.JS.Expressions.CallOperator).allowTCO = true;
 
-            statistic.Returns.Add(body ?? EmptyStatement.Instance);
+            statistic.Returns.Add(body ?? EmptyExpression.Instance);
 
             return false;
         }

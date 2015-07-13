@@ -154,7 +154,7 @@ namespace NiL.JS.Statements
 #endif
             }
             if (_this == this && body == null)
-                body = new EmptyStatement();
+                body = new EmptyExpression();
             return false;
         }
 

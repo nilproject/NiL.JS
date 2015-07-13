@@ -32,7 +32,7 @@ namespace NiL.JS.Statements
             if (!Parser.Validate(state.Code, "throw", ref i) || (!Parser.isIdentificatorTerminator(state.Code[i])))
                 return new ParseResult();
             var b = Parser.Parse(state, ref i, 1, true);
-            if (b is EmptyStatement)
+            if (b is EmptyExpression)
                 throw new JSException((new SyntaxError("Can't throw result of EmptyStatement " + CodeCoordinates.FromTextPosition(state.Code, i - 1, 0))));
             var pos = index;
             index = i;

@@ -676,7 +676,7 @@ namespace NiL.JS.Statements
                     return default(ParseResult);
                 first = (Expression)Parser.Parse(state, ref i, 2);
             }
-            if (first is EmptyStatement)
+            if (first is EmptyExpression)
                 throw new JSException((new SyntaxError("Invalid operator argument at " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
             bool canAsign = true && !forUnary; // на случай f() = x
             bool assign = false; // на случай операторов 'x='

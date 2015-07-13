@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using NiL.JS.Core;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.TypeProxing;
+using NiL.JS.Expressions;
 
 namespace NiL.JS.Statements
 {
@@ -377,14 +378,14 @@ namespace NiL.JS.Statements
             if (finallyBody != null)
                 Parser.Build(ref finallyBody, depth, variables, state, message, statistic, opts);
             if (body == null
-                || body is EmptyStatement
+                || body is EmptyExpression
                 || (body is CodeBlock && (body as CodeBlock).lines.Length == 0))
             {
                 if (message != null)
                     message(MessageLevel.Warning, new CodeCoordinates(0, Position, Length), "Empty (or reduced to empty) try" + (catchBody != null || finallyBody == null ? "..catch" : "") + (finallyBody != null ? "..finally" : "") + " block. Maybe, something missing.");
                 _this = finallyBody;
             }
-            if (catchBody != null && (catchBody.lines.Length == 0 || (catchBody.lines.Length == 1 && catchBody.lines[0] is EmptyStatement)))
+            if (catchBody != null && (catchBody.lines.Length == 0 || (catchBody.lines.Length == 1 && catchBody.lines[0] is EmptyExpression)))
             {
                 if (message != null)
                     message(MessageLevel.Warning, new CodeCoordinates(0, (catchBody ?? this as CodeNode).Position, (catchBody ?? this as CodeNode).Length), "Empty (or reduced to empty) catch block. Do not ignore exceptions.");

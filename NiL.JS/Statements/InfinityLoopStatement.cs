@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using NiL.JS.Core;
+using NiL.JS.Expressions;
 
 namespace NiL.JS.Statements
 {
@@ -18,7 +19,7 @@ namespace NiL.JS.Statements
 
         internal InfinityLoopStatement(CodeNode body, string[] labels)
         {
-            this.body = body ?? new EmptyStatement();
+            this.body = body ?? new EmptyExpression();
             this.labels = labels;
         }
 

@@ -335,7 +335,7 @@ namespace NiL.JS.Core
             return Visit(node as CodeNode);
         }
 
-        internal protected virtual T Visit(EmptyStatement node)
+        internal protected virtual T Visit(EmptyExpression node)
         {
             return Visit(node as CodeNode);
         }

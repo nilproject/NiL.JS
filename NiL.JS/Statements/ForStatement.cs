@@ -189,7 +189,7 @@ namespace NiL.JS.Statements
                 _this = init;
                 return false;
             }
-            else if (body == null || body is EmptyStatement) // initial solution. Will extended
+            else if (body == null || body is EmptyExpression) // initial solution. Will extended
             {
                 VariableReference variable = null;
                 ConstantNotation limit = null;

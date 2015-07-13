@@ -1,15 +1,15 @@
 ﻿using System;
 using NiL.JS.Core;
 
-namespace NiL.JS.Statements
+namespace NiL.JS.Expressions
 {
 #if !PORTABLE
     [Serializable]
 #endif
-    public sealed class EmptyStatement : Expressions.Expression
+    public sealed class EmptyExpression : Expression
     {
-        private static readonly EmptyStatement _instance = new EmptyStatement();
-        public static EmptyStatement Instance { get { return _instance; } }
+        private static readonly EmptyExpression _instance = new EmptyExpression();
+        public static EmptyExpression Instance { get { return _instance; } }
 
         protected internal override bool ResultInTempContainer
         {
@@ -24,12 +24,12 @@ namespace NiL.JS.Statements
             }
         }
 
-        public EmptyStatement()
+        public EmptyExpression()
             : base(null, null, false)
         {
         }
 
-        public EmptyStatement(int position)
+        public EmptyExpression(int position)
             : base(null, null, false)
         {
             Position = position;
