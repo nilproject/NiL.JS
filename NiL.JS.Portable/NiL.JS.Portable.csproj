@@ -296,8 +296,8 @@
     <Compile Include="..\NiL.JS\Expressions\Constant.cs">
       <Link>Expressions\Constant.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Expressions\Decriment.cs">
-      <Link>Expressions\Decriment.cs</Link>
+    <Compile Include="..\NiL.JS\Expressions\Decrement.cs">
+      <Link>Expressions\Decrement.cs</Link>
     </Compile>
     <Compile Include="..\NiL.JS\Expressions\Delete.cs">
       <Link>Expressions\Delete.cs</Link>
@@ -332,8 +332,8 @@
     <Compile Include="..\NiL.JS\Expressions\In.cs">
       <Link>Expressions\In.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Expressions\Incriment.cs">
-      <Link>Expressions\Incriment.cs</Link>
+    <Compile Include="..\NiL.JS\Expressions\Increment.cs">
+      <Link>Expressions\Increment.cs</Link>
     </Compile>
     <Compile Include="..\NiL.JS\Expressions\InstanceOf.cs">
       <Link>Expressions\InstanceOf.cs</Link>
@@ -523,9 +523,7 @@
     </Compile>
     <Compile Include="Core\Backward.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Core\JIT\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
