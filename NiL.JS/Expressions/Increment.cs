@@ -14,7 +14,7 @@ namespace NiL.JS.Expressions
 #if !PORTABLE
     [Serializable]
 #endif
-    public sealed class Incriment : Expression
+    public sealed class Increment : Expression
     {
         public override bool IsContextIndependent
         {
@@ -52,7 +52,7 @@ namespace NiL.JS.Expressions
             }
         }
 
-        public Incriment(Expression op, IncrimentType type)
+        public Increment(Expression op, IncrimentType type)
             : base(op, type == IncrimentType.Postincriment ? op : null, type == IncrimentType.Postincriment)
         {
             if (type > IncrimentType.Postincriment)

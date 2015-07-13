@@ -319,7 +319,7 @@
     <Compile Include="Expressions\New.cs" />
     <Compile Include="Expressions\InstanceOf.cs" />
     <Compile Include="Expressions\Addition.cs" />
-    <Compile Include="Expressions\Decriment.cs" />
+    <Compile Include="Expressions\Decrement.cs" />
     <Compile Include="Expressions\More.cs" />
     <Compile Include="Expressions\LessOrEqual.cs" />
     <Compile Include="Expressions\Substract.cs" />
@@ -351,7 +351,7 @@
     <Compile Include="Expressions\Json.cs" />
     <Compile Include="Expressions\Assign.cs" />
     <Compile Include="Expressions\Call.cs" />
-    <Compile Include="Expressions\Incriment.cs" />
+    <Compile Include="Expressions\Increment.cs" />
     <Compile Include="Expressions\Less.cs" />
     <Compile Include="Expressions\Mul.cs" />
     <Compile Include="Expressions\Expression.cs" />

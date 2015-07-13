@@ -215,8 +215,8 @@ namespace NiL.JS.Statements
                 }
                 if (variable != null
                     && limit != null
-                    && post is NiL.JS.Expressions.Incriment
-                    && ((post as NiL.JS.Expressions.Incriment).FirstOperand as VariableReference).descriptor == variable.descriptor)
+                    && post is NiL.JS.Expressions.Increment
+                    && ((post as NiL.JS.Expressions.Increment).FirstOperand as VariableReference).descriptor == variable.descriptor)
                 {
                     if (variable.functionDepth >= 0 && variable.descriptor.defineDepth >= 0)
                     {

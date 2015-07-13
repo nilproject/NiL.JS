@@ -45,7 +45,7 @@ namespace NiL.JS.Core
             return Visit(node as Expression);
         }
 
-        internal protected virtual T Visit(Decriment node)
+        internal protected virtual T Visit(Decrement node)
         {
             return Visit(node as Expression);
         }
@@ -100,7 +100,7 @@ namespace NiL.JS.Core
             return Visit(node as Expression);
         }
 
-        internal protected virtual T Visit(Incriment node)
+        internal protected virtual T Visit(Increment node)
         {
             return Visit(node as Expression);
         }

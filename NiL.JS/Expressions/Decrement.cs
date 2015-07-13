@@ -12,7 +12,7 @@ namespace NiL.JS.Expressions
 #if !PORTABLE
     [Serializable]
 #endif
-    public sealed class Decriment : Expression
+    public sealed class Decrement : Expression
     {
         public override bool IsContextIndependent
         {
@@ -50,7 +50,7 @@ namespace NiL.JS.Expressions
             }
         }
 
-        public Decriment(Expression op, DecrimentType type)
+        public Decrement(Expression op, DecrimentType type)
             : base(op, type == DecrimentType.Postdecriment ? op : null, type == DecrimentType.Postdecriment)
         {
             if (type > DecrimentType.Postdecriment)

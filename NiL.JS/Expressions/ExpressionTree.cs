@@ -132,7 +132,7 @@ namespace NiL.JS.Statements
                         }
                     case OperationType.Incriment:
                         {
-                            fastImpl = new Expressions.Incriment(first ?? second, first == null ? Expressions.IncrimentType.Postincriment : Expressions.IncrimentType.Preincriment);
+                            fastImpl = new Expressions.Increment(first ?? second, first == null ? Expressions.IncrimentType.Postincriment : Expressions.IncrimentType.Preincriment);
                             break;
                         }
                     case OperationType.Call:
@@ -143,7 +143,7 @@ namespace NiL.JS.Statements
                         }
                     case OperationType.Decriment:
                         {
-                            fastImpl = new Expressions.Decriment(first ?? second, first == null ? Expressions.DecrimentType.Postdecriment : Expressions.DecrimentType.Postdecriment);
+                            fastImpl = new Expressions.Decrement(first ?? second, first == null ? Expressions.DecrimentType.Postdecriment : Expressions.DecrimentType.Postdecriment);
                             break;
                         }
                     case OperationType.LessOrEqual:
@@ -491,7 +491,7 @@ namespace NiL.JS.Statements
                                 if (state.strict.Peek()
                                     && (first is GetVariableExpression) && ((first as GetVariableExpression).Name == "arguments" || (first as GetVariableExpression).Name == "eval"))
                                     throw new JSException(new SyntaxError("Can not incriment \"" + (first as GetVariableExpression).Name + "\" in strict mode."));
-                                first = new Expressions.Incriment(first, Expressions.IncrimentType.Preincriment) { Position = index, Length = i - index };
+                                first = new Expressions.Increment(first, Expressions.IncrimentType.Preincriment) { Position = index, Length = i - index };
                             }
                             else
                             {
@@ -521,7 +521,7 @@ namespace NiL.JS.Statements
                                 if (state.strict.Peek()
                                     && (first is GetVariableExpression) && ((first as GetVariableExpression).Name == "arguments" || (first as GetVariableExpression).Name == "eval"))
                                     throw new JSException(new SyntaxError("Can not decriment \"" + (first as GetVariableExpression).Name + "\" in strict mode."));
-                                first = new Expressions.Decriment(first, Expressions.DecrimentType.Predecriment) { Position = index, Length = i - index };
+                                first = new Expressions.Decrement(first, Expressions.DecrimentType.Predecriment) { Position = index, Length = i - index };
                             }
                             else
                             {
@@ -823,7 +823,7 @@ namespace NiL.JS.Statements
                                         && ((first as GetVariableExpression).Name == "arguments" || (first as GetVariableExpression).Name == "eval"))
                                         throw new JSException(new SyntaxError("Can not incriment \"" + (first as GetVariableExpression).Name + "\" in strict mode."));
                                 }
-                                first = new Expressions.Incriment(first, Expressions.IncrimentType.Postincriment) { Position = first.Position, Length = i + 2 - first.Position };
+                                first = new Expressions.Increment(first, Expressions.IncrimentType.Postincriment) { Position = first.Position, Length = i + 2 - first.Position };
                                 //first = new OperatorStatement() { second = first, _type = OperationType.Incriment, Position = first.Position, Length = i + 2 - first.Position };
                                 repeat = true;
                                 i += 2;
@@ -860,7 +860,7 @@ namespace NiL.JS.Statements
                                         && ((first as GetVariableExpression).Name == "arguments" || (first as GetVariableExpression).Name == "eval"))
                                         throw new JSException(new SyntaxError("Can not decriment \"" + (first as GetVariableExpression).Name + "\" in strict mode."));
                                 }
-                                first = new Expressions.Decriment(first, Expressions.DecrimentType.Postdecriment) { Position = first.Position, Length = i + 2 - first.Position };
+                                first = new Expressions.Decrement(first, Expressions.DecrimentType.Postdecriment) { Position = first.Position, Length = i + 2 - first.Position };
                                 //first = new OperatorStatement() { second = first, _type = OperationType.Decriment, Position = first.Position, Length = i + 2 - first.Position };
                                 repeat = true;
                                 i += 2;
