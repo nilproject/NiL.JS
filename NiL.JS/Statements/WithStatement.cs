@@ -32,7 +32,7 @@ namespace NiL.JS.Statements
                 throw new JSException((new NiL.JS.BaseLibrary.SyntaxError("Invalid syntax WithStatement.")));
             do i++; while (char.IsWhiteSpace(state.Code[i]));
             var body = Parser.Parse(state, ref i, 0);
-            if (body is FunctionExpression)
+            if (body is FunctionNotation)
             {
                 if (state.strict.Peek())
                     throw new JSException((new NiL.JS.BaseLibrary.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
@@ -106,7 +106,7 @@ namespace NiL.JS.Statements
             return false;
         }
 
-        internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             if (obj != null)
                 obj.Optimize(ref obj, owner, message, opts, statistic);

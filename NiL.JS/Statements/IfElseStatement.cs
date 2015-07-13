@@ -59,7 +59,7 @@ namespace NiL.JS.Statements
             return visitor.Visit(this);
         }
 
-        internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             var cc = condition as CodeNode;
             condition.Optimize(ref cc, owner, message, opts, statistic);
@@ -108,7 +108,7 @@ namespace NiL.JS.Statements
                 throw new ArgumentException("code (" + i + ")");
             do i++; while (char.IsWhiteSpace(state.Code[i]));
             CodeNode body = Parser.Parse(state, ref i, 0);
-            if (body is FunctionExpression)
+            if (body is FunctionNotation)
             {
                 if (state.strict.Peek())
                     throw new JSException((new NiL.JS.BaseLibrary.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
@@ -126,7 +126,7 @@ namespace NiL.JS.Statements
             {
                 while (char.IsWhiteSpace(state.Code[i])) i++;
                 elseBody = Parser.Parse(state, ref i, 0);
-                if (elseBody is FunctionExpression)
+                if (elseBody is FunctionNotation)
                 {
                     if (state.strict.Peek())
                         throw new JSException((new NiL.JS.BaseLibrary.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
@@ -202,7 +202,7 @@ namespace NiL.JS.Statements
             Parser.Build(ref body, depth, variables, state | _BuildState.Conditional, message, statistic, opts);
             Parser.Build(ref elseBody, depth, variables, state | _BuildState.Conditional, message, statistic, opts);
 
-            if ((opts & Options.SuppressUselessExpressionsElimination) == 0 && condition is ToBool)
+            if ((opts & Options.SuppressUselessExpressionsElimination) == 0 && condition is ToBooleanOperator)
             {
                 if (message != null)
                     message(MessageLevel.Warning, new CodeCoordinates(0, condition.Position, 2), "Useless conversion. Remove double negation in condition");
@@ -211,7 +211,7 @@ namespace NiL.JS.Statements
             try
             {
                 if ((opts & Options.SuppressUselessExpressionsElimination) == 0
-                    && (condition is Constant || (condition is Expression && ((Expression)condition).IsContextIndependent)))
+                    && (condition is ConstantNotation || (condition is Expression && ((Expression)condition).IsContextIndependent)))
                 {
                     if ((bool)condition.Evaluate(null))
                         _this = body;
@@ -234,7 +234,7 @@ namespace NiL.JS.Statements
             return false;
         }
 
-        internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             var cc = condition as CodeNode;
             condition.Optimize(ref cc, owner, message, opts, statistic);

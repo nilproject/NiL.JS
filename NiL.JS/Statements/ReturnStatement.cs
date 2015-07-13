@@ -71,22 +71,22 @@ namespace NiL.JS.Statements
         {
             Parser.Build(ref body, 2, variables, state, message, statistic, opts);
             // Улучшает работу оптимизатора хвостовой рекурсии
-            if (message == null && body is NiL.JS.Expressions.Ternary)
+            if (message == null && body is NiL.JS.Expressions.ConditionalOperator)
             {
-                var bat = body as NiL.JS.Expressions.Ternary;
+                var bat = body as NiL.JS.Expressions.ConditionalOperator;
                 var bts = bat.Threads;
                 _this = new IfElseStatement(bat.FirstOperand, new ReturnStatement(bts[0]), new ReturnStatement(bts[1])) { Position = bat.Position, Length = bat.Length };
                 return true;
             }
-            else if (body is NiL.JS.Expressions.Call)
-                (body as NiL.JS.Expressions.Call).allowTCO = true;
+            else if (body is NiL.JS.Expressions.CallOperator)
+                (body as NiL.JS.Expressions.CallOperator).allowTCO = true;
 
             statistic.Returns.Add(body ?? EmptyStatement.Instance);
 
             return false;
         }
 
-        internal override void Optimize(ref CodeNode _this, Expressions.FunctionExpression owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal override void Optimize(ref CodeNode _this, Expressions.FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             if (body != null)
             {

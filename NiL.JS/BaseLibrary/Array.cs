@@ -685,7 +685,7 @@ namespace NiL.JS.BaseLibrary
                         continue;
                     if (value.valueType == JSValueType.Property)
                         value = (value.oValue as PropertyPair).get == null ? undefined : (value.oValue as PropertyPair).get.Invoke(self, null);
-                    if (Expressions.StrictEqual.Check(value, image))
+                    if (Expressions.StrictEqualOperator.Check(value, image))
                         return key;
                 }
                 while (alter);
@@ -831,7 +831,7 @@ namespace NiL.JS.BaseLibrary
                         continue;
                     if (value.valueType == JSValueType.Property)
                         value = (value.oValue as PropertyPair).get == null ? undefined : (value.oValue as PropertyPair).get.Invoke(self, null);
-                    if (Expressions.StrictEqual.Check(value, image))
+                    if (Expressions.StrictEqualOperator.Check(value, image))
                         return key;
                 }
                 while (alter);

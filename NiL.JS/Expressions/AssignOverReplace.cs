@@ -6,7 +6,7 @@ namespace NiL.JS.Expressions
 #if !PORTABLE
     [Serializable]
 #endif
-    public sealed class AssignOverReplace : Assign
+    public sealed class AssignOverReplace : AssignmentOperator
     {
         public AssignOverReplace(Expression first, Expression second)
             : base(first, second)
@@ -35,7 +35,7 @@ namespace NiL.JS.Expressions
             return false;
         }
 
-        internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             // do nothing
         }

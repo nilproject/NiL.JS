@@ -41,7 +41,7 @@ namespace NiL.JS.Core
                 new _Rule("for", ForStatement.Parse),
                 new _Rule("while", WhileStatement.Parse),
                 new _Rule("return", ReturnStatement.Parse),
-                new _Rule("function", FunctionExpression.Parse),
+                new _Rule("function", FunctionNotation.Parse),
                 new _Rule("switch", SwitchStatement.Parse),
                 new _Rule("with", WithStatement.Parse),
                 new _Rule("do", DoWhileStatement.Parse),
@@ -66,7 +66,7 @@ namespace NiL.JS.Core
                 new _Rule(ValidateName, LabeledStatement.Parse),
                 new _Rule(ValidateName, ExpressionTree.Parse),
                 new _Rule(ValidateValue, ExpressionTree.Parse),
-                new _Rule("debugger", DebuggerOperator.Parse)
+                new _Rule("debugger", DebuggerStatement.Parse)
             },
             // 1
             new _Rule[] // Для операторов
@@ -95,9 +95,9 @@ namespace NiL.JS.Core
             // 2
             new _Rule[] // Для операторов №2
             {
-                new _Rule("[", ArrayExpression.Parse),
-                new _Rule("{", Json.Parse),
-                new _Rule("function", FunctionExpression.Parse),
+                new _Rule("[", ArrayNotation.Parse),
+                new _Rule("{", ObjectNotation.Parse),
+                new _Rule("function", FunctionNotation.Parse),
             },
             // 3
             new _Rule[] // Для for
@@ -136,7 +136,7 @@ namespace NiL.JS.Core
                 new _Rule("for", ForStatement.Parse),
                 new _Rule("while", WhileStatement.Parse),
                 new _Rule("return", ReturnStatement.Parse),
-                new _Rule("function", FunctionExpression.Parse),
+                new _Rule("function", FunctionNotation.Parse),
                 new _Rule("switch", SwitchStatement.Parse),
                 new _Rule("with", WithStatement.Parse),
                 new _Rule("do", DoWhileStatement.Parse),
@@ -161,7 +161,7 @@ namespace NiL.JS.Core
                 new _Rule(ValidateName, LabeledStatement.Parse),
                 new _Rule(ValidateName, ExpressionTree.Parse),
                 new _Rule(ValidateValue, ExpressionTree.Parse),
-                new _Rule("debugger", DebuggerOperator.Parse)
+                new _Rule("debugger", DebuggerStatement.Parse)
             }
         };
 

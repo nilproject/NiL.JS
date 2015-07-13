@@ -128,7 +128,7 @@ namespace NiL.JS.Core.Functions
         {
             bool bynew = false;
             if (thisOverride != null)
-                bynew = thisOverride.oValue == typeof(Expressions.New) as object;
+                bynew = thisOverride.oValue == typeof(Expressions.NewOperator) as object;
             if (!bynew)
             {
                 if (proxy.hostedType == typeof(Date))

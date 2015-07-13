@@ -59,7 +59,7 @@ namespace NiL.JS.Statements
             state.AllowBreak.Push(true);
             state.AllowContinue.Push(true);
             var body = Parser.Parse(state, ref i, 0);
-            if (body is FunctionExpression)
+            if (body is FunctionNotation)
             {
                 if (state.strict.Peek())
                     throw new JSException((new NiL.JS.BaseLibrary.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
@@ -181,7 +181,7 @@ namespace NiL.JS.Statements
             }
             Parser.Build(ref body, System.Math.Max(1, depth), variables, state | _BuildState.Conditional | _BuildState.InLoop, message, statistic, opts);
             if (condition == null)
-                condition = new Constant(NiL.JS.BaseLibrary.Boolean.True);
+                condition = new ConstantNotation(NiL.JS.BaseLibrary.Boolean.True);
             else if ((condition is Expressions.Expression)
                 && (condition as Expressions.Expression).IsContextIndependent
                 && !(bool)condition.Evaluate(null))
@@ -192,40 +192,40 @@ namespace NiL.JS.Statements
             else if (body == null || body is EmptyStatement) // initial solution. Will extended
             {
                 VariableReference variable = null;
-                Constant limit = null;
-                if (condition is NiL.JS.Expressions.Less)
+                ConstantNotation limit = null;
+                if (condition is NiL.JS.Expressions.LessOperator)
                 {
-                    variable = (condition as NiL.JS.Expressions.Less).FirstOperand as VariableReference;
-                    limit = (condition as NiL.JS.Expressions.Less).SecondOperand as Constant;
+                    variable = (condition as NiL.JS.Expressions.LessOperator).FirstOperand as VariableReference;
+                    limit = (condition as NiL.JS.Expressions.LessOperator).SecondOperand as ConstantNotation;
                 }
-                else if (condition is NiL.JS.Expressions.More)
+                else if (condition is NiL.JS.Expressions.MoreOperator)
                 {
-                    variable = (condition as NiL.JS.Expressions.More).SecondOperand as VariableReference;
-                    limit = (condition as NiL.JS.Expressions.More).FirstOperand as Constant;
+                    variable = (condition as NiL.JS.Expressions.MoreOperator).SecondOperand as VariableReference;
+                    limit = (condition as NiL.JS.Expressions.MoreOperator).FirstOperand as ConstantNotation;
                 }
-                else if (condition is NiL.JS.Expressions.NotEqual)
+                else if (condition is NiL.JS.Expressions.NotEqualOperator)
                 {
-                    variable = (condition as NiL.JS.Expressions.Less).SecondOperand as VariableReference;
-                    limit = (condition as NiL.JS.Expressions.Less).FirstOperand as Constant;
+                    variable = (condition as NiL.JS.Expressions.LessOperator).SecondOperand as VariableReference;
+                    limit = (condition as NiL.JS.Expressions.LessOperator).FirstOperand as ConstantNotation;
                     if (variable == null && limit == null)
                     {
-                        variable = (condition as NiL.JS.Expressions.Less).FirstOperand as VariableReference;
-                        limit = (condition as NiL.JS.Expressions.Less).SecondOperand as Constant;
+                        variable = (condition as NiL.JS.Expressions.LessOperator).FirstOperand as VariableReference;
+                        limit = (condition as NiL.JS.Expressions.LessOperator).SecondOperand as ConstantNotation;
                     }
                 }
                 if (variable != null
                     && limit != null
-                    && post is NiL.JS.Expressions.Incriment
-                    && ((post as NiL.JS.Expressions.Incriment).FirstOperand as VariableReference).descriptor == variable.descriptor)
+                    && post is NiL.JS.Expressions.IncrementOperator
+                    && ((post as NiL.JS.Expressions.IncrementOperator).FirstOperand as VariableReference).descriptor == variable.descriptor)
                 {
                     if (variable.functionDepth >= 0 && variable.descriptor.defineDepth >= 0)
                     {
-                        if (init is NiL.JS.Expressions.Assign
-                            && (init as NiL.JS.Expressions.Assign).FirstOperand is GetVariableExpression
-                            && ((init as NiL.JS.Expressions.Assign).FirstOperand as GetVariableExpression).descriptor == variable.descriptor)
+                        if (init is NiL.JS.Expressions.AssignmentOperator
+                            && (init as NiL.JS.Expressions.AssignmentOperator).FirstOperand is GetVariableExpression
+                            && ((init as NiL.JS.Expressions.AssignmentOperator).FirstOperand as GetVariableExpression).descriptor == variable.descriptor)
                         {
-                            var value = (init as NiL.JS.Expressions.Assign).SecondOperand;
-                            if (value is Constant)
+                            var value = (init as NiL.JS.Expressions.AssignmentOperator).SecondOperand;
+                            if (value is ConstantNotation)
                             {
                                 var vvalue = value.Evaluate(null);
                                 var lvalue = limit.Evaluate(null);
@@ -236,12 +236,12 @@ namespace NiL.JS.Statements
                                     || lvalue.valueType == JSValueType.Bool
                                     || lvalue.valueType == JSValueType.Double))
                                 {
-                                    if (!(bool)NiL.JS.Expressions.Less.Check(vvalue, lvalue))
+                                    if (!(bool)NiL.JS.Expressions.LessOperator.Check(vvalue, lvalue))
                                     {
                                         _this = init;
                                         return false;
                                     }
-                                    _this = new CodeBlock(new[] { new NiL.JS.Expressions.Assign(variable, limit), init }, false);
+                                    _this = new CodeBlock(new[] { new NiL.JS.Expressions.AssignmentOperator(variable, limit), init }, false);
                                     return true;
                                 }
                             }
@@ -252,7 +252,7 @@ namespace NiL.JS.Statements
             return false;
         }
 
-        internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             if (init != null)
                 init.Optimize(ref init, owner, message, opts, statistic);

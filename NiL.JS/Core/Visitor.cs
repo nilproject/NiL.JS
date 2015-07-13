@@ -15,27 +15,27 @@ namespace NiL.JS.Core
     {
         internal protected abstract T Visit(CodeNode node);
 
-        internal protected virtual T Visit(Addition node)
+        internal protected virtual T Visit(AdditionOperator node)
         {
             return Visit(node as Expression);
         }
 
-        internal protected virtual T Visit(And node)
+        internal protected virtual T Visit(BitwiseConjunctionOperator node)
         {
             return Visit(node as Expression);
         }
 
-        internal protected virtual T Visit(ArrayExpression node)
+        internal protected virtual T Visit(ArrayNotation node)
         {
             return Visit(node as Expression);
         }
 
-        internal protected virtual T Visit(Assign node)
+        internal protected virtual T Visit(AssignmentOperator node)
         {
             return Visit(node as Expression);
         }
 
-        internal protected virtual T Visit(Call node)
+        internal protected virtual T Visit(CallOperator node)
         {
             return Visit(node as Expression);
         }
@@ -45,17 +45,17 @@ namespace NiL.JS.Core
             return Visit(node as Expression);
         }
 
-        internal protected virtual T Visit(Constant node)
+        internal protected virtual T Visit(ConstantNotation node)
         {
             return Visit(node as Expression);
         }
 
-        internal protected virtual T Visit(Decriment node)
+        internal protected virtual T Visit(DecrementOperator node)
         {
             return Visit(node as Expression);
         }
 
-        internal protected virtual T Visit(Delete node)
+        internal protected virtual T Visit(DeleteOperator node)
         {
             return Visit(node as Expression);
         }
@@ -65,12 +65,12 @@ namespace NiL.JS.Core
             return Visit(node as Expression);
         }
 
-        internal protected virtual T Visit(Division node)
+        internal protected virtual T Visit(DivisionOperator node)
         {
             return Visit(node as Expression);
         }
 
-        internal protected virtual T Visit(Equal node)
+        internal protected virtual T Visit(EqualOperator node)
         {
             return Visit(node as Expression);
         }
@@ -80,12 +80,12 @@ namespace NiL.JS.Core
             return Visit(node as CodeNode);
         }
 
-        internal protected virtual T Visit(FunctionExpression node)
+        internal protected virtual T Visit(FunctionNotation node)
         {
             return Visit(node as Expression);
         }
 
-        internal protected virtual T Visit(GetMemberExpression node)
+        internal protected virtual T Visit(GetMemberOperator node)
         {
             return Visit(node as Expression);
         }
@@ -100,122 +100,122 @@ namespace NiL.JS.Core
             return Visit(node as Expression);
         }
 
-        internal protected virtual T Visit(In node)
+        internal protected virtual T Visit(InOperator node)
         {
             return Visit(node as Expression);
         }
 
-        internal protected virtual T Visit(Incriment node)
+        internal protected virtual T Visit(IncrementOperator node)
         {
             return Visit(node as Expression);
         }
 
-        internal protected virtual T Visit(InstanceOf node)
+        internal protected virtual T Visit(InstanceOfOperator node)
         {
             return Visit(node as Expression);
         }
 
-        internal protected virtual T Visit(Json node)
+        internal protected virtual T Visit(ObjectNotation  node)
         {
             return Visit(node as Expression);
         }
 
-        internal protected virtual T Visit(Less node)
+        internal protected virtual T Visit(LessOperator node)
         {
             return Visit(node as Expression);
         }
 
-        internal protected virtual T Visit(LessOrEqual node)
+        internal protected virtual T Visit(LessOrEqualOperator node)
         {
             return Visit(node as Expression);
         }
 
-        internal protected virtual T Visit(LogicalAnd node)
+        internal protected virtual T Visit(LogicalConjunctionOperator node)
         {
             return Visit(node as Expression);
         }
 
-        internal protected virtual T Visit(LogicalNot node)
+        internal protected virtual T Visit(LogicalNegationOperator node)
         {
             return Visit(node as Expression);
         }
 
-        internal protected virtual T Visit(LogicalOr node)
+        internal protected virtual T Visit(LogicalDisjunctionOperator node)
         {
             return Visit(node as Expression);
         }
 
-        internal protected virtual T Visit(Mod node)
+        internal protected virtual T Visit(ModuloOperator node)
         {
             return Visit(node as Expression);
         }
 
-        internal protected virtual T Visit(More node)
+        internal protected virtual T Visit(MoreOperator node)
         {
             return Visit(node as Expression);
         }
 
-        internal protected virtual T Visit(MoreOrEqual node)
+        internal protected virtual T Visit(MoreOrEqualOperator node)
         {
             return Visit(node as Expression);
         }
 
-        internal protected virtual T Visit(Mul node)
+        internal protected virtual T Visit(MultiplicationOperator node)
         {
             return Visit(node as Expression);
         }
 
-        internal protected virtual T Visit(Neg node)
+        internal protected virtual T Visit(NegationOperator node)
         {
             return Visit(node as Expression);
         }
 
-        internal protected virtual T Visit(New node)
+        internal protected virtual T Visit(NewOperator node)
         {
             return Visit(node as Expression);
         }
 
-        internal protected virtual T Visit(None node)
+        internal protected virtual T Visit(CommaOperator node)
         {
             return Visit(node as Expression);
         }
 
-        internal protected virtual T Visit(Not node)
+        internal protected virtual T Visit(BitwiseNegationOperator node)
         {
             return Visit(node as Expression);
         }
 
-        internal protected virtual T Visit(NotEqual node)
+        internal protected virtual T Visit(NotEqualOperator node)
         {
             return Visit(node as Expression);
         }
 
-        internal protected virtual T Visit(NumberAddition node)
+        internal protected virtual T Visit(NumberAdditionOperator node)
         {
             return Visit(node as Expression);
         }
 
-        internal protected virtual T Visit(NumberLess node)
+        internal protected virtual T Visit(NumberLessOperator node)
         {
             return Visit(node as Expression);
         }
 
-        internal protected virtual T Visit(NumberLessOrEqual node)
+        internal protected virtual T Visit(NumberLessOrEqualOperator node)
         {
             return Visit(node as Expression);
         }
 
-        internal protected virtual T Visit(NumberMore node)
+        internal protected virtual T Visit(NumberMoreOpeartor node)
         {
             return Visit(node as Expression);
         }
 
-        internal protected virtual T Visit(NumberMoreOrEqual node)
+        internal protected virtual T Visit(NumberMoreOrEqualOperator node)
         {
             return Visit(node as Expression);
         }
 
-        internal protected virtual T Visit(Or node)
+        internal protected virtual T Visit(BitwiseDisjunctionOperator node)
         {
             return Visit(node as Expression);
         }
@@ -230,82 +230,82 @@ namespace NiL.JS.Core
             return Visit(node as Expression);
         }
 
-        internal protected virtual T Visit(SignedShiftLeft node)
+        internal protected virtual T Visit(SignedShiftLeftOperator node)
         {
             return Visit(node as Expression);
         }
 
-        internal protected virtual T Visit(SignedShiftRight node)
+        internal protected virtual T Visit(SignedShiftRightOperator node)
         {
             return Visit(node as Expression);
         }
 
-        internal protected virtual T Visit(StrictEqual node)
+        internal protected virtual T Visit(StrictEqualOperator node)
         {
             return Visit(node as Expression);
         }
 
-        internal protected virtual T Visit(StrictNotEqual node)
+        internal protected virtual T Visit(StrictNotEqualOperator node)
         {
             return Visit(node as Expression);
         }
 
-        internal protected virtual T Visit(StringConcat node)
+        internal protected virtual T Visit(StringConcatenationExpression node)
         {
             return Visit(node as Expression);
         }
 
-        internal protected virtual T Visit(Substract node)
+        internal protected virtual T Visit(SubstractOperator node)
         {
             return Visit(node as Expression);
         }
 
-        internal protected virtual T Visit(Ternary node)
+        internal protected virtual T Visit(ConditionalOperator node)
         {
             return Visit(node as Expression);
         }
 
-        internal protected virtual T Visit(ToBool node)
+        internal protected virtual T Visit(ToBooleanOperator node)
         {
             return Visit(node as Expression);
         }
 
-        internal protected virtual T Visit(ToInt node)
+        internal protected virtual T Visit(ToIntegerOperator node)
         {
             return Visit(node as Expression);
         }
 
-        internal protected virtual T Visit(ToNumber node)
+        internal protected virtual T Visit(ToNumberOperator node)
         {
             return Visit(node as Expression);
         }
 
-        internal protected virtual T Visit(ToStr node)
+        internal protected virtual T Visit(ToStringExpression node)
         {
             return Visit(node as Expression);
         }
 
-        internal protected virtual T Visit(ToUInt node)
+        internal protected virtual T Visit(ToUnsignedIntegerExpression node)
         {
             return Visit(node as Expression);
         }
 
-        internal protected virtual T Visit(TypeOf node)
+        internal protected virtual T Visit(TypeOfOperator node)
         {
             return Visit(node as Expression);
         }
 
-        internal protected virtual T Visit(UnsignedShiftRight node)
+        internal protected virtual T Visit(UnsignedShiftRightOperator node)
         {
             return Visit(node as Expression);
         }
 
-        internal protected virtual T Visit(Xor node)
+        internal protected virtual T Visit(BitwiseExclusiveDisjunctionOperator node)
         {
             return Visit(node as Expression);
         }
 #if !PORTABLE
-        internal protected virtual T Visit(Yield node)
+        internal protected virtual T Visit(YieldOperator node)
         {
             return Visit(node as Expression);
         }
@@ -325,7 +325,7 @@ namespace NiL.JS.Core
             return Visit(node as CodeNode);
         }
 
-        internal protected virtual T Visit(DebuggerOperator node)
+        internal protected virtual T Visit(DebuggerStatement node)
         {
             return Visit(node as CodeNode);
         }
@@ -365,7 +365,7 @@ namespace NiL.JS.Core
             return Visit(node as CodeNode);
         }
 
-        internal protected virtual T Visit(InfinityLoop node)
+        internal protected virtual T Visit(InfinityLoopStatement node)
         {
             return Visit(node as CodeNode);
         }

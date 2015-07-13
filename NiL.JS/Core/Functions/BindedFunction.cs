@@ -95,7 +95,7 @@ namespace NiL.JS.Core.Functions
                 for (var i = bindedArguments.length; i-- > 0; )
                     args[i] = bindedArguments[i];
             }
-            if (thisBind != null && thisBind.oValue == typeof(New) as object)
+            if (thisBind != null && thisBind.oValue == typeof(NewOperator) as object)
                 return proto.Invoke(thisBind, args);
             return proto.Invoke(this.thisBind, args);
         }

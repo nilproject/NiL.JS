@@ -53,7 +53,7 @@ namespace NiL.JS.Statements
                 return res;
             }
 
-            internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+            internal override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
             {
                 var v = variable as CodeNode;
                 variable.Optimize(ref v, owner, message, opts, statistic);
@@ -161,7 +161,7 @@ namespace NiL.JS.Statements
                     if (isConst)
                         source = new AllowWriteCN(accm, source);
                     initializator.Add(
-                        new Assign(
+                        new AssignmentOperator(
                             accm,
                             source)
                         {
@@ -282,7 +282,7 @@ namespace NiL.JS.Statements
             return false;
         }
 
-        internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             for (int i = 0; i < initializators.Length; i++)
             {

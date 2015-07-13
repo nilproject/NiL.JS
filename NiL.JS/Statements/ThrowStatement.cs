@@ -16,7 +16,7 @@ namespace NiL.JS.Statements
 
         public ThrowStatement(Exception e)
         {
-            body = new Constant(TypeProxy.Proxy(e));
+            body = new ConstantNotation(TypeProxy.Proxy(e));
         }
 
         internal ThrowStatement(CodeNode statement)
@@ -68,7 +68,7 @@ namespace NiL.JS.Statements
             return false;
         }
 
-        internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             if (body != null)
                 body.Optimize(ref body, owner, message, opts, statistic);

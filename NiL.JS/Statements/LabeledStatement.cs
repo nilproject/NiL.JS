@@ -34,7 +34,7 @@ namespace NiL.JS.Statements
             state.AllowBreak.Pop();
             state.Labels.Remove(label);
             state.LabelCount = oldlc;
-            if (stat is FunctionExpression)
+            if (stat is FunctionNotation)
             {
                 if (state.message != null)
                     state.message(MessageLevel.CriticalWarning, CodeCoordinates.FromTextPosition(state.Code, stat.Position, stat.Length), "Labeled function. Are you sure?.");
@@ -78,7 +78,7 @@ namespace NiL.JS.Statements
             return false;
         }
 
-        internal override void Optimize(ref CodeNode _this, Expressions.FunctionExpression owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal override void Optimize(ref CodeNode _this, Expressions.FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             statement.Optimize(ref statement, owner, message, opts, statistic);
         }

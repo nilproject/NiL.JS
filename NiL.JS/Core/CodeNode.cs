@@ -76,7 +76,7 @@ namespace NiL.JS.Core
             return false;
         }
 
-        internal virtual void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal virtual void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
 
         }

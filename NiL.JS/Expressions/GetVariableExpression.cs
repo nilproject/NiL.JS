@@ -168,7 +168,7 @@ namespace NiL.JS.Expressions
             return false;
         }
 
-        internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             base.Optimize(ref _this, owner, message, opts, statistic);
             if ((opts & Options.SuppressConstantPropogation) == 0
@@ -205,8 +205,8 @@ namespace NiL.JS.Expressions
 
                         if (descriptor.isReadOnly)
                         {
-                            if ((assigns[i] is Assign)
-                                && (assigns[i] as Assign).first is Statements.VariableDefineStatement.AllowWriteCN)
+                            if ((assigns[i] is AssignmentOperator)
+                                && (assigns[i] as AssignmentOperator).first is Statements.VariableDefineStatement.AllowWriteCN)
                             {
                                 lastAssign = assigns[i];
                                 break;
@@ -217,8 +217,8 @@ namespace NiL.JS.Expressions
                             lastAssign = assigns[i];
                         }
                     }
-                    var assign = lastAssign as Assign;
-                    if (assign != null && (assign.codeContext & _BuildState.Conditional) == 0 && assign.second is Constant)
+                    var assign = lastAssign as AssignmentOperator;
+                    if (assign != null && (assign.codeContext & _BuildState.Conditional) == 0 && assign.second is ConstantNotation)
                     {
                         _this = assign.second;
                     }

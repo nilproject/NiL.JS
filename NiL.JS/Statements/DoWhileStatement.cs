@@ -40,7 +40,7 @@ namespace NiL.JS.Statements
             int ccs = state.continiesCount;
             int cbs = state.breaksCount;
             var body = Parser.Parse(state, ref i, 4);
-            if (body is FunctionExpression)
+            if (body is FunctionNotation)
             {
                 if (state.strict.Peek())
                     throw new JSException((new NiL.JS.BaseLibrary.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
@@ -134,10 +134,10 @@ namespace NiL.JS.Statements
             {
                 if (allowRemove
                     && (opts & Options.SuppressUselessExpressionsElimination) == 0
-                    && (condition is Constant || (condition as Expressions.Expression).IsContextIndependent))
+                    && (condition is ConstantNotation || (condition as Expressions.Expression).IsContextIndependent))
                 {
                     if ((bool)condition.Evaluate(null))
-                        _this = new InfinityLoop(body, labels);
+                        _this = new InfinityLoopStatement(body, labels);
                     else if (labels.Length == 0)
                         _this = body;
                     condition.Eliminated = true;
@@ -158,7 +158,7 @@ namespace NiL.JS.Statements
             return false;
         }
 
-        internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             condition.Optimize(ref condition, owner, message, opts, statistic);
             body.Optimize(ref body, owner, message, opts, statistic);

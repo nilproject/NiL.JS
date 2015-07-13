@@ -10,6 +10,18 @@ namespace NiL.JS.Expressions
 #endif
     public abstract class Expression : CodeNode
     {
+        /*
+         * Правила именования:
+         *      Один оператор в выражении:                  <смысл выражения>Operator. Конструкция "!!" рассматривается как один унарный оператор
+         *      Два или более оператора в выражении:        <смысл выражения>Expression. StringConcatenationExpression может содержать более одного оператора "+", а ToIntExpression состоит из операторов "|0" и "()"
+         *      Операторов нет, но есть описание сущности:  <смысл выражения>Notation.
+         *      Исключения: 
+         *          GetVariableExpression - оператора получения переменной нет, сущность не описывается
+         *          
+         * Наследниками Expression являются только те конструкции, которые могут возвращать значени (r-value).
+         */
+
+
         internal JSValue tempContainer;
 
         internal protected virtual PredictedType ResultType
@@ -51,8 +63,8 @@ namespace NiL.JS.Expressions
         {
             get
             {
-                return (first == null || first is Constant || (first is Expression && ((Expression)first).IsContextIndependent))
-                    && (second == null || second is Constant || (second is Expression && ((Expression)second).IsContextIndependent));
+                return (first == null || first is ConstantNotation || (first is Expression && ((Expression)first).IsContextIndependent))
+                    && (second == null || second is ConstantNotation || (second is Expression && ((Expression)second).IsContextIndependent));
             }
         }
 
@@ -89,12 +101,12 @@ namespace NiL.JS.Expressions
                         res.iValue = (int)res.dValue;
                         res.valueType = JSValueType.Int;
                     }
-                    _this = new Constant(res);
+                    _this = new ConstantNotation(res);
                     return true;
                 }
                 catch (JSException e)
                 {
-                    _this = new ExpressionWrapper(new ThrowStatement(new Constant(e.Avatar)));
+                    _this = new ExpressionWrapper(new ThrowStatement(new ConstantNotation(e.Avatar)));
                     expressionWillThrow(message);
                     return true;
                 }
@@ -108,12 +120,12 @@ namespace NiL.JS.Expressions
             return false;
         }
 
-        internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             baseOptimize(ref _this, owner, message, opts, statistic);
         }
 
-        internal void baseOptimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal void baseOptimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             var f = first as CodeNode;
             var s = second as CodeNode;
@@ -127,15 +139,15 @@ namespace NiL.JS.Expressions
                 s.Optimize(ref s, owner, message, opts, statistic);
                 second = s as Expression;
             }
-            if (IsContextIndependent && !(this is Constant))
+            if (IsContextIndependent && !(this is ConstantNotation))
             {
                 try
                 {
-                    _this = new Constant(Evaluate(null));
+                    _this = new ConstantNotation(Evaluate(null));
                 }
                 catch (JSException e)
                 {
-                    _this = new ExpressionWrapper(new ThrowStatement(new Constant(e.Avatar)));
+                    _this = new ExpressionWrapper(new ThrowStatement(new ConstantNotation(e.Avatar)));
                     expressionWillThrow(message);
                 }
                 catch (Exception e)

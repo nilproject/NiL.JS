@@ -24,12 +24,12 @@ namespace NiL.JS.Statements
 #endif
     public sealed class SwitchStatement : CodeNode
     {
-        private FunctionExpression[] functions;
+        private FunctionNotation[] functions;
         private readonly CodeNode[] lines;
         private SwitchCase[] cases;
         private CodeNode image;
 
-        public FunctionExpression[] Functions { get { return functions; } }
+        public FunctionNotation[] Functions { get { return functions; } }
         public CodeNode[] Body { get { return lines; } }
         public SwitchCase[] Cases { get { return cases; } }
         public CodeNode Image { get { return image; } }
@@ -53,7 +53,7 @@ namespace NiL.JS.Statements
                 throw new JSException((new SyntaxError("Expected \"{\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
             do i++; while (char.IsWhiteSpace(state.Code[i]));
             var body = new List<CodeNode>();
-            var funcs = new List<FunctionExpression>();
+            var funcs = new List<FunctionNotation>();
             var cases = new List<SwitchCase>();
             cases.Add(null);
             state.AllowBreak.Push(true);
@@ -90,11 +90,11 @@ namespace NiL.JS.Statements
                 var t = Parser.Parse(state, ref i, 0);
                 if (t == null)
                     continue;
-                if (t is FunctionExpression)
+                if (t is FunctionNotation)
                 {
                     if (state.strict.Peek())
                         throw new JSException((new NiL.JS.BaseLibrary.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
-                    funcs.Add(t as FunctionExpression);
+                    funcs.Add(t as FunctionNotation);
                 }
                 else
                     body.Add(t);
@@ -130,7 +130,7 @@ namespace NiL.JS.Statements
                 if (context.debugging)
                     context.raiseDebugger(cases[j].statement);
 #endif
-                if (Expressions.StrictEqual.Check(imageVal, cases[j].statement.Evaluate(context)))
+                if (Expressions.StrictEqualOperator.Check(imageVal, cases[j].statement.Evaluate(context)))
                 {
                     i = cases[j].index;
                     break;
@@ -203,7 +203,7 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override void Optimize(ref CodeNode _this, Expressions.FunctionExpression owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal override void Optimize(ref CodeNode _this, Expressions.FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             image.Optimize(ref image, owner, message, opts, statistic);
             for (var i = 1; i < cases.Length; i++)

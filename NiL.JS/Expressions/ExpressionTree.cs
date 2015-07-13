@@ -112,27 +112,27 @@ namespace NiL.JS.Statements
                 {
                     case OperationType.Multiply:
                         {
-                            fastImpl = new Expressions.Mul(first, second);
+                            fastImpl = new Expressions.MultiplicationOperator(first, second);
                             break;
                         }
                     case OperationType.None:
                         {
-                            fastImpl = new Expressions.None(first, second);
+                            fastImpl = new Expressions.CommaOperator(first, second);
                             break;
                         }
                     case OperationType.Assign:
                         {
-                            fastImpl = new Expressions.Assign(first, second);
+                            fastImpl = new Expressions.AssignmentOperator(first, second);
                             break;
                         }
                     case OperationType.Less:
                         {
-                            fastImpl = new Expressions.Less(first, second);
+                            fastImpl = new Expressions.LessOperator(first, second);
                             break;
                         }
                     case OperationType.Incriment:
                         {
-                            fastImpl = new Expressions.Incriment(first ?? second, first == null ? Expressions.IncrimentType.Postincriment : Expressions.IncrimentType.Preincriment);
+                            fastImpl = new Expressions.IncrementOperator(first ?? second, first == null ? Expressions.IncrimentType.Postincriment : Expressions.IncrimentType.Preincriment);
                             break;
                         }
                     case OperationType.Call:
@@ -143,112 +143,112 @@ namespace NiL.JS.Statements
                         }
                     case OperationType.Decriment:
                         {
-                            fastImpl = new Expressions.Decriment(first ?? second, first == null ? Expressions.DecrimentType.Postdecriment : Expressions.DecrimentType.Postdecriment);
+                            fastImpl = new Expressions.DecrementOperator(first ?? second, first == null ? Expressions.DecrimentType.Postdecriment : Expressions.DecrimentType.Postdecriment);
                             break;
                         }
                     case OperationType.LessOrEqual:
                         {
-                            fastImpl = new Expressions.LessOrEqual(first, second);
+                            fastImpl = new Expressions.LessOrEqualOperator(first, second);
                             break;
                         }
                     case OperationType.Addition:
                         {
-                            fastImpl = new Expressions.Addition(first, second);
+                            fastImpl = new Expressions.AdditionOperator(first, second);
                             break;
                         }
                     case OperationType.StrictNotEqual:
                         {
-                            fastImpl = new Expressions.StrictNotEqual(first, second);
+                            fastImpl = new Expressions.StrictNotEqualOperator(first, second);
                             break;
                         }
                     case OperationType.More:
                         {
-                            fastImpl = new Expressions.More(first, second);
+                            fastImpl = new Expressions.MoreOperator(first, second);
                             break;
                         }
                     case OperationType.MoreOrEqual:
                         {
-                            fastImpl = new Expressions.MoreOrEqual(first, second);
+                            fastImpl = new Expressions.MoreOrEqualOperator(first, second);
                             break;
                         }
                     case OperationType.Division:
                         {
-                            fastImpl = new Expressions.Division(first, second);
+                            fastImpl = new Expressions.DivisionOperator(first, second);
                             break;
                         }
                     case OperationType.Equal:
                         {
-                            fastImpl = new Expressions.Equal(first, second);
+                            fastImpl = new Expressions.EqualOperator(first, second);
                             break;
                         }
                     case OperationType.Substract:
                         {
-                            fastImpl = new Expressions.Substract(first, second);
+                            fastImpl = new Expressions.SubstractOperator(first, second);
                             break;
                         }
                     case OperationType.StrictEqual:
                         {
-                            fastImpl = new Expressions.StrictEqual(first, second);
+                            fastImpl = new Expressions.StrictEqualOperator(first, second);
                             break;
                         }
                     case OperationType.LogicalOr:
                         {
-                            fastImpl = new Expressions.LogicalOr(first, second);
+                            fastImpl = new Expressions.LogicalDisjunctionOperator(first, second);
                             break;
                         }
                     case OperationType.LogicalAnd:
                         {
-                            fastImpl = new Expressions.LogicalAnd(first, second);
+                            fastImpl = new Expressions.LogicalConjunctionOperator(first, second);
                             break;
                         }
                     case OperationType.NotEqual:
                         {
-                            fastImpl = new Expressions.NotEqual(first, second);
+                            fastImpl = new Expressions.NotEqualOperator(first, second);
                             break;
                         }
                     case OperationType.UnsignedShiftRight:
                         {
-                            fastImpl = new Expressions.UnsignedShiftRight(first, second);
+                            fastImpl = new Expressions.UnsignedShiftRightOperator(first, second);
                             break;
                         }
                     case OperationType.SignedShiftLeft:
                         {
-                            fastImpl = new Expressions.SignedShiftLeft(first, second);
+                            fastImpl = new Expressions.SignedShiftLeftOperator(first, second);
                             break;
                         }
                     case OperationType.SignedShiftRight:
                         {
-                            fastImpl = new Expressions.SignedShiftRight(first, second);
+                            fastImpl = new Expressions.SignedShiftRightOperator(first, second);
                             break;
                         }
                     case OperationType.Module:
                         {
-                            fastImpl = new Expressions.Mod(first, second);
+                            fastImpl = new Expressions.ModuloOperator(first, second);
                             break;
                         }
                     case OperationType.LogicalNot:
                         {
-                            fastImpl = new Expressions.LogicalNot(first);
+                            fastImpl = new Expressions.LogicalNegationOperator(first);
                             break;
                         }
                     case OperationType.Not:
                         {
-                            fastImpl = new Expressions.Not(first);
+                            fastImpl = new Expressions.BitwiseNegationOperator(first);
                             break;
                         }
                     case OperationType.Xor:
                         {
-                            fastImpl = new Expressions.Xor(first, second);
+                            fastImpl = new Expressions.BitwiseExclusiveDisjunctionOperator(first, second);
                             break;
                         }
                     case OperationType.Or:
                         {
-                            fastImpl = new Expressions.Or(first, second);
+                            fastImpl = new Expressions.BitwiseDisjunctionOperator(first, second);
                             break;
                         }
                     case OperationType.And:
                         {
-                            fastImpl = new Expressions.And(first, second);
+                            fastImpl = new Expressions.BitwiseConjunctionOperator(first, second);
                             break;
                         }
                     case OperationType.Ternary:
@@ -257,12 +257,12 @@ namespace NiL.JS.Statements
                                 && (second as ExpressionTree)._type == OperationType.None
                                 && (second as ExpressionTree).second == null)
                                 second = (second as ExpressionTree).first;
-                            fastImpl = new Expressions.Ternary(first, (Expression[])second.Evaluate(null).oValue);
+                            fastImpl = new Expressions.ConditionalOperator(first, (Expression[])second.Evaluate(null).oValue);
                             break;
                         }
                     case OperationType.TypeOf:
                         {
-                            fastImpl = new Expressions.TypeOf(first);
+                            fastImpl = new Expressions.TypeOfOperator(first);
                             break;
                         }
                     case OperationType.New:
@@ -273,23 +273,23 @@ namespace NiL.JS.Statements
                         }
                     case OperationType.Delete:
                         {
-                            fastImpl = new Expressions.Delete(first);
+                            fastImpl = new Expressions.DeleteOperator(first);
                             break;
                         }
                     case OperationType.InstanceOf:
                         {
-                            fastImpl = new Expressions.InstanceOf(first, second);
+                            fastImpl = new Expressions.InstanceOfOperator(first, second);
                             break;
                         }
                     case OperationType.In:
                         {
-                            fastImpl = new Expressions.In(first, second);
+                            fastImpl = new Expressions.InOperator(first, second);
                             break;
                         }
 #if !PORTABLE
                     case OperationType.Yield:
                         {
-                            fastImpl = new Expressions.Yield(first);
+                            fastImpl = new Expressions.YieldOperator(first);
                             break;
                         }
 #endif
@@ -389,7 +389,7 @@ namespace NiL.JS.Statements
                 do
                     i++;
                 while (char.IsWhiteSpace(state.Code[i]));
-                first = new Constant(new JSValue() { valueType = JSValueType.Object, oValue = threads }) { Position = position };
+                first = new ConstantNotation(new JSValue() { valueType = JSValueType.Object, oValue = threads }) { Position = position };
                 threads[1] = (Expression)ExpressionTree.Parse(state, ref i, false, false, false, true, false, forEnumeration).Statement;
                 first.Length = i - first.Position;
             }
@@ -397,7 +397,7 @@ namespace NiL.JS.Statements
             {
                 var name = Tools.Unescape(state.Code.Substring(s, i - s), state.strict.Peek());
                 if (name == "undefined")
-                    first = new Constant(JSValue.undefined) { Position = index, Length = i - index };
+                    first = new ConstantNotation(JSValue.undefined) { Position = index, Length = i - index };
                 else
                     first = new GetVariableExpression(name, state.functionsDepth) { Position = index, Length = i - index, functionDepth = state.functionsDepth };
             }
@@ -408,17 +408,17 @@ namespace NiL.JS.Statements
                 {
                     value = Tools.Unescape(value.Substring(1, value.Length - 2), state.strict.Peek());
                     if (state.stringConstants.ContainsKey(value))
-                        first = new Constant(state.stringConstants[value]) { Position = index, Length = i - s };
+                        first = new ConstantNotation(state.stringConstants[value]) { Position = index, Length = i - s };
                     else
-                        first = new Constant(state.stringConstants[value] = value) { Position = index, Length = i - s };
+                        first = new ConstantNotation(state.stringConstants[value] = value) { Position = index, Length = i - s };
                 }
                 else
                 {
                     bool b = false;
                     if (value == "null")
-                        first = new Constant(JSValue.Null) { Position = s, Length = i - s };
+                        first = new ConstantNotation(JSValue.Null) { Position = s, Length = i - s };
                     else if (bool.TryParse(value, out b))
-                        first = new Constant(b ? NiL.JS.BaseLibrary.Boolean.True : NiL.JS.BaseLibrary.Boolean.False) { Position = index, Length = i - s };
+                        first = new ConstantNotation(b ? NiL.JS.BaseLibrary.Boolean.True : NiL.JS.BaseLibrary.Boolean.False) { Position = index, Length = i - s };
                     else
                     {
                         int n = 0;
@@ -428,16 +428,16 @@ namespace NiL.JS.Statements
                             if ((n = (int)d) == d && !double.IsNegativeInfinity(1.0 / d))
                             {
                                 if (state.intConstants.ContainsKey(n))
-                                    first = new Constant(state.intConstants[n]) { Position = index, Length = i - index };
+                                    first = new ConstantNotation(state.intConstants[n]) { Position = index, Length = i - index };
                                 else
-                                    first = new Constant(state.intConstants[n] = n) { Position = index, Length = i - index };
+                                    first = new ConstantNotation(state.intConstants[n] = n) { Position = index, Length = i - index };
                             }
                             else
                             {
                                 if (state.doubleConstants.ContainsKey(d))
-                                    first = new Constant(state.doubleConstants[d]) { Position = index, Length = i - index };
+                                    first = new ConstantNotation(state.doubleConstants[d]) { Position = index, Length = i - index };
                                 else
-                                    first = new Constant(state.doubleConstants[d] = d) { Position = index, Length = i - index };
+                                    first = new ConstantNotation(state.doubleConstants[d] = d) { Position = index, Length = i - index };
                             }
                         }
                         else if (Parser.ValidateRegex(state.Code, ref s, true))
@@ -483,7 +483,7 @@ namespace NiL.JS.Statements
                                 if (i >= state.Code.Length)
                                     throw new JSException(new SyntaxError("Unexpected end of source."));
                                 first = (Expression)Parse(state, ref i, true, true, false, true, false, forEnumeration).Statement;
-                                if (((first as GetMemberExpression) as object ?? (first as GetVariableExpression)) == null)
+                                if (((first as GetMemberOperator) as object ?? (first as GetVariableExpression)) == null)
                                 {
                                     var cord = CodeCoordinates.FromTextPosition(state.Code, i, 0);
                                     throw new JSException((new SyntaxError("Invalid prefix operation. " + cord)));
@@ -491,14 +491,14 @@ namespace NiL.JS.Statements
                                 if (state.strict.Peek()
                                     && (first is GetVariableExpression) && ((first as GetVariableExpression).Name == "arguments" || (first as GetVariableExpression).Name == "eval"))
                                     throw new JSException(new SyntaxError("Can not incriment \"" + (first as GetVariableExpression).Name + "\" in strict mode."));
-                                first = new Expressions.Incriment(first, Expressions.IncrimentType.Preincriment) { Position = index, Length = i - index };
+                                first = new Expressions.IncrementOperator(first, Expressions.IncrimentType.Preincriment) { Position = index, Length = i - index };
                             }
                             else
                             {
                                 while (char.IsWhiteSpace(state.Code[i]))
                                     i++;
                                 var f = (Expression)Parse(state, ref i, true, true, false, true, false, forEnumeration).Statement;
-                                first = new Expressions.ToNumber(f) { Position = index, Length = i - index };
+                                first = new Expressions.ToNumberOperator(f) { Position = index, Length = i - index };
                             }
                             break;
                         }
@@ -513,7 +513,7 @@ namespace NiL.JS.Statements
                                 if (i >= state.Code.Length)
                                     throw new JSException(new SyntaxError("Unexpected end of source."));
                                 first = (Expression)Parse(state, ref i, true, true, false, true, false, forEnumeration).Statement;
-                                if (((first as GetMemberExpression) as object ?? (first as GetVariableExpression)) == null)
+                                if (((first as GetMemberOperator) as object ?? (first as GetVariableExpression)) == null)
                                 {
                                     var cord = CodeCoordinates.FromTextPosition(state.Code, i, 0);
                                     throw new JSException((new SyntaxError("Invalid prefix operation. " + cord)));
@@ -521,14 +521,14 @@ namespace NiL.JS.Statements
                                 if (state.strict.Peek()
                                     && (first is GetVariableExpression) && ((first as GetVariableExpression).Name == "arguments" || (first as GetVariableExpression).Name == "eval"))
                                     throw new JSException(new SyntaxError("Can not decriment \"" + (first as GetVariableExpression).Name + "\" in strict mode."));
-                                first = new Expressions.Decriment(first, Expressions.DecrimentType.Predecriment) { Position = index, Length = i - index };
+                                first = new Expressions.DecrementOperator(first, Expressions.DecrimentType.Predecriment) { Position = index, Length = i - index };
                             }
                             else
                             {
                                 while (char.IsWhiteSpace(state.Code[i]))
                                     i++;
                                 var f = (Expression)Parse(state, ref i, true, true, false, true, false, forEnumeration).Statement;
-                                first = new Expressions.Neg(f) { Position = index, Length = i - index };
+                                first = new Expressions.NegationOperator(f) { Position = index, Length = i - index };
                             }
                             break;
                         }
@@ -537,7 +537,7 @@ namespace NiL.JS.Statements
                             do
                                 i++;
                             while (char.IsWhiteSpace(state.Code[i]));
-                            first = new Expressions.LogicalNot((Expression)Parse(state, ref i, true, true, false, true, false, forEnumeration).Statement) { Position = index, Length = i - index };
+                            first = new Expressions.LogicalNegationOperator((Expression)Parse(state, ref i, true, true, false, true, false, forEnumeration).Statement) { Position = index, Length = i - index };
                             if (first == null)
                             {
                                 var cord = CodeCoordinates.FromTextPosition(state.Code, i, 0);
@@ -556,7 +556,7 @@ namespace NiL.JS.Statements
                                 var cord = CodeCoordinates.FromTextPosition(state.Code, i, 0);
                                 throw new JSException((new SyntaxError("Invalid prefix operation. " + cord)));
                             }
-                            first = new Expressions.Not(first) { Position = index, Length = i - index };
+                            first = new Expressions.BitwiseNegationOperator(first) { Position = index, Length = i - index };
                             break;
                         }
                     case 't':
@@ -571,7 +571,7 @@ namespace NiL.JS.Statements
                                 var cord = CodeCoordinates.FromTextPosition(state.Code, i, 0);
                                 throw new JSException((new SyntaxError("Invalid prefix operation. " + cord)));
                             }
-                            first = new Expressions.TypeOf(first) { Position = index, Length = i - index };
+                            first = new Expressions.TypeOfOperator(first) { Position = index, Length = i - index };
                             break;
                         }
                     case 'v':
@@ -580,7 +580,7 @@ namespace NiL.JS.Statements
                             do
                                 i++;
                             while (char.IsWhiteSpace(state.Code[i]));
-                            first = new Expressions.None((Expression)Parse(state, ref i, false, true, false, true, false, forEnumeration).Statement, new Constant(JSValue.undefined)) { Position = index, Length = i - index };
+                            first = new Expressions.CommaOperator((Expression)Parse(state, ref i, false, true, false, true, false, forEnumeration).Statement, new ConstantNotation(JSValue.undefined)) { Position = index, Length = i - index };
                             if (first == null)
                             {
                                 var cord = CodeCoordinates.FromTextPosition(state.Code, i, 0);
@@ -600,13 +600,13 @@ namespace NiL.JS.Statements
                                 var cord = CodeCoordinates.FromTextPosition(state.Code, i, 0);
                                 throw new JSException((new SyntaxError("Invalid prefix operation. " + cord)));
                             }
-                            if (first is Call)
-                                first = new New((first as Expression).FirstOperand, (first as Call).Arguments) { Position = index, Length = i - index };
+                            if (first is CallOperator)
+                                first = new NewOperator((first as Expression).FirstOperand, (first as CallOperator).Arguments) { Position = index, Length = i - index };
                             else
                             {
                                 if (state.message != null)
                                     state.message(MessageLevel.Warning, CodeCoordinates.FromTextPosition(state.Code, index, 0), "Missing brackets in a constructor invocation.");
-                                first = new Expressions.New(first, new Expression[0]) { Position = index, Length = i - index };
+                                first = new Expressions.NewOperator(first, new Expression[0]) { Position = index, Length = i - index };
                             }
                             break;
                         }
@@ -622,7 +622,7 @@ namespace NiL.JS.Statements
                                 var cord = CodeCoordinates.FromTextPosition(state.Code, i, 0);
                                 throw new JSException((new SyntaxError("Invalid prefix operation. " + cord)));
                             }
-                            first = new Expressions.Delete(first) { Position = index, Length = i - index };
+                            first = new Expressions.DeleteOperator(first) { Position = index, Length = i - index };
                             break;
                         }
                     case 'y':
@@ -642,7 +642,7 @@ namespace NiL.JS.Statements
                                 var cord = CodeCoordinates.FromTextPosition(state.Code, i, 0);
                                 throw new JSException((new SyntaxError("Invalid prefix operation. " + cord)));
                             }
-                            first = new Expressions.Yield(first) { Position = index, Length = i - index };
+                            first = new Expressions.YieldOperator(first) { Position = index, Length = i - index };
                             break;
 #endif
                         }
@@ -659,16 +659,16 @@ namespace NiL.JS.Statements
                     if (first == null)
                         first = temp;
                     else
-                        first = new None(first, temp);
+                        first = new CommaOperator(first, temp);
                     while (char.IsWhiteSpace(state.Code[i]))
                         i++;
                     if (state.Code[i] != ')' && state.Code[i] != ',')
                         throw new JSException((new SyntaxError("Expected \")\"")));
                 }
                 i++;
-                if ((state.InExpression > 0 && first is FunctionExpression)
-                    || (forNew && first is Call))
-                    first = new Expressions.None(first, null) { Position = index, Length = i - index };
+                if ((state.InExpression > 0 && first is FunctionNotation)
+                    || (forNew && first is CallOperator))
+                    first = new Expressions.CommaOperator(first, null) { Position = index, Length = i - index };
             }
             else
             {
@@ -823,7 +823,7 @@ namespace NiL.JS.Statements
                                         && ((first as GetVariableExpression).Name == "arguments" || (first as GetVariableExpression).Name == "eval"))
                                         throw new JSException(new SyntaxError("Can not incriment \"" + (first as GetVariableExpression).Name + "\" in strict mode."));
                                 }
-                                first = new Expressions.Incriment(first, Expressions.IncrimentType.Postincriment) { Position = first.Position, Length = i + 2 - first.Position };
+                                first = new Expressions.IncrementOperator(first, Expressions.IncrimentType.Postincriment) { Position = first.Position, Length = i + 2 - first.Position };
                                 //first = new OperatorStatement() { second = first, _type = OperationType.Incriment, Position = first.Position, Length = i + 2 - first.Position };
                                 repeat = true;
                                 i += 2;
@@ -860,7 +860,7 @@ namespace NiL.JS.Statements
                                         && ((first as GetVariableExpression).Name == "arguments" || (first as GetVariableExpression).Name == "eval"))
                                         throw new JSException(new SyntaxError("Can not decriment \"" + (first as GetVariableExpression).Name + "\" in strict mode."));
                                 }
-                                first = new Expressions.Decriment(first, Expressions.DecrimentType.Postdecriment) { Position = first.Position, Length = i + 2 - first.Position };
+                                first = new Expressions.DecrementOperator(first, Expressions.DecrimentType.Postdecriment) { Position = first.Position, Length = i + 2 - first.Position };
                                 //first = new OperatorStatement() { second = first, _type = OperationType.Decriment, Position = first.Position, Length = i + 2 - first.Position };
                                 repeat = true;
                                 i += 2;
@@ -1099,7 +1099,7 @@ namespace NiL.JS.Statements
                             JSValue jsname = null;
                             if (!state.stringConstants.TryGetValue(name, out jsname))
                                 state.stringConstants[name] = jsname = name;
-                            first = new GetMemberExpression(first, new Constant(jsname)
+                            first = new GetMemberOperator(first, new ConstantNotation(name)
                                                                      {
                                                                          Position = s,
                                                                          Length = i - s
@@ -1125,7 +1125,7 @@ namespace NiL.JS.Statements
                             while (char.IsWhiteSpace(state.Code[i])) i++;
                             if (state.Code[i] != ']')
                                 throw new JSException((new SyntaxError("Expected \"]\" at " + CodeCoordinates.FromTextPosition(state.Code, startPos, 0))));
-                            first = new GetMemberExpression(first, mname) { Position = first.Position, Length = i + 1 - first.Position };
+                            first = new GetMemberOperator(first, mname) { Position = first.Position, Length = i + 1 - first.Position };
                             i++;
                             repeat = true;
                             canAsign = true;
@@ -1133,7 +1133,7 @@ namespace NiL.JS.Statements
                             if (state.message != null)
                             {
                                 startPos = 0;
-                                var cname = mname as Constant;
+                                var cname = mname as ConstantNotation;
                                 if (cname != null
                                     && cname.value.valueType == JSValueType.String
                                     && Parser.ValidateName(cname.value.oValue.ToString(), ref startPos, false)
@@ -1167,7 +1167,7 @@ namespace NiL.JS.Statements
                                 if (args[args.Count - 1] == null)
                                     throw new JSException((new SyntaxError("Expected \")\" at " + CodeCoordinates.FromTextPosition(state.Code, startPos, 0))));
                             }
-                            first = new Call(first, args.ToArray())
+                            first = new CallOperator(first, args.ToArray())
                             {
                                 Position = first.Position,
                                 Length = i - first.Position + 1
@@ -1249,11 +1249,11 @@ namespace NiL.JS.Statements
             {
                 root = false; // блокируем вызов дейкстры
                 second = deicstra(second as ExpressionTree);
-                var opassigncache = new OpAssignCache(first);
+                var opassigncache = new GetValueForAssignmentOperator(first);
                 if (second is ExpressionTree
                     && (second as ExpressionTree)._type == OperationType.None)
                 {
-                    second.first = new Assign(opassigncache, new ExpressionTree()
+                    second.first = new AssignmentOperator(opassigncache, new ExpressionTree()
                     {
                         first = opassigncache,
                         second = second.first,
@@ -1269,7 +1269,7 @@ namespace NiL.JS.Statements
                 }
                 else
                 {
-                    res = new Assign(opassigncache, new ExpressionTree()
+                    res = new AssignmentOperator(opassigncache, new ExpressionTree()
                     {
                         first = opassigncache,
                         second = second,

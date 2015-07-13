@@ -89,8 +89,8 @@ namespace NiL.JS.Statements
                 var defVal = ExpressionTree.Parse(state, ref i, false, false, false, true, false, true);
                 if (!defVal.IsParsed)
                     return defVal;
-                NiL.JS.Expressions.Expression exp = new OpAssignCache(res.variable as GetVariableExpression ?? (res.variable as VariableDefineStatement).initializators[0] as GetVariableExpression);
-                exp = new Assign(
+                NiL.JS.Expressions.Expression exp = new GetValueForAssignmentOperator(res.variable as GetVariableExpression ?? (res.variable as VariableDefineStatement).initializators[0] as GetVariableExpression);
+                exp = new AssignmentOperator(
                     exp,
                     (NiL.JS.Expressions.Expression)defVal.Statement)
                     {
@@ -114,7 +114,7 @@ namespace NiL.JS.Statements
             state.AllowBreak.Push(true);
             state.AllowContinue.Push(true);
             res.body = Parser.Parse(state, ref i, 0);
-            if (res.body is FunctionExpression)
+            if (res.body is FunctionNotation)
             {
                 if (state.strict.Peek())
                     throw new JSException((new NiL.JS.BaseLibrary.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
@@ -139,10 +139,10 @@ namespace NiL.JS.Statements
         {
             var s = source.Evaluate(context);
             JSValue v = null;
-            if (variable is Assign)
+            if (variable is AssignmentOperator)
             {
                 variable.Evaluate(context);
-                v = (variable as Assign).first.Evaluate(context);
+                v = (variable as AssignmentOperator).first.Evaluate(context);
             }
             else
                 v = variable.EvaluateForAssing(context);
@@ -280,25 +280,25 @@ namespace NiL.JS.Statements
             var tvar = variable as VariableDefineStatement;
             if (tvar != null)
                 variable = tvar.initializators[0];
-            if (variable is Assign)
-                ((variable as Assign).first.first as GetVariableExpression).forceThrow = false;
+            if (variable is AssignmentOperator)
+                ((variable as AssignmentOperator).first.first as GetVariableExpression).forceThrow = false;
             Parser.Build(ref source, 2, variables, state, message, statistic, opts);
             Parser.Build(ref body, System.Math.Max(1, depth), variables, state | _BuildState.Conditional | _BuildState.InLoop, message, statistic, opts);
-            if (variable is Expressions.None)
+            if (variable is Expressions.CommaOperator)
             {
-                if ((variable as Expressions.None).SecondOperand != null)
+                if ((variable as Expressions.CommaOperator).SecondOperand != null)
                     throw new InvalidOperationException("Invalid left-hand side in for-in");
-                variable = (variable as Expressions.None).FirstOperand;
+                variable = (variable as Expressions.CommaOperator).FirstOperand;
             }
             if (message != null
-                && (source is Json
-                || source is ArrayExpression
-                || source is Constant))
+                && (source is ObjectNotation
+                || source is ArrayNotation
+                || source is ConstantNotation))
                 message(MessageLevel.Recomendation, new CodeCoordinates(0, Position, Length), "for..in with constant source. This reduce performance. Rewrite without using for..in.");
             return false;
         }
 
-        internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             source.Optimize(ref source, owner, message, opts, statistic);
             if (body != null)

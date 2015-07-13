@@ -146,7 +146,7 @@ namespace NiL.JS.Statements
                 i = start;
             }
             for (var j = body.Count; j-- > 0; )
-                (body[j] as Constant).value.oValue = Tools.Unescape((body[j] as Constant).value.oValue.ToString(), state.strict.Peek());
+                (body[j] as ConstantNotation).value.oValue = Tools.Unescape((body[j] as ConstantNotation).value.oValue.ToString(), state.strict.Peek());
 
             bool expectSemicolon = false;
             while ((sroot && i < state.Code.Length) || (!sroot && state.Code[i] != '}'))
@@ -163,11 +163,11 @@ namespace NiL.JS.Statements
                     expectSemicolon = false;
                     continue;
                 }
-                if (t is FunctionExpression)
+                if (t is FunctionNotation)
                 {
                     if (state.strict.Peek() && !allowDirectives)
                         throw new JSException((new NiL.JS.BaseLibrary.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
-                    if (state.InExpression == 0 && string.IsNullOrEmpty((t as FunctionExpression).Name))
+                    if (state.InExpression == 0 && string.IsNullOrEmpty((t as FunctionNotation).Name))
                         throw new JSException((new NiL.JS.BaseLibrary.SyntaxError("Declarated function must have name.")));
                     expectSemicolon = false;
                 }
@@ -261,7 +261,7 @@ namespace NiL.JS.Statements
                 res.Add(node);
             }
             if (variables != null)
-                res.AddRange(from v in variables where v.Inititalizator != null && (!(v.Inititalizator is FunctionExpression) || (v.Inititalizator as FunctionExpression).body != this) select v.Inititalizator);
+                res.AddRange(from v in variables where v.Inititalizator != null && (!(v.Inititalizator is FunctionNotation) || (v.Inititalizator as FunctionNotation).body != this) select v.Inititalizator);
             return res.ToArray();
         }
 
@@ -272,7 +272,7 @@ namespace NiL.JS.Statements
 
             for (int i = lines.Length; i-- > 0; )
             {
-                var fe = lines[i] as FunctionExpression;
+                var fe = lines[i] as FunctionNotation;
                 if (fe != null)
                 {
                     Parser.Build(ref lines[i], depth < 0 ? 2 : System.Math.Max(1, depth), variables, state | (this.strict ? _BuildState.Strict : _BuildState.None), message, statistic, opts);
@@ -375,7 +375,7 @@ namespace NiL.JS.Statements
             return false;
         }
 
-        internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             if (localVariables != null)
                 for (var i = 0; i < localVariables.Length; i++)

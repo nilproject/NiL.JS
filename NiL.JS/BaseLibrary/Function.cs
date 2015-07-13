@@ -558,7 +558,7 @@ namespace NiL.JS.BaseLibrary
         }
 #endif
 
-        private static readonly FunctionExpression creatorDummy = new FunctionExpression("anonymous");
+        private static readonly FunctionNotation creatorDummy = new FunctionNotation("anonymous");
         internal static readonly Function emptyFunction = new Function();
         private static readonly Function TTEProxy = new MethodProxy(typeof(Function)
 #if PORTABLE
@@ -583,7 +583,7 @@ namespace NiL.JS.BaseLibrary
             attributes = JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.Immutable | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.NotConfigurable
         };
 
-        internal readonly FunctionExpression creator;
+        internal readonly FunctionNotation creator;
         [Hidden]
         [CLSCompliant(false)]
         internal protected readonly Context context;
@@ -743,11 +743,11 @@ namespace NiL.JS.BaseLibrary
             for (int i = 0; i < len; i++)
                 argn += args[i] + (i + 1 < len ? "," : "");
             string code = "function (" + argn + "){" + Environment.NewLine + (len == -1 ? "undefined" : args[len]) + Environment.NewLine + "}";
-            var fs = FunctionExpression.Parse(new ParsingState(Tools.RemoveComments(code, 0), code, null), ref index);
+            var fs = FunctionNotation.Parse(new ParsingState(Tools.RemoveComments(code, 0), code, null), ref index);
             if (fs.IsParsed && code.Length == index)
             {
                 Parser.Build(ref fs.Statement, 0, new Dictionary<string, VariableDescriptor>(), context.strict ? _BuildState.Strict : _BuildState.None, null, null, Options.Default);
-                creator = fs.Statement as FunctionExpression;
+                creator = fs.Statement as FunctionNotation;
             }
             else
                 throw new JSException((new SyntaxError("")));
@@ -756,7 +756,7 @@ namespace NiL.JS.BaseLibrary
         }
 
         [Hidden]
-        internal Function(Context context, FunctionExpression creator)
+        internal Function(Context context, FunctionNotation creator)
         {
             attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.SystemObject;
             this.context = context;
@@ -830,16 +830,16 @@ namespace NiL.JS.BaseLibrary
                         var restArr = new Array((long)(arguments.Length - i));
                         _arguments[i] = restArr;
                         for (; i < arguments.Length; i++)
-                            restArr.data.Add(Call.PrepareArg(initiator, arguments[i], false, arguments.Length > 1));
+                            restArr.data.Add(CallOperator.PrepareArg(initiator, arguments[i], false, arguments.Length > 1));
                     }
                     else
-                        _arguments[i] = Call.PrepareArg(initiator, arguments[i], false, arguments.Length > 1);
+                        _arguments[i] = CallOperator.PrepareArg(initiator, arguments[i], false, arguments.Length > 1);
                 }
             }
             else
             {
                 for (int i = 0; i < arguments.Length; i++)
-                    _arguments[i] = Call.PrepareArg(initiator, arguments[i], false, arguments.Length > 1);
+                    _arguments[i] = CallOperator.PrepareArg(initiator, arguments[i], false, arguments.Length > 1);
             }
             initiator.objectSource = null;
 
@@ -1331,7 +1331,7 @@ namespace NiL.JS.BaseLibrary
         {
             if (thisBind == null)
                 return strict ? undefined : context.Root.thisBind;
-            else if (thisBind.oValue == typeof(New) as object)
+            else if (thisBind.oValue == typeof(NewOperator) as object)
             {
                 thisBind.__proto__ = prototype.valueType < JSValueType.Object ? GlobalPrototype : prototype.oValue as JSObject;
                 thisBind.oValue = thisBind;

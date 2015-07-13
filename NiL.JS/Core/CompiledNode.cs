@@ -163,7 +163,7 @@ namespace NiL.JS.Core
             return original.Build(ref _this, depth, variables, state, message, statistic, opts);
         }
 
-        internal override void Optimize(ref CodeNode _this, Expressions.FunctionExpression owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal override void Optimize(ref CodeNode _this, Expressions.FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             original.Optimize(ref _this, owner, message, opts, statistic);
         }

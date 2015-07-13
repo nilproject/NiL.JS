@@ -31,7 +31,7 @@ namespace NiL.JS.Expressions
         internal DeleteMemberExpression(Expression obj, Expression fieldName)
             : base(obj, fieldName, true)
         {
-            if (fieldName is Constant)
+            if (fieldName is ConstantNotation)
                 cachedMemberName = fieldName.Evaluate(null);
         }
 
@@ -64,10 +64,10 @@ namespace NiL.JS.Expressions
         {
             var res = first.ToString();
             int i = 0;
-            if (second is Constant
-                && (second as Constant).value.ToString().Length > 0
-                && (Parser.ValidateName((second as Constant).value.ToString(), ref i, true)))
-                res += "." + (second as Constant).value;
+            if (second is ConstantNotation
+                && (second as ConstantNotation).value.ToString().Length > 0
+                && (Parser.ValidateName((second as ConstantNotation).value.ToString(), ref i, true)))
+                res += "." + (second as ConstantNotation).value;
             else
                 res += "[" + second.ToString() + "]";
             return "delete " + res;

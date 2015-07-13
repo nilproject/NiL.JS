@@ -463,7 +463,7 @@ namespace NiL.JS.Core
                 return false;
             if (object.ReferenceEquals(obj, this))
                 return true;
-            return Expressions.StrictEqual.Check(this, obj as JSObject);
+            return Expressions.StrictEqualOperator.Check(this, obj as JSObject);
         }
 
         [Hidden]

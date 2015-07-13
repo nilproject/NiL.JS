@@ -71,7 +71,7 @@ namespace NiL.JS.Expressions
                     throw new SyntaxError("Invalid base class name").Wrap();
                 var baseClassName = code.Substring(n, i - n);
                 if (baseClassName == "null")
-                    bce = new Constant(JSValue.Null) { Position = n, Length = 4 };
+                    bce = new ConstantNotation(JSValue.Null) { Position = n, Length = 4 };
                 else
                     bce = new GetVariableExpression(baseClassName, state.functionsDepth);
                 while (char.IsWhiteSpace(code[i])) i++;
@@ -89,43 +89,43 @@ namespace NiL.JS.Expressions
                 if (Parser.Validate(state.Code, "set ", ref i) && state.Code[i] != ':')
                 {
                     i = s;
-                    var setter = FunctionExpression.Parse(state, ref i, FunctionType.Set).Statement as FunctionExpression;
+                    var setter = FunctionNotation.Parse(state, ref i, FunctionType.Set).Statement as FunctionNotation;
                     if (!flds.ContainsKey(setter.Name))
                     {
-                        var vle = new Constant(new JSValue() { valueType = JSValueType.Object, oValue = new CodeNode[2] { setter, null } });
+                        var vle = new ConstantNotation(new JSValue() { valueType = JSValueType.Object, oValue = new CodeNode[2] { setter, null } });
                         vle.value.valueType = JSValueType.Property;
                         flds.Add(setter.Name, vle);
                     }
                     else
                     {
                         var vle = flds[setter.Name];
-                        if (!(vle is Constant)
-                            || (vle as Constant).value.valueType != JSValueType.Property)
+                        if (!(vle is ConstantNotation)
+                            || (vle as ConstantNotation).value.valueType != JSValueType.Property)
                             throw new JSException((new SyntaxError("Try to define setter for defined field at " + CodeCoordinates.FromTextPosition(state.Code, s, 0))));
-                        if (((vle as Constant).value.oValue as CodeNode[])[0] != null)
+                        if (((vle as ConstantNotation).value.oValue as CodeNode[])[0] != null)
                             throw new JSException((new SyntaxError("Try to redefine setter " + setter.Name + " at " + CodeCoordinates.FromTextPosition(state.Code, s, 0))));
-                        ((vle as Constant).value.oValue as CodeNode[])[0] = setter;
+                        ((vle as ConstantNotation).value.oValue as CodeNode[])[0] = setter;
                     }
                 }
                 else if (Parser.Validate(state.Code, "get ", ref i) && state.Code[i] != ':')
                 {
                     i = s;
-                    var getter = FunctionExpression.Parse(state, ref i, FunctionType.Get).Statement as FunctionExpression;
+                    var getter = FunctionNotation.Parse(state, ref i, FunctionType.Get).Statement as FunctionNotation;
                     if (!flds.ContainsKey(getter.Name))
                     {
-                        var vle = new Constant(new JSValue() { valueType = JSValueType.Object, oValue = new CodeNode[2] { null, getter } });
+                        var vle = new ConstantNotation(new JSValue() { valueType = JSValueType.Object, oValue = new CodeNode[2] { null, getter } });
                         vle.value.valueType = JSValueType.Property;
                         flds.Add(getter.Name, vle);
                     }
                     else
                     {
                         var vle = flds[getter.Name];
-                        if (!(vle is Constant)
-                            || (vle as Constant).value.valueType != JSValueType.Property)
+                        if (!(vle is ConstantNotation)
+                            || (vle as ConstantNotation).value.valueType != JSValueType.Property)
                             throw new JSException((new SyntaxError("Try to define getter for defined field at " + CodeCoordinates.FromTextPosition(state.Code, s, 0))));
-                        if (((vle as Constant).value.oValue as CodeNode[])[1] != null)
+                        if (((vle as ConstantNotation).value.oValue as CodeNode[])[1] != null)
                             throw new JSException((new SyntaxError("Try to redefine getter " + getter.Name + " at " + CodeCoordinates.FromTextPosition(state.Code, s, 0))));
-                        ((vle as Constant).value.oValue as CodeNode[])[1] = getter;
+                        ((vle as ConstantNotation).value.oValue as CodeNode[])[1] = getter;
                     }
                 }
                 else
@@ -146,7 +146,7 @@ namespace NiL.JS.Expressions
                     if (fieldName == null)
                         throw new JSException((new SyntaxError("Invalid field name at " + CodeCoordinates.FromTextPosition(state.Code, s, i - s))));
                     i = s;
-                    var initializator = FunctionExpression.Parse(state, ref i, FunctionType.Method).Statement as FunctionExpression;
+                    var initializator = FunctionNotation.Parse(state, ref i, FunctionType.Method).Statement as FunctionNotation;
                     if (initializator == null)
                         throw new SyntaxError().Wrap();
                     CodeNode aei = null;

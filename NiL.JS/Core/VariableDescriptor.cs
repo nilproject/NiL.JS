@@ -119,8 +119,8 @@ namespace NiL.JS.Core
         {
             this.defineDepth = defineDepth;
             this.name = proto.Name;
-            if (proto is FunctionExpression.FunctionReference)
-                Inititalizator = (proto as FunctionExpression.FunctionReference).Owner;
+            if (proto is FunctionNotation.FunctionReference)
+                Inititalizator = (proto as FunctionNotation.FunctionReference).Owner;
             references = new List<VariableReference>() { proto };
             proto.descriptor = this;
             this.isDefined = defined;
