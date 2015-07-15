@@ -40,7 +40,7 @@ namespace NiL.JS.Core
             return Visit(node as Expression);
         }
 
-        internal protected virtual T Visit(ClassExpression node)
+        internal protected virtual T Visit(ClassNotation node)
         {
             return Visit(node as Expression);
         }

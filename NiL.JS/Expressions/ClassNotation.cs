@@ -9,7 +9,7 @@ namespace NiL.JS.Expressions
 #if !PORTABLE
     [Serializable]
 #endif
-    public sealed class ClassExpression : Expression
+    public sealed class ClassNotation : Expression
     {
         protected internal override PredictedType ResultType
         {
@@ -33,7 +33,7 @@ namespace NiL.JS.Expressions
         public string Name { get; private set; }
         public Expression BaseClassExpression { get { return bce; } }
 
-        public ClassExpression(string name, Expression bce, Dictionary<string, CodeNode> fields)
+        public ClassNotation(string name, Expression bce, Dictionary<string, CodeNode> fields)
         {
             this.Name = name;
             this.bce = bce;
@@ -156,7 +156,7 @@ namespace NiL.JS.Expressions
                 }
             }
             state.strict.Pop();
-            return new ParseResult() { IsParsed = true, Statement = new ClassExpression(name, bce, flds) };
+            return new ParseResult() { IsParsed = true, Statement = new ClassNotation(name, bce, flds) };
         }
 
         internal override JSValue Evaluate(Context context)
