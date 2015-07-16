@@ -39,7 +39,7 @@ namespace NiL.JS.Statements
             state.AllowContinue.Push(true);
             int ccs = state.continiesCount;
             int cbs = state.breaksCount;
-            var body = Parser.Parse(state, ref i, 4);
+            var body = Parser.Parse(state, ref i, 0);
             if (body is FunctionNotation)
             {
                 if (state.strict.Peek())
