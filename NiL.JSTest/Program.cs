@@ -416,7 +416,7 @@ t.__proto__.constructor().type(Number);
             }));
 #endif
 
-            int mode = 154
+            int mode = 12
                    ;
             switch (mode)
             {
@@ -530,11 +530,11 @@ t.__proto__.constructor().type(Number);
     fallback = fallback || function () { };
 })(null);";
 
-                            var script = new Script("");
-                            script.Context.Eval(new StreamReader(file).ReadToEnd());
-                            script.Context.DefineVariable("code").Assign(new NiL.JS.BaseLibrary.String(myString));
+                            var context = new Context();
+                            context.Eval(new StreamReader(file).ReadToEnd());
+                            context.DefineVariable("code").Assign(new NiL.JS.BaseLibrary.String(myString));
 
-                            var result = script.Context.Eval(@"var ast = UglifyJS.parse(code);
+                            var result = context.Eval(@"var ast = UglifyJS.parse(code);
 ast.figure_out_scope();
 compressor = UglifyJS.Compressor();
 ast = ast.transform(compressor);
@@ -563,6 +563,47 @@ ast.print_to_string();");
                 case 11:
                     {
                         runFile("sunspider-regexp-dna.js");
+                        break;
+                    }
+                case 12:
+                    {
+                        using (var file = new FileStream("oop.js", FileMode.Open, FileAccess.Read))
+                        {
+                            var context = new Context();
+                            context.Eval(new StreamReader(file).ReadToEnd(), true);
+                            context.Eval(@"
+/** OOP.JS Demonstration **/
+var output = console.log;
+$class('Foo').via(function() {
+    this.a = null;
+    this.b = null;
+    this.c = null;
+    this.d = null;
+    this.describe = function() {
+        output('[' + this._name + '], A: ' + this.a + ', B: ' + this.b + ', C: ' + this.c + ', ' + this.d);
+    };
+    this.construct = function(a, b) {
+        this.a = a;
+        this.b = b;
+        this.describe();
+    };
+});
+
+$class('Bar').extends('Foo').via(function() {
+    this.c = 'class bar';
+    this.d = 'extends foo';
+});
+
+$class('Baz').extends('Bar').via(function() {
+    this.c = 'class baz';
+    this.d = 'extends bar';
+    this.e = function() { output(""Baz:e()""); }
+});
+var foo = new Foo('Foo', 1);
+var bar = new Bar('Bar', 2);
+var baz = new Baz('Baz', 3);
+baz.e();", true);
+                        }
                         break;
                     }
                 case 151:
