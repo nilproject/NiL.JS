@@ -1,15 +1,11 @@
 ﻿using NiL.JS;
 using NiL.JS.Core;
-using NiL.JS.Core.Modules;
 using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
-using System.Windows.Forms;
 using System.Threading;
-using NiL.JS.Core.TypeProxing;
-using System.Collections.Generic;
 using System.Linq.Expressions;
 using NiL.JS.Core.Functions;
 
@@ -422,7 +418,7 @@ var strObj = new String(""bbq"");
             }));
 #endif
 
-            int mode = 0
+            int mode = 101
                     ;
             switch (mode)
             {
@@ -536,16 +532,15 @@ var strObj = new String(""bbq"");
     fallback = fallback || function () { };
 })(null);";
 
-                            var script = new Script("");
-                            script.Context.Eval(new StreamReader(file).ReadToEnd());
-                            script.Context.DefineVariable("code").Assign(new NiL.JS.BaseLibrary.String(myString));
+                            var context = new Context();
+                            context.Eval(new StreamReader(file).ReadToEnd());
+                            context.DefineVariable("code").Assign(new NiL.JS.BaseLibrary.String(myString));
 
-                            var result = script.Context.Eval(@"var ast = UglifyJS.parse(code);
+                            var result = context.Eval(@"var ast = UglifyJS.parse(code);
 ast.figure_out_scope();
 compressor = UglifyJS.Compressor();
 ast = ast.transform(compressor);
 ast.print_to_string();");
-
 
                             Console.WriteLine(result.ToString());
                         }

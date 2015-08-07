@@ -502,10 +502,12 @@ namespace NiL.JS.Core
         /// Выполняет переданный код скрипта в указанном контексте.
         /// </summary>
         /// <param name="code">Код скрипта на языке JavaScript</param>
-        /// <param name="inplace">Если истина, переменные объявленные в ходе выполнения, не будут доступны для удаления</param>
+        /// <param name="inplace">Если установлен, переменные объявленные в ходе выполнения, не будут доступны для удаления</param>
         /// <returns>Результат выполнения кода (аргумент оператора "return" либо результат выполнения последней выполненной строки кода).</returns>
         public JSValue Eval(string code, bool inplace)
         {
+            if (parent == null)
+                throw new InvalidOperationException("Cannot execute script in global context");
             if (string.IsNullOrEmpty(code))
                 return JSValue.undefined;
 #if DEV

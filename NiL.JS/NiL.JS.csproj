@@ -14,6 +14,7 @@
     <TargetFrameworkVersion Condition=" '$(VisualStudioVersion)' == '10.0' ">v4.0</TargetFrameworkVersion>
     <TargetFrameworkVersion Condition=" '$(VisualStudioVersion)' == '11.0' ">v4.5</TargetFrameworkVersion>
     <TargetFrameworkVersion Condition=" '$(VisualStudioVersion)' == '12.0' ">v4.5.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion Condition=" '$(VisualStudioVersion)' == '14.0' ">v4.6</TargetFrameworkVersion>
     <BaseIntermediateOutputPath>obj\$(TargetFrameworkVersion)\</BaseIntermediateOutputPath>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile>
@@ -199,6 +200,7 @@
     <DefineConstants Condition=" '$(Configuration)' == 'Debug' ">$(DefineConstants);DEV</DefineConstants>
     <DefineConstants Condition=" '$(TargetFrameworkVersion)' == 'v4.5' ">$(DefineConstants);INLINE</DefineConstants>
     <DefineConstants Condition=" '$(TargetFrameworkVersion)' == 'v4.5.1' ">$(DefineConstants);INLINE</DefineConstants>
+    <DefineConstants Condition=" '$(TargetFrameworkVersion)' == 'v4.6' ">$(DefineConstants);INLINE</DefineConstants>
     <DefineConstants Condition=" '$(TargetFrameworkVersion)' == 'v4.0' ">$(DefineConstants);NET40</DefineConstants>
     <DefineConstants Condition=" '$(TargetFrameworkVersion)' == 'v3.5' ">$(DefineConstants);NET35</DefineConstants>
   </PropertyGroup>
