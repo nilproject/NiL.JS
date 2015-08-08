@@ -1282,7 +1282,7 @@ namespace NiL.JS.Core
         internal static JSObject RaiseIfNotExist(JSObject obj, object name)
         {
             if (obj.valueType == JSObjectType.NotExists)
-                throw new JSException((new NiL.JS.BaseLibrary.ReferenceError("Variable \"" + name + "\" is not defined.")));
+                throw new JSException((new NiL.JS.BaseLibrary.ReferenceError("Variable \"" + name + "\" has not been defined.")));
             return obj;
         }
 
