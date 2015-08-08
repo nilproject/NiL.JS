@@ -848,6 +848,10 @@ namespace NiL.JS.BaseLibrary
 
         private JSValue fastInvoke(JSValue self, Expression[] arguments, Context initiator)
         {
+#if DEBUG && !PORTABLE
+            if (creator.trace)
+                System.Console.WriteLine("DEBUG: Run \"" + creator.Reference.Name + "\"");
+#endif
             var body = creator.body;
             var oldcaller = _caller;
             var oldArgs = this._arguments;
@@ -881,6 +885,10 @@ namespace NiL.JS.BaseLibrary
             }
             finally
             {
+#if DEBUG && !PORTABLE
+                if (creator.trace)
+                    System.Console.WriteLine("DEBUG: Exit \"" + creator.Reference.Name + "\"");
+#endif
                 exit(internalContext);
                 _caller = oldcaller;
                 this._arguments = oldArgs;
@@ -1028,18 +1036,17 @@ namespace NiL.JS.BaseLibrary
         {
             JSValue a0, a1, a2, a3, a4, a5, a6, a7; // Вместо кучи, выделяем память на стеке
 
-            var m = System.Math.Min(creator.parameters.Length, arguments.Length);
-            switch (m)
+            if (creator.parameters.Length != arguments.Length)
+                throw new ArgumentException("Invalid arguments count");
+
+            switch (arguments.Length)
             {
                 case 0:
                     break;
                 case 1:
                     {
                         a0 = arguments[0].Evaluate(initiator).CloneImpl(false);
-
-                        for (int i = m; i < arguments.Length; i++)
-                            arguments[i].Evaluate(initiator);
-
+                        
                         setPrmFst(0, a0, internalContext);
                         break;
                     }
@@ -1047,9 +1054,6 @@ namespace NiL.JS.BaseLibrary
                     {
                         a0 = arguments[0].Evaluate(initiator).CloneImpl(false);
                         a1 = arguments[1].Evaluate(initiator).CloneImpl(false);
-
-                        for (int i = m; i < arguments.Length; i++)
-                            arguments[i].Evaluate(initiator);
 
                         setPrmFst(0, a0, internalContext);
                         setPrmFst(1, a1, internalContext);
@@ -1060,9 +1064,6 @@ namespace NiL.JS.BaseLibrary
                         a0 = arguments[0].Evaluate(initiator).CloneImpl(false);
                         a1 = arguments[1].Evaluate(initiator).CloneImpl(false);
                         a2 = arguments[2].Evaluate(initiator).CloneImpl(false);
-
-                        for (int i = m; i < arguments.Length; i++)
-                            arguments[i].Evaluate(initiator);
 
                         setPrmFst(0, a0, internalContext);
                         setPrmFst(1, a1, internalContext);
@@ -1075,9 +1076,6 @@ namespace NiL.JS.BaseLibrary
                         a1 = arguments[1].Evaluate(initiator).CloneImpl(false);
                         a2 = arguments[2].Evaluate(initiator).CloneImpl(false);
                         a3 = arguments[3].Evaluate(initiator).CloneImpl(false);
-
-                        for (int i = m; i < arguments.Length; i++)
-                            arguments[i].Evaluate(initiator);
 
                         setPrmFst(0, a0, internalContext);
                         setPrmFst(1, a1, internalContext);
@@ -1092,9 +1090,6 @@ namespace NiL.JS.BaseLibrary
                         a2 = arguments[2].Evaluate(initiator).CloneImpl(false);
                         a3 = arguments[3].Evaluate(initiator).CloneImpl(false);
                         a4 = arguments[4].Evaluate(initiator).CloneImpl(false);
-
-                        for (int i = m; i < arguments.Length; i++)
-                            arguments[i].Evaluate(initiator);
 
                         setPrmFst(0, a0, internalContext);
                         setPrmFst(1, a1, internalContext);
@@ -1111,9 +1106,6 @@ namespace NiL.JS.BaseLibrary
                         a3 = arguments[3].Evaluate(initiator).CloneImpl(false);
                         a4 = arguments[4].Evaluate(initiator).CloneImpl(false);
                         a5 = arguments[5].Evaluate(initiator).CloneImpl(false);
-
-                        for (int i = m; i < arguments.Length; i++)
-                            arguments[i].Evaluate(initiator);
 
                         setPrmFst(0, a0, internalContext);
                         setPrmFst(1, a1, internalContext);
@@ -1132,9 +1124,6 @@ namespace NiL.JS.BaseLibrary
                         a4 = arguments[4].Evaluate(initiator).CloneImpl(false);
                         a5 = arguments[5].Evaluate(initiator).CloneImpl(false);
                         a6 = arguments[6].Evaluate(initiator).CloneImpl(false);
-
-                        for (int i = m; i < arguments.Length; i++)
-                            arguments[i].Evaluate(initiator);
 
                         setPrmFst(0, a0, internalContext);
                         setPrmFst(1, a1, internalContext);
@@ -1156,9 +1145,6 @@ namespace NiL.JS.BaseLibrary
                         a6 = arguments[6].Evaluate(initiator).CloneImpl(false);
                         a7 = arguments[7].Evaluate(initiator).CloneImpl(false);
 
-                        for (int i = m; i < arguments.Length; i++)
-                            arguments[i].Evaluate(initiator);
-
                         setPrmFst(0, a0, internalContext);
                         setPrmFst(1, a1, internalContext);
                         setPrmFst(2, a2, internalContext);
@@ -1171,24 +1157,6 @@ namespace NiL.JS.BaseLibrary
                     }
                 default:
                     throw new ArgumentException("To many arguments");
-            }
-            for (int i = m; i < creator.parameters.Length; i++)
-            {
-                if (creator.parameters[i].assignations != null)
-                    creator.parameters[i].cacheRes = new JSValue()
-                    {
-                        valueType = JSValueType.Undefined,
-                        attributes = JSObjectAttributesInternal.Argument
-                    };
-                else
-                    creator.parameters[i].cacheRes = undefined;
-                creator.parameters[i].cacheContext = internalContext;
-                if (creator.parameters[i].captured)
-                {
-                    if (internalContext.fields == null)
-                        internalContext.fields = createFields();
-                    internalContext.fields[creator.parameters[i].Name] = creator.parameters[i].cacheRes;
-                }
             }
         }
 
@@ -1212,7 +1180,8 @@ namespace NiL.JS.BaseLibrary
                 var args = new Arguments()
                 {
                     caller = _caller,
-                    callee = this
+                    callee = this,
+                    length = creator.parameters.Length
                 };
                 for (var i = 0; i < creator.parameters.Length; i++)
                 {

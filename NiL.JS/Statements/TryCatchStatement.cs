@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using NiL.JS.Core;
 using NiL.JS.BaseLibrary;
+using NiL.JS.Core;
 using NiL.JS.Core.TypeProxing;
 using NiL.JS.Expressions;
 

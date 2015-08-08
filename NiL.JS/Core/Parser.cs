@@ -42,6 +42,7 @@ namespace NiL.JS.Core
                 new _Rule("while", WhileStatement.Parse),
                 new _Rule("return", ReturnStatement.Parse),
                 new _Rule("function", FunctionNotation.Parse),
+                new _Rule("class", ClassNotation.Parse),
                 new _Rule("switch", SwitchStatement.Parse),
                 new _Rule("with", WithStatement.Parse),
                 new _Rule("do", DoWhileStatement.Parse),
@@ -74,6 +75,7 @@ namespace NiL.JS.Core
                 new _Rule("[", ExpressionTree.Parse),
                 new _Rule("{", ExpressionTree.Parse),
                 new _Rule("function", ExpressionTree.Parse),
+                new _Rule("class", ExpressionTree.Parse),
                 new _Rule("(", ExpressionTree.Parse),
                 new _Rule("+", ExpressionTree.Parse),
                 new _Rule("-", ExpressionTree.Parse),
@@ -98,6 +100,7 @@ namespace NiL.JS.Core
                 new _Rule("[", ArrayNotation.Parse),
                 new _Rule("{", ObjectNotation.Parse),
                 new _Rule("function", FunctionNotation.Parse),
+                new _Rule("class", ClassNotation.Parse),
             },
             // 3
             new _Rule[] // Для for
@@ -110,6 +113,7 @@ namespace NiL.JS.Core
                 new _Rule("!", ExpressionTree.Parse),
                 new _Rule("~", ExpressionTree.Parse),
                 new _Rule("function", ExpressionTree.Parse),
+                new _Rule("class", ClassNotation.Parse),
                 new _Rule("(", ExpressionTree.Parse),
                 new _Rule("true", ExpressionTree.Parse),
                 new _Rule("false", ExpressionTree.Parse),
@@ -122,46 +126,6 @@ namespace NiL.JS.Core
                 new _Rule("yield", ExpressionTree.Parse),
                 new _Rule(ValidateName, ExpressionTree.Parse),
                 new _Rule(ValidateValue, ExpressionTree.Parse),
-            },
-            // 4
-            new _Rule[] // Общий без JSON
-            {
-                new _Rule("[", ExpressionTree.Parse),
-                new _Rule("{", CodeBlock.Parse),
-                new _Rule("var ", VariableDefineStatement.Parse),
-                new _Rule("const ", VariableDefineStatement.Parse),
-                new _Rule("if", IfElseStatement.Parse),
-                new _Rule("for", ForOfStatement.Parse),
-                new _Rule("for", ForInStatement.Parse),
-                new _Rule("for", ForStatement.Parse),
-                new _Rule("while", WhileStatement.Parse),
-                new _Rule("return", ReturnStatement.Parse),
-                new _Rule("function", FunctionNotation.Parse),
-                new _Rule("switch", SwitchStatement.Parse),
-                new _Rule("with", WithStatement.Parse),
-                new _Rule("do", DoWhileStatement.Parse),
-                new _Rule("(", ExpressionTree.Parse),
-                new _Rule("+", ExpressionTree.Parse),
-                new _Rule("-", ExpressionTree.Parse),
-                new _Rule("!", ExpressionTree.Parse),
-                new _Rule("~", ExpressionTree.Parse),
-                new _Rule("true", ExpressionTree.Parse),
-                new _Rule("false", ExpressionTree.Parse),
-                new _Rule("null", ExpressionTree.Parse),
-                new _Rule("this", ExpressionTree.Parse),
-                new _Rule("typeof", ExpressionTree.Parse),
-                new _Rule("try", TryCatchStatement.Parse),
-                new _Rule("new", ExpressionTree.Parse),
-                new _Rule("delete", ExpressionTree.Parse),
-                new _Rule("void", ExpressionTree.Parse),
-                new _Rule("yield", ExpressionTree.Parse),
-                new _Rule("break", BreakStatement.Parse),
-                new _Rule("continue", ContinueStatement.Parse),
-                new _Rule("throw", ThrowStatement.Parse),
-                new _Rule(ValidateName, LabeledStatement.Parse),
-                new _Rule(ValidateName, ExpressionTree.Parse),
-                new _Rule(ValidateValue, ExpressionTree.Parse),
-                new _Rule("debugger", DebuggerStatement.Parse)
             }
         };
 
@@ -500,20 +464,12 @@ namespace NiL.JS.Core
 
         internal static CodeNode Parse(ParsingState state, ref int index, int ruleset)
         {
-            return Parse(state, ref index, ruleset, false);
-        }
-
-        internal static CodeNode Parse(ParsingState state, ref int index, int ruleset, bool lineAutoComplite)
-        {
-            //string code = state.Code;
-            while ((index < state.Code.Length) && (char.IsWhiteSpace(state.Code[index])) && (!lineAutoComplite || !Tools.isLineTerminator(state.Code[index])))
+            while ((index < state.Code.Length) && (char.IsWhiteSpace(state.Code[index])))
                 index++;
             if (index >= state.Code.Length || state.Code[index] == '}')
                 return null;
             int sindex = index;
-            if (state.Code[index] == ','
-                || state.Code[index] == ';'
-                || (lineAutoComplite && Tools.isLineTerminator(state.Code[index])))
+            if (state.Code[index] == ',' || state.Code[index] == ';')
             {
                 index++;
                 return null;

@@ -295,7 +295,7 @@
     <Compile Include="Core\Functions\ProxyConstructor.cs" />
     <Compile Include="Core\Visitor.cs" />
     <Compile Include="Core\WithContext.cs" />
-    <Compile Include="Expressions\ClassExpression.cs" />
+    <Compile Include="Expressions\ClassNotation.cs" />
     <Compile Include="Expressions\ExpressionWrapper.cs" />
     <Compile Include="Expressions\DeleteMemberExpression.cs" />
     <Compile Include="Expressions\SetMemberExpression.cs" />
