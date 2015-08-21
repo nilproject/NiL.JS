@@ -11,7 +11,7 @@ Licensed under BSD 3-Clause License.
 * Support Mono.
 * Compatible with ASP.NET.
 * Automatic wrapping .NET objects. No changes are required.
-* Support .NET namespaces (Standalon version).
+* Support .NET namespaces (Standalone version).
 * Compiler as a Service (CaaS).
 * Integrated static analyser.
 * Integrated debugger ("For developers" version).
