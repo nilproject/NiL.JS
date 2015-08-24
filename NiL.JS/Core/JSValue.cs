@@ -426,7 +426,7 @@ namespace NiL.JS.Core
         internal protected virtual void SetMember(JSValue name, JSValue value, bool strict)
         {
             JSValue field;
-            if (valueType >= JSValueType.Object && oValue != this)
+            if (valueType >= JSValueType.Object)
             {
                 if (oValue == null)
                     throw new JSException(new TypeError("Can not get property \"" + name + "\" of \"null\""));

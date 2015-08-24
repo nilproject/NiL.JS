@@ -618,19 +618,17 @@ namespace NiL.JS.BaseLibrary
         [ArgumentsLength(1)]
         public static JSValue indexOf(JSValue self, Arguments args)
         {
-            bool nativeMode = self.GetType() == typeof(Array);
-            Array src;
+            Array src = self as Array;
+            bool nativeMode = src != null;
             if (!self.IsDefinded || (self.valueType >= JSValueType.Object && self.oValue == null))
                 throw new JSException(new TypeError("Can not call Array.prototype.indexOf for null or undefined"));
-            var _length = nativeMode ? (self as Array).data.Length : Tools.getLengthOfIterably(self, false);
+            var _length = nativeMode ? src.data.Length : Tools.getLengthOfIterably(self, false);
             var fromIndex = args.length > 1 ? Tools.JSObjectToInt64(args[1], 0, true) : 0;
             if (fromIndex < 0)
                 fromIndex += _length;
 
             if (!nativeMode)
                 src = Tools.iterableToArray(self, false, false, false, _length);
-            else
-                src = self as Array;
             JSValue image = args[0];
             IEnumerator<KeyValuePair<int, JSValue>> alternativeEnum = null;
             long prew = fromIndex - 1;
@@ -762,8 +760,8 @@ namespace NiL.JS.BaseLibrary
         [ArgumentsLength(1)]
         public static JSValue lastIndexOf(JSValue self, Arguments args)
         {
-            bool nativeMode = self.GetType() == typeof(Array);
-            Array src;
+            Array src = self as Array; 
+            bool nativeMode = src != null;
             if (!self.IsDefinded || (self.valueType >= JSValueType.Object && self.oValue == null))
                 throw new JSException(new TypeError("Can not call Array.prototype.lastIndexOf for null or undefined"));
 
@@ -774,13 +772,11 @@ namespace NiL.JS.BaseLibrary
 
             if (!nativeMode)
                 src = Tools.iterableToArray(self, false, false, false, _length);
-            else
-                src = self as Array;
 
             JSValue image = args[0];
             IEnumerator<KeyValuePair<int, JSValue>> alternativeEnum = null;
             long prew = fromIndex + 1;
-            var mainEnum = (src as Array).data.ReversOrder.GetEnumerator();
+            var mainEnum = src.data.ReversOrder.GetEnumerator();
             bool moved = true;
             while (moved)
             {

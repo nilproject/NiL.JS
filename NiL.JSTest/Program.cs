@@ -418,7 +418,7 @@ var strObj = new String(""bbq"");
             }));
 #endif
 
-            int mode = 101
+            int mode = 0
                     ;
             switch (mode)
             {

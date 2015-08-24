@@ -190,11 +190,11 @@ namespace NiL.JS.Core.Functions
                         obj = constructor.InvokeImpl(null, args, argsObj == null ? constructor.parameters.Length != 0 ? new Arguments() : null : argsObj);
                     }
                 }
-                JSValue res = null;
+                JSValue res = obj as JSValue;
+
+                // Здесь нельзя возвращать контейнер с ValueType < Object, иначе из New выйдет служебный экземпляр NewMarker
                 if (bynew)
                 {
-                    // Здесь нельзя возвращать контейнер с ValueType < Object, иначе из New выйдет служебный экземпляр NewMarker
-                    res = obj as JSValue;
                     if (res != null)
                     {
                         // Для Number, Boolean и String
@@ -226,10 +226,10 @@ namespace NiL.JS.Core.Functions
                 {
                     if (proxy.hostedType == typeof(JSValue))
                     {
-                        if (((obj as JSValue).oValue is JSValue) && ((obj as JSValue).oValue as JSValue).valueType >= JSValueType.Object)
-                            return (obj as JSValue).oValue as JSValue;
+                        if ((res.oValue is JSValue) && (res.oValue as JSValue).valueType >= JSValueType.Object)
+                            return res.oValue as JSValue;
                     }
-                    res = obj as JSValue ?? new ObjectContainer(obj)
+                    res = res ?? new ObjectContainer(obj)
                     {
                         attributes = JSObjectAttributesInternal.SystemObject | (proxy.hostedType.IsDefined(typeof(ImmutableAttribute), false) ? JSObjectAttributesInternal.Immutable : JSObjectAttributesInternal.None)
                     };

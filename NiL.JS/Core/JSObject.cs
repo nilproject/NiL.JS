@@ -196,10 +196,11 @@ namespace NiL.JS.Core
 
         protected internal override JSValue GetMember(JSValue key, bool forWrite, bool own)
         {
-
+#if DEBUG
             // Это ошибочная ситуация, но, по крайней мере, так положение будет исправлено
             if (oValue != this && oValue is JSValue)
                 return base.GetMember(key, forWrite, own);
+#endif
 
             string name = null;
             if (forWrite || fields != null)
@@ -255,8 +256,6 @@ namespace NiL.JS.Core
             {
                 if (oValue == null)
                     throw new JSException(new TypeError("Can not get property \"" + name + "\" of \"null\""));
-                if (oValue == this)
-                    throw new InvalidOperationException();
                 field = oValue as JSObject;
                 if (field != null)
                 {

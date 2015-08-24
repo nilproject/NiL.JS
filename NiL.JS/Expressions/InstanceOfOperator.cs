@@ -9,8 +9,6 @@ namespace NiL.JS.Expressions
 #endif
     public sealed class InstanceOfOperator : Expression
     {
-        private static readonly JSValue prototype = "prototype";
-
         protected internal override PredictedType ResultType
         {
             get

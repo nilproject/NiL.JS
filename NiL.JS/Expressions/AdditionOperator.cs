@@ -303,14 +303,14 @@ namespace NiL.JS.Expressions
                 {
                     if (first is ConstantNotation && (first as ConstantNotation).value.valueType == JSValueType.String)
                     {
-                        if ((first as ConstantNotation).value.oValue.ToString() == "")
+                        if ((first as ConstantNotation).value.oValue.ToString().Length == 0)
                             _this = new ToStringExpression(second);
                         else
                             _this = new StringConcatenationExpression(new List<Expression>() { first, second });
                     }
                     else if (second is ConstantNotation && (second as ConstantNotation).value.valueType == JSValueType.String)
                     {
-                        if ((second as ConstantNotation).value.oValue.ToString() == "")
+                        if ((second as ConstantNotation).value.oValue.ToString().Length == 0)
                             _this = new ToStringExpression(first);
                         else
                             _this = new StringConcatenationExpression(new List<Expression>() { first, second });

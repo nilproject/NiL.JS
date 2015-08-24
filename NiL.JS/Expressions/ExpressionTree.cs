@@ -362,11 +362,6 @@ namespace NiL.JS.Statements
             return Parse(state, ref index, processComma, false, false, true, false, false);
         }
 
-        internal static ParseResult Parse(ParsingState state, ref int index, bool processComma, bool forUnary)
-        {
-            return Parse(state, ref index, processComma, forUnary, false, true, false, false);
-        }
-
         internal static ParseResult Parse(ParsingState state, ref int index, bool processComma, bool forUnary, bool forNew, bool root, bool forTernary, bool forEnumeration)
         {
             int i = index;

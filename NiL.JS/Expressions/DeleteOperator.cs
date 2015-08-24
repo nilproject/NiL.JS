@@ -26,13 +26,6 @@ namespace NiL.JS.Expressions
                 get { return false; }
             }
 
-            internal SafeMemberGetter(GetMemberOperator gms)
-            {
-                proto = gms;
-                Position = gms.Position;
-                Length = gms.Length;
-            }
-
             protected override CodeNode[] getChildsImpl()
             {
                 return proto.Childs;

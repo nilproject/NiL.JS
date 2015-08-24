@@ -18,9 +18,9 @@ namespace NiL.JS.Core.Modules
 #if PORTABLE
     internal
 #else
-    public 
+    public
 #endif
-        class AllowUnsafeCallAttribute : Attribute
+    sealed class AllowUnsafeCallAttribute : Attribute
     {
         internal readonly Type baseType;
 

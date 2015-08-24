@@ -522,13 +522,13 @@ namespace NiL.JS.Core
                 ps.strict.Clear();
                 ps.strict.Push(strict);
                 var cb = CodeBlock.Parse(ps, ref i).Statement;
-                bool leak = !(strict || (cb as CodeBlock).strict);
+                var body = cb as CodeBlock;
+                bool leak = !(strict || body.strict);
                 if (i < c.Length)
                     throw new System.ArgumentException("Invalid char");
                 var vars = new Dictionary<string, VariableDescriptor>();
                 Parser.Build(ref cb, leak ? -1 : -2, vars, strict ? _BuildState.Strict : _BuildState.None, null, null, Options.Default);
                 Context context = null;
-                var body = cb as CodeBlock;
                 if (leak)
                     context = this;
                 else
