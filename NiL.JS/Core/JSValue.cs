@@ -20,6 +20,20 @@ namespace NiL.JS.Core
 , ICloneable, IConvertible
 #endif
     {
+        /*
+         * Класс выполняет две роли: представляет значения JS и является контейнером значений в свойствах объектов 
+         * и переменных в контектсе выполнения.
+         * Преймущества от такого подхода существенные: нет необходимости создавать эти самые контейнеры свойств 
+         * со своими аттрибутами, нет нужды создавать ворох классов для реализации оператора присваивания, 
+         * чтобы поддерживать весь тот ворох возможных случаев lvalue. Один JSValue умеет копировать значение 
+         * с другого JSValue'а и, если потребуется, переходить в режим посредника, перенапрвляя вызовы GetMember, 
+         * SetMember и DeleteMember. Однако есть и недостатки - необходимо указывать, с какой целью запрашивается 
+         * значение. В случаях, когда значение запрашивается для записи, необходимо убедиться, что эта операция 
+         * не перепишет системные значения. К примеру, в свойстве объекта может находиться значение null. Для оптимизации,
+         * это может быть системная константа JSValue.Null, поэтому по запросу значения для записи нужно вернуть 
+         * новый объект, которым следует заменить значение свойства в объекте. 
+         */
+
         [Hidden]
         internal static readonly IEnumerator<string> EmptyEnumerator = ((IEnumerable<string>)(new string[0])).GetEnumerator();
         [Hidden]
@@ -369,13 +383,13 @@ namespace NiL.JS.Core
                     {
                         if (own)
                             return notExists;
-
                         return stringGetMember(name, ref forWrite);
                     }
-                case JSValueType.Date:
-                case JSValueType.Function:
-                case JSValueType.Symbol:
-                case JSValueType.Object:
+                case JSValueType.Undefined:
+                case JSValueType.NotExists:
+                case JSValueType.NotExistsInObject:
+                    throw can_not_get_property_of_undefined(name);
+                default:
                     {
                         if (oValue == this)
                             break;
@@ -386,10 +400,6 @@ namespace NiL.JS.Core
                             return inObj.GetMember(name, forWrite, own);
                         break;
                     }
-                case JSValueType.Undefined:
-                case JSValueType.NotExists:
-                case JSValueType.NotExistsInObject:
-                    throw can_not_get_property_of_undefined(name);
             }
             throw new InvalidOperationException();
         }
