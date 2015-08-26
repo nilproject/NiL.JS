@@ -161,33 +161,29 @@ namespace NiL.JS.Core
                     return;
                 if (valueType < JSObjectType.Object)
                     return;
-                if (oValue != this
-                    && (oValue as JSObject) != null)
+                if (value != null && value.valueType < JSObjectType.Object)
+                    return;
+                if (oValue != this && (oValue as JSObject) != null)
                 {
                     (oValue as JSObject).__proto__ = value;
                     __prototype = null;
                     return;
                 }
-                if (value == null)
+                if (value == null || value.oValue == null)
                 {
                     __prototype = Null;
-                    return;
                 }
-                if (value.valueType < JSObjectType.Object)
-                    return;
-                if (value.oValue == null)
+                else
                 {
-                    __prototype = Null;
-                    return;
+                    var c = value.oValue as JSObject ?? value;
+                    while (c != null && c != Null && c.valueType > JSObjectType.Undefined)
+                    {
+                        if (c == this || c.oValue == this)
+                            throw new JSException(new Error("Try to set cyclic __proto__ value."));
+                        c = c.__proto__;
+                    }
+                    __prototype = value.oValue as JSObject ?? value;
                 }
-                var c = value.oValue as JSObject ?? value;
-                while (c != null && c != Null && c.valueType > JSObjectType.Undefined)
-                {
-                    if (c == this || c.oValue == this)
-                        throw new JSException(new Error("Try to set cyclic __proto__ value."));
-                    c = c.__proto__;
-                }
-                __prototype = value.oValue as JSObject ?? value;
             }
         }
 
