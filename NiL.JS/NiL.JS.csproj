@@ -255,7 +255,6 @@
     <Compile Include="Core\Functions\EvalFunction.cs" />
     <Compile Include="Core\Functions\ExternalFunction.cs" />
     <Compile Include="Core\GlobalFunctions.cs" />
-    <Compile Include="Core\Modules\AllowUnsafeCallAttribute.cs" />
     <Compile Include="Core\Modules\FieldAttribute.cs" />
     <Compile Include="Core\Modules\NotConfigurable.cs" />
     <Compile Include="Core\RegExpCreateExpression.cs" />

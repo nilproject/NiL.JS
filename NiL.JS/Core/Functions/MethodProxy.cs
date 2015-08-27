@@ -11,29 +11,11 @@ namespace NiL.JS.Core.Functions
 {
     public sealed class MethodProxy : Function
     {
-        private enum _Mode
-        {
-            Regular = 0,
-            A1,
-            A2,
-            F1,
-            F2
-        }
-
         public static bool PartiallyTrusted { get; private set; }
         private static FieldInfo handleInfo;
         private Func<object, object[], Arguments, object> implementation;
         private bool raw;
         private bool forceInstance;
-
-        #region Только для небезопасных вызовов
-        private AllowUnsafeCallAttribute[] alternedTypes;
-        private Action<object> action1;
-        private Action<object, object> action2;
-        private Func<object, object> func1;
-        private Func<object, object, object> func2;
-        private _Mode mode;
-        #endregion
 
         private object hardTarget;
         internal ParameterInfo[] parameters;
@@ -167,89 +149,6 @@ namespace NiL.JS.Core.Functions
                     raw = true;
                 }
 
-                if (!PartiallyTrusted
-                    && !methodInfo.IsStatic
-                    && (parameters.Length == 0 || (parameters.Length == 1 && parameters[0].ParameterType == typeof(Arguments)))
-#if PORTABLE
- && !methodInfo.ReturnType.GetTypeInfo().IsValueType
- && !methodInfo.DeclaringType.GetTypeInfo().IsValueType)
-#else
- && !methodInfo.ReturnType.IsValueType
- && !methodInfo.DeclaringType.IsValueType)
-#endif
-                {
-                    var t = methodBase.GetCustomAttributes(typeof(AllowUnsafeCallAttribute), false).ToArray();
-                    alternedTypes = new AllowUnsafeCallAttribute[t.Length];
-                    for (var i = 0; i < t.Length; i++)
-                        alternedTypes[i] = (AllowUnsafeCallAttribute)t[i];
-                }
-
-                #region Magic
-                if (alternedTypes != null)
-                {
-                    if (methodInfo.ReturnType == typeof(void))
-                    {
-                        if (parameters.Length == 0)
-                        {
-#if PORTABLE
-                            var methodDelegate = methodInfo.CreateDelegate(typeof(Action<>).MakeGenericType(methodBase.DeclaringType));
-                            var handle = handleInfo.GetValue(methodDelegate);
-                            var forceConverterConstructor = typeof(Action<object>).GetTypeInfo().DeclaredConstructors.First();
-#else
-                            var forceConverterConstructor = typeof(Action<object>).GetConstructors().First();
-                            var handle = methodInfo.MethodHandle.GetFunctionPointer();
-#endif
-                            action1 = (Action<object>)forceConverterConstructor.Invoke(new object[] { null, (IntPtr)handle });
-                            mode = _Mode.A1;
-                        }
-                        else // 1
-                        {
-#if PORTABLE
-                            var methodDelegate = methodInfo.CreateDelegate(typeof(Action<,>).MakeGenericType(methodBase.DeclaringType, typeof(Arguments)));
-                            var handle = handleInfo.GetValue(methodDelegate);
-                            var forceConverterConstructor = typeof(Action<object, object>).GetTypeInfo().DeclaredConstructors.First();
-#else
-                            var forceConverterConstructor = typeof(Action<object, object>).GetConstructors().First();
-                            var handle = methodInfo.MethodHandle.GetFunctionPointer();
-#endif
-                            action2 = (Action<object, object>)forceConverterConstructor.Invoke(new object[] { null, (IntPtr)handle });
-                            mode = _Mode.A2;
-                        }
-                    }
-                    else
-                    {
-                        if (parameters.Length == 0)
-                        {
-#if PORTABLE
-                            var methodDelegate = methodInfo.CreateDelegate(typeof(Func<,>).MakeGenericType(methodBase.DeclaringType, methodInfo.ReturnType));
-                            var handle = handleInfo.GetValue(methodDelegate);
-                            var forceConverterConstructor = typeof(Func<object, object>).GetTypeInfo().DeclaredConstructors.First();
-#else
-                            var forceConverterConstructor = typeof(Func<object, object>).GetConstructors().First();
-                            var handle = methodInfo.MethodHandle.GetFunctionPointer();
-#endif
-                            func1 = (Func<object, object>)forceConverterConstructor.Invoke(new object[] { getDummy(), (IntPtr)handle });
-                            mode = _Mode.F1;
-
-                        }
-                        else // 1
-                        {
-#if PORTABLE
-                            var methodDelegate = methodInfo.CreateDelegate(typeof(Func<,,>).MakeGenericType(methodBase.DeclaringType, typeof(Arguments), methodInfo.ReturnType));
-                            var handle = handleInfo.GetValue(methodDelegate);
-                            var forceConverterConstructor = typeof(Func<object, object, object>).GetTypeInfo().DeclaredConstructors.First();
-#else
-                            var forceConverterConstructor = typeof(Func<object, object, object>).GetConstructors().First();
-                            var handle = methodInfo.MethodHandle.GetFunctionPointer();
-#endif
-                            func2 = (Func<object, object, object>)forceConverterConstructor.Invoke(new object[] { getDummy(), (IntPtr)handle });
-                            mode = _Mode.F2;
-                        }
-                    }
-                    raw = true;
-                    return; // больше ничего не требуется, будет вызывать через этот путь
-                }
-                #endregion
 #if PORTABLE
                 makeMethodOverExpression(methodInfo);
 #else
@@ -578,28 +477,11 @@ namespace NiL.JS.Core.Functions
             }
             try
             {
-                object res = null;
-                switch (mode)
-                {
-                    case _Mode.A1:
-                        action1(target);
-                        break;
-                    case _Mode.A2:
-                        action2(target, argsSource);
-                        break;
-                    case _Mode.F1:
-                        res = func1(target);
-                        break;
-                    case _Mode.F2:
-                        res = func2(target, argsSource);
-                        break;
-                    default:
-                        res = implementation(
+                object res = implementation(
                             target,
                             raw ? null : (args ?? ConvertArgs(argsSource, true)),
                             argsSource);
-                        break;
-                }
+
                 if (returnConverter != null)
                     res = returnConverter.From(res);
                 return res;
@@ -641,14 +523,6 @@ namespace NiL.JS.Core.Functions
             var res = Tools.convertJStoObj(_this, targetType);
             if (res != null)
                 return res;
-            if (alternedTypes != null)
-                for (var i = alternedTypes.Length; i-- > 0; )
-                {
-                    var at = alternedTypes[i];
-                    res = Tools.convertJStoObj(_this, at.baseType);
-                    if (res != null)
-                        return res;
-                }
 
             return null;
         }

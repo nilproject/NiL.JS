@@ -22,7 +22,6 @@ namespace NiL.JS.Core.TypeProxing
         }
 
         [CLSCompliant(false)]
-        [AllowUnsafeCall(typeof(JSObject))]
         [DoNotEnumerate]
         public new JSObject toString(Arguments args)
         {

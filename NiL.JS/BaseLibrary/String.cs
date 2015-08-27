@@ -885,7 +885,6 @@ namespace NiL.JS.BaseLibrary
         [NotConfigurable]
         public JSObject length
         {
-            [AllowUnsafeCall(typeof(JSObject))]
             [Hidden]
             get
             {

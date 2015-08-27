@@ -692,7 +692,6 @@ namespace NiL.JS.BaseLibrary
         [NotConfigurable]
         public virtual JSObject length
         {
-            [AllowUnsafeCall(typeof(JSObject))]
             [Hidden]
             get
             {
