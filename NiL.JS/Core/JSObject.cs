@@ -495,10 +495,7 @@ namespace NiL.JS.Core
                     }
                 case JSObjectType.String:
                     {
-                        if (own)
-                            return notExists;
-
-                        return stringGetMember(name, ref forWrite);
+                        return stringGetMember(name, forWrite, own);
                     }
                 case JSObjectType.Date:
                 case JSObjectType.Function:
@@ -531,10 +528,10 @@ namespace NiL.JS.Core
             return new JSException(new TypeError("Can't get property \"" + name + "\" of \"null\""));
         }
 
-        private JSObject stringGetMember(JSObject name, ref bool forWrite)
+        private JSObject stringGetMember(JSObject name, bool forWrite, bool own)
         {
             forWrite = false;
-            if (name.valueType == JSObjectType.String
+            if ((name.valueType == JSValueType.String || name.valueType >= JSValueType.Object)
                 && string.CompareOrdinal(name.oValue.ToString(), "length") == 0)
                 return oValue.ToString().Length;
 
@@ -546,6 +543,9 @@ namespace NiL.JS.Core
                 && ((index = (int)dindex) == dindex)
                 && oValue.ToString().Length > index)
                 return oValue.ToString()[index];
+
+            if (own)
+                return notExists;
 
             if (__prototype == null)
                 __prototype = TypeProxy.GetPrototype(typeof(NiL.JS.BaseLibrary.String));
