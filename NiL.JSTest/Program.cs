@@ -146,7 +146,7 @@ namespace NiL.JSTest
             _("Found " + (fls.Length - 2) + " js-files");
             bool skipedShowed = false;
             sw.Start();
-            for (int i = 0; i < fls.Length; i++)
+            for (int i = 297; i < fls.Length; i++)
             {
                 if (i != 0 && !skipedShowed)
                     _("Skiped: " + i);
@@ -416,7 +416,7 @@ t.__proto__.constructor().type(Number);
             }));
 #endif
 
-            int mode = 1
+            int mode = 152
                    ;
             switch (mode)
             {

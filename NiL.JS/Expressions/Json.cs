@@ -116,6 +116,8 @@ namespace NiL.JS.Expressions
                         fieldName = Tools.Unescape(state.Code.Substring(s, i - s), state.strict.Peek());
                     else if (Parser.ValidateValue(state.Code, ref i))
                     {
+                        if (state.Code[s] == '-')
+                            throw new JSException(new SyntaxError("Invalid char \"-\" at " + CodeCoordinates.FromTextPosition(state.Code, s, 1)));
                         double d = 0.0;
                         int n = s;
                         if (Tools.ParseNumber(state.Code, ref n, out d))
@@ -203,11 +205,11 @@ namespace NiL.JS.Expressions
                 if ((values[i] is Constant) && ((values[i] as Constant).value.valueType == JSObjectType.Property))
                 {
                     var gs = (values[i] as Constant).value.oValue as CodeNode[];
-                    Parser.Build(ref gs[0], 1,variables, state, message, statistic, opts);
-                    Parser.Build(ref gs[1], 1,variables, state, message, statistic, opts);
+                    Parser.Build(ref gs[0], 1, variables, state, message, statistic, opts);
+                    Parser.Build(ref gs[1], 1, variables, state, message, statistic, opts);
                 }
                 else
-                    Parser.Build(ref values[i], 2,variables, state, message, statistic, opts);
+                    Parser.Build(ref values[i], 2, variables, state, message, statistic, opts);
             }
             return false;
         }

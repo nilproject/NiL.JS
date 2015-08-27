@@ -531,7 +531,7 @@ namespace NiL.JS.Core
         private JSObject stringGetMember(JSObject name, bool forWrite, bool own)
         {
             forWrite = false;
-            if ((name.valueType == JSValueType.String || name.valueType >= JSValueType.Object)
+            if ((name.valueType == JSObjectType.String || name.valueType >= JSObjectType.Object)
                 && string.CompareOrdinal(name.oValue.ToString(), "length") == 0)
                 return oValue.ToString().Length;
 
