@@ -875,7 +875,6 @@ namespace NiL.JS.BaseLibrary
         [NotConfigurable]
         public JSValue length
         {
-            [AllowUnsafeCall(typeof(JSValue))]
             [Hidden]
             get
             {

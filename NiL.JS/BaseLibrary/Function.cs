@@ -693,7 +693,6 @@ namespace NiL.JS.BaseLibrary
         [NotConfigurable]
         public virtual JSValue length
         {
-            [AllowUnsafeCall(typeof(JSValue))]
             [Hidden]
             get
             {

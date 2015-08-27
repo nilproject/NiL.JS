@@ -22,7 +22,6 @@ namespace NiL.JS.Core.TypeProxing
         }
 
         [CLSCompliant(false)]
-        [AllowUnsafeCall(typeof(JSValue))]
         [DoNotEnumerate]
         public new JSValue toString(Arguments args)
         {
