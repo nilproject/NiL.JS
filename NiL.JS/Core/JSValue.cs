@@ -381,9 +381,7 @@ namespace NiL.JS.Core
                     }
                 case JSValueType.String:
                     {
-                        if (own)
-                            return notExists;
-                        return stringGetMember(name, ref forWrite);
+                        return stringGetMember(name, forWrite, own);
                     }
                 case JSValueType.Undefined:
                 case JSValueType.NotExists:
@@ -414,10 +412,10 @@ namespace NiL.JS.Core
             return new JSException(new TypeError("Can't get property \"" + name + "\" of \"null\""));
         }
 
-        private JSValue stringGetMember(JSValue name, ref bool forWrite)
+        private JSValue stringGetMember(JSValue name, bool forWrite, bool own)
         {
             forWrite = false;
-            if (name.valueType == JSValueType.String
+            if ((name.valueType == JSValueType.String || name.valueType >= JSValueType.Object)
                 && string.CompareOrdinal(name.oValue.ToString(), "length") == 0)
                 return oValue.ToString().Length;
 
@@ -429,6 +427,9 @@ namespace NiL.JS.Core
                 && ((index = (int)dindex) == dindex)
                 && oValue.ToString().Length > index)
                 return oValue.ToString()[index];
+
+            if (own)
+                return notExists;
 
             return TypeProxy.GetPrototype(typeof(NiL.JS.BaseLibrary.String)).GetMember(name, false, false);
         }

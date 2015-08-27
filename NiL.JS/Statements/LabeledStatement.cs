@@ -29,9 +29,7 @@ namespace NiL.JS.Statements
             state.Labels.Add(label);
             int oldlc = state.LabelCount;
             state.LabelCount++;
-            state.AllowBreak.Push(true);
             var stat = Parser.Parse(state, ref i, 0);
-            state.AllowBreak.Pop();
             state.Labels.Remove(label);
             state.LabelCount = oldlc;
             if (stat is FunctionNotation)
@@ -58,13 +56,13 @@ namespace NiL.JS.Statements
 
         internal override JSValue Evaluate(Context context)
         {
-            statement.Evaluate(context);
+            var res = statement.Evaluate(context);
             if ((context.abort == AbortType.Break) && (context.abortInfo != null) && (context.abortInfo.oValue as string == label))
             {
                 context.abort = AbortType.None;
                 context.abortInfo = JSValue.notExists;
             }
-            return JSValue.notExists;
+            return res;
         }
 
         protected override CodeNode[] getChildsImpl()

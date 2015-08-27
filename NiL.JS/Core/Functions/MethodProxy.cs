@@ -433,7 +433,14 @@ namespace NiL.JS.Core.Functions
             {
                 target = hardTarget ?? getTargetObject(thisBind ?? undefined, methodBase.DeclaringType);
                 if (target == null)
-                    throw new JSException(new TypeError("Can not call function \"" + this.name + "\" for object of another type."));
+                    if (target == null)
+                    {
+                        // Исключительная ситуация. Я не знаю, почему Function.length обобщённое свойство, а не константа. Array.length работает по-другому.
+                        if (methodBase.Name == "get_length" && typeof(Function).IsAssignableFrom(methodBase.DeclaringType))
+                            return 0;
+
+                        throw new JSException(new TypeError("Can not call function \"" + this.name + "\" for object of another type."));
+                    }
             }
             try
             {

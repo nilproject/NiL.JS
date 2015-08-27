@@ -259,10 +259,13 @@ namespace NiL.JS.Core
                     throw new JSException(new TypeError("Can not assign to readonly property \"" + name + "\""));
                 return;
             }
-            else
-                if (strict && (field.attributes & JSObjectAttributesInternal.ReadOnly) != 0)
+            else if ((field.attributes & JSObjectAttributesInternal.ReadOnly) != 0)
+            {
+                if (strict)
                     throw new JSException(new TypeError("Can not assign to readonly property \"" + name + "\""));
-            field.Assign(value);
+            }
+            else
+                field.Assign(value);
         }
 
         protected internal override bool DeleteMember(JSValue name)
@@ -578,7 +581,7 @@ namespace NiL.JS.Core
                 obj.attributes &= ~JSObjectAttributesInternal.Argument;
             }
             if ((obj.attributes & JSObjectAttributesInternal.SystemObject) != 0)
-                throw new JSException(new TypeError("Can not define property \"" + memberName + "\". Object is immutable."));
+                throw new JSException(new TypeError("Can not define property \"" + memberName + "\". Object immutable."));
 
             if (target is NiL.JS.BaseLibrary.Array)
             {

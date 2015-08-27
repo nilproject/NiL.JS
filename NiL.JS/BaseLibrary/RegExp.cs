@@ -188,7 +188,7 @@ namespace NiL.JS.BaseLibrary
         public JSValue exec(JSValue arg)
         {
             if (this.GetType() != typeof(RegExp))
-                throw new JSException(new TypeError("Try to call RegExp.exec on not RegExp object."));
+                throw new JSException(new TypeError("Try to call RegExp.exec for not RegExp object."));
             string input = (arg ?? "undefined").ToString();
             lIndex = Tools.JSObjectToNumber(lastIndex);
             if ((lIndex.attributes & JSObjectAttributesInternal.SystemObject) != 0)

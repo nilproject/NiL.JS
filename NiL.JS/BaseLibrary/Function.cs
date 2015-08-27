@@ -635,16 +635,12 @@ namespace NiL.JS.BaseLibrary
                     if ((attributes & JSObjectAttributesInternal.ProxyPrototype) != 0)
                     {
                         // Вызывается в случае Function.prototype.prototype
-                        _prototype = undefined;
+                        _prototype = new JSValue(); // выдавать тут константу undefined нельзя, иначе будет падать на вызове defineProperty
                     }
                     else
                     {
-                        var res = new JSObject(true)
-                        {
-                            valueType = JSValueType.Object,
-                            attributes = JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.DoNotDelete
-                        };
-                        res.oValue = res;
+                        var res = JSObject.CreateObject();
+                        res.attributes = JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.NotConfigurable;
                         (res.fields["constructor"] = this.CloneImpl()).attributes = JSObjectAttributesInternal.DoNotEnum;
                         _prototype = res;
                     }
@@ -696,8 +692,6 @@ namespace NiL.JS.BaseLibrary
             [Hidden]
             get
             {
-                if (this == null || !typeof(Function).IsAssignableFrom(this.GetType()))
-                    return 0;
                 if (_length == null)
                 {
                     _length = new Number(0) { attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum };
@@ -1351,16 +1345,8 @@ namespace NiL.JS.BaseLibrary
             string name = nameObj.ToString();
             if (creator.body.strict && (name == "caller" || name == "arguments"))
                 return propertiesDummySM;
-            if (name == "prototype")
-            {
-                // проблема в том, что прототип прототипа функций не конфигурируемый, 
-                // но при попытке на нём что-то сделать не надо падать.
-                // здесь я даю поконфигурировать значение, но игнорирую все изменения
-                if ((attributes & JSObjectAttributesInternal.ProxyPrototype) != 0 && forWrite)
-                    return new JSValue();
-                if (!forWrite)
-                    return prototype ?? undefined;
-            }
+            if ((attributes & JSObjectAttributesInternal.ProxyPrototype) != 0 && name == "prototype")
+                return prototype;
             return base.GetMember(nameObj, forWrite, own);
         }
 

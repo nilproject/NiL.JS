@@ -352,28 +352,25 @@ namespace NiL.JS.BaseLibrary
 
         private static string stringifyImpl(string key, JSValue obj, Function replacer, string space, List<JSValue> processed, Arguments args)
         {
+            if (replacer != null)
+            {
+                args[0] = "";
+                args[0].oValue = key;
+                args[1] = obj;
+                args.length = 2;
+                var t = replacer.Invoke(args);
+                if (t.valueType <= JSValueType.Undefined || (t.valueType >= JSValueType.Object && t.oValue == null))
+                    return null;
+                obj = t.Value as JSValue ?? t;
+            }
             if (processed.IndexOf(obj) != -1)
                 throw new JSException(new TypeError("Can not convert circular structure to JSON."));
             processed.Add(obj);
             try
             {
-                {
-                    if (replacer != null)
-                    {
-                        args[0] = "";
-                        args[0].oValue = key;
-                        args[1] = obj;
-                        args.length = 2;
-                        var t = replacer.Invoke(args);
-                        if (t.valueType <= JSValueType.Undefined || (t.valueType >= JSValueType.Object && t.oValue == null))
-                            return null;
-                        obj = t;
-                    }
-                }
-                if (obj.valueType <= JSValueType.Undefined
-                    || obj.valueType == JSValueType.Function)
+                if (obj.valueType <= JSValueType.Undefined || obj.valueType == JSValueType.Function)
                     return null;
-                obj = obj.Value as JSValue ?? obj;
+
                 StringBuilder res = null;
                 string strval = null;
                 if (obj.valueType < JSValueType.Object)

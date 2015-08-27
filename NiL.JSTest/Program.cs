@@ -142,7 +142,7 @@ namespace NiL.JSTest
             _("Found " + (fls.Length - 2) + " js-files");
             bool skipedShowed = false;
             sw.Start();
-            for (int i = 0; i < fls.Length; i++)
+            for (int i = 275; i < fls.Length; i++)
             {
                 if (i != 0 && !skipedShowed)
                     _("Skiped: " + i);
@@ -155,7 +155,7 @@ namespace NiL.JSTest
                     if (showAll)
                         Console.Write("Processing file \"" + fls[i] + "\" ");
                     var f = new FileStream(fls[i], FileMode.Open, FileAccess.Read);
-                    var sr = new StreamReader(f);
+                    var sr = new StreamReader(f, true);
                     code = sr.ReadToEnd();
                     sr.Dispose();
                     f.Dispose();
@@ -418,7 +418,7 @@ var strObj = new String(""bbq"");
             }));
 #endif
 
-            int mode = 0
+            int mode = 2
                     ;
             switch (mode)
             {

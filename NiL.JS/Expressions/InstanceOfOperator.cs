@@ -35,7 +35,7 @@ namespace NiL.JS.Expressions
             var c = second.Evaluate(context);
             tempContainer = a;
             if (c.valueType != JSValueType.Function)
-                throw new JSException(new NiL.JS.BaseLibrary.TypeError("Right-hand value of instanceof is not function."));
+                throw new JSException(new NiL.JS.BaseLibrary.TypeError("Right-hand value of instanceof is not a function."));
             var p = (c.oValue as Function).prototype;
             if (p.valueType < JSValueType.Object)
                 throw new JSException(new TypeError("Property \"prototype\" of function not represent object."));

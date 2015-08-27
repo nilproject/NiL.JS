@@ -1158,5 +1158,17 @@ namespace NiL.JS.BaseLibrary
                 return double.NaN;
             }
         }
+
+        [Hidden]
+        public override bool Equals(object obj)
+        {
+            return base.Equals(obj);
+        }
+
+        [Hidden]
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
     }
 }

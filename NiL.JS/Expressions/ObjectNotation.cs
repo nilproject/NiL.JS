@@ -112,6 +112,8 @@ namespace NiL.JS.Expressions
                         fieldName = Tools.Unescape(state.Code.Substring(s, i - s), state.strict.Peek());
                     else if (Parser.ValidateValue(state.Code, ref i))
                     {
+                        if (state.Code[s] == '-')
+                            throw new SyntaxError("Invalid char \"-\" at " + CodeCoordinates.FromTextPosition(state.Code, s, 1)).Wrap();
                         double d = 0.0;
                         int n = s;
                         if (Tools.ParseNumber(state.Code, ref n, out d))
