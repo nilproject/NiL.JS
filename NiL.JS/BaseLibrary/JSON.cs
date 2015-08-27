@@ -287,7 +287,7 @@ namespace NiL.JS.BaseLibrary
                 }
             }
             var target = args[0];
-            return stringify(target.Value as JSValue ?? target, replacer, space) ?? JSValue.undefined;
+            return stringify(target, replacer, space) ?? JSValue.undefined;
         }
 
         [Hidden]
@@ -361,8 +361,9 @@ namespace NiL.JS.BaseLibrary
                 var t = replacer.Invoke(args);
                 if (t.valueType <= JSValueType.Undefined || (t.valueType >= JSValueType.Object && t.oValue == null))
                     return null;
-                obj = t.Value as JSValue ?? t;
+                obj = t;
             }
+            obj = obj.Value as JSValue ?? obj;
             if (processed.IndexOf(obj) != -1)
                 throw new JSException(new TypeError("Can not convert circular structure to JSON."));
             processed.Add(obj);
