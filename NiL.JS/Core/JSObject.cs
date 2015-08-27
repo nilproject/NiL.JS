@@ -57,7 +57,7 @@ namespace NiL.JS.Core
         Reassign = 1 << 25,
         IntrinsicFunction = 1 << 26,
         /// <summary>
-        /// Аттрибуты, не передающиеся при присваивании
+        /// ГЂГІГІГ°ГЁГЎГіГІГ», Г­ГҐ ГЇГҐГ°ГҐГ¤Г ГѕГ№ГЁГҐГ±Гї ГЇГ°ГЁ ГЇГ°ГЁГ±ГўГ ГЁГўГ Г­ГЁГЁ
         /// </summary>
         PrivateAttributes = Immutable | ProxyPrototype | Field,
     }
@@ -1164,7 +1164,7 @@ namespace NiL.JS.Core
             get { return valueType == JSObjectType.Int || valueType == JSObjectType.Double; }
         }
 
-        #region Члены IComparable<JSObject>
+        #region Г—Г«ГҐГ­Г» IComparable<JSObject>
 
         int IComparable<JSObject>.CompareTo(JSObject other)
         {
@@ -1418,7 +1418,7 @@ namespace NiL.JS.Core
                 obj.attributes &= ~JSObjectAttributesInternal.Argument;
             }
             if ((obj.attributes & JSObjectAttributesInternal.SystemObject) != 0)
-                throw new JSException(new TypeError("Can not define property \"" + memberName + "\". Object is immutable."));
+                throw new JSException(new TypeError("Can not define property \"" + memberName + "\". Object immutable."));
 
             if (target is NiL.JS.BaseLibrary.Array)
             {
@@ -1854,7 +1854,7 @@ namespace NiL.JS.Core
 
         internal bool isNeedClone { get { return (attributes & (JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.SystemObject)) == JSObjectAttributesInternal.SystemObject; } }
 
-        #region Члены IConvertible
+        #region Г—Г«ГҐГ­Г» IConvertible
 #if !PORTABLE
         [Hidden]
         public virtual T As<T>()
@@ -1862,7 +1862,7 @@ namespace NiL.JS.Core
             switch (Type.GetTypeCode(typeof(T)))
             {
                 case TypeCode.Boolean:
-                    return (T)(object)(bool)this; // оптимизатор разруливает такой каскад преобразований
+                    return (T)(object)(bool)this; // Г®ГЇГІГЁГ¬ГЁГ§Г ГІГ®Г° Г°Г Г§Г°ГіГ«ГЁГўГ ГҐГІ ГІГ ГЄГ®Г© ГЄГ Г±ГЄГ Г¤ ГЇГ°ГҐГ®ГЎГ°Г Г§Г®ГўГ Г­ГЁГ©
                 case TypeCode.Byte:
                     {
                         return (T)(object)(byte)Tools.JSObjectToInt32(this);
