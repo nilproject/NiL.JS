@@ -454,7 +454,7 @@ t.__proto__.constructor().type(Number);
                         sputnikTests(@"tests\sputnik\ch15\15.1\");
                         sputnikTests(@"tests\sputnik\ch15\15.2\");
                         sputnikTests(@"tests\sputnik\ch15\15.3\");
-                        sputnikTests(@"tests\sputnik\ch15\15.4\"); // with 42 asserts
+                        sputnikTests(@"tests\sputnik\ch15\15.4\"); // with 20 asserts
                         sputnikTests(@"tests\sputnik\ch15\15.5\"); // with some errors due double.toString() (8)
                         sputnikTests(@"tests\sputnik\ch15\15.6\");
                         sputnikTests(@"tests\sputnik\ch15\15.7\");

@@ -49,7 +49,7 @@ namespace NiL.JS.Statements
 
         internal override JSObject Evaluate(Context context)
         {
-            throw new JSException(body.Evaluate(context));
+            throw new JSException(body == null ? JSObject.undefined : body.Evaluate(context));
         }
 
         protected override CodeNode[] getChildsImpl()

@@ -179,9 +179,6 @@
     <Compile Include="..\NiL.JS\Core\JSObject.cs">
       <Link>Core\JSObject.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Core\Modules\AllowUnsafeCallAttribute.cs">
-      <Link>Core\Modules\AllowUnsafeCallAttribute.cs</Link>
-    </Compile>
     <Compile Include="..\NiL.JS\Core\Modules\ArgumentsLengthAttribute.cs">
       <Link>Core\Modules\ArgumentsLengthAttribute.cs</Link>
     </Compile>

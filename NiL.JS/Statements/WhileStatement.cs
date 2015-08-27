@@ -140,7 +140,8 @@ namespace NiL.JS.Statements
                     {
                         _this = null;
                         Eliminated = true;
-                        body.Eliminated = true;
+                        if (body != null)
+                            body.Eliminated = true;
                     }
                     condition.Eliminated = true;
                 }

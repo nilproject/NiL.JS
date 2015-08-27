@@ -63,7 +63,7 @@ namespace NiL.JS.Core.Functions
         public ExternalFunction(ExternalFunctionDelegate del)
         {
             if (_length == null)
-                _length = new Number(0) { attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum };
+                _length = new Number(0);
             
 #if PORTABLE
             var paramCountAttrbt = del.GetMethodInfo().GetCustomAttributes(typeof(ArgumentsLengthAttribute), false).ToArray();

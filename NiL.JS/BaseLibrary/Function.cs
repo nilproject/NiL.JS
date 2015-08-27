@@ -699,9 +699,10 @@ namespace NiL.JS.BaseLibrary
                     return 0;
                 if (_length == null)
                 {
-                    _length = new Number(0) { attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum };
+                    _length = new Number(0);
                     _length.iValue = creator.arguments.Length;
                 }
+                _length.attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum;
                 return _length;
             }
         }

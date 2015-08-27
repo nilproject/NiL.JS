@@ -626,10 +626,13 @@ namespace NiL.JS.Core
                     throw new JSException(new TypeError("Can not assign to readonly property \"" + name + "\""));
                 return;
             }
-            else
-                if (strict && (field.attributes & JSObjectAttributesInternal.ReadOnly) != 0)
+            else if ((field.attributes & JSObjectAttributesInternal.ReadOnly) != 0)
+            {
+                if (strict)
                     throw new JSException(new TypeError("Can not assign to readonly property \"" + name + "\""));
-            field.Assign(value);
+            }
+            else
+                field.Assign(value);
         }
 
         [Hidden]
