@@ -1027,129 +1027,90 @@ namespace NiL.JS.BaseLibrary
 
         private void initParametersFast(Expression[] arguments, Core.Context initiator, Context internalContext)
         {
-            JSValue a0, a1, a2, a3, a4, a5, a6, a7; // Вместо кучи, выделяем память на стеке
+            JSValue a0 = null,
+                    a1 = null,
+                    a2 = null,
+                    a3 = null,
+                    a4 = null,
+                    a5 = null,
+                    a6 = null,
+                    a7 = null; // Вместо кучи, выделяем память на стеке
 
             if (creator.parameters.Length != arguments.Length)
                 throw new ArgumentException("Invalid arguments count");
+            if (arguments.Length > 8)
+                throw new ArgumentException("To many arguments");
+            if (arguments.Length == 0)
+                return;
 
-            switch (arguments.Length)
+            /*
+             * Да, от этого кода можно вздрогнуть, но по ряду причин лучше сделать не получится.
+             * Такая она цена оптимизации
+             */
+
+            /*
+             * Эти два блока нельзя смешивать. Текущие значения параметров могут быть использованы для расчёта новых. 
+             * Поэтому заменять значения можно только после полного расчёта новых значений
+             */
+
+            a0 = arguments[0].Evaluate(initiator).CloneImpl(false);
+            if (arguments.Length > 1)
             {
-                case 0:
-                    break;
-                case 1:
+                a1 = arguments[1].Evaluate(initiator).CloneImpl(false);
+                if (arguments.Length > 2)
+                {
+                    a2 = arguments[2].Evaluate(initiator).CloneImpl(false);
+                    if (arguments.Length > 3)
                     {
-                        a0 = arguments[0].Evaluate(initiator).CloneImpl(false);
-                        
-                        setPrmFst(0, a0, internalContext);
-                        break;
-                    }
-                case 2:
-                    {
-                        a0 = arguments[0].Evaluate(initiator).CloneImpl(false);
-                        a1 = arguments[1].Evaluate(initiator).CloneImpl(false);
-
-                        setPrmFst(0, a0, internalContext);
-                        setPrmFst(1, a1, internalContext);
-                        break;
-                    }
-                case 3:
-                    {
-                        a0 = arguments[0].Evaluate(initiator).CloneImpl(false);
-                        a1 = arguments[1].Evaluate(initiator).CloneImpl(false);
-                        a2 = arguments[2].Evaluate(initiator).CloneImpl(false);
-
-                        setPrmFst(0, a0, internalContext);
-                        setPrmFst(1, a1, internalContext);
-                        setPrmFst(2, a2, internalContext);
-                        break;
-                    }
-                case 4:
-                    {
-                        a0 = arguments[0].Evaluate(initiator).CloneImpl(false);
-                        a1 = arguments[1].Evaluate(initiator).CloneImpl(false);
-                        a2 = arguments[2].Evaluate(initiator).CloneImpl(false);
                         a3 = arguments[3].Evaluate(initiator).CloneImpl(false);
-
-                        setPrmFst(0, a0, internalContext);
-                        setPrmFst(1, a1, internalContext);
-                        setPrmFst(2, a2, internalContext);
-                        setPrmFst(3, a3, internalContext);
-                        break;
+                        if (arguments.Length > 4)
+                        {
+                            a4 = arguments[4].Evaluate(initiator).CloneImpl(false);
+                            if (arguments.Length > 5)
+                            {
+                                a5 = arguments[5].Evaluate(initiator).CloneImpl(false);
+                                if (arguments.Length > 6)
+                                {
+                                    a6 = arguments[6].Evaluate(initiator).CloneImpl(false);
+                                    if (arguments.Length > 7)
+                                    {
+                                        a7 = arguments[7].Evaluate(initiator).CloneImpl(false);
+                                    }
+                                }
+                            }
+                        }
                     }
-                case 5:
+                }
+            }
+
+            setPrmFst(0, a0, internalContext);
+            if (arguments.Length > 1)
+            {
+                setPrmFst(1, a1, internalContext);
+                if (arguments.Length > 2)
+                {
+                    setPrmFst(2, a2, internalContext);
+                    if (arguments.Length > 3)
                     {
-                        a0 = arguments[0].Evaluate(initiator).CloneImpl(false);
-                        a1 = arguments[1].Evaluate(initiator).CloneImpl(false);
-                        a2 = arguments[2].Evaluate(initiator).CloneImpl(false);
-                        a3 = arguments[3].Evaluate(initiator).CloneImpl(false);
-                        a4 = arguments[4].Evaluate(initiator).CloneImpl(false);
-
-                        setPrmFst(0, a0, internalContext);
-                        setPrmFst(1, a1, internalContext);
-                        setPrmFst(2, a2, internalContext);
                         setPrmFst(3, a3, internalContext);
-                        setPrmFst(4, a4, internalContext);
-                        break;
+                        if (arguments.Length > 4)
+                        {
+                            setPrmFst(4, a4, internalContext);
+                            if (arguments.Length > 5)
+                            {
+                                setPrmFst(5, a5, internalContext);
+                                if (arguments.Length > 6)
+                                {
+                                    setPrmFst(6, a6, internalContext);
+                                    if (arguments.Length > 7)
+                                    {
+                                        setPrmFst(7, a7, internalContext);
+                                    }
+                                }
+                            }
+                        }
                     }
-                case 6:
-                    {
-                        a0 = arguments[0].Evaluate(initiator).CloneImpl(false);
-                        a1 = arguments[1].Evaluate(initiator).CloneImpl(false);
-                        a2 = arguments[2].Evaluate(initiator).CloneImpl(false);
-                        a3 = arguments[3].Evaluate(initiator).CloneImpl(false);
-                        a4 = arguments[4].Evaluate(initiator).CloneImpl(false);
-                        a5 = arguments[5].Evaluate(initiator).CloneImpl(false);
-
-                        setPrmFst(0, a0, internalContext);
-                        setPrmFst(1, a1, internalContext);
-                        setPrmFst(2, a2, internalContext);
-                        setPrmFst(3, a3, internalContext);
-                        setPrmFst(4, a4, internalContext);
-                        setPrmFst(5, a5, internalContext);
-                        break;
-                    }
-                case 7:
-                    {
-                        a0 = arguments[0].Evaluate(initiator).CloneImpl(false);
-                        a1 = arguments[1].Evaluate(initiator).CloneImpl(false);
-                        a2 = arguments[2].Evaluate(initiator).CloneImpl(false);
-                        a3 = arguments[3].Evaluate(initiator).CloneImpl(false);
-                        a4 = arguments[4].Evaluate(initiator).CloneImpl(false);
-                        a5 = arguments[5].Evaluate(initiator).CloneImpl(false);
-                        a6 = arguments[6].Evaluate(initiator).CloneImpl(false);
-
-                        setPrmFst(0, a0, internalContext);
-                        setPrmFst(1, a1, internalContext);
-                        setPrmFst(2, a2, internalContext);
-                        setPrmFst(3, a3, internalContext);
-                        setPrmFst(4, a4, internalContext);
-                        setPrmFst(5, a5, internalContext);
-                        setPrmFst(6, a6, internalContext);
-                        break;
-                    }
-                case 8:
-                    {
-                        a0 = arguments[0].Evaluate(initiator).CloneImpl(false);
-                        a1 = arguments[1].Evaluate(initiator).CloneImpl(false);
-                        a2 = arguments[2].Evaluate(initiator).CloneImpl(false);
-                        a3 = arguments[3].Evaluate(initiator).CloneImpl(false);
-                        a4 = arguments[4].Evaluate(initiator).CloneImpl(false);
-                        a5 = arguments[5].Evaluate(initiator).CloneImpl(false);
-                        a6 = arguments[6].Evaluate(initiator).CloneImpl(false);
-                        a7 = arguments[7].Evaluate(initiator).CloneImpl(false);
-
-                        setPrmFst(0, a0, internalContext);
-                        setPrmFst(1, a1, internalContext);
-                        setPrmFst(2, a2, internalContext);
-                        setPrmFst(3, a3, internalContext);
-                        setPrmFst(4, a4, internalContext);
-                        setPrmFst(5, a5, internalContext);
-                        setPrmFst(6, a6, internalContext);
-                        setPrmFst(7, a7, internalContext);
-                        break;
-                    }
-                default:
-                    throw new ArgumentException("To many arguments");
+                }
             }
         }
 

@@ -232,13 +232,15 @@ namespace NiL.JS.Statements
                     else
                         throw new ApplicationException("notExist was rewrite");
                 if (BaseLibrary.Boolean.False.valueType != JSValueType.Bool
-                    || BaseLibrary.Boolean.False.iValue != 0)
+                    || BaseLibrary.Boolean.False.iValue != 0
+                    || BaseLibrary.Boolean.False.attributes != JSObjectAttributesInternal.SystemObject)
                     if (System.Diagnostics.Debugger.IsAttached)
                         System.Diagnostics.Debugger.Break();
                     else
                         throw new ApplicationException("Boolean.False was rewrite");
                 if (BaseLibrary.Boolean.True.valueType != JSValueType.Bool
-                    || BaseLibrary.Boolean.True.iValue != 1)
+                    || BaseLibrary.Boolean.True.iValue != 1
+                    || BaseLibrary.Boolean.True.attributes != JSObjectAttributesInternal.SystemObject)
                     if (System.Diagnostics.Debugger.IsAttached)
                         System.Diagnostics.Debugger.Break();
                     else

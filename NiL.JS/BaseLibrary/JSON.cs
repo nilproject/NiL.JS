@@ -287,12 +287,14 @@ namespace NiL.JS.BaseLibrary
                 }
             }
             var target = args[0];
-            return stringify(target.Value as JSValue ?? target, replacer, space) ?? JSValue.undefined;
+            return stringify(target, replacer, space) ?? JSValue.undefined;
         }
 
         [Hidden]
         public static string stringify(JSValue obj, Function replacer, string space)
         {
+            if (obj.valueType >= JSValueType.Object && obj.Value == null)
+                return "null";
             return stringifyImpl("", obj, replacer, space, new List<JSValue>(), new Arguments());
         }
 
@@ -359,22 +361,24 @@ namespace NiL.JS.BaseLibrary
                 args[1] = obj;
                 args.length = 2;
                 var t = replacer.Invoke(args);
-                if (t.valueType <= JSValueType.Undefined || (t.valueType >= JSValueType.Object && t.oValue == null))
+                if (t.valueType >= JSValueType.Object && t.oValue == null)
+                    return "null";
+                if (t.valueType <= JSValueType.Undefined)
                     return null;
-                obj = t.Value as JSValue ?? t;
+                obj = t;
             }
+            obj = obj.Value as JSValue ?? obj;
             if (processed.IndexOf(obj) != -1)
                 throw new JSException(new TypeError("Can not convert circular structure to JSON."));
             processed.Add(obj);
             try
             {
-                if (obj.valueType <= JSValueType.Undefined || obj.valueType == JSValueType.Function)
-                    return null;
-
                 StringBuilder res = null;
                 string strval = null;
                 if (obj.valueType < JSValueType.Object)
                 {
+                    if (obj.valueType <= JSValueType.Undefined)
+                        return null;
                     if (obj.valueType == JSValueType.String)
                     {
                         res = new StringBuilder("\"");
@@ -387,7 +391,9 @@ namespace NiL.JS.BaseLibrary
                     return obj.ToString();
                 }
                 if (obj.Value == null)
-                    return "null";
+                    return null;
+                if (obj.valueType == JSValueType.Function)
+                    return null;
                 var toJSONmemb = obj["toJSON"];
                 toJSONmemb = toJSONmemb.Value as JSValue ?? toJSONmemb;
                 if (toJSONmemb.valueType == JSValueType.Function)
@@ -404,7 +410,12 @@ namespace NiL.JS.BaseLibrary
                         value = ((value.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(obj, null);
                     strval = stringifyImpl(member, value, replacer, space, processed, args);
                     if (strval == null)
-                        continue;
+                    {
+                        if (obj is Array)
+                            strval = "null";
+                        else
+                            continue;
+                    }
                     if (!first)
                         res.Append(",");
                     if (space != null)
@@ -415,12 +426,6 @@ namespace NiL.JS.BaseLibrary
                     {
                         if (space != null)
                             res.Append(space);
-                        /*
-                        for (var i = 0; i < strval.Length; i++)
-                        {
-                            escapeIfNeed(res, strval[i]);
-                        }
-                        */
                         res.Append(strval);
                     }
                     else
@@ -432,26 +437,11 @@ namespace NiL.JS.BaseLibrary
                         }
                         res.Append("\":")
                            .Append(space ?? "");
-                        /*
-                        if (strval.Length > 0 && strval[0] == '"')
+                        for (var i = 0; i < strval.Length; i++)
                         {
-                            res.Append(strval[0]);
-                            for (var i = 1; i < strval.Length - 1; i++)
-                            {
-                                escapeIfNeed(res, strval[i]);
-                            }
-                            if (strval.Length > 1)
-                                res.Append(strval[strval.Length - 1]);
-                        }
-                        else
-                        */
-                        {
-                            for (var i = 0; i < strval.Length; i++)
-                            {
-                                res.Append(strval[i]);
-                                if (i >= Environment.NewLine.Length && strval.IndexOf(Environment.NewLine, i - 1, Environment.NewLine.Length) != -1)
-                                    res.Append(space);
-                            }
+                            res.Append(strval[i]);
+                            if (i >= Environment.NewLine.Length && strval.IndexOf(Environment.NewLine, i - 1, Environment.NewLine.Length) != -1)
+                                res.Append(space);
                         }
                     }
                     first = false;
