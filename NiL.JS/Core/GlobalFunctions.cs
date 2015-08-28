@@ -77,7 +77,7 @@ namespace NiL.JS.Core
                 return source;
             if (source.valueType == JSValueType.Double)
                 return source.dValue == 0.0 ? (Number)0 : // +0 и -0 должны стать равными
-                    (Number)source.dValue;
+                    source;
             var arg = source.ToString().Trim(Tools.TrimChars);
             if (!string.IsNullOrEmpty(arg))
                 Tools.ParseNumber(arg, out result, Tools.ParseNumberOptions.AllowFloat);

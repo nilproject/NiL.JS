@@ -6,7 +6,7 @@ namespace NiL.JS.Core.Modules
     [Serializable]
 #endif
     [AttributeUsage(
-        AttributeTargets.Field
+          AttributeTargets.Field
         | AttributeTargets.Property
         | AttributeTargets.ReturnValue
         | AttributeTargets.Parameter, AllowMultiple = false, Inherited = false)]

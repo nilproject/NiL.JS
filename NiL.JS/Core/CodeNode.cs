@@ -26,7 +26,7 @@ namespace NiL.JS.Core
 #endif
     public abstract class CodeNode
     {
-        internal static readonly CodeNode[] emptyCodeNodeArray = new CodeNode[0];
+        private static readonly CodeNode[] emptyCodeNodeArray = new CodeNode[0];
 #if !PORTABLE
         internal static readonly MethodInfo EvaluateForAssignMethod = typeof(CodeNode).GetMethod("EvaluateForAssing", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic, null, new[] { typeof(Context) }, null);
         internal static readonly MethodInfo EvaluateMethod = typeof(CodeNode).GetMethod("Evaluate", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic, null, new[] { typeof(Context) }, null);

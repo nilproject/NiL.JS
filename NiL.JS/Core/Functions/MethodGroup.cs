@@ -4,10 +4,13 @@ using NiL.JS.Core.TypeProxing;
 
 namespace NiL.JS.Core.Functions
 {
+    /// <remarks>
+    /// Доступ к типу не предоставляется из скрипта. Атрибуты не нужны
+    /// </remarks>
 #if !PORTABLE
     [Serializable]
 #endif
-    public sealed class MethodGroup : BaseLibrary.Function
+    internal sealed class MethodGroup : BaseLibrary.Function
     {
         private readonly MethodProxy[] methods;
         private readonly int passCount;
@@ -43,16 +46,16 @@ namespace NiL.JS.Core.Functions
             for (var i = 0; i < methods.Length; i++)
                 len = System.Math.Max(len, methods[i].parameters.Length);
             _length = new BaseLibrary.Number(len) { attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum };
-            
-            
-            passCount = 2; 
+
+
+            passCount = 2;
             // На втором проходе будет выбираться первый метод, 
             // для которого получится сгенерировать параметры по-умолчанию.
             // Если нужен более строгий подбор, то количество проходов нужно
             // уменьшить до одного
         }
 
-        protected override JSObject getDefaultPrototype()
+        internal override JSObject GetDefaultPrototype()
         {
             return TypeProxy.GetPrototype(typeof(Function));
         }

@@ -14,8 +14,13 @@ namespace NiL.JS.Core.Functions
     [Prototype(typeof(Function))]
     internal class ProxyConstructor : Function
     {
+        // На втором проходе будет выбираться первый метод, 
+        // для которого получится сгенерировать параметры по-умолчанию.
+        // Если нужен более строгий подбор, то количество проходов нужно
+        // уменьшить до одного
+        private const int passesCount = 2;
+
         private static readonly object[] _objectA = new object[0];
-        private readonly int passCount;
         internal readonly TypeProxy proxy;
         private MethodProxy[] constructors;
 
@@ -92,12 +97,6 @@ namespace NiL.JS.Core.Functions
                 y.Parameters.Length == 1 && y.Parameters[0].ParameterType == typeof(Arguments) ? -1 :
                 x.Parameters.Length - y.Parameters.Length);
             constructors = ctorsL.ToArray();
-
-            passCount = 2;
-            // На втором проходе будет выбираться первый метод, 
-            // для которого получится сгенерировать параметры по-умолчанию.
-            // Если нужен более строгий подбор, то количество проходов нужно
-            // уменьшить до одного
         }
 
         [Hidden]
@@ -251,7 +250,7 @@ namespace NiL.JS.Core.Functions
         {
             args = null;
             var len = argObj == null ? 0 : argObj.length;
-            for (var pass = 0; pass < passCount; pass++)
+            for (var pass = 0; pass < passesCount; pass++)
                 for (int i = 0; i < constructors.Length; i++)
                 {
                     if (constructors[i].parameters.Length == 1 && (constructors[i].parameters[0].ParameterType == typeof(Arguments)))
@@ -280,7 +279,7 @@ namespace NiL.JS.Core.Functions
             return null;
         }
 
-        protected override JSObject getDefaultPrototype()
+        internal override JSObject GetDefaultPrototype()
         {
             return TypeProxy.GetPrototype(typeof(Function));
         }

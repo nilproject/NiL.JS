@@ -177,6 +177,7 @@ namespace NiL.JS.Core
         internal Function caller;
         internal bool strict;
         internal VariableDescriptor[] variables;
+
         public Context Root
         {
             get

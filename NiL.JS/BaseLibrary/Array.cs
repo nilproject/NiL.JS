@@ -39,11 +39,11 @@ namespace NiL.JS.BaseLibrary
             }
         }
 
-        private sealed class _lengthField : JSValue
+        private sealed class LengthField : JSValue
         {
             private Array array;
 
-            public _lengthField(Array owner)
+            public LengthField(Array owner)
             {
                 attributes |= JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.Reassign;
                 array = owner;
@@ -207,7 +207,7 @@ namespace NiL.JS.BaseLibrary
             data.Add(obj);
         }
 
-        private _lengthField _lengthObj;
+        private LengthField _lengthObj;
         [Hidden]
         public JSValue length
         {
@@ -215,7 +215,7 @@ namespace NiL.JS.BaseLibrary
             get
             {
                 if (_lengthObj == null)
-                    _lengthObj = new _lengthField(this);
+                    _lengthObj = new LengthField(this);
                 if (data.Length <= int.MaxValue)
                 {
                     _lengthObj.iValue = (int)data.Length;

@@ -142,7 +142,7 @@ namespace NiL.JSTest
             _("Found " + (fls.Length - 2) + " js-files");
             bool skipedShowed = false;
             sw.Start();
-            for (int i = 275; i < fls.Length; i++)
+            for (int i = 0; i < fls.Length; i++)
             {
                 if (i != 0 && !skipedShowed)
                     _("Skiped: " + i);
@@ -418,7 +418,7 @@ var strObj = new String(""bbq"");
             }));
 #endif
 
-            int mode = 2
+            int mode = 1512
                     ;
             switch (mode)
             {

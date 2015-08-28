@@ -9,7 +9,7 @@ using NiL.JS.Core.TypeProxing;
 
 namespace NiL.JS.Core.Functions
 {
-    public sealed class MethodProxy : Function
+    internal sealed class MethodProxy : Function
     {
         private Func<object, object[], Arguments, object> implementation;
         private bool raw;

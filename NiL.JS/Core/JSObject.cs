@@ -18,7 +18,7 @@ namespace NiL.JS.Core
     {
         NotExists = 0,
         NotExistsInObject = 1,
-        Undefined = 3,  // 00000000011 // значение undefined говорит о том, что этот объект, вообще-то, определён, но вот его значение нет
+        Undefined = 3,  // 00000000011 // Р·РЅР°С‡РµРЅРёРµ undefined РіРѕРІРѕСЂРёС‚ Рѕ С‚РѕРј, С‡С‚Рѕ СЌС‚РѕС‚ РѕР±СЉРµРєС‚, РІРѕРѕР±С‰Рµ-С‚Рѕ, РѕРїСЂРµРґРµР»С‘РЅ, РЅРѕ РІРѕС‚ РµРіРѕ Р·РЅР°С‡РµРЅРёРµ РЅРµС‚
         Bool = 7,       // 00000000111
         Int = 11,       // 00000001011
         Double = 19,    // 00000010011
@@ -54,7 +54,7 @@ namespace NiL.JS.Core
         Reassign = 1 << 25,
         IntrinsicFunction = 1 << 26,
         /// <summary>
-        /// Аттрибуты, не передающиеся при присваивании
+        /// РђС‚С‚СЂРёР±СѓС‚С‹, РЅРµ РїРµСЂРµРґР°СЋС‰РёРµСЃСЏ РїСЂРё РїСЂРёСЃРІР°РёРІР°РЅРёРё
         /// </summary>
         PrivateAttributes = Immutable | ProxyPrototype | Field,
     }
@@ -94,18 +94,18 @@ namespace NiL.JS.Core
                 if (!this.IsDefinded || this.IsNull)
                     throw new JSException(new TypeError("Can not get prototype of null or undefined"));
                 if (valueType >= JSValueType.Object
-                    && oValue != this // вот такого теперь быть не должно
+                    && oValue != this // РІРѕС‚ С‚Р°РєРѕРіРѕ С‚РµРїРµСЂСЊ Р±С‹С‚СЊ РЅРµ РґРѕР»Р¶РЅРѕ
                     && (oValue as JSObject) != null)
                     return (oValue as JSObject).__proto__;
                 if (__prototype != null)
                 {
                     if (__prototype.valueType < JSValueType.Object)
-                        __prototype = getDefaultPrototype(); // такого тоже
+                        __prototype = GetDefaultPrototype(); // С‚Р°РєРѕРіРѕ С‚РѕР¶Рµ
                     else if (__prototype.oValue == null)
                         return Null;
                     return __prototype;
                 }
-                return __prototype = getDefaultPrototype();
+                return __prototype = GetDefaultPrototype();
             }
             [Hidden]
             set
@@ -183,7 +183,7 @@ namespace NiL.JS.Core
         protected internal override JSValue GetMember(JSValue key, bool forWrite, bool own)
         {
 #if DEBUG
-            // Это ошибочная ситуация, но, по крайней мере, так положение будет исправлено
+            // Р­С‚Рѕ РѕС€РёР±РѕС‡РЅР°СЏ СЃРёС‚СѓР°С†РёСЏ, РЅРѕ, РїРѕ РєСЂР°Р№РЅРµР№ РјРµСЂРµ, С‚Р°Рє РїРѕР»РѕР¶РµРЅРёРµ Р±СѓРґРµС‚ РёСЃРїСЂР°РІР»РµРЅРѕ
             if (oValue != this && oValue is JSValue)
                 return base.GetMember(key, forWrite, own);
 #endif

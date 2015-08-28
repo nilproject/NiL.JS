@@ -202,7 +202,7 @@ namespace NiL.JS.Core
                     return (oValue as JSObject).__proto__;
                 if (!this.IsDefinded || this.IsNull)
                     throw new JSException(new TypeError("Can not get prototype of null or undefined"));
-                return getDefaultPrototype();
+                return GetDefaultPrototype();
             }
             [Hidden]
             set
@@ -219,7 +219,7 @@ namespace NiL.JS.Core
             }
         }
 
-        protected virtual JSObject getDefaultPrototype()
+        internal virtual JSObject GetDefaultPrototype()
         {
             switch (valueType)
             {
@@ -235,7 +235,7 @@ namespace NiL.JS.Core
             {
                 var rojso = oValue as JSObject;
                 if (rojso != null)
-                    return rojso.getDefaultPrototype() ?? Null;
+                    return rojso.GetDefaultPrototype() ?? Null;
                 else
                     return TypeProxy.GetPrototype(oValue.GetType());
             }
