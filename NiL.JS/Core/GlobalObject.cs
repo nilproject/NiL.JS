@@ -21,7 +21,7 @@ namespace NiL.JS.Core
 
         private Context context;
 
-        protected override JSObject getDefaultPrototype()
+        internal override JSObject GetDefaultPrototype()
         {
             return thisProto;
         }

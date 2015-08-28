@@ -4,10 +4,13 @@ using NiL.JS.Core.TypeProxing;
 
 namespace NiL.JS.Core.Functions
 {
+    /// <remarks>
+    /// Доступ к типу не предоставляется из скрипта. Атрибуты не нужны
+    /// </remarks>
 #if !PORTABLE
     [Serializable]
 #endif
-    public sealed class MethodGroup : BaseLibrary.Function
+    internal sealed class MethodGroup : BaseLibrary.Function
     {
         private readonly MethodProxy[] methods;
         private readonly int passCount;
@@ -52,7 +55,7 @@ namespace NiL.JS.Core.Functions
             // уменьшить до одного
         }
 
-        protected override JSObject getDefaultPrototype()
+        internal override JSObject GetDefaultPrototype()
         {
             return TypeProxy.GetPrototype(typeof(Function));
         }

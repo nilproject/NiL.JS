@@ -135,7 +135,7 @@ namespace NiL.JS.Core
             this[length++] = arg;
         }
 
-        protected override JSObject getDefaultPrototype()
+        internal override JSObject GetDefaultPrototype()
         {
             return GlobalPrototype ?? Null;
         }

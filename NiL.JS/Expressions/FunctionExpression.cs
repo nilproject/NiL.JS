@@ -45,7 +45,7 @@ namespace NiL.JS.Expressions
                 return TypeProxy.Proxy(new Generator(generator, thisBind, args));
             }
 
-            protected override JSObject getDefaultPrototype()
+            internal override JSObject GetDefaultPrototype()
             {
                 return TypeProxy.GetPrototype(typeof(Function));
             }

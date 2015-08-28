@@ -250,7 +250,7 @@ namespace NiL.JS.Core.TypeProxing
             }
         }
 
-        protected override JSObject getDefaultPrototype()
+        internal override JSObject GetDefaultPrototype()
         {
 #if PORTABLE
             if (Context.currentContext == null)

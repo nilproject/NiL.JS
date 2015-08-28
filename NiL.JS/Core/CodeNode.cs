@@ -22,7 +22,7 @@ namespace NiL.JS.Core
 #endif
     public abstract class CodeNode
     {
-        internal static readonly CodeNode[] emptyCodeNodeArray = new CodeNode[0];
+        private static readonly CodeNode[] emptyCodeNodeArray = new CodeNode[0];
 
         public virtual bool Eliminated { get; internal set; }
         public virtual int Position { get; internal set; }

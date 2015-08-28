@@ -112,7 +112,7 @@ namespace NiL.JS.Core.Functions
             return proto.GetMember(name, forWrite, own);
         }
 
-        protected override JSObject getDefaultPrototype()
+        internal override JSObject GetDefaultPrototype()
         {
             return TypeProxy.GetPrototype(typeof(Function));
         }

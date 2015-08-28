@@ -147,12 +147,12 @@ namespace NiL.JS.Core
                 if (__prototype != null)
                 {
                     if (__prototype.valueType < JSObjectType.Object)
-                        __prototype = getDefaultPrototype();
+                        __prototype = GetDefaultPrototype();
                     else if (__prototype.oValue == null)
                         return Null;
                     return __prototype;
                 }
-                return __prototype = getDefaultPrototype();
+                return __prototype = GetDefaultPrototype();
             }
             [Hidden]
             set
@@ -187,7 +187,7 @@ namespace NiL.JS.Core
             }
         }
 
-        protected virtual JSObject getDefaultPrototype()
+        internal virtual JSObject GetDefaultPrototype()
         {
             switch (valueType)
             {
@@ -203,7 +203,7 @@ namespace NiL.JS.Core
             {
                 var rojso = oValue as JSObject;
                 if (rojso != null)
-                    return rojso.getDefaultPrototype() ?? Null;
+                    return rojso.GetDefaultPrototype() ?? Null;
                 else
                     return TypeProxy.GetPrototype(oValue.GetType());
             }

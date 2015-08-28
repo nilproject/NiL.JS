@@ -9,7 +9,7 @@ using NiL.JS.Core.TypeProxing;
 
 namespace NiL.JS.Core.Functions
 {
-    public sealed class MethodProxy : Function
+    internal sealed class MethodProxy : Function
     {
         public static bool PartiallyTrusted { get; private set; }
         private static FieldInfo handleInfo;
