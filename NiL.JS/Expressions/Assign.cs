@@ -37,41 +37,52 @@ namespace NiL.JS.Expressions
             JSObject field = first.EvaluateForAssing(context);
             if (field.valueType == JSObjectType.Property)
             {
-                lock (this)
-                {
-                    if (setterArgs == null)
-                        setterArgs = new Arguments();
-                    var fieldSource = context.objectSource;
-                    temp = second.Evaluate(context);
-                    if (saveResult)
-                    {
-                        if (tempContainer == null)
-                            tempContainer = new JSObject();
-                        tempContainer.Assign(temp);
-                        temp = tempContainer;
-                        tempContainer = null;
-                    }
-                    setterArgs.Reset();
-                    setterArgs.length = 1;
-                    setterArgs[0] = temp;
-                    var setter = (field.oValue as PropertyPair).set;
-                    if (setter != null)
-                        setter.Invoke(fieldSource, setterArgs);
-                    else if (context.strict)
-                        throw new JSException(new TypeError("Can not assign to readonly property \"" + first + "\""));
-                    if (saveResult)
-                        tempContainer = temp;
-                    return temp;
-                }
+                return setProperty(context, field);
             }
             else
             {
                 if ((field.attributes & JSObjectAttributesInternal.ReadOnly) != 0 && context.strict)
-                    throw new JSException(new TypeError("Can not assign to readonly property \"" + first + "\""));
+                    throwRoError();
             }
             temp = second.Evaluate(context);
             field.Assign(temp);
             return temp;
+        }
+
+        private void throwRoError()
+        {
+            throw new JSException(new TypeError("Can not assign to readonly property \"" + first + "\""));
+        }
+
+        private JSObject setProperty(Context context, JSObject field)
+        {
+            JSObject temp;
+            lock (this)
+            {
+                if (setterArgs == null)
+                    setterArgs = new Arguments();
+                var fieldSource = context.objectSource;
+                temp = second.Evaluate(context);
+                if (saveResult)
+                {
+                    if (tempContainer == null)
+                        tempContainer = new JSObject();
+                    tempContainer.Assign(temp);
+                    temp = tempContainer;
+                    tempContainer = null;
+                }
+                setterArgs.Reset();
+                setterArgs.length = 1;
+                setterArgs[0] = temp;
+                var setter = (field.oValue as PropertyPair).set;
+                if (setter != null)
+                    setter.Invoke(fieldSource, setterArgs);
+                else if (context.strict)
+                    throw new JSException(new TypeError("Can not assign to readonly property \"" + first + "\""));
+                if (saveResult)
+                    tempContainer = temp;
+                return temp;
+            }
         }
 
         internal override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)

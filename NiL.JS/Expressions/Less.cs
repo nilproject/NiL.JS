@@ -8,10 +8,12 @@ namespace NiL.JS.Expressions
 #endif
     public class Less : Expression
     {
+        private bool trueLess;
+
         internal Less(Expression first, Expression second)
             : base(first, second, true)
         {
-
+            trueLess = this.GetType() == typeof(Less);
         }
 
         protected internal override PredictedType ResultType
@@ -231,22 +233,32 @@ namespace NiL.JS.Expressions
         internal override JSObject Evaluate(Context context)
         {
             var f = first.Evaluate(context);
-            var temp = tempContainer ?? new JSObject { attributes = JSObjectAttributesInternal.Temporary };
+            var temp = tempContainer;
+            tempContainer = null;
+            if (temp == null)
+                temp = new JSObject { attributes = JSObjectAttributesInternal.Temporary };
             temp.valueType = f.valueType;
             temp.iValue = f.iValue;
             temp.dValue = f.dValue;
             temp.oValue = f.oValue;
-            tempContainer = null;
             var s = second.Evaluate(context);
             tempContainer = temp;
-            if (tempContainer.valueType == s.valueType
-                && tempContainer.valueType == JSObjectType.Int)
+            if (temp.valueType == JSObjectType.Int && s.valueType == JSObjectType.Int)
             {
-                tempContainer.valueType = JSObjectType.Bool;
-                tempContainer.iValue = tempContainer.iValue < s.iValue ? 1 : 0;
+                temp.valueType = JSObjectType.Bool;
+                temp.iValue = temp.iValue < s.iValue ? 1 : 0;
                 return tempContainer;
             }
-            return Check(tempContainer, s, this is MoreOrEqual);
+            if (tempContainer.valueType == JSObjectType.Double && s.valueType == JSObjectType.Double)
+            {
+                temp.valueType = JSObjectType.Bool;
+                if (double.IsNaN(temp.dValue) || double.IsNaN(s.dValue))
+                    temp.iValue = trueLess ? 0 : 1;
+                else
+                    temp.iValue = temp.dValue < s.dValue ? 1 : 0;
+                return tempContainer;
+            }
+            return Check(tempContainer, s, !trueLess);
         }
 
         internal override void Optimize(ref CodeNode _this, FunctionExpression owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)

@@ -146,7 +146,7 @@ namespace NiL.JSTest
             _("Found " + (fls.Length - 2) + " js-files");
             bool skipedShowed = false;
             sw.Start();
-            for (int i = 297; i < fls.Length; i++)
+            for (int i = 0; i < fls.Length; i++)
             {
                 if (i != 0 && !skipedShowed)
                     _("Skiped: " + i);
@@ -361,7 +361,7 @@ for (var i = 0; i < 10000000; )
                         Console.ForegroundColor = ConsoleColor.Red;
                         break;
                     case MessageLevel.CriticalWarning:
-                        Console.ForegroundColor = ConsoleColor.DarkRed;
+                        Console.ForegroundColor = ConsoleColor.Magenta;
                         break;
                     default:
                         Console.ForegroundColor = ConsoleColor.Gray;
@@ -416,7 +416,7 @@ t.__proto__.constructor().type(Number);
             }));
 #endif
 
-            int mode = 11
+            int mode = -5
                    ;
             switch (mode)
             {
