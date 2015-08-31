@@ -357,7 +357,7 @@ for (var i = 0; i < 10000000; )
                         Console.ForegroundColor = ConsoleColor.Red;
                         break;
                     case MessageLevel.CriticalWarning:
-                        Console.ForegroundColor = ConsoleColor.DarkRed;
+                        Console.ForegroundColor = ConsoleColor.Magenta;
                         break;
                     default:
                         Console.ForegroundColor = ConsoleColor.Gray;
@@ -418,7 +418,7 @@ var strObj = new String(""bbq"");
             }));
 #endif
 
-            int mode = 1
+            int mode = 0
                     ;
             switch (mode)
             {

@@ -129,7 +129,7 @@ namespace NiL.JS.Expressions
                                     return;
                                 }
                         }
-                        throw new NotImplementedException();
+                        break;
                     }
                 case JSValueType.Double:
                     {
@@ -170,9 +170,8 @@ namespace NiL.JS.Expressions
                                     resultContainer.valueType = JSValueType.Double;
                                     return;
                                 }
-                            default:
-                                throw new NotImplementedException();
                         }
+                        break;
                     }
                 case JSValueType.String:
                     {
@@ -281,7 +280,6 @@ namespace NiL.JS.Expressions
                         break;
                     }
             }
-            throw new NotImplementedException();
         }
 
         internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)

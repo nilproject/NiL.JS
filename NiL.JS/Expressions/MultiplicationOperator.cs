@@ -43,59 +43,54 @@ namespace NiL.JS.Expressions
 
         internal override JSValue Evaluate(Context context)
         {
-            lock (this)
-            {
 #if TYPE_SAFE
-                double da = 0.0;
-                JSValue f = first.Evaluate(context);
-                JSValue s = null;
-                long l = 0;
-                if (f.valueType == JSValueType.Int
-                    || f.valueType == JSValueType.Bool)
+            double da = 0.0;
+            JSValue f = first.Evaluate(context);
+            JSValue s = null;
+            long l = 0;
+            if (((int)f.valueType & 0xf) > 3) // bool - b0111, int - b1011
+            {
+                int a = f.iValue;
+                s = second.Evaluate(context);
+                if (((int)s.valueType & 0xf) > 3)
                 {
-                    int a = f.iValue;
-                    s = second.Evaluate(context);
-                    if (s.valueType == JSValueType.Int
-                        || s.valueType == JSValueType.Bool)
+                    if (((a | s.iValue) & 0xFFFF0000) == 0)
                     {
-                        if (((a | s.iValue) & 0xFFFF0000) == 0)
+                        tempContainer.iValue = a * s.iValue;
+                        tempContainer.valueType = JSValueType.Int;
+                    }
+                    else
+                    {
+                        l = (long)a * s.iValue;
+                        if (l > 2147483647L || l < -2147483648L)
                         {
-                            tempContainer.iValue = a * s.iValue;
-                            tempContainer.valueType = JSValueType.Int;
+                            tempContainer.dValue = l;
+                            tempContainer.valueType = JSValueType.Double;
                         }
                         else
                         {
-                            l = (long)a * s.iValue;
-                            if (l > 2147483647L || l < -2147483648L)
-                            {
-                                tempContainer.dValue = l;
-                                tempContainer.valueType = JSValueType.Double;
-                            }
-                            else
-                            {
-                                tempContainer.iValue = (int)l;
-                                tempContainer.valueType = JSValueType.Int;
-                            }
+                            tempContainer.iValue = (int)l;
+                            tempContainer.valueType = JSValueType.Int;
                         }
-                        return tempContainer;
                     }
-                    else
-                        da = a;
+                    return tempContainer;
                 }
                 else
-                {
-                    da = Tools.JSObjectToDouble(f);
-                    s = second.Evaluate(context);
-                }
-                tempContainer.dValue = da * Tools.JSObjectToDouble(s);
-                tempContainer.valueType = JSValueType.Double;
-                return tempContainer;
-#else
-                tempResult.dValue = Tools.JSObjectToDouble(first.Invoke(context)) * Tools.JSObjectToDouble(second.Invoke(context));
-                tempResult.valueType = JSObjectType.Double;
-                return tempResult;
-#endif
+                    da = a;
             }
+            else
+            {
+                da = Tools.JSObjectToDouble(f);
+                s = second.Evaluate(context);
+            }
+            tempContainer.dValue = da * Tools.JSObjectToDouble(s);
+            tempContainer.valueType = JSValueType.Double;
+            return tempContainer;
+#else
+            tempResult.dValue = Tools.JSObjectToDouble(first.Invoke(context)) * Tools.JSObjectToDouble(second.Invoke(context));
+            tempResult.valueType = JSObjectType.Double;
+            return tempResult;
+#endif
         }
 
         internal override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
