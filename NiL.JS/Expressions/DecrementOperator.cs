@@ -72,7 +72,7 @@ namespace NiL.JS.Expressions
                 val = (val.oValue as PropertyPair).get.Invoke(context.objectSource, null).CloneImpl();
                 val.attributes = 0;
             }
-            else if ((val.attributes & JSObjectAttributesInternal.ReadOnly) != 0)
+            else if ((val.attributes & JSValueAttributesInternal.ReadOnly) != 0)
             {
                 if (context.strict)
                     throw new JSException(new TypeError("Can not deccriment readonly \"" + (first) + "\""));
@@ -176,7 +176,7 @@ namespace NiL.JS.Expressions
                 args[0] = val;
                 setter.Invoke(context.objectSource, args);
             }
-            else if ((val.attributes & JSObjectAttributesInternal.Reassign) != 0)
+            else if ((val.attributes & JSValueAttributesInternal.Reassign) != 0)
                 val.Assign(val);
             return res;
         }

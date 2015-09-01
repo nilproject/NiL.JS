@@ -45,13 +45,13 @@ namespace NiL.JS.Core.TypeProxing
                                 _prototypeInstance = CreateObject();
                                 (_prototypeInstance as JSObject).__prototype = Null;
                                 (_prototypeInstance as JSObject).fields = fields;
-                                (_prototypeInstance as JSObject).attributes |= JSObjectAttributesInternal.ProxyPrototype;
+                                (_prototypeInstance as JSObject).attributes |= JSValueAttributesInternal.ProxyPrototype;
                             }
                             else if (typeof(JSObject).IsAssignableFrom(hostedType))
                             {
                                 _prototypeInstance = ictor.Invoke(null) as JSObject;
                                 _prototypeInstance.__prototype = __proto__;
-                                _prototypeInstance.attributes |= JSObjectAttributesInternal.ProxyPrototype;
+                                _prototypeInstance.attributes |= JSValueAttributesInternal.ProxyPrototype;
                                 _prototypeInstance.fields = fields;
                                 //_prototypeInstance.valueType = (JSValueType)System.Math.Max((int)JSValueType.Object, (int)_prototypeInstance.valueType);
                                 valueType = (JSValueType)System.Math.Max((int)JSValueType.Object, (int)_prototypeInstance.valueType);
@@ -60,7 +60,7 @@ namespace NiL.JS.Core.TypeProxing
                             {
                                 _prototypeInstance = new ObjectContainer(ictor.Invoke(null))
                                 {
-                                    attributes = attributes | JSObjectAttributesInternal.ProxyPrototype,
+                                    attributes = attributes | JSValueAttributesInternal.ProxyPrototype,
                                     fields = fields,
                                     __prototype = JSObject.GlobalPrototype
                                 };
@@ -176,7 +176,7 @@ namespace NiL.JS.Core.TypeProxing
         {
             valueType = JSValueType.Object;
             oValue = this;
-            attributes |= JSObjectAttributesInternal.SystemObject;
+            attributes |= JSValueAttributesInternal.SystemObject;
         }
 
         private TypeProxy(Type type)
@@ -201,9 +201,9 @@ namespace NiL.JS.Core.TypeProxing
                     ictor = hostedType.GetConstructor(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy, null, System.Type.EmptyTypes, null);
 #endif
 
-                    attributes |= JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.SystemObject;
+                    attributes |= JSValueAttributesInternal.DoNotEnum | JSValueAttributesInternal.SystemObject;
                     if (hostedType.IsDefined(typeof(ImmutablePrototypeAttribute), false))
-                        attributes |= JSObjectAttributesInternal.Immutable;
+                        attributes |= JSValueAttributesInternal.Immutable;
                     var staticProxy = new TypeProxy()
                     {
                         hostedType = type,
@@ -230,7 +230,7 @@ namespace NiL.JS.Core.TypeProxing
                         else
                             ctor = new ProxyConstructor(staticProxy);
                         ctor.attributes = attributes;
-                        attributes |= JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.ReadOnly;
+                        attributes |= JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnum | JSValueAttributesInternal.NotConfigurable | JSValueAttributesInternal.ReadOnly;
                         staticProxies[type] = ctor;
                         if (hostedType != typeof(ProxyConstructor))
                             fields["constructor"] = ctor;
@@ -374,8 +374,8 @@ namespace NiL.JS.Core.TypeProxing
                     }
                 }
                 if (create
-                    && ((attributes & JSObjectAttributesInternal.Immutable) == 0)
-                    && (r.attributes & (JSObjectAttributesInternal.SystemObject | JSObjectAttributesInternal.ReadOnly)) == JSObjectAttributesInternal.SystemObject)
+                    && ((attributes & JSValueAttributesInternal.Immutable) == 0)
+                    && (r.attributes & (JSValueAttributesInternal.SystemObject | JSValueAttributesInternal.ReadOnly)) == JSValueAttributesInternal.SystemObject)
                     fields[name] = r = r.CloneImpl();
                 return r;
             }
@@ -415,7 +415,7 @@ namespace NiL.JS.Core.TypeProxing
                         {
                             var method = (MethodInfo)m[0];
                             r = new MethodProxy(method);
-                            r.attributes &= ~(JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.DoNotEnum);
+                            r.attributes &= ~(JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.NotConfigurable | JSValueAttributesInternal.DoNotEnum);
                             break;
                         }
                     case MemberTypes.Field:
@@ -425,7 +425,7 @@ namespace NiL.JS.Core.TypeProxing
                                 && (field.Attributes & FieldAttributes.Static) != 0)
                             {
                                 r = Proxy(field.GetValue(null));
-                                r.attributes |= JSObjectAttributesInternal.ReadOnly;
+                                r.attributes |= JSValueAttributesInternal.ReadOnly;
                             }
                             else
                             {
@@ -445,9 +445,9 @@ namespace NiL.JS.Core.TypeProxing
                                         }) : null
                                     )
                                 };
-                                r.attributes = JSObjectAttributesInternal.Immutable | JSObjectAttributesInternal.Field;
+                                r.attributes = JSValueAttributesInternal.Immutable | JSValueAttributesInternal.Field;
                                 if ((r.oValue as PropertyPair).set == null)
-                                    r.attributes |= JSObjectAttributesInternal.ReadOnly;
+                                    r.attributes |= JSValueAttributesInternal.ReadOnly;
 
                             }
                             break;
@@ -470,11 +470,11 @@ pinfo.CanRead && pinfo.GetGetMethod(false) != null ? new MethodProxy(pinfo.GetGe
 )
                             };
 
-                            r.attributes = JSObjectAttributesInternal.Immutable;
+                            r.attributes = JSValueAttributesInternal.Immutable;
                             if ((r.oValue as PropertyPair).set == null)
-                                r.attributes |= JSObjectAttributesInternal.ReadOnly;
+                                r.attributes |= JSValueAttributesInternal.ReadOnly;
                             if (pinfo.IsDefined(typeof(FieldAttribute), false))
-                                r.attributes |= JSObjectAttributesInternal.Field;
+                                r.attributes |= JSValueAttributesInternal.Field;
                             break;
                         }
                     case MemberTypes.Event:
@@ -513,23 +513,23 @@ pinfo.CanRead && pinfo.GetGetMethod(false) != null ? new MethodProxy(pinfo.GetGe
                 }
             }
             if (m[0].IsDefined(typeof(DoNotEnumerateAttribute), false))
-                r.attributes |= JSObjectAttributesInternal.DoNotEnum;
+                r.attributes |= JSValueAttributesInternal.DoNotEnum;
             lock (fields)
-                fields[name] = create && (r.attributes & (JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.SystemObject)) == JSObjectAttributesInternal.SystemObject ? (r = r.CloneImpl()) : r;
+                fields[name] = create && (r.attributes & (JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.SystemObject)) == JSValueAttributesInternal.SystemObject ? (r = r.CloneImpl()) : r;
 
             for (var i = m.Count; i-- > 0; )
             {
                 if (!m[i].IsDefined(typeof(DoNotEnumerateAttribute), false))
                 {
-                    r.attributes &= ~JSObjectAttributesInternal.DoNotEnum;
+                    r.attributes &= ~JSValueAttributesInternal.DoNotEnum;
                     break;
                 }
                 if (m[i].IsDefined(typeof(ReadOnlyAttribute), false))
-                    r.attributes |= JSObjectAttributesInternal.ReadOnly;
+                    r.attributes |= JSValueAttributesInternal.ReadOnly;
                 if (m[i].IsDefined(typeof(NotConfigurable), false))
-                    r.attributes |= JSObjectAttributesInternal.NotConfigurable;
+                    r.attributes |= JSValueAttributesInternal.NotConfigurable;
                 if (m[i].IsDefined(typeof(DoNotDeleteAttribute), false))
-                    r.attributes |= JSObjectAttributesInternal.DoNotDelete;
+                    r.attributes |= JSValueAttributesInternal.DoNotDelete;
             }
             return r;
         }
@@ -542,9 +542,9 @@ pinfo.CanRead && pinfo.GetGetMethod(false) != null ? new MethodProxy(pinfo.GetGe
             JSValue field = null;
             if (fields != null
                 && fields.TryGetValue(tname = name.ToString(), out field)
-                && (!field.IsExist || (field.attributes & JSObjectAttributesInternal.DoNotDelete) == 0))
+                && (!field.IsExist || (field.attributes & JSValueAttributesInternal.DoNotDelete) == 0))
             {
-                if ((field.attributes & JSObjectAttributesInternal.SystemObject) == 0)
+                if ((field.attributes & JSValueAttributesInternal.SystemObject) == 0)
                     field.valueType = JSValueType.NotExistsInObject;
                 return fields.Remove(tname) | members.Remove(tname); // it's not mistake
             }
@@ -572,7 +572,7 @@ pinfo.CanRead && pinfo.GetGetMethod(false) != null ? new MethodProxy(pinfo.GetGe
             var name = args[0].ToString();
             JSValue temp;
             if (fields != null && fields.TryGetValue(name, out temp))
-                return temp.IsExist && (temp.attributes & JSObjectAttributesInternal.DoNotEnum) == 0;
+                return temp.IsExist && (temp.attributes & JSValueAttributesInternal.DoNotEnum) == 0;
             IList<MemberInfo> m = null;
             if (members.TryGetValue(name, out m))
             {
@@ -598,7 +598,7 @@ pinfo.CanRead && pinfo.GetGetMethod(false) != null ? new MethodProxy(pinfo.GetGe
             {
                 foreach (var f in fields)
                 {
-                    if (!pdef || (f.Value.attributes & JSObjectAttributesInternal.DoNotEnum) == 0)
+                    if (!pdef || (f.Value.attributes & JSValueAttributesInternal.DoNotEnum) == 0)
                         yield return f.Key;
                 }
             }

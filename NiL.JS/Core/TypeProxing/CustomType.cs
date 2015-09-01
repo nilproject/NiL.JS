@@ -18,7 +18,7 @@ namespace NiL.JS.Core.TypeProxing
         {
             valueType = JSValueType.Object;
             oValue = this;
-            attributes |= JSObjectAttributesInternal.SystemObject | JSObjectAttributesInternal.ReadOnly;
+            attributes |= JSValueAttributesInternal.SystemObject | JSValueAttributesInternal.ReadOnly;
         }
 
         [CLSCompliant(false)]
@@ -42,7 +42,7 @@ namespace NiL.JS.Core.TypeProxing
         {
             if (fields != null)
                 foreach (var r in fields)
-                    if (r.Value.IsExist && (!pdef || (r.Value.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+                    if (r.Value.IsExist && (!pdef || (r.Value.attributes & JSValueAttributesInternal.DoNotEnum) == 0))
                         yield return r.Key;
         }
     }

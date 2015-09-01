@@ -9,54 +9,6 @@ namespace NiL.JS.Expressions
 #endif
     public sealed class DeleteOperator : Expression
     {
-        internal sealed class SafeMemberGetter : Expression
-        {
-            private GetMemberOperator proto;
-
-            public override bool IsContextIndependent
-            {
-                get
-                {
-                    return false;
-                }
-            }
-
-            protected internal override bool ResultInTempContainer
-            {
-                get { return false; }
-            }
-
-            protected override CodeNode[] getChildsImpl()
-            {
-                return proto.Childs;
-            }
-
-            internal override JSValue Evaluate(Context context)
-            {
-                var source = proto.Source.Evaluate(context);
-                if (source.valueType < JSValueType.Object)
-                    source = source.Clone() as JSValue;
-                else
-                    source = source.oValue as JSValue ?? source;
-                var memberName = proto.FieldName.Evaluate(context);
-                context.objectSource = source;
-                var res = context.objectSource.GetMember(memberName, false, true);
-                if (res.IsExist && (res.attributes & JSObjectAttributesInternal.SystemObject) != 0)
-                    res = context.objectSource.GetMember(memberName, true, true);
-                return res;
-            }
-
-            public override T Visit<T>(Visitor<T> visitor)
-            {
-                return visitor.Visit(proto);
-            }
-
-            public override string ToString()
-            {
-                return proto.ToString();
-            }
-        }
-
         protected internal override PredictedType ResultType
         {
             get
@@ -91,45 +43,13 @@ namespace NiL.JS.Expressions
                 var temp = first.Evaluate(context);
                 if (temp.valueType < JSValueType.Undefined)
                     return true;
-                else if ((temp.attributes & JSObjectAttributesInternal.Argument) != 0)
+                else if ((temp.attributes & JSValueAttributesInternal.Argument) != 0)
                 {
-                    if (first is SafeMemberGetter && (temp.attributes & JSObjectAttributesInternal.DoNotDelete) == 0)
-                    {
-                        var args = context.objectSource.oValue as JSObject;
-                        if (args != null)
-                        {
-                            if (args.fields != null)
-                            {
-                                foreach (var a in args.fields)
-                                {
-                                    if (a.Value == temp)
-                                    {
-                                        args.fields.Remove(a.Key);
-                                        return true;
-                                    }
-                                }
-                            }
-                            var oaa = args.oValue as Arguments;
-                            if (oaa != null)
-                            {
-                                for (var i = 0; i < oaa.length; i++)
-                                    if (oaa[i] == temp)
-                                    {
-                                        oaa[i] = null;
-                                        return true;
-                                    }
-                            }
-                        }
-                        return true;
-                    }
-                    else
-                    {
-                        return false;
-                    }
+                    return false;
                 }
-                else if ((temp.attributes & JSObjectAttributesInternal.DoNotDelete) == 0)
+                else if ((temp.attributes & JSValueAttributesInternal.DoNotDelete) == 0)
                 {
-                    if ((temp.attributes & JSObjectAttributesInternal.SystemObject) == 0)
+                    if ((temp.attributes & JSValueAttributesInternal.SystemObject) == 0)
                     {
                         temp.valueType = JSValueType.NotExists;
                         temp.oValue = null;
@@ -145,7 +65,7 @@ namespace NiL.JS.Expressions
 
         internal override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
-            if (base.Build(ref _this, depth,variables, state, message, statistic, opts))
+            if (base.Build(ref _this, depth, variables, state, message, statistic, opts))
                 return true;
             if (first is GetVariableExpression)
             {

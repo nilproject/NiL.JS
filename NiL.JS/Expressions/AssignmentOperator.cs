@@ -41,7 +41,7 @@ namespace NiL.JS.Expressions
             }
             else
             {
-                if ((field.attributes & JSObjectAttributesInternal.ReadOnly) != 0 && context.strict)
+                if ((field.attributes & JSValueAttributesInternal.ReadOnly) != 0 && context.strict)
                     throwRoError();
             }
             temp = second.Evaluate(context);

@@ -8,6 +8,8 @@ namespace NiL.JS.Expressions
 #endif
     public class MoreOperator : Expression
     {
+        private bool trueMore;
+
         protected internal override PredictedType ResultType
         {
             get
@@ -24,7 +26,7 @@ namespace NiL.JS.Expressions
         public MoreOperator(Expression first, Expression second)
             : base(first, second, true)
         {
-
+            trueMore = this.GetType() == typeof(MoreOperator);
         }
 
         internal static bool Check(JSValue first, JSValue second, bool lessOrEqual)
@@ -231,22 +233,32 @@ namespace NiL.JS.Expressions
         internal override JSValue Evaluate(Context context)
         {
             var f = first.Evaluate(context);
-            var temp = tempContainer ?? new JSValue { attributes = JSObjectAttributesInternal.Temporary };
+            var temp = tempContainer;
+            tempContainer = null;
+            if (temp == null)
+                temp = new JSValue { attributes = JSValueAttributesInternal.Temporary };
             temp.valueType = f.valueType;
             temp.iValue = f.iValue;
             temp.dValue = f.dValue;
             temp.oValue = f.oValue;
-            tempContainer = null;
             var s = second.Evaluate(context);
             tempContainer = temp;
-            if (tempContainer.valueType == s.valueType
-                && tempContainer.valueType == JSValueType.Int)
+            if (tempContainer.valueType == JSValueType.Int && s.valueType == JSValueType.Int)
             {
                 tempContainer.valueType = JSValueType.Bool;
                 tempContainer.iValue = tempContainer.iValue > s.iValue ? 1 : 0;
                 return tempContainer;
             }
-            return Check(tempContainer, s, this is LessOrEqualOperator);
+            if (tempContainer.valueType == JSValueType.Double && s.valueType == JSValueType.Double)
+            {
+                temp.valueType = JSValueType.Bool;
+                if (double.IsNaN(temp.dValue) || double.IsNaN(s.dValue))
+                    temp.iValue = trueMore ? 0 : 1;
+                else
+                    temp.iValue = temp.dValue > s.dValue ? 1 : 0;
+                return tempContainer;
+            }
+            return Check(tempContainer, s, !trueMore);
         }
 
         internal override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)

@@ -56,7 +56,7 @@ namespace NiL.JS.BaseLibrary
                             return arg;
                         if (arg.iValue == int.MinValue)
                             goto default;
-                        if ((arg.attributes & JSObjectAttributesInternal.Cloned) != 0)
+                        if ((arg.attributes & JSValueAttributesInternal.Cloned) != 0)
                         {
                             arg.valueType = JSValueType.Int;
                             arg.iValue = -arg.iValue;
@@ -68,7 +68,7 @@ namespace NiL.JS.BaseLibrary
                     {
                         if (arg.dValue >= 0)
                             return arg;
-                        if ((arg.attributes & JSObjectAttributesInternal.Cloned) != 0)
+                        if ((arg.attributes & JSValueAttributesInternal.Cloned) != 0)
                         {
                             arg.valueType = JSValueType.Double;
                             arg.dValue = -arg.dValue;
@@ -79,7 +79,7 @@ namespace NiL.JS.BaseLibrary
                 default:
                     {
                         var value = System.Math.Abs(Tools.JSObjectToDouble(arg));
-                        if ((arg.attributes & JSObjectAttributesInternal.Cloned) != 0)
+                        if ((arg.attributes & JSValueAttributesInternal.Cloned) != 0)
                         {
                             arg.valueType = JSValueType.Double;
                             arg.dValue = value;
@@ -146,7 +146,7 @@ namespace NiL.JS.BaseLibrary
         {
             var arg = args[0];
             var res = System.Math.Exp(Tools.JSObjectToDouble(arg));
-            if ((arg.attributes & JSObjectAttributesInternal.Cloned) != 0)
+            if ((arg.attributes & JSValueAttributesInternal.Cloned) != 0)
             {
                 arg.valueType = JSValueType.Double;
                 arg.dValue = res;
@@ -175,7 +175,7 @@ namespace NiL.JS.BaseLibrary
             var a = Tools.JSObjectToDouble(arg);
             if (a == 0.0)
             {
-                if ((arg.attributes & JSObjectAttributesInternal.Cloned) != 0)
+                if ((arg.attributes & JSValueAttributesInternal.Cloned) != 0)
                 {
                     arg.valueType = JSValueType.Int;
                     arg.iValue = 0;
@@ -199,7 +199,7 @@ namespace NiL.JS.BaseLibrary
                     return -(long)shl(m, e);
                 }
                 var r = (long)shl(m, e) * s;
-                if ((arg.attributes & JSObjectAttributesInternal.Cloned) != 0)
+                if ((arg.attributes & JSValueAttributesInternal.Cloned) != 0)
                 {
                     if (r <= int.MaxValue)
                     {
@@ -235,7 +235,7 @@ namespace NiL.JS.BaseLibrary
             double res = double.NegativeInfinity;
             for (int i = 0; i < args.Length; i++)
             {
-                if (reso == null && (args[i].attributes & JSObjectAttributesInternal.Cloned) != 0)
+                if (reso == null && (args[i].attributes & JSValueAttributesInternal.Cloned) != 0)
                     reso = args[i];
                 var t = Tools.JSObjectToDouble(args[i]);
                 if (double.IsNaN(t))
@@ -307,7 +307,7 @@ namespace NiL.JS.BaseLibrary
             var a = Tools.JSObjectToDouble(arg);
             if (a == 0.0)
             {
-                if ((arg.attributes & JSObjectAttributesInternal.Cloned) != 0)
+                if ((arg.attributes & JSValueAttributesInternal.Cloned) != 0)
                 {
                     arg.valueType = JSValueType.Int;
                     arg.iValue = 0;
@@ -334,7 +334,7 @@ namespace NiL.JS.BaseLibrary
                     }
                 }
                 var r = ((long)shl(m, e) + ((long)shl(m, (e - 1)) & 1) * s) * s;
-                if ((arg.attributes & JSObjectAttributesInternal.Cloned) != 0)
+                if ((arg.attributes & JSValueAttributesInternal.Cloned) != 0)
                 {
                     if (r <= int.MaxValue)
                     {
@@ -367,7 +367,7 @@ namespace NiL.JS.BaseLibrary
         {
             var arg = args[0];
             var res = System.Math.Sqrt(Tools.JSObjectToDouble(arg));
-            if ((arg.attributes & JSObjectAttributesInternal.Cloned) != 0)
+            if ((arg.attributes & JSValueAttributesInternal.Cloned) != 0)
             {
                 arg.valueType = JSValueType.Double;
                 arg.dValue = res;

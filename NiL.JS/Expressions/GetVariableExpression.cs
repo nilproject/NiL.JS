@@ -69,7 +69,7 @@ namespace NiL.JS.Expressions
                 var res = Descriptor.Get(context, false, functionDepth);
                 if (res.valueType < JSValueType.Undefined && (!suspendThrow || forceThrow))
                     throwRefError();
-                if ((res.attributes & JSObjectAttributesInternal.Argument) != 0)
+                if ((res.attributes & JSValueAttributesInternal.Argument) != 0)
                     context.caller.buildArgumentsObject();
                 return res;
             }

@@ -25,7 +25,7 @@ namespace NiL.JS.BaseLibrary
                 this.index = index;
                 this.iValue = parent.Data[index];
                 this.data = parent.Data;
-                this.attributes |= JSObjectAttributesInternal.Reassign;
+                this.attributes |= JSValueAttributesInternal.Reassign;
             }
 
             public override void Assign(JSValue value)
@@ -61,7 +61,7 @@ namespace NiL.JS.BaseLibrary
             if (data == null)
                 throw new ArgumentNullException();
             Data = data;
-            attributes |= JSObjectAttributesInternal.SystemObject;
+            attributes |= JSValueAttributesInternal.SystemObject;
         }
 
         public int byteLength

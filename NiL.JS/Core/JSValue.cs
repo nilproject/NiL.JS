@@ -15,6 +15,68 @@ namespace NiL.JS.Core
 #if !PORTABLE
     [Serializable]
 #endif
+    public enum JSValueType
+    {
+        NotExists = 0,
+        NotExistsInObject = 1,
+        Undefined = 3,  // 00000000011 // значение undefined говорит о том, что этот объект, вообще-то, определён, но вот его значение нет
+        Bool = 7,       // 00000000111
+        Int = 11,       // 00000001011
+        Double = 19,    // 00000010011
+        String = 35,    // 00000100011
+        Symbol = 67,    // 00001000011
+        Object = 131,   // 00010000011
+        Function = 259, // 00100000011
+        Date = 515,     // 01000000011
+        Property = 1027 // 10000000011
+    }
+
+#if !PORTABLE
+    [Serializable]
+#endif
+    [Flags]
+    internal enum JSValueAttributesInternal : uint
+    {
+        None = 0,
+        DoNotEnum = 1 << 0,
+        DoNotDelete = 1 << 1,
+        ReadOnly = 1 << 2,
+        Immutable = 1 << 3,
+        NotConfigurable = 1 << 4,
+        Argument = 1 << 16,
+        SystemObject = 1 << 17,
+        ProxyPrototype = 1 << 18,
+        Field = 1 << 19,
+        Eval = 1 << 20,
+        Temporary = 1 << 21,
+        Cloned = 1 << 22,
+        ContainsParsedInt = 1 << 23,
+        ContainsParsedDouble = 1 << 24,
+        Reassign = 1 << 25,
+        IntrinsicFunction = 1 << 26,
+        /// <summary>
+        /// Аттрибуты, не передающиеся при присваивании
+        /// </summary>
+        PrivateAttributes = Immutable | ProxyPrototype | Field,
+    }
+
+#if !PORTABLE
+    [Serializable]
+#endif
+    [Flags]
+    public enum JSValuesAttributes : int
+    {
+        None = 0,
+        DoNotEnum = 1 << 0,
+        DoNotDelete = 1 << 1,
+        ReadOnly = 1 << 2,
+        Immutable = 1 << 3,
+        NotConfigurable = 1 << 4,
+    }
+
+#if !PORTABLE
+    [Serializable]
+#endif
     public class JSValue : IEnumerable<string>, IEnumerable, IComparable<JSValue>
 #if !PORTABLE
 , ICloneable, IConvertible
@@ -37,13 +99,13 @@ namespace NiL.JS.Core
         [Hidden]
         internal static readonly IEnumerator<string> EmptyEnumerator = ((IEnumerable<string>)(new string[0])).GetEnumerator();
         [Hidden]
-        internal static readonly JSValue undefined = new JSValue() { valueType = JSValueType.Undefined, attributes = JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.SystemObject };
+        internal static readonly JSValue undefined = new JSValue() { valueType = JSValueType.Undefined, attributes = JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnum | JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.NotConfigurable | JSValueAttributesInternal.SystemObject };
         [Hidden]
-        internal static readonly JSValue notExists = new JSValue() { valueType = JSValueType.NotExists, attributes = JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.SystemObject };
+        internal static readonly JSValue notExists = new JSValue() { valueType = JSValueType.NotExists, attributes = JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnum | JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.NotConfigurable | JSValueAttributesInternal.SystemObject };
         [Hidden]
-        internal static readonly JSObject Null = new JSObject() { valueType = JSValueType.Object, oValue = null, attributes = JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.SystemObject };
+        internal static readonly JSObject Null = new JSObject() { valueType = JSValueType.Object, oValue = null, attributes = JSValueAttributesInternal.DoNotEnum | JSValueAttributesInternal.SystemObject };
         [Hidden]
-        internal static readonly JSValue nullString = new JSValue() { valueType = JSValueType.String, oValue = "null", attributes = JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.SystemObject };
+        internal static readonly JSValue nullString = new JSValue() { valueType = JSValueType.String, oValue = "null", attributes = JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnum | JSValueAttributesInternal.SystemObject };
 
         [Hidden]
         public static JSValue Undefined { [Hidden] get { return undefined; } }
@@ -90,7 +152,7 @@ namespace NiL.JS.Core
         internal double dValue;
         internal object oValue;
 
-        internal JSObjectAttributesInternal attributes;
+        internal JSValueAttributesInternal attributes;
 
         [Hidden]
         public virtual object Value
@@ -178,12 +240,12 @@ namespace NiL.JS.Core
         }
 
         [Hidden]
-        public JSObjectAttributes Attributes
+        public JSValuesAttributes Attributes
         {
             [Hidden]
             get
             {
-                return (JSObjectAttributes)((int)attributes & 0xffff);
+                return (JSValuesAttributes)((int)attributes & 0xffff);
             }
         }
 
@@ -207,7 +269,7 @@ namespace NiL.JS.Core
             [Hidden]
             set
             {
-                if ((attributes & JSObjectAttributesInternal.Immutable) != 0)
+                if ((attributes & JSValueAttributesInternal.Immutable) != 0)
                     return;
                 if (valueType < JSValueType.Object)
                     return;
@@ -605,7 +667,7 @@ namespace NiL.JS.Core
 #if INLINE
             [MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
-            get { return (attributes & (JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.SystemObject)) == JSObjectAttributesInternal.SystemObject; }
+            get { return (attributes & (JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.SystemObject)) == JSValueAttributesInternal.SystemObject; }
         }
 
         internal bool IsBox
@@ -629,18 +691,18 @@ namespace NiL.JS.Core
 
         internal JSValue CloneImpl(bool force)
         {
-            if (!force && (attributes & JSObjectAttributesInternal.Cloned) != 0)
+            if (!force && (attributes & JSValueAttributesInternal.Cloned) != 0)
             {
-                attributes &= ~JSObjectAttributesInternal.Cloned;
+                attributes &= ~JSValueAttributesInternal.Cloned;
                 return this;
             }
             var res = new JSValue();
             res.Assign(this);
-            res.attributes = this.attributes & ~(JSObjectAttributesInternal.SystemObject | JSObjectAttributesInternal.ReadOnly);
+            res.attributes = this.attributes & ~(JSValueAttributesInternal.SystemObject | JSValueAttributesInternal.ReadOnly);
             return res;
         }
 
-        internal virtual JSValue CloneImpl(JSObjectAttributesInternal resetMask)
+        internal virtual JSValue CloneImpl(JSValueAttributesInternal resetMask)
         {
             var res = new JSValue();
             res.Assign(this);
@@ -690,15 +752,15 @@ namespace NiL.JS.Core
             if (valueType == JSValueType.Property)
                 throw new InvalidOperationException("Try to assign to property.");
 #endif
-            if (this == value || (attributes & (JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.SystemObject)) != 0)
+            if (this == value || (attributes & (JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.SystemObject)) != 0)
                 return;
             this.valueType = value.valueType | JSValueType.Undefined;
             this.iValue = value.iValue;
             this.dValue = value.dValue;
             this.oValue = value.oValue;
             this.attributes =
-                (this.attributes & ~JSObjectAttributesInternal.PrivateAttributes)
-                | (value.attributes & JSObjectAttributesInternal.PrivateAttributes);
+                (this.attributes & ~JSValueAttributesInternal.PrivateAttributes)
+                | (value.attributes & JSValueAttributesInternal.PrivateAttributes);
         }
 
         [Hidden]
@@ -896,7 +958,7 @@ namespace NiL.JS.Core
             var name = args[0];
             string n = name.ToString();
             var res = GetMember(n, true);
-            res = (res.IsExist) && ((res.attributes & JSObjectAttributesInternal.DoNotEnum) == 0);
+            res = (res.IsExist) && ((res.attributes & JSValueAttributesInternal.DoNotEnum) == 0);
             return res;
         }
 

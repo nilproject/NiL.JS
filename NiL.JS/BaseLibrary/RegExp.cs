@@ -191,7 +191,7 @@ namespace NiL.JS.BaseLibrary
                 throw new JSException(new TypeError("Try to call RegExp.exec for not RegExp object."));
             string input = (arg ?? "undefined").ToString();
             lIndex = Tools.JSObjectToNumber(lastIndex);
-            if ((lIndex.attributes & JSObjectAttributesInternal.SystemObject) != 0)
+            if ((lIndex.attributes & JSValueAttributesInternal.SystemObject) != 0)
                 lIndex = lIndex.CloneImpl();
             if (lIndex.valueType == JSValueType.Double)
             {

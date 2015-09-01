@@ -174,16 +174,16 @@ namespace NiL.JS.Statements
                     {
                         if (item.Value == null
                             || !item.Value.IsExist
-                            || (item.Value.attributes & JSObjectAttributesInternal.DoNotEnum) != 0)
+                            || (item.Value.attributes & JSValueAttributesInternal.DoNotEnum) != 0)
                             continue;
                         if (item.Key >= 0)
                         {
-                            v.attributes = (v.attributes & ~JSObjectAttributesInternal.ContainsParsedDouble) | JSObjectAttributesInternal.ContainsParsedInt;
+                            v.attributes = (v.attributes & ~JSValueAttributesInternal.ContainsParsedDouble) | JSValueAttributesInternal.ContainsParsedInt;
                             v.oValue = item.Key.ToString();
                         }
                         else
                         {
-                            v.attributes = (v.attributes & ~JSObjectAttributesInternal.ContainsParsedInt) | JSObjectAttributesInternal.ContainsParsedDouble;
+                            v.attributes = (v.attributes & ~JSValueAttributesInternal.ContainsParsedInt) | JSValueAttributesInternal.ContainsParsedDouble;
                             v.oValue = ((uint)item.Key).ToString();
                         }
                         if (processedKeys.Contains(v.oValue.ToString()))
@@ -213,7 +213,7 @@ namespace NiL.JS.Statements
                         {
                             if (item.Value == null
                                 || !item.Value.IsExist
-                                || (item.Value.attributes & JSObjectAttributesInternal.DoNotEnum) != 0)
+                                || (item.Value.attributes & JSValueAttributesInternal.DoNotEnum) != 0)
                                 continue;
                             v.valueType = JSValueType.String;
                             v.oValue = item.Key;

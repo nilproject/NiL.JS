@@ -19,7 +19,7 @@ namespace NiL.JS.Core.TypeProxing
             {
                 this.owner = owner;
                 this.index = index;
-                attributes |= JSObjectAttributesInternal.Reassign;
+                attributes |= JSValueAttributesInternal.Reassign;
                 var value = owner.data[index];
                 valueType = JSValueType.Undefined;
                 if (value is JSValue)
@@ -107,7 +107,7 @@ namespace NiL.JS.Core.TypeProxing
                 {
                     var type = value.GetType();
                     __proto__ = TypeProxy.GetPrototype(type);
-                    attributes |= __proto__.attributes & JSObjectAttributesInternal.Immutable;
+                    attributes |= __proto__.attributes & JSValueAttributesInternal.Immutable;
                 }
             }
 
@@ -157,7 +157,7 @@ namespace NiL.JS.Core.TypeProxing
 
         protected internal override JSValue GetMember(JSValue name, bool forWrite, bool own)
         {
-            forWrite &= (attributes & JSObjectAttributesInternal.Immutable) == 0;
+            forWrite &= (attributes & JSValueAttributesInternal.Immutable) == 0;
             if (name.valueType == JSValueType.String && string.CompareOrdinal("length", name.oValue.ToString()) == 0)
             {
                 lenObj.iValue = data.Count;

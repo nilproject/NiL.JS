@@ -46,7 +46,7 @@ namespace NiL.JS.BaseLibrary
         {
             oValue = s;
             valueType = JSValueType.String;
-            attributes |= JSObjectAttributesInternal.SystemObject;
+            attributes |= JSValueAttributesInternal.SystemObject;
         }
 
         [Hidden]
@@ -57,7 +57,7 @@ namespace NiL.JS.BaseLibrary
             {
                 if ((pos < 0) || (pos >= oValue.ToString().Length))
                     return JSValue.notExists;
-                return new JSValue() { valueType = JSValueType.String, oValue = (oValue.ToString())[pos].ToString(), attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.DoNotDelete };
+                return new JSValue() { valueType = JSValueType.String, oValue = (oValue.ToString())[pos].ToString(), attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.NotConfigurable | JSValueAttributesInternal.DoNotEnum | JSValueAttributesInternal.DoNotDelete };
             }
         }
 
@@ -882,7 +882,7 @@ namespace NiL.JS.BaseLibrary
                 if (this.GetType() == typeof(String))
                 {
                     if (_length == null)
-                        _length = new Number(len) { attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.NotConfigurable };
+                        _length = new Number(len) { attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnum | JSValueAttributesInternal.NotConfigurable };
                     else
                         _length.iValue = len;
                     return _length;
@@ -945,7 +945,7 @@ namespace NiL.JS.BaseLibrary
             {
                 foreach (var f in fields)
                 {
-                    if (f.Value.IsExist && (!hideNonEnum || (f.Value.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+                    if (f.Value.IsExist && (!hideNonEnum || (f.Value.attributes & JSValueAttributesInternal.DoNotEnum) == 0))
                         yield return f.Key;
                 }
             }

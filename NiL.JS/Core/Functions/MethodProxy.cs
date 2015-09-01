@@ -72,7 +72,7 @@ namespace NiL.JS.Core.Functions
             parameters = methodBase.GetParameters();
 
             if (_length == null)
-                _length = new Number(0) { attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.SystemObject };
+                _length = new Number(0) { attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnum | JSValueAttributesInternal.SystemObject };
             var pc = methodBase.GetCustomAttributes(typeof(Modules.ArgumentsLengthAttribute), false).ToArray();
             if (pc.Length != 0)
                 _length.iValue = (pc[0] as Modules.ArgumentsLengthAttribute).Count;

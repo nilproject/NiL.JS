@@ -19,7 +19,7 @@ namespace NiL.JS.BaseLibrary
             {
                 this.owner = owner;
                 this.index = index;
-                attributes |= JSObjectAttributesInternal.Reassign;
+                attributes |= JSValueAttributesInternal.Reassign;
             }
 
             public override void Assign(JSValue value)

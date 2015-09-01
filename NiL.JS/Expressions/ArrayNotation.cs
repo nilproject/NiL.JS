@@ -92,7 +92,7 @@ namespace NiL.JS.Expressions
                         res.data[i] = e;
                     }
                     else
-                        res.data[i] = (writableNotExist ?? (writableNotExist = new JSValue() { valueType = JSValueType.NotExistsInObject, attributes = JSObjectAttributesInternal.SystemObject }));
+                        res.data[i] = (writableNotExist ?? (writableNotExist = new JSValue() { valueType = JSValueType.NotExistsInObject, attributes = JSValueAttributesInternal.SystemObject }));
                 }
             }
             return res;

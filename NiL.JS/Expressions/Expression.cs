@@ -76,7 +76,7 @@ namespace NiL.JS.Expressions
         internal protected Expression(Expression first, Expression second, bool createTempContainer)
         {
             if (createTempContainer)
-                tempContainer = new JSValue() { attributes = JSObjectAttributesInternal.Temporary };
+                tempContainer = new JSValue() { attributes = JSValueAttributesInternal.Temporary };
             this.first = first;
             this.second = second;
         }

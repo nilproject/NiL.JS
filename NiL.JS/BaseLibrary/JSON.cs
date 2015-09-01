@@ -85,7 +85,7 @@ namespace NiL.JS.BaseLibrary
             while (pos < code.Length)
             {
                 int start = pos;
-                if (char.IsDigit(code[start]) || (code[start] == '-' && char.IsDigit(code[start + 1])))
+                if (Tools.IsDigit(code[start]) || (code[start] == '-' && Tools.IsDigit(code[start + 1])))
                 {
                     if (stack.Peek().state != ParseState.Value)
                         throw new JSException((new SyntaxError("Unexpected token.")));

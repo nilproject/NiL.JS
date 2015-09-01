@@ -11,68 +11,6 @@ using NiL.JS.Expressions;
 
 namespace NiL.JS.Core
 {
-#if !PORTABLE
-    [Serializable]
-#endif
-    public enum JSValueType
-    {
-        NotExists = 0,
-        NotExistsInObject = 1,
-        Undefined = 3,  // 00000000011 // значение undefined говорит о том, что этот объект, вообще-то, определён, но вот его значение нет
-        Bool = 7,       // 00000000111
-        Int = 11,       // 00000001011
-        Double = 19,    // 00000010011
-        String = 35,    // 00000100011
-        Symbol = 67,    // 00001000011
-        Object = 131,   // 00010000011
-        Function = 259, // 00100000011
-        Date = 515,     // 01000000011
-        Property = 1027 // 10000000011
-    }
-
-#if !PORTABLE
-    [Serializable]
-#endif
-    [Flags]
-    internal enum JSObjectAttributesInternal : uint
-    {
-        None = 0,
-        DoNotEnum = 1 << 0,
-        DoNotDelete = 1 << 1,
-        ReadOnly = 1 << 2,
-        Immutable = 1 << 3,
-        NotConfigurable = 1 << 4,
-        Argument = 1 << 16,
-        SystemObject = 1 << 17,
-        ProxyPrototype = 1 << 18,
-        Field = 1 << 19,
-        Eval = 1 << 20,
-        Temporary = 1 << 21,
-        Cloned = 1 << 22,
-        ContainsParsedInt = 1 << 23,
-        ContainsParsedDouble = 1 << 24,
-        Reassign = 1 << 25,
-        IntrinsicFunction = 1 << 26,
-        /// <summary>
-        /// Аттрибуты, не передающиеся при присваивании
-        /// </summary>
-        PrivateAttributes = Immutable | ProxyPrototype | Field,
-    }
-
-#if !PORTABLE
-    [Serializable]
-#endif
-    [Flags]
-    public enum JSObjectAttributes : int
-    {
-        None = 0,
-        DoNotEnum = 1 << 0,
-        DoNotDelete = 1 << 1,
-        ReadOnly = 1 << 2,
-        Immutable = 1 << 3,
-        NotConfigurable = 1 << 4,
-    }
-
     public class JSObject : JSValue
     {
         internal static JSObject GlobalPrototype;
@@ -110,7 +48,7 @@ namespace NiL.JS.Core
             [Hidden]
             set
             {
-                if ((attributes & JSObjectAttributesInternal.Immutable) != 0)
+                if ((attributes & JSValueAttributesInternal.Immutable) != 0)
                     return;
                 if (valueType < JSValueType.Object)
                     return;
@@ -197,12 +135,12 @@ namespace NiL.JS.Core
             if (fromProto)
             {
                 res = proto.GetMember(key, false, own);
-                if (((own && ((res.attributes & JSObjectAttributesInternal.Field) == 0 || res.valueType != JSValueType.Property))) || res.valueType < JSValueType.Undefined)
+                if (((own && ((res.attributes & JSValueAttributesInternal.Field) == 0 || res.valueType != JSValueType.Property))) || res.valueType < JSValueType.Undefined)
                     res = null;
             }
             if (res == null)
             {
-                if (!forWrite || (attributes & JSObjectAttributesInternal.Immutable) != 0)
+                if (!forWrite || (attributes & JSValueAttributesInternal.Immutable) != 0)
                 {
                     if (!own && string.CompareOrdinal(name, "__proto__") == 0)
                         return proto;
@@ -218,9 +156,9 @@ namespace NiL.JS.Core
             }
             else if (forWrite)
             {
-                if (((res.attributes & JSObjectAttributesInternal.SystemObject) != 0 || fromProto))
+                if (((res.attributes & JSValueAttributesInternal.SystemObject) != 0 || fromProto))
                 {
-                    if ((res.attributes & JSObjectAttributesInternal.ReadOnly) == 0
+                    if ((res.attributes & JSValueAttributesInternal.ReadOnly) == 0
                         && (res.valueType != JSValueType.Property || own))
                     {
                         res = res.CloneImpl();
@@ -259,7 +197,7 @@ namespace NiL.JS.Core
                     throw new JSException(new TypeError("Can not assign to readonly property \"" + name + "\""));
                 return;
             }
-            else if ((field.attributes & JSObjectAttributesInternal.ReadOnly) != 0)
+            else if ((field.attributes & JSValueAttributesInternal.ReadOnly) != 0)
             {
                 if (strict)
                     throw new JSException(new TypeError("Can not assign to readonly property \"" + name + "\""));
@@ -282,18 +220,18 @@ namespace NiL.JS.Core
             string tname = null;
             if (fields != null
                 && fields.TryGetValue(tname = name.ToString(), out field)
-                && (!field.IsExist || (field.attributes & JSObjectAttributesInternal.DoNotDelete) == 0))
+                && (!field.IsExist || (field.attributes & JSValueAttributesInternal.DoNotDelete) == 0))
             {
-                if ((field.attributes & JSObjectAttributesInternal.SystemObject) == 0)
+                if ((field.attributes & JSValueAttributesInternal.SystemObject) == 0)
                     field.valueType = JSValueType.NotExistsInObject;
                 return fields.Remove(tname);
             }
             field = GetMember(name, false, true);
             if (!field.IsExist)
                 return true;
-            if ((field.attributes & JSObjectAttributesInternal.SystemObject) != 0)
+            if ((field.attributes & JSValueAttributesInternal.SystemObject) != 0)
                 field = GetMember(name, true, true);
-            if ((field.attributes & JSObjectAttributesInternal.DoNotDelete) == 0)
+            if ((field.attributes & JSValueAttributesInternal.DoNotDelete) == 0)
             {
                 field.valueType = JSValueType.NotExistsInObject;
                 field.oValue = null;
@@ -308,7 +246,7 @@ namespace NiL.JS.Core
             {
                 foreach (var f in fields)
                 {
-                    if (f.Value.IsExist && (!hideNonEnum || (f.Value.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+                    if (f.Value.IsExist && (!hideNonEnum || (f.Value.attributes & JSValueAttributesInternal.DoNotEnum) == 0))
                         yield return f.Key;
                 }
             }
@@ -317,7 +255,7 @@ namespace NiL.JS.Core
         [Hidden]
         public sealed override void Assign(JSValue value)
         {
-            if ((attributes & JSObjectAttributesInternal.ReadOnly) == 0)
+            if ((attributes & JSValueAttributesInternal.ReadOnly) == 0)
             {
                 if (this is GlobalObject)
                     throw new JSException(new NiL.JS.BaseLibrary.ReferenceError("Invalid left-hand side"));
@@ -371,46 +309,28 @@ namespace NiL.JS.Core
                         throw new JSException(new TypeError("Invalid property descriptor for property " + member + " ."));
                     var value = desc["value"];
                     if (value.valueType == JSValueType.Property)
-                    {
-                        value = ((value.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(desc, null);
-                        if (value.valueType < JSValueType.Undefined)
-                            value = undefined;
-                    }
+                        value = Tools.invokeGetter(value, desc);
+
                     var configurable = desc["configurable"];
                     if (configurable.valueType == JSValueType.Property)
-                    {
-                        configurable = ((configurable.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(desc, null);
-                        if (configurable.valueType < JSValueType.Undefined)
-                            configurable = undefined;
-                    }
+                        configurable = Tools.invokeGetter(configurable, desc);
+
                     var enumerable = desc["enumerable"];
                     if (enumerable.valueType == JSValueType.Property)
-                    {
-                        enumerable = ((enumerable.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(desc, null);
-                        if (enumerable.valueType < JSValueType.Undefined)
-                            enumerable = undefined;
-                    }
+                        enumerable = Tools.invokeGetter(enumerable, desc);
+
                     var writable = desc["writable"];
                     if (writable.valueType == JSValueType.Property)
-                    {
-                        writable = ((writable.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(desc, null);
-                        if (writable.valueType < JSValueType.Undefined)
-                            writable = undefined;
-                    }
+                        writable = Tools.invokeGetter(writable, desc);
+
                     var get = desc["get"];
                     if (get.valueType == JSValueType.Property)
-                    {
-                        get = ((get.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(desc, null);
-                        if (get.valueType < JSValueType.Undefined)
-                            get = undefined;
-                    }
+                        get = Tools.invokeGetter(get, desc);
+
                     var set = desc["set"];
                     if (set.valueType == JSValueType.Property)
-                    {
-                        set = ((set.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(desc, null);
-                        if (set.valueType < JSValueType.Undefined)
-                            set = undefined;
-                    }
+                        set = Tools.invokeGetter(set, desc);
+
                     if (value.IsExist && (get.IsExist || set.IsExist))
                         throw new JSException(new TypeError("Property can not have getter or setter and default value."));
                     if (writable.IsExist && (get.IsExist || set.IsExist))
@@ -422,14 +342,14 @@ namespace NiL.JS.Core
                     var obj = new JSValue() { valueType = JSValueType.Undefined };
                     res.fields[member] = obj;
                     obj.attributes |=
-                        JSObjectAttributesInternal.DoNotEnum
-                        | JSObjectAttributesInternal.NotConfigurable
-                        | JSObjectAttributesInternal.DoNotDelete
-                        | JSObjectAttributesInternal.ReadOnly;
+                          JSValueAttributesInternal.DoNotEnum
+                        | JSValueAttributesInternal.NotConfigurable
+                        | JSValueAttributesInternal.DoNotDelete
+                        | JSValueAttributesInternal.ReadOnly;
                     if ((bool)enumerable)
-                        obj.attributes &= ~JSObjectAttributesInternal.DoNotEnum;
+                        obj.attributes &= ~JSValueAttributesInternal.DoNotEnum;
                     if ((bool)configurable)
-                        obj.attributes &= ~(JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.DoNotDelete);
+                        obj.attributes &= ~(JSValueAttributesInternal.NotConfigurable | JSValueAttributesInternal.DoNotDelete);
                     if (value.IsExist)
                     {
                         var atr = obj.attributes;
@@ -437,7 +357,7 @@ namespace NiL.JS.Core
                         obj.Assign(value);
                         obj.attributes = atr;
                         if ((bool)writable)
-                            obj.attributes &= ~JSObjectAttributesInternal.ReadOnly;
+                            obj.attributes &= ~JSValueAttributesInternal.ReadOnly;
                     }
                     else if (get.IsExist || set.IsExist)
                     {
@@ -455,7 +375,7 @@ namespace NiL.JS.Core
                         };
                     }
                     else if ((bool)writable)
-                        obj.attributes &= ~JSObjectAttributesInternal.ReadOnly;
+                        obj.attributes &= ~JSValueAttributesInternal.ReadOnly;
                 }
             }
             return res;
@@ -521,46 +441,27 @@ namespace NiL.JS.Core
         {
             var value = desc["value"];
             if (value.valueType == JSValueType.Property)
-            {
-                value = ((value.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(desc, null);
-                if (value.valueType < JSValueType.Undefined)
-                    value = undefined;
-            }
+                value = Tools.invokeGetter(value, desc);
+
             var configurable = desc["configurable"];
             if (configurable.valueType == JSValueType.Property)
-            {
-                configurable = ((configurable.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(desc, null);
-                if (configurable.valueType < JSValueType.Undefined)
-                    configurable = undefined;
-            }
+                configurable = Tools.invokeGetter(configurable, desc);
+
             var enumerable = desc["enumerable"];
             if (enumerable.valueType == JSValueType.Property)
-            {
-                enumerable = ((enumerable.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(desc, null);
-                if (enumerable.valueType < JSValueType.Undefined)
-                    enumerable = undefined;
-            }
+                enumerable = Tools.invokeGetter(enumerable, desc);
+
             var writable = desc["writable"];
             if (writable.valueType == JSValueType.Property)
-            {
-                writable = ((writable.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(desc, null);
-                if (writable.valueType < JSValueType.Undefined)
-                    writable = undefined;
-            }
+                writable = Tools.invokeGetter(writable, desc);
+
             var get = desc["get"];
             if (get.valueType == JSValueType.Property)
-            {
-                get = ((get.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(desc, null);
-                if (get.valueType < JSValueType.Undefined)
-                    get = undefined;
-            }
+                get = Tools.invokeGetter(get, desc);
+
             var set = desc["set"];
             if (set.valueType == JSValueType.Property)
-            {
-                set = ((set.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(desc, null);
-                if (set.valueType < JSValueType.Undefined)
-                    set = undefined;
-            }
+                set = Tools.invokeGetter(set, desc);
             if (value.IsExist && (get.IsExist || set.IsExist))
                 throw new JSException(new TypeError("Property can not have getter or setter and default value."));
             if (writable.IsExist && (get.IsExist || set.IsExist))
@@ -571,16 +472,16 @@ namespace NiL.JS.Core
                 throw new JSException(new TypeError("Setter mast be a function."));
             JSValue obj = null;
             obj = target.DefineMember(memberName);
-            if ((obj.attributes & JSObjectAttributesInternal.Argument) != 0 && (set.IsExist || get.IsExist))
+            if ((obj.attributes & JSValueAttributesInternal.Argument) != 0 && (set.IsExist || get.IsExist))
             {
                 var ti = 0;
                 if (target is Arguments && int.TryParse(memberName, NumberStyles.Integer, CultureInfo.InvariantCulture, out ti) && ti >= 0 && ti < 16)
-                    (target as Arguments)[ti] = obj = obj.CloneImpl(JSObjectAttributesInternal.SystemObject);
+                    (target as Arguments)[ti] = obj = obj.CloneImpl(JSValueAttributesInternal.SystemObject);
                 else
-                    target.fields[memberName] = obj = obj.CloneImpl(JSObjectAttributesInternal.SystemObject);
-                obj.attributes &= ~JSObjectAttributesInternal.Argument;
+                    target.fields[memberName] = obj = obj.CloneImpl(JSValueAttributesInternal.SystemObject);
+                obj.attributes &= ~JSValueAttributesInternal.Argument;
             }
-            if ((obj.attributes & JSObjectAttributesInternal.SystemObject) != 0)
+            if ((obj.attributes & JSValueAttributesInternal.SystemObject) != 0)
                 throw new JSException(new TypeError("Can not define property \"" + memberName + "\". Object immutable."));
 
             if (target is NiL.JS.BaseLibrary.Array)
@@ -595,7 +496,7 @@ namespace NiL.JS.Core
                             var nlen = (uint)nlenD;
                             if (double.IsNaN(nlenD) || double.IsInfinity(nlenD) || nlen != nlenD)
                                 throw new JSException(new RangeError("Invalid array length"));
-                            if ((obj.attributes & JSObjectAttributesInternal.ReadOnly) != 0
+                            if ((obj.attributes & JSValueAttributesInternal.ReadOnly) != 0
                                 && ((obj.valueType == JSValueType.Double && nlenD != obj.dValue)
                                     || (obj.valueType == JSValueType.Int && nlen != obj.iValue)))
                                 throw new JSException(new TypeError("Cannot change length of fixed size array"));
@@ -607,35 +508,35 @@ namespace NiL.JS.Core
                     finally
                     {
                         if (writable.IsExist && !(bool)writable)
-                            obj.attributes |= JSObjectAttributesInternal.ReadOnly;
+                            obj.attributes |= JSValueAttributesInternal.ReadOnly;
                     }
                 }
             }
 
             var newProp = obj.valueType < JSValueType.Undefined;
-            var config = (obj.attributes & JSObjectAttributesInternal.NotConfigurable) == 0 || newProp;
+            var config = (obj.attributes & JSValueAttributesInternal.NotConfigurable) == 0 || newProp;
 
             if (!config)
             {
-                if (enumerable.IsExist && (obj.attributes & JSObjectAttributesInternal.DoNotEnum) != 0 == (bool)enumerable)
+                if (enumerable.IsExist && (obj.attributes & JSValueAttributesInternal.DoNotEnum) != 0 == (bool)enumerable)
                     throw new JSException(new TypeError("Cannot change enumerable attribute for non configurable property."));
 
-                if (writable.IsExist && (obj.attributes & JSObjectAttributesInternal.ReadOnly) != 0 && (bool)writable)
+                if (writable.IsExist && (obj.attributes & JSValueAttributesInternal.ReadOnly) != 0 && (bool)writable)
                     throw new JSException(new TypeError("Cannot change writable attribute for non configurable property."));
 
                 if (configurable.IsExist && (bool)configurable)
                     throw new JSException(new TypeError("Cannot set configurate attribute to true."));
 
-                if ((obj.valueType != JSValueType.Property || ((obj.attributes & JSObjectAttributesInternal.Field) != 0)) && (set.IsExist || get.IsExist))
+                if ((obj.valueType != JSValueType.Property || ((obj.attributes & JSValueAttributesInternal.Field) != 0)) && (set.IsExist || get.IsExist))
                     throw new JSException(new TypeError("Cannot redefine not configurable property from immediate value to accessor property"));
-                if (obj.valueType == JSValueType.Property && (obj.attributes & JSObjectAttributesInternal.Field) == 0 && value.IsExist)
+                if (obj.valueType == JSValueType.Property && (obj.attributes & JSValueAttributesInternal.Field) == 0 && value.IsExist)
                     throw new JSException(new TypeError("Cannot redefine not configurable property from accessor property to immediate value"));
-                if (obj.valueType == JSValueType.Property && (obj.attributes & JSObjectAttributesInternal.Field) == 0
+                if (obj.valueType == JSValueType.Property && (obj.attributes & JSValueAttributesInternal.Field) == 0
                     && set.IsExist
                     && (((obj.oValue as PropertyPair).set != null && (obj.oValue as PropertyPair).set.oValue != set.oValue)
                         || ((obj.oValue as PropertyPair).set == null && set.IsDefinded)))
                     throw new JSException(new TypeError("Cannot redefine setter of not configurable property."));
-                if (obj.valueType == JSValueType.Property && (obj.attributes & JSObjectAttributesInternal.Field) == 0
+                if (obj.valueType == JSValueType.Property && (obj.attributes & JSValueAttributesInternal.Field) == 0
                     && get.IsExist
                     && (((obj.oValue as PropertyPair).get != null && (obj.oValue as PropertyPair).get.oValue != get.oValue)
                         || ((obj.oValue as PropertyPair).get == null && get.IsDefinded)))
@@ -645,7 +546,7 @@ namespace NiL.JS.Core
             if (value.IsExist)
             {
                 if (!config
-                    && (obj.attributes & JSObjectAttributesInternal.ReadOnly) != 0
+                    && (obj.attributes & JSValueAttributesInternal.ReadOnly) != 0
                     && !((StrictEqualOperator.Check(obj, value) && ((obj.valueType == JSValueType.Undefined && value.valueType == JSValueType.Undefined) || !obj.IsNumber || !value.IsNumber || (1.0 / Tools.JSObjectToDouble(obj) == 1.0 / Tools.JSObjectToDouble(value))))
                         || (obj.valueType == JSValueType.Double && value.valueType == JSValueType.Double && double.IsNaN(obj.dValue) && double.IsNaN(value.dValue))))
                     throw new JSException(new TypeError("Cannot change value of not configurable not writable peoperty."));
@@ -678,40 +579,40 @@ namespace NiL.JS.Core
             if (newProp)
             {
                 obj.attributes |=
-                    JSObjectAttributesInternal.DoNotEnum
-                    | JSObjectAttributesInternal.DoNotDelete
-                    | JSObjectAttributesInternal.NotConfigurable
-                    | JSObjectAttributesInternal.ReadOnly;
+                    JSValueAttributesInternal.DoNotEnum
+                    | JSValueAttributesInternal.DoNotDelete
+                    | JSValueAttributesInternal.NotConfigurable
+                    | JSValueAttributesInternal.ReadOnly;
             }
             else
             {
                 var atrbts = obj.attributes;
                 if (configurable.IsExist && (config || !(bool)configurable))
-                    obj.attributes |= JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.DoNotDelete;
+                    obj.attributes |= JSValueAttributesInternal.NotConfigurable | JSValueAttributesInternal.DoNotDelete;
                 if (enumerable.IsExist && (config || !(bool)enumerable))
-                    obj.attributes |= JSObjectAttributesInternal.DoNotEnum;
+                    obj.attributes |= JSValueAttributesInternal.DoNotEnum;
                 if (writable.IsExist && (config || !(bool)writable))
-                    obj.attributes |= JSObjectAttributesInternal.ReadOnly;
+                    obj.attributes |= JSValueAttributesInternal.ReadOnly;
 
-                if (obj.attributes != atrbts && (obj.attributes & JSObjectAttributesInternal.Argument) != 0)
+                if (obj.attributes != atrbts && (obj.attributes & JSValueAttributesInternal.Argument) != 0)
                 {
                     var ti = 0;
                     if (target is Arguments && int.TryParse(memberName, NumberStyles.Integer, CultureInfo.InvariantCulture, out ti) && ti >= 0 && ti < 16)
-                        (target as Arguments)[ti] = obj = obj.CloneImpl(JSObjectAttributesInternal.SystemObject);
+                        (target as Arguments)[ti] = obj = obj.CloneImpl(JSValueAttributesInternal.SystemObject);
                     else
-                        target.fields[memberName] = obj = obj.CloneImpl(JSObjectAttributesInternal.SystemObject);
-                    obj.attributes &= ~JSObjectAttributesInternal.Argument;
+                        target.fields[memberName] = obj = obj.CloneImpl(JSValueAttributesInternal.SystemObject);
+                    obj.attributes &= ~JSValueAttributesInternal.Argument;
                 }
             }
 
             if (config)
             {
                 if ((bool)enumerable)
-                    obj.attributes &= ~JSObjectAttributesInternal.DoNotEnum;
+                    obj.attributes &= ~JSValueAttributesInternal.DoNotEnum;
                 if ((bool)configurable)
-                    obj.attributes &= ~(JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.DoNotDelete);
+                    obj.attributes &= ~(JSValueAttributesInternal.NotConfigurable | JSValueAttributesInternal.DoNotDelete);
                 if ((bool)writable)
-                    obj.attributes &= ~JSObjectAttributesInternal.ReadOnly;
+                    obj.attributes &= ~JSValueAttributesInternal.ReadOnly;
             }
             return target;
         }
@@ -725,9 +626,9 @@ namespace NiL.JS.Core
             if (args[1].valueType != JSValueType.Function)
                 throw new JSException(new TypeError("Expecting function as second parameter"));
             var field = GetMember(args[0], true, true);
-            if ((field.attributes & JSObjectAttributesInternal.NotConfigurable) != 0)
+            if ((field.attributes & JSValueAttributesInternal.NotConfigurable) != 0)
                 throw new JSException(new TypeError("Cannot change value of not configurable peoperty."));
-            if ((field.attributes & JSObjectAttributesInternal.ReadOnly) != 0)
+            if ((field.attributes & JSValueAttributesInternal.ReadOnly) != 0)
                 throw new JSException(new TypeError("Cannot change value of readonly peoperty."));
             if (field.valueType == JSValueType.Property)
                 (field.oValue as PropertyPair).get = args.a1.oValue as Function;
@@ -750,9 +651,9 @@ namespace NiL.JS.Core
             if (args[1].valueType != JSValueType.Function)
                 throw new JSException(new TypeError("Expecting function as second parameter"));
             var field = GetMember(args[0], true, true);
-            if ((field.attributes & JSObjectAttributesInternal.NotConfigurable) != 0)
+            if ((field.attributes & JSValueAttributesInternal.NotConfigurable) != 0)
                 throw new JSException(new TypeError("Cannot change value of not configurable peoperty."));
-            if ((field.attributes & JSObjectAttributesInternal.ReadOnly) != 0)
+            if ((field.attributes & JSValueAttributesInternal.ReadOnly) != 0)
                 throw new JSException(new TypeError("Cannot change value of readonly peoperty."));
             if (field.valueType == JSValueType.Property)
                 (field.oValue as PropertyPair).set = args.a1.oValue as Function;
@@ -794,23 +695,23 @@ namespace NiL.JS.Core
             if (args[0].oValue == null)
                 throw new JSException(new TypeError("Object.freeze called on null."));
             var obj = args[0].Value as JSObject ?? args[0].oValue as JSObject;
-            obj.attributes |= JSObjectAttributesInternal.Immutable;
+            obj.attributes |= JSValueAttributesInternal.Immutable;
             if (obj is NiL.JS.BaseLibrary.Array)
             {
                 var arr = obj as NiL.JS.BaseLibrary.Array;
                 foreach (var element in arr.data)
                     if (element != null && element.IsExist)
-                        element.attributes |= JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete;
+                        element.attributes |= JSValueAttributesInternal.NotConfigurable | JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete;
             }
             else if (obj is Arguments)
             {
                 var arg = obj as Arguments;
                 for (var i = 0; i < 16; i++)
-                    arg[i].attributes |= JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete;
+                    arg[i].attributes |= JSValueAttributesInternal.NotConfigurable | JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete;
             }
             if (obj.fields != null)
                 foreach (var f in obj.fields)
-                    f.Value.attributes |= JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete;
+                    f.Value.attributes |= JSValueAttributesInternal.NotConfigurable | JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete;
             return obj;
         }
 
@@ -822,7 +723,7 @@ namespace NiL.JS.Core
             if (args[0].oValue == null)
                 throw new JSException(new TypeError("Can not prevent extensions for null"));
             var obj = args[0].Value as JSObject ?? args[0].oValue as JSObject;
-            obj.attributes |= JSObjectAttributesInternal.Immutable;
+            obj.attributes |= JSValueAttributesInternal.Immutable;
             return obj;
         }
 
@@ -834,7 +735,7 @@ namespace NiL.JS.Core
             if (args[0].oValue == null)
                 throw new JSException(new TypeError("Object.isExtensible called on null."));
             var obj = args[0].Value as JSObject ?? args[0].oValue as JSObject;
-            return (obj.attributes & JSObjectAttributesInternal.Immutable) == 0;
+            return (obj.attributes & JSValueAttributesInternal.Immutable) == 0;
         }
 
         [DoNotEnumerate]
@@ -845,7 +746,7 @@ namespace NiL.JS.Core
             if (args[0].oValue == null)
                 throw new JSException(new TypeError("Object.isSealed called on null."));
             var obj = args[0].Value as JSObject ?? args[0].oValue as JSObject;
-            if ((obj.attributes & JSObjectAttributesInternal.Immutable) == 0)
+            if ((obj.attributes & JSValueAttributesInternal.Immutable) == 0)
                 return false;
             if (obj is TypeProxy)
                 return true;
@@ -857,14 +758,14 @@ namespace NiL.JS.Core
                     if (node != null
                         && node.IsExist
                         && node.valueType >= JSValueType.Object && node.oValue != null
-                        && (node.attributes & JSObjectAttributesInternal.NotConfigurable) == 0)
+                        && (node.attributes & JSValueAttributesInternal.NotConfigurable) == 0)
                         return false;
                 }
             }
             if (obj.fields != null)
                 foreach (var f in obj.fields)
                 {
-                    if (f.Value.valueType >= JSValueType.Object && f.Value.oValue != null && (f.Value.attributes & JSObjectAttributesInternal.NotConfigurable) == 0)
+                    if (f.Value.valueType >= JSValueType.Object && f.Value.oValue != null && (f.Value.attributes & JSValueAttributesInternal.NotConfigurable) == 0)
                         return false;
                 }
             return true;
@@ -878,23 +779,23 @@ namespace NiL.JS.Core
             if (args[0].oValue == null)
                 throw new JSException(new TypeError("Object.seal called on null."));
             var obj = args[0].Value as JSObject ?? args[0].oValue as JSObject;
-            obj.attributes |= JSObjectAttributesInternal.Immutable;
+            obj.attributes |= JSValueAttributesInternal.Immutable;
             var arr = obj as NiL.JS.BaseLibrary.Array;
             if (arr != null)
             {
                 foreach (var element in arr.data)
                     if (element != null && element.IsExist)
-                        element.attributes |= JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.DoNotDelete;
+                        element.attributes |= JSValueAttributesInternal.NotConfigurable | JSValueAttributesInternal.DoNotDelete;
             }
             else if (obj is Arguments)
             {
                 var arg = obj as Arguments;
                 for (var i = 0; i < 16; i++)
-                    arg[i].attributes |= JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.DoNotDelete;
+                    arg[i].attributes |= JSValueAttributesInternal.NotConfigurable | JSValueAttributesInternal.DoNotDelete;
             }
             if (obj.fields != null)
                 foreach (var f in obj.fields)
-                    f.Value.attributes |= JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.DoNotDelete;
+                    f.Value.attributes |= JSValueAttributesInternal.NotConfigurable | JSValueAttributesInternal.DoNotDelete;
             return obj;
         }
 
@@ -906,7 +807,7 @@ namespace NiL.JS.Core
             if (args[0].oValue == null)
                 throw new JSException(new TypeError("Object.isFrozen called on null."));
             var obj = args[0].Value as JSObject ?? args[0].oValue as JSObject;
-            if ((obj.attributes & JSObjectAttributesInternal.Immutable) == 0)
+            if ((obj.attributes & JSValueAttributesInternal.Immutable) == 0)
                 return false;
             if (obj is TypeProxy)
                 return true;
@@ -916,8 +817,8 @@ namespace NiL.JS.Core
                 foreach (var node in arr.data.DirectOrder)
                 {
                     if (node.Value != null && node.Value.IsExist &&
-                        ((node.Value.attributes & JSObjectAttributesInternal.NotConfigurable) == 0
-                        || (node.Value.valueType != JSValueType.Property && (node.Value.attributes & JSObjectAttributesInternal.ReadOnly) == 0)))
+                        ((node.Value.attributes & JSValueAttributesInternal.NotConfigurable) == 0
+                        || (node.Value.valueType != JSValueType.Property && (node.Value.attributes & JSValueAttributesInternal.ReadOnly) == 0)))
                         return false;
                 }
             }
@@ -926,16 +827,16 @@ namespace NiL.JS.Core
                 var arg = obj as Arguments;
                 for (var i = 0; i < 16; i++)
                 {
-                    if ((arg[i].attributes & JSObjectAttributesInternal.NotConfigurable) == 0
-                            || (arg[i].valueType != JSValueType.Property && (arg[i].attributes & JSObjectAttributesInternal.ReadOnly) == 0))
+                    if ((arg[i].attributes & JSValueAttributesInternal.NotConfigurable) == 0
+                            || (arg[i].valueType != JSValueType.Property && (arg[i].attributes & JSValueAttributesInternal.ReadOnly) == 0))
                         return false;
                 }
             }
             if (obj.fields != null)
                 foreach (var f in obj.fields)
                 {
-                    if ((f.Value.attributes & JSObjectAttributesInternal.NotConfigurable) == 0
-                            || (f.Value.valueType != JSValueType.Property && (f.Value.attributes & JSObjectAttributesInternal.ReadOnly) == 0))
+                    if ((f.Value.attributes & JSValueAttributesInternal.NotConfigurable) == 0
+                            || (f.Value.valueType != JSValueType.Property && (f.Value.attributes & JSValueAttributesInternal.ReadOnly) == 0))
                         return false;
                 }
             return true;
@@ -964,24 +865,24 @@ namespace NiL.JS.Core
             var obj = source.GetMember(args[1], false, true);
             if (obj.valueType < JSValueType.Undefined)
                 return undefined;
-            if ((obj.attributes & JSObjectAttributesInternal.SystemObject) != 0)
+            if ((obj.attributes & JSValueAttributesInternal.SystemObject) != 0)
                 obj = source.GetMember(args[1], true, true);
             var res = CreateObject();
-            if (obj.valueType != JSValueType.Property || (obj.attributes & JSObjectAttributesInternal.Field) != 0)
+            if (obj.valueType != JSValueType.Property || (obj.attributes & JSValueAttributesInternal.Field) != 0)
             {
                 if (obj.valueType == JSValueType.Property)
                     res["value"] = (obj.oValue as PropertyPair).get.Invoke(source, null);
                 else
                     res["value"] = obj;
-                res["writable"] = obj.valueType < JSValueType.Undefined || (obj.attributes & JSObjectAttributesInternal.ReadOnly) == 0;
+                res["writable"] = obj.valueType < JSValueType.Undefined || (obj.attributes & JSValueAttributesInternal.ReadOnly) == 0;
             }
             else
             {
                 res["set"] = (obj.oValue as PropertyPair).set;
                 res["get"] = (obj.oValue as PropertyPair).get;
             }
-            res["configurable"] = (obj.attributes & JSObjectAttributesInternal.NotConfigurable) == 0 || (obj.attributes & JSObjectAttributesInternal.DoNotDelete) == 0;
-            res["enumerable"] = (obj.attributes & JSObjectAttributesInternal.DoNotEnum) == 0;
+            res["configurable"] = (obj.attributes & JSValueAttributesInternal.NotConfigurable) == 0 || (obj.attributes & JSValueAttributesInternal.DoNotDelete) == 0;
+            res["enumerable"] = (obj.attributes & JSValueAttributesInternal.DoNotEnum) == 0;
             return res;
         }
 

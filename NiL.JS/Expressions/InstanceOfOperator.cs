@@ -29,7 +29,7 @@ namespace NiL.JS.Expressions
 
         internal override JSValue Evaluate(Context context)
         {
-            var a = tempContainer ?? new JSValue { attributes = JSObjectAttributesInternal.Temporary };
+            var a = tempContainer ?? new JSValue { attributes = JSValueAttributesInternal.Temporary };
             tempContainer = null;
             a.Assign(first.Evaluate(context));
             var c = second.Evaluate(context);

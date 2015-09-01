@@ -323,14 +323,14 @@ namespace NiL.JS.BaseLibrary
                 {
                     case 'y':
                         {
-                            if (!Tools.isDigit(timeStr[j]))
+                            if (!Tools.IsDigit(timeStr[j]))
                                 return false;
                             year = year * 10 + timeStr[j] - '0';
                             break;
                         }
                     case 'm':
                         {
-                            if (!Tools.isDigit(timeStr[j]))
+                            if (!Tools.IsDigit(timeStr[j]))
                                 return false;
                             switch (part)
                             {
@@ -349,14 +349,14 @@ namespace NiL.JS.BaseLibrary
                         }
                     case 'd':
                         {
-                            if (!Tools.isDigit(timeStr[j]))
+                            if (!Tools.IsDigit(timeStr[j]))
                                 return false;
                             day = day * 10 + timeStr[j] - '0';
                             break;
                         }
                     case 'h':
                         {
-                            if (!Tools.isDigit(timeStr[j]))
+                            if (!Tools.IsDigit(timeStr[j]))
                                 return false;
                             hour = hour * 10 + timeStr[j] - '0';
                             break;

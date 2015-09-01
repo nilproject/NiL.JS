@@ -567,10 +567,10 @@ namespace NiL.JS.BaseLibrary
 .GetMethod("ThrowTypeError", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic))
 #endif
             {
-                attributes = JSObjectAttributesInternal.DoNotDelete
-                | JSObjectAttributesInternal.Immutable
-                | JSObjectAttributesInternal.DoNotEnum
-                | JSObjectAttributesInternal.ReadOnly
+                attributes = JSValueAttributesInternal.DoNotDelete
+                | JSValueAttributesInternal.Immutable
+                | JSValueAttributesInternal.DoNotEnum
+                | JSValueAttributesInternal.ReadOnly
             };
         protected static void ThrowTypeError()
         {
@@ -580,7 +580,7 @@ namespace NiL.JS.BaseLibrary
         {
             valueType = JSValueType.Property,
             oValue = new PropertyPair() { get = TTEProxy, set = TTEProxy },
-            attributes = JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.Immutable | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.NotConfigurable
+            attributes = JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.Immutable | JSValueAttributesInternal.DoNotEnum | JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.NotConfigurable
         };
 
         internal readonly FunctionNotation creator;
@@ -632,7 +632,7 @@ namespace NiL.JS.BaseLibrary
             {
                 if (_prototype == null)
                 {
-                    if ((attributes & JSObjectAttributesInternal.ProxyPrototype) != 0)
+                    if ((attributes & JSValueAttributesInternal.ProxyPrototype) != 0)
                     {
                         // Вызывается в случае Function.prototype.prototype
                         _prototype = new JSValue(); // выдавать тут константу undefined нельзя, иначе будет падать на вызове defineProperty
@@ -640,8 +640,8 @@ namespace NiL.JS.BaseLibrary
                     else
                     {
                         var res = JSObject.CreateObject();
-                        res.attributes = JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.NotConfigurable;
-                        (res.fields["constructor"] = this.CloneImpl()).attributes = JSObjectAttributesInternal.DoNotEnum;
+                        res.attributes = JSValueAttributesInternal.DoNotEnum | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.NotConfigurable;
+                        (res.fields["constructor"] = this.CloneImpl()).attributes = JSValueAttributesInternal.DoNotEnum;
                         _prototype = res;
                     }
                 }
@@ -694,7 +694,7 @@ namespace NiL.JS.BaseLibrary
             {
                 if (_length == null)
                 {
-                    _length = new Number(0) { attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum };
+                    _length = new Number(0) { attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnum };
                     _length.iValue = creator.parameters.Length;
                 }
                 return _length;
@@ -717,7 +717,7 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         public Function()
         {
-            attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.SystemObject;
+            attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnum | JSValueAttributesInternal.SystemObject;
             creator = creatorDummy;
             valueType = JSValueType.Function;
             this.oValue = this;
@@ -726,7 +726,7 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         public Function(Arguments args)
         {
-            attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.SystemObject;
+            attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnum | JSValueAttributesInternal.SystemObject;
             context = (Context.CurrentContext ?? Context.GlobalContext).Root;
             if (context == Context.globalContext)
                 throw new InvalidOperationException("Special Functions constructor can be called only in runtime.");
@@ -751,7 +751,7 @@ namespace NiL.JS.BaseLibrary
         [Hidden]
         internal Function(Context context, FunctionNotation creator)
         {
-            attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.SystemObject;
+            attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnum | JSValueAttributesInternal.SystemObject;
             this.context = context;
             this.creator = creator;
             valueType = JSValueType.Function;
@@ -930,7 +930,7 @@ namespace NiL.JS.BaseLibrary
                     internalContext.fields["arguments"] = _arguments;
                 if (body.strict)
                 {
-                    args.attributes |= JSObjectAttributesInternal.ReadOnly;
+                    args.attributes |= JSValueAttributesInternal.ReadOnly;
                     args.callee = propertiesDummySM;
                     args.caller = propertiesDummySM;
                     _caller = propertiesDummySM;
@@ -1116,7 +1116,7 @@ namespace NiL.JS.BaseLibrary
 
         private void setPrmFst(int index, JSValue value, Context context)
         {
-            value.attributes |= JSObjectAttributesInternal.Argument;
+            value.attributes |= JSValueAttributesInternal.Argument;
             creator.parameters[index].cacheRes = value;
             creator.parameters[index].cacheContext = context;
             if (creator.parameters[index].captured)
@@ -1163,11 +1163,11 @@ namespace NiL.JS.BaseLibrary
                     if (arg.assignations != null)
                     {
                         args[i] = t = t.CloneImpl();
-                        t.attributes |= JSObjectAttributesInternal.Cloned;
+                        t.attributes |= JSValueAttributesInternal.Cloned;
                     }
                     if (cea)
                     {
-                        if ((t.attributes & JSObjectAttributesInternal.Cloned) == 0)
+                        if ((t.attributes & JSValueAttributesInternal.Cloned) == 0)
                             args[i] = t.CloneImpl();
                         t = t.CloneImpl();
                     }
@@ -1177,14 +1177,14 @@ namespace NiL.JS.BaseLibrary
                     if (arg.assignations != null
                         || cea
                         || cew
-                        || (t.attributes & JSObjectAttributesInternal.Temporary) != 0)
+                        || (t.attributes & JSValueAttributesInternal.Temporary) != 0)
                     {
-                        if ((t.attributes & JSObjectAttributesInternal.Cloned) == 0)
+                        if ((t.attributes & JSValueAttributesInternal.Cloned) == 0)
                             args[i] = t = t.CloneImpl();
-                        t.attributes |= JSObjectAttributesInternal.Argument;
+                        t.attributes |= JSValueAttributesInternal.Argument;
                     }
                 }
-                t.attributes &= ~JSObjectAttributesInternal.Cloned;
+                t.attributes &= ~JSValueAttributesInternal.Cloned;
                 if (arg.captured || cew)
                     (internalContext.fields ?? (internalContext.fields = createFields(1)))[arg.Name] = t;
                 arg.cacheContext = internalContext;
@@ -1195,11 +1195,11 @@ namespace NiL.JS.BaseLibrary
             for (; i < args.length; i++)
             {
                 JSValue t = args[i];
-                if ((t.attributes & JSObjectAttributesInternal.Cloned) != 0)
-                    t.attributes &= ~JSObjectAttributesInternal.Cloned;
+                if ((t.attributes & JSValueAttributesInternal.Cloned) != 0)
+                    t.attributes &= ~JSValueAttributesInternal.Cloned;
                 else if (cew || cea)
                     args[i] = t = t.CloneImpl();
-                t.attributes |= JSObjectAttributesInternal.Argument;
+                t.attributes |= JSValueAttributesInternal.Argument;
             }
             for (; i < creator.parameters.Length; i++)
             {
@@ -1207,7 +1207,7 @@ namespace NiL.JS.BaseLibrary
                 if (cew || arg.assignations != null)
                     arg.cacheRes = new JSValue()
                     {
-                        attributes = JSObjectAttributesInternal.Argument,
+                        attributes = JSValueAttributesInternal.Argument,
                         valueType = JSValueType.Undefined
                     };
                 else
@@ -1235,13 +1235,13 @@ namespace NiL.JS.BaseLibrary
                     bool isArg = string.CompareOrdinal(v.name, "arguments") == 0;
                     if (isArg && v.Inititalizator == null)
                         continue;
-                    JSValue f = new JSValue() { valueType = JSValueType.Undefined, attributes = JSObjectAttributesInternal.DoNotDelete };
+                    JSValue f = new JSValue() { valueType = JSValueType.Undefined, attributes = JSValueAttributesInternal.DoNotDelete };
                     if (v.captured || cew)
                         (internalContext.fields ?? (internalContext.fields = createFields()))[v.name] = f;
                     if (v.Inititalizator != null)
                         f.Assign(v.Inititalizator.Evaluate(internalContext));
                     if (v.isReadOnly)
-                        f.attributes |= JSObjectAttributesInternal.ReadOnly;
+                        f.attributes |= JSValueAttributesInternal.ReadOnly;
                     v.cacheRes = f;
                     v.cacheContext = internalContext;
                     if (isArg)
@@ -1306,7 +1306,7 @@ namespace NiL.JS.BaseLibrary
             string name = nameObj.ToString();
             if (creator.body.strict && (name == "caller" || name == "arguments"))
                 return propertiesDummySM;
-            if ((attributes & JSObjectAttributesInternal.ProxyPrototype) != 0 && name == "prototype")
+            if ((attributes & JSValueAttributesInternal.ProxyPrototype) != 0 && name == "prototype")
                 return prototype;
             return base.GetMember(nameObj, forWrite, own);
         }

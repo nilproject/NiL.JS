@@ -56,16 +56,16 @@ namespace NiL.JS.Expressions
         {
             context.objectSource = null;
             var a = source.Evaluate(context);
-            if ((a.attributes & (JSObjectAttributesInternal.SystemObject | JSObjectAttributesInternal.ReadOnly)) == 0)
+            if ((a.attributes & (JSValueAttributesInternal.SystemObject | JSValueAttributesInternal.ReadOnly)) == 0)
             {
                 // Предполагается, что тут мы отдаём не контейнер, а сам объект. 
                 // В частности, preventExtensions ожидает именно такое поведение
                 if (a.IsBox)
                     return a.oValue as JSObject; // клонировать в таком случае не надо, так как это точно не временный объект
-                if (clone && (a.attributes & JSObjectAttributesInternal.Temporary) != 0)
+                if (clone && (a.attributes & JSValueAttributesInternal.Temporary) != 0)
                 {
                     a = a.CloneImpl();
-                    a.attributes |= JSObjectAttributesInternal.Cloned;
+                    a.attributes |= JSValueAttributesInternal.Cloned;
                 }
             }
             return a;
@@ -124,7 +124,7 @@ namespace NiL.JS.Expressions
                 else
                     context.objectSource = null;
             }
-            func.attributes = (func.attributes & ~JSObjectAttributesInternal.Eval) | (temp.attributes & JSObjectAttributesInternal.Eval);
+            func.attributes = (func.attributes & ~JSValueAttributesInternal.Eval) | (temp.attributes & JSValueAttributesInternal.Eval);
 
             checkStack();
             return func.InternalInvoke(newThisBind, this.arguments, context);

@@ -10,12 +10,6 @@ namespace NiL.JS.Expressions
     {
         private bool trueLess;
 
-        internal LessOperator(Expression first, Expression second)
-            : base(first, second, true)
-        {
-            trueLess = this.GetType() == typeof(LessOperator);
-        }
-
         protected internal override PredictedType ResultType
         {
             get
@@ -27,6 +21,12 @@ namespace NiL.JS.Expressions
         protected internal override bool ResultInTempContainer
         {
             get { return false; }
+        }
+
+        internal LessOperator(Expression first, Expression second)
+            : base(first, second, true)
+        {
+            trueLess = this.GetType() == typeof(LessOperator);
         }
 
         internal static bool Check(JSValue first, JSValue second)
@@ -236,7 +236,7 @@ namespace NiL.JS.Expressions
             var temp = tempContainer;
             tempContainer = null;
             if (temp == null)
-                temp = new JSValue { attributes = JSObjectAttributesInternal.Temporary };
+                temp = new JSValue { attributes = JSValueAttributesInternal.Temporary };
             temp.valueType = f.valueType;
             temp.iValue = f.iValue;
             temp.dValue = f.dValue;

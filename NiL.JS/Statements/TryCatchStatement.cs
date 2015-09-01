@@ -332,7 +332,7 @@ namespace NiL.JS.Statements
             else
 #endif
                 cvar = e is JSException ? (e as JSException).Avatar.CloneImpl() : TypeProxy.Proxy(e);
-            cvar.attributes |= JSObjectAttributesInternal.DoNotDelete;
+            cvar.attributes |= JSValueAttributesInternal.DoNotDelete;
             var catchContext = new CatchContext(cvar, context, catchVariableDesc.name);
 #if DEBUG
             if (!(e is JSException))

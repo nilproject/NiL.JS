@@ -81,7 +81,7 @@ namespace NiL.JS.Core
                 JSObject.GlobalPrototype = null;
                 TypeProxy.Clear();
                 globalContext.fields.Add("Object", TypeProxy.GetConstructor(typeof(JSObject)).CloneImpl());
-                globalContext.fields["Object"].attributes = JSObjectAttributesInternal.DoNotDelete;
+                globalContext.fields["Object"].attributes = JSValueAttributesInternal.DoNotDelete;
                 JSObject.GlobalPrototype = TypeProxy.GetPrototype(typeof(JSObject));
                 Core.GlobalObject.refreshGlobalObjectProto();
                 globalContext.AttachModule(typeof(BaseLibrary.Math));
@@ -119,7 +119,7 @@ namespace NiL.JS.Core
 
                 #region Base Function
                 globalContext.DefineVariable("eval").Assign(new EvalFunction());
-                globalContext.fields["eval"].attributes |= JSObjectAttributesInternal.Eval;
+                globalContext.fields["eval"].attributes |= JSValueAttributesInternal.Eval;
                 globalContext.DefineVariable("isNaN").Assign(new ExternalFunction(GlobalFunctions.isNaN));
                 globalContext.DefineVariable("unescape").Assign(new ExternalFunction(GlobalFunctions.unescape));
                 globalContext.DefineVariable("escape").Assign(new ExternalFunction(GlobalFunctions.escape));
@@ -142,7 +142,7 @@ namespace NiL.JS.Core
                 #endregion
 
                 foreach (var v in globalContext.fields.Values)
-                    v.attributes |= JSObjectAttributesInternal.DoNotEnum;
+                    v.attributes |= JSValueAttributesInternal.DoNotEnum;
             }
             catch
             {
@@ -281,7 +281,7 @@ namespace NiL.JS.Core
             }
             else
             {
-                tempContainer = new JSValue() { attributes = JSObjectAttributesInternal.Temporary };
+                tempContainer = new JSValue() { attributes = JSValueAttributesInternal.Temporary };
             }
             this.caller = caller;
             if (createFields)
@@ -386,10 +386,10 @@ namespace NiL.JS.Core
             {
                 fields[name] = res = new JSValue()
                 {
-                    attributes = JSObjectAttributesInternal.DoNotDelete
+                    attributes = JSValueAttributesInternal.DoNotDelete
                 };
             }
-            else if ((res.attributes & (JSObjectAttributesInternal.SystemObject | JSObjectAttributesInternal.ReadOnly)) == JSObjectAttributesInternal.SystemObject)
+            else if ((res.attributes & (JSValueAttributesInternal.SystemObject | JSValueAttributesInternal.ReadOnly)) == JSValueAttributesInternal.SystemObject)
                 fields[name] = res = res.CloneImpl();
             res.valueType |= JSValueType.Undefined;
             return res;
@@ -441,7 +441,7 @@ namespace NiL.JS.Core
                 objectSource = parent.objectSource;
             else
             {
-                if (create && (res.attributes & (JSObjectAttributesInternal.SystemObject | JSObjectAttributesInternal.ReadOnly)) == JSObjectAttributesInternal.SystemObject)
+                if (create && (res.attributes & (JSValueAttributesInternal.SystemObject | JSValueAttributesInternal.ReadOnly)) == JSValueAttributesInternal.SystemObject)
                     fields[name] = res = res.CloneImpl();
             }
             return res;
@@ -483,8 +483,20 @@ namespace NiL.JS.Core
                 name = moduleType.Name.Substring(0, moduleType.Name.LastIndexOf('`'));
             else
                 name = moduleType.Name;
+            AttachModule(moduleType, name);
+        }
+
+        /// <summary>
+        /// Добавляет в указанный контекст объект, представляющий переданный тип.
+        /// Имя созданного объекта будет совпадать с именем переданного типа. 
+        /// Статические члены типа будут доступны как поля созданного объекта. 
+        /// Если тип не являлся статическим, то созданный объект будет функцией (с поздним связыванием), представляющей конструкторы указанного типа.
+        /// </summary>
+        /// <param name="moduleType">Тип, для которого будет создан внутренний объект.</param>
+        public void AttachModule(Type moduleType, string name)
+        {
             fields.Add(name, TypeProxy.GetConstructor(moduleType).CloneImpl());
-            fields[name].attributes = JSObjectAttributesInternal.DoNotEnum;
+            fields[name].attributes = JSValueAttributesInternal.DoNotEnum;
         }
 
         /// <summary>
@@ -576,11 +588,11 @@ namespace NiL.JS.Core
                 {
                     var f = context.DefineVariable(body.localVariables[i].name);
                     if (!inplace)
-                        f.attributes = JSObjectAttributesInternal.None;
+                        f.attributes = JSValueAttributesInternal.None;
                     if (body.localVariables[i].Inititalizator != null)
                         f.Assign(body.localVariables[i].Inititalizator.Evaluate(context));
                     if (body.localVariables[i].isReadOnly)
-                        f.attributes |= JSObjectAttributesInternal.ReadOnly;
+                        f.attributes |= JSValueAttributesInternal.ReadOnly;
                     body.localVariables[i].captured = true;
                 }
 

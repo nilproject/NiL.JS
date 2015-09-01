@@ -11,16 +11,16 @@ namespace NiL.JS.BaseLibrary
     public class Boolean : JSObject
     {
         [Hidden]
-        internal static readonly Boolean True = new Boolean(true) { attributes = JSObjectAttributesInternal.SystemObject };
+        internal static readonly Boolean True = new Boolean(true) { attributes = JSValueAttributesInternal.SystemObject };
         [Hidden]
-        internal static readonly Boolean False = new Boolean(false) { attributes = JSObjectAttributesInternal.SystemObject };
+        internal static readonly Boolean False = new Boolean(false) { attributes = JSValueAttributesInternal.SystemObject };
 
         [DoNotEnumerate]
         public Boolean()
         {
             valueType = JSValueType.Bool;
             iValue = 0;
-            attributes |= JSObjectAttributesInternal.SystemObject;
+            attributes |= JSValueAttributesInternal.SystemObject;
         }
 
         [DoNotEnumerate]
@@ -30,7 +30,7 @@ namespace NiL.JS.BaseLibrary
                 throw new ArgumentNullException("obj");
             valueType = JSValueType.Bool;
             iValue = (bool)obj[0] ? 1 : 0;
-            attributes |= JSObjectAttributesInternal.SystemObject;
+            attributes |= JSValueAttributesInternal.SystemObject;
         }
 
         [DoNotEnumerate]
@@ -38,7 +38,7 @@ namespace NiL.JS.BaseLibrary
         {
             valueType = JSValueType.Bool;
             iValue = value ? 1 : 0;
-            attributes |= JSObjectAttributesInternal.SystemObject;
+            attributes |= JSValueAttributesInternal.SystemObject;
         }
 
         [DoNotEnumerate]
@@ -46,7 +46,7 @@ namespace NiL.JS.BaseLibrary
         {
             valueType = JSValueType.Bool;
             iValue = value != 0 && !double.IsNaN(value) ? 1 : 0;
-            attributes |= JSObjectAttributesInternal.SystemObject;
+            attributes |= JSValueAttributesInternal.SystemObject;
         }
 
         [DoNotEnumerate]
@@ -54,7 +54,7 @@ namespace NiL.JS.BaseLibrary
         {
             valueType = JSValueType.Bool;
             iValue = value != 0 ? 1 : 0;
-            attributes |= JSObjectAttributesInternal.SystemObject;
+            attributes |= JSValueAttributesInternal.SystemObject;
         }
 
         [DoNotEnumerate]
@@ -62,7 +62,7 @@ namespace NiL.JS.BaseLibrary
         {
             valueType = JSValueType.Bool;
             iValue = !string.IsNullOrEmpty(value) ? 1 : 0;
-            attributes |= JSObjectAttributesInternal.SystemObject;
+            attributes |= JSValueAttributesInternal.SystemObject;
         }
 
 #if INLINE

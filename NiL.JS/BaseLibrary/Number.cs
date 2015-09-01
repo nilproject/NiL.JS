@@ -41,11 +41,11 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         static Number()
         {
-            POSITIVE_INFINITY.attributes |= JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.SystemObject;
-            NEGATIVE_INFINITY.attributes |= JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.SystemObject;
-            MAX_VALUE.attributes |= JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.SystemObject;
-            MIN_VALUE.attributes |= JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.SystemObject;
-            NaN.attributes |= JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.SystemObject;
+            POSITIVE_INFINITY.attributes |= JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.NotConfigurable | JSValueAttributesInternal.SystemObject;
+            NEGATIVE_INFINITY.attributes |= JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.NotConfigurable | JSValueAttributesInternal.SystemObject;
+            MAX_VALUE.attributes |= JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.NotConfigurable | JSValueAttributesInternal.SystemObject;
+            MIN_VALUE.attributes |= JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.NotConfigurable | JSValueAttributesInternal.SystemObject;
+            NaN.attributes |= JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.NotConfigurable | JSValueAttributesInternal.SystemObject;
         }
 
         [DoNotEnumerate]
@@ -53,7 +53,7 @@ namespace NiL.JS.BaseLibrary
         {
             valueType = JSValueType.Int;
             iValue = 0;
-            attributes |= JSObjectAttributesInternal.SystemObject | JSObjectAttributesInternal.ReadOnly;
+            attributes |= JSValueAttributesInternal.SystemObject | JSValueAttributesInternal.ReadOnly;
         }
 
         [DoNotEnumerate]
@@ -61,7 +61,7 @@ namespace NiL.JS.BaseLibrary
         {
             valueType = JSValueType.Int;
             iValue = value;
-            attributes |= JSObjectAttributesInternal.SystemObject | JSObjectAttributesInternal.ReadOnly;
+            attributes |= JSValueAttributesInternal.SystemObject | JSValueAttributesInternal.ReadOnly;
         }
 
         [Hidden]
@@ -77,7 +77,7 @@ namespace NiL.JS.BaseLibrary
                 valueType = JSValueType.Double;
                 dValue = value;
             }
-            attributes |= JSObjectAttributesInternal.SystemObject | JSObjectAttributesInternal.ReadOnly;
+            attributes |= JSValueAttributesInternal.SystemObject | JSValueAttributesInternal.ReadOnly;
         }
 
         [DoNotEnumerate]
@@ -85,7 +85,7 @@ namespace NiL.JS.BaseLibrary
         {
             valueType = JSValueType.Double;
             dValue = value;
-            attributes |= JSObjectAttributesInternal.SystemObject | JSObjectAttributesInternal.ReadOnly;
+            attributes |= JSValueAttributesInternal.SystemObject | JSValueAttributesInternal.ReadOnly;
         }
 
         [DoNotEnumerate]
@@ -99,7 +99,7 @@ namespace NiL.JS.BaseLibrary
             int i = 0;
             if (value.Length != 0 && Tools.ParseNumber(value, ref i, out d, 0, Tools.ParseNumberOptions.Default | (Context.CurrentContext.strict ? Tools.ParseNumberOptions.RaiseIfOctal : 0)) && i == value.Length)
                 dValue = d;
-            attributes |= JSObjectAttributesInternal.SystemObject | JSObjectAttributesInternal.ReadOnly;
+            attributes |= JSValueAttributesInternal.SystemObject | JSValueAttributesInternal.ReadOnly;
         }
 
         [DoNotEnumerate]
@@ -107,7 +107,7 @@ namespace NiL.JS.BaseLibrary
         {
             valueType = JSValueType.Double;
             dValue = Tools.JSObjectToDouble(obj[0]);
-            attributes |= JSObjectAttributesInternal.SystemObject | JSObjectAttributesInternal.ReadOnly;
+            attributes |= JSValueAttributesInternal.SystemObject | JSValueAttributesInternal.ReadOnly;
         }
 
         [DoNotEnumerate]

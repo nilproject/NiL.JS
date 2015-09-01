@@ -49,7 +49,7 @@ namespace NiL.JS.Expressions
                 else
                 {
                     if (tempContainer == null)
-                        tempContainer = new JSValue() { attributes = JSObjectAttributesInternal.Temporary };
+                        tempContainer = new JSValue() { attributes = JSValueAttributesInternal.Temporary };
                     tempContainer.valueType = JSValueType.Int;
                     tempContainer.iValue = itemp;
                     return !LessOperator.Check(tempContainer, op, true);
@@ -71,7 +71,7 @@ namespace NiL.JS.Expressions
                 else
                 {
                     if (tempContainer == null)
-                        tempContainer = new JSValue() { attributes = JSObjectAttributesInternal.Temporary };
+                        tempContainer = new JSValue() { attributes = JSValueAttributesInternal.Temporary };
                     tempContainer.valueType = JSValueType.Double;
                     tempContainer.dValue = dtemp;
                     return !LessOperator.Check(tempContainer, op, true);
@@ -80,7 +80,7 @@ namespace NiL.JS.Expressions
             else
             {
                 if (tempContainer == null)
-                    tempContainer = new JSValue() { attributes = JSObjectAttributesInternal.Temporary };
+                    tempContainer = new JSValue() { attributes = JSValueAttributesInternal.Temporary };
                 var temp = tempContainer;
                 temp.Assign(op);
                 tempContainer = null;

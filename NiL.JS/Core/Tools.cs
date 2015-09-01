@@ -666,7 +666,7 @@ namespace NiL.JS.Core
                 }
                 while (res[res.Length - 1] == '0')
                     res.Length--;
-                if (!char.IsDigit(res[res.Length - 1]))
+                if (!Tools.IsDigit(res[res.Length - 1]))
                     res.Length--;
                 res.Append("e+").Append(ts.Length - 1 + count);
                 return res.ToString();
@@ -772,7 +772,13 @@ namespace NiL.JS.Core
             return ParseNumber(code, ref index, out value, 0, options);
         }
 
-        public static bool isDigit(char c)
+        /// <summary>
+        /// Проверяет символ на принадлежность диапазону цифр
+        /// </summary>
+        /// <param name="c"></param>
+        /// <remarks>Использовать вместо этой функции char.IsDigit не получится. Версия char учитывает региональные особенности, что не нужно</remarks>
+        /// <returns></returns>
+        public static bool IsDigit(char c)
         {
             return c >= '0' && c <= '9';
         }
@@ -846,7 +852,7 @@ namespace NiL.JS.Core
                         i += 2;
                         radix = 16;
                     }
-                    else if (radix == 0 && isDigit(code[i + 1]))
+                    else if (radix == 0 && IsDigit(code[i + 1]))
                     {
                         if (raiseOctal)
                             throw new JSException((new SyntaxError("Octal literals not allowed in strict mode")));
@@ -864,7 +870,7 @@ namespace NiL.JS.Core
                 int deg = 0;
                 while (i < code.Length)
                 {
-                    if (!isDigit(code[i]))
+                    if (!IsDigit(code[i]))
                         break;
                     else
                     {
@@ -888,7 +894,7 @@ namespace NiL.JS.Core
                     i++;
                     while (i < code.Length)
                     {
-                        if (!isDigit(code[i]))
+                        if (!IsDigit(code[i]))
                             break;
                         else
                         {
@@ -914,7 +920,7 @@ namespace NiL.JS.Core
                     scount = 0;
                     while (i < code.Length)
                     {
-                        if (!isDigit(code[i]))
+                        if (!IsDigit(code[i]))
                             break;
                         else
                         {
@@ -1145,14 +1151,14 @@ namespace NiL.JS.Core
                             }
                         default:
                             {
-                                if (isDigit(code[i]) && !processRegexComp)
+                                if (IsDigit(code[i]) && !processRegexComp)
                                 {
                                     if (strict)
                                         throw new JSException((new SyntaxError("Octal literals are not allowed in strict mode.")));
                                     var ccode = code[i] - '0';
-                                    if (i + 1 < code.Length && isDigit(code[i + 1]))
+                                    if (i + 1 < code.Length && IsDigit(code[i + 1]))
                                         ccode = ccode * 10 + (code[++i] - '0');
-                                    if (i + 1 < code.Length && isDigit(code[i + 1]))
+                                    if (i + 1 < code.Length && IsDigit(code[i + 1]))
                                         ccode = ccode * 10 + (code[++i] - '0');
                                     res.Append((char)ccode);
                                 }
@@ -1300,6 +1306,11 @@ namespace NiL.JS.Core
             return c >= 0 && c < 16;
         }
 
+        /// <summary>
+        /// Переводит представление числа из системы исчисления с основанием 36 (0-9 A-Z без учёта регистра) в десятичную.
+        /// </summary>
+        /// <param name="p"></param>
+        /// <returns></returns>
 #if INLINE
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
@@ -1307,12 +1318,13 @@ namespace NiL.JS.Core
         {
             return ((p % 'a' % 'A' + 10) % ('0' + 10));
         }
+
         internal static long getLengthOfIterably(JSValue src, bool reassignLen)
         {
             var len = src.GetMember("length", true, false); // тут же проверка на null/undefined с падением если надо
             if (len.valueType == JSValueType.Property)
             {
-                if (reassignLen && (len.attributes & JSObjectAttributesInternal.ReadOnly) == 0)
+                if (reassignLen && (len.attributes & JSValueAttributesInternal.ReadOnly) == 0)
                 {
                     len.valueType = JSValueType.Undefined;
                     len.Assign(((len.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(src, null));
@@ -1441,6 +1453,14 @@ namespace NiL.JS.Core
         public static bool IsEqual(Enum x, Enum y, Enum mask)
         {
             return ((int)(ValueType)x & (int)(ValueType)mask) == ((int)(ValueType)y & (int)(ValueType)mask);
+        }
+
+        internal static JSValue invokeGetter(JSValue getter, JSValue target)
+        {
+            getter = ((getter.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(target, null);
+            if (getter.valueType < JSValueType.Undefined)
+                getter = JSValue.undefined;
+            return getter;
         }
     }
 }

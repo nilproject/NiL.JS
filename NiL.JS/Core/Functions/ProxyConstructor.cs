@@ -76,7 +76,7 @@ namespace NiL.JS.Core.Functions
                 throw new JSException((new TypeError(proxy.hostedType.Name + " can't be created because it's generic type.")));
 #endif
             if (_length == null)
-                _length = new Number(0) { attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum };
+                _length = new Number(0) { attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnum };
 
 #if PORTABLE
             var ctors = typeProxy.hostedType.GetTypeInfo().DeclaredConstructors.ToArray();
@@ -112,7 +112,7 @@ namespace NiL.JS.Core.Functions
                 return res;
             }
             res = __proto__.GetMember(name, forWrite, own);
-            if (own && (res.valueType != JSValueType.Property || (res.attributes & JSObjectAttributesInternal.Field) == 0))
+            if (own && (res.valueType != JSValueType.Property || (res.attributes & JSValueAttributesInternal.Field) == 0))
                 return notExists; // если для записи, то первая ветка всё разрулит и сюда выполнение не придёт
             return res;
         }
@@ -216,7 +216,7 @@ namespace NiL.JS.Core.Functions
                         //if (res.fields == null)
                         //    res.fields = createFields();
                         // из-за того, что GetMember сам дотягивается до объекта, можно попробовать убрать создание филдов
-                        res.attributes |= proxy.hostedType.IsDefined(typeof(ImmutableAttribute), false) ? JSObjectAttributesInternal.Immutable : JSObjectAttributesInternal.None;
+                        res.attributes |= proxy.hostedType.IsDefined(typeof(ImmutableAttribute), false) ? JSValueAttributesInternal.Immutable : JSValueAttributesInternal.None;
                         if (obj is Date)
                             res.valueType = JSValueType.Date;
                     }
@@ -230,7 +230,7 @@ namespace NiL.JS.Core.Functions
                     }
                     res = res ?? new ObjectContainer(obj)
                     {
-                        attributes = JSObjectAttributesInternal.SystemObject | (proxy.hostedType.IsDefined(typeof(ImmutableAttribute), false) ? JSObjectAttributesInternal.Immutable : JSObjectAttributesInternal.None)
+                        attributes = JSValueAttributesInternal.SystemObject | (proxy.hostedType.IsDefined(typeof(ImmutableAttribute), false) ? JSValueAttributesInternal.Immutable : JSValueAttributesInternal.None)
                     };
                 }
                 return res;

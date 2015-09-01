@@ -31,8 +31,8 @@ namespace NiL.JS.Statements
             {
                 var res = source.Evaluate(context);
                 var v = variable.Evaluate(context);
-                if ((v.attributes & JSObjectAttributesInternal.SystemObject) == 0)
-                    v.attributes &= ~JSObjectAttributesInternal.ReadOnly;
+                if ((v.attributes & JSValueAttributesInternal.SystemObject) == 0)
+                    v.attributes &= ~JSValueAttributesInternal.ReadOnly;
                 return res;
             }
 
@@ -40,8 +40,8 @@ namespace NiL.JS.Statements
             {
                 var res = source.EvaluateForAssing(context);
                 var v = variable.Evaluate(context);
-                if ((v.attributes & JSObjectAttributesInternal.SystemObject) == 0)
-                    v.attributes &= ~JSObjectAttributesInternal.ReadOnly;
+                if ((v.attributes & JSValueAttributesInternal.SystemObject) == 0)
+                    v.attributes &= ~JSValueAttributesInternal.ReadOnly;
                 return res;
             }
 
@@ -213,7 +213,7 @@ namespace NiL.JS.Statements
             {
                 initializators[i].Evaluate(context);
                 if (isConst)
-                    (this.variables[i].cacheRes ?? this.variables[i].Get(context, false, this.variables[i].defineDepth)).attributes |= JSObjectAttributesInternal.ReadOnly;
+                    (this.variables[i].cacheRes ?? this.variables[i].Get(context, false, this.variables[i].defineDepth)).attributes |= JSValueAttributesInternal.ReadOnly;
             }
             return JSValue.notExists;
         }

@@ -387,9 +387,9 @@ namespace NiL.JS
             state = state ^ state << 1;
         }
 
-        public void Add(KeyValuePair<TKey, TValue> keyValuePair)
+        public void Add(KeyValuePair<TKey, TValue> item)
         {
-            Add(keyValuePair.Key, keyValuePair.Value);
+            Add(item.Key, item.Value);
         }
 
         public void Add(TKey key, TValue value)
@@ -514,10 +514,10 @@ namespace NiL.JS
             return TryGetValue(key, out temp);
         }
 
-        public bool Contains(KeyValuePair<TKey, TValue> keyValuePair)
+        public bool Contains(KeyValuePair<TKey, TValue> item)
         {
             TValue temp;
-            return TryGetValue(keyValuePair.Key, out temp) && keyValuePair.Value.Equals(temp);
+            return TryGetValue(item.Key, out temp) && item.Value.Equals(temp);
         }
 
         public bool Remove(TKey key)
@@ -621,13 +621,13 @@ namespace NiL.JS
             }
         }
 
-        public bool Remove(KeyValuePair<TKey, TValue> keyValuePair)
+        public bool Remove(KeyValuePair<TKey, TValue> item)
         {
             if (root == null)
                 return false;
             lock (this)
             {
-                var key = keyValuePair.Key;
+                var key = item.Key;
                 Node prev = null;
                 var c = root;
                 stack.Clear();
@@ -636,7 +636,7 @@ namespace NiL.JS
                     var cmp = comparer != null ? comparer.Compare(key, c.key) : key.CompareTo(c.key);
                     if (cmp == 0)
                     {
-                        if (!keyValuePair.Value.Equals(c.value))
+                        if (!item.Value.Equals(c.value))
                             return false;
                         if (c.greater == null)
                         {
@@ -723,16 +723,16 @@ namespace NiL.JS
             }
         }
 
-        public void CopyTo(KeyValuePair<TKey, TValue>[] array, int index)
+        public void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
         {
             if (array == null)
                 throw new ArgumentNullException("array");
-            if (index < 0)
+            if (arrayIndex < 0)
                 throw new ArgumentOutOfRangeException("index");
-            if (array.Length - index < Count)
+            if (array.Length - arrayIndex < Count)
                 throw new ArgumentException("index and array incompatible with count of elements");
             foreach (var kvp in this)
-                array[index++] = kvp;
+                array[arrayIndex++] = kvp;
         }
 
         internal IEnumerator<Node> enumerateReversed(Node node)

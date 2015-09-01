@@ -101,7 +101,7 @@ namespace NiL.JS
                 if (body.localVariables[i].Inititalizator != null)
                     f.Assign(body.localVariables[i].Inititalizator.Evaluate(Context));
                 if (body.localVariables[i].isReadOnly)
-                    body.localVariables[i].cacheRes.attributes |= JSObjectAttributesInternal.ReadOnly;
+                    body.localVariables[i].cacheRes.attributes |= JSValueAttributesInternal.ReadOnly;
                 body.localVariables[i].captured |= stat.ContainsEval;
             }
             var bd = body as CodeNode;

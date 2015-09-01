@@ -32,7 +32,7 @@ namespace NiL.JS.Expressions
         {
             bool res;
             if (tempContainer == null)
-                tempContainer = new JSValue { attributes = JSObjectAttributesInternal.Temporary };
+                tempContainer = new JSValue { attributes = JSValueAttributesInternal.Temporary };
             tempContainer.Assign(first.Evaluate(context));
             var temp = tempContainer;
             tempContainer = null;

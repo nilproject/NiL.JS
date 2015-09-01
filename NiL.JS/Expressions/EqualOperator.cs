@@ -186,7 +186,7 @@ namespace NiL.JS.Expressions
                 case JSValueType.Object:
                     {
                         if (tempContainer == null)
-                            tempContainer = new JSValue() { attributes = JSObjectAttributesInternal.Temporary };
+                            tempContainer = new JSValue() { attributes = JSValueAttributesInternal.Temporary };
                         tempContainer.Assign(temp);
                         temp = tempContainer;
 

@@ -93,14 +93,14 @@ namespace NiL.JS.Core
             if (create
                 && !isDefined
                 && res.valueType == JSValueType.NotExists)
-                res.attributes = JSObjectAttributesInternal.None;
+                res.attributes = JSValueAttributesInternal.None;
             else
             {
                 tp = res.oValue as TypeProxy;
                 if (tp != null)
                     res = tp.prototypeInstance ?? res;
             }
-            if ((res.attributes & JSObjectAttributesInternal.SystemObject) != 0)
+            if ((res.attributes & JSValueAttributesInternal.SystemObject) != 0)
                 return res;
             cacheContext = context;
             cacheRes = res;

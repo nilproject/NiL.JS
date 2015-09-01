@@ -38,8 +38,8 @@ namespace NiL.JS.Core
             else
                 valueType = JSValueType.Object;
             oValue = this;
-            attributes = JSObjectAttributesInternal.SystemObject;
-            attributes |= proto.attributes & JSObjectAttributesInternal.Immutable;
+            attributes = JSValueAttributesInternal.SystemObject;
+            attributes |= proto.attributes & JSValueAttributesInternal.Immutable;
         }
 
         [Hidden]

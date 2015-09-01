@@ -182,7 +182,7 @@ namespace NiL.JS.Expressions
                 else
                 {
                     val = val.CloneImpl();
-                    val.attributes = JSObjectAttributesInternal.None;
+                    val.attributes = JSValueAttributesInternal.None;
                     if (this.fields[i] == "__proto__")
                         res.__proto__ = val.oValue as JSObject;
                     else

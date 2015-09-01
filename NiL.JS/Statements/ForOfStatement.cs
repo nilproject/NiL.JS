@@ -161,7 +161,7 @@ namespace NiL.JS.Statements
                     {
                         if (item == null
                             || !item.IsExist
-                            || (item.attributes & JSObjectAttributesInternal.DoNotEnum) != 0)
+                            || (item.attributes & JSValueAttributesInternal.DoNotEnum) != 0)
                             continue;
                         v.Assign(item);
 #if DEV
@@ -188,7 +188,7 @@ namespace NiL.JS.Statements
                         {
                             if (item.Value == null
                                 || !item.Value.IsExist
-                                || (item.Value.attributes & JSObjectAttributesInternal.DoNotEnum) != 0)
+                                || (item.Value.attributes & JSValueAttributesInternal.DoNotEnum) != 0)
                                 continue;
                             if (processedKeys.Contains(item.Key))
                                 continue;

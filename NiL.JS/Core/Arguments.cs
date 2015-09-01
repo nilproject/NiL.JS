@@ -127,7 +127,7 @@ namespace NiL.JS.Core
         {
             valueType = JSValueType.Object;
             oValue = this;
-            attributes = JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.SystemObject;
+            attributes = JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnum | JSValueAttributesInternal.SystemObject;
         }
 
         public void Add(JSValue arg)
@@ -142,7 +142,7 @@ namespace NiL.JS.Core
 
         protected internal override JSValue GetMember(JSValue name, bool createMember, bool own)
         {
-            createMember &= (attributes & JSObjectAttributesInternal.Immutable) == 0;
+            createMember &= (attributes & JSValueAttributesInternal.Immutable) == 0;
             if (name.valueType == JSValueType.Int)
             {
                 switch (name.iValue)
@@ -186,24 +186,24 @@ namespace NiL.JS.Core
                 case "length":
                     {
                         if (_length == null)
-                            _length = new _LengthContainer(this) { valueType = JSValueType.Int, iValue = length, attributes = JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.Reassign };
+                            _length = new _LengthContainer(this) { valueType = JSValueType.Int, iValue = length, attributes = JSValueAttributesInternal.DoNotEnum | JSValueAttributesInternal.Reassign };
                         return _length;
                     }
                 case "callee":
                     {
-                        if (createMember && (callee.attributes & JSObjectAttributesInternal.SystemObject) != 0)
+                        if (createMember && (callee.attributes & JSValueAttributesInternal.SystemObject) != 0)
                         {
                             callee = callee.CloneImpl();
-                            callee.attributes = JSObjectAttributesInternal.DoNotEnum;
+                            callee.attributes = JSValueAttributesInternal.DoNotEnum;
                         }
                         return (callee ?? (!createMember ? notExists : (callee = new JSValue() { valueType = JSValueType.NotExistsInObject })));
                     }
                 case "caller":
                     {
-                        if (createMember && (caller.attributes & JSObjectAttributesInternal.SystemObject) != 0)
+                        if (createMember && (caller.attributes & JSValueAttributesInternal.SystemObject) != 0)
                         {
                             caller = caller.CloneImpl();
-                            callee.attributes = JSObjectAttributesInternal.DoNotEnum;
+                            callee.attributes = JSValueAttributesInternal.DoNotEnum;
                         }
                         return (caller ?? (!createMember ? notExists : (caller = new JSValue() { valueType = JSValueType.NotExistsInObject })));
                     }
@@ -213,15 +213,15 @@ namespace NiL.JS.Core
 
         protected internal override IEnumerator<string> GetEnumeratorImpl(bool hideNonEnum)
         {
-            if (a0 != null && a0.IsExist && (!hideNonEnum || (a0.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+            if (a0 != null && a0.IsExist && (!hideNonEnum || (a0.attributes & JSValueAttributesInternal.DoNotEnum) == 0))
                 yield return "0";
-            if (a1 != null && a1.IsExist && (!hideNonEnum || (a1.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+            if (a1 != null && a1.IsExist && (!hideNonEnum || (a1.attributes & JSValueAttributesInternal.DoNotEnum) == 0))
                 yield return "1";
-            if (a2 != null && a2.IsExist && (!hideNonEnum || (a2.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+            if (a2 != null && a2.IsExist && (!hideNonEnum || (a2.attributes & JSValueAttributesInternal.DoNotEnum) == 0))
                 yield return "2";
-            if (a3 != null && a3.IsExist && (!hideNonEnum || (a3.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+            if (a3 != null && a3.IsExist && (!hideNonEnum || (a3.attributes & JSValueAttributesInternal.DoNotEnum) == 0))
                 yield return "3";
-            if (a4 != null && a4.IsExist && (!hideNonEnum || (a4.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+            if (a4 != null && a4.IsExist && (!hideNonEnum || (a4.attributes & JSValueAttributesInternal.DoNotEnum) == 0))
                 yield return "4";
             //if (a5 != null && a5.IsExist && (!hideNonEnum || (a5.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
             //    yield return "5";
@@ -245,11 +245,11 @@ namespace NiL.JS.Core
             //    yield return "14";
             //if (a15 != null && a15.isExist && (!hideNonEnum || (a15.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
             //    yield return "15";
-            if (callee != null && callee.IsExist && (!hideNonEnum || (callee.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+            if (callee != null && callee.IsExist && (!hideNonEnum || (callee.attributes & JSValueAttributesInternal.DoNotEnum) == 0))
                 yield return "callee";
-            if (caller != null && callee.IsExist && (!hideNonEnum || (caller.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+            if (caller != null && callee.IsExist && (!hideNonEnum || (caller.attributes & JSValueAttributesInternal.DoNotEnum) == 0))
                 yield return "caller";
-            if (_length != null && _length.IsExist && (!hideNonEnum || (_length.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+            if (_length != null && _length.IsExist && (!hideNonEnum || (_length.attributes & JSValueAttributesInternal.DoNotEnum) == 0))
                 yield return "length";
             var be = getBaseEnumerator(hideNonEnum);
             while (be.MoveNext())
@@ -268,15 +268,15 @@ namespace NiL.JS.Core
                 switch (name.iValue)
                 {
                     case 0:
-                        return a0 == null || ((a0.attributes & JSObjectAttributesInternal.DoNotDelete) == 0) && (a0 = null) == null;
+                        return a0 == null || ((a0.attributes & JSValueAttributesInternal.DoNotDelete) == 0) && (a0 = null) == null;
                     case 1:
-                        return a1 == null || ((a1.attributes & JSObjectAttributesInternal.DoNotDelete) == 0) && (a1 = null) == null;
+                        return a1 == null || ((a1.attributes & JSValueAttributesInternal.DoNotDelete) == 0) && (a1 = null) == null;
                     case 2:
-                        return a2 == null || ((a2.attributes & JSObjectAttributesInternal.DoNotDelete) == 0) && (a2 = null) == null;
+                        return a2 == null || ((a2.attributes & JSValueAttributesInternal.DoNotDelete) == 0) && (a2 = null) == null;
                     case 3:
-                        return a3 == null || ((a3.attributes & JSObjectAttributesInternal.DoNotDelete) == 0) && (a3 = null) == null;
+                        return a3 == null || ((a3.attributes & JSValueAttributesInternal.DoNotDelete) == 0) && (a3 = null) == null;
                     case 4:
-                        return a4 == null || ((a4.attributes & JSObjectAttributesInternal.DoNotDelete) == 0) && (a4 = null) == null;
+                        return a4 == null || ((a4.attributes & JSValueAttributesInternal.DoNotDelete) == 0) && (a4 = null) == null;
                     //case 5:
                     //    return a5 == null || ((a5.attributes & JSObjectAttributesInternal.DoNotDelete) == 0) && (a5 = null) == null;
                     //case 6:
@@ -288,15 +288,15 @@ namespace NiL.JS.Core
             switch (name.ToString())
             {
                 case "0":
-                    return a0 == null || ((a0.attributes & JSObjectAttributesInternal.DoNotDelete) == 0) && (a0 = null) == null;
+                    return a0 == null || ((a0.attributes & JSValueAttributesInternal.DoNotDelete) == 0) && (a0 = null) == null;
                 case "1":
-                    return a1 == null || ((a1.attributes & JSObjectAttributesInternal.DoNotDelete) == 0) && (a1 = null) == null;
+                    return a1 == null || ((a1.attributes & JSValueAttributesInternal.DoNotDelete) == 0) && (a1 = null) == null;
                 case "2":
-                    return a2 == null || ((a2.attributes & JSObjectAttributesInternal.DoNotDelete) == 0) && (a2 = null) == null;
+                    return a2 == null || ((a2.attributes & JSValueAttributesInternal.DoNotDelete) == 0) && (a2 = null) == null;
                 case "3":
-                    return a3 == null || ((a3.attributes & JSObjectAttributesInternal.DoNotDelete) == 0) && (a3 = null) == null;
+                    return a3 == null || ((a3.attributes & JSValueAttributesInternal.DoNotDelete) == 0) && (a3 = null) == null;
                 case "4":
-                    return a4 == null || ((a4.attributes & JSObjectAttributesInternal.DoNotDelete) == 0) && (a4 = null) == null;
+                    return a4 == null || ((a4.attributes & JSValueAttributesInternal.DoNotDelete) == 0) && (a4 = null) == null;
                 //case "5":
                 //    return a5 == null || ((a5.attributes & JSObjectAttributesInternal.DoNotDelete) == 0) && (a5 = null) == null;
                 //case "6":
@@ -325,7 +325,7 @@ namespace NiL.JS.Core
             _length = null;
             valueType = JSValueType.Object;
             oValue = this;
-            attributes = JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.SystemObject;
+            attributes = JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnum | JSValueAttributesInternal.SystemObject;
         }
     }
 }
