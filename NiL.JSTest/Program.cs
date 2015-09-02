@@ -8,6 +8,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading;
 using System.Linq.Expressions;
 using NiL.JS.Core.Functions;
+using NiL.JS.Core.TypeProxing;
 
 namespace NiL.JSTest
 {
@@ -418,7 +419,7 @@ var strObj = new String(""bbq"");
             }));
 #endif
 
-            int mode = -1
+            int mode = 100
                     ;
             switch (mode)
             {

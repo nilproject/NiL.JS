@@ -8,7 +8,7 @@ namespace NiL.JS.Core
 {
     /// <summary>
     /// Объект-контейнер для внешних объектов. 
-    /// Так же используется для типов наследников JSObject, имеющих valueType меньше Object, 
+    /// Так же используется для типов наследников JSValue, имеющих valueType меньше Object, 
     /// с целью имитировать valueType == Object.
     /// </summary>
     /// <remarks>

@@ -1,12 +1,13 @@
 ﻿using System;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Expressions;
+using NiL.JS.Core;
 
 #if !PORTABLE
 using NiL.JS.Core.JIT;
 #endif
 
-namespace NiL.JS.Core
+namespace NiL.JS.Expressions
 {
 #if !PORTABLE
     [Serializable]

@@ -185,9 +185,6 @@
     <Compile Include="..\NiL.JS\Core\JSValue.cs">
       <Link>Core\JSValue.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Core\Modules\AllowUnsafeCallAttribute.cs">
-      <Link>Core\Modules\AllowUnsafeCallAttribute.cs</Link>
-    </Compile>
     <Compile Include="..\NiL.JS\Core\Modules\ArgumentsLengthAttribute.cs">
       <Link>Core\Modules\ArgumentsLengthAttribute.cs</Link>
     </Compile>
@@ -238,9 +235,6 @@
     </Compile>
     <Compile Include="..\NiL.JS\Core\PropertyPair.cs">
       <Link>Core\PropertyPair.cs</Link>
-    </Compile>
-    <Compile Include="..\NiL.JS\Core\RegExpCreateExpression.cs">
-      <Link>Core\RegExpCreateExpression.cs</Link>
     </Compile>
     <Compile Include="..\NiL.JS\Core\RopeString.cs">
       <Link>Core\RopeString.cs</Link>
@@ -308,8 +302,8 @@
     <Compile Include="..\NiL.JS\Expressions\CallOperator.cs">
       <Link>Expressions\CallOperator.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Expressions\ClassExpression.cs">
-      <Link>Expressions\ClassExpression.cs</Link>
+    <Compile Include="..\NiL.JS\Expressions\ClassNotation.cs">
+      <Link>Expressions\ClassNotation.cs</Link>
     </Compile>
     <Compile Include="..\NiL.JS\Expressions\CommaOperator.cs">
       <Link>Expressions\CommaOperator.cs</Link>
@@ -421,6 +415,9 @@
     </Compile>
     <Compile Include="..\NiL.JS\Expressions\ObjectNotation.cs">
       <Link>Expressions\ObjectNotation.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\Expressions\RegExpCreateExpression.cs">
+      <Link>Expressions\RegExpCreateExpression.cs</Link>
     </Compile>
     <Compile Include="..\NiL.JS\Expressions\SetMemberExpression.cs">
       <Link>Expressions\SetMemberExpression.cs</Link>
