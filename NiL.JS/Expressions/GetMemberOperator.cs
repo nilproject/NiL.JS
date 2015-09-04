@@ -54,7 +54,7 @@ namespace NiL.JS.Expressions
             JSValue source = null;
             source = first.Evaluate(context);
             if (source.valueType < JSValueType.Object)
-                source = source.Clone() as JSValue;
+                source = source.CloneImpl();
             else
                 source = source.oValue as JSValue ?? source;
             res = source.GetMember(cachedMemberName ?? second.Evaluate(context), false, false);
@@ -62,7 +62,7 @@ namespace NiL.JS.Expressions
             if (res.valueType == JSValueType.NotExists)
                 res.valueType = JSValueType.NotExistsInObject;
             else if (res.valueType == JSValueType.Property)
-                res = (res.oValue as PropertyPair).get != null ? (res.oValue as PropertyPair).get.Invoke(source, null) : JSValue.notExists;
+                res = Tools.invokeGetter(res, source);
             return res;
         }
 
