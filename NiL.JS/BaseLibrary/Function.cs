@@ -863,8 +863,7 @@ namespace NiL.JS.BaseLibrary
                 _caller = propertiesDummySM;
             else
                 _caller = initiator.caller;
-            if (this.creator.reference.descriptor != null
-                && creator.reference.descriptor.cacheRes == null)
+            if (this.creator.reference.descriptor != null && creator.reference.descriptor.cacheRes == null)
             {
                 creator.reference.descriptor.cacheContext = internalContext.parent;
                 creator.reference.descriptor.cacheRes = this;

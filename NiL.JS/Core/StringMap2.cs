@@ -2,18 +2,20 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace NiL.JS.Core
 {
     public sealed class StringMap2<TValue> : IDictionary<string, TValue>
     {
+        [StructLayout(LayoutKind.Sequential)]
         private struct Record
         {
-            public int next;
+            // Порядок полей не менять!
             public int hash;
             public string key;
+            public int next;
             public TValue value;
-
 #if DEBUG
             public override string ToString()
             {
@@ -89,6 +91,7 @@ namespace NiL.JS.Core
                 records[prewIndex].next = index + 1;
             if (eicount == existedIndexes.Length)
             {
+                // Увеличиваем размер массива с занятыми номерами
                 var newEI = new int[existedIndexes.Length << 1];
                 Array.Copy(existedIndexes, newEI, existedIndexes.Length);
                 existedIndexes = newEI;

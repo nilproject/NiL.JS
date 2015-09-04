@@ -1455,12 +1455,14 @@ namespace NiL.JS.Core
             return ((int)(ValueType)x & (int)(ValueType)mask) == ((int)(ValueType)y & (int)(ValueType)mask);
         }
 
-        internal static JSValue invokeGetter(JSValue getter, JSValue target)
+        internal static JSValue invokeGetter(JSValue property, JSValue target)
         {
-            getter = ((getter.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(target, null);
-            if (getter.valueType < JSValueType.Undefined)
-                getter = JSValue.undefined;
-            return getter;
+            if ((property.oValue as PropertyPair).get == null)
+                return JSValue.undefined;
+            property = (property.oValue as PropertyPair).get.Invoke(target, null);
+            if (property.valueType < JSValueType.Undefined)
+                property = JSValue.undefined;
+            return property;
         }
     }
 }

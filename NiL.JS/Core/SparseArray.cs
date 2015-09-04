@@ -22,8 +22,8 @@ namespace NiL.JS.Core
 
         private static readonly _NavyItem[] emptyData = new _NavyItem[0]; // data dummy. In cases where instance of current class was created, but not used
 
-        private uint allocatedCount;
         private _NavyItem[] navyData;
+        private uint allocatedCount;
         private TValue[] values;
         private uint pseudoLength;
         private ArrayMode mode;
@@ -137,46 +137,43 @@ namespace NiL.JS.Core
                 int bi = 31;
                 for (uint i = 0, ni = 0; ; bi--)
                 {
-                    if (navyData[i].index != _index)
+                    if (navyData[i].index > _index)
                     {
-                        if (navyData[i].index > _index)
+                        if (@default)
                         {
-                            if (@default)
-                            {
-                                if (pseudoLength <= _index)
-                                    pseudoLength = _index + 1; // длина может быть меньше 
-                                // уже записанных элементов если эти элементы имеют значение 
-                                // по-умолчанию и был вызван Trim
-                                return;
-                            }
-                            var oi = navyData[i].index;
-                            var ov = values[i];
-                            navyData[i].index = _index;
-                            values[i] = value;
-                            if (oi < pseudoLength)
-                                this[(int)oi] = ov;
+                            if (pseudoLength <= _index)
+                                pseudoLength = _index + 1; // длина может быть меньше 
+                            // уже записанных элементов если эти элементы имеют значение 
+                            // по-умолчанию и был вызван Trim
                             return;
                         }
-                        else
+                        var oi = navyData[i].index;
+                        var ov = values[i];
+                        navyData[i].index = _index;
+                        values[i] = value;
+                        if (oi < pseudoLength)
+                            this[(int)oi] = ov;
+                        return;
+                    }
+                    else if (navyData[i].index < _index)
+                    {
+                        var b = (_index & (1 << bi)) == 0;
+                        ni = b ? navyData[i].zeroContinue : navyData[i].oneContinue;
+                        if (ni == 0)
                         {
-                            var b = (_index & (1 << bi)) == 0;
-                            ni = b ? navyData[i].zeroContinue : navyData[i].oneContinue;
-                            if (ni == 0)
-                            {
-                                if (pseudoLength <= _index)
-                                    pseudoLength = _index + 1;
-                                if (@default)
-                                    return;
-                                if (b)
-                                    navyData[i].zeroContinue = ni = allocatedCount++;
-                                else
-                                    navyData[i].oneContinue = ni = allocatedCount++;
-                                navyData[ni].index = _index;
-                                values[ni] = value;
+                            if (pseudoLength <= _index)
+                                pseudoLength = _index + 1;
+                            if (@default)
                                 return;
-                            }
-                            i = ni;
+                            if (b)
+                                navyData[i].zeroContinue = ni = allocatedCount++;
+                            else
+                                navyData[i].oneContinue = ni = allocatedCount++;
+                            navyData[ni].index = _index;
+                            values[ni] = value;
+                            return;
                         }
+                        i = ni;
                     }
                     else
                     {
