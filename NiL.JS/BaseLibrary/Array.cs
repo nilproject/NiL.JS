@@ -765,7 +765,7 @@ namespace NiL.JS.BaseLibrary
             if (!self.IsDefinded || (self.valueType >= JSValueType.Object && self.oValue == null))
                 throw new JSException(new TypeError("Can not call Array.prototype.lastIndexOf for null or undefined"));
 
-            var _length = nativeMode ? (self as Array).data.Length : Tools.getLengthOfIterably(self, false);
+            var _length = nativeMode ? src.data.Length : Tools.getLengthOfIterably(self, false);
             var fromIndex = args.length > 1 ? Tools.JSObjectToInt64(args[1], 0, true) : _length - 1;
             if (fromIndex < 0)
                 fromIndex += _length;

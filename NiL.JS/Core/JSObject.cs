@@ -501,7 +501,7 @@ namespace NiL.JS.Core
                                     || (obj.valueType == JSValueType.Int && nlen != obj.iValue)))
                                 throw new JSException(new TypeError("Cannot change length of fixed size array"));
                             if (!(target as NiL.JS.BaseLibrary.Array).setLength(nlen))
-                                throw new JSException(new TypeError("Unable to reduce length because not configurable elements"));
+                                throw new JSException(new TypeError("Unable to reduce length because exists not configurable elements"));
                             value = notExists;
                         }
                     }
@@ -598,10 +598,9 @@ namespace NiL.JS.Core
                 {
                     var ti = 0;
                     if (target is Arguments && int.TryParse(memberName, NumberStyles.Integer, CultureInfo.InvariantCulture, out ti) && ti >= 0 && ti < 16)
-                        (target as Arguments)[ti] = obj = obj.CloneImpl(JSValueAttributesInternal.SystemObject);
+                        (target as Arguments)[ti] = obj = obj.CloneImpl(JSValueAttributesInternal.SystemObject | JSValueAttributesInternal.Argument);
                     else
-                        target.fields[memberName] = obj = obj.CloneImpl(JSValueAttributesInternal.SystemObject);
-                    obj.attributes &= ~JSValueAttributesInternal.Argument;
+                        target.fields[memberName] = obj = obj.CloneImpl(JSValueAttributesInternal.SystemObject | JSValueAttributesInternal.Argument);
                 }
             }
 
@@ -696,22 +695,14 @@ namespace NiL.JS.Core
                 throw new JSException(new TypeError("Object.freeze called on null."));
             var obj = args[0].Value as JSObject ?? args[0].oValue as JSObject;
             obj.attributes |= JSValueAttributesInternal.Immutable;
-            if (obj is NiL.JS.BaseLibrary.Array)
+            for (var e = obj.GetEnumeratorImpl(false); e.MoveNext(); )
             {
-                var arr = obj as NiL.JS.BaseLibrary.Array;
-                foreach (var element in arr.data)
-                    if (element != null && element.IsExist)
-                        element.attributes |= JSValueAttributesInternal.NotConfigurable | JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete;
+                var value = obj[e.Current];
+                if ((value.attributes & JSValueAttributesInternal.SystemObject) == 0)
+                {
+                    value.attributes |= JSValueAttributesInternal.NotConfigurable | JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete;
+                }
             }
-            else if (obj is Arguments)
-            {
-                var arg = obj as Arguments;
-                for (var i = 0; i < 16; i++)
-                    arg[i].attributes |= JSValueAttributesInternal.NotConfigurable | JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete;
-            }
-            if (obj.fields != null)
-                foreach (var f in obj.fields)
-                    f.Value.attributes |= JSValueAttributesInternal.NotConfigurable | JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete;
             return obj;
         }
 
@@ -781,21 +772,14 @@ namespace NiL.JS.Core
             var obj = args[0].Value as JSObject ?? args[0].oValue as JSObject;
             obj.attributes |= JSValueAttributesInternal.Immutable;
             var arr = obj as NiL.JS.BaseLibrary.Array;
-            if (arr != null)
+            for (var e = obj.GetEnumeratorImpl(false); e.MoveNext(); )
             {
-                foreach (var element in arr.data)
-                    if (element != null && element.IsExist)
-                        element.attributes |= JSValueAttributesInternal.NotConfigurable | JSValueAttributesInternal.DoNotDelete;
+                var value = obj[e.Current];
+                if ((value.attributes & JSValueAttributesInternal.SystemObject) == 0)
+                {
+                    value.attributes |= JSValueAttributesInternal.NotConfigurable | JSValueAttributesInternal.DoNotDelete;
+                }
             }
-            else if (obj is Arguments)
-            {
-                var arg = obj as Arguments;
-                for (var i = 0; i < 16; i++)
-                    arg[i].attributes |= JSValueAttributesInternal.NotConfigurable | JSValueAttributesInternal.DoNotDelete;
-            }
-            if (obj.fields != null)
-                foreach (var f in obj.fields)
-                    f.Value.attributes |= JSValueAttributesInternal.NotConfigurable | JSValueAttributesInternal.DoNotDelete;
             return obj;
         }
 

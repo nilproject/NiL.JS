@@ -90,9 +90,9 @@ namespace NiL.JS.Core.Functions
                 }
             }
 
-            if (methodBase is MethodInfo)
+            var methodInfo = methodBase as MethodInfo;
+            if (methodInfo != null)
             {
-                var methodInfo = methodBase as MethodInfo;
                 returnConverter = methodInfo.ReturnParameter.GetCustomAttribute(typeof(Modules.ConvertValueAttribute), false) as Modules.ConvertValueAttribute;
 
                 forceInstance = methodBase.IsDefined(typeof(InstanceMemberAttribute), false);
@@ -482,7 +482,7 @@ namespace NiL.JS.Core.Functions
         {
         }
 
-        private object getTargetObject(JSValue _this, Type targetType)
+        private static object getTargetObject(JSValue _this, Type targetType)
         {
             if (_this == null)
                 return null;
@@ -490,7 +490,6 @@ namespace NiL.JS.Core.Functions
             var res = Tools.convertJStoObj(_this, targetType);
             if (res != null)
                 return res;
-
             return null;
         }
 
@@ -574,7 +573,7 @@ namespace NiL.JS.Core.Functions
                 {
 #endif
                     if (eltype == typeof(byte) && v is ArrayBuffer)
-                        return (v as ArrayBuffer).Data;
+                        return (v as ArrayBuffer).GetData();
                     var ta = v as TypedArray;
                     if (ta != null && ta.ElementType == eltype)
                         return ta.ToNativeArray();

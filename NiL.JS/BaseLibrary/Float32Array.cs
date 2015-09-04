@@ -14,7 +14,7 @@ namespace NiL.JS.BaseLibrary
             get
             {
                 var res = new Element(this, index);
-                res.dValue = BitConverter.ToSingle(buffer.Data, index * BYTES_PER_ELEMENT + byteOffset);
+                res.dValue = BitConverter.ToSingle(buffer.data, index * BYTES_PER_ELEMENT + byteOffset);
                 res.valueType = JSValueType.Double;
                 return res;
             }
@@ -25,17 +25,17 @@ namespace NiL.JS.BaseLibrary
                 var v = BitConverter.GetBytes((float)Tools.JSObjectToDouble(value));
                 if (BitConverter.IsLittleEndian)
                 {
-                    buffer.Data[index * BYTES_PER_ELEMENT + byteOffset + 0] = v[3];
-                    buffer.Data[index * BYTES_PER_ELEMENT + byteOffset + 1] = v[2];
-                    buffer.Data[index * BYTES_PER_ELEMENT + byteOffset + 2] = v[1];
-                    buffer.Data[index * BYTES_PER_ELEMENT + byteOffset + 3] = v[0];
+                    buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 0] = v[3];
+                    buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 1] = v[2];
+                    buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 2] = v[1];
+                    buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 3] = v[0];
                 }
                 else
                 {
-                    buffer.Data[index * BYTES_PER_ELEMENT + byteOffset + 0] = v[0];
-                    buffer.Data[index * BYTES_PER_ELEMENT + byteOffset + 1] = v[1];
-                    buffer.Data[index * BYTES_PER_ELEMENT + byteOffset + 2] = v[2];
-                    buffer.Data[index * BYTES_PER_ELEMENT + byteOffset + 3] = v[3];
+                    buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 0] = v[0];
+                    buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 1] = v[1];
+                    buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 2] = v[2];
+                    buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 3] = v[3];
                 }
             }
         }

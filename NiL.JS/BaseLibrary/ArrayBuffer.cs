@@ -23,8 +23,8 @@ namespace NiL.JS.BaseLibrary
             {
                 this.valueType = JSValueType.Int;
                 this.index = index;
-                this.iValue = parent.Data[index];
-                this.data = parent.Data;
+                this.iValue = parent.data[index];
+                this.data = parent.data;
                 this.attributes |= JSValueAttributesInternal.Reassign;
             }
 
@@ -34,14 +34,7 @@ namespace NiL.JS.BaseLibrary
             }
         }
 
-        [Hidden]
-        public byte[] Data
-        {
-            [Hidden]
-            get;
-            [Hidden]
-            private set;
-        }
+        internal byte[] data;
 
         [DoNotEnumerate]
         public ArrayBuffer()
@@ -60,7 +53,7 @@ namespace NiL.JS.BaseLibrary
         {
             if (data == null)
                 throw new ArgumentNullException();
-            Data = data;
+            this.data = data;
             attributes |= JSValueAttributesInternal.SystemObject;
         }
 
@@ -69,25 +62,25 @@ namespace NiL.JS.BaseLibrary
             [Hidden]
             get
             {
-                return Data.Length;
+                return data.Length;
             }
         }
 
         [Hidden]
         public ArrayBuffer slice(int begin, int end)
         {
-            if (end < begin || begin >= Data.Length || end >= Data.Length)
+            if (end < begin || begin >= data.Length || end >= data.Length)
                 throw new JSException((new RangeError("Invalid begin or end index")));
             var res = new ArrayBuffer(end - begin + 1);
             for (int i = 0, j = begin; j <= end; j++, i++)
-                res.Data[i] = Data[j];
+                res.data[i] = data[j];
             return res;
         }
 
         [Hidden]
         public ArrayBuffer slice(int begin)
         {
-            return slice(begin, Data.Length - 1);
+            return slice(begin, data.Length - 1);
         }
 
         public ArrayBuffer slice(Arguments args)
@@ -98,7 +91,7 @@ namespace NiL.JS.BaseLibrary
             if (l == 0)
                 return this;
             if (l == 1)
-                return slice(Tools.JSObjectToInt32(args[0]), Data.Length - 1);
+                return slice(Tools.JSObjectToInt32(args[0]), data.Length - 1);
             else
                 return slice(Tools.JSObjectToInt32(args[0]), Tools.JSObjectToInt32(args[1]));
         }
@@ -109,12 +102,12 @@ namespace NiL.JS.BaseLibrary
             [Hidden]
             get
             {
-                return Data[index];
+                return data[index];
             }
             [Hidden]
             set
             {
-                Data[index] = value;
+                data[index] = value;
             }
         }
 
@@ -129,7 +122,7 @@ namespace NiL.JS.BaseLibrary
                     throw new JSException((new RangeError("Invalid array index")));
                 if (((index = (int)dindex) == dindex))
                 {
-                    if (index >= Data.Length)
+                    if (index >= data.Length)
                         return undefined;
                     return new Element(index, this);
                 }
@@ -142,8 +135,14 @@ namespace NiL.JS.BaseLibrary
             var be = base.GetEnumerator();
             while (be.MoveNext())
                 yield return be.Current;
-            for (var i = 0; i < Data.Length; i++)
+            for (var i = 0; i < data.Length; i++)
                 yield return i < 16 ? Tools.NumString[i] : i.ToString();
+        }
+
+        [Hidden]
+        public byte[] GetData()
+        {
+            return data;
         }
     }
 }

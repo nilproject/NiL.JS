@@ -82,7 +82,7 @@ namespace NiL.JS.BaseLibrary
             string nstring;
             if (message == null
                 || message.valueType <= JSValueType.Undefined
-                || (mstring = message.ToString()) == "")
+                || string.IsNullOrEmpty((mstring = message.ToString())))
                 return name.ToString()
 #if CALLSTACKTOSTRING
  + Environment.NewLine + callstack
@@ -90,7 +90,7 @@ namespace NiL.JS.BaseLibrary
 ;
             if (name == null
                 || name.valueType <= JSValueType.Undefined
-                || (nstring = name.ToString()) == "")
+                || string.IsNullOrEmpty((nstring = name.ToString())))
                 return mstring
 #if CALLSTACKTOSTRING
  + Environment.NewLine + callstack

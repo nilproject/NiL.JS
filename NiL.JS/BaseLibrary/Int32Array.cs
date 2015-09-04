@@ -24,19 +24,19 @@ namespace NiL.JS.BaseLibrary
                 if (index < 0 || index > length.iValue)
                     throw new JSException(new RangeError());
                 var v = Tools.JSObjectToInt32(value, 0, false);
-                buffer.Data[index * BYTES_PER_ELEMENT + byteOffset + 0] = (byte)v;
-                buffer.Data[index * BYTES_PER_ELEMENT + byteOffset + 1] = (byte)(v >> 8);
-                buffer.Data[index * BYTES_PER_ELEMENT + byteOffset + 2] = (byte)(v >> 16);
-                buffer.Data[index * BYTES_PER_ELEMENT + byteOffset + 3] = (byte)(v >> 24);
+                buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 0] = (byte)v;
+                buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 1] = (byte)(v >> 8);
+                buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 2] = (byte)(v >> 16);
+                buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 3] = (byte)(v >> 24);
             }
         }
 
         private int getValue(int index)
         {
-            return (buffer.Data[index * BYTES_PER_ELEMENT + byteOffset + 0]
-                                | (buffer.Data[index * BYTES_PER_ELEMENT + byteOffset + 1] << 8)
-                                | (buffer.Data[index * BYTES_PER_ELEMENT + byteOffset + 2] << 16)
-                                | (buffer.Data[index * BYTES_PER_ELEMENT + byteOffset + 3] << 24));
+            return (buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 0]
+                                | (buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 1] << 8)
+                                | (buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 2] << 16)
+                                | (buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 3] << 24));
         }
 
         public override int BYTES_PER_ELEMENT

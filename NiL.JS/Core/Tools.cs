@@ -1455,6 +1455,9 @@ namespace NiL.JS.Core
             return ((int)(ValueType)x & (int)(ValueType)mask) == ((int)(ValueType)y & (int)(ValueType)mask);
         }
 
+#if INLINE
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+#endif
         internal static JSValue invokeGetter(JSValue getter, JSValue target)
         {
             getter = ((getter.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(target, null);

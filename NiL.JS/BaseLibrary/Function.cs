@@ -586,7 +586,7 @@ namespace NiL.JS.BaseLibrary
         internal readonly FunctionNotation creator;
         [Hidden]
         [CLSCompliant(false)]
-        internal protected readonly Context context;
+        internal readonly Context context;
         [Hidden]
         public Context Context
         {
@@ -620,7 +620,7 @@ namespace NiL.JS.BaseLibrary
         #region Runtime
         [Hidden]
         [CLSCompliant(false)]
-        internal protected JSValue _prototype;
+        internal JSValue _prototype;
         [Field]
         [DoNotDelete]
         [DoNotEnumerate]

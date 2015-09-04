@@ -37,8 +37,8 @@ namespace NiL.JS.Expressions
         }
         internal _BuildState codeContext;
 
-        protected internal Expression first;
-        protected internal Expression second;
+        internal Expression first;
+        internal Expression second;
 
         public Expression FirstOperand { get { return first; } }
         public Expression SecondOperand { get { return second; } }

@@ -411,7 +411,7 @@ namespace NiL.JS.Core
             //if (!IsExcecuting)
             //    System.Diagnostics.Debug.Fail("Try to get varible from stoped context.");
 #endif
-            if (name.Length == 4
+            if (name.Length == 4 // такое странное решение показало лучшую скорость
                 && name[0] == 't'
                 && name[1] == 'h'
                 && name[2] == 'i'
