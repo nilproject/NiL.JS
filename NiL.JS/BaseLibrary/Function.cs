@@ -601,6 +601,29 @@ namespace NiL.JS.BaseLibrary
             get { return creator.name; }
         }
         [Hidden]
+        internal Number _length = null;
+        [Field]
+        [ReadOnly]
+        [DoNotDelete]
+        [DoNotEnumerate]
+        [NotConfigurable]
+        public virtual JSObject length
+        {
+            [Hidden]
+            get
+            {
+                if (this == null || !typeof(Function).IsAssignableFrom(this.GetType()))
+                    return 0;
+                if (_length == null)
+                {
+                    _length = new Number(0);
+                    _length.iValue = creator.arguments.Length;
+                }
+                _length.attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum;
+                return _length;
+            }
+        }
+        [Hidden]
         public virtual FunctionType Type
         {
             [Hidden]
@@ -613,6 +636,15 @@ namespace NiL.JS.BaseLibrary
             get
             {
                 return creator.body.strict;
+            }
+        }
+        [Hidden]
+        public virtual CodeBlock Body
+        {
+            [Hidden]
+            get
+            {
+                return creator != null ? creator.body : null;
             }
         }
 
@@ -682,31 +714,7 @@ namespace NiL.JS.BaseLibrary
                 _arguments = value;
             }
         }
-
-        [Hidden]
-        internal Number _length = null;
-        [Field]
-        [ReadOnly]
-        [DoNotDelete]
-        [DoNotEnumerate]
-        [NotConfigurable]
-        public virtual JSObject length
-        {
-            [Hidden]
-            get
-            {
-                if (this == null || !typeof(Function).IsAssignableFrom(this.GetType()))
-                    return 0;
-                if (_length == null)
-                {
-                    _length = new Number(0);
-                    _length.iValue = creator.arguments.Length;
-                }
-                _length.attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum;
-                return _length;
-            }
-        }
-
+        
         internal JSObject _caller;
         [Field]
         [DoNotDelete]

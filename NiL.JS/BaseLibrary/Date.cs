@@ -336,6 +336,8 @@ namespace NiL.JS.BaseLibrary
                             {
                                 case 0:
                                     {
+                                        if (month == int.MinValue)
+                                            month = 0;
                                         month = month * 10 + timeStr[j] - '0';
                                         break;
                                     }
@@ -351,6 +353,8 @@ namespace NiL.JS.BaseLibrary
                         {
                             if (!Tools.isDigit(timeStr[j]))
                                 return false;
+                            if (day == int.MinValue)
+                                day = 0;
                             day = day * 10 + timeStr[j] - '0';
                             break;
                         }
@@ -361,11 +365,17 @@ namespace NiL.JS.BaseLibrary
                             hour = hour * 10 + timeStr[j] - '0';
                             break;
                         }
+                    case 's':
+                        {
+                            if (!Tools.isDigit(timeStr[j]))
+                                return false;
+                            seconds = seconds * 10 + timeStr[j] - '0';
+                            break;
+                        }
                     case ':':
                         {
                             if (format[i] != timeStr[j])
                                 return false;
-                            part++;
                             break;
                         }
                     case '/':
@@ -387,9 +397,21 @@ namespace NiL.JS.BaseLibrary
                         {
                             if (format[i] != timeStr[j])
                                 return false;
-                            month = 0;
                             break;
                         }
+                    case 't':
+                        {
+                            part++;
+                            break;
+                        }
+                    case '.':
+                        {
+                            if (part != 1)
+                                return false;
+                            else
+                                break;
+                        }
+                    case 'z': break;
                     default: return false;
                 }
             }
@@ -402,20 +424,23 @@ namespace NiL.JS.BaseLibrary
             if (year < 100)
                 year += (DateTime.Now.Year / 100) * 100;
             time = dateToMilliseconds(year, month - 1, day, hour, minutes, seconds, milliseconds);
-            timeZoneOffset = 0;
+            timeZoneOffset = TimeZoneInfo.Local.GetUtcOffset(DateTime.Now).Ticks / 10000;
+            time += timeZoneOffset;
             return true;
         }
 
         private static bool tryParse(string timeString, out long time, out long tzo)
         {
-            return (parseByFormat("YYYY-MM-DDTHH:MM:SS.SSS", timeString, out time, out tzo)
+            return parseByFormat("YYYY-MM-DDTHH:MM:SS.SSSZ", timeString, out time, out tzo)
+             || parseByFormat("YYYY-MM-DDTHH:MM:SS.SSS", timeString, out time, out tzo)
+             || parseByFormat("YYYY-MM-DDTHH:MM:SSZ", timeString, out time, out tzo)
              || parseByFormat("YYYY-MM-DDTHH:MM:SS", timeString, out time, out tzo)
              || parseByFormat("YYYY-MM-DDTHH:MM", timeString, out time, out tzo)
              || parseByFormat("YYYY-MM-DDTHH", timeString, out time, out tzo)
              || parseByFormat("YYYY-MM-DD", timeString, out time, out tzo)
              || parseByFormat("YYYY-MM", timeString, out time, out tzo)
              || parseByFormat("YYYY", timeString, out time, out tzo)
-             || parseSelf(timeString, out time, out tzo));
+             || parseSelf(timeString, out time, out tzo);
         }
 
         private static bool isLeap(int year)
@@ -1158,7 +1183,7 @@ namespace NiL.JS.BaseLibrary
                 return double.NaN;
             }
         }
-        
+
         [Hidden]
         public override bool Equals(object obj)
         {
