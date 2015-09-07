@@ -602,6 +602,26 @@ namespace NiL.JS.BaseLibrary
             get { return creator.name; }
         }
         [Hidden]
+        internal Number _length = null;
+        [Field]
+        [ReadOnly]
+        [DoNotDelete]
+        [DoNotEnumerate]
+        [NotConfigurable]
+        public virtual JSValue length
+        {
+            [Hidden]
+            get
+            {
+                if (_length == null)
+                {
+                    _length = new Number(0) { attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnum };
+                    _length.iValue = creator.parameters.Length;
+                }
+                return _length;
+            }
+        }
+        [Hidden]
         public virtual FunctionType Type
         {
             [Hidden]
@@ -616,10 +636,18 @@ namespace NiL.JS.BaseLibrary
                 return creator.body.strict;
             }
         }
+        [Hidden]
+        public virtual CodeBlock Body
+        {
+            [Hidden]
+            get
+            {
+                return creator != null ? creator.body : null;
+            }
+        }
 
         #region Runtime
         [Hidden]
-        [CLSCompliant(false)]
         internal JSValue _prototype;
         [Field]
         [DoNotDelete]
@@ -677,27 +705,6 @@ namespace NiL.JS.BaseLibrary
                 if (creator.body.strict)
                     throw new JSException(new TypeError("Property arguments not allowed in strict mode."));
                 _arguments = value;
-            }
-        }
-
-        [Hidden]
-        internal Number _length = null;
-        [Field]
-        [ReadOnly]
-        [DoNotDelete]
-        [DoNotEnumerate]
-        [NotConfigurable]
-        public virtual JSValue length
-        {
-            [Hidden]
-            get
-            {
-                if (_length == null)
-                {
-                    _length = new Number(0) { attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnum };
-                    _length.iValue = creator.parameters.Length;
-                }
-                return _length;
             }
         }
 
