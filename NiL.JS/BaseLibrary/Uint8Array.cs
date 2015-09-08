@@ -22,13 +22,13 @@ namespace NiL.JS.BaseLibrary
             {
                 if (index < 0 || index > length.iValue)
                     throw new JSException(new RangeError());
-                buffer.Data[index + byteOffset] = (byte)Tools.JSObjectToInt32(value, 0, false);
+                buffer.data[index + byteOffset] = (byte)Tools.JSObjectToInt32(value, 0, false);
             }
         }
 
         private byte getValue(int index)
         {
-            return buffer.Data[index + byteOffset];
+            return buffer.data[index + byteOffset];
         }
 
         public override int BYTES_PER_ELEMENT

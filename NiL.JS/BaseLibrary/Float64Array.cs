@@ -25,32 +25,32 @@ namespace NiL.JS.BaseLibrary
                 var v = BitConverter.DoubleToInt64Bits(Tools.JSObjectToDouble(value));
                 if (BitConverter.IsLittleEndian)
                 {
-                    buffer.Data[index * BYTES_PER_ELEMENT + byteOffset + 0] = (byte)(v >> 0);
-                    buffer.Data[index * BYTES_PER_ELEMENT + byteOffset + 1] = (byte)(v >> 8);
-                    buffer.Data[index * BYTES_PER_ELEMENT + byteOffset + 2] = (byte)(v >> 16);
-                    buffer.Data[index * BYTES_PER_ELEMENT + byteOffset + 3] = (byte)(v >> 24);
-                    buffer.Data[index * BYTES_PER_ELEMENT + byteOffset + 4] = (byte)(v >> 32);
-                    buffer.Data[index * BYTES_PER_ELEMENT + byteOffset + 5] = (byte)(v >> 40);
-                    buffer.Data[index * BYTES_PER_ELEMENT + byteOffset + 6] = (byte)(v >> 48);
-                    buffer.Data[index * BYTES_PER_ELEMENT + byteOffset + 7] = (byte)(v >> 56);
+                    buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 0] = (byte)(v >> 0);
+                    buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 1] = (byte)(v >> 8);
+                    buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 2] = (byte)(v >> 16);
+                    buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 3] = (byte)(v >> 24);
+                    buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 4] = (byte)(v >> 32);
+                    buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 5] = (byte)(v >> 40);
+                    buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 6] = (byte)(v >> 48);
+                    buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 7] = (byte)(v >> 56);
                 }
                 else
                 {
-                    buffer.Data[index * BYTES_PER_ELEMENT + byteOffset + 0] = (byte)(v >> 56);
-                    buffer.Data[index * BYTES_PER_ELEMENT + byteOffset + 1] = (byte)(v >> 48);
-                    buffer.Data[index * BYTES_PER_ELEMENT + byteOffset + 2] = (byte)(v >> 40);
-                    buffer.Data[index * BYTES_PER_ELEMENT + byteOffset + 3] = (byte)(v >> 32);
-                    buffer.Data[index * BYTES_PER_ELEMENT + byteOffset + 4] = (byte)(v >> 24);
-                    buffer.Data[index * BYTES_PER_ELEMENT + byteOffset + 5] = (byte)(v >> 16);
-                    buffer.Data[index * BYTES_PER_ELEMENT + byteOffset + 6] = (byte)(v >> 8);
-                    buffer.Data[index * BYTES_PER_ELEMENT + byteOffset + 7] = (byte)(v >> 0);
+                    buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 0] = (byte)(v >> 56);
+                    buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 1] = (byte)(v >> 48);
+                    buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 2] = (byte)(v >> 40);
+                    buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 3] = (byte)(v >> 32);
+                    buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 4] = (byte)(v >> 24);
+                    buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 5] = (byte)(v >> 16);
+                    buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 6] = (byte)(v >> 8);
+                    buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 7] = (byte)(v >> 0);
                 }
             }
         }
 
         private double getValue(int index)
         {
-            return BitConverter.ToDouble(buffer.Data, index * BYTES_PER_ELEMENT + byteOffset);
+            return BitConverter.ToDouble(buffer.data, index * BYTES_PER_ELEMENT + byteOffset);
         }
 
         public override int BYTES_PER_ELEMENT

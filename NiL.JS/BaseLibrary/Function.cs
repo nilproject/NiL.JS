@@ -586,7 +586,7 @@ namespace NiL.JS.BaseLibrary
         internal readonly FunctionNotation creator;
         [Hidden]
         [CLSCompliant(false)]
-        internal protected readonly Context context;
+        internal readonly Context context;
         [Hidden]
         public Context Context
         {
@@ -600,6 +600,26 @@ namespace NiL.JS.BaseLibrary
         {
             [Hidden]
             get { return creator.name; }
+        }
+        [Hidden]
+        internal Number _length = null;
+        [Field]
+        [ReadOnly]
+        [DoNotDelete]
+        [DoNotEnumerate]
+        [NotConfigurable]
+        public virtual JSValue length
+        {
+            [Hidden]
+            get
+            {
+                if (_length == null)
+                {
+                    _length = new Number(0) { attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnum };
+                    _length.iValue = creator.parameters.Length;
+                }
+                return _length;
+            }
         }
         [Hidden]
         public virtual FunctionType Type
@@ -616,11 +636,19 @@ namespace NiL.JS.BaseLibrary
                 return creator.body.strict;
             }
         }
+        [Hidden]
+        public virtual CodeBlock Body
+        {
+            [Hidden]
+            get
+            {
+                return creator != null ? creator.body : null;
+            }
+        }
 
         #region Runtime
         [Hidden]
-        [CLSCompliant(false)]
-        internal protected JSValue _prototype;
+        internal JSValue _prototype;
         [Field]
         [DoNotDelete]
         [DoNotEnumerate]
@@ -677,27 +705,6 @@ namespace NiL.JS.BaseLibrary
                 if (creator.body.strict)
                     throw new JSException(new TypeError("Property arguments not allowed in strict mode."));
                 _arguments = value;
-            }
-        }
-
-        [Hidden]
-        internal Number _length = null;
-        [Field]
-        [ReadOnly]
-        [DoNotDelete]
-        [DoNotEnumerate]
-        [NotConfigurable]
-        public virtual JSValue length
-        {
-            [Hidden]
-            get
-            {
-                if (_length == null)
-                {
-                    _length = new Number(0) { attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnum };
-                    _length.iValue = creator.parameters.Length;
-                }
-                return _length;
             }
         }
 

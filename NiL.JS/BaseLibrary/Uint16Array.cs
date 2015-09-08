@@ -23,14 +23,14 @@ namespace NiL.JS.BaseLibrary
                 if (index < 0 || index > length.iValue)
                     throw new JSException(new RangeError());
                 var v = (ushort)Tools.JSObjectToInt32(value, 0, false);
-                buffer.Data[index * BYTES_PER_ELEMENT + byteOffset] = (byte)v;
-                buffer.Data[index * BYTES_PER_ELEMENT + byteOffset + 1] = (byte)(v >> 8);
+                buffer.data[index * BYTES_PER_ELEMENT + byteOffset] = (byte)v;
+                buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 1] = (byte)(v >> 8);
             }
         }
 
         private ushort getValue(int index)
         {
-            return (ushort)(buffer.Data[index * BYTES_PER_ELEMENT + byteOffset] | (buffer.Data[index * BYTES_PER_ELEMENT + byteOffset + 1] << 8));
+            return (ushort)(buffer.data[index * BYTES_PER_ELEMENT + byteOffset] | (buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 1] << 8));
         }
 
         public override int BYTES_PER_ELEMENT

@@ -9,8 +9,8 @@ namespace NiL.JS.Core.JIT
     {
         public readonly Stack<LabelTarget> BreakLabels;
         public readonly Stack<LabelTarget> ContinueLabels;
-        public Dictionary<string, LabelTarget> NamedBreakLabels;
-        public Dictionary<string, LabelTarget> NamedContinueLabels;
+        public readonly Dictionary<string, LabelTarget> NamedBreakLabels;
+        public readonly Dictionary<string, LabelTarget> NamedContinueLabels;
 
         public TreeBuildingState()
         {

@@ -87,7 +87,7 @@ namespace NiL.JS.Core
          * и переменных в контектсе выполнения.
          * Преймущества от такого подхода существенные: нет необходимости создавать эти самые контейнеры свойств 
          * со своими аттрибутами, нет нужды создавать ворох классов для реализации оператора присваивания, 
-         * чтобы поддерживать весь тот ворох возможных случаев lvalue. Один JSValue умеет копировать значение 
+         * чтобы поддерживать весь тот букет возможных случаев lvalue. Один JSValue умеет копировать значение 
          * с другого JSValue'а и, если потребуется, переходить в режим посредника, перенапрвляя вызовы GetMember, 
          * SetMember и DeleteMember. Однако есть и недостатки - необходимо указывать, с какой целью запрашивается 
          * значение. В случаях, когда значение запрашивается для записи, необходимо убедиться, что эта операция 
@@ -143,7 +143,7 @@ namespace NiL.JS.Core
             [Hidden]
             set
             {
-                this.GetMember(name, true, true).Assign(value ?? JSObject.undefined);
+                this.GetMember(name, true, true).Assign(value ?? JSValue.undefined);
             }
         }
 
@@ -293,9 +293,9 @@ namespace NiL.JS.Core
                 case JSValueType.String:
                     return TypeProxy.GetPrototype(typeof(NiL.JS.BaseLibrary.String));
             }
-            if (valueType >= JSValueType.Object && oValue != null && oValue != this)
+            if (oValue != null && oValue != this)
             {
-                var rojso = oValue as JSObject;
+                var rojso = oValue as JSValue;
                 if (rojso != null)
                     return rojso.GetDefaultPrototype() ?? Null;
                 else
@@ -532,7 +532,7 @@ namespace NiL.JS.Core
         [Hidden]
         public override bool Equals(object obj)
         {
-            if (object.ReferenceEquals(obj as JSObject, null))
+            if (!(obj is JSObject))
                 return false;
             if (object.ReferenceEquals(obj, this))
                 return true;
@@ -928,7 +928,7 @@ namespace NiL.JS.Core
         [DoNotEnumerate]
         public virtual JSValue toLocaleString()
         {
-            var self = this.oValue as JSObject ?? this;
+            var self = this.oValue as JSValue ?? this;
             if (self.valueType >= JSValueType.Object && self.oValue == null)
                 throw new JSException(new TypeError("toLocaleString calling on null."));
             if (self.valueType <= JSValueType.Undefined)
@@ -1171,7 +1171,7 @@ namespace NiL.JS.Core
 #endif
         #endregion
 
-        #region Члены IComparable<JSObject>
+        #region Члены IComparable<JSValue>
 
         int IComparable<JSValue>.CompareTo(JSValue other)
         {

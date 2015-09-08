@@ -56,11 +56,6 @@ namespace NiL.JS.Statements
             };
         }
 
-        private static WithContext initContext(Context parent, JSValue obj)
-        {
-            return new WithContext(obj, parent);
-        }
-
         internal override JSValue Evaluate(Context context)
         {
 #if DEV
