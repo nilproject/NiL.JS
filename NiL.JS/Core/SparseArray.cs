@@ -143,11 +143,23 @@ namespace NiL.JS.Core
                     {
                         if (@default)
                         {
-                            if (pseudoLength <= _index)
+                            if (_index >= pseudoLength)
                                 pseudoLength = _index + 1;
                             return;
                         }
-                        rebuildToSparse();
+                        if (_index < 8)
+                        {
+                            // Покрывает много тех случаев, когда относительно маленький массив заполняют с конца. 
+                            // Кто-то верит, что это должно работать быстрее. 
+                            // Вот именно из-за таких кусков кода так и может показаться.
+                            // Не время для попыток исправить мир
+                            ensureCapacity(8);
+                            pseudoLength = _index + 1;
+                            this[index] = value;
+                            return;
+                        }
+                        else
+                            rebuildToSparse();
                     }
                     else
                     {
@@ -226,21 +238,6 @@ namespace NiL.JS.Core
                     }
                 }
             }
-        }
-
-        private void rebuildToSparse()
-        {
-            allocatedCount = 0;
-            mode = ArrayMode.Sparse;
-            var len = pseudoLength;
-            if (len == 0)
-            {
-                ensureCapacity(0);
-                return;
-            }
-            navyData = new _NavyItem[values.Length];
-            for (var i = 0; i < len; i++)
-                this[i] = values[i];
         }
 
         #endregion
@@ -550,6 +547,21 @@ namespace NiL.JS.Core
                     newData[i] = navyData[i];
                 navyData = newData;
             }
+        }
+
+        private void rebuildToSparse()
+        {
+            allocatedCount = 0;
+            mode = ArrayMode.Sparse;
+            var len = pseudoLength;
+            if (len == 0)
+            {
+                ensureCapacity(0);
+                return;
+            }
+            navyData = new _NavyItem[values.Length];
+            for (var i = 0; i < len; i++)
+                this[i] = values[i];
         }
     }
 }

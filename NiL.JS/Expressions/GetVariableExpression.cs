@@ -79,14 +79,18 @@ namespace NiL.JS.Expressions
         internal override JSValue Evaluate(Context context)
         {
             var res = descriptor.Get(context, false, functionDepth);
-            if (res.valueType == JSValueType.NotExists)
+            switch (res.valueType)
             {
-                if (!suspendThrow)
-                    throwRefError();
-            }
-            else if (res.valueType == JSValueType.Property)
-            {
-                return processProp(context, res);
+                case JSValueType.NotExists:
+                    {
+                        if (!suspendThrow)
+                            throwRefError();
+                        break;
+                    }
+                case JSValueType.Property:
+                    {
+                        return processProp(context, res);
+                    }
             }
             return res;
         }
