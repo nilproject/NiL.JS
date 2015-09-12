@@ -265,16 +265,16 @@ namespace NiL.JS.Core.Functions
             {
                 for (; ; )
                 {
-                    if (methodInfo.IsStatic && parameters[0].ParameterType == typeof(JSObject))
+                    if (methodInfo.IsStatic && parameters[0].ParameterType == typeof(JSValue))
                     {
                         if (parameters.Length == 1)
                         {
-                            tree = Expression.Call(methodInfo, Expression.Convert(target, typeof(JSObject)));
+                            tree = Expression.Call(methodInfo, Expression.Convert(target, typeof(JSValue)));
                             break;
                         }
                         else if (parameters.Length == 2 && parameters[1].ParameterType == typeof(Arguments))
                         {
-                            tree = Expression.Call(methodInfo, Expression.Convert(target, typeof(JSObject)), argsSource);
+                            tree = Expression.Call(methodInfo, Expression.Convert(target, typeof(JSValue)), argsSource);
                             break;
                         }
                     }
