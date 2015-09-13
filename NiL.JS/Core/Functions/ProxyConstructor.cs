@@ -8,6 +8,13 @@ using NiL.JS.Core.TypeProxing;
 
 namespace NiL.JS.Core.Functions
 {
+    public enum RequireNewKeywordLevel
+    {
+        Both = 0,
+        OnlyWithNew,
+        OnlyWithoutNew
+    }
+
 #if !PORTABLE
     [Serializable]
 #endif
@@ -23,6 +30,15 @@ namespace NiL.JS.Core.Functions
         private static readonly object[] _objectA = new object[0];
         internal readonly TypeProxy proxy;
         private MethodProxy[] constructors;
+
+        [Hidden]
+        public RequireNewKeywordLevel RequireNewKeywordLevel
+        {
+            [Hidden]
+            get;
+            [Hidden]
+            set;
+        }
 
         [Hidden]
         public override string name
@@ -70,11 +86,19 @@ namespace NiL.JS.Core.Functions
             proxy = typeProxy;
 #if PORTABLE
             if (proxy.hostedType.GetTypeInfo().ContainsGenericParameters)
-                throw new JSException((new TypeError(proxy.hostedType.Name + " can't be created because it's generic type.")));
 #else
             if (proxy.hostedType.ContainsGenericParameters)
-                throw new JSException((new TypeError(proxy.hostedType.Name + " can't be created because it's generic type.")));
 #endif
+                throw new JSException((new TypeError(proxy.hostedType.Name + " can't be created because it's generic type.")));
+            var ownew = typeProxy.hostedType.IsDefined(typeof(RequireNewKeywordAttribute), true);
+            var owonew = typeProxy.hostedType.IsDefined(typeof(DisallowNewKeywordAttribute), true);
+            if (ownew && owonew)
+                throw new InvalidOperationException("Unacceptably use of " + typeof(RequireNewKeywordAttribute).Name + " and " + typeof(DisallowNewKeywordAttribute).Name + " for same type.");
+            if (ownew)
+                RequireNewKeywordLevel = Functions.RequireNewKeywordLevel.OnlyWithNew;
+            if (owonew)
+                RequireNewKeywordLevel = Functions.RequireNewKeywordLevel.OnlyWithoutNew;
+
             if (_length == null)
                 _length = new Number(0) { attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum };
 
@@ -87,7 +111,7 @@ namespace NiL.JS.Core.Functions
 #endif
             for (int i = 0; i < ctors.Length; i++)
             {
-                if (!ctors[i].IsDefined(typeof(HiddenAttribute), false) || ctors[i].IsDefined(typeof(ForceUse), true))
+                if (!ctors[i].IsDefined(typeof(HiddenAttribute), false) || ctors[i].IsDefined(typeof(ForceUseAttribute), true))
                 {
                     ctorsL.Add(new MethodProxy(ctors[i]));
                     length.iValue = System.Math.Max(ctorsL[ctorsL.Count - 1]._length.iValue, _length.iValue);
@@ -131,8 +155,19 @@ namespace NiL.JS.Core.Functions
                 bynew = thisOverride.oValue == typeof(Expressions.New) as object;
             try
             {
-                if (!bynew && proxy.hostedType == typeof(Date))
-                    return new Date().ToString();
+                if (bynew)
+                {
+                    if (RequireNewKeywordLevel == Functions.RequireNewKeywordLevel.OnlyWithoutNew)
+                        throw new JSException(new TypeError("Type \"" + proxy.hostedType.Name + "\" can not be crated with new keyword"));
+                }
+                else
+                {
+                    if (RequireNewKeywordLevel == Functions.RequireNewKeywordLevel.OnlyWithNew)
+                        throw new JSException(new TypeError("Type \"" + proxy.hostedType.Name + "\" can not be crated without new keyword"));
+
+                    if (proxy.hostedType == typeof(Date))
+                        return new Date().ToString();
+                }
                 object obj;
                 if (proxy.hostedType == typeof(NiL.JS.BaseLibrary.Array))
                 {

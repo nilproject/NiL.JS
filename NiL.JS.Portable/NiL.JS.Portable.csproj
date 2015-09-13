@@ -185,6 +185,9 @@
     <Compile Include="..\NiL.JS\Core\Modules\ConvertValueAttribute.cs">
       <Link>Core\Modules\ConvertValueAttribute.cs</Link>
     </Compile>
+    <Compile Include="..\NiL.JS\Core\Modules\DisallowNewKeywordAttribute.cs">
+      <Link>Core\Modules\DisallowNewKeywordAttribute.cs</Link>
+    </Compile>
     <Compile Include="..\NiL.JS\Core\Modules\DoNotEnumerateAttribute.cs">
       <Link>Core\Modules\DoNotEnumerateAttribute.cs</Link>
     </Compile>
@@ -194,8 +197,8 @@
     <Compile Include="..\NiL.JS\Core\Modules\FieldAttribute.cs">
       <Link>Core\Modules\FieldAttribute.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Core\Modules\ForceUse.cs">
-      <Link>Core\TypeProxing\ForceUse.cs</Link>
+    <Compile Include="..\NiL.JS\Core\Modules\ForceUseAttribute.cs">
+      <Link>Core\TypeProxing\ForceUseAttribute.cs</Link>
     </Compile>
     <Compile Include="..\NiL.JS\Core\Modules\HiddenAttribute.cs">
       <Link>Core\Modules\HiddenAttribute.cs</Link>
@@ -214,6 +217,9 @@
     </Compile>
     <Compile Include="..\NiL.JS\Core\Modules\ReadOnlyAttribute.cs">
       <Link>Core\Modules\ReadOnlyAttribute.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\Core\Modules\RequireNewKeywordAttribute.cs">
+      <Link>Core\Modules\RequireNewKeywordAttribute.cs</Link>
     </Compile>
     <Compile Include="..\NiL.JS\Core\ObjectContainer.cs">
       <Link>Core\ObjectContainer.cs</Link>

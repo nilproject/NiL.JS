@@ -440,13 +440,24 @@ namespace NiL.JS.Core.Functions
                         if (paramsConverters != null && paramsConverters[i] != null)
                             args[i] = paramsConverters[i].To(args[i]);
                     }
+                    if (args[i] == null)
+                    {
+                        args[i] = parameters[i].DefaultValue;
+
 #if PORTABLE
-                    if (args[i] == null && parameters[i].ParameterType.GetTypeInfo().IsValueType)
-                        args[i] = Activator.CreateInstance(parameters[i].ParameterType);
+                        if (args[i] != null && args[i].GetType().FullName == "System.DBNull")
+                        {
+                            if (parameters[i].ParameterType.GetTypeInfo().IsValueType)
 #else
-                    if (args[i] == null && parameters[i].ParameterType.IsValueType)
-                        args[i] = Activator.CreateInstance(parameters[i].ParameterType);
+                        if (args[i] is DBNull)
+                        {
+                            if (parameters[i].ParameterType.IsValueType)
 #endif
+                                args[i] = Activator.CreateInstance(parameters[i].ParameterType);
+                            else
+                                args[i] = null;
+                        }
+                    }
                 }
                 return TypeProxing.TypeProxy.Proxy(InvokeImpl(self, args, null));
             }

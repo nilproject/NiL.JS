@@ -21,7 +21,7 @@ namespace NiL.JS.Core.Modules
 #if !WRC
     public
 #endif
- sealed class ForceUse : Attribute
+ sealed class ForceUseAttribute : Attribute
     {
     }
 }
