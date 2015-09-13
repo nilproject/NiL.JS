@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core;
-using NiL.JS.Core.TypeProxing;
+using NiL.JS.Core.Interop;
 using NiL.JS.Expressions;
 
 namespace NiL.JS.Statements

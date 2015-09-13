@@ -7,7 +7,7 @@ using NiL.JS.Core;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Functions;
 using NiL.JS.Core.Modules;
-using NiL.JS.Core.TypeProxing;
+using NiL.JS.Core.Interop;
 using NiL.JS.Statements;
 
 namespace NiL.JS.Expressions

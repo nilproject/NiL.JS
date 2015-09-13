@@ -6,7 +6,7 @@ using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Functions;
 using NiL.JS.Core.Modules;
 
-namespace NiL.JS.Core.TypeProxing
+namespace NiL.JS.Core.Interop
 {
     public sealed class NativeList : CustomType
     {

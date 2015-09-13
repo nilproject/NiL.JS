@@ -8,7 +8,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading;
 using System.Linq.Expressions;
 using NiL.JS.Core.Functions;
-using NiL.JS.Core.TypeProxing;
+using NiL.JS.Core.Interop;
 
 namespace NiL.JSTest
 {
@@ -320,24 +320,6 @@ for (var i = 0; i < 10000000; )
             Console.WriteLine(sw.Elapsed);
         }
 
-        private struct Struct
-        {
-            public T test<T>(T n) where T : class
-            {
-                return (T)(object)n;
-            }
-
-            public void type(Type type)
-            {
-
-            }
-        }
-
-        private void test()
-        {
-            new Struct().test<object>(null);
-        }
-
         private static void staticAnalyzer(string fileName)
         {
             var f = new FileStream("ftest.js", FileMode.Open, FileAccess.Read);
@@ -374,18 +356,21 @@ for (var i = 0; i < 10000000; )
             sw.Stop();
         }
 
+        [RequireNewKeyword]
+        private struct Struct
+        {
+            public string funcWithDefaultValues(string x = "hello")
+            {
+                return x;
+            }
+        }
+
         private static void testEx()
         {
             var t = new Script(@"
-console.log(function(){
-var strObj = new String(""bbq"");
-        var preCheck = Object.isExtensible(strObj);
-        Object.preventExtensions(strObj);
-
-        strObj.exName = 2;
-        return preCheck && !strObj.hasOwnProperty(""exName"");
-}());
+console.log(new Struct().funcWithDefaultValues());
 ");
+            t.Context.AttachModule(typeof(Struct));
             t.Invoke();
         }
 
@@ -419,7 +404,7 @@ var strObj = new String(""bbq"");
             }));
 #endif
 
-            int mode = 101
+            int mode = 3
                     ;
             switch (mode)
             {

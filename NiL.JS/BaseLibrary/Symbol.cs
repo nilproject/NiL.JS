@@ -5,12 +5,14 @@ using System.Text;
 using System.Threading.Tasks;
 using NiL.JS.Core;
 using NiL.JS.Core.Modules;
+using NiL.JS.Core.Interop;
 
 namespace NiL.JS.BaseLibrary
 {
 #if !PORTABLE
     [Serializable]
 #endif
+    [DisallowNewKeyword]
     public sealed class Symbol : JSObject
     {
         private static readonly Dictionary<string, Symbol> symbolsCache = new Dictionary<string, Symbol>();

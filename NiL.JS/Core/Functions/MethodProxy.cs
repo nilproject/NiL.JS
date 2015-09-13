@@ -5,7 +5,9 @@ using System.Reflection;
 using System.Reflection.Emit;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Modules;
-using NiL.JS.Core.TypeProxing;
+using NiL.JS.Core.Interop;
+using System.ComponentModel;
+using System.Runtime.InteropServices;
 
 namespace NiL.JS.Core.Functions
 {
@@ -398,15 +400,23 @@ namespace NiL.JS.Core.Functions
                         if (paramsConverters != null && paramsConverters[i] != null)
                             args[i] = paramsConverters[i].To(args[i]);
                     }
+                    if (args[i] == null)
+                    {
+                        args[i] = parameters[i].DefaultValue;
+                        if (args[i] is DBNull)
+                        {
 #if PORTABLE
-                    if (args[i] == null && parameters[i].ParameterType.GetTypeInfo().IsValueType)
-                        args[i] = Activator.CreateInstance(parameters[i].ParameterType);
+                            if (parameters[i].ParameterType.GetTypeInfo().IsValueType)
 #else
-                    if (args[i] == null && parameters[i].ParameterType.IsValueType)
-                        args[i] = Activator.CreateInstance(parameters[i].ParameterType);
+                            if (parameters[i].ParameterType.IsValueType)
 #endif
+                                args[i] = Activator.CreateInstance(parameters[i].ParameterType);
+                            else
+                                args[i] = null;
+                        }
+                    }
                 }
-                return TypeProxing.TypeProxy.Proxy(InvokeImpl(self, args, null));
+                return Interop.TypeProxy.Proxy(InvokeImpl(self, args, null));
             }
         }
 
@@ -525,7 +535,7 @@ namespace NiL.JS.Core.Functions
 
         public override NiL.JS.Core.JSValue Invoke(NiL.JS.Core.JSValue thisBind, NiL.JS.Core.Arguments args)
         {
-            return TypeProxing.TypeProxy.Proxy(InvokeImpl(thisBind, null, args));
+            return Interop.TypeProxy.Proxy(InvokeImpl(thisBind, null, args));
         }
 
         private static object[] convertArray(NiL.JS.BaseLibrary.Array array)

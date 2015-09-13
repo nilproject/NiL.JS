@@ -8,7 +8,7 @@ using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Modules;
 using NiL.JS.Core.Functions;
 
-namespace NiL.JS.Core.TypeProxing
+namespace NiL.JS.Core.Interop
 {
 #if !PORTABLE
     [Serializable]

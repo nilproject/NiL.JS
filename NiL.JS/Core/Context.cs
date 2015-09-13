@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Threading;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Functions;
-using NiL.JS.Core.TypeProxing;
+using NiL.JS.Core.Interop;
 using NiL.JS.Statements;
 
 namespace NiL.JS.Core

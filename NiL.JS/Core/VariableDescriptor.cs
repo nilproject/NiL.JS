@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using NiL.JS.Core.TypeProxing;
+using NiL.JS.Core.Interop;
 using NiL.JS.Expressions;
 
 namespace NiL.JS.Core

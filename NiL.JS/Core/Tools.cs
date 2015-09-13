@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using NiL.JS.BaseLibrary;
-using NiL.JS.Core.TypeProxing;
+using NiL.JS.Core.Interop;
 
 namespace NiL.JS.Core
 {

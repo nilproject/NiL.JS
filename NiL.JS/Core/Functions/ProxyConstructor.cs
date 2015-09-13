@@ -4,10 +4,17 @@ using System.Collections.Generic;
 using System.Reflection;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Modules;
-using NiL.JS.Core.TypeProxing;
+using NiL.JS.Core.Interop;
 
 namespace NiL.JS.Core.Functions
 {
+    public enum RequireNewKeywordLevel
+    {
+        Both = 0,
+        OnlyWithNew,
+        OnlyWithoutNew
+    }
+
 #if !PORTABLE
     [Serializable]
 #endif
@@ -19,10 +26,19 @@ namespace NiL.JS.Core.Functions
         // Если нужен более строгий подбор, то количество проходов нужно
         // уменьшить до одного
         private const int passesCount = 2;
-
+        
         private static readonly object[] _objectA = new object[0];
         internal readonly TypeProxy proxy;
         private MethodProxy[] constructors;
+
+        [Hidden]
+        public RequireNewKeywordLevel RequireNewKeywordLevel
+        {
+            [Hidden]
+            get;
+            [Hidden]
+            set;
+        }
 
         [Hidden]
         public override string name
@@ -75,6 +91,15 @@ namespace NiL.JS.Core.Functions
             if (proxy.hostedType.ContainsGenericParameters)
                 throw new JSException((new TypeError(proxy.hostedType.Name + " can't be created because it's generic type.")));
 #endif
+            var ownew = typeProxy.hostedType.IsDefined(typeof(RequireNewKeywordAttribute));
+            var owonew = typeProxy.hostedType.IsDefined(typeof(DisallowNewKeywordAttribute));
+            if (ownew && owonew)
+                throw new InvalidOperationException("Unacceptably use of " + typeof(RequireNewKeywordAttribute).Name + " and " + typeof(DisallowNewKeywordAttribute).Name + " for same type.");
+            if (ownew)
+                RequireNewKeywordLevel = Functions.RequireNewKeywordLevel.OnlyWithNew;
+            if (owonew)
+                RequireNewKeywordLevel = Functions.RequireNewKeywordLevel.OnlyWithoutNew;
+
             if (_length == null)
                 _length = new Number(0) { attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnum };
 
@@ -128,15 +153,18 @@ namespace NiL.JS.Core.Functions
             bool bynew = false;
             if (thisOverride != null)
                 bynew = thisOverride.oValue == typeof(Expressions.NewOperator) as object;
-            if (!bynew)
+            if (bynew)
             {
-                if (proxy.hostedType == typeof(Date))
-                    return new Date().ToString();
+                if (RequireNewKeywordLevel == Functions.RequireNewKeywordLevel.OnlyWithoutNew)
+                    throw new TypeError("Type \"" + proxy.hostedType.Name + "\" can not be crated with new keyword").Wrap();
             }
             else
             {
-                if (proxy.hostedType == typeof(Symbol))
-                    throw new TypeError("Symbol cannot be created as an object").Wrap();
+                if (RequireNewKeywordLevel == Functions.RequireNewKeywordLevel.OnlyWithNew)
+                    throw new TypeError("Type \"" + proxy.hostedType.Name + "\" can not be crated without new keyword").Wrap();
+
+                if (proxy.hostedType == typeof(Date))
+                    return new Date().ToString();
             }
             try
             {

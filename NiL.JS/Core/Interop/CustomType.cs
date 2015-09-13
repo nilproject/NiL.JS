@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using NiL.JS.Core.Modules;
 
-namespace NiL.JS.Core.TypeProxing
+namespace NiL.JS.Core.Interop
 {
     /// <summary>
     /// Базовый объект для создания пользовательских встроенных типов. 

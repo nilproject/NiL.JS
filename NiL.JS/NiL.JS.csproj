@@ -242,8 +242,8 @@
     <Compile Include="Core\RopeString.cs" />
     <Compile Include="Core\SparseArray.cs" />
     <Compile Include="Core\StringMap2.cs" />
-    <Compile Include="Core\TypeProxing\AllowNullArgumentsAttribute.cs" />
-    <Compile Include="Core\TypeProxing\CustomType.cs" />
+    <Compile Include="Core\Interop\AllowNullArgumentsAttribute.cs" />
+    <Compile Include="Core\Interop\CustomType.cs" />
     <Compile Include="BaseLibrary\Date.cs" />
     <Compile Include="BaseLibrary\RegExp.cs" />
     <Compile Include="BaseLibrary\URIError.cs" />
@@ -264,12 +264,14 @@
     <Compile Include="Core\JIT\TreeBuildingState.cs" />
     <Compile Include="Core\Modules\FieldAttribute.cs" />
     <Compile Include="Core\Modules\NotConfigurable.cs" />
+    <Compile Include="Core\Interop\DisallowNewKeywordAttribute.cs" />
+    <Compile Include="Core\Interop\RequireNewKeywordAttribute.cs" />
     <Compile Include="Expressions\RegExpCreateExpression.cs" />
-    <Compile Include="Core\TypeProxing\InstanceMemberAttribute.cs" />
-    <Compile Include="Core\TypeProxing\NativeList.cs" />
+    <Compile Include="Core\Interop\InstanceMemberAttribute.cs" />
+    <Compile Include="Core\Interop\NativeList.cs" />
     <Compile Include="Core\ObjectContainer.cs" />
     <Compile Include="Core\VariableDescriptor.cs" />
-    <Compile Include="Core\TypeProxing\GenericType.cs" />
+    <Compile Include="Core\Interop\GenericType.cs" />
     <Compile Include="Core\VariableReference.cs" />
     <Compile Include="Core\JSException.cs" />
     <Compile Include="Core\Modules\DoNotEnumerateAttribute.cs" />
@@ -289,7 +291,7 @@
     <Compile Include="Core\Modules\ImmutableAttribute.cs" />
     <Compile Include="BaseLibrary\Math.cs" />
     <Compile Include="Core\Tools.cs" />
-    <Compile Include="Core\TypeProxing\TypeProxy.cs" />
+    <Compile Include="Core\Interop\TypeProxy.cs" />
     <Compile Include="Core\Modules\ReadOnlyAttribute.cs" />
     <Compile Include="Core\Functions\ProxyConstructor.cs" />
     <Compile Include="Core\Visitor.cs" />
