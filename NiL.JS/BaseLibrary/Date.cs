@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using NiL.JS.Core;
-using NiL.JS.Core.Modules;
+using NiL.JS.Core.Interop;
 
 namespace NiL.JS.BaseLibrary
 {

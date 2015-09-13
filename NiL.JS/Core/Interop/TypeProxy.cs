@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using NiL.JS.BaseLibrary;
-using NiL.JS.Core.Modules;
+using NiL.JS.Core.Interop;
 using NiL.JS.Core.Functions;
 
 namespace NiL.JS.Core.Interop
@@ -438,7 +438,7 @@ namespace NiL.JS.Core.Interop
                                         {
                                             return Proxy(field.GetValue(field.IsStatic ? null : thisBind.Value));
                                         }),
-                                        !m[0].IsDefined(typeof(Modules.ReadOnlyAttribute), false) ? new ExternalFunction((thisBind, a) =>
+                                        !m[0].IsDefined(typeof(Interop.ReadOnlyAttribute), false) ? new ExternalFunction((thisBind, a) =>
                                         {
                                             field.SetValue(field.IsStatic ? null : thisBind.Value, a[0].Value);
                                             return null;

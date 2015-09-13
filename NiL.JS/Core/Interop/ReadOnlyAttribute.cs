@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace NiL.JS.Core.Modules
+namespace NiL.JS.Core.Interop
 {
     /// <summary>
     /// Значение поля, помеченного данным аттрибутом, будет неизменяемо для скрипта.

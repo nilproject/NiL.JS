@@ -1,6 +1,6 @@
 using NiL.JS.BaseLibrary;
 using System;
-using NiL.JS.Core.Modules;
+using NiL.JS.Core.Interop;
 using NiL.JS.Core;
 
 namespace NiL.JS.BaseLibrary

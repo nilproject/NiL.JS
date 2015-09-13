@@ -6,7 +6,7 @@ using System.IO;
 using System.Linq;
 using NiL.JS;
 using NiL.JS.Core;
-using NiL.JS.Core.TypeProxing;
+using NiL.JS.Core.Interop;
 using Windows.ApplicationModel;
 using Windows.Storage;
 using Windows.Storage.Pickers;

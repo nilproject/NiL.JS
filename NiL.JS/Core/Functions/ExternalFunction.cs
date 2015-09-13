@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Reflection;
 using NiL.JS.BaseLibrary;
-using NiL.JS.Core.Modules;
+using NiL.JS.Core.Interop;
 
 namespace NiL.JS.Core.Functions
 {

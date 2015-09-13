@@ -1,5 +1,5 @@
 ﻿using NiL.JS.Core;
-using NiL.JS.Core.Modules;
+using NiL.JS.Core.Interop;
 using System;
 using System.Collections.Generic;
 using System.IO;

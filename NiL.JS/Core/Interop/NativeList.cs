@@ -4,7 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Functions;
-using NiL.JS.Core.Modules;
+using NiL.JS.Core.Interop;
 
 namespace NiL.JS.Core.Interop
 {

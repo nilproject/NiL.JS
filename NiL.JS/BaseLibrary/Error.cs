@@ -3,7 +3,7 @@
 using System;
 using System.Text;
 using NiL.JS.Core;
-using NiL.JS.Core.Modules;
+using NiL.JS.Core.Interop;
 
 namespace NiL.JS.BaseLibrary
 {

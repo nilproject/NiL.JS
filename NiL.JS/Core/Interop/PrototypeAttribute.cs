@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace NiL.JS.Core.Modules
+namespace NiL.JS.Core.Interop
 {
     /// <summary>
     /// Указывает, какой тип необходимо представить в цепочке прототипов объекта-прослойки для помеченного типа.

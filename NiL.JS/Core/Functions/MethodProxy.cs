@@ -4,7 +4,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Reflection.Emit;
 using NiL.JS.BaseLibrary;
-using NiL.JS.Core.Modules;
+using NiL.JS.Core.Interop;
 using NiL.JS.Core.Interop;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
@@ -75,19 +75,19 @@ namespace NiL.JS.Core.Functions
 
             if (_length == null)
                 _length = new Number(0) { attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnum | JSValueAttributesInternal.SystemObject };
-            var pc = methodBase.GetCustomAttributes(typeof(Modules.ArgumentsLengthAttribute), false).ToArray();
+            var pc = methodBase.GetCustomAttributes(typeof(Interop.ArgumentsLengthAttribute), false).ToArray();
             if (pc.Length != 0)
-                _length.iValue = (pc[0] as Modules.ArgumentsLengthAttribute).Count;
+                _length.iValue = (pc[0] as Interop.ArgumentsLengthAttribute).Count;
             else
                 _length.iValue = parameters.Length;
 
             for (int i = 0; i < parameters.Length; i++)
             {
-                var t = parameters[i].GetCustomAttribute(typeof(Modules.ConvertValueAttribute)) as Modules.ConvertValueAttribute;
+                var t = parameters[i].GetCustomAttribute(typeof(Interop.ConvertValueAttribute)) as Interop.ConvertValueAttribute;
                 if (t != null)
                 {
                     if (paramsConverters == null)
-                        paramsConverters = new Modules.ConvertValueAttribute[parameters.Length];
+                        paramsConverters = new Interop.ConvertValueAttribute[parameters.Length];
                     paramsConverters[i] = t;
                 }
             }
@@ -95,7 +95,7 @@ namespace NiL.JS.Core.Functions
             var methodInfo = methodBase as MethodInfo;
             if (methodInfo != null)
             {
-                returnConverter = methodInfo.ReturnParameter.GetCustomAttribute(typeof(Modules.ConvertValueAttribute), false) as Modules.ConvertValueAttribute;
+                returnConverter = methodInfo.ReturnParameter.GetCustomAttribute(typeof(Interop.ConvertValueAttribute), false) as Interop.ConvertValueAttribute;
 
                 forceInstance = methodBase.IsDefined(typeof(InstanceMemberAttribute), false);
 

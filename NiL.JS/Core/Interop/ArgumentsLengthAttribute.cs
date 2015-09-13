@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace NiL.JS.Core.Modules
+namespace NiL.JS.Core.Interop
 {
     /// <summary>
     /// Служит для передачи в среду выполнения скрипта информации о количестве ожидаемых параметров метода.

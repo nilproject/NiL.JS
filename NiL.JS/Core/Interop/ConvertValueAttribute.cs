@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace NiL.JS.Core.Modules
+namespace NiL.JS.Core.Interop
 {
 #if !PORTABLE
     [Serializable]

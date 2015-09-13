@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using NiL.JS.Core;
-using NiL.JS.Core.Modules;
+using NiL.JS.Core.Interop;
 using NiL.JS.Core.Interop;
 
 namespace NiL.JS.BaseLibrary

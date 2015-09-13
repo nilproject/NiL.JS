@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace NiL.JS.Core.Modules
+namespace NiL.JS.Core.Interop
 {
     /// <summary>
     /// Объект-прослойка, созданный для типа, помеченного данным аттрибутом, 
@@ -10,7 +10,7 @@ namespace NiL.JS.Core.Modules
     [Serializable]
 #endif
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false, Inherited = false)]
-    public sealed class ImmutablePrototypeAttribute : Attribute
+    public sealed class ImmutableAttribute : Attribute
     {
     }
 }

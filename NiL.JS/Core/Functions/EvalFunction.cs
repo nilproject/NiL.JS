@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using NiL.JS.BaseLibrary;
-using NiL.JS.Core.Modules;
+using NiL.JS.Core.Interop;
 
 namespace NiL.JS.Core.Functions
 {

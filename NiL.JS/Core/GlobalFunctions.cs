@@ -2,7 +2,7 @@
 using System.Text;
 using System.Threading;
 using NiL.JS.BaseLibrary;
-using NiL.JS.Core.Modules;
+using NiL.JS.Core.Interop;
 using NiL.JS.Core.Interop;
 
 namespace NiL.JS.Core

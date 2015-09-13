@@ -179,17 +179,53 @@
     <Compile Include="..\NiL.JS\Core\Interop\AllowNullArgumentsAttribute.cs">
       <Link>Core\Interop\AllowNullArgumentsAttribute.cs</Link>
     </Compile>
+    <Compile Include="..\NiL.JS\Core\Interop\ArgumentsLengthAttribute.cs">
+      <Link>Core\Interop\ArgumentsLengthAttribute.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\Core\Interop\ConvertValueAttribute.cs">
+      <Link>Core\Interop\ConvertValueAttribute.cs</Link>
+    </Compile>
     <Compile Include="..\NiL.JS\Core\Interop\CustomType.cs">
       <Link>Core\Interop\CustomType.cs</Link>
     </Compile>
     <Compile Include="..\NiL.JS\Core\Interop\DisallowNewKeywordAttribute.cs">
       <Link>Core\Interop\DisallowNewKeywordAttribute.cs</Link>
     </Compile>
+    <Compile Include="..\NiL.JS\Core\Interop\DoNotEnumerateAttribute.cs">
+      <Link>Core\Interop\DoNotEnumerateAttribute.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\Core\Interop\DontDeleteAttribute.cs">
+      <Link>Core\Interop\DontDeleteAttribute.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\Core\Interop\FieldAttribute.cs">
+      <Link>Core\Interop\FieldAttribute.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\Core\Interop\ForceUseAttribute.cs">
+      <Link>Core\Interop\ForceUseAttribute.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\Core\Interop\HiddenAttribute.cs">
+      <Link>Core\Interop\HiddenAttribute.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\Core\Interop\ImmutableAttribute.cs">
+      <Link>Core\Interop\ImmutableAttribute.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\Core\Interop\ImmutablePrototypeAttribute.cs">
+      <Link>Core\Interop\ImmutablePrototypeAttribute.cs</Link>
+    </Compile>
     <Compile Include="..\NiL.JS\Core\Interop\InstanceMemberAttribute.cs">
       <Link>Core\Interop\InstanceMemberAttribute.cs</Link>
     </Compile>
     <Compile Include="..\NiL.JS\Core\Interop\NativeList.cs">
       <Link>Core\Interop\NativeList.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\Core\Interop\NotConfigurable.cs">
+      <Link>Core\Interop\NotConfigurable.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\Core\Interop\PrototypeAttribute.cs">
+      <Link>Core\Interop\PrototypeAttribute.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\Core\Interop\ReadOnlyAttribute.cs">
+      <Link>Core\Interop\ReadOnlyAttribute.cs</Link>
     </Compile>
     <Compile Include="..\NiL.JS\Core\Interop\RequireNewKeywordAttribute.cs">
       <Link>Core\Interop\RequireNewKeywordAttribute.cs</Link>
@@ -205,42 +241,6 @@
     </Compile>
     <Compile Include="..\NiL.JS\Core\JSValue.cs">
       <Link>Core\JSValue.cs</Link>
-    </Compile>
-    <Compile Include="..\NiL.JS\Core\Modules\ArgumentsLengthAttribute.cs">
-      <Link>Core\Modules\ArgumentsLengthAttribute.cs</Link>
-    </Compile>
-    <Compile Include="..\NiL.JS\Core\Modules\ConvertValueAttribute.cs">
-      <Link>Core\Modules\ConvertValueAttribute.cs</Link>
-    </Compile>
-    <Compile Include="..\NiL.JS\Core\Modules\DoNotEnumerateAttribute.cs">
-      <Link>Core\Modules\DoNotEnumerateAttribute.cs</Link>
-    </Compile>
-    <Compile Include="..\NiL.JS\Core\Modules\DontDeleteAttribute.cs">
-      <Link>Core\Modules\DontDeleteAttribute.cs</Link>
-    </Compile>
-    <Compile Include="..\NiL.JS\Core\Modules\FieldAttribute.cs">
-      <Link>Core\Modules\FieldAttribute.cs</Link>
-    </Compile>
-    <Compile Include="..\NiL.JS\Core\Modules\ForceUseAttribute.cs">
-      <Link>Core\Modules\ForceUseAttribute.cs</Link>
-    </Compile>
-    <Compile Include="..\NiL.JS\Core\Modules\HiddenAttribute.cs">
-      <Link>Core\Modules\HiddenAttribute.cs</Link>
-    </Compile>
-    <Compile Include="..\NiL.JS\Core\Modules\ImmutableAttribute.cs">
-      <Link>Core\Modules\ImmutableAttribute.cs</Link>
-    </Compile>
-    <Compile Include="..\NiL.JS\Core\Modules\ImmutablePrototypeAttribute.cs">
-      <Link>Core\Modules\ImmutablePrototypeAttribute.cs</Link>
-    </Compile>
-    <Compile Include="..\NiL.JS\Core\Modules\NotConfigurable.cs">
-      <Link>Core\Modules\NotConfigurable.cs</Link>
-    </Compile>
-    <Compile Include="..\NiL.JS\Core\Modules\PrototypeAttribute.cs">
-      <Link>Core\Modules\PrototypeAttribute.cs</Link>
-    </Compile>
-    <Compile Include="..\NiL.JS\Core\Modules\ReadOnlyAttribute.cs">
-      <Link>Core\Modules\ReadOnlyAttribute.cs</Link>
     </Compile>
     <Compile Include="..\NiL.JS\Core\ObjectContainer.cs">
       <Link>Core\ObjectContainer.cs</Link>
