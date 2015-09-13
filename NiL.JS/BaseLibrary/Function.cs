@@ -585,7 +585,6 @@ namespace NiL.JS.BaseLibrary
 
         internal readonly FunctionNotation creator;
         [Hidden]
-        [CLSCompliant(false)]
         internal readonly Context context;
         [Hidden]
         public Context Context

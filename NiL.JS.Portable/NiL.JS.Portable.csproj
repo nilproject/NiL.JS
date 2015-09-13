@@ -176,6 +176,27 @@
     <Compile Include="..\NiL.JS\Core\GlobalObject.cs">
       <Link>Core\GlobalObject.cs</Link>
     </Compile>
+    <Compile Include="..\NiL.JS\Core\Interop\AllowNullArgumentsAttribute.cs">
+      <Link>Core\Interop\AllowNullArgumentsAttribute.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\Core\Interop\CustomType.cs">
+      <Link>Core\Interop\CustomType.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\Core\Interop\DisallowNewKeywordAttribute.cs">
+      <Link>Core\Interop\DisallowNewKeywordAttribute.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\Core\Interop\InstanceMemberAttribute.cs">
+      <Link>Core\Interop\InstanceMemberAttribute.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\Core\Interop\NativeList.cs">
+      <Link>Core\Interop\NativeList.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\Core\Interop\RequireNewKeywordAttribute.cs">
+      <Link>Core\Interop\RequireNewKeywordAttribute.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\Core\Interop\TypeProxy.cs">
+      <Link>Core\Interop\TypeProxy.cs</Link>
+    </Compile>
     <Compile Include="..\NiL.JS\Core\JSException.cs">
       <Link>Core\JSException.cs</Link>
     </Compile>
@@ -200,8 +221,8 @@
     <Compile Include="..\NiL.JS\Core\Modules\FieldAttribute.cs">
       <Link>Core\Modules\FieldAttribute.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Core\Modules\ForceUse.cs">
-      <Link>Core\TypeProxing\ForceUse.cs</Link>
+    <Compile Include="..\NiL.JS\Core\Modules\ForceUseAttribute.cs">
+      <Link>Core\Modules\ForceUseAttribute.cs</Link>
     </Compile>
     <Compile Include="..\NiL.JS\Core\Modules\HiddenAttribute.cs">
       <Link>Core\Modules\HiddenAttribute.cs</Link>
@@ -247,21 +268,6 @@
     </Compile>
     <Compile Include="..\NiL.JS\Core\Tools.cs">
       <Link>Core\Tools.cs</Link>
-    </Compile>
-    <Compile Include="..\NiL.JS\Core\TypeProxing\AllowNullArgumentsAttribute.cs">
-      <Link>Core\TypeProxing\AllowNullArgumentsAttribute.cs</Link>
-    </Compile>
-    <Compile Include="..\NiL.JS\Core\TypeProxing\CustomType.cs">
-      <Link>Core\TypeProxing\CustomType.cs</Link>
-    </Compile>
-    <Compile Include="..\NiL.JS\Core\TypeProxing\InstanceMemberAttribute.cs">
-      <Link>Core\TypeProxing\InstanceMemberAttribute.cs</Link>
-    </Compile>
-    <Compile Include="..\NiL.JS\Core\TypeProxing\NativeList.cs">
-      <Link>Core\TypeProxing\NativeList.cs</Link>
-    </Compile>
-    <Compile Include="..\NiL.JS\Core\TypeProxing\TypeProxy.cs">
-      <Link>Core\TypeProxing\TypeProxy.cs</Link>
     </Compile>
     <Compile Include="..\NiL.JS\Core\VariableDescriptor.cs">
       <Link>Core\VariableDescriptor.cs</Link>

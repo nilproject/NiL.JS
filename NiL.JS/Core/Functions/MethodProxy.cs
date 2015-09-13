@@ -403,11 +403,14 @@ namespace NiL.JS.Core.Functions
                     if (args[i] == null)
                     {
                         args[i] = parameters[i].DefaultValue;
-                        if (args[i] is DBNull)
-                        {
+
 #if PORTABLE
+                        if (args[i] != null && args[i].GetType().FullName == "System.DBNull")
+                        {
                             if (parameters[i].ParameterType.GetTypeInfo().IsValueType)
 #else
+                        if (args[i] is DBNull)
+                        {
                             if (parameters[i].ParameterType.IsValueType)
 #endif
                                 args[i] = Activator.CreateInstance(parameters[i].ParameterType);

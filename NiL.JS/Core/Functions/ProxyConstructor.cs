@@ -91,8 +91,8 @@ namespace NiL.JS.Core.Functions
             if (proxy.hostedType.ContainsGenericParameters)
                 throw new JSException((new TypeError(proxy.hostedType.Name + " can't be created because it's generic type.")));
 #endif
-            var ownew = typeProxy.hostedType.IsDefined(typeof(RequireNewKeywordAttribute));
-            var owonew = typeProxy.hostedType.IsDefined(typeof(DisallowNewKeywordAttribute));
+            var ownew = typeProxy.hostedType.IsDefined(typeof(RequireNewKeywordAttribute), true);
+            var owonew = typeProxy.hostedType.IsDefined(typeof(DisallowNewKeywordAttribute), true);
             if (ownew && owonew)
                 throw new InvalidOperationException("Unacceptably use of " + typeof(RequireNewKeywordAttribute).Name + " and " + typeof(DisallowNewKeywordAttribute).Name + " for same type.");
             if (ownew)
@@ -112,7 +112,7 @@ namespace NiL.JS.Core.Functions
 #endif
             for (int i = 0; i < ctors.Length; i++)
             {
-                if (!ctors[i].IsDefined(typeof(HiddenAttribute), false) || ctors[i].IsDefined(typeof(ForceUse), true))
+                if (!ctors[i].IsDefined(typeof(HiddenAttribute), false) || ctors[i].IsDefined(typeof(ForceUseAttribute), true))
                 {
                     ctorsL.Add(new MethodProxy(ctors[i]));
                     length.iValue = System.Math.Max(ctorsL[ctorsL.Count - 1]._length.iValue, _length.iValue);

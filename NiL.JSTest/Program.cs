@@ -359,7 +359,7 @@ for (var i = 0; i < 10000000; )
         [RequireNewKeyword]
         private struct Struct
         {
-            public string funcWithDefaultValues(string x = "hello")
+            public string funcWithDefaultValues(string x)
             {
                 return x;
             }
