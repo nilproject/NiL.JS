@@ -5,9 +5,6 @@ using System.Reflection;
 using System.Reflection.Emit;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Interop;
-using NiL.JS.Core.Interop;
-using System.ComponentModel;
-using System.Runtime.InteropServices;
 
 namespace NiL.JS.Core.Functions
 {

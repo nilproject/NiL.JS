@@ -64,12 +64,14 @@ namespace NiL.JS.Expressions
         internal override JSValue Evaluate(Context context)
         {
             var f = first.Evaluate(context);
-            var temp = tempContainer ?? (tempContainer = new JSValue() { attributes = JSValueAttributesInternal.Temporary });
+            var temp = tempContainer;
+            tempContainer = null;
+            if (temp == null)
+                temp = new JSValue { attributes = JSValueAttributesInternal.Temporary };
             temp.valueType = f.valueType;
             temp.iValue = f.iValue;
             temp.dValue = f.dValue;
             temp.oValue = f.oValue;
-            tempContainer = null;
             Impl(temp, temp, second.Evaluate(context));
             tempContainer = temp;
             return temp;

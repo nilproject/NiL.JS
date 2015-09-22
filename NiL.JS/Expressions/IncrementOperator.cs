@@ -5,11 +5,11 @@ using NiL.JS.BaseLibrary;
 
 namespace NiL.JS.Expressions
 {
-        public enum IncrimentType
-        {
-            Preincriment,
-            Postincriment
-        }
+    public enum IncrimentType
+    {
+        Preincriment,
+        Postincriment
+    }
 
 #if !PORTABLE
     [Serializable]
@@ -69,18 +69,23 @@ namespace NiL.JS.Expressions
             Function setter = null;
             JSValue res = null;
             var val = first.EvaluateForAssing(context);
+            Arguments args = null;
             if (val.valueType == JSValueType.Property)
             {
-                setter = (val.oValue as PropertyPair).set;
+                var ppair = val.oValue as PropertyPair;
+                setter = ppair.set;
                 if (context.strict && setter == null)
-                    throw new JSException(new TypeError("Can not increment property \"" + (first) + "\" without setter."));
-                val = (val.oValue as PropertyPair).get.Invoke(context.objectSource, null).CloneImpl();
-                val.attributes = 0;
+                    raiseErrorProp();
+                args = new Arguments();
+                if (ppair.get == null)
+                    val = JSValue.undefined.CloneImpl(unchecked((JSValueAttributesInternal)(-1)));
+                else
+                    val = ppair.get.Invoke(context.objectSource, args).CloneImpl(unchecked((JSValueAttributesInternal)(-1)));
             }
             else if ((val.attributes & JSValueAttributesInternal.ReadOnly) != 0)
             {
                 if (context.strict)
-                    throw new JSException(new TypeError("Can not deccriment readonly \"" + (first) + "\""));
+                    raiseErrorValue();
                 val = val.CloneImpl();
             }
             switch (val.valueType)
@@ -92,12 +97,7 @@ namespace NiL.JS.Expressions
                     }
                 case JSValueType.String:
                     {
-                        double resd;
-                        int i = 0;
-                        if (!Tools.ParseNumber(val.oValue.ToString(), i, out resd, Tools.ParseNumberOptions.Default))
-                            resd = double.NaN;
-                        val.valueType = JSValueType.Double;
-                        val.dValue = resd;
+                        Tools.JSObjectToNumber(val, val);
                         break;
                     }
                 case JSValueType.Object:
@@ -114,20 +114,15 @@ namespace NiL.JS.Expressions
                                 }
                             case JSValueType.String:
                                 {
-                                    double resd;
-                                    int i = 0;
-                                    if (!Tools.ParseNumber(val.oValue.ToString(), i, out resd, Tools.ParseNumberOptions.Default))
-                                        resd = double.NaN;
-                                    val.valueType = JSValueType.Double;
-                                    val.dValue = resd;
+                                    Tools.JSObjectToNumber(val, val);
                                     break;
                                 }
                             case JSValueType.Date:
                             case JSValueType.Function:
                             case JSValueType.Object: // null
                                 {
-                                    val.iValue = 0;
                                     val.valueType = JSValueType.Int;
+                                    val.iValue = 0;
                                     break;
                                 }
                         }
@@ -152,8 +147,8 @@ namespace NiL.JS.Expressions
                     {
                         if (val.iValue == 0x7FFFFFFF)
                         {
-                            val.dValue = val.iValue + 1.0;
                             val.valueType = JSValueType.Double;
+                            val.dValue = val.iValue + 1.0;
                         }
                         else
                             val.iValue++;
@@ -171,12 +166,9 @@ namespace NiL.JS.Expressions
                         val.dValue = double.NaN;
                         break;
                     }
-                default:
-                    throw new NotImplementedException();
             }
             if (setter != null)
             {
-                var args = new Arguments();
                 args.length = 1;
                 args[0] = val;
                 setter.Invoke(context.objectSource, args);
@@ -186,11 +178,21 @@ namespace NiL.JS.Expressions
             return res;
         }
 
+        private void raiseErrorValue()
+        {
+            throw new TypeError("Can not increment readonly \"" + (first) + "\"").Wrap();
+        }
+
+        private void raiseErrorProp()
+        {
+            throw new TypeError("Can not increment property \"" + (first) + "\" without setter.").Wrap();
+        }
+
         internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             codeContext = state;
 
-            Parser.Build(ref first, depth + 1,variables, state, message, statistic, opts);
+            Parser.Build(ref first, depth + 1, variables, state, message, statistic, opts);
             if (depth <= 1 && second != null)
                 second = null;
             var f = first as VariableReference ?? ((first is GetValueForAssignmentOperator) ? (first as GetValueForAssignmentOperator).Source as VariableReference : null);

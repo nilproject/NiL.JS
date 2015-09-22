@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using NiL.JS.BaseLibrary;
-using NiL.JS.Core.Interop;
 using NiL.JS.Core.Interop;
 
 namespace NiL.JS.Core

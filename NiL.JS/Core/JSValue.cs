@@ -2,12 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 using NiL.JS.BaseLibrary;
-using NiL.JS.Core.Interop;
 using NiL.JS.Core.Interop;
 
 namespace NiL.JS.Core
@@ -147,12 +143,11 @@ namespace NiL.JS.Core
             }
         }
 
+        internal JSValueAttributesInternal attributes;
         internal JSValueType valueType;
         internal int iValue;
         internal double dValue;
         internal object oValue;
-
-        internal JSValueAttributesInternal attributes;
 
         [Hidden]
         public virtual object Value
@@ -754,13 +749,13 @@ namespace NiL.JS.Core
 #endif
             if (this == value || (attributes & (JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.SystemObject)) != 0)
                 return;
+            this.attributes =
+                (this.attributes & ~JSValueAttributesInternal.PrivateAttributes)
+                | (value.attributes & JSValueAttributesInternal.PrivateAttributes);
             this.valueType = value.valueType | JSValueType.Undefined;
             this.iValue = value.iValue;
             this.dValue = value.dValue;
             this.oValue = value.oValue;
-            this.attributes =
-                (this.attributes & ~JSValueAttributesInternal.PrivateAttributes)
-                | (value.attributes & JSValueAttributesInternal.PrivateAttributes);
         }
 
         [Hidden]

@@ -1,15 +1,12 @@
 ﻿using System;
-using System.Reflection;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
-using System.Threading;
-using NiL.JS.Core.Interop;
+using NiL.JS.Core;
+using NiL.JS.Core.Functions;
 using NiL.JS.Core.Interop;
 using NiL.JS.Expressions;
 using NiL.JS.Statements;
-using NiL.JS.Core.Functions;
-using NiL.JS.Core;
 
 namespace NiL.JS.BaseLibrary
 {
@@ -27,6 +24,16 @@ namespace NiL.JS.BaseLibrary
         AnonymousFunction,
         Generator,
         Method
+    }
+
+#if !PORTABLE
+    [Serializable]
+#endif
+    public enum RequireNewKeywordLevel
+    {
+        Both = 0,
+        OnlyWithNew,
+        OnlyWithoutNew
     }
 
 #if !PORTABLE
@@ -645,6 +652,15 @@ namespace NiL.JS.BaseLibrary
             }
         }
 
+        [Hidden]
+        public virtual RequireNewKeywordLevel RequireNewKeywordLevel
+        {
+            [Hidden]
+            get;
+            [Hidden]
+            set;
+        }
+
         #region Runtime
         [Hidden]
         internal JSValue _prototype;
@@ -987,13 +1003,13 @@ namespace NiL.JS.BaseLibrary
                     var i = creator.body.localVariables.Length;
                     for (; i-- > 0; )
                     {
-                        creator.body.localVariables[i].cacheRes = null;
                         creator.body.localVariables[i].cacheContext = null;
+                        creator.body.localVariables[i].cacheRes = null;
                     }
                     for (i = creator.parameters.Length; i-- > 0; )
                     {
-                        creator.parameters[i].cacheRes = null;
                         creator.parameters[i].cacheContext = null;
+                        creator.parameters[i].cacheRes = null;
                     }
                 }
             }
@@ -1041,11 +1057,12 @@ namespace NiL.JS.BaseLibrary
                     a6 = null,
                     a7 = null; // Вместо кучи, выделяем память на стеке
 
-            if (creator.parameters.Length != arguments.Length)
+            var argumentsCount = arguments.Length;
+            if (creator.parameters.Length != argumentsCount)
                 throw new ArgumentException("Invalid arguments count");
-            if (arguments.Length > 8)
+            if (argumentsCount > 8)
                 throw new ArgumentException("To many arguments");
-            if (arguments.Length == 0)
+            if (argumentsCount == 0)
                 return;
 
             /*
@@ -1059,25 +1076,25 @@ namespace NiL.JS.BaseLibrary
              */
 
             a0 = arguments[0].Evaluate(initiator).CloneImpl(false);
-            if (arguments.Length > 1)
+            if (argumentsCount > 1)
             {
                 a1 = arguments[1].Evaluate(initiator).CloneImpl(false);
-                if (arguments.Length > 2)
+                if (argumentsCount > 2)
                 {
                     a2 = arguments[2].Evaluate(initiator).CloneImpl(false);
-                    if (arguments.Length > 3)
+                    if (argumentsCount > 3)
                     {
                         a3 = arguments[3].Evaluate(initiator).CloneImpl(false);
-                        if (arguments.Length > 4)
+                        if (argumentsCount > 4)
                         {
                             a4 = arguments[4].Evaluate(initiator).CloneImpl(false);
-                            if (arguments.Length > 5)
+                            if (argumentsCount > 5)
                             {
                                 a5 = arguments[5].Evaluate(initiator).CloneImpl(false);
-                                if (arguments.Length > 6)
+                                if (argumentsCount > 6)
                                 {
                                     a6 = arguments[6].Evaluate(initiator).CloneImpl(false);
-                                    if (arguments.Length > 7)
+                                    if (argumentsCount > 7)
                                     {
                                         a7 = arguments[7].Evaluate(initiator).CloneImpl(false);
                                     }
@@ -1089,25 +1106,25 @@ namespace NiL.JS.BaseLibrary
             }
 
             setPrmFst(0, a0, internalContext);
-            if (arguments.Length > 1)
+            if (argumentsCount > 1)
             {
                 setPrmFst(1, a1, internalContext);
-                if (arguments.Length > 2)
+                if (argumentsCount > 2)
                 {
                     setPrmFst(2, a2, internalContext);
-                    if (arguments.Length > 3)
+                    if (argumentsCount > 3)
                     {
                         setPrmFst(3, a3, internalContext);
-                        if (arguments.Length > 4)
+                        if (argumentsCount > 4)
                         {
                             setPrmFst(4, a4, internalContext);
-                            if (arguments.Length > 5)
+                            if (argumentsCount > 5)
                             {
                                 setPrmFst(5, a5, internalContext);
-                                if (arguments.Length > 6)
+                                if (argumentsCount > 6)
                                 {
                                     setPrmFst(6, a6, internalContext);
-                                    if (arguments.Length > 7)
+                                    if (argumentsCount > 7)
                                     {
                                         setPrmFst(7, a7, internalContext);
                                     }

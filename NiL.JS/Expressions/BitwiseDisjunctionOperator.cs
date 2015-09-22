@@ -29,15 +29,14 @@ namespace NiL.JS.Expressions
 
         internal override JSValue Evaluate(Context context)
         {
-            var left = Tools.JSObjectToInt32(first.Evaluate(context));
-            tempContainer.iValue = left | Tools.JSObjectToInt32(second.Evaluate(context));
+            tempContainer.iValue = Tools.JSObjectToInt32(first.Evaluate(context)) | Tools.JSObjectToInt32(second.Evaluate(context));
             tempContainer.valueType = JSValueType.Int;
             return tempContainer;
         }
 
         internal override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
-            var res = base.Build(ref _this, depth,variables, state, message, statistic, opts);
+            var res = base.Build(ref _this, depth, variables, state, message, statistic, opts);
             if (_this != this)
                 return res;
             if ((second is ConstantNotation || (second is Expression && ((Expression)second).IsContextIndependent))

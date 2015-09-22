@@ -423,7 +423,7 @@ namespace NiL.JS.Core
                         int ix = 0;
                         string s = (arg.oValue.ToString()).Trim(TrimChars);
                         if (!Tools.ParseNumber(s, ref ix, out x) || ix < s.Length)
-                            return Number.NaN;
+                            x = double.NaN;
                         result.valueType = JSValueType.Double;
                         result.dValue = x;
                         return result;

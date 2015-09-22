@@ -2,7 +2,6 @@
 using System.Text.RegularExpressions;
 using NiL.JS.Core;
 using NiL.JS.Core.Interop;
-using NiL.JS.Core.Interop;
 
 namespace NiL.JS.BaseLibrary
 {
@@ -46,7 +45,7 @@ namespace NiL.JS.BaseLibrary
             _global = false;
             try
             {
-                System.Text.RegularExpressions.RegexOptions options = System.Text.RegularExpressions.RegexOptions.ECMAScript;
+                System.Text.RegularExpressions.RegexOptions options = System.Text.RegularExpressions.RegexOptions.ECMAScript | RegexOptions.CultureInvariant;
                 for (int i = 0; i < flags.Length; i++)
                 {
                     char c = flags[i];

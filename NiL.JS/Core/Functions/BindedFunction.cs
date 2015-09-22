@@ -2,9 +2,7 @@
 using System.Collections.Generic;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Interop;
-using NiL.JS.Core.Interop;
 using NiL.JS.Expressions;
-using NiL.JS.Statements;
 
 namespace NiL.JS.Core.Functions
 {
