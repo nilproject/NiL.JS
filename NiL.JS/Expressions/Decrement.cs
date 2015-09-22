@@ -64,18 +64,23 @@ namespace NiL.JS.Expressions
             Function setter = null;
             JSObject res = null;
             var val = first.EvaluateForAssing(context);
+            Arguments args = null;
             if (val.valueType == JSObjectType.Property)
             {
-                setter = (val.oValue as PropertyPair).set;
+                var ppair = val.oValue as PropertyPair;
+                setter = ppair.set;
                 if (context.strict && setter == null)
-                    throw new JSException(new TypeError("Can not decrement property \"" + (first) + "\" without setter."));
-                val = (val.oValue as PropertyPair).get.Invoke(context.objectSource, null).CloneImpl();
-                val.attributes = 0;
+                    raiseErrorProp();
+                args = new Arguments();
+                if (ppair.get == null)
+                    val = JSObject.undefined.CloneImpl(unchecked((JSObjectAttributesInternal)(-1)));
+                else
+                    val = ppair.get.Invoke(context.objectSource, args).CloneImpl(unchecked((JSObjectAttributesInternal)(-1)));
             }
             else if ((val.attributes & JSObjectAttributesInternal.ReadOnly) != 0)
             {
                 if (context.strict)
-                    throw new JSException(new TypeError("Can not deccriment readonly \"" + (first) + "\""));
+                    raiseErrorValue();
                 val = val.CloneImpl();
             }
             switch (val.valueType)
@@ -87,12 +92,7 @@ namespace NiL.JS.Expressions
                     }
                 case JSObjectType.String:
                     {
-                        double resd;
-                        int i = 0;
-                        if (!Tools.ParseNumber(val.oValue.ToString(), i, out resd, Tools.ParseNumberOptions.Default))
-                            resd = double.NaN;
-                        val.valueType = JSObjectType.Double;
-                        val.dValue = resd;
+                        Tools.JSObjectToNumber(val, val);
                         break;
                     }
                 case JSObjectType.Object:
@@ -109,20 +109,15 @@ namespace NiL.JS.Expressions
                                 }
                             case JSObjectType.String:
                                 {
-                                    double resd;
-                                    int i = 0;
-                                    if (!Tools.ParseNumber(val.oValue.ToString(), i, out resd, Tools.ParseNumberOptions.Default))
-                                        resd = double.NaN;
-                                    val.valueType = JSObjectType.Double;
-                                    val.dValue = resd;
+                                    Tools.JSObjectToNumber(val, val);
                                     break;
                                 }
                             case JSObjectType.Date:
                             case JSObjectType.Function:
                             case JSObjectType.Object: // null
                                 {
-                                    val.iValue = 0;
                                     val.valueType = JSObjectType.Int;
+                                    val.iValue = 0;
                                     break;
                                 }
                         }
@@ -147,8 +142,8 @@ namespace NiL.JS.Expressions
                     {
                         if (val.iValue == int.MinValue)
                         {
-                            val.dValue = val.iValue - 1.0;
                             val.valueType = JSObjectType.Double;
+                            val.dValue = val.iValue - 1.0;
                         }
                         else
                             val.iValue--;
@@ -166,12 +161,9 @@ namespace NiL.JS.Expressions
                         val.dValue = double.NaN;
                         break;
                     }
-                default:
-                    throw new NotImplementedException();
             }
             if (setter != null)
             {
-                var args = new Arguments();
                 args.length = 1;
                 args[0] = val;
                 setter.Invoke(context.objectSource, args);
@@ -179,6 +171,16 @@ namespace NiL.JS.Expressions
             else if ((val.attributes & JSObjectAttributesInternal.Reassign) != 0)
                 val.Assign(val);
             return res;
+        }
+
+        private void raiseErrorValue()
+        {
+            throw new JSException(new TypeError("Can not decrement readonly \"" + (first) + "\""));
+        }
+
+        private void raiseErrorProp()
+        {
+            throw new JSException(new TypeError("Can not decrement property \"" + (first) + "\" without setter."));
         }
 
         internal override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
@@ -235,7 +237,7 @@ namespace NiL.JS.Expressions
 
         public override string ToString()
         {
-            return first != null ? "--" + first : second + "--";
+            return second == null ? "--" + first : first + "--";
         }
     }
 }

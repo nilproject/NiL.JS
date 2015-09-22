@@ -12,9 +12,7 @@ using NiL.JS.Expressions;
 namespace NiL.JS.Core
 {
 #if !PORTABLE
-#if !PORTABLE
     [Serializable]
-#endif
 #endif
     public enum JSObjectType
     {
@@ -32,9 +30,7 @@ namespace NiL.JS.Core
     }
 
 #if !PORTABLE
-#if !PORTABLE
     [Serializable]
-#endif
 #endif
     [Flags]
     internal enum JSObjectAttributesInternal : uint
@@ -63,9 +59,7 @@ namespace NiL.JS.Core
     }
 
 #if !PORTABLE
-#if !PORTABLE
     [Serializable]
-#endif
 #endif
     [Flags]
     public enum JSObjectAttributes : int
@@ -79,9 +73,7 @@ namespace NiL.JS.Core
     }
 
 #if !PORTABLE
-#if !PORTABLE
     [Serializable]
-#endif
 #endif
     [StructLayout(LayoutKind.Sequential)]
     public class JSObject : IEnumerable<string>, IEnumerable, IComparable<JSObject>
@@ -210,6 +202,7 @@ namespace NiL.JS.Core
             return TypeProxy.GetPrototype(this.GetType());
         }
 
+        internal JSObjectAttributesInternal attributes;
         internal JSObjectType valueType;
         internal int iValue;
         internal double dValue;
@@ -217,7 +210,6 @@ namespace NiL.JS.Core
 
         internal IDictionary<string, JSObject> fields;
         internal JSObject __prototype;
-        internal JSObjectAttributesInternal attributes;
 
         [Hidden]
         public virtual JSObject this[string name]
@@ -757,15 +749,15 @@ namespace NiL.JS.Core
 #endif
             if (this == value || (attributes & (JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.SystemObject)) != 0)
                 return;
+            this.attributes =
+                (this.attributes & ~JSObjectAttributesInternal.PrivateAttributes)
+                | (value.attributes & JSObjectAttributesInternal.PrivateAttributes);
             this.valueType = value.valueType | JSObjectType.Undefined;
             this.iValue = value.iValue;
             this.dValue = value.dValue;
             this.oValue = value.oValue;
             this.fields = null;
             this.__prototype = null;
-            this.attributes =
-                (this.attributes & ~JSObjectAttributesInternal.PrivateAttributes)
-                | (value.attributes & JSObjectAttributesInternal.PrivateAttributes);
         }
 
         [Hidden]
