@@ -12,7 +12,7 @@ namespace NiL.JS.Expressions
 #if !PORTABLE
     [Serializable]
 #endif
-    public sealed class FunctionNotation : Expression
+    public sealed class FunctionNotation : EntityNotation
     {
 #if !PORTABLE
         internal sealed class GeneratorInitializator : Function
@@ -159,42 +159,6 @@ namespace NiL.JS.Expressions
 #if !PORTABLE
         [Serializable]
 #endif
-        internal sealed class FunctionReference : VariableReference
-        {
-            private FunctionNotation owner;
-
-            public FunctionNotation Owner { get { return owner; } }
-
-            public override string Name
-            {
-                get { return owner.name; }
-            }
-
-            internal override JSValue Evaluate(Context context)
-            {
-                return owner.Evaluate(context);
-            }
-
-            public FunctionReference(FunctionNotation owner)
-            {
-                functionDepth = -1;
-                this.owner = owner;
-            }
-
-            public override T Visit<T>(Visitor<T> visitor)
-            {
-                return visitor.Visit(this);
-            }
-
-            public override string ToString()
-            {
-                return owner.ToString();
-            }
-        }
-
-#if !PORTABLE
-        [Serializable]
-#endif
         public sealed class ParameterDescriptor : VariableDescriptor
         {
             public bool IsRest { get; private set; }
@@ -242,7 +206,6 @@ namespace NiL.JS.Expressions
             }
         }
 
-        internal VariableReference reference;
         #region Runtime
         internal int parametersStored;
         internal int recursiveDepth;
@@ -250,16 +213,13 @@ namespace NiL.JS.Expressions
         internal readonly FunctionStatistics statistic;
         internal ParameterDescriptor[] parameters;
         internal CodeBlock body;
-        internal string name;
         internal FunctionType type;
 #if DEBUG
         internal bool trace;
 #endif
 
         public CodeBlock Body { get { return body; } }
-        public string Name { get { return name; } }
         public ReadOnlyCollection<ParameterDescriptor> Parameters { get { return new ReadOnlyCollection<ParameterDescriptor>(parameters); } }
-        public VariableReference Reference { get { return reference; } }
 
         public override bool IsContextIndependent
         {
@@ -284,7 +244,6 @@ namespace NiL.JS.Expressions
 
         internal FunctionNotation(string name)
         {
-            reference = new FunctionReference(this);
             parameters = new ParameterDescriptor[0];
             body = new CodeBlock(new CodeNode[0], false);
             body.variables = new VariableDescriptor[0];
@@ -503,7 +462,7 @@ namespace NiL.JS.Expressions
             state.InExpression = inExp;
             if (name != null)
             {
-                func.Reference.functionDepth = state.functionsDepth;
+                func.Reference.defineDepth = state.functionsDepth;
                 func.Reference.Position = nameStartPos;
                 func.Reference.Length = name.Length;
             }
@@ -575,18 +534,18 @@ namespace NiL.JS.Expressions
                 parameters[i].isDefined = true;
             }
             statistic.ContainsRestParameters = parameters.Length > 0 && parameters[parameters.Length - 1].IsRest;
-            bodyCode.Build(ref bodyCode, 0, nvars, state & ~_BuildState.Conditional, message, statistic, opts);
+            bodyCode.Build(ref bodyCode, 0, nvars, state & ~(_BuildState.Conditional | _BuildState.InExpression | _BuildState.InEval), message, statistic, opts);
             if (type == FunctionType.Function && !string.IsNullOrEmpty(name))
             {
                 VariableDescriptor fdesc = null;
-                if (Reference.Descriptor == null)
-                    Reference.descriptor = new VariableDescriptor(Reference, true, Reference.functionDepth);// { owner = this };
+                if (Reference.descriptor == null)
+                    Reference.descriptor = new VariableDescriptor(Reference, true, Reference.defineDepth);
                 if (System.Array.FindIndex(parameters, x => x.Name == Reference.descriptor.name) == -1)
                     if (nvars.TryGetValue(name, out fdesc) && !fdesc.IsDefined)
                     {
                         foreach (var r in fdesc.references)
                             r.descriptor = Reference.Descriptor;
-                        Reference.Descriptor.references.AddRange(fdesc.references);
+                        Reference.descriptor.references.AddRange(fdesc.references);
                         for (var i = body.variables.Length; i-- > 0; )
                         {
                             if (body.variables[i] == fdesc)
@@ -643,6 +602,7 @@ namespace NiL.JS.Expressions
                 }
             }
             checkUsings();
+            base.Build(ref _this, depth, variables, state, message, statistic, opts);
             return false;
         }
 

@@ -138,12 +138,12 @@ namespace NiL.JS.Core.Functions
             if (bynew)
             {
                 if (RequireNewKeywordLevel == RequireNewKeywordLevel.OnlyWithoutNew)
-                    throw new TypeError("Type \"" + proxy.hostedType.Name + "\" can not be crated with new keyword").Wrap();
+                    throw new TypeError(string.Format(Strings.InvalidTryToCreateWithNew, proxy.hostedType.Name)).Wrap();
             }
             else
             {
                 if (RequireNewKeywordLevel == RequireNewKeywordLevel.OnlyWithNew)
-                    throw new TypeError("Type \"" + proxy.hostedType.Name + "\" can not be crated without new keyword").Wrap();
+                    throw new TypeError(string.Format(Strings.InvalidTryToCreateWithoutNew, proxy.hostedType.Name)).Wrap();
 
                 if (proxy.hostedType == typeof(Date))
                     return new Date().ToString();

@@ -129,7 +129,7 @@ namespace NiL.JS.Statements
         {
             depth = System.Math.Max(1, depth);
             Parser.Build(ref body, depth, variables, state | _BuildState.InLoop, message, statistic, opts);
-            Parser.Build(ref condition, 2, variables, state | _BuildState.InLoop, message, statistic, opts);
+            Parser.Build(ref condition, 2, variables, state | _BuildState.InLoop | _BuildState.InExpression, message, statistic, opts);
             try
             {
                 if (allowRemove

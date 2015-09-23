@@ -22,3 +22,5 @@ catch (e) {
     if (!(e instanceof SyntaxError))
         console.log("empty func argument fail #3.1");
 }
+
+var f = eval("function func(){}");

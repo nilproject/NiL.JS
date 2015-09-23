@@ -66,7 +66,7 @@ namespace NiL.JS.Statements
 
         internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
-            Parser.Build(ref body, 2, variables, state, message, statistic, opts);
+            Parser.Build(ref body, 2, variables, state | _BuildState.InExpression, message, statistic, opts);
             return false;
         }
 

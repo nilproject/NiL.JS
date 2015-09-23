@@ -74,8 +74,7 @@ namespace NiL.JS.Expressions
             if (second is ConstantNotation)
             {
                 cachedMemberName = second.Evaluate(null);
-                if (statistic != null
-                    && cachedMemberName.ToString() == "arguments")
+                if (statistic != null && cachedMemberName.ToString() == "arguments")
                     statistic.ContainsArguments = true;
             }
             return false;

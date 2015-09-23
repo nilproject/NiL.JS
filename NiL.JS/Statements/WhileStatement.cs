@@ -120,7 +120,7 @@ namespace NiL.JS.Statements
         {
             depth = System.Math.Max(1, depth);
             Parser.Build(ref body, depth, variables, state | _BuildState.Conditional | _BuildState.InLoop, message, statistic, opts);
-            Parser.Build(ref condition, 2, variables, state | _BuildState.InLoop, message, statistic, opts);
+            Parser.Build(ref condition, 2, variables, state | _BuildState.InLoop | _BuildState.InExpression, message, statistic, opts);
             if ((opts & Options.SuppressUselessExpressionsElimination) == 0 && condition is ToBooleanOperator)
             {
                 if (message == null)

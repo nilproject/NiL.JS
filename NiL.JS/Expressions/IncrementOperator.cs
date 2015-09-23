@@ -192,7 +192,7 @@ namespace NiL.JS.Expressions
         {
             codeContext = state;
 
-            Parser.Build(ref first, depth + 1, variables, state, message, statistic, opts);
+            Parser.Build(ref first, depth + 1, variables, state | _BuildState.InExpression, message, statistic, opts);
             if (depth <= 1 && second != null)
                 second = null;
             var f = first as VariableReference ?? ((first is GetValueForAssignmentOperator) ? (first as GetValueForAssignmentOperator).Source as VariableReference : null);

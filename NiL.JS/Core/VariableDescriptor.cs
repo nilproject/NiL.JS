@@ -37,11 +37,11 @@ namespace NiL.JS.Core
         internal bool captured;
         internal List<CodeNode> assignations;
         internal PredictedType lastPredictedType;
-
         internal bool isDefined;
+        internal bool isReadOnly;
+
         public bool IsDefined { get { return isDefined; } }
         public CodeNode Owner { get { return owner; } }
-        internal bool isReadOnly;
         public bool IsReadOnly { get { return isReadOnly; } }
         public Expression Inititalizator { get; internal set; }
         public string Name { get { return name; } }
@@ -119,8 +119,8 @@ namespace NiL.JS.Core
         {
             this.defineDepth = defineDepth;
             this.name = proto.Name;
-            if (proto is FunctionNotation.FunctionReference)
-                Inititalizator = (proto as FunctionNotation.FunctionReference).Owner;
+            if (proto is EntityReference)
+                Inititalizator = (proto as EntityReference).Entity;
             references = new List<VariableReference>() { proto };
             proto.descriptor = this;
             this.isDefined = defined;

@@ -32,12 +32,6 @@ namespace NiL.JS.Expressions
             return !(bool)first.Evaluate(context);
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
-        {
-            var res = base.Build(ref _this, depth, variables, state, message, statistic, opts);
-            return res;
-        }
-
         public override T Visit<T>(Visitor<T> visitor)
         {
             return visitor.Visit(this);

@@ -54,8 +54,8 @@ namespace NiL.JS.Expressions
                 _this = first;
                 return true;
             }
-            Parser.Build(ref first, depth + 1,variables, state, message, statistic, opts);
-            Parser.Build(ref second, depth + 1,variables, state, message, statistic, opts);
+            Parser.Build(ref first, depth + 1, variables, state | _BuildState.InExpression, message, statistic, opts);
+            Parser.Build(ref second, depth + 1, variables, state | _BuildState.InExpression, message, statistic, opts);
             return false;
         }
 

@@ -155,7 +155,7 @@ namespace NiL.JS.Statements
         {
             if (depth < 1)
                 throw new InvalidOperationException();
-            Parser.Build(ref image, 2, variables, state, message, statistic, opts);
+            Parser.Build(ref image, 2, variables, state | _BuildState.InExpression, message, statistic, opts);
             for (int i = 0; i < lines.Length; i++)
                 Parser.Build(ref lines[i], 1, variables, state | _BuildState.Conditional, message, statistic, opts);
             for (int i = 0; functions != null && i < functions.Length; i++)
@@ -171,7 +171,7 @@ namespace NiL.JS.Statements
                     for (var j = 0; j < desc.references.Count; j++)
                         desc.references[j].descriptor = functions[i].Reference.descriptor;
                     functions[i].Reference.descriptor.references.AddRange(desc.references);
-                    functions[i].Reference.descriptor.captured = functions[i].Reference.descriptor.captured || functions[i].Reference.descriptor.references.FindIndex(x => x.functionDepth > x.descriptor.defineDepth) != -1;
+                    functions[i].Reference.descriptor.captured = functions[i].Reference.descriptor.captured || functions[i].Reference.descriptor.references.FindIndex(x => x.defineDepth > x.descriptor.defineDepth) != -1;
                 }
             }
             functions = null;

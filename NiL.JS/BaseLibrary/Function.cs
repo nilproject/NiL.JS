@@ -765,7 +765,7 @@ namespace NiL.JS.BaseLibrary
                 creator = fs.Statement as FunctionNotation;
             }
             else
-                throw new JSException((new SyntaxError("")));
+                throw new JSException(new SyntaxError("Unknown syntax error"));
             valueType = JSValueType.Function;
             this.oValue = this;
         }
@@ -1278,11 +1278,15 @@ namespace NiL.JS.BaseLibrary
                 return strict ? undefined : context.Root.thisBind;
             else if (thisBind.oValue == typeof(NewOperator) as object)
             {
+                if (RequireNewKeywordLevel == BaseLibrary.RequireNewKeywordLevel.OnlyWithoutNew)
+                    ExceptionsHelper.Throw(new TypeError(string.Format(Strings.InvalidTryToCreateWithNew, name)));
                 thisBind.__proto__ = prototype.valueType < JSValueType.Object ? GlobalPrototype : prototype.oValue as JSObject;
                 thisBind.oValue = thisBind;
             }
             else if (context != null)
             {
+                if (RequireNewKeywordLevel == BaseLibrary.RequireNewKeywordLevel.OnlyWithNew)
+                    ExceptionsHelper.Throw(new TypeError(string.Format(Strings.InvalidTryToCreateWithoutNew, name)));
                 if (!strict) // Поправляем this
                 {
                     if (thisBind.valueType > JSValueType.Undefined && thisBind.valueType < JSValueType.Object)

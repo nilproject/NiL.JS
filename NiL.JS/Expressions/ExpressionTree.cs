@@ -396,7 +396,7 @@ namespace NiL.JS.Statements
                 if (name == "undefined")
                     first = new ConstantNotation(JSValue.undefined) { Position = index, Length = i - index };
                 else
-                    first = new GetVariableExpression(name, state.functionsDepth) { Position = index, Length = i - index, functionDepth = state.functionsDepth };
+                    first = new GetVariableExpression(name, state.functionsDepth) { Position = index, Length = i - index, defineDepth = state.functionsDepth };
             }
             else if (Parser.ValidateValue(state.Code, ref i))
             {

@@ -272,12 +272,6 @@ namespace NiL.JS.Expressions
             return false;
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
-        {
-            var res = base.Build(ref _this, depth,variables, state, message, statistic, opts);
-            return res;
-        }
-
         internal override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             base.Optimize(ref _this, owner, message, opts, statistic);

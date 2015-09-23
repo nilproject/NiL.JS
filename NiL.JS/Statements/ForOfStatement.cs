@@ -63,7 +63,7 @@ namespace NiL.JS.Statements
                     if (varName == "arguments" || varName == "eval")
                         throw new JSException((new SyntaxError("Parameters name may not be \"arguments\" or \"eval\" in strict mode at " + CodeCoordinates.FromTextPosition(state.Code, start, i - start))));
                 }
-                res.variable = new VariableDefineStatement(varName, new GetVariableExpression(varName, state.functionsDepth) { Position = start, Length = i - start, functionDepth = state.functionsDepth }, false, state.functionsDepth) { Position = vStart, Length = i - vStart };
+                res.variable = new VariableDefineStatement(varName, new GetVariableExpression(varName, state.functionsDepth) { Position = start, Length = i - start, defineDepth = state.functionsDepth }, false, state.functionsDepth) { Position = vStart, Length = i - vStart };
             }
             else
             {
@@ -80,7 +80,7 @@ namespace NiL.JS.Statements
                     if (varName == "arguments" || varName == "eval")
                         throw new JSException((new SyntaxError("Parameters name may not be \"arguments\" or \"eval\" in strict mode at " + CodeCoordinates.FromTextPosition(state.Code, start, i - start))));
                 }
-                res.variable = new GetVariableExpression(varName, state.functionsDepth) { Position = start, Length = i - start, functionDepth = state.functionsDepth };
+                res.variable = new GetVariableExpression(varName, state.functionsDepth) { Position = start, Length = i - start, defineDepth = state.functionsDepth };
             }
             while (char.IsWhiteSpace(state.Code[i])) i++;
             if (state.Code[i] == '=')
@@ -276,13 +276,13 @@ namespace NiL.JS.Statements
 
         internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
-            Parser.Build(ref variable, 2, variables, state, message, statistic, opts);
+            Parser.Build(ref variable, 2, variables, state | _BuildState.InExpression, message, statistic, opts);
             var tvar = variable as VariableDefineStatement;
             if (tvar != null)
                 variable = tvar.initializators[0];
             if (variable is AssignmentOperator)
                 ((variable as AssignmentOperator).first.first as GetVariableExpression).forceThrow = false;
-            Parser.Build(ref source, 2, variables, state, message, statistic, opts);
+            Parser.Build(ref source, 2, variables, state | _BuildState.InExpression, message, statistic, opts);
             Parser.Build(ref body, System.Math.Max(1, depth), variables, state | _BuildState.Conditional | _BuildState.InLoop, message, statistic, opts);
             if (variable is Expressions.CommaOperator)
             {

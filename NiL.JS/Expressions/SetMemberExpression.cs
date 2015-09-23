@@ -83,7 +83,6 @@ namespace NiL.JS.Expressions
         internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             codeContext = state;
-
             return false;
         }
 

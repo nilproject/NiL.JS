@@ -56,8 +56,8 @@ namespace NiL.JS.Expressions
 
         internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
-            Parser.Build(ref threads[0], depth, variables, state | _BuildState.Conditional, message, statistic, opts);
-            Parser.Build(ref threads[1], depth, variables, state | _BuildState.Conditional, message, statistic, opts);
+            Parser.Build(ref threads[0], depth, variables, state | _BuildState.Conditional | _BuildState.InExpression, message, statistic, opts);
+            Parser.Build(ref threads[1], depth, variables, state | _BuildState.Conditional | _BuildState.InExpression, message, statistic, opts);
             base.Build(ref _this, depth, variables, state, message, statistic, opts);
             if ((opts & Options.SuppressUselessExpressionsElimination) == 0 && first is ConstantNotation)
             {

@@ -540,7 +540,7 @@ namespace NiL.JS.Core
                 if (i < c.Length)
                     throw new System.ArgumentException("Invalid char");
                 var vars = new Dictionary<string, VariableDescriptor>();
-                Parser.Build(ref cb, leak ? -1 : -2, vars, strict ? _BuildState.Strict : _BuildState.None, null, null, Options.Default);
+                Parser.Build(ref cb, 0, vars, (strict ? _BuildState.Strict : _BuildState.None) | _BuildState.InEval, null, null, Options.Default);
                 Context context = null;
                 if (leak)
                     context = this;
@@ -584,16 +584,19 @@ namespace NiL.JS.Core
                             }
                         }
                 }
-                for (i = body.localVariables.Length; i-- > 0; )
+                if (body.localVariables != null)
                 {
-                    var f = context.DefineVariable(body.localVariables[i].name);
-                    if (!inplace)
-                        f.attributes = JSValueAttributesInternal.None;
-                    if (body.localVariables[i].Inititalizator != null)
-                        f.Assign(body.localVariables[i].Inititalizator.Evaluate(context));
-                    if (body.localVariables[i].isReadOnly)
-                        f.attributes |= JSValueAttributesInternal.ReadOnly;
-                    body.localVariables[i].captured = true;
+                    for (i = body.localVariables.Length; i-- > 0; )
+                    {
+                        var f = context.DefineVariable(body.localVariables[i].name);
+                        if (!inplace)
+                            f.attributes = JSValueAttributesInternal.None;
+                        if (body.localVariables[i].Inititalizator != null)
+                            f.Assign(body.localVariables[i].Inititalizator.Evaluate(context));
+                        if (body.localVariables[i].isReadOnly)
+                            f.attributes |= JSValueAttributesInternal.ReadOnly;
+                        body.localVariables[i].captured = true;
+                    }
                 }
 
                 var bd = body as CodeNode;

@@ -66,7 +66,7 @@ namespace NiL.JS.Expressions
                 if (saveResult)
                 {
                     if (tempContainer == null)
-                        tempContainer = new JSObject();
+                        tempContainer = new JSValue();
                     tempContainer.Assign(temp);
                     temp = tempContainer;
                     tempContainer = null;
@@ -117,7 +117,7 @@ namespace NiL.JS.Expressions
             if (gme != null)
                 _this = new SetMemberExpression(gme.first, gme.second, second) { Position = Position, Length = Length };
 
-            if (depth > 1)
+            if ((state & (_BuildState.InExpression | _BuildState.InEval)) != 0)
                 saveResult = true;
 
             return r;

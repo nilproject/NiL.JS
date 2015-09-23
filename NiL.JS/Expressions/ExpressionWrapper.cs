@@ -41,7 +41,7 @@ namespace NiL.JS.Expressions
         {
             codeContext = state;
 
-            return node.Build(ref node, depth,variables, state, message, statistic, opts);
+            return node.Build(ref node, depth, variables, state | _BuildState.InExpression, message, statistic, opts);
         }
     }
 }

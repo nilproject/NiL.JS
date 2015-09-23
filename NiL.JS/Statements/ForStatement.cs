@@ -172,10 +172,10 @@ namespace NiL.JS.Statements
                 && !(init as VariableDefineStatement).isConst
                 && (init as VariableDefineStatement).initializators.Length == 1)
                 init = (init as VariableDefineStatement).initializators[0];
-            Parser.Build(ref condition, 2, variables, state | _BuildState.InLoop, message, statistic, opts);
+            Parser.Build(ref condition, 2, variables, state | _BuildState.InLoop | _BuildState.InExpression, message, statistic, opts);
             if (post != null)
             {
-                Parser.Build(ref post, 1, variables, state | _BuildState.Conditional | _BuildState.InLoop, message, statistic, opts);
+                Parser.Build(ref post, 1, variables, state | _BuildState.Conditional | _BuildState.InLoop | _BuildState.InExpression, message, statistic, opts);
                 if (post == null && message != null)
                     message(MessageLevel.Warning, new CodeCoordinates(0, Position, Length), "Last expression of for-loop was removed. Maybe, it's a mistake.");
             }
@@ -218,7 +218,7 @@ namespace NiL.JS.Statements
                     && post is NiL.JS.Expressions.IncrementOperator
                     && ((post as NiL.JS.Expressions.IncrementOperator).FirstOperand as VariableReference).descriptor == variable.descriptor)
                 {
-                    if (variable.functionDepth >= 0 && variable.descriptor.defineDepth >= 0)
+                    if (variable.defineDepth >= 0 && variable.descriptor.defineDepth >= 0)
                     {
                         if (init is NiL.JS.Expressions.AssignmentOperator
                             && (init as NiL.JS.Expressions.AssignmentOperator).FirstOperand is GetVariableExpression

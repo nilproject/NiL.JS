@@ -152,7 +152,7 @@ namespace NiL.JS.Expressions
             codeContext = state;
 
             for (var i = 0; i < arguments.Length; i++)
-                Parser.Build(ref arguments[i], depth + 1, variables, state, message, statistic, opts);
+                Parser.Build(ref arguments[i], depth + 1, variables, state | _BuildState.InExpression, message, statistic, opts);
             base.Build(ref _this, depth, variables, state, message, statistic, opts);
             if (first is GetVariableExpression)
             {

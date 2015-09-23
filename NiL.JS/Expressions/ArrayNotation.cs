@@ -113,7 +113,7 @@ namespace NiL.JS.Expressions
             codeContext = state;
 
             for (int i = 0; i < elements.Length; i++)
-                Parser.Build(ref elements[i], 2,variables, state, message, statistic, opts);
+                Parser.Build(ref elements[i], 2, variables, state | _BuildState.InExpression, message, statistic, opts);
             return false;
         }
 

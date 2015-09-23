@@ -266,6 +266,8 @@
     <Compile Include="Core\Interop\NotConfigurable.cs" />
     <Compile Include="Core\Interop\DisallowNewKeywordAttribute.cs" />
     <Compile Include="Core\Interop\RequireNewKeywordAttribute.cs" />
+    <Compile Include="ExceptionsHelper.cs" />
+    <Compile Include="Expressions\EntityNotation.cs" />
     <Compile Include="Expressions\RegExpCreateExpression.cs" />
     <Compile Include="Core\Interop\InstanceMemberAttribute.cs" />
     <Compile Include="Core\Interop\NativeList.cs" />
@@ -382,8 +384,18 @@
     <Compile Include="Statements\WithStatement.cs" />
     <Compile Include="Statements\DebuggerStatement.cs" />
     <Compile Include="Statements\ForOfStatement.cs" />
+    <Compile Include="Strings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Strings.resx</DependentUpon>
+    </Compile>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <EmbeddedResource Include="Strings.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Strings.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

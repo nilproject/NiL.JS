@@ -18,7 +18,9 @@ namespace NiL.JS.Core
         //ForAssign = 2,
         Conditional = 4,
         InLoop = 8,
-        InWith = 16
+        InWith = 16,
+        InEval = 32,
+        InExpression = 64
     }
 
 #if !PORTABLE

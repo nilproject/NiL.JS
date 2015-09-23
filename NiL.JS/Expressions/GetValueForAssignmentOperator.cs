@@ -112,7 +112,7 @@ namespace NiL.JS.Expressions
 
             codeContext = state;
 
-            var res = first.Build(ref _this, depth, variables, state, message, statistic, opts);
+            var res = first.Build(ref _this, depth, variables, state | _BuildState.InExpression, message, statistic, opts);
             if (!res && first is GetVariableExpression)
                 (first as GetVariableExpression).forceThrow = true;
             return res;

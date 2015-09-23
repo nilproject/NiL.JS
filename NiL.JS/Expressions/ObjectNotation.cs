@@ -201,11 +201,11 @@ namespace NiL.JS.Expressions
                 if ((values[i] is ConstantNotation) && ((values[i] as ConstantNotation).value.valueType == JSValueType.Property))
                 {
                     var gs = (values[i] as ConstantNotation).value.oValue as CodeNode[];
-                    Parser.Build(ref gs[0], 1, variables, state, message, statistic, opts);
-                    Parser.Build(ref gs[1], 1, variables, state, message, statistic, opts);
+                    Parser.Build(ref gs[0], 1, variables, state | _BuildState.InExpression, message, statistic, opts);
+                    Parser.Build(ref gs[1], 1, variables, state | _BuildState.InExpression, message, statistic, opts);
                 }
                 else
-                    Parser.Build(ref values[i], 2, variables, state, message, statistic, opts);
+                    Parser.Build(ref values[i], 2, variables, state | _BuildState.InExpression, message, statistic, opts);
             }
             return false;
         }

@@ -55,7 +55,7 @@ namespace NiL.JS.Expressions
 
         internal GetVariableExpression(string name, int functionDepth)
         {
-            this.functionDepth = functionDepth;
+            this.defineDepth = functionDepth;
             int i = 0;
             if ((name != "this") && !Parser.ValidateName(name, i, true, true, false))
                 throw new ArgumentException("Invalid variable name");
@@ -66,19 +66,19 @@ namespace NiL.JS.Expressions
         {
             if (context.strict || forceThrow)
             {
-                var res = Descriptor.Get(context, false, functionDepth);
+                var res = Descriptor.Get(context, false, defineDepth);
                 if (res.valueType < JSValueType.Undefined && (!suspendThrow || forceThrow))
                     throwRefError();
                 if ((res.attributes & JSValueAttributesInternal.Argument) != 0)
                     context.caller.buildArgumentsObject();
                 return res;
             }
-            return descriptor.Get(context, true, functionDepth);
+            return descriptor.Get(context, true, defineDepth);
         }
 
         internal override JSValue Evaluate(Context context)
         {
-            var res = descriptor.Get(context, false, functionDepth);
+            var res = descriptor.Get(context, false, defineDepth);
             switch (res.valueType)
             {
                 case JSValueType.NotExists:
@@ -146,7 +146,7 @@ namespace NiL.JS.Expressions
             VariableDescriptor desc = null;
             if (!variables.TryGetValue(variableName, out desc) || desc == null)
             {
-                desc = new VariableDescriptor(this, false, functionDepth);
+                desc = new VariableDescriptor(this, false, defineDepth);
                 descriptor = desc;
                 variables[variableName] = this.Descriptor;
             }
@@ -163,11 +163,11 @@ namespace NiL.JS.Expressions
                     message(MessageLevel.Warning, new CodeCoordinates(0, Position, Length), "Unused get of defined variable was removed. Maybe, something missing.");
             }
             else if (variableName == "arguments"
-                && functionDepth > 0)
+                && defineDepth > 0)
             {
                 if (statistic != null)
                     statistic.ContainsArguments = true;
-                _this = new GetArgumentsExpression(functionDepth) { descriptor = descriptor };
+                _this = new GetArgumentsExpression(defineDepth) { descriptor = descriptor };
             }
             return false;
         }

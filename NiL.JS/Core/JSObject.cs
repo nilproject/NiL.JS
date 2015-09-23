@@ -256,7 +256,7 @@ namespace NiL.JS.Core
             {
                 if (this is GlobalObject)
                     throw new JSException(new NiL.JS.BaseLibrary.ReferenceError("Invalid left-hand side"));
-                throw new InvalidOperationException("Try to assign to non-primitive value");
+                throw new InvalidOperationException("Try to assign to a non-primitive value");
             }
         }
 

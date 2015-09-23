@@ -96,7 +96,7 @@ namespace NiL.JS.Statements
         {
             if (statistic != null)
                 statistic.ContainsWith = true;
-            Parser.Build(ref obj, depth + 1, variables, state, message, statistic, opts);
+            Parser.Build(ref obj, depth + 1, variables, state | _BuildState.InExpression, message, statistic, opts);
             Parser.Build(ref body, depth, variables, state | _BuildState.InWith, message, statistic, opts);
             return false;
         }

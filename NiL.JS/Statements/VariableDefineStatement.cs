@@ -136,7 +136,7 @@ namespace NiL.JS.Statements
                     throw new JSException((new SyntaxError("Expected \";\", \",\", \"=\" or \"}\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 1))));
                 if (i >= state.Code.Length)
                 {
-                    initializator.Add(new GetVariableExpression(name, state.functionsDepth) { Position = s, Length = name.Length, functionDepth = state.functionsDepth });
+                    initializator.Add(new GetVariableExpression(name, state.functionsDepth) { Position = s, Length = name.Length, defineDepth = state.functionsDepth });
                     break;
                 }
                 if (Tools.isLineTerminator(state.Code[i]))
@@ -145,7 +145,7 @@ namespace NiL.JS.Statements
                     do i++; while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]));
                     if (i >= state.Code.Length)
                     {
-                        initializator.Add(new GetVariableExpression(name, state.functionsDepth) { Position = s, Length = name.Length, functionDepth = state.functionsDepth });
+                        initializator.Add(new GetVariableExpression(name, state.functionsDepth) { Position = s, Length = name.Length, defineDepth = state.functionsDepth });
                         break;
                     }
                     if (state.Code[i] != '=')
@@ -156,7 +156,7 @@ namespace NiL.JS.Statements
                     do i++; while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]));
                     if (i == state.Code.Length)
                         throw new JSException((new SyntaxError("Unexpected end of line in variable defenition.")));
-                    VariableReference accm = new GetVariableExpression(name, state.functionsDepth) { Position = s, Length = name.Length, functionDepth = state.functionsDepth };
+                    VariableReference accm = new GetVariableExpression(name, state.functionsDepth) { Position = s, Length = name.Length, defineDepth = state.functionsDepth };
                     Expression source = ExpressionTree.Parse(state, ref i, false).Statement as Expression;
                     if (isConst)
                         source = new AllowWriteCN(accm, source);
@@ -173,7 +173,7 @@ namespace NiL.JS.Statements
                 {
                     //if (isConst)
                     //    throw new JSException(new SyntaxError("Constant must contain value at " + CodeCoordinates.FromTextPosition(state.Code, i)));
-                    initializator.Add(new GetVariableExpression(name, state.functionsDepth) { Position = s, Length = name.Length, functionDepth = state.functionsDepth });
+                    initializator.Add(new GetVariableExpression(name, state.functionsDepth) { Position = s, Length = name.Length, defineDepth = state.functionsDepth });
                 }
                 if (i >= state.Code.Length)
                     break;
