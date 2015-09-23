@@ -1,13 +1,18 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+VisualStudioVersion = 12.0.40629.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NiL.JS", "NiL.JS\NiL.JS.csproj", "{F703D739-BCFA-4515-A963-C95651CB1EC4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NiL.JSTest", "NiL.JSTest\NiL.JSTest.csproj", "{6A330CC6-C974-47FD-95FA-AA0BCFAC4635}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestsDownloader", "TestsDownloader\TestsDownloader.csproj", "{C658ECBC-1632-40A6-A49E-BFFB6CB21FDC}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{18376F85-F016-4B6A-9105-56E7C7CF13A3}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

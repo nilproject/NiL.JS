@@ -5,6 +5,7 @@ NiL.JS
 Open source ECMAScript 5.1 (JavaScript) engine.
 Licensed under BSD 3-Clause License.
     
+* Easy integration.
 * High performance.
 * Works on Windows Runtime (Portable version)
 * Support .NET 3.5.
@@ -50,4 +51,4 @@ Execution of function in two or more threads gives incorrect result. To fix it, 
   **2.** Create [bug report](https://github.com/nilproject/NiL.JS/issues). It's will take some time, but reduce time for fixing it.  
   **3.** Fork project and fix bug by yourself, after that create pull request.  
 
-I hope that you will not choose the first path.
+I hope you will not choose the first path.
