@@ -54,10 +54,10 @@ namespace NiL.JS.Statements
                 while (char.IsWhiteSpace(state.Code[i])) i++;
                 int start = i;
                 string varName;
-                if (!Parser.ValidateName(state.Code, ref i, state.strict.Peek()))
+                if (!Parser.ValidateName(state.Code, ref i, state.strict))
                     throw new ArgumentException();
-                varName = Tools.Unescape(state.Code.Substring(start, i - start), state.strict.Peek());
-                if (state.strict.Peek())
+                varName = Tools.Unescape(state.Code.Substring(start, i - start), state.strict);
+                if (state.strict)
                 {
                     if (varName == "arguments" || varName == "eval")
                         throw new JSException(new SyntaxError("Parameters name may not be \"arguments\" or \"eval\" in strict mode at " + CodeCoordinates.FromTextPosition(state.Code, start, i - start)));
@@ -71,7 +71,7 @@ namespace NiL.JS.Statements
                 while (char.IsWhiteSpace(state.Code[i])) i++;
                 int start = i;
                 string varName;
-                if (!Parser.ValidateName(state.Code, ref i, state.strict.Peek()))
+                if (!Parser.ValidateName(state.Code, ref i, state.strict))
                 {
                     if (Parser.ValidateValue(state.Code, ref i))
                     {
@@ -85,10 +85,10 @@ namespace NiL.JS.Statements
                         return new ParseResult();
                     //throw new JSException(new SyntaxError("Unexpected token at " + CodeCoordinates.FromTextPosition(state.Code, start)));
                 }
-                //if (!Parser.ValidateName(state.Code, ref i, state.strict.Peek()))
+                //if (!Parser.ValidateName(state.Code, ref i, state.strict))
                 //    return new ParseResult(); // for (1 in {};;); должен вызвать синтаксическую ошибку, но это проверка заставляет перейти в обычный for, для которого такое выражение допустимо
-                varName = Tools.Unescape(state.Code.Substring(start, i - start), state.strict.Peek());
-                if (state.strict.Peek())
+                varName = Tools.Unescape(state.Code.Substring(start, i - start), state.strict);
+                if (state.strict)
                 {
                     if (varName == "arguments" || varName == "eval")
                         throw new JSException((new SyntaxError("Parameters name may not be \"arguments\" or \"eval\" in strict mode at " + CodeCoordinates.FromTextPosition(state.Code, start, i - start))));
@@ -129,11 +129,11 @@ namespace NiL.JS.Statements
             res.body = Parser.Parse(state, ref i, 0);
             if (res.body is FunctionNotation)
             {
-                if (state.strict.Peek())
+                if (state.strict)
                     throw new JSException((new NiL.JS.BaseLibrary.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
                 if (state.message != null)
                     state.message(MessageLevel.CriticalWarning, CodeCoordinates.FromTextPosition(state.Code, res.body.Position, 0), "Do not declare function in nested blocks.");
-                res.body = new CodeBlock(new[] { res.body }, state.strict.Peek()); // для того, чтобы не дублировать код по декларации функции, 
+                res.body = new CodeBlock(new[] { res.body }, state.strict); // для того, чтобы не дублировать код по декларации функции, 
                 // она оборачивается в блок, который сделает самовыпил на втором этапе, но перед этим корректно объявит функцию.
             }
             state.AllowBreak.Pop();

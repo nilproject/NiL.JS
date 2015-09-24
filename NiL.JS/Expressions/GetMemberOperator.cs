@@ -55,8 +55,15 @@ namespace NiL.JS.Expressions
             source = first.Evaluate(context);
             if (source.valueType < JSValueType.Object)
                 source = source.CloneImpl();
-            else
-                source = source.oValue as JSValue ?? source;
+            else if (source != source.oValue)
+            {
+                res = source.oValue as JSValue;
+                if (res != null)
+                {
+                    source = res;
+                    res = null;
+                }
+            }
             res = source.GetMember(cachedMemberName ?? second.Evaluate(context), false, false);
             context.objectSource = source;
             if (res.valueType == JSValueType.NotExists)

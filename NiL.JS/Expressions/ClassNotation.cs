@@ -31,6 +31,10 @@ namespace NiL.JS.Expressions
         public CodeNode[] Initializators { get { return values; } }
         public string[] Fields { get { return fields; } }
         public Expression BaseClassExpression { get { return bce; } }
+        public override bool Hoist
+        {
+            get { return false; }
+        }
 
         public ClassNotation(string name, Expression bce, Dictionary<string, CodeNode> fields)
         {
@@ -77,7 +81,10 @@ namespace NiL.JS.Expressions
             }
             if (code[i] != '{')
                 throw new SyntaxError("Unexpected token at " + CodeCoordinates.FromTextPosition(code, i, 1)).Wrap();
-            state.strict.Push(true);
+
+            var explicitCtor = false;
+            var oldStrict = state.strict;
+            state.strict = true;
             var flds = new Dictionary<string, CodeNode>();
             while (code[i] != '}')
             {
@@ -131,8 +138,8 @@ namespace NiL.JS.Expressions
                 {
                     i = s;
                     string fieldName = null;
-                    if (Parser.ValidateName(state.Code, ref i, false, true, state.strict.Peek()))
-                        fieldName = Tools.Unescape(state.Code.Substring(s, i - s), state.strict.Peek());
+                    if (Parser.ValidateName(state.Code, ref i, false, true, state.strict))
+                        fieldName = Tools.Unescape(state.Code.Substring(s, i - s), state.strict);
                     else if (Parser.ValidateValue(state.Code, ref i))
                     {
                         double d = 0.0;
@@ -140,21 +147,32 @@ namespace NiL.JS.Expressions
                         if (Tools.ParseNumber(state.Code, ref n, out d))
                             fieldName = Tools.DoubleToString(d);
                         else if (state.Code[s] == '\'' || state.Code[s] == '"')
-                            fieldName = Tools.Unescape(state.Code.Substring(s + 1, i - s - 2), state.strict.Peek());
+                            fieldName = Tools.Unescape(state.Code.Substring(s + 1, i - s - 2), state.strict);
                     }
                     if (fieldName == null)
                         throw new JSException((new SyntaxError("Invalid field name at " + CodeCoordinates.FromTextPosition(state.Code, s, i - s))));
+                    if (flds.ContainsKey(fieldName))
+                        throw new JSException(new SyntaxError("Try to redefine field \"" + fieldName + "\" at " + CodeCoordinates.FromTextPosition(state.Code, s, i - s)));
+                    if (fieldName == "constructor")
+                        explicitCtor = true;
                     i = s;
                     var initializator = FunctionNotation.Parse(state, ref i, FunctionType.Method).Statement as FunctionNotation;
                     if (initializator == null)
                         throw new SyntaxError().Wrap();
-                    CodeNode aei = null;
-                    if (flds.TryGetValue(fieldName, out aei))
-                        throw new JSException(new SyntaxError("Try to redefine field \"" + fieldName + "\" at " + CodeCoordinates.FromTextPosition(state.Code, s, i - s)));
                     flds[fieldName] = initializator;
                 }
             }
-            state.strict.Pop();
+            state.strict = oldStrict;
+            if (!explicitCtor)
+            {
+                string ctorCode;
+                int ctorIndex = 0;
+                if (bce != null && !(bce is ConstantNotation))
+                    ctorCode = "constructor(...args) { super(...args); }";
+                else
+                    ctorCode = "constructor(...args) { }";
+                flds["constructor"] = FunctionNotation.Parse(new ParsingState(ctorCode, ctorCode, null), ref ctorIndex).Statement;
+            }
             index = i + 1;
             return new ParseResult() { IsParsed = true, Statement = new ClassNotation(name, bce, flds) };
         }

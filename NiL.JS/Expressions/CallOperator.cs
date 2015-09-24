@@ -11,19 +11,12 @@ namespace NiL.JS.Expressions
 #endif
     public sealed class CallOperator : Expression
     {
-        public override bool IsContextIndependent
-        {
-            get
-            {
-                return false;
-            }
-        }
+        private Expression[] arguments;
+        internal bool allowTCO;
+        internal bool containsSpread;
 
-        protected internal override bool ResultInTempContainer
-        {
-            get { return false; }
-        }
-
+        public override bool IsContextIndependent { get { return false; } }
+        protected internal override bool ResultInTempContainer { get { return false; } }
         protected internal override PredictedType ResultType
         {
             get
@@ -40,11 +33,9 @@ namespace NiL.JS.Expressions
                 return PredictedType.Unknown;
             }
         }
-
-        private Expression[] arguments;
         public Expression[] Arguments { get { return arguments; } }
-        internal bool allowTCO;
         public bool AllowTCO { get { return allowTCO; } }
+        public bool ContainsSpread { get { return containsSpread; } }
 
         internal CallOperator(Expression first, Expression[] arguments)
             : base(first, null, false)
@@ -76,9 +67,7 @@ namespace NiL.JS.Expressions
             var temp = first.Evaluate(context);
             JSValue newThisBind = context.objectSource;
 
-            bool tail = false;
             Function func = temp.valueType == JSValueType.Function ? temp.oValue as Function ?? (temp.oValue as TypeProxy).prototypeInstance as Function : null; // будем надеяться, что только в одном случае в oValue не будет лежать функция
-            Arguments arguments = null;
             if (func == null)
             {
                 for (int i = 0; i < this.arguments.Length; i++)
@@ -88,7 +77,7 @@ namespace NiL.JS.Expressions
                 }
                 context.objectSource = null;
                 // Аргументы должны быть вычислены даже если функция не существует.
-                throw new JSException(new NiL.JS.BaseLibrary.TypeError(first.ToString() + " is not callable"));
+                ExceptionsHelper.Throw(new TypeError(first.ToString() + " is not callable"));
             }
             else
             {
@@ -98,27 +87,7 @@ namespace NiL.JS.Expressions
                     && func == context.caller.oValue
                     && context.caller.oValue != Script.pseudoCaller)
                 {
-                    context.abort = AbortType.TailRecursion;
-                    tail = true;
-
-                    arguments = new Core.Arguments()
-                    {
-                        caller = context.strict && context.caller != null && context.caller.creator.body.strict ? Function.propertiesDummySM : context.caller,
-                        length = this.arguments.Length
-                    };
-                    for (int i = 0; i < this.arguments.Length; i++)
-                        arguments[i] = PrepareArg(context, this.arguments[i], tail, this.arguments.Length > 1);
-                    context.objectSource = null;
-
-                    arguments.callee = func;
-                    for (var i = func.creator.body.localVariables.Length; i-- > 0; )
-                    {
-                        if (func.creator.body.localVariables[i].Inititalizator == null)
-                            func.creator.body.localVariables[i].cacheRes.Assign(JSValue.undefined);
-                    }
-                    func._arguments = arguments;
-                    if (context.fields != null && context.fields.ContainsKey("arguments"))
-                        context.fields["arguments"] = arguments;
+                    tailCall(context, func);
                     return JSValue.undefined;
                 }
                 else
@@ -128,6 +97,31 @@ namespace NiL.JS.Expressions
 
             checkStack();
             return func.InternalInvoke(newThisBind, this.arguments, context);
+        }
+
+        private void tailCall(Context context, Function func)
+        {
+            context.abort = AbortType.TailRecursion;
+            var tail = true;
+
+            var arguments = new Arguments()
+            {
+                caller = context.strict && context.caller != null && context.caller.creator.body.strict ? Function.propertiesDummySM : context.caller,
+                length = this.arguments.Length
+            };
+            for (int i = 0; i < this.arguments.Length; i++)
+                arguments[i] = PrepareArg(context, this.arguments[i], tail, this.arguments.Length > 1);
+            context.objectSource = null;
+
+            arguments.callee = func;
+            for (var i = func.creator.body.localVariables.Length; i-- > 0; )
+            {
+                if (func.creator.body.localVariables[i].Inititalizator == null)
+                    func.creator.body.localVariables[i].cacheRes.Assign(JSValue.undefined);
+            }
+            func._arguments = arguments;
+            if (context.fields != null && context.fields.ContainsKey("arguments"))
+                context.fields["arguments"] = arguments;
         }
 
         private static void checkStack()

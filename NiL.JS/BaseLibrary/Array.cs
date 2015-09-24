@@ -1563,7 +1563,7 @@ namespace NiL.JS.BaseLibrary
                 var delta = System.Math.Max(0, args.length - 2) - (pos1 - pos0);
                 var res = needResult ? new Array() : null;
                 long prewKey = -1;
-                foreach (var keyS in Tools.iterablyEnum(_length, self))
+                foreach (var keyS in Tools.EnumerateIterably(_length, self))
                 {
                     if (prewKey == -1)
                         prewKey = (uint)keyS.Key;
@@ -1584,7 +1584,7 @@ namespace NiL.JS.BaseLibrary
                         break;
                     else if (pos0 <= keyS.Key)
                     {
-                        var value = self[keyS.Value];
+                        var value = keyS.Value;
                         if (value.ValueType == JSValueType.Property)
                             value = Tools.invokeGetter(value, self).CloneImpl();
                         else
@@ -1812,10 +1812,10 @@ namespace NiL.JS.BaseLibrary
 
                     var tt = new BinaryTree<JSValue, List<JSValue>>(new JSComparer(args, first, second, comparer));
                     List<string> keysToRemove = new List<string>();
-                    foreach (var key in Tools.iterablyEnum(len, self))
+                    foreach (var key in Tools.EnumerateIterably(len, self))
                     {
-                        keysToRemove.Add(key.Value);
-                        var item = self[key.Value];
+                        keysToRemove.Add(key.Key.ToString());
+                        var item = key.Value;
                         if (item.IsDefinded)
                         {
                             item = item.CloneImpl();

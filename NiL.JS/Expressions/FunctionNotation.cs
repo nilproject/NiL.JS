@@ -221,6 +221,11 @@ namespace NiL.JS.Expressions
         public CodeBlock Body { get { return body; } }
         public ReadOnlyCollection<ParameterDescriptor> Parameters { get { return new ReadOnlyCollection<ParameterDescriptor>(parameters); } }
 
+        public override bool Hoist
+        {
+            get { return true; }
+        }
+
         public override bool IsContextIndependent
         {
             get
@@ -307,12 +312,12 @@ namespace NiL.JS.Expressions
             if (code[i] != '(')
             {
                 nameStartPos = i;
-                if (Parser.ValidateName(code, ref i, false, true, state.strict.Peek()))
-                    name = Tools.Unescape(code.Substring(nameStartPos, i - nameStartPos), state.strict.Peek());
+                if (Parser.ValidateName(code, ref i, false, true, state.strict))
+                    name = Tools.Unescape(code.Substring(nameStartPos, i - nameStartPos), state.strict);
                 else if ((mode == FunctionType.Get || mode == FunctionType.Set) && Parser.ValidateString(code, ref i, false))
-                    name = Tools.Unescape(code.Substring(nameStartPos + 1, i - nameStartPos - 2), state.strict.Peek());
+                    name = Tools.Unescape(code.Substring(nameStartPos + 1, i - nameStartPos - 2), state.strict);
                 else if ((mode == FunctionType.Get || mode == FunctionType.Set) && Parser.ValidateNumber(code, ref i))
-                    name = Tools.Unescape(code.Substring(nameStartPos, i - nameStartPos), state.strict.Peek());
+                    name = Tools.Unescape(code.Substring(nameStartPos, i - nameStartPos), state.strict);
                 else throw new JSException((new SyntaxError("Invalid function name at " + CodeCoordinates.FromTextPosition(code, nameStartPos, i - nameStartPos))));
                 while (char.IsWhiteSpace(code[i])) i++;
                 if (code[i] != '(')
@@ -329,9 +334,9 @@ namespace NiL.JS.Expressions
             {
                 bool rest = Parser.Validate(code, "...", ref i);
                 int n = i;
-                if (!Parser.ValidateName(code, ref i, state.strict.Peek()))
+                if (!Parser.ValidateName(code, ref i, state.strict))
                     throw new JSException((new SyntaxError("Invalid char at " + CodeCoordinates.FromTextPosition(code, nameStartPos, 0))));
-                var pname = Tools.Unescape(code.Substring(n, i - n), state.strict.Peek());
+                var pname = Tools.Unescape(code.Substring(n, i - n), state.strict);
                 parameters.Add(new ParameterReference(pname, rest, state.functionsDepth + 1)
                 {
                     Position = n,
@@ -363,9 +368,6 @@ namespace NiL.JS.Expressions
             do i++; while (char.IsWhiteSpace(code[i]));
             if (code[i] != '{')
                 throw new JSException(new SyntaxError("Unexpected char at " + CodeCoordinates.FromTextPosition(code, i, 0)));
-            bool needSwitchCWith = state.containsWith.Peek();
-            if (needSwitchCWith)
-                state.containsWith.Push(false);
             var labels = state.Labels;
             state.Labels = new List<string>();
             state.functionsDepth++;
@@ -523,7 +525,7 @@ namespace NiL.JS.Expressions
             codeContext = state;
 
             if ((state & _BuildState.InLoop) != 0 && message != null)
-                message(MessageLevel.Warning, new CodeCoordinates(0, Position, EndPosition - Position), "Do not define function inside a loop");
+                message(MessageLevel.Warning, new CodeCoordinates(0, Position, EndPosition - Position), Strings.FunctionInLoop);
 
             var bodyCode = body as CodeNode;
             var nvars = new Dictionary<string, VariableDescriptor>();
@@ -602,7 +604,6 @@ namespace NiL.JS.Expressions
                 }
             }
             checkUsings();
-            base.Build(ref _this, depth, variables, state, message, statistic, opts);
             return false;
         }
 

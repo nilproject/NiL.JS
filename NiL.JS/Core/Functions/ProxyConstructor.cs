@@ -86,7 +86,7 @@ namespace NiL.JS.Core.Functions
                 _length = new Number(0) { attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnum };
 
 #if PORTABLE
-            var ctors = typeProxy.hostedType.GetTypeInfo().DeclaredConstructors.ToArray();
+            var ctors = System.Linq.Enumerable.ToArray(typeProxy.hostedType.GetTypeInfo().DeclaredConstructors);
             List<MethodProxy> ctorsL = new List<MethodProxy>(ctors.Length + (typeProxy.hostedType.GetTypeInfo().IsValueType ? 1 : 0));
 #else
             var ctors = typeProxy.hostedType.GetConstructors(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);

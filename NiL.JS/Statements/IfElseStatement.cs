@@ -110,11 +110,11 @@ namespace NiL.JS.Statements
             CodeNode body = Parser.Parse(state, ref i, 0);
             if (body is FunctionNotation)
             {
-                if (state.strict.Peek())
+                if (state.strict)
                     throw new JSException((new NiL.JS.BaseLibrary.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
                 if (state.message != null)
                     state.message(MessageLevel.CriticalWarning, CodeCoordinates.FromTextPosition(state.Code, body.Position, body.Length), "Do not declare function in nested blocks.");
-                body = new CodeBlock(new[] { body }, state.strict.Peek()); // для того, чтобы не дублировать код по декларации функции, 
+                body = new CodeBlock(new[] { body }, state.strict); // для того, чтобы не дублировать код по декларации функции, 
                 // она оборачивается в блок, который сделает самовыпил на втором этапе, но перед этим корректно объявит функцию.
             }
             CodeNode elseBody = null;
@@ -128,11 +128,11 @@ namespace NiL.JS.Statements
                 elseBody = Parser.Parse(state, ref i, 0);
                 if (elseBody is FunctionNotation)
                 {
-                    if (state.strict.Peek())
+                    if (state.strict)
                         throw new JSException((new NiL.JS.BaseLibrary.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
                     if (state.message != null)
                         state.message(MessageLevel.CriticalWarning, CodeCoordinates.FromTextPosition(state.Code, elseBody.Position, elseBody.Length), "Do not declare function in nested blocks.");
-                    elseBody = new CodeBlock(new[] { elseBody }, state.strict.Peek()); // для того, чтобы не дублировать код по декларации функции, 
+                    elseBody = new CodeBlock(new[] { elseBody }, state.strict); // для того, чтобы не дублировать код по декларации функции, 
                     // она оборачивается в блок, который сделает самовыпил на втором этапе, но перед этим корректно объявит функцию.
                 }
             }

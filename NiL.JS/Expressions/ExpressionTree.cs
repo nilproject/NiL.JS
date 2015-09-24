@@ -390,9 +390,9 @@ namespace NiL.JS.Statements
                 threads[1] = (Expression)ExpressionTree.Parse(state, ref i, false, false, false, true, false, forEnumeration).Statement;
                 first.Length = i - first.Position;
             }
-            else if (Parser.ValidateName(state.Code, ref i, state.strict.Peek()) || Parser.Validate(state.Code, "this", ref i))
+            else if (Parser.ValidateName(state.Code, ref i, state.strict) || Parser.Validate(state.Code, "this", ref i))
             {
-                var name = Tools.Unescape(state.Code.Substring(s, i - s), state.strict.Peek());
+                var name = Tools.Unescape(state.Code.Substring(s, i - s), state.strict);
                 if (name == "undefined")
                     first = new ConstantNotation(JSValue.undefined) { Position = index, Length = i - index };
                 else
@@ -403,7 +403,7 @@ namespace NiL.JS.Statements
                 string value = state.Code.Substring(s, i - s);
                 if ((value[0] == '\'') || (value[0] == '"'))
                 {
-                    value = Tools.Unescape(value.Substring(1, value.Length - 2), state.strict.Peek());
+                    value = Tools.Unescape(value.Substring(1, value.Length - 2), state.strict);
                     if (state.stringConstants.ContainsKey(value))
                         first = new ConstantNotation(state.stringConstants[value]) { Position = index, Length = i - s };
                     else
@@ -420,7 +420,7 @@ namespace NiL.JS.Statements
                     {
                         int n = 0;
                         double d = 0;
-                        if (Tools.ParseNumber(state.Code, ref s, out d, 0, Tools.ParseNumberOptions.Default | (state.strict.Peek() ? Tools.ParseNumberOptions.RaiseIfOctal : Tools.ParseNumberOptions.None)))
+                        if (Tools.ParseNumber(state.Code, ref s, out d, 0, Tools.ParseNumberOptions.Default | (state.strict ? Tools.ParseNumberOptions.RaiseIfOctal : Tools.ParseNumberOptions.None)))
                         {
                             if ((n = (int)d) == d && !double.IsNegativeInfinity(1.0 / d))
                             {
@@ -485,7 +485,7 @@ namespace NiL.JS.Statements
                                     var cord = CodeCoordinates.FromTextPosition(state.Code, i, 0);
                                     throw new JSException((new SyntaxError("Invalid prefix operation. " + cord)));
                                 }
-                                if (state.strict.Peek()
+                                if (state.strict
                                     && (first is GetVariableExpression) && ((first as GetVariableExpression).Name == "arguments" || (first as GetVariableExpression).Name == "eval"))
                                     throw new JSException(new SyntaxError("Can not incriment \"" + (first as GetVariableExpression).Name + "\" in strict mode."));
                                 first = new Expressions.IncrementOperator(first, Expressions.IncrimentType.Preincriment) { Position = index, Length = i - index };
@@ -515,7 +515,7 @@ namespace NiL.JS.Statements
                                     var cord = CodeCoordinates.FromTextPosition(state.Code, i, 0);
                                     throw new JSException((new SyntaxError("Invalid prefix operation. " + cord)));
                                 }
-                                if (state.strict.Peek()
+                                if (state.strict
                                     && (first is GetVariableExpression) && ((first as GetVariableExpression).Name == "arguments" || (first as GetVariableExpression).Name == "eval"))
                                     throw new JSException(new SyntaxError("Can not decriment \"" + (first as GetVariableExpression).Name + "\" in strict mode."));
                                 first = new Expressions.DecrementOperator(first, Expressions.DecrimentType.Predecriment) { Position = index, Length = i - index };
@@ -643,8 +643,6 @@ namespace NiL.JS.Statements
                             break;
 #endif
                         }
-                    default:
-                        throw new NotImplementedException("Unary operator " + state.Code[i]);
                 }
             }
             else if (state.Code[i] == '(')
@@ -761,23 +759,6 @@ namespace NiL.JS.Statements
                                 break;
                             }
                             type = OperationType.Ternary;
-                            //do
-                            //    i++;
-                            //while (char.IsWhiteSpace(state.Code[i]));
-                            //position = i;
-                            //var threads = new CodeNode[]
-                            //    {
-                            //        ExpressionStatement.Parse(state, ref i, true, false, false, true, false).Statement,
-                            //        null
-                            //    };
-                            //if (state.Code[i] != ':')
-                            //    throw new ArgumentException("Invalid char in ternary operator");
-                            //do
-                            //    i++;
-                            //while (char.IsWhiteSpace(state.Code[i]));
-                            //second = new Constant(new JSObject() { valueType = JSObjectType.Object, oValue = threads }) { Position = position };
-                            //threads[1] = ExpressionStatement.Parse(state, ref i, false, false, false, true, false).Statement;
-                            //second.Length = i - second.Position;
                             binary = true;
                             repeat = false;
                             break;
@@ -814,7 +795,7 @@ namespace NiL.JS.Statements
                             {
                                 if (rollbackPos != i)
                                     goto default;
-                                if (state.strict.Peek())
+                                if (state.strict)
                                 {
                                     if ((first is GetVariableExpression)
                                         && ((first as GetVariableExpression).Name == "arguments" || (first as GetVariableExpression).Name == "eval"))
@@ -851,7 +832,7 @@ namespace NiL.JS.Statements
                             {
                                 if (rollbackPos != i)
                                     goto default;
-                                if (state.strict.Peek())
+                                if (state.strict)
                                 {
                                     if ((first is GetVariableExpression)
                                         && ((first as GetVariableExpression).Name == "arguments" || (first as GetVariableExpression).Name == "eval"))
@@ -1090,7 +1071,7 @@ namespace NiL.JS.Statements
                             while (char.IsWhiteSpace(state.Code[i]))
                                 i++;
                             s = i;
-                            if (!Parser.ValidateName(state.Code, ref i, false, true, state.strict.Peek()))
+                            if (!Parser.ValidateName(state.Code, ref i, false, true, state.strict))
                                 throw new ArgumentException("code (" + i + ")");
                             string name = state.Code.Substring(s, i - s);
                             JSValue jsname = null;
@@ -1159,7 +1140,7 @@ namespace NiL.JS.Statements
                                     while (char.IsWhiteSpace(state.Code[i]));
                                 }
                                 if (i + 1 == state.Code.Length)
-                                    throw new JSException((new SyntaxError("Unexpected end of line")));
+                                    throw new JSException(new SyntaxError("Unexpected end of line"));
                                 args.Add((Expression)ExpressionTree.Parse(state, ref i, false).Statement);
                                 if (args[args.Count - 1] == null)
                                     throw new JSException((new SyntaxError("Expected \")\" at " + CodeCoordinates.FromTextPosition(state.Code, startPos, 0))));
@@ -1221,7 +1202,7 @@ namespace NiL.JS.Statements
                         }
                 }
             } while (repeat);
-            if (state.strict.Peek()
+            if (state.strict
                 && (first is GetVariableExpression) && ((first as GetVariableExpression).Name == "arguments" || (first as GetVariableExpression).Name == "eval"))
             {
                 if (assign || type == OperationType.Assign)

@@ -108,8 +108,8 @@ namespace NiL.JS.Expressions
                 {
                     i = s;
                     var fieldName = "";
-                    if (Parser.ValidateName(state.Code, ref i, false, true, state.strict.Peek()))
-                        fieldName = Tools.Unescape(state.Code.Substring(s, i - s), state.strict.Peek());
+                    if (Parser.ValidateName(state.Code, ref i, false, true, state.strict))
+                        fieldName = Tools.Unescape(state.Code.Substring(s, i - s), state.strict);
                     else if (Parser.ValidateValue(state.Code, ref i))
                     {
                         if (state.Code[s] == '-')
@@ -119,7 +119,7 @@ namespace NiL.JS.Expressions
                         if (Tools.ParseNumber(state.Code, ref n, out d))
                             fieldName = Tools.DoubleToString(d);
                         else if (state.Code[s] == '\'' || state.Code[s] == '"')
-                            fieldName = Tools.Unescape(state.Code.Substring(s + 1, i - s - 2), state.strict.Peek());
+                            fieldName = Tools.Unescape(state.Code.Substring(s + 1, i - s - 2), state.strict);
                         else if (flds.Count != 0)
                             throw new JSException((new SyntaxError("Invalid field name at " + CodeCoordinates.FromTextPosition(state.Code, s, i - s))));
                         else
@@ -136,7 +136,7 @@ namespace NiL.JS.Expressions
                     CodeNode aei = null;
                     if (flds.TryGetValue(fieldName, out aei))
                     {
-                        if (((state.strict.Peek() && (!(aei is ConstantNotation) || (aei as ConstantNotation).value != JSValue.undefined))
+                        if (((state.strict && (!(aei is ConstantNotation) || (aei as ConstantNotation).value != JSValue.undefined))
                             || (aei is ConstantNotation && ((aei as ConstantNotation).value.valueType == JSValueType.Property))))
                             throw new JSException(new SyntaxError("Try to redefine field \"" + fieldName + "\" at " + CodeCoordinates.FromTextPosition(state.Code, s, i - s)));
                         if (state.message != null)

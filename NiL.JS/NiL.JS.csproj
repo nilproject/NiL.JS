@@ -267,6 +267,7 @@
     <Compile Include="Core\Interop\DisallowNewKeywordAttribute.cs" />
     <Compile Include="Core\Interop\RequireNewKeywordAttribute.cs" />
     <Compile Include="ExceptionsHelper.cs" />
+    <Compile Include="Expressions\SpreadOperator.cs" />
     <Compile Include="Expressions\EntityNotation.cs" />
     <Compile Include="Expressions\RegExpCreateExpression.cs" />
     <Compile Include="Core\Interop\InstanceMemberAttribute.cs" />

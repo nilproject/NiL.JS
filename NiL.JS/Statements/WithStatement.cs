@@ -18,11 +18,10 @@ namespace NiL.JS.Statements
 
         internal static ParseResult Parse(ParsingState state, ref int index)
         {
-            state.containsWith.Push(state.containsWith.Pop() || true);
             int i = index;
             if (!Parser.Validate(state.Code, "with (", ref i) && !Parser.Validate(state.Code, "with(", ref i))
                 return new ParseResult();
-            if (state.strict.Peek())
+            if (state.strict)
                 throw new JSException((new NiL.JS.BaseLibrary.SyntaxError("WithStatement is not allowed in strict mode.")));
             if (state.message != null)
                 state.message(MessageLevel.CriticalWarning, CodeCoordinates.FromTextPosition(state.Code, index, 4), "Do not use \"with\".");
@@ -34,11 +33,11 @@ namespace NiL.JS.Statements
             var body = Parser.Parse(state, ref i, 0);
             if (body is FunctionNotation)
             {
-                if (state.strict.Peek())
+                if (state.strict)
                     throw new JSException((new NiL.JS.BaseLibrary.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
                 if (state.message != null)
                     state.message(MessageLevel.CriticalWarning, CodeCoordinates.FromTextPosition(state.Code, body.Position, body.Length), "Do not declare function in nested blocks.");
-                body = new CodeBlock(new[] { body }, state.strict.Peek()); // для того, чтобы не дублировать код по декларации функции, 
+                body = new CodeBlock(new[] { body }, state.strict); // для того, чтобы не дублировать код по декларации функции, 
                 // она оборачивается в блок, который сделает самовыпил на втором этапе, но перед этим корректно объявит функцию.
             }
             var pos = index;

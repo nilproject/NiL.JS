@@ -92,7 +92,7 @@ namespace NiL.JS.Statements
                     continue;
                 if (t is FunctionNotation)
                 {
-                    if (state.strict.Peek())
+                    if (state.strict)
                         throw new JSException((new NiL.JS.BaseLibrary.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
                     funcs.Add(t as FunctionNotation);
                 }

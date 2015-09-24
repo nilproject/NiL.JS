@@ -55,10 +55,10 @@ namespace NiL.JS.Statements
                 while (char.IsWhiteSpace(state.Code[i])) i++;
                 int start = i;
                 string varName;
-                if (!Parser.ValidateName(state.Code, ref i, state.strict.Peek()))
+                if (!Parser.ValidateName(state.Code, ref i, state.strict))
                     throw new JSException(new SyntaxError("Invalid variable name at " + CodeCoordinates.FromTextPosition(state.Code, start, 0)));
-                varName = Tools.Unescape(state.Code.Substring(start, i - start), state.strict.Peek());
-                if (state.strict.Peek())
+                varName = Tools.Unescape(state.Code.Substring(start, i - start), state.strict);
+                if (state.strict)
                 {
                     if (varName == "arguments" || varName == "eval")
                         throw new JSException((new SyntaxError("Parameters name may not be \"arguments\" or \"eval\" in strict mode at " + CodeCoordinates.FromTextPosition(state.Code, start, i - start))));
@@ -72,10 +72,10 @@ namespace NiL.JS.Statements
                 while (char.IsWhiteSpace(state.Code[i])) i++;
                 int start = i;
                 string varName;
-                if (!Parser.ValidateName(state.Code, ref i, state.strict.Peek()))
+                if (!Parser.ValidateName(state.Code, ref i, state.strict))
                     return new ParseResult();
-                varName = Tools.Unescape(state.Code.Substring(start, i - start), state.strict.Peek());
-                if (state.strict.Peek())
+                varName = Tools.Unescape(state.Code.Substring(start, i - start), state.strict);
+                if (state.strict)
                 {
                     if (varName == "arguments" || varName == "eval")
                         throw new JSException((new SyntaxError("Parameters name may not be \"arguments\" or \"eval\" in strict mode at " + CodeCoordinates.FromTextPosition(state.Code, start, i - start))));
@@ -116,11 +116,11 @@ namespace NiL.JS.Statements
             res.body = Parser.Parse(state, ref i, 0);
             if (res.body is FunctionNotation)
             {
-                if (state.strict.Peek())
+                if (state.strict)
                     throw new JSException((new NiL.JS.BaseLibrary.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
                 if (state.message != null)
                     state.message(MessageLevel.CriticalWarning, CodeCoordinates.FromTextPosition(state.Code, res.body.Position, res.body.Length), "Do not declare function in nested blocks.");
-                res.body = new CodeBlock(new[] { res.body }, state.strict.Peek()); // для того, чтобы не дублировать код по декларации функции, 
+                res.body = new CodeBlock(new[] { res.body }, state.strict); // для того, чтобы не дублировать код по декларации функции, 
                 // она оборачивается в блок, который сделает самовыпил на втором этапе, но перед этим корректно объявит функцию.
             }
             state.AllowBreak.Pop();

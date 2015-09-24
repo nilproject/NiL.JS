@@ -75,6 +75,7 @@ namespace NiL.JS.Statements
                 return source.ToString();
             }
         }
+
         internal int functionDepth;
         internal VariableDescriptor[] variables;
         internal CodeNode[] initializators;
@@ -117,14 +118,14 @@ namespace NiL.JS.Statements
             while ((state.Code[i] != ';') && (state.Code[i] != '}') && !Tools.isLineTerminator(state.Code[i]))
             {
                 int s = i;
-                if (!Parser.ValidateName(state.Code, ref i, state.strict.Peek()))
+                if (!Parser.ValidateName(state.Code, ref i, state.strict))
                 {
-                    if (Parser.ValidateName(state.Code, ref i, false, true, state.strict.Peek()))
-                        throw new JSException((new SyntaxError('\"' + Tools.Unescape(state.Code.Substring(s, i - s), state.strict.Peek()) + "\" is a reserved word at " + CodeCoordinates.FromTextPosition(state.Code, s, i - s))));
+                    if (Parser.ValidateName(state.Code, ref i, false, true, state.strict))
+                        throw new JSException((new SyntaxError('\"' + Tools.Unescape(state.Code.Substring(s, i - s), state.strict) + "\" is a reserved word at " + CodeCoordinates.FromTextPosition(state.Code, s, i - s))));
                     throw new JSException((new SyntaxError("Invalid variable definition at " + CodeCoordinates.FromTextPosition(state.Code, s, i - s))));
                 }
-                string name = Tools.Unescape(state.Code.Substring(s, i - s), state.strict.Peek());
-                if (state.strict.Peek())
+                string name = Tools.Unescape(state.Code.Substring(s, i - s), state.strict);
+                if (state.strict)
                 {
                     if (name == "arguments" || name == "eval")
                         throw new JSException((new SyntaxError("Varible name may not be \"arguments\" or \"eval\" in strict mode at " + CodeCoordinates.FromTextPosition(state.Code, s, i - s))));

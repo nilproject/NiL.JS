@@ -1388,11 +1388,9 @@ namespace NiL.JS.Core
                             return temp;
                     }
                     long prew = -1;
-                    var tjo = new JSValue() { valueType = JSValueType.String };
-                    foreach (var index in iterablyEnum(_length, src))
+                    foreach (var index in EnumerateIterably(_length, src))
                     {
-                        tjo.oValue = index.Value;
-                        var value = src.GetMember(tjo, false, false);
+                        var value = index.Value;
                         if (!value.IsExist)
                             continue;
                         if (evalProps && value.valueType == JSValueType.Property)
@@ -1419,30 +1417,40 @@ namespace NiL.JS.Core
             return temp;
         }
 
-        internal static IEnumerable<KeyValuePair<long, string>> iterablyEnum(long length, JSValue src)
+        internal static IEnumerable<KeyValuePair<uint, JSValue>> EnumerateIterably(long length, JSValue src)
         {
-            List<KeyValuePair<long, string>> res = null;
+            //List<KeyValuePair<uint, string>> res = null;
+            if (src.valueType == JSValueType.Object && src.Value is BaseLibrary.Array)
+            {
+                foreach (var item in (src.Value as BaseLibrary.Array).data.DirectOrder)
+                {
+                    yield return new KeyValuePair<uint, JSValue>((uint)item.Key, item.Value);
+                }
+            }
             var @enum = src.GetEnumerator(false);
             while (@enum.MoveNext())
             {
                 var i = @enum.Current;
                 var pindex = 0;
                 var dindex = 0.0;
-                long lindex = 0;
+                var lindex = 0U;
+                var key = new JSValue() { valueType = JSValueType.String };
                 if (Tools.ParseNumber(i, ref pindex, out dindex)
                     && (pindex == i.Length)
                     && dindex < length
-                    && (lindex = (long)dindex) == dindex)
+                    && (lindex = (uint)dindex) == dindex)
                 {
-                    if (res == null)
-                        res = new List<KeyValuePair<long, string>>();
-                    res.Add(new KeyValuePair<long, string>(lindex, i));
+                    //if (res == null)
+                    //    res = new List<KeyValuePair<uint, string>>();
+                    //res.Add(new KeyValuePair<uint, string>(lindex, i));
+                    key.oValue = i;
+                    yield return new KeyValuePair<uint, JSValue>(lindex, src.GetMember(key, false, false));
                 }
             }
-            if (res == null)
-                return new KeyValuePair<long, string>[0];
-            res.Sort(new Comparison<KeyValuePair<long, string>>((x, y) => System.Math.Sign(x.Key - y.Key)));
-            return res;
+            //if (res == null)
+            //    return new KeyValuePair<uint, string>[0];
+            //res.Sort(new Comparison<KeyValuePair<uint, string>>((x, y) => System.Math.Sign(x.Key - y.Key)));
+            //return res;
         }
 
         public static int CompareWithMask(Enum x, Enum y, Enum mask)

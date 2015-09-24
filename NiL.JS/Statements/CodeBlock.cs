@@ -117,9 +117,9 @@ namespace NiL.JS.Statements
                         if (Parser.ValidateString(state.Code, ref t, true))
                         {
                             var str = state.Code.Substring(s + 1, t - s - 2);
-                            if (!strictSwitch && str == "use strict")
+                            if (!strictSwitch && str == "use strict" && !state.strict)
                             {
-                                state.strict.Push(true);
+                                state.strict = true;
                                 strictSwitch = true;
                             }
                             if (directives == null)
@@ -146,7 +146,7 @@ namespace NiL.JS.Statements
                 i = start;
             }
             for (var j = body.Count; j-- > 0; )
-                (body[j] as ConstantNotation).value.oValue = Tools.Unescape((body[j] as ConstantNotation).value.oValue.ToString(), state.strict.Peek());
+                (body[j] as ConstantNotation).value.oValue = Tools.Unescape((body[j] as ConstantNotation).value.oValue.ToString(), state.strict);
 
             bool expectSemicolon = false;
             while ((sroot && i < state.Code.Length) || (!sroot && state.Code[i] != '}'))
@@ -165,7 +165,7 @@ namespace NiL.JS.Statements
                 }
                 if (t is FunctionNotation)
                 {
-                    if (state.strict.Peek() && !allowDirectives)
+                    if (state.strict && !allowDirectives)
                         throw new JSException((new NiL.JS.BaseLibrary.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
                     if (state.InExpression == 0 && string.IsNullOrEmpty((t as FunctionNotation).Name))
                         throw new JSException((new NiL.JS.BaseLibrary.SyntaxError("Declarated function must have name.")));
@@ -185,7 +185,7 @@ namespace NiL.JS.Statements
             return new ParseResult()
             {
                 IsParsed = true,
-                Statement = new CodeBlock(body.ToArray(), strictSwitch ? state.strict.Pop() : state.strict.Peek())
+                Statement = new CodeBlock(body.ToArray(), (state.strict ^= strictSwitch) || strictSwitch)
                 {
                     variables = emptyVariables,
                     Position = startPos,
@@ -278,7 +278,11 @@ namespace NiL.JS.Statements
                 if (fe != null)
                 {
                     Parser.Build(ref lines[i], (state & _BuildState.InEval) != 0 ? 2 : System.Math.Max(1, depth), variables, state | (this.strict ? _BuildState.Strict : _BuildState.None), message, statistic, opts);
-                    lines[i] = null;
+                    if (fe.Hoist)
+                    {
+                        lines[i] = null;
+                        fe.Register(variables, state);
+                    }
                 }
             }
             bool unreachable = false;

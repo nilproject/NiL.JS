@@ -117,6 +117,9 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="FunctionInLoop" xml:space="preserve">
+    <value>Do not define a function inside a loop</value>
+  </data>
   <data name="InvalidTryToCallWithNew" xml:space="preserve">
     <value>Method "{0}" can not be called with new keyword</value>
   </data>

@@ -43,10 +43,10 @@ namespace NiL.JS.Statements
             if (Parser.Validate(state.Code, "catch (", ref i) || Parser.Validate(state.Code, "catch(", ref i))
             {
                 int s = i;
-                if (!Parser.ValidateName(state.Code, ref i, state.strict.Peek()))
+                if (!Parser.ValidateName(state.Code, ref i, state.strict))
                     throw new JSException((new SyntaxError("Catch block must contain variable name " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
-                exptn = Tools.Unescape(state.Code.Substring(s, i - s), state.strict.Peek());
-                if (state.strict.Peek())
+                exptn = Tools.Unescape(state.Code.Substring(s, i - s), state.strict);
+                if (state.strict)
                 {
                     if (exptn == "arguments" || exptn == "eval")
                         throw new JSException((new SyntaxError("Varible name may not be \"arguments\" or \"eval\" in strict mode at " + CodeCoordinates.FromTextPosition(state.Code, s, i - s))));

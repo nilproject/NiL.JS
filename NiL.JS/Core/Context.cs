@@ -532,8 +532,7 @@ namespace NiL.JS.Core
                 int i = 0;
                 string c = Tools.RemoveComments(code, 0);
                 var ps = new ParsingState(c, code, null);
-                ps.strict.Clear();
-                ps.strict.Push(strict);
+                ps.strict = strict;
                 var cb = CodeBlock.Parse(ps, ref i).Statement;
                 var body = cb as CodeBlock;
                 bool leak = !(strict || body.strict);

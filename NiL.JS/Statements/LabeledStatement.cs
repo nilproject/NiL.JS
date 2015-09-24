@@ -20,7 +20,7 @@ namespace NiL.JS.Statements
         {
             int i = index;
             //string code = state.Code;
-            if (!Parser.ValidateName(state.Code, ref i, state.strict.Peek()))
+            if (!Parser.ValidateName(state.Code, ref i, state.strict))
                 return new ParseResult();
             int l = i;
             if (i >= state.Code.Length || (!Parser.Validate(state.Code, " :", ref i) && state.Code[i++] != ':'))
@@ -36,7 +36,7 @@ namespace NiL.JS.Statements
             {
                 if (state.message != null)
                     state.message(MessageLevel.CriticalWarning, CodeCoordinates.FromTextPosition(state.Code, stat.Position, stat.Length), "Labeled function. Are you sure?.");
-                stat = new CodeBlock(new[] { stat }, state.strict.Peek()); // для того, чтобы не дублировать код по декларации функции, 
+                stat = new CodeBlock(new[] { stat }, state.strict); // для того, чтобы не дублировать код по декларации функции, 
                 // она оборачивается в блок, который сделает самовыпил на втором этапе, но перед этим корректно объявит функцию.
             }
             var pos = index;
