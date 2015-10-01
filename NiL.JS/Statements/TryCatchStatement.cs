@@ -432,7 +432,7 @@ namespace NiL.JS.Statements
             return "try" + (body is CodeBlock ? sbody : " {" + Environment.NewLine + "  " + sbody + Environment.NewLine + "}") +
                 (catchBody != null ?
                 Environment.NewLine + "catch (" + catchVariableDesc + ")" +
-                (catchBody is CodeBlock ? cbody : "{ " + cbody + " }") : "") +
+                (catchBody != null ? cbody : "{ " + cbody + " }") : "") +
                 (finallyBody != null ?
                 Environment.NewLine + "finally" +
                 (finallyBody is CodeBlock ? fbody : " { " + fbody + " }") : "");

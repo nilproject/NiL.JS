@@ -846,16 +846,16 @@ namespace NiL.JS.BaseLibrary
                         var restArr = new Array((long)(arguments.Length - i));
                         _arguments[i] = restArr;
                         for (; i < arguments.Length; i++)
-                            restArr.data.Add(CallOperator.PrepareArg(initiator, arguments[i], false, arguments.Length > 1));
+                            restArr.data.Add(CallOperator.PrepareArg(initiator, arguments[i], arguments.Length > 1));
                     }
                     else
-                        _arguments[i] = CallOperator.PrepareArg(initiator, arguments[i], false, arguments.Length > 1);
+                        _arguments[i] = CallOperator.PrepareArg(initiator, arguments[i], arguments.Length > 1);
                 }
             }
             else
             {
                 for (int i = 0; i < arguments.Length; i++)
-                    _arguments[i] = CallOperator.PrepareArg(initiator, arguments[i], false, arguments.Length > 1);
+                    _arguments[i] = CallOperator.PrepareArg(initiator, arguments[i], arguments.Length > 1);
             }
             initiator.objectSource = null;
 
@@ -920,7 +920,7 @@ namespace NiL.JS.BaseLibrary
             JSValue res = null;
             var body = creator.body;
             thisBind = correctThisBind(thisBind, body.strict);
-            if (body == null || body.lines.Length == 0)
+            if (body.lines.Length == 0)
             {
                 notExists.valueType = JSValueType.NotExistsInObject;
                 return notExists;

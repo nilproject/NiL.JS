@@ -10,7 +10,7 @@ namespace NiL.JS.BaseLibrary
             for (var i = 0; i < args.length; i++)
             {
                 if (i > 0)
-                    System.Console.Write(" ");
+                    System.Console.Write(' ');
                 var r = args[i].ToString();
                 System.Console.Write(r);
             }

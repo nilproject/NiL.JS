@@ -113,9 +113,7 @@ namespace NiL.JS.Core.Functions
 #endif
             }
             else if (methodBase is ConstructorInfo)
-            {
                 makeConstructorOverExpression(methodBase as ConstructorInfo);
-            }
             else
                 throw new NotImplementedException();
         }
@@ -377,7 +375,7 @@ namespace NiL.JS.Core.Functions
                 };
 
                 for (int i = 0; i < arguments.Length; i++)
-                    _arguments[i] = NiL.JS.Expressions.CallOperator.PrepareArg(initiator, arguments[i], false, arguments.Length > 1);
+                    _arguments[i] = NiL.JS.Expressions.CallOperator.PrepareArg(initiator, arguments[i], arguments.Length > 1);
                 initiator.objectSource = null;
 
                 return Invoke(self, _arguments);
@@ -390,7 +388,7 @@ namespace NiL.JS.Core.Functions
                 args = new object[targetCount];
                 for (int i = targetCount; i-- > 0; )
                 {
-                    var obj = arguments.Length > i ? NiL.JS.Expressions.CallOperator.PrepareArg(initiator, arguments[i], false, arguments.Length > 1) : notExists;
+                    var obj = arguments.Length > i ? NiL.JS.Expressions.CallOperator.PrepareArg(initiator, arguments[i], arguments.Length > 1) : notExists;
                     if (obj.IsExist)
                     {
                         args[i] = marshal(obj, parameters[i].ParameterType);
@@ -443,14 +441,13 @@ namespace NiL.JS.Core.Functions
             {
                 target = hardTarget ?? getTargetObject(thisBind ?? undefined, methodBase.DeclaringType);
                 if (target == null)
-                    if (target == null)
-                    {
-                        // Исключительная ситуация. Я не знаю, почему Function.length обобщённое свойство, а не константа. Array.length работает по-другому.
-                        if (methodBase.Name == "get_length" && typeof(Function).IsAssignableFrom(methodBase.DeclaringType))
-                            return 0;
+                {
+                    // Исключительная ситуация. Я не знаю, почему Function.length обобщённое свойство, а не константа. Array.length работает по-другому.
+                    if (methodBase.Name == "get_length" && typeof(Function).IsAssignableFrom(methodBase.DeclaringType))
+                        return 0;
 
-                        throw new JSException(new TypeError("Can not call function \"" + this.name + "\" for object of another type."));
-                    }
+                    throw new JSException(new TypeError("Can not call function \"" + this.name + "\" for object of another type."));
+                }
             }
             try
             {
@@ -498,9 +495,7 @@ namespace NiL.JS.Core.Functions
                 return null;
             _this = _this.oValue as JSValue ?? _this; // это может быть лишь ссылка на какой-то другой контейнер
             var res = Tools.convertJStoObj(_this, targetType);
-            if (res != null)
-                return res;
-            return null;
+            return res;
         }
 
         internal object[] ConvertArgs(Arguments source, bool dummyValueTypes)

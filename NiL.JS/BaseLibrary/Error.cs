@@ -13,14 +13,14 @@ namespace NiL.JS.BaseLibrary
     public class Error
     {
         [DoNotEnumerate]
-        public virtual JSValue message
+        public JSValue message
         {
             [Hidden]
             get;
             private set;
         }
         [DoNotEnumerate]
-        public virtual JSValue name
+        public JSValue name
         {
             [Hidden]
             get;

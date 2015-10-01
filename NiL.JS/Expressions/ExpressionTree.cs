@@ -16,7 +16,7 @@ namespace NiL.JS.Statements
 #if !PORTABLE
     [Serializable]
 #endif
-    internal enum OperationTypeGroups : int
+    internal enum OperationTypeGroups
     {
         None = 0x0,
         Assign = 0x10,
@@ -39,7 +39,7 @@ namespace NiL.JS.Statements
 #if !PORTABLE
     [Serializable]
 #endif
-    internal enum OperationType : int
+    internal enum OperationType
     {
         None = OperationTypeGroups.None + 0,
         Assign = OperationTypeGroups.Assign + 0,
@@ -300,10 +300,6 @@ namespace NiL.JS.Statements
                 }
                 _type = value;
             }
-        }
-
-        public ExpressionTree()
-        {
         }
 
         private static Expression deicstra(ExpressionTree statement)
@@ -673,7 +669,7 @@ namespace NiL.JS.Statements
             }
             if (first is EmptyExpression)
                 throw new JSException((new SyntaxError("Invalid operator argument at " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
-            bool canAsign = true && !forUnary; // на случай f() = x
+            bool canAsign = !forUnary; // на случай f() = x
             bool assign = false; // на случай операторов 'x='
             bool binary = false;
             bool repeat; // лёгкая замена goto. Тот самый случай, когда он уместен.

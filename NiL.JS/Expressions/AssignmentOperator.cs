@@ -159,7 +159,7 @@ namespace NiL.JS.Expressions
                     && !statistic.ContainsEval
                     && !statistic.ContainsWith) // можем упустить присваивание
                 {
-                    if ((owner == null || owner.body.strict || gve.descriptor.owner != owner || !owner.statistic.ContainsArguments) // аргументы это одна сущность с двумя именами
+                    if ((owner.body.strict || gve.descriptor.owner != owner || !owner.statistic.ContainsArguments) // аргументы это одна сущность с двумя именами
                         && (codeContext & _BuildState.InLoop) == 0)
                     {
                         bool last = true;

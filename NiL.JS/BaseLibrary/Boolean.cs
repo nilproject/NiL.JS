@@ -105,7 +105,7 @@ namespace NiL.JS.BaseLibrary
         {
             if (self.GetType() == typeof(Boolean))
                 return self.iValue != 0;
-            if (!typeof(JSValue).IsAssignableFrom(self.GetType()) || self.valueType != JSValueType.Bool)
+            if (self.valueType != JSValueType.Bool)
                 throw new JSException(new TypeError("Boolean.prototype.valueOf called for not boolean."));
             return self;
         }

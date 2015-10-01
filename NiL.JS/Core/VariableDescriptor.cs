@@ -6,7 +6,7 @@ using NiL.JS.Expressions;
 
 namespace NiL.JS.Core
 {
-    public enum PredictedType : int
+    public enum PredictedType
     {
         Unknown = 0x0,
         Ambiguous = 0x10,

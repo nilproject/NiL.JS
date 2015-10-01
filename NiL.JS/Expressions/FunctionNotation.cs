@@ -633,7 +633,7 @@ namespace NiL.JS.Expressions
             {
                 statistic.ContainsDebugger |= this.statistic.ContainsDebugger;
                 statistic.ContainsEval |= this.statistic.ContainsEval;
-                statistic.ContainsInnerFunction |= true;
+                statistic.ContainsInnerFunction = true;
                 statistic.ContainsTry |= this.statistic.ContainsTry;
                 statistic.ContainsWith |= this.statistic.ContainsWith;
                 statistic.UseCall |= this.statistic.UseCall;

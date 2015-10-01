@@ -510,7 +510,7 @@ namespace NiL.JS.Core
             if (tpres != null && targetType.IsAssignableFrom(tpres.hostedType))
             {
                 jsobj = tpres.prototypeInstance;
-                if (jsobj != null && jsobj.GetType() == typeof(ObjectContainer))
+                if (jsobj is ObjectContainer)
                     return jsobj.Value;
                 return jsobj;
             }
@@ -1354,12 +1354,13 @@ namespace NiL.JS.Core
             for (; goDeep; )
             {
                 goDeep = false;
-                if (src.GetType() == typeof(BaseLibrary.Array))
+                var srca = src as BaseLibrary.Array;
+                if (srca != null)
                 {
                     if (_length == -1)
-                        _length = (src as NiL.JS.BaseLibrary.Array).data.Length;
+                        _length = srca.data.Length;
                     long prew = -1;
-                    foreach (var element in (src as BaseLibrary.Array).data.DirectOrder)
+                    foreach (var element in srca.data.DirectOrder)
                     {
                         if (element.Key >= _length) // эээ...
                             break;
@@ -1406,7 +1407,6 @@ namespace NiL.JS.Core
                     }
                     goDeep |= System.Math.Abs(prew - _length) > 1;
                 }
-                var crnt = src;
                 if (src.__proto__ == JSValue.Null)
                     break;
                 src = src.__proto__.oValue as JSValue ?? src.__proto__;

@@ -27,7 +27,7 @@ namespace NiL.JS.Expressions
             return res;
         }
 
-        internal sealed override JSValue Evaluate(Context context)
+        internal override JSValue Evaluate(Context context)
         {
             var res = context.caller._arguments;
             return res;

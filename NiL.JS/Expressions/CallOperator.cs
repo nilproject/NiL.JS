@@ -13,7 +13,6 @@ namespace NiL.JS.Expressions
     {
         private Expression[] arguments;
         internal bool allowTCO;
-        internal bool containsSpread;
 
         public override bool IsContextIndependent { get { return false; } }
         protected internal override bool ResultInTempContainer { get { return false; } }
@@ -35,7 +34,6 @@ namespace NiL.JS.Expressions
         }
         public Expression[] Arguments { get { return arguments; } }
         public bool AllowTCO { get { return allowTCO; } }
-        public bool ContainsSpread { get { return containsSpread; } }
 
         internal CallOperator(Expression first, Expression[] arguments)
             : base(first, null, false)
@@ -43,7 +41,7 @@ namespace NiL.JS.Expressions
             this.arguments = arguments;
         }
 
-        internal static JSValue PrepareArg(Context context, CodeNode source, bool tail, bool clone)
+        internal static JSValue PrepareArg(Context context, CodeNode source, bool clone)
         {
             context.objectSource = null;
             var a = source.Evaluate(context);
@@ -102,7 +100,6 @@ namespace NiL.JS.Expressions
         private void tailCall(Context context, Function func)
         {
             context.abort = AbortType.TailRecursion;
-            var tail = true;
 
             var arguments = new Arguments()
             {
@@ -110,7 +107,7 @@ namespace NiL.JS.Expressions
                 length = this.arguments.Length
             };
             for (int i = 0; i < this.arguments.Length; i++)
-                arguments[i] = PrepareArg(context, this.arguments[i], tail, this.arguments.Length > 1);
+                arguments[i] = PrepareArg(context, this.arguments[i], this.arguments.Length > 1);
             context.objectSource = null;
 
             arguments.callee = func;
@@ -156,20 +153,17 @@ namespace NiL.JS.Expressions
                 VariableDescriptor f = null;
                 if (variables.TryGetValue(name, out f))
                 {
-                    if (f.Inititalizator != null) // Defined function
+                    var func = f.Inititalizator as FunctionNotation;
+                    if (func != null)
                     {
-                        var func = f.Inititalizator as FunctionNotation;
-                        if (func != null)
+                        for (var i = 0; i < func.parameters.Length; i++)
                         {
-                            for (var i = 0; i < func.parameters.Length; i++)
-                            {
-                                if (i >= arguments.Length)
-                                    break;
-                                if (func.parameters[i].lastPredictedType == PredictedType.Unknown)
-                                    func.parameters[i].lastPredictedType = arguments[i].ResultType;
-                                else if (Tools.CompareWithMask(func.parameters[i].lastPredictedType, arguments[i].ResultType, PredictedType.Group) != 0)
-                                    func.parameters[i].lastPredictedType = PredictedType.Ambiguous;
-                            }
+                            if (i >= arguments.Length)
+                                break;
+                            if (func.parameters[i].lastPredictedType == PredictedType.Unknown)
+                                func.parameters[i].lastPredictedType = arguments[i].ResultType;
+                            else if (Tools.CompareWithMask(func.parameters[i].lastPredictedType, arguments[i].ResultType, PredictedType.Group) != 0)
+                                func.parameters[i].lastPredictedType = PredictedType.Ambiguous;
                         }
                     }
                 }

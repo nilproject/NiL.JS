@@ -226,7 +226,7 @@ namespace NiL.JS.BaseLibrary
             }
             if (isIndex)
             {
-                if (index > 0x7fffffff || index < 0)
+                if (index < 0)
                     throw new JSException(new RangeError("Invalid array index"));
                 if (index >= length.iValue)
                     return undefined;
@@ -284,7 +284,7 @@ namespace NiL.JS.BaseLibrary
             }
             if (isIndex)
             {
-                if (index > 0x7fffffff || index < 0)
+                if (index < 0)
                     throw new JSException(new RangeError("Invalid array index"));
                 if (index >= length.iValue)
                     return;

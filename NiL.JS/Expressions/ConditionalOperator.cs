@@ -17,8 +17,8 @@ namespace NiL.JS.Expressions
             get
             {
                 return base.IsContextIndependent
-                    && (threads[0] is ConstantNotation || (threads[0] is Expression && threads[0].IsContextIndependent))
-                    && (threads[1] is ConstantNotation || (threads[1] is Expression && threads[1].IsContextIndependent));
+                    && (threads[0].IsContextIndependent)
+                    && (threads[1].IsContextIndependent);
             }
         }
 

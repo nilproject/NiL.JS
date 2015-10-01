@@ -9,7 +9,7 @@ namespace NiL.JS.Core.Interop
           AttributeTargets.Field
         | AttributeTargets.Property
         | AttributeTargets.ReturnValue
-        | AttributeTargets.Parameter, AllowMultiple = false, Inherited = false)]
+        | AttributeTargets.Parameter)]
     /// <summary>
     /// Указывает на необходимость преобразования значения для доступа из сценария.
     /// </summary>

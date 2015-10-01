@@ -131,7 +131,7 @@ namespace NiL.JS.BaseLibrary
 
         protected internal override IEnumerator<string> GetEnumeratorImpl(bool pdef)
         {
-            var be = base.GetEnumerator();
+            var be = GetEnumerator();
             while (be.MoveNext())
                 yield return be.Current;
             for (var i = 0; i < data.Length; i++)

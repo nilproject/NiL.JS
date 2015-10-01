@@ -35,7 +35,7 @@ namespace NiL.JS
 
         static NamespaceProvider()
         {
-            AppDomain.CurrentDomain.AssemblyLoad += new AssemblyLoadEventHandler(CurrentDomain_AssemblyLoad);
+            AppDomain.CurrentDomain.AssemblyLoad += CurrentDomain_AssemblyLoad;
             var assms = AppDomain.CurrentDomain.GetAssemblies();
             for (int i = 0; i < assms.Length; i++)
                 addTypes(assms[i]);

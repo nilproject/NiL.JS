@@ -35,7 +35,7 @@ namespace NiL.JS.Core
         private int count;
         private int eicount;
 
-        private void insert(string key, TValue value, int hash, bool @throw, bool resizeMode)
+        private void insert(string key, TValue value, int hash, bool @throw)
         {
             if (key == null)
                 throw new ArgumentNullException();
@@ -243,7 +243,7 @@ namespace NiL.JS.Core
                 {
                     var index = existedIndexes[i];
                     if (oldRecords[index].key != null)
-                        insert(oldRecords[index].key, oldRecords[index].value, oldRecords[index].hash, false, true);
+                        insert(oldRecords[index].key, oldRecords[index].value, oldRecords[index].hash, false);
                 }
             }
             return records.Length;
@@ -251,7 +251,7 @@ namespace NiL.JS.Core
 
         public void Add(string key, TValue value)
         {
-            insert(key, value, computeHash(key), true, false);
+            insert(key, value, computeHash(key), true);
         }
 
         public bool ContainsKey(string key)
@@ -281,7 +281,7 @@ namespace NiL.JS.Core
             }
             set
             {
-                insert(key, value, computeHash(key), false, false);
+                insert(key, value, computeHash(key), false);
             }
         }
 

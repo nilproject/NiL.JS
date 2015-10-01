@@ -123,7 +123,7 @@ namespace NiL.JS.Statements
             Parser.Build(ref condition, 2, variables, state | _BuildState.InLoop | _BuildState.InExpression, message, statistic, opts);
             if ((opts & Options.SuppressUselessExpressionsElimination) == 0 && condition is ToBooleanOperator)
             {
-                if (message == null)
+                if (message != null)
                     message(MessageLevel.Warning, new CodeCoordinates(0, condition.Position, 2), "Useless conversion. Remove double negation in condition");
                 condition = (condition as Expression).first;
             }

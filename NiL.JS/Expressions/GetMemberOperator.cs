@@ -101,7 +101,7 @@ namespace NiL.JS.Expressions
                 && (Parser.ValidateName((second as ConstantNotation).value.ToString(), ref i, true)))
                 res += "." + (second as ConstantNotation).value;
             else
-                res += "[" + second.ToString() + "]";
+                res += "[" + second + "]";
             return res;
         }
     }

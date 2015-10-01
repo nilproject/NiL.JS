@@ -49,7 +49,7 @@ namespace NiL.JS.Expressions
 
             if (message != null && depth <= 1 && first != null && second != null)
                 message(MessageLevel.Warning, new CodeCoordinates(0, Position, 0), "Do not use comma as a statements delimiter");
-            if (second == null && (depth > 2 || first is Expression))
+            if (second == null)
             {
                 _this = first;
                 return true;

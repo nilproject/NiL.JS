@@ -180,12 +180,11 @@ namespace NiL.JS.BaseLibrary
                             day = month;
                             wasDay = true;
                         }
-                        else if (!wasYear)
+                        else
                         {
                             year = month;
                             wasYear = true;
                         }
-                        else return false;
                     }
                     wasForceMonth = true;
                     wasMonth = true;
@@ -831,7 +830,7 @@ namespace NiL.JS.BaseLibrary
                 || (time.valueType == JSValueType.Double && (double.IsNaN(time.dValue) || double.IsInfinity(time.dValue))))
             {
                 error = true;
-                time = 0;
+                this.time = 0;
             }
             else
             {
@@ -1184,6 +1183,8 @@ namespace NiL.JS.BaseLibrary
             }
         }
 
+#region Do not remove
+
         [Hidden]
         public override bool Equals(object obj)
         {
@@ -1195,5 +1196,8 @@ namespace NiL.JS.BaseLibrary
         {
             return base.GetHashCode();
         }
+
+#endregion
+
     }
 }

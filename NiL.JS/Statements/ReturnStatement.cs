@@ -66,7 +66,7 @@ namespace NiL.JS.Statements
         protected override CodeNode[] getChildsImpl()
         {
             if (body != null)
-                return new[] { body };
+                return new CodeNode[] { body };
             return new CodeNode[0];
         }
 

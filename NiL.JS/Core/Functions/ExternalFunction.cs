@@ -70,7 +70,7 @@ namespace NiL.JS.Core.Functions
 #else
             var paramCountAttrbt = del.Method.GetCustomAttributes(typeof(ArgumentsLengthAttribute), false);
 #endif
-            _length.iValue = paramCountAttrbt != null && paramCountAttrbt.Length > 0 ? ((ArgumentsLengthAttribute)paramCountAttrbt[0]).Count : 1;
+            _length.iValue = paramCountAttrbt.Length > 0 ? ((ArgumentsLengthAttribute)paramCountAttrbt[0]).Count : 1;
             _prototype = undefined;
             if (del == null)
                 throw new ArgumentNullException();

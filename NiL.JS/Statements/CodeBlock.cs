@@ -198,7 +198,7 @@ namespace NiL.JS.Statements
             };
         }
 
-        internal sealed override JSValue Evaluate(Context context)
+        internal override JSValue Evaluate(Context context)
         {
             var ls = lines;
             for (int i = ls.Length; i-- > 0; )

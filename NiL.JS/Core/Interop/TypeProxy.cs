@@ -156,7 +156,7 @@ namespace NiL.JS.Core.Interop
             {
                 lock (staticProxies)
                 {
-                    new TypeProxy(type);
+                    new TypeProxy(type); // It's ok. This instance will be registered and saved
                     constructor = staticProxies[type];
                 }
             }
@@ -434,10 +434,7 @@ namespace NiL.JS.Core.Interop
                                     valueType = JSValueType.Property,
                                     oValue = new PropertyPair
                                     (
-                                        new ExternalFunction((thisBind, a) =>
-                                        {
-                                            return Proxy(field.GetValue(field.IsStatic ? null : thisBind.Value));
-                                        }),
+                                        new ExternalFunction((thisBind, a) => Proxy(field.GetValue(field.IsStatic ? null : thisBind.Value))),
                                         !m[0].IsDefined(typeof(Interop.ReadOnlyAttribute), false) ? new ExternalFunction((thisBind, a) =>
                                         {
                                             field.SetValue(field.IsStatic ? null : thisBind.Value, a[0].Value);

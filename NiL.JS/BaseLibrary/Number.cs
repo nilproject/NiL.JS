@@ -234,7 +234,7 @@ namespace NiL.JS.BaseLibrary
         public static JSValue toString(JSValue self, Arguments radix)
         {
             var ovt = self.valueType;
-            if (self.valueType > JSValueType.Double && self.GetType() == typeof(Number))
+            if (self.valueType > JSValueType.Double && self is Number)
                 self.valueType = self.dValue == 0.0 ? JSValueType.Int : JSValueType.Double;
             try
             {
@@ -351,7 +351,7 @@ namespace NiL.JS.BaseLibrary
         [InstanceMember]
         public static JSValue valueOf(JSValue self)
         {
-            if (self.GetType() == typeof(Number))
+            if (self is Number)
                 return self.iValue == 0 ? self.dValue : self.iValue;
             if (self.valueType != JSValueType.Int && self.valueType != JSValueType.Double)
                 throw new JSException((new TypeError("Try to call Number.valueOf on not number object.")));

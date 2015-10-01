@@ -104,9 +104,9 @@ namespace NiL.JS.BaseLibrary
                 return string.Concat(self.ToString(), args[0].ToString(), args[1].ToString(), args[2].ToString());
             if (args.length == 4)
                 return string.Concat(self.ToString(), args[0].ToString(), args[1].ToString(), args[2].ToString(), args[3].ToString());
-            var res = new StringBuilder().Append(self.ToString());
+            var res = new StringBuilder().Append(self);
             for (var i = 0; i < args.Length; i++)
-                res.Append(args[i].ToString());
+                res.Append(args[i]);
             return res.ToString();
         }
 
@@ -233,9 +233,9 @@ namespace NiL.JS.BaseLibrary
             if (self.valueType <= JSValueType.Undefined || (self.valueType >= JSValueType.Object && self.Value == null))
                 throw new JSException(new TypeError("String.prototype.match called on null or undefined"));
             var a0 = args[0];
-            if (a0.valueType == JSValueType.Object && a0.oValue is RegExp)
+            var regex = a0.oValue as RegExp;
+            if (a0.valueType == JSValueType.Object && regex != null)
             {
-                var regex = a0.oValue as RegExp;
                 if (!regex._global)
                 {
                     regex.lastIndex.valueType = JSValueType.Int;
@@ -278,8 +278,7 @@ namespace NiL.JS.BaseLibrary
                 return 0;
             var a0 = args[0];
             if (a0.valueType == JSValueType.Object
-                && a0.oValue != null
-                && a0.oValue.GetType() == typeof(RegExp))
+                && a0.oValue is RegExp)
             {
                 var regex = a0.oValue as RegExp;
                 if (!regex._global)
@@ -312,15 +311,15 @@ namespace NiL.JS.BaseLibrary
                 && (args[0] ?? Null).Value != null
                 && args[0].Value.GetType() == typeof(RegExp))
             {
-                if (args.length > 1 && args[1].oValue is Function)
+                var f = args[1].oValue as Function;
+                if (args.length > 1 && f != null)
                 {
                     string temp = self.oValue.ToString();
-                    var f = args[1].oValue as Function;
                     var match = new String();
                     var margs = new Arguments();
                     margs.length = 1;
                     margs[0] = match;
-                    match.oValue = (args[0].oValue as RegExp).regEx.Replace(self.ToString(), new System.Text.RegularExpressions.MatchEvaluator(
+                    match.oValue = (args[0].oValue as RegExp).regEx.Replace(self.ToString(),
                         (m) =>
                         {
                             self.oValue = temp;
@@ -337,7 +336,7 @@ namespace NiL.JS.BaseLibrary
                             margs[margs.length - 2] = t;
                             margs[margs.length - 1] = self;
                             return f.Invoke(margs).ToString();
-                        }), (args[0].Value as RegExp)._global ? int.MaxValue : 1);
+                        }, (args[0].Value as RegExp)._global ? int.MaxValue : 1);
                     self.oValue = temp;
                     self.valueType = JSValueType.String;
                     return match;
@@ -350,10 +349,10 @@ namespace NiL.JS.BaseLibrary
             else
             {
                 string pattern = args.Length > 0 ? args[0].ToString() : "";
-                if (args.Length > 1 && args[1].oValue is Function)
+                var f = args[1].oValue as Function;
+                if (args.Length > 1 && f != null)
                 {
                     string othis = self.oValue.ToString();
-                    var f = args[1].oValue as Function;
                     var margs = new Arguments();
                     margs.length = 3;
                     margs[0] = pattern;
@@ -813,7 +812,7 @@ namespace NiL.JS.BaseLibrary
                 if (index > 0)
                     sb.Remove(0, index);
                 index = sb.Length - 1;
-                for (; index >= 0 && System.Array.IndexOf(Tools.TrimChars, sb[index]) != -1; index--) ;
+                while (index >= 0 && System.Array.IndexOf(Tools.TrimChars, sb[index]) != -1) index--;
                 index++;
                 if (index < sb.Length)
                     sb.Remove(index, sb.Length - index);
@@ -822,7 +821,7 @@ namespace NiL.JS.BaseLibrary
                     index = 0;
                     for (; ; )
                     {
-                        for (; index < sb.Length && sb[index] != '\n' && sb[index] != '\r'; index++) ;
+                        while (index < sb.Length && sb[index] != '\n' && sb[index] != '\r') index++;
                         if (index >= sb.Length)
                             break;
                         var startindex = index;
@@ -878,16 +877,11 @@ namespace NiL.JS.BaseLibrary
             get
             {
                 var len = oValue.ToString().Length;
-                if (this.GetType() == typeof(String))
-                {
-                    if (_length == null)
-                        _length = new Number(len) { attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnum | JSValueAttributesInternal.NotConfigurable };
-                    else
-                        _length.iValue = len;
-                    return _length;
-                }
+                if (_length == null)
+                    _length = new Number(len) { attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnum | JSValueAttributesInternal.NotConfigurable };
                 else
-                    return len;
+                    _length.iValue = len;
+                return _length;
             }
         }
 

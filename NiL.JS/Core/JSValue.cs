@@ -60,7 +60,7 @@ namespace NiL.JS.Core
     [Serializable]
 #endif
     [Flags]
-    public enum JSValuesAttributes : int
+    public enum JSValuesAttributes
     {
         None = 0,
         DoNotEnum = 1 << 0,
@@ -395,7 +395,7 @@ namespace NiL.JS.Core
         public bool DeleteMember(string memberName)
         {
             if (memberName == null)
-                throw new ArgumentNullException("memberName can not be null");
+                throw new ArgumentNullException("memberName");
             var cc = Context.CurrentContext;
             if (cc == null)
                 return DeleteMember((JSObject)memberName);
@@ -471,7 +471,6 @@ namespace NiL.JS.Core
 
         private JSValue stringGetMember(JSValue name, bool forWrite, bool own)
         {
-            forWrite = false;
             if ((name.valueType == JSValueType.String || name.valueType >= JSValueType.Object)
                 && string.CompareOrdinal(name.oValue.ToString(), "length") == 0)
                 return oValue.ToString().Length;
@@ -534,6 +533,8 @@ namespace NiL.JS.Core
             return Expressions.StrictEqualOperator.Check(this, obj as JSObject);
         }
 
+#region Do not remove
+
         [Hidden]
         public override int GetHashCode()
         {
@@ -545,7 +546,8 @@ namespace NiL.JS.Core
         {
             return new NiL.JS.BaseLibrary.String(value.ToString());
         }
-
+#endregion
+        
 #if INLINE
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif

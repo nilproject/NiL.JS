@@ -78,7 +78,7 @@ namespace NiL.JS.Expressions
 #if INLINE
         [MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
-        private static JSValue impl(Context context, CodeNode[] elements)
+        private static JSValue impl(Context context, Expression[] elements)
         {
             var res = new NiL.JS.BaseLibrary.Array((long)elements.Length);
             if (elements.Length > 0)

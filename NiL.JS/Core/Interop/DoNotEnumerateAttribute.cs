@@ -11,7 +11,6 @@ namespace NiL.JS.Core.Interop
     [AttributeUsage(AttributeTargets.Event | AttributeTargets.Field | AttributeTargets.Method | AttributeTargets.Property | AttributeTargets.Constructor, AllowMultiple = false, Inherited = false)]
     public sealed class DoNotEnumerateAttribute : Attribute
     {
-        public DoNotEnumerateAttribute()
-        { }
+
     }
 }

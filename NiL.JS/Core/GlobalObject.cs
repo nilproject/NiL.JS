@@ -11,12 +11,11 @@ namespace NiL.JS.Core
     {
         private static JSObject thisProto;
 
-        internal static JSValue refreshGlobalObjectProto()
+        internal static void refreshGlobalObjectProto()
         {
             thisProto = CreateObject();
             thisProto.oValue = thisProto;
             thisProto.attributes |= JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.Immutable | JSValueAttributesInternal.DoNotEnum | JSValueAttributesInternal.DoNotDelete;
-            return thisProto;
         }
 
         private Context context;

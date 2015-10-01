@@ -59,7 +59,7 @@ namespace NiL.JS.BaseLibrary
         {
             if (forWrite)
                 return undefined;
-            return base.GetMember(name, forWrite, own);
+            return base.GetMember(name, false, own);
         }
     }
 }

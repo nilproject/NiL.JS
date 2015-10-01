@@ -41,11 +41,10 @@ namespace NiL.JS.Expressions
             {
                 try
                 {
-                    if ((first).IsContextIndependent
+                    if (first.IsContextIndependent
                         && Tools.JSObjectToInt32((first).Evaluate(null)) == 0)
                         _this = new ConstantNotation(0);
-                    else if ((second is Expression)
-                            && (second).IsContextIndependent
+                    else if (second.IsContextIndependent
                             && Tools.JSObjectToInt32((second).Evaluate(null)) == 0)
                         _this = new ToIntegerOperator(first);
                 }

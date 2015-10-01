@@ -403,7 +403,7 @@ namespace NiL.JS.Core
             return ToString().ToLowerInvariant();
         }
 
-        private static StringBuilder _append(StringBuilder sb, object arg)
+        private static void _append(StringBuilder sb, object arg)
         {
             var str = arg.ToString();
             var start = sb.Length;
@@ -414,7 +414,6 @@ namespace NiL.JS.Core
             {
                 sb[start + i] = str[i];
             }
-            return sb;
         }
 
         public override string ToString()

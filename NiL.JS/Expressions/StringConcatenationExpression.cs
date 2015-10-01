@@ -18,8 +18,7 @@ namespace NiL.JS.Expressions
             {
                 for (var i = 0; i < sources.Count; i++)
                 {
-                    if (!(sources[i] is Expression)
-                        || !(sources[i] as Expression).IsContextIndependent)
+                    if (sources[i].IsContextIndependent)
                         return false;
                 }
                 return true;
@@ -49,14 +48,20 @@ namespace NiL.JS.Expressions
 
         private static object prep(JSValue x, ref bool metString)
         {
-            if (x.valueType == JSValueType.String && (metString |= true))
+            if (x.valueType == JSValueType.String)
+            {
+                metString = true;
                 return x.oValue;
+            }
             if (x.valueType == JSValueType.Date)
                 x = x.ToPrimitiveValue_String_Value();
             else
                 x = x.ToPrimitiveValue_Value_String();
-            if (x.valueType == JSValueType.String && (metString |= true))
+            if (x.valueType == JSValueType.String)
+            {
+                metString = true;
                 return x.oValue;
+            }
             return x.ToString();
         }
 
@@ -78,7 +83,7 @@ namespace NiL.JS.Expressions
 
         internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
-            var res = base.Build(ref _this, depth,variables, state, message, statistic, opts);
+            var res = base.Build(ref _this, depth, variables, state, message, statistic, opts);
             if (!res)
                 second = sources[sources.Count - 1];
             return res;

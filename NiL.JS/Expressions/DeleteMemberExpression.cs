@@ -64,12 +64,13 @@ namespace NiL.JS.Expressions
         {
             var res = first.ToString();
             int i = 0;
+            var cn = second as ConstantNotation;
             if (second is ConstantNotation
-                && (second as ConstantNotation).value.ToString().Length > 0
-                && (Parser.ValidateName((second as ConstantNotation).value.ToString(), ref i, true)))
-                res += "." + (second as ConstantNotation).value;
+                && cn.value.ToString().Length > 0
+                && (Parser.ValidateName(cn.value.ToString(), ref i, true)))
+                res += "." + cn.value;
             else
-                res += "[" + second.ToString() + "]";
+                res += "[" + second + "]";
             return "delete " + res;
         }
     }

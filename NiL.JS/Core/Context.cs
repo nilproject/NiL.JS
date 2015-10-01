@@ -428,7 +428,10 @@ namespace NiL.JS.Core
                 else
                 {
                     if (create)
-                        fields[name] = res = new JSValue() { valueType = JSValueType.NotExists };
+                    {
+                        res = new JSValue() {valueType = JSValueType.NotExists};
+                        fields[name] = res;
+                    }
                     else
                     {
                         res = JSObject.GlobalPrototype.GetMember(wrap(name), create, false);
@@ -598,7 +601,7 @@ namespace NiL.JS.Core
                     }
                 }
 
-                var bd = body as CodeNode;
+                CodeNode bd = body;
                 body.Optimize(ref bd, null, null, Options.SuppressUselessExpressionsElimination | Options.SuppressConstantPropogation, null);
 
                 var run = context.Activate();

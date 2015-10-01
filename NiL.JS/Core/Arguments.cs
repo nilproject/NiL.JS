@@ -186,26 +186,35 @@ namespace NiL.JS.Core
                 case "length":
                     {
                         if (_length == null)
-                            _length = new _LengthContainer(this) { valueType = JSValueType.Int, iValue = length, attributes = JSValueAttributesInternal.DoNotEnum | JSValueAttributesInternal.Reassign };
+                            _length = new _LengthContainer(this)
+                            {
+                                valueType = JSValueType.Int,
+                                iValue = length,
+                                attributes = JSValueAttributesInternal.DoNotEnum | JSValueAttributesInternal.Reassign
+                            };
                         return _length;
                     }
                 case "callee":
                     {
+                        if (callee == null)
+                            callee = NotExistsInObject;
                         if (createMember && (callee.attributes & JSValueAttributesInternal.SystemObject) != 0)
                         {
                             callee = callee.CloneImpl();
                             callee.attributes = JSValueAttributesInternal.DoNotEnum;
                         }
-                        return (callee ?? (!createMember ? notExists : (callee = new JSValue() { valueType = JSValueType.NotExistsInObject })));
+                        return callee;
                     }
                 case "caller":
                     {
+                        if (caller == null)
+                            caller = NotExistsInObject;
                         if (createMember && (caller.attributes & JSValueAttributesInternal.SystemObject) != 0)
                         {
                             caller = caller.CloneImpl();
                             callee.attributes = JSValueAttributesInternal.DoNotEnum;
                         }
-                        return (caller ?? (!createMember ? notExists : (caller = new JSValue() { valueType = JSValueType.NotExistsInObject })));
+                        return caller;
                     }
             }
             return base.GetMember(name, createMember, own);

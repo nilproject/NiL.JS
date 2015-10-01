@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Runtime.CompilerServices;
@@ -768,7 +768,6 @@ namespace NiL.JS.Core
                 throw new JSException(new TypeError("Object.seal called on null."));
             var obj = args[0].Value as JSObject ?? args[0].oValue as JSObject;
             obj.attributes |= JSValueAttributesInternal.Immutable;
-            var arr = obj as NiL.JS.BaseLibrary.Array;
             for (var e = obj.GetEnumeratorImpl(false); e.MoveNext(); )
             {
                 var value = obj[e.Current];

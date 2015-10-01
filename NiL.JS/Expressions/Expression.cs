@@ -173,16 +173,16 @@ namespace NiL.JS.Expressions
         protected override CodeNode[] getChildsImpl()
         {
             if (first != null && second != null)
-                return new[]{
+                return new CodeNode[]{
                     first,
                     second
                 };
             if (first != null)
-                return new[]{
+                return new CodeNode[]{
                     first
                 };
             if (second != null)
-                return new[]{
+                return new CodeNode[]{
                     second
                 };
             return null;

@@ -48,9 +48,9 @@ namespace NiL.JS.Core
 
                     var m = Avatar.GetMember("message");
                     if (m.valueType == JSValueType.Property)
-                        return n + ": " + (m.oValue as PropertyPair).get.Invoke(Avatar, null).ToString();
+                        return n + ": " + (m.oValue as PropertyPair).get.Invoke(Avatar, null);
                     else
-                        return n + ": " + m.ToString();
+                        return n + ": " + m;
                 }
                 else return Avatar.ToString();
             }

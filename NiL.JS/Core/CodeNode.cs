@@ -71,7 +71,6 @@ namespace NiL.JS.Core
         /// </summary>
         /// <param name="_this">Ссылка на экземпляр, для которого происходит вызов функции</param>
         /// <param name="depth">Глубина погружения в выражении</param>
-        /// <param name="functionDepth">Глубина погружения в функции. Увеличивается при входе в функцию и уменьшается при выходе из нее</param>
         /// <returns>true если были внесены изменения и требуется повторный вызов функции</returns>
         internal virtual bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {

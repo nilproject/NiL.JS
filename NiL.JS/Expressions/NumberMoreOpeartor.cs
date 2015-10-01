@@ -8,11 +8,11 @@ namespace NiL.JS.Expressions
 #endif
     public sealed class NumberMoreOpeartor : Expression
     {
-        protected internal override Core.PredictedType ResultType
+        protected internal override PredictedType ResultType
         {
             get
             {
-                return Core.PredictedType.Bool;
+                return PredictedType.Bool;
             }
         }
 

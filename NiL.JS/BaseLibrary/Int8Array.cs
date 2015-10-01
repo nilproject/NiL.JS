@@ -37,7 +37,6 @@ namespace NiL.JS.BaseLibrary
         }
 
         public Int8Array()
-            : base()
         {
         }
 

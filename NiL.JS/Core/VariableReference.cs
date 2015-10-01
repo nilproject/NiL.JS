@@ -9,7 +9,7 @@ namespace NiL.JS.Core
     public abstract class VariableReference : Expression
     {
         internal int defineDepth;
-        public virtual int DefineDepth { get { return defineDepth; } }
+        public int DefineDepth { get { return defineDepth; } }
 
         public abstract string Name { get; }
 
