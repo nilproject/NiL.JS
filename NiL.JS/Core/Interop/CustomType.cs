@@ -38,11 +38,11 @@ namespace NiL.JS.Core.Interop
         }
 
         [Hidden]
-        protected internal override IEnumerator<string> GetEnumeratorImpl(bool pdef)
+        protected internal override IEnumerator<string> GetEnumeratorImpl(bool hideNonEnum)
         {
             if (fields != null)
                 foreach (var r in fields)
-                    if (r.Value.IsExist && (!pdef || (r.Value.attributes & JSValueAttributesInternal.DoNotEnum) == 0))
+                    if (r.Value.IsExist && (!hideNonEnum || (r.Value.attributes & JSValueAttributesInternal.DoNotEnum) == 0))
                         yield return r.Key;
         }
     }
