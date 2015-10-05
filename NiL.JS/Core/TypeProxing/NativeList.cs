@@ -8,6 +8,7 @@ using NiL.JS.Core.Modules;
 
 namespace NiL.JS.Core.TypeProxing
 {
+    [Prototype(typeof(BaseLibrary.Array))]
     public sealed class NativeList : CustomType
     {
         private sealed class Element : JSObject
@@ -266,6 +267,16 @@ namespace NiL.JS.Core.TypeProxing
                 return;
             }
             base.SetMember(name, value, strict);
+        }
+
+        protected internal override IEnumerator<string> GetEnumeratorImpl(bool pdef)
+        {
+            for (var i = 0; i < data.Count; i++)
+            {
+                yield return i.ToString();
+            }
+            for (var e = base.GetEnumeratorImpl(pdef); e.MoveNext(); )
+                yield return e.Current;
         }
     }
 }
