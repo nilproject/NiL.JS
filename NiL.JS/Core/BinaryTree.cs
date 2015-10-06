@@ -420,7 +420,7 @@ namespace NiL.JS.Core
                         if (cmp == 0)
                         {
                             if (throwIfExists)
-                                throw new ArgumentException("Element exists");
+                                throw new ArgumentException("Element Exists");
                             else
                                 return false;
                         }

@@ -1413,7 +1413,7 @@ namespace NiL.JS.BaseLibrary
             var self = nargs[0];
             if (args != null)
                 nargs.Reset();
-            if (argsSource.IsDefinded)
+            if (argsSource.IsDefined)
             {
                 if (argsSource.valueType < JSValueType.Object)
                     throw new JSException(new TypeError("Argument list has wrong type."));

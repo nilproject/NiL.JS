@@ -369,7 +369,7 @@ namespace NiL.JS.Core.Interop
                     if (!create)
                     {
                         var t = base.GetMember(nameObj, false, own);
-                        if (t.IsExist)
+                        if (t.IsExists)
                             r.Assign(t);
                     }
                 }
@@ -539,7 +539,7 @@ pinfo.CanRead && pinfo.GetGetMethod(false) != null ? new MethodProxy(pinfo.GetGe
             JSValue field = null;
             if (fields != null
                 && fields.TryGetValue(tname = name.ToString(), out field)
-                && (!field.IsExist || (field.attributes & JSValueAttributesInternal.DoNotDelete) == 0))
+                && (!field.IsExists || (field.attributes & JSValueAttributesInternal.DoNotDelete) == 0))
             {
                 if ((field.attributes & JSValueAttributesInternal.SystemObject) == 0)
                     field.valueType = JSValueType.NotExistsInObject;
@@ -569,7 +569,7 @@ pinfo.CanRead && pinfo.GetGetMethod(false) != null ? new MethodProxy(pinfo.GetGe
             var name = args[0].ToString();
             JSValue temp;
             if (fields != null && fields.TryGetValue(name, out temp))
-                return temp.IsExist && (temp.attributes & JSValueAttributesInternal.DoNotEnum) == 0;
+                return temp.IsExists && (temp.attributes & JSValueAttributesInternal.DoNotEnum) == 0;
             IList<MemberInfo> m = null;
             if (members.TryGetValue(name, out m))
             {

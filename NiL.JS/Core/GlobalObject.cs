@@ -45,10 +45,10 @@ namespace NiL.JS.Core
         protected internal override IEnumerator<string> GetEnumeratorImpl(bool pdef)
         {
             foreach (var i in Context.globalContext.fields)
-                if (i.Value.IsExist && (!pdef || (i.Value.attributes & JSValueAttributesInternal.DoNotEnum) == 0))
+                if (i.Value.IsExists && (!pdef || (i.Value.attributes & JSValueAttributesInternal.DoNotEnum) == 0))
                     yield return i.Key;
             foreach (var i in context.fields)
-                if (i.Value.IsExist && (!pdef || (i.Value.attributes & JSValueAttributesInternal.DoNotEnum) == 0))
+                if (i.Value.IsExists && (!pdef || (i.Value.attributes & JSValueAttributesInternal.DoNotEnum) == 0))
                     yield return i.Key;
         }
 

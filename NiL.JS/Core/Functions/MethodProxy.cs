@@ -389,7 +389,7 @@ namespace NiL.JS.Core.Functions
                 for (int i = targetCount; i-- > 0; )
                 {
                     var obj = arguments.Length > i ? NiL.JS.Expressions.CallOperator.PrepareArg(initiator, arguments[i], arguments.Length > 1) : notExists;
-                    if (obj.IsExist)
+                    if (obj.IsExists)
                     {
                         args[i] = marshal(obj, parameters[i].ParameterType);
                         if (paramsConverters != null && paramsConverters[i] != null)
@@ -508,7 +508,7 @@ namespace NiL.JS.Core.Functions
                 for (int i = targetCount; i-- > 0; )
                 {
                     var obj = source[i];
-                    if (obj.IsExist)
+                    if (obj.IsExists)
                     {
                         res[i] = marshal(obj, parameters[i].ParameterType);
                         if (paramsConverters != null && paramsConverters[i] != null)

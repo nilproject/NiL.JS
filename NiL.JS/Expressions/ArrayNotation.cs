@@ -11,7 +11,7 @@ namespace NiL.JS.Expressions
 #endif
     public sealed class ArrayNotation : Expression
     {
-        private static JSValue writableNotExist = null;
+        private static JSValue writableNotExists = null;
         private Expression[] elements;
 
         public ICollection<Expression> Elements { get { return elements; } }
@@ -92,7 +92,7 @@ namespace NiL.JS.Expressions
                         res.data[i] = e;
                     }
                     else
-                        res.data[i] = (writableNotExist ?? (writableNotExist = new JSValue() { valueType = JSValueType.NotExistsInObject, attributes = JSValueAttributesInternal.SystemObject }));
+                        res.data[i] = (writableNotExists ?? (writableNotExists = new JSValue() { valueType = JSValueType.NotExistsInObject, attributes = JSValueAttributesInternal.SystemObject }));
                 }
             }
             return res;

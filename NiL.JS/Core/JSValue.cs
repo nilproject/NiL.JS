@@ -257,7 +257,7 @@ namespace NiL.JS.Core
                     && oValue != this
                     && (oValue as JSObject) != null)
                     return (oValue as JSObject).__proto__;
-                if (!this.IsDefinded || this.IsNull)
+                if (!this.IsDefined || this.IsNull)
                     throw new JSException(new TypeError("Can not get prototype of null or undefined"));
                 return GetDefaultPrototype();
             }
@@ -620,7 +620,7 @@ namespace NiL.JS.Core
         }
 
         [Hidden]
-        public bool IsExist
+        public bool IsExists
         {
             [Hidden]
 #if INLINE
@@ -630,7 +630,7 @@ namespace NiL.JS.Core
         }
 
         [Hidden]
-        public bool IsDefinded
+        public bool IsDefined
         {
             [Hidden]
 #if INLINE
@@ -955,7 +955,7 @@ namespace NiL.JS.Core
             var name = args[0];
             string n = name.ToString();
             var res = GetMember(n, true);
-            res = (res.IsExist) && ((res.attributes & JSValueAttributesInternal.DoNotEnum) == 0);
+            res = (res.IsExists) && ((res.attributes & JSValueAttributesInternal.DoNotEnum) == 0);
             return res;
         }
 
@@ -1001,7 +1001,7 @@ namespace NiL.JS.Core
         {
             JSValue name = args[0];
             var res = GetMember(name, false, true);
-            return res.IsExist;
+            return res.IsExists;
         }
 
         #region Члены IConvertible

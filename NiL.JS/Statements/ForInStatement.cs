@@ -159,7 +159,7 @@ namespace NiL.JS.Statements
             }
             else
                 v = variable.EvaluateForAssing(context);
-            if (!s.IsDefinded
+            if (!s.IsDefined
                 || (s.valueType >= JSValueType.Object && s.oValue == null)
                 || body == null)
                 return JSValue.undefined;
@@ -173,7 +173,7 @@ namespace NiL.JS.Statements
                     foreach (var item in src.data.DirectOrder)
                     {
                         if (item.Value == null
-                            || !item.Value.IsExist
+                            || !item.Value.IsExists
                             || (item.Value.attributes & JSValueAttributesInternal.DoNotEnum) != 0)
                             continue;
                         if (item.Key >= 0)
@@ -212,7 +212,7 @@ namespace NiL.JS.Statements
                         foreach (var item in src.fields)
                         {
                             if (item.Value == null
-                                || !item.Value.IsExist
+                                || !item.Value.IsExists
                                 || (item.Value.attributes & JSValueAttributesInternal.DoNotEnum) != 0)
                                 continue;
                             v.valueType = JSValueType.String;
@@ -282,7 +282,7 @@ namespace NiL.JS.Statements
                     }
                 }
                 s = s.__proto__;
-                if (s == JSValue.Null || !s.IsDefinded || (s.valueType >= JSValueType.Object && s.oValue == null))
+                if (s == JSValue.Null || !s.IsDefined || (s.valueType >= JSValueType.Object && s.oValue == null))
                     break;
             }
             return null;

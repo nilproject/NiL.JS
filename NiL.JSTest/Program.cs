@@ -368,7 +368,7 @@ for (var i = 0; i < 10000000; )
         private static void testEx()
         {
             var t = new Script(@"
-console.log(new Struct().funcWithDefaultValues());
+console.log(new Struct().funcWithDefaultValues()); 
 ");
             t.Context.AttachModule(typeof(Struct));
             t.Invoke();

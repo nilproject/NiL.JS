@@ -160,8 +160,9 @@ namespace NiL.JS.Expressions
                                             {
                                                 if (Tools.ParseNumber(tstr, ref index, out tdouble) && (index == tstr.Length))
                                                     return tdouble == temp.iValue ? NiL.JS.BaseLibrary.Boolean.True : NiL.JS.BaseLibrary.Boolean.False;
-                                                else goto
-                                                    case JSValueType.String;
+                                                else
+                                                    goto
+                                                        case JSValueType.String;
                                             }
                                         case JSValueType.Double:
                                             {
@@ -263,11 +264,12 @@ namespace NiL.JS.Expressions
                                 }
                             default:
                                 {
-                                    return !temp.IsDefinded ? NiL.JS.BaseLibrary.Boolean.True : NiL.JS.BaseLibrary.Boolean.False;
+                                    return !temp.IsDefined ? NiL.JS.BaseLibrary.Boolean.True : NiL.JS.BaseLibrary.Boolean.False;
                                 }
                         }
                     }
-                default: throw new NotImplementedException();
+                default:
+                    throw new NotImplementedException();
             }
             return false;
         }

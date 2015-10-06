@@ -226,11 +226,11 @@ namespace NiL.JS.Statements
                         System.Diagnostics.Debugger.Break();
                     else
                         throw new ApplicationException("undefined was rewrite");
-                if (JSObject.notExists.IsExist)
+                if (JSObject.notExists.IsExists)
                     if (System.Diagnostics.Debugger.IsAttached)
                         System.Diagnostics.Debugger.Break();
                     else
-                        throw new ApplicationException("notExist was rewrite");
+                        throw new ApplicationException("notExists was rewrite");
                 if (BaseLibrary.Boolean.False.valueType != JSValueType.Bool
                     || BaseLibrary.Boolean.False.iValue != 0
                     || BaseLibrary.Boolean.False.attributes != JSValueAttributesInternal.SystemObject)

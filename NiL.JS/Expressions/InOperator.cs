@@ -44,14 +44,14 @@ namespace NiL.JS.Expressions
                 var array = source.oValue as BaseLibrary.Array;
                 if (array != null)
                 {
-                    res = temp.iValue >= 0 && temp.iValue < array.data.Length && (array.data[temp.iValue] ?? JSValue.notExists).IsExist;
+                    res = temp.iValue >= 0 && temp.iValue < array.data.Length && (array.data[temp.iValue] ?? JSValue.notExists).IsExists;
                     tempContainer = temp;
                     return res;
                 }
             }
             var t = source.GetMember(temp, false, false);
             tempContainer = temp;
-            return t.IsExist;
+            return t.IsExists;
         }
 
         public override T Visit<T>(Visitor<T> visitor)

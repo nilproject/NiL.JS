@@ -177,7 +177,7 @@ namespace NiL.JS.BaseLibrary
                         revargs[0] = t.fieldName;
                         revargs[1] = t.value;
                         var val = reviewer.Invoke(revargs);
-                        if (val.IsDefinded)
+                        if (val.IsDefined)
                         {
                             if (t.container != null)
                                 t.container.GetMember(t.fieldName, true, true).Assign(val);

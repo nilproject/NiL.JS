@@ -31,13 +31,15 @@ namespace NiL.JS.Statements
             int i = index;
             if (!Parser.Validate(state.Code, "try", ref i) || !Parser.isIdentificatorTerminator(state.Code[i]))
                 return new ParseResult();
-            while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i])) i++;
+            while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]))
+                i++;
             if (i >= state.Code.Length)
                 throw new JSException(new SyntaxError("Unexpected end of line."));
             if (state.Code[i] != '{')
                 throw new JSException((new SyntaxError("Invalid try statement definition at " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
             var b = CodeBlock.Parse(state, ref i).Statement;
-            while (char.IsWhiteSpace(state.Code[i])) i++;
+            while (char.IsWhiteSpace(state.Code[i]))
+                i++;
             CodeNode cb = null;
             string exptn = null;
             if (Parser.Validate(state.Code, "catch (", ref i) || Parser.Validate(state.Code, "catch(", ref i))
@@ -51,10 +53,12 @@ namespace NiL.JS.Statements
                     if (exptn == "arguments" || exptn == "eval")
                         throw new JSException((new SyntaxError("Varible name may not be \"arguments\" or \"eval\" in strict mode at " + CodeCoordinates.FromTextPosition(state.Code, s, i - s))));
                 }
-                while (char.IsWhiteSpace(state.Code[i])) i++;
+                while (char.IsWhiteSpace(state.Code[i]))
+                    i++;
                 if (!Parser.Validate(state.Code, ")", ref i))
                     throw new JSException((new SyntaxError("Expected \")\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
-                while (char.IsWhiteSpace(state.Code[i])) i++;
+                while (char.IsWhiteSpace(state.Code[i]))
+                    i++;
                 if (state.Code[i] != '{')
                     throw new JSException((new SyntaxError("Invalid catch block statement definition at " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
                 state.functionsDepth++;
@@ -66,13 +70,15 @@ namespace NiL.JS.Statements
                 {
                     state.functionsDepth--;
                 }
-                while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i])) i++;
+                while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]))
+                    i++;
             }
             CodeNode f = null;
             if (Parser.Validate(state.Code, "finally", i) && Parser.isIdentificatorTerminator(state.Code[i + 7]))
             {
                 i += 7;
-                while (char.IsWhiteSpace(state.Code[i])) i++;
+                while (char.IsWhiteSpace(state.Code[i]))
+                    i++;
                 if (state.Code[i] != '{')
                     throw new JSException((new SyntaxError("Invalid finally block statement definition at " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
                 f = CodeBlock.Parse(state, ref i).Statement;
@@ -267,7 +273,7 @@ namespace NiL.JS.Statements
             var ainfo = context.abortInfo;
             if (abort == AbortType.Return && ainfo != null)
             {
-                if (ainfo.IsDefinded)
+                if (ainfo.IsDefined)
                     ainfo = ainfo.CloneImpl();
                 else
                     ainfo = JSValue.Undefined;
