@@ -484,7 +484,7 @@ namespace NiL.JS.BaseLibrary
         [ArgumentsLength(2)]
         public static JSObject split(JSObject self, Arguments args)
         {
-            if (args.Length == 0 || !args[0].IsDefinded)
+            if (args.Length == 0 || !args[0].IsDefined)
                 return new Array(new object[] { self.ToString() });
             uint limit = uint.MaxValue;
             if (args.Length > 1)

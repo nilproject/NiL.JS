@@ -59,7 +59,7 @@ namespace NiL.JS.Core.TypeProxing
         {
             if (fields != null)
                 foreach (var r in fields)
-                    if (r.Value.IsExist && (!hideNonEnum || (r.Value.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+                    if (r.Value.IsExists && (!hideNonEnum || (r.Value.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
                         yield return r.Key;
         }
     }

@@ -146,7 +146,7 @@ namespace NiL.JS.Statements
             }
             else
                 v = variable.EvaluateForAssing(context);
-            if (!s.IsDefinded
+            if (!s.IsDefined
                 || (s.valueType >= JSObjectType.Object && s.oValue == null)
                 || body == null)
                 return JSObject.undefined;
@@ -160,7 +160,7 @@ namespace NiL.JS.Statements
                     foreach (var item in src.data)
                     {
                         if (item == null
-                            || !item.IsExist
+                            || !item.IsExists
                             || (item.attributes & JSObjectAttributesInternal.DoNotEnum) != 0)
                             continue;
                         v.Assign(item);
@@ -187,7 +187,7 @@ namespace NiL.JS.Statements
                         foreach (var item in src.fields)
                         {
                             if (item.Value == null
-                                || !item.Value.IsExist
+                                || !item.Value.IsExists
                                 || (item.Value.attributes & JSObjectAttributesInternal.DoNotEnum) != 0)
                                 continue;
                             if (processedKeys.Contains(item.Key))
@@ -256,7 +256,7 @@ namespace NiL.JS.Statements
                     }
                 }
                 s = s.__proto__;
-                if (s == JSObject.Null || !s.IsDefinded || (s.valueType >= JSObjectType.Object && s.oValue == null))
+                if (s == JSObject.Null || !s.IsDefined || (s.valueType >= JSObjectType.Object && s.oValue == null))
                     break;
             }
             return null;

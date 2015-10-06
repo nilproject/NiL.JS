@@ -1279,7 +1279,7 @@ namespace NiL.JS.Core
 #if INLINE
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
-        internal static JSObject RaiseIfNotExist(JSObject obj, object name)
+        internal static JSObject RaiseIfNotExists(JSObject obj, object name)
         {
             if (obj.valueType == JSObjectType.NotExists)
                 throw new JSException((new NiL.JS.BaseLibrary.ReferenceError("Variable \"" + name + "\" has not been defined.")));
@@ -1352,7 +1352,7 @@ namespace NiL.JS.Core
                         if (element.Key >= _length) // эээ...
                             break;
                         var value = element.Value;
-                        if (value == null || !value.IsExist)
+                        if (value == null || !value.IsExists)
                             continue;
                         if (!goDeep && System.Math.Abs(prew - element.Key) > 1)
                         {
@@ -1381,7 +1381,7 @@ namespace NiL.JS.Core
                     {
                         tjo.oValue = index.Value;
                         var value = src.GetMember(tjo, false, false);
-                        if (!value.IsExist)
+                        if (!value.IsExists)
                             continue;
                         if (evalProps && value.valueType == JSObjectType.Property)
                             value = (value.oValue as PropertyPair).get == null ? JSObject.undefined : (value.oValue as PropertyPair).get.Invoke(src, null).CloneImpl();

@@ -28,7 +28,7 @@ namespace NiL.JS.Core
         private TValue emptyKeyValue;
 
         private Record[] records = emptyRecords;
-        private int[] existedIndexes;
+        private int[] ExistsedIndexes;
 
         private int count;
         private int eicount;
@@ -40,7 +40,7 @@ namespace NiL.JS.Core
             if (key.Length == 0)
             {
                 if (@throw && emptyKeyValueExists)
-                    throw new InvalidOperationException("Item already exists");
+                    throw new InvalidOperationException("Item already Exists");
                 emptyKeyValueExists = true;
                 emptyKeyValue = value;
                 //count++;
@@ -57,7 +57,7 @@ namespace NiL.JS.Core
                 if (records[index].hash == hash && string.CompareOrdinal(records[index].key, key) == 0)
                 {
                     if (@throw)
-                        throw new InvalidOperationException("Item already exists");
+                        throw new InvalidOperationException("Item already Exists");
                     records[index].value = value;
                     return;
                 }
@@ -87,13 +87,13 @@ namespace NiL.JS.Core
             records[index].value = value;
             if (prewIndex >= 0)
                 records[prewIndex].next = index + 1;
-            if (eicount == existedIndexes.Length)
+            if (eicount == ExistsedIndexes.Length)
             {
-                var newEI = new int[existedIndexes.Length << 1];
-                Array.Copy(existedIndexes, newEI, existedIndexes.Length);
-                existedIndexes = newEI;
+                var newEI = new int[ExistsedIndexes.Length << 1];
+                Array.Copy(ExistsedIndexes, newEI, ExistsedIndexes.Length);
+                ExistsedIndexes = newEI;
             }
-            existedIndexes[eicount++] = index;
+            ExistsedIndexes[eicount++] = index;
             count++;
 
             if (colisionCount > 17)
@@ -225,7 +225,7 @@ namespace NiL.JS.Core
             if (records.Length == 0)
             {
                 records = new Record[4];
-                existedIndexes = new int[4];
+                ExistsedIndexes = new int[4];
             }
             else
             {
@@ -238,7 +238,7 @@ namespace NiL.JS.Core
                 eicount = 0;
                 for (; i < c; i++)
                 {
-                    var index = existedIndexes[i];
+                    var index = ExistsedIndexes[i];
                     if (oldRecords[index].key != null)
                         insert(oldRecords[index].key, oldRecords[index].value, oldRecords[index].hash, false, true);
                 }
@@ -289,8 +289,8 @@ namespace NiL.JS.Core
 
         public void Clear()
         {
-            if (existedIndexes != null)
-                Array.Clear(existedIndexes, 0, existedIndexes.Length);
+            if (ExistsedIndexes != null)
+                Array.Clear(ExistsedIndexes, 0, ExistsedIndexes.Length);
             Array.Clear(records, 0, records.Length);
             count = 0;
             eicount = 0;
@@ -329,8 +329,8 @@ namespace NiL.JS.Core
                 yield return new KeyValuePair<string, TValue>("", emptyKeyValue);
             for (int i = 0; i < eicount; i++)
             {
-                if (records[existedIndexes[i]].key != null)
-                    yield return new KeyValuePair<string, TValue>(records[existedIndexes[i]].key, records[existedIndexes[i]].value);
+                if (records[ExistsedIndexes[i]].key != null)
+                    yield return new KeyValuePair<string, TValue>(records[ExistsedIndexes[i]].key, records[ExistsedIndexes[i]].value);
             }
         }
 

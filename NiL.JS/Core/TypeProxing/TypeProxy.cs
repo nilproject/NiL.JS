@@ -381,7 +381,7 @@ namespace NiL.JS.Core.TypeProxing
                     if (!create)
                     {
                         var t = DefaultFieldGetter(nameObj, false, own);
-                        if (t.IsExist)
+                        if (t.IsExists)
                             r.Assign(t);
                     }
                 }
@@ -554,7 +554,7 @@ pinfo.CanRead && pinfo.GetGetMethod(false) != null ? new MethodProxy(pinfo.GetGe
             JSObject field = null;
             if (fields != null
                 && fields.TryGetValue(tname = name.ToString(), out field)
-                && (!field.IsExist || (field.attributes & JSObjectAttributesInternal.DoNotDelete) == 0))
+                && (!field.IsExists || (field.attributes & JSObjectAttributesInternal.DoNotDelete) == 0))
             {
                 if ((field.attributes & JSObjectAttributesInternal.SystemObject) == 0)
                     field.valueType = JSObjectType.NotExistsInObject;
@@ -584,7 +584,7 @@ pinfo.CanRead && pinfo.GetGetMethod(false) != null ? new MethodProxy(pinfo.GetGe
             var name = args[0].ToString();
             JSObject temp;
             if (fields != null && fields.TryGetValue(name, out temp))
-                return temp.IsExist && (temp.attributes & JSObjectAttributesInternal.DoNotEnum) == 0;
+                return temp.IsExists && (temp.attributes & JSObjectAttributesInternal.DoNotEnum) == 0;
             IList<MemberInfo> m = null;
             if (members.TryGetValue(name, out m))
             {

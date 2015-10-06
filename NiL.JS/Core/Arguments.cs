@@ -224,43 +224,43 @@ namespace NiL.JS.Core
 
         protected internal override IEnumerator<string> GetEnumeratorImpl(bool hideNonEnum)
         {
-            if (a0 != null && a0.IsExist && (!hideNonEnum || (a0.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+            if (a0 != null && a0.IsExists && (!hideNonEnum || (a0.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
                 yield return "0";
-            if (a1 != null && a1.IsExist && (!hideNonEnum || (a1.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+            if (a1 != null && a1.IsExists && (!hideNonEnum || (a1.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
                 yield return "1";
-            if (a2 != null && a2.IsExist && (!hideNonEnum || (a2.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+            if (a2 != null && a2.IsExists && (!hideNonEnum || (a2.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
                 yield return "2";
-            if (a3 != null && a3.IsExist && (!hideNonEnum || (a3.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+            if (a3 != null && a3.IsExists && (!hideNonEnum || (a3.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
                 yield return "3";
-            if (a4 != null && a4.IsExist && (!hideNonEnum || (a4.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+            if (a4 != null && a4.IsExists && (!hideNonEnum || (a4.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
                 yield return "4";
-            //if (a5 != null && a5.IsExist && (!hideNonEnum || (a5.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+            //if (a5 != null && a5.IsExists && (!hideNonEnum || (a5.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
             //    yield return "5";
-            //if (a6 != null && a6.IsExist && (!hideNonEnum || (a6.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+            //if (a6 != null && a6.IsExists && (!hideNonEnum || (a6.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
             //    yield return "6";
-            //if (a7 != null && a7.IsExist && (!hideNonEnum || (a7.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+            //if (a7 != null && a7.IsExists && (!hideNonEnum || (a7.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
             //    yield return "7";
-            //if (a8 != null && a8.isExist && (!hideNonEnum || (a8.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+            //if (a8 != null && a8.isExists && (!hideNonEnum || (a8.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
             //    yield return "8";
-            //if (a9 != null && a9.isExist && (!hideNonEnum || (a9.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+            //if (a9 != null && a9.isExists && (!hideNonEnum || (a9.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
             //    yield return "9";
-            //if (a10 != null && a10.isExist && (!hideNonEnum || (a10.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+            //if (a10 != null && a10.isExists && (!hideNonEnum || (a10.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
             //    yield return "10";
-            //if (a11 != null && a11.isExist && (!hideNonEnum || (a11.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+            //if (a11 != null && a11.isExists && (!hideNonEnum || (a11.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
             //    yield return "11";
-            //if (a12 != null && a12.isExist && (!hideNonEnum || (a12.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+            //if (a12 != null && a12.isExists && (!hideNonEnum || (a12.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
             //    yield return "12";
-            //if (a13 != null && a13.isExist && (!hideNonEnum || (a13.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+            //if (a13 != null && a13.isExists && (!hideNonEnum || (a13.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
             //    yield return "13";
-            //if (a14 != null && a14.isExist && (!hideNonEnum || (a14.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+            //if (a14 != null && a14.isExists && (!hideNonEnum || (a14.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
             //    yield return "14";
-            //if (a15 != null && a15.isExist && (!hideNonEnum || (a15.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+            //if (a15 != null && a15.isExists && (!hideNonEnum || (a15.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
             //    yield return "15";
-            if (callee != null && callee.IsExist && (!hideNonEnum || (callee.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+            if (callee != null && callee.IsExists && (!hideNonEnum || (callee.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
                 yield return "callee";
-            if (caller != null && callee.IsExist && (!hideNonEnum || (caller.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+            if (caller != null && callee.IsExists && (!hideNonEnum || (caller.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
                 yield return "caller";
-            if (_length != null && _length.IsExist && (!hideNonEnum || (_length.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+            if (_length != null && _length.IsExists && (!hideNonEnum || (_length.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
                 yield return "length";
             var be = getBaseEnumerator(hideNonEnum);
             while (be.MoveNext())

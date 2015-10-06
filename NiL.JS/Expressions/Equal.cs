@@ -262,7 +262,7 @@ namespace NiL.JS.Expressions
                                 }
                             default:
                                 {
-                                    return !temp.IsDefinded ? NiL.JS.BaseLibrary.Boolean.True : NiL.JS.BaseLibrary.Boolean.False;
+                                    return !temp.IsDefined ? NiL.JS.BaseLibrary.Boolean.True : NiL.JS.BaseLibrary.Boolean.False;
                                 }
                         }
                     }

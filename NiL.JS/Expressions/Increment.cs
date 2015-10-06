@@ -129,11 +129,11 @@ namespace NiL.JS.Expressions
                     }
                 case JSObjectType.NotExists:
                     {
-                        Tools.RaiseIfNotExist(val, first);
+                        Tools.RaiseIfNotExists(val, first);
                         break;
                     }
             }
-            if (second != null && val.IsDefinded)
+            if (second != null && val.IsDefined)
             {
                 res = tempContainer;
                 res.Assign(val);

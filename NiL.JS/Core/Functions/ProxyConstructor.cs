@@ -129,7 +129,7 @@ namespace NiL.JS.Core.Functions
             if (name.ToString() == "prototype") // Все прокси-прототипы read-only и non-configurable. Это и оптимизация, и устранение необходимости навешивания атрибутов
                 return prototype;
             var res = proxy.GetMember(name, forWrite && own, own);
-            if (res.IsExist || (own && forWrite))
+            if (res.IsExists || (own && forWrite))
             {
                 if (forWrite && res.isNeedClone)
                     res = proxy.GetMember(name, true, own);

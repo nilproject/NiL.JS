@@ -321,7 +321,7 @@ namespace NiL.JS.Core
         /// 
         /// </summary>
         /// <param name="index"></param>
-        /// <returns>Zero if the requested index does not exists</returns>
+        /// <returns>Zero if the requested index does not Exists</returns>
         public long NearestIndexNotLess(long index)
         {
             int bi = 31;
