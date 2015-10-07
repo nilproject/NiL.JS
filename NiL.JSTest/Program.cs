@@ -404,7 +404,7 @@ console.log(new Struct().funcWithDefaultValues());
             }));
 #endif
 
-            int mode = 100
+            int mode = 0
                     ;
             switch (mode)
             {
@@ -882,7 +882,7 @@ ast.print_to_string();");
             _("Directory: \"" + Directory.GetParent(folderPath) + "\"");
             _("Scaning directory...");
             var fls = Directory.EnumerateFiles(folderPath, "*.js", SearchOption.AllDirectories).ToArray();
-            _("Founded " + fls.Length + " js-files");
+            _("Found " + fls.Length + " js-files");
 
             long _total = 0;
             var round = 0;
@@ -924,7 +924,7 @@ ast.print_to_string();");
             _("Directory: \"" + Directory.GetParent(folderPath) + "\"");
             _("Scaning directory...");
             var fls = Directory.EnumerateFiles(folderPath, "*.js", SearchOption.AllDirectories).ToArray();
-            _("Founded " + fls.Length + " js-files");
+            _("Found " + fls.Length + " js-files");
 
             long _total = 0;
             var round = 0;

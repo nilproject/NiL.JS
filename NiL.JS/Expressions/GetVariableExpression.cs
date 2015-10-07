@@ -68,7 +68,7 @@ namespace NiL.JS.Expressions
             {
                 var res = Descriptor.Get(context, false, defineDepth);
                 if (res.valueType < JSValueType.Undefined && (!suspendThrow || forceThrow))
-                    throwRefError();
+                    ExceptionsHelper.ThrowVariableNotDefined(variableName);
                 if ((res.attributes & JSValueAttributesInternal.Argument) != 0)
                     context.caller.buildArgumentsObject();
                 return res;
@@ -84,28 +84,15 @@ namespace NiL.JS.Expressions
                 case JSValueType.NotExists:
                     {
                         if (!suspendThrow)
-                            throwRefError();
+                            ExceptionsHelper.ThrowVariableNotDefined(variableName);
                         break;
                     }
                 case JSValueType.Property:
                     {
-                        return processProp(context, res);
+                        return Tools.InvokeGetter(res, context.objectSource);
                     }
             }
             return res;
-        }
-
-        private static JSValue processProp(Context context, JSValue res)
-        {
-            var getter = (res.oValue as PropertyPair).get;
-            if (getter == null)
-                return JSValue.notExists;
-            return getter.Invoke(context.objectSource, null);
-        }
-
-        private void throwRefError()
-        {
-            throw new JSException(new NiL.JS.BaseLibrary.ReferenceError("Variable \"" + variableName + "\" is not defined."));
         }
 
         protected override CodeNode[] getChildsImpl()

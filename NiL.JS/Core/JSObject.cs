@@ -306,27 +306,27 @@ namespace NiL.JS.Core
                         throw new JSException(new TypeError("Invalid property descriptor for property " + member + " ."));
                     var value = desc["value"];
                     if (value.valueType == JSValueType.Property)
-                        value = Tools.invokeGetter(value, desc);
+                        value = Tools.InvokeGetter(value, desc);
 
                     var configurable = desc["configurable"];
                     if (configurable.valueType == JSValueType.Property)
-                        configurable = Tools.invokeGetter(configurable, desc);
+                        configurable = Tools.InvokeGetter(configurable, desc);
 
                     var enumerable = desc["enumerable"];
                     if (enumerable.valueType == JSValueType.Property)
-                        enumerable = Tools.invokeGetter(enumerable, desc);
+                        enumerable = Tools.InvokeGetter(enumerable, desc);
 
                     var writable = desc["writable"];
                     if (writable.valueType == JSValueType.Property)
-                        writable = Tools.invokeGetter(writable, desc);
+                        writable = Tools.InvokeGetter(writable, desc);
 
                     var get = desc["get"];
                     if (get.valueType == JSValueType.Property)
-                        get = Tools.invokeGetter(get, desc);
+                        get = Tools.InvokeGetter(get, desc);
 
                     var set = desc["set"];
                     if (set.valueType == JSValueType.Property)
-                        set = Tools.invokeGetter(set, desc);
+                        set = Tools.InvokeGetter(set, desc);
 
                     if (value.IsExists && (get.IsExists || set.IsExists))
                         throw new JSException(new TypeError("Property can not have getter or setter and default value."));
@@ -438,27 +438,27 @@ namespace NiL.JS.Core
         {
             var value = desc["value"];
             if (value.valueType == JSValueType.Property)
-                value = Tools.invokeGetter(value, desc);
+                value = Tools.InvokeGetter(value, desc);
 
             var configurable = desc["configurable"];
             if (configurable.valueType == JSValueType.Property)
-                configurable = Tools.invokeGetter(configurable, desc);
+                configurable = Tools.InvokeGetter(configurable, desc);
 
             var enumerable = desc["enumerable"];
             if (enumerable.valueType == JSValueType.Property)
-                enumerable = Tools.invokeGetter(enumerable, desc);
+                enumerable = Tools.InvokeGetter(enumerable, desc);
 
             var writable = desc["writable"];
             if (writable.valueType == JSValueType.Property)
-                writable = Tools.invokeGetter(writable, desc);
+                writable = Tools.InvokeGetter(writable, desc);
 
             var get = desc["get"];
             if (get.valueType == JSValueType.Property)
-                get = Tools.invokeGetter(get, desc);
+                get = Tools.InvokeGetter(get, desc);
 
             var set = desc["set"];
             if (set.valueType == JSValueType.Property)
-                set = Tools.invokeGetter(set, desc);
+                set = Tools.InvokeGetter(set, desc);
             if (value.IsExists && (get.IsExists || set.IsExists))
                 throw new JSException(new TypeError("Property can not have getter or setter and default value."));
             if (writable.IsExists && (get.IsExists || set.IsExists))

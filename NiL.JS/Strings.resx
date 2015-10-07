@@ -132,4 +132,7 @@
   <data name="InvalidTryToCreateWithoutNew" xml:space="preserve">
     <value>Type "{0}" can not be created without new keyword</value>
   </data>
+  <data name="VariableNotDefined" xml:space="preserve">
+    <value>Variable "{0}" not defined</value>
+  </data>
 </root>

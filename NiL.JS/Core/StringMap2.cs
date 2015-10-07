@@ -108,23 +108,26 @@ namespace NiL.JS.Core
 #endif
         private static int computeHash(string key)
         {
-            int hash;
-            var keyLen = key.Length;
-            hash = keyLen * 0x55 ^ 0xe5b5e5;
-            for (var i = 0; i < keyLen; i++)
-                hash += (hash >> 28) + (hash << 4) + key[i];
-            return hash;
+            unchecked
+            {
+                int hash;
+                var keyLen = key.Length;
+                hash = keyLen * 0x55 ^ 0xe5b5e5;
+                for (var i = 0; i < keyLen; i++)
+                    hash += (hash >> 28) + (hash << 4) + key[i];
+                return hash;
+            }
         }
 
         public bool TryGetValue(string key, out TValue value)
         {
             if (key == null)
-                throw new ArgumentNullException();
+                ExceptionsHelper.ThrowNullReference("key");
+            value = default(TValue);
             if (key.Length == 0)
             {
                 if (!emptyKeyValueExists)
                 {
-                    value = default(TValue);
                     return false;
                 }
                 value = emptyKeyValue;
@@ -132,7 +135,6 @@ namespace NiL.JS.Core
             }
             if (records.Length == 0)
             {
-                value = default(TValue);
                 return false;
             }
             int hash = computeHash(key);

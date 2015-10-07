@@ -1113,7 +1113,7 @@ namespace NiL.JS.BaseLibrary
                     }
                     args[0] = accum;
                     if (value.valueType == JSValueType.Property)
-                        args.a1.Assign(Tools.invokeGetter(value, self));
+                        args.a1.Assign(Tools.InvokeGetter(value, self));
                     else
                         args.a1.Assign(value);
                     called = true;
@@ -1156,7 +1156,7 @@ namespace NiL.JS.BaseLibrary
                 if (res == null || !res.IsExists)
                     res = src.__proto__["0"];
                 if (res.valueType == JSValueType.Property)
-                    res = Tools.invokeGetter(res, self);
+                    res = Tools.InvokeGetter(res, self);
 
                 JSValue prw = res;
                 var length = src.data.Length;
@@ -1195,7 +1195,7 @@ namespace NiL.JS.BaseLibrary
                             //    continue;
                         }
                         if (value != null && value.valueType == JSValueType.Property)
-                            value = Tools.invokeGetter(value, self);
+                            value = Tools.InvokeGetter(value, self);
 
                         if (prw != null && prw.valueType == JSValueType.Property)
                         {
@@ -1231,7 +1231,7 @@ namespace NiL.JS.BaseLibrary
             {
                 var lenObj = self["length"];
                 if (lenObj.valueType == JSValueType.Property)
-                    lenObj = Tools.invokeGetter(lenObj, self);
+                    lenObj = Tools.InvokeGetter(lenObj, self);
 
                 long _length = (long)(uint)Tools.JSObjectToDouble(lenObj);
                 if (_length > uint.MaxValue)
@@ -1245,7 +1245,7 @@ namespace NiL.JS.BaseLibrary
                 var t = self.GetMember(ti, true, false);
                 var res = t;
                 if (res.valueType == JSValueType.Property)
-                    res = Tools.invokeGetter(res, self).CloneImpl();
+                    res = Tools.InvokeGetter(res, self).CloneImpl();
                 else
                     res = res.CloneImpl();
                 if ((t.attributes & (JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete)) == 0)
@@ -1346,7 +1346,7 @@ namespace NiL.JS.BaseLibrary
                         if (value == null || !value.IsExists)
                             continue;
                         if (value.valueType == JSValueType.Property)
-                            value = Tools.invokeGetter(value, self);
+                            value = Tools.InvokeGetter(value, self);
 
                         if (processedKeys != null)
                         {
@@ -1365,7 +1365,7 @@ namespace NiL.JS.BaseLibrary
                     if (!lenObj.IsDefined)
                         return res;
                     if (lenObj.valueType == JSValueType.Property)
-                        lenObj = Tools.invokeGetter(lenObj, self);
+                        lenObj = Tools.InvokeGetter(lenObj, self);
 
                     if (lenObj.valueType >= JSValueType.Object)
                         lenObj = lenObj.ToPrimitiveValue_Value_String();
@@ -1394,7 +1394,7 @@ namespace NiL.JS.BaseLibrary
                         {
                             var temp = self[i];
                             if (temp.valueType == JSValueType.Property)
-                                temp = Tools.invokeGetter(temp, self);
+                                temp = Tools.InvokeGetter(temp, self);
 
                             if (!temp.IsExists)
                                 continue;
@@ -1480,7 +1480,7 @@ namespace NiL.JS.BaseLibrary
                         value = value.CloneImpl();
                     }
                     if (value.valueType == JSValueType.Property)
-                        value = Tools.invokeGetter(value, self).CloneImpl();
+                        value = Tools.InvokeGetter(value, self).CloneImpl();
 
                     if (key < pos1)
                     {
@@ -1561,7 +1561,7 @@ namespace NiL.JS.BaseLibrary
                         {
                             var value = self.__proto__[i.ToString()];
                             if (value.valueType == JSValueType.Property)
-                                value = Tools.invokeGetter(value, self).CloneImpl();
+                                value = Tools.InvokeGetter(value, self).CloneImpl();
                             else
                                 value = value.CloneImpl();
                             if (needResult)
@@ -1574,7 +1574,7 @@ namespace NiL.JS.BaseLibrary
                     {
                         var value = keyS.Value;
                         if (value.ValueType == JSValueType.Property)
-                            value = Tools.invokeGetter(value, self).CloneImpl();
+                            value = Tools.InvokeGetter(value, self).CloneImpl();
                         else
                             value = value.CloneImpl();
                         if (needResult)
@@ -1615,7 +1615,7 @@ namespace NiL.JS.BaseLibrary
                         }
                         var src = self.GetMember(tjo, true, false);
                         if (src.valueType == JSValueType.Property)
-                            src = Tools.invokeGetter(src, self);
+                            src = Tools.InvokeGetter(src, self);
 
                         if (dst.valueType == JSValueType.Property)
                             ((dst.oValue as PropertyPair).set ?? Function.emptyFunction).Invoke(self, new Arguments() { a0 = src, length = 1 });
@@ -1674,7 +1674,7 @@ namespace NiL.JS.BaseLibrary
                         var srcItem = self.GetMember(tjo, true, false);
                         var src = srcItem;
                         if (src.valueType == JSValueType.Property)
-                            src = Tools.invokeGetter(src, self);
+                            src = Tools.InvokeGetter(src, self);
 
                         if (dst.valueType == JSValueType.Property)
                             ((dst.oValue as PropertyPair).set ?? Function.emptyFunction).Invoke(self, new Arguments() { a0 = src, length = 1 });

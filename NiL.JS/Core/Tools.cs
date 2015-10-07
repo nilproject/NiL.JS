@@ -138,7 +138,8 @@ namespace NiL.JS.Core
                 catch
                 {
                     parent = owner.GetEnumerator();
-                    for (int i = 0; i < index && parent.MoveNext(); i++) ;
+                    for (int i = 0; i < index && parent.MoveNext(); i++)
+                        ;
                     return MoveNext();
                 }
             }
@@ -471,24 +472,33 @@ namespace NiL.JS.Core
                     }
                 case JSValueType.Double:
                     {
-                        if (targetType == typeof(double)) return (double)jsobj.dValue;
-                        if (targetType == typeof(float)) return (float)jsobj.dValue;
+                        if (targetType == typeof(double))
+                            return (double)jsobj.dValue;
+                        if (targetType == typeof(float))
+                            return (float)jsobj.dValue;
                         break;
                     }
                 case JSValueType.Int:
                     {
-                        if (targetType == typeof(int)) return (int)jsobj.iValue;
+                        if (targetType == typeof(int))
+                            return (int)jsobj.iValue;
 
                         //if (targetType == typeof(byte)) return (byte)jsobj.iValue;
                         //if (targetType == typeof(sbyte)) return (sbyte)jsobj.iValue;
                         //if (targetType == typeof(short)) return (short)jsobj.iValue;
                         //if (targetType == typeof(ushort)) return (ushort)jsobj.iValue;
-                        if (targetType == typeof(uint)) return (uint)jsobj.iValue;
-                        if (targetType == typeof(long)) return (long)jsobj.iValue;
-                        if (targetType == typeof(ulong)) return (ulong)jsobj.iValue;
-                        if (targetType == typeof(double)) return (double)jsobj.iValue;
-                        if (targetType == typeof(float)) return (float)jsobj.iValue;
-                        if (targetType == typeof(decimal)) return (float)jsobj.iValue;
+                        if (targetType == typeof(uint))
+                            return (uint)jsobj.iValue;
+                        if (targetType == typeof(long))
+                            return (long)jsobj.iValue;
+                        if (targetType == typeof(ulong))
+                            return (ulong)jsobj.iValue;
+                        if (targetType == typeof(double))
+                            return (double)jsobj.iValue;
+                        if (targetType == typeof(float))
+                            return (float)jsobj.iValue;
+                        if (targetType == typeof(decimal))
+                            return (float)jsobj.iValue;
                         break;
                     }
                 default:
@@ -1463,11 +1473,12 @@ namespace NiL.JS.Core
             return ((int)(ValueType)x & (int)(ValueType)mask) == ((int)(ValueType)y & (int)(ValueType)mask);
         }
 
-        internal static JSValue invokeGetter(JSValue property, JSValue target)
+        internal static JSValue InvokeGetter(JSValue property, JSValue target)
         {
-            if ((property.oValue as PropertyPair).get == null)
+            var getter = property.oValue as PropertyPair;
+            if (getter == null || getter.get == null)
                 return JSValue.undefined;
-            property = (property.oValue as PropertyPair).get.Invoke(target, null);
+            property = getter.get.Invoke(target, null);
             if (property.valueType < JSValueType.Undefined)
                 property = JSValue.undefined;
             return property;

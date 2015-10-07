@@ -69,7 +69,7 @@ namespace NiL.JS.Expressions
             if (res.valueType == JSValueType.NotExists)
                 res.valueType = JSValueType.NotExistsInObject;
             else if (res.valueType == JSValueType.Property)
-                res = Tools.invokeGetter(res, source);
+                res = Tools.InvokeGetter(res, source);
             return res;
         }
 
