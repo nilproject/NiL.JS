@@ -404,7 +404,7 @@ console.log(new Struct().funcWithDefaultValues());
             }));
 #endif
 
-            int mode = 0
+            int mode = 3
                     ;
             switch (mode)
             {

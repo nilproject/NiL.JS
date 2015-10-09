@@ -10,7 +10,6 @@
 
 namespace NiL.JS {
     using System;
-    using System.Reflection;
     
     
     /// <summary>
@@ -40,7 +39,7 @@ namespace NiL.JS {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("NiL.JS.Strings", typeof(Strings).GetTypeInfo().Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("NiL.JS.Strings", typeof(Strings).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -67,6 +66,42 @@ namespace NiL.JS {
         internal static string FunctionInLoop {
             get {
                 return ResourceManager.GetString("FunctionInLoop", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Can not increment property &quot;{0}&quot; without setter..
+        /// </summary>
+        internal static string IncrementPropertyWOSetter {
+            get {
+                return ResourceManager.GetString("IncrementPropertyWOSetter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Can not increment readonly &quot;{0}&quot;.
+        /// </summary>
+        internal static string IncrementReadonly {
+            get {
+                return ResourceManager.GetString("IncrementReadonly", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Invalid property name at {0}.
+        /// </summary>
+        internal static string InvalidPropertyName {
+            get {
+                return ResourceManager.GetString("InvalidPropertyName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Unable to process regular expression {0}.
+        /// </summary>
+        internal static string InvalidRegExp {
+            get {
+                return ResourceManager.GetString("InvalidRegExp", resourceCulture);
             }
         }
         

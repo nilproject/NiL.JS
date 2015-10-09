@@ -38,7 +38,7 @@ namespace NiL.JS.Expressions
             tempContainer = null;
             var source = second.Evaluate(context);
             if (source.valueType < JSValueType.Object)
-                throw new JSException(new TypeError("Right-hand value of operator in is not object."));
+                ExceptionsHelper.Throw(new TypeError("Right-hand value of operator in is not object."));
             if (temp.valueType == JSValueType.Int)
             {
                 var array = source.oValue as BaseLibrary.Array;

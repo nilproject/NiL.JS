@@ -62,7 +62,7 @@ namespace NiL.JS.BaseLibrary
                 var nlenD = Tools.JSObjectToDouble(value);
                 var nlen = (uint)nlenD;
                 if (double.IsNaN(nlenD) || double.IsInfinity(nlenD) || nlen != nlenD)
-                    throw new JSException(new RangeError("Invalid array length"));
+                    ExceptionsHelper.Throw(new RangeError("Invalid array length"));
                 if ((attributes & JSValueAttributesInternal.ReadOnly) != 0)
                     return;
                 array.setLength(nlen);
@@ -98,7 +98,7 @@ namespace NiL.JS.BaseLibrary
             oValue = this;
             valueType = JSValueType.Object;
             if (length < 0)
-                throw new JSException((new RangeError("Invalid array length.")));
+                ExceptionsHelper.Throw((new RangeError("Invalid array length.")));
             data = new SparseArray<JSValue>((int)System.Math.Min(100000, (uint)length));
             if (length > 0)
             {
@@ -121,7 +121,7 @@ namespace NiL.JS.BaseLibrary
             oValue = this;
             valueType = JSValueType.Object;
             if (length < 0 || length > uint.MaxValue)
-                throw new JSException((new RangeError("Invalid array length.")));
+                ExceptionsHelper.Throw((new RangeError("Invalid array length.")));
             data = new SparseArray<JSValue>((int)System.Math.Min(100000, length));
             //if (length > 0)
             //    data[(int)(length - 1)] = null;
@@ -134,7 +134,7 @@ namespace NiL.JS.BaseLibrary
             oValue = this;
             valueType = JSValueType.Object;
             if (((long)length != length) || (length < 0) || (length > 0xffffffff))
-                throw new JSException((new RangeError("Invalid array length.")));
+                ExceptionsHelper.Throw((new RangeError("Invalid array length.")));
             data = new SparseArray<JSValue>();
             if (length > 0)
                 data[(int)((uint)length - 1)] = null;
@@ -234,7 +234,7 @@ namespace NiL.JS.BaseLibrary
             if (data.Length == nlen)
                 return true;
             if (nlen < 0)
-                throw new JSException(new RangeError("Invalid array length"));
+                ExceptionsHelper.Throw(new RangeError("Invalid array length"));
             if (data.Length > nlen)
             {
                 var res = true;
@@ -323,13 +323,13 @@ namespace NiL.JS.BaseLibrary
             Array src = self as Array;
             bool nativeMode = src != null;
             if (!self.IsDefined || (self.valueType >= JSValueType.Object && self.oValue == null))
-                throw new JSException(new TypeError("Can not call Array.prototype." + (inverse ? "some" : "every") + " for null or undefined"));
+                ExceptionsHelper.Throw(new TypeError("Can not call Array.prototype." + (inverse ? "some" : "every") + " for null or undefined"));
             if (!nativeMode)
                 src = Tools.iterableToArray(self, false, false, false, -1);
 
             Function f = args[0] == null ? null : args[0].oValue as Function;
             if (f == null)
-                throw new JSException(new TypeError("Callback argument is not a function."));
+                ExceptionsHelper.Throw(new TypeError("Callback argument is not a function."));
             var ao = new Arguments();
             ao.length = 3;
             ao[0] = new JSValue();
@@ -412,13 +412,13 @@ namespace NiL.JS.BaseLibrary
             Array src = self as Array;
             bool nativeMode = src != null;
             if (!self.IsDefined || (self.valueType >= JSValueType.Object && self.oValue == null))
-                throw new JSException(new TypeError("Can not call Array.prototype.filter for null or undefined"));
+                ExceptionsHelper.Throw(new TypeError("Can not call Array.prototype.filter for null or undefined"));
             if (!nativeMode)
                 src = Tools.iterableToArray(self, false, false, false, -1);
 
             Function f = args[0] == null ? null : args[0].oValue as Function;
             if (f == null)
-                throw new JSException(new TypeError("Callback argument is not a function."));
+                ExceptionsHelper.Throw(new TypeError("Callback argument is not a function."));
             var ao = new Arguments()
             {
                 new JSValue(),
@@ -520,13 +520,13 @@ namespace NiL.JS.BaseLibrary
             Array src = self as Array;
             bool nativeMode = src != null;
             if (!self.IsDefined || (self.valueType >= JSValueType.Object && self.oValue == null))
-                throw new JSException(new TypeError("Can not call Array.prototype." + (needResult ? "map" : "forEach") + " for null or undefined"));
+                ExceptionsHelper.Throw(new TypeError("Can not call Array.prototype." + (needResult ? "map" : "forEach") + " for null or undefined"));
             if (!nativeMode)
                 src = Tools.iterableToArray(self, false, false, false, -1);
 
             Function f = args[0] == null ? null : args[0].oValue as Function;
             if (f == null)
-                throw new JSException(new TypeError("Callback argument is not a function."));
+                ExceptionsHelper.Throw(new TypeError("Callback argument is not a function."));
             var ao = new Arguments();
             ao.length = 3;
             ao[0] = new JSValue();
@@ -613,7 +613,7 @@ namespace NiL.JS.BaseLibrary
             Array src = self as Array;
             bool nativeMode = src != null;
             if (!self.IsDefined || (self.valueType >= JSValueType.Object && self.oValue == null))
-                throw new JSException(new TypeError("Can not call Array.prototype.indexOf for null or undefined"));
+                ExceptionsHelper.Throw(new TypeError("Can not call Array.prototype.indexOf for null or undefined"));
             var _length = nativeMode ? src.data.Length : Tools.getLengthOfIterably(self, false);
             var fromIndex = args.length > 1 ? Tools.JSObjectToInt64(args[1], 0, true) : 0;
             if (fromIndex < 0)
@@ -702,7 +702,7 @@ namespace NiL.JS.BaseLibrary
         private static string joinImpl(JSValue self, string separator, bool locale)
         {
             if ((self.oValue == null && self.valueType >= JSValueType.Object) || self.valueType <= JSValueType.Undefined)
-                throw new JSException(new TypeError("Array.prototype.join called for null or undefined"));
+                ExceptionsHelper.Throw(new TypeError("Array.prototype.join called for null or undefined"));
             if (self.valueType >= JSValueType.Object && self.oValue.GetType() == typeof(Array))
             {
                 var selfa = self as Array;
@@ -755,7 +755,7 @@ namespace NiL.JS.BaseLibrary
             Array src = self as Array;
             bool nativeMode = src != null;
             if (!self.IsDefined || (self.valueType >= JSValueType.Object && self.oValue == null))
-                throw new JSException(new TypeError("Can not call Array.prototype.lastIndexOf for null or undefined"));
+                ExceptionsHelper.Throw(new TypeError("Can not call Array.prototype.lastIndexOf for null or undefined"));
 
             var _length = nativeMode ? src.data.Length : Tools.getLengthOfIterably(self, false);
             var fromIndex = args.length > 1 ? Tools.JSObjectToInt64(args[1], 0, true) : _length - 1;
@@ -884,7 +884,7 @@ namespace NiL.JS.BaseLibrary
                         if (selfa.fields == null)
                             selfa.fields = createFields();
                         selfa.fields[uint.MaxValue.ToString()] = args.a0.CloneImpl();
-                        throw new JSException(new RangeError("Invalid length of array"));
+                        ExceptionsHelper.Throw(new RangeError("Invalid length of array"));
                     }
                     selfa.data.Add(args[i].CloneImpl());
                 }
@@ -1053,13 +1053,13 @@ namespace NiL.JS.BaseLibrary
             if (accum.valueType < JSValueType.Undefined)
             {
                 if (src.data.Length == 0)
-                    throw new JSException(new TypeError("Array is empty."));
+                    ExceptionsHelper.Throw(new TypeError("Array is empty."));
                 skip = true;
             }
             else if (src.data.Length == 0)
                 return accum;
             if (func == null || func.valueType != JSValueType.Function)
-                throw new JSException(new TypeError("First argument on reduce mast be a function."));
+                ExceptionsHelper.Throw(new TypeError("First argument on reduce mast be a function."));
             if (accum.GetType() != typeof(JSValue))
                 accum = accum.CloneImpl();
             args.length = 4;
@@ -1140,7 +1140,7 @@ namespace NiL.JS.BaseLibrary
                     break;
             }
             if (!called && skip)
-                throw new JSException(new TypeError("Array is empty."));
+                ExceptionsHelper.Throw(new TypeError("Array is empty."));
             return accum;
         }
 
@@ -1235,7 +1235,7 @@ namespace NiL.JS.BaseLibrary
 
                 long _length = (long)(uint)Tools.JSObjectToDouble(lenObj);
                 if (_length > uint.MaxValue)
-                    throw new JSException(new RangeError("Invalid array length"));
+                    ExceptionsHelper.Throw(new RangeError("Invalid array length"));
                 if (_length == 0)
                 {
                     self["length"] = lenObj = _length;
@@ -1321,7 +1321,7 @@ namespace NiL.JS.BaseLibrary
             if (args == null)
                 throw new ArgumentNullException("args");
             if (!self.IsDefined || (self.valueType >= JSValueType.Object && self.oValue == null))
-                throw new JSException(new TypeError("Can not call Array.prototype.slice for null or undefined"));
+                ExceptionsHelper.Throw(new TypeError("Can not call Array.prototype.slice for null or undefined"));
             HashSet<string> processedKeys = null;
             Array res = new Array();
             for (; ; )
@@ -1898,7 +1898,7 @@ namespace NiL.JS.BaseLibrary
         public new JSValue toString(Arguments args)
         {
             if (this.GetType() != typeof(Array) && !this.GetType().IsSubclassOf(typeof(Array)))
-                throw new JSException(new TypeError("Try to call Array.toString on not Array object."));
+                ExceptionsHelper.Throw(new TypeError("Try to call Array.toString on not Array object."));
             return this.ToString();
         }
 
@@ -2021,7 +2021,7 @@ namespace NiL.JS.BaseLibrary
                     if (_lengthObj != null && (_lengthObj.attributes & JSValueAttributesInternal.ReadOnly) != 0 && index >= data.Length)
                     {
                         if (own)
-                            throw new JSException(new TypeError("Can not add item to fixed size array"));
+                            ExceptionsHelper.Throw(new TypeError("Can not add item to fixed size array"));
                         return notExists;
                     }
                     var res = data[index];

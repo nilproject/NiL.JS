@@ -231,7 +231,7 @@ namespace NiL.JS.BaseLibrary
         public static JSValue match(JSValue self, Arguments args)
         {
             if (self.valueType <= JSValueType.Undefined || (self.valueType >= JSValueType.Object && self.Value == null))
-                throw new JSException(new TypeError("String.prototype.match called on null or undefined"));
+                ExceptionsHelper.Throw(new TypeError("String.prototype.match called on null or undefined"));
             var a0 = args[0];
             var regex = a0.oValue as RegExp;
             if (a0.valueType == JSValueType.Object && regex != null)
@@ -273,7 +273,7 @@ namespace NiL.JS.BaseLibrary
         public static JSValue search(JSValue self, Arguments args)
         {
             if (self.valueType <= JSValueType.Undefined || (self.valueType >= JSValueType.Object && self.Value == null))
-                throw new JSException(new TypeError("String.prototype.match called on null or undefined"));
+                ExceptionsHelper.Throw(new TypeError("String.prototype.match called on null or undefined"));
             if (args.length == 0)
                 return 0;
             var a0 = args[0];
@@ -793,13 +793,16 @@ namespace NiL.JS.BaseLibrary
                 case JSValueType.Undefined:
                 case JSValueType.NotExists:
                 case JSValueType.NotExistsInObject:
-                    throw new JSException(new TypeError("string can't be undefined"));
+                    {
+                        ExceptionsHelper.Throw(new TypeError("string can't be undefined"));
+                        break;
+                    }
                 case JSValueType.Function:
                 case JSValueType.String:
                 case JSValueType.Object:
                     {
                         if (self.oValue == null)
-                            throw new JSException(new TypeError("string can't be null"));
+                            ExceptionsHelper.Throw(new TypeError("string can't be null"));
                         break;
                     }
             }
@@ -808,11 +811,13 @@ namespace NiL.JS.BaseLibrary
                 var sb = new StringBuilder(self.ToString());
                 int initialLength = sb.Length;
                 int index = 0;
-                for (; index < sb.Length && System.Array.IndexOf(Tools.TrimChars, sb[index]) != -1; index++) ;
+                for (; index < sb.Length && System.Array.IndexOf(Tools.TrimChars, sb[index]) != -1; index++)
+                    ;
                 if (index > 0)
                     sb.Remove(0, index);
                 index = sb.Length - 1;
-                while (index >= 0 && System.Array.IndexOf(Tools.TrimChars, sb[index]) != -1) index--;
+                while (index >= 0 && System.Array.IndexOf(Tools.TrimChars, sb[index]) != -1)
+                    index--;
                 index++;
                 if (index < sb.Length)
                     sb.Remove(index, sb.Length - index);
@@ -821,11 +826,13 @@ namespace NiL.JS.BaseLibrary
                     index = 0;
                     for (; ; )
                     {
-                        while (index < sb.Length && sb[index] != '\n' && sb[index] != '\r') index++;
+                        while (index < sb.Length && sb[index] != '\n' && sb[index] != '\r')
+                            index++;
                         if (index >= sb.Length)
                             break;
                         var startindex = index;
-                        for (; index < sb.Length && System.Array.IndexOf(Tools.TrimChars, sb[index]) != -1; index++) ;
+                        for (; index < sb.Length && System.Array.IndexOf(Tools.TrimChars, sb[index]) != -1; index++)
+                            ;
                         sb.Remove(startindex, index - startindex);
                     }
                 }
@@ -845,10 +852,9 @@ namespace NiL.JS.BaseLibrary
         {
             if ((self as object) is String && self.valueType == JSValueType.Object) // prototype instance
                 return self.ToString();
-            if (self.valueType == JSValueType.String)
-                return self;
-            else
-                throw new JSException(new TypeError("Try to call String.toString for not string object."));
+            if (self.valueType != JSValueType.String)
+                ExceptionsHelper.Throw(new TypeError("Try to call String.toString for not string object."));
+            return self;
         }
 
         [DoNotEnumerate]
@@ -858,10 +864,9 @@ namespace NiL.JS.BaseLibrary
         {
             if ((self as object) is String && self.valueType == JSValueType.Object) // prototype instance
                 return self.ToString();
-            if (self.valueType == JSValueType.String)
-                return self;
-            else
-                throw new JSException(new TypeError("Try to call String.valueOf for not string object."));
+            if (self.valueType != JSValueType.String)
+                ExceptionsHelper.Throw(new TypeError("Try to call String.valueOf for not string object."));
+            return self;
         }
 
         private Number _length = null;
@@ -889,7 +894,7 @@ namespace NiL.JS.BaseLibrary
         public override string ToString()
         {
             if (this.valueType != JSValueType.String)
-                throw new JSException(new TypeError("Try to call String.toString for not string object."));
+                ExceptionsHelper.Throw(new TypeError("Try to call String.toString for not string object."));
             return oValue.ToString();
         }
 

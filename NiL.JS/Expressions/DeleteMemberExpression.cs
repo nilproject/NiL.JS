@@ -46,7 +46,7 @@ namespace NiL.JS.Expressions
             var res = source.DeleteMember(cachedMemberName ?? second.Evaluate(context));
             context.objectSource = null;
             if (!res && context.strict)
-                throw new JSException(new TypeError("Can not delete property \"" + first + "\"."));
+                ExceptionsHelper.Throw(new TypeError("Can not delete property \"" + first + "\"."));
             return res;
         }
 

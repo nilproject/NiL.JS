@@ -43,11 +43,11 @@ namespace NiL.JS.Expressions
             {
                 JSValue ctor = source.Evaluate(context);
                 if (ctor.valueType != JSValueType.Function && !(ctor.valueType == JSValueType.Object && ctor.oValue is Function))
-                    throw new JSException((new NiL.JS.BaseLibrary.TypeError(ctor + " is not callable")));
+                    ExceptionsHelper.Throw((new NiL.JS.BaseLibrary.TypeError(ctor + " is not callable")));
                 if (ctor.oValue is EvalFunction
                     || ctor.oValue is ExternalFunction
                     || ctor.oValue is MethodProxy)
-                    throw new JSException(new TypeError("Function \"" + (ctor.oValue as Function).name + "\" is not a constructor."));
+                    ExceptionsHelper.Throw(new TypeError("Function \"" + (ctor.oValue as Function).name + "\" is not a constructor."));
 
                 JSValue _this = new JSObject(false) { valueType = JSValueType.Object, oValue = typeof(NewOperator) };
                 context.objectSource = _this;

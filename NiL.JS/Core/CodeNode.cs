@@ -56,12 +56,8 @@ namespace NiL.JS.Core
 
         internal virtual JSValue EvaluateForAssing(NiL.JS.Core.Context context)
         {
-            return raiseInvalidAssignment();
-        }
-
-        protected static JSValue raiseInvalidAssignment()
-        {
-            throw new JSException(new ReferenceError("Invalid left-hand side in assignment."));
+            ExceptionsHelper.Throw(new ReferenceError("Invalid left-hand side in assignment."));
+            return null;
         }
 
         internal abstract JSValue Evaluate(Context context);

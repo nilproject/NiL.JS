@@ -92,7 +92,8 @@ namespace NiL.JS.Core.Functions
                     }
                 }
             }
-            throw new JSException(new TypeError("Invalid arguments for function " + methods[0].name));
+            ExceptionsHelper.Throw(new TypeError("Invalid arguments for function " + methods[0].name));
+            return null;
         }
     }
 }

@@ -28,7 +28,7 @@ namespace NiL.JS.BaseLibrary
             if (ptrn.valueType == JSValueType.Object && ptrn.Value is RegExp)
             {
                 if (args.GetMember("length").iValue > 1 && args[1].valueType > JSValueType.Undefined)
-                    throw new JSException(new TypeError("Cannot supply flags when constructing one RegExp from another"));
+                    ExceptionsHelper.Throw(new TypeError("Cannot supply flags when constructing one RegExp from another"));
                 oValue = ptrn.oValue;
                 regEx = (ptrn.Value as RegExp).regEx;
                 _global = (ptrn.Value as RegExp).global;
@@ -64,27 +64,28 @@ namespace NiL.JS.BaseLibrary
                         case 'i':
                             {
                                 if ((options & System.Text.RegularExpressions.RegexOptions.IgnoreCase) != 0)
-                                    throw new JSException((new SyntaxError("Try to double use RegExp flag \"" + flags[i] + '"')));
+                                    ExceptionsHelper.Throw((new SyntaxError("Try to double use RegExp flag \"" + flags[i] + '"')));
                                 options |= System.Text.RegularExpressions.RegexOptions.IgnoreCase;
                                 break;
                             }
                         case 'm':
                             {
                                 if ((options & System.Text.RegularExpressions.RegexOptions.Multiline) != 0)
-                                    throw new JSException((new SyntaxError("Try to double use RegExp flag \"" + flags[i] + '"')));
+                                    ExceptionsHelper.Throw((new SyntaxError("Try to double use RegExp flag \"" + flags[i] + '"')));
                                 options |= System.Text.RegularExpressions.RegexOptions.Multiline;
                                 break;
                             }
                         case 'g':
                             {
                                 if (_global)
-                                    throw new JSException((new SyntaxError("Try to double use RegExp flag \"" + flags[i] + '"')));
+                                    ExceptionsHelper.Throw((new SyntaxError("Try to double use RegExp flag \"" + flags[i] + '"')));
                                 _global = true;
                                 break;
                             }
                         default:
                             {
-                                throw new JSException((new SyntaxError("Invalid RegExp flag \"" + flags[i] + '"')));
+                                ExceptionsHelper.Throw((new SyntaxError("Invalid RegExp flag \"" + flags[i] + '"')));
+                                break;
                             }
                     }
                 }
@@ -93,7 +94,7 @@ namespace NiL.JS.BaseLibrary
             }
             catch (ArgumentException e)
             {
-                throw new JSException((new SyntaxError(e.Message)));
+                ExceptionsHelper.Throw((new SyntaxError(e.Message)));
             }
         }
 
@@ -187,7 +188,7 @@ namespace NiL.JS.BaseLibrary
         public JSValue exec(JSValue arg)
         {
             if (this.GetType() != typeof(RegExp))
-                throw new JSException(new TypeError("Try to call RegExp.exec for not RegExp object."));
+                ExceptionsHelper.Throw(new TypeError("Try to call RegExp.exec for not RegExp object."));
             string input = (arg ?? "undefined").ToString();
             lIndex = Tools.JSObjectToNumber(lastIndex);
             if ((lIndex.attributes & JSValueAttributesInternal.SystemObject) != 0)

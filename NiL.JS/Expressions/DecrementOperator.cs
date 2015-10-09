@@ -175,12 +175,12 @@ namespace NiL.JS.Expressions
 
         private void raiseErrorValue()
         {
-            throw new TypeError("Can not decrement readonly \"" + (first) + "\"").Wrap();
+            ExceptionsHelper.Throw(new TypeError("Can not decrement readonly \"" + (first) + "\""));
         }
 
         private void raiseErrorProp()
         {
-            throw new TypeError("Can not decrement property \"" + (first) + "\" without setter.").Wrap();
+            ExceptionsHelper.Throw(new TypeError("Can not decrement property \"" + (first) + "\" without setter."));
         }
 
         internal override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)

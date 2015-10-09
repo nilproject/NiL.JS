@@ -51,7 +51,7 @@ namespace NiL.JS.Expressions
 
         private void throwRoError()
         {
-            throw new JSException(new TypeError("Can not assign to readonly property \"" + first + "\""));
+            ExceptionsHelper.Throw(new TypeError("Can not assign to readonly property \"" + first + "\""));
         }
 
         private JSValue setProperty(Context context, JSValue field)
@@ -78,7 +78,7 @@ namespace NiL.JS.Expressions
                 if (setter != null)
                     setter.Invoke(fieldSource, setterArgs);
                 else if (context.strict)
-                    throw new JSException(new TypeError("Can not assign to readonly property \"" + first + "\""));
+                    ExceptionsHelper.Throw(new TypeError("Can not assign to readonly property \"" + first + "\""));
                 if (saveResult)
                     tempContainer = temp;
                 return temp;

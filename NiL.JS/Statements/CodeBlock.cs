@@ -155,7 +155,7 @@ namespace NiL.JS.Statements
                 if (t == null || t is EmptyExpression)
                 {
                     if (sroot && i < state.Code.Length && state.Code[i] == '}')
-                        throw new JSException(new SyntaxError("Unexpected symbol \"}\" at " + CodeCoordinates.FromTextPosition(state.Code, i, 0)));
+                        ExceptionsHelper.Throw(new SyntaxError("Unexpected symbol \"}\" at " + CodeCoordinates.FromTextPosition(state.Code, i, 0)));
                     if (state.message != null
                         && !expectSemicolon
                         && (state.Code[i - 1] == ';' || state.Code[i - 1] == ','))
@@ -166,9 +166,9 @@ namespace NiL.JS.Statements
                 if (t is FunctionNotation)
                 {
                     if (state.strict && !allowDirectives)
-                        throw new JSException((new NiL.JS.BaseLibrary.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
+                        ExceptionsHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
                     if (state.InExpression == 0 && string.IsNullOrEmpty((t as FunctionNotation).Name))
-                        throw new JSException((new NiL.JS.BaseLibrary.SyntaxError("Declarated function must have name.")));
+                        ExceptionsHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("Declarated function must have name.")));
                     expectSemicolon = false;
                 }
                 else

@@ -258,7 +258,7 @@ namespace NiL.JS.Core
                     && (oValue as JSObject) != null)
                     return (oValue as JSObject).__proto__;
                 if (!this.IsDefined || this.IsNull)
-                    throw new JSException(new TypeError("Can not get prototype of null or undefined"));
+                    ExceptionsHelper.Throw(new TypeError("Can not get prototype of null or undefined"));
                 return GetDefaultPrototype();
             }
             [Hidden]
@@ -271,7 +271,7 @@ namespace NiL.JS.Core
                 if (oValue == this)
                     throw new InvalidOperationException();
                 if (oValue == null)
-                    throw new ReferenceError("Cannot set __proto__ of null").Wrap();
+                    ExceptionsHelper.Throw(new ReferenceError("Cannot set __proto__ of null"));
                 (oValue as JSObject).__proto__ = value;
             }
         }
@@ -496,7 +496,7 @@ namespace NiL.JS.Core
             if (valueType >= JSValueType.Object)
             {
                 if (oValue == null)
-                    throw new JSException(new TypeError("Can not get property \"" + name + "\" of \"null\""));
+                    ExceptionsHelper.Throw(new TypeError("Can not get property \"" + name + "\" of \"null\""));
                 if (oValue == this)
                     throw new InvalidOperationException();
                 field = oValue as JSObject;
@@ -513,7 +513,7 @@ namespace NiL.JS.Core
             if (valueType >= JSValueType.Object)
             {
                 if (oValue == null)
-                    throw new JSException(new TypeError("Can't get property \"" + name + "\" of \"null\""));
+                    ExceptionsHelper.Throw(new TypeError("Can't get property \"" + name + "\" of \"null\""));
                 if (oValue == this)
                     throw new InvalidOperationException();
                 var obj = oValue as JSObject;
@@ -807,7 +807,7 @@ namespace NiL.JS.Core
                     if (res.valueType < JSValueType.Object)
                         return res;
                 }
-                throw new JSException(new TypeError("Can't convert object to primitive value."));
+                ExceptionsHelper.Throw(new TypeError("Can't convert object to primitive value."));
             }
             return this;
         }
@@ -927,9 +927,9 @@ namespace NiL.JS.Core
         {
             var self = this.oValue as JSValue ?? this;
             if (self.valueType >= JSValueType.Object && self.oValue == null)
-                throw new JSException(new TypeError("toLocaleString calling on null."));
+                ExceptionsHelper.Throw(new TypeError("toLocaleString calling on null."));
             if (self.valueType <= JSValueType.Undefined)
-                throw new JSException(new TypeError("toLocaleString calling on undefined value."));
+                ExceptionsHelper.Throw(new TypeError("toLocaleString calling on undefined value."));
             if (self == this)
                 return toString(null);
             return self.toLocaleString();
@@ -939,9 +939,9 @@ namespace NiL.JS.Core
         public virtual JSValue valueOf()
         {
             if (valueType >= JSValueType.Object && oValue == null)
-                throw new JSException(new TypeError("valueOf calling on null."));
+                ExceptionsHelper.Throw(new TypeError("valueOf calling on null."));
             if (valueType <= JSValueType.Undefined)
-                throw new JSException(new TypeError("valueOf calling on undefined value."));
+                ExceptionsHelper.Throw(new TypeError("valueOf calling on undefined value."));
             return valueType < JSValueType.Object ? new JSObject() { valueType = JSValueType.Object, oValue = this } : this;
         }
 
@@ -949,9 +949,9 @@ namespace NiL.JS.Core
         public virtual JSValue propertyIsEnumerable(Arguments args)
         {
             if (valueType >= JSValueType.Object && oValue == null)
-                throw new JSException(new TypeError("propertyIsEnumerable calling on null."));
+                ExceptionsHelper.Throw(new TypeError("propertyIsEnumerable calling on null."));
             if (valueType <= JSValueType.Undefined)
-                throw new JSException(new TypeError("propertyIsEnumerable calling on undefined value."));
+                ExceptionsHelper.Throw(new TypeError("propertyIsEnumerable calling on undefined value."));
             var name = args[0];
             string n = name.ToString();
             var res = GetMember(n, true);
@@ -963,9 +963,9 @@ namespace NiL.JS.Core
         public virtual JSValue isPrototypeOf(Arguments args)
         {
             if (valueType >= JSValueType.Object && oValue == null)
-                throw new JSException(new TypeError("isPrototypeOf calling on null."));
+                ExceptionsHelper.Throw(new TypeError("isPrototypeOf calling on null."));
             if (valueType <= JSValueType.Undefined)
-                throw new JSException(new TypeError("isPrototypeOf calling on undefined value."));
+                ExceptionsHelper.Throw(new TypeError("isPrototypeOf calling on undefined value."));
             if (args.GetMember("length").iValue == 0)
                 return false;
             var a = args[0];

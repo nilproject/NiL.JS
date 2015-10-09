@@ -35,7 +35,7 @@ namespace NiL.JS.Statements
             if (!Parser.Validate(state.Code, "return", ref i) || !Parser.isIdentificatorTerminator(state.Code[i]))
                 return new ParseResult();
             if (state.AllowReturn == 0)
-                throw new JSException(new SyntaxError("Invalid use of return statement."));
+                ExceptionsHelper.Throw(new SyntaxError("Invalid use of return statement."));
             while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]) && !Tools.isLineTerminator(state.Code[i]))
                 i++;
             var body = state.Code[i] == ';' || Tools.isLineTerminator(state.Code[i]) ? null : Parser.Parse(state, ref i, 1);

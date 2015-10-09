@@ -120,6 +120,18 @@
   <data name="FunctionInLoop" xml:space="preserve">
     <value>Do not define a function inside a loop</value>
   </data>
+  <data name="IncrementPropertyWOSetter" xml:space="preserve">
+    <value>Can not increment property "{0}" without setter.</value>
+  </data>
+  <data name="IncrementReadonly" xml:space="preserve">
+    <value>Can not increment readonly "{0}"</value>
+  </data>
+  <data name="InvalidPropertyName" xml:space="preserve">
+    <value>Invalid property name at {0}</value>
+  </data>
+  <data name="InvalidRegExp" xml:space="preserve">
+    <value>Unable to process regular expression {0}</value>
+  </data>
   <data name="InvalidTryToCallWithNew" xml:space="preserve">
     <value>Method "{0}" can not be called with new keyword</value>
   </data>

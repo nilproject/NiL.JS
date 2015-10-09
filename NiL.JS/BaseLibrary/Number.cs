@@ -137,7 +137,7 @@ namespace NiL.JS.BaseLibrary
                 case JSValueType.Object:
                     {
                         if (typeof(Number) != self.GetType())
-                            throw new JSException((new TypeError("Try to call Number.toExponential on not number object.")));
+                            ExceptionsHelper.Throw((new TypeError("Try to call Number.toExponential on not number object.")));
                         res = self.iValue == 0 ? self.dValue : self.iValue;
                         break;
                     }
@@ -203,7 +203,7 @@ namespace NiL.JS.BaseLibrary
                 case JSValueType.Object:
                     {
                         if (typeof(Number) != self.GetType())
-                            throw new JSException((new TypeError("Try to call Number.toFixed on not number object.")));
+                            ExceptionsHelper.Throw((new TypeError("Try to call Number.toFixed on not number object.")));
                         res = self.iValue == 0 ? self.dValue : self.iValue;
                         break;
                     }
@@ -212,7 +212,7 @@ namespace NiL.JS.BaseLibrary
             }
             int dgts = Tools.JSObjectToInt32(digits[0], true);
             if (dgts < 0 || dgts > 20)
-                throw new JSException((new RangeError("toFixed() digits argument must be between 0 and 20")));
+                ExceptionsHelper.Throw((new RangeError("toFixed() digits argument must be between 0 and 20")));
             if (System.Math.Abs(self.dValue) >= 1e+21)
                 return self.dValue.ToString("0.####e+0", System.Globalization.CultureInfo.InvariantCulture);
             if (dgts > 0)
@@ -239,13 +239,13 @@ namespace NiL.JS.BaseLibrary
             try
             {
                 if (self.valueType != JSValueType.Int && self.valueType != JSValueType.Double)
-                    throw new JSException((new TypeError("Try to call Number.toString on not Number object")));
+                    ExceptionsHelper.Throw((new TypeError("Try to call Number.toString on not Number object")));
                 int r = 10;
                 if (radix != null && radix.GetMember("length").iValue > 0)
                 {
                     var ar = radix[0];
                     if (ar.valueType == JSValueType.Object && ar.oValue == null)
-                        throw new JSException((new Error("Radix can't be null.")));
+                        ExceptionsHelper.Throw((new Error("Radix can't be null.")));
                     switch (ar.valueType)
                     {
                         case JSValueType.Int:
@@ -273,7 +273,7 @@ namespace NiL.JS.BaseLibrary
                     }
                 }
                 if (r < 2 || r > 36)
-                    throw new JSException((new TypeError("Radix must be between 2 and 36.")));
+                    ExceptionsHelper.Throw((new TypeError("Radix must be between 2 and 36.")));
                 if (r == 10)
                     return self.ToString();
                 else
@@ -320,7 +320,7 @@ namespace NiL.JS.BaseLibrary
                     if (neg)
                         res = -res;
                     if (res < 0)
-                        throw new JSException(new Error("Internal error"));
+                        ExceptionsHelper.Throw(new Error("Internal error"));
                     sres.Append(Tools.NumChars[res % r]);
                     res /= r;
                     while (res != 0)
@@ -354,7 +354,7 @@ namespace NiL.JS.BaseLibrary
             if (self is Number)
                 return self.iValue == 0 ? self.dValue : self.iValue;
             if (self.valueType != JSValueType.Int && self.valueType != JSValueType.Double)
-                throw new JSException((new TypeError("Try to call Number.valueOf on not number object.")));
+                ExceptionsHelper.Throw((new TypeError("Try to call Number.valueOf on not number object.")));
             return self;
         }
 

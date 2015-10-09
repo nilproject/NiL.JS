@@ -47,10 +47,10 @@ namespace NiL.JS.Statements
             while (char.IsWhiteSpace(state.Code[i])) i++;
             var image = ExpressionTree.Parse(state, ref i).Statement;
             if (state.Code[i] != ')')
-                throw new JSException((new SyntaxError("Expected \")\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
+                ExceptionsHelper.Throw((new SyntaxError("Expected \")\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
             do i++; while (char.IsWhiteSpace(state.Code[i]));
             if (state.Code[i] != '{')
-                throw new JSException((new SyntaxError("Expected \"{\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
+                ExceptionsHelper.Throw((new SyntaxError("Expected \"{\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
             do i++; while (char.IsWhiteSpace(state.Code[i]));
             var body = new List<CodeNode>();
             var funcs = new List<FunctionNotation>();
@@ -67,7 +67,7 @@ namespace NiL.JS.Statements
                         while (char.IsWhiteSpace(state.Code[i])) i++;
                         var sample = ExpressionTree.Parse(state, ref i).Statement;
                         if (state.Code[i] != ':')
-                            throw new JSException((new SyntaxError("Expected \":\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
+                            ExceptionsHelper.Throw((new SyntaxError("Expected \":\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
                         i++;
                         cases.Add(new SwitchCase() { index = body.Count, statement = sample });
                     }
@@ -76,9 +76,9 @@ namespace NiL.JS.Statements
                         i += 7;
                         while (char.IsWhiteSpace(state.Code[i])) i++;
                         if (cases[0] != null)
-                            throw new JSException((new SyntaxError("Duplicate default case in switch at " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
+                            ExceptionsHelper.Throw((new SyntaxError("Duplicate default case in switch at " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
                         if (state.Code[i] != ':')
-                            throw new JSException((new SyntaxError("Expected \":\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
+                            ExceptionsHelper.Throw((new SyntaxError("Expected \":\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
                         i++;
                         cases[0] = new SwitchCase() { index = body.Count, statement = null };
                     }
@@ -86,14 +86,14 @@ namespace NiL.JS.Statements
                     while (char.IsWhiteSpace(state.Code[i]) || (state.Code[i] == ';')) i++;
                 } while (true);
                 if (cases.Count == 1 && cases[0] == null)
-                    throw new JSException((new SyntaxError("Switch statement must be contain cases. " + CodeCoordinates.FromTextPosition(state.Code, index, 0))));
+                    ExceptionsHelper.Throw((new SyntaxError("Switch statement must be contain cases. " + CodeCoordinates.FromTextPosition(state.Code, index, 0))));
                 var t = Parser.Parse(state, ref i, 0);
                 if (t == null)
                     continue;
                 if (t is FunctionNotation)
                 {
                     if (state.strict)
-                        throw new JSException((new NiL.JS.BaseLibrary.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
+                        ExceptionsHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
                     funcs.Add(t as FunctionNotation);
                 }
                 else

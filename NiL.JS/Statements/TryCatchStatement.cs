@@ -34,9 +34,9 @@ namespace NiL.JS.Statements
             while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]))
                 i++;
             if (i >= state.Code.Length)
-                throw new JSException(new SyntaxError("Unexpected end of line."));
+                ExceptionsHelper.Throw(new SyntaxError("Unexpected end of line."));
             if (state.Code[i] != '{')
-                throw new JSException((new SyntaxError("Invalid try statement definition at " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
+                ExceptionsHelper.Throw((new SyntaxError("Invalid try statement definition at " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
             var b = CodeBlock.Parse(state, ref i).Statement;
             while (char.IsWhiteSpace(state.Code[i]))
                 i++;
@@ -46,21 +46,21 @@ namespace NiL.JS.Statements
             {
                 int s = i;
                 if (!Parser.ValidateName(state.Code, ref i, state.strict))
-                    throw new JSException((new SyntaxError("Catch block must contain variable name " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
+                    ExceptionsHelper.Throw((new SyntaxError("Catch block must contain variable name " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
                 exptn = Tools.Unescape(state.Code.Substring(s, i - s), state.strict);
                 if (state.strict)
                 {
                     if (exptn == "arguments" || exptn == "eval")
-                        throw new JSException((new SyntaxError("Varible name may not be \"arguments\" or \"eval\" in strict mode at " + CodeCoordinates.FromTextPosition(state.Code, s, i - s))));
+                        ExceptionsHelper.Throw((new SyntaxError("Varible name may not be \"arguments\" or \"eval\" in strict mode at " + CodeCoordinates.FromTextPosition(state.Code, s, i - s))));
                 }
                 while (char.IsWhiteSpace(state.Code[i]))
                     i++;
                 if (!Parser.Validate(state.Code, ")", ref i))
-                    throw new JSException((new SyntaxError("Expected \")\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
+                    ExceptionsHelper.Throw((new SyntaxError("Expected \")\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
                 while (char.IsWhiteSpace(state.Code[i]))
                     i++;
                 if (state.Code[i] != '{')
-                    throw new JSException((new SyntaxError("Invalid catch block statement definition at " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
+                    ExceptionsHelper.Throw((new SyntaxError("Invalid catch block statement definition at " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
                 state.functionsDepth++;
                 try
                 {
@@ -80,11 +80,11 @@ namespace NiL.JS.Statements
                 while (char.IsWhiteSpace(state.Code[i]))
                     i++;
                 if (state.Code[i] != '{')
-                    throw new JSException((new SyntaxError("Invalid finally block statement definition at " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
+                    ExceptionsHelper.Throw((new SyntaxError("Invalid finally block statement definition at " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
                 f = CodeBlock.Parse(state, ref i).Statement;
             }
             if (cb == null && f == null)
-                throw new JSException((new SyntaxError("try block must contain 'catch' or/and 'finally' block")));
+                ExceptionsHelper.Throw((new SyntaxError("try block must contain 'catch' or/and 'finally' block")));
             var pos = index;
             index = i;
             return new ParseResult()

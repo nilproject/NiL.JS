@@ -318,24 +318,24 @@ namespace NiL.JS.Expressions
                     name = Tools.Unescape(code.Substring(nameStartPos + 1, i - nameStartPos - 2), state.strict);
                 else if ((mode == FunctionType.Get || mode == FunctionType.Set) && Parser.ValidateNumber(code, ref i))
                     name = Tools.Unescape(code.Substring(nameStartPos, i - nameStartPos), state.strict);
-                else throw new JSException((new SyntaxError("Invalid function name at " + CodeCoordinates.FromTextPosition(code, nameStartPos, i - nameStartPos))));
+                else ExceptionsHelper.Throw((new SyntaxError("Invalid function name at " + CodeCoordinates.FromTextPosition(code, nameStartPos, i - nameStartPos))));
                 while (char.IsWhiteSpace(code[i])) i++;
                 if (code[i] != '(')
-                    throw new JSException(new SyntaxError("Unexpected char at " + CodeCoordinates.FromTextPosition(code, i, 0)));
+                    ExceptionsHelper.Throw(new SyntaxError("Unexpected char at " + CodeCoordinates.FromTextPosition(code, i, 0)));
             }
             else if (mode == FunctionType.Get || mode == FunctionType.Set)
-                throw new JSException(new SyntaxError("Getters and Setters must have name"));
+                ExceptionsHelper.Throw(new SyntaxError("Getters and Setters must have name"));
             else if (mode == FunctionType.Method)
-                throw new JSException(new SyntaxError("Methods must have name"));
+                ExceptionsHelper.Throw(new SyntaxError("Methods must have name"));
             do i++; while (char.IsWhiteSpace(code[i]));
             if (code[i] == ',')
-                throw new JSException(new SyntaxError("Unexpected char at " + CodeCoordinates.FromTextPosition(code, i, 0)));
+                ExceptionsHelper.Throw(new SyntaxError("Unexpected char at " + CodeCoordinates.FromTextPosition(code, i, 0)));
             while (code[i] != ')')
             {
                 bool rest = Parser.Validate(code, "...", ref i);
                 int n = i;
                 if (!Parser.ValidateName(code, ref i, state.strict))
-                    throw new JSException((new SyntaxError("Invalid char at " + CodeCoordinates.FromTextPosition(code, nameStartPos, 0))));
+                    ExceptionsHelper.Throw((new SyntaxError("Invalid char at " + CodeCoordinates.FromTextPosition(code, nameStartPos, 0))));
                 var pname = Tools.Unescape(code.Substring(n, i - n), state.strict);
                 parameters.Add(new ParameterReference(pname, rest, state.functionsDepth + 1)
                 {
@@ -346,7 +346,7 @@ namespace NiL.JS.Expressions
                 if (code[i] == ',')
                 {
                     if (rest)
-                        throw new SyntaxError("Rest parameters must be the last in parameters list").Wrap();
+                        ExceptionsHelper.Throw(new SyntaxError("Rest parameters must be the last in parameters list"));
                     do i++; while (char.IsWhiteSpace(code[i]));
                 }
             }
@@ -355,19 +355,19 @@ namespace NiL.JS.Expressions
                 case FunctionType.Get:
                     {
                         if (parameters.Count != 0)
-                            throw new JSException(new SyntaxError("getter have many arguments"));
+                            ExceptionsHelper.Throw(new SyntaxError("getter have many arguments"));
                         break;
                     }
                 case FunctionType.Set:
                     {
                         if (parameters.Count != 1)
-                            throw new JSException(new SyntaxError("setter have invalid arguments"));
+                            ExceptionsHelper.Throw(new SyntaxError("setter have invalid arguments"));
                         break;
                     }
             }
             do i++; while (char.IsWhiteSpace(code[i]));
             if (code[i] != '{')
-                throw new JSException(new SyntaxError("Unexpected char at " + CodeCoordinates.FromTextPosition(code, i, 0)));
+                ExceptionsHelper.Throw(new SyntaxError("Unexpected char at " + CodeCoordinates.FromTextPosition(code, i, 0)));
             var labels = state.Labels;
             state.Labels = new List<string>();
             state.functionsDepth++;
@@ -398,13 +398,13 @@ namespace NiL.JS.Expressions
                 for (var j = parameters.Count; j-- > 1; )
                     for (var k = j; k-- > 0; )
                         if (parameters[j].Name == parameters[k].Name)
-                            throw new JSException(new SyntaxError("Duplicate names of function parameters not allowed in strict mode."));
+                            ExceptionsHelper.Throw(new SyntaxError("Duplicate names of function parameters not allowed in strict mode."));
                 if (name == "arguments" || name == "eval")
-                    throw new JSException((new SyntaxError("Functions name may not be \"arguments\" or \"eval\" in strict mode at " + CodeCoordinates.FromTextPosition(code, index, 0))));
+                    ExceptionsHelper.Throw((new SyntaxError("Functions name may not be \"arguments\" or \"eval\" in strict mode at " + CodeCoordinates.FromTextPosition(code, index, 0))));
                 for (int j = parameters.Count; j-- > 0; )
                 {
                     if (parameters[j].Name == "arguments" || parameters[j].Name == "eval")
-                        throw new JSException((new SyntaxError("Parameters name may not be \"arguments\" or \"eval\" in strict mode at " + CodeCoordinates.FromTextPosition(code, parameters[j].references[0].Position, parameters[j].references[0].Length))));
+                        ExceptionsHelper.Throw((new SyntaxError("Parameters name may not be \"arguments\" or \"eval\" in strict mode at " + CodeCoordinates.FromTextPosition(code, parameters[j].references[0].Position, parameters[j].references[0].Length))));
                 }
             }
             if (mode == FunctionType.Function && string.IsNullOrEmpty(name))
@@ -451,7 +451,7 @@ namespace NiL.JS.Expressions
                     index = i;
                     while (i < code.Length && char.IsWhiteSpace(code[i])) i++;
                     if (i < code.Length && code[i] == ';')
-                        throw new JSException((new SyntaxError("Expression can not start with word \"function\"")));
+                        ExceptionsHelper.Throw((new SyntaxError("Expression can not start with word \"function\"")));
                     return new ParseResult()
                     {
                         IsParsed = true,

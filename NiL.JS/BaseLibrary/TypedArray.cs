@@ -97,11 +97,11 @@ namespace NiL.JS.BaseLibrary
         protected TypedArray(ArrayBuffer buffer, int byteOffset, int length)
         {
             if (byteOffset % BYTES_PER_ELEMENT != 0)
-                throw new JSException(new RangeError("Offset is not alligned"));
+                ExceptionsHelper.Throw(new RangeError("Offset is not alligned"));
             if (buffer.byteLength % BYTES_PER_ELEMENT != 0)
-                throw new JSException(new RangeError("buffer.byteLength is not alligned"));
+                ExceptionsHelper.Throw(new RangeError("buffer.byteLength is not alligned"));
             if (buffer.byteLength < byteOffset)
-                throw new JSException(new RangeError("Invalid offset"));
+                ExceptionsHelper.Throw(new RangeError("Invalid offset"));
             this.byteLength = System.Math.Min(buffer.byteLength - byteOffset, length * BYTES_PER_ELEMENT);
             this.buffer = buffer;
             this.length = new Number(byteLength / BYTES_PER_ELEMENT);
@@ -138,7 +138,7 @@ namespace NiL.JS.BaseLibrary
                 return;
             var length = Tools.JSObjectToInt64(src["length"], 0, false);
             if (this.length.iValue - offset < length)
-                throw new JSException(new RangeError("Invalid source length or offset argument"));
+                ExceptionsHelper.Throw(new RangeError("Invalid source length or offset argument"));
             JSValue index = 0;
             var dummyArgs = new Arguments();
             for (var i = 0L; i < length; i++)
@@ -227,7 +227,7 @@ namespace NiL.JS.BaseLibrary
             if (isIndex)
             {
                 if (index < 0)
-                    throw new JSException(new RangeError("Invalid array index"));
+                    ExceptionsHelper.Throw(new RangeError("Invalid array index"));
                 if (index >= length.iValue)
                     return undefined;
                 return this[index];
@@ -285,7 +285,7 @@ namespace NiL.JS.BaseLibrary
             if (isIndex)
             {
                 if (index < 0)
-                    throw new JSException(new RangeError("Invalid array index"));
+                    ExceptionsHelper.Throw(new RangeError("Invalid array index"));
                 if (index >= length.iValue)
                     return;
                 this[index] = value;

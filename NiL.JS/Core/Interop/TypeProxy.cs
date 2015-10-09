@@ -395,7 +395,7 @@ namespace NiL.JS.Core.Interop
             {
                 for (int i = 0; i < m.Count; i++)
                     if (!(m[i] is MethodBase))
-                        throw new JSException(Proxy(new TypeError("Incompatible fields type.")));
+                        ExceptionsHelper.Throw(Proxy(new TypeError("Incompatible fields type.")));
                 var cache = new MethodProxy[m.Count];
                 for (int i = 0; i < m.Count; i++)
                     cache[i] = new MethodProxy(m[i] as MethodBase);

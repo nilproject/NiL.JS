@@ -582,7 +582,7 @@ namespace NiL.JS.BaseLibrary
             };
         protected static void ThrowTypeError()
         {
-            throw new JSException(new TypeError("Properties caller, callee and arguments not allowed in strict mode."));
+            ExceptionsHelper.Throw(new TypeError("Properties caller, callee and arguments not allowed in strict mode."));
         }
         internal static readonly JSValue propertiesDummySM = new JSValue()
         {
@@ -710,7 +710,7 @@ namespace NiL.JS.BaseLibrary
             get
             {
                 if (creator.body.strict)
-                    throw new JSException(new TypeError("Property arguments not allowed in strict mode."));
+                    ExceptionsHelper.Throw(new TypeError("Property arguments not allowed in strict mode."));
                 if (_arguments == null && creator.recursiveDepth > 0)
                     buildArgumentsObject();
                 return _arguments;
@@ -719,7 +719,7 @@ namespace NiL.JS.BaseLibrary
             set
             {
                 if (creator.body.strict)
-                    throw new JSException(new TypeError("Property arguments not allowed in strict mode."));
+                    ExceptionsHelper.Throw(new TypeError("Property arguments not allowed in strict mode."));
                 _arguments = value;
             }
         }
@@ -731,9 +731,9 @@ namespace NiL.JS.BaseLibrary
         public virtual JSValue caller
         {
             [Hidden]
-            get { if (creator.body.strict || _caller == propertiesDummySM) throw new JSException(new TypeError("Property caller not allowed in strict mode.")); return _caller; }
+            get { if (creator.body.strict || _caller == propertiesDummySM) ExceptionsHelper.Throw(new TypeError("Property caller not allowed in strict mode.")); return _caller; }
             [Hidden]
-            set { if (creator.body.strict || _caller == propertiesDummySM) throw new JSException(new TypeError("Property caller not allowed in strict mode.")); }
+            set { if (creator.body.strict || _caller == propertiesDummySM) ExceptionsHelper.Throw(new TypeError("Property caller not allowed in strict mode.")); }
         }
         #endregion
 
@@ -766,7 +766,7 @@ namespace NiL.JS.BaseLibrary
                 creator = fs.Statement as FunctionNotation;
             }
             else
-                throw new JSException(new SyntaxError("Unknown syntax error"));
+                ExceptionsHelper.Throw(new SyntaxError("Unknown syntax error"));
             valueType = JSValueType.Function;
             this.oValue = this;
         }
@@ -1416,13 +1416,13 @@ namespace NiL.JS.BaseLibrary
             if (argsSource.IsDefined)
             {
                 if (argsSource.valueType < JSValueType.Object)
-                    throw new JSException(new TypeError("Argument list has wrong type."));
+                    ExceptionsHelper.Throw(new TypeError("Argument list has wrong type."));
                 var len = argsSource["length"];
                 if (len.valueType == JSValueType.Property)
                     len = (len.oValue as PropertyPair).get.Invoke(argsSource, null);
                 nargs.length = Tools.JSObjectToInt32(len);
                 if (nargs.length >= 50000)
-                    throw new JSException(new RangeError("Too many arguments."));
+                    ExceptionsHelper.Throw(new RangeError("Too many arguments."));
                 for (var i = nargs.length; i-- > 0; )
                     nargs[i] = argsSource[i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture)];
             }

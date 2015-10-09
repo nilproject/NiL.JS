@@ -38,29 +38,27 @@ namespace NiL.JS.Expressions
 
         internal override JSValue Evaluate(Context context)
         {
-            lock (this)
+            var temp = first.Evaluate(context);
+            if (temp.valueType < JSValueType.Undefined)
+                return true;
+            else if ((temp.attributes & JSValueAttributesInternal.Argument) != 0)
             {
-                var temp = first.Evaluate(context);
-                if (temp.valueType < JSValueType.Undefined)
-                    return true;
-                else if ((temp.attributes & JSValueAttributesInternal.Argument) != 0)
-                {
-                    return false;
-                }
-                else if ((temp.attributes & JSValueAttributesInternal.DoNotDelete) == 0)
-                {
-                    if ((temp.attributes & JSValueAttributesInternal.SystemObject) == 0)
-                    {
-                        temp.valueType = JSValueType.NotExists;
-                        temp.oValue = null;
-                    }
-                    return true;
-                }
-                else if (context.strict)
-                    throw new JSException(new TypeError("Can not delete property \"" + first + "\"."));
-                else
-                    return false;
+                return false;
             }
+            else if ((temp.attributes & JSValueAttributesInternal.DoNotDelete) == 0)
+            {
+                if ((temp.attributes & JSValueAttributesInternal.SystemObject) == 0)
+                {
+                    temp.valueType = JSValueType.NotExists;
+                    temp.oValue = null;
+                }
+                return true;
+            }
+            else if (context.strict)
+            {
+                ExceptionsHelper.Throw(new TypeError("Can not delete property \"" + first + "\"."));
+            }
+            return false;
         }
 
         internal override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
@@ -70,7 +68,7 @@ namespace NiL.JS.Expressions
             if (first is GetVariableExpression)
             {
                 if ((state & _BuildState.Strict) != 0)
-                    throw new JSException(new SyntaxError("Can not evalute delete on variable in strict mode"));
+                    ExceptionsHelper.Throw(new SyntaxError("Can not evalute delete on variable in strict mode"));
                 (first as GetVariableExpression).suspendThrow = true;
             }
             var gme = first as GetMemberOperator;

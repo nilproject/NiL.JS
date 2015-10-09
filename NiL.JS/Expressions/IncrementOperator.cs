@@ -75,7 +75,7 @@ namespace NiL.JS.Expressions
                 var ppair = val.oValue as PropertyPair;
                 setter = ppair.set;
                 if (context.strict && setter == null)
-                    raiseErrorProp();
+                    ExceptionsHelper.ThrowIncrementPropertyWOSetter(first);
                 args = new Arguments();
                 if (ppair.get == null)
                     val = JSValue.undefined.CloneImpl(unchecked((JSValueAttributesInternal)(-1)));
@@ -85,7 +85,7 @@ namespace NiL.JS.Expressions
             else if ((val.attributes & JSValueAttributesInternal.ReadOnly) != 0)
             {
                 if (context.strict)
-                    raiseErrorValue();
+                    ExceptionsHelper.ThrowIncrementReadonly(first);
                 val = val.CloneImpl();
             }
             switch (val.valueType)
@@ -176,16 +176,6 @@ namespace NiL.JS.Expressions
             else if ((val.attributes & JSValueAttributesInternal.Reassign) != 0)
                 val.Assign(val);
             return res;
-        }
-
-        private void raiseErrorValue()
-        {
-            throw new TypeError("Can not increment readonly \"" + (first) + "\"").Wrap();
-        }
-
-        private void raiseErrorProp()
-        {
-            throw new TypeError("Can not increment property \"" + (first) + "\" without setter.").Wrap();
         }
 
         internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)

@@ -122,7 +122,7 @@ namespace NiL.JS.Core
         public bool TryGetValue(string key, out TValue value)
         {
             if (key == null)
-                ExceptionsHelper.ThrowNullReference("key");
+                ExceptionsHelper.ThrowArgumentNull("key");
             value = default(TValue);
             if (key.Length == 0)
             {

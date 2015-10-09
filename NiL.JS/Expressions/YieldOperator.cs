@@ -44,7 +44,7 @@ namespace NiL.JS.Expressions
                     Thread.Sleep(0);
 #endif
                 if (context.abort == AbortType.Exception)
-                    throw new JSException(new Error("Execution aborted"));
+                    ExceptionsHelper.Throw(new Error("Execution aborted"));
                 context.abort = AbortType.None;
                 context.Activate();
                 tempContainer.Assign(context.abortInfo ?? JSValue.notExists);

@@ -388,7 +388,7 @@ namespace NiL.JS.Core
                     {
                         if (!@throw)
                             return false;
-                        throw new JSException((new SyntaxError("Unterminated string constant")));
+                        ExceptionsHelper.Throw((new SyntaxError("Unterminated string constant")));
                     }
                     j++;
                     if (j >= code.Length)
@@ -486,8 +486,9 @@ namespace NiL.JS.Core
                 }
             }
             var cord = CodeCoordinates.FromTextPosition(state.Code, sindex, 0);
-            throw new JSException((new NiL.JS.BaseLibrary.SyntaxError("Unexpected token at " + cord + " : "
+            ExceptionsHelper.Throw((new SyntaxError("Unexpected token at " + cord + " : "
                 + state.Code.Substring(index, System.Math.Min(20, state.Code.Length - index)).Split(new[] { ' ', '\n', '\r' })[0])));
+            return null;
         }
 
         internal static void Build(ref CodeNode s, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)

@@ -446,7 +446,7 @@ namespace NiL.JS.Core.Functions
                     if (methodBase.Name == "get_length" && typeof(Function).IsAssignableFrom(methodBase.DeclaringType))
                         return 0;
 
-                    throw new JSException(new TypeError("Can not call function \"" + this.name + "\" for object of another type."));
+                    ExceptionsHelper.Throw(new TypeError("Can not call function \"" + this.name + "\" for object of another type."));
                 }
             }
             try
@@ -466,8 +466,9 @@ namespace NiL.JS.Core.Functions
                     e = e.InnerException;
                 if (e is JSException)
                     throw e;
-                throw new JSException(new TypeError(e.Message), e);
+                ExceptionsHelper.Throw(new TypeError(e.Message), e);
             }
+            return null;
         }
 
         private object getDummy()

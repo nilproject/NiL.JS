@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using NiL.JS.BaseLibrary;
+using NiL.JS.Core;
 
 namespace NiL.JS
 {
@@ -13,19 +14,43 @@ namespace NiL.JS
         [MethodImpl(MethodImplOptions.NoInlining)]
         internal static void Throw(BaseLibrary.Error error)
         {
-            throw error.Wrap();
+            throw new JSException(error);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        internal static void ThrowNullReference(string message)
+        internal static void Throw(JSValue error)
         {
-            throw new NullReferenceException(message);
+            throw new JSException(error);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        internal static void ThrowVariableNotDefined(string variableName)
+        internal static void Throw(Error error, Exception innerException)
+        {
+            throw new JSException(error, innerException);
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        internal static void ThrowArgumentNull(string message)
+        {
+            throw new ArgumentNullException(message);
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        internal static void ThrowVariableNotDefined(object variableName)
         {
             Throw(new ReferenceError(string.Format(Strings.VariableNotDefined, variableName)));
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        internal static void ThrowIncrementPropertyWOSetter(object proprtyName)
+        {
+            Throw(new TypeError(string.Format(Strings.IncrementPropertyWOSetter, proprtyName)));
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        internal static void ThrowIncrementReadonly(object entityName)
+        {
+            Throw(new TypeError(string.Format(Strings.IncrementReadonly, entityName)));
         }
     }
 }

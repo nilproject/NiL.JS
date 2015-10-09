@@ -1051,7 +1051,7 @@ namespace NiL.JS.BaseLibrary
             {
                 time -= timeZoneOffset;
                 if (time > 8702135600400000 || time < -8577864403200000 || error)
-                    throw new JSException(new RangeError("Invalid time value"));
+                    ExceptionsHelper.Throw(new RangeError("Invalid time value"));
                 var y = getYearImpl();
 
                 return y +

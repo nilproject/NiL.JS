@@ -33,12 +33,12 @@ namespace NiL.JS.Statements
             var condition = Parser.Parse(state, ref i, 1);
             while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i])) i++;
             if (i >= state.Code.Length)
-                throw new JSException(new SyntaxError("Unexpected end of line."));
+                ExceptionsHelper.Throw(new SyntaxError("Unexpected end of line."));
             if (state.Code[i] != ')')
                 throw new ArgumentException("code (" + i + ")");
             do i++; while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]));
             if (i >= state.Code.Length)
-                throw new JSException(new SyntaxError("Unexpected end of line."));
+                ExceptionsHelper.Throw(new SyntaxError("Unexpected end of line."));
             state.AllowBreak.Push(true);
             state.AllowContinue.Push(true);
             int ccs = state.continiesCount;
@@ -47,7 +47,7 @@ namespace NiL.JS.Statements
             if (body is FunctionNotation)
             {
                 if (state.strict)
-                    throw new JSException((new NiL.JS.BaseLibrary.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
+                    ExceptionsHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
                 if (state.message != null)
                     state.message(MessageLevel.CriticalWarning, CodeCoordinates.FromTextPosition(state.Code, body.Position, body.Length), "Do not declare function in nested blocks.");
                 body = new CodeBlock(new[] { body }, state.strict); // для того, чтобы не дублировать код по декларации функции, 

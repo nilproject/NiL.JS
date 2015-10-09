@@ -121,20 +121,20 @@ namespace NiL.JS.Statements
                 if (!Parser.ValidateName(state.Code, ref i, state.strict))
                 {
                     if (Parser.ValidateName(state.Code, ref i, false, true, state.strict))
-                        throw new JSException((new SyntaxError('\"' + Tools.Unescape(state.Code.Substring(s, i - s), state.strict) + "\" is a reserved word at " + CodeCoordinates.FromTextPosition(state.Code, s, i - s))));
-                    throw new JSException((new SyntaxError("Invalid variable definition at " + CodeCoordinates.FromTextPosition(state.Code, s, i - s))));
+                        ExceptionsHelper.Throw((new SyntaxError('\"' + Tools.Unescape(state.Code.Substring(s, i - s), state.strict) + "\" is a reserved word at " + CodeCoordinates.FromTextPosition(state.Code, s, i - s))));
+                    ExceptionsHelper.Throw((new SyntaxError("Invalid variable definition at " + CodeCoordinates.FromTextPosition(state.Code, s, i - s))));
                 }
                 string name = Tools.Unescape(state.Code.Substring(s, i - s), state.strict);
                 if (state.strict)
                 {
                     if (name == "arguments" || name == "eval")
-                        throw new JSException((new SyntaxError("Varible name may not be \"arguments\" or \"eval\" in strict mode at " + CodeCoordinates.FromTextPosition(state.Code, s, i - s))));
+                        ExceptionsHelper.Throw((new SyntaxError("Varible name may not be \"arguments\" or \"eval\" in strict mode at " + CodeCoordinates.FromTextPosition(state.Code, s, i - s))));
                 }
                 names.Add(name);
                 isDef = true;
                 while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]) && !Tools.isLineTerminator(state.Code[i])) i++;
                 if (i < state.Code.Length && (state.Code[i] != ',') && (state.Code[i] != ';') && (state.Code[i] != '=') && (state.Code[i] != '}') && (!Tools.isLineTerminator(state.Code[i])))
-                    throw new JSException((new SyntaxError("Expected \";\", \",\", \"=\" or \"}\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 1))));
+                    ExceptionsHelper.Throw((new SyntaxError("Expected \";\", \",\", \"=\" or \"}\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 1))));
                 if (i >= state.Code.Length)
                 {
                     initializator.Add(new GetVariableExpression(name, state.functionsDepth) { Position = s, Length = name.Length, defineDepth = state.functionsDepth });
@@ -156,7 +156,7 @@ namespace NiL.JS.Statements
                 {
                     do i++; while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]));
                     if (i == state.Code.Length)
-                        throw new JSException((new SyntaxError("Unexpected end of line in variable defenition.")));
+                        ExceptionsHelper.Throw((new SyntaxError("Unexpected end of line in variable defenition.")));
                     VariableReference accm = new GetVariableExpression(name, state.functionsDepth) { Position = s, Length = name.Length, defineDepth = state.functionsDepth };
                     Expression source = ExpressionTree.Parse(state, ref i, false).Statement as Expression;
                     if (isConst)
@@ -173,14 +173,14 @@ namespace NiL.JS.Statements
                 else
                 {
                     //if (isConst)
-                    //    throw new JSException(new SyntaxError("Constant must contain value at " + CodeCoordinates.FromTextPosition(state.Code, i)));
+                    //    ExceptionsHelper.Throw(new SyntaxError("Constant must contain value at " + CodeCoordinates.FromTextPosition(state.Code, i)));
                     initializator.Add(new GetVariableExpression(name, state.functionsDepth) { Position = s, Length = name.Length, defineDepth = state.functionsDepth });
                 }
                 if (i >= state.Code.Length)
                     break;
                 s = i;
                 if ((state.Code[i] != ',') && (state.Code[i] != ';') && (state.Code[i] != '=') && (state.Code[i] != '}') && (!Tools.isLineTerminator(state.Code[i])))
-                    throw new JSException(new SyntaxError("Unexpected token at " + CodeCoordinates.FromTextPosition(state.Code, i, 0)));
+                    ExceptionsHelper.Throw(new SyntaxError("Unexpected token at " + CodeCoordinates.FromTextPosition(state.Code, i, 0)));
                 while (s < state.Code.Length && char.IsWhiteSpace(state.Code[s])) s++;
                 if (s >= state.Code.Length)
                     break;

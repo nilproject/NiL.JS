@@ -35,7 +35,7 @@ namespace NiL.JS.Statements
                 i++;
             var b = state.Code[i] == ';' || Tools.isLineTerminator(state.Code[i]) ? null : Parser.Parse(state, ref i, 1);
             if (b is EmptyExpression)
-                throw new JSException((new SyntaxError("Can't throw result of EmptyStatement " + CodeCoordinates.FromTextPosition(state.Code, i - 1, 0))));
+                ExceptionsHelper.Throw((new SyntaxError("Can't throw result of EmptyStatement " + CodeCoordinates.FromTextPosition(state.Code, i - 1, 0))));
             var pos = index;
             index = i;
             return new ParseResult()
@@ -51,7 +51,8 @@ namespace NiL.JS.Statements
 
         internal override JSValue Evaluate(Context context)
         {
-            throw new JSException(body == null ? JSValue.undefined : body.Evaluate(context));
+            ExceptionsHelper.Throw(body == null ? JSValue.undefined : body.Evaluate(context));
+            return null;
         }
 
         protected override CodeNode[] getChildsImpl()

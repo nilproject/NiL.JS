@@ -16,11 +16,11 @@ namespace NiL.JS.Core
             if (obj == null)
                 throw new ArgumentNullException("obj");
             if (obj.valueType == JSValueType.NotExists)
-                throw new JSException((new ReferenceError("Variable not defined.")));
+                ExceptionsHelper.Throw((new ReferenceError("Variable not defined.")));
             if (obj.valueType <= JSValueType.Undefined)
-                throw new JSException(new TypeError("Can't access to property value of \"undefined\"."));
+                ExceptionsHelper.Throw(new TypeError("Can't access to property value of \"undefined\"."));
             if (obj.valueType >= JSValueType.Object && obj.oValue == null)
-                throw new JSException(new TypeError("Can't access to property value of \"null\"."));
+                ExceptionsHelper.Throw(new TypeError("Can't access to property value of \"null\"."));
             @object = obj.oValue as JSValue ?? obj;
         }
 

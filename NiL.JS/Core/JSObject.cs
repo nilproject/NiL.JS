@@ -27,7 +27,7 @@ namespace NiL.JS.Core
                 if (GlobalPrototype == this)
                     return Null;
                 if (!this.IsDefined || this.IsNull)
-                    throw new JSException(new TypeError("Can not get prototype of null or undefined"));
+                    ExceptionsHelper.Throw(new TypeError("Can not get prototype of null or undefined"));
                 if (valueType >= JSValueType.Object
                     && oValue != this // вот такого теперь быть не должно
                     && (oValue as JSObject) != null)
@@ -67,7 +67,7 @@ namespace NiL.JS.Core
                     while (c != null && c != Null && c.valueType > JSValueType.Undefined)
                     {
                         if (c == this || c.oValue == this)
-                            throw new JSException(new Error("Try to set cyclic __proto__ value."));
+                            ExceptionsHelper.Throw(new Error("Try to set cyclic __proto__ value."));
                         c = c.__proto__;
                     }
                     __prototype = value.oValue as JSObject ?? value;
@@ -176,7 +176,7 @@ namespace NiL.JS.Core
             if (valueType >= JSValueType.Object && oValue != this)
             {
                 if (oValue == null)
-                    throw new JSException(new TypeError("Can not get property \"" + name + "\" of \"null\""));
+                    ExceptionsHelper.Throw(new TypeError("Can not get property \"" + name + "\" of \"null\""));
                 field = oValue as JSObject;
                 if (field != null)
                 {
@@ -191,13 +191,13 @@ namespace NiL.JS.Core
                 if (setter != null)
                     setter.Invoke(this, new Arguments { value });
                 else if (strict)
-                    throw new JSException(new TypeError("Can not assign to readonly property \"" + name + "\""));
+                    ExceptionsHelper.Throw(new TypeError("Can not assign to readonly property \"" + name + "\""));
                 return;
             }
             else if ((field.attributes & JSValueAttributesInternal.ReadOnly) != 0)
             {
                 if (strict)
-                    throw new JSException(new TypeError("Can not assign to readonly property \"" + name + "\""));
+                    ExceptionsHelper.Throw(new TypeError("Can not assign to readonly property \"" + name + "\""));
             }
             else
                 field.Assign(value);
@@ -209,7 +209,7 @@ namespace NiL.JS.Core
             if (valueType >= JSValueType.Object && oValue != this)
             {
                 if (oValue == null)
-                    throw new JSException(new TypeError("Can't get property \"" + name + "\" of \"null\""));
+                    ExceptionsHelper.Throw(new TypeError("Can't get property \"" + name + "\" of \"null\""));
                 field = oValue as JSObject;
                 if (field != null)
                     return field.DeleteMember(name);
@@ -255,7 +255,7 @@ namespace NiL.JS.Core
             if ((attributes & JSValueAttributesInternal.ReadOnly) == 0)
             {
                 if (this is GlobalObject)
-                    throw new JSException(new NiL.JS.BaseLibrary.ReferenceError("Invalid left-hand side"));
+                    ExceptionsHelper.Throw(new NiL.JS.BaseLibrary.ReferenceError("Invalid left-hand side"));
                 throw new InvalidOperationException("Try to assign to a non-primitive value");
             }
         }
@@ -282,11 +282,11 @@ namespace NiL.JS.Core
         public static JSValue create(Arguments args)
         {
             if (args[0].valueType < JSValueType.Object)
-                throw new JSException(new TypeError("Prototype may be only Object or null."));
+                ExceptionsHelper.Throw(new TypeError("Prototype may be only Object or null."));
             var proto = args[0].oValue as JSObject ?? Null;
             var members = args[1].oValue as JSObject ?? Null;
             if (args[1].valueType >= JSValueType.Object && members.oValue == null)
-                throw new JSException(new TypeError("Properties descriptor may be only Object."));
+                ExceptionsHelper.Throw(new TypeError("Properties descriptor may be only Object."));
             var res = CreateObject();
             if (proto.valueType >= JSValueType.Object)
                 res.__prototype = proto;
@@ -299,11 +299,11 @@ namespace NiL.JS.Core
                     {
                         var getter = (desc.oValue as PropertyPair).get;
                         if (getter == null || getter.oValue == null)
-                            throw new JSException(new TypeError("Invalid property descriptor for property " + member + " ."));
+                            ExceptionsHelper.Throw(new TypeError("Invalid property descriptor for property " + member + " ."));
                         desc = (getter.oValue as Function).Invoke(members, null);
                     }
                     if (desc.valueType < JSValueType.Object || desc.oValue == null)
-                        throw new JSException(new TypeError("Invalid property descriptor for property " + member + " ."));
+                        ExceptionsHelper.Throw(new TypeError("Invalid property descriptor for property " + member + " ."));
                     var value = desc["value"];
                     if (value.valueType == JSValueType.Property)
                         value = Tools.InvokeGetter(value, desc);
@@ -329,13 +329,13 @@ namespace NiL.JS.Core
                         set = Tools.InvokeGetter(set, desc);
 
                     if (value.IsExists && (get.IsExists || set.IsExists))
-                        throw new JSException(new TypeError("Property can not have getter or setter and default value."));
+                        ExceptionsHelper.Throw(new TypeError("Property can not have getter or setter and default value."));
                     if (writable.IsExists && (get.IsExists || set.IsExists))
-                        throw new JSException(new TypeError("Property can not have getter or setter and writable attribute."));
+                        ExceptionsHelper.Throw(new TypeError("Property can not have getter or setter and writable attribute."));
                     if (get.IsDefined && get.valueType != JSValueType.Function)
-                        throw new JSException(new TypeError("Getter mast be a function."));
+                        ExceptionsHelper.Throw(new TypeError("Getter mast be a function."));
                     if (set.IsDefined && set.valueType != JSValueType.Function)
-                        throw new JSException(new TypeError("Setter mast be a function."));
+                        ExceptionsHelper.Throw(new TypeError("Setter mast be a function."));
                     var obj = new JSValue() { valueType = JSValueType.Undefined };
                     res.fields[member] = obj;
                     obj.attributes |=
@@ -383,17 +383,17 @@ namespace NiL.JS.Core
         public static JSValue defineProperties(Arguments args)
         {
             if (args[0].valueType < JSValueType.Object)
-                throw new JSException(new TypeError("Property define may only for Objects."));
+                ExceptionsHelper.Throw(new TypeError("Property define may only for Objects."));
             if (args[0].oValue == null)
-                throw new JSException(new TypeError("Can not define properties of null."));
+                ExceptionsHelper.Throw(new TypeError("Can not define properties of null."));
             var target = args[0].oValue as JSObject ?? Null;
             var members = args[1].oValue as JSObject ?? Null;
             if (!args[1].IsDefined)
-                throw new JSException(new TypeError("Properties descriptor can not be undefined."));
+                ExceptionsHelper.Throw(new TypeError("Properties descriptor can not be undefined."));
             if (args[1].valueType < JSValueType.Object)
                 return target;
             if (members.oValue == null)
-                throw new JSException(new TypeError("Properties descriptor can not be null."));
+                ExceptionsHelper.Throw(new TypeError("Properties descriptor can not be null."));
             if (target.valueType < JSValueType.Object || target.oValue == null)
                 return target;
             if (members.valueType > JSValueType.Undefined)
@@ -405,11 +405,11 @@ namespace NiL.JS.Core
                     {
                         var getter = (desc.oValue as PropertyPair).get;
                         if (getter == null || getter.oValue == null)
-                            throw new JSException(new TypeError("Invalid property descriptor for property " + memberName + " ."));
+                            ExceptionsHelper.Throw(new TypeError("Invalid property descriptor for property " + memberName + " ."));
                         desc = (getter.oValue as Function).Invoke(members, null);
                     }
                     if (desc.valueType < JSValueType.Object || desc.oValue == null)
-                        throw new JSException(new TypeError("Invalid property descriptor for property " + memberName + " ."));
+                        ExceptionsHelper.Throw(new TypeError("Invalid property descriptor for property " + memberName + " ."));
                     definePropertyImpl(target, desc.oValue as JSObject, memberName);
                 }
             }
@@ -421,11 +421,11 @@ namespace NiL.JS.Core
         public static JSValue defineProperty(Arguments args)
         {
             if (args[0].valueType < JSValueType.Object || args[0].oValue == null)
-                throw new JSException(new TypeError("Object.defineProperty cannot apply to non-object."));
+                ExceptionsHelper.Throw(new TypeError("Object.defineProperty cannot apply to non-object."));
             var target = args[0].oValue as JSObject ?? Null;
             var desc = args[2].oValue as JSObject ?? Null;
             if (desc.valueType < JSValueType.Object || desc.oValue == null)
-                throw new JSException(new TypeError("Invalid property descriptor."));
+                ExceptionsHelper.Throw(new TypeError("Invalid property descriptor."));
             if (target.valueType < JSValueType.Object || target.oValue == null)
                 return target;
             if (target is TypeProxy)
@@ -460,13 +460,13 @@ namespace NiL.JS.Core
             if (set.valueType == JSValueType.Property)
                 set = Tools.InvokeGetter(set, desc);
             if (value.IsExists && (get.IsExists || set.IsExists))
-                throw new JSException(new TypeError("Property can not have getter or setter and default value."));
+                ExceptionsHelper.Throw(new TypeError("Property can not have getter or setter and default value."));
             if (writable.IsExists && (get.IsExists || set.IsExists))
-                throw new JSException(new TypeError("Property can not have getter or setter and writable attribute."));
+                ExceptionsHelper.Throw(new TypeError("Property can not have getter or setter and writable attribute."));
             if (get.IsDefined && get.valueType != JSValueType.Function)
-                throw new JSException(new TypeError("Getter mast be a function."));
+                ExceptionsHelper.Throw(new TypeError("Getter mast be a function."));
             if (set.IsDefined && set.valueType != JSValueType.Function)
-                throw new JSException(new TypeError("Setter mast be a function."));
+                ExceptionsHelper.Throw(new TypeError("Setter mast be a function."));
             JSValue obj = null;
             obj = target.DefineMember(memberName);
             if ((obj.attributes & JSValueAttributesInternal.Argument) != 0 && (set.IsExists || get.IsExists))
@@ -479,7 +479,7 @@ namespace NiL.JS.Core
                 obj.attributes &= ~JSValueAttributesInternal.Argument;
             }
             if ((obj.attributes & JSValueAttributesInternal.SystemObject) != 0)
-                throw new JSException(new TypeError("Can not define property \"" + memberName + "\". Object immutable."));
+                ExceptionsHelper.Throw(new TypeError("Can not define property \"" + memberName + "\". Object immutable."));
 
             if (target is NiL.JS.BaseLibrary.Array)
             {
@@ -492,13 +492,13 @@ namespace NiL.JS.Core
                             var nlenD = Tools.JSObjectToDouble(value);
                             var nlen = (uint)nlenD;
                             if (double.IsNaN(nlenD) || double.IsInfinity(nlenD) || nlen != nlenD)
-                                throw new JSException(new RangeError("Invalid array length"));
+                                ExceptionsHelper.Throw(new RangeError("Invalid array length"));
                             if ((obj.attributes & JSValueAttributesInternal.ReadOnly) != 0
                                 && ((obj.valueType == JSValueType.Double && nlenD != obj.dValue)
                                     || (obj.valueType == JSValueType.Int && nlen != obj.iValue)))
-                                throw new JSException(new TypeError("Cannot change length of fixed size array"));
+                                ExceptionsHelper.Throw(new TypeError("Cannot change length of fixed size array"));
                             if (!(target as NiL.JS.BaseLibrary.Array).setLength(nlen))
-                                throw new JSException(new TypeError("Unable to reduce length because Exists not configurable elements"));
+                                ExceptionsHelper.Throw(new TypeError("Unable to reduce length because Exists not configurable elements"));
                             value = notExists;
                         }
                     }
@@ -516,28 +516,28 @@ namespace NiL.JS.Core
             if (!config)
             {
                 if (enumerable.IsExists && (obj.attributes & JSValueAttributesInternal.DoNotEnum) != 0 == (bool)enumerable)
-                    throw new JSException(new TypeError("Cannot change enumerable attribute for non configurable property."));
+                    ExceptionsHelper.Throw(new TypeError("Cannot change enumerable attribute for non configurable property."));
 
                 if (writable.IsExists && (obj.attributes & JSValueAttributesInternal.ReadOnly) != 0 && (bool)writable)
-                    throw new JSException(new TypeError("Cannot change writable attribute for non configurable property."));
+                    ExceptionsHelper.Throw(new TypeError("Cannot change writable attribute for non configurable property."));
 
                 if (configurable.IsExists && (bool)configurable)
-                    throw new JSException(new TypeError("Cannot set configurate attribute to true."));
+                    ExceptionsHelper.Throw(new TypeError("Cannot set configurate attribute to true."));
 
                 if ((obj.valueType != JSValueType.Property || ((obj.attributes & JSValueAttributesInternal.Field) != 0)) && (set.IsExists || get.IsExists))
-                    throw new JSException(new TypeError("Cannot redefine not configurable property from immediate value to accessor property"));
+                    ExceptionsHelper.Throw(new TypeError("Cannot redefine not configurable property from immediate value to accessor property"));
                 if (obj.valueType == JSValueType.Property && (obj.attributes & JSValueAttributesInternal.Field) == 0 && value.IsExists)
-                    throw new JSException(new TypeError("Cannot redefine not configurable property from accessor property to immediate value"));
+                    ExceptionsHelper.Throw(new TypeError("Cannot redefine not configurable property from accessor property to immediate value"));
                 if (obj.valueType == JSValueType.Property && (obj.attributes & JSValueAttributesInternal.Field) == 0
                     && set.IsExists
                     && (((obj.oValue as PropertyPair).set != null && (obj.oValue as PropertyPair).set.oValue != set.oValue)
                         || ((obj.oValue as PropertyPair).set == null && set.IsDefined)))
-                    throw new JSException(new TypeError("Cannot redefine setter of not configurable property."));
+                    ExceptionsHelper.Throw(new TypeError("Cannot redefine setter of not configurable property."));
                 if (obj.valueType == JSValueType.Property && (obj.attributes & JSValueAttributesInternal.Field) == 0
                     && get.IsExists
                     && (((obj.oValue as PropertyPair).get != null && (obj.oValue as PropertyPair).get.oValue != get.oValue)
                         || ((obj.oValue as PropertyPair).get == null && get.IsDefined)))
-                    throw new JSException(new TypeError("Cannot redefine getter of not configurable property."));
+                    ExceptionsHelper.Throw(new TypeError("Cannot redefine getter of not configurable property."));
             }
 
             if (value.IsExists)
@@ -546,7 +546,7 @@ namespace NiL.JS.Core
                     && (obj.attributes & JSValueAttributesInternal.ReadOnly) != 0
                     && !((StrictEqualOperator.Check(obj, value) && ((obj.valueType == JSValueType.Undefined && value.valueType == JSValueType.Undefined) || !obj.IsNumber || !value.IsNumber || (1.0 / Tools.JSObjectToDouble(obj) == 1.0 / Tools.JSObjectToDouble(value))))
                         || (obj.valueType == JSValueType.Double && value.valueType == JSValueType.Double && double.IsNaN(obj.dValue) && double.IsNaN(value.dValue))))
-                    throw new JSException(new TypeError("Cannot change value of not configurable not writable peoperty."));
+                    ExceptionsHelper.Throw(new TypeError("Cannot change value of not configurable not writable peoperty."));
                 //if ((obj.attributes & JSObjectAttributesInternal.ReadOnly) == 0 || obj.valueType == JSObjectType.Property)
                 {
                     obj.valueType = JSValueType.Undefined;
@@ -618,14 +618,14 @@ namespace NiL.JS.Core
         public void __defineGetter__(Arguments args)
         {
             if (args.length < 2)
-                throw new JSException(new TypeError("Missed parameters"));
+                ExceptionsHelper.Throw(new TypeError("Missed parameters"));
             if (args[1].valueType != JSValueType.Function)
-                throw new JSException(new TypeError("Expecting function as second parameter"));
+                ExceptionsHelper.Throw(new TypeError("Expecting function as second parameter"));
             var field = GetMember(args[0], true, true);
             if ((field.attributes & JSValueAttributesInternal.NotConfigurable) != 0)
-                throw new JSException(new TypeError("Cannot change value of not configurable peoperty."));
+                ExceptionsHelper.Throw(new TypeError("Cannot change value of not configurable peoperty."));
             if ((field.attributes & JSValueAttributesInternal.ReadOnly) != 0)
-                throw new JSException(new TypeError("Cannot change value of readonly peoperty."));
+                ExceptionsHelper.Throw(new TypeError("Cannot change value of readonly peoperty."));
             if (field.valueType == JSValueType.Property)
                 (field.oValue as PropertyPair).get = args.a1.oValue as Function;
             else
@@ -643,14 +643,14 @@ namespace NiL.JS.Core
         public void __defineSetter__(Arguments args)
         {
             if (args.length < 2)
-                throw new JSException(new TypeError("Missed parameters"));
+                ExceptionsHelper.Throw(new TypeError("Missed parameters"));
             if (args[1].valueType != JSValueType.Function)
-                throw new JSException(new TypeError("Expecting function as second parameter"));
+                ExceptionsHelper.Throw(new TypeError("Expecting function as second parameter"));
             var field = GetMember(args[0], true, true);
             if ((field.attributes & JSValueAttributesInternal.NotConfigurable) != 0)
-                throw new JSException(new TypeError("Cannot change value of not configurable peoperty."));
+                ExceptionsHelper.Throw(new TypeError("Cannot change value of not configurable peoperty."));
             if ((field.attributes & JSValueAttributesInternal.ReadOnly) != 0)
-                throw new JSException(new TypeError("Cannot change value of readonly peoperty."));
+                ExceptionsHelper.Throw(new TypeError("Cannot change value of readonly peoperty."));
             if (field.valueType == JSValueType.Property)
                 (field.oValue as PropertyPair).set = args.a1.oValue as Function;
             else
@@ -687,9 +687,9 @@ namespace NiL.JS.Core
         public static JSValue freeze(Arguments args)
         {
             if (args[0].valueType < JSValueType.Object)
-                throw new JSException(new TypeError("Object.freeze called on non-object."));
+                ExceptionsHelper.Throw(new TypeError("Object.freeze called on non-object."));
             if (args[0].oValue == null)
-                throw new JSException(new TypeError("Object.freeze called on null."));
+                ExceptionsHelper.Throw(new TypeError("Object.freeze called on null."));
             var obj = args[0].Value as JSObject ?? args[0].oValue as JSObject;
             obj.attributes |= JSValueAttributesInternal.Immutable;
             for (var e = obj.GetEnumeratorImpl(false); e.MoveNext(); )
@@ -707,9 +707,9 @@ namespace NiL.JS.Core
         public static JSValue preventExtensions(Arguments args)
         {
             if (args[0].valueType < JSValueType.Object)
-                throw new JSException(new TypeError("Prevent the expansion can only for objects"));
+                ExceptionsHelper.Throw(new TypeError("Prevent the expansion can only for objects"));
             if (args[0].oValue == null)
-                throw new JSException(new TypeError("Can not prevent extensions for null"));
+                ExceptionsHelper.Throw(new TypeError("Can not prevent extensions for null"));
             var obj = args[0].Value as JSObject ?? args[0].oValue as JSObject;
             obj.attributes |= JSValueAttributesInternal.Immutable;
             return obj;
@@ -719,9 +719,9 @@ namespace NiL.JS.Core
         public static JSValue isExtensible(Arguments args)
         {
             if (args[0].valueType < JSValueType.Object)
-                throw new JSException(new TypeError("Object.isExtensible called on non-object."));
+                ExceptionsHelper.Throw(new TypeError("Object.isExtensible called on non-object."));
             if (args[0].oValue == null)
-                throw new JSException(new TypeError("Object.isExtensible called on null."));
+                ExceptionsHelper.Throw(new TypeError("Object.isExtensible called on null."));
             var obj = args[0].Value as JSObject ?? args[0].oValue as JSObject;
             return (obj.attributes & JSValueAttributesInternal.Immutable) == 0;
         }
@@ -730,9 +730,9 @@ namespace NiL.JS.Core
         public static JSValue isSealed(Arguments args)
         {
             if (args[0].valueType < JSValueType.Object)
-                throw new JSException(new TypeError("Object.isSealed called on non-object."));
+                ExceptionsHelper.Throw(new TypeError("Object.isSealed called on non-object."));
             if (args[0].oValue == null)
-                throw new JSException(new TypeError("Object.isSealed called on null."));
+                ExceptionsHelper.Throw(new TypeError("Object.isSealed called on null."));
             var obj = args[0].Value as JSObject ?? args[0].oValue as JSObject;
             if ((obj.attributes & JSValueAttributesInternal.Immutable) == 0)
                 return false;
@@ -763,9 +763,9 @@ namespace NiL.JS.Core
         public static JSObject seal(Arguments args)
         {
             if (args[0].valueType < JSValueType.Object)
-                throw new JSException(new TypeError("Object.seal called on non-object."));
+                ExceptionsHelper.Throw(new TypeError("Object.seal called on non-object."));
             if (args[0].oValue == null)
-                throw new JSException(new TypeError("Object.seal called on null."));
+                ExceptionsHelper.Throw(new TypeError("Object.seal called on null."));
             var obj = args[0].Value as JSObject ?? args[0].oValue as JSObject;
             obj.attributes |= JSValueAttributesInternal.Immutable;
             for (var e = obj.GetEnumeratorImpl(false); e.MoveNext(); )
@@ -783,9 +783,9 @@ namespace NiL.JS.Core
         public static JSValue isFrozen(Arguments args)
         {
             if (args[0].valueType < JSValueType.Object)
-                throw new JSException(new TypeError("Object.isFrozen called on non-object."));
+                ExceptionsHelper.Throw(new TypeError("Object.isFrozen called on non-object."));
             if (args[0].oValue == null)
-                throw new JSException(new TypeError("Object.isFrozen called on null."));
+                ExceptionsHelper.Throw(new TypeError("Object.isFrozen called on null."));
             var obj = args[0].Value as JSObject ?? args[0].oValue as JSObject;
             if ((obj.attributes & JSValueAttributesInternal.Immutable) == 0)
                 return false;
@@ -826,7 +826,7 @@ namespace NiL.JS.Core
         public static JSObject getPrototypeOf(Arguments args)
         {
             if (args[0].valueType < JSValueType.Object)
-                throw new JSException(new TypeError("Parameter isn't an Object."));
+                ExceptionsHelper.Throw(new TypeError("Parameter isn't an Object."));
             var res = args[0].__proto__;
             //if (res.oValue is TypeProxy && (res.oValue as TypeProxy).prototypeInstance != null)
             //    res = (res.oValue as TypeProxy).prototypeInstance;
@@ -838,9 +838,9 @@ namespace NiL.JS.Core
         public static JSValue getOwnPropertyDescriptor(Arguments args)
         {
             if (args[0].valueType <= JSValueType.Undefined)
-                throw new JSException(new TypeError("Object.getOwnPropertyDescriptor called on undefined."));
+                ExceptionsHelper.Throw(new TypeError("Object.getOwnPropertyDescriptor called on undefined."));
             if (args[0].valueType < JSValueType.Object)
-                throw new JSException(new TypeError("Object.getOwnPropertyDescriptor called on non-object."));
+                ExceptionsHelper.Throw(new TypeError("Object.getOwnPropertyDescriptor called on non-object."));
             var source = args[0].oValue as JSObject ?? Null;
             var obj = source.GetMember(args[1], false, true);
             if (obj.valueType < JSValueType.Undefined)
@@ -870,9 +870,9 @@ namespace NiL.JS.Core
         public static JSObject getOwnPropertyNames(Arguments args)
         {
             if (args[0].valueType < JSValueType.Object)
-                throw new JSException(new TypeError("Object.getOwnPropertyNames called on non-object value."));
+                ExceptionsHelper.Throw(new TypeError("Object.getOwnPropertyNames called on non-object value."));
             if (args[0].oValue == null)
-                throw new JSException(new TypeError("Cannot get property names of null"));
+                ExceptionsHelper.Throw(new TypeError("Cannot get property names of null"));
             var obj = args[0].oValue as JSObject;
             return new NiL.JS.BaseLibrary.Array(obj.GetEnumeratorImpl(false));
         }
@@ -881,9 +881,9 @@ namespace NiL.JS.Core
         public static JSObject keys(Arguments args)
         {
             if (args[0].valueType < JSValueType.Object)
-                throw new JSException(new TypeError("Object.keys called on non-object value."));
+                ExceptionsHelper.Throw(new TypeError("Object.keys called on non-object value."));
             if (args[0].oValue == null)
-                throw new JSException(new TypeError("Cannot get property names of null"));
+                ExceptionsHelper.Throw(new TypeError("Cannot get property names of null"));
             var obj = args[0].oValue as JSObject;
             return new NiL.JS.BaseLibrary.Array(obj.GetEnumeratorImpl(true));
         }

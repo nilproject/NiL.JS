@@ -296,7 +296,7 @@ namespace NiL.JS.Core
                         return JSObjectToInt32(r);
                     }
                 case JSValueType.NotExists:
-                //throw new JSException((new NiL.JS.BaseLibrary.ReferenceError("Variable not defined.")));
+                //ExceptionsHelper.Throw((new NiL.JS.BaseLibrary.ReferenceError("Variable not defined.")));
                 case JSValueType.Undefined:
                 case JSValueType.NotExistsInObject:
                     return nullOrUndef;
@@ -865,7 +865,7 @@ namespace NiL.JS.Core
                     else if (radix == 0 && IsDigit(code[i + 1]))
                     {
                         if (raiseOctal)
-                            throw new JSException((new SyntaxError("Octal literals not allowed in strict mode")));
+                            ExceptionsHelper.Throw((new SyntaxError("Octal literals not allowed in strict mode")));
                         i += 1;
                         if (processOctal)
                             radix = 8;
@@ -987,7 +987,7 @@ namespace NiL.JS.Core
                 else
                     value = temp;
                 if (value == 0 && skiped && raiseOctal)
-                    throw new JSException((new SyntaxError("Octal literals not allowed in strict mode")));
+                    ExceptionsHelper.Throw((new SyntaxError("Octal literals not allowed in strict mode")));
                 value *= sig;
                 index = i;
                 return true;
@@ -1073,7 +1073,7 @@ namespace NiL.JS.Core
                                         break;
                                     }
                                     else
-                                        throw new JSException((new SyntaxError("Invalid escape code (\"" + code + "\")")));
+                                        ExceptionsHelper.Throw((new SyntaxError("Invalid escape code (\"" + code + "\")")));
                                 }
                                 string c = code.Substring(i + 1, code[i] == 'u' ? 4 : 2);
                                 ushort chc = 0;
@@ -1088,7 +1088,7 @@ namespace NiL.JS.Core
                                     if (processRegexComp)
                                         res.Append(code[i]);
                                     else
-                                        throw new JSException((new SyntaxError("Invalid escape sequence '\\" + code[i] + c + "'")));
+                                        ExceptionsHelper.Throw((new SyntaxError("Invalid escape sequence '\\" + code[i] + c + "'")));
                                 }
                                 break;
                             }
@@ -1164,7 +1164,7 @@ namespace NiL.JS.Core
                                 if (IsDigit(code[i]) && !processRegexComp)
                                 {
                                     if (strict)
-                                        throw new JSException((new SyntaxError("Octal literals are not allowed in strict mode.")));
+                                        ExceptionsHelper.Throw((new SyntaxError("Octal literals are not allowed in strict mode.")));
                                     var ccode = code[i] - '0';
                                     if (i + 1 < code.Length && IsDigit(code[i + 1]))
                                         ccode = ccode * 10 + (code[++i] - '0');
@@ -1223,7 +1223,7 @@ namespace NiL.JS.Core
                                 while (index + 1 < code.Length && (code[index] != '*' || code[index + 1] != '/'))
                                     index++;
                                 if (index + 1 >= code.Length)
-                                    throw new JSException(new SyntaxError("Unexpected end of source."));
+                                    ExceptionsHelper.Throw(new SyntaxError("Unexpected end of source."));
                                 index += 2;
                                 work = true;
                                 break;
@@ -1299,7 +1299,7 @@ namespace NiL.JS.Core
         internal static JSValue RaiseIfNotExists(JSValue obj, object name)
         {
             if (obj.valueType == JSValueType.NotExists)
-                throw new JSException((new NiL.JS.BaseLibrary.ReferenceError("Variable \"" + name + "\" has not been defined.")));
+                ExceptionsHelper.Throw((new NiL.JS.BaseLibrary.ReferenceError("Variable \"" + name + "\" has not been defined.")));
             return obj;
         }
 

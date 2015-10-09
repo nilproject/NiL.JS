@@ -5,7 +5,7 @@ using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Interop;
 
 namespace NiL.JS.Core.Functions
-{    
+{
 #if !PORTABLE
     [Serializable]
 #endif
@@ -17,7 +17,7 @@ namespace NiL.JS.Core.Functions
         // Если нужен более строгий подбор, то количество проходов нужно
         // уменьшить до одного
         private const int passesCount = 2;
-        
+
         private static readonly object[] _objectA = new object[0];
         internal readonly TypeProxy proxy;
         private MethodProxy[] constructors;
@@ -68,10 +68,10 @@ namespace NiL.JS.Core.Functions
             proxy = typeProxy;
 #if PORTABLE
             if (proxy.hostedType.GetTypeInfo().ContainsGenericParameters)
-                throw new JSException((new TypeError(proxy.hostedType.Name + " can't be created because it's generic type.")));
+                ExceptionsHelper.Throw((new TypeError(proxy.hostedType.Name + " can't be created because it's generic type.")));
 #else
             if (proxy.hostedType.ContainsGenericParameters)
-                throw new JSException((new TypeError(proxy.hostedType.Name + " can't be created because it's generic type.")));
+                ExceptionsHelper.Throw((new TypeError(proxy.hostedType.Name + " can't be created because it's generic type.")));
 #endif
             var ownew = typeProxy.hostedType.IsDefined(typeof(RequireNewKeywordAttribute), true);
             var owonew = typeProxy.hostedType.IsDefined(typeof(DisallowNewKeywordAttribute), true);
@@ -138,12 +138,12 @@ namespace NiL.JS.Core.Functions
             if (bynew)
             {
                 if (RequireNewKeywordLevel == RequireNewKeywordLevel.OnlyWithoutNew)
-                    throw new TypeError(string.Format(Strings.InvalidTryToCreateWithNew, proxy.hostedType.Name)).Wrap();
+                    ExceptionsHelper.Throw(new TypeError(string.Format(Strings.InvalidTryToCreateWithNew, proxy.hostedType.Name)));
             }
             else
             {
                 if (RequireNewKeywordLevel == RequireNewKeywordLevel.OnlyWithNew)
-                    throw new TypeError(string.Format(Strings.InvalidTryToCreateWithoutNew, proxy.hostedType.Name)).Wrap();
+                    ExceptionsHelper.Throw(new TypeError(string.Format(Strings.InvalidTryToCreateWithoutNew, proxy.hostedType.Name)));
 
                 if (proxy.hostedType == typeof(Date))
                     return new Date().ToString();
@@ -155,7 +155,8 @@ namespace NiL.JS.Core.Functions
                 {
                     if (argsObj == null)
                         obj = new NiL.JS.BaseLibrary.Array();
-                    else switch (argsObj.length)
+                    else
+                        switch (argsObj.length)
                         {
                             case 0:
                                 obj = new NiL.JS.BaseLibrary.Array();
@@ -195,7 +196,7 @@ namespace NiL.JS.Core.Functions
                         object[] args = null;
                         MethodProxy constructor = findConstructor(argsObj, ref args);
                         if (constructor == null)
-                            throw new JSException((new TypeError(proxy.hostedType.Name + " can't be created.")));
+                            ExceptionsHelper.Throw((new TypeError(proxy.hostedType.Name + " can't be created.")));
                         obj = constructor.InvokeImpl(null, args, argsObj == null ? constructor.parameters.Length != 0 ? new Arguments() : null : argsObj);
                     }
                 }

@@ -22,19 +22,19 @@ namespace NiL.JS.Statements
             if (!Parser.Validate(state.Code, "with (", ref i) && !Parser.Validate(state.Code, "with(", ref i))
                 return new ParseResult();
             if (state.strict)
-                throw new JSException((new NiL.JS.BaseLibrary.SyntaxError("WithStatement is not allowed in strict mode.")));
+                ExceptionsHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("WithStatement is not allowed in strict mode.")));
             if (state.message != null)
                 state.message(MessageLevel.CriticalWarning, CodeCoordinates.FromTextPosition(state.Code, index, 4), "Do not use \"with\".");
             var obj = Parser.Parse(state, ref i, 1);
             while (char.IsWhiteSpace(state.Code[i])) i++;
             if (state.Code[i] != ')')
-                throw new JSException((new NiL.JS.BaseLibrary.SyntaxError("Invalid syntax WithStatement.")));
+                ExceptionsHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("Invalid syntax WithStatement.")));
             do i++; while (char.IsWhiteSpace(state.Code[i]));
             var body = Parser.Parse(state, ref i, 0);
             if (body is FunctionNotation)
             {
                 if (state.strict)
-                    throw new JSException((new NiL.JS.BaseLibrary.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
+                    ExceptionsHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
                 if (state.message != null)
                     state.message(MessageLevel.CriticalWarning, CodeCoordinates.FromTextPosition(state.Code, body.Position, body.Length), "Do not declare function in nested blocks.");
                 body = new CodeBlock(new[] { body }, state.strict); // для того, чтобы не дублировать код по декларации функции, 

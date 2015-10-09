@@ -18,7 +18,7 @@ namespace NiL.JS.Statements
             if (!Parser.Validate(state.Code, "continue", ref i) || !Parser.isIdentificatorTerminator(state.Code[i]))
                 return new ParseResult();
             if (!state.AllowContinue.Peek())
-                throw new JSException((new NiL.JS.BaseLibrary.SyntaxError("Invalid use continue statement")));
+                ExceptionsHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("Invalid use continue statement")));
             while (char.IsWhiteSpace(state.Code[i]) && !Tools.isLineTerminator(state.Code[i])) i++;
             int sl = i;
             JSValue label = null;
@@ -26,7 +26,7 @@ namespace NiL.JS.Statements
             {
                 label = Tools.Unescape(state.Code.Substring(sl, i - sl), state.strict);
                 if (!state.Labels.Contains(label.oValue.ToString()))
-                    throw new JSException((new NiL.JS.BaseLibrary.SyntaxError("Try to continue to undefined label.")));
+                    ExceptionsHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("Try to continue to undefined label.")));
             }
             int pos = index;
             index = i;

@@ -69,7 +69,7 @@ namespace NiL.JS.BaseLibrary
         public ArrayBuffer slice(int begin, int end)
         {
             if (end < begin || begin >= data.Length || end >= data.Length)
-                throw new JSException((new RangeError("Invalid begin or end index")));
+                ExceptionsHelper.Throw((new RangeError("Invalid begin or end index")));
             var res = new ArrayBuffer(end - begin + 1);
             for (int i = 0, j = begin; j <= end; j++, i++)
                 res.data[i] = data[j];
@@ -118,7 +118,7 @@ namespace NiL.JS.BaseLibrary
             if (!double.IsInfinity(dindex) && !double.IsNaN(dindex) && ((index = (int)dindex) == dindex))
             {
                 if (dindex > 0x7fffffff || dindex < 0)
-                    throw new JSException((new RangeError("Invalid array index")));
+                    ExceptionsHelper.Throw((new RangeError("Invalid array index")));
                 if (((index = (int)dindex) == dindex))
                 {
                     if (index >= data.Length)

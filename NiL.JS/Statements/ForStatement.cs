@@ -45,16 +45,16 @@ namespace NiL.JS.Statements
                 && (init as ExpressionTree).second == null)
                 init = (init as ExpressionTree).first;
             if (state.Code[i] != ';')
-                throw new JSException((new SyntaxError("Expected \";\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
+                ExceptionsHelper.Throw((new SyntaxError("Expected \";\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
             do i++; while (char.IsWhiteSpace(state.Code[i]));
             var condition = state.Code[i] == ';' ? null as CodeNode : ExpressionTree.Parse(state, ref i).Statement;
             if (state.Code[i] != ';')
-                throw new JSException((new SyntaxError("Expected \";\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
+                ExceptionsHelper.Throw((new SyntaxError("Expected \";\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
             do i++; while (char.IsWhiteSpace(state.Code[i]));
             var post = state.Code[i] == ')' ? null as CodeNode : ExpressionTree.Parse(state, ref i).Statement;
             while (char.IsWhiteSpace(state.Code[i])) i++;
             if (state.Code[i] != ')')
-                throw new JSException((new SyntaxError("Expected \";\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
+                ExceptionsHelper.Throw((new SyntaxError("Expected \";\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
             do i++; while (char.IsWhiteSpace(state.Code[i]));
             state.AllowBreak.Push(true);
             state.AllowContinue.Push(true);
@@ -62,7 +62,7 @@ namespace NiL.JS.Statements
             if (body is FunctionNotation)
             {
                 if (state.strict)
-                    throw new JSException((new NiL.JS.BaseLibrary.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
+                    ExceptionsHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
                 if (state.message != null)
                     state.message(MessageLevel.CriticalWarning, CodeCoordinates.FromTextPosition(state.Code, body.Position, body.Length), "Do not declare function in nested blocks.");
                 body = new CodeBlock(new[] { body }, state.strict); // для того, чтобы не дублировать код по декларации функции, 

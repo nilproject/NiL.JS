@@ -31,7 +31,6 @@ namespace NiL.JS.Expressions
 
         internal override JSValue Evaluate(Context context)
         {
-            //var result = new List<JSObject>();
             throw new NotImplementedException();
         }
 

@@ -169,10 +169,10 @@ namespace NiL.JS.Core
                     case '%':
                         {
                             if (k + 2 >= str.Length)
-                                throw new JSException(new URIError("Substring after \"%\" not represent valid code."));
+                                ExceptionsHelper.Throw(new URIError("Substring after \"%\" not represent valid code."));
                             if (!Tools.isHex(str[k + 1])
                                 || !Tools.isHex(str[k + 2]))
-                                throw new JSException(new URIError("Substring after \"%\" not represent valid code."));
+                                ExceptionsHelper.Throw(new URIError("Substring after \"%\" not represent valid code."));
                             var cc = Tools.anum(str[k + 1]) * 16 + Tools.anum(str[k + 2]);
                             k += 2;
                             if ((cc & 0x80) == 0)
@@ -183,21 +183,21 @@ namespace NiL.JS.Core
                                 while (((cc << n) & 0x80) != 0)
                                     n++;
                                 if (n == 1 || n > 4)
-                                    throw new JSException(new URIError("URI malformed"));
+                                    ExceptionsHelper.Throw(new URIError("URI malformed"));
                                 if (k + (3 * (n - 1)) >= str.Length)
-                                    throw new JSException(new URIError("URI malformed"));
+                                    ExceptionsHelper.Throw(new URIError("URI malformed"));
                                 var octet = (cc & (((1 << (n * 7 - 1)) - 1) >> (8 * (n - 1)))) << ((n - 1) * 6);
                                 for (var j = 1; j < n; j++)
                                 {
                                     k++;
                                     if (str[k] != '%')
-                                        throw new JSException(new URIError(""));
+                                        ExceptionsHelper.Throw(new URIError(""));
                                     if (!Tools.isHex(str[k + 1])
                                         || !Tools.isHex(str[k + 2]))
-                                        throw new JSException(new URIError("Substring after \"%\" not represent valid code."));
+                                        ExceptionsHelper.Throw(new URIError("Substring after \"%\" not represent valid code."));
                                     cc = Tools.anum(str[k + 1]) * 16 + Tools.anum(str[k + 2]);
                                     if ((cc & 0xC0) != 0x80)
-                                        throw new JSException(new URIError("URI malformed"));
+                                        ExceptionsHelper.Throw(new URIError("URI malformed"));
                                     octet |= (cc & 63) << ((n - j - 1) * 6);
                                     k += 2;
                                 }
@@ -241,10 +241,10 @@ namespace NiL.JS.Core
                     case '%':
                         {
                             if (k + 2 >= str.Length)
-                                throw new JSException(new URIError("Substring after \"%\" not represent valid code."));
+                                ExceptionsHelper.Throw(new URIError("Substring after \"%\" not represent valid code."));
                             if (!Tools.isHex(str[k + 1])
                                 || !Tools.isHex(str[k + 2]))
-                                throw new JSException(new URIError("Substring after \"%\" not represent valid code."));
+                                ExceptionsHelper.Throw(new URIError("Substring after \"%\" not represent valid code."));
                             var cc = Tools.anum(str[k + 1]) * 16 + Tools.anum(str[k + 2]);
                             k += 2;
                             if ((cc & 0x80) == 0)
@@ -261,21 +261,21 @@ namespace NiL.JS.Core
                                 while (((cc << n) & 0x80) != 0)
                                     n++;
                                 if (n == 1 || n > 4)
-                                    throw new JSException(new URIError("URI malformed"));
+                                    ExceptionsHelper.Throw(new URIError("URI malformed"));
                                 if (k + (3 * (n - 1)) >= str.Length)
-                                    throw new JSException(new URIError("URI malformed"));
+                                    ExceptionsHelper.Throw(new URIError("URI malformed"));
                                 var octet = (cc & (((1 << (n * 7 - 1)) - 1) >> (8 * (n - 1)))) << ((n - 1) * 6);
                                 for (var j = 1; j < n; j++)
                                 {
                                     k++;
                                     if (str[k] != '%')
-                                        throw new JSException(new URIError(""));
+                                        ExceptionsHelper.Throw(new URIError(""));
                                     if (!Tools.isHex(str[k + 1])
                                         || !Tools.isHex(str[k + 2]))
-                                        throw new JSException(new URIError("Substring after \"%\" not represent valid code."));
+                                        ExceptionsHelper.Throw(new URIError("Substring after \"%\" not represent valid code."));
                                     cc = Tools.anum(str[k + 1]) * 16 + Tools.anum(str[k + 2]);
                                     if ((cc & 0xC0) != 0x80)
-                                        throw new JSException(new URIError("URI malformed"));
+                                        ExceptionsHelper.Throw(new URIError("URI malformed"));
                                     octet |= (cc & 63) << ((n - j - 1) * 6);
                                     k += 2;
                                 }
@@ -346,16 +346,16 @@ namespace NiL.JS.Core
                 {
                     int v = 0;
                     if (s[i] >= 0xdc00 && s[i] <= 0xdfff)
-                        throw new JSException(new URIError(""));
+                        ExceptionsHelper.Throw(new URIError(""));
                     if (s[i] < 0xd800 || s[i] > 0xdbff)
                         v = s[i];
                     else
                     {
                         i++;
                         if (i == s.Length)
-                            throw new JSException(new URIError(""));
+                            ExceptionsHelper.Throw(new URIError(""));
                         if (s[i] < 0xdc00 || s[i] > 0xdfff)
-                            throw new JSException(new URIError(""));
+                            ExceptionsHelper.Throw(new URIError(""));
                         v = (s[i - 1] - 0xd800) * 0x400 + (s[i] - 0xdc00) + 0x10000;
                     }
                     var n = 1;
@@ -364,7 +364,7 @@ namespace NiL.JS.Core
                         while ((v >> (n * 6 - (n - 1))) != 0)
                             n++;
                         if (n > 4)
-                            throw new JSException(new URIError(""));
+                            ExceptionsHelper.Throw(new URIError(""));
                         var b = (v >> ((n - 1) * 6)) | ~((1 << (8 - n)) - 1);
                         res.Append('%')
                             .Append(Tools.NumChars[(b >> 4) & 0xf])
@@ -399,16 +399,16 @@ namespace NiL.JS.Core
                 {
                     int v = 0;
                     if (s[i] >= 0xdc00 && s[i] <= 0xdfff)
-                        throw new JSException(new URIError(""));
+                        ExceptionsHelper.Throw(new URIError(""));
                     if (s[i] < 0xd800 || s[i] > 0xdbff)
                         v = s[i];
                     else
                     {
                         i++;
                         if (i == s.Length)
-                            throw new JSException(new URIError(""));
+                            ExceptionsHelper.Throw(new URIError(""));
                         if (s[i] < 0xdc00 || s[i] > 0xdfff)
-                            throw new JSException(new URIError(""));
+                            ExceptionsHelper.Throw(new URIError(""));
                         v = (s[i - 1] - 0xd800) * 0x400 + (s[i] - 0xdc00) + 0x10000;
                     }
                     var n = 1;
@@ -417,7 +417,7 @@ namespace NiL.JS.Core
                         while ((v >> (n * 6 - (n - 1))) != 0)
                             n++;
                         if (n > 4)
-                            throw new JSException(new URIError(""));
+                            ExceptionsHelper.Throw(new URIError(""));
                         var b = (v >> ((n - 1) * 6)) | ~((1 << (8 - n)) - 1);
                         res.Append('%')
                             .Append(Tools.NumChars[(b >> 4) & 0xf])

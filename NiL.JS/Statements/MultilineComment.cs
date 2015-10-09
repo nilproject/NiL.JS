@@ -15,7 +15,7 @@ namespace NiL.JS.Statements
                 return new ParseResult();
             while (i + 1 < state.Code.Length && (state.Code[i] != '*' || state.Code[i + 1] != '/')) i++;
             if (i + 1 >= state.Code.Length)
-                throw new JSException((new SyntaxError("Non terminated multiline comment")));
+                ExceptionsHelper.Throw((new SyntaxError("Non terminated multiline comment")));
             i += 2;
             try
             {

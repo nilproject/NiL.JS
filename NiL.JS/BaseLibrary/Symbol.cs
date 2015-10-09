@@ -40,7 +40,7 @@ namespace NiL.JS.BaseLibrary
         public static string keyFor(Symbol symbol)
         {
             if (symbol == null)
-                throw new TypeError("Invalid argument").Wrap();
+                ExceptionsHelper.Throw(new TypeError("Invalid argument"));
             return symbol.Description;
         }
 

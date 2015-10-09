@@ -131,7 +131,7 @@ namespace NiL.JS.Expressions
             }
             catch
             {
-                throw new JSException(new RangeError("Stack overflow."));
+                ExceptionsHelper.Throw(new RangeError("Stack overflow."));
             }
         }
 

@@ -77,9 +77,9 @@ namespace NiL.JS.Expressions
                         var vle = flds[setter.Name];
                         if (!(vle is ConstantNotation)
                             || (vle as ConstantNotation).value.valueType != JSValueType.Property)
-                            throw new JSException((new SyntaxError("Try to define setter for defined field at " + CodeCoordinates.FromTextPosition(state.Code, s, 0))));
+                            ExceptionsHelper.Throw((new SyntaxError("Try to define setter for defined field at " + CodeCoordinates.FromTextPosition(state.Code, s, 0))));
                         if (((vle as ConstantNotation).value.oValue as CodeNode[])[0] != null)
-                            throw new JSException((new SyntaxError("Try to redefine setter " + setter.Name + " at " + CodeCoordinates.FromTextPosition(state.Code, s, 0))));
+                            ExceptionsHelper.Throw((new SyntaxError("Try to redefine setter " + setter.Name + " at " + CodeCoordinates.FromTextPosition(state.Code, s, 0))));
                         ((vle as ConstantNotation).value.oValue as CodeNode[])[0] = setter;
                     }
                 }
@@ -98,9 +98,9 @@ namespace NiL.JS.Expressions
                         var vle = flds[getter.Name];
                         if (!(vle is ConstantNotation)
                             || (vle as ConstantNotation).value.valueType != JSValueType.Property)
-                            throw new JSException((new SyntaxError("Try to define getter for defined field at " + CodeCoordinates.FromTextPosition(state.Code, s, 0))));
+                            ExceptionsHelper.Throw((new SyntaxError("Try to define getter for defined field at " + CodeCoordinates.FromTextPosition(state.Code, s, 0))));
                         if (((vle as ConstantNotation).value.oValue as CodeNode[])[1] != null)
-                            throw new JSException((new SyntaxError("Try to redefine getter " + getter.Name + " at " + CodeCoordinates.FromTextPosition(state.Code, s, 0))));
+                            ExceptionsHelper.Throw((new SyntaxError("Try to redefine getter " + getter.Name + " at " + CodeCoordinates.FromTextPosition(state.Code, s, 0))));
                         ((vle as ConstantNotation).value.oValue as CodeNode[])[1] = getter;
                     }
                 }
@@ -113,7 +113,7 @@ namespace NiL.JS.Expressions
                     else if (Parser.ValidateValue(state.Code, ref i))
                     {
                         if (state.Code[s] == '-')
-                            throw new SyntaxError("Invalid char \"-\" at " + CodeCoordinates.FromTextPosition(state.Code, s, 1)).Wrap();
+                            ExceptionsHelper.Throw(new SyntaxError("Invalid char \"-\" at " + CodeCoordinates.FromTextPosition(state.Code, s, 1)));
                         double d = 0.0;
                         int n = s;
                         if (Tools.ParseNumber(state.Code, ref n, out d))
@@ -121,7 +121,7 @@ namespace NiL.JS.Expressions
                         else if (state.Code[s] == '\'' || state.Code[s] == '"')
                             fieldName = Tools.Unescape(state.Code.Substring(s + 1, i - s - 2), state.strict);
                         else if (flds.Count != 0)
-                            throw new JSException((new SyntaxError("Invalid field name at " + CodeCoordinates.FromTextPosition(state.Code, s, i - s))));
+                            ExceptionsHelper.Throw((new SyntaxError("Invalid field name at " + CodeCoordinates.FromTextPosition(state.Code, s, i - s))));
                         else
                             return new ParseResult();
                     }
@@ -138,7 +138,7 @@ namespace NiL.JS.Expressions
                     {
                         if (((state.strict && (!(aei is ConstantNotation) || (aei as ConstantNotation).value != JSValue.undefined))
                             || (aei is ConstantNotation && ((aei as ConstantNotation).value.valueType == JSValueType.Property))))
-                            throw new JSException(new SyntaxError("Try to redefine field \"" + fieldName + "\" at " + CodeCoordinates.FromTextPosition(state.Code, s, i - s)));
+                            ExceptionsHelper.Throw(new SyntaxError("Try to redefine field \"" + fieldName + "\" at " + CodeCoordinates.FromTextPosition(state.Code, s, i - s)));
                         if (state.message != null)
                             state.message(MessageLevel.Warning, CodeCoordinates.FromTextPosition(state.Code, initializator.Position, 0), "Duplicate key \"" + fieldName + "\"");
                     }
